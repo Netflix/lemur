@@ -1,0 +1,85 @@
+<h2 class="featurette-heading"><span ng-show="!role.fromServer">Create</span><span ng-show="role.fromServer">Edit</span> Role <span class="text-muted"><small>The nail that sticks out farthest gets hammered the hardest
+</small></span></h2>
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <button ng-click="roleService.loadPassword(role)" class="btn btn-warning">Show Credentials</button>
+    <a href="/#/roles" class="btn btn-danger pull-right">Cancel</a>
+    <div class="clearfix"></div>
+  </div>
+  <div class="panel-body">
+    <form name="createForm" class="form-horizontal" ng-submit="save(role)" role="form" novalidate>
+      <div class="form-group"
+           ng-class="{'has-error': createForm.name.$invalid, 'has-success': !createForm.name.$invalid&&createForm.name.$dirty}">
+        <label class="control-label col-sm-2">
+          Name
+        </label>
+        <div class="col-sm-10">
+          <input name="name" ng-model="role.name" placeholder="Name" class="form-control" required/>
+          <p ng-show="createForm.name.$invalid && !createForm.name.$pristine" class="help-block">You must enter an role name</p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="control-label col-sm-2">
+          Description
+        </label>
+        <div class="col-sm-10">
+          <textarea name="description" ng-model="role.description" placeholder="Something elegant" class="form-control" ></textarea>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="control-label col-sm-2">
+          Username
+        </label>
+        <div class="col-sm-10">
+          <input ng-show="!role.fromServer" name="username" ng-model="role.username" placeholder="Username" class="form-control" required/>
+          <div class="well">
+            <span ng-show="role.password">
+              {{ role.username }}
+            </span>
+            <span ng-show="!role.password">
+              ******************
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="control-label col-sm-2">
+          Password
+        </label>
+        <div class="col-sm-10">
+          <input ng-show="!role.fromServer" type="password" name="password" ng-model="role.password" placeholder="hunter2" class="form-control" required/>
+          <p ng-show="createForm.password.$invalid && !createForm.password.$pristine" class="help-block">You must enter an password</p>
+          <div class="well">
+            <span ng-show="role.password">
+                {{ role.password }}
+            </span>
+            <span ng-show="!role.password">
+              *****************
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="control-label col-sm-2">User(s)</label>
+        <div class="col-sm-10">
+          <input tooltip="You can attach any user to this role, once attached they will have access as defined by this role"
+                 typeahead="user.username for user in userService.findUserByName($viewValue)" typeahead-loading="loadingUsers"
+                 typeahead-min-wait="100" typeahead-on-select="role.addUser($item)"
+                 type="text" name="user" ng-model="role.selectedUser" placeholder="Username..." class="form-control" required/>
+          <table ng-show="role.users" class="table">
+            <tr ng-repeat="user in role.users track by $index">
+              <td>{{ user.username }}</td>
+              <td>
+                <button type="button" ng-click="role.removeUser($index)" class="btn btn-danger btn-sm pull-right">Remove</button>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="panel-footer">
+    <button ng-click="save(role)" class="btn btn-success pull-right">Save</button>
+    <div class="clearfix"></div>
+  </div>
+</div>

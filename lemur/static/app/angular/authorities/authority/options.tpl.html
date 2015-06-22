@@ -1,0 +1,78 @@
+<div class="form-horizontal">
+  <div class="form-group">
+    <label class="control-label col-sm-2">
+      Type
+    </label>
+    <div class="col-sm-10">
+      <select class="form-control" ng-model="authority.caType" ng-options="option for option in ['root', 'subca']" ng-init="authority.caType = 'root'"required></select>
+    </div>
+  </div>
+  <div ng-show="authority.caType == 'subca'" class="form-group">
+    <label class="control-label col-sm-2">
+      Parent Authority
+    </label>
+    <div class="col-sm-10">
+      <input type="text" ng-model="authority.caParent" placeholder="Parent Authority Name"
+             typeahead="authority.name for authority in authorityService.findAuthorityByName($viewValue)" typeahead-loading="loadingAuthorities"
+             class="form-control input-md" typeahead-min-wait="50"
+             tooltip="When you specifiy a subordinate certificate authority you must specific the parent authority"
+             tooltip-trigger="focus" tooltip-placement="top">
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="control-label col-sm-2">
+      Signing Algorithm
+    </label>
+    <div class="col-sm-10">
+      <select class="form-control" ng-model="authority.caSigningAlgo" ng-options="option for option in ['sha1WithRSA', 'sha256WithRSA']" ng-init="authority.caSigningAlgo = 'sha256WithRSA'"></select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="control-label col-sm-2">
+      Sensitivity
+    </label>
+    <div class="col-sm-10">
+      <select class="form-control" ng-model="authority.caSensitivity" ng-options="option for option in ['medium', 'high']" ng-init="authority.caSensitivity = 'medium'"></select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="control-label col-sm-2">
+      Key Type
+    </label>
+    <div class="col-sm-10">
+      <select class="form-control" ng-model="authority.keyType" ng-options="option for option in ['RSA2048', 'RSA4096']" ng-init="authority.keyType = 'RSA2048'"></select>
+    </div>
+  </div>
+  <div ng-show="authority.caSensitivity == 'high'" class="form-group">
+    <label class="control-label col-sm-2">
+      Key Name
+    </label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" ng-model="authority.keyName" />
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="control-label col-sm-2">
+      Serial Number
+    </label>
+    <div class="col-sm-10">
+      <input type="number" name="serialNumber" ng-model="authority.caSerialNumber" placeholder="Serial Number" class="form-control"/>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="control-label col-sm-2">
+      First Serial Number
+    </label>
+    <div class="col-sm-10">
+      <input type="number" name="firstSerialNumber" ng-model="authority.caFirstSerial" placeholder="First Serial Number" class="form-control" ng-init="1000" />
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="control-label col-sm-2">
+      Plugin Name
+    </label>
+    <div class="col-sm-10">
+      <select class="form-control" ng-model="authority.pluginName" ng-options="option for option in ['cloudca', 'verisign']" ng-init="authority.pluginName = 'cloudca'" required></select>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,44 @@
+<h2 class="featurette-heading">Edit</span> Authority <span class="text-muted"><small>Chain of command
+</small></span></h2>
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <a href="#/authorities" class="btn btn-danger pull-right">Cancel</a>
+    <div class="clearfix"></div>
+  </div>
+  <div class="panel-body">
+    <form name="createForm" class="form-horizontal" role="form" novalidate>
+      <div class="form-group">
+        <label class="control-label col-sm-2">
+          Roles
+        </label>
+        <div class="col-sm-10">
+          <div class="input-group">
+            <input type="text" ng-model="authority.selectedRole" placeholder="Role Name"
+                   typeahead="role.name for role in roleService.findRoleByName($viewValue)" typeahead-loading="loadingRoles"
+                   class="form-control input-md" typeahead-on-select="authority.attachRole($item)" typeahead-min-wait="50"
+                   tooltip="Roles control which authorities a user can issue certificates from"
+                   tooltip-trigger="focus" tooltip-placement="top">
+          <span class="input-group-btn">
+            <button ng-model="roles.show" class="btn btn-md btn-default" btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
+              <span class="badge">{{ authority.roles.length || 0 }}</span>
+            </button>
+          </span>
+          </div>
+          <table ng-show="authority.roles" class="table">
+            <tr ng-repeat="role in authority.roles track by $index">
+              <td><a class="btn btn-sm btn-info" href="#/roles/{{ role.id }}/edit">{{ role.name }}</a></td>
+              <td><span class="text-muted">{{ role.description }}</span></td>
+              <td>
+                <button type="button" ng-click="authority.removeRole($index)" class="btn btn-danger btn-sm pull-right">Remove</button>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="panel-footer">
+    <button ng-click="save(authority)" class="btn btn-success pull-right">Save</button>
+    <div class="clearfix"></div>
+  </div>
+</div>

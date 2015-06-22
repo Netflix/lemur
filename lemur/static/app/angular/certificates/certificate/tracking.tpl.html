@@ -1,0 +1,103 @@
+<form name="trackingForm" novalidate>
+  <div class="form-horizontal">
+    <div class="form-group"
+         ng-class="{'has-error': trackingForm.ownerEmail.$invalid, 'has-success': !trackingForm.$invalid&&trackingForm.ownerEmail.$dirty}">
+      <label class="control-label col-sm-2">
+        Owner
+      </label>
+      <div class="col-sm-10">
+        <input type="email" name="ownerEmail" ng-model="certificate.owner" placeholder="TeamDL@netflix.com" tooltip="This is the certificates team distribution list or main point of contact" class="form-control" required/>
+        <p ng-show="trackingForm.ownerEmail.$invalid && !trackingForm.ownerEmail.$pristine" class="help-block">You must enter an Certificate owner</p>
+      </div>
+    </div>
+    <div class="form-group"
+      ng-class="{'has-error': trackingForm.description.$invalid, 'has-success': !trackingForm.$invalid&&trackingForm.description.$dirty}">
+      <label class="control-label col-sm-2">
+        Description
+      </label>
+      <div class="col-sm-10">
+        <textarea name="description" ng-model="certificate.description" placeholder="Something elegant" class="form-control" ng-pattern="/^[\w\-\s]+$/" required></textarea>
+        <p ng-show="trackingForm.description.$invalid && !trackingForm.description.$pristine" class="help-block">You must give a short description about this authority will be used for, this description should only include alphanumeric characters</p>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="control-label col-sm-2">
+        Certificate Authority
+      </label>
+      <div class="col-sm-10">
+        <div class="input-group col-sm-12">
+          <input tooltip="If you are unsure which authority you need; you most likely want to use 'verisign'" type="text" ng-model="certificate.selectedAuthority" placeholder="Authority Name" typeahead-on-select="certificate.attachAuthority($item)"
+                 typeahead="authority.name for authority in authorityService.findAuthorityByName($viewValue)" typeahead-loading="loadingAuthorities"
+                 class="form-control" typeahead-wait-ms="100" typeahead-template-url="angular/authorities/authority/select.tpl.html">
+        </div>
+      </div>
+    </div>
+    <div ng-show="certificate.authority.name == 'verisign'">
+      <div class="form-group" ng-class="{'has-error': !certificate.extensions.subAltNames.names.length&&!certificate.extensions.subAltNames.names , 'has-success': certificate.extensions.subAltNames.names||certificate.subAltValue}">
+        <label class="control-label col-sm-2">Domain(s)</label>
+        <div class="col-sm-10">
+          <div class="input-group input-group-option">
+            <input tooltip="If you request multiple domains a SAN certificate will be created" type="text" name="domain" ng-model="certificate.subAltValue" placeholder="Domain..." class="form-control" required/>
+        <span class="input-group-btn">
+          <button class="btn btn-default" ng-click="certificate.attachSubAltName()">Add</button>
+        </span>
+          </div>
+          <table ng-show="certificate.extensions.subAltNames.names" class="table">
+            <tr ng-repeat="domain in certificate.extensions.subAltNames.names track by $index">
+              <td>{{ domain.value }}</td>
+              <td>
+                <button type="button" ng-click="certificate.removeSubAltName($index)" class="btn btn-danger btn-sm pull-right">Remove</button>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div ng-show="certificate.authority && certificate.authority.name != 'verisign'" class="form-group">
+      <label class="control-label col-sm-2">
+        Certificate Template
+      </label>
+      <div class="col-sm-10">
+        <select class="form-control" ng-change="certificate.useTemplate()" name="certificateTemplate" ng-model="certificate.template" ng-options="template.name for template in templates"></select>
+      </div>
+    </div>
+    <div ng-show="certificate.authority && certificate.authority.name != 'verisign'" class="form-group"
+         ng-class="{'has-error': trackingForm.commonName.$invalid, 'has-success': !trackingForm.$invalid&&trackingForm.commonName.$dirty}">
+      <label class="control-label col-sm-2">
+        Common Name
+      </label>
+      <div class="col-sm-10">
+        <input name="commonName" ng-model="certificate.commonName" placeholder="Common Name" class="form-control" required/>
+        <p ng-show="trackingForm.commonName.$invalid && !trackingForm.commonName.$pristine" class="help-block">You must enter a common name</p>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="control-label col-sm-2">
+        Validity Range
+      </label>
+      <div class="col-sm-4">
+        <div>
+          <div class="input-group">
+            <input tooltip="Starting Date (yyyy/MM/dd)" class="form-control" datepicker-popup="yyyy/MM/dd" is-open="$parent.openNotBefore.isOpen" min-date="certificate.authority.notBefore" max-date="certificate.authority.maxDate" ng-model="certificate.validityStart" />
+          <span class="input-group-btn">
+            <button class="btn btn-default" ng-click="openNotBefore($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+          </span>
+          </div>
+        </div>
+      </div>
+      <span class="text-center col-sm-2"><label><span class="glyphicon glyphicon-resize-horizontal"></span></label></span>
+      <div class="col-sm-4">
+        <div>
+          <div class="input-group">
+            <input tooltip="Ending Date (yyyy/MM/dd)" class="form-control" datepicker-popup="yyyy/MM/dd" is-open="$parent.openNotAfter.isOpen" min-date="certificate.authority.notBefore" max-date="certificate.authority.maxDate" ng-model="certificate.validityEnd" />
+            <span class="input-group-btn">
+              <button class="btn btn-default" ng-click="openNotAfter($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+</form>
+

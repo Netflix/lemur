@@ -1,0 +1,20 @@
+<h2 class="featurette-heading">Create a certificate <span class="text-muted"><small>encrypt all the things
+</small></span></h2>
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <a href="/#/certificates/" class="btn btn-danger pull-right">Cancel</a>
+    <div class="clearfix"></div>
+  </div>
+  <div class="panel-body">
+    <form name="createForm" class="form-horizontal" role="form" ng-submit="submitCreate()" novalidate>
+
+    </form>
+  </div>
+  <div class="panel-footer">
+    <button type="submit" ng-disabled="createForm.$invalid" class="btn btn-success pull-right"><span
+      ng-show="!loading"> Create </span><span ng-show="loading">Creating <i ng-show="loading"
+                                                                            class="fa fa-cog fa-spin"></i></span>
+    </button>
+    <div class="clearfix"></div>
+  </div>
+</div>

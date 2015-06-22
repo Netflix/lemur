@@ -1,0 +1,49 @@
+{
+  "name": "lemur",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/netflix/lemur.git"
+  },
+  "private": true,
+  "dependencies": {
+    "angular": "1.3",
+    "json3": "~3.3",
+    "es5-shim": "~4.0",
+    "jquery": "~2.1",
+    "angular-resource": "1.2.15",
+    "angular-cookies": "1.2.15",
+    "angular-sanitize": "1.2.15",
+    "angular-route": "1.2.15",
+    "angular-strap": "~2.0.2",
+    "restangular": "~1.4.0",
+    "ng-table": "~0.5.4",
+    "ngAnimate": "*",
+    "moment": "~2.6.0",
+    "angular-animate": "~1.4.0",
+    "angular-loading-bar": "~0.6.0",
+    "fontawesome": "~4.2.0",
+    "angular-wizard": "~0.4.0",
+    "bootswatch": "3.3.1+2",
+    "angular-spinkit": "~0.3.3",
+    "angular-bootstrap": "~0.12.0",
+    "angular-ui-switch": "~0.1.0",
+    "angular-chart.js": "~0.7.1",
+    "satellizer": "~0.9.4",
+    "angularjs-toaster": "~0.4.14"
+  },
+  "devDependencies": {
+    "angular-mocks": "~1.3",
+    "angular-scenario": "~1.3"
+  },
+  "resolutions": {
+    "bootstrap": "~3.3.1",
+    "angular": "1.3"
+  },
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

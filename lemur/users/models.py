@@ -1,0 +1,88 @@
+"""
+.. module: lemur.users.models
+    :platform: unix
+    :synopsis: This module contains all of the models need to create a user within
+    lemur
+    :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
+    :license: Apache, see LICENSE for more details.
+
+.. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
+"""
+from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy.event import listen
+
+
+from lemur.database import db
+from lemur.models import roles_users
+
+from lemur.extensions import bcrypt
+
+
+def hash_password(mapper, connect, target):
+    """
+    Helper function that is a listener and hashes passwords before
+    insertion into the database.
+
+    :param mapper:
+    :param connect:
+    :param target:
+    """
+    target.hash_password()
+
+
+class User(db.Model):
+    __tablename__ = 'users'
+    id = Column(Integer, primary_key=True)
+    password = Column(String(128))
+    active = Column(Boolean())
+    confirmed_at = Column(DateTime())
+    username = Column(String(255), nullable=False, unique=True)
+    email = Column(String(128), unique=True)
+    profile_picture = Column(String(255))
+    roles = relationship('Role', secondary=roles_users, passive_deletes=True, backref=db.backref('user'), lazy='dynamic')
+    certificates = relationship("Certificate", backref=db.backref('user'), lazy='dynamic')
+    authorities = relationship("Authority", backref=db.backref('user'), lazy='dynamic')
+
+    def check_password(self, password):
+        """
+        Hash a given password and check it against the stored value
+        to determine it's validity.
+
+        :param password:
+        :return:
+        """
+        return bcrypt.check_password_hash(self.password, password)
+
+    def hash_password(self):
+        """
+        Generate the secure hash for the password.
+
+        :return:
+        """
+        self.password = bcrypt.generate_password_hash(self.password)
+        return self.password
+
+    @property
+    def is_admin(self):
+        """
+        Determine if the current user has the 'admin' role associated
+        with it.
+
+        :return:
+        """
+        for role in self.roles:
+            if role.name == 'admin':
+                return True
+
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+    def serialize(self):
+        blob = self.as_dict()
+        return blob
+
+
+listen(User, 'before_insert', hash_password)
+
+

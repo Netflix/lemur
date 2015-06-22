@@ -1,0 +1,25 @@
+<div class="row">
+  <div class="col-md-12">
+    <h2 class="featurette-heading">Domains
+      <span class="text-muted"><small>Zone transfers as scary</small></span></h2>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <div class="btn-group">
+          <button ng-click="toggleFilter(domainsTable)" class="btn btn-default">Filter</button>
+        </div>
+        <div class="clearfix"></div>
+      </div>
+      <div class="table-responsive">
+        <table ng-table="domainsTable" class="table table-striped" show-filter="false" template-pagination="angular/pager.html">
+          <tbody>
+          <tr ng-repeat="domain in $data track by $index">
+            <td data-title="'Name'" sortable="'name'" filter="{ 'name': 'text' }">
+              {{ domain.name }}
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

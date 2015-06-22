@@ -1,0 +1,4 @@
+tests/
+lemur/static/lemur/scripts/lib/
+lemur/static/lemur/dist/
+lemur/static/lemur/vendor/

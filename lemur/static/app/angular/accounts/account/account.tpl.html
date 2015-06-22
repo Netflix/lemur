@@ -1,0 +1,45 @@
+<h2 class="featurette-heading"><span ng-show="!account.fromServer">Create</span><span ng-show="account.fromServer">Edit</span> Account <span class="text-muted"><small>next in line please
+</small></span></h2>
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <a href="/#/accounts/" class="btn btn-danger pull-right">Cancel</a>
+    <div class="clearfix"></div>
+  </div>
+  <div class="panel-body">
+    <form name="createForm" class="form-horizontal" role="form" novalidate>
+      <div class="form-group"
+           ng-class="{'has-error': createForm.name.$invalid, 'has-success': !createForm.name.$invalid&&createForm.name.$dirty}">
+        <label class="control-label col-sm-2">
+          Name
+        </label>
+        <div class="col-sm-10">
+          <input name="name" ng-model="account.label" placeholder="Name" class="form-control" required/>
+          <p ng-show="createForm.name.$invalid && !createForm.name.$pristine" class="help-block">You must enter an account name</p>
+        </div>
+      </div>
+      <div class="form-group"
+           ng-class="{'has-error': createForm.accountNumber.$invalid, 'has-success': !createForm.accountNumber.$invalid&&createForm.accountNumber.$dirty}">
+        <label class="control-label col-sm-2">
+          Account Number
+        </label>
+        <div class="col-sm-10">
+          <input type="number" name="accountNumber" ng-model="account.accountNumber" placeholder="111111111111" class="form-control" ng-minlength="12" ng-maxlength="12" required/>
+          <p ng-show="createForm.accountNumber.$invalid && !createForm.accountNumber.$pristine" class="help-block">You must enter an account number</p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="control-label col-sm-2">
+          Comments
+        </label>
+        <div class="col-sm-10">
+          <textarea name="comments" ng-model="account.comments" placeholder="Something elegant" class="form-control" ></textarea>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="panel-footer">
+    <button ng-click="save(account)" type="submit" ng-disabled="createForm.$invalid" class="btn btn-primary pull-right">Save</button>
+    <div class="clearfix"></div>
+  </div>
+</div>
+

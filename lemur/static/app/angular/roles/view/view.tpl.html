@@ -1,0 +1,41 @@
+<div class="row">
+  <div class="col-md-12">
+    <h2 class="featurette-heading">Roles
+      <span class="text-muted"><small>Black Hat? Grey Hat? White Hat?</small></span></h2>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <div class="btn-group pull-right">
+          <a data-placement="left" data-title="Create Role" bs-tooltip href="#/roles/create" class="btn btn-primary">Create</a>
+        </div>
+        <div class="btn-group">
+          <button ng-click="toggleFilter(rolesTable)" class="btn btn-default">Filter</button>
+        </div>
+        <div class="clearfix"></div>
+      </div>
+      <div class="table-responsive">
+        <table ng-table="rolesTable" class="table table-striped" show-filter="false" template-pagination="angular/pager.html">
+          <tbody>
+          <tr ng-repeat="role in $data track by $index">
+            <td data-title="'Name'" sortable="'name'" filter="{ 'name': 'text' }">
+              <ul class="list-unstyled">
+                <li>{{ role.name }}</li>
+                <li><span class="text-muted">{{ role.description }}</span></li>
+              </ul>
+            </td>
+            <td data-title="''">
+              <div class="btn-group-vertical pull-right">
+                <a href="#/roles/{{ role.id }}/edit" class="btn btn-sm btn-info">
+                  Edit
+                </a>
+                <a ng-click="remove(role)" class="btn btn-sm btn-danger">
+                  Remove
+                </a>
+              </div>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,86 @@
+<!doctype html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+  <head>
+    <meta charset="utf-8">
+    <title>Lemur</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+    <!-- build:css(.) styles/main.css -->
+    <!-- inject:css -->
+    <!-- endinject -->
+    <!-- endbuild -->
+
+    <!--[if lt IE 9]>
+    <script src="bower_components/es5-shim/es5-shim.js"></script>
+    <script src="bower_components/json3/lib/json3.min.js"></script>
+    <![endif]-->
+
+    <!-- build:js(.) scripts/vendor.js -->
+    <!-- inject:bower:js -->
+    <!-- endinject -->
+    <!-- endbuild -->
+
+    <!-- build:js(.) scripts/main.js -->
+    <!-- inject:js -->
+    <!-- endinject -->
+    <!-- inject:ngviews -->
+    <!-- endinject -->
+    <!-- endbuild -->
+
+  </head>
+  <body ng-app="lemur" ng-csp>
+    <toaster-container></toaster-container>
+    <!--[if lt IE 7]>
+      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+    <![endif]-->
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/#/">Lemur</a>
+            </div>
+            <div class="navbar-collapse collapse" ng-controller="LoginController">
+                <ul class="nav navbar-nav navbar-left">
+                    <li data-match-route="/dashboard"><a href="/#/dashboard">Dashboard</a></li>
+                    <li data-match-route="/certificates"><a href="/#/certificates">Certificates</a></li>
+                    <li data-match-route="/authorities"><a href="/#/authorities">Authorities</a></li>
+                    <li data-match-route="/domains"><a href="/#/domains">Domains</a></li>
+                    <li><a href="/#/roles">Roles</a></li>
+                    <li><a href="/#/users">Users</a></li>
+                    <li><a href="/#/accounts">Accounts</a></li>
+                </ul>
+                <ul ng-show="!currentUser.username" class="nav navbar-nav navbar-right">
+                  <li><a href="/#/login">Login</a></li>
+                </ul>
+                <ul ng-show="currentUser.username" class="nav navbar-nav navbar-right">
+                  <li class="dropdown" dropdown on-toggle="toggled(open)">
+                    <a href class="dropdown-toggle profile-nav" dropdown-toggle>
+                      {{ currentUser.username }}<img ng-show="currentUser.profileImage" src="{{ currentUser.profileImage }}" class="profile img-circle">
+                    </a>
+                    <ul class="dropdown-menu">
+                      <li><a ng-click="logout()">Logout</a></li>
+                    </ul>
+                  </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- Add your site or application content here -->
+    <div class="container-fluid">
+      <div ng-view></div>
+    </div>
+    <footer class="footer">
+      <div class="container">
+        <p class="text-muted">Lemur is maintained by <a href="mailto:secops@netflix.com">Security Operations</a>.</p>
+      </div>
+    </footer>
+</body>
+</html>

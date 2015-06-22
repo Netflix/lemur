@@ -1,0 +1,71 @@
+<form name="trackingForm" novalidate>
+  <div class="form-horizontal">
+    <div class="form-group"
+         ng-class="{'has-error': trackingForm.caName.$invalid, 'has-success': !trackingForm.caName.$invalid&&trackingForm.caName.$dirty}">
+      <label class="control-label col-sm-2">
+        Name
+      </label>
+      <div class="col-sm-10">
+        <input name="caName" ng-model="authority.caName" placeholder="Name" tooltip="This will be the name of your authority, it is the name you will reference when creating new certificates" class="form-control" ng-pattern="/^[A-Za-z0-9_-]+$/" required/>
+        <p ng-show="trackingForm.caName.$invalid && !trackingForm.caName.$pristine" class="help-block">You must enter a valid authority name, spaces are not allowed</p>
+      </div>
+    </div>
+    <div class="form-group"
+         ng-class="{'has-error': trackingForm.ownerEmail.$invalid, 'has-success': !trackingForm.$invalid&&trackingForm.ownerEmail.$dirty}">
+      <label class="control-label col-sm-2">
+        Owner
+      </label>
+      <div class="col-sm-10">
+        <input type="email" name="ownerEmail" ng-model="authority.ownerEmail" placeholder="TeamDL@netflix.com" tooltip="This is the authorities team distribution list or the main point of contact for this authority" class="form-control" required/>
+        <p ng-show="trackingForm.ownerEmail.$invalid && !trackingForm.ownerEmail.$pristine" class="help-block">You must enter an Certificate Authority owner</p>
+      </div>
+    </div>
+    <div class="form-group"
+      ng-class="{'has-error': trackingForm.caDescription.$invalid, 'has-success': !trackingForm.$invalid&&trackingForm.caDescription.$dirty}">
+      <label class="control-label col-sm-2">
+        Description
+      </label>
+      <div class="col-sm-10">
+        <textarea name="caDescription" ng-model="authority.caDescription" placeholder="Something elegant" class="form-control" ng-maxlength="250" ng-pattern="/^[\w\-\s]+$/" required></textarea>
+        <p ng-show="trackingForm.caDescription.$invalid && !trackingForm.caDescription.$pristine" class="help-block">You must give a short description about this authority will be used for, it should contain only alphanumeric characters</p>
+      </div>
+    </div>
+    <div class="form-group"
+         ng-class="{'has-error': trackingForm.commonName.$invalid, 'has-success': !trackingForm.$invalid&&trackingForm.commanName.$dirty}">
+      <label class="control-label col-sm-2">
+        Common Name
+      </label>
+      <div class="col-sm-10">
+        <input name="commonName" ng-model="authority.caDN.commonName" placeholder="Common Name" class="form-control" required/>
+        <p ng-show="trackingForm.commandName.$invalid && !trackingForm.commonName.$pristine" class="help-block">You must enter a common name</p>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="control-label col-sm-2">
+        Validity Range
+      </label>
+      <div class="col-sm-4">
+        <div>
+          <div class="input-group">
+            <input tooltip="Starting Date" class="form-control" datepicker-popup="yyyy/MM/dd" is-open="opened1" ng-model="authority.validityStart" />
+          <span class="input-group-btn">
+            <button class="btn btn-default" ng-click="open($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+          </span>
+          </div>
+        </div>
+      </div>
+      <span class="text-center col-sm-2"><label><span class="glyphicon glyphicon-resize-horizontal"></span></label></span>
+      <div class="col-sm-4">
+        <div>
+          <div class="input-group">
+            <input tooltip="Ending Date" class="form-control" datepicker-popup="yyyy/MM/dd" is-open="opened2" ng-model="authority.validityEnd" />
+          <span class="input-group-btn">
+            <button class="btn btn-default" ng-click="open2($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+          </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+

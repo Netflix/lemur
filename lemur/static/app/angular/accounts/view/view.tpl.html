@@ -1,0 +1,44 @@
+<div class="row">
+  <div class="col-md-12">
+    <h2 class="featurette-heading">Accounts
+      <span class="text-muted"><small>next in line please</small></span></h2>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <div class="btn-group pull-right">
+          <a href="#/accounts/create" class="btn btn-primary">Create</a>
+        </div>
+        <div class="btn-group">
+          <button ng-click="toggleFilter(accountsTable)" class="btn btn-default">Filter</button>
+        </div>
+        <div class="clearfix"></div>
+      </div>
+      <div class="table-responsive">
+        <table ng-table="accountsTable" class="table table-striped" show-filter="false" template-pagination="angular/pager.html" >
+          <tbody>
+          <tr ng-repeat="account in $data track by $index">
+            <td data-title="'Name'" sortable="'label'" filter="{ 'label': 'text' }">
+              <ul class="list-unstyled">
+                <li>{{ account.label }}</li>
+                <li><span class="text-muted">{{ account.comments }}</span></li>
+              </ul>
+            </td>
+            <td data-title="'Account Number'" sortable="'account_number'" filter="{ 'account_number': 'text' }">
+              {{ account.accountNumber }}
+            </td>
+            <td data-title="''">
+              <div class="btn-group-vertical pull-right">
+                <a tooltip="Edit Account" href="#/accounts/{{ account.id }}/edit" class="btn btn-sm btn-info">
+                  Edit
+                </a>
+                <button tooltip="Delete Account" ng-click="remove(account)" type="button" class="btn btn-sm btn-danger pull-left">
+                  Remove
+                </button>
+              </div>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

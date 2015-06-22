@@ -1,0 +1,144 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0">    <!-- So that mobile webkit will display zoomed in -->
+    <meta name="format-detection" content="telephone=no"> <!-- disable auto telephone linking in iOS -->
+
+    <title>Lemur</title>
+    <style type="text/css">
+
+        /* Resets: see reset.css for details */
+        .ReadMsgBody { width: 100%; background-color: #ebebeb;}
+        .ExternalClass {width: 100%; background-color: #ebebeb;}
+        .ExternalClass, .ExternalClass p, .ExternalClass span, .ExternalClass font, .ExternalClass td, .ExternalClass div {line-height:100%;}
+        body {-webkit-text-size-adjust:none; -ms-text-size-adjust:none;}
+        body {margin:0; padding:0;}
+        table {border-spacing:0;}
+        table td {border-collapse:collapse;}
+        .yshortcuts a {border-bottom: none !important;}
+
+
+        /* Constrain email width for small screens */
+        @media screen and (max-width: 600px) {
+            table[class="container"] {
+                width: 95% !important;
+            }
+        }
+
+        /* Give content more room on mobile */
+        @media screen and (max-width: 480px) {
+            td[class="container-padding"] {
+                padding-left: 12px !important;
+                padding-right: 12px !important;
+            }
+        }
+
+    </style>
+</head>
+<body style="margin:0; padding:10px 0;" bgcolor="#ebebeb" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
+<br>
+<!-- 100% wrapper (grey background) -->
+<table border="0" width="100%" height="100%" cellpadding="50" cellspacing="0" bgcolor="#ebebeb">
+    <tr>
+        <td align="center" valign="top" bgcolor="#ebebeb" style="background-color: #ebebeb;">
+            <!-- 600px container (white background) -->
+            <table border="0" width="600" cellpadding="0" cellspacing="0" class="container" bgcolor="#ffffff">
+                <tr>
+                    <td class="container-padding" bgcolor="#ffffff" style="background-color: #ffffff; padding-left: 30px; padding-right: 30px; font-size: 14px; line-height: 20px; font-family: Helvetica, sans-serif; color: #333;">
+                       <br />
+                       <div style="font-weight: bold; font-size: 18px; line-height: 24px; color: #202d3b">
+                            <span style="color: #29abe0">Notice: Your SSL certificates are expiring!</span>
+                            <hr />
+                       </div>
+                        Lemur, Netflix's SSL management portal has noticed that the following certificates are expiring soon, if you rely on these certificates
+                        you should create new certificates to replace the certificates that are expiring. Visit https://lemur.netflix.com/#/certificates/create to reissue them.
+                    </td>
+                </tr>
+                {%  for message in messages %}
+                <tr>
+                    <td class="container-padding" bgcolor="#ffffff" style="background-color: #ffffff; padding-left: 30px; padding-right: 30px; font-size: 14px; line-height: 20px; font-family: Helvetica, sans-serif; color: #333;">
+                        <hr />
+                        <table width="540">
+                            <tr>
+                                <td><strong>Name</strong></td>
+                            </tr>
+                            <tr>
+                                <td>{{ message.name }}</td>
+                            <tr>
+                                <td><strong>Owner</strong></td>
+                            </tr>
+                            <tr>
+                                <td>{{ message.owner }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Not Before</strong></td>
+                            </tr>
+                            <tr>
+                                <td>{{  message.not_before }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Not After</strong></td>
+                            </tr>
+                            <tr>
+                                <td>{{  message.not_after }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Associated Domains</strong></td>
+                            </tr>
+                            {% if message.domains %}
+                                {% for name in message.domains %}
+                                    <tr>
+                                        <td>{{ name }}</td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td>Unknown</td>
+                                </tr>
+                            {% endif %}
+                            <tr>
+                                <td><strong>Associated ELBs</strong></td>
+                            </tr>
+                            {% if message.listeners %}
+                                {% for name in message.listeners %}
+                                    <tr>
+                                        <td>{{ name }}</td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td>None</td>
+                                </tr>
+                            {% endif %}
+                            <tr>
+                                <td><strong>Potentially Superseded by</strong> (Lemur's best guess)</td>
+                            </tr>
+                            {% if message.superseded %}
+                                {%  for name in message.superseded %}
+                                    <tr><td>{{ name }}</td></tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr><td>Unknown</td></tr>
+                            {% endif %}
+                            <tr><td></td></tr>
+                        </table>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        <!--/600px container -->
+        </td>
+    </tr>
+    <tr>
+        <td style="padding-top: 0px" align="center" valign="top">
+            <em style="font-style:italic; font-size: 12px; color: #aaa;">Lemur is broken regularly by <a style="color: #29abe0; text-decoration: none;" href="mailto:secops@netflix.com">Security Operations</a></em>
+        </td>
+    </tr>
+</table>
+<!--/100% wrapper-->
+<br>
+<br>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<h2 class="featurette-heading">Login <span class="text-muted"><small>None shall pass</small></span></h2>
+<div class="row">
+  <div class="login">
+    <div class="row">
+      <div class="col-xs-12 col-sm-12 col-md-12">
+        <button class="btn btn-block btn-default" ng-click="authenticate('ping')">
+          Login with Meechum
+        </button>
+      </div>
+    </div>
+    <div class="login-or">
+      <hr class="hr-or">
+      <span class="span-or">or</span>
+    </div>
+    <form role="form" _lpchecked="1">
+      <div class="form-group">
+        <input type="text" ng-model="username" placeholder="Username" class="form-control"/>
+      </div>
+      <div class="form-group">
+        <input type="password" ng-model="password" placeholder="Password" class="form-control"/>
+      </div>
+      <div class="form-group">
+        <button ng-click="login(username, password)" class="btn btn-block btn-success">Login</button>
+      </div>
+    </form>
+  </div>
+</div>

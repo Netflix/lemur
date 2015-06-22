@@ -1,0 +1,17 @@
+<h2 class="featurette-heading"><span ng-show="!authority.id">Create</span><span ng-show="authority.id">Edit</span> Authority <span class="text-muted"><small>The nail that sticks out farthest gets hammered the hardest
+<div>
+  <wizard on-finish="save(authority)" template="angular/wizard.html">
+    <wz-step title="Tracking" canexit="exitTracking">
+      <ng-include src="'angular/authorities/authority/tracking.tpl.html'"></ng-include>
+    </wz-step>
+    <wz-step title="Distinguished Name" canenter="exitTracking" canexit="exitDN">
+      <ng-include src="'angular/authorities/authority/distinguishedName.tpl.html'"></ng-include>
+    </wz-step>
+    <wz-step title="Options" canenter="exitDN" canexit="exitOptions">
+      <ng-include src="'angular/authorities/authority/options.tpl.html'"></ng-include>
+    </wz-step>
+    <wz-step title="Extensions" canenter="exitOptions" canexit="exitExtensions">
+      <ng-include src="'angular/authorities/authority/extensions.tpl.html'"></ng-include>
+    </wz-step>
+  </wizard>
+</div>

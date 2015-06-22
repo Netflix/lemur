@@ -1,0 +1,257 @@
+"""
+.. module: lemur.auth.views
+    :platform: Unix
+    :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
+    :license: Apache, see LICENSE for more details.
+.. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
+"""
+import jwt
+import base64
+import requests
+
+from flask import g, Blueprint, current_app, abort
+
+from flask.ext.restful import reqparse, Resource, Api
+from flask.ext.principal import Identity, identity_changed
+
+from lemur.common.crypto import unlock
+
+from lemur.auth.permissions import admin_permission
+from lemur.users import service as user_service
+from lemur.roles import service as role_service
+from lemur.certificates import service as cert_service
+from lemur.auth.service import AuthenticatedResource, create_token, fetch_token_header, get_rsa_public_key
+
+
+mod = Blueprint('auth', __name__)
+api = Api(mod)
+
+
+class Login(Resource):
+    """
+    Provides an endpoint for Lemur's basic authentication. It takes a username and password
+    combination and returns a JWT token.
+
+    This token token is required for each API request and must be provided in the Authorization Header for the request.
+    ::
+
+        Authorization:Bearer <token>
+
+    Tokens have a set expiration date. You can inspect the token expiration be base64 decoding the token and inspecting
+    it's contents.
+
+    .. note:: It is recommended that the token expiration is fairly short lived (hours not days). This will largely depend \
+    on your uses cases but. It is important to not that there is currently no build in method to revoke a users token \
+    and force re-authentication.
+    """
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        super(Login, self).__init__()
+
+    def post(self):
+        """
+        .. http:post:: /auth/login
+
+           Login with username:password
+
+           **Example request**:
+
+           .. sourcecode:: http
+
+              POST /auth/login HTTP/1.1
+              Host: example.com
+              Accept: application/json, text/javascript
+
+              {
+                "username": "test",
+                "password": "test"
+              }
+
+           **Example response**:
+
+           .. sourcecode:: http
+
+              HTTP/1.1 200 OK
+              Vary: Accept
+              Content-Type: text/javascript
+
+              {
+                "token": "12343243243"
+              }
+
+           :arg username: username
+           :arg password: password
+           :statuscode 401: invalid credentials
+           :statuscode 200: no error
+        """
+        self.reqparse.add_argument('username', type=str, required=True, location='json')
+        self.reqparse.add_argument('password', type=str, required=True, location='json')
+
+        args = self.reqparse.parse_args()
+
+        if '@' in args['username']:
+            user = user_service.get_by_email(args['username'])
+        else:
+            user = user_service.get_by_username(args['username'])
+
+        if user and user.check_password(args['password']):
+            # Tell Flask-Principal the identity changed
+            identity_changed.send(current_app._get_current_object(),
+                                  identity=Identity(user.id))
+            return dict(token=create_token(user))
+
+        return dict(message='The supplied credentials are invalid'), 401
+
+    def get(self):
+        return {'username': g.current_user.username, 'roles': [r.name for r in g.current_user.roles]}
+
+
+class Ping(Resource):
+    """
+    This class serves as an example of how one might implement an SSO provider for use with Lemur. In
+    this example we use a OpenIDConnect authentication flow, that is essentially OAuth2 underneath. If you have an
+    OAuth2 provider you want to use Lemur there would be two steps:
+
+    1. Define your own class that inherits from :class:`flask.ext.restful.Resource` and create the HTTP methods the \
+    provider uses for it's callbacks.
+    2. Add or change the Lemur AngularJS Configuration to point to your new provider
+    """
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        super(Ping, self).__init__()
+
+    def post(self):
+        self.reqparse.add_argument('clientId', type=str, required=True, location='json')
+        self.reqparse.add_argument('redirectUri', type=str, required=True, location='json')
+        self.reqparse.add_argument('code', type=str, required=True, location='json')
+
+        args = self.reqparse.parse_args()
+
+        # take the information we have received from Meechum to create a new request
+        params = {
+            'client_id': args['clientId'],
+            'grant_type': 'authorization_code',
+            'scope': 'openid email profile address',
+            'redirect_uri': args['redirectUri'],
+            'code': args['code']
+        }
+
+        # you can either discover these dynamically or simply configure them
+        access_token_url = current_app.config.get('PING_ACCESS_TOKEN_URL')
+        user_api_url = current_app.config.get('PING_USER_API_URL')
+
+        # the secret and cliendId will be given to you when you signup for meechum
+        basic = base64.b64encode('{0}:{1}'.format(args['clientId'], current_app.config.get("PING_SECRET")))
+        headers = {'Authorization': 'Basic {0}'.format(basic)}
+
+        # exchange authorization code for access token.
+
+        r = requests.post(access_token_url, headers=headers, params=params)
+        id_token = r.json()['id_token']
+        access_token = r.json()['access_token']
+
+        # fetch token public key
+        header_data = fetch_token_header(id_token)
+        jwks_url = current_app.config.get('PING_JWKS_URL')
+
+        # retrieve the key material as specified by the token header
+        r = requests.get(jwks_url)
+        for key in r.json()['keys']:
+            if key['kid'] == header_data['kid']:
+                secret = get_rsa_public_key(key['n'], key['e'])
+                algo = header_data['alg']
+                break
+        else:
+            return dict(message='Key not found'), 403
+
+        # validate your token based on the key it was signed with
+        try:
+            jwt.decode(id_token, secret, algorithms=[algo], audience=args['clientId'])
+        except jwt.DecodeError:
+            return dict(message='Token is invalid'), 403
+        except jwt.ExpiredSignatureError:
+            return dict(message='Token has expired'), 403
+        except jwt.InvalidTokenError:
+            return dict(message='Token is invalid'), 403
+
+        user_params = dict(access_token=access_token, schema='profile')
+
+        # retrieve information about the current user.
+        r = requests.get(user_api_url, params=user_params)
+        profile = r.json()
+
+        user = user_service.get_by_email(profile['email'])
+
+        # update their google 'roles'
+        roles = []
+
+        # Legacy edge case - 'admin' has some special privileges associated with it
+        if 'secops@netflix.com' in profile['googleGroups']:
+            roles.append(role_service.get_by_name('admin'))
+
+        for group in profile['googleGroups']:
+            role = role_service.get_by_name(group)
+            if not role:
+                role = role_service.create(group, description='This is a google group based role created by Lemur')
+            roles.append(role)
+
+        # if we get an sso user create them an account
+        # we still pick a random password in case sso is down
+        if not user:
+            # every user is an operator (tied to the verisignCA)
+            v = role_service.get_by_name('verisign')
+            if v:
+                roles.append(v)
+
+            user = user_service.create(
+                profile['email'],
+                cert_service.create_challenge(),
+                profile['email'],
+                True,
+                profile.get('thumbnailPhotoUrl'),
+                roles
+            )
+
+        else:
+            # we add 'lemur' specific roles, so they do not get marked as removed
+            for ur in user.roles:
+                if ur.authority_id:
+                    roles.append(ur)
+
+            # update any changes to the user
+            user_service.update(
+                user.id,
+                profile['email'],
+                profile['email'],
+                True,
+                profile.get('thumbnailPhotoUrl'), # incase profile isn't google+ enabled
+                roles
+            )
+
+        # Tell Flask-Principal the identity changed
+        identity_changed.send(current_app._get_current_object(), identity=Identity(user.id))
+
+        return dict(token=create_token(user))
+
+
+class Unlock(AuthenticatedResource):
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        super(Unlock, self).__init__()
+
+    @admin_permission.require(http_exception=403)
+    def post(self):
+        self.reqparse.add_argument('password', type=str, required=True, location='json')
+        args = self.reqparse.parse_args()
+        unlock(args['password'])
+        return {
+            "message": "You have successfully unlocked this Lemur instance",
+            "type": "success"
+        }
+
+
+api.add_resource(Login, '/auth/login', endpoint='login')
+api.add_resource(Ping, '/auth/ping', endpoint='ping')
+api.add_resource(Unlock, '/auth/unlock', endpoint='unlock')
+
+

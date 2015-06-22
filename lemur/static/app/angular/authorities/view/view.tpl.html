@@ -1,0 +1,50 @@
+<div class="row">
+  <div class="col-md-12">
+    <h2 class="featurette-heading">Authorities
+      <span class="text-muted"><small>The nail that sticks out farthest gets hammered the hardest</small></span></h2>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <div class="btn-group pull-right">
+          <a href="#/authorities/create" class="btn btn-primary">Create</a>
+        </div>
+        <div class="btn-group">
+          <button ng-click="toggleFilter(authoritiesTable)" class="btn btn-default">Filter</button>
+        </div>
+        <div class="clearfix"></div>
+      </div>
+      <div class="table-responsive">
+        <table ng-table="authoritiesTable" class="table table-striped" template-pagination="angular/pager.html" show-filter="false">
+          <tbody>
+          <tr ng-repeat="authority in $data track by $index">
+            <td data-title="'Name'" sortable="'name'" filter="{ 'name': 'text' }">
+              <ul class="list-unstyled">
+                <li>{{ authority.name }}</li>
+                <li><span class="text-muted">{{ authority.description }}</span></li>
+              </ul>
+            </td>
+            <td data-title="'Active'" filter="{ 'active': 'select' }" filter-data="getAuthorityStatus()">
+              <form>
+                <switch ng-change="authorityService.updateActive(authority)" id="status" name="status" ng-model="authority.active" class="green small"></switch>
+              </form>
+            </td>
+            <td data-title="'Roles'"> <!--filter="{ 'select': 'role' }" filter-data="roleService.getRoleDropDown()">-->
+              <div class="btn-group">
+                <button ng-repeat="role in authority.roles" class="btn btn-sm btn-danger">
+                    {{ role.name }}
+                </button>
+              </div>
+            </td>
+            <td data-title="''">
+              <div class="btn-group-vertical pull-right">
+                <a tooltip="Edit Authority" href="#/authorities/{{ authority.id }}/edit" class="btn btn-sm btn-info">
+                  Edit
+                </a>
+              </div>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
