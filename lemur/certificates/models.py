@@ -116,8 +116,10 @@ def cert_get_issuer(cert):
     :param cert:
     :return: Issuer
     """
+    delchars = ''.join(c for c in map(chr, range(256)) if not c.isalnum())
     try:
-        return cert.subject.get_attributes_for_oid(x509.OID_ORGANIZATION_NAME)[0].value
+        issuer = str(cert.subject.get_attributes_for_oid(x509.OID_ORGANIZATION_NAME)[0].value)
+        return issuer.translate(None, delchars)
     except Exception as e:
         current_app.logger.error("Unable to get issuer! {0}".format(e))
 
