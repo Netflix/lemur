@@ -181,7 +181,7 @@ class Accounts(AuthenticatedResource):
     @marshal_items(FIELDS)
     def put(self, account_id):
         """
-        .. http:post:: /accounts/1
+        .. http:put:: /accounts/1
 
            Updates an account
 
