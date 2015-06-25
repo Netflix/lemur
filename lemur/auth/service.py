@@ -96,9 +96,8 @@ def login_required(f):
             response.status_code = 401
             return response
 
-        token = request.headers.get('Authorization').split()[1]
-
         try:
+            token = request.headers.get('Authorization').split()[1]
             payload = jwt.decode(token, current_app.config['TOKEN_SECRET'])
         except jwt.DecodeError:
             return dict(message='Token is invalid'), 403

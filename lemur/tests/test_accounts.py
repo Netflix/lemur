@@ -40,14 +40,7 @@ def test_unauthenticated_views(client):
     assert client.delete(api.url_for(Accounts, account_id=1)).status_code == 401
     assert client.patch(api.url_for(Accounts, account_id=1), {}).status_code == 405
 
-    assert client.get(api.url_for(AccountsList)).status_code == 401
-    assert client.post(api.url_for(AccountsList), {}).status_code == 401
-    assert client.put(api.url_for(AccountsList), {}).status_code == 405
-    assert client.delete(api.url_for(AccountsList)).status_code == 405
-    assert client.patch(api.url_for(Accounts), {}).status_code == 405
+VALID_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0MzUyMzMzNjksInN1YiI6MSwiZXhwIjoxNTIxNTQ2OTY5fQ.1qCi0Ip7mzKbjNh0tVd3_eJOrae3rNa_9MCVdA4WtQI'
 
-    assert client.get(api.url_for(CertificateAccounts, certificate_id=1)).status_code == 401
-    assert client.post(api.url_for(CertificateAccounts), {}).status_code == 405
-    assert client.put(api.url_for(CertificateAccounts), {}).status_code == 405
-    assert client.delete(api.url_for(CertificateAccounts)).status_code == 405
-    assert client.patch(api.url_for(CertificateAccounts), {}).status_code == 405
+def test_auth_account_get(auth_client):
+        assert auth_client.get(api.url_for(Accounts, account_id=1), headers={'Authorization': 'Basic ' + VALID_TOKEN}).status_code == 200

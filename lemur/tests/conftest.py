@@ -1,9 +1,11 @@
 import pytest
 
+from flask import current_app
+
 from lemur import create_app
-from lemur.database import db as _db
 
 from flask.ext.sqlalchemy import SignallingSession
+from flask.ext.principal import Identity, identity_changed
 
 from sqlalchemy import event
 
@@ -45,26 +47,45 @@ def app():
     ctx.pop()
 
 
-@pytest.yield_fixture(scope="session")
-def db():
-    _db.create_all()
-
-    yield _db
-
-    _db.drop_all()
+@pytest.yield_fixture(scope="function")
+def unauth_client(app):
+    with app.test_client() as client:
+        yield client
 
 
 @pytest.yield_fixture(scope="function")
-def session(app, db):
+def auth_client(app):
+    with app.test_client() as client:
+        yield client
+
+
+@pytest.yield_fixture(scope="function")
+def admin_client(app):
+    with app.test_client() as client:
+        yield client
+
+
+
+@pytest.yield_fixture(scope="session")
+def database(app):
+    app.db.create_all()
+
+    yield app.db
+
+    app.db.drop_all()
+
+
+@pytest.yield_fixture(scope="function")
+def session(database):
     """
     Creates a new database session with (with working transaction)
     for test duration.
     """
-    connection = _db.engine.connect()
+    connection = database.engine.connect()
     transaction = connection.begin()
 
     options = dict(bind=connection)
-    session = _db.create_scoped_session(options=options)
+    session = database.create_scoped_session(options=options)
 
     # then each time that SAVEPOINT ends, reopen it
     @event.listens_for(SignallingSession, "after_transaction_end")
@@ -81,7 +102,7 @@ def session(app, db):
     # pushing new Flask application context for multiple-thread
     # tests to work
 
-    _db.session = session
+    database.session = session
 
     yield session
 
