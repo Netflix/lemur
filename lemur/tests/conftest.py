@@ -35,6 +35,7 @@ def app():
     """
     app = create_app()
     app.config['TESTING'] = True
+    app.config['LEMUR_ENCRYPTION_KEY'] = 'test'
 
     ctx = app.app_context()
     ctx.push()
@@ -52,9 +53,11 @@ def db(app, request):
 
     _db.app = app
 
+    user = user_service.create('user', 'test', 'user@example.com', True, None, [])
+    admin_role = role_service.create('admin')
+    admin = user_service.create('admin', 'admin', 'admin@example.com', True, None, [admin_role])
+    _db.session.commit()
     yield _db
-
-    _db.drop_all()
 
 
 @pytest.yield_fixture(scope="function")
@@ -68,21 +71,8 @@ def session(db, request):
     db.session.rollback()
 
 
-@pytest.yield_fixture(scope="session")
-def default_user(db):
-    user = user_service.create('user', 'test', 'user@example.com', True, None, [])
-    yield user
-
-
-@pytest.yield_fixture(scope="session")
-def admin_user(db):
-    admin_role = role_service.create('admin')
-    admin = user_service.create('admin', 'admin', 'admin@example.com', True, None, [admin_role])
-    yield admin
-
-
 @pytest.yield_fixture(scope="function")
-def client(app):
+def client(app, session):
     with app.test_client() as client:
         yield client
 
