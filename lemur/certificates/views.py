@@ -437,6 +437,9 @@ class CertificatePrivateKey(AuthenticatedResource):
            :statuscode 403: unauthenticated
         """
         cert = service.get(certificate_id)
+        if not cert:
+            return dict(message="Cannot find specified certificate"), 404
+
         role = role_service.get_by_name(cert.owner)
 
         permission = ViewKeyPermission(certificate_id, hasattr(role, 'id'))
