@@ -98,6 +98,10 @@ def login_required(f):
 
         try:
             token = request.headers.get('Authorization').split()[1]
+        except Exception as e:
+            return dict(message='Token is invalid'), 403
+
+        try:
             payload = jwt.decode(token, current_app.config['TOKEN_SECRET'])
         except jwt.DecodeError:
             return dict(message='Token is invalid'), 403
@@ -108,7 +112,7 @@ def login_required(f):
 
         g.current_user = user_service.get(payload['sub'])
 
-        if not g.current_user.id:
+        if not g.current_user:
             return dict(message='You are not logged in'), 403
 
         # Tell Flask-Principal the identity changed
