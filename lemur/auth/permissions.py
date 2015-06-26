@@ -13,7 +13,7 @@ from flask.ext.principal import Permission, RoleNeed
 
 # Permissions
 operator_permission = Permission(RoleNeed('operator'))
-admin_permission = Permission(RoleNeed('secops@netflix.com'))
+admin_permission = Permission(RoleNeed('admin'))
 
 CertificateCreator = namedtuple('certificate', ['method', 'value'])
 CertificateCreatorNeed = partial(CertificateCreator, 'certificateView')
