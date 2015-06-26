@@ -1,13 +1,9 @@
 import pytest
 
-from flask import current_app
-
 from lemur import create_app
-
-from flask.ext.sqlalchemy import SignallingSession
-from flask.ext.principal import Identity, identity_changed
-
-from sqlalchemy import event
+from lemur.database import db as _db
+from lemur.users import service as user_service
+from lemur.roles import service as role_service
 
 
 def pytest_addoption(parser):
@@ -38,6 +34,7 @@ def app():
     Uses application factory `create_app`.
     """
     app = create_app()
+    app.config['TESTING'] = True
 
     ctx = app.app_context()
     ctx.push()
@@ -47,66 +44,45 @@ def app():
     ctx.pop()
 
 
-@pytest.yield_fixture(scope="function")
-def unauth_client(app):
-    with app.test_client() as client:
-        yield client
-
-
-@pytest.yield_fixture(scope="function")
-def auth_client(app):
-    with app.test_client() as client:
-        yield client
-
-
-@pytest.yield_fixture(scope="function")
-def admin_client(app):
-    with app.test_client() as client:
-        yield client
-
-
 
 @pytest.yield_fixture(scope="session")
-def database(app):
-    app.db.create_all()
+def db(app, request):
+    _db.drop_all()
+    _db.create_all()
 
-    yield app.db
+    _db.app = app
 
-    app.db.drop_all()
+    yield _db
+
+    _db.drop_all()
 
 
 @pytest.yield_fixture(scope="function")
-def session(database):
+def session(db, request):
     """
     Creates a new database session with (with working transaction)
     for test duration.
     """
-    connection = database.engine.connect()
-    transaction = connection.begin()
-
-    options = dict(bind=connection)
-    session = database.create_scoped_session(options=options)
-
-    # then each time that SAVEPOINT ends, reopen it
-    @event.listens_for(SignallingSession, "after_transaction_end")
-    def restart_savepoint(session, transaction):
-        if transaction.nested and not transaction._parent.nested:
-
-            # ensure that state is expired the way
-            # session.commit() at the top level normally does
-            # (optional step)
-            session.expire_all()
-
-            session.begin_nested()
-
-    # pushing new Flask application context for multiple-thread
-    # tests to work
-
-    database.session = session
-
+    db.session.begin_nested()
     yield session
+    db.session.rollback()
 
-    # the code after the yield statement works as a teardown
-    transaction.rollback()
-    connection.close()
-    session.remove()
+
+@pytest.yield_fixture(scope="session")
+def default_user(db):
+    user = user_service.create('user', 'test', 'user@example.com', True, None, [])
+    yield user
+
+
+@pytest.yield_fixture(scope="session")
+def admin_user(db):
+    admin_role = role_service.create('admin')
+    admin = user_service.create('admin', 'admin', 'admin@example.com', True, None, [admin_role])
+    yield admin
+
+
+@pytest.yield_fixture(scope="function")
+def client(app):
+    with app.test_client() as client:
+        yield client
+
