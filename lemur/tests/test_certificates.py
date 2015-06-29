@@ -1,4 +1,6 @@
+import os
 import pytest
+from mock import mock_open, patch
 from lemur.certificates.views import *
 
 #def test_crud(session):
@@ -32,7 +34,12 @@ def test_private_key_str():
 
 
 def test_create_csr():
-    assert 1 == 2
+    from lemur.tests.certs import CSR_CONFIG
+    from lemur.certificates.service import create_csr
+    m = mock_open()
+    with patch('lemur.certificates.service.open', m, create=True):
+        path = create_csr(CSR_CONFIG)
+        assert path == ''
 
 
 def test_create_path():

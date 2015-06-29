@@ -181,3 +181,41 @@ t5Gpocpt77LJnNiszXSerj/KjX2MflY5xUXeekWowLVTBOK5+CZ8+XBIgBt1hIG3
 XKxcRgm/Va4QMEAnec0qXfdTVJaJiAW0bdKwKRRrrbwcTdNRGibdng==
 -----END RSA PRIVATE KEY-----
 """
+
+CSR_CONFIG = """
+                # Configuration for standard CSR generation for Netflix
+                # Used for procuring VeriSign certificates
+                # Author: jbob
+                # Contact: security@example.com
+
+                [ req ]
+                # Use a 2048 bit private key
+                default_bits       = 2048
+                default_keyfile    = key.pem
+                prompt             = no
+                encrypt_key        = no
+
+                # base request
+                distinguished_name = req_distinguished_name
+
+                # extensions
+                # Uncomment the following line if you are requesting a SAN cert
+                #req_extensions     = req_ext
+
+                # distinguished_name
+                [ req_distinguished_name ]
+                countryName            = "US"                     # C=
+                stateOrProvinceName    = "CALIFORNIA"                 # ST=
+                localityName           = "A place"                 # L=
+                organizationName       = "Example, Inc."        # O=
+                organizationalUnitName = "Operations"          # OU=
+                # This is the hostname/subject name on the certificate
+                commonName             = "example.net"            # CN=
+
+                [ req_ext ]
+                # Uncomment the following line if you are requesting a SAN cert
+                #subjectAltName          = @alt_names
+
+                [alt_names]
+                # Put your SANs here
+"""
