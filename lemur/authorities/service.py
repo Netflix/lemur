@@ -57,11 +57,14 @@ def create(kwargs):
     cert = cert_service.save_cert(cert_body, None, intermediate, None, None, None)
     cert.user = g.current_user
 
-    # we create and attach any roles that cloudCA gives us
+    # we create and attach any roles that the issuer gives us
     role_objs = []
     for r in issuer_roles:
-        role = role_service.create(r['name'], password=r['password'], description="CloudCA auto generated role",
-                                   username=r['username'])
+        role = role_service.create(
+            r['name'],
+           password=r['password'],
+           description="{0} auto generated role".format(kwargs.get('pluginName')),
+           username=r['username'])
         # the user creating the authority should be able to administer it
         if role.username == 'admin':
             g.current_user.roles.append(role)
