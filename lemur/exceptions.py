@@ -11,6 +11,14 @@ class LemurException(Exception):
         current_app.logger.error(self)
 
 
+class DuplicateError(LemurException):
+    def __init__(self, key):
+        self.key = key
+
+    def __str__(self):
+        return repr("Duplicate found! Could not create: {0}".format(self.key))
+
+
 class AuthenticationFailedException(LemurException):
     def __init__(self, remote_ip, user_agent):
         self.remote_ip = remote_ip

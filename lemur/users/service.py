@@ -31,8 +31,7 @@ def create(username, password, email, active, profile_picture, roles):
         profile_picture=profile_picture,
         role=roles
     )
-    user = database.create(user)
-    return database.update(user)
+    return database.create(user)
 
 
 def update(user_id, username, email, active, profile_picture, roles):

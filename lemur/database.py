@@ -15,7 +15,7 @@ from sqlalchemy import exc
 from sqlalchemy.sql import and_, or_
 
 from lemur.extensions import db
-from lemur.exceptions import AttrNotFound, IntegrityError
+from lemur.exceptions import AttrNotFound, IntegrityError, DuplicateError
 
 
 def filter_none(kwargs):
@@ -153,9 +153,10 @@ def create(model):
     try:
         db.session.add(model)
         commit()
-        db.session.refresh(model)
     except exc.IntegrityError as e:
-        raise IntegrityError(e.orig.diag.message_detail)
+        raise DuplicateError(e.orig.diag.message_detail)
+
+    db.session.refresh(model)
     return model
 
 
