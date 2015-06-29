@@ -365,7 +365,11 @@ class CertificateAuthority(AuthenticatedResource):
            :statuscode 200: no error
            :statuscode 403: unauthenticated
         """
-        return certificate_service.get(certificate_id).authority
+        cert = certificate_service.get(certificate_id)
+        if not cert:
+            return dict(message="Certificate not found"), 404
+
+        return cert.authority
 
 api.add_resource(AuthoritiesList, '/authorities', endpoint='authorities')
 api.add_resource(Authorities, '/authorities/<int:authority_id>', endpoint='authority')
