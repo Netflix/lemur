@@ -45,11 +45,14 @@ class marshal_items(object):
 
                 return marshal(resp, self.fields)
             except Exception as e:
+                current_app.logger.exception(e)
                 # this is a little weird hack to respect flask restful parsing errors on marshaled functions
                 if hasattr(e, 'code'):
-                    return {'message': e.data['message']}, 400
+                    if hasattr(e, 'data'):
+                        return {'message': e.data['message']}, 400
+                    else:
+                        return {'message': 'unknown'}, 400
                 else:
-                    current_app.logger.exception(e)
                     return {'message': e.message}, 400
         return wrapper
 

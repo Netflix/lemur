@@ -51,6 +51,12 @@ def create_app(app_name=None, blueprints=None, config=None):
     configure_blueprints(app, blueprints)
     configure_extensions(app)
     configure_logging(app)
+
+    @app.teardown_appcontext
+    def teardown(exception=None):
+        if db.session:
+            db.session.remove()
+
     return app
 
 
@@ -84,7 +90,7 @@ def configure_app(app, config=None):
     :return:
     """
     try:
-        app.config.from_envvar("LEMUR_SETTINGS")
+        app.config.from_envvar("LEMUR_CONF")
     except RuntimeError:
         if config and config != 'None':
             app.config.from_object(from_file(config))

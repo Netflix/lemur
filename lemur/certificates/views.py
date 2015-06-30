@@ -90,7 +90,7 @@ def private_key_str(value, name):
     :return: :raise ValueError:
     """
     try:
-        serialization.load_pem_private_key(str(value), backend=default_backend())
+        serialization.load_pem_private_key(str(value), None, backend=default_backend())
     except Exception as e:
         raise ValueError("The parameter '{0}' needs to be a valid RSA private key".format(name))
     return value
@@ -437,6 +437,9 @@ class CertificatePrivateKey(AuthenticatedResource):
            :statuscode 403: unauthenticated
         """
         cert = service.get(certificate_id)
+        if not cert:
+            return dict(message="Cannot find specified certificate"), 404
+
         role = role_service.get_by_name(cert.owner)
 
         permission = ViewKeyPermission(certificate_id, hasattr(role, 'id'))

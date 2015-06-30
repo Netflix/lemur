@@ -26,6 +26,36 @@ from lemur.constants import SAN_NAMING_TEMPLATE, DEFAULT_NAMING_TEMPLATE, NONSTA
 from lemur.models import certificate_associations, certificate_account_associations
 
 
+def create_name(issuer, not_before, not_after, common_name, san):
+    """
+    Create a name for our certificate. A naming standard
+    is based on a series of templates. The name includes
+    useful information such as Common Name, Validation dates,
+    and Issuer.
+
+    :rtype : str
+    :return:
+    """
+    delchars = ''.join(c for c in map(chr, range(256)) if not c.isalnum())
+    # aws doesn't allow special chars
+    subject = common_name.replace('*', "WILDCARD")
+    issuer = issuer.translate(None, delchars)
+
+    if san:
+        t = SAN_NAMING_TEMPLATE
+    else:
+        t = DEFAULT_NAMING_TEMPLATE
+
+    temp = t.format(
+        subject=subject,
+        issuer=issuer,
+        not_before=not_before.strftime('%Y%m%d'),
+        not_after=not_after.strftime('%Y%m%d')
+    )
+
+    return temp
+
+
 def cert_get_cn(cert):
     """
     Attempts to get a sane common name from a given certificate.
@@ -33,12 +63,9 @@ def cert_get_cn(cert):
     :param cert:
     :return: Common name or None
     """
-    try:
-        return cert.subject.get_attributes_for_oid(
-            x509.OID_COMMON_NAME
-        )[0].value.strip()
-    except Exception as e:
-        current_app.logger.error("Unable to get CN! {0}".format(e))
+    return cert.subject.get_attributes_for_oid(
+        x509.OID_COMMON_NAME
+    )[0].value.strip()
 
 
 def cert_get_domains(cert):
@@ -48,17 +75,21 @@ def cert_get_domains(cert):
     return the common name.
 
     :param cert:
-    :return: List of domains
+    :return: List of domainss
     """
     domains = []
     try:
         ext = cert.extensions.get_extension_for_oid(x509.OID_SUBJECT_ALTERNATIVE_NAME)
-        entries = ext.get_values_for(x509.DNSName)
+        entries = ext.value.get_values_for_type(x509.DNSName)
         for entry in entries:
-            domains.append(entry.split(":")[1].strip(", "))
+            domains.append(entry)
     except Exception as e:
         current_app.logger.warning("Failed to get SubjectAltName: {0}".format(e))
-        domains.append(cert_get_cn(cert))
+
+    # do a simple check to make sure it's a real domain
+    common_name = cert_get_cn(cert)
+    if '.' in common_name:
+        domains.append(common_name)
     return domains
 
 
@@ -106,7 +137,7 @@ def cert_get_bitstrength(cert):
     :param cert:
     :return: Integer
     """
-    return cert.public_key().key_size * 8
+    return cert.public_key().key_size
 
 
 def cert_get_issuer(cert):
@@ -116,24 +147,12 @@ def cert_get_issuer(cert):
     :param cert:
     :return: Issuer
     """
+    delchars = ''.join(c for c in map(chr, range(256)) if not c.isalnum())
     try:
-        return cert.subject.get_attributes_for_oid(x509.OID_ORGANIZATION_NAME)[0].value
+        issuer = str(cert.subject.get_attributes_for_oid(x509.OID_ORGANIZATION_NAME)[0].value)
+        return issuer.translate(None, delchars)
     except Exception as e:
         current_app.logger.error("Unable to get issuer! {0}".format(e))
-
-
-def cert_is_internal(cert):
-    """
-    Uses an internal resource in order to determine if
-    a given certificate was issued by an 'internal' certificate
-    authority.
-
-    :param cert:
-    :return: Bool
-    """
-    if cert_get_issuer(cert) in current_app.config.get('INTERNAL_CA', []):
-        return True
-    return False
 
 
 def cert_get_not_before(cert):
@@ -223,48 +242,10 @@ class Certificate(db.Model):
         self.san = cert_is_san(cert)
         self.not_before = cert_get_not_before(cert)
         self.not_after = cert_get_not_after(cert)
-        self.name = self.create_name
+        self.name = create_name(self.issuer, self.not_before, self.not_after, self.cn, self.san)
 
         for domain in cert_get_domains(cert):
             self.domains.append(Domain(name=domain))
-
-    @property
-    def create_name(self):
-        """
-        Create a name for our certificate. A naming standard
-        is based on a series of templates. The name includes
-        useful information such as Common Name, Validation dates,
-        and Issuer.
-
-        :rtype : str
-        :return:
-        """
-        # aws doesn't allow special chars
-        if self.cn:
-            subject = self.cn.replace('*', "WILDCARD")
-
-            if self.san:
-                t = SAN_NAMING_TEMPLATE
-            else:
-                t = DEFAULT_NAMING_TEMPLATE
-
-            temp = t.format(
-                subject=subject,
-                issuer=self.issuer,
-                not_before=self.not_before.strftime('%Y%m%d'),
-                not_after=self.not_after.strftime('%Y%m%d')
-            )
-
-        else:
-            t = NONSTANDARD_NAMING_TEMPLATE
-
-            temp = t.format(
-                issuer=self.issuer,
-                not_before=self.not_before.strftime('%Y%m%d'),
-                not_after=self.not_after.strftime('%Y%m%d')
-            )
-
-        return temp
 
     @property
     def is_expired(self):
@@ -295,13 +276,4 @@ class Certificate(db.Model):
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
-
-    def serialize(self):
-        blob = self.as_dict()
-        # TODO this should be done with relationships
-        user = user_service.get(self.user_id)
-        if user:
-            blob['creator'] = user.username
-
-        return blob
 
