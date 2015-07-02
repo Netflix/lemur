@@ -261,15 +261,6 @@ class CloudCA(Issuer):
 
         return cert, "".join(intermediates),
 
-    def get_csr_config(self, issuer_options):
-        """
-        Get a valid CSR for use with CloudCA
-
-        :param issuer_options:
-        :return:
-        """
-        return cloudca.constants.CSR_CONFIG.format(**issuer_options)
-
     def random(self, length=10):
         """
         Uses CloudCA as a decent source of randomness.

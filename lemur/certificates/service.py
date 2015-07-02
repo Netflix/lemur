@@ -5,13 +5,9 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import os
 import arrow
 import string
 import random
-import hashlib
-import datetime
-import subprocess
 
 from sqlalchemy import func, or_
 from flask import g, current_app
@@ -21,14 +17,17 @@ from lemur.common.services.aws import iam
 from lemur.common.services.issuers.manager import get_plugin_by_name
 
 from lemur.certificates.models import Certificate
-from lemur.certificates.exceptions import UnableToCreateCSR, \
-    UnableToCreatePrivateKey, MissingFiles
 
 from lemur.accounts.models import Account
 from lemur.accounts import service as account_service
 from lemur.authorities.models import Authority
 
 from lemur.roles.models import Role
+
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import rsa
 
 
 def get(cert_id):
@@ -128,23 +127,17 @@ def mint(issuer_options):
     authority = issuer_options['authority']
 
     issuer = get_plugin_by_name(authority.plugin_name)
-    # NOTE if we wanted to support more issuers it might make sense to
-    # push CSR creation down to the plugin
-    path = create_csr(issuer.get_csr_config(issuer_options))
-    challenge, csr, csr_config, private_key = load_ssl_pack(path)
 
-    issuer_options['challenge'] = challenge
+    csr, private_key = create_csr(issuer_options)
+
+    issuer_options['challenge'] = create_challenge()
     issuer_options['creator'] = g.user.email
     cert_body, cert_chain = issuer.create_certificate(csr, issuer_options)
 
-    cert = save_cert(cert_body, private_key, cert_chain, challenge, csr_config, issuer_options.get('accounts'))
+    cert = save_cert(cert_body, private_key, cert_chain, issuer_options.get('accounts'))
     cert.user = g.user
     cert.authority = authority
     database.update(cert)
-
-    # securely delete pack after saving it to RDS and IAM (if applicable)
-    delete_ssl_pack(path)
-
     return cert, private_key, cert_chain,
 
 
@@ -302,93 +295,83 @@ def create_csr(csr_config):
 
     :param csr_config:
     """
+    private_key = rsa.generate_private_key(
+        public_exponent=65537,
+        key_size=2048,
+        backend=default_backend()
+    )
 
-    # we create a no colliding file name
-    path = create_path(hashlib.md5(csr_config).hexdigest())
+    builder = x509.CertificateSigningRequestBuilder()
+    builder = builder.subject_name(x509.Name([
+        x509.NameAttribute(x509.OID_COMMON_NAME, csr_config['commonName']),
+        x509.NameAttribute(x509.OID_ORGANIZATION_NAME, csr_config['organization']),
+        x509.NameAttribute(x509.OID_ORGANIZATIONAL_UNIT_NAME, csr_config['organizationalUnit']),
+        x509.NameAttribute(x509.OID_COUNTRY_NAME, csr_config['country']),
+        x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, csr_config['state']),
+        x509.NameAttribute(x509.OID_LOCALITY_NAME, csr_config['location'])
+    ]))
 
-    challenge = create_challenge()
-    challenge_path = os.path.join(path, 'challenge.txt')
+    builder = builder.add_extension(
+        x509.BasicConstraints(ca=False, path_length=None), critical=True,
+    )
 
-    with open(challenge_path, 'w') as c:
-        c.write(challenge)
+    for name in csr_config['extensions']['subAltNames']['names']:
+        builder.add_extension(
+            x509.SubjectAlternativeName(x509.DNSName, name['value'])
+        )
 
-    csr_path = os.path.join(path, 'csr_config.txt')
+# TODO support more CSR options
+#    csr_config['extensions']['keyUsage']
+#    builder.add_extension(
+#        x509.KeyUsage(
+#            digital_signature=digital_signature,
+#            content_commitment=content_commitment,
+#            key_encipherment=key_enipherment,
+#            data_encipherment=data_encipherment,
+#            key_agreement=key_agreement,
+#            key_cert_sign=key_cert_sign,
+#            crl_sign=crl_sign,
+#            encipher_only=enchipher_only,
+#            decipher_only=decipher_only
+#        ), critical=True
+#    )
+#
+#    # we must maintain our own list of OIDs here
+#    builder.add_extension(
+#        x509.ExtendedKeyUsage(
+#            server_authentication=server_authentication,
+#            email=
+#        )
+#    )
+#
+#    builder.add_extension(
+#        x509.AuthorityInformationAccess()
+#    )
+#
+#    builder.add_extension(
+#        x509.AuthorityKeyIdentifier()
+#    )
+#
+#    builder.add_extension(
+#        x509.SubjectKeyIdentifier()
+#    )
+#
+#    builder.add_extension(
+#        x509.CRLDistributionPoints()
+#    )
 
-    with open(csr_path, 'w') as f:
-        f.write(csr_config)
+    request = builder.sign(
+        private_key, hashes.SHA256(), default_backend()
+    )
 
-    #TODO use cloudCA to seed a -rand file for each call
-    #TODO replace openssl shell calls with cryptograph
-    with open('/dev/null', 'w') as devnull:
-        code = subprocess.call(['openssl', 'genrsa',
-                                '-out', os.path.join(path, 'private.key'), '2048'],
-                               stdout=devnull, stderr=devnull)
-
-        if code != 0:
-            raise UnableToCreatePrivateKey(code)
-
-    with open('/dev/null', 'w') as devnull:
-        code = subprocess.call(['openssl', 'req', '-new', '-sha256', '-nodes',
-                                            '-config', csr_path, "-key", os.path.join(path, 'private.key'),
-                                            "-out", os.path.join(path, 'request.csr')], stdout=devnull, stderr=devnull)
-
-        if code != 0:
-            raise UnableToCreateCSR(code)
-
-    return path
-
-
-def create_path(domain_hash):
-    """
-
-    :param domain_hash:
-    :return:
-    """
-    path = os.path.join('/tmp', domain_hash)
-
-    try:
-        os.mkdir(path)
-    except OSError as e:
-        now = datetime.datetime.now()
-        path = os.path.join('/tmp', "{}.{}".format(domain_hash, now.strftime('%s')))
-        os.mkdir(path)
-        current_app.logger.warning(e)
-
-    current_app.logger.debug("Writing ssl files to: {}".format(path))
-    return path
-
-
-def load_ssl_pack(path):
-    """
-    Loads the information created by openssl to be used by other functions.
-
-    :param path:
-    """
-    if len(os.listdir(path)) != 4:
-        raise MissingFiles(path)
-
-    with open(os.path.join(path, 'challenge.txt')) as c:
-        challenge = c.read()
-
-    with open(os.path.join(path, 'request.csr')) as r:
-        csr = r.read()
-
-    with open(os.path.join(path, 'csr_config.txt')) as config:
-        csr_config = config.read()
-
-    with open(os.path.join(path, 'private.key')) as key:
-        private_key = key.read()
-
-    return (challenge, csr, csr_config, private_key,)
+    # here we try and support arbitrary oids
+    for oid in csr_config['extensions']['custom']:
+        builder.add_extension(
+            x509.ObjectIdentifier(oid)
+        )
 
 
-def delete_ssl_pack(path):
-    """
-    Removes the temporary files associated with CSR creation.
-
-    :param path:
-    """
-    subprocess.check_call(['srm', '-r', path])
+    return request.public_bytes("PEM"), private_key.public_bytes("PEM")
 
 
 def create_challenge():

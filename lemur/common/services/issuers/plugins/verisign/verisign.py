@@ -129,39 +129,6 @@ class Verisign(Issuer):
         cert = self.handle_response(response.content)['Response']['Certificate']
         return cert, verisign.constants.VERISIGN_INTERMEDIATE,
 
-    def get_csr_config(self, issuer_options):
-        """
-        Used to generate a valid CSR for the given Certificate Authority.
-
-        :param issuer_options:
-        :return: :raise InsufficientDomains:
-        """
-        domains = []
-
-        if issuer_options.get('commonName'):
-            domains.append(issuer_options.get('commonName'))
-
-        if issuer_options.get('extensions'):
-            for n in issuer_options['extensions']['subAltNames']['names']:
-                if n['value']:
-                    domains.append(n['value'])
-
-        is_san_comment = "#"
-
-        dns_lines = []
-        if len(domains) < 1:
-            raise InsufficientDomains
-
-        elif len(domains) > 1:
-            is_san_comment = ""
-            for domain_line in list(set(domains)):
-                dns_lines.append("DNS.{} = {}".format(len(dns_lines) + 1, domain_line))
-
-        return verisign.constants.CSR_CONFIG.format(
-            is_san_comment=is_san_comment,
-            OU=issuer_options.get('organizationalUnit', 'Operations'),
-            DNS=domains,
-            DNS_LINES="\n".join(dns_lines))
 
     @staticmethod
     def create_authority(options):

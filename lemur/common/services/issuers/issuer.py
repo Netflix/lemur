@@ -27,6 +27,3 @@ class Issuer(object):
     def get_authorities(self):
         raise NotImplementedError
 
-    def get_csr_config(self):
-        raise NotImplementedError
-
