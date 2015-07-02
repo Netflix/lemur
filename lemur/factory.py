@@ -84,14 +84,14 @@ def configure_app(app, config=None):
     :return:
     """
     try:
-        app.config.from_envvar("LEMUR_SETTINGS")
+        app.config.from_envvar("LEMUR_CONF")
     except RuntimeError:
         if config and config != 'None':
             app.config.from_object(from_file(config))
         else:
             app.config.from_object(from_file(os.path.expanduser("~/.lemur/lemur.conf.py")))
 
-    if not app.config.get('ENCRYPTION_KEY'):
+    if not app.config.get('LEMUR_ENCRYPTION_KEY'):
         raise NoEncryptionKeyFound
 
 

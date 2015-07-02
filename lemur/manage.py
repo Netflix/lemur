@@ -494,7 +494,7 @@ class LemurServer(Command):
         return app.run()
 
 
-def main():
+if __name__ == "__main__":
     manager.add_command("start", LemurServer())
     manager.add_command("runserver", Server(host='127.0.0.1'))
     manager.add_command("clean", Clean())
