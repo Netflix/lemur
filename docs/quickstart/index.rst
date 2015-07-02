@@ -102,6 +102,10 @@ administer Lemur.
 
 .. code-block:: bash
 
+    $ lemur db init
+
+.. code-block:: bash
+
     $ lemur init
 
 .. note:: It is recommended that once the 'lemur' user is created that you create individual users for every day access.
