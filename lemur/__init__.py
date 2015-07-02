@@ -62,8 +62,3 @@ def configure_hook(app):
         response.status_code = 403
         return response
 
-
-
-
-
-

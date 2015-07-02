@@ -495,7 +495,7 @@ def create_config(config_path=None):
     sys.stdout.write("Created a new configuration file {0}\n".format(config_path))
 
 
-if __name__ == "__main__":
+def main():
     manager.add_command("start", LemurServer())
     manager.add_command("runserver", Server(host='127.0.0.1'))
     manager.add_command("clean", Clean())
@@ -506,3 +506,7 @@ if __name__ == "__main__":
     manager.add_command('create_role', CreateRole())
     manager.add_command("sync", Sync())
     manager.run()
+
+
+if __name__ == "__main__":
+    main()
