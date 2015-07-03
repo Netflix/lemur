@@ -183,7 +183,7 @@ def save_cert(cert_body, private_key, cert_chain, challenge, csr_config, account
     :param cert_chain:
     :param challenge:
     :param csr_config:
-    :param account_ids:
+    :param accounts:
     """
     cert = Certificate(cert_body, private_key, challenge, cert_chain, csr_config)
     # if we have an AWS accounts lets upload them
