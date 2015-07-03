@@ -1,6 +1,4 @@
-import os
 import pytest
-from mock import mock_open, patch
 from lemur.certificates.views import *
 
 #def test_crud(session):
@@ -33,25 +31,23 @@ def test_private_key_str():
         private_key_str('dfsdfsdf', 'test')
 
 
-def test_create_csr():
-    from lemur.tests.certs import CSR_CONFIG
+def test_create_basic_csr():
     from lemur.certificates.service import create_csr
-    m = mock_open()
-    with patch('lemur.certificates.service.open', m, create=True):
-        path = create_csr(CSR_CONFIG)
-        assert path == ''
+    csr_config = dict(
+        commonName=u'example.com',
+        organization=u'Example, Inc.',
+        organizationalUnit=u'Operations',
+        country=u'US',
+        state=u'CA',
+        location=u'A place',
+        extensions=dict(subAltNames=[u'test.example.com', u'test2.example.com'])
+    )
+    csr, pem = create_csr(csr_config)
 
-
-def test_create_path():
-    assert 1 == 2
-
-
-def test_load_ssl_pack():
-    assert 1 == 2
-
-
-def test_delete_ssl_path():
-    assert 1 == 2
+    private_key = serialization.load_pem_private_key(pem, password=None, backend=default_backend())
+    csr = x509.load_pem_x509_csr(csr, default_backend())
+    for name in csr.subject:
+        assert name.value in csr_config.values()
 
 
 def test_import_certificate(session):

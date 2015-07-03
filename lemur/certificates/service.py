@@ -26,8 +26,9 @@ from lemur.roles.models import Role
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
+
 
 
 def get(cert_id):
@@ -145,7 +146,7 @@ def import_certificate(**kwargs):
     """
     Uploads already minted certificates and pulls the required information into Lemur.
 
-    This is to be used for certificates that are reated outside of Lemur but
+    This is to be used for certificates that are created outside of Lemur but
     should still be tracked.
 
     Internally this is used to bootstrap Lemur with external
@@ -315,64 +316,71 @@ def create_csr(csr_config):
         x509.BasicConstraints(ca=False, path_length=None), critical=True,
     )
 
-    for name in csr_config['extensions']['subAltNames']['names']:
-        builder.add_extension(
-            x509.SubjectAlternativeName(x509.DNSName, name['value'])
-        )
+    for k, v in csr_config.get('extensions', {}).items():
+        if k == 'subAltNames':
+            builder = builder.add_extension(
+                x509.SubjectAlternativeName([x509.DNSName(n) for n in v]), critical=True,
+            )
 
-# TODO support more CSR options
-#    csr_config['extensions']['keyUsage']
-#    builder.add_extension(
-#        x509.KeyUsage(
-#            digital_signature=digital_signature,
-#            content_commitment=content_commitment,
-#            key_encipherment=key_enipherment,
-#            data_encipherment=data_encipherment,
-#            key_agreement=key_agreement,
-#            key_cert_sign=key_cert_sign,
-#            crl_sign=crl_sign,
-#            encipher_only=enchipher_only,
-#            decipher_only=decipher_only
-#        ), critical=True
-#    )
-#
-#    # we must maintain our own list of OIDs here
-#    builder.add_extension(
-#        x509.ExtendedKeyUsage(
-#            server_authentication=server_authentication,
-#            email=
-#        )
-#    )
-#
-#    builder.add_extension(
-#        x509.AuthorityInformationAccess()
-#    )
-#
-#    builder.add_extension(
-#        x509.AuthorityKeyIdentifier()
-#    )
-#
-#    builder.add_extension(
-#        x509.SubjectKeyIdentifier()
-#    )
-#
-#    builder.add_extension(
-#        x509.CRLDistributionPoints()
-#    )
+    # TODO support more CSR options, none of the authorities support these atm
+    #    builder.add_extension(
+    #        x509.KeyUsage(
+    #            digital_signature=digital_signature,
+    #            content_commitment=content_commitment,
+    #            key_encipherment=key_enipherment,
+    #            data_encipherment=data_encipherment,
+    #            key_agreement=key_agreement,
+    #            key_cert_sign=key_cert_sign,
+    #            crl_sign=crl_sign,
+    #            encipher_only=enchipher_only,
+    #            decipher_only=decipher_only
+    #        ), critical=True
+    #    )
+    #
+    #    # we must maintain our own list of OIDs here
+    #    builder.add_extension(
+    #        x509.ExtendedKeyUsage(
+    #            server_authentication=server_authentication,
+    #            email=
+    #        )
+    #    )
+    #
+    #    builder.add_extension(
+    #        x509.AuthorityInformationAccess()
+    #    )
+    #
+    #    builder.add_extension(
+    #        x509.AuthorityKeyIdentifier()
+    #    )
+    #
+    #    builder.add_extension(
+    #        x509.SubjectKeyIdentifier()
+    #    )
+    #
+    #    builder.add_extension(
+    #        x509.CRLDistributionPoints()
+    #    )
+    #
+    #    builder.add_extension(
+    #        x509.ObjectIdentifier(oid)
+    #    )
 
     request = builder.sign(
         private_key, hashes.SHA256(), default_backend()
     )
 
-    # here we try and support arbitrary oids
-    for oid in csr_config['extensions']['custom']:
-        builder.add_extension(
-            x509.ObjectIdentifier(oid)
-        )
+    # serialize our private key and CSR
+    pem = private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption()
+    )
 
+    csr = request.public_bytes(
+        encoding=serialization.Encoding.PEM
+    )
 
-    return request.public_bytes("PEM"), private_key.public_bytes("PEM")
-
+    return csr, pem
 
 def create_challenge():
     """

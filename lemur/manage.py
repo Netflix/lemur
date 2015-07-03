@@ -3,6 +3,8 @@ import sys
 import base64
 from gunicorn.config import make_settings
 
+from cryptography.fernet import Fernet
+
 from flask import current_app
 from flask.ext.script import Manager, Command, Option, Group, prompt_pass
 from flask.ext.migrate import Migrate, MigrateCommand, stamp
@@ -19,7 +21,6 @@ from lemur.certificates import sync
 from lemur.elbs.sync import sync_all_elbs
 
 from lemur import create_app
-from lemur.common.crypto import encrypt, decrypt, lock, unlock
 
 # Needed to be imported so that SQLAlchemy create_all can find our models
 from lemur.users.models import User
@@ -130,78 +131,6 @@ SQLALCHEMY_DATABASE_URI = ''
 def create():
     database.db.create_all()
     stamp(revision='head')
-
-
-@manager.command
-def lock():
-    """
-    Encrypts all of the files in the `keys` directory with the password
-    given. This is a useful function to ensure that you do no check in
-    your key files into source code in clear text.
-
-    :return:
-    """
-    password = prompt_pass("Please enter the encryption password")
-    lock(password)
-    sys.stdout.write("[+] Lemur keys have been encrypted!\n")
-
-
-@manager.command
-def unlock():
-    """
-    Decrypts all of the files in the `keys` directory with the password
-    given. This is most commonly used during the startup sequence of Lemur
-    allowing it to go from source code to something that can communicate
-    with external services.
-
-    :return:
-    """
-    password = prompt_pass("Please enter the encryption password")
-    unlock(password)
-    sys.stdout.write("[+] Lemur keys have been unencrypted!\n")
-
-
-@manager.command
-def encrypt_file(source):
-    """
-    Utility to encrypt sensitive files, Lemur will decrypt these
-    files when admin enters the correct password.
-
-    Uses AES-256-CBC encryption
-    """
-    dest = source + ".encrypted"
-    password = prompt_pass("Please enter the encryption password")
-    password1 = prompt_pass("Please confirm the encryption password")
-    if password != password1:
-        sys.stdout.write("[!] Encryption passwords do not match!\n")
-        return
-
-    with open(source, 'rb') as in_file, open(dest, 'wb') as out_file:
-        encrypt(in_file, out_file, password)
-
-    sys.stdout.write("[+] Writing encryption files... {0}!\n".format(dest))
-
-
-@manager.command
-def decrypt_file(source):
-    """
-    Utility to decrypt, Lemur will decrypt these
-    files when admin enters the correct password.
-
-    Assumes AES-256-CBC encryption
-    """
-    # cleanup extensions a bit
-    if ".encrypted" in source:
-        dest = ".".join(source.split(".")[:-1]) + ".decrypted"
-    else:
-        dest = source + ".decrypted"
-
-    password = prompt_pass("Please enter the encryption password")
-
-    with open(source, 'rb') as in_file, open(dest, 'wb') as out_file:
-        decrypt(in_file, out_file, password)
-
-    sys.stdout.write("[+] Writing decrypted files... {0}!\n".format(dest))
 
 
 @manager.command
@@ -491,7 +420,84 @@ def create_config(config_path=None):
     with open(config_path, 'w') as f:
         f.write(config)
 
-    sys.stdout.write("Created a new configuration file {0}\n".format(config_path))
+    sys.stdout.write("[+] Created a new configuration file {0}\n".format(config_path))
+
+
+@manager.command
+def lock(path=None):
+    """
+    Encrypts a given path. This directory can be used to store secrets needed for normal
+    Lemur operation. This is especially useful for storing secrets needed for communication
+    with third parties (e.g. external certificate authorities).
+
+    Lemur does not assume anything about the contents of the directory and will attempt to
+    encrypt all files contained within. Currently this has only been tested against plain
+    text files.
+
+    Path defaults ~/.lemur/keys
+
+    :param: path
+    """
+    if not path:
+        path = os.path.expanduser('~/.lemur/keys')
+
+    dest_dir = os.path.join(path, "encrypted")
+    sys.stdout.write("[!] Generating a new key...\n")
+
+    key = Fernet.generate_key()
+
+    if not os.path.exists(dest_dir):
+        sys.stdout.write("[+] Creating encryption directory: {0}\n".format(dest_dir))
+        os.makedirs(dest_dir)
+
+    for root, dirs, files in os.walk(os.path.join(path, 'decrypted')):
+        for f in files:
+            source = os.path.join(root, f)
+            dest = os.path.join(dest_dir, f + ".enc")
+            with open(source, 'rb') as in_file, open(dest, 'wb') as out_file:
+                f = Fernet(key)
+                data = f.encrypt(in_file.read())
+                out_file.write(data)
+                sys.stdout.write("[+] Writing file: {0} Source: {1}\n".format(dest, source))
+
+    sys.stdout.write("[+] Keys have been encrypted with key {0}\n".format(key))
+
+
+@manager.command
+def unlock(path=None):
+    """
+    Decrypts all of the files in a given directory with provided password.
+    This is most commonly used during the startup sequence of Lemur
+    allowing it to go from source code to something that can communicate
+    with external services.
+
+    Path defaults ~/.lemur/keys
+
+    :param: path
+    """
+    key = prompt_pass("[!] Please enter the encryption password")
+
+    if not path:
+        path = os.path.expanduser('~/.lemur/keys')
+
+    dest_dir = os.path.join(path, "decrypted")
+    source_dir = os.path.join(path, "encrypted")
+
+    if not os.path.exists(dest_dir):
+        sys.stdout.write("[+] Creating decryption directory: {0}\n".format(dest_dir))
+        os.makedirs(dest_dir)
+
+    for root, dirs, files in os.walk(source_dir):
+        for f in files:
+            source = os.path.join(source_dir, f)
+            dest = os.path.join(dest_dir, ".".join(f.split(".")[:-1]))
+            with open(source, 'rb') as in_file, open(dest, 'wb') as out_file:
+                f = Fernet(key)
+                data = f.decrypt(in_file.read())
+                out_file.write(data)
+                sys.stdout.write("[+] Writing file: {0} Source: {1}\n".format(dest, source))
+
+    sys.stdout.write("[+] Keys have been unencrypted!\n")
 
 
 def main():
