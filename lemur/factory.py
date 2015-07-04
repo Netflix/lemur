@@ -91,8 +91,7 @@ def configure_app(app, config=None):
         elif os.path.isfile(os.path.expanduser("~/.lemur/lemur.conf.py")):
             app.config.from_object(from_file(os.path.expanduser("~/.lemur/lemur.conf.py")))
         else:
-            app.config.from_object(from_file(os.path.join(os.getcwd(), 'default.conf.py')))
-
+            app.config.from_object(from_file(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'default.conf.py')))
 
 
 def configure_extensions(app):
