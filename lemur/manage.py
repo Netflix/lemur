@@ -333,7 +333,7 @@ class InitializeApp(Command):
         else:
             sys.stdout.write("[-] Default user has already been created, skipping...!\n")
 
-        if current_app.app.config.get('AWS_ACCOUNT_MAPPINGS'):
+        if current_app.config.get('AWS_ACCOUNT_MAPPINGS'):
             for account_name, account_number in current_app.config.get('AWS_ACCOUNT_MAPPINGS').items():
                 account = account_service.get_by_account_number(account_number)
 
