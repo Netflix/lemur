@@ -94,11 +94,10 @@ def configure_app(app, config=None):
     except RuntimeError:
         if config and config != 'None':
             app.config.from_object(from_file(config))
-        else:
+        elif os.path.isfile(os.path.expanduser("~/.lemur/lemur.conf.py")):
             app.config.from_object(from_file(os.path.expanduser("~/.lemur/lemur.conf.py")))
-
-    if not app.config.get('ENCRYPTION_KEY'):
-        raise NoEncryptionKeyFound
+        else:
+            app.config.from_object(from_file(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'default.conf.py')))
 
 
 def configure_extensions(app):

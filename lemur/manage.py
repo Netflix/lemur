@@ -333,14 +333,15 @@ class InitializeApp(Command):
         else:
             sys.stdout.write("[-] Default user has already been created, skipping...!\n")
 
-        for account_name, account_number in current_app.config.get('AWS_ACCOUNT_MAPPINGS').items():
-            account = account_service.get_by_account_number(account_number)
+        if current_app.config.get('AWS_ACCOUNT_MAPPINGS'):
+            for account_name, account_number in current_app.config.get('AWS_ACCOUNT_MAPPINGS').items():
+                account = account_service.get_by_account_number(account_number)
 
-            if not account:
-                account_service.create(account_number, label=account_name)
-                sys.stdout.write("[+] Added new account {0}:{1}!\n".format(account_number, account_name))
-            else:
-                sys.stdout.write("[-] Account already exists, skipping...!\n")
+                if not account:
+                    account_service.create(account_number, label=account_name)
+                    sys.stdout.write("[+] Added new account {0}:{1}!\n".format(account_number, account_name))
+                else:
+                    sys.stdout.write("[-] Account already exists, skipping...!\n")
 
         sys.stdout.write("[/] Done!\n")
 
@@ -439,26 +440,6 @@ class CreateRole(Command):
         sys.stdout.write("[+] Created new role: {0}".format(name))
 
 
-@manager.command
-def create_config(config_path=None):
-    """
-    Creates a new configuration file if one does not already exist
-    """
-    if not config_path:
-        config_path = DEFAULT_CONFIG_PATH
-
-    config_path = os.path.expanduser(config_path)
-    dir = os.path.dirname(config_path)
-    if not os.path.exists(dir):
-        os.makedirs(dir)
-
-    config = generate_settings()
-    with open(config_path, 'w') as f:
-        f.write(config)
-
-    sys.stdout.write("Created a new configuration file {0}\n".format(config_path))
-
-
 class LemurServer(Command):
     """
     This is the main Lemur server, it runs the flask app with gunicorn and
@@ -494,6 +475,26 @@ class LemurServer(Command):
         return app.run()
 
 
+@manager.command
+def create_config(config_path=None):
+    """
+    Creates a new configuration file if one does not already exist
+    """
+    if not config_path:
+        config_path = DEFAULT_CONFIG_PATH
+
+    config_path = os.path.expanduser(config_path)
+    dir = os.path.dirname(config_path)
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+
+    config = generate_settings()
+    with open(config_path, 'w') as f:
+        f.write(config)
+
+    sys.stdout.write("Created a new configuration file {0}\n".format(config_path))
+
+
 def main():
     manager.add_command("start", LemurServer())
     manager.add_command("runserver", Server(host='127.0.0.1'))
@@ -505,3 +506,7 @@ def main():
     manager.add_command('create_role', CreateRole())
     manager.add_command("sync", Sync())
     manager.run()
+
+
+if __name__ == "__main__":
+    main()
