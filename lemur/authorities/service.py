@@ -17,7 +17,7 @@ from lemur.roles import service as role_service
 from lemur.roles.models import Role
 import lemur.certificates.service as cert_service
 
-from lemur.common.services.issuers.manager import get_plugin_by_name
+from lemur.plugins.base import plugins
 
 def update(authority_id, active=None, roles=None):
     """
@@ -49,7 +49,7 @@ def create(kwargs):
     :return:
     """
 
-    issuer = get_plugin_by_name(kwargs.get('pluginName'))
+    issuer = plugins.get(kwargs.get('pluginName'))
 
     kwargs['creator'] = g.current_user.email
     cert_body, intermediate, issuer_roles = issuer.create_authority(kwargs)

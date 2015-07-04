@@ -18,8 +18,7 @@ from flask import g, current_app
 
 from lemur import database
 from lemur.common.services.aws import iam
-from lemur.common.services.issuers.manager import get_plugin_by_name
-
+from lemur.plugins.base import plugins
 from lemur.certificates.models import Certificate
 from lemur.certificates.exceptions import UnableToCreateCSR, \
     UnableToCreatePrivateKey, MissingFiles
@@ -127,7 +126,7 @@ def mint(issuer_options):
     """
     authority = issuer_options['authority']
 
-    issuer = get_plugin_by_name(authority.plugin_name)
+    issuer = plugins.get(authority.plugin_name)
     # NOTE if we wanted to support more issuers it might make sense to
     # push CSR creation down to the plugin
     path = create_csr(issuer.get_csr_config(issuer_options))

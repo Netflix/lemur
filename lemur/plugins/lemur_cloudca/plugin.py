@@ -18,10 +18,8 @@ from requests.adapters import HTTPAdapter
 from flask import current_app
 
 from lemur.exceptions import LemurException
-from lemur.common.services.issuers.issuer import Issuer
-
-from lemur.common.services.issuers.plugins import cloudca
-
+from lemur.plugins.bases import IssuerPlugin
+from lemur.plugins import lemur_cloudca as cloudca
 
 from lemur.authorities import service as authority_service
 
@@ -144,7 +142,7 @@ def get_auth_data(ca_name):
     raise CloudCAException("You do not have the required role to issue certificates from {0}".format(ca_name))
 
 
-class CloudCA(Issuer):
+class CloudCAPlugin(IssuerPlugin):
     title = 'CloudCA'
     slug = 'cloudca'
     description = 'Enables the creation of certificates from the cloudca API.'
@@ -164,7 +162,7 @@ class CloudCA(Issuer):
         else:
             current_app.logger.warning("No CLOUDCA credentials found, lemur will be unable to request certificates from CLOUDCA")
 
-        super(CloudCA, self).__init__(*args, **kwargs)
+        super(CloudCAPlugin, self).__init__(*args, **kwargs)
 
     def create_authority(self, options):
         """
@@ -261,15 +259,6 @@ class CloudCA(Issuer):
 
         return cert, "".join(intermediates),
 
-    def get_csr_config(self, issuer_options):
-        """
-        Get a valid CSR for use with CloudCA
-
-        :param issuer_options:
-        :return:
-        """
-        return cloudca.constants.CSR_CONFIG.format(**issuer_options)
-
     def random(self, length=10):
         """
         Uses CloudCA as a decent source of randomness.
@@ -339,8 +328,4 @@ class CloudCA(Issuer):
 
         response = self.session.get(self.url + endpoint, timeout=10, verify=self.ca_bundle)
         return process_response(response)
-
-
-def init():
-    return CloudCA()
 

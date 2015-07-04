@@ -1,5 +1,5 @@
 """
-.. module: lemur.common.services.issuers.plugins.verisign.verisign
+.. module: lemur.plugins.lemur_verisign.verisign
     :platform: Unix
     :synopsis: This module is responsible for communicating with the VeriSign VICE 2.0 API.
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
@@ -13,10 +13,9 @@ import xmltodict
 
 from flask import current_app
 
-from lemur.common.services.issuers.issuer import Issuer
-from lemur.common.services.issuers.plugins import verisign
-
-from lemur.certificates.exceptions import InsufficientDomains
+from lemur.plugins.bases import IssuerPlugin
+from lemur.plugins import lemur_verisign as verisign
+from lemur.plugins.lemur_verisign import constants
 
 
 # https://support.venafi.com/entries/66445046-Info-VeriSign-Error-Codes
@@ -58,7 +57,7 @@ VERISIGN_ERRORS = {
 }
 
 
-class Verisign(Issuer):
+class VerisignPlugin(IssuerPlugin):
     title = 'VeriSign'
     slug = 'verisign'
     description = 'Enables the creation of certificates by the VICE2.0 verisign API.'
@@ -70,7 +69,7 @@ class Verisign(Issuer):
     def __init__(self, *args, **kwargs):
         self.session = requests.Session()
         self.session.cert = current_app.config.get('VERISIGN_PEM_PATH')
-        super(Verisign, self).__init__(*args, **kwargs)
+        super(VerisignPlugin, self).__init__(*args, **kwargs)
 
     @staticmethod
     def handle_response(content):
@@ -127,41 +126,7 @@ class Verisign(Issuer):
 
         response = self.session.post(url, data=data)
         cert = self.handle_response(response.content)['Response']['Certificate']
-        return cert, verisign.constants.VERISIGN_INTERMEDIATE,
-
-    def get_csr_config(self, issuer_options):
-        """
-        Used to generate a valid CSR for the given Certificate Authority.
-
-        :param issuer_options:
-        :return: :raise InsufficientDomains:
-        """
-        domains = []
-
-        if issuer_options.get('commonName'):
-            domains.append(issuer_options.get('commonName'))
-
-        if issuer_options.get('extensions'):
-            for n in issuer_options['extensions']['subAltNames']['names']:
-                if n['value']:
-                    domains.append(n['value'])
-
-        is_san_comment = "#"
-
-        dns_lines = []
-        if len(domains) < 1:
-            raise InsufficientDomains
-
-        elif len(domains) > 1:
-            is_san_comment = ""
-            for domain_line in list(set(domains)):
-                dns_lines.append("DNS.{} = {}".format(len(dns_lines) + 1, domain_line))
-
-        return verisign.constants.CSR_CONFIG.format(
-            is_san_comment=is_san_comment,
-            OU=issuer_options.get('organizationalUnit', 'Operations'),
-            DNS=domains,
-            DNS_LINES="\n".join(dns_lines))
+        return cert, constants.VERISIGN_INTERMEDIATE,
 
     @staticmethod
     def create_authority(options):
@@ -173,7 +138,7 @@ class Verisign(Issuer):
         :return:
         """
         role = {'username': '', 'password': '', 'name': 'verisign'}
-        return verisign.constants.VERISIGN_ROOT, "", [role]
+        return constants.VERISIGN_ROOT, "", [role]
 
     def get_available_units(self):
         """
@@ -189,6 +154,3 @@ class Verisign(Issuer):
     def get_authorities(self):
         pass
 
-
-def init():
-    return Verisign()

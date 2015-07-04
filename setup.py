@@ -103,6 +103,10 @@ setup(
         'console_scripts': [
             'lemur = lemur.manage:main',
         ],
+        'lemur.plugins': [
+             'verisign = lemur.plugins.lemur_verisign.plugin:VerisignPlugin',
+             'cloudca = lemur.plugins.lemur_cloudca.plugin:CloudCAPlugin',
+        ],
     },
     classifiers=[
         'Framework :: Flask',

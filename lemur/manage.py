@@ -333,7 +333,7 @@ class InitializeApp(Command):
         else:
             sys.stdout.write("[-] Default user has already been created, skipping...!\n")
 
-        if current_app.app.config.get('AWS_ACCOUNT_MAPPINGS'):
+        if current_app.config.get('AWS_ACCOUNT_MAPPINGS'):
             for account_name, account_number in current_app.config.get('AWS_ACCOUNT_MAPPINGS').items():
                 account = account_service.get_by_account_number(account_number)
 
@@ -344,45 +344,6 @@ class InitializeApp(Command):
                     sys.stdout.write("[-] Account already exists, skipping...!\n")
 
         sys.stdout.write("[/] Done!\n")
-
-
-
-#def install_issuers(settings):
-#    """
-#    Installs new issuers that are not currently bundled with Lemur.
-#
-#    :param settings:
-#    :return:
-#    """
-#    from lemur.issuers import register
-#    # entry_points={
-#    #    'lemur.issuers': [
-#    #         'verisign = lemur_issuers.issuers:VerisignPlugin'
-#    #     ],
-#    # },
-#    installed_apps = list(settings.INSTALLED_APPS)
-#    for ep in pkg_resources.iter_entry_points('lemur.apps'):
-#        try:
-#            issuer = ep.load()
-#        except Exception:
-#            import sys
-#            import traceback
-#
-#            sys.stderr.write("Failed to load app %r:\n%s\n" % (ep.name, traceback.format_exc()))
-#        else:
-#            installed_apps.append(ep.module_name)
-#    settings.INSTALLED_APPS = tuple(installed_apps)
-#
-#    for ep in pkg_resources.iter_entry_points('lemur.issuers'):
-#        try:
-#            issuer = ep.load()
-#        except Exception:
-#            import sys
-#            import traceback
-#
-#            sys.stderr.write("Failed to load issuer %r:\n%s\n" % (ep.name, traceback.format_exc()))
-#        else:
-#            register(issuer)
 
 
 class CreateUser(Command):
