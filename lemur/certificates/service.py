@@ -316,11 +316,11 @@ def create_csr(csr_config):
         x509.BasicConstraints(ca=False, path_length=None), critical=True,
     )
 
-    for k, v in csr_config.get('extensions', {}).items():
-        if k == 'subAltNames':
-            builder = builder.add_extension(
-                x509.SubjectAlternativeName([x509.DNSName(n) for n in v]), critical=True,
-            )
+    #for k, v in csr_config.get('extensions', {}).items():
+    #    if k == 'subAltNames':
+    #        builder = builder.add_extension(
+    #            x509.SubjectAlternativeName([x509.DNSName(n) for n in v]), critical=True,
+    #        )
 
     # TODO support more CSR options, none of the authorities support these atm
     #    builder.add_extension(
