@@ -92,6 +92,8 @@ that be easier to setup in your environment.
 Once created you will need to update the configuration file with information about your environment,
 such as which database to talk to, where keys are stores etc..
 
+.. _InitializingLemur:
+
 Initializing Lemur
 ------------------
 
@@ -119,22 +121,6 @@ administer Lemur.
     for details.
 
 
-Starting the Web Service
-------------------------
-
-Lemur provides a built-in webserver (powered by gunicorn and eventlet) to get you off the ground quickly.
-
-To start the webserver, you simply use ``lemur start``. If you opted to use an alternative configuration path
-you can pass that via the --config option.
-
-::
-
-  # Lemur's server runs on port 5000 by default. Make sure your client reflects
-  # the correct host and port!
-  lemur --config=/etc/lemur.conf.py start
-
-You should now be able to test the web service by visiting `http://localhost:5000/`.
-
 Setup a Reverse Proxy
 ---------------------
 
@@ -145,34 +131,47 @@ you setup a simple web proxy.
 Proxying with Nginx
 ~~~~~~~~~~~~~~~~~~~
 
-You'll use the builtin HttpProxyModule within Nginx to handle proxying::
+You'll use the builtin HttpProxyModule within Nginx to handle proxying
+
+::
+
+   location /api {
+        proxy_pass  http://127.0.0.1:5000;
+        proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
+        proxy_redirect off;
+        proxy_buffering off;
+        proxy_set_header        Host            $host;
+        proxy_set_header        X-Real-IP       $remote_addr;
+        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
 
     location / {
-      proxy_pass         http://localhost:5000;
-      proxy_redirect     off;
-
-      proxy_set_header   Host              $host;
-      proxy_set_header   X-Real-IP         $remote_addr;
-      proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
-      proxy_set_header   X-Forwarded-Proto $scheme;
+        root /www/lemur/lemur/static/dist;
+        index index.html;
     }
 
 See :doc:`../production/index` for more details on using Nginx.
 
-Proxying with Apache
-~~~~~~~~~~~~~~~~~~~~
 
-Apache requires the use of mod_proxy for forwarding requests::
+Starting the Web Service
+------------------------
 
-    ProxyPass / http://localhost:5000/
-    ProxyPassReverse / http://localhost:5000/
-    ProxyPreserveHost On
-    RequestHeader set X-Forwarded-Proto "https" env=HTTPS
+Lemur provides a built-in webserver (powered by gunicorn and eventlet) to get you off the ground quickly.
 
-You will need to enable ``headers``, ``proxy``, and ``proxy_http`` apache modules to use these settings.
+To start the webserver, you simply use ``lemur start``. If you opted to use an alternative configuration path
+you can pass that via the --config option.
 
-See :doc:`../production/index` for more details on using Apache.
+.. note::
+    You can login with the default user created during :ref:`Initializing Lemur <InitializingLemur>` or any other
+    user you may have created.
 
+::
+
+  # Lemur's server runs on port 5000 by default. Make sure your client reflects
+  # the correct host and port!
+  lemur --config=/etc/lemur.conf.py start -b 127.0.0.1:5000
+
+You should now be able to test the web service by visiting `http://localhost:5000/`.
 
 Running Lemur as a Service
 ---------------------------
