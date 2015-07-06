@@ -106,7 +106,7 @@ You can make some adjustments to get a better user experience::
         }
 
         location / {
-            root /apps/lemur/lemur/static/dist;
+            root /www/lemur/lemur/static/dist;
             index index.html;
         }
 
@@ -171,7 +171,7 @@ sensitive nature of Lemur and what it controls makes this essential. This is a s
         }
 
         location / {
-            root /apps/lemur/lemur/static/dist;
+            root /www/lemur/lemur/static/dist;
             index index.html;
         }
 
