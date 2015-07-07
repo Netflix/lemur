@@ -96,7 +96,6 @@ def configure_app(app, config=None):
             app.config.from_object(from_file(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'default.conf.py')))
 
 
-
 def configure_extensions(app):
     """
     Attaches and configures any needed flask extensions
