@@ -12,28 +12,28 @@ from flask import jsonify
 
 from lemur import factory
 
-from lemur.users.views import mod as users
-from lemur.roles.views import mod as roles
-from lemur.auth.views import mod as auth
-from lemur.domains.views import mod as domains
-from lemur.elbs.views import mod as elbs
-from lemur.accounts.views import mod as accounts
-from lemur.authorities.views import mod as authorities
-from lemur.listeners.views import  mod as listeners
-from lemur.certificates.views import mod as certificates
-from lemur.status.views import mod as status
+from lemur.users.views import mod as users_bp
+from lemur.roles.views import mod as roles_bp
+from lemur.auth.views import mod as auth_bp
+from lemur.domains.views import mod as domains_bp
+from lemur.elbs.views import mod as elbs_bp
+from lemur.accounts.views import mod as accounts_bp
+from lemur.authorities.views import mod as authorities_bp
+from lemur.listeners.views import mod as listeners_bp
+from lemur.certificates.views import mod as certificates_bp
+from lemur.status.views import mod as status_bp
 
 LEMUR_BLUEPRINTS = (
-    users,
-    roles,
-    auth,
-    domains,
-    elbs,
-    accounts,
-    authorities,
-    listeners,
-    certificates,
-    status
+    users_bp,
+    roles_bp,
+    auth_bp,
+    domains_bp,
+    elbs_bp,
+    accounts_bp,
+    authorities_bp,
+    listeners_bp,
+    certificates_bp,
+    status_bp
 )
 
 def create_app(config=None):
