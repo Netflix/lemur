@@ -77,6 +77,7 @@ The `IssuerPlugin` interface only required that you implement one function::
     def create_certificate(self, options):
         # requests.get('a third party')
 
+
 Lemur will pass a dictionary of all possible options for certificate creation.
 
 Optionally the `IssuerPlugin` exposes another function for authority create::
@@ -84,7 +85,13 @@ Optionally the `IssuerPlugin` exposes another function for authority create::
     def create_authority(self, options):
         # request.get('a third party')
 
-If implemented this function will be used to allow users to create external Certificate Authorities.
+
+If implemented this function will be used to allow users to create external Certificate Authorities. From this function
+you are expected to return the ROOT certificate authority, any intermediates that Authority might provide and any roles
+you wish to be associated with this authority.
+
+.. Note:: You do not need to associate roles to the authority at creation time as they can always be associated after the
+fact.
 
 
 Testing
@@ -157,4 +164,6 @@ Running tests follows the py.test standard. As long as your test files and metho
 
     =========================== 1 passed in 0.35 seconds ============================
 
+
+.. SeeAlso:: Lemur bundles several plugins that use the same interfaces mentioned above. View the source: #TODO
 

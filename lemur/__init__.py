@@ -8,8 +8,6 @@
 
 
 """
-from flask import jsonify
-
 from lemur import factory
 
 from lemur.users.views import mod as users_bp

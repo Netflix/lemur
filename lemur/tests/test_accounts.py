@@ -22,11 +22,11 @@ def test_account_get(client):
 
 
 def test_account_post(client):
-    assert client.post(api.url_for(Accounts, account_id=1), {}).status_code == 405
+    assert client.post(api.url_for(Accounts, account_id=1), data={}).status_code == 405
 
 
 def test_account_put(client):
-    assert client.put(api.url_for(Accounts, account_id=1), {}).status_code == 401
+    assert client.put(api.url_for(Accounts, account_id=1), data={}).status_code == 401
 
 
 def test_account_delete(client):
@@ -34,7 +34,7 @@ def test_account_delete(client):
 
 
 def test_account_patch(client):
-    assert client.patch(api.url_for(Accounts, account_id=1), {}).status_code == 405
+    assert client.patch(api.url_for(Accounts, account_id=1), data={}).status_code == 405
 
 
 VALID_USER_HEADER_TOKEN = {
@@ -45,7 +45,7 @@ def test_auth_account_get(client):
 
 
 def test_auth_account_post_(client):
-    assert client.post(api.url_for(Accounts, account_id=1), {}, headers=VALID_USER_HEADER_TOKEN).status_code == 405
+    assert client.post(api.url_for(Accounts, account_id=1), data={}, headers=VALID_USER_HEADER_TOKEN).status_code == 405
 
 
 def test_auth_account_put(client):
@@ -57,7 +57,7 @@ def test_auth_account_delete(client):
 
 
 def test_auth_account_patch(client):
-    assert client.patch(api.url_for(Accounts, account_id=1), {}, headers=VALID_USER_HEADER_TOKEN).status_code == 405
+    assert client.patch(api.url_for(Accounts, account_id=1), data={}, headers=VALID_USER_HEADER_TOKEN).status_code == 405
 
 
 VALID_ADMIN_HEADER_TOKEN = {
@@ -68,7 +68,7 @@ def test_admin_account_get(client):
 
 
 def test_admin_account_post(client):
-    assert client.post(api.url_for(Accounts, account_id=1), {}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
+    assert client.post(api.url_for(Accounts, account_id=1), data={}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
 
 
 def test_admin_account_put(client):
@@ -80,7 +80,7 @@ def test_admin_account_delete(client):
 
 
 def test_admin_account_patch(client):
-    assert client.patch(api.url_for(Accounts, account_id=1), {}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
+    assert client.patch(api.url_for(Accounts, account_id=1), data={}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
 
 
 def test_accounts_get(client):
@@ -88,11 +88,11 @@ def test_accounts_get(client):
 
 
 def test_accounts_post(client):
-    assert client.post(api.url_for(AccountsList), {}).status_code == 401
+    assert client.post(api.url_for(AccountsList), data={}).status_code == 401
 
 
 def test_accounts_put(client):
-    assert client.put(api.url_for(AccountsList), {}).status_code == 405
+    assert client.put(api.url_for(AccountsList), data={}).status_code == 405
 
 
 def test_accounts_delete(client):
@@ -100,7 +100,7 @@ def test_accounts_delete(client):
 
 
 def test_accounts_patch(client):
-    assert client.patch(api.url_for(AccountsList), {}).status_code == 405
+    assert client.patch(api.url_for(AccountsList), data={}).status_code == 405
 
 
 def test_auth_accounts_get(client):
@@ -108,7 +108,7 @@ def test_auth_accounts_get(client):
 
 
 def test_auth_accounts_post(client):
-    assert client.post(api.url_for(AccountsList), {}, headers=VALID_USER_HEADER_TOKEN).status_code == 403
+    assert client.post(api.url_for(AccountsList), data={}, headers=VALID_USER_HEADER_TOKEN).status_code == 403
 
 
 def test_admin_accounts_get(client):

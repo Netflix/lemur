@@ -47,7 +47,8 @@ tests_require = [
     'pyflakes',
     'moto',
     'nose',
-    'pytest'
+    'pytest',
+    'pytest-flask'
 ]
 
 docs_require = [

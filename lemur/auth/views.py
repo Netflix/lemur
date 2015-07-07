@@ -14,8 +14,6 @@ from flask import g, Blueprint, current_app, abort
 from flask.ext.restful import reqparse, Resource, Api
 from flask.ext.principal import Identity, identity_changed
 
-from lemur.common.crypto import unlock
-
 from lemur.auth.permissions import admin_permission
 from lemur.users import service as user_service
 from lemur.roles import service as role_service
@@ -234,24 +232,7 @@ class Ping(Resource):
         return dict(token=create_token(user))
 
 
-class Unlock(AuthenticatedResource):
-    def __init__(self):
-        self.reqparse = reqparse.RequestParser()
-        super(Unlock, self).__init__()
-
-    @admin_permission.require(http_exception=403)
-    def post(self):
-        self.reqparse.add_argument('password', type=str, required=True, location='json')
-        args = self.reqparse.parse_args()
-        unlock(args['password'])
-        return {
-            "message": "You have successfully unlocked this Lemur instance",
-            "type": "success"
-        }
-
-
 api.add_resource(Login, '/auth/login', endpoint='login')
 api.add_resource(Ping, '/auth/ping', endpoint='ping')
-api.add_resource(Unlock, '/auth/unlock', endpoint='unlock')
 
 

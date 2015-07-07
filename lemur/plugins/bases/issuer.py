@@ -19,6 +19,3 @@ class IssuerPlugin(Plugin):
     def create_authority(self):
         raise NotImplemented
 
-    def get_csr_config(self):
-        raise NotImplementedError
-

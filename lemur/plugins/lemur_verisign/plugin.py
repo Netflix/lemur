@@ -151,6 +151,3 @@ class VerisignPlugin(IssuerPlugin):
         response = self.session.post(url, headers={'content-type': 'application/x-www-form-urlencoded'})
         return self.handle_response(response.content)['Response']['Order']
 
-    def get_authorities(self):
-        pass
-
