@@ -53,8 +53,26 @@ VERISIGN_ERRORS = {
     "0x6013": "only supports DSA keys with (2048, 256) as the bit lengths of the prime parameter pair (p, q), other DSA key sizes will get this error",
     "0x600d": "RSA key size < 2A048",
     "0x4828": "Verisign certificates can be at most two years in length",
-    "0x3043": "Certificates must have a validity of at least 1 day"
+    "0x3043": "Certificates must have a validity of at least 1 day",
+    "0x950b": "CSR: Invalid State",
 }
+
+
+def handle_response(content):
+    """
+    Helper function that helps with parsing responses from the Verisign API.
+    :param content:
+    :return: :raise Exception:
+    """
+    d = xmltodict.parse(content)
+    global VERISIGN_ERRORS
+    if d.get('Error'):
+        status_code = d['Error']['StatusCode']
+    elif d.get('Response'):
+        status_code = d['Response']['StatusCode']
+    if status_code in VERISIGN_ERRORS.keys():
+        raise Exception(VERISIGN_ERRORS[status_code])
+    return d
 
 
 class VerisignPlugin(IssuerPlugin):
@@ -70,23 +88,6 @@ class VerisignPlugin(IssuerPlugin):
         self.session = requests.Session()
         self.session.cert = current_app.config.get('VERISIGN_PEM_PATH')
         super(VerisignPlugin, self).__init__(*args, **kwargs)
-
-    @staticmethod
-    def handle_response(content):
-        """
-        Helper function that helps with parsing responses from the Verisign API.
-        :param content:
-        :return: :raise Exception:
-        """
-        d = xmltodict.parse(content)
-        global VERISIGN_ERRORS
-        if d.get('Error'):
-            status_code = d['Error']['StatusCode']
-        elif d.get('Response'):
-            status_code = d['Response']['StatusCode']
-        if status_code in VERISIGN_ERRORS.keys():
-            raise Exception(VERISIGN_ERRORS[status_code])
-        return d
 
     def create_certificate(self, csr, issuer_options):
         """
@@ -125,7 +126,7 @@ class VerisignPlugin(IssuerPlugin):
         current_app.logger.info("Requesting a new verisign certificate: {0}".format(data))
 
         response = self.session.post(url, data=data)
-        cert = self.handle_response(response.content)['Response']['Certificate']
+        cert = handle_response(response.content)['Response']['Certificate']
         return cert, constants.VERISIGN_INTERMEDIATE,
 
     @staticmethod
@@ -149,5 +150,5 @@ class VerisignPlugin(IssuerPlugin):
         """
         url = current_app.config.get("VERISIGN_URL") + '/getTokens'
         response = self.session.post(url, headers={'content-type': 'application/x-www-form-urlencoded'})
-        return self.handle_response(response.content)['Response']['Order']
+        return handle_response(response.content)['Response']['Order']
 
