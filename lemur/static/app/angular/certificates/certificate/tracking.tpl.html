@@ -20,40 +20,20 @@
         <p ng-show="trackingForm.description.$invalid && !trackingForm.description.$pristine" class="help-block">You must give a short description about this authority will be used for, this description should only include alphanumeric characters</p>
       </div>
     </div>
-    <div class="form-group">
+    <div class="form-group"
+         ng-class="{'has-error': trackingForm.selectedAuthority.$invalid, 'has-success': !trackingForm.$invalid&&trackingForm.selectedAuthority.$dirty}">
       <label class="control-label col-sm-2">
         Certificate Authority
       </label>
       <div class="col-sm-10">
         <div class="input-group col-sm-12">
-          <input tooltip="If you are unsure which authority you need; you most likely want to use 'verisign'" type="text" ng-model="certificate.selectedAuthority" placeholder="Authority Name" typeahead-on-select="certificate.attachAuthority($item)"
+          <input name="selectedAuthority" tooltip="If you are unsure which authority you need; you most likely want to use 'verisign'" type="text" ng-model="certificate.selectedAuthority" placeholder="Authority Name" typeahead-on-select="certificate.attachAuthority($item)"
                  typeahead="authority.name for authority in authorityService.findAuthorityByName($viewValue)" typeahead-loading="loadingAuthorities"
-                 class="form-control" typeahead-wait-ms="100" typeahead-template-url="angular/authorities/authority/select.tpl.html">
+                 class="form-control" typeahead-wait-ms="100" typeahead-template-url="angular/authorities/authority/select.tpl.html" required>
         </div>
       </div>
     </div>
-    <div ng-show="certificate.authority.name == 'verisign'">
-      <div class="form-group" ng-class="{'has-error': !certificate.extensions.subAltNames.names.length&&!certificate.extensions.subAltNames.names , 'has-success': certificate.extensions.subAltNames.names||certificate.subAltValue}">
-        <label class="control-label col-sm-2">Domain(s)</label>
-        <div class="col-sm-10">
-          <div class="input-group input-group-option">
-            <input tooltip="If you request multiple domains a SAN certificate will be created" type="text" name="domain" ng-model="certificate.subAltValue" placeholder="Domain..." class="form-control" required/>
-        <span class="input-group-btn">
-          <button class="btn btn-default" ng-click="certificate.attachSubAltName()">Add</button>
-        </span>
-          </div>
-          <table ng-show="certificate.extensions.subAltNames.names" class="table">
-            <tr ng-repeat="domain in certificate.extensions.subAltNames.names track by $index">
-              <td>{{ domain.value }}</td>
-              <td>
-                <button type="button" ng-click="certificate.removeSubAltName($index)" class="btn btn-danger btn-sm pull-right">Remove</button>
-              </td>
-            </tr>
-          </table>
-        </div>
-      </div>
-    </div>
-    <div ng-show="certificate.authority && certificate.authority.name != 'verisign'" class="form-group">
+    <div ng-show="certificate.authority" class="form-group">
       <label class="control-label col-sm-2">
         Certificate Template
       </label>
@@ -61,19 +41,19 @@
         <select class="form-control" ng-change="certificate.useTemplate()" name="certificateTemplate" ng-model="certificate.template" ng-options="template.name for template in templates"></select>
       </div>
     </div>
-    <div ng-show="certificate.authority && certificate.authority.name != 'verisign'" class="form-group"
+    <div class="form-group"
          ng-class="{'has-error': trackingForm.commonName.$invalid, 'has-success': !trackingForm.$invalid&&trackingForm.commonName.$dirty}">
       <label class="control-label col-sm-2">
         Common Name
       </label>
       <div class="col-sm-10">
-        <input name="commonName" ng-model="certificate.commonName" placeholder="Common Name" class="form-control" required/>
+        <input name="commonName" tooltip="If you need a certificate with multiple domains enter your primary domain here and the rest under 'Subject Alternate Names' in the options panel" ng-model="certificate.commonName" placeholder="Common Name" class="form-control" required/>
         <p ng-show="trackingForm.commonName.$invalid && !trackingForm.commonName.$pristine" class="help-block">You must enter a common name</p>
       </div>
     </div>
     <div class="form-group">
-      <label class="control-label col-sm-2">
-        Validity Range
+      <label class="control-label col-sm-2" tooltip="If no date is selected Lemur attempts to issue a 2 year certificate">
+        Validity Range <span class="glyphicon glyphicon-question-sign"></span>
       </label>
       <div class="col-sm-4">
         <div>
