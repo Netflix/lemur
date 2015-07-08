@@ -38,7 +38,7 @@ function browserSyncInit(baseDir, files, browser) {
 gulp.task('serve', ['watch'], function () {
   browserSyncInit([
     '.tmp',
-    'app'
+    'lemur/static/app'
   ], [
     '.tmp/*.html',
     '.tmp/styles/**/*.css',

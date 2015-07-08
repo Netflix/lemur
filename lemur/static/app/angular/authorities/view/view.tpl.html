@@ -29,9 +29,9 @@
             </td>
             <td data-title="'Roles'"> <!--filter="{ 'select': 'role' }" filter-data="roleService.getRoleDropDown()">-->
               <div class="btn-group">
-                <button ng-repeat="role in authority.roles" class="btn btn-sm btn-danger">
+                <a href="#/roles/{{ role.id }}/edit" ng-repeat="role in authority.roles" class="btn btn-sm btn-danger">
                     {{ role.name }}
-                </button>
+                </a>
               </div>
             </td>
             <td data-title="''">

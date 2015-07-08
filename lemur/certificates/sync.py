@@ -30,8 +30,7 @@ from lemur.certificates.models import Certificate, get_name_from_arn
 from lemur.common.services.aws.iam import get_all_server_certs
 from lemur.common.services.aws.iam import get_cert_from_arn
 
-from lemur.common.services.issuers.manager import get_plugin_by_name
-
+from lemur.plugins.base import plugins
 
 def aws():
     """
@@ -101,7 +100,7 @@ def cloudca():
     """
     user = user_service.get_by_email('lemur@nobody')
     # sync all new certificates/authorities not created through lemur
-    issuer = get_plugin_by_name('cloudca')
+    issuer = plugins.get('cloudca')
     authorities = issuer.get_authorities()
     total = 0
     new = 1

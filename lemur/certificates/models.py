@@ -20,13 +20,12 @@ from sqlalchemy_utils import EncryptedType
 from lemur.database import db
 
 from lemur.domains.models import Domain
-from lemur.users import service as user_service
 
 from lemur.constants import SAN_NAMING_TEMPLATE, DEFAULT_NAMING_TEMPLATE, NONSTANDARD_NAMING_TEMPLATE
 from lemur.models import certificate_associations, certificate_account_associations
 
 
-def create_name(issuer, not_before, not_after, common_name, san):
+def create_name(issuer, not_before, not_after, subject, san):
     """
     Create a name for our certificate. A naming standard
     is based on a series of templates. The name includes
@@ -36,11 +35,6 @@ def create_name(issuer, not_before, not_after, common_name, san):
     :rtype : str
     :return:
     """
-    delchars = ''.join(c for c in map(chr, range(256)) if not c.isalnum())
-    # aws doesn't allow special chars
-    subject = common_name.replace('*', "WILDCARD")
-    issuer = issuer.translate(None, delchars)
-
     if san:
         t = SAN_NAMING_TEMPLATE
     else:
@@ -53,7 +47,14 @@ def create_name(issuer, not_before, not_after, common_name, san):
         not_after=not_after.strftime('%Y%m%d')
     )
 
-    return temp
+    # NOTE we may want to give more control over naming
+    # aws doesn't allow special chars except '-'
+    disallowed_chars = ''.join(c for c in map(chr, range(256)) if not c.isalnum())
+    disallowed_chars = disallowed_chars.replace("-", "")
+    temp = temp.replace('*', "WILDCARD")
+    temp = temp.translate(None, disallowed_chars)
+    # white space is silly too
+    return temp.replace(" ", "-")
 
 
 def cert_get_cn(cert):
@@ -85,11 +86,6 @@ def cert_get_domains(cert):
             domains.append(entry)
     except Exception as e:
         current_app.logger.warning("Failed to get SubjectAltName: {0}".format(e))
-
-    # do a simple check to make sure it's a real domain
-    common_name = cert_get_cn(cert)
-    if '.' in common_name:
-        domains.append(common_name)
     return domains
 
 
@@ -111,11 +107,8 @@ def cert_is_san(cert):
     :param cert:
     :return: Bool
     """
-    domains = cert_get_domains(cert)
-    if len(domains) > 1:
+    if len(cert_get_domains(cert)) > 1:
         return True
-    return False
-
 
 def cert_is_wildcard(cert):
     """
@@ -127,7 +120,6 @@ def cert_is_wildcard(cert):
     domains = cert_get_domains(cert)
     if len(domains) == 1 and domains[0][0:1] == "*":
         return True
-    return False
 
 
 def cert_get_bitstrength(cert):
@@ -205,8 +197,8 @@ class Certificate(db.Model):
     owner = Column(String(128))
     body = Column(Text())
     private_key = Column(EncryptedType(String, os.environ.get('LEMUR_ENCRYPTION_KEY')))
-    challenge = Column(EncryptedType(String, os.environ.get('LEMUR_ENCRYPTION_KEY')))
-    csr_config = Column(Text())
+    challenge = Column(EncryptedType(String, os.environ.get('LEMUR_ENCRYPTION_KEY'))) # TODO deprecate
+    csr_config = Column(Text()) # TODO deprecate
     status = Column(String(128))
     deleted = Column(Boolean, index=True)
     name = Column(String(128))
@@ -227,13 +219,11 @@ class Certificate(db.Model):
     domains = relationship("Domain", secondary=certificate_associations, backref="certificate")
     elb_listeners = relationship("Listener", lazy='dynamic', backref='certificate')
 
-    def __init__(self, body, private_key=None, challenge=None, chain=None, csr_config=None):
+    def __init__(self, body, private_key=None, chain=None):
         self.body = body
         # We encrypt the private_key on creation
         self.private_key = private_key
         self.chain = chain
-        self.csr_config = csr_config
-        self.challenge = challenge
         cert = x509.load_pem_x509_certificate(str(self.body), default_backend())
         self.bits = cert_get_bitstrength(cert)
         self.issuer = cert_get_issuer(cert)

@@ -47,7 +47,8 @@ tests_require = [
     'pyflakes',
     'moto',
     'nose',
-    'pytest'
+    'pytest',
+    'pytest-flask'
 ]
 
 docs_require = [
@@ -103,6 +104,10 @@ setup(
     entry_points={
         'console_scripts': [
             'lemur = lemur.manage:main',
+        ],
+        'lemur.plugins': [
+             'verisign = lemur.plugins.lemur_verisign.plugin:VerisignPlugin',
+             'cloudca = lemur.plugins.lemur_cloudca.plugin:CloudCAPlugin',
         ],
     },
     classifiers=[

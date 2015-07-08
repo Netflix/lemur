@@ -1,11 +1,11 @@
 Writing a Plugin
 ================
 
-**The plugin interface is a work in progress.**
-
 Several interfaces exist for extending Lemur:
 
-* Issuers (lemur.issuers)
+* Issuer (lemur.plugins.base.issuer)
+* Destination (lemur.plugins.base.destination)
+* Source (lemur.plugins.base.source)
 
 Structure
 ---------
@@ -29,9 +29,9 @@ if you want to pull the version using pkg_resources (which is what we recommend)
 Inside of ``plugin.py``, you'll declare your Plugin class::
 
     import lemur_pluginname
-    from lemur.common.services.issuers.plugins import Issuer
+    from lemur.plugins.base.issuer import IssuerPlugin
 
-    class PluginName(Plugin):
+    class PluginName(IssuerPlugin):
         title = 'Plugin Name'
         slug = 'pluginname'
         description = 'My awesome plugin!'
@@ -55,27 +55,43 @@ And you'll register it via ``entry_points`` in your ``setup.py``::
     )
 
 
-That's it! Users will be able to install your plugin via ``pip install <package name>`` and configure it
-via the web interface based on the hooks you enabled.
+That's it! Users will be able to install your plugin via ``pip install <package name>``.
+
+Interfaces
+==========
+
+Lemur has several different plugin interfaces that are used to extend Lemur, each of them require
+that you subclass and override their functions in order for your plugin to function.
 
 
-Permissions
-===========
+Issuer
+------
 
-As described in the plugin interface, Lemur provides a suite of permissions.
+Issuer plugins are to be used when you want to allow Lemur to use external services to create certificates.
+In the simple case this means that you have one Certificate Authority and you ask it for certificates given a
+few parameters. In a more advanced case this could mean that this third party not only allows you to create certifcates
+but also allows you to create Certificate Authorities and Sub Certificate Authorities.
 
-In most cases, a admin (that is, if User.is_admin is ``True``), will be granted implicit permissions
-on everything.
+The `IssuerPlugin` interface only required that you implement one function::
 
-This page attempts to describe those permissions, and the contextual objects along with them.
+    def create_certificate(self, options):
+        # requests.get('a third party')
 
-.. data:: add_project
 
-         Controls whether a user can create a new project.
+Lemur will pass a dictionary of all possible options for certificate creation.
 
-         ::
+Optionally the `IssuerPlugin` exposes another function for authority create::
 
-            >>> has_perm('add_project', user)
+    def create_authority(self, options):
+        # request.get('a third party')
+
+
+If implemented this function will be used to allow users to create external Certificate Authorities. From this function
+you are expected to return the ROOT certificate authority, any intermediates that Authority might provide and any roles
+you wish to be associated with this authority.
+
+.. Note:: You do not need to associate roles to the authority at creation time as they can always be associated after the
+fact.
 
 
 Testing
@@ -148,4 +164,6 @@ Running tests follows the py.test standard. As long as your test files and metho
 
     =========================== 1 passed in 0.35 seconds ============================
 
+
+.. SeeAlso:: Lemur bundles several plugins that use the same interfaces mentioned above. View the source: #TODO
 

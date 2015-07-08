@@ -45,7 +45,6 @@ def app():
     ctx.pop()
 
 
-
 @pytest.yield_fixture(scope="session")
 def db(app, request):
     _db.drop_all()
@@ -72,7 +71,6 @@ def session(db, request):
 
 
 @pytest.yield_fixture(scope="function")
-def client(app, session):
-    with app.test_client() as client:
-        yield client
+def client(app, session, client):
+    yield client
 

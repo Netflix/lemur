@@ -72,13 +72,13 @@ def create_token(user):
     :param user:
     :return:
     """
-    expiration_delta = timedelta(days=int(current_app.config.get('TOKEN_EXPIRATION', 1)))
+    expiration_delta = timedelta(days=int(current_app.config.get('LEMUR_TOKEN_EXPIRATION', 1)))
     payload = {
         'sub': user.id,
         'iat': datetime.now(),
         'exp': datetime.now() + expiration_delta
     }
-    token = jwt.encode(payload, current_app.config['TOKEN_SECRET'])
+    token = jwt.encode(payload, current_app.config['LEMUR_TOKEN_SECRET'])
     return token.decode('unicode_escape')
 
 
@@ -102,7 +102,7 @@ def login_required(f):
             return dict(message='Token is invalid'), 403
 
         try:
-            payload = jwt.decode(token, current_app.config['TOKEN_SECRET'])
+            payload = jwt.decode(token, current_app.config['LEMUR_TOKEN_SECRET'])
         except jwt.DecodeError:
             return dict(message='Token is invalid'), 403
         except jwt.ExpiredSignatureError:
