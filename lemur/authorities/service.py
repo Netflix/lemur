@@ -54,7 +54,7 @@ def create(kwargs):
     kwargs['creator'] = g.current_user.email
     cert_body, intermediate, issuer_roles = issuer.create_authority(kwargs)
 
-    cert = cert_service.save_cert(cert_body, None, intermediate, None, None, None)
+    cert = cert_service.save_cert(cert_body, None, intermediate, None)
     cert.user = g.current_user
 
     # we create and attach any roles that the issuer gives us
@@ -65,9 +65,11 @@ def create(kwargs):
            password=r['password'],
            description="{0} auto generated role".format(kwargs.get('pluginName')),
            username=r['username'])
+
         # the user creating the authority should be able to administer it
         if role.username == 'admin':
             g.current_user.roles.append(role)
+
         role_objs.append(role)
 
     authority = Authority(
@@ -80,7 +82,6 @@ def create(kwargs):
         roles=role_objs
     )
 
-    # do this last encase we need to roll back/abort
     database.update(cert)
     authority = database.create(authority)
 

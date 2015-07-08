@@ -173,7 +173,7 @@ def import_certificate(**kwargs):
     return cert
 
 
-def save_cert(cert_body, private_key, cert_chain, challenge, csr_config, accounts):
+def save_cert(cert_body, private_key, cert_chain, accounts):
     """
     Determines if the certificate needs to be uploaded to AWS or other services.
 
@@ -184,7 +184,7 @@ def save_cert(cert_body, private_key, cert_chain, challenge, csr_config, account
     :param csr_config:
     :param accounts:
     """
-    cert = Certificate(cert_body, private_key, challenge, cert_chain, csr_config)
+    cert = Certificate(cert_body, private_key, cert_chain)
     # if we have an AWS accounts lets upload them
     if accounts:
         for account in accounts:
@@ -204,8 +204,6 @@ def upload(**kwargs):
         kwargs.get('public_cert'),
         kwargs.get('private_key'),
         kwargs.get('intermediate_cert'),
-        None,
-        None,
         kwargs.get('accounts')
     )
 
@@ -223,6 +221,7 @@ def create(**kwargs):
 
     cert.owner = kwargs['owner']
     database.create(cert)
+    cert.description = kwargs['description']
     g.user.certificates.append(cert)
     database.update(g.user)
     return cert
@@ -372,7 +371,7 @@ def create_csr(csr_config):
     # serialize our private key and CSR
     pem = private_key.private_bytes(
         encoding=serialization.Encoding.PEM,
-        format=serialization.PrivateFormat.PKCS8,
+        format=serialization.PrivateFormat.TraditionalOpenSSL,  # would like to use PKCS8 but AWS ELBs don't like it
         encryption_algorithm=serialization.NoEncryption()
     )
 
