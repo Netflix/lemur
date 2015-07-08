@@ -306,9 +306,6 @@ class CloudCAPlugin(IssuerPlugin):
         :param data:
         :return:
         """
-        if self.dry_run:
-            endpoint += '?dry_run=1'
-
         data = dumps(dict(data.items() + get_auth_data(data['caName']).items()))
 
         # we set a low timeout, if cloudca is down it shouldn't bring down
@@ -323,9 +320,6 @@ class CloudCAPlugin(IssuerPlugin):
         :param endpoint:
         :return:
         """
-        if self.dry_run:
-            endpoint += '?dry_run=1'
-
         response = self.session.get(self.url + endpoint, timeout=10, verify=self.ca_bundle)
         return process_response(response)
 
