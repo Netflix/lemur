@@ -1,62 +1,28 @@
-<p>Destinations are purely optional, if you think the created certificate will be used in AWS select one or more accounts and Lemur will upload it for you.</p>
-<div class="form-horizontal">
-  <div class="form-group">
+<div class="form-group">
     <label class="control-label col-sm-2">
-      Accounts
+        Destinations
     </label>
     <div class="col-sm-10">
       <div class="input-group">
-        <input type="text" ng-model="certificate.selectedAccount" placeholder="Account Name"
-               typeahead="account.label for account in accountService.findAccountsByName($viewValue)" typeahead-loading="loadingAccounts"
-               class="form-control input-md" typeahead-on-select="certificate.attachAccount($item)" typeahead-min-wait="50"
-               tooltip="Lemur can upload the certificate to any AWS account."
+        <input type="text" ng-model="certificate.selectedDestination" placeholder="AWS, TheSecret..."
+               typeahead="destination.label for destination in destinationService.findDestinationsByName($viewValue)" typeahead-loading="loadingDestinations"
+               class="form-control input-md" typeahead-on-select="certificate.attachDestination($item)" typeahead-min-wait="50"
+               tooltip="Lemur can upload certificates to any pre-defined destination"
                tooltip-trigger="focus" tooltip-placement="top">
           <span class="input-group-btn">
-            <button ng-model="accounts.show" class="btn btn-md btn-default" btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
-              <span class="badge">{{ certificate.accounts.length || 0 }}</span>
+            <button ng-model="destinations.show" class="btn btn-md btn-default" btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
+              <span class="badge">{{ certificate.destinations.length || 0 }}</span>
             </button>
           </span>
       </div>
       <table class="table">
-        <tr ng-repeat="account in certificate.accounts track by $index">
-          <td><a class="btn btn-sm btn-info" href="#/accounts/{{ account.id }}/certificates">{{ account.label }}</a></td>
-          <td><span class="text-muted">{{ account.comments }}</span></td>
+        <tr ng-repeat="destination in certificate.destinations track by $index">
+          <td><a class="btn btn-sm btn-info" href="#/destinations/{{ destination.id }}/certificates">{{ destination.label }}</a></td>
+          <td><span class="text-muted">{{ destination.description }}</span></td>
           <td>
-            <button type="button" ng-click="certificate.removeAccount($index)" class="btn btn-danger btn-sm pull-right">Remove</button>
+            <button type="button" ng-click="certificate.removeDestination($index)" class="btn btn-danger btn-sm pull-right">Remove</button>
           </td>
         </tr>
       </table>
     </div>
-  </div>
-  <!--<div ng-show="certificate.accounts" class="form-group">
-    <label class="control-label col-sm-2">
-      ELBs
-    </label>
-    <div class="col-sm-10">
-      <div class="input-group">
-        <input type="text" ng-model="certificate.selectedELB" placeholder="ELB Name"
-               typeahead="elb.name for elb in elbService.findELBByName($viewValue)" typeahead-loading="loadingAccounts"
-               class="form-control col-md-4" typeahead-min-wait="50"
-               tooltip="Lemur can upload a certificate to one or more ELBs"
-               tooltip-trigger="focus" tooltip-placement="top"/>
-        <input class="form-control col-md-2" type="integer" ng-model="certificate.selectedPort" placeholder="Port"/>
-        <select class="form-control col-md-2" ng-options="item for item in ['https', 'tcp']"></select>
-      <span class="input-group-btn">
-        <button ng-click="certificate.attachELB()" class="btn btn-info">Add</button>
-      </span>
-      </div>
-      <table class="table">
-        <tr ng-repeat="elb in certificate.elbs track by $index">
-          <td><a class="btn btn-sm btn-info" href="#/accounts/{{ elb.id }}/elbs">{{ elb.name }}</a></td>
-          <td>{{ elb.region }}</td>
-          <td>{{ elb.scheme }}</td>
-          <td>{{ elb.vpcId }}</td>
-          <td>{{ elb.listener.scheme }}</td>
-          <td>{{ elb.listener.port }}</td>
-          <td>
-            <button type="button" ng-click="certificate.removeELB($index)" class="btn btn-danger btn-sm pull-right">remove</button>
-          </td>
-        </tr>
-      </table>
-  </div>-->
 </div>

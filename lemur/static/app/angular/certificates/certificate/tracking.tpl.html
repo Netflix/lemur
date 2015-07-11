@@ -47,7 +47,7 @@
         Common Name
       </label>
       <div class="col-sm-10">
-        <input name="commonName" tooltip="If you need a certificate with multiple domains enter your primary domain here and the rest under 'Subject Alternate Names' in the options panel" ng-model="certificate.commonName" placeholder="Common Name" class="form-control" required/>
+        <input name="commonName" tooltip="If you need a certificate with multiple domains enter your primary domain here and the rest under 'Subject Alternate Names' in the next panel" ng-model="certificate.commonName" placeholder="Common Name" class="form-control" required/>
         <p ng-show="trackingForm.commonName.$invalid && !trackingForm.commonName.$pristine" class="help-block">You must enter a common name</p>
       </div>
     </div>
@@ -65,7 +65,7 @@
           </div>
         </div>
       </div>
-      <span class="text-center col-sm-2"><label><span class="glyphicon glyphicon-resize-horizontal"></span></label></span>
+      <span style="padding-top: 15px" class="text-center col-sm-2"><label><span class="glyphicon glyphicon-resize-horizontal"></span></label></span>
       <div class="col-sm-4">
         <div>
           <div class="input-group">

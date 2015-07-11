@@ -58,15 +58,15 @@ angular.module('lemur')
         removeCustom: function (index) {
           this.extensions.custom.splice(index, 1);
         },
-        attachAccount: function (account) {
-          this.selectedAccount = null;
-          if (this.accounts === undefined) {
-            this.accounts = [];
+        attachDestination: function (destination) {
+          this.selectedDestination = null;
+          if (this.destinations === undefined) {
+            this.destinations = [];
           }
-          this.accounts.push(account);
+          this.destinations.push(destination);
         },
-        removeAccount: function (index) {
-          this.accounts.splice(index, 1);
+        removeDestination: function (index) {
+          this.destinations.splice(index, 1);
         },
         attachELB: function (elb) {
           this.selectedELB = null;
@@ -97,13 +97,6 @@ angular.module('lemur')
         .then(function (certificates) {
           return certificates;
         });
-    };
-
-    CertificateService.getARNs = function (certificate) {
-      certificate.arns = [];
-      _.each(certificate.accounts, function (account) {
-        certificate.arns.push('arn:aws:iam::' + account.accountNumber + ':server-certificate/' + certificate.name);
-      });
     };
 
     CertificateService.create = function (certificate) {
@@ -191,10 +184,9 @@ angular.module('lemur')
       });
     };
 
-    CertificateService.getAccounts = function (certificate) {
-      certificate.getList('accounts').then(function (accounts) {
-        certificate.accounts = accounts;
-        CertificateService.getARNs(certificate);
+    CertificateService.getDestinations = function (certificate) {
+      certificate.getList('destinations').then(function (destinations) {
+        certificate.destinations = destinations;
       });
     };
 

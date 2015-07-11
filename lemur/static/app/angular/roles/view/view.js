@@ -9,7 +9,7 @@ angular.module('lemur')
     });
   })
 
-  .controller('RolesViewController', function ($scope, RoleApi, RoleService, ngTableParams) {
+  .controller('RolesViewController', function ($scope, $modal, RoleApi, RoleService, ngTableParams) {
     $scope.filter = {};
     $scope.rolesTable = new ngTableParams({
       page: 1,            // show first page
@@ -37,6 +37,40 @@ angular.module('lemur')
 
     $scope.toggleFilter = function (params) {
       params.settings().$scope.show_filter = !params.settings().$scope.show_filter;
+    };
+
+
+    $scope.edit = function (roleId) {
+      var modalInstance = $modal.open({
+        animation: true,
+        templateUrl: '/angular/roles/role/role.tpl.html',
+        controller: 'RolesEditController',
+        size: 'lg',
+        resolve: {
+          editId: function () {
+            return roleId;
+          }
+        }
+      });
+
+      modalInstance.result.then(function () {
+        $scope.rolesTable.reload();
+      });
+
+    };
+
+    $scope.create = function () {
+      var modalInstance = $modal.open({
+        animation: true,
+        controller: 'RolesCreateController',
+        templateUrl: '/angular/roles/role/role.tpl.html',
+        size: 'lg'
+      });
+
+      modalInstance.result.then(function () {
+        $scope.rolesTable.reload();
+      });
+
     };
 
   });

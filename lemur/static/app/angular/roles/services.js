@@ -38,7 +38,7 @@ angular.module('lemur')
     };
 
     RoleService.create = function (role) {
-      RoleApi.post(role).then(
+      return RoleApi.post(role).then(
         function () {
           toaster.pop({
             type: 'success',
@@ -57,7 +57,7 @@ angular.module('lemur')
     };
 
     RoleService.update = function (role) {
-      role.put().then(
+      return role.put().then(
         function () {
           toaster.pop({
             type: 'success',

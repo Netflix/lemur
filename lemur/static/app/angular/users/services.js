@@ -50,7 +50,7 @@ angular.module('lemur')
     };
 
     UserService.create = function (user) {
-      UserApi.post(user).then(
+      return UserApi.post(user).then(
         function () {
           toaster.pop({
             type: 'success',
@@ -69,7 +69,7 @@ angular.module('lemur')
     };
 
     UserService.update = function (user) {
-      user.put().then(
+      return user.put().then(
         function () {
           toaster.pop({
             type: 'success',

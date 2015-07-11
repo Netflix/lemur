@@ -5,7 +5,7 @@
     <div class="panel panel-default">
       <div class="panel-heading">
         <div class="btn-group pull-right">
-          <a href="#/users/create" class="btn btn-primary">Create</a>
+          <button ng-click="create()" class="btn btn-primary">Create</button>
         </div>
         <div class="btn-group">
           <button ng-click="toggleFilter(usersTable)" class="btn btn-default">Filter</button>
@@ -29,9 +29,9 @@
             </td>
             <td data-title="''">
               <div class="btn-group-vertical pull-right">
-                <a tooltip="Edit User" href="#/users/{{ user.id }}/edit" class="btn btn-sm btn-info">
+                <button tooltip="Edit User" ng-click="edit(user.id)" class="btn btn-sm btn-info">
                   Edit
-                </a>
+                </button>
               </div>
             </td>
           </tr>

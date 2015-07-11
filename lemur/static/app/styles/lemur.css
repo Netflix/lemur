@@ -159,3 +159,13 @@ a {
   margin-top: 10px;
 }
 
+.wave-spinner {
+    margin: 5px auto !important;
+    width: 40px !important;
+    height: 12px !important;
+}
+
+.wave-spinner>div {
+    background-color: #FFFFFF !important;
+}
+

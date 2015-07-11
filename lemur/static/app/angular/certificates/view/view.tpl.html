@@ -5,14 +5,14 @@
     <div class="panel panel-default">
       <div class="panel-heading">
         <div class="btn-group pull-right">
-          <a data-placement="left" data-title="Create Certificate" bs-tooltip href="#/certificates/create"
+          <button data-placement="left" data-title="Create Certificate" bs-tooltip ng-click="create()"
              class="btn btn-primary">
             Create
-          </a>
-          <a data-placement="left" data-title="Upload Certificate" bs-tooltip href="#/certificates/upload"
+          </button>
+          <button data-placement="left" data-title="Import Certificate" bs-tooltip ng-click="import()"
              class="btn btn-info">
-            Upload
-          </a>
+            Import
+          </button>
         </div>
         <div class="btn-group">
           <button ng-click="toggleFilter(certificateTable)" class="btn btn-default">Filter</button>
@@ -30,9 +30,9 @@
                 <li><span class="text-muted">{{ certificate.owner }}</span></li>
               </ul>
             </td>
-            <td data-title="'Accounts'" filter="{ 'account': 'select' }" filter-date="getAccountDropDown()">
+            <td data-title="'Destinations'" filter="{ 'destination': 'select' }" filter-date="getDestinationDropDown()">
               <div class="btn-group">
-                <a href="#/accounts/{{ account.id }}/edit" class="btn btn-sm btn-default" ng-repeat="account in certificate.accounts">{{ account.label }}</a>
+                <a href="#/destinations/{{ destination.id }}/edit" class="btn btn-sm btn-default" ng-repeat="account in certificate.destinations">{{ destination.label }}</a>
               </div>
             </td>
             <td data-title="'Active'" filter="{ 'active': 'select' }" filter-data="getCertificateStatus()">
@@ -106,7 +106,7 @@
                 <div class="list-group">
                   <a href="#/domains/{{ domain.id }}" class="list-group-item" ng-repeat="domain in certificate.domains">{{ domain.name }}</a>
                 </div>
-                <h4 ng-show="certificate.accounts.total">ARNs</h4>
+                <h4 ng-show="certificate.destinations.total">ARNs</h4>
                 <ul class="list-group">
                   <li class="list-group-item" ng-repeat="arn in certificate.arns">{{ arn }}</li>
                 </ul>
