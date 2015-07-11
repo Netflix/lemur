@@ -18,12 +18,12 @@ from requests.adapters import HTTPAdapter
 from flask import current_app
 
 from lemur.exceptions import LemurException
-from lemur.plugins.bases import IssuerPlugin
+from lemur.plugins.bases import IssuerPlugin, SourcePlugin
 from lemur.plugins import lemur_cloudca as cloudca
 
 from lemur.authorities import service as authority_service
 
-API_ENDPOINT = '/v1/ca/netflix'
+API_ENDPOINT = '/v1/ca/netflix' # TODO this should be configurable
 
 
 class CloudCAException(LemurException):
@@ -142,15 +142,7 @@ def get_auth_data(ca_name):
     raise CloudCAException("You do not have the required role to issue certificates from {0}".format(ca_name))
 
 
-class CloudCAPlugin(IssuerPlugin):
-    title = 'CloudCA'
-    slug = 'cloudca'
-    description = 'Enables the creation of certificates from the cloudca API.'
-    version = cloudca.VERSION
-
-    author = 'Kevin Glisson'
-    author_url = 'https://github.com/netflix/lemur'
-
+class CloudCA(object):
     def __init__(self, *args, **kwargs):
         self.session = requests.Session()
         self.session.mount('https://', CloudCAHostNameCheckingAdapter())
@@ -162,7 +154,69 @@ class CloudCAPlugin(IssuerPlugin):
         else:
             current_app.logger.warning("No CLOUDCA credentials found, lemur will be unable to request certificates from CLOUDCA")
 
-        super(CloudCAPlugin, self).__init__(*args, **kwargs)
+        super(CloudCA, self).__init__(*args, **kwargs)
+
+    def post(self, endpoint, data):
+        """
+        HTTP POST to CloudCA
+
+        :param endpoint:
+        :param data:
+        :return:
+        """
+        data = dumps(dict(data.items() + get_auth_data(data['caName']).items()))
+
+        # we set a low timeout, if cloudca is down it shouldn't bring down
+        # lemur
+        response = self.session.post(self.url + endpoint, data=data, timeout=10, verify=self.ca_bundle)
+        return process_response(response)
+
+    def get(self, endpoint):
+        """
+        HTTP GET to CloudCA
+
+        :param endpoint:
+        :return:
+        """
+        response = self.session.get(self.url + endpoint, timeout=10, verify=self.ca_bundle)
+        return process_response(response)
+
+    def random(self, length=10):
+        """
+        Uses CloudCA as a decent source of randomness.
+
+        :param length:
+        :return:
+        """
+        endpoint = '/v1/random/{0}'.format(length)
+        response = self.session.get(self.url + endpoint, verify=self.ca_bundle)
+        return response
+
+    def get_authorities(self):
+        """
+        Retrieves authorities that were made outside of Lemur.
+
+        :return:
+        """
+        endpoint = '{0}/listCAs'.format(API_ENDPOINT)
+        authorities = []
+        for ca in self.get(endpoint)['data']['caList']:
+            try:
+                authorities.append(ca['caName'])
+            except AttributeError as e:
+                current_app.logger.error("No authority has been defined for {}".format(ca['caName']))
+
+        return authorities
+
+
+class CloudCAIssuerPlugin(IssuerPlugin, CloudCA):
+    title = 'CloudCA'
+    slug = 'cloudca-issuer'
+    description = 'Enables the creation of certificates from the cloudca API.'
+    version = cloudca.VERSION
+
+    author = 'Kevin Glisson'
+    author_url = 'https://github.com/netflix/lemur'
 
     def create_authority(self, options):
         """
@@ -205,22 +259,6 @@ class CloudCAPlugin(IssuerPlugin):
 
         return cert, "".join(intermediates), roles,
 
-    def get_authorities(self):
-        """
-        Retrieves authorities that were made outside of Lemur.
-
-        :return:
-        """
-        endpoint = '{0}/listCAs'.format(API_ENDPOINT)
-        authorities = []
-        for ca in self.get(endpoint)['data']['caList']:
-            try:
-                authorities.append(ca['caName'])
-            except AttributeError as e:
-                current_app.logger.error("No authority has been defined for {}".format(ca['caName']))
-
-        return authorities
-
     def create_certificate(self, csr, options):
         """
         Creates a new certificate from cloudca
@@ -259,16 +297,25 @@ class CloudCAPlugin(IssuerPlugin):
 
         return cert, "".join(intermediates),
 
-    def random(self, length=10):
-        """
-        Uses CloudCA as a decent source of randomness.
 
-        :param length:
-        :return:
-        """
-        endpoint = '/v1/random/{0}'.format(length)
-        response = self.session.get(self.url + endpoint, verify=self.ca_bundle)
-        return response
+class CloudCASourcePlugin(SourcePlugin, CloudCA):
+    title = 'CloudCA'
+    slug = 'cloudca-source'
+    description = 'Discovers all SSL certificates in CloudCA'
+    version = cloudca.VERSION
+
+    author = 'Kevin Glisson'
+    author_url = 'https://github.com/netflix/lemur'
+
+    options = {
+        'pollRate': {'type': 'int', 'default': '60'}
+    }
+
+    def get_certificates(self, **kwargs):
+        certs = []
+        for authority in self.get_authorities():
+            certs += self.get_cert(ca_name=authority)
+        return
 
     def get_cert(self, ca_name=None, cert_handle=None):
         """
@@ -297,29 +344,3 @@ class CloudCAPlugin(IssuerPlugin):
             })
 
         return certs
-
-    def post(self, endpoint, data):
-        """
-        HTTP POST to CloudCA
-
-        :param endpoint:
-        :param data:
-        :return:
-        """
-        data = dumps(dict(data.items() + get_auth_data(data['caName']).items()))
-
-        # we set a low timeout, if cloudca is down it shouldn't bring down
-        # lemur
-        response = self.session.post(self.url + endpoint, data=data, timeout=10, verify=self.ca_bundle)
-        return process_response(response)
-
-    def get(self, endpoint):
-        """
-        HTTP GET to CloudCA
-
-        :param endpoint:
-        :return:
-        """
-        response = self.session.get(self.url + endpoint, timeout=10, verify=self.ca_bundle)
-        return process_response(response)
-
