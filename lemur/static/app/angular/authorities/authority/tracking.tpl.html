@@ -31,37 +31,40 @@
       </div>
     </div>
     <div class="form-group"
-         ng-class="{'has-error': trackingForm.commonName.$invalid, 'has-success': !trackingForm.$invalid&&trackingForm.commanName.$dirty}">
+         ng-class="{'has-error': trackingForm.commonName.$invalid, 'has-success': !trackingForm.$invalid&&trackingForm.commonName.$dirty}">
       <label class="control-label col-sm-2">
         Common Name
       </label>
       <div class="col-sm-10">
         <input name="commonName" ng-model="authority.caDN.commonName" placeholder="Common Name" class="form-control" required/>
-        <p ng-show="trackingForm.commandName.$invalid && !trackingForm.commonName.$pristine" class="help-block">You must enter a common name</p>
+        <p ng-show="trackingForm.commonName.$invalid && !trackingForm.commonName.$pristine" class="help-block">You must enter a common name</p>
       </div>
     </div>
-    <div class="form-group">
+    <div class="form-group"
+        ng-class="{'has-error': trackingForm.validityEnd.$invalid || trackingForm.validityStart.$invalid, 'has-success': !trackingForm.$invalid&&trackingForm.validityEnd.$dirty&&trackingForm.validityStart.$dirty}">
       <label class="control-label col-sm-2">
         Validity Range
       </label>
       <div class="col-sm-4">
         <div>
           <div class="input-group">
-            <input tooltip="Starting Date" class="form-control" datepicker-popup="yyyy/MM/dd" is-open="opened1" ng-model="authority.validityStart" />
-          <span class="input-group-btn">
-            <button class="btn btn-default" ng-click="open($event)"><i class="glyphicon glyphicon-calendar"></i></button>
-          </span>
+            <input name="validityStart" tooltip="Starting Date" class="form-control" datepicker-popup="yyyy/MM/dd" is-open="opened1" ng-model="authority.validityStart" required/>
+            <p ng-show="trackingForm.validityStart.$invalid && !trackingForm.validityStart.$pristine" class="help-block">A start date is required!</p>
+            <span class="input-group-btn">
+                <button class="btn btn-default" ng-click="open($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+            </span>
           </div>
         </div>
       </div>
-      <span class="text-center col-sm-2"><label><span class="glyphicon glyphicon-resize-horizontal"></span></label></span>
+      <span style="padding-top: 15px" class="text-center col-sm-2"><label><span class="glyphicon glyphicon-resize-horizontal"></span></label></span>
       <div class="col-sm-4">
         <div>
           <div class="input-group">
-            <input tooltip="Ending Date" class="form-control" datepicker-popup="yyyy/MM/dd" is-open="opened2" ng-model="authority.validityEnd" />
-          <span class="input-group-btn">
-            <button class="btn btn-default" ng-click="open2($event)"><i class="glyphicon glyphicon-calendar"></i></button>
-          </span>
+            <input name="validityEnd" tooltip="Ending Date" class="form-control" datepicker-popup="yyyy/MM/dd" is-open="opened2" ng-model="authority.validityEnd" required/>
+            <p ng-show="trackingForm.validityEnd.$invalid && !trackingForm.validityEnd.$pristine" class="help-block">A end date is required!</p>
+            <span class="input-group-btn">
+                <button class="btn btn-default" ng-click="open2($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+            </span>
           </div>
         </div>
       </div>

@@ -75,9 +75,9 @@ def handle_response(content):
     return d
 
 
-class VerisignPlugin(IssuerPlugin):
-    title = 'VeriSign'
-    slug = 'verisign'
+class VerisignIssuerPlugin(IssuerPlugin):
+    title = 'Verisign'
+    slug = 'verisign-issuer'
     description = 'Enables the creation of certificates by the VICE2.0 verisign API.'
     version = verisign.VERSION
 
@@ -87,7 +87,7 @@ class VerisignPlugin(IssuerPlugin):
     def __init__(self, *args, **kwargs):
         self.session = requests.Session()
         self.session.cert = current_app.config.get('VERISIGN_PEM_PATH')
-        super(VerisignPlugin, self).__init__(*args, **kwargs)
+        super(VerisignIssuerPlugin, self).__init__(*args, **kwargs)
 
     def create_certificate(self, csr, issuer_options):
         """

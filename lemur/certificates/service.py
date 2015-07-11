@@ -13,12 +13,10 @@ from sqlalchemy import func, or_
 from flask import g, current_app
 
 from lemur import database
-from lemur.common.services.aws import iam
 from lemur.plugins.base import plugins
 from lemur.certificates.models import Certificate
 
-from lemur.accounts.models import Account
-from lemur.accounts import service as account_service
+from lemur.destinations.models import Destination
 from lemur.authorities.models import Authority
 
 from lemur.roles.models import Role
@@ -57,28 +55,6 @@ def delete(cert_id):
     :param cert_id:
     """
     database.delete(get(cert_id))
-
-
-def disassociate_aws_account(certs, account):
-    """
-    Removes the account association from a certificate. We treat AWS as a completely
-    external service. Certificates are added and removed from this service but a record
-    of that certificate is always kept and tracked by Lemur. This allows us to migrate
-    certificates to different accounts with ease.
-
-    :param certs:
-    :param account:
-    """
-    account_certs = Certificate.query.filter(Certificate.accounts.any(Account.id == 1)).\
-                        filter(~Certificate.body.in_(certs)).all()
-
-    for a_cert in account_certs:
-        try:
-            a_cert.accounts.remove(account)
-        except Exception as e:
-            current_app.logger.debug("Skipping {0} account {1} is already disassociated".format(a_cert.name, account.label))
-            continue
-        database.update(a_cert)
 
 
 def get_all_certs():
@@ -134,7 +110,7 @@ def mint(issuer_options):
     issuer_options['creator'] = g.user.email
     cert_body, cert_chain = issuer.create_certificate(csr, issuer_options)
 
-    cert = save_cert(cert_body, private_key, cert_chain, issuer_options.get('accounts'))
+    cert = save_cert(cert_body, private_key, cert_chain, issuer_options.get('destinations'))
     cert.user = g.user
     cert.authority = authority
     database.update(cert)
@@ -154,9 +130,10 @@ def import_certificate(**kwargs):
 
     :param kwargs:
     """
+    from lemur.users import service as user_service
     cert = Certificate(kwargs['public_certificate'])
-    cert.owner = kwargs.get('owner', )
-    cert.creator = kwargs.get('creator', 'Lemur')
+    cert.owner = kwargs.get('owner', current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL'))
+    cert.creator = kwargs.get('creator', user_service.get_by_email('lemur@nobody'))
 
     # NOTE existing certs may not follow our naming standard we will
     # overwrite the generated name with the actual cert name
@@ -166,31 +143,29 @@ def import_certificate(**kwargs):
     if kwargs.get('user'):
         cert.user = kwargs.get('user')
 
-    if kwargs.get('account'):
-        cert.accounts.append(kwargs.get('account'))
+    if kwargs.get('destination'):
+        cert.destinations.append(kwargs.get('destination'))
 
     cert = database.create(cert)
     return cert
 
 
-def save_cert(cert_body, private_key, cert_chain, accounts):
+def save_cert(cert_body, private_key, cert_chain, destinations):
     """
     Determines if the certificate needs to be uploaded to AWS or other services.
 
     :param cert_body:
     :param private_key:
     :param cert_chain:
-    :param challenge:
-    :param csr_config:
-    :param accounts:
+    :param destinations:
     """
     cert = Certificate(cert_body, private_key, cert_chain)
-    # if we have an AWS accounts lets upload them
-    if accounts:
-        for account in accounts:
-            account = account_service.get(account['id'])
-            iam.upload_cert(account.account_number, cert, private_key, cert_chain)
-            cert.accounts.append(account)
+
+    # we should save them to any destination that is requested
+    for destination in destinations:
+        destination_plugin = plugins.get(destination['plugin']['slug'])
+        destination_plugin.upload(cert, private_key, cert_chain, destination['plugin']['pluginOptions'])
+
     return cert
 
 
@@ -198,13 +173,11 @@ def upload(**kwargs):
     """
     Allows for pre-made certificates to be imported into Lemur.
     """
-    # save this cert the same way we save all of our certs, including uploading
-    # to aws if necessary
     cert = save_cert(
         kwargs.get('public_cert'),
         kwargs.get('private_key'),
         kwargs.get('intermediate_cert'),
-        kwargs.get('accounts')
+        kwargs.get('destinations')
     )
 
     cert.owner = kwargs['owner']
@@ -237,7 +210,7 @@ def render(args):
     query = database.session_query(Certificate)
 
     time_range = args.pop('time_range')
-    account_id = args.pop('account_id')
+    destination_id = args.pop('destination_id')
     show = args.pop('show')
     owner = args.pop('owner')
     creator = args.pop('creator')  # TODO we should enabling filtering by owner
@@ -260,8 +233,8 @@ def render(args):
             )
             return database.sort_and_page(query, Certificate, args)
 
-        if 'account' in terms:
-            query = query.filter(Certificate.accounts.any(Account.id == terms[1]))
+        if 'destination' in terms:
+            query = query.filter(Certificate.destinations.any(Destination.id == terms[1]))
         elif 'active' in filt: # this is really weird but strcmp seems to not work here??
             query = query.filter(Certificate.active == terms[1])
         else:
@@ -276,8 +249,8 @@ def render(args):
             )
         )
 
-    if account_id:
-        query = query.filter(Certificate.accounts.any(Account.id == account_id))
+    if destination_id:
+        query = query.filter(Certificate.destinations.any(Destination.id == destination_id))
 
     if time_range:
         to = arrow.now().replace(weeks=+time_range).format('YYYY-MM-DD')
@@ -404,8 +377,8 @@ def stats(**kwargs):
     if kwargs.get('active') == 'true':
         query = query.filter(Certificate.elb_listeners.any())
 
-    if kwargs.get('account_id'):
-        query = query.filter(Certificate.accounts.any(Account.id == kwargs.get('account_id')))
+    if kwargs.get('destination_id'):
+        query = query.filter(Certificate.destinations.any(Destination.id == kwargs.get('destination_id')))
 
     if kwargs.get('metric') == 'not_after':
         start = arrow.utcnow()

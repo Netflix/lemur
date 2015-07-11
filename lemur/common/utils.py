@@ -41,7 +41,7 @@ class marshal_items(object):
                     return {'items': _filter_items(resp.items), 'total': resp.total}
 
                 if isinstance(resp, list):
-                    return _filter_items(resp)
+                    return {'items': _filter_items(resp), 'total': len(resp)}
 
                 return marshal(resp, self.fields)
             except Exception as e:

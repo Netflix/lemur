@@ -9,7 +9,7 @@ angular.module('lemur')
     });
   })
 
-  .controller('AuthoritiesViewController', function ($scope, $q, AuthorityApi, AuthorityService, ngTableParams) {
+  .controller('AuthoritiesViewController', function ($scope, $q, $modal, AuthorityApi, AuthorityService, ngTableParams) {
     $scope.filter = {};
     $scope.authoritiesTable = new ngTableParams({
       page: 1,            // show first page
@@ -43,4 +43,36 @@ angular.module('lemur')
       params.settings().$scope.show_filter = !params.settings().$scope.show_filter;
     };
 
+    $scope.edit = function (authorityId) {
+      var modalInstance = $modal.open({
+        animation: true,
+        templateUrl: '/angular/authorities/authority/authorityWizard.tpl.html',
+        controller: 'AuthorityEditController',
+        size: 'lg',
+        resolve: {
+          editId: function () {
+            return authorityId;
+          }
+        }
+      });
+
+      modalInstance.result.then(function () {
+        $scope.authoritiesTable.reload();
+      });
+
+    };
+
+    $scope.create = function () {
+      var modalInstance = $modal.open({
+        animation: true,
+        controller: 'AuthorityCreateController',
+        templateUrl: '/angular/authorities/authority/authorityWizard.tpl.html',
+        size: 'lg'
+      });
+
+      modalInstance.result.then(function () {
+        $scope.authoritiesTable.reload();
+      });
+
+    };
   });

@@ -22,7 +22,7 @@ from lemur.database import db
 from lemur.domains.models import Domain
 
 from lemur.constants import SAN_NAMING_TEMPLATE, DEFAULT_NAMING_TEMPLATE, NONSTANDARD_NAMING_TEMPLATE
-from lemur.models import certificate_associations, certificate_account_associations
+from lemur.models import certificate_associations, certificate_destination_associations
 
 
 def create_name(issuer, not_before, not_after, subject, san):
@@ -215,7 +215,7 @@ class Certificate(db.Model):
     date_created = Column(DateTime, PassiveDefault(func.now()), nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'))
     authority_id = Column(Integer, ForeignKey('authorities.id'))
-    accounts = relationship("Account", secondary=certificate_account_associations, backref='certificate')
+    accounts = relationship("Destination", secondary=certificate_destination_associations, backref='certificate')
     domains = relationship("Domain", secondary=certificate_associations, backref="certificate")
     elb_listeners = relationship("Listener", lazy='dynamic', backref='certificate')
 

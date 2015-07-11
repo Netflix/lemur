@@ -9,7 +9,7 @@ angular.module('lemur')
     });
   })
 
-  .controller('UsersViewController', function ($scope, UserApi, UserService, ngTableParams) {
+  .controller('UsersViewController', function ($scope, $modal, UserApi, UserService, ngTableParams) {
     $scope.filter = {};
     $scope.usersTable = new ngTableParams({
       page: 1,            // show first page
@@ -34,6 +34,39 @@ angular.module('lemur')
       account.remove().then(function () {
         $scope.usersTable.reload();
       });
+    };
+
+    $scope.edit = function (userId) {
+      var modalInstance = $modal.open({
+        animation: true,
+        templateUrl: '/angular/users/user/user.tpl.html',
+        controller: 'UsersEditController',
+        size: 'lg',
+        resolve: {
+          editId: function () {
+            return userId;
+          }
+        }
+      });
+
+      modalInstance.result.then(function () {
+        $scope.usersTable.reload();
+      });
+
+    };
+
+    $scope.create = function () {
+      var modalInstance = $modal.open({
+        animation: true,
+        controller: 'UsersCreateController',
+        templateUrl: '/angular/users/user/user.tpl.html',
+        size: 'lg'
+      });
+
+      modalInstance.result.then(function () {
+        $scope.usersTable.reload();
+      });
+
     };
 
     $scope.toggleFilter = function (params) {

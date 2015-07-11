@@ -1,18 +1,6 @@
 'use strict';
 
 angular.module('lemur')
-  .config(function config($routeProvider) {
-    $routeProvider.when('/certificates/create', {
-      templateUrl: '/angular/certificates/certificate/certificateWizard.tpl.html',
-      controller: 'CertificateCreateController'
-    });
-
-    $routeProvider.when('/certificates/:id/edit', {
-      templateUrl: '/angular/certificates/certificate/edit.tpl.html',
-      controller: 'CertificateEditController'
-    });
-  })
-
   .controller('CertificateEditController', function ($scope, $routeParams, CertificateApi, CertificateService, MomentService) {
     CertificateApi.get($routeParams.id).then(function (certificate) {
       $scope.certificate = certificate;
@@ -23,13 +11,14 @@ angular.module('lemur')
 
   })
 
-  .controller('CertificateCreateController', function ($scope, $modal, CertificateApi, CertificateService, AccountService, ELBService, AuthorityService, MomentService, LemurRestangular) {
+  .controller('CertificateCreateController', function ($scope, $modalInstance, CertificateApi, CertificateService, DestinationService, ELBService, AuthorityService, PluginService, MomentService, WizardHandler, LemurRestangular) {
     $scope.certificate = LemurRestangular.restangularizeElement(null, {}, 'certificates');
 
-    $scope.save = function (certificate) {
-      var loadingModal = $modal.open({backdrop: 'static', template: '<wave-spinner></wave-spinner>', windowTemplateUrl: 'angular/loadingModal.html', size: 'large'});
+    $scope.create = function (certificate) {
+      WizardHandler.wizard().context.loading = true;
       CertificateService.create(certificate).then(function (response) {
-        loadingModal.close();
+        WizardHandler.wizard().context.loading = false;
+        $modalInstance.close();
       });
     };
 
@@ -88,7 +77,11 @@ angular.module('lemur')
 
     };
 
+    PluginService.get('destination').then(function (plugins) {
+        $scope.plugins = plugins;
+    });
+
     $scope.elbService = ELBService;
     $scope.authorityService = AuthorityService;
-    $scope.accountService = AccountService;
+    $scope.destinationService = DestinationService;
   });

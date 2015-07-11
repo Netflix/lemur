@@ -13,6 +13,8 @@ class IssuerPlugin(Plugin):
     This is the base class from which all of the supported
     issuers will inherit from.
     """
+    type = 'issuer'
+
     def create_certificate(self):
         raise NotImplementedError
 

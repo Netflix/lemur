@@ -47,12 +47,13 @@ class IPlugin(local):
     # Configuration specifics
     conf_key = None
     conf_title = None
+    options = {}
 
     # Global enabled state
     enabled = True
     can_disable = True
 
-    def is_enabled(self, project=None):
+    def is_enabled(self):
         """
         Returns a boolean representing if this plugin is enabled.
         If ``project`` is passed, it will limit the scope to that project.

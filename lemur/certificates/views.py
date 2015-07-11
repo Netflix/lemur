@@ -164,7 +164,7 @@ class CertificatesList(AuthenticatedResource):
         parser.add_argument('owner', type=bool, location='args')
         parser.add_argument('id', type=str, location='args')
         parser.add_argument('active', type=bool, location='args')
-        parser.add_argument('accountId', type=int, dest="account_id", location='args')
+        parser.add_argument('destinationId', type=int, dest="destination_id", location='args')
         parser.add_argument('creator', type=str, location='args')
         parser.add_argument('show', type=str, location='args')
 
@@ -271,7 +271,7 @@ class CertificatesList(AuthenticatedResource):
            :statuscode 403: unauthenticated
         """
         self.reqparse.add_argument('extensions', type=dict, location='json')
-        self.reqparse.add_argument('accounts', type=list, location='json')
+        self.reqparse.add_argument('destinations', type=list, default=[], location='json')
         self.reqparse.add_argument('elbs', type=list, location='json')
         self.reqparse.add_argument('owner', type=str, location='json')
         self.reqparse.add_argument('validityStart', type=str, location='json') # parse date
@@ -330,7 +330,7 @@ class CertificatesUpload(AuthenticatedResource):
                  "publicCert": "---Begin Public...",
                  "intermediateCert": "---Begin Public...",
                  "privateKey": "---Begin Private..."
-                 "accounts": []
+                 "destinations": []
               }
 
            **Example response**:
@@ -364,19 +364,19 @@ class CertificatesUpload(AuthenticatedResource):
            :arg publicCert: valid PEM public key for certificate
            :arg intermediateCert valid PEM intermediate key for certificate
            :arg privateKey: valid PEM private key for certificate
-           :arg accounts: list of aws accounts to upload the certificate to
+           :arg destinations: list of aws destinations to upload the certificate to
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 403: unauthenticated
            :statuscode 200: no error
         """
         self.reqparse.add_argument('owner', type=str, required=True, location='json')
         self.reqparse.add_argument('publicCert', type=pem_str, required=True, dest='public_cert', location='json')
-        self.reqparse.add_argument('accounts', type=list, dest='accounts', location='json')
+        self.reqparse.add_argument('destinations', type=list, default=[], dest='destinations', location='json')
         self.reqparse.add_argument('intermediateCert', type=pem_str, dest='intermediate_cert', location='json')
         self.reqparse.add_argument('privateKey', type=private_key_str, dest='private_key', location='json')
 
         args = self.reqparse.parse_args()
-        if args.get('accounts'):
+        if args.get('destinations'):
             if args.get('private_key'):
                 return service.upload(**args)
             else:
@@ -393,7 +393,7 @@ class CertificatesStats(AuthenticatedResource):
     def get(self):
         self.reqparse.add_argument('metric', type=str, location='args')
         self.reqparse.add_argument('range', default=32, type=int, location='args')
-        self.reqparse.add_argument('accountId', dest='account_id', location='args')
+        self.reqparse.add_argument('destinationId', dest='destination_id', location='args')
         self.reqparse.add_argument('active', type=str, default='true', location='args')
 
         args = self.reqparse.parse_args()

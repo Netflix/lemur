@@ -1,17 +1,23 @@
-<h2 class="featurette-heading"><span ng-show="!certificate.id">Create</span><span ng-show="certificate.id">Edit</span> Certificate <span class="text-muted"><small>encrypt all the things
-  <div>
-    <wizard on-finish="save(certificate)" template="angular/wizard.html">
-      <wz-step title="Tracking" canexit="trackingForm.$valid">
-        <ng-include src="'angular/certificates/certificate/tracking.tpl.html'"></ng-include>
-      </wz-step>
-      <wz-step title="Distinguished Name" canenter="exitTracking" canexit="exitDN">
-        <ng-include src="'angular/certificates/certificate/distinguishedName.tpl.html'"></ng-include>
-      </wz-step>
-      <wz-step title="Options" canenter="enterValidation">
-        <ng-include src="'angular/certificates/certificate/options.tpl.html'"></ng-include>
-      </wz-step>
-      <wz-step title="Destinations" canenter="enterValidation">
-        <ng-include src="'angular/certificates/certificate/destinations.tpl.html'"></ng-include>
-      </wz-step>
-    </wizard>
-  </div>
+<div class="modal-header">
+    <h3 class="modal-title"><span ng-show="!certificate.id">Create</span><span ng-show="certificate.id">Edit</span> Certificate <span class="text-muted"><small>encrypt all the things</small></h3>
+</div>
+<div class="modal-body">
+    <div>
+        <wizard on-finish="create(certificate)" template="angular/wizard.html">
+            <wz-step title="Tracking" canexit="trackingForm.$valid">
+                <ng-include src="'angular/certificates/certificate/tracking.tpl.html'"></ng-include>
+            </wz-step>
+            <wz-step title="Options" canenter="enterValidation">
+                <ng-include src="'angular/certificates/certificate/options.tpl.html'"></ng-include>
+            </wz-step>
+            <wz-step title="Distinguished Name" canenter="exitTracking" canexit="exitDN">
+                <ng-include src="'angular/certificates/certificate/distinguishedName.tpl.html'"></ng-include>
+            </wz-step>
+            <wz-step title="Destinations" canenter="enterValidation">
+                <ng-include src="'angular/certificates/certificate/destinations.tpl.html'"></ng-include>
+            </wz-step>
+        </wizard>
+    </div>
+</div>
+
+

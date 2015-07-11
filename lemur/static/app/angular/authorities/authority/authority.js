@@ -2,17 +2,6 @@
 
 angular.module('lemur')
 
-  .config(function config($routeProvider) {
-    $routeProvider.when('/authorities/create', {
-      templateUrl: '/angular/authorities/authority/authorityWizard.tpl.html',
-      controller: 'AuthorityCreateController'
-    });
-    $routeProvider.when('/authorities/:id/edit', {
-      templateUrl: '/angular/authorities/authority/authorityEdit.tpl.html',
-      controller: 'AuthorityEditController'
-    });
-  })
-
   .controller('AuthorityEditController', function ($scope, $routeParams, AuthorityApi, AuthorityService, RoleService){
     AuthorityApi.get($routeParams.id).then(function (authority) {
       AuthorityService.getRoles(authority);
@@ -24,16 +13,21 @@ angular.module('lemur')
     $scope.roleService = RoleService;
   })
 
-  .controller('AuthorityCreateController', function ($scope, $modal, AuthorityService, LemurRestangular, RoleService)  {
+  .controller('AuthorityCreateController', function ($scope, $modalInstance, AuthorityService, LemurRestangular, RoleService, PluginService, WizardHandler)  {
     $scope.authority = LemurRestangular.restangularizeElement(null, {}, 'authorities');
 
-    $scope.save = function (authority) {
-      var loadingModal = $modal.open({backdrop: 'static', template: '<wave-spinner></wave-spinner>', windowTemplateUrl: 'angular/loadingModal.html', size: 'large'});
-      return AuthorityService.create(authority).then(function (response) {
-        loadingModal.close();
-      });
+    $scope.loading = false;
+    $scope.create = function (authority) {
+      WizardHandler.wizard().context.loading = true;
+      AuthorityService.create(authority).then(function (resposne) {
+        WizardHandler.wizard().context.loading = false;
+        $modalInstance.close();
+      })
     };
 
+    PluginService.get('issuer').then(function (plugins) {
+        $scope.plugins = plugins;
+    });
 
     $scope.roleService = RoleService;
 

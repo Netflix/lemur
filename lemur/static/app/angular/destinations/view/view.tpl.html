@@ -1,0 +1,47 @@
+<div class="row">
+  <div class="col-md-12">
+    <h2 class="featurette-heading">Destinations
+      <span class="text-muted"><small>oh the places you will go</small></span></h2>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <div class="btn-group pull-right">
+          <button ng-click="create()" class="btn btn-primary">Create</button>
+        </div>
+        <div class="btn-group">
+          <button ng-click="toggleFilter(destinationsTable)" class="btn btn-default">Filter</button>
+        </div>
+        <div class="clearfix"></div>
+      </div>
+      <div class="table-responsive">
+        <table ng-table="destinationsTable" class="table table-striped" show-filter="false" template-pagination="angular/pager.html" >
+          <tbody>
+          <tr ng-repeat="destination in $data track by $index">
+            <td data-title="'Label'" sortable="'label'" filter="{ 'label': 'text' }">
+              <ul class="list-unstyled">
+                <li>{{ destination.label }}</li>
+                <li><span class="text-muted">{{ destination.description }}</span></li>
+              </ul>
+            </td>
+              <td data-title="'Plugin'">
+                  <ul class="list-unstyled">
+                      <li>{{ destination.plugin.title }}</li>
+                      <li><span class="text-muted">{{ destination.plugin.description }}</span></li>
+                  </ul>
+              </td>
+            <td data-title="''">
+              <div class="btn-group-vertical pull-right">
+                <button tooltip="Edit Destination" ng-click="edit(destination.id)" class="btn btn-sm btn-info">
+                  Edit
+                </button>
+                <button tooltip="Delete Destination" ng-click="remove(destination)" type="button" class="btn btn-sm btn-danger pull-left">
+                  Remove
+                </button>
+              </div>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

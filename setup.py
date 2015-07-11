@@ -106,8 +106,11 @@ setup(
             'lemur = lemur.manage:main',
         ],
         'lemur.plugins': [
-             'verisign = lemur.plugins.lemur_verisign.plugin:VerisignPlugin',
-             'cloudca = lemur.plugins.lemur_cloudca.plugin:CloudCAPlugin',
+            'verisign_issuer = lemur.plugins.lemur_verisign.plugin:VerisignIssuerPlugin',
+            'cloudca_issuer = lemur.plugins.lemur_cloudca.plugin:CloudCAIssuerPlugin',
+            'cloudca_source = lemur.plugins.lemur_cloudca.plugin:CloudCASourcePlugin'
+            'aws_destination = lemur.plugins.lemur_aws.plugin:AWSDestinationPlugin',
+            'aws_source = lemur.plugins.lemur_aws.plugin:AWSSourcePlugin'
         ],
     },
     classifiers=[

@@ -15,7 +15,7 @@
       <input type="text" ng-model="authority.caParent" placeholder="Parent Authority Name"
              typeahead="authority.name for authority in authorityService.findAuthorityByName($viewValue)" typeahead-loading="loadingAuthorities"
              class="form-control input-md" typeahead-min-wait="50"
-             tooltip="When you specifiy a subordinate certificate authority you must specific the parent authority"
+             tooltip="When you specify a subordinate certificate authority you must specific the parent authority"
              tooltip-trigger="focus" tooltip-placement="top">
     </div>
   </div>
@@ -69,10 +69,10 @@
   </div>
   <div class="form-group">
     <label class="control-label col-sm-2">
-      Plugin Name
+      Plugin
     </label>
     <div class="col-sm-10">
-      <select class="form-control" ng-model="authority.pluginName" ng-options="option for option in ['cloudca', 'verisign']" ng-init="authority.pluginName = 'cloudca'" required></select>
+      <select class="form-control" ng-model="authority.pluginName" ng-options="plugin.slug as plugin.title for plugin in plugins" ng-init="authority.pluginName = 'cloudca-issuer'" required></select>
     </div>
   </div>
 </div>
