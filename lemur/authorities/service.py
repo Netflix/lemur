@@ -54,7 +54,7 @@ def create(kwargs):
     kwargs['creator'] = g.current_user.email
     cert_body, intermediate, issuer_roles = issuer.create_authority(kwargs)
 
-    cert = cert_service.save_cert(cert_body, None, intermediate, None)
+    cert = cert_service.save_cert(cert_body, None, intermediate, [])
     cert.user = g.current_user
 
     # we create and attach any roles that the issuer gives us
