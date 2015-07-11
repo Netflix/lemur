@@ -13,8 +13,10 @@ from flask_script.commands import ShowUrls, Clean, Server
 from lemur import database
 from lemur.users import service as user_service
 from lemur.roles import service as role_service
-from lemur.accounts import service as account_service
+from lemur.destinations import service as destination_service
 from lemur.certificates import service as cert_service
+
+from lemur.plugins.base import plugins
 
 from lemur.certificates.verify import verify_string
 from lemur.certificates import sync
@@ -27,7 +29,7 @@ from lemur.users.models import User
 from lemur.roles.models import Role
 from lemur.authorities.models import Authority
 from lemur.certificates.models import Certificate
-from lemur.accounts.models import Account
+from lemur.destinations.models import Destination
 from lemur.domains.models import Domain
 from lemur.elbs.models import ELB
 from lemur.listeners.models import Listener
@@ -96,12 +98,12 @@ SQLALCHEMY_DATABASE_URI = ''
 ## AWS ##
 #########
 
-# Lemur will need STS assume role access to every account you want to monitor
+# Lemur will need STS assume role access to every destination you want to monitor
 #AWS_ACCOUNT_MAPPINGS = {{
 #    '1111111111': 'myawsacount'
 #}}
 
-## This is useful if you know you only want to monitor one account
+## This is useful if you know you only want to monitor one destination
 #AWS_REGIONS = ['us-east-1']
 
 #LEMUR_INSTANCE_PROFILE = 'Lemur'
@@ -131,6 +133,11 @@ SQLALCHEMY_DATABASE_URI = ''
 def create():
     database.db.create_all()
     stamp(revision='head')
+
+
+@MigrateCommand.command
+def drop_all():
+    database.db.drop_all()
 
 
 @manager.command
@@ -227,7 +234,7 @@ class Sync(Command):
 
 class InitializeApp(Command):
     """
-    This command will bootstrap our database with any accounts as
+    This command will bootstrap our database with any destinations as
     specified by our config.
 
     Additionally a Lemur user will be created as a default user
@@ -262,15 +269,20 @@ class InitializeApp(Command):
             sys.stdout.write("[-] Default user has already been created, skipping...!\n")
 
         if current_app.config.get('AWS_ACCOUNT_MAPPINGS'):
-            for account_name, account_number in current_app.config.get('AWS_ACCOUNT_MAPPINGS').items():
-                account = account_service.get_by_account_number(account_number)
+            if plugins.get('aws-destination'):
+                for account_name, account_number in current_app.config.get('AWS_ACCOUNT_MAPPINGS').items():
 
-                if not account:
-                    account_service.create(account_number, label=account_name)
-                    sys.stdout.write("[+] Added new account {0}:{1}!\n".format(account_number, account_name))
-                else:
-                    sys.stdout.write("[-] Account already exists, skipping...!\n")
+                    destination = destination_service.get_by_label(account_name)
 
+                    options = dict(account_number=account_number)
+                    if not destination:
+                        destination_service.create(account_name, 'aws-destination', options,
+                                                   description="This is an auto-generated AWS destination.")
+                        sys.stdout.write("[+] Added new destination {0}:{1}!\n".format(account_number, account_name))
+                    else:
+                        sys.stdout.write("[-] Account already exists, skipping...!\n")
+            else:
+                sys.stdout.write("[!] Skipping adding AWS destinations AWS plugin no available\n")
         sys.stdout.write("[/] Done!\n")
 
 

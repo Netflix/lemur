@@ -18,7 +18,7 @@ from lemur.listeners.models import Listener
 from lemur.elbs import service as elb_service
 from lemur.certificates import service as certificate_service
 
-from lemur.common.services.aws.elb import update_listeners, create_new_listeners, delete_listeners
+#from lemur.common.services.aws.elb import update_listeners, create_new_listeners, delete_listeners
 
 
 def verify_attachment(certificate_id, elb_account_number):

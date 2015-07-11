@@ -15,11 +15,12 @@ from lemur.roles.views import mod as roles_bp
 from lemur.auth.views import mod as auth_bp
 from lemur.domains.views import mod as domains_bp
 from lemur.elbs.views import mod as elbs_bp
-from lemur.accounts.views import mod as accounts_bp
+from lemur.destinations.views import mod as destinations_bp
 from lemur.authorities.views import mod as authorities_bp
 from lemur.listeners.views import mod as listeners_bp
 from lemur.certificates.views import mod as certificates_bp
 from lemur.status.views import mod as status_bp
+from lemur.plugins.views import mod as plugins_bp
 
 LEMUR_BLUEPRINTS = (
     users_bp,
@@ -27,11 +28,12 @@ LEMUR_BLUEPRINTS = (
     auth_bp,
     domains_bp,
     elbs_bp,
-    accounts_bp,
+    destinations_bp,
     authorities_bp,
     listeners_bp,
     certificates_bp,
-    status_bp
+    status_bp,
+    plugins_bp,
 )
 
 def create_app(config=None):

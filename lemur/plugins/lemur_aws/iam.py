@@ -6,8 +6,17 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from flask import current_app
-from lemur.common.services.aws.sts import assume_service
+from lemur.plugins.lemur_aws.sts import assume_service
+
+
+def get_name_from_arn(arn):
+    """
+    Extract the certificate name from an arn.
+
+    :param arn: IAM SSL arn
+    :return: name of the certificate as uploaded to AWS
+    """
+    return arn.split("/", 1)[1]
 
 
 def ssl_split(param_string):

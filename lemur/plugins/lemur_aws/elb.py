@@ -10,7 +10,7 @@ import boto.ec2
 from flask import current_app
 
 from lemur.exceptions import InvalidListener
-from lemur.common.services.aws.sts import assume_service
+from lemur.plugins.lemur_aws.sts import assume_service
 
 
 def is_valid(listener_tuple):

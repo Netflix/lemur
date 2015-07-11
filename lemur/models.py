@@ -18,8 +18,8 @@ certificate_associations = db.Table('certificate_associations',
     Column('certificate_id', Integer, ForeignKey('certificates.id'))
 )
 
-certificate_account_associations = db.Table('certificate_account_associations',
-    Column('account_id', Integer, ForeignKey('accounts.id', ondelete='cascade')),
+certificate_destination_associations = db.Table('certificate_destination_associations',
+    Column('destination_id', Integer, ForeignKey('destinations.id', ondelete='cascade')),
     Column('certificate_id', Integer, ForeignKey('certificates.id', ondelete='cascade'))
 )
 

@@ -16,7 +16,7 @@ from lemur.listeners.models import Listener
 class ELB(db.Model):
     __tablename__ = 'elbs'
     id = Column(BigInteger, primary_key=True)
-    account_id = Column(BigInteger, ForeignKey("accounts.id"), index=True)
+    #account_id = Column(BigInteger, ForeignKey("accounts.id"), index=True)
     region = Column(String(32))
     name = Column(String(128))
     vpc_id = Column(String(128))

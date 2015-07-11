@@ -1,5 +1,5 @@
 """
-.. module: lemur.accounts.views
+.. module: lemur.destinations.views
     :platform: Unix
     :synopsis: This module contains all of the accounts view code.
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
@@ -8,35 +8,36 @@
 """
 from flask import Blueprint
 from flask.ext.restful import Api, reqparse, fields
-from lemur.accounts import service
+from lemur.destinations import service
 
 from lemur.auth.service import AuthenticatedResource
 from lemur.auth.permissions import admin_permission
 from lemur.common.utils import paginated_parser, marshal_items
 
+from lemur.plugins.views import FIELDS as PLUGIN_FIELDS
 
-mod = Blueprint('accounts', __name__)
+mod = Blueprint('destinations', __name__)
 api = Api(mod)
 
 
 FIELDS = {
-    'accountNumber': fields.Integer(attribute='account_number'),
+    'description': fields.String,
+    'plugin': fields.Nested(PLUGIN_FIELDS, attribute='plugin'),
     'label': fields.String,
-    'comments': fields.String(attribute='notes'),
     'id': fields.Integer,
 }
 
 
-class AccountsList(AuthenticatedResource):
-    """ Defines the 'accounts' endpoint """
+class DestinationsList(AuthenticatedResource):
+    """ Defines the 'destinations' endpoint """
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(AccountsList, self).__init__()
+        super(DestinationsList, self).__init__()
 
     @marshal_items(FIELDS)
     def get(self):
         """
-        .. http:get:: /accounts
+        .. http:get:: /destinations
 
            The current account list
 
@@ -44,7 +45,7 @@ class AccountsList(AuthenticatedResource):
 
            .. sourcecode:: http
 
-              GET /accounts HTTP/1.1
+              GET /destinations HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
 
@@ -90,7 +91,7 @@ class AccountsList(AuthenticatedResource):
     @marshal_items(FIELDS)
     def post(self):
         """
-        .. http:post:: /accounts
+        .. http:post:: /destinations
 
            Creates a new account
 
@@ -98,7 +99,7 @@ class AccountsList(AuthenticatedResource):
 
            .. sourcecode:: http
 
-              POST /accounts HTTP/1.1
+              POST /destinations HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
 
@@ -129,23 +130,23 @@ class AccountsList(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
-        self.reqparse.add_argument('accountNumber', type=int, dest="account_number", location='json', required=True)
         self.reqparse.add_argument('label', type=str, location='json', required=True)
-        self.reqparse.add_argument('comments', type=str, location='json')
+        self.reqparse.add_argument('plugin', type=dict, location='json', required=True)
+        self.reqparse.add_argument('description', type=str, location='json')
 
         args = self.reqparse.parse_args()
-        return service.create(args['account_number'], args['label'], args['comments'])
+        return service.create(args['label'], args['plugin']['slug'], args['plugin']['pluginOptions'], args['description'])
 
 
-class Accounts(AuthenticatedResource):
+class Destinations(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(Accounts, self).__init__()
+        super(Destinations, self).__init__()
 
     @marshal_items(FIELDS)
-    def get(self, account_id):
+    def get(self, destination_id):
         """
-        .. http:get:: /accounts/1
+        .. http:get:: /destinations/1
 
            Get a specific account
 
@@ -153,7 +154,7 @@ class Accounts(AuthenticatedResource):
 
            .. sourcecode:: http
 
-              GET /accounts/1 HTTP/1.1
+              GET /destinations/1 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
 
@@ -175,13 +176,13 @@ class Accounts(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
-        return service.get(account_id)
+        return service.get(destination_id)
 
     @admin_permission.require(http_exception=403)
     @marshal_items(FIELDS)
-    def put(self, account_id):
+    def put(self, destination_id):
         """
-        .. http:put:: /accounts/1
+        .. http:put:: /destinations/1
 
            Updates an account
 
@@ -189,15 +190,10 @@ class Accounts(AuthenticatedResource):
 
            .. sourcecode:: http
 
-              POST /accounts/1 HTTP/1.1
+              POST /destinations/1 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
 
-              {
-                 "accountNumber": 11111111111,
-                 "label": "labelChanged,
-                 "comments": "this is a thing"
-              }
 
            **Example response**:
 
@@ -220,29 +216,29 @@ class Accounts(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
-        self.reqparse.add_argument('accountNumber', type=int, dest="account_number", location='json', required=True)
         self.reqparse.add_argument('label', type=str, location='json', required=True)
-        self.reqparse.add_argument('comments', type=str, location='json')
+        self.reqparse.add_argument('pluginOptions', type=dict, location='json', required=True)
+        self.reqparse.add_argument('description', type=str, location='json')
 
         args = self.reqparse.parse_args()
-        return service.update(account_id, args['account_number'], args['label'], args['comments'])
+        return service.update(destination_id, args['label'], args['options'], args['description'])
 
     @admin_permission.require(http_exception=403)
-    def delete(self, account_id):
-        service.delete(account_id)
+    def delete(self, destination_id):
+        service.delete(destination_id)
         return {'result': True}
 
 
 
-class CertificateAccounts(AuthenticatedResource):
-    """ Defines the 'certificate/<int:certificate_id/accounts'' endpoint """
+class CertificateDestinations(AuthenticatedResource):
+    """ Defines the 'certificate/<int:certificate_id/destinations'' endpoint """
     def __init__(self):
-        super(CertificateAccounts, self).__init__()
+        super(CertificateDestinations, self).__init__()
 
     @marshal_items(FIELDS)
     def get(self, certificate_id):
         """
-        .. http:get:: /certificates/1/accounts
+        .. http:get:: /certificates/1/destinations
 
            The current account list for a given certificates
 
@@ -250,7 +246,7 @@ class CertificateAccounts(AuthenticatedResource):
 
            .. sourcecode:: http
 
-              GET /certificates/1/accounts HTTP/1.1
+              GET /certificates/1/destinations HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
 
@@ -261,24 +257,6 @@ class CertificateAccounts(AuthenticatedResource):
               HTTP/1.1 200 OK
               Vary: Accept
               Content-Type: text/javascript
-
-              {
-                "items": [
-                    {
-                      "id": 2,
-                      "accountNumber": 222222222,
-                      "label": "account2",
-                      "comments": "this is a thing"
-                    },
-                    {
-                      "id": 1,
-                      "accountNumber": 11111111111,
-                      "label": "account1",
-                      "comments": "this is a thing"
-                    },
-                  ]
-                "total": 2
-              }
 
            :query sortBy: field to sort on
            :query sortDir: acs or desc
@@ -294,7 +272,7 @@ class CertificateAccounts(AuthenticatedResource):
         return service.render(args)
 
 
-api.add_resource(AccountsList, '/accounts', endpoint='accounts')
-api.add_resource(Accounts, '/accounts/<int:account_id>', endpoint='account')
-api.add_resource(CertificateAccounts, '/certificates/<int:certificate_id>/accounts', endpoint='certificateAccounts')
+api.add_resource(DestinationsList, '/destinations', endpoint='destinations')
+api.add_resource(Destinations, '/destinations/<int:destination_id>', endpoint='account')
+api.add_resource(CertificateDestinations, '/certificates/<int:certificate_id>/destinations', endpoint='certificateDestinations')
 
