@@ -148,7 +148,6 @@ Proxying with Nginx
 You'll use the builtin HttpProxyModule within Nginx to handle proxying::
 
     location / {
-<<<<<<< HEAD
       proxy_pass         http://localhost:5000;
       proxy_redirect     off;
 
@@ -156,11 +155,12 @@ You'll use the builtin HttpProxyModule within Nginx to handle proxying::
       proxy_set_header   X-Real-IP         $remote_addr;
       proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
       proxy_set_header   X-Forwarded-Proto $scheme;
-=======
+    }
+
+    location / {
         root /www/lemur/lemur/static/dist;
         include mime.types;
         index index.html;
->>>>>>> b978435... Merge pull request #21 from kevgliss/buildfixes
     }
 
 See :doc:`../production/index` for more details on using Nginx.

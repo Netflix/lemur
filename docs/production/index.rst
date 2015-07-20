@@ -106,12 +106,8 @@ You can make some adjustments to get a better user experience::
         }
 
         location / {
-<<<<<<< HEAD
-            root /apps/lemur/lemur/static/dist;
-=======
             root /www/lemur/lemur/static/dist;
             include mime.types;
->>>>>>> b978435... Merge pull request #21 from kevgliss/buildfixes
             index index.html;
         }
 
@@ -176,12 +172,8 @@ sensitive nature of Lemur and what it controls makes this essential. This is a s
         }
 
         location / {
-<<<<<<< HEAD
-            root /apps/lemur/lemur/static/dist;
-=======
             root /www/lemur/lemur/static/dist;
             include mime.types;
->>>>>>> b978435... Merge pull request #21 from kevgliss/buildfixes
             index index.html;
         }
 
