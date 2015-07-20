@@ -187,6 +187,7 @@ sensitive nature of Lemur and what it controls makes this essential. This is a s
         location / {
             root /path/to/lemur/static/dist;
             include mime.types;
+            index index.html;
         }
 
 
