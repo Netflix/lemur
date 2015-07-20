@@ -26,7 +26,7 @@ var gulp = require('gulp'),
   imagemin = require('gulp-imagemin'),
   minifyHtml = require('gulp-minify-html'),
   bowerFiles = require('main-bower-files'),
-  replace = require('gulp-replace-task');
+  replace = require('gulp-replace');
 
 
 gulp.task('default', ['clean'], function () {
@@ -227,5 +227,15 @@ gulp.task('build:images', function () {
     .pipe(size());
 });
 
+gulp.task('package:strip', function () {
+  return gulp.src(['lemur/static/dist/scripts/main*'])
+    .pipe(replace('http:\/\/localhost:5000', ''))
+    .pipe(replace('http:\/\/localhost:3000', ''))
+    .pipe(useref())
+    .pipe(revReplace())
+    .pipe(gulp.dest('lemur/static/dist/scripts'))
+    .pipe(size());
+});
 
 gulp.task('build', ['build:ngviews', 'build:inject', 'build:images', 'build:fonts', 'build:html', 'build:extras']);
+gulp.task('package', ['package:strip']);
