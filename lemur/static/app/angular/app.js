@@ -62,7 +62,7 @@ lemur.controller('datePickerController', function ($scope, $timeout){
 
 lemur.factory('LemurRestangular', function (Restangular, $location, $auth) {
   return Restangular.withConfig(function (RestangularConfigurer) {
-    RestangularConfigurer.setBaseUrl('http://127.0.0.1:5000/api/1');
+    RestangularConfigurer.setBaseUrl('http://localhost:5000/api/1');
     RestangularConfigurer.setDefaultHttpFields({withCredentials: true});
 
     RestangularConfigurer.addResponseInterceptor(function (data, operation, what, url, response, deferred) {

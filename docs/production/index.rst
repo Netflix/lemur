@@ -106,7 +106,12 @@ You can make some adjustments to get a better user experience::
         }
 
         location / {
+<<<<<<< HEAD
             root /apps/lemur/lemur/static/dist;
+=======
+            root /www/lemur/lemur/static/dist;
+            include mime.types;
+>>>>>>> b978435... Merge pull request #21 from kevgliss/buildfixes
             index index.html;
         }
 
@@ -171,7 +176,12 @@ sensitive nature of Lemur and what it controls makes this essential. This is a s
         }
 
         location / {
+<<<<<<< HEAD
             root /apps/lemur/lemur/static/dist;
+=======
+            root /www/lemur/lemur/static/dist;
+            include mime.types;
+>>>>>>> b978435... Merge pull request #21 from kevgliss/buildfixes
             index index.html;
         }
 
@@ -203,6 +213,9 @@ An example apache config::
 
 Also included in the configurations above are several best practices when it comes to deploying SSL. Things like enabling
 HSTS, disabling vulnerable ciphers are all good ideas when it comes to deploying Lemur into a production environment.
+
+.. note::
+    This is a rather incomplete apache config for running Lemur (needs mod_wsgi etc.,), if you have a working apache config please let us know!
 
 .. seealso::
     `Mozilla SSL Configuration Generator <https://mozilla.github.io/server-side-tls/ssl-config-generator/>`_
