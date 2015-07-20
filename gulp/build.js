@@ -26,6 +26,7 @@ var gulp = require('gulp'),
   imagemin = require('gulp-imagemin'),
   minifyHtml = require('gulp-minify-html'),
   bowerFiles = require('main-bower-files'),
+  karma = require('karma'),
   replace = require('gulp-replace-task');
 
 
@@ -35,6 +36,15 @@ gulp.task('default', ['clean'], function () {
 
 gulp.task('clean', function (cb) {
   del(['.tmp', 'lemur/static/dist'], cb);
+});
+
+gulp.task('test', function (done) {
+  new karma.Server({
+    configFile: __dirname + '/karma.conf.js',
+    singleRun: true
+  }, function() {
+    done();
+  }).start();
 });
 
 gulp.task('dev:fonts', function () {

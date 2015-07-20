@@ -480,8 +480,8 @@ def main():
     manager.add_command("show_urls", ShowUrls())
     manager.add_command("db", MigrateCommand)
     manager.add_command("init", InitializeApp())
-    manager.add_command('create_user', CreateUser())
-    manager.add_command('create_role', CreateRole())
+    manager.add_command("create_user", CreateUser())
+    manager.add_command("create_role", CreateRole())
     manager.add_command("sync", Sync())
     manager.run()
 

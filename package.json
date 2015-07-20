@@ -51,7 +51,8 @@
     "main-bower-files": "^1.0.2",
     "require-dir": "~0.3.0",
     "streamqueue": "^0.1.1",
-    "uglify-save-license": "^0.4.1"
+    "uglify-save-license": "^0.4.1",
+    "karma": "~0.13.2"
   },
   "engines": {
     "node": ">=0.10.0"
@@ -59,9 +60,12 @@
   "scripts": {
     "postinstall": "bower install --allow-root",
     "pretest": "npm install && npm run build_static",
-    "build_static": "gulp dist",
+    "build_static": "gulp build",
     "prelint": "npm install",
     "lint": "jshint app/",
     "test": "gulp test"
+  },
+  "devDependencies": {
+    "karma-chrome-launcher": "^0.2.0"
   }
 }

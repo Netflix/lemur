@@ -14,6 +14,7 @@ import os.path
 from distutils import log
 from distutils.core import Command
 from setuptools.command.develop import develop
+from setuptools.command.install import install
 from setuptools.command.sdist import sdist
 from setuptools import setup
 from subprocess import check_output
@@ -56,6 +57,24 @@ docs_require = [
     'sphinxcontrib-httpdomain'
 ]
 
+dev_requires = [
+    'flake8>=2.0,<2.1',
+]
+
+class SmartInstall(install):
+    """
+    Installs Lemur into the Python environment.
+    If the package indicator is missing, this will also force a run of
+    `build_static` which is required for JavaScript assets and other things.
+    """
+    def _needs_static(self):
+        return not os.path.exists(os.path.join(ROOT, 'lemur-package.json'))
+
+    def run(self):
+        if self._needs_static():
+            self.run_command('build_static')
+        install.run(self)
+
 class DevelopWithBuildStatic(develop):
     def install_for_development(self):
         self.run_command('build_static')
@@ -79,7 +98,7 @@ class BuildStatic(Command):
         log.info("running [npm install --quiet]")
         check_output(['npm', 'install', '--quiet'], cwd=ROOT)
 
-        log.info("running [gulp buld]")
+        log.info("running [gulp build]")
         check_output([os.path.join(ROOT, 'node_modules', '.bin', 'gulp'), 'build'], cwd=ROOT)
 
 setup(
@@ -94,12 +113,15 @@ setup(
     install_requires=install_requires,
     extras_require={
         'tests': tests_require,
-        'docs': docs_require
+        'docs': docs_require,
+        'dev': dev_requires,
     },
     cmdclass={
         'build_static': BuildStatic,
         'develop': DevelopWithBuildStatic,
-        'sdist': SdistWithBuildStatic
+        'sdist': SdistWithBuildStatic,
+        'install': SmartInstall
+
     },
     entry_points={
         'console_scripts': [
