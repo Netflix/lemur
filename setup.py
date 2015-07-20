@@ -100,6 +100,8 @@ class BuildStatic(Command):
 
         log.info("running [gulp build]")
         check_output([os.path.join(ROOT, 'node_modules', '.bin', 'gulp'), 'build'], cwd=ROOT)
+        log.info("running [gulp package]")
+        check_output([os.path.join(ROOT, 'node_modules', '.bin', 'gulp'), 'package'], cwd=ROOT)
 
 setup(
     name='lemur',

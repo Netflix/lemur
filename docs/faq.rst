@@ -4,9 +4,14 @@ Frequently Asked Questions
 Common Problems
 ---------------
 
-In my startup logs I see *'Aborting... Lemur cannot locate db encryption key, is ENCRYPTION_KEY set?'*
-  You likely have not correctly configured **ENCRYPTION_KEY**. See
-  :doc:`administration/configuration` for more information.
+In my startup logs I see *'Aborting... Lemur cannot locate db encryption key, is LEMUR_ENCRYPTION_KEY set?'*
+  You likely have not correctly configured **LEMUR_ENCRYPTION_KEY**. See
+  :doc:`administration/index` for more information.
+
+
+I am seeing Lemur's javascript load in my browser but not the CSS.
+  Ensure that you are placing *include mime.types;* to your Nginx static file location. See
+  :doc:`production/index` for example configurations.
 
 
 How do I
