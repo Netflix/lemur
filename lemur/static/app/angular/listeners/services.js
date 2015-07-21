@@ -1,3 +1,5 @@
+'use strict';
+
 angular.module('lemur')
   .service('ListenerApi', function (LemurRestangular) {
     return LemurRestangular.all('listeners');

@@ -65,11 +65,11 @@ lemur.factory('LemurRestangular', function (Restangular, $location, $auth) {
     RestangularConfigurer.setBaseUrl('http://localhost:5000/api/1');
     RestangularConfigurer.setDefaultHttpFields({withCredentials: true});
 
-    RestangularConfigurer.addResponseInterceptor(function (data, operation, what, url, response, deferred) {
+    RestangularConfigurer.addResponseInterceptor(function (data, operation) {
       var extractedData;
 
       // .. to look for getList operations
-      if (operation === "getList") {
+      if (operation === 'getList') {
         // .. and handle the data and meta data
         extractedData = data.items;
         extractedData.total = data.total;
@@ -79,7 +79,7 @@ lemur.factory('LemurRestangular', function (Restangular, $location, $auth) {
       return extractedData;
     });
 
-    RestangularConfigurer.addFullRequestInterceptor(function (element, operation, route, url, headers, params, httpConfig) {
+    RestangularConfigurer.addFullRequestInterceptor(function (element, operation, route, url, headers, params) {
       // We want to make sure the user is auth'd before any requests
       if (!$auth.isAuthenticated()) {
         $location.path('/login');
@@ -97,7 +97,7 @@ lemur.factory('LemurRestangular', function (Restangular, $location, $auth) {
           newParams.sortDir = params[item];
         } else if (item.indexOf(f) > -1) {
           var key = regExp.exec(item)[1];
-          newParams['filter'] = key + ";" + params[item];
+          newParams.filter = key + ';' + params[item];
         } else {
           newParams[item] = params[item];
         }

@@ -1,3 +1,5 @@
+'use strict';
+
 angular.module('lemur')
   .service('DomainApi', function (LemurRestangular) {
     return LemurRestangular.all('domains');

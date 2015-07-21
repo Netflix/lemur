@@ -19,10 +19,10 @@ angular.module('lemur')
     $scope.loading = false;
     $scope.create = function (authority) {
       WizardHandler.wizard().context.loading = true;
-      AuthorityService.create(authority).then(function (resposne) {
+      AuthorityService.create(authority).then(function () {
         WizardHandler.wizard().context.loading = false;
         $modalInstance.close();
-      })
+      });
     };
 
     PluginService.get('issuer').then(function (plugins) {

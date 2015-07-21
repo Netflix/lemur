@@ -1,6 +1,5 @@
-/**
- * Created by kglisson on 1/19/15.
- */
+'use strict';
+
 angular.module('lemur')
   .service('CertificateApi', function (LemurRestangular, DomainService) {
     LemurRestangular.extendModel('certificates', function (obj) {
@@ -102,7 +101,7 @@ angular.module('lemur')
     CertificateService.create = function (certificate) {
       certificate.attachSubAltName();
       return CertificateApi.post(certificate).then(
-        function (response) {
+        function () {
           toaster.pop({
             type: 'success',
             title: certificate.name,
@@ -132,8 +131,8 @@ angular.module('lemur')
     };
 
     CertificateService.upload = function (certificate) {
-      CertificateApi.customPOST(certificate, "upload").then(
-        function (response) {
+      CertificateApi.customPOST(certificate, 'upload').then(
+        function () {
           toaster.pop({
             type: 'success',
             title: certificate.name,
@@ -163,7 +162,7 @@ angular.module('lemur')
             certificate.privateKey = response.key;
           }
         },
-        function (response) {
+        function () {
           toaster.pop({
             type: 'error',
             title: certificate.name,

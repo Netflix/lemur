@@ -1,3 +1,5 @@
+'use strict';
+
 angular.module('lemur')
     .service('PluginApi', function (LemurRestangular) {
         return LemurRestangular.all('plugins');

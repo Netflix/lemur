@@ -16,7 +16,7 @@ angular.module('lemur')
 
     $scope.create = function (certificate) {
       WizardHandler.wizard().context.loading = true;
-      CertificateService.create(certificate).then(function (response) {
+      CertificateService.create(certificate).then(function () {
         WizardHandler.wizard().context.loading = false;
         $modalInstance.close();
       });

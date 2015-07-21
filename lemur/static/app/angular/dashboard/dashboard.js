@@ -7,9 +7,8 @@ angular.module('lemur')
       controller: 'DashboardController'
     });
   })
-  .controller('DashboardController', function ($scope, $rootScope, $filter, $location, LemurRestangular, ngTableParams) {
+  .controller('DashboardController', function ($scope, $rootScope, $filter, $location, LemurRestangular) {
 
-    var baseStats = LemurRestangular.all('stats');
     var baseAccounts = LemurRestangular.all('accounts');
 
     baseAccounts.getList()
@@ -78,16 +77,16 @@ angular.module('lemur')
 
     LemurRestangular.all('certificates').customGET('stats', {metric: 'issuer'})
       .then(function (data) {
-        $scope.issuers = data['items'];
+        $scope.issuers = data.items;
       });
 
     LemurRestangular.all('certificates').customGET('stats', {metric: 'bits'})
       .then(function (data) {
-        $scope.bits = data['items'];
+        $scope.bits = data.items;
       });
 
     LemurRestangular.all('certificates').customGET('stats', {metric: 'not_after'})
       .then(function (data) {
-        $scope.expiring = {labels: data['items']['labels'], values: [data['items']['values']]};
+        $scope.expiring = {labels: data.items.labels, values: [data.items.values]};
       });
   });

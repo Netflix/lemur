@@ -62,10 +62,11 @@
     "pretest": "npm install && npm run build_static",
     "build_static": "gulp build",
     "prelint": "npm install",
-    "lint": "jshint app/",
+    "lint": "jshint lemur/static/app/",
     "test": "gulp test"
   },
   "devDependencies": {
+    "jshint": "^2.8.0",
     "karma-chrome-launcher": "^0.2.0"
   }
 }
