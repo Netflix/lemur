@@ -13,14 +13,13 @@ env:
   global:
     - PIP_DOWNLOAD_CACHE=".pip_download_cache"
 install:
-  - time make develop dev-postgres
+  - make develop dev-postgres
 before_script:
   - psql -c 'create database lemur;' -U postgres
+  - npm install -g bower
 script:
   - make lint
-  - make test-js
   - py.test tests
-  - make test-cli
 
 notifications:
   email:
