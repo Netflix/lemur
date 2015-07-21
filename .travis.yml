@@ -19,7 +19,7 @@ before_script:
   - npm install -g bower
 script:
   - make lint
-  - py.test tests
+  - make tests
 
 notifications:
   email:
