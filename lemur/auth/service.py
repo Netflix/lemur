@@ -28,7 +28,7 @@ from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
 
 from lemur.users import service as user_service
 from lemur.auth.permissions import CertificateOwnerNeed, CertificateCreatorNeed, \
-    AuthorityCreatorNeed, AuthorityOwnerNeed, ViewRoleCredentialsNeed
+    AuthorityCreatorNeed, ViewRoleCredentialsNeed
 
 
 def base64url_decode(data):
@@ -143,7 +143,6 @@ def fetch_token_header(token):
         raise jwt.DecodeError('Invalid header padding')
 
 
-
 @identity_loaded.connect
 def on_identity_loaded(sender, identity):
     """
@@ -187,5 +186,3 @@ class AuthenticatedResource(Resource):
 
     def __init__(self):
         super(AuthenticatedResource, self).__init__()
-
-

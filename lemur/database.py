@@ -9,13 +9,11 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from flask import current_app
-
 from sqlalchemy import exc
 from sqlalchemy.sql import and_, or_
 
 from lemur.extensions import db
-from lemur.exceptions import AttrNotFound, IntegrityError, DuplicateError
+from lemur.exceptions import AttrNotFound, DuplicateError
 
 
 def filter_none(kwargs):
@@ -126,7 +124,7 @@ def get(model, value, field="id"):
     query = session_query(model)
     try:
         return query.filter(getattr(model, field) == value).one()
-    except:
+    except Exception:
         return
 
 
@@ -209,7 +207,7 @@ def sort(query, model, field, direction):
         direction = getattr(field, direction)
         query = query.order_by(direction())
         return query
-    except AttributeError as e:
+    except AttributeError:
         raise AttrNotFound(field)
 
 
@@ -274,6 +272,3 @@ def sort_and_page(query, model, args):
         query = sort(query, model, sort_by, sort_dir)
 
     return paginate(query, page, count)
-
-
-

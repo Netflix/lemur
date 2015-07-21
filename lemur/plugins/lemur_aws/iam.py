@@ -44,7 +44,8 @@ def upload_cert(account_number, cert, private_key, cert_chain=None):
     :param cert_chain:
     :return:
     """
-    return assume_service(account_number, 'iam').upload_server_cert(cert.name, str(cert.body), str(private_key), cert_chain=str(cert_chain))
+    return assume_service(account_number, 'iam').upload_server_cert(cert.name, str(cert.body), str(private_key),
+                                                                    cert_chain=str(cert_chain))
 
 
 def delete_cert(account_number, cert):
@@ -109,5 +110,3 @@ def digest_aws_cert_response(response):
         chain = cert['certificate_chain']
 
     return str(body), str(chain),
-
-

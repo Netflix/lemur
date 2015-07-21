@@ -19,7 +19,6 @@ from logging.handlers import RotatingFileHandler
 
 from flask import Flask
 from lemur.common.health import mod as health
-from lemur.exceptions import NoEncryptionKeyFound
 from lemur.extensions import db, migrate, principal
 
 
@@ -161,7 +160,6 @@ def install_plugins(app):
         try:
             plugin = ep.load()
         except Exception:
-            import sys
             import traceback
             app.logger.error("Failed to load plugin %r:\n%s\n" % (ep.name, traceback.format_exc()))
         else:

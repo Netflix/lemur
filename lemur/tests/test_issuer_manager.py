@@ -1,6 +1,6 @@
-from lemur.tests import LemurTestCase
+# from lemur.tests import LemurTestCase
 
-#class ManagerTestCase(LemurTestCase):
+# class ManagerTestCase(LemurTestCase):
 #    def test_validate_authority(self):
 #        pass
 #

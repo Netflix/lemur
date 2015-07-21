@@ -1,4 +1,5 @@
-from lemur.domains.views import *
+from lemur.domains.views import *  # noqa
+
 
 def test_domain_get(client):
     assert client.get(api.url_for(Domains, domain_id=1)).status_code == 401
@@ -23,6 +24,7 @@ def test_domain_patch(client):
 VALID_USER_HEADER_TOKEN = {
     'Authorization': 'Basic ' + 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0MzUyMzMzNjksInN1YiI6MSwiZXhwIjoxNTIxNTQ2OTY5fQ.1qCi0Ip7mzKbjNh0tVd3_eJOrae3rNa_9MCVdA4WtQI'}
 
+
 def test_auth_domain_get(client):
     assert client.get(api.url_for(Domains, domain_id=1), headers=VALID_USER_HEADER_TOKEN).status_code == 200
 
@@ -45,6 +47,7 @@ def test_auth_domain_patch(client):
 
 VALID_ADMIN_HEADER_TOKEN = {
     'Authorization': 'Basic ' + 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0MzUyNTAyMTgsInN1YiI6MiwiZXhwIjoxNTIxNTYzODE4fQ.6mbq4-Ro6K5MmuNiTJBB153RDhlM5LGJBjI7GBKkfqA'}
+
 
 def test_admin_domain_get(client):
     assert client.get(api.url_for(Domains, domain_id=1), headers=VALID_ADMIN_HEADER_TOKEN).status_code == 200
@@ -118,6 +121,7 @@ def test_certificate_domains_patch(client):
 
 def test_auth_certificate_domains_get(client):
     assert client.get(api.url_for(CertificateDomains, certificate_id=1), headers=VALID_USER_HEADER_TOKEN).status_code == 200
+
 
 def test_admin_certificate_domains_get(client):
     assert client.get(api.url_for(CertificateDomains, certificate_id=1), headers=VALID_ADMIN_HEADER_TOKEN).status_code == 200

@@ -1,11 +1,11 @@
-from lemur.tests import LemurTestCase
+# from lemur.tests import LemurTestCase
 
-from lemur.certificates.models import Certificate
+# from lemur.certificates.models import Certificate
 
-from moto import mock_iam, mock_sts
+# from moto import mock_iam, mock_sts
 
 
-#class IAMTestCase(LemurTestCase):
+# class IAMTestCase(LemurTestCase):
 #    @mock_sts
 #    @mock_iam
 #    def test_get_all_server_certs(self):

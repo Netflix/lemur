@@ -40,4 +40,3 @@ class Listener(db.Model):
         blob = self.as_dict()
         del blob['date_created']
         return blob
-

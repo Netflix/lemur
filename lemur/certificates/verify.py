@@ -30,7 +30,7 @@ def ocsp_verify(cert_path, issuer_chain_path):
     url, err = p1.communicate()
 
     p2 = subprocess.Popen(['openssl', 'ocsp', '-issuer', issuer_chain_path,
-                            '-cert', cert_path, "-url", url.strip()], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                           '-cert', cert_path, "-url", url.strip()], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     message, err = p2.communicate()
     if 'error' in message or 'Error' in message:

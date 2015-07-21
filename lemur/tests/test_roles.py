@@ -1,6 +1,6 @@
 from json import dumps
-from lemur.roles.service import *
-from lemur.roles.views import *
+from lemur.roles.service import *  # noqa
+from lemur.roles.views import *  # noqa
 
 
 def test_crud(session):

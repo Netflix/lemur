@@ -36,6 +36,7 @@ LEMUR_BLUEPRINTS = (
     plugins_bp,
 )
 
+
 def create_app(config=None):
     app = factory.create_app(app_name=__name__, blueprints=LEMUR_BLUEPRINTS, config=config)
     configure_hook(app)
@@ -61,4 +62,3 @@ def configure_hook(app):
         response = {'message': 'You are not allow to access this resource'}
         response.status_code = 403
         return response
-

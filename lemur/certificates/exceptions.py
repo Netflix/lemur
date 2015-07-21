@@ -53,6 +53,7 @@ class UnableToCreateCSR(LemurException):
     def __str__(self):
         return repr(self.data['message'])
 
+
 class UnableToCreatePrivateKey(LemurException):
     def __init__(self):
         self.code = 500
@@ -62,6 +63,7 @@ class UnableToCreatePrivateKey(LemurException):
 
     def __str__(self):
         return repr(self.data['message'])
+
 
 class MissingFiles(LemurException):
     def __init__(self, path):
@@ -84,4 +86,3 @@ class NoPersistanceFound(LemurException):
 
     def __str__(self):
         return repr(self.data['message'])
-

@@ -183,8 +183,8 @@ class AuthoritiesList(AuthenticatedResource):
         self.reqparse.add_argument('caDescription', type=str, location='json', required=False)
         self.reqparse.add_argument('ownerEmail', type=str, location='json', required=True)
         self.reqparse.add_argument('caDN', type=dict, location='json', required=False)
-        self.reqparse.add_argument('validityStart', type=str, location='json', required=False) # TODO validate
-        self.reqparse.add_argument('validityEnd', type=str, location='json', required=False) # TODO validate
+        self.reqparse.add_argument('validityStart', type=str, location='json', required=False)  # TODO validate
+        self.reqparse.add_argument('validityEnd', type=str, location='json', required=False)  # TODO validate
         self.reqparse.add_argument('extensions', type=dict, location='json', required=False)
         self.reqparse.add_argument('pluginName', type=str, location='json', required=True)
         self.reqparse.add_argument('caType', type=str, location='json', required=False)

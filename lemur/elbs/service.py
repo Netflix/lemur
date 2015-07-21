@@ -14,6 +14,7 @@ from lemur import database
 from lemur.elbs.models import ELB
 from lemur.listeners.models import Listener
 
+
 def get_all(account_id, elb_name):
     """
     Retrieves all ELBs in a given account
@@ -112,7 +113,7 @@ def stats(**kwargs):
 
     if kwargs.get('active') == 'true':
         query = query.join(ELB.listeners)
-        query = query.filter(Listener.certificate_id != None)
+        query = query.filter(Listener.certificate_id != None)  # noqa
 
     items = query.group_by(attr).all()
 
@@ -121,5 +122,3 @@ def stats(**kwargs):
         if key:
             results.append({"key": key, "y": count})
     return results
-
-

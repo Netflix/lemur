@@ -36,4 +36,3 @@ class Role(db.Model):
     def serialize(self):
         blob = self.as_dict()
         return blob
-

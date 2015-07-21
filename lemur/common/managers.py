@@ -8,6 +8,7 @@
 """
 from flask import current_app
 
+
 # inspired by https://github.com/getsentry/sentry
 class InstanceManager(object):
     def __init__(self, class_list=None, instances=True):

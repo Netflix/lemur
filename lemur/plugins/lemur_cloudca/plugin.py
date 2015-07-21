@@ -23,7 +23,7 @@ from lemur.plugins import lemur_cloudca as cloudca
 
 from lemur.authorities import service as authority_service
 
-API_ENDPOINT = '/v1/ca/netflix' # TODO this should be configurable
+API_ENDPOINT = '/v1/ca/netflix'  # TODO this should be configurable
 
 
 class CloudCAException(LemurException):
@@ -72,7 +72,8 @@ def get_default_issuance(options):
     if not options.get('validityStart') and not options.get('validityEnd'):
         start = arrow.utcnow()
         options['validityStart'] = start.floor('second').isoformat()
-        options['validityEnd'] = start.replace(years=current_app.config.get('CLOUDCA_DEFAULT_VALIDITY')).ceil('second').isoformat()
+        options['validityEnd'] = start.replace(years=current_app.config.get('CLOUDCA_DEFAULT_VALIDITY'))\
+            .ceil('second').isoformat()
     return options
 
 
@@ -95,7 +96,8 @@ def convert_date_to_utc_time(date):
     :return:
     """
     d = arrow.get(date)
-    return arrow.utcnow().replace(day=d.naive.day).replace(month=d.naive.month).replace(year=d.naive.year).replace(microsecond=0)
+    return arrow.utcnow().replace(day=d.naive.day).replace(month=d.naive.month).replace(year=d.naive.year)\
+        .replace(microsecond=0)
 
 
 def process_response(response):
@@ -152,7 +154,9 @@ class CloudCA(object):
             self.session.cert = current_app.config.get('CLOUDCA_PEM_PATH')
             self.ca_bundle = current_app.config.get('CLOUDCA_BUNDLE')
         else:
-            current_app.logger.warning("No CLOUDCA credentials found, lemur will be unable to request certificates from CLOUDCA")
+            current_app.logger.warning(
+                "No CLOUDCA credentials found, lemur will be unable to request certificates from CLOUDCA"
+            )
 
         super(CloudCA, self).__init__(*args, **kwargs)
 
@@ -203,7 +207,7 @@ class CloudCA(object):
         for ca in self.get(endpoint)['data']['caList']:
             try:
                 authorities.append(ca['caName'])
-            except AttributeError as e:
+            except AttributeError:
                 current_app.logger.error("No authority has been defined for {}".format(ca['caName']))
 
         return authorities
@@ -235,7 +239,8 @@ class CloudCAIssuerPlugin(IssuerPlugin, CloudCA):
         options['validityStart'] = convert_date_to_utc_time(options['validityStart']).isoformat()
         options['validityEnd'] = convert_date_to_utc_time(options['validityEnd']).isoformat()
 
-        response = self.session.post(self.url + endpoint, data=dumps(remove_none(options)), timeout=10, verify=self.ca_bundle)
+        response = self.session.post(self.url + endpoint, data=dumps(remove_none(options)), timeout=10,
+                                     verify=self.ca_bundle)
 
         json = process_response(response)
         roles = []
@@ -326,7 +331,8 @@ class CloudCASourcePlugin(SourcePlugin, CloudCA):
         :return:
         """
         endpoint = '{0}/getCert'.format(API_ENDPOINT)
-        response = self.session.post(self.url + endpoint, data=dumps({'caName': ca_name}), timeout=10, verify=self.ca_bundle)
+        response = self.session.post(self.url + endpoint, data=dumps({'caName': ca_name}), timeout=10,
+                                     verify=self.ca_bundle)
         raw = process_response(response)
 
         certs = []

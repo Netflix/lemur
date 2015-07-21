@@ -35,11 +35,11 @@ class AWSDestinationPlugin(DestinationPlugin):
             'helpMessage': 'Must be a valid AWS account number!',
         }
     ]
-        #'elb': {
-        #    'name': {'type': 'name'},
-        #    'region': {'type': 'str'},
-        #    'port': {'type': 'int'}
-        #}
+    # 'elb': {
+    #    'name': {'type': 'name'},
+    #    'region': {'type': 'str'},
+    #    'port': {'type': 'int'}
+    # }
 
     def upload(self, cert, private_key, cert_chain, options, **kwargs):
         iam.upload_cert(find_value('accountNumber', options), cert, private_key, cert_chain=cert_chain)

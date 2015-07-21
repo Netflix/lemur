@@ -12,7 +12,6 @@ from flask import current_app
 
 from flask.ext.restful import marshal
 from flask.ext.restful.reqparse import RequestParser
-
 from flask.ext.sqlalchemy import Pagination
 
 

@@ -73,4 +73,3 @@ def session(db, request):
 @pytest.yield_fixture(scope="function")
 def client(app, session, client):
     yield client
-

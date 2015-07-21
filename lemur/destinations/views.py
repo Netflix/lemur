@@ -229,7 +229,6 @@ class Destinations(AuthenticatedResource):
         return {'result': True}
 
 
-
 class CertificateDestinations(AuthenticatedResource):
     """ Defines the 'certificate/<int:certificate_id/destinations'' endpoint """
     def __init__(self):
@@ -274,5 +273,5 @@ class CertificateDestinations(AuthenticatedResource):
 
 api.add_resource(DestinationsList, '/destinations', endpoint='destinations')
 api.add_resource(Destinations, '/destinations/<int:destination_id>', endpoint='account')
-api.add_resource(CertificateDestinations, '/certificates/<int:certificate_id>/destinations', endpoint='certificateDestinations')
-
+api.add_resource(CertificateDestinations, '/certificates/<int:certificate_id>/destinations',
+                 endpoint='certificateDestinations')

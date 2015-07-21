@@ -21,6 +21,7 @@ from lemur.certificates import service as cert_service
 from lemur.plugins.base import plugins
 from lemur.plugins.bases.source import SourcePlugin
 
+
 def sync():
     for plugin in plugins:
         new = 0
@@ -42,5 +43,4 @@ def sync():
 
                 # TODO associated cert with source
                 # TODO update cert if found from different source
-                # TODO dissassociate source if missing
-
+                # TODO disassociate source if missing

@@ -24,4 +24,3 @@ class Domain(db.Model):
         blob = self.as_dict()
         blob['certificates'] = [x.id for x in self.certificate]
         return blob
-

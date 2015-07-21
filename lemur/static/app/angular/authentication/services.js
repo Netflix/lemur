@@ -41,7 +41,7 @@ angular.module('lemur')
             });
           }
       );
-    }
+    };
 
     AuthenticationService.logout = function () {
       if (!$auth.isAuthenticated()) {

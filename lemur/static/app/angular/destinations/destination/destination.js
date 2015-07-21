@@ -32,7 +32,7 @@ angular.module('lemur')
       DestinationService.update(destination).then(function () {
         $modalInstance.close();
       });
-    }
+    };
 
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');

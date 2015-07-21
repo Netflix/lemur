@@ -21,7 +21,7 @@ from lemur.database import db
 
 from lemur.domains.models import Domain
 
-from lemur.constants import SAN_NAMING_TEMPLATE, DEFAULT_NAMING_TEMPLATE, NONSTANDARD_NAMING_TEMPLATE
+from lemur.constants import SAN_NAMING_TEMPLATE, DEFAULT_NAMING_TEMPLATE
 from lemur.models import certificate_associations, certificate_destination_associations
 
 
@@ -110,6 +110,7 @@ def cert_is_san(cert):
     if len(cert_get_domains(cert)) > 1:
         return True
 
+
 def cert_is_wildcard(cert):
     """
     Determines if certificate is a wildcard certificate.
@@ -197,8 +198,8 @@ class Certificate(db.Model):
     owner = Column(String(128))
     body = Column(Text())
     private_key = Column(EncryptedType(String, os.environ.get('LEMUR_ENCRYPTION_KEY')))
-    challenge = Column(EncryptedType(String, os.environ.get('LEMUR_ENCRYPTION_KEY'))) # TODO deprecate
-    csr_config = Column(Text()) # TODO deprecate
+    challenge = Column(EncryptedType(String, os.environ.get('LEMUR_ENCRYPTION_KEY')))  # TODO deprecate
+    csr_config = Column(Text())  # TODO deprecate
     status = Column(String(128))
     deleted = Column(Boolean, index=True)
     name = Column(String(128))
@@ -266,4 +267,3 @@ class Certificate(db.Model):
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
-

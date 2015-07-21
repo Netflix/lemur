@@ -1,5 +1,6 @@
 import pytest
-from lemur.certificates.views import *
+from lemur.certificates.views import *  # noqa
+
 
 def test_valid_authority(session):
     assert 1 == 2
@@ -86,6 +87,7 @@ def test_cert_get_bitstrength():
     from lemur.tests.certs import INTERNAL_VALID_LONG_CERT
     from lemur.certificates.models import cert_get_bitstrength
     assert cert_get_bitstrength(INTERNAL_VALID_LONG_CERT) == 2048
+
 
 def test_cert_get_issuer():
     from lemur.tests.certs import INTERNAL_VALID_LONG_CERT
@@ -324,4 +326,3 @@ def test_admin_certificate_credentials_delete(client):
 
 def test_admin_certificate_credentials_patch(client):
     assert client.patch(api.url_for(CertificatePrivateKey, certificate_id=1), data={}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
-

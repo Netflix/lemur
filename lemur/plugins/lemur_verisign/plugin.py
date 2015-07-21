@@ -151,4 +151,3 @@ class VerisignIssuerPlugin(IssuerPlugin):
         url = current_app.config.get("VERISIGN_URL") + '/getTokens'
         response = self.session.post(url, headers={'content-type': 'application/x-www-form-urlencoded'})
         return handle_response(response.content)['Response']['Order']
-

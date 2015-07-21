@@ -9,16 +9,15 @@ import jwt
 import base64
 import requests
 
-from flask import g, Blueprint, current_app, abort
+from flask import g, Blueprint, current_app
 
 from flask.ext.restful import reqparse, Resource, Api
 from flask.ext.principal import Identity, identity_changed
 
-from lemur.auth.permissions import admin_permission
 from lemur.users import service as user_service
 from lemur.roles import service as role_service
 from lemur.certificates import service as cert_service
-from lemur.auth.service import AuthenticatedResource, create_token, fetch_token_header, get_rsa_public_key
+from lemur.auth.service import create_token, fetch_token_header, get_rsa_public_key
 
 
 mod = Blueprint('auth', __name__)
@@ -222,7 +221,7 @@ class Ping(Resource):
                 profile['email'],
                 profile['email'],
                 True,
-                profile.get('thumbnailPhotoUrl'), # incase profile isn't google+ enabled
+                profile.get('thumbnailPhotoUrl'),  # Encase profile isn't google+ enabled
                 roles
             )
 
@@ -234,5 +233,3 @@ class Ping(Resource):
 
 api.add_resource(Login, '/auth/login', endpoint='login')
 api.add_resource(Ping, '/auth/ping', endpoint='ping')
-
-

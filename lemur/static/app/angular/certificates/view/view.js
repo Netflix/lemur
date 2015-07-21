@@ -48,7 +48,7 @@ angular.module('lemur')
 
     $scope.getCertificateStatus = function () {
       var def = $q.defer();
-      def.resolve([{'title': 'Active', 'id': true}, {'title': 'Inactive', 'id': false}])
+      def.resolve([{'title': 'Active', 'id': true}, {'title': 'Inactive', 'id': false}]);
       return def;
     };
 

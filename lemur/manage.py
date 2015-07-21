@@ -20,19 +20,18 @@ from lemur.plugins.base import plugins
 
 from lemur.certificates.verify import verify_string
 from lemur.certificates import sync
-from lemur.elbs.sync import sync_all_elbs
 
 from lemur import create_app
 
 # Needed to be imported so that SQLAlchemy create_all can find our models
-from lemur.users.models import User
-from lemur.roles.models import Role
-from lemur.authorities.models import Authority
-from lemur.certificates.models import Certificate
-from lemur.destinations.models import Destination
-from lemur.domains.models import Domain
-from lemur.elbs.models import ELB
-from lemur.listeners.models import Listener
+from lemur.users.models import User  # noqa
+from lemur.roles.models import Role  # noqa
+from lemur.authorities.models import Authority  # noqa
+from lemur.certificates.models import Certificate  # noqa
+from lemur.destinations.models import Destination  # noqa
+from lemur.domains.models import Domain  # noqa
+from lemur.elbs.models import ELB  # noqa
+from lemur.listeners.models import Listener  # noqa
 
 manager = Manager(create_app)
 manager.add_option('-c', '--config', dest='config')
@@ -135,6 +134,7 @@ SQLALCHEMY_DATABASE_URI = ''
 #VERSIGN_EMAIL = ''
 """
 
+
 @MigrateCommand.command
 def create():
     database.db.create_all()
@@ -214,7 +214,7 @@ class Sync(Command):
             sys.stdout.write("[!] Starting to sync with AWS!\n")
             try:
                 sync.aws()
-                #sync_all_elbs()
+                # sync_all_elbs()
                 sys.stdout.write("[+] Finished syncing with AWS!\n")
             except Exception as e:
                 sys.stdout.write("[-] Syncing with AWS failed!\n")

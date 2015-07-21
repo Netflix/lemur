@@ -27,5 +27,5 @@ gulp.task('default', function () {
   console.log(c.green + '-------------------------------------------' + c.reset);
   console.log(Object.keys(gulp.tasks).sort().join('\n'));
   console.log('');
-  return;
+
 });

@@ -8,6 +8,7 @@
 from flask import current_app
 from lemur.common.managers import InstanceManager
 
+
 # inspired by https://github.com/getsentry/sentry
 class PluginManager(InstanceManager):
     def __iter__(self):
@@ -57,4 +58,3 @@ class PluginManager(InstanceManager):
     def unregister(self, cls):
         self.remove('%s.%s' % (cls.__module__, cls.__name__))
         return cls
-

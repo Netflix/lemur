@@ -1,10 +1,10 @@
-import boto
-from lemur.tests import LemurTestCase
+# import boto
+# from lemur.tests import LemurTestCase
 
-from moto import mock_elb, mock_sts
+# from moto import mock_elb, mock_sts
 
 
-#class ELBTestCase(LemurTestCase):
+# class ELBTestCase(LemurTestCase):
 #    @mock_sts
 #    @mock_elb
 #    def test_add_listener(self):

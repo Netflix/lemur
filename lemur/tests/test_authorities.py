@@ -1,7 +1,6 @@
-import pytest
-from lemur.authorities.views import *
+from lemur.authorities.views import *  # noqa
 
-#def test_crud(session):
+# def test_crud(session):
 #    role = create('role1')
 #    assert role.id > 0
 #

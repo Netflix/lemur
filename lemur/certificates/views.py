@@ -51,7 +51,7 @@ def valid_authority(authority_options):
     """
     Defends against invalid authorities
 
-    :param authority_name:
+    :param authority_options:
     :return: :raise ValueError:
     """
     name = authority_options['name']
@@ -76,7 +76,7 @@ def pem_str(value, name):
     """
     try:
         x509.load_pem_x509_certificate(str(value), default_backend())
-    except Exception as e:
+    except Exception:
         raise ValueError("The parameter '{0}' needs to be a valid PEM string".format(name))
     return value
 
@@ -91,10 +91,9 @@ def private_key_str(value, name):
     """
     try:
         serialization.load_pem_private_key(str(value), None, backend=default_backend())
-    except Exception as e:
+    except Exception:
         raise ValueError("The parameter '{0}' needs to be a valid RSA private key".format(name))
     return value
-
 
 
 class CertificatesList(AuthenticatedResource):
@@ -274,8 +273,8 @@ class CertificatesList(AuthenticatedResource):
         self.reqparse.add_argument('destinations', type=list, default=[], location='json')
         self.reqparse.add_argument('elbs', type=list, location='json')
         self.reqparse.add_argument('owner', type=str, location='json')
-        self.reqparse.add_argument('validityStart', type=str, location='json') # parse date
-        self.reqparse.add_argument('validityEnd', type=str, location='json') # parse date
+        self.reqparse.add_argument('validityStart', type=str, location='json')  # TODO validate
+        self.reqparse.add_argument('validityEnd', type=str, location='json')  # TODO validate
         self.reqparse.add_argument('authority', type=valid_authority, location='json')
         self.reqparse.add_argument('description', type=str, location='json')
         self.reqparse.add_argument('country', type=str, location='json')

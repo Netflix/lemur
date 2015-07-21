@@ -14,17 +14,18 @@ from sqlalchemy import Column, Integer, ForeignKey
 from lemur.database import db
 
 certificate_associations = db.Table('certificate_associations',
-    Column('domain_id', Integer, ForeignKey('domains.id')),
-    Column('certificate_id', Integer, ForeignKey('certificates.id'))
-)
+                                    Column('domain_id', Integer, ForeignKey('domains.id')),
+                                    Column('certificate_id', Integer, ForeignKey('certificates.id'))
+                                    )
 
 certificate_destination_associations = db.Table('certificate_destination_associations',
-    Column('destination_id', Integer, ForeignKey('destinations.id', ondelete='cascade')),
-    Column('certificate_id', Integer, ForeignKey('certificates.id', ondelete='cascade'))
-)
+                                                Column('destination_id', Integer,
+                                                       ForeignKey('destinations.id', ondelete='cascade')),
+                                                Column('certificate_id', Integer,
+                                                       ForeignKey('certificates.id', ondelete='cascade'))
+                                                )
 
 roles_users = db.Table('roles_users',
-    Column('user_id', Integer, ForeignKey('users.id')),
-    Column('role_id', Integer, ForeignKey('roles.id'))
-)
-
+                       Column('user_id', Integer, ForeignKey('users.id')),
+                       Column('role_id', Integer, ForeignKey('roles.id'))
+                       )
