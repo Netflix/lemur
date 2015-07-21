@@ -28,7 +28,6 @@
     "gulp-imagemin": "^0.6.2",
     "gulp-inject": "~1.0.1",
     "gulp-jshint": "^1.10.0",
-    "gulp-karma": "^0.0.4",
     "gulp-load-plugins": "^0.5.3",
     "gulp-minify-html": "~0.1.4",
     "gulp-ng-annotate": "~0.5.2",
