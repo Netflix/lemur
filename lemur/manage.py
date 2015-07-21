@@ -63,6 +63,12 @@ THREADS_PER_PAGE = 8
 CORS = False
 debug = False
 
+# modify this if you are not using a local database
+SQLALCHEMY_DATABASE_URI = 'postgresql://lemur:lemur@localhost:5432/lemur'
+
+# this is the secret key used by flask session management
+SECRET_KEY = '{flask_secret_key}'
+
 # You should consider storing these separately from your config
 LEMUR_SECRET_TOKEN = '{secret_token}'
 LEMUR_ENCRYPTION_KEY = '{encryption_key}'
@@ -178,7 +184,8 @@ def generate_settings():
     """
     output = CONFIG_TEMPLATE.format(
         encryption_key=base64.b64encode(os.urandom(KEY_LENGTH)),
-        secret_token=base64.b64encode(os.urandom(KEY_LENGTH))
+        secret_token=base64.b64encode(os.urandom(KEY_LENGTH)),
+        flask_secret_key=base64.b64encode(os.urandom(KEY_LENGTH)),
     )
 
     return output

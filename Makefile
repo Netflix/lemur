@@ -65,7 +65,7 @@ lint: lint-python lint-js
 
 lint-python:
 	@echo "--> Linting Python files"
-	PYFLAKES_NODOCTEST=1 flake8 lemur tests
+	PYFLAKES_NODOCTEST=1 flake8 lemur
 	@echo ""
 
 lint-js:
