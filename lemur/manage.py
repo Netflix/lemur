@@ -54,54 +54,42 @@ ADMINS = frozenset([''])
 
 THREADS_PER_PAGE = 8
 
-#############
-## General ##
-#############
+# General
 
 # These will need to be set to `True` if you are developing locally
 CORS = False
 debug = False
 
-# modify this if you are not using a local database
-SQLALCHEMY_DATABASE_URI = 'postgresql://lemur:lemur@localhost:5432/lemur'
-
 # this is the secret key used by flask session management
 SECRET_KEY = '{flask_secret_key}'
 
 # You should consider storing these separately from your config
-LEMUR_SECRET_TOKEN = '{secret_token}'
+LEMUR_TOKEN_SECRET = '{secret_token}'
 LEMUR_ENCRYPTION_KEY = '{encryption_key}'
 
 # this is a list of domains as regexes that only admins can issue
 LEMUR_RESTRICTED_DOMAINS = []
 
-#################
-## Mail Server ##
-#################
+# Mail Server
 
 # Lemur currently only supports SES for sending email, this address
 # needs to be verified
 LEMUR_EMAIL = ''
 LEMUR_SECURITY_TEAM_EMAIL = []
 
-#############
-## Logging ##
-#############
+# Logging
 
 LOG_LEVEL = "DEBUG"
 LOG_FILE = "lemur.log"
 
 
-##############
-## Database ##
-##############
+# Database
 
-SQLALCHEMY_DATABASE_URI = ''
+# modify this if you are not using a local database
+SQLALCHEMY_DATABASE_URI = 'postgresql://lemur:lemur@localhost:5432/lemur'
 
 
-#########
-## AWS ##
-#########
+# AWS
 
 # Lemur will need STS assume role access to every destination you want to monitor
 #AWS_ACCOUNT_MAPPINGS = {{

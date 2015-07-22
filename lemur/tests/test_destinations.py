@@ -5,11 +5,11 @@ from json import dumps
 
 
 def test_crud(session):
-    destination = create('111111', 'destination1')
+    destination = create('testdest', 'aws-destination', {}, description='destination1')
     assert destination.id > 0
 
-    destination = update(destination.id, 11111, 'destination2')
-    assert destination.label == 'destination2'
+    destination = update(destination.id, 'testdest2', {}, 'destination2')
+    assert destination.label == 'testdest2'
 
     assert len(get_all()) == 1
 
@@ -121,13 +121,13 @@ def test_admin_destinations_get(client):
 
 def test_admin_destinations_crud(client):
     assert client.post(api.url_for(DestinationsList), headers=VALID_ADMIN_HEADER_TOKEN).status_code == 400
-    data = {'destinationNumber': 111, 'label': 'test', 'comments': 'test'}
+    data = {'plugin': {'slug': 'aws-destination', 'pluginOptions': {}}, 'label': 'test', 'description': 'test'}
     resp = client.post(api.url_for(DestinationsList), data=dumps(data), content_type='application/json', headers=VALID_ADMIN_HEADER_TOKEN)
     assert resp.status_code == 200
     assert client.get(api.url_for(Destinations, destination_id=resp.json['id']), headers=VALID_ADMIN_HEADER_TOKEN).status_code == 200
     resp = client.get(api.url_for(DestinationsList), headers=VALID_ADMIN_HEADER_TOKEN)
     assert resp.status_code == 200
-    assert resp.json == {'items': [{'destinationNumber': 111, 'label': 'test', 'comments': 'test', 'id': 2}], 'total': 1}
+    assert resp.json['items'][0]['description'] == 'test'
     assert client.delete(api.url_for(Destinations, destination_id=2), headers=VALID_ADMIN_HEADER_TOKEN).status_code == 200
     resp = client.get(api.url_for(DestinationsList), headers=VALID_ADMIN_HEADER_TOKEN)
     assert resp.status_code == 200

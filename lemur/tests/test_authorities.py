@@ -150,13 +150,3 @@ def test_admin_certificate_authorities_get(client):
     assert client.get(api.url_for(CertificateAuthority, certificate_id=1), headers=VALID_ADMIN_HEADER_TOKEN).status_code == 404
 
 
-def test_admin_certificate_authorities_post(client):
-    assert client.post(api.url_for(CertificateAuthority, certficate_id=1), headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
-
-
-def test_admin_certificate_authorities_put(client):
-    assert client.put(api.url_for(CertificateAuthority, certificate_id=1), headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
-
-
-def test_admin_certificate_authorities_delete(client):
-    assert client.delete(api.url_for(CertificateAuthority, certificate_id=1), headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405

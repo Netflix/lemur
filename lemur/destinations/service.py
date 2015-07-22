@@ -37,7 +37,7 @@ def update(destination_id, label, options, description):
     destination = get(destination_id)
 
     destination.label = label
-    description.options = options
+    destination.options = options
     destination.description = description
 
     return database.update(destination)
