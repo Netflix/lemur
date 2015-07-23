@@ -18,7 +18,7 @@ angular.module('lemur')
       UserService.update(user).then(function () {
         $modalInstance.close();
       });
-    }
+    };
 
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');

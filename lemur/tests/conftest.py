@@ -1,3 +1,4 @@
+import os
 import pytest
 
 from lemur import create_app
@@ -33,14 +34,11 @@ def app():
     Creates a new Flask application for a test duration.
     Uses application factory `create_app`.
     """
-    app = create_app()
-    app.config['TESTING'] = True
-    app.config['LEMUR_ENCRYPTION_KEY'] = 'test'
-
-    ctx = app.app_context()
+    _app = create_app(os.path.dirname(os.path.realpath(__file__)) + '/conf.py')
+    ctx = _app.app_context()
     ctx.push()
 
-    yield app
+    yield _app
 
     ctx.pop()
 
@@ -73,4 +71,3 @@ def session(db, request):
 @pytest.yield_fixture(scope="function")
 def client(app, session, client):
     yield client
-

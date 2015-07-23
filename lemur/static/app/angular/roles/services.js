@@ -1,3 +1,5 @@
+'use strict';
+
 angular.module('lemur')
   .service('RoleApi', function (LemurRestangular) {
     LemurRestangular.extendModel('roles', function (obj) {
@@ -108,7 +110,7 @@ angular.module('lemur')
             role.username = response.username;
           }
         },
-        function (response) {
+        function () {
           toaster.pop({
             type: 'error',
             title: role.name,

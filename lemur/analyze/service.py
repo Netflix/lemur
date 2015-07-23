@@ -4,7 +4,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-#def analyze(endpoints, truststores):
+# def analyze(endpoints, truststores):
 #    results = {"headings": ["Endpoint"],
 #               "results": [],
 #               "time": datetime.now().strftime("#Y%m%d %H:%M:%S")}
@@ -37,7 +37,9 @@
 #                    log.debug(e)
 #                    if 'hostname' in str(e):
 #                        tests.append('pass')
-#                        result['details'].append("{}: This test passed ssl negotiation but failed hostname verification becuase the hostname is not included in the certificate".format(region))
+#                        result['details'].append(
+#                              "{}: This test passed ssl negotiation but failed hostname verification because \
+#                                   the hostname is not included in the certificate".format(region))
 #                    elif 'certificate verify failed' in str(e):
 #                        tests.append('fail')
 #                        result['details'].append("{}: This test failed to verify the SSL certificate".format(region))

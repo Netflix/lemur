@@ -8,6 +8,7 @@
 """
 from lemur.plugins.base import Plugin
 
+
 class SourcePlugin(Plugin):
     type = 'source'
 
@@ -16,4 +17,3 @@ class SourcePlugin(Plugin):
 
     def get_options(self):
         return {}
-

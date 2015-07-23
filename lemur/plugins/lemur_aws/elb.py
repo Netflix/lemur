@@ -38,6 +38,7 @@ def is_valid(listener_tuple):
 
     return listener_tuple
 
+
 def get_all_regions():
     """
     Retrieves all current EC2 regions.
@@ -48,6 +49,7 @@ def get_all_regions():
     for r in boto.ec2.regions():
         regions.append(r.name)
     return regions
+
 
 def get_all_elbs(account_number, region):
     """
@@ -72,7 +74,6 @@ def get_all_elbs(account_number, region):
 #            marker = result['marker']
 #        else:
 #            return elbs
-
 
 
 def attach_certificate(account_number, region, name, port, certificate_id):
@@ -137,4 +138,3 @@ def delete_listeners(account_number, region, name, ports):
     :return:
     """
     return assume_service(account_number, 'elb', region).delete_load_balancer_listeners(name, ports)
-

@@ -8,6 +8,7 @@
 """
 from threading import local
 
+
 # stolen from https://github.com/getsentry/sentry/
 class PluginMount(type):
     def __new__(cls, name, bases, attrs):

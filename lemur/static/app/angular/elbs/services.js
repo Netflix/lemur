@@ -1,5 +1,7 @@
+'use strict';
+
 angular.module('lemur')
-  .service('ELBApi', function (LemurRestangular, ListenerService) {
+  .service('ELBApi', function (LemurRestangular) {
     LemurRestangular.extendModel('elbs', function (obj) {
       return angular.extend(obj, {
         attachListener: function (listener) {

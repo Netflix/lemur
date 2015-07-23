@@ -6,8 +6,6 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import arrow
-import string
-import random
 
 from sqlalchemy import func, or_
 from flask import g, current_app
@@ -25,7 +23,6 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
-
 
 
 def get(cert_id):
@@ -106,7 +103,6 @@ def mint(issuer_options):
 
     csr, private_key = create_csr(issuer_options)
 
-    issuer_options['challenge'] = create_challenge()
     issuer_options['creator'] = g.user.email
     cert_body, cert_chain = issuer.create_certificate(csr, issuer_options)
 
@@ -212,8 +208,8 @@ def render(args):
     time_range = args.pop('time_range')
     destination_id = args.pop('destination_id')
     show = args.pop('show')
-    owner = args.pop('owner')
-    creator = args.pop('creator')  # TODO we should enabling filtering by owner
+    # owner = args.pop('owner')
+    # creator = args.pop('creator')  # TODO we should enabling filtering by owner
 
     filt = args.pop('filter')
 
@@ -235,7 +231,7 @@ def render(args):
 
         if 'destination' in terms:
             query = query.filter(Certificate.destinations.any(Destination.id == terms[1]))
-        elif 'active' in filt: # this is really weird but strcmp seems to not work here??
+        elif 'active' in filt:  # this is really weird but strcmp seems to not work here??
             query = query.filter(Certificate.active == terms[1])
         else:
             query = database.filter(query, Certificate, terms)
@@ -288,7 +284,7 @@ def create_csr(csr_config):
         x509.BasicConstraints(ca=False, path_length=None), critical=True,
     )
 
-    #for k, v in csr_config.get('extensions', {}).items():
+    # for k, v in csr_config.get('extensions', {}).items():
     #    if k == 'subAltNames':
     #        builder = builder.add_extension(
     #            x509.SubjectAlternativeName([x509.DNSName(n) for n in v]), critical=True,
@@ -354,16 +350,6 @@ def create_csr(csr_config):
 
     return csr, pem
 
-def create_challenge():
-    """
-    Create a random and strongish csr challenge.
-    """
-    challenge = ''.join(random.choice(string.ascii_uppercase) for x in range(6))
-    challenge += ''.join(random.choice("~!@#$%^&*()_+") for x in range(6))
-    challenge += ''.join(random.choice(string.ascii_lowercase) for x in range(6))
-    challenge += ''.join(random.choice(string.digits) for x in range(6))
-    return challenge
-
 
 def stats(**kwargs):
     """
@@ -405,5 +391,3 @@ def stats(**kwargs):
         values.append(count)
 
     return {'labels': keys, 'values': values}
-
-

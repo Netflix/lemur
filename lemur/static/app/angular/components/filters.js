@@ -1,3 +1,5 @@
+'use strict';
+
 angular.module('lemur').
   filter('titleCase', function () {
     return function (str) {

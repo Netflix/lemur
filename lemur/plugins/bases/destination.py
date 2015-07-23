@@ -8,9 +8,9 @@
 """
 from lemur.plugins.base import Plugin
 
+
 class DestinationPlugin(Plugin):
     type = 'destination'
 
     def upload(self):
         raise NotImplemented
-

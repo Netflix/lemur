@@ -7,18 +7,13 @@ ADMINS = frozenset([''])
 
 THREADS_PER_PAGE = 8
 
-#############
-## General ##
-#############
+# General
 
 # These will need to be set to `True` if you are developing locally
 CORS = False
 debug = False
 
-#############
-## Logging ##
-#############
+# Logging
 
 LOG_LEVEL = "DEBUG"
 LOG_FILE = "lemur.log"
-

@@ -1,5 +1,5 @@
 """
-.. module: lemur.common.services.aws.iam
+.. module: lemur.plugins.lemur_aws.iam
     :platform: Unix
     :synopsis: Contains helper functions for interactive with AWS IAM Apis.
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
@@ -19,21 +19,6 @@ def get_name_from_arn(arn):
     return arn.split("/", 1)[1]
 
 
-def ssl_split(param_string):
-    """
-
-    :param param_string:
-    :return:
-    """
-    output = {}
-    parts = str(param_string).split("/")
-    for part in parts:
-        if "=" in part:
-            key, value = part.split("=", 1)
-            output[key] = value
-    return output
-
-
 def upload_cert(account_number, cert, private_key, cert_chain=None):
     """
     Upload a certificate to AWS
@@ -44,7 +29,8 @@ def upload_cert(account_number, cert, private_key, cert_chain=None):
     :param cert_chain:
     :return:
     """
-    return assume_service(account_number, 'iam').upload_server_cert(cert.name, str(cert.body), str(private_key), cert_chain=str(cert_chain))
+    return assume_service(account_number, 'iam').upload_server_cert(cert.name, str(cert.body), str(private_key),
+                                                                    cert_chain=str(cert_chain))
 
 
 def delete_cert(account_number, cert):
@@ -109,5 +95,3 @@ def digest_aws_cert_response(response):
         chain = cert['certificate_chain']
 
     return str(body), str(chain),
-
-

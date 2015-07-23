@@ -84,5 +84,3 @@ class User(db.Model):
 
 
 listen(User, 'before_insert', hash_password)
-
-

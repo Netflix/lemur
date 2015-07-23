@@ -20,19 +20,18 @@ from lemur.plugins.base import plugins
 
 from lemur.certificates.verify import verify_string
 from lemur.certificates import sync
-from lemur.elbs.sync import sync_all_elbs
 
 from lemur import create_app
 
 # Needed to be imported so that SQLAlchemy create_all can find our models
-from lemur.users.models import User
-from lemur.roles.models import Role
-from lemur.authorities.models import Authority
-from lemur.certificates.models import Certificate
-from lemur.destinations.models import Destination
-from lemur.domains.models import Domain
-from lemur.elbs.models import ELB
-from lemur.listeners.models import Listener
+from lemur.users.models import User  # noqa
+from lemur.roles.models import Role  # noqa
+from lemur.authorities.models import Authority  # noqa
+from lemur.certificates.models import Certificate  # noqa
+from lemur.destinations.models import Destination  # noqa
+from lemur.domains.models import Domain  # noqa
+from lemur.elbs.models import ELB  # noqa
+from lemur.listeners.models import Listener  # noqa
 
 manager = Manager(create_app)
 manager.add_option('-c', '--config', dest='config')
@@ -55,48 +54,42 @@ ADMINS = frozenset([''])
 
 THREADS_PER_PAGE = 8
 
-#############
-## General ##
-#############
+# General
 
 # These will need to be set to `True` if you are developing locally
 CORS = False
 debug = False
 
+# this is the secret key used by flask session management
+SECRET_KEY = '{flask_secret_key}'
+
 # You should consider storing these separately from your config
-LEMUR_SECRET_TOKEN = '{secret_token}'
+LEMUR_TOKEN_SECRET = '{secret_token}'
 LEMUR_ENCRYPTION_KEY = '{encryption_key}'
 
 # this is a list of domains as regexes that only admins can issue
 LEMUR_RESTRICTED_DOMAINS = []
 
-#################
-## Mail Server ##
-#################
+# Mail Server
 
 # Lemur currently only supports SES for sending email, this address
 # needs to be verified
 LEMUR_EMAIL = ''
 LEMUR_SECURITY_TEAM_EMAIL = []
 
-#############
-## Logging ##
-#############
+# Logging
 
 LOG_LEVEL = "DEBUG"
 LOG_FILE = "lemur.log"
 
 
-##############
-## Database ##
-##############
+# Database
 
-SQLALCHEMY_DATABASE_URI = ''
+# modify this if you are not using a local database
+SQLALCHEMY_DATABASE_URI = 'postgresql://lemur:lemur@localhost:5432/lemur'
 
 
-#########
-## AWS ##
-#########
+# AWS
 
 # Lemur will need STS assume role access to every destination you want to monitor
 #AWS_ACCOUNT_MAPPINGS = {{
@@ -128,6 +121,7 @@ SQLALCHEMY_DATABASE_URI = ''
 #VERISIGN_LAST_NAME = ''
 #VERSIGN_EMAIL = ''
 """
+
 
 @MigrateCommand.command
 def create():
@@ -178,7 +172,8 @@ def generate_settings():
     """
     output = CONFIG_TEMPLATE.format(
         encryption_key=base64.b64encode(os.urandom(KEY_LENGTH)),
-        secret_token=base64.b64encode(os.urandom(KEY_LENGTH))
+        secret_token=base64.b64encode(os.urandom(KEY_LENGTH)),
+        flask_secret_key=base64.b64encode(os.urandom(KEY_LENGTH)),
     )
 
     return output
@@ -207,7 +202,7 @@ class Sync(Command):
             sys.stdout.write("[!] Starting to sync with AWS!\n")
             try:
                 sync.aws()
-                #sync_all_elbs()
+                # sync_all_elbs()
                 sys.stdout.write("[+] Finished syncing with AWS!\n")
             except Exception as e:
                 sys.stdout.write("[-] Syncing with AWS failed!\n")
@@ -480,8 +475,8 @@ def main():
     manager.add_command("show_urls", ShowUrls())
     manager.add_command("db", MigrateCommand)
     manager.add_command("init", InitializeApp())
-    manager.add_command('create_user', CreateUser())
-    manager.add_command('create_role', CreateRole())
+    manager.add_command("create_user", CreateUser())
+    manager.add_command("create_role", CreateRole())
     manager.add_command("sync", Sync())
     manager.run()
 

@@ -6,8 +6,8 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from flask import current_app
 import boto.ses
+from flask import current_app
 
 from lemur.templates.config import env
 
@@ -22,8 +22,7 @@ def send(subject, data, email_type, recipients):
     :param recipients:
     """
     conn = boto.connect_ses()
-    #jinja template depending on type
+    # jinja template depending on type
     template = env.get_template('{}.html'.format(email_type))
     body = template.render(**data)
     conn.send_email(current_app.config.get("LEMUR_EMAIL"), subject, body, recipients, format='html')
-

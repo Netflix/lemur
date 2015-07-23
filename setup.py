@@ -14,13 +14,14 @@ import os.path
 from distutils import log
 from distutils.core import Command
 from setuptools.command.develop import develop
+from setuptools.command.install import install
 from setuptools.command.sdist import sdist
 from setuptools import setup
 from subprocess import check_output
 
 ROOT = os.path.realpath(os.path.join(os.path.dirname(__file__)))
 
-install_requires=[
+install_requires = [
     'Flask>=0.10.1',
     'Flask-RESTful>=0.3.3',
     'Flask-SQLAlchemy>=1.0.5',
@@ -37,7 +38,7 @@ install_requires=[
     'six>=1.9.0',
     'gunicorn>=19.3.0',
     'pycrypto>=2.6.1',
-    'cryptography>=0.9',
+    'cryptography>=1.0dev',
     'pyopenssl>=0.15.1',
     'pyjwt>=1.0.1',
     'xmltodict>=0.9.2'
@@ -45,16 +46,36 @@ install_requires=[
 
 tests_require = [
     'pyflakes',
-    'moto',
-    'nose',
-    'pytest',
-    'pytest-flask'
+    'moto==0.4.6',
+    'nose==1.3.7',
+    'pytest==2.7.2',
+    'pytest-flask==0.8.1'
 ]
 
 docs_require = [
     'sphinx',
     'sphinxcontrib-httpdomain'
 ]
+
+dev_requires = [
+    'flake8>=2.0,<2.1',
+]
+
+
+class SmartInstall(install):
+    """
+    Installs Lemur into the Python environment.
+    If the package indicator is missing, this will also force a run of
+    `build_static` which is required for JavaScript assets and other things.
+    """
+    def _needs_static(self):
+        return not os.path.exists(os.path.join(ROOT, 'lemur-package.json'))
+
+    def run(self):
+        if self._needs_static():
+            self.run_command('build_static')
+        install.run(self)
+
 
 class DevelopWithBuildStatic(develop):
     def install_for_development(self):
@@ -79,7 +100,7 @@ class BuildStatic(Command):
         log.info("running [npm install --quiet]")
         check_output(['npm', 'install', '--quiet'], cwd=ROOT)
 
-        log.info("running [gulp buld]")
+        log.info("running [gulp build]")
         check_output([os.path.join(ROOT, 'node_modules', '.bin', 'gulp'), 'build'], cwd=ROOT)
         log.info("running [gulp package]")
         check_output([os.path.join(ROOT, 'node_modules', '.bin', 'gulp'), 'package'], cwd=ROOT)
@@ -96,12 +117,15 @@ setup(
     install_requires=install_requires,
     extras_require={
         'tests': tests_require,
-        'docs': docs_require
+        'docs': docs_require,
+        'dev': dev_requires,
     },
     cmdclass={
         'build_static': BuildStatic,
         'develop': DevelopWithBuildStatic,
-        'sdist': SdistWithBuildStatic
+        'sdist': SdistWithBuildStatic,
+        'install': SmartInstall
+
     },
     entry_points={
         'console_scripts': [

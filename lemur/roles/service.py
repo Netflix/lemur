@@ -15,6 +15,7 @@ from lemur import database
 from lemur.roles.models import Role
 from lemur.users.models import User
 
+
 def update(role_id, name, description, users):
     """
     Update a role
@@ -122,4 +123,3 @@ def render(args):
         query = database.sort(query, Role, sort_by, sort_dir)
 
     return database.paginate(query, page, count)
-

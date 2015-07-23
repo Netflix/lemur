@@ -137,4 +137,3 @@ class PluginsTypeList(AuthenticatedResource):
 
 api.add_resource(PluginsList, '/plugins', endpoint='plugins')
 api.add_resource(PluginsTypeList, '/plugins/<plugin_type>', endpoint='pluginType')
-

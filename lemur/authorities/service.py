@@ -19,6 +19,7 @@ import lemur.certificates.service as cert_service
 
 from lemur.plugins.base import plugins
 
+
 def update(authority_id, active=None, roles=None):
     """
     Update a an authority with new values.
@@ -30,7 +31,7 @@ def update(authority_id, active=None, roles=None):
     """
     authority = get(authority_id)
     if roles:
-        authority = database.update_list(authority, 'roles',  Role, roles)
+        authority = database.update_list(authority, 'roles', Role, roles)
 
     if active:
         authority.active = active
@@ -62,9 +63,9 @@ def create(kwargs):
     for r in issuer_roles:
         role = role_service.create(
             r['name'],
-           password=r['password'],
-           description="{0} auto generated role".format(kwargs.get('pluginName')),
-           username=r['username'])
+            password=r['password'],
+            description="{0} auto generated role".format(kwargs.get('pluginName')),
+            username=r['username'])
 
         # the user creating the authority should be able to administer it
         if role.username == 'admin':
@@ -132,7 +133,7 @@ def get_authority_role(ca_name):
     """
     if g.current_user.is_admin:
         authority = get_by_name(ca_name)
-        #TODO we should pick admin ca roles for admin
+        # TODO we should pick admin ca roles for admin
         return authority.roles[0]
     else:
         for role in g.current_user.roles:
@@ -156,7 +157,7 @@ def render(args):
 
     if filt:
         terms = filt.split(';')
-        if 'active' in filt: # this is really weird but strcmp seems to not work here??
+        if 'active' in filt:  # this is really weird but strcmp seems to not work here??
             query = query.filter(Authority.active == terms[1])
         else:
             query = database.filter(query, Authority, terms)

@@ -12,6 +12,7 @@ from lemur.database import db
 
 from lemur.plugins.base import plugins
 
+
 class Destination(db.Model):
     __tablename__ = 'destinations'
     id = Column(Integer, primary_key=True)

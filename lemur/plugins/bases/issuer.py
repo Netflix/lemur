@@ -8,6 +8,7 @@
 """
 from lemur.plugins.base import Plugin
 
+
 class IssuerPlugin(Plugin):
     """
     This is the base class from which all of the supported
@@ -20,4 +21,3 @@ class IssuerPlugin(Plugin):
 
     def create_authority(self):
         raise NotImplemented
-

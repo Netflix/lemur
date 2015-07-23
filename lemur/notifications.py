@@ -58,7 +58,7 @@ def _find_superseded(domains):
         current_app.logger.info("Trying to resolve {0}".format(domain.name))
 
     query = query.filter(Certificate.domains.any(Domain.name.in_([x.name for x in domains])))
-    query = query.filter(Certificate.active == True)
+    query = query.filter(Certificate.active == True)  # noqa
     query = query.filter(Certificate.not_after >= arrow.utcnow().format('YYYY-MM-DD'))
     ss_list.extend(query.all())
 

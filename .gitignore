@@ -26,3 +26,5 @@ pip-log.txt
 docs/_build
 .editorconfig
 .idea
+test.conf
+lemur/tests/tmp

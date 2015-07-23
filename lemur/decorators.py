@@ -9,9 +9,10 @@ from flask import make_response, request, current_app
 from functools import update_wrapper
 
 
+# this is only used for dev
 def crossdomain(origin=None, methods=None, headers=None,
                 max_age=21600, attach_to_all=True,
-                automatic_options=True):
+                automatic_options=True):  # pragma: no cover
     if methods is not None:
         methods = ', '.join(sorted(x.upper() for x in methods))
 
@@ -44,12 +45,10 @@ def crossdomain(origin=None, methods=None, headers=None,
             h['Access-Control-Allow-Origin'] = origin
             h['Access-Control-Allow-Methods'] = get_methods()
             h['Access-Control-Max-Age'] = str(max_age)
-            #if headers is not None:
-            h['Access-Control-Allow-Headers'] = "Origin, X-Requested-With, Content-Type, Accept, Authorization "  # headers
+            h['Access-Control-Allow-Headers'] = "Origin, X-Requested-With, Content-Type, Accept, Authorization "
             h['Access-Control-Allow-Credentials'] = 'true'
             return resp
 
         f.provide_automatic_options = False
         return update_wrapper(wrapped_function, f)
     return decorator
-

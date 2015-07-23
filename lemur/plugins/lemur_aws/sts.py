@@ -25,17 +25,13 @@ def assume_service(account_number, service, region=None):
 
     elif service in 'elb':
         return boto.ec2.elb.connect_to_region(
-                region,
-                aws_access_key_id=role.credentials.access_key,
-                aws_secret_access_key=role.credentials.secret_key,
-                security_token=role.credentials.session_token)
+            region,
+            aws_access_key_id=role.credentials.access_key,
+            aws_secret_access_key=role.credentials.secret_key,
+            security_token=role.credentials.session_token)
 
     elif service in 'vpc':
         return boto.connect_vpc(
-                aws_access_key_id=role.credentials.access_key,
-                aws_secret_access_key=role.credentials.secret_key,
-                security_token=role.credentials.session_token)
-
-
-
-
+            aws_access_key_id=role.credentials.access_key,
+            aws_secret_access_key=role.credentials.secret_key,
+            security_token=role.credentials.session_token)

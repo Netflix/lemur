@@ -1,8 +1,5 @@
 import pytest
-from lemur.certificates.views import *
-
-def test_valid_authority(session):
-    assert 1 == 2
+from lemur.certificates.views import *  # noqa
 
 
 def test_pem_str():
@@ -40,18 +37,6 @@ def test_create_basic_csr():
         assert name.value in csr_config.values()
 
 
-def test_import_certificate():
-    assert 1 == 2
-
-
-def test_mint():
-    assert 1 == 2
-
-
-def test_disassociate_aws_account():
-    assert 1 == 2
-
-
 def test_cert_get_cn():
     from lemur.tests.certs import INTERNAL_VALID_LONG_CERT
     from lemur.certificates.models import cert_get_cn
@@ -59,19 +44,19 @@ def test_cert_get_cn():
     assert cert_get_cn(INTERNAL_VALID_LONG_CERT) == 'long.lived.com'
 
 
-def test_cert_get_domains():
+def test_cert_get_subAltDomains():
     from lemur.tests.certs import INTERNAL_VALID_SAN_CERT, INTERNAL_VALID_LONG_CERT
     from lemur.certificates.models import cert_get_domains
 
-    assert cert_get_domains(INTERNAL_VALID_LONG_CERT) == ['long.lived.com']
-    assert cert_get_domains(INTERNAL_VALID_SAN_CERT) == ['example2.long.com', 'example3.long.com', 'san.example.com']
+    assert cert_get_domains(INTERNAL_VALID_LONG_CERT) == []
+    assert cert_get_domains(INTERNAL_VALID_SAN_CERT) == ['example2.long.com', 'example3.long.com']
 
 
 def test_cert_is_san():
     from lemur.tests.certs import INTERNAL_VALID_SAN_CERT, INTERNAL_VALID_LONG_CERT
     from lemur.certificates.models import cert_is_san
 
-    assert cert_is_san(INTERNAL_VALID_LONG_CERT) == False
+    assert cert_is_san(INTERNAL_VALID_LONG_CERT) == None
     assert cert_is_san(INTERNAL_VALID_SAN_CERT) == True
 
 
@@ -79,13 +64,14 @@ def test_cert_is_wildcard():
     from lemur.tests.certs import INTERNAL_VALID_WILDCARD_CERT, INTERNAL_VALID_LONG_CERT
     from lemur.certificates.models import cert_is_wildcard
     assert cert_is_wildcard(INTERNAL_VALID_WILDCARD_CERT) == True
-    assert cert_is_wildcard(INTERNAL_VALID_LONG_CERT) == False
+    assert cert_is_wildcard(INTERNAL_VALID_LONG_CERT) == None
 
 
 def test_cert_get_bitstrength():
     from lemur.tests.certs import INTERNAL_VALID_LONG_CERT
     from lemur.certificates.models import cert_get_bitstrength
     assert cert_get_bitstrength(INTERNAL_VALID_LONG_CERT) == 2048
+
 
 def test_cert_get_issuer():
     from lemur.tests.certs import INTERNAL_VALID_LONG_CERT
@@ -324,4 +310,3 @@ def test_admin_certificate_credentials_delete(client):
 
 def test_admin_certificate_credentials_patch(client):
     assert client.patch(api.url_for(CertificatePrivateKey, certificate_id=1), data={}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
-

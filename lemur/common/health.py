@@ -10,6 +10,7 @@ from flask import Blueprint
 
 mod = Blueprint('healthCheck', __name__)
 
+
 @mod.route('/healthcheck')
 def health():
     return 'ok'

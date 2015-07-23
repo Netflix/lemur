@@ -18,7 +18,7 @@ from lemur.listeners.models import Listener
 from lemur.elbs import service as elb_service
 from lemur.certificates import service as certificate_service
 
-#from lemur.common.services.aws.elb import update_listeners, create_new_listeners, delete_listeners
+# from lemur.common.services.aws.elb import update_listeners, create_new_listeners, delete_listeners
 
 
 def verify_attachment(certificate_id, elb_account_number):
@@ -60,7 +60,7 @@ def create(elb_id, instance_protocol, instance_port, load_balancer_port, load_ba
 
     cert = verify_attachment(certificate_id, account_number)
     listener_tuple = (load_balancer_port, instance_port, load_balancer_protocol, cert.get_art(account_number),)
-    create_new_listeners(account_number, elb.region, elb.name, [listener_tuple])
+    # create_new_listeners(account_number, elb.region, elb.name, [listener_tuple])
 
     return {'message': 'Listener has been created'}
 
@@ -98,7 +98,7 @@ def update(listener_id, **kwargs):
 
     database.update(listener)
     listener_tuple = (listener.load_balancer_port, listener.instance_port, listener.load_balancer_protocol, arn,)
-    update_listeners(account_number, elb.region, elb.name, [listener_tuple], ports)
+    # update_listeners(account_number, elb.region, elb.name, [listener_tuple], ports)
 
     return {'message': 'Listener has been updated'}
 
@@ -106,7 +106,7 @@ def update(listener_id, **kwargs):
 def delete(listener_id):
     # first try to delete the listener in aws
     listener = get(listener_id)
-    delete_listeners(listener.elb.account.account_number, listener.elb.region, listener.elb.name, [listener.load_balancer_port])
+    # delete_listeners(listener.elb.account.account_number, listener.elb.region, listener.elb.name, [listener.load_balancer_port])
     # cleanup operation in lemur
     database.delete(listener)
 
@@ -149,7 +149,7 @@ def stats(**kwargs):
         query = query.filter(ELB.account_id == kwargs.get('account_id'))
 
     if kwargs.get('active') == 'true':
-        query = query.filter(Listener.certificate_id != None)
+        query = query.filter(Listener.certificate_id != None)  # noqa
 
     items = query.group_by(attr).all()
     results = []
@@ -157,6 +157,3 @@ def stats(**kwargs):
         if key:
             results.append({"key": key, "y": count})
     return results
-
-
-

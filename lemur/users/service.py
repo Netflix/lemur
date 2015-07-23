@@ -145,5 +145,3 @@ def render(args):
         query = database.sort(query, User, sort_by, sort_dir)
 
     return database.paginate(query, page, count)
-
-

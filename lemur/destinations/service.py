@@ -37,7 +37,7 @@ def update(destination_id, label, options, description):
     destination = get(destination_id)
 
     destination.label = label
-    description.options = options
+    destination.options = options
     destination.description = description
 
     return database.update(destination)
@@ -107,4 +107,3 @@ def render(args):
         query = database.sort(query, Destination, sort_by, sort_dir)
 
     return database.paginate(query, page, count)
-
