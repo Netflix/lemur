@@ -14,9 +14,10 @@ from flask import g, Blueprint, current_app
 from flask.ext.restful import reqparse, Resource, Api
 from flask.ext.principal import Identity, identity_changed
 
+from lemur.common.utils import get_psuedo_random_string
+
 from lemur.users import service as user_service
 from lemur.roles import service as role_service
-from lemur.certificates import service as cert_service
 from lemur.auth.service import create_token, fetch_token_header, get_rsa_public_key
 
 
@@ -202,7 +203,7 @@ class Ping(Resource):
 
             user = user_service.create(
                 profile['email'],
-                cert_service.create_challenge(),
+                get_psuedo_random_string(),
                 profile['email'],
                 True,
                 profile.get('thumbnailPhotoUrl'),

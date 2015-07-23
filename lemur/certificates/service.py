@@ -105,7 +105,6 @@ def mint(issuer_options):
 
     csr, private_key = create_csr(issuer_options)
 
-    issuer_options['challenge'] = create_challenge()  # TODO deprecate
     issuer_options['creator'] = g.user.email
     cert_body, cert_chain = issuer.create_certificate(csr, issuer_options)
 
@@ -352,18 +351,6 @@ def create_csr(csr_config):
     )
 
     return csr, pem
-
-
-# TODO deprecate
-def create_challenge():
-    """
-    Create a random and strongish csr challenge.
-    """
-    challenge = ''.join(random.choice(string.ascii_uppercase) for x in range(6))  # noqa
-    challenge += ''.join(random.choice("~!@#$%^&*()_+") for x in range(6))  # noqa
-    challenge += ''.join(random.choice(string.ascii_lowercase) for x in range(6))
-    challenge += ''.join(random.choice(string.digits) for x in range(6))  # noqa
-    return challenge
 
 
 def stats(**kwargs):
