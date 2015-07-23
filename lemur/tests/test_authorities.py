@@ -148,5 +148,3 @@ def test_admin_authorities_delete(client):
 
 def test_admin_certificate_authorities_get(client):
     assert client.get(api.url_for(CertificateAuthority, certificate_id=1), headers=VALID_ADMIN_HEADER_TOKEN).status_code == 404
-
-

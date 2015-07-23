@@ -6,8 +6,6 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import arrow
-import string
-import random
 
 from sqlalchemy import func, or_
 from flask import g, current_app

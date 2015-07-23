@@ -54,12 +54,12 @@ LEMUR_INSTANCE_PROFILE = 'Lemur'
 # These will be dependent on which 3rd party that Lemur is
 # configured to use.
 
-#CLOUDCA_URL = ''
-#CLOUDCA_PEM_PATH = ''
-#CLOUDCA_BUNDLE = ''
+# CLOUDCA_URL = ''
+# CLOUDCA_PEM_PATH = ''
+# CLOUDCA_BUNDLE = ''
 
 # number of years to issue if not specified
-#CLOUDCA_DEFAULT_VALIDITY = 2
+# CLOUDCA_DEFAULT_VALIDITY = 2
 
 VERISIGN_URL = 'http://example.com'
 VERISIGN_PEM_PATH = '~/'
