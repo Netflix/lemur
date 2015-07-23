@@ -139,9 +139,6 @@ setup(
             'aws_source = lemur.plugins.lemur_aws.plugin:AWSSourcePlugin'
         ],
     },
-    dependency_links=[
-        "git+ssh://git@github.com/pyca/cryptography.git@1.0.dev1#egg=cryptography-1.0.dev1"
-    ],
     classifiers=[
         'Framework :: Flask',
         'Intended Audience :: Developers',
