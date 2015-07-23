@@ -7,11 +7,6 @@ python:
 cache:
   directories:
     - node_modules
-    - .pip_download_cache
-    - "$HOME/virtualenv/python2.7.9"
-env:
-  global:
-    - PIP_DOWNLOAD_CACHE=".pip_download_cache"
 install:
   - make develop dev-postgres
 before_script:
