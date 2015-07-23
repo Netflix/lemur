@@ -46,10 +46,10 @@ install_requires = [
 
 tests_require = [
     'pyflakes',
-    'moto=0.4.6',
-    'nose=1.3.7',
-    'pytest=2.7.2',
-    'pytest-flask=0.8.1'
+    'moto==0.4.6',
+    'nose==1.3.7',
+    'pytest==2.7.2',
+    'pytest-flask==0.8.1'
 ]
 
 docs_require = [
