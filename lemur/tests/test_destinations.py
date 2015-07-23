@@ -78,7 +78,7 @@ def test_admin_destination_put(client):
 
 
 def test_admin_destination_delete(client):
-    assert client.delete(api.url_for(Destinations, destination_id=1), headers=VALID_ADMIN_HEADER_TOKEN).status_code == 500
+    assert client.delete(api.url_for(Destinations, destination_id=1), headers=VALID_ADMIN_HEADER_TOKEN).status_code == 200
 
 
 def test_admin_destination_patch(client):

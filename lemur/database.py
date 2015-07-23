@@ -176,8 +176,9 @@ def delete(model):
 
     :param model:
     """
-    db.session.delete(model)
-    db.session.commit()
+    if model:
+        db.session.delete(model)
+        db.session.commit()
 
 
 def filter(query, model, terms):
