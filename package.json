@@ -58,7 +58,7 @@
     "node": ">=0.10.0"
   },
   "scripts": {
-    "postinstall": "bower install --allow-root",
+    "postinstall": "bower install --allow-root --config.interactive=false",
     "pretest": "npm install && npm run build_static",
     "build_static": "gulp build",
     "prelint": "npm install",
