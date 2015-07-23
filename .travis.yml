@@ -15,7 +15,7 @@ env:
 install:
   - make develop dev-postgres
 before_script:
-  - psql -c 'create database lemur; create user lemur with password 'lemur;' -U postgres
+  - psql -c "create database lemur; create user lemur with password 'lemur;' -U postgres"
   - npm install -g bower
 script:
   - make lint
