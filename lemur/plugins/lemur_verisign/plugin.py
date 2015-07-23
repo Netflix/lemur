@@ -16,6 +16,7 @@ from flask import current_app
 from lemur.plugins.bases import IssuerPlugin
 from lemur.plugins import lemur_verisign as verisign
 from lemur.plugins.lemur_verisign import constants
+from lemur.common.utils import get_psuedo_random_string
 
 
 # https://support.venafi.com/entries/66445046-Info-VeriSign-Error-Codes
@@ -58,9 +59,57 @@ VERISIGN_ERRORS = {
 }
 
 
+def process_options(options):
+    """
+    Processes and maps the incoming issuer options to fields/options that
+    verisign understands
+
+    :param options:
+    :return: dict or valid verisign options
+    """
+    data = {
+        'challenge': get_psuedo_random_string(),
+        'serverType': 'Apache',
+        'certProductType': 'Server',
+        'firstName': current_app.config.get("VERISIGN_FIRST_NAME"),
+        'lastName': current_app.config.get("VERISIGN_LAST_NAME"),
+        'signatureAlgorithm': 'sha256WithRSAEncryption',
+        'email': current_app.config.get("VERISIGN_EMAIL")
+    }
+
+    if options.get('validityEnd'):
+        end_date, period = get_default_issuance(options)
+        data['specificEndDate'] = end_date
+        data['validityPeriod'] = period
+
+    return data
+
+
+def get_default_issuance(options):
+    """
+    Gets the default time range for certificates
+
+    :param options:
+    :return:
+    """
+    specific_end_date = arrow.get(options['validityEnd']).replace(days=-1).format("MM/DD/YYYY")
+
+    now = arrow.utcnow()
+    then = arrow.get(options['validityEnd'])
+
+    if then < now.replace(years=+1):
+        validity_period = '1Y'
+    elif then < now.replace(years=+2):
+        validity_period = '2Y'
+    else:
+        raise Exception("Verisign issued certificates cannot exceed two years in validity")
+
+    return specific_end_date, validity_period
+
+
 def handle_response(content):
     """
-    Helper function that helps with parsing responses from the Verisign API.
+    Helper function for parsing responses from the Verisign API.
     :param content:
     :return: :raise Exception:
     """
@@ -99,29 +148,8 @@ class VerisignIssuerPlugin(IssuerPlugin):
         """
         url = current_app.config.get("VERISIGN_URL") + '/enroll'
 
-        data = {
-            'csr': csr,
-            'challenge': issuer_options['challenge'],
-            'serverType': 'Apache',
-            'certProductType': 'Server',
-            'firstName': current_app.config.get("VERISIGN_FIRST_NAME"),
-            'lastName': current_app.config.get("VERISIGN_LAST_NAME"),
-            'signatureAlgorithm': 'sha256WithRSAEncryption',
-            'email': current_app.config.get("VERISIGN_EMAIL")
-        }
-
-        if issuer_options.get('validityEnd'):
-            data['specificEndDate'] = arrow.get(issuer_options['validityEnd']).replace(days=-1).format("MM/DD/YYYY")
-
-            now = arrow.utcnow()
-            then = arrow.get(issuer_options['validityEnd'])
-
-            if then < now.replace(years=+1):
-                data['validityPeriod'] = '1Y'
-            elif then < now.replace(years=+2):
-                data['validityPeriod'] = '2Y'
-            else:
-                raise Exception("Verisign issued certificates cannot exceed two years in validity")
+        data = process_options(issuer_options)
+        data['csr'] = csr
 
         current_app.logger.info("Requesting a new verisign certificate: {0}".format(data))
 

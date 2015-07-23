@@ -8,9 +8,7 @@ ADMINS = frozenset([''])
 
 THREADS_PER_PAGE = 8
 
-#############
-## General ##
-#############
+# General
 
 # These will need to be set to `True` if you are developing locally
 CORS = False
@@ -28,48 +26,30 @@ LEMUR_ENCRYPTION_KEY = 'jPd2xwxgVGXONqghHNq7/S761sffYSrT3UAgKwgtMxbqa0gmKYCfag==
 # this is a list of domains as regexes that only admins can issue
 LEMUR_RESTRICTED_DOMAINS = []
 
-#################
-## Mail Server ##
-#################
+# Mail Server
 
 # Lemur currently only supports SES for sending email, this address
 # needs to be verified
 LEMUR_EMAIL = ''
 LEMUR_SECURITY_TEAM_EMAIL = []
 
-#############
-## Logging ##
-#############
+# Logging
 
 LOG_LEVEL = "DEBUG"
 LOG_FILE = "lemur.log"
 
 
-##############
-## Database ##
-##############
+# Database
 
 # modify this if you are not using a local database
 SQLALCHEMY_DATABASE_URI = 'postgresql://lemur:lemur@localhost:5432/lemur'
 
 
-#########
-## AWS ##
-#########
+# AWS
 
-# Lemur will need STS assume role access to every destination you want to monitor
-#AWS_ACCOUNT_MAPPINGS = {
-#    '1111111111': 'myawsacount'
-#}
+LEMUR_INSTANCE_PROFILE = 'Lemur'
 
-## This is useful if you know you only want to monitor one destination
-#AWS_REGIONS = ['us-east-1']
-
-#LEMUR_INSTANCE_PROFILE = 'Lemur'
-
-#############
-## Issuers ##
-#############
+# Issuers
 
 # These will be dependent on which 3rd party that Lemur is
 # configured to use.
@@ -81,8 +61,8 @@ SQLALCHEMY_DATABASE_URI = 'postgresql://lemur:lemur@localhost:5432/lemur'
 # number of years to issue if not specified
 #CLOUDCA_DEFAULT_VALIDITY = 2
 
-#VERISIGN_URL = ''
-#VERISIGN_PEM_PATH = ''
-#VERISIGN_FIRST_NAME = ''
-#VERISIGN_LAST_NAME = ''
-#VERSIGN_EMAIL = ''
+VERISIGN_URL = 'http://example.com'
+VERISIGN_PEM_PATH = '~/'
+VERISIGN_FIRST_NAME = 'Jim'
+VERISIGN_LAST_NAME = 'Bob'
+VERSIGN_EMAIL = 'jim@example.com'

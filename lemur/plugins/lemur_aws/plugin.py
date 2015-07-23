@@ -58,10 +58,22 @@ class AWSSourcePlugin(SourcePlugin):
     author = 'Kevin Glisson'
     author_url = 'https://github.com/netflix/lemur'
 
-    options = {
-        'accountNumber': {'type': 'int'},
-        'pollRate': {'type': 'int', 'default': '60'}
-    }
+    options = [
+        {
+            'name': 'accountNumber',
+            'type': 'int',
+            'required': True,
+            'validation': '/^[0-9]{12,12}$/',
+            'helpMessage': 'Must be a valid AWS account number!',
+        },
+        {
+            'name': 'pollRate',
+            'type': 'int',
+            'required': False,
+            'helpMessage': 'Rate in seconds to poll source for new information.',
+            'default': '60',
+        }
+    ]
 
     def get_certificates(self, **kwargs):
         certs = []
