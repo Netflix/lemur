@@ -21,7 +21,7 @@ from subprocess import check_output
 
 ROOT = os.path.realpath(os.path.join(os.path.dirname(__file__)))
 
-install_requires=[
+install_requires = [
     'Flask>=0.10.1',
     'Flask-RESTful>=0.3.3',
     'Flask-SQLAlchemy>=1.0.5',
@@ -61,6 +61,7 @@ dev_requires = [
     'flake8>=2.0,<2.1',
 ]
 
+
 class SmartInstall(install):
     """
     Installs Lemur into the Python environment.
@@ -74,6 +75,7 @@ class SmartInstall(install):
         if self._needs_static():
             self.run_command('build_static')
         install.run(self)
+
 
 class DevelopWithBuildStatic(develop):
     def install_for_development(self):
@@ -137,6 +139,9 @@ setup(
             'aws_source = lemur.plugins.lemur_aws.plugin:AWSSourcePlugin'
         ],
     },
+    dependency_links=[
+        "git+ssh://git@github.com/pyca/cryptography.git@1.0.dev1#egg=cryptography-1.0.dev1"
+    ],
     classifiers=[
         'Framework :: Flask',
         'Intended Audience :: Developers',
