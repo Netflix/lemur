@@ -14,3 +14,6 @@ bcrypt = Bcrypt()
 
 from flask.ext.principal import Principal
 principal = Principal()
+
+from flask_mail import Mail
+smtp_mail = Mail()

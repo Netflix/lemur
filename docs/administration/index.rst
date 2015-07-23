@@ -63,26 +63,6 @@ Basic Configuration
         SQLALCHEMY_DATABASE_URI = 'postgresql://<user>:<password>@<hostname>:5432/lemur'
 
 
-.. data:: LEMUR_MAIL
-    :noindex:
-
-        Lemur mail service
-
-    ::
-
-        LEMUR_MAIL = 'lemur.example.com'
-
-
-.. data:: LEMUR_SECURITY_TEAM_EMAIL
-    :noindex:
-
-        This is an email or list of emails that should be notified when a certificate is expiring. It is also the contact email address for any discovered certificate.
-
-    ::
-
-        LEMUR_SECURITY_TEAM_EMAIL = ['security@example.com']
-
-
 .. data:: LEMUR_RESTRICTED_DOMAINS
     :noindex:
 
@@ -120,6 +100,57 @@ Basic Configuration
     ::
 
         LEMUR_ENCRYPTION_KEY = 'supersupersecret'
+
+
+Notification Options
+--------------------
+
+Lemur currently has very basic support for notifications. Notifications are sent to the certificate creator, owner and
+security team as specified by the `SECURITY_TEAM_EMAIL` configuration parameter.
+
+The template for all of these notifications lives under lemur/template/event.html and can be easily modified to fit your
+needs.
+
+Certificates marked as in-active will **not** be notified of upcoming expiration. This enables a user to essentially
+silence the expiration. If a certificate is active and is expiring the above will be notified at 30, 15, 5, 2 days
+respectively.
+
+Lemur supports sending certification expiration notifications through SES and SMTP.
+
+
+.. data:: LEMUR_EMAIL_SENDER
+    :noindex:
+
+            Specifies which service will be delivering notification emails. Valid values are `SMTP` or `SES`
+
+.. note::
+    If using STMP as your provider you will need to define additional configuration options as specified by Flask-Mail.
+    See: `Flask-Mail <https://pythonhosted.org/Flask-Mail>`_
+
+    If you are using SES the email specified by the `LEMUR_MAIL` configuration will need to be verified by AWS before
+    you can send any mail. See: `Verifying Email Address in Amazon SES <http://docs.aws.amazon.com/ses/latest/DeveloperGuide/verify-email-addresses.html>`_
+
+.. data:: LEMUR_MAIL
+    :noindex:
+
+            Lemur sender's email
+
+        ::
+
+        LEMUR_MAIL = 'lemur.example.com'
+
+
+.. data:: LEMUR_SECURITY_TEAM_EMAIL
+    :noindex:
+
+            This is an email or list of emails that should be notified when a certificate is expiring. It is also the contact email address for any discovered certificate.
+
+        ::
+
+        LEMUR_SECURITY_TEAM_EMAIL = ['security@example.com']
+
+
+.. data::
 
 
 Authority Options
@@ -190,19 +221,6 @@ If you are not using PING you do not need to configure any of these options
 
         PING_JWKS_URL = "https://<yourpingserver>/pf/JWKS"
 
-
-Notifications
-=============
-
-Lemur currently has very basic support for notifications. Notifications are send to the certificate creator, owner and
-security team as specified by the `SECURITY_TEAM_EMAIL` configuration parameter.
-
-The template for all of these notifications lives under lemur/template/event.html and can be easily modified to fit your
-needs.
-
-Certificates marked as in-active will **not** be notified of upcoming expiration. This enables a user to essentially
-silence the expiration. If a certificate is active and is expiring the above will be notified at 30, 15, 5, 2 days
-respectively. Lemur will not attempt to notify about certificate that have already expired.
 
 
 AWS Configuration
