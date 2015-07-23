@@ -72,8 +72,6 @@ LEMUR_RESTRICTED_DOMAINS = []
 
 # Mail Server
 
-# Lemur currently only supports SES for sending email, this address
-# needs to be verified
 LEMUR_EMAIL = ''
 LEMUR_SECURITY_TEAM_EMAIL = []
 
@@ -92,34 +90,32 @@ SQLALCHEMY_DATABASE_URI = 'postgresql://lemur:lemur@localhost:5432/lemur'
 # AWS
 
 # Lemur will need STS assume role access to every destination you want to monitor
-#AWS_ACCOUNT_MAPPINGS = {{
+# AWS_ACCOUNT_MAPPINGS = {{
 #    '1111111111': 'myawsacount'
-#}}
+# }}
 
 ## This is useful if you know you only want to monitor one destination
 #AWS_REGIONS = ['us-east-1']
 
 #LEMUR_INSTANCE_PROFILE = 'Lemur'
 
-#############
-## Issuers ##
-#############
+# Issuers
 
 # These will be dependent on which 3rd party that Lemur is
 # configured to use.
 
-#CLOUDCA_URL = ''
-#CLOUDCA_PEM_PATH = ''
-#CLOUDCA_BUNDLE = ''
+# CLOUDCA_URL = ''
+# CLOUDCA_PEM_PATH = ''
+# CLOUDCA_BUNDLE = ''
 
 # number of years to issue if not specified
-#CLOUDCA_DEFAULT_VALIDITY = 2
+# CLOUDCA_DEFAULT_VALIDITY = 2
 
-#VERISIGN_URL = ''
-#VERISIGN_PEM_PATH = ''
-#VERISIGN_FIRST_NAME = ''
-#VERISIGN_LAST_NAME = ''
-#VERSIGN_EMAIL = ''
+# VERISIGN_URL = ''
+# VERISIGN_PEM_PATH = ''
+# VERISIGN_FIRST_NAME = ''
+# VERISIGN_LAST_NAME = ''
+# VERSIGN_EMAIL = ''
 """
 
 

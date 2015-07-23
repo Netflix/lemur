@@ -12,12 +12,18 @@ import ssl
 import socket
 
 import arrow
+import boto.ses
+
 from flask import current_app
+from flask_mail import Message
 
 from lemur import database
-from lemur.common.services.aws import ses
 from lemur.certificates.models import Certificate
 from lemur.domains.models import Domain
+
+from lemur.templates.config import env
+from lemur.extensions import smtp_mail
+
 
 NOTIFICATION_INTERVALS = [30, 15, 5, 2]
 
@@ -84,7 +90,7 @@ def send_expiration_notifications():
 
     for messages, recipients in roll_ups:
         notifications += 1
-        ses.send("Certificate Expiration", dict(messages=messages), 'event', recipients)
+        send("Certificate Expiration", dict(messages=messages), 'event', recipients)
 
     print notifications
     current_app.logger.info("Lemur has sent {0} certification notifications".format(notifications))
@@ -182,3 +188,31 @@ def _create_roll_ups(messages):
         else:
             roll_ups.append(([message_data], recipients))
     return roll_ups
+
+
+def send(subject, data, email_type, recipients):
+    """
+    Configures all Lemur email messaging
+
+    :param subject:
+    :param data:
+    :param email_type:
+    :param recipients:
+    """
+    # jinja template depending on type
+    template = env.get_template('{}.html'.format(email_type))
+    body = template.render(**data)
+
+    s_type = current_app.config.get("LEMUR_EMAIL_SENDER").lower()
+    if s_type == 'ses':
+        conn = boto.connect_ses()
+        conn.send_email(current_app.config.get("LEMUR_EMAIL"), subject, body, recipients, format='html')
+
+    elif s_type == 'smtp':
+        msg = Message(subject, recipients=recipients)
+        msg.body = ""  # kinda a weird api for sending html emails
+        msg.html = body
+        smtp_mail.send(msg)
+
+    else:
+        current_app.logger.error("No mail carrier specified, notification emails were not able to be sent!")

@@ -29,6 +29,7 @@ install_requires = [
     'Flask-Migrate>=1.4.0',
     'Flask-Bcrypt>=0.6.2',
     'Flask-Principal>=0.4.0',
+    'Flask-Mail==0.9.1',
     'SQLAlchemy-Utils>=0.30.11',
     'BeautifulSoup4',
     'requests>=2.7.0',
