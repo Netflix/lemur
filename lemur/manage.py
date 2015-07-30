@@ -32,6 +32,8 @@ from lemur.destinations.models import Destination  # noqa
 from lemur.domains.models import Domain  # noqa
 from lemur.elbs.models import ELB  # noqa
 from lemur.listeners.models import Listener  # noqa
+from lemur.notifications.models import Notification  # noqa
+
 
 manager = Manager(create_app)
 manager.add_option('-c', '--config', dest='config')

@@ -22,27 +22,27 @@ from subprocess import check_output
 ROOT = os.path.realpath(os.path.join(os.path.dirname(__file__)))
 
 install_requires = [
-    'Flask>=0.10.1',
-    'Flask-RESTful>=0.3.3',
-    'Flask-SQLAlchemy>=1.0.5',
-    'Flask-Script>=2.0.5',
-    'Flask-Migrate>=1.4.0',
-    'Flask-Bcrypt>=0.6.2',
-    'Flask-Principal>=0.4.0',
+    'Flask==0.10.1',
+    'Flask-RESTful==0.3.3',
+    'Flask-SQLAlchemy==2.0',
+    'Flask-Script==2.0.5',
+    'Flask-Migrate==1.4.0',
+    'Flask-Bcrypt==0.6.2',
+    'Flask-Principal==0.4.0',
     'Flask-Mail==0.9.1',
-    'SQLAlchemy-Utils>=0.30.11',
+    'SQLAlchemy-Utils==0.30.11',
     'BeautifulSoup4',
-    'requests>=2.7.0',
-    'psycopg2>=2.6.1',
-    'arrow>=0.5.4',
-    'boto>=2.38.0',  # we might make this optional
-    'six>=1.9.0',
-    'gunicorn>=19.3.0',
-    'pycrypto>=2.6.1',
+    'requests==2.7.0',
+    'psycopg2==2.6.1',
+    'arrow==0.5.4',
+    'boto==2.38.0',  # we might make this optional
+    'six==1.9.0',
+    'gunicorn==19.3.0',
+    'pycrypto==2.6.1',
     'cryptography>=1.0dev',
-    'pyopenssl>=0.15.1',
-    'pyjwt>=1.0.1',
-    'xmltodict>=0.9.2'
+    'pyopenssl==0.15.1',
+    'pyjwt==1.0.1',
+    'xmltodict==0.9.2'
 ]
 
 tests_require = [
@@ -138,6 +138,7 @@ setup(
             'cloudca_source = lemur.plugins.lemur_cloudca.plugin:CloudCASourcePlugin'
             'aws_destination = lemur.plugins.lemur_aws.plugin:AWSDestinationPlugin',
             'aws_source = lemur.plugins.lemur_aws.plugin:AWSSourcePlugin'
+            'email_notification = lemur.plugins.lemur_email.plugin:EmailNotificationPlugin'
         ],
     },
     classifiers=[

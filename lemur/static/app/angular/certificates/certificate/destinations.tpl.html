@@ -3,26 +3,26 @@
         Destinations
     </label>
     <div class="col-sm-10">
-      <div class="input-group">
-        <input type="text" ng-model="certificate.selectedDestination" placeholder="AWS, TheSecret..."
-               typeahead="destination.label for destination in destinationService.findDestinationsByName($viewValue)" typeahead-loading="loadingDestinations"
-               class="form-control input-md" typeahead-on-select="certificate.attachDestination($item)" typeahead-min-wait="50"
-               tooltip="Lemur can upload certificates to any pre-defined destination"
-               tooltip-trigger="focus" tooltip-placement="top">
+        <div class="input-group">
+            <input type="text" ng-model="certificate.selectedDestination" placeholder="AWS, TheSecret..."
+                   typeahead="destination.label for destination in destinationService.findDestinationsByName($viewValue)" typeahead-loading="loadingDestinations"
+                   class="form-control input-md" typeahead-on-select="certificate.attachDestination($item)" typeahead-min-wait="50"
+                   tooltip="Lemur can upload certificates to any pre-defined destination"
+                   tooltip-trigger="focus" tooltip-placement="top">
           <span class="input-group-btn">
             <button ng-model="destinations.show" class="btn btn-md btn-default" btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
-              <span class="badge">{{ certificate.destinations.length || 0 }}</span>
+                <span class="badge">{{ certificate.destinations.length || 0 }}</span>
             </button>
           </span>
-      </div>
-      <table class="table">
-        <tr ng-repeat="destination in certificate.destinations track by $index">
-          <td><a class="btn btn-sm btn-info" href="#/destinations/{{ destination.id }}/certificates">{{ destination.label }}</a></td>
-          <td><span class="text-muted">{{ destination.description }}</span></td>
-          <td>
-            <button type="button" ng-click="certificate.removeDestination($index)" class="btn btn-danger btn-sm pull-right">Remove</button>
-          </td>
-        </tr>
-      </table>
+        </div>
+        <table class="table">
+            <tr ng-repeat="destination in certificate.destinations track by $index">
+                <td><a class="btn btn-sm btn-info" href="#/destinations/{{ destination.id }}/certificates">{{ destination.label }}</a></td>
+                <td><span class="text-muted">{{ destination.description }}</span></td>
+                <td>
+                    <button type="button" ng-click="certificate.removeDestination($index)" class="btn btn-danger btn-sm pull-right">Remove</button>
+                </td>
+            </tr>
+        </table>
     </div>
 </div>

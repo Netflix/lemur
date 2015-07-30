@@ -15,6 +15,7 @@ from lemur.plugins.base import plugins
 from lemur.certificates.models import Certificate
 
 from lemur.destinations.models import Destination
+from lemur.notifications.models import Notification
 from lemur.authorities.models import Authority
 
 from lemur.roles.models import Role
@@ -75,7 +76,7 @@ def find_duplicates(cert_body):
     return Certificate.query.filter_by(body=cert_body).all()
 
 
-def update(cert_id, owner, active):
+def update(cert_id, owner, description, active, destinations, notifications):
     """
     Updates a certificate.
 
@@ -87,6 +88,11 @@ def update(cert_id, owner, active):
     cert = get(cert_id)
     cert.owner = owner
     cert.active = active
+    cert.description = description
+
+    database.update_list(cert, 'notifications', Notification, notifications)
+    database.update_list(cert, 'destinations', Destination, destinations)
+
     return database.update(cert)
 
 
@@ -106,7 +112,8 @@ def mint(issuer_options):
     issuer_options['creator'] = g.user.email
     cert_body, cert_chain = issuer.create_certificate(csr, issuer_options)
 
-    cert = save_cert(cert_body, private_key, cert_chain, issuer_options.get('destinations'))
+    cert = Certificate(cert_body, private_key, cert_chain)
+
     cert.user = g.user
     cert.authority = authority
     database.update(cert)
@@ -139,29 +146,9 @@ def import_certificate(**kwargs):
     if kwargs.get('user'):
         cert.user = kwargs.get('user')
 
-    if kwargs.get('destination'):
-        cert.destinations.append(kwargs.get('destination'))
+    database.update_list(cert, 'notifications', Notification, kwargs.get('notifications'))
 
     cert = database.create(cert)
-    return cert
-
-
-def save_cert(cert_body, private_key, cert_chain, destinations):
-    """
-    Determines if the certificate needs to be uploaded to AWS or other services.
-
-    :param cert_body:
-    :param private_key:
-    :param cert_chain:
-    :param destinations:
-    """
-    cert = Certificate(cert_body, private_key, cert_chain)
-
-    # we should save them to any destination that is requested
-    for destination in destinations:
-        destination_plugin = plugins.get(destination['plugin']['slug'])
-        destination_plugin.upload(cert, private_key, cert_chain, destination['plugin']['pluginOptions'])
-
     return cert
 
 
@@ -169,12 +156,14 @@ def upload(**kwargs):
     """
     Allows for pre-made certificates to be imported into Lemur.
     """
-    cert = save_cert(
+    cert = Certificate(
         kwargs.get('public_cert'),
         kwargs.get('private_key'),
         kwargs.get('intermediate_cert'),
-        kwargs.get('destinations')
     )
+
+    database.update_list(cert, 'destinations', Destination, kwargs.get('destinations'))
+    database.update_list(cert, 'notifications', Notification, kwargs.get('notifications'))
 
     cert.owner = kwargs['owner']
     cert = database.create(cert)
@@ -189,10 +178,18 @@ def create(**kwargs):
     cert, private_key, cert_chain = mint(kwargs)
 
     cert.owner = kwargs['owner']
+
+    database.update_list(cert, 'destinations', Destination, kwargs.get('destinations'))
+
     database.create(cert)
     cert.description = kwargs['description']
     g.user.certificates.append(cert)
     database.update(g.user)
+
+    # do this after the certificate has already been created because if it fails to upload to the third party
+    # we do not want to lose the certificate information.
+    database.update_list(cert, 'notifications', Notification, kwargs.get('notifications'))
+    database.update(cert)
     return cert
 
 
@@ -207,6 +204,7 @@ def render(args):
 
     time_range = args.pop('time_range')
     destination_id = args.pop('destination_id')
+    notification_id = args.pop('notification_id', None)
     show = args.pop('show')
     # owner = args.pop('owner')
     # creator = args.pop('creator')  # TODO we should enabling filtering by owner
@@ -248,6 +246,9 @@ def render(args):
     if destination_id:
         query = query.filter(Certificate.destinations.any(Destination.id == destination_id))
 
+    if notification_id:
+        query = query.filter(Certificate.notifications.any(Notification.id == notification_id))
+
     if time_range:
         to = arrow.now().replace(weeks=+time_range).format('YYYY-MM-DD')
         now = arrow.now().format('YYYY-MM-DD')
@@ -284,11 +285,17 @@ def create_csr(csr_config):
         x509.BasicConstraints(ca=False, path_length=None), critical=True,
     )
 
-    # for k, v in csr_config.get('extensions', {}).items():
-    #    if k == 'subAltNames':
-    #        builder = builder.add_extension(
-    #            x509.SubjectAlternativeName([x509.DNSName(n) for n in v]), critical=True,
-    #        )
+    for k, v in csr_config.get('extensions', {}).items():
+        if k == 'subAltNames':
+            # map types to their x509 objects
+            general_names = []
+            for name in v['names']:
+                if name['nameType'] == 'DNSName':
+                    general_names.append(x509.DNSName(name['value']))
+
+            builder = builder.add_extension(
+                x509.SubjectAlternativeName(general_names), critical=True
+            )
 
     # TODO support more CSR options, none of the authorities support these atm
     #    builder.add_extension(

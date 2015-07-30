@@ -25,6 +25,12 @@ certificate_destination_associations = db.Table('certificate_destination_associa
                                                        ForeignKey('certificates.id', ondelete='cascade'))
                                                 )
 
+certificate_notification_associations = db.Table('certificate_notification_associations',
+                                                Column('notification_id', Integer,
+                                                       ForeignKey('notifications.id', ondelete='cascade')),
+                                                Column('certificate_id', Integer,
+                                                       ForeignKey('certificates.id', ondelete='cascade'))
+                                                )
 roles_users = db.Table('roles_users',
                        Column('user_id', Integer, ForeignKey('users.id')),
                        Column('role_id', Integer, ForeignKey('roles.id'))

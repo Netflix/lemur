@@ -46,7 +46,7 @@ angular.module('lemur')
     $scope.edit = function (authorityId) {
       var modalInstance = $modal.open({
         animation: true,
-        templateUrl: '/angular/authorities/authority/authorityWizard.tpl.html',
+        templateUrl: '/angular/authorities/authority/authorityEdit.tpl.html',
         controller: 'AuthorityEditController',
         size: 'lg',
         resolve: {

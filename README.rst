@@ -1,6 +1,9 @@
 Lemur
 *****
 
+[![Build Status](https://magnum.travis-ci.com/Netflix/lemur.svg?token=i5tcyx3z4N7pEVTxTeuP&branch=master)](https://magnum.travis-ci.com/Netflix/lemur)
+
+
 Lemur manages SSL certificate creation. It provides a central portal for developers to issuer their own SSL certificates with 'sane' defaults.
 
 It works on CPython 2.7. It is known

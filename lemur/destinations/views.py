@@ -14,7 +14,6 @@ from lemur.auth.service import AuthenticatedResource
 from lemur.auth.permissions import admin_permission
 from lemur.common.utils import paginated_parser, marshal_items
 
-from lemur.plugins.views import FIELDS as PLUGIN_FIELDS
 
 mod = Blueprint('destinations', __name__)
 api = Api(mod)
@@ -22,7 +21,8 @@ api = Api(mod)
 
 FIELDS = {
     'description': fields.String,
-    'plugin': fields.Nested(PLUGIN_FIELDS, attribute='plugin'),
+    'destinationOptions': fields.Raw(attribute='options'),
+    'pluginName': fields.String(attribute='plugin_name'),
     'label': fields.String,
     'id': fields.Integer,
 }
@@ -60,19 +60,23 @@ class DestinationsList(AuthenticatedResource):
               {
                 "items": [
                     {
-                      "id": 2,
-                      "accountNumber": 222222222,
-                      "label": "account2",
-                      "comments": "this is a thing"
-                    },
-                    {
-                      "id": 1,
-                      "accountNumber": 11111111111,
-                      "label": "account1",
-                      "comments": "this is a thing"
-                    },
-                  ]
-                "total": 2
+                        "destinationOptions": [
+                            {
+                                "name": "accountNumber",
+                                "required": true,
+                                "value": 111111111112,
+                                "helpMessage": "Must be a valid AWS account number!",
+                                "validation": "/^[0-9]{12,12}$/",
+                                "type": "int"
+                            }
+                        ],
+                        "pluginName": "aws-destination",
+                        "id": 3,
+                        "description": "test",
+                        "label": "test"
+                    }
+                ],
+                "total": 1
               }
 
            :query sortBy: field to sort on
@@ -104,9 +108,20 @@ class DestinationsList(AuthenticatedResource):
               Accept: application/json, text/javascript
 
               {
-                 "accountNumber": 11111111111,
-                 "label": "account1,
-                 "comments": "this is a thing"
+                "destinationOptions": [
+                    {
+                        "name": "accountNumber",
+                        "required": true,
+                        "value": 111111111112,
+                        "helpMessage": "Must be a valid AWS account number!",
+                        "validation": "/^[0-9]{12,12}$/",
+                        "type": "int"
+                    }
+                ],
+                "pluginName": "aws-destination",
+                "id": 3,
+                "description": "test",
+                "label": "test"
               }
 
            **Example response**:
@@ -118,15 +133,24 @@ class DestinationsList(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                "id": 1,
-                "accountNumber": 11111111111,
-                "label": "account1",
-                "comments": "this is a thing"
+                "destinationOptions": [
+                    {
+                        "name": "accountNumber",
+                        "required": true,
+                        "value": 111111111112,
+                        "helpMessage": "Must be a valid AWS account number!",
+                        "validation": "/^[0-9]{12,12}$/",
+                        "type": "int"
+                    }
+                ],
+                "pluginName": "aws-destination",
+                "id": 3,
+                "description": "test",
+                "label": "test"
               }
 
-           :arg accountNumber: aws account number
            :arg label: human readable account label
-           :arg comments: some description about the account
+           :arg description: some description about the account
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
@@ -167,10 +191,20 @@ class Destinations(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                "id": 1,
-                "accountNumber": 11111111111,
-                "label": "account1",
-                "comments": "this is a thing"
+                "destinationOptions": [
+                    {
+                        "name": "accountNumber",
+                        "required": true,
+                        "value": 111111111112,
+                        "helpMessage": "Must be a valid AWS account number!",
+                        "validation": "/^[0-9]{12,12}$/",
+                        "type": "int"
+                    }
+                ],
+                "pluginName": "aws-destination",
+                "id": 3,
+                "description": "test",
+                "label": "test"
               }
 
            :reqheader Authorization: OAuth token to authenticate
@@ -194,6 +228,22 @@ class Destinations(AuthenticatedResource):
               Host: example.com
               Accept: application/json, text/javascript
 
+              {
+                "destinationOptions": [
+                    {
+                        "name": "accountNumber",
+                        "required": true,
+                        "value": 111111111112,
+                        "helpMessage": "Must be a valid AWS account number!",
+                        "validation": "/^[0-9]{12,12}$/",
+                        "type": "int"
+                    }
+                ],
+                "pluginName": "aws-destination",
+                "id": 3,
+                "description": "test",
+                "label": "test"
+              }
 
            **Example response**:
 
@@ -204,24 +254,34 @@ class Destinations(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                "id": 1,
-                "accountNumber": 11111111111,
-                "label": "labelChanged",
-                "comments": "this is a thing"
+                "destinationOptions": [
+                    {
+                        "name": "accountNumber",
+                        "required": true,
+                        "value": 111111111112,
+                        "helpMessage": "Must be a valid AWS account number!",
+                        "validation": "/^[0-9]{12,12}$/",
+                        "type": "int"
+                    }
+                ],
+                "pluginName": "aws-destination",
+                "id": 3,
+                "description": "test",
+                "label": "test"
               }
 
            :arg accountNumber: aws account number
            :arg label: human readable account label
-           :arg comments: some description about the account
+           :arg description: some description about the account
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
         self.reqparse.add_argument('label', type=str, location='json', required=True)
-        self.reqparse.add_argument('pluginOptions', type=dict, location='json', required=True)
+        self.reqparse.add_argument('plugin', type=dict, location='json', required=True)
         self.reqparse.add_argument('description', type=str, location='json')
 
         args = self.reqparse.parse_args()
-        return service.update(destination_id, args['label'], args['options'], args['description'])
+        return service.update(destination_id, args['label'], args['plugin']['pluginOptions'], args['description'])
 
     @admin_permission.require(http_exception=403)
     def delete(self, destination_id):
@@ -256,6 +316,28 @@ class CertificateDestinations(AuthenticatedResource):
               HTTP/1.1 200 OK
               Vary: Accept
               Content-Type: text/javascript
+
+              {
+                "items": [
+                    {
+                        "destinationOptions": [
+                            {
+                                "name": "accountNumber",
+                                "required": true,
+                                "value": 111111111112,
+                                "helpMessage": "Must be a valid AWS account number!",
+                                "validation": "/^[0-9]{12,12}$/",
+                                "type": "int"
+                            }
+                        ],
+                        "pluginName": "aws-destination",
+                        "id": 3,
+                        "description": "test",
+                        "label": "test"
+                    }
+                ],
+                "total": 1
+              }
 
            :query sortBy: field to sort on
            :query sortDir: acs or desc

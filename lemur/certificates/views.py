@@ -271,7 +271,7 @@ class CertificatesList(AuthenticatedResource):
         """
         self.reqparse.add_argument('extensions', type=dict, location='json')
         self.reqparse.add_argument('destinations', type=list, default=[], location='json')
-        self.reqparse.add_argument('elbs', type=list, location='json')
+        self.reqparse.add_argument('notifications', type=list, default=[], location='json')
         self.reqparse.add_argument('owner', type=str, location='json')
         self.reqparse.add_argument('validityStart', type=str, location='json')  # TODO validate
         self.reqparse.add_argument('validityEnd', type=str, location='json')  # TODO validate
@@ -329,7 +329,8 @@ class CertificatesUpload(AuthenticatedResource):
                  "publicCert": "---Begin Public...",
                  "intermediateCert": "---Begin Public...",
                  "privateKey": "---Begin Private..."
-                 "destinations": []
+                 "destinations": [],
+                 "notifications": []
               }
 
            **Example response**:
@@ -371,6 +372,7 @@ class CertificatesUpload(AuthenticatedResource):
         self.reqparse.add_argument('owner', type=str, required=True, location='json')
         self.reqparse.add_argument('publicCert', type=pem_str, required=True, dest='public_cert', location='json')
         self.reqparse.add_argument('destinations', type=list, default=[], dest='destinations', location='json')
+        self.reqparse.add_argument('notifications', type=list, default=[], dest='notifications', location='json')
         self.reqparse.add_argument('intermediateCert', type=pem_str, dest='intermediate_cert', location='json')
         self.reqparse.add_argument('privateKey', type=private_key_str, dest='private_key', location='json')
 
@@ -523,6 +525,8 @@ class Certificates(AuthenticatedResource):
               {
                  "owner": "jimbob@example.com",
                  "active": false
+                 "notifications": [],
+                 "destinations": []
               }
 
            **Example response**:
@@ -549,7 +553,7 @@ class Certificates(AuthenticatedResource):
                 "notBefore": "2015-06-05T17:09:39",
                 "notAfter": "2015-06-10T17:09:39",
                 "cn": "example.com",
-                "status": "unknown"
+                "status": "unknown",
               }
 
            :reqheader Authorization: OAuth token to authenticate
@@ -558,6 +562,9 @@ class Certificates(AuthenticatedResource):
         """
         self.reqparse.add_argument('active', type=bool, location='json')
         self.reqparse.add_argument('owner', type=str, location='json')
+        self.reqparse.add_argument('description', type=str, location='json')
+        self.reqparse.add_argument('destinations', type=list, default=[], location='json')
+        self.reqparse.add_argument('notifications', type=list, default=[], location='json')
         args = self.reqparse.parse_args()
 
         cert = service.get(certificate_id)
@@ -565,13 +572,96 @@ class Certificates(AuthenticatedResource):
         permission = UpdateCertificatePermission(certificate_id, hasattr(role, 'id'))
 
         if permission.can():
-            return service.update(certificate_id, args['owner'], args['active'])
+            return service.update(
+                certificate_id,
+                args['owner'],
+                args['description'],
+                args['active'],
+                args['destinations'],
+                args['notifications']
+            )
 
         return dict(message='You are not authorized to update this certificate'), 403
 
+
+class NotificationCertificatesList(AuthenticatedResource):
+    """ Defines the 'certificates' endpoint """
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        super(NotificationCertificatesList, self).__init__()
+
+    @marshal_items(FIELDS)
+    def get(self, notification_id):
+        """
+        .. http:get:: /notifications/1/certificates
+
+           The current list of certificates for a given notification
+
+           **Example request**:
+
+           .. sourcecode:: http
+
+              GET /notifications/1/certificates HTTP/1.1
+              Host: example.com
+              Accept: application/json, text/javascript
+
+           **Example response**:
+
+           .. sourcecode:: http
+
+              HTTP/1.1 200 OK
+              Vary: Accept
+              Content-Type: text/javascript
+
+              {
+                "items": [
+                    {
+                      "id": 1,
+                      "name": "cert1",
+                      "description": "this is cert1",
+                      "bits": 2048,
+                      "deleted": false,
+                      "issuer": "ExampeInc.",
+                      "serial": "123450",
+                      "chain": "-----Begin ...",
+                      "body": "-----Begin ...",
+                      "san": true,
+                      "owner": 'bob@example.com",
+                      "active": true,
+                      "notBefore": "2015-06-05T17:09:39",
+                      "notAfter": "2015-06-10T17:09:39",
+                      "cn": "example.com",
+                      "status": "unknown"
+                    }
+                  ]
+                "total": 1
+              }
+
+           :query sortBy: field to sort on
+           :query sortDir: acs or desc
+           :query page: int. default is 1
+           :query filter: key value pair. format is k=v;
+           :query limit: limit number. default is 10
+           :reqheader Authorization: OAuth token to authenticate
+           :statuscode 200: no error
+           :statuscode 403: unauthenticated
+        """
+        parser = paginated_parser.copy()
+        parser.add_argument('timeRange', type=int, dest='time_range', location='args')
+        parser.add_argument('owner', type=bool, location='args')
+        parser.add_argument('id', type=str, location='args')
+        parser.add_argument('active', type=bool, location='args')
+        parser.add_argument('destinationId', type=int, dest="destination_id", location='args')
+        parser.add_argument('creator', type=str, location='args')
+        parser.add_argument('show', type=str, location='args')
+
+        args = parser.parse_args()
+        args['notification_id'] = notification_id
+        return service.render(args)
 
 api.add_resource(CertificatesList, '/certificates', endpoint='certificates')
 api.add_resource(Certificates, '/certificates/<int:certificate_id>', endpoint='certificate')
 api.add_resource(CertificatesStats, '/certificates/stats', endpoint='certificateStats')
 api.add_resource(CertificatesUpload, '/certificates/upload', endpoint='certificateUpload')
 api.add_resource(CertificatePrivateKey, '/certificates/<int:certificate_id>/key', endpoint='privateKeyCertificates')
+api.add_resource(NotificationCertificatesList, '/notifications/<int:notification_id>/certificates', endpoint='notificationCertificates')

@@ -2,15 +2,29 @@
 
 angular.module('lemur')
 
-  .controller('AuthorityEditController', function ($scope, $routeParams, AuthorityApi, AuthorityService, RoleService){
-    AuthorityApi.get($routeParams.id).then(function (authority) {
+  .controller('AuthorityEditController', function ($scope, $modalInstance, AuthorityApi, AuthorityService, RoleService, editId){
+    AuthorityApi.get(editId).then(function (authority) {
       AuthorityService.getRoles(authority);
       $scope.authority = authority;
     });
 
     $scope.authorityService = AuthorityService;
-    $scope.save = AuthorityService.update;
     $scope.roleService = RoleService;
+
+    $scope.save = function (authority) {
+      AuthorityService.update(authority).then(
+        function () {
+          $modalInstance.close();
+        },
+        function () {
+
+        }
+      );
+    };
+
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
   })
 
   .controller('AuthorityCreateController', function ($scope, $modalInstance, AuthorityService, LemurRestangular, RoleService, PluginService, WizardHandler)  {
@@ -25,7 +39,7 @@ angular.module('lemur')
       });
     };
 
-    PluginService.get('issuer').then(function (plugins) {
+    PluginService.getByType('issuer').then(function (plugins) {
         $scope.plugins = plugins;
     });
 
