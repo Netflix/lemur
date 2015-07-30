@@ -27,7 +27,7 @@ def test_create_basic_csr():
         country=u'US',
         state=u'CA',
         location=u'A place',
-        extensions=dict(subAltNames=[u'test.example.com', u'test2.example.com'])
+        extensions=dict(names=dict(subAltNames=[u'test.example.com', u'test2.example.com']))
     )
     csr, pem = create_csr(csr_config)
 
@@ -56,15 +56,15 @@ def test_cert_is_san():
     from lemur.tests.certs import INTERNAL_VALID_SAN_CERT, INTERNAL_VALID_LONG_CERT
     from lemur.certificates.models import cert_is_san
 
-    assert cert_is_san(INTERNAL_VALID_LONG_CERT) == None
-    assert cert_is_san(INTERNAL_VALID_SAN_CERT) == True
+    assert cert_is_san(INTERNAL_VALID_LONG_CERT) == None  # noqa
+    assert cert_is_san(INTERNAL_VALID_SAN_CERT) == True  # noqa
 
 
 def test_cert_is_wildcard():
     from lemur.tests.certs import INTERNAL_VALID_WILDCARD_CERT, INTERNAL_VALID_LONG_CERT
     from lemur.certificates.models import cert_is_wildcard
-    assert cert_is_wildcard(INTERNAL_VALID_WILDCARD_CERT) == True
-    assert cert_is_wildcard(INTERNAL_VALID_LONG_CERT) == None
+    assert cert_is_wildcard(INTERNAL_VALID_WILDCARD_CERT) == True  # noqa
+    assert cert_is_wildcard(INTERNAL_VALID_LONG_CERT) == None  # noqa
 
 
 def test_cert_get_bitstrength():
