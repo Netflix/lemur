@@ -138,6 +138,7 @@ setup(
             'cloudca_source = lemur.plugins.lemur_cloudca.plugin:CloudCASourcePlugin'
             'aws_destination = lemur.plugins.lemur_aws.plugin:AWSDestinationPlugin',
             'aws_source = lemur.plugins.lemur_aws.plugin:AWSSourcePlugin'
+            'email_notification = lemur.plugins.lemur_email.plugin:EmailNotificationPlugin'
         ],
     },
     classifiers=[

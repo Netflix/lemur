@@ -15,7 +15,7 @@ from lemur.authorities.models import Authority
 from lemur.roles import service as role_service
 
 from lemur.roles.models import Role
-import lemur.certificates.service as cert_service
+from lemur.certificates.models import Certificate
 
 from lemur.plugins.base import plugins
 
@@ -42,10 +42,6 @@ def create(kwargs):
     """
     Create a new authority.
 
-    :param name: name of the authority
-    :param roles: roles that are allowed to use this authority
-    :param options: available options for authority
-    :param description:
     :rtype : Authority
     :return:
     """
@@ -55,7 +51,9 @@ def create(kwargs):
     kwargs['creator'] = g.current_user.email
     cert_body, intermediate, issuer_roles = issuer.create_authority(kwargs)
 
-    cert = cert_service.save_cert(cert_body, None, intermediate, [])
+    cert = Certificate(cert_body, chain=intermediate)
+    cert.owner = kwargs['ownerEmail']
+    cert.description = "This is the ROOT certificate for the {0} certificate authority".format(kwargs.get('caName'))
     cert.user = g.current_user
 
     # we create and attach any roles that the issuer gives us

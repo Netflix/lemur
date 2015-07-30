@@ -23,6 +23,9 @@ angular.module('lemur')
       getData: function ($defer, params) {
         DestinationApi.getList(params.url()).then(
           function (data) {
+            _.each(data, function (destination) {
+              DestinationService.getPlugin(destination);
+            });
             params.total(data.total);
             $defer.resolve(data);
           }

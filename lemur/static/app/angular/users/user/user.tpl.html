@@ -55,11 +55,11 @@
                                class="form-control input-md" typeahead-on-select="user.attachRole($item)" typeahead-min-wait="50"
                                tooltip="Roles control which authorities a user can issue certificates from"
                                tooltip-trigger="focus" tooltip-placement="top">
-          <span class="input-group-btn">
-            <button ng-model="roles.show" class="btn btn-md btn-default" btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
-                <span class="badge">{{ user.roles.total || 0 }}</span>
-            </button>
-          </span>
+                        <span class="input-group-btn">
+                            <button ng-model="roles.show" class="btn btn-md btn-default" btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
+                                <span class="badge">{{ user.roles.total || 0 }}</span>
+                            </button>
+                        </span>
                     </div>
                     <table ng-show="user.roles" class="table">
                         <tr ng-repeat="role in user.roles track by $index">

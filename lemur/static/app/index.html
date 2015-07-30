@@ -49,13 +49,20 @@
             </div>
             <div class="navbar-collapse collapse" ng-controller="LoginController">
                 <ul class="nav navbar-nav navbar-left">
-                    <li data-match-route="/dashboard"><a href="/#/dashboard">Dashboard</a></li>
-                    <li data-match-route="/certificates"><a href="/#/certificates">Certificates</a></li>
-                    <li data-match-route="/authorities"><a href="/#/authorities">Authorities</a></li>
-                    <li data-match-route="/domains"><a href="/#/domains">Domains</a></li>
-                    <li><a href="/#/roles">Roles</a></li>
-                    <li><a href="/#/users">Users</a></li>
+                    <li><a href="/#/dashboard">Dashboard</a></li>
+                    <li><a href="/#/certificates">Certificates</a></li>
+                    <li><a href="/#/authorities">Authorities</a></li>
+                    <li><a href="/#/notifications">Notifications</a></li>
                     <li><a href="/#/destinations">Destinations</a></li>
+                    <li></li>
+                    <li class="dropdown" dropdown on-toggle="toggled(open)">
+                        <a href class="dropdown-toggle" dropdown-toggle>Settings <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="/#/roles">Roles</a></li>
+                            <li><a href="/#/users">Users</a></li>
+                            <li><a href="/#/domains">Domains</a></li>
+                        </ul>
+                    </li>
                 </ul>
                 <ul ng-show="!currentUser.username" class="nav navbar-nav navbar-right">
                   <li><a href="/#/login">Login</a></li>
@@ -63,7 +70,7 @@
                 <ul ng-show="currentUser.username" class="nav navbar-nav navbar-right">
                   <li class="dropdown" dropdown on-toggle="toggled(open)">
                     <a href class="dropdown-toggle profile-nav" dropdown-toggle>
-                      {{ currentUser.username }}<img ng-show="currentUser.profileImage" src="{{ currentUser.profileImage }}" class="profile img-circle">
+                      {{ currentUser.username }}<img ng-if="currentUser.profileImage" src="{{ currentUser.profileImage }}" class="profile img-circle">
                     </a>
                     <ul class="dropdown-menu">
                       <li><a ng-click="logout()">Logout</a></li>

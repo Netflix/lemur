@@ -27,7 +27,7 @@ angular.module('lemur')
             _.each(data, function (certificate) {
               CertificateService.getDomains(certificate);
               CertificateService.getDestinations(certificate);
-              CertificateService.getListeners(certificate);
+              CertificateService.getNotifications(certificate);
               CertificateService.getAuthority(certificate);
               CertificateService.getCreator(certificate);
             });
@@ -67,6 +67,24 @@ angular.module('lemur')
         controller: 'CertificateCreateController',
         templateUrl: '/angular/certificates/certificate/certificateWizard.tpl.html',
         size: 'lg'
+      });
+
+      modalInstance.result.then(function () {
+        $scope.certificateTable.reload();
+      });
+    };
+
+    $scope.edit = function (certificateId) {
+      var modalInstance = $modal.open({
+        animation: true,
+        controller: 'CertificateEditController',
+        templateUrl: '/angular/certificates/certificate/edit.tpl.html',
+        size: 'lg',
+        resolve: {
+          editId: function () {
+            return certificateId;
+          }
+        }
       });
 
       modalInstance.result.then(function () {

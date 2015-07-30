@@ -1,17 +1,28 @@
 'use strict';
 
 angular.module('lemur')
-  .controller('CertificateEditController', function ($scope, $routeParams, CertificateApi, CertificateService, MomentService) {
-    CertificateApi.get($routeParams.id).then(function (certificate) {
+  .controller('CertificateEditController', function ($scope, $modalInstance, CertificateApi, CertificateService, DestinationService, NotificationService, editId) {
+    CertificateApi.get(editId).then(function (certificate) {
+      CertificateService.getNotifications(certificate);
+      CertificateService.getDestinations(certificate);
       $scope.certificate = certificate;
     });
 
-    $scope.momentService = MomentService;
-    $scope.save = CertificateService.update;
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
 
+    $scope.save = function (certificate) {
+      CertificateService.update(certificate).then(function () {
+        $modalInstance.close();
+      });
+    };
+
+    $scope.destinationService = DestinationService;
+    $scope.notificationService = NotificationService;
   })
 
-  .controller('CertificateCreateController', function ($scope, $modalInstance, CertificateApi, CertificateService, DestinationService, ELBService, AuthorityService, PluginService, MomentService, WizardHandler, LemurRestangular) {
+  .controller('CertificateCreateController', function ($scope, $modalInstance, CertificateApi, CertificateService, DestinationService, ELBService, AuthorityService, PluginService, MomentService, WizardHandler, LemurRestangular, NotificationService) {
     $scope.certificate = LemurRestangular.restangularizeElement(null, {}, 'certificates');
 
     $scope.create = function (certificate) {
@@ -77,11 +88,12 @@ angular.module('lemur')
 
     };
 
-    PluginService.get('destination').then(function (plugins) {
+    PluginService.getByType('destination').then(function (plugins) {
         $scope.plugins = plugins;
     });
 
     $scope.elbService = ELBService;
     $scope.authorityService = AuthorityService;
     $scope.destinationService = DestinationService;
+    $scope.notificationService = NotificationService;
   });

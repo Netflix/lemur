@@ -65,6 +65,19 @@ angular.module('lemur')
         });
     };
 
+    AuthorityService.findActiveAuthorityByName = function (filterValue) {
+      return AuthorityApi.getList({'filter[name]': filterValue})
+        .then(function (authorities) {
+          var activeAuthorities = [];
+          _.each(authorities, function (authority) {
+              if (authority.active) {
+                activeAuthorities.push(authority);
+              }
+          });
+          return activeAuthorities;
+        });
+    };
+
     AuthorityService.create = function (authority) {
       authority.attachSubAltName();
       return AuthorityApi.post(authority).then(
@@ -86,7 +99,7 @@ angular.module('lemur')
     };
 
     AuthorityService.update = function (authority) {
-      authority.put().then(
+      return authority.put().then(
         function () {
           toaster.pop({
             type: 'success',
@@ -105,13 +118,13 @@ angular.module('lemur')
     };
 
     AuthorityService.getRoles = function (authority) {
-      authority.getList('roles').then(function (roles) {
+      return authority.getList('roles').then(function (roles) {
         authority.roles = roles;
       });
     };
 
     AuthorityService.updateActive = function (authority) {
-      authority.put().then(
+      return authority.put().then(
         function () {
           toaster.pop({
             type: 'success',

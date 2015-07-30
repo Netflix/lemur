@@ -67,6 +67,16 @@ angular.module('lemur')
         removeDestination: function (index) {
           this.destinations.splice(index, 1);
         },
+        attachNotification: function (notification) {
+          this.selectedNotification = null;
+          if (this.notifications === undefined) {
+            this.notifications = [];
+          }
+          this.notifications.push(notification);
+        },
+        removeNotification: function (index) {
+          this.notifications.splice(index, 1);
+        },
         attachELB: function (elb) {
           this.selectedELB = null;
           if (this.elbs === undefined) {
@@ -89,7 +99,7 @@ angular.module('lemur')
     });
     return LemurRestangular.all('certificates');
   })
-  .service('CertificateService', function ($location, CertificateApi, toaster) {
+  .service('CertificateService', function ($location, CertificateApi, LemurRestangular, toaster) {
     var CertificateService = this;
     CertificateService.findCertificatesByName = function (filterValue) {
       return CertificateApi.getList({'filter[name]': filterValue})
@@ -120,7 +130,7 @@ angular.module('lemur')
     };
 
     CertificateService.update = function (certificate) {
-      certificate.put().then(function () {
+      return LemurRestangular.copy(certificate).put().then(function () {
         toaster.pop({
           type: 'success',
           title: certificate.name,
@@ -131,7 +141,7 @@ angular.module('lemur')
     };
 
     CertificateService.upload = function (certificate) {
-      CertificateApi.customPOST(certificate, 'upload').then(
+      return CertificateApi.customPOST(certificate, 'upload').then(
         function () {
           toaster.pop({
             type: 'success',
@@ -150,7 +160,7 @@ angular.module('lemur')
     };
 
     CertificateService.loadPrivateKey = function (certificate) {
-      certificate.customGET('key').then(
+      return certificate.customGET('key').then(
         function (response) {
           if (response.key === null) {
             toaster.pop({
@@ -172,43 +182,49 @@ angular.module('lemur')
     };
 
     CertificateService.getAuthority = function (certificate) {
-      certificate.customGET('authority').then(function (authority) {
+      return certificate.customGET('authority').then(function (authority) {
         certificate.authority = authority;
       });
     };
 
     CertificateService.getCreator = function (certificate) {
-      certificate.customGET('creator').then(function (creator) {
+      return certificate.customGET('creator').then(function (creator) {
         certificate.creator = creator;
       });
     };
 
     CertificateService.getDestinations = function (certificate) {
-      certificate.getList('destinations').then(function (destinations) {
+      return certificate.getList('destinations').then(function (destinations) {
         certificate.destinations = destinations;
       });
     };
 
+    CertificateService.getNotifications = function (certificate) {
+      return certificate.getList('notifications').then(function (notifications) {
+        certificate.notifications = notifications;
+      });
+    };
+
     CertificateService.getListeners = function (certificate) {
-      certificate.getList('listeners').then(function (listeners) {
+      return certificate.getList('listeners').then(function (listeners) {
         certificate.listeners = listeners;
       });
     };
 
     CertificateService.getELBs = function (certificate) {
-      certificate.getList('listeners').then(function (elbs) {
+      return certificate.getList('listeners').then(function (elbs) {
         certificate.elbs = elbs;
       });
     };
 
     CertificateService.getDomains = function (certificate) {
-      certificate.getList('domains').then(function (domains) {
+      return certificate.getList('domains').then(function (domains) {
         certificate.domains = domains;
       });
     };
 
     CertificateService.updateActive = function (certificate) {
-      certificate.put().then(
+      return certificate.put().then(
           function () {
             toaster.pop({
               type: 'success',

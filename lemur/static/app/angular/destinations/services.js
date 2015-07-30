@@ -3,7 +3,7 @@ angular.module('lemur')
   .service('DestinationApi', function (LemurRestangular) {
     return LemurRestangular.all('destinations');
   })
-  .service('DestinationService', function ($location,  DestinationApi, toaster) {
+  .service('DestinationService', function ($location,  DestinationApi, PluginService, toaster) {
     var DestinationService = this;
     DestinationService.findDestinationsByName = function (filterValue) {
       return DestinationApi.getList({'filter[label]': filterValue})
@@ -48,6 +48,12 @@ angular.module('lemur')
             body: 'Was not updated! ' + response.data.message
           });
         });
+    };
+
+    DestinationService.getPlugin = function (destination) {
+      return PluginService.getByName(destination.pluginName).then(function (plugin) {
+        destination.plugin = plugin;
+      });
     };
     return DestinationService;
   });

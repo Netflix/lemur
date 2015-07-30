@@ -5,7 +5,7 @@ angular.module('lemur')
   .controller('DestinationsCreateController', function ($scope, $modalInstance, PluginService, DestinationService, LemurRestangular){
     $scope.destination = LemurRestangular.restangularizeElement(null, {}, 'destinations');
 
-    PluginService.get('destination').then(function (plugins) {
+    PluginService.getByType('destination').then(function (plugins) {
         $scope.plugins = plugins;
     });
     $scope.save = function (destination) {
@@ -24,8 +24,14 @@ angular.module('lemur')
       $scope.destination = destination;
     });
     
-    PluginService.get('destination').then(function (plugins) {
-        $scope.plugins = plugins;
+    PluginService.getByType('destination').then(function (plugins) {
+      $scope.plugins = plugins;
+      _.each($scope.plugins, function (plugin) {
+        if (plugin.slug == $scope.destination.pluginName) {
+          plugin.pluginOptions = $scope.destination.destinationOptions;
+          $scope.destination.plugin = plugin;
+        };
+      });
     });
 
     $scope.save = function (destination) {

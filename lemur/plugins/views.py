@@ -65,13 +65,13 @@ class PluginsList(AuthenticatedResource):
                       "id": 2,
                       "accountNumber": 222222222,
                       "label": "account2",
-                      "comments": "this is a thing"
+                      "description": "this is a thing"
                     },
                     {
                       "id": 1,
                       "accountNumber": 11111111111,
                       "label": "account1",
-                      "comments": "this is a thing"
+                      "description": "this is a thing"
                     },
                   ]
                 "total": 2
@@ -80,19 +80,24 @@ class PluginsList(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
+        self.reqparse.add_argument('type', type=str, location='args')
+        args = self.reqparse.parse_args()
+
+        if args['type']:
+            return list(plugins.all(plugin_type=args['type']))
+
         return plugins.all()
 
 
-class PluginsTypeList(AuthenticatedResource):
-    """ Defines the 'plugins' endpoint """
+class Plugins(AuthenticatedResource):
+    """ Defines the the 'plugins' endpoint """
     def __init__(self):
-        self.reqparse = reqparse.RequestParser()
-        super(PluginsTypeList, self).__init__()
+        super(Plugins, self).__init__()
 
     @marshal_items(FIELDS)
-    def get(self, plugin_type):
+    def get(self, name):
         """
-        .. http:get:: /plugins/issuer
+        .. http:get:: /plugins/<name>
 
            The current plugin list
 
@@ -100,7 +105,7 @@ class PluginsTypeList(AuthenticatedResource):
 
            .. sourcecode:: http
 
-              GET /plugins/issuer HTTP/1.1
+              GET /plugins HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
 
@@ -113,27 +118,16 @@ class PluginsTypeList(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                "items": [
-                    {
-                      "id": 2,
-                      "accountNumber": 222222222,
-                      "label": "account2",
-                      "comments": "this is a thing"
-                    },
-                    {
-                      "id": 1,
-                      "accountNumber": 11111111111,
-                      "label": "account1",
-                      "comments": "this is a thing"
-                    },
-                  ]
-                "total": 2
+                  "accountNumber": 222222222,
+                  "label": "account2",
+                  "description": "this is a thing"
               }
 
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
-        return list(plugins.all(plugin_type=plugin_type))
+        return plugins.get(name)
+
 
 api.add_resource(PluginsList, '/plugins', endpoint='plugins')
-api.add_resource(PluginsTypeList, '/plugins/<plugin_type>', endpoint='pluginType')
+api.add_resource(Plugins, '/plugins/<name>', endpoint='pluginName')

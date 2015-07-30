@@ -13,16 +13,17 @@ from cryptography.hazmat.backends import default_backend
 from flask import current_app
 
 from sqlalchemy.orm import relationship
-from sqlalchemy import Integer, ForeignKey, String, DateTime, PassiveDefault, func, Column, Text, Boolean
+from sqlalchemy import event, Integer, ForeignKey, String, DateTime, PassiveDefault, func, Column, Text, Boolean
 
 from sqlalchemy_utils import EncryptedType
 
 from lemur.database import db
+from lemur.plugins.base import plugins
 
 from lemur.domains.models import Domain
 
 from lemur.constants import SAN_NAMING_TEMPLATE, DEFAULT_NAMING_TEMPLATE
-from lemur.models import certificate_associations, certificate_destination_associations
+from lemur.models import certificate_associations, certificate_destination_associations, certificate_notification_associations
 
 
 def create_name(issuer, not_before, not_after, subject, san):
@@ -147,7 +148,7 @@ def cert_get_issuer(cert):
     """
     delchars = ''.join(c for c in map(chr, range(256)) if not c.isalnum())
     try:
-        issuer = str(cert.subject.get_attributes_for_oid(x509.OID_ORGANIZATION_NAME)[0].value)
+        issuer = str(cert.issuer.get_attributes_for_oid(x509.OID_ORGANIZATION_NAME)[0].value)
         return issuer.translate(None, delchars)
     except Exception as e:
         current_app.logger.error("Unable to get issuer! {0}".format(e))
@@ -203,8 +204,6 @@ class Certificate(db.Model):
     owner = Column(String(128))
     body = Column(Text())
     private_key = Column(EncryptedType(String, os.environ.get('LEMUR_ENCRYPTION_KEY')))
-    challenge = Column(EncryptedType(String, os.environ.get('LEMUR_ENCRYPTION_KEY')))  # TODO deprecate
-    csr_config = Column(Text())  # TODO deprecate
     status = Column(String(128))
     deleted = Column(Boolean, index=True)
     name = Column(String(128))
@@ -221,7 +220,8 @@ class Certificate(db.Model):
     date_created = Column(DateTime, PassiveDefault(func.now()), nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'))
     authority_id = Column(Integer, ForeignKey('authorities.id'))
-    accounts = relationship("Destination", secondary=certificate_destination_associations, backref='certificate')
+    notifications = relationship("Notification", secondary=certificate_notification_associations, backref='certificate')
+    destinations = relationship("Destination", secondary=certificate_destination_associations, backref='certificate')
     domains = relationship("Domain", secondary=certificate_associations, backref="certificate")
     elb_listeners = relationship("Listener", lazy='dynamic', backref='certificate')
 
@@ -272,3 +272,10 @@ class Certificate(db.Model):
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+
+@event.listens_for(Certificate.destinations, 'append')
+def update_destinations(target, value, initiator):
+    destination_plugin = plugins.get(value.plugin_name)
+
+    destination_plugin.upload(target.body, target.private_key, target.chain, value.options)
