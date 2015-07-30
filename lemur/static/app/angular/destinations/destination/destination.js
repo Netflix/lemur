@@ -8,6 +8,7 @@ angular.module('lemur')
     PluginService.getByType('destination').then(function (plugins) {
         $scope.plugins = plugins;
     });
+
     $scope.save = function (destination) {
       DestinationService.create(destination).then(function () {
         $modalInstance.close();
@@ -27,10 +28,10 @@ angular.module('lemur')
     PluginService.getByType('destination').then(function (plugins) {
       $scope.plugins = plugins;
       _.each($scope.plugins, function (plugin) {
-        if (plugin.slug == $scope.destination.pluginName) {
+        if (plugin.slug === $scope.destination.pluginName) {
           plugin.pluginOptions = $scope.destination.destinationOptions;
           $scope.destination.plugin = plugin;
-        };
+        }
       });
     });
 
