@@ -17,3 +17,11 @@ domains Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`views` Module
+-------------------
+
+.. automodule:: lemur.domains.views
+    :members:
+    :undoc-members:
+    :show-inheritance:
+

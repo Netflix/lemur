@@ -66,13 +66,6 @@ class AWSSourcePlugin(SourcePlugin):
             'validation': '/^[0-9]{12,12}$/',
             'helpMessage': 'Must be a valid AWS account number!',
         },
-        {
-            'name': 'pollRate',
-            'type': 'int',
-            'required': False,
-            'helpMessage': 'Rate in seconds to poll source for new information.',
-            'default': '60',
-        }
     ]
 
     def get_certificates(self, **kwargs):

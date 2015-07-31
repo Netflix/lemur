@@ -17,4 +17,10 @@ roles Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`views` Module
+-------------------
 
+.. automodule:: lemur.roles.views
+    :members:
+    :undoc-members:
+    :show-inheritance:

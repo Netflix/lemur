@@ -17,4 +17,11 @@ authorities Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`views` Module
+-------------------
+
+.. automodule:: lemur.authorities.views
+    :members:
+    :undoc-members:
+    :show-inheritance:
 

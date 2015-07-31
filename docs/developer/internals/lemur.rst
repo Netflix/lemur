@@ -1,7 +1,20 @@
+lemur Package
+=============
+
+:mod:`lemur` Package
+--------------------
+
+.. automodule:: lemur.__init__
+    :noindex:
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`constants` Module
 -----------------------
 
 .. automodule:: lemur.constants
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -10,6 +23,7 @@
 ----------------------
 
 .. automodule:: lemur.database
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -18,6 +32,7 @@
 ------------------------
 
 .. automodule:: lemur.decorators
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -26,6 +41,7 @@
 ------------------------
 
 .. automodule:: lemur.exceptions
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -34,6 +50,7 @@
 ------------------------
 
 .. automodule:: lemur.extensions
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -42,6 +59,7 @@
 ---------------------
 
 .. automodule:: lemur.factory
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -50,6 +68,7 @@
 --------------------
 
 .. automodule:: lemur.manage
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -58,14 +77,7 @@
 --------------------
 
 .. automodule:: lemur.models
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`notifications` Module
----------------------------
-
-.. automodule:: lemur.notifications
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -75,13 +87,14 @@ Subpackages
 
 .. toctree::
 
-    lemur.accounts
     lemur.auth
     lemur.authorities
     lemur.certificates
     lemur.common
+    lemur.destinations
     lemur.domains
+    lemur.notifications
+    lemur.plugins
     lemur.roles
     lemur.status
     lemur.users
-

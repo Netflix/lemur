@@ -2,6 +2,7 @@ Quickstart
 **********
 
 This guide will step you through setting up a Python-based virtualenv, installing the required packages, and configuring the basic web service.
+This guide assumes a clean Ubuntu 14.04 instance, commands may differ based on the OS and configuration being used.
 
 Dependencies
 ------------
@@ -36,6 +37,20 @@ Finally, activate your virtualenv::
 
 .. note:: Activating the environment adjusts your PATH, so that things like pip now
           install into the virtualenv by default.
+
+
+Installing build dependencies
+-----------------------------
+
+If installing Lemur on true bare Ubuntu OS you will need to grab the following packages so that Lemur can correctly build it's
+dependencies.
+
+    $ sudo apt-get update
+    $ sudo apt-get install nodejs-legacy python-pip libpq-dev python-dev build-essential libssl-dev libffi-dev nginx git supervisor
+
+And optionally if your database is going to be on the same host as the webserver.
+
+    $ sudo apt-get install postgres
 
 
 Installing Lemur
@@ -89,8 +104,33 @@ You can specify `-c` or `--config` to any Lemur command to specify the current e
 you are working in. Lemur will also look under the environmental variable `LEMUR_CONF` should
 that be easier to setup in your environment.
 
+Update your configuration
+-------------------------
+
 Once created you will need to update the configuration file with information about your environment,
 such as which database to talk to, where keys are stores etc..
+
+.. Note:: If you are unVfamiliar with with the SQLALCHEMY_DATABASE_URI string it can be broken up like so:
+      postgresql://userame:password@databasefqdn:databaseport/databasename
+
+Setup Postgres
+--------------
+
+For production a dedicated database is recommended, for this guide we will assume postgres has been installed and is on
+the same machine that Lemur is installed on.
+
+First, set a password for the postgres user.  For this guide, we will use **lemur** as an example but you should use the database password generated for by Lemur.::
+
+     $ sudo -u postgres psql postgres
+     # \password postgres
+     Enter new password: lemur
+     Enter it again: lemur
+
+Type CTRL-D to exit psql once you have changed the password.
+
+Next, we will create our a new database::
+
+     $ sudo -u postgres createdb lemur
 
 .. _InitializingLemur:
 
@@ -101,6 +141,8 @@ Lemur provides a helpful command that will initialize your database for you. It 
 used by Lemur to help associate certificates that do not currently have an owner. This is most commonly the case when
 Lemur has discovered certificates from a third party resource. This is also a default user that can be used to
 administer Lemur.
+
+**Make note of the password used as this will be use to first login to the Lemur UI**
 
 .. code-block:: bash
 
@@ -114,12 +156,6 @@ administer Lemur.
     There is currently no way for a user to self enroll for Lemur access, they must have an administrator create an account
     for them or be enrolled automatically through SSO. This can be done through the CLI or UI.
     See :ref:`Creating Users <CreatingUsers>` and :ref:`Command Line Interface <CommandLineInterface>` for details
-
-.. note::
-    This assumes you have already created a postgres database and have specified the right postgres URI in the
-    lemur configuration. See the `Postgres Documentation <http://www.postgresql.org/docs/9.0/static/tutorial-createdb.html>`_
-    for details.
-
 
 Setup a Reverse Proxy
 ---------------------
@@ -208,7 +244,7 @@ of Lemur, but we do our best to reconcile those changes.
 .. code-block:: bash
 
   $ crontab -e
-  * 3 * * * lemur sync
+  * 3 * * * lemur sync --all
   * 3 * * * lemur check_revoked
 
 Additional Utilities
@@ -238,4 +274,3 @@ The above gets you going, but for production there are several different securit
 remember Lemur is handling sensitive data and security is imperative.
 
 See :doc:`../production/index` for more details on how to configure Lemur for production.
-

@@ -12,8 +12,19 @@ from lemur.plugins.base import Plugin
 class SourcePlugin(Plugin):
     type = 'source'
 
+    default_options = [
+        {
+            'name': 'pollRate',
+            'type': 'int',
+            'required': False,
+            'helpMessage': 'Rate in seconds to poll source for new information.',
+            'default': '60',
+        }
+    ]
+
     def get_certificates(self):
         raise NotImplemented
 
-    def get_options(self):
-        return {}
+    @property
+    def options(self):
+        return list(self.default_options) + self.additional_options

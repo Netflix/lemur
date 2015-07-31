@@ -17,4 +17,11 @@ auth Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`views` Module
+-------------------
+
+.. automodule:: lemur.auth.views
+    :members:
+    :undoc-members:
+    :show-inheritance:
 

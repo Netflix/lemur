@@ -17,3 +17,11 @@ users Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`views` Module
+-------------------
+
+.. automodule:: lemur.users.views
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
