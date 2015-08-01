@@ -35,7 +35,7 @@ angular.module('lemur')
     PluginService.getByType('notification').then(function (plugins) {
       $scope.plugins = plugins;
       _.each($scope.plugins, function (plugin) {
-        if (plugin.slug == $scope.notification.pluginName) {
+        if (plugin.slug === $scope.notification.pluginName) {
           plugin.pluginOptions = $scope.notification.notificationOptions;
           $scope.notification.plugin = plugin;
         };

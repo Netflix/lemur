@@ -226,7 +226,6 @@ class Certificate(db.Model):
     destinations = relationship("Destination", secondary=certificate_destination_associations, backref='certificate')
     sources = relationship("Source", secondary=certificate_source_associations, backref='certificate')
     domains = relationship("Domain", secondary=certificate_associations, backref="certificate")
-    elb_listeners = relationship("Listener", lazy='dynamic', backref='certificate')
 
     def __init__(self, body, private_key=None, chain=None):
         self.body = body

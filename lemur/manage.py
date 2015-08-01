@@ -30,8 +30,6 @@ from lemur.authorities.models import Authority  # noqa
 from lemur.certificates.models import Certificate  # noqa
 from lemur.destinations.models import Destination  # noqa
 from lemur.domains.models import Domain  # noqa
-from lemur.elbs.models import ELB  # noqa
-from lemur.listeners.models import Listener  # noqa
 from lemur.notifications.models import Notification  # noqa
 from lemur.sources.models import Source  # noqa
 
