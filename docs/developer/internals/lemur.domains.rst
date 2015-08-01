@@ -5,6 +5,7 @@ domains Package
 --------------------
 
 .. automodule:: lemur.domains.models
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -13,6 +14,7 @@ domains Package
 ---------------------
 
 .. automodule:: lemur.domains.service
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -21,7 +23,7 @@ domains Package
 -------------------
 
 .. automodule:: lemur.domains.views
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
-

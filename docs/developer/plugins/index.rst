@@ -75,6 +75,8 @@ at multiple plugins within your package::
 
 That's it! Users will be able to install your plugin via ``pip install <package name>``.
 
+.. SeeAlso:: For more information about python packages see `Python Packaging <https://packaging.python.org/en/latest/distributing.html>`_
+
 .. _PluginInterfaces:
 
 Plugin Interfaces
@@ -112,7 +114,7 @@ If you wish to be able to create new authorities implement the following functio
 
 
 .. Note::
-    Lemur uses PEM (PKCS#7) certificates as it's internal standard, if you recieve certificates in other formats convert them to PEM before returning.
+    Lemur uses PEM formatted certificates as it's internal standard, if you receive certificates in other formats convert them to PEM before returning.
 
 
 If instead you do not need need to generate authorities but instead use a static authority (Verisign, DigiCert), you can use publicly available constants::

@@ -5,6 +5,7 @@ lemur_aws Package
 ------------------------
 
 .. automodule:: lemur.plugins.lemur_aws
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -13,6 +14,7 @@ lemur_aws Package
 -----------------
 
 .. automodule:: lemur.plugins.lemur_aws.elb
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -21,6 +23,7 @@ lemur_aws Package
 -----------------
 
 .. automodule:: lemur.plugins.lemur_aws.iam
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -29,6 +32,7 @@ lemur_aws Package
 --------------------
 
 .. automodule:: lemur.plugins.lemur_aws.plugin
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -37,7 +41,7 @@ lemur_aws Package
 -----------------
 
 .. automodule:: lemur.plugins.lemur_aws.sts
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
-

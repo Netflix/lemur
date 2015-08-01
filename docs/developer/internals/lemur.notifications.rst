@@ -5,6 +5,7 @@ notifications Package
 --------------------
 
 .. automodule:: lemur.notifications.models
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -13,6 +14,7 @@ notifications Package
 ---------------------
 
 .. automodule:: lemur.notifications.service
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -21,7 +23,7 @@ notifications Package
 -------------------
 
 .. automodule:: lemur.notifications.views
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
-

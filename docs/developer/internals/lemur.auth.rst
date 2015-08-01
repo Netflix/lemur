@@ -5,6 +5,7 @@ auth Package
 -------------------------
 
 .. automodule:: lemur.auth.permissions
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -13,6 +14,7 @@ auth Package
 ---------------------
 
 .. automodule:: lemur.auth.service
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -21,7 +23,7 @@ auth Package
 -------------------
 
 .. automodule:: lemur.auth.views
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
-

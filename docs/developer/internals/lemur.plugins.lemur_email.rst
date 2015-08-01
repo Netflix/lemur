@@ -5,6 +5,7 @@ lemur_email Package
 --------------------------
 
 .. automodule:: lemur.plugins.lemur_email
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -13,6 +14,7 @@ lemur_email Package
 --------------------
 
 .. automodule:: lemur.plugins.lemur_email.plugin
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -23,4 +25,3 @@ Subpackages
 .. toctree::
 
     lemur.plugins.lemur_email.templates
-

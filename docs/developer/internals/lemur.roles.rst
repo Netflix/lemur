@@ -5,6 +5,7 @@ roles Package
 --------------------
 
 .. automodule:: lemur.roles.models
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -13,6 +14,7 @@ roles Package
 ---------------------
 
 .. automodule:: lemur.roles.service
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -21,6 +23,7 @@ roles Package
 -------------------
 
 .. automodule:: lemur.roles.views
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:

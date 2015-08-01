@@ -5,6 +5,7 @@ lemur_verisign Package
 -----------------------------
 
 .. automodule:: lemur.plugins.lemur_verisign
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -13,6 +14,7 @@ lemur_verisign Package
 -----------------------
 
 .. automodule:: lemur.plugins.lemur_verisign.constants
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -21,7 +23,7 @@ lemur_verisign Package
 --------------------
 
 .. automodule:: lemur.plugins.lemur_verisign.plugin
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
-

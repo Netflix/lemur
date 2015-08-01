@@ -5,6 +5,7 @@ base Package
 -------------------
 
 .. automodule:: lemur.plugins.base
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -13,6 +14,7 @@ base Package
 ---------------------
 
 .. automodule:: lemur.plugins.base.manager
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -21,7 +23,7 @@ base Package
 ----------------
 
 .. automodule:: lemur.plugins.base.v1
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
-

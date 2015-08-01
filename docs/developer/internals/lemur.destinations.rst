@@ -5,6 +5,7 @@ destinations Package
 --------------------
 
 .. automodule:: lemur.destinations.models
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -13,6 +14,7 @@ destinations Package
 ---------------------
 
 .. automodule:: lemur.destinations.service
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -21,7 +23,7 @@ destinations Package
 -------------------
 
 .. automodule:: lemur.destinations.views
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
-

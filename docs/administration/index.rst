@@ -223,35 +223,17 @@ If you are not using PING you do not need to configure any of these options
 
 
 
-AWS Configuration
-=================
+AWS Plugin Configuration
+========================
 
 In order for Lemur to manage it's own account and other accounts we must ensure it has the correct AWS permissions.
 
 .. note:: AWS usage is completely optional. Lemur can upload, find and manage SSL certificates in AWS. But is not required to do so.
 
-AWS Configuration Options
--------------------------
-
-.. data:: AWS_ACCOUNT_MAPPINGS
-    :noindex:
-
-        Lemur maintains it's own internal table of AWS accounts with their alias and account numbers, this variable is used during setup to bootstrap
-        your particular enviroment.
-
-        Defaults to ``{}``.
-
-    ::
-
-        AWS_ACCOUNT_MAPPINGS = {
-            'awsaccountalias': 111111111111
-        }
-
-
 Setting up IAM roles
 --------------------
 
-Lemur uses boto heavily to talk to all the AWS resources it manages. By default it uses the on-instance credentials to make the necessary calls.
+Lemur's aws plugin uses boto heavily to talk to all the AWS resources it manages. By default it uses the on-instance credentials to make the necessary calls.
 
 In order to limit the permissions we will create a new two IAM roles for Lemur. You can name them whatever you would like but for example sake we will be calling them LemurInstanceProfile and Lemur.
 
@@ -554,5 +536,3 @@ These permissions are applied to the user upon login and refreshed on every requ
 
 .. seealso::
     `Flask-Principal <https://pythonhosted.org/Flask-Principal>`_
-
-

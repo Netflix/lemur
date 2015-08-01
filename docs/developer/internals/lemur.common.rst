@@ -5,6 +5,7 @@ common Package
 --------------------
 
 .. automodule:: lemur.common.health
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -13,6 +14,7 @@ common Package
 ----------------------
 
 .. automodule:: lemur.common.managers
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -21,7 +23,7 @@ common Package
 -------------------
 
 .. automodule:: lemur.common.utils
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
-
