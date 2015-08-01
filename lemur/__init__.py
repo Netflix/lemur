@@ -22,6 +22,8 @@ from lemur.certificates.views import mod as certificates_bp
 from lemur.status.views import mod as status_bp
 from lemur.plugins.views import mod as plugins_bp
 from lemur.notifications.views import mod as notifications_bp
+from lemur.sources.views import mod as sources_bp
+
 
 LEMUR_BLUEPRINTS = (
     users_bp,
@@ -36,6 +38,7 @@ LEMUR_BLUEPRINTS = (
     status_bp,
     plugins_bp,
     notifications_bp,
+    sources_bp
 )
 
 

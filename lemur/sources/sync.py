@@ -1,5 +1,5 @@
 """
-.. module: sync
+.. module: lemur.sources.sync
     :platform: Unix
     :synopsis: This module contains various certificate syncing operations.
     Because of the nature of the SSL environment there are multiple ways

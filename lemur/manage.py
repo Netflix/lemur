@@ -19,7 +19,7 @@ from lemur.certificates import service as cert_service
 from lemur.plugins.base import plugins
 
 from lemur.certificates.verify import verify_string
-from lemur.certificates import sync
+from lemur.sources import sync
 
 from lemur import create_app
 
@@ -33,6 +33,7 @@ from lemur.domains.models import Domain  # noqa
 from lemur.elbs.models import ELB  # noqa
 from lemur.listeners.models import Listener  # noqa
 from lemur.notifications.models import Notification  # noqa
+from lemur.sources.models import Source  # noqa
 
 
 manager = Manager(create_app)
@@ -183,12 +184,11 @@ class Sync(Command):
     run on a periodic basis and updates the Lemur datastore with the
     information it discovers.
     """
+
+    # TODO create these commands dynamically
     option_list = [
         Group(
             Option('-a', '--all', action="store_true"),
-            Option('-b', '--aws', action="store_true"),
-            Option('-d', '--cloudca', action="store_true"),
-            Option('-s', '--source', action="store_true"),
             exclusive=True, required=True
         )
     ]

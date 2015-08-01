@@ -23,7 +23,9 @@ from lemur.plugins.base import plugins
 from lemur.domains.models import Domain
 
 from lemur.constants import SAN_NAMING_TEMPLATE, DEFAULT_NAMING_TEMPLATE
-from lemur.models import certificate_associations, certificate_destination_associations, certificate_notification_associations
+
+from lemur.models import certificate_associations, certificate_source_associations, \
+    certificate_destination_associations, certificate_notification_associations
 
 
 def create_name(issuer, not_before, not_after, subject, san):
@@ -222,6 +224,7 @@ class Certificate(db.Model):
     authority_id = Column(Integer, ForeignKey('authorities.id'))
     notifications = relationship("Notification", secondary=certificate_notification_associations, backref='certificate')
     destinations = relationship("Destination", secondary=certificate_destination_associations, backref='certificate')
+    sources = relationship("Source", secondary=certificate_source_associations, backref='certificate')
     domains = relationship("Domain", secondary=certificate_associations, backref="certificate")
     elb_listeners = relationship("Listener", lazy='dynamic', backref='certificate')
 
