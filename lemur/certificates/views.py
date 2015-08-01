@@ -185,7 +185,7 @@ class CertificatesList(AuthenticatedResource):
               Host: example.com
               Accept: application/json, text/javascript
 
-             {
+              {
                 "country": "US",
                 "state": "CA",
                 "location": "A Place",
@@ -225,7 +225,7 @@ class CertificatesList(AuthenticatedResource):
                 "commonName": "test",
                 "validityStart": "2015-06-05T07:00:00.000Z",
                 "validityEnd": "2015-06-16T07:00:00.000Z"
-            }
+             }
 
            **Example response**:
 

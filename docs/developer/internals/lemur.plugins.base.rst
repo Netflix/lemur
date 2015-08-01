@@ -1,28 +1,28 @@
-roles Package
-=============
+base Package
+============
 
-:mod:`models` Module
---------------------
-
-.. automodule:: lemur.roles.models
-    :noindex:
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`service` Module
----------------------
-
-.. automodule:: lemur.roles.service
-    :noindex:
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`views` Module
+:mod:`base` Package
 -------------------
 
-.. automodule:: lemur.roles.views
+.. automodule:: lemur.plugins.base
+    :noindex:
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`manager` Module
+---------------------
+
+.. automodule:: lemur.plugins.base.manager
+    :noindex:
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`v1` Module
+----------------
+
+.. automodule:: lemur.plugins.base.v1
     :noindex:
     :members:
     :undoc-members:

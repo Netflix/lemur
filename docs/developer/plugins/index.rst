@@ -6,6 +6,11 @@ Several interfaces exist for extending Lemur:
 * Issuer (lemur.plugins.base.issuer)
 * Destination (lemur.plugins.base.destination)
 * Source (lemur.plugins.base.source)
+* Notification (lemur.plugins.base.notification)
+
+Each interface has its own function that will need to be defined in order for
+your plugin to work correctly. See :ref:`Plugin Interfaces <PluginInterfaces>` for details.
+
 
 Structure
 ---------
@@ -54,44 +59,175 @@ And you'll register it via ``entry_points`` in your ``setup.py``::
         },
     )
 
+You can potentially package multiple plugin types in one package, say you want to create a source and
+destination plugins for the same third-party. To accomplish this simply alias the plugin in entry points to point
+at multiple plugins within your package::
+
+    setup(
+        # ...
+        entry_points={
+            'lemur.plugins': [
+                'pluginnamesource = lemur_pluginname.plugin:PluginNameSource',
+                'pluginnamedestination = lemur_pluginname.plugin:PluginNameDestination'
+            ],
+        },
+    )
 
 That's it! Users will be able to install your plugin via ``pip install <package name>``.
 
-Interfaces
-==========
+.. SeeAlso:: For more information about python packages see `Python Packaging <https://packaging.python.org/en/latest/distributing.html>`_
 
-Lemur has several different plugin interfaces that are used to extend Lemur, each of them require
-that you subclass and override their functions in order for your plugin to function.
+.. _PluginInterfaces:
 
+Plugin Interfaces
+=================
+
+In order to use the interfaces all plugins are required to inherit and override unimplemented functions
+of the parent object.
 
 Issuer
 ------
 
-Issuer plugins are to be used when you want to allow Lemur to use external services to create certificates.
-In the simple case this means that you have one Certificate Authority and you ask it for certificates given a
-few parameters. In a more advanced case this could mean that this third party not only allows you to create certifcates
-but also allows you to create Certificate Authorities and Sub Certificate Authorities.
+Issuer plugins are used when you have an external service that creates certificates or authorities.
+In the simple case the third party only issues certificates (Verisign, DigiCert, etc.).
 
-The `IssuerPlugin` interface only required that you implement one function::
+If you have a third party or internal service that creates authorities (CloudCA, EJBCA, etc.), Lemur has you covered,
+it can treat any issuer plugin as both a source of creating new certificates as well as new authorities.
+
+
+The `IssuerPlugin` exposes two functions::
 
     def create_certificate(self, options):
         # requests.get('a third party')
 
+Lemur will pass a dictionary of all possible options for certificate creation. Including a valid CSR, and the raw options associated with the request.
 
-Lemur will pass a dictionary of all possible options for certificate creation.
-
-Optionally the `IssuerPlugin` exposes another function for authority create::
+If you wish to be able to create new authorities implement the following function and ensure that the ROOT_CERTIFICATE and the INTERMEDIATE_CERTIFICATE (if any) for the new authority is returned::
 
     def create_authority(self, options):
-        # request.get('a third party')
+        root_cert, intermediate_cert, username, password = request.get('a third party')
+
+        # if your provider creates specific credentials for each authority you can associated them with the role associated with the authority
+        # these credentials will be provided along with any other options when a certificate is created
+        role = dict(username=username, password=password, name='generatedAuthority')
+        return root_cert, intermediate_cert, [role]
 
 
-If implemented this function will be used to allow users to create external Certificate Authorities. From this function
-you are expected to return the ROOT certificate authority, any intermediates that Authority might provide and any roles
-you wish to be associated with this authority.
+.. Note::
+    Lemur uses PEM formatted certificates as it's internal standard, if you receive certificates in other formats convert them to PEM before returning.
 
-.. Note:: You do not need to associate roles to the authority at creation time as they can always be associated after the
-fact.
+
+If instead you do not need need to generate authorities but instead use a static authority (Verisign, DigiCert), you can use publicly available constants::
+
+
+    def create_authority(self, options):
+        # optionally associate a role with authority to control who can use it
+        role = dict(username='', password='', name='exampleAuthority')
+        # username and password don't really matter here because we do no need to authenticate our authority against a third party
+        return EXAMPLE_ROOT_CERTIFICATE, EXAMPLE_INTERMEDIATE_CERTIFICATE, [role]
+
+
+.. Note:: You do not need to associate roles to the authority at creation time as they can always be associated after the fact.
+
+
+The `IssuerPlugin` doesn't have any options like Destination, Source, and Notification plugins. Essentially Lemur **should** already have
+any fields you might need to submit a request to a third party. If there are additional options you need
+in your plugin feel free to open an issue, or look into adding additional options to issuers yourself.
+
+Destination
+-----------
+
+Destination plugins allow you to propagate certificates managed by Lemur to additional third parties. This provides flexibility when
+different orchestration systems have their own way of manage certificates or there is an existing system you wish to integrate with Lemur.
+
+The DestinationPlugin requires only one function to be implemented::
+
+    def upload(self, cert, private_key, cert_chain, options, **kwargs):
+        # request.post('a third party')
+
+Additionally the DestinationPlugin allows the plugin author to add additional options
+that can be used to help define sub-destinations.
+
+For example, if we look at the aws-destination plugin we can see that it defines an `accountNumber` option::
+
+    options = [
+      {
+          'name': 'accountNumber',
+          'type': 'int',
+          'required': True,
+          'validation': '/^[0-9]{12,12}$/',
+          'helpMessage': 'Must be a valid AWS account number!',
+      }
+    ]
+
+By defining an `accountNumber` we can make this plugin handle many N number of AWS accounts instead of just one.
+
+The schema for defining plugin options are pretty straightforward:
+
+  - **Name**: name of the variable you wish to present the user, snake case (snakeCase) is preferrred as Lemur
+    will parse these and create pretty variable titles
+  - **Type** there are currently four supported variable types
+      - **Int** creates an html integer box for the user to enter integers into
+      - **Str** creates a html text input box
+      - **Boolean** creates a checkbox for the user to signify truithyness
+      - **Select** creates a select box that gives the user a list of options
+          - When used a `available` key must be provided with a list of selectable options
+  - **Required** determines if this option is required, this **must be a boolean value**
+  - **Validation** simple JavaScript regular expression used to give the user an indication if the input value is valid
+  - **HelpMessage** simple string that provides more detail about the option
+
+.. Note::
+    DestinationPlugin, NotificationPlugin and SourcePlugin all support the option
+    schema outlined above.
+
+
+Notification
+------------
+
+Lemur includes the ability to create Email notifications by **default**. These notifications
+currently come in the form of expiration noticies. Lemur periodically checks certifications expiration dates and
+determines if a given certificate is eligible for notification. There are currently only two parameters used to
+determine if a certificate is eligible; validity expiration (date the certificate is no longer valid) and the number
+of days the current date (UTC) is from that expiration date.
+
+There are currently two objects that available for notification plugins the first is `NotficationPlugin`. This is the base object for
+any notification within Lemur. Currently the only support notification type is an certificate expiration notification. If you
+are trying to create a new notification type (audit, failed logins, etc.) this would be the object to base your plugin on.
+You would also then need to build additional code to trigger the new notification type.
+
+The second is `ExpirationNotificationPlugin`, this object inherits from `NotificationPlugin` object.
+You will most likely want to base your plugin on, if you want to add new channels for expiration notices (Slack, Hipcat, Jira, etc.). It adds default options that are required by
+by all expiration notifications (interval, unit). This interface expects for the child to define the following function::
+
+    def send(self):
+        #  request.post("some alerting infrastructure")
+
+
+Source
+------
+
+When building Lemur we realized that although it would be nice if every certificate went through Lemur to get issued, but this is not
+always be the case. Often times there are third parties that will issue certificates on your behalf and these can get deployed
+to infrastructure without any interaction with Lemur. In an attempt to combat this and try to track every certificate, Lemur has a notion of
+certificate **Sources**. Lemur will contact the source at periodic intervals and attempt to **sync** against the source. This means downloading or discovering any
+certificate Lemur does not know about and adding the certificate to it's inventory to be tracked and alerted on.
+
+The `SourcePlugin` object has one default option of `pollRate`. This controls the number of seconds which to get new certificates.
+
+ .. warning::
+    Lemur currently has a very basic polling system of running a cron job every 15min to see which source plugins need to be run.
+    This means special consideration needs to be taken such that running all `SourcePlugins` does not take >15min to run. It also means
+    that the minimum resolution of a source plugin poll rate is effectively 15min.
+
+
+The `SourcePlugin` object requires implementation of one function::
+
+      def get_certificates(self, **kwargs):
+          #  request.get("some source of certificates")
+
+
+.. Note::
+    Often times to facilitate code re-use it makes sense put source and destination plugins into one package.
 
 
 Testing
@@ -165,5 +301,4 @@ Running tests follows the py.test standard. As long as your test files and metho
     =========================== 1 passed in 0.35 seconds ============================
 
 
-.. SeeAlso:: Lemur bundles several plugins that use the same interfaces mentioned above. View the source: #TODO
-
+.. SeeAlso:: Lemur bundles several plugins that use the same interfaces mentioned above. View the source: # TODO

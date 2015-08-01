@@ -64,17 +64,6 @@ You will benefit from having:
 You must create a Nginx configuration file for Lemur. On GNU/Linux, they usually
 go into /etc/nginx/conf.d/. Name it lemur.conf.
 
-The minimal configuration file to run the site is::
-
-    server {
-        listen       80;
-        server_name www.yourwebsite.com;
-
-        location / {
-            proxy_pass http://127.0.0.1:5000;
-        }
-    }
-
 `proxy_pass` just passes the external request to the Python process.
 The port much match the one used by the 0bin process of course.
 
@@ -106,7 +95,7 @@ You can make some adjustments to get a better user experience::
         }
 
         location / {
-            root /www/lemur/lemur/static/dist;
+            root /path/to/lemur/static/dist;
             include mime.types;
             index index.html;
         }
@@ -172,13 +161,15 @@ sensitive nature of Lemur and what it controls makes this essential. This is a s
         }
 
         location / {
-            root /www/lemur/lemur/static/dist;
+            root /path/to/lemur/static/dist;
             include mime.types;
             index index.html;
         }
 
 
     }
+
+.. Note:: Some paths will have to be adjusted based on where you have choose to install Lemur.
 
 Apache
 ------

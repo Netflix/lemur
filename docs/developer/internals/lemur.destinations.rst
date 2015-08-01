@@ -1,10 +1,11 @@
-listeners Package
-=================
+destinations Package
+====================
 
 :mod:`models` Module
 --------------------
 
-.. automodule:: lemur.listeners.models
+.. automodule:: lemur.destinations.models
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -12,7 +13,8 @@ listeners Package
 :mod:`service` Module
 ---------------------
 
-.. automodule:: lemur.listeners.service
+.. automodule:: lemur.destinations.service
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -20,8 +22,8 @@ listeners Package
 :mod:`views` Module
 -------------------
 
-.. automodule:: lemur.listeners.views
+.. automodule:: lemur.destinations.views
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
-

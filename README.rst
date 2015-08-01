@@ -1,7 +1,16 @@
 Lemur
-*****
+=====
 
-[![Build Status](https://magnum.travis-ci.com/Netflix/lemur.svg?token=i5tcyx3z4N7pEVTxTeuP&branch=master)](https://magnum.travis-ci.com/Netflix/lemur)
+.. image:: https://img.shields.io/pypi/v/lemur.svg
+    :target: https://pypi.python.org/pypi/lemur/
+    :alt: Latest Version
+
+.. image:: https://readthedocs.org/projects/lemur/badge/?version=latest
+    :target: https://lemur.readthedocs.org
+    :alt: Latest Docs
+
+.. image:: https://magnum.travis-ci.com/Netflix/lemur.svg?branch=master
+      :target: https://magnum.travis-ci.com/Netflix/lemur
 
 
 Lemur manages SSL certificate creation. It provides a central portal for developers to issuer their own SSL certificates with 'sane' defaults.

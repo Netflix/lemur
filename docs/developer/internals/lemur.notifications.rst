@@ -1,10 +1,11 @@
-elbs Package
-============
+notifications Package
+=====================
 
 :mod:`models` Module
 --------------------
 
-.. automodule:: lemur.elbs.models
+.. automodule:: lemur.notifications.models
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -12,15 +13,8 @@ elbs Package
 :mod:`service` Module
 ---------------------
 
-.. automodule:: lemur.elbs.service
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`sync` Module
-------------------
-
-.. automodule:: lemur.elbs.sync
+.. automodule:: lemur.notifications.service
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -28,8 +22,8 @@ elbs Package
 :mod:`views` Module
 -------------------
 
-.. automodule:: lemur.elbs.views
+.. automodule:: lemur.notifications.views
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
-
