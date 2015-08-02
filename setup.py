@@ -42,7 +42,8 @@ install_requires = [
     'cryptography>=1.0dev',
     'pyopenssl==0.15.1',
     'pyjwt==1.0.1',
-    'xmltodict==0.9.2'
+    'xmltodict==0.9.2',
+    'lockfile=0.10.2'
 ]
 
 tests_require = [

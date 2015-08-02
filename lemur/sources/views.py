@@ -23,6 +23,7 @@ FIELDS = {
     'description': fields.String,
     'sourceOptions': fields.Raw(attribute='options'),
     'pluginName': fields.String(attribute='plugin_name'),
+    'lastRun': fields.DateTime(attribute='last_run', dt_format='iso8061'),
     'label': fields.String,
     'id': fields.Integer,
 }
@@ -71,6 +72,7 @@ class SourcesList(AuthenticatedResource):
                             }
                         ],
                         "pluginName": "aws-source",
+                        "lastRun": "2015-08-01T15:40:58",
                         "id": 3,
                         "description": "test",
                         "label": "test"
@@ -120,6 +122,7 @@ class SourcesList(AuthenticatedResource):
                 ],
                 "pluginName": "aws-source",
                 "id": 3,
+                "lastRun": "2015-08-01T15:40:58",
                 "description": "test",
                 "label": "test"
               }
@@ -145,6 +148,7 @@ class SourcesList(AuthenticatedResource):
                 ],
                 "pluginName": "aws-source",
                 "id": 3,
+                "lastRun": "2015-08-01T15:40:58",
                 "description": "test",
                 "label": "test"
               }
@@ -203,6 +207,7 @@ class Sources(AuthenticatedResource):
                 ],
                 "pluginName": "aws-source",
                 "id": 3,
+                "lastRun": "2015-08-01T15:40:58",
                 "description": "test",
                 "label": "test"
               }
@@ -241,6 +246,7 @@ class Sources(AuthenticatedResource):
                 ],
                 "pluginName": "aws-source",
                 "id": 3,
+                "lastRun": "2015-08-01T15:40:58",
                 "description": "test",
                 "label": "test"
               }
@@ -266,6 +272,7 @@ class Sources(AuthenticatedResource):
                 ],
                 "pluginName": "aws-source",
                 "id": 3,
+                "lastRun": "2015-08-01T15:40:58",
                 "description": "test",
                 "label": "test"
               }
@@ -332,6 +339,7 @@ class CertificateSources(AuthenticatedResource):
                         ],
                         "pluginName": "aws-source",
                         "id": 3,
+                        "lastRun": "2015-08-01T15:40:58",
                         "description": "test",
                         "label": "test"
                     }

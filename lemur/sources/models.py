@@ -6,7 +6,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import copy
-from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean
 from sqlalchemy_utils import JSONType
 from lemur.database import db
 
@@ -20,6 +20,8 @@ class Source(db.Model):
     options = Column(JSONType)
     description = Column(Text())
     plugin_name = Column(String(32))
+    active = Column(Boolean, default=True)
+    last_run = Column(DateTime)
 
     @property
     def plugin(self):

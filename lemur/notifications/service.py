@@ -64,7 +64,7 @@ def send_expiration_notifications():
     """
     notifications = 0
 
-    for plugin_name, notifications in database.get_all(Notification, 'active', field='status').group_by(Notification.plugin_name):
+    for plugin_name, notifications in database.get_all(Notification, True, field='active').group_by(Notification.plugin_name):
         notifications += 1
 
         messages = _deduplicate(notifications)

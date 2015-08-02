@@ -1,12 +1,15 @@
 import os
 import sys
 import base64
+import time
 from gunicorn.config import make_settings
 
 from cryptography.fernet import Fernet
 
+from lockfile import LockFile, LockTimeout
+
 from flask import current_app
-from flask.ext.script import Manager, Command, Option, Group, prompt_pass
+from flask.ext.script import Manager, Command, Option, prompt_pass
 from flask.ext.migrate import Migrate, MigrateCommand, stamp
 from flask_script.commands import ShowUrls, Clean, Server
 
@@ -15,11 +18,12 @@ from lemur.users import service as user_service
 from lemur.roles import service as role_service
 from lemur.destinations import service as destination_service
 from lemur.certificates import service as cert_service
+from lemur.sources import service as source_service
 
 from lemur.plugins.base import plugins
 
 from lemur.certificates.verify import verify_string
-from lemur.sources import sync
+from lemur.sources.service import sync
 
 from lemur import create_app
 
@@ -176,51 +180,55 @@ def generate_settings():
     return output
 
 
-class Sync(Command):
+@manager.option('-s', '--sources', dest='labels', default='', required=False)
+@manager.option('-l', '--list', dest='view', default=False, required=False)
+def sync_sources(labels, view):
     """
     Attempts to run several methods Certificate discovery. This is
     run on a periodic basis and updates the Lemur datastore with the
     information it discovers.
     """
+    if view:
+        for source in source_service.get_all():
+            sys.stdout.write(
+                "[{active}]\t{label}\t{description}!\n".format(
+                    label=source.label,
+                    description=source.description,
+                    active=source.active
+                )
+            )
+    else:
+        start_time = time.time()
+        lock_file = "/tmp/.lemur_lock"
+        sync_lock = LockFile(lock_file)
 
-    # TODO create these commands dynamically
-    option_list = [
-        Group(
-            Option('-a', '--all', action="store_true"),
-            exclusive=True, required=True
-        )
-    ]
-
-    def run(self, all, aws, cloudca, source):
-        sys.stdout.write("[!] Starting to sync with external sources!\n")
-
-        if all or aws:
-            sys.stdout.write("[!] Starting to sync with AWS!\n")
+        while not sync_lock.i_am_locking():
             try:
-                sync.aws()
-                # sync_all_elbs()
-                sys.stdout.write("[+] Finished syncing with AWS!\n")
-            except Exception as e:
-                sys.stdout.write("[-] Syncing with AWS failed!\n")
+                sync_lock.acquire(timeout=10)    # wait up to 10 seconds
 
-        if all or cloudca:
-            sys.stdout.write("[!] Starting to sync with CloudCA!\n")
-            try:
-                sync.cloudca()
-                sys.stdout.write("[+] Finished syncing with CloudCA!\n")
-            except Exception as e:
-                sys.stdout.write("[-] Syncing with CloudCA failed!\n")
+                if labels:
+                    sys.stdout.write("[+] Staring to sync sources: {labels}!\n".format(labels))
+                    labels = labels.split(",")
+                else:
+                    sys.stdout.write("[+] Starting to sync ALL sources!\n".format(labels))
 
-            sys.stdout.write("[!] Starting to sync with Source Code!\n")
+                sync(labels=labels)
+                sys.stdout.write(
+                    "[+] Finished syncing sources. Run Time: {time}\n".format(
+                        time=(time.time() - start_time)
+                    )
+                )
+            except LockTimeout:
+                sys.stderr.write(
+                    "[!] Unable to acquire file lock on {file}, is there another sync running?\n".format(
+                        file=lock_file
+                    )
+                )
+                sync_lock.break_lock()
+                sync_lock.acquire()
+                sync_lock.release()
 
-        if all or source:
-            try:
-                sync.source()
-                sys.stdout.write("[+] Finished syncing with Source Code!\n")
-            except Exception as e:
-                sys.stdout.write("[-] Syncing with Source Code failed!\n")
-
-            sys.stdout.write("[+] Finished syncing with external sources!\n")
+        sync_lock.release()
 
 
 class InitializeApp(Command):
@@ -473,7 +481,6 @@ def main():
     manager.add_command("init", InitializeApp())
     manager.add_command("create_user", CreateUser())
     manager.add_command("create_role", CreateRole())
-    manager.add_command("sync", Sync())
     manager.run()
 
 

@@ -5,9 +5,80 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+from flask import current_app
+
 from lemur import database
 from lemur.sources.models import Source
 from lemur.certificates.models import Certificate
+from lemur.certificates import service as cert_service
+
+from lemur.plugins.base import plugins
+
+
+def _disassociate_certs_from_source(current_certificates, found_certificates, source_label):
+    missing = []
+    for cc in current_certificates:
+        for fc in found_certificates:
+            if fc.body == cc.body:
+                break
+        else:
+            missing.append(cc)
+
+    for c in missing:
+        for s in c.sources:
+            if s.label == source_label:
+                current_app.logger.info(
+                    "Certificate {name} is no longer associated with {source}".format(
+                        name=c.name,
+                        source=source_label
+                    )
+                )
+                c.sources.delete(s)
+
+
+def sync(labels=None):
+    new, updated = 0, 0
+    c_certificates = cert_service.get_all_certs()
+
+    for source in database.get_all(Source, True, field='active'):
+        # we should be able to specify, individual sources to sync
+        if labels:
+            if source.label not in labels:
+                continue
+
+        current_app.logger.error("Retrieving certificates from {0}".format(source.title))
+        s = plugins.get(source.plugin_name)
+        certificates = s.get_certificates(source.options)
+
+        for certificate in certificates:
+            exists = cert_service.find_duplicates(certificate)
+
+            if not exists:
+                cert = cert_service.import_certificate(**certificate)
+                cert.sources.append(source)
+                database.update(cert)
+
+                new += 1
+
+            # check to make sure that existing certificates have the current source associated with it
+            if len(exists) == 1:
+                for s in cert.sources:
+                    if s.label == source.label:
+                        break
+                    else:
+                        cert.sources.append(source)
+
+                updated += 1
+
+            else:
+                current_app.logger.warning(
+                    "Multiple certificates found, attempt to deduplicate the following certificates: {0}".format(
+                        ",".join([x.name for x in exists])
+                    )
+                )
+
+        # we need to try and find the absent of certificates so we can properly disassociate them when they are deleted
+        _disassociate_certs_from_source(c_certificates, certificates, source)
 
 
 def create(label, plugin_name, options, description=None):

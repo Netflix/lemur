@@ -505,11 +505,19 @@ All commands default to `~/.lemur/lemur.conf.py` if a configuration is not speci
 
 .. data:: sync
 
-    Sync attempts to discover certificates in the environment that were not created by Lemur. There
+    Sync attempts to discover certificates in the environment that were not created by Lemur. If you wish to only sync
+    a few sources you can pass a comma delimited list of sources to sync
 
     ::
 
-        lemur sync --all
+        lemur sync source1,source2
+
+
+    Additionally you can also list the available sources that Lemur can sync
+
+    ::
+
+        lemur sync -list
 
 
 Identity and Access Management
