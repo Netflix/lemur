@@ -222,6 +222,23 @@ def sync_sources(labels, view):
         sync_lock.release()
 
 
+@manager.command
+def notify():
+    """
+    Runs Lemur's notification engine, that looks for expired certificates and sends
+    notifications out to those that bave subscribed to them.
+
+    :return:
+    """
+    sys.stdout.write("Starting to notify subscribers about expiring certificates!\n")
+    count = notification_service.send_expiration_notifications()
+    sys.stdout.write(
+        "Finished notifying subscribers about expiring certificates! Sent {count} notifications!\n".format(
+            count=count
+        )
+    )
+
+
 class InitializeApp(Command):
     """
     This command will bootstrap our database with any destinations as

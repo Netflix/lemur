@@ -279,5 +279,4 @@ class Certificate(db.Model):
 @event.listens_for(Certificate.destinations, 'append')
 def update_destinations(target, value, initiator):
     destination_plugin = plugins.get(value.plugin_name)
-
     destination_plugin.upload(target.body, target.private_key, target.chain, value.options)

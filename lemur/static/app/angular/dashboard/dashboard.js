@@ -11,11 +11,6 @@ angular.module('lemur')
 
     var baseAccounts = LemurRestangular.all('accounts');
 
-    baseAccounts.getList()
-      .then(function (data) {
-        $scope.accounts = data;
-      });
-
     $scope.colours = [
       {
         fillColor: 'rgba(41, 171, 224, 0.2)',
@@ -88,5 +83,10 @@ angular.module('lemur')
     LemurRestangular.all('certificates').customGET('stats', {metric: 'not_after'})
       .then(function (data) {
         $scope.expiring = {labels: data.items.labels, values: [data.items.values]};
+      });
+
+    LemurRestangular.all('destinations').customGET('stats', {metric: 'certificates'})
+      .then(function (data) {
+        $scope.destinations = {labels: data.items.labels, values: [data.items.values]};
       });
   });

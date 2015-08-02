@@ -101,12 +101,17 @@ class IPlugin(local):
         Returns a list of tuples pointing to various resources for this plugin.
         >>> def get_resource_links(self):
         >>>     return [
-        >>>         ('Documentation', 'http://sentry.readthedocs.org'),
-        >>>         ('Bug Tracker', 'https://github.com/getsentry/sentry/issues'),
-        >>>         ('Source', 'https://github.com/getsentry/sentry'),
+        >>>         ('Documentation', 'http://lemury.readthedocs.org'),
+        >>>         ('Bug Tracker', 'https://github.com/Netflix/lemur/issues'),
+        >>>         ('Source', 'https://github.com/Netflix/lemur'),
         >>>     ]
         """
         return self.resource_links
+
+    def get_option(self, name, options):
+        for o in options:
+            if o.get(name):
+                return o['value']
 
 
 class Plugin(IPlugin):

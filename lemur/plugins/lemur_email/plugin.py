@@ -19,12 +19,6 @@ from lemur.plugins import lemur_email as email
 from lemur.plugins.lemur_email.templates.config import env
 
 
-def find_value(name, options):
-    for o in options:
-        if o.get(name):
-            return o['value']
-
-
 class EmailNotificationPlugin(ExpirationNotificationPlugin):
     title = 'Email'
     slug = 'email-notification'

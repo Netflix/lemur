@@ -18,7 +18,6 @@ from lemur.destinations.models import Destination
 from lemur.notifications.models import Notification
 from lemur.authorities.models import Authority
 
-
 from lemur.roles.models import Role
 
 from cryptography import x509
@@ -400,14 +399,6 @@ def stats(**kwargs):
     :param kwargs:
     :return:
     """
-    query = database.session_query(Certificate)
-
-    if kwargs.get('active') == 'true':
-        query = query.filter(Certificate.elb_listeners.any())
-
-    if kwargs.get('destination_id'):
-        query = query.filter(Certificate.destinations.any(Destination.id == kwargs.get('destination_id')))
-
     if kwargs.get('metric') == 'not_after':
         start = arrow.utcnow()
         end = start.replace(weeks=+32)
@@ -419,10 +410,6 @@ def stats(**kwargs):
     else:
         attr = getattr(Certificate, kwargs.get('metric'))
         query = database.db.session.query(attr, func.count(attr))
-
-        # TODO this could be cleaned up
-        if kwargs.get('active') == 'true':
-            query = query.filter(Certificate.elb_listeners.any())
 
         items = query.group_by(attr).all()
 

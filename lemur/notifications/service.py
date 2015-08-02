@@ -34,7 +34,7 @@ def _get_message_data(cert):
     cert_dict = cert.as_dict()
     cert_dict['creator'] = cert.user.email
     cert_dict['domains'] = [x .name for x in cert.domains]
-    cert_dict['superseded'] = list(set([x.name for x in find_superseded(cert.domains) if cert.name != x]))
+    cert_dict['superseded'] = list(set([x.name for x in _find_superseded(cert) if cert.name != x]))
     return cert_dict
 
 
@@ -44,8 +44,13 @@ def _deduplicate(messages):
     a roll up to the same set if the recipients are the same
     """
     roll_ups = []
-    for targets, data in messages:
-        for m, r in roll_ups:
+    for data, options in messages:
+        targets = []
+        for o in options:
+            if o.get('name') == 'recipients':
+                targets = o['value'].split(',')
+
+        for m, r, o in roll_ups:
             if r == targets:
                 m.append(data)
                 current_app.logger.info(
@@ -53,7 +58,7 @@ def _deduplicate(messages):
                         data['name'], ",".join(targets)))
                 break
         else:
-            roll_ups.append(([data], targets, data.plugin_options))
+            roll_ups.append(([data], targets, options))
     return roll_ups
 
 
@@ -62,21 +67,30 @@ def send_expiration_notifications():
     This function will check for upcoming certificate expiration,
     and send out notification emails at given intervals.
     """
-    notifications = 0
+    sent = 0
 
-    for plugin_name, notifications in database.get_all(Notification, True, field='active').group_by(Notification.plugin_name):
-        notifications += 1
+    for plugin in plugins.all(plugin_type='notification'):
+        notifications = database.db.session.query(Notification)\
+            .filter(Notification.plugin_name == plugin.slug)\
+            .filter(Notification.active == True).all()  # noqa
 
-        messages = _deduplicate(notifications)
-        plugin = plugins.get(plugin_name)
+        messages = []
+        for n in notifications:
+            for c in n.certificates:
+                if _is_eligible_for_notifications(c):
+                    messages.append((_get_message_data(c), n.options))
+
+        messages = _deduplicate(messages)
 
         for data, targets, options in messages:
+            sent += 1
             plugin.send('expiration', data, targets, options)
 
-    current_app.logger.info("Lemur has sent {0} certification notifications".format(notifications))
+        current_app.logger.info("Lemur has sent {0} certification notifications".format(sent))
+    return sent
 
 
-def get_domain_certificate(name):
+def _get_domain_certificate(name):
     """
     Fetch the SSL certificate currently hosted at a given domain (if any) and
     compare it against our all of our know certificates to determine if a new
@@ -92,7 +106,7 @@ def get_domain_certificate(name):
         current_app.logger.info(str(e))
 
 
-def find_superseded(domains):
+def _find_superseded(cert):
     """
     Here we try to fetch any domain in the certificate to see if we can resolve it
     and to try and see if it is currently serving the certificate we are
@@ -103,17 +117,22 @@ def find_superseded(domains):
     """
     query = database.session_query(Certificate)
     ss_list = []
-    for domain in domains:
-        dc = get_domain_certificate(domain.name)
-        if dc:
-            ss_list.append(dc)
+
+    # determine what is current host at our domains
+    for domain in cert.domains:
+        dups = _get_domain_certificate(domain.name)
+        for c in dups:
+            if c.body != cert.body:
+                ss_list.append(dups)
+
         current_app.logger.info("Trying to resolve {0}".format(domain.name))
 
-    query = query.filter(Certificate.domains.any(Domain.name.in_([x.name for x in domains])))
+    # look for other certificates that may not be hosted but cover the same domains
+    query = query.filter(Certificate.domains.any(Domain.name.in_([x.name for x in cert.domains])))
     query = query.filter(Certificate.active == True)  # noqa
     query = query.filter(Certificate.not_after >= arrow.utcnow().format('YYYY-MM-DD'))
+    query = query.filter(Certificate.body != cert.body)
     ss_list.extend(query.all())
-
     return ss_list
 
 

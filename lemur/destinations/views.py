@@ -353,7 +353,21 @@ class CertificateDestinations(AuthenticatedResource):
         return service.render(args)
 
 
+class DestinationsStats(AuthenticatedResource):
+    """ Defines the 'certificates' stats endpoint """
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        super(DestinationsStats, self).__init__()
+
+    def get(self):
+        self.reqparse.add_argument('metric', type=str, location='args')
+        args = self.reqparse.parse_args()
+        items = service.stats(**args)
+        return dict(items=items, total=len(items))
+
+
 api.add_resource(DestinationsList, '/destinations', endpoint='destinations')
-api.add_resource(Destinations, '/destinations/<int:destination_id>', endpoint='account')
+api.add_resource(Destinations, '/destinations/<int:destination_id>', endpoint='destination')
 api.add_resource(CertificateDestinations, '/certificates/<int:certificate_id>/destinations',
                  endpoint='certificateDestinations')
+api.add_resource(DestinationsStats, '/destinations/stats', endpoint='destinationStats')
