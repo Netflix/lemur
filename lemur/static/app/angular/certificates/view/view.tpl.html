@@ -101,14 +101,20 @@
                         </ul>
                     </tab>
                     <tab heading="Notifications">
-                        <div class="list-group">
-                            <a href="#/domains/{{ domain.id }}" class="list-group-item" ng-repeat="notification in certificate.notifications">{{ notification.label }}</a>
-                        </div>
+                        <ul class="list-group">
+                            <li class="list-group-item" ng-repeat="notification in certificate.notifications">
+                                <strong>{{ notification.label }}</strong>
+                                <span class="pull-right">{{ notification.description}}</span>
+                            </li>
+                        </ul>
                     </tab>
                     <tab heading="Destinations">
-                        <div class="list-group">
-                            <a href="#/domains/{{ domain.id }}" class="list-group-item" ng-repeat="destination in certificate.destinations">{{ destination.label }}</a>
-                        </div>
+                        <ul class="list-group">
+                            <li class="list-group-item" ng-repeat="destination in certificate.destinations">
+                                <strong>{{ destination.label }}</strong>
+                                <span class="pull-right">{{ destination.description }}</span>
+                            </li>
+                        </ul>
                     </tab>
                     <tab heading="Domains">
                         <div class="list-group">

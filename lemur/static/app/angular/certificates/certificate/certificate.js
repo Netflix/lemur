@@ -22,7 +22,7 @@ angular.module('lemur')
     $scope.notificationService = NotificationService;
   })
 
-  .controller('CertificateCreateController', function ($scope, $modalInstance, CertificateApi, CertificateService, DestinationService, ELBService, AuthorityService, PluginService, MomentService, WizardHandler, LemurRestangular, NotificationService) {
+  .controller('CertificateCreateController', function ($scope, $modalInstance, CertificateApi, CertificateService, DestinationService, AuthorityService, PluginService, MomentService, WizardHandler, LemurRestangular, NotificationService) {
     $scope.certificate = LemurRestangular.restangularizeElement(null, {}, 'certificates');
 
     $scope.create = function (certificate) {
@@ -92,7 +92,6 @@ angular.module('lemur')
         $scope.plugins = plugins;
     });
 
-    $scope.elbService = ELBService;
     $scope.authorityService = AuthorityService;
     $scope.destinationService = DestinationService;
     $scope.notificationService = NotificationService;

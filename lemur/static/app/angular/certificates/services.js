@@ -77,18 +77,8 @@ angular.module('lemur')
         removeNotification: function (index) {
           this.notifications.splice(index, 1);
         },
-        attachELB: function (elb) {
-          this.selectedELB = null;
-          if (this.elbs === undefined) {
-            this.elbs = [];
-          }
-          this.elbs.push(elb);
-        },
-        removeELB: function (index) {
-          this.elbs.splice(index, 1);
-        },
         findDuplicates: function () {
-          DomainService.findDomainByName(this.extensions.subAltNames[0]).then(function (domains) { //We should do a better job of searchin multiple domains
+          DomainService.findDomainByName(this.extensions.subAltNames[0]).then(function (domains) { //We should do a better job of searching for multiple domains
             this.duplicates = domains.total;
           });
         },
@@ -202,18 +192,6 @@ angular.module('lemur')
     CertificateService.getNotifications = function (certificate) {
       return certificate.getList('notifications').then(function (notifications) {
         certificate.notifications = notifications;
-      });
-    };
-
-    CertificateService.getListeners = function (certificate) {
-      return certificate.getList('listeners').then(function (listeners) {
-        certificate.listeners = listeners;
-      });
-    };
-
-    CertificateService.getELBs = function (certificate) {
-      return certificate.getList('listeners').then(function (elbs) {
-        certificate.elbs = elbs;
       });
     };
 
