@@ -16,11 +16,8 @@ from flask_script.commands import ShowUrls, Clean, Server
 from lemur import database
 from lemur.users import service as user_service
 from lemur.roles import service as role_service
-from lemur.destinations import service as destination_service
 from lemur.certificates import service as cert_service
 from lemur.sources import service as source_service
-
-from lemur.plugins.base import plugins
 
 from lemur.certificates.verify import verify_string
 from lemur.sources.service import sync
@@ -93,14 +90,6 @@ SQLALCHEMY_DATABASE_URI = 'postgresql://lemur:lemur@localhost:5432/lemur'
 
 
 # AWS
-
-# Lemur will need STS assume role access to every destination you want to monitor
-# AWS_ACCOUNT_MAPPINGS = {{
-#    '1111111111': 'myawsacount'
-# }}
-
-## This is useful if you know you only want to monitor one destination
-#AWS_REGIONS = ['us-east-1']
 
 #LEMUR_INSTANCE_PROFILE = 'Lemur'
 
@@ -267,21 +256,6 @@ class InitializeApp(Command):
         else:
             sys.stdout.write("[-] Default user has already been created, skipping...!\n")
 
-        if current_app.config.get('AWS_ACCOUNT_MAPPINGS'):
-            if plugins.get('aws-destination'):
-                for account_name, account_number in current_app.config.get('AWS_ACCOUNT_MAPPINGS').items():
-
-                    destination = destination_service.get_by_label(account_name)
-
-                    options = dict(account_number=account_number)
-                    if not destination:
-                        destination_service.create(account_name, 'aws-destination', options,
-                                                   description="This is an auto-generated AWS destination.")
-                        sys.stdout.write("[+] Added new destination {0}:{1}!\n".format(account_number, account_name))
-                    else:
-                        sys.stdout.write("[-] Account already exists, skipping...!\n")
-            else:
-                sys.stdout.write("[!] Skipping adding AWS destinations AWS plugin no available\n")
         sys.stdout.write("[/] Done!\n")
 
 
