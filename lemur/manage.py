@@ -77,6 +77,7 @@ LEMUR_RESTRICTED_DOMAINS = []
 
 LEMUR_EMAIL = ''
 LEMUR_SECURITY_TEAM_EMAIL = []
+LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS = [30, 15, 2]
 
 # Logging
 
@@ -257,82 +258,19 @@ class InitializeApp(Command):
         else:
             sys.stdout.write("[-] Default user has already been created, skipping...!\n")
 
-        thirty_day = notification_service.get_by_label("SECURITY_TEAM_30_DAY")
-        ten_day = notification_service.get_by_label("SECURITY_TEAM_10_DAY")
-        two_day = notification_service.get_by_label("SECURITY_TEAM_2_DAY")
-        sys.stdout.write("[+] Creating default email notifications!\n")
+        sys.stdout.write("[+] Creating expiration email notifications!\n")
+        sys.stdout.write("[!] Using {recipients} as specified by LEMUR_SECURITY_TEAM_EMAIL for notifications\n")
 
-        to = ",".join(current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL"))
+        intervals = current_app.config.get("LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS")
+        sys.stdout.write(
+            "[!] Creating {num} notifications for {intervals} days as specified by LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS\n".format(
+                num=len(intervals),
+                intervals=",".join([str(x) for x in intervals])
+            )
+        )
 
-        options = [
-            {
-                'name': 'recipients',
-                'value': to
-            },
-            {
-                'name': 'unit',
-                'value': 'days'
-            }
-        ]
-
-        if not thirty_day:
-            inter = [{
-                'name': 'interval',
-                'value': 30,
-            }]
-            inter.extend(options)
-            notification_service.create(
-                label="SECURITY_TEAM_30_DAY",
-                plugin_name="email-notification",
-                options=list(inter),
-                description="Default 30 day expiration notification",
-                certificates=[]
-            )
-            sys.stdout.write("[+] Created 30 day email notification for {recipients}!\n".format(recipients=to))
-        else:
-            sys.stdout.write("[-] Skipping 30 day email notification already created for {recipients}!\n".format(
-                recipients=to)
-            )
-
-        if not ten_day:
-            inter = [{
-                'name': 'interval',
-                'value': 10,
-            }]
-            inter.extend(options)
-            notification_service.create(
-                label="SECURITY_TEAM_30_DAY",
-                plugin_name="email-notification",
-                options=list(inter),
-                description="Default 10 day expiration notification",
-                certificates=[]
-            )
-            sys.stdout.write("[+] Created 10 day email notification for {recipients}!\n".format(recipients=to))
-        else:
-            sys.stdout.write("[-] Skipping 10 day email notification already created for {recipients}!\n".format(
-                recipients=to)
-            )
-
-        if not two_day:
-            inter = [{
-                'name': 'interval',
-                'value': 2,
-            }]
-            inter.extend(options)
-            notification_service.create(
-                label="SECURITY_TEAM_30_DAY",
-                plugin_name="email-notification",
-                options=list(inter),
-                description="Default 2 day expiration notification",
-                certificates=[]
-            )
-            sys.stdout.write("[+] Created 2 day email notification for {recipients}!\n".format(
-                recipients=to)
-            )
-        else:
-            sys.stdout.write("[-] Skipping 2 day email notification already created for {recipients}!\n".format(
-                recipients=to)
-            )
+        recipients = current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL')
+        notification_service.create_default_expiration_notifications("DEFAULT_SECURITY", recipients=recipients)
 
         sys.stdout.write("[/] Done!\n")
 

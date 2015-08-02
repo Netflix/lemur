@@ -147,6 +147,48 @@ def _is_eligible_for_notifications(cert):
             return cert
 
 
+def create_default_expiration_notifications(name, recipients):
+    """
+    Will create standard 30, 10 and 2 day notifications for a given owner. If standard notifications
+    already exist these will be returned instead of new notifications.
+
+    :param name:
+    :return:
+    """
+    options = [
+        {
+            'name': 'recipients',
+            'value': ','.join(recipients)
+        },
+        {
+            'name': 'unit',
+            'value': 'days'
+        }
+    ]
+
+    intervals = current_app.config.get("LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS")
+
+    notifications = []
+    for i in intervals:
+        n = get_by_label("{name}_{interval}_DAY".format(name=name, interval=i))
+        if not n:
+            inter = [{
+                'name': 'interval',
+                'value': i,
+            }]
+            inter.extend(options)
+            n = create(
+                label="{name}_{interval}_DAY".format(name=name, interval=i),
+                plugin_name="email-notification",
+                options=list(inter),
+                description="Default {interval} day expiration notification".format(interval=i),
+                certificates=[]
+            )
+        notifications.append(n)
+
+    return notifications
+
+
 def create(label, plugin_name, options, description, certificates):
     """
     Creates a new destination, that can then be used as a destination for certificates.
