@@ -297,7 +297,7 @@ def create_csr(csr_config):
                 x509.SubjectAlternativeName(general_names), critical=True
             )
 
-    # TODO support more CSR options, none of the authorities support these atm
+    # TODO support more CSR options, none of the authority plugins currently support these options
     #    builder.add_extension(
     #        x509.KeyUsage(
     #            digital_signature=digital_signature,

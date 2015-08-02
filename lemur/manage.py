@@ -18,6 +18,7 @@ from lemur.users import service as user_service
 from lemur.roles import service as role_service
 from lemur.certificates import service as cert_service
 from lemur.sources import service as source_service
+from lemur.notifications import service as notification_service
 
 from lemur.certificates.verify import verify_string
 from lemur.sources.service import sync
@@ -255,6 +256,83 @@ class InitializeApp(Command):
 
         else:
             sys.stdout.write("[-] Default user has already been created, skipping...!\n")
+
+        thirty_day = notification_service.get_by_label("SECURITY_TEAM_30_DAY")
+        ten_day = notification_service.get_by_label("SECURITY_TEAM_10_DAY")
+        two_day = notification_service.get_by_label("SECURITY_TEAM_2_DAY")
+        sys.stdout.write("[+] Creating default email notifications!\n")
+
+        to = ",".join(current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL"))
+
+        options = [
+            {
+                'name': 'recipients',
+                'value': to
+            },
+            {
+                'name': 'unit',
+                'value': 'days'
+            }
+        ]
+
+        if not thirty_day:
+            inter = [{
+                'name': 'interval',
+                'value': 30,
+            }]
+            inter.extend(options)
+            notification_service.create(
+                label="SECURITY_TEAM_30_DAY",
+                plugin_name="email-notification",
+                options=list(inter),
+                description="Default 30 day expiration notification",
+                certificates=[]
+            )
+            sys.stdout.write("[+] Created 30 day email notification for {recipients}!\n".format(recipients=to))
+        else:
+            sys.stdout.write("[-] Skipping 30 day email notification already created for {recipients}!\n".format(
+                recipients=to)
+            )
+
+        if not ten_day:
+            inter = [{
+                'name': 'interval',
+                'value': 10,
+            }]
+            inter.extend(options)
+            notification_service.create(
+                label="SECURITY_TEAM_30_DAY",
+                plugin_name="email-notification",
+                options=list(inter),
+                description="Default 10 day expiration notification",
+                certificates=[]
+            )
+            sys.stdout.write("[+] Created 10 day email notification for {recipients}!\n".format(recipients=to))
+        else:
+            sys.stdout.write("[-] Skipping 10 day email notification already created for {recipients}!\n".format(
+                recipients=to)
+            )
+
+        if not two_day:
+            inter = [{
+                'name': 'interval',
+                'value': 2,
+            }]
+            inter.extend(options)
+            notification_service.create(
+                label="SECURITY_TEAM_30_DAY",
+                plugin_name="email-notification",
+                options=list(inter),
+                description="Default 2 day expiration notification",
+                certificates=[]
+            )
+            sys.stdout.write("[+] Created 2 day email notification for {recipients}!\n".format(
+                recipients=to)
+            )
+        else:
+            sys.stdout.write("[-] Skipping 2 day email notification already created for {recipients}!\n".format(
+                recipients=to)
+            )
 
         sys.stdout.write("[/] Done!\n")
 
