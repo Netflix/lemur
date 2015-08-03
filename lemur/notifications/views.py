@@ -110,6 +110,7 @@ class NotificationsList(AuthenticatedResource):
            :statuscode 200: no error
         """
         parser = paginated_parser.copy()
+        parser.add_argument('active', type=bool, location='args')
         args = parser.parse_args()
         return service.render(args)
 
@@ -346,6 +347,7 @@ class Notifications(AuthenticatedResource):
         """
         self.reqparse.add_argument('label', type=str, location='json', required=True)
         self.reqparse.add_argument('plugin', type=dict, location='json', required=True)
+        self.reqparse.add_argument('active', type=bool, location='json')
         self.reqparse.add_argument('certificates', type=list, default=[], location='json')
         self.reqparse.add_argument('description', type=str, location='json')
 
@@ -355,6 +357,7 @@ class Notifications(AuthenticatedResource):
             args['label'],
             args['plugin']['pluginOptions'],
             args['description'],
+            args['active'],
             args['certificates']
         )
 
@@ -444,6 +447,7 @@ class CertificateNotifications(AuthenticatedResource):
            :statuscode 200: no error
         """
         parser = paginated_parser.copy()
+        parser.add_argument('active', type=bool, location='args')
         args = parser.parse_args()
         args['certificate_id'] = certificate_id
         return service.render(args)

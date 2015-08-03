@@ -243,7 +243,7 @@ def create(label, plugin_name, options, description, certificates):
     return database.create(notification)
 
 
-def update(notification_id, label, options, description, certificates):
+def update(notification_id, label, options, description, active, certificates):
     """
     Updates an existing destination.
 
@@ -258,6 +258,7 @@ def update(notification_id, label, options, description, certificates):
     notification.label = label
     notification.options = options
     notification.description = description
+    notification.active = active
     notification = database.update_list(notification, 'certificates', Certificate, certificates)
 
     return database.update(notification)
