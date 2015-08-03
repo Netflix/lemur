@@ -43,7 +43,7 @@ install_requires = [
     'pyopenssl==0.15.1',
     'pyjwt==1.0.1',
     'xmltodict==0.9.2',
-    'lockfile=0.10.2'
+    'lockfile==0.10.2'
 ]
 
 tests_require = [
@@ -136,10 +136,10 @@ setup(
         'lemur.plugins': [
             'verisign_issuer = lemur.plugins.lemur_verisign.plugin:VerisignIssuerPlugin',
             'cloudca_issuer = lemur.plugins.lemur_cloudca.plugin:CloudCAIssuerPlugin',
-            'cloudca_source = lemur.plugins.lemur_cloudca.plugin:CloudCASourcePlugin'
+            'cloudca_source = lemur.plugins.lemur_cloudca.plugin:CloudCASourcePlugin',
             'aws_destination = lemur.plugins.lemur_aws.plugin:AWSDestinationPlugin',
-            'aws_source = lemur.plugins.lemur_aws.plugin:AWSSourcePlugin'
-            'email_notification = lemur.plugins.lemur_email.plugin:EmailNotificationPlugin'
+            'aws_source = lemur.plugins.lemur_aws.plugin:AWSSourcePlugin',
+            'email_notification = lemur.plugins.lemur_email.plugin:EmailNotificationPlugin',
         ],
     },
     classifiers=[

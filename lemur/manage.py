@@ -180,6 +180,7 @@ def sync_sources(labels, view):
     information it discovers.
     """
     if view:
+        sys.stdout.write("Active", "Label", "Description")
         for source in source_service.get_all():
             sys.stdout.write(
                 "[{active}]\t{label}\t{description}!\n".format(

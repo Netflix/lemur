@@ -19,17 +19,17 @@ def get_name_from_arn(arn):
     return arn.split("/", 1)[1]
 
 
-def upload_cert(account_number, cert, private_key, cert_chain=None):
+def upload_cert(account_number, name, body, private_key, cert_chain=None):
     """
     Upload a certificate to AWS
 
     :param account_number:
-    :param cert:
+    :param name:
     :param private_key:
     :param cert_chain:
     :return:
     """
-    return assume_service(account_number, 'iam').upload_server_cert(cert.name, str(cert.body), str(private_key),
+    return assume_service(account_number, 'iam').upload_server_cert(name, str(body), str(private_key),
                                                                     cert_chain=str(cert_chain))
 
 
@@ -57,7 +57,7 @@ def get_all_server_certs(account_number):
         result = response['list_server_certificates_response']['list_server_certificates_result']
 
         for cert in result['server_certificate_metadata_list']:
-            certs.append(cert)
+            certs.append(cert['arn'])
 
         if result['is_truncated'] == 'true':
             marker = result['marker']
@@ -72,7 +72,7 @@ def get_cert_from_arn(arn):
     :param arn:
     :return:
     """
-    name = arn.split("/", 1)[1]
+    name = get_name_from_arn(arn)
     account_number = arn.split(":")[4]
     name = name.split("/")[-1]
 

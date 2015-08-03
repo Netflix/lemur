@@ -38,7 +38,7 @@ angular.module('lemur')
         if (plugin.slug === $scope.notification.pluginName) {
           plugin.pluginOptions = $scope.notification.notificationOptions;
           $scope.notification.plugin = plugin;
-        };
+        }
       });
     });
 

@@ -24,6 +24,12 @@ from lemur.certificates import service as cert_service
 from lemur.plugins.base import plugins
 
 
+def get_options(name, options):
+    for o in options:
+        if o.get('name') == name:
+            return o
+
+
 def _get_message_data(cert):
     """
     Parse our the certification information needed for our notification
@@ -45,10 +51,8 @@ def _deduplicate(messages):
     """
     roll_ups = []
     for data, options in messages:
-        targets = []
-        for o in options:
-            if o.get('name') == 'recipients':
-                targets = o['value'].split(',')
+        o = get_options('recipients', options)
+        targets = o['value'].split(',')
 
         for m, r, o in roll_ups:
             if r == targets:
@@ -148,8 +152,8 @@ def _is_eligible_for_notifications(cert):
     days = (cert.not_after - now.naive).days
 
     for notification in cert.notifications:
-        interval = notification.options['interval']
-        unit = notification.options['unit']
+        interval = get_options('interval', notification.options)['value']
+        unit = get_options('unit', notification.options)['value']
         if unit == 'weeks':
             interval *= 7
 

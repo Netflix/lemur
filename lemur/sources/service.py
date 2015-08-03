@@ -11,6 +11,7 @@ from lemur import database
 from lemur.sources.models import Source
 from lemur.certificates.models import Certificate
 from lemur.certificates import service as cert_service
+from lemur.destinations import service as destination_service
 
 from lemur.plugins.base import plugins
 
@@ -19,7 +20,7 @@ def _disassociate_certs_from_source(current_certificates, found_certificates, so
     missing = []
     for cc in current_certificates:
         for fc in found_certificates:
-            if fc.body == cc.body:
+            if fc['public_certificate'] == cc.body:
                 break
         else:
             missing.append(cc)
@@ -36,6 +37,34 @@ def _disassociate_certs_from_source(current_certificates, found_certificates, so
                 c.sources.delete(s)
 
 
+def sync_create(certificate, source):
+    cert = cert_service.import_certificate(**certificate)
+    cert.sources.append(source)
+    sync_update_destination(cert, source)
+    database.update(cert)
+
+
+def sync_update(certificate, source):
+    for s in certificate.sources:
+        if s.label == source.label:
+            break
+    else:
+        certificate.sources.append(source)
+
+    sync_update_destination(certificate, source)
+    database.update(certificate)
+
+
+def sync_update_destination(certificate, source):
+    dest = destination_service.get_by_label(source.label)
+    if dest:
+        for d in certificate.destinations:
+            if d.label == source.label:
+                break
+        else:
+            certificate.destinations.append(dest)
+
+
 def sync(labels=None):
     new, updated = 0, 0
     c_certificates = cert_service.get_all_certs()
@@ -46,30 +75,21 @@ def sync(labels=None):
             if source.label not in labels:
                 continue
 
-        current_app.logger.error("Retrieving certificates from {0}".format(source.title))
+        current_app.logger.error("Retrieving certificates from {0}".format(source.label))
         s = plugins.get(source.plugin_name)
         certificates = s.get_certificates(source.options)
 
         for certificate in certificates:
-            exists = cert_service.find_duplicates(certificate)
+            exists = cert_service.find_duplicates(certificate['public_certificate'])
 
             if not exists:
-                cert = cert_service.import_certificate(**certificate)
-                cert.sources.append(source)
-                database.update(cert)
-
+                sync_create(certificate, source)
                 new += 1
 
             # check to make sure that existing certificates have the current source associated with it
-            if len(exists) == 1:
-                for s in cert.sources:
-                    if s.label == source.label:
-                        break
-                    else:
-                        cert.sources.append(source)
-
+            elif len(exists) == 1:
+                sync_update(exists[0], source)
                 updated += 1
-
             else:
                 current_app.logger.warning(
                     "Multiple certificates found, attempt to deduplicate the following certificates: {0}".format(

@@ -135,10 +135,10 @@ def import_certificate(**kwargs):
     """
     from lemur.users import service as user_service
     from lemur.notifications import service as notification_service
-    cert = Certificate(kwargs['public_certificate'])
+    cert = Certificate(kwargs['public_certificate'], chain=kwargs['intermediate_certificate'])
 
     # TODO future source plugins might have a better understanding of who the 'owner' is we should support this
-    cert.owner = kwargs.get('owner', current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL'))
+    cert.owner = kwargs.get('owner', current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL')[0])
     cert.creator = kwargs.get('creator', user_service.get_by_email('lemur@nobody'))
 
     # NOTE existing certs may not follow our naming standard we will

@@ -9,8 +9,6 @@ angular.module('lemur')
   })
   .controller('DashboardController', function ($scope, $rootScope, $filter, $location, LemurRestangular) {
 
-    var baseAccounts = LemurRestangular.all('accounts');
-
     $scope.colours = [
       {
         fillColor: 'rgba(41, 171, 224, 0.2)',
