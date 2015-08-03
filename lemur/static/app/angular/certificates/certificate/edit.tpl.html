@@ -1,0 +1,38 @@
+<div class="modal-header">
+    <div class="modal-title">
+        <h3 class="modal-header">Edit <span class="text-muted"><small>{{ certificate.name }}</small></span></h3>
+    </div>
+    <div class="modal-body">
+        <form name="editForm" class="form-horizontal" role="form" novalidate>
+            <div class="form-group"
+                 ng-class="{'has-error': editForm.owner.$invalid, 'has-success': !editForm.owner.$invalid&&editForm.owner.$dirty}">
+                <label class="control-label col-sm-2">
+                    Owner
+                </label>
+                <div class="col-sm-10">
+                    <input type="email" name="owner" ng-model="certificate.owner" placeholder="owner@netflix.com"
+                           class="form-control" required/>
+
+                    <p ng-show="editForm.owner.$invalid && !editForm.owner.$pristine" class="help-block">Enter a valid
+                        email.</p>
+                </div>
+            </div>
+            <div class="form-group"
+                 ng-class="{'has-error': editForm.description.$invalid, 'has-success': !editForm.$invalid&&editForm.description.$dirty}">
+                <label class="control-label col-sm-2">
+                    Description
+                </label>
+                <div class="col-sm-10">
+                    <textarea name="description" ng-model="certificate.description" placeholder="Something elegant" class="form-control" ng-pattern="/^[\w\-\s]+$/" required></textarea>
+                    <p ng-show="editForm.description.$invalid && !editForm.description.$pristine" class="help-block">You must give a short description about this authority will be used for, this description should only include alphanumeric characters</p>
+                </div>
+            </div>
+            <div ng-include="'angular/certificates/certificate/notifications.tpl.html'"></div>
+            <div ng-include="'angular/certificates/certificate/destinations.tpl.html'"></div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button type="submit" ng-click="save(certificate)" ng-disabled="editForm.$invalid" class="btn btn-success">Save</button>
+        <button ng-click="cancel()" class="btn btn-danger">Cancel</button>
+    </div>
+</div>

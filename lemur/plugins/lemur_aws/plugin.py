@@ -13,7 +13,7 @@ from lemur.plugins import lemur_aws as aws
 
 def find_value(name, options):
     for o in options:
-        if o.get(name):
+        if o['name'] == name:
             return o['value']
 
 
@@ -29,7 +29,7 @@ class AWSDestinationPlugin(DestinationPlugin):
     options = [
         {
             'name': 'accountNumber',
-            'type': 'int',
+            'type': 'str',
             'required': True,
             'validation': '/^[0-9]{12,12}$/',
             'helpMessage': 'Must be a valid AWS account number!',
@@ -41,8 +41,8 @@ class AWSDestinationPlugin(DestinationPlugin):
     #    'port': {'type': 'int'}
     # }
 
-    def upload(self, cert, private_key, cert_chain, options, **kwargs):
-        iam.upload_cert(find_value('accountNumber', options), cert, private_key, cert_chain=cert_chain)
+    def upload(self, name, body, private_key, cert_chain, options, **kwargs):
+        iam.upload_cert(find_value('accountNumber', options), name, body, private_key, cert_chain=cert_chain)
 
         e = find_value('elb', options)
         if e:
@@ -68,14 +68,15 @@ class AWSSourcePlugin(SourcePlugin):
         },
     ]
 
-    def get_certificates(self, **kwargs):
+    def get_certificates(self, options, **kwargs):
         certs = []
-        arns = elb.get_all_server_certs(kwargs['account_number'])
+        arns = iam.get_all_server_certs(find_value('accountNumber', options))
         for arn in arns:
-            cert_body = iam.get_cert_from_arn(arn)
+            cert_body, cert_chain = iam.get_cert_from_arn(arn)
             cert_name = iam.get_name_from_arn(arn)
             cert = dict(
                 public_certificate=cert_body,
+                intermediate_certificate=cert_chain,
                 name=cert_name
             )
             certs.append(cert)

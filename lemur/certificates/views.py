@@ -369,6 +369,7 @@ class CertificatesUpload(AuthenticatedResource):
            :statuscode 403: unauthenticated
            :statuscode 200: no error
         """
+        self.reqparse.add_argument('description', type=str, location='json')
         self.reqparse.add_argument('owner', type=str, required=True, location='json')
         self.reqparse.add_argument('publicCert', type=pem_str, required=True, dest='public_cert', location='json')
         self.reqparse.add_argument('destinations', type=list, default=[], dest='destinations', location='json')

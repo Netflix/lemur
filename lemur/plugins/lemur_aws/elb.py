@@ -1,9 +1,9 @@
 """
-.. module:: elb
+.. module: elb
     :synopsis: Module contains some often used and helpful classes that
     are used to deal with ELBs
 
-.. moduleauthor:: Kevin Glisson (kglisson@netflix.com)
+.. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import boto.ec2
 

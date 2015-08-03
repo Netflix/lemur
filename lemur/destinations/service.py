@@ -5,6 +5,8 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+from sqlalchemy import func
+
 from lemur import database
 from lemur.destinations.models import Destination
 from lemur.certificates.models import Certificate
@@ -28,9 +30,8 @@ def update(destination_id, label, options, description):
     Updates an existing destination.
 
     :param destination_id:  Lemur assigned ID
-    :param destination_number: AWS assigned ID
     :param label: Destination common name
-    :param comments:
+    :param description:
     :rtype : Destination
     :return:
     """
@@ -107,3 +108,24 @@ def render(args):
         query = database.sort(query, Destination, sort_by, sort_dir)
 
     return database.paginate(query, page, count)
+
+
+def stats(**kwargs):
+    """
+    Helper that defines some useful statistics about destinations.
+
+    :param kwargs:
+    :return:
+    """
+    attr = getattr(Destination, kwargs.get('metric'))
+    query = database.db.session.query(attr, func.count(attr))
+
+    items = query.group_by(attr).all()
+
+    keys = []
+    values = []
+    for key, count in items:
+        keys.append(key)
+        values.append(count)
+
+    return {'labels': keys, 'values': values}

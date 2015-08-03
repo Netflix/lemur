@@ -24,6 +24,12 @@ from lemur.certificates import service as cert_service
 from lemur.plugins.base import plugins
 
 
+def get_options(name, options):
+    for o in options:
+        if o.get('name') == name:
+            return o
+
+
 def _get_message_data(cert):
     """
     Parse our the certification information needed for our notification
@@ -34,7 +40,7 @@ def _get_message_data(cert):
     cert_dict = cert.as_dict()
     cert_dict['creator'] = cert.user.email
     cert_dict['domains'] = [x .name for x in cert.domains]
-    cert_dict['superseded'] = list(set([x.name for x in find_superseded(cert.domains) if cert.name != x]))
+    cert_dict['superseded'] = list(set([x.name for x in _find_superseded(cert) if cert.name != x]))
     return cert_dict
 
 
@@ -44,8 +50,11 @@ def _deduplicate(messages):
     a roll up to the same set if the recipients are the same
     """
     roll_ups = []
-    for targets, data in messages:
-        for m, r in roll_ups:
+    for data, options in messages:
+        o = get_options('recipients', options)
+        targets = o['value'].split(',')
+
+        for m, r, o in roll_ups:
             if r == targets:
                 m.append(data)
                 current_app.logger.info(
@@ -53,7 +62,7 @@ def _deduplicate(messages):
                         data['name'], ",".join(targets)))
                 break
         else:
-            roll_ups.append(([data], targets, data.plugin_options))
+            roll_ups.append(([data], targets, options))
     return roll_ups
 
 
@@ -62,21 +71,30 @@ def send_expiration_notifications():
     This function will check for upcoming certificate expiration,
     and send out notification emails at given intervals.
     """
-    notifications = 0
+    sent = 0
 
-    for plugin_name, notifications in database.get_all(Notification, 'active', field='status').group_by(Notification.plugin_name):
-        notifications += 1
+    for plugin in plugins.all(plugin_type='notification'):
+        notifications = database.db.session.query(Notification)\
+            .filter(Notification.plugin_name == plugin.slug)\
+            .filter(Notification.active == True).all()  # noqa
 
-        messages = _deduplicate(notifications)
-        plugin = plugins.get(plugin_name)
+        messages = []
+        for n in notifications:
+            for c in n.certificates:
+                if _is_eligible_for_notifications(c):
+                    messages.append((_get_message_data(c), n.options))
+
+        messages = _deduplicate(messages)
 
         for data, targets, options in messages:
+            sent += 1
             plugin.send('expiration', data, targets, options)
 
-    current_app.logger.info("Lemur has sent {0} certification notifications".format(notifications))
+        current_app.logger.info("Lemur has sent {0} certification notifications".format(sent))
+    return sent
 
 
-def get_domain_certificate(name):
+def _get_domain_certificate(name):
     """
     Fetch the SSL certificate currently hosted at a given domain (if any) and
     compare it against our all of our know certificates to determine if a new
@@ -92,7 +110,7 @@ def get_domain_certificate(name):
         current_app.logger.info(str(e))
 
 
-def find_superseded(domains):
+def _find_superseded(cert):
     """
     Here we try to fetch any domain in the certificate to see if we can resolve it
     and to try and see if it is currently serving the certificate we are
@@ -103,17 +121,22 @@ def find_superseded(domains):
     """
     query = database.session_query(Certificate)
     ss_list = []
-    for domain in domains:
-        dc = get_domain_certificate(domain.name)
-        if dc:
-            ss_list.append(dc)
+
+    # determine what is current host at our domains
+    for domain in cert.domains:
+        dups = _get_domain_certificate(domain.name)
+        for c in dups:
+            if c.body != cert.body:
+                ss_list.append(dups)
+
         current_app.logger.info("Trying to resolve {0}".format(domain.name))
 
-    query = query.filter(Certificate.domains.any(Domain.name.in_([x.name for x in domains])))
+    # look for other certificates that may not be hosted but cover the same domains
+    query = query.filter(Certificate.domains.any(Domain.name.in_([x.name for x in cert.domains])))
     query = query.filter(Certificate.active == True)  # noqa
     query = query.filter(Certificate.not_after >= arrow.utcnow().format('YYYY-MM-DD'))
+    query = query.filter(Certificate.body != cert.body)
     ss_list.extend(query.all())
-
     return ss_list
 
 
@@ -129,8 +152,8 @@ def _is_eligible_for_notifications(cert):
     days = (cert.not_after - now.naive).days
 
     for notification in cert.notifications:
-        interval = notification.options['interval']
-        unit = notification.options['unit']
+        interval = get_options('interval', notification.options)['value']
+        unit = get_options('unit', notification.options)['value']
         if unit == 'weeks':
             interval *= 7
 
@@ -145,6 +168,63 @@ def _is_eligible_for_notifications(cert):
 
         if days == interval:
             return cert
+
+
+def create_default_expiration_notifications(name, recipients):
+    """
+    Will create standard 30, 10 and 2 day notifications for a given owner. If standard notifications
+    already exist these will be returned instead of new notifications.
+
+    :param name:
+    :return:
+    """
+    options = [
+        {
+            'name': 'unit',
+            'type': 'select',
+            'required': True,
+            'validation': '',
+            'available': ['days', 'weeks', 'months'],
+            'helpMessage': 'Interval unit',
+            'value': 'days',
+        },
+        {
+            'name': 'recipients',
+            'type': 'str',
+            'required': True,
+            'validation': '^([\w+-.%]+@[\w-.]+\.[A-Za-z]{2,4},?)+$',
+            'helpMessage': 'Comma delimited list of email addresses',
+            'value': ','.join(recipients)
+        },
+    ]
+
+    intervals = current_app.config.get("LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS")
+
+    notifications = []
+    for i in intervals:
+        n = get_by_label("{name}_{interval}_DAY".format(name=name, interval=i))
+        if not n:
+            inter = [
+                {
+                    'name': 'interval',
+                    'type': 'int',
+                    'required': True,
+                    'validation': '^\d+$',
+                    'helpMessage': 'Number of days to be alert before expiration.',
+                    'value': i,
+                }
+            ]
+            inter.extend(options)
+            n = create(
+                label="{name}_{interval}_DAY".format(name=name, interval=i),
+                plugin_name="email-notification",
+                options=list(inter),
+                description="Default {interval} day expiration notification".format(interval=i),
+                certificates=[]
+            )
+        notifications.append(n)
+
+    return notifications
 
 
 def create(label, plugin_name, options, description, certificates):
@@ -163,7 +243,7 @@ def create(label, plugin_name, options, description, certificates):
     return database.create(notification)
 
 
-def update(notification_id, label, options, description, certificates):
+def update(notification_id, label, options, description, active, certificates):
     """
     Updates an existing destination.
 
@@ -178,6 +258,7 @@ def update(notification_id, label, options, description, certificates):
     notification.label = label
     notification.options = options
     notification.description = description
+    notification.active = active
     notification = database.update_list(notification, 'certificates', Certificate, certificates)
 
     return database.update(notification)

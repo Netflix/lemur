@@ -1,0 +1,28 @@
+<div class="form-group">
+    <label class="control-label col-sm-2">
+        Notifications
+    </label>
+    <div class="col-sm-10">
+        <div class="input-group">
+            <input type="text" ng-model="certificate.selectedNotification" placeholder="Email"
+                   typeahead="notification.label for notification in notificationService.findNotificationsByName($viewValue)" typeahead-loading="loadingDestinations"
+                   class="form-control input-md" typeahead-on-select="certificate.attachNotification($item)" typeahead-min-wait="50"
+                   tooltip="By default Lemur will always notify you about this certificate through Email notifications."
+                   tooltip-trigger="focus" tooltip-placement="top">
+          <span class="input-group-btn">
+            <button ng-model="notifications.show" class="btn btn-md btn-default" btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
+                <span class="badge">{{ certificate.notifications.length || 0 }}</span>
+            </button>
+          </span>
+        </div>
+        <table class="table">
+            <tr ng-repeat="notification in certificate.notifications track by $index">
+                <td><a class="btn btn-sm btn-info" href="#/notifications/{{ notification.id }}/certificates">{{ notification.label }}</a></td>
+                <td><span class="text-muted">{{ notification.description }}</span></td>
+                <td>
+                    <button type="button" ng-click="certificate.removeNotification($index)" class="btn btn-danger btn-sm pull-right">Remove</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>

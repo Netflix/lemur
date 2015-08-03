@@ -8,9 +8,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-
 from sqlalchemy import Column, Integer, ForeignKey
-
 from lemur.database import db
 
 certificate_associations = db.Table('certificate_associations',
@@ -25,12 +23,19 @@ certificate_destination_associations = db.Table('certificate_destination_associa
                                                        ForeignKey('certificates.id', ondelete='cascade'))
                                                 )
 
+certificate_source_associations = db.Table('certificate_source_associations',
+                                           Column('source_id', Integer,
+                                                  ForeignKey('sources.id', ondelete='cascade')),
+                                           Column('certificate_id', Integer,
+                                                  ForeignKey('certificates.id', ondelete='cascade'))
+                                           )
+
 certificate_notification_associations = db.Table('certificate_notification_associations',
-                                                Column('notification_id', Integer,
-                                                       ForeignKey('notifications.id', ondelete='cascade')),
-                                                Column('certificate_id', Integer,
-                                                       ForeignKey('certificates.id', ondelete='cascade'))
-                                                )
+                                                 Column('notification_id', Integer,
+                                                        ForeignKey('notifications.id', ondelete='cascade')),
+                                                 Column('certificate_id', Integer,
+                                                        ForeignKey('certificates.id', ondelete='cascade'))
+                                                 )
 roles_users = db.Table('roles_users',
                        Column('user_id', Integer, ForeignKey('users.id')),
                        Column('role_id', Integer, ForeignKey('roles.id'))

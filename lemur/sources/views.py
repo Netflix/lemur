@@ -1,5 +1,5 @@
 """
-.. module: lemur.destinations.views
+.. module: lemur.sources.views
     :platform: Unix
     :synopsis: This module contains all of the accounts view code.
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
@@ -8,36 +8,37 @@
 """
 from flask import Blueprint
 from flask.ext.restful import Api, reqparse, fields
-from lemur.destinations import service
+from lemur.sources import service
 
 from lemur.auth.service import AuthenticatedResource
 from lemur.auth.permissions import admin_permission
 from lemur.common.utils import paginated_parser, marshal_items
 
 
-mod = Blueprint('destinations', __name__)
+mod = Blueprint('sources', __name__)
 api = Api(mod)
 
 
 FIELDS = {
     'description': fields.String,
-    'destinationOptions': fields.Raw(attribute='options'),
+    'sourceOptions': fields.Raw(attribute='options'),
     'pluginName': fields.String(attribute='plugin_name'),
+    'lastRun': fields.DateTime(attribute='last_run', dt_format='iso8061'),
     'label': fields.String,
     'id': fields.Integer,
 }
 
 
-class DestinationsList(AuthenticatedResource):
-    """ Defines the 'destinations' endpoint """
+class SourcesList(AuthenticatedResource):
+    """ Defines the 'sources' endpoint """
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(DestinationsList, self).__init__()
+        super(SourcesList, self).__init__()
 
     @marshal_items(FIELDS)
     def get(self):
         """
-        .. http:get:: /destinations
+        .. http:get:: /sources
 
            The current account list
 
@@ -45,7 +46,7 @@ class DestinationsList(AuthenticatedResource):
 
            .. sourcecode:: http
 
-              GET /destinations HTTP/1.1
+              GET /sources HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
 
@@ -60,7 +61,7 @@ class DestinationsList(AuthenticatedResource):
               {
                 "items": [
                     {
-                        "destinationOptions": [
+                        "sourceOptions": [
                             {
                                 "name": "accountNumber",
                                 "required": true,
@@ -70,7 +71,8 @@ class DestinationsList(AuthenticatedResource):
                                 "type": "int"
                             }
                         ],
-                        "pluginName": "aws-destination",
+                        "pluginName": "aws-source",
+                        "lastRun": "2015-08-01T15:40:58",
                         "id": 3,
                         "description": "test",
                         "label": "test"
@@ -95,7 +97,7 @@ class DestinationsList(AuthenticatedResource):
     @marshal_items(FIELDS)
     def post(self):
         """
-        .. http:post:: /destinations
+        .. http:post:: /sources
 
            Creates a new account
 
@@ -103,12 +105,12 @@ class DestinationsList(AuthenticatedResource):
 
            .. sourcecode:: http
 
-              POST /destinations HTTP/1.1
+              POST /sources HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
 
               {
-                "destinationOptions": [
+                "sourceOptions": [
                     {
                         "name": "accountNumber",
                         "required": true,
@@ -118,8 +120,9 @@ class DestinationsList(AuthenticatedResource):
                         "type": "int"
                     }
                 ],
-                "pluginName": "aws-destination",
+                "pluginName": "aws-source",
                 "id": 3,
+                "lastRun": "2015-08-01T15:40:58",
                 "description": "test",
                 "label": "test"
               }
@@ -133,7 +136,7 @@ class DestinationsList(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                "destinationOptions": [
+                "sourceOptions": [
                     {
                         "name": "accountNumber",
                         "required": true,
@@ -143,8 +146,9 @@ class DestinationsList(AuthenticatedResource):
                         "type": "int"
                     }
                 ],
-                "pluginName": "aws-destination",
+                "pluginName": "aws-source",
                 "id": 3,
+                "lastRun": "2015-08-01T15:40:58",
                 "description": "test",
                 "label": "test"
               }
@@ -162,15 +166,15 @@ class DestinationsList(AuthenticatedResource):
         return service.create(args['label'], args['plugin']['slug'], args['plugin']['pluginOptions'], args['description'])
 
 
-class Destinations(AuthenticatedResource):
+class Sources(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(Destinations, self).__init__()
+        super(Sources, self).__init__()
 
     @marshal_items(FIELDS)
-    def get(self, destination_id):
+    def get(self, source_id):
         """
-        .. http:get:: /destinations/1
+        .. http:get:: /sources/1
 
            Get a specific account
 
@@ -178,7 +182,7 @@ class Destinations(AuthenticatedResource):
 
            .. sourcecode:: http
 
-              GET /destinations/1 HTTP/1.1
+              GET /sources/1 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
 
@@ -191,7 +195,7 @@ class Destinations(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                "destinationOptions": [
+                "sourceOptions": [
                     {
                         "name": "accountNumber",
                         "required": true,
@@ -201,8 +205,9 @@ class Destinations(AuthenticatedResource):
                         "type": "int"
                     }
                 ],
-                "pluginName": "aws-destination",
+                "pluginName": "aws-source",
                 "id": 3,
+                "lastRun": "2015-08-01T15:40:58",
                 "description": "test",
                 "label": "test"
               }
@@ -210,13 +215,13 @@ class Destinations(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
-        return service.get(destination_id)
+        return service.get(source_id)
 
     @admin_permission.require(http_exception=403)
     @marshal_items(FIELDS)
-    def put(self, destination_id):
+    def put(self, source_id):
         """
-        .. http:put:: /destinations/1
+        .. http:put:: /sources/1
 
            Updates an account
 
@@ -224,12 +229,12 @@ class Destinations(AuthenticatedResource):
 
            .. sourcecode:: http
 
-              POST /destinations/1 HTTP/1.1
+              POST /sources/1 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
 
               {
-                "destinationOptions": [
+                "sourceOptions": [
                     {
                         "name": "accountNumber",
                         "required": true,
@@ -239,8 +244,9 @@ class Destinations(AuthenticatedResource):
                         "type": "int"
                     }
                 ],
-                "pluginName": "aws-destination",
+                "pluginName": "aws-source",
                 "id": 3,
+                "lastRun": "2015-08-01T15:40:58",
                 "description": "test",
                 "label": "test"
               }
@@ -254,7 +260,7 @@ class Destinations(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                "destinationOptions": [
+                "sourceOptions": [
                     {
                         "name": "accountNumber",
                         "required": true,
@@ -264,8 +270,9 @@ class Destinations(AuthenticatedResource):
                         "type": "int"
                     }
                 ],
-                "pluginName": "aws-destination",
+                "pluginName": "aws-source",
                 "id": 3,
+                "lastRun": "2015-08-01T15:40:58",
                 "description": "test",
                 "label": "test"
               }
@@ -281,23 +288,23 @@ class Destinations(AuthenticatedResource):
         self.reqparse.add_argument('description', type=str, location='json')
 
         args = self.reqparse.parse_args()
-        return service.update(destination_id, args['label'], args['plugin']['pluginOptions'], args['description'])
+        return service.update(source_id, args['label'], args['plugin']['pluginOptions'], args['description'])
 
     @admin_permission.require(http_exception=403)
-    def delete(self, destination_id):
-        service.delete(destination_id)
+    def delete(self, source_id):
+        service.delete(source_id)
         return {'result': True}
 
 
-class CertificateDestinations(AuthenticatedResource):
-    """ Defines the 'certificate/<int:certificate_id/destinations'' endpoint """
+class CertificateSources(AuthenticatedResource):
+    """ Defines the 'certificate/<int:certificate_id/sources'' endpoint """
     def __init__(self):
-        super(CertificateDestinations, self).__init__()
+        super(CertificateSources, self).__init__()
 
     @marshal_items(FIELDS)
     def get(self, certificate_id):
         """
-        .. http:get:: /certificates/1/destinations
+        .. http:get:: /certificates/1/sources
 
            The current account list for a given certificates
 
@@ -305,7 +312,7 @@ class CertificateDestinations(AuthenticatedResource):
 
            .. sourcecode:: http
 
-              GET /certificates/1/destinations HTTP/1.1
+              GET /certificates/1/sources HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
 
@@ -320,7 +327,7 @@ class CertificateDestinations(AuthenticatedResource):
               {
                 "items": [
                     {
-                        "destinationOptions": [
+                        "sourceOptions": [
                             {
                                 "name": "accountNumber",
                                 "required": true,
@@ -330,8 +337,9 @@ class CertificateDestinations(AuthenticatedResource):
                                 "type": "int"
                             }
                         ],
-                        "pluginName": "aws-destination",
+                        "pluginName": "aws-source",
                         "id": 3,
+                        "lastRun": "2015-08-01T15:40:58",
                         "description": "test",
                         "label": "test"
                     }
@@ -353,21 +361,7 @@ class CertificateDestinations(AuthenticatedResource):
         return service.render(args)
 
 
-class DestinationsStats(AuthenticatedResource):
-    """ Defines the 'certificates' stats endpoint """
-    def __init__(self):
-        self.reqparse = reqparse.RequestParser()
-        super(DestinationsStats, self).__init__()
-
-    def get(self):
-        self.reqparse.add_argument('metric', type=str, location='args')
-        args = self.reqparse.parse_args()
-        items = service.stats(**args)
-        return dict(items=items, total=len(items))
-
-
-api.add_resource(DestinationsList, '/destinations', endpoint='destinations')
-api.add_resource(Destinations, '/destinations/<int:destination_id>', endpoint='destination')
-api.add_resource(CertificateDestinations, '/certificates/<int:certificate_id>/destinations',
-                 endpoint='certificateDestinations')
-api.add_resource(DestinationsStats, '/destinations/stats', endpoint='destinationStats')
+api.add_resource(SourcesList, '/sources', endpoint='sources')
+api.add_resource(Sources, '/sources/<int:source_id>', endpoint='account')
+api.add_resource(CertificateSources, '/certificates/<int:certificate_id>/sources',
+                 endpoint='certificateSources')

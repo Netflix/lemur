@@ -23,6 +23,15 @@ angular.module('lemur')
   .controller('DestinationsEditController', function ($scope, $modalInstance, DestinationService, DestinationApi, PluginService, editId) {
     DestinationApi.get(editId).then(function (destination) {
       $scope.destination = destination;
+      PluginService.getByType('destination').then(function (plugins) {
+        $scope.plugins = plugins;
+        _.each($scope.plugins, function (plugin) {
+          if (plugin.slug === $scope.destination.pluginName) {
+            plugin.pluginOptions = $scope.destination.destinationOptions;
+            $scope.destination.plugin = plugin;
+          }
+        });
+      });
     });
     
     PluginService.getByType('destination').then(function (plugins) {

@@ -1,25 +1,27 @@
 import os
 import sys
 import base64
+import time
 from gunicorn.config import make_settings
 
 from cryptography.fernet import Fernet
 
+from lockfile import LockFile, LockTimeout
+
 from flask import current_app
-from flask.ext.script import Manager, Command, Option, Group, prompt_pass
+from flask.ext.script import Manager, Command, Option, prompt_pass
 from flask.ext.migrate import Migrate, MigrateCommand, stamp
 from flask_script.commands import ShowUrls, Clean, Server
 
 from lemur import database
 from lemur.users import service as user_service
 from lemur.roles import service as role_service
-from lemur.destinations import service as destination_service
 from lemur.certificates import service as cert_service
-
-from lemur.plugins.base import plugins
+from lemur.sources import service as source_service
+from lemur.notifications import service as notification_service
 
 from lemur.certificates.verify import verify_string
-from lemur.certificates import sync
+from lemur.sources.service import sync
 
 from lemur import create_app
 
@@ -30,9 +32,8 @@ from lemur.authorities.models import Authority  # noqa
 from lemur.certificates.models import Certificate  # noqa
 from lemur.destinations.models import Destination  # noqa
 from lemur.domains.models import Domain  # noqa
-from lemur.elbs.models import ELB  # noqa
-from lemur.listeners.models import Listener  # noqa
 from lemur.notifications.models import Notification  # noqa
+from lemur.sources.models import Source  # noqa
 
 
 manager = Manager(create_app)
@@ -76,6 +77,7 @@ LEMUR_RESTRICTED_DOMAINS = []
 
 LEMUR_EMAIL = ''
 LEMUR_SECURITY_TEAM_EMAIL = []
+LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS = [30, 15, 2]
 
 # Logging
 
@@ -90,14 +92,6 @@ SQLALCHEMY_DATABASE_URI = 'postgresql://lemur:lemur@localhost:5432/lemur'
 
 
 # AWS
-
-# Lemur will need STS assume role access to every destination you want to monitor
-# AWS_ACCOUNT_MAPPINGS = {{
-#    '1111111111': 'myawsacount'
-# }}
-
-## This is useful if you know you only want to monitor one destination
-#AWS_REGIONS = ['us-east-1']
 
 #LEMUR_INSTANCE_PROFILE = 'Lemur'
 
@@ -177,52 +171,73 @@ def generate_settings():
     return output
 
 
-class Sync(Command):
+@manager.option('-s', '--sources', dest='labels', default='', required=False)
+@manager.option('-l', '--list', dest='view', default=False, required=False)
+def sync_sources(labels, view):
     """
     Attempts to run several methods Certificate discovery. This is
     run on a periodic basis and updates the Lemur datastore with the
     information it discovers.
     """
-    option_list = [
-        Group(
-            Option('-a', '--all', action="store_true"),
-            Option('-b', '--aws', action="store_true"),
-            Option('-d', '--cloudca', action="store_true"),
-            Option('-s', '--source', action="store_true"),
-            exclusive=True, required=True
+    if view:
+        sys.stdout.write("Active\tLabel\tDescription\n")
+        for source in source_service.get_all():
+            sys.stdout.write(
+                "[{active}]\t{label}\t{description}!\n".format(
+                    label=source.label,
+                    description=source.description,
+                    active=source.active
+                )
+            )
+    else:
+        start_time = time.time()
+        lock_file = "/tmp/.lemur_lock"
+        sync_lock = LockFile(lock_file)
+
+        while not sync_lock.i_am_locking():
+            try:
+                sync_lock.acquire(timeout=10)    # wait up to 10 seconds
+
+                if labels:
+                    sys.stdout.write("[+] Staring to sync sources: {labels}!\n".format(labels=labels))
+                    labels = labels.split(",")
+                else:
+                    sys.stdout.write("[+] Starting to sync ALL sources!\n")
+
+                sync(labels=labels)
+                sys.stdout.write(
+                    "[+] Finished syncing sources. Run Time: {time}\n".format(
+                        time=(time.time() - start_time)
+                    )
+                )
+            except LockTimeout:
+                sys.stderr.write(
+                    "[!] Unable to acquire file lock on {file}, is there another sync running?\n".format(
+                        file=lock_file
+                    )
+                )
+                sync_lock.break_lock()
+                sync_lock.acquire()
+                sync_lock.release()
+
+        sync_lock.release()
+
+
+@manager.command
+def notify():
+    """
+    Runs Lemur's notification engine, that looks for expired certificates and sends
+    notifications out to those that bave subscribed to them.
+
+    :return:
+    """
+    sys.stdout.write("Starting to notify subscribers about expiring certificates!\n")
+    count = notification_service.send_expiration_notifications()
+    sys.stdout.write(
+        "Finished notifying subscribers about expiring certificates! Sent {count} notifications!\n".format(
+            count=count
         )
-    ]
-
-    def run(self, all, aws, cloudca, source):
-        sys.stdout.write("[!] Starting to sync with external sources!\n")
-
-        if all or aws:
-            sys.stdout.write("[!] Starting to sync with AWS!\n")
-            try:
-                sync.aws()
-                # sync_all_elbs()
-                sys.stdout.write("[+] Finished syncing with AWS!\n")
-            except Exception as e:
-                sys.stdout.write("[-] Syncing with AWS failed!\n")
-
-        if all or cloudca:
-            sys.stdout.write("[!] Starting to sync with CloudCA!\n")
-            try:
-                sync.cloudca()
-                sys.stdout.write("[+] Finished syncing with CloudCA!\n")
-            except Exception as e:
-                sys.stdout.write("[-] Syncing with CloudCA failed!\n")
-
-            sys.stdout.write("[!] Starting to sync with Source Code!\n")
-
-        if all or source:
-            try:
-                sync.source()
-                sys.stdout.write("[+] Finished syncing with Source Code!\n")
-            except Exception as e:
-                sys.stdout.write("[-] Syncing with Source Code failed!\n")
-
-            sys.stdout.write("[+] Finished syncing with external sources!\n")
+    )
 
 
 class InitializeApp(Command):
@@ -261,21 +276,20 @@ class InitializeApp(Command):
         else:
             sys.stdout.write("[-] Default user has already been created, skipping...!\n")
 
-        if current_app.config.get('AWS_ACCOUNT_MAPPINGS'):
-            if plugins.get('aws-destination'):
-                for account_name, account_number in current_app.config.get('AWS_ACCOUNT_MAPPINGS').items():
+        sys.stdout.write("[+] Creating expiration email notifications!\n")
+        sys.stdout.write("[!] Using {recipients} as specified by LEMUR_SECURITY_TEAM_EMAIL for notifications\n")
 
-                    destination = destination_service.get_by_label(account_name)
+        intervals = current_app.config.get("LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS")
+        sys.stdout.write(
+            "[!] Creating {num} notifications for {intervals} days as specified by LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS\n".format(
+                num=len(intervals),
+                intervals=",".join([str(x) for x in intervals])
+            )
+        )
 
-                    options = dict(account_number=account_number)
-                    if not destination:
-                        destination_service.create(account_name, 'aws-destination', options,
-                                                   description="This is an auto-generated AWS destination.")
-                        sys.stdout.write("[+] Added new destination {0}:{1}!\n".format(account_number, account_name))
-                    else:
-                        sys.stdout.write("[-] Account already exists, skipping...!\n")
-            else:
-                sys.stdout.write("[!] Skipping adding AWS destinations AWS plugin no available\n")
+        recipients = current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL')
+        notification_service.create_default_expiration_notifications("DEFAULT_SECURITY", recipients=recipients)
+
         sys.stdout.write("[/] Done!\n")
 
 
@@ -475,7 +489,6 @@ def main():
     manager.add_command("init", InitializeApp())
     manager.add_command("create_user", CreateUser())
     manager.add_command("create_role", CreateRole())
-    manager.add_command("sync", Sync())
     manager.run()
 
 

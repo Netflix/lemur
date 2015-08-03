@@ -134,8 +134,11 @@ def import_certificate(**kwargs):
     :param kwargs:
     """
     from lemur.users import service as user_service
-    cert = Certificate(kwargs['public_certificate'])
-    cert.owner = kwargs.get('owner', current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL'))
+    from lemur.notifications import service as notification_service
+    cert = Certificate(kwargs['public_certificate'], chain=kwargs['intermediate_certificate'])
+
+    # TODO future source plugins might have a better understanding of who the 'owner' is we should support this
+    cert.owner = kwargs.get('owner', current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL')[0])
     cert.creator = kwargs.get('creator', user_service.get_by_email('lemur@nobody'))
 
     # NOTE existing certs may not follow our naming standard we will
@@ -146,7 +149,9 @@ def import_certificate(**kwargs):
     if kwargs.get('user'):
         cert.user = kwargs.get('user')
 
-    database.update_list(cert, 'notifications', Notification, kwargs.get('notifications'))
+    notification_name = 'DEFAULT_SECURITY'
+    notifications = notification_service.create_default_expiration_notifications(notification_name, current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL'))
+    cert.notifications = notifications
 
     cert = database.create(cert)
     return cert
@@ -156,18 +161,35 @@ def upload(**kwargs):
     """
     Allows for pre-made certificates to be imported into Lemur.
     """
+    from lemur.notifications import service as notification_service
     cert = Certificate(
         kwargs.get('public_cert'),
         kwargs.get('private_key'),
         kwargs.get('intermediate_cert'),
     )
 
-    database.update_list(cert, 'destinations', Destination, kwargs.get('destinations'))
-    database.update_list(cert, 'notifications', Notification, kwargs.get('notifications'))
+    cert.description = kwargs.get('description')
 
     cert.owner = kwargs['owner']
     cert = database.create(cert)
+
     g.user.certificates.append(cert)
+
+    database.update_list(cert, 'destinations', Destination, kwargs.get('destinations'))
+
+    database.update_list(cert, 'notifications', Notification, kwargs.get('notifications'))
+
+    # create default notifications for this certificate if none are provided
+    notifications = []
+    if not kwargs.get('notifications'):
+        notification_name = "DEFAULT_{0}".format(cert.owner.split('@')[0].upper())
+        notifications += notification_service.create_default_expiration_notifications(notification_name, [cert.owner])
+
+    notification_name = 'DEFAULT_SECURITY'
+    notifications += notification_service.create_default_expiration_notifications(notification_name, current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL'))
+    cert.notifications = notifications
+
+    database.update(cert)
     return cert
 
 
@@ -175,11 +197,10 @@ def create(**kwargs):
     """
     Creates a new certificate.
     """
+    from lemur.notifications import service as notification_service
     cert, private_key, cert_chain = mint(kwargs)
 
     cert.owner = kwargs['owner']
-
-    database.update_list(cert, 'destinations', Destination, kwargs.get('destinations'))
 
     database.create(cert)
     cert.description = kwargs['description']
@@ -188,7 +209,20 @@ def create(**kwargs):
 
     # do this after the certificate has already been created because if it fails to upload to the third party
     # we do not want to lose the certificate information.
+    database.update_list(cert, 'destinations', Destination, kwargs.get('destinations'))
+
     database.update_list(cert, 'notifications', Notification, kwargs.get('notifications'))
+
+    # create default notifications for this certificate if none are provided
+    notifications = []
+    if not kwargs.get('notifications'):
+        notification_name = "DEFAULT_{0}".format(cert.owner.split('@')[0].upper())
+        notifications += notification_service.create_default_expiration_notifications(notification_name, [cert.owner])
+
+    notification_name = 'DEFAULT_SECURITY'
+    notifications += notification_service.create_default_expiration_notifications(notification_name, current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL'))
+    cert.notifications = notifications
+
     database.update(cert)
     return cert
 
@@ -297,7 +331,7 @@ def create_csr(csr_config):
                 x509.SubjectAlternativeName(general_names), critical=True
             )
 
-    # TODO support more CSR options, none of the authorities support these atm
+    # TODO support more CSR options, none of the authority plugins currently support these options
     #    builder.add_extension(
     #        x509.KeyUsage(
     #            digital_signature=digital_signature,
@@ -365,14 +399,6 @@ def stats(**kwargs):
     :param kwargs:
     :return:
     """
-    query = database.session_query(Certificate)
-
-    if kwargs.get('active') == 'true':
-        query = query.filter(Certificate.elb_listeners.any())
-
-    if kwargs.get('destination_id'):
-        query = query.filter(Certificate.destinations.any(Destination.id == kwargs.get('destination_id')))
-
     if kwargs.get('metric') == 'not_after':
         start = arrow.utcnow()
         end = start.replace(weeks=+32)
@@ -384,10 +410,6 @@ def stats(**kwargs):
     else:
         attr = getattr(Certificate, kwargs.get('metric'))
         query = database.db.session.query(attr, func.count(attr))
-
-        # TODO this could be cleaned up
-        if kwargs.get('active') == 'true':
-            query = query.filter(Certificate.elb_listeners.any())
 
         items = query.group_by(attr).all()
 
