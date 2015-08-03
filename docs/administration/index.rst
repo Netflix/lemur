@@ -150,9 +150,6 @@ Lemur supports sending certification expiration notifications through SES and SM
         LEMUR_SECURITY_TEAM_EMAIL = ['security@example.com']
 
 
-.. data::
-
-
 Authority Options
 -----------------
 

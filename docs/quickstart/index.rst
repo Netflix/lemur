@@ -42,13 +42,13 @@ Finally, activate your virtualenv::
 Installing build dependencies
 -----------------------------
 
-If installing Lemur on true bare Ubuntu OS you will need to grab the following packages so that Lemur can correctly build it's
-dependencies.
+If installing Lemur on truely bare Ubuntu OS you will need to grab the following packages so that Lemur can correctly build it's
+dependencies::
 
     $ sudo apt-get update
     $ sudo apt-get install nodejs-legacy python-pip libpq-dev python-dev build-essential libssl-dev libffi-dev nginx git supervisor
 
-And optionally if your database is going to be on the same host as the webserver.
+And optionally if your database is going to be on the same host as the webserver::
 
     $ sudo apt-get install postgres
 
@@ -110,7 +110,7 @@ Update your configuration
 Once created you will need to update the configuration file with information about your environment,
 such as which database to talk to, where keys are stores etc..
 
-.. Note:: If you are unVfamiliar with with the SQLALCHEMY_DATABASE_URI string it can be broken up like so:
+.. Note:: If you are unfamiliar with with the SQLALCHEMY_DATABASE_URI string it can be broken up like so:
       postgresql://userame:password@databasefqdn:databaseport/databasename
 
 Setup Postgres
@@ -119,7 +119,7 @@ Setup Postgres
 For production a dedicated database is recommended, for this guide we will assume postgres has been installed and is on
 the same machine that Lemur is installed on.
 
-First, set a password for the postgres user.  For this guide, we will use **lemur** as an example but you should use the database password generated for by Lemur.::
+First, set a password for the postgres user.  For this guide, we will use **lemur** as an example but you should use the database password generated for by Lemur::
 
      $ sudo -u postgres psql postgres
      # \password postgres
@@ -139,10 +139,17 @@ Initializing Lemur
 
 Lemur provides a helpful command that will initialize your database for you. It creates a default user (lemur) that is
 used by Lemur to help associate certificates that do not currently have an owner. This is most commonly the case when
-Lemur has discovered certificates from a third party resource. This is also a default user that can be used to
+Lemur has discovered certificates from a third party source. This is also a default user that can be used to
 administer Lemur.
 
-**Make note of the password used as this will be use to first login to the Lemur UI**
+In addition to create a new User, Lemur also creates a few default email notifications. These notifications are based
+on a few configuration options such as `LEMUR_SECURITY_TEAM_EMAIL` they basically garentee that every cerificate within
+Lemur will send one expiration notification to the security team.
+
+Additional notifications can be created through the UI or API.
+See :ref:`Creating Notifications <CreatingNotifications>` and :ref:`Command Line Interface <CommandLineInterface>` for details.
+
+**Make note of the password used as this will be used during first login to the Lemur UI**
 
 .. code-block:: bash
 

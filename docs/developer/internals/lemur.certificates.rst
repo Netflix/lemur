@@ -28,15 +28,6 @@ certificates Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`sync` Module
-------------------
-
-.. automodule:: lemur.certificates.sync
-    :noindex:
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`verify` Module
 --------------------
 

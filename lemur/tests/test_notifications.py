@@ -115,23 +115,3 @@ def test_admin_notifications_get(client):
     resp = client.get(api.url_for(NotificationsList), headers=VALID_ADMIN_HEADER_TOKEN)
     assert resp.status_code == 200
     assert resp.json == {'items': [], 'total': 0}
-
-
-def test_get_message_data(session):
-    assert 1 == 2
-
-
-def test_deduplicate(session):
-    assert 1 == 2
-
-
-def test_find_superseded(session):
-    assert 1 == 2
-
-
-def test_is_eligible_for_notifications(session):
-    assert 1 == 2
-
-
-def test_create_default_expiration_notifications(session):
-    assert 1 == 2
