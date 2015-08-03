@@ -180,7 +180,7 @@ def sync_sources(labels, view):
     information it discovers.
     """
     if view:
-        sys.stdout.write("Active", "Label", "Description")
+        sys.stdout.write("Active\tLabel\tDescription\n")
         for source in source_service.get_all():
             sys.stdout.write(
                 "[{active}]\t{label}\t{description}!\n".format(
@@ -199,10 +199,10 @@ def sync_sources(labels, view):
                 sync_lock.acquire(timeout=10)    # wait up to 10 seconds
 
                 if labels:
-                    sys.stdout.write("[+] Staring to sync sources: {labels}!\n".format(labels))
+                    sys.stdout.write("[+] Staring to sync sources: {labels}!\n".format(labels=labels))
                     labels = labels.split(",")
                 else:
-                    sys.stdout.write("[+] Starting to sync ALL sources!\n".format(labels))
+                    sys.stdout.write("[+] Starting to sync ALL sources!\n")
 
                 sync(labels=labels)
                 sys.stdout.write(

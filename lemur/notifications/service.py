@@ -180,13 +180,22 @@ def create_default_expiration_notifications(name, recipients):
     """
     options = [
         {
-            'name': 'recipients',
-            'value': ','.join(recipients)
+            'name': 'unit',
+            'type': 'select',
+            'required': True,
+            'validation': '',
+            'available': ['days', 'weeks', 'months'],
+            'helpMessage': 'Interval unit',
+            'value': 'days',
         },
         {
-            'name': 'unit',
-            'value': 'days'
-        }
+            'name': 'recipients',
+            'type': 'str',
+            'required': True,
+            'validation': '^([\w+-.%]+@[\w-.]+\.[A-Za-z]{2,4},?)+$',
+            'helpMessage': 'Comma delimited list of email addresses',
+            'value': ','.join(recipients)
+        },
     ]
 
     intervals = current_app.config.get("LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS")
@@ -195,10 +204,16 @@ def create_default_expiration_notifications(name, recipients):
     for i in intervals:
         n = get_by_label("{name}_{interval}_DAY".format(name=name, interval=i))
         if not n:
-            inter = [{
-                'name': 'interval',
-                'value': i,
-            }]
+            inter = [
+                {
+                    'name': 'interval',
+                    'type': 'int',
+                    'required': True,
+                    'validation': '^\d+$',
+                    'helpMessage': 'Number of days to be alert before expiration.',
+                    'value': i,
+                }
+            ]
             inter.extend(options)
             n = create(
                 label="{name}_{interval}_DAY".format(name=name, interval=i),

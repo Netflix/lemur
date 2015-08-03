@@ -23,6 +23,15 @@ angular.module('lemur')
   .controller('SourcesEditController', function ($scope, $modalInstance, SourceService, SourceApi, PluginService, editId) {
     SourceApi.get(editId).then(function (source) {
       $scope.source = source;
+      PluginService.getByType('source').then(function (plugins) {
+        $scope.plugins = plugins;
+        _.each($scope.plugins, function (plugin) {
+          if (plugin.slug === $scope.source.pluginName) {
+            plugin.pluginOptions = $scope.source.sourceOptions;
+            $scope.source.plugin = plugin;
+          }
+        });
+      });
     });
     
     PluginService.getByType('source').then(function (plugins) {

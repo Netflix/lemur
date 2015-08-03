@@ -9,10 +9,12 @@
 
 """
 from flask import g
+from flask import current_app
 
 from lemur import database
 from lemur.authorities.models import Authority
 from lemur.roles import service as role_service
+from lemur.notifications import service as notification_service
 
 from lemur.roles.models import Role
 from lemur.certificates.models import Certificate
@@ -56,9 +58,15 @@ def create(kwargs):
     cert.description = "This is the ROOT certificate for the {0} certificate authority".format(kwargs.get('caName'))
     cert.user = g.current_user
 
+    cert.notifications = notification_service.create_default_expiration_notifications(
+        'DEFAULT_SECURITY',
+        current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL')
+    )
+
     # we create and attach any roles that the issuer gives us
     role_objs = []
     for r in issuer_roles:
+
         role = role_service.create(
             r['name'],
             password=r['password'],

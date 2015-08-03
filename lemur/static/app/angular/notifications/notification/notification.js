@@ -29,6 +29,15 @@ angular.module('lemur')
   .controller('NotificationsEditController', function ($scope, $modalInstance, NotificationService, NotificationApi, PluginService, CertificateService, editId) {
     NotificationApi.get(editId).then(function (notification) {
       $scope.notification = notification;
+      PluginService.getByType('notification').then(function (plugins) {
+        $scope.plugins = plugins;
+        _.each($scope.plugins, function (plugin) {
+          if (plugin.slug === $scope.notification.pluginName) {
+            plugin.pluginOptions = $scope.notification.notificationOptions;
+            $scope.notification.plugin = plugin;
+          }
+        });
+      });
       NotificationService.getCertificates(notification);
     });
 
