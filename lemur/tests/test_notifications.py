@@ -6,7 +6,7 @@ def test_crud(session):
     notification = create('testnotify', 'email-notification', {}, 'notify1', [])
     assert notification.id > 0
 
-    notification = update(notification.id, 'testnotify2', {}, 'notify2', [])
+    notification = update(notification.id, 'testnotify2', {}, 'notify2', True, [])
     assert notification.label == 'testnotify2'
 
     assert len(get_all()) == 1
