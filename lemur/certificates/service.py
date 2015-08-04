@@ -304,15 +304,15 @@ def create_csr(csr_config):
         backend=default_backend()
     )
 
-    # TODO When we figure out a better way to validate these options they should be parsed as unicode
+    # TODO When we figure out a better way to validate these options they should be parsed as str
     builder = x509.CertificateSigningRequestBuilder()
     builder = builder.subject_name(x509.Name([
-        x509.NameAttribute(x509.OID_COMMON_NAME, unicode(csr_config['commonName'])),
-        x509.NameAttribute(x509.OID_ORGANIZATION_NAME, unicode(csr_config['organization'])),
-        x509.NameAttribute(x509.OID_ORGANIZATIONAL_UNIT_NAME, unicode(csr_config['organizationalUnit'])),
-        x509.NameAttribute(x509.OID_COUNTRY_NAME, unicode(csr_config['country'])),
-        x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, unicode(csr_config['state'])),
-        x509.NameAttribute(x509.OID_LOCALITY_NAME, unicode(csr_config['location'])),
+        x509.NameAttribute(x509.OID_COMMON_NAME, csr_config['commonName']),
+        x509.NameAttribute(x509.OID_ORGANIZATION_NAME, csr_config['organization']),
+        x509.NameAttribute(x509.OID_ORGANIZATIONAL_UNIT_NAME, csr_config['organizationalUnit']),
+        x509.NameAttribute(x509.OID_COUNTRY_NAME, csr_config['country']),
+        x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, csr_config['state']),
+        x509.NameAttribute(x509.OID_LOCALITY_NAME, csr_config['location']),
     ]))
 
     builder = builder.add_extension(

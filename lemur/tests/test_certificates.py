@@ -1,3 +1,5 @@
+from __future__ import unicode_literals    # at top of module
+
 import pytest
 from lemur.certificates.views import *  # noqa
 
@@ -21,13 +23,13 @@ def test_private_key_str():
 def test_create_basic_csr():
     from lemur.certificates.service import create_csr
     csr_config = dict(
-        commonName=u'example.com',
-        organization=u'Example, Inc.',
-        organizationalUnit=u'Operations',
-        country=u'US',
-        state=u'CA',
-        location=u'A place',
-        extensions=dict(names=dict(subAltNames=[u'test.example.com', u'test2.example.com']))
+        commonName='example.com',
+        organization='Example, Inc.',
+        organizationalUnit='Operations',
+        country='US',
+        state='CA',
+        location='A place',
+        extensions=dict(names=dict(subAltNames=['test.example.com', 'test2.example.com']))
     )
     csr, pem = create_csr(csr_config)
 

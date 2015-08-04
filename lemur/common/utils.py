@@ -65,7 +65,7 @@ class marshal_items(object):
                     else:
                         return {'message': 'unknown'}, 400
                 else:
-                    return {'message': e.message}, 400
+                    return {'message': str(e)}, 400
         return wrapper
 
 
