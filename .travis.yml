@@ -1,23 +1,36 @@
 sudo: false
+
 language: python
+
 addons:
   postgresql: "9.4"
-python:
-  - "2.7"
+
+matrix:
+  include:
+    - python: "2.7"
+      env: TOXENV=py27
+    - python: "3.3"
+      env: TOXENV=py33
+    - python: "3.4"
+      env: TOXENV=py34
+
 cache:
   directories:
     - node_modules
     - .pip_download_cache
-    - "$HOME/virtualenv/python2.7.9"
+
 env:
   global:
     - PIP_DOWNLOAD_CACHE=".pip_download_cache"
+
 install:
   - make dev-postgres
+
 before_script:
   - psql -c "create database lemur;" -U postgres
   - psql -c "create user lemur with password 'lemur;'" -U postgres
   - npm install -g bower
+
 script:
   - make test
 

@@ -1,7 +1,7 @@
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 
-INTERNAL_VALID_LONG_STR = """
+INTERNAL_VALID_LONG_STR = b"""
 -----BEGIN CERTIFICATE-----
 MIID1zCCAr+gAwIBAgIBATANBgkqhkiG9w0BAQsFADCBjDELMAkGA1UEBhMCVVMx
 CzAJBgNVBAgMAkNBMRAwDgYDVQQHDAdBIHBsYWNlMRcwFQYDVQQDDA5sb25nLmxp
@@ -29,7 +29,7 @@ h0S8LN4iv/+vNFPNiM1z9X/SZgfbwZXrLsSi
 INTERNAL_VALID_LONG_CERT = x509.load_pem_x509_certificate(INTERNAL_VALID_LONG_STR, default_backend())
 
 
-INTERNAL_INVALID_STR = """
+INTERNAL_INVALID_STR = b"""
 -----BEGIN CERTIFICATE-----
 MIIEFTCCAv2gAwIBAgICA+gwDQYJKoZIhvcNAQELBQAwgYwxCzAJBgNVBAYTAlVT
 MQswCQYDVQQIDAJDQTEQMA4GA1UEBwwHQSBwbGFjZTEXMBUGA1UEAwwObG9uZy5s
@@ -58,7 +58,7 @@ kP+oGWtHvhteUAe8Gloo5NchZJ0/BqlYRCD5aAHcmbXRsDid9mO4ADU=
 INTERNAL_INVALID_CERT = x509.load_pem_x509_certificate(INTERNAL_INVALID_STR, default_backend())
 
 
-INTERNAL_VALID_SAN_STR = """
+INTERNAL_VALID_SAN_STR = b"""
 -----BEGIN CERTIFICATE-----
 MIIESjCCAzKgAwIBAgICA+kwDQYJKoZIhvcNAQELBQAwgYwxCzAJBgNVBAYTAlVT
 MQswCQYDVQQIDAJDQTEQMA4GA1UEBwwHQSBwbGFjZTEXMBUGA1UEAwwObG9uZy5s
@@ -88,7 +88,7 @@ YBrY/duF15YpoMKAlFhDBh6R9/nb5kI2n3pY6I5h6LEYfLStazXbIu61M8zu9TM/
 INTERNAL_VALID_SAN_CERT = x509.load_pem_x509_certificate(INTERNAL_VALID_SAN_STR, default_backend())
 
 
-INTERNAL_VALID_WILDCARD_STR = """
+INTERNAL_VALID_WILDCARD_STR = b"""
 -----BEGIN CERTIFICATE-----
 MIIEHDCCAwSgAwIBAgICA+owDQYJKoZIhvcNAQELBQAwgYwxCzAJBgNVBAYTAlVT
 MQswCQYDVQQIDAJDQTEQMA4GA1UEBwwHQSBwbGFjZTEXMBUGA1UEAwwObG9uZy5s
@@ -117,7 +117,7 @@ S0Xb3ZauZJQI7OdHeUPDRVq+8hcG77sopN9pEYrIH08oxvLX2US3GqrowjOxthRa
 INTERNAL_VALID_WILDCARD_CERT = x509.load_pem_x509_certificate(INTERNAL_VALID_WILDCARD_STR, default_backend())
 
 
-EXTERNAL_VALID_STR = """
+EXTERNAL_VALID_STR = b"""
 -----BEGIN CERTIFICATE-----
 MIIFHzCCBAegAwIBAgIQGFWCciDWzbOej/TbAJN0WzANBgkqhkiG9w0BAQsFADCB
 pDELMAkGA1UEBhMCVVMxHTAbBgNVBAoTFFN5bWFudGVjIENvcnBvcmF0aW9uMR8w
@@ -152,7 +152,7 @@ Bs63gULVCqWygt5KEbv990m/XGuRMaXuHzHCHB4v5LRM30FiFmqCzyD8d+btzW9B
 EXTERNAL_CERT = x509.load_pem_x509_certificate(EXTERNAL_VALID_STR, default_backend())
 
 
-PRIVATE_KEY_STR = """
+PRIVATE_KEY_STR = b"""
 -----BEGIN RSA PRIVATE KEY-----
 MIIEpAIBAAKCAQEAnEjM0cQevlDjT6mDMtTo8N1ovAyKbfVEp0ketCPC4hLkStms
 q9ETIyyerARIMv4SEhKqS4E7HIg6ccGkwv1ja5E/b2jHMH4ht1dEXnfM2yh0Mwvk
@@ -180,42 +180,4 @@ F74P1wKBgQCPQGKLUcfAvjIcZp4ECH0K8sBEmoEf8pceuALZ3H5vneYDzqMDIceo
 t5Gpocpt77LJnNiszXSerj/KjX2MflY5xUXeekWowLVTBOK5+CZ8+XBIgBt1hIG3
 XKxcRgm/Va4QMEAnec0qXfdTVJaJiAW0bdKwKRRrrbwcTdNRGibdng==
 -----END RSA PRIVATE KEY-----
-"""
-
-CSR_CONFIG = """
-                # Configuration for standard CSR generation for Netflix
-                # Used for procuring VeriSign certificates
-                # Author: jbob
-                # Contact: security@example.com
-
-                [ req ]
-                # Use a 2048 bit private key
-                default_bits       = 2048
-                default_keyfile    = key.pem
-                prompt             = no
-                encrypt_key        = no
-
-                # base request
-                distinguished_name = req_distinguished_name
-
-                # extensions
-                # Uncomment the following line if you are requesting a SAN cert
-                #req_extensions     = req_ext
-
-                # distinguished_name
-                [ req_distinguished_name ]
-                countryName            = "US"                     # C=
-                stateOrProvinceName    = "CALIFORNIA"                 # ST=
-                localityName           = "A place"                 # L=
-                organizationName       = "Example, Inc."        # O=
-                organizationalUnitName = "Operations"          # OU=
-                # This is the hostname/subject name on the certificate
-                commonName             = "example.net"            # CN=
-
-                [ req_ext ]
-                # Uncomment the following line if you are requesting a SAN cert
-                #subjectAltName          = @alt_names
-
-                [alt_names]
-                # Put your SANs here
 """

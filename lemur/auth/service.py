@@ -12,6 +12,8 @@ import jwt
 import json
 import base64
 import binascii
+from builtins import str
+
 from functools import wraps
 from datetime import datetime, timedelta
 
@@ -32,7 +34,7 @@ from lemur.auth.permissions import CertificateOwnerNeed, CertificateCreatorNeed,
 
 
 def base64url_decode(data):
-    if isinstance(data, unicode):
+    if isinstance(data, str):
         data = str(data)
 
     rem = len(data) % 4
@@ -139,7 +141,9 @@ def fetch_token_header(token):
 
     try:
         return json.loads(base64url_decode(header_segment))
-    except TypeError, binascii.Error:
+    except TypeError:
+        raise jwt.DecodeError('Invalid header padding')
+    except binascii.Error:
         raise jwt.DecodeError('Invalid header padding')
 
 
@@ -161,19 +165,19 @@ def on_identity_loaded(sender, identity):
     # identity with the roles that the user provides
     if hasattr(user, 'roles'):
         for role in user.roles:
-            identity.provides.add(CertificateOwnerNeed(unicode(role.id)))
-            identity.provides.add(ViewRoleCredentialsNeed(unicode(role.id)))
+            identity.provides.add(CertificateOwnerNeed(role.id))
+            identity.provides.add(ViewRoleCredentialsNeed(role.id))
             identity.provides.add(RoleNeed(role.name))
 
     # apply ownership for authorities
     if hasattr(user, 'authorities'):
         for authority in user.authorities:
-            identity.provides.add(AuthorityCreatorNeed(unicode(authority.id)))
+            identity.provides.add(AuthorityCreatorNeed(authority.id))
 
     # apply ownership of certificates
     if hasattr(user, 'certificates'):
         for certificate in user.certificates:
-            identity.provides.add(CertificateCreatorNeed(unicode(certificate.id)))
+            identity.provides.add(CertificateCreatorNeed(certificate.id))
 
     g.user = user
 

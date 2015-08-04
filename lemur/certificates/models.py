@@ -7,6 +7,7 @@
 """
 import os
 import datetime
+
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 
@@ -56,7 +57,10 @@ def create_name(issuer, not_before, not_after, subject, san):
     disallowed_chars = disallowed_chars.replace("-", "")
     disallowed_chars = disallowed_chars.replace(".", "")
     temp = temp.replace('*', "WILDCARD")
-    temp = temp.translate(None, disallowed_chars)
+
+    for c in disallowed_chars:
+        temp = temp.replace(c, "")
+
     # white space is silly too
     return temp.replace(" ", "-")
 
@@ -151,7 +155,9 @@ def cert_get_issuer(cert):
     delchars = ''.join(c for c in map(chr, range(256)) if not c.isalnum())
     try:
         issuer = str(cert.issuer.get_attributes_for_oid(x509.OID_ORGANIZATION_NAME)[0].value)
-        return issuer.translate(None, delchars)
+        for c in delchars:
+            issuer = issuer.replace(c, "")
+        return issuer
     except Exception as e:
         current_app.logger.error("Unable to get issuer! {0}".format(e))
 

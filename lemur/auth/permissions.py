@@ -1,5 +1,5 @@
 """
-.. module: permissions
+.. module: lemur.auth.permissions
     :platform: Unix
     :synopsis: This module defines all the permission used within Lemur
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
@@ -24,15 +24,15 @@ CertificateOwnerNeed = partial(CertificateOwner, 'certificateView')
 
 class ViewKeyPermission(Permission):
     def __init__(self, role_id, certificate_id):
-        c_need = CertificateCreatorNeed(unicode(certificate_id))
-        o_need = CertificateOwnerNeed(unicode(role_id))
+        c_need = CertificateCreatorNeed(str(certificate_id))
+        o_need = CertificateOwnerNeed(str(role_id))
         super(ViewKeyPermission, self).__init__(o_need, c_need, RoleNeed('admin'))
 
 
 class UpdateCertificatePermission(Permission):
     def __init__(self, role_id, certificate_id):
-        c_need = CertificateCreatorNeed(unicode(certificate_id))
-        o_need = CertificateOwnerNeed(unicode(role_id))
+        c_need = CertificateCreatorNeed(str(certificate_id))
+        o_need = CertificateOwnerNeed(str(role_id))
         super(UpdateCertificatePermission, self).__init__(o_need, c_need, RoleNeed('admin'))
 
 
@@ -42,7 +42,7 @@ ViewRoleCredentialsNeed = partial(RoleUser, 'roleView')
 
 class ViewRoleCredentialsPermission(Permission):
     def __init__(self, role_id):
-        need = ViewRoleCredentialsNeed(unicode(role_id))
+        need = ViewRoleCredentialsNeed(str(role_id))
         super(ViewRoleCredentialsPermission, self).__init__(need, RoleNeed('admin'))
 
 
@@ -55,8 +55,8 @@ AuthorityOwnerNeed = partial(AuthorityOwner, 'role')
 
 class AuthorityPermission(Permission):
     def __init__(self, authority_id, roles):
-        needs = [RoleNeed('admin'), AuthorityCreatorNeed(unicode(authority_id))]
+        needs = [RoleNeed('admin'), AuthorityCreatorNeed(str(authority_id))]
         for r in roles:
-            needs.append(AuthorityOwnerNeed(unicode(r)))
+            needs.append(AuthorityOwnerNeed(str(r)))
 
         super(AuthorityPermission, self).__init__(*needs)

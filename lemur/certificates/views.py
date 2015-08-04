@@ -5,6 +5,8 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+from builtins import str
+
 from flask import Blueprint, make_response, jsonify
 from flask.ext.restful import reqparse, Api, fields
 
@@ -75,7 +77,7 @@ def pem_str(value, name):
     :return: :raise ValueError:
     """
     try:
-        x509.load_pem_x509_certificate(str(value), default_backend())
+        x509.load_pem_x509_certificate(bytes(value), default_backend())
     except Exception:
         raise ValueError("The parameter '{0}' needs to be a valid PEM string".format(name))
     return value
@@ -90,7 +92,7 @@ def private_key_str(value, name):
     :return: :raise ValueError:
     """
     try:
-        serialization.load_pem_private_key(str(value), None, backend=default_backend())
+        serialization.load_pem_private_key(bytes(value), None, backend=default_backend())
     except Exception:
         raise ValueError("The parameter '{0}' needs to be a valid RSA private key".format(name))
     return value
