@@ -3,6 +3,8 @@
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 """
+from builtins import str
+
 from datetime import timedelta
 from flask import make_response, request, current_app
 
@@ -16,10 +18,10 @@ def crossdomain(origin=None, methods=None, headers=None,
     if methods is not None:
         methods = ', '.join(sorted(x.upper() for x in methods))
 
-    if headers is not None and not isinstance(headers, basestring):
+    if headers is not None and not isinstance(headers, str):
         headers = ', '.join(x.upper() for x in headers)
 
-    if not isinstance(origin, basestring):
+    if not isinstance(origin, str):
         origin = ', '.join(origin)
 
     if isinstance(max_age, timedelta):
