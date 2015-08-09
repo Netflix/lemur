@@ -32,6 +32,30 @@ and
 
 If you choose to use this feature ensure that the KEY are decrypted before Lemur starts as it will have trouble communicating with the database otherwise.
 
+Entropy
+-------
+
+Lemur generates private keys for the certificates it creates. This means that it is vitally important that Lemur has enough entropy to draw from. To generate private keys Lemur uses the python library `Cryptography <https://cryptography.io>`_. In turn Cryptography uses OpenSSL bindings to generate
+keys just like you might from the OpenSSL command line. OpenSSL draws it's initial entropy from system during startup and uses PRNGs to generate a stream of random bytes (as output by /dev/urandom) whenever it needs to do a cryptographic operation.
+
+What does all this mean? Well in order for the keys
+that Lemur generates to be strong, the system needs to interact with the outside world. This is typically accomplished through the systems hardware (thermal, sound, video user-input, etc.) since the physical world is much more "random" than the computer world.
+
+If you are running Lemur on its own server with its own hardware "bare metal" then the entropy of the system is typically "good enough" for generating keys. If however you are using an VM on shared hardware there is a potential that your initial seed data (data that was initially
+fed to the PRNG) is not very good. What's more VMs have been known to be unable to inject more entropy into the system once it has been started. This is because there is typically very little interaction with the server once it has been started.
+
+The amount of effort you wish to expend ensuring that Lemur has good entropy to draw from is up to your specific risk tolerance and how Lemur is configured.
+
+If you wish to generate more entropy for your system we would suggest you take a look at the following resources:
+
+- `WES-entropy-client <https://github.com/WhitewoodCrypto/WES-entropy-client>`_
+- `haveaged <http://www.issihosts.com/haveged/>`_
+
+For additional information about OpenSSL entropy issues:
+
+- `Managing and Understanding Entropy Usage <https://www.blackhat.com/docs/us-15/materials/us-15-Potter-Understanding-And-Managing-Entropy-Usage.pdf>`_
+
+
 SSL
 ====
 
