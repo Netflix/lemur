@@ -185,11 +185,7 @@ sensitive nature of Lemur and what it controls makes this essential. This is a s
         }
 
         location / {
-<<<<<<< HEAD
             root /path/to/lemur/static/dist;
-=======
-            root /www/lemur/lemur/static/dist;
->>>>>>> f679392c610c0cb1f7fb61986f30bf8db3c53054
             include mime.types;
             index index.html;
         }
