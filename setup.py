@@ -125,7 +125,6 @@ setup(
     },
     cmdclass={
         'build_static': BuildStatic,
-        'develop': DevelopWithBuildStatic,
         'sdist': SdistWithBuildStatic,
         'install': SmartInstall
 
