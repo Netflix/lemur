@@ -72,7 +72,7 @@ class SmartInstall(install):
     `build_static` which is required for JavaScript assets and other things.
     """
     def _needs_static(self):
-        return not os.path.exists(os.path.join(ROOT, 'lemur-package.json'))
+        return not os.path.exists(os.path.join(ROOT, 'lemur/static/dist'))
 
     def run(self):
         if self._needs_static():
