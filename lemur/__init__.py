@@ -54,7 +54,7 @@ def configure_hook(app):
     from lemur.decorators import crossdomain
     if app.config.get('CORS'):
         @app.after_request
-        @crossdomain(origin="http://localhost:3000", methods=['PUT', 'HEAD', 'GET', 'POST', 'OPTIONS', 'DELETE'])
+        @crossdomain(origin=u"http://localhost:3000", methods=['PUT', 'HEAD', 'GET', 'POST', 'OPTIONS', 'DELETE'])
         def after(response):
             return response
 
