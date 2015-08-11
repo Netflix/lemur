@@ -113,7 +113,7 @@ setup(
     version='0.1',
     author='Kevin Glisson',
     author_email='kglisson@netflix.com',
-    long_description=open('README.rst').read(),
+    long_description=open(os.path.join(ROOT, 'README.rst')).read(),
     packages=['lemur'],
     include_package_data=True,
     zip_safe=False,
