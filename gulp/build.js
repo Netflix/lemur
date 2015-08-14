@@ -48,8 +48,8 @@ gulp.task('test', function (done) {
 
 gulp.task('dev:fonts', function () {
   var fileList = [
-    'lemur/static/app/vendor/bower_components/bootstrap/dist/fonts/*',
-    'lemur/static/app/vendor/bower_components/fontawesome/fonts/*'
+    'bower_components/bootstrap/dist/fonts/*',
+    'bower_components/fontawesome/fonts/*'
   ];
 
   return gulp.src(fileList)
@@ -57,7 +57,7 @@ gulp.task('dev:fonts', function () {
 });
 
 gulp.task('dev:styles', function () {
-  var baseContent = '@import "lemur/static/app/vendor/bower_components/bootstrap/less/bootstrap.less";@import "lemur/static/app/vendor/bower_components/bootswatch/$theme$/variables.less";@import "lemur/static/app/vendor/bower_components/bootswatch/$theme$/bootswatch.less";@import "lemur/static/app/vendor/bower_components/bootstrap/less/utilities.less";';
+  var baseContent = '@import "bower_components/bootstrap/less/bootstrap.less";@import "bower_components/bootswatch/$theme$/variables.less";@import "bower_components/bootswatch/$theme$/bootswatch.less";@import "bower_components/bootstrap/less/utilities.less";';
   var isBootswatchFile = function (file) {
 
     var suffix = 'bootswatch.less';
@@ -73,15 +73,15 @@ gulp.task('dev:styles', function () {
 
   var fileList = [
     'lemur/static/app/styles/lemur.css',
-    'lemur/static/app/vendor/bower_components/bootswatch/sandstone/bootswatch.less',
-    'lemur/static/app/vendor/bower_components/fontawesome/css/font-awesome.css',
-    'lemur/static/app/vendor/bower_components/angular-spinkit/src/angular-spinkit.css',
-    'lemur/static/app/vendor/bower_components/angular-chart.js/dist/angular-chart.css',
-    'lemur/static/app/vendor/bower_components/angular-loading-bar/src/loading-bar.css',
-    'lemur/static/app/vendor/bower_components/angular-ui-switch/angular-ui-switch.css',
-    'lemur/static/app/vendor/bower_components/angular-wizard/dist/angular-wizard.css',
-    'lemur/static/app/vendor/bower_components/ng-table/ng-table.css',
-    'lemur/static/app/vendor/bower_components/angularjs-toaster/toaster.css'
+    'bower_components/bootswatch/sandstone/bootswatch.less',
+    'bower_components/fontawesome/css/font-awesome.css',
+    'bower_components/angular-spinkit/src/angular-spinkit.css',
+    'bower_components/angular-chart.js/dist/angular-chart.css',
+    'bower_components/angular-loading-bar/src/loading-bar.css',
+    'bower_components/angular-ui-switch/angular-ui-switch.css',
+    'bower_components/angular-wizard/dist/angular-wizard.css',
+    'bower_components/ng-table/ng-table.css',
+    'bower_components/angularjs-toaster/toaster.css'
   ];
 
   return gulp.src(fileList)
