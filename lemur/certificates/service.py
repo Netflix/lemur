@@ -220,7 +220,8 @@ def create(**kwargs):
         notifications += notification_service.create_default_expiration_notifications(notification_name, [cert.owner])
 
     notification_name = 'DEFAULT_SECURITY'
-    notifications += notification_service.create_default_expiration_notifications(notification_name, current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL'))
+    notifications += notification_service.create_default_expiration_notifications(notification_name,
+                                                                                  current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL'))
     cert.notifications = notifications
 
     database.update(cert)

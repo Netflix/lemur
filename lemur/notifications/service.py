@@ -178,6 +178,9 @@ def create_default_expiration_notifications(name, recipients):
     :param name:
     :return:
     """
+    if not recipients:
+        return []
+
     options = [
         {
             'name': 'unit',
