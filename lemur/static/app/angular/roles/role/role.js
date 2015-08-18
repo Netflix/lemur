@@ -18,6 +18,12 @@ angular.module('lemur')
       $modalInstance.dismiss('cancel');
     };
 
+    $scope.userPage = 1;
+    $scope.loadMoreRoles = function () {
+      $scope.userPage += 1;
+      RoleService.loadMoreUsers($scope.role, $scope.userPage);
+    };
+
     $scope.userService = UserService;
     $scope.roleService = RoleService;
   })

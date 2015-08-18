@@ -23,9 +23,10 @@ CertificateOwnerNeed = partial(CertificateOwner, 'certificateView')
 
 
 class ViewKeyPermission(Permission):
-    def __init__(self, role_id, certificate_id):
+    def __init__(self, certificate_id, owner_id):
         c_need = CertificateCreatorNeed(str(certificate_id))
-        o_need = CertificateOwnerNeed(str(role_id))
+        o_need = CertificateOwnerNeed(str(owner_id))
+
         super(ViewKeyPermission, self).__init__(o_need, c_need, RoleNeed('admin'))
 
 
