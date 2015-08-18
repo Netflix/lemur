@@ -34,16 +34,6 @@ angular.module('lemur')
       });
     });
     
-    PluginService.getByType('destination').then(function (plugins) {
-      $scope.plugins = plugins;
-      _.each($scope.plugins, function (plugin) {
-        if (plugin.slug === $scope.destination.pluginName) {
-          plugin.pluginOptions = $scope.destination.destinationOptions;
-          $scope.destination.plugin = plugin;
-        }
-      });
-    });
-
     $scope.save = function (destination) {
       DestinationService.update(destination).then(function () {
         $modalInstance.close();

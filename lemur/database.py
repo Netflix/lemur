@@ -9,10 +9,9 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from flask import current_app
-
 from sqlalchemy import exc
 from sqlalchemy.sql import and_, or_
+from sqlalchemy.orm.exc import NoResultFound
 
 from lemur.extensions import db
 from lemur.exceptions import AttrNotFound, DuplicateError
@@ -126,8 +125,7 @@ def get(model, value, field="id"):
     query = session_query(model)
     try:
         return query.filter(getattr(model, field) == value).one()
-    except Exception as e:
-        current_app.logger.exception(e)
+    except NoResultFound as e:
         return
 
 

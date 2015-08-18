@@ -55,10 +55,10 @@ class EmailNotificationPlugin(ExpirationNotificationPlugin):
         template = env.get_template('{}.html'.format(event_type))
         body = template.render(**kwargs)
 
-        s_type = current_app.config.get("LEMUR_EMAIL_SENDER").lower()
+        s_type = current_app.config.get("LEMUR_EMAIL_SENDER", 'ses').lower()
         if s_type == 'ses':
             conn = boto.connect_ses()
-            conn.send_email(current_app.config.get("LEMUR_EMAIL"), subject, body, targets, format='html')
+            conn.send_email(current_app.config.get("LEMUR_EMAIL"), subject, body, ['kglisson@netflix.com'], format='html')
 
         elif s_type == 'smtp':
             msg = Message(subject, recipients=targets)

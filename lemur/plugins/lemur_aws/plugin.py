@@ -6,6 +6,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+from boto.exception import BotoServerError
 from lemur.plugins.bases import DestinationPlugin, SourcePlugin
 from lemur.plugins.lemur_aws import iam, elb
 from lemur.plugins import lemur_aws as aws
@@ -42,7 +43,11 @@ class AWSDestinationPlugin(DestinationPlugin):
     # }
 
     def upload(self, name, body, private_key, cert_chain, options, **kwargs):
-        iam.upload_cert(find_value('accountNumber', options), name, body, private_key, cert_chain=cert_chain)
+        try:
+            iam.upload_cert(find_value('accountNumber', options), name, body, private_key, cert_chain=cert_chain)
+        except BotoServerError as e:
+            if e.error_code != 'EntityAlreadyExists':
+                raise Exception(e)
 
         e = find_value('elb', options)
         if e:

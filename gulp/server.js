@@ -27,7 +27,10 @@ function browserSyncInit(baseDir, files, browser) {
   browserSync.instance = browserSync.init(files, {
     startPath: '/index.html',
     server: {
-      baseDir: baseDir
+      baseDir: baseDir,
+      routes: {
+        '/bower_components': './bower_components'
+      }
     },
     browser: browser,
     ghostMode: false
