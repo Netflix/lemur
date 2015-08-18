@@ -178,6 +178,9 @@ def create_default_expiration_notifications(name, recipients):
     :param name:
     :return:
     """
+    if not recipients:
+        return []
+
     options = [
         {
             'name': 'unit',
@@ -198,7 +201,7 @@ def create_default_expiration_notifications(name, recipients):
         },
     ]
 
-    intervals = current_app.config.get("LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS")
+    intervals = current_app.config.get("LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS", [30, 15, 2])
 
     notifications = []
     for i in intervals:
