@@ -14,6 +14,7 @@ from json import dumps
 import arrow
 import requests
 from requests.adapters import HTTPAdapter
+from requests.exceptions import ConnectionError
 
 from flask import current_app
 
@@ -22,8 +23,6 @@ from lemur.plugins.bases import IssuerPlugin, SourcePlugin
 from lemur.plugins import lemur_cloudca as cloudca
 
 from lemur.authorities import service as authority_service
-
-API_ENDPOINT = '/v1/ca/netflix'  # TODO this should be configurable
 
 
 class CloudCAException(LemurException):
@@ -172,7 +171,11 @@ class CloudCA(object):
 
         # we set a low timeout, if cloudca is down it shouldn't bring down
         # lemur
-        response = self.session.post(self.url + endpoint, data=data, timeout=10, verify=self.ca_bundle)
+        try:
+            response = self.session.post(self.url + endpoint, data=data, timeout=10, verify=self.ca_bundle)
+        except ConnectionError:
+            raise Exception("Could not talk to CloudCA, is it up?")
+
         return process_response(response)
 
     def get(self, endpoint):
@@ -182,7 +185,11 @@ class CloudCA(object):
         :param endpoint:
         :return:
         """
-        response = self.session.get(self.url + endpoint, timeout=10, verify=self.ca_bundle)
+        try:
+            response = self.session.get(self.url + endpoint, timeout=10, verify=self.ca_bundle)
+        except ConnectionError:
+            raise Exception("Could not talk to CloudCA, is it up?")
+
         return process_response(response)
 
     def random(self, length=10):
@@ -202,7 +209,7 @@ class CloudCA(object):
 
         :return:
         """
-        endpoint = '{0}/listCAs'.format(API_ENDPOINT)
+        endpoint = '{0}/listCAs'.format(current_app.config.get('CLOUDCA_API_ENDPOINT'))
         authorities = []
         for ca in self.get(endpoint)['data']['caList']:
             try:
@@ -230,7 +237,7 @@ class CloudCAIssuerPlugin(IssuerPlugin, CloudCA):
         :return:
         """
         # this is weird and I don't like it
-        endpoint = '{0}/createCA'.format(API_ENDPOINT)
+        endpoint = '{0}/createCA'.format(current_app.config.get('CLOUDCA_API_ENDPOINT'))
         options['caDN']['email'] = options['ownerEmail']
 
         if options['caType'] == 'subca':
@@ -239,8 +246,11 @@ class CloudCAIssuerPlugin(IssuerPlugin, CloudCA):
         options['validityStart'] = convert_date_to_utc_time(options['validityStart']).isoformat()
         options['validityEnd'] = convert_date_to_utc_time(options['validityEnd']).isoformat()
 
-        response = self.session.post(self.url + endpoint, data=dumps(remove_none(options)), timeout=10,
-                                     verify=self.ca_bundle)
+        try:
+            response = self.session.post(self.url + endpoint, data=dumps(remove_none(options)), timeout=10,
+                                         verify=self.ca_bundle)
+        except ConnectionError:
+            raise Exception("Could not communicate with CloudCA, is it up?")
 
         json = process_response(response)
         roles = []
@@ -274,7 +284,7 @@ class CloudCAIssuerPlugin(IssuerPlugin, CloudCA):
         :param csr:
         :param options:
         """
-        endpoint = '{0}/enroll'.format(API_ENDPOINT)
+        endpoint = '{0}/enroll'.format(current_app.config.get('CLOUDCA_API_ENDPOINT'))
         # lets default to two years if it's not specified
         # we do some last minute data massaging
         options = get_default_issuance(options)
@@ -330,7 +340,7 @@ class CloudCASourcePlugin(SourcePlugin, CloudCA):
         :param cert_handle:
         :return:
         """
-        endpoint = '{0}/getCert'.format(API_ENDPOINT)
+        endpoint = '{0}/getCert'.format(current_app.config.get('CLOUDCA_API_ENDPOINT'))
         response = self.session.post(self.url + endpoint, data=dumps({'caName': ca_name}), timeout=10,
                                      verify=self.ca_bundle)
         raw = process_response(response)
