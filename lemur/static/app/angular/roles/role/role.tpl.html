@@ -27,7 +27,7 @@
                     Username
                 </label>
                 <div class="col-sm-10">
-                    <input ng-show="!role.fromServer" name="username" ng-model="role.username" placeholder="Username" class="form-control" required/>
+                    <input ng-show="!role.fromServer" name="username" ng-model="role.username" placeholder="Username" class="form-control"/>
                     <div class="well">
             <span ng-show="role.password">
               {{ role.username }}
@@ -43,7 +43,7 @@
                     Password
                 </label>
                 <div class="col-sm-10">
-                    <input ng-show="!role.fromServer" type="password" name="password" ng-model="role.password" placeholder="hunter2" class="form-control" required/>
+                    <input ng-show="!role.fromServer" type="password" name="password" ng-model="role.password" placeholder="hunter2" class="form-control"/>
                     <p ng-show="createForm.password.$invalid && !createForm.password.$pristine" class="help-block">You must enter an password</p>
                     <div class="well">
             <span ng-show="role.password">
@@ -61,13 +61,17 @@
                     <input tooltip="You can attach any user to this role, once attached they will have access as defined by this role"
                            typeahead="user.username for user in userService.findUserByName($viewValue)" typeahead-loading="loadingUsers"
                            typeahead-min-wait="100" typeahead-on-select="role.addUser($item)"
-                           type="text" name="user" ng-model="role.selectedUser" placeholder="Username..." class="form-control" required/>
+                           type="text" name="user" ng-model="role.selectedUser" placeholder="Username..." class="form-control"/>
                     <table ng-show="role.users" class="table">
                         <tr ng-repeat="user in role.users track by $index">
                             <td>{{ user.username }}</td>
                             <td>
                                 <button type="button" ng-click="role.removeUser($index)" class="btn btn-danger btn-sm pull-right">Remove</button>
                             </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><a class="pull-right" ng-click="loadMoreUsers()"><strong>More</strong></a></td>
                         </tr>
                     </table>
                 </div>

@@ -140,7 +140,7 @@ class RolesList(AuthenticatedResource):
         self.reqparse.add_argument('description', type=str, location='json')
         self.reqparse.add_argument('username', type=str, location='json')
         self.reqparse.add_argument('password', type=str, location='json')
-        self.reqparse.add_argument('users', type=dict, location='json')
+        self.reqparse.add_argument('users', type=list, location='json')
 
         args = self.reqparse.parse_args()
         return service.create(args['name'], args.get('password'), args.get('description'), args.get('username'),

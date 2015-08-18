@@ -34,8 +34,16 @@ angular.module('lemur')
     };
 
     RoleService.getUsers = function (role) {
-      role.customGET('users').then(function (users) {
+      return role.getList('users').then(function (users) {
         role.users = users;
+      });
+    };
+
+    RoleService.loadMoreUsers = function (role, page) {
+      role.getList('users', {page: page}).then(function (users) {
+        _.each(users, function (user) {
+          role.users.push(user);
+        });
       });
     };
 
