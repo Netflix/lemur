@@ -326,11 +326,11 @@ class CloudCASourcePlugin(SourcePlugin, CloudCA):
         'pollRate': {'type': 'int', 'default': '60'}
     }
 
-    def get_certificates(self, **kwargs):
+    def get_certificates(self, options, **kwargs):
         certs = []
         for authority in self.get_authorities():
             certs += self.get_cert(ca_name=authority)
-        return
+        return certs
 
     def get_cert(self, ca_name=None, cert_handle=None):
         """
@@ -355,7 +355,7 @@ class CloudCASourcePlugin(SourcePlugin, CloudCA):
 
             certs.append({
                 'public_certificate': cert,
-                'intermediate_cert': "\n".join(intermediates),
+                'intermediate_certificate': "\n".join(intermediates),
                 'owner': c['ownerEmail']
             })
 

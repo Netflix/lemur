@@ -77,7 +77,6 @@ LEMUR_RESTRICTED_DOMAINS = []
 
 LEMUR_EMAIL = ''
 LEMUR_SECURITY_TEAM_EMAIL = []
-LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS = [30, 15, 2]
 
 # Logging
 
@@ -172,18 +171,17 @@ def generate_settings():
 
 
 @manager.option('-s', '--sources', dest='labels', default='', required=False)
-@manager.option('-l', '--list', dest='view', default=False, required=False)
-def sync_sources(labels, view):
+def sync_sources(labels):
     """
     Attempts to run several methods Certificate discovery. This is
     run on a periodic basis and updates the Lemur datastore with the
     information it discovers.
     """
-    if view:
+    if not labels:
         sys.stdout.write("Active\tLabel\tDescription\n")
         for source in source_service.get_all():
             sys.stdout.write(
-                "[{active}]\t{label}\t{description}!\n".format(
+                "{active}\t{label}\t{description}!\n".format(
                     label=source.label,
                     description=source.description,
                     active=source.active

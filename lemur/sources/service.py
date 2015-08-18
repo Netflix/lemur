@@ -39,6 +39,7 @@ def _disassociate_certs_from_source(current_certificates, found_certificates, so
 
 def sync_create(certificate, source):
     cert = cert_service.import_certificate(**certificate)
+    cert.description = "This certificate was automatically discovered by Lemur"
     cert.sources.append(source)
     sync_update_destination(cert, source)
     database.update(cert)
