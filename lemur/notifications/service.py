@@ -59,13 +59,18 @@ def _deduplicate(messages):
 
         for m, r, o in roll_ups:
             if r == targets:
-                m.append(data)
-                current_app.logger.info(
-                    "Sending expiration alert about {0} to {1}".format(
-                        data['name'], ",".join(targets)))
+                for cert in m:
+                    if cert['body'] == data['body']:
+                        break
+                else:
+                    m.append(data)
+                    current_app.logger.info(
+                        "Sending expiration alert about {0} to {1}".format(
+                            data['name'], ",".join(targets)))
                 break
         else:
             roll_ups.append(([data], targets, options))
+
     return roll_ups
 
 
