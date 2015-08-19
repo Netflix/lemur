@@ -15,6 +15,6 @@ def get_key():
     :return:
     """
     try:
-        return current_app.config.get('LEMUR_ENCRYPTION_KEY')
+        return current_app.config.get('LEMUR_ENCRYPTION_KEY').strip()
     except RuntimeError:
         return ''
