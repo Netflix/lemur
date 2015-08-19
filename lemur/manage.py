@@ -480,6 +480,72 @@ def unlock(path=None):
     sys.stdout.write("[+] Keys have been unencrypted!\n")
 
 
+class ProvisionELB(Command):
+    """
+    Creates and provisions a certificate on an ELB based on a json blob
+    """
+
+    option_list = (
+        Option('-d', '--dns', dest='dns', required=True),
+        Option('-e', '--elb', dest='elb', required=True),
+        Option('-o', '--owner', dest='owner'),
+        Option('-a', '--authority', dest='authority', required=True),
+        Option('-s','--description', dest='description'),
+        Option('-t','--destinations', dest='destinations'),
+        Option('-n','--notifications', dest='notifications')
+    )
+
+    def run(self, dns, elb, owner, authority, description, destinations, notifications):
+        from lemur.certificates import service
+        from lemur.certificates.views import valid_authority
+        from flask import g
+        import lemur.users.service
+
+        # convert argument lists to arrays, or empty sets
+        destinations = [] if not destinations else destinations.split(',')
+        notifications = [] if not notifications else notifications.split(',')
+
+        # set a default description
+        description = u'Command line provisioned keypair' if not description else unicode(description)
+
+        #grab the user
+        g.user = lemur.users.service.get_by_username(owner)
+        if not g.user:
+            g.user = lemur.users.service.get_all()[0] ## get the first user
+
+        dns = dns.split(',')
+
+        # get the primary CN
+        cn = dns[0]
+
+        # IF there are more, add them as alternate name
+        extensions = {}
+        if len(dns) > 1:
+            sub_alt_names = []
+
+            for alt_name in dns[1:]:
+                sub_alt_names.append({'nameType': 'DNSName', 'value': unicode(alt_name)})
+
+            extensions['subAltNames'] = {'names': sub_alt_names}
+
+        sys.stdout.write("subNames: {}\n".format(extensions))
+        sys.stdout.write("cn: {} is a {}\n".format(cn, cn.__class__))
+
+        cert = service.create(authority=valid_authority({ "name": authority}), commonName=unicode(cn), extensions=extensions,
+                              organization=u'Netflix',
+                              organizationalUnit=u'Operations',
+                              country=u'US',
+                              state=u'California',
+                              location=u'Los Gatos',
+                              owner=unicode(owner),
+                              description=description,
+                              destinations=destinations,
+                              notifications=notifications
+                              )
+        sys.stdout.write("cert {}".format(cert))
+
+
+
 def main():
     manager.add_command("start", LemurServer())
     manager.add_command("runserver", Server(host='127.0.0.1'))
@@ -489,6 +555,7 @@ def main():
     manager.add_command("init", InitializeApp())
     manager.add_command("create_user", CreateUser())
     manager.add_command("create_role", CreateRole())
+    manager.add_command("provision_elb", ProvisionELB())
     manager.run()
 
 
