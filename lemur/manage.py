@@ -490,17 +490,24 @@ class ProvisionELB(Command):
         Option('-e', '--elb', dest='elb', required=True),
         Option('-o', '--owner', dest='owner'),
         Option('-a', '--authority', dest='authority', required=True),
-        Option('-s','--description', dest='description'),
-        Option('-t','--destinations', dest='destinations'),
-        Option('-n','--notifications', dest='notifications')
+        Option('-s', '--description', dest='description'),
+        Option('-t', '--destinations', dest='destinations'),
+        Option('-n', '--notifications', dest='notifications')
     )
 
-    def run(self, dns, elb, owner, authority, description, destinations, notifications):
-        from lemur.certificates import service
-        from lemur.certificates.views import valid_authority
+    def _configure_user(self, owner):
         from flask import g
         import lemur.users.service
 
+        # grab the user
+        g.user = lemur.users.service.get_by_username(owner)
+        # get the first user by default
+        if not g.user:
+            g.user = lemur.users.service.get_all()[0]
+
+        return unicode(g.user.username)
+
+    def _build_cert_options(self, destinations, notifications, description, owner, dns, authority):
         # convert argument lists to arrays, or empty sets
         destinations = [] if not destinations else destinations.split(',')
         notifications = [] if not notifications else notifications.split(',')
@@ -508,15 +515,12 @@ class ProvisionELB(Command):
         # set a default description
         description = u'Command line provisioned keypair' if not description else unicode(description)
 
-        #grab the user
-        g.user = lemur.users.service.get_by_username(owner)
-        if not g.user:
-            g.user = lemur.users.service.get_all()[0] ## get the first user
+        owner = unicode(owner)
 
         dns = dns.split(',')
 
         # get the primary CN
-        cn = dns[0]
+        cn = unicode(dns[0])
 
         # IF there are more, add them as alternate name
         extensions = {}
@@ -531,19 +535,45 @@ class ProvisionELB(Command):
         sys.stdout.write("subNames: {}\n".format(extensions))
         sys.stdout.write("cn: {} is a {}\n".format(cn, cn.__class__))
 
-        cert = service.create(authority=valid_authority({ "name": authority}), commonName=unicode(cn), extensions=extensions,
-                              organization=u'Netflix',
-                              organizationalUnit=u'Operations',
-                              country=u'US',
-                              state=u'California',
-                              location=u'Los Gatos',
-                              owner=unicode(owner),
-                              description=description,
-                              destinations=destinations,
-                              notifications=notifications
-                              )
-        sys.stdout.write("cert {}".format(cert))
+        from lemur.certificates.views import valid_authority
 
+        authority=valid_authority({"name": authority})
+
+        options = {
+            'destinations': destinations,
+            'description': description,
+            'notifications': notifications,
+            'commonName': cn,
+            'extensions': extensions,
+            'authority': authority,
+            'owner': owner,
+            # defaults:
+            'organization': u'Netflix',
+            'organizationalUnit': u'Operations',
+            'country': u'US',
+            'state': u'California',
+            'location': u'Los Gatos'
+        }
+
+        return options
+
+
+    def run(self, dns, elb, owner, authority, description, notifications):
+        from lemur.certificates import service
+
+        # configure the owner if we can find it, or go for default, and put it in the global
+        owner = self._configure_user(owner)
+
+        # make a config blob from the command line arguments
+        cert_options = self._build_cert_options(
+            destinations=destinations, notifications=notifications, description=description,
+            owner=owner, dns=dns, authority=authority)
+
+        sys.stdout.write("cert options: {}\n".format(cert_options))
+
+        # create the certificate
+        cert = service.create( **cert_options )
+        sys.stdout.write("cert {}".format(cert))
 
 
 def main():
@@ -557,7 +587,6 @@ def main():
     manager.add_command("create_role", CreateRole())
     manager.add_command("provision_elb", ProvisionELB())
     manager.run()
-
 
 if __name__ == "__main__":
     main()
