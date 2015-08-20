@@ -29,7 +29,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
 
 from lemur.users import service as user_service
-from lemur.auth.permissions import CertificateOwnerNeed, CertificateCreatorNeed, \
+from lemur.auth.permissions import CertificateCreatorNeed, \
     AuthorityCreatorNeed, ViewRoleCredentialsNeed
 
 
@@ -165,7 +165,6 @@ def on_identity_loaded(sender, identity):
     # identity with the roles that the user provides
     if hasattr(user, 'roles'):
         for role in user.roles:
-            identity.provides.add(CertificateOwnerNeed(role.id))
             identity.provides.add(ViewRoleCredentialsNeed(role.id))
             identity.provides.add(RoleNeed(role.name))
 
