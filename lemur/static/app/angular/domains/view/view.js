@@ -21,7 +21,7 @@ angular.module('lemur')
     }, {
       total: 0,           // length of data
       getData: function ($defer, params) {
-        DomainApi.getList().then(function (data) {
+        DomainApi.getList(params.url()).then(function (data) {
             params.total(data.total);
             $defer.resolve(data);
           });

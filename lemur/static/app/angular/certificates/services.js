@@ -107,7 +107,6 @@ angular.module('lemur')
             title: certificate.name,
             body: 'Successfully created!'
           });
-          $location.path('/certificates');
         },
         function (response) {
           toaster.pop({
@@ -120,14 +119,21 @@ angular.module('lemur')
     };
 
     CertificateService.update = function (certificate) {
-      return LemurRestangular.copy(certificate).put().then(function () {
-        toaster.pop({
-          type: 'success',
-          title: certificate.name,
-          body: 'Successfully updated!'
+      return LemurRestangular.copy(certificate).put().then(
+        function () {
+          toaster.pop({
+            type: 'success',
+            title: certificate.name,
+            body: 'Successfully updated!'
+          });
+        },
+        function (response) {
+          toaster.pop({
+            type: 'error',
+            title: certificate.name,
+            body: 'Failed to update ' + response.data.message
+          });
         });
-        $location.path('certificates');
-      });
     };
 
     CertificateService.upload = function (certificate) {
@@ -138,7 +144,6 @@ angular.module('lemur')
             title: certificate.name,
             body: 'Successfully uploaded!'
           });
-          $location.path('/certificates');
         },
         function (response) {
           toaster.pop({

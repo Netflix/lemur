@@ -52,8 +52,13 @@
                             <span style="color: #29abe0">Notice: Your SSL certificates are expiring!</span>
                             <hr />
                        </div>
-                        Lemur, Netflix's SSL management portal has noticed that the following certificates are expiring soon, if you rely on these certificates
-                        you should create new certificates to replace the certificates that are expiring. Visit https://lemur.netflix.com/#/certificates/create to reissue them.
+                        <p>
+                            Lemur, Netflix's SSL management portal has noticed that the following certificates are expiring soon, if you rely on these certificates
+                            you should create new certificates to replace the certificates that are expiring.
+                        </p>
+                        <p>
+                            Visit https://{{ hostname }}/#/certificates/create to reissue them.
+                        </p>
                     </td>
                 </tr>
                 {%  for message in messages %}
@@ -77,6 +82,12 @@
                             </tr>
                             <tr>
                                 <td>{{ message.creator }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Description</strong></td>
+                            </tr>
+                            <tr>
+                                <td>{{ message.description }}</td>
                             </tr>
                             <tr>
                                 <td><strong>Not Before</strong></td>
@@ -105,20 +116,6 @@
                                 </tr>
                             {% endif %}
                             <tr>
-                                <td><strong>Associated ELBs</strong></td>
-                            </tr>
-                            {% if message.listeners %}
-                                {% for name in message.listeners %}
-                                    <tr>
-                                        <td>{{ name }}</td>
-                                    </tr>
-                                {% endfor %}
-                            {% else %}
-                                <tr>
-                                    <td>None</td>
-                                </tr>
-                            {% endif %}
-                            <tr>
                                 <td><strong>Potentially Superseded by</strong> (Lemur's best guess)</td>
                             </tr>
                             {% if message.superseded %}
@@ -139,7 +136,7 @@
     </tr>
     <tr>
         <td style="padding-top: 0px" align="center" valign="top">
-            <em style="font-style:italic; font-size: 12px; color: #aaa;">Lemur is broken regularly by <a style="color: #29abe0; text-decoration: none;" href="mailto:secops@netflix.com">Security Operations</a></em>
+            <em style="font-style:italic; font-size: 12px; color: #aaa;">Lemur is broken regularly by Netflix</em>
         </td>
     </tr>
 </table>

@@ -53,9 +53,9 @@ class EmailNotificationPlugin(ExpirationNotificationPlugin):
 
         # jinja template depending on type
         template = env.get_template('{}.html'.format(event_type))
-        body = template.render(**kwargs)
+        body = template.render(dict(messages=message, hostname=current_app.config.get('LEMUR_HOSTNAME')))
 
-        s_type = current_app.config.get("LEMUR_EMAIL_SENDER").lower()
+        s_type = current_app.config.get("LEMUR_EMAIL_SENDER", 'ses').lower()
         if s_type == 'ses':
             conn = boto.connect_ses()
             conn.send_email(current_app.config.get("LEMUR_EMAIL"), subject, body, targets, format='html')
