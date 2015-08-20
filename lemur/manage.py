@@ -537,7 +537,7 @@ class ProvisionELB(Command):
 
         from lemur.certificates.views import valid_authority
 
-        authority=valid_authority({"name": authority})
+        authority = valid_authority({"name": authority})
 
         options = {
             'destinations': destinations,
@@ -557,8 +557,7 @@ class ProvisionELB(Command):
 
         return options
 
-
-    def run(self, dns, elb, owner, authority, description, notifications):
+    def run(self, dns, elb, owner, authority, description, notifications, destinations):
         from lemur.certificates import service
 
         # configure the owner if we can find it, or go for default, and put it in the global
@@ -572,7 +571,7 @@ class ProvisionELB(Command):
         sys.stdout.write("cert options: {}\n".format(cert_options))
 
         # create the certificate
-        cert = service.create( **cert_options )
+        cert = service.create(**cert_options)
         sys.stdout.write("cert {}".format(cert))
 
 
