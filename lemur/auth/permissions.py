@@ -16,25 +16,19 @@ operator_permission = Permission(RoleNeed('operator'))
 admin_permission = Permission(RoleNeed('admin'))
 
 CertificateCreator = namedtuple('certificate', ['method', 'value'])
-CertificateCreatorNeed = partial(CertificateCreator, 'certificateView')
-
-CertificateOwner = namedtuple('certificate', ['method', 'value'])
-CertificateOwnerNeed = partial(CertificateOwner, 'certificateView')
+CertificateCreatorNeed = partial(CertificateCreator, 'key')
 
 
 class ViewKeyPermission(Permission):
-    def __init__(self, certificate_id, owner_id):
+    def __init__(self, certificate_id, owner):
         c_need = CertificateCreatorNeed(str(certificate_id))
-        o_need = CertificateOwnerNeed(str(owner_id))
-
-        super(ViewKeyPermission, self).__init__(o_need, c_need, RoleNeed('admin'))
+        super(ViewKeyPermission, self).__init__(c_need, RoleNeed(owner), RoleNeed('admin'))
 
 
 class UpdateCertificatePermission(Permission):
-    def __init__(self, role_id, certificate_id):
+    def __init__(self, certificate_id, owner):
         c_need = CertificateCreatorNeed(str(certificate_id))
-        o_need = CertificateOwnerNeed(str(role_id))
-        super(UpdateCertificatePermission, self).__init__(o_need, c_need, RoleNeed('admin'))
+        super(UpdateCertificatePermission, self).__init__(c_need, RoleNeed(owner), RoleNeed('admin'))
 
 
 RoleUser = namedtuple('role', ['method', 'value'])
