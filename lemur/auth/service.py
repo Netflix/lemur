@@ -8,11 +8,12 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
+from __future__ import unicode_literals
+from builtins import bytes
 import jwt
 import json
 import base64
 import binascii
-from builtins import str
 
 from functools import wraps
 from datetime import datetime, timedelta
@@ -34,19 +35,16 @@ from lemur.auth.permissions import CertificateCreatorNeed, \
 
 
 def base64url_decode(data):
-    if isinstance(data, str):
-        data = str(data)
-
     rem = len(data) % 4
 
     if rem > 0:
-        data += b'=' * (4 - rem)
+        data += '=' * (4 - rem)
 
-    return base64.urlsafe_b64decode(data)
+    return base64.urlsafe_b64decode(bytes(data.encode('latin-1')))
 
 
 def base64url_encode(data):
-    return base64.urlsafe_b64encode(data).replace(b'=', b'')
+    return base64.urlsafe_b64encode(data).replace('=', '')
 
 
 def get_rsa_public_key(n, e):
@@ -141,9 +139,11 @@ def fetch_token_header(token):
 
     try:
         return json.loads(base64url_decode(header_segment))
-    except TypeError:
+    except TypeError as e:
+        current_app.logger.exception(e)
         raise jwt.DecodeError('Invalid header padding')
-    except binascii.Error:
+    except binascii.Error as e:
+        current_app.logger.exception(e)
         raise jwt.DecodeError('Invalid header padding')
 
 
