@@ -446,14 +446,13 @@ class CertificatePrivateKey(AuthenticatedResource):
 
         role = role_service.get_by_name(cert.owner)
 
-        if role:
-            permission = ViewKeyPermission(certificate_id, role.name)
+        permission = ViewKeyPermission(certificate_id, getattr(role, 'name', None))
 
-            if permission.can():
-                response = make_response(jsonify(key=cert.private_key), 200)
-                response.headers['cache-control'] = 'private, max-age=0, no-cache, no-store'
-                response.headers['pragma'] = 'no-cache'
-                return response
+        if permission.can():
+            response = make_response(jsonify(key=cert.private_key), 200)
+            response.headers['cache-control'] = 'private, max-age=0, no-cache, no-store'
+            response.headers['pragma'] = 'no-cache'
+            return response
 
         return dict(message='You are not authorized to view this key'), 403
 

@@ -17,4 +17,5 @@ def get_key():
     try:
         return current_app.config.get('LEMUR_ENCRYPTION_KEY').strip()
     except RuntimeError:
+        print("No Encryption Key Found")
         return ''
