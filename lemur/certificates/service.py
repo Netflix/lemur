@@ -320,17 +320,18 @@ def create_csr(csr_config):
         x509.BasicConstraints(ca=False, path_length=None), critical=True,
     )
 
-    for k, v in csr_config.get('extensions', {}).items():
-        if k == 'subAltNames':
-            # map types to their x509 objects
-            general_names = []
-            for name in v['names']:
-                if name['nameType'] == 'DNSName':
-                    general_names.append(x509.DNSName(name['value']))
+    if csr_config.get('extensions'):
+        for k, v in csr_config.get('extensions', {}).items():
+            if k == 'subAltNames':
+                # map types to their x509 objects
+                general_names = []
+                for name in v['names']:
+                    if name['nameType'] == 'DNSName':
+                        general_names.append(x509.DNSName(name['value']))
 
-            builder = builder.add_extension(
-                x509.SubjectAlternativeName(general_names), critical=True
-            )
+                builder = builder.add_extension(
+                    x509.SubjectAlternativeName(general_names), critical=True
+                )
 
     # TODO support more CSR options, none of the authority plugins currently support these options
     #    builder.add_extension(
