@@ -21,13 +21,13 @@ CertificateCreatorNeed = partial(CertificateCreator, 'key')
 
 class ViewKeyPermission(Permission):
     def __init__(self, certificate_id, owner):
-        c_need = CertificateCreatorNeed(str(certificate_id))
+        c_need = CertificateCreatorNeed(certificate_id)
         super(ViewKeyPermission, self).__init__(c_need, RoleNeed(owner), RoleNeed('admin'))
 
 
 class UpdateCertificatePermission(Permission):
     def __init__(self, certificate_id, owner):
-        c_need = CertificateCreatorNeed(str(certificate_id))
+        c_need = CertificateCreatorNeed(certificate_id)
         super(UpdateCertificatePermission, self).__init__(c_need, RoleNeed(owner), RoleNeed('admin'))
 
 
