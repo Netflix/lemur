@@ -56,6 +56,7 @@ VERISIGN_ERRORS = {
     "0x4828": "Verisign certificates can be at most two years in length",
     "0x3043": "Certificates must have a validity of at least 1 day",
     "0x950b": "CSR: Invalid State",
+    "0x3105": "Organization Name Not Matched",
 }
 
 
