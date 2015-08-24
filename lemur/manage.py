@@ -488,12 +488,15 @@ class ProvisionELB(Command):
         Option('-e', '--elb', dest='elb', required=True),
         Option('-o', '--owner', dest='owner'),
         Option('-a', '--authority', dest='authority', required=True),
-        Option('-s', '--description', dest='description'),
+        Option('-s', '--description', dest='description', default=u'Command line provisioned keypair'),
         Option('-t', '--destinations', dest='destinations'),
-        Option('-n', '--notifications', dest='notifications')
+        Option('-n', '--notifications', dest='notifications'),
+        Option('-r', '--region', dest='region', default=u'us-east-1'),
+        Option('-p', '--dport', '--port', dest='dport', default=7002),
+        Option('--src-port', '--source-port', '--sport', dest='sport', default=443)
     )
 
-    def _configure_user(self, owner):
+    def configure_user(self, owner):
         from flask import g
         import lemur.users.service
 
@@ -505,24 +508,19 @@ class ProvisionELB(Command):
 
         return unicode(g.user.username)
 
-    def _build_cert_options(self, destinations, notifications, description, owner, dns, authority):
+    def build_cert_options(self, destinations, notifications, description, owner, dns, authority):
         # convert argument lists to arrays, or empty sets
-        destinations = [] if not destinations else destinations.split(',')
+        destinations = [] if not destinations else self._get_destinations(destinations.split(','))
         notifications = [] if not notifications else notifications.split(',')
-
-        # set a default description
-        description = u'Command line provisioned keypair' if not description else unicode(description)
-
-        owner = unicode(owner)
 
         dns = dns.split(',')
 
         # get the primary CN
-        cn = unicode(dns[0])
+        commonName = unicode(dns.pop(0))
 
-        # IF there are more, add them as alternate name
+        # If there are more than one fqdn, add them as alternate names
         extensions = {}
-        if len(dns) > 1:
+        if dns:
             sub_alt_names = []
 
             for alt_name in dns[1:]:
@@ -530,18 +528,15 @@ class ProvisionELB(Command):
 
             extensions['subAltNames'] = {'names': sub_alt_names}
 
-        sys.stdout.write("subNames: {}\n".format(extensions))
-        sys.stdout.write("cn: {} is a {}\n".format(cn, cn.__class__))
-
         from lemur.certificates.views import valid_authority
 
         authority = valid_authority({"name": authority})
 
         options = {
-            'destinations': destinations,
-            'description': description,
+            'destinations': map(lambda x: {'id': x.id, 'label': x.label}, destinations),
+            'description': unicode(description),
             'notifications': notifications,
-            'commonName': cn,
+            'commonName': commonName,
             'extensions': extensions,
             'authority': authority,
             'owner': owner,
@@ -555,22 +550,59 @@ class ProvisionELB(Command):
 
         return options
 
-    def run(self, dns, elb, owner, authority, description, notifications, destinations):
+    def get_destinations(self, destination_names):
+        from lemur.destinations import service
+
+        destinations = []
+
+        for destination_name in destination_names:
+            sys.stderr.write("looking up dest: {}\n".format(destination_name))
+            destinations.append(service.get_by_label(destination_name))
+
+        return destinations
+
+    def _get_destination_account(self, destinations):
+        for destination in self._get_destinations(destinations.split(',')):
+            if destination.plugin_name == 'aws-destination':
+
+                account_number = destination.plugin.get_option('accountNumber', destination.options)
+                sys.stdout.write('found aws account: {}\n'.format(account_number))
+                return account_number
+
+        sys.stderr.write("No destination AWS account provided, failing\n")
+        sys.exit(1)
+
+    def run(self, dns, elb_name, owner, authority, description, notifications, destinations, region, dport, sport):
         from lemur.certificates import service
+        from lemur.plugins.lemur_aws import elb
 
         # configure the owner if we can find it, or go for default, and put it in the global
-        owner = self._configure_user(owner)
+        owner = self.configure_user(owner)
 
         # make a config blob from the command line arguments
-        cert_options = self._build_cert_options(
-            destinations=destinations, notifications=notifications, description=description,
-            owner=owner, dns=dns, authority=authority)
+        cert_options = self.build_cert_options(
+            destinations=destinations,
+            notifications=notifications,
+            description=description,
+            owner=owner,
+            dns=dns,
+            authority=authority)
 
-        sys.stdout.write("cert options: {}\n".format(cert_options))
+        aws_account = self.get_destination_account(destinations)
 
         # create the certificate
+        sys.stdout.write('Creating certificate for {}'.format(cert_options['commonName']))
+
         cert = service.create(**cert_options)
-        sys.stdout.write("cert {}".format(cert))
+
+        cert_arn = cert.get_arn(aws_account)
+        sys.stderr.write('cert arn: {}\n'.format(cert_arn))
+
+        time.sleep(2)
+        # adding the listener
+        sys.stderr.write('Configuring elb {} from port {} to port {} in region {} with cert {}\n'.format(elb, sport, dport, region, cert_arn))
+
+        elb.create_new_listeners(aws_account, region, elb_name, [(sport, dport, 'HTTPS', cert_arn)])
 
 
 def main():
