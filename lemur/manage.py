@@ -1,3 +1,5 @@
+from __future__ import unicode_literals    # at top of module
+
 import os
 import sys
 import base64
@@ -480,18 +482,18 @@ def unlock(path=None):
 
 class ProvisionELB(Command):
     """
-    Creates and provisions a certificate on an ELB based on a json blob
+    Creates and provisions a certificate on an ELB based on command line arguments
     """
 
     option_list = (
-        Option('-d', '--dns', dest='dns', required=True),
-        Option('-e', '--elb', dest='elb', required=True),
-        Option('-o', '--owner', dest='owner'),
-        Option('-a', '--authority', dest='authority', required=True),
-        Option('-s', '--description', dest='description', default=u'Command line provisioned keypair'),
-        Option('-t', '--destinations', dest='destinations'),
-        Option('-n', '--notifications', dest='notifications'),
-        Option('-r', '--region', dest='region', default=u'us-east-1'),
+        Option('-d', '--dns', dest='dns', action='append', required=True, type=unicode),
+        Option('-e', '--elb', dest='elb_name', required=True, type=unicode),
+        Option('-o', '--owner', dest='owner', type=unicode),
+        Option('-a', '--authority', dest='authority', required=True, type=unicode),
+        Option('-s', '--description', dest='description', default=u'Command line provisioned keypair', type=unicode),
+        Option('-t', '--destinations', dest='destinations', action='append', type=unicode),
+        Option('-n', '--notifications', dest='notifications', action='append', type=unicode, default=[]),
+        Option('-r', '--region', dest='region', default=u'us-east-1', type=unicode),
         Option('-p', '--dport', '--port', dest='dport', default=7002),
         Option('--src-port', '--source-port', '--sport', dest='sport', default=443)
     )
@@ -506,42 +508,35 @@ class ProvisionELB(Command):
         if not g.user:
             g.user = lemur.users.service.get_all()[0]
 
-        return unicode(g.user.username)
+        return g.user.username
 
     def build_cert_options(self, destinations, notifications, description, owner, dns, authority):
-        # convert argument lists to arrays, or empty sets
-        destinations = [] if not destinations else self._get_destinations(destinations.split(','))
-        notifications = [] if not notifications else notifications.split(',')
+        from lemur.certificates.views import valid_authority
 
-        dns = dns.split(',')
+        # convert argument lists to arrays, or empty sets
+        destinations = self.get_destinations(destinations)
 
         # get the primary CN
-        commonName = unicode(dns.pop(0))
+        common_name = dns[0]
 
         # If there are more than one fqdn, add them as alternate names
         extensions = {}
-        if dns:
-            sub_alt_names = []
-
-            for alt_name in dns[1:]:
-                sub_alt_names.append({'nameType': 'DNSName', 'value': unicode(alt_name)})
-
-            extensions['subAltNames'] = {'names': sub_alt_names}
-
-        from lemur.certificates.views import valid_authority
+        if len(dns) > 1:
+            extensions['subAltNames'] = {'names': map(lambda x: {'nameType': 'DNSName', 'value': x}, dns)}
 
         authority = valid_authority({"name": authority})
 
         options = {
+            # Convert from the Destination model to the JSON input expected further in the code
             'destinations': map(lambda x: {'id': x.id, 'label': x.label}, destinations),
-            'description': unicode(description),
+            'description': description,
             'notifications': notifications,
-            'commonName': commonName,
+            'commonName': common_name,
             'extensions': extensions,
             'authority': authority,
             'owner': owner,
             # defaults:
-            'organization': u'Netflix',
+            'organization': u'Netflix, Inc.',
             'organizationalUnit': u'Operations',
             'country': u'US',
             'state': u'California',
@@ -556,17 +551,15 @@ class ProvisionELB(Command):
         destinations = []
 
         for destination_name in destination_names:
-            sys.stderr.write("looking up dest: {}\n".format(destination_name))
             destinations.append(service.get_by_label(destination_name))
 
         return destinations
 
-    def _get_destination_account(self, destinations):
-        for destination in self._get_destinations(destinations.split(',')):
+    def get_destination_account(self, destinations):
+        for destination in self.get_destinations(destinations):
             if destination.plugin_name == 'aws-destination':
 
                 account_number = destination.plugin.get_option('accountNumber', destination.options)
-                sys.stdout.write('found aws account: {}\n'.format(account_number))
                 return account_number
 
         sys.stderr.write("No destination AWS account provided, failing\n")
@@ -575,6 +568,7 @@ class ProvisionELB(Command):
     def run(self, dns, elb_name, owner, authority, description, notifications, destinations, region, dport, sport):
         from lemur.certificates import service
         from lemur.plugins.lemur_aws import elb
+        from boto.exception import BotoServerError
 
         # configure the owner if we can find it, or go for default, and put it in the global
         owner = self.configure_user(owner)
@@ -591,18 +585,31 @@ class ProvisionELB(Command):
         aws_account = self.get_destination_account(destinations)
 
         # create the certificate
-        sys.stdout.write('Creating certificate for {}'.format(cert_options['commonName']))
-
+        sys.stdout.write('Creating certificate for {}\n'.format(cert_options['commonName']))
         cert = service.create(**cert_options)
 
         cert_arn = cert.get_arn(aws_account)
         sys.stderr.write('cert arn: {}\n'.format(cert_arn))
 
-        time.sleep(2)
-        # adding the listener
-        sys.stderr.write('Configuring elb {} from port {} to port {} in region {} with cert {}\n'.format(elb, sport, dport, region, cert_arn))
+        sys.stderr.write('Configuring elb {} from port {} to port {} in region {} with cert {}\n'.format(elb_name, sport, dport, region, cert_arn))
 
-        elb.create_new_listeners(aws_account, region, elb_name, [(sport, dport, 'HTTPS', cert_arn)])
+        delay = 1
+        done = False
+        retries = 5
+        while not done and retries > 0:
+            try:
+                elb.create_new_listeners(aws_account, region, elb_name, [(sport, dport, 'HTTPS', cert_arn)])
+            except BotoServerError as bse:
+                # if the server retuirns ad error, the certificate
+                if bse.error_code == 'CertificateNotFound':
+                    sys.stderr.write('Certificate not available yet in the AWS account, waiting {}, {} retries left\n'.format(delay, retries))
+                    time.sleep(delay)
+                    delay *= 2
+                    retries -= 1
+                else:
+                    raise bse
+            else:
+                done = True
 
 
 def main():
