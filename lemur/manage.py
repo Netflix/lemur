@@ -480,22 +480,31 @@ def unlock(path=None):
     sys.stdout.write("[+] Keys have been unencrypted!\n")
 
 
+def unicode_(data):
+    import sys
+
+    if sys.version_info.major < 3:
+        return unicode(data)
+    return data
+
+
 class ProvisionELB(Command):
     """
     Creates and provisions a certificate on an ELB based on command line arguments
     """
 
     option_list = (
-        Option('-d', '--dns', dest='dns', action='append', required=True, type=unicode),
-        Option('-e', '--elb', dest='elb_name', required=True, type=unicode),
-        Option('-o', '--owner', dest='owner', type=unicode),
-        Option('-a', '--authority', dest='authority', required=True, type=unicode),
-        Option('-s', '--description', dest='description', default=u'Command line provisioned keypair', type=unicode),
-        Option('-t', '--destinations', dest='destinations', action='append', type=unicode),
-        Option('-n', '--notifications', dest='notifications', action='append', type=unicode, default=[]),
-        Option('-r', '--region', dest='region', default=u'us-east-1', type=unicode),
+        Option('-d', '--dns', dest='dns', action='append', required=True, type=unicode_),
+        Option('-e', '--elb', dest='elb_name', required=True, type=unicode_),
+        Option('-o', '--owner', dest='owner', type=unicode_),
+        Option('-a', '--authority', dest='authority', required=True, type=unicode_),
+        Option('-s', '--description', dest='description', default=u'Command line provisioned keypair', type=unicode_),
+        Option('-t', '--destinations', dest='destinations', action='append', type=unicode_),
+        Option('-n', '--notifications', dest='notifications', action='append', type=unicode_, default=[]),
+        Option('-r', '--region', dest='region', default=u'us-east-1', type=unicode_),
         Option('-p', '--dport', '--port', dest='dport', default=7002),
-        Option('--src-port', '--source-port', '--sport', dest='sport', default=443)
+        Option('--src-port', '--source-port', '--sport', dest='sport', default=443),
+        Option('--dry-run', dest='dryrun', action='store_true')
     )
 
     def configure_user(self, owner):
@@ -565,7 +574,7 @@ class ProvisionELB(Command):
         sys.stderr.write("No destination AWS account provided, failing\n")
         sys.exit(1)
 
-    def run(self, dns, elb_name, owner, authority, description, notifications, destinations, region, dport, sport):
+    def run(self, dns, elb_name, owner, authority, description, notifications, destinations, region, dport, sport, dryrun):
         from lemur.certificates import service
         from lemur.plugins.lemur_aws import elb
         from boto.exception import BotoServerError
@@ -583,6 +592,12 @@ class ProvisionELB(Command):
             authority=authority)
 
         aws_account = self.get_destination_account(destinations)
+
+        if dryrun:
+            import json
+
+            sys.stdout('Creating certificate for using options: {}\n'.format(json.dumps(cert_options, sort_keys=True, indent=2)))
+            sys.exit(0)
 
         # create the certificate
         sys.stdout.write('Creating certificate for {}\n'.format(cert_options['commonName']))
