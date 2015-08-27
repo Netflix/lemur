@@ -499,8 +499,8 @@ class ProvisionELB(Command):
         Option('-o', '--owner', dest='owner', type=unicode_),
         Option('-a', '--authority', dest='authority', required=True, type=unicode_),
         Option('-s', '--description', dest='description', default=u'Command line provisioned keypair', type=unicode_),
-        Option('-t', '--destinations', dest='destinations', action='append', type=unicode_),
-        Option('-n', '--notifications', dest='notifications', action='append', type=unicode_, default=[]),
+        Option('-t', '--destination', dest='destinations', action='append', type=unicode, required=True),
+        Option('-n', '--notification', dest='notifications', action='append', type=unicode_, default=[]),
         Option('-r', '--region', dest='region', default=u'us-east-1', type=unicode_),
         Option('-p', '--dport', '--port', dest='dport', default=7002),
         Option('--src-port', '--source-port', '--sport', dest='sport', default=443),
@@ -520,10 +520,15 @@ class ProvisionELB(Command):
         return g.user.username
 
     def build_cert_options(self, destinations, notifications, description, owner, dns, authority):
+        from sqlalchemy.orm.exc import NoResultFound
         from lemur.certificates.views import valid_authority
+        import sys
 
         # convert argument lists to arrays, or empty sets
         destinations = self.get_destinations(destinations)
+        if not destinations:
+            sys.stderr.write("Valid destinations provided\n")
+            sys.exit(1)
 
         # get the primary CN
         common_name = dns[0]
@@ -533,7 +538,11 @@ class ProvisionELB(Command):
         if len(dns) > 1:
             extensions['subAltNames'] = {'names': map(lambda x: {'nameType': 'DNSName', 'value': x}, dns)}
 
-        authority = valid_authority({"name": authority})
+        try:
+            authority = valid_authority({"name": authority})
+        except NoResultFound:
+            sys.stderr.write("Invalid authority specified: '{}'\naborting\n".format(authority))
+            sys.exit(1)
 
         options = {
             # Convert from the Destination model to the JSON input expected further in the code
@@ -560,9 +569,24 @@ class ProvisionELB(Command):
         destinations = []
 
         for destination_name in destination_names:
+            destination = service.get_by_label(destination_name)
+
+            if not destination:
+                sys.stderr.write("Invalid destination specified: '{}'\nAborting...\n".format(destination_name))
+                sys.exit(1)
+
             destinations.append(service.get_by_label(destination_name))
 
         return destinations
+
+    def check_duplicate_listener(self, elb_name, region, account, sport, dport):
+        from lemur.plugins.lemur_aws import elb
+
+        listeners = elb.get_listeners(account, region, elb_name)
+        for listener in listeners:
+            if listener[0] == sport and listener[1] == dport:
+                return True
+        return False
 
     def get_destination_account(self, destinations):
         for destination in self.get_destinations(destinations):
@@ -574,7 +598,8 @@ class ProvisionELB(Command):
         sys.stderr.write("No destination AWS account provided, failing\n")
         sys.exit(1)
 
-    def run(self, dns, elb_name, owner, authority, description, notifications, destinations, region, dport, sport, dryrun):
+    def run(self, dns, elb_name, owner, authority, description, notifications, destinations, region, dport, sport,
+            dryrun):
         from lemur.certificates import service
         from lemur.plugins.lemur_aws import elb
         from boto.exception import BotoServerError
@@ -596,17 +621,32 @@ class ProvisionELB(Command):
         if dryrun:
             import json
 
-            sys.stdout('Creating certificate for using options: {}\n'.format(json.dumps(cert_options, sort_keys=True, indent=2)))
+            cert_options['authority'] = cert_options['authority'].name
+            sys.stdout.write('Will create certificate using options: {}\n'
+                             .format(json.dumps(cert_options, sort_keys=True, indent=2)))
+            sys.stdout.write('Will create listener {}->{} HTTPS using the new certificate to elb {}\n'
+                             .format(sport, dport, elb_name))
             sys.exit(0)
 
+        if self.check_duplicate_listener(elb_name, region, aws_account, sport, dport):
+            sys.stderr.write("ELB {} already has a listener {}->{}\nAborting...\n".format(elb_name, sport, dport))
+            sys.exit(1)
+
         # create the certificate
-        sys.stdout.write('Creating certificate for {}\n'.format(cert_options['commonName']))
-        cert = service.create(**cert_options)
+        try:
+            sys.stdout.write('Creating certificate for {}\n'.format(cert_options['commonName']))
+            cert = service.create(**cert_options)
+        except Exception as e:
+            if e.message == 'Duplicate certificate: a certificate with the same common name exists already':
+                sys.stderr.write("Certificate already exists named: {}\n".format(dns[0]))
+                sys.exit(1)
+            raise e
 
         cert_arn = cert.get_arn(aws_account)
         sys.stderr.write('cert arn: {}\n'.format(cert_arn))
 
-        sys.stderr.write('Configuring elb {} from port {} to port {} in region {} with cert {}\n'.format(elb_name, sport, dport, region, cert_arn))
+        sys.stderr.write('Configuring elb {} from port {} to port {} in region {} with cert {}\n'
+                         .format(elb_name, sport, dport, region, cert_arn))
 
         delay = 1
         done = False
@@ -615,12 +655,16 @@ class ProvisionELB(Command):
             try:
                 elb.create_new_listeners(aws_account, region, elb_name, [(sport, dport, 'HTTPS', cert_arn)])
             except BotoServerError as bse:
-                # if the server retuirns ad error, the certificate
+                # if the server returns ad error, the certificate
                 if bse.error_code == 'CertificateNotFound':
-                    sys.stderr.write('Certificate not available yet in the AWS account, waiting {}, {} retries left\n'.format(delay, retries))
+                    sys.stderr.write('Certificate not available yet in the AWS account, waiting {}, {} retries left\n'
+                                     .format(delay, retries))
                     time.sleep(delay)
                     delay *= 2
                     retries -= 1
+                elif bse.error_code == 'DuplicateListener':
+                    sys.stderr.write('ELB {} already has a listener {}->{}'.format(elb_name, sport, dport))
+                    sys.exit(1)
                 else:
                     raise bse
             else:
