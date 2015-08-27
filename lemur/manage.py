@@ -499,7 +499,7 @@ class ProvisionELB(Command):
         Option('-o', '--owner', dest='owner', type=unicode_),
         Option('-a', '--authority', dest='authority', required=True, type=unicode_),
         Option('-s', '--description', dest='description', default=u'Command line provisioned keypair', type=unicode_),
-        Option('-t', '--destination', dest='destinations', action='append', type=unicode, required=True),
+        Option('-t', '--destination', dest='destinations', action='append', type=unicode_, required=True),
         Option('-n', '--notification', dest='notifications', action='append', type=unicode_, default=[]),
         Option('-r', '--region', dest='region', default=u'us-east-1', type=unicode_),
         Option('-p', '--dport', '--port', dest='dport', default=7002),
