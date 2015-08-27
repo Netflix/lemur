@@ -206,6 +206,16 @@ angular.module('lemur')
       });
     };
 
+    CertificateService.getDefaults = function (certificate) {
+      return certificate.customGET('defaults').then(function (defaults) {
+        certificate.country = defaults.country;
+        certificate.state = defaults.state;
+        certificate.location = defaults.location;
+        certificate.organization = defaults.organization;
+        certificate.organizationalUnit = defaults.organizationalUnit;
+      });
+    };
+
     CertificateService.updateActive = function (certificate) {
       return certificate.put().then(
           function () {

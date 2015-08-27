@@ -25,6 +25,9 @@ angular.module('lemur')
   .controller('CertificateCreateController', function ($scope, $modalInstance, CertificateApi, CertificateService, DestinationService, AuthorityService, PluginService, MomentService, WizardHandler, LemurRestangular, NotificationService) {
     $scope.certificate = LemurRestangular.restangularizeElement(null, {}, 'certificates');
 
+    // set the defaults
+    CertificateService.getDefaults($scope.certificate);
+
     $scope.create = function (certificate) {
       WizardHandler.wizard().context.loading = true;
       CertificateService.create(certificate).then(function () {

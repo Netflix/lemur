@@ -6,7 +6,7 @@
         Country
       </label>
       <div class="col-sm-10">
-        <input name="country" ng-model="certificate.country" placeholder="Country" class="form-control" ng-init="certificate.country = 'US'" required/>
+        <input name="country" ng-model="certificate.country" placeholder="Country" class="form-control" required/>
         <p ng-show="dnForm.country.$invalid && !dnForm.country.$pristine" class="help-block">You must enter a country</p>
       </div>
     </div>
@@ -16,7 +16,7 @@
         State
       </label>
       <div class="col-sm-10">
-        <input name="state" ng-model="certificate.state" placeholder="State" class="form-control" ng-init="certificate.state = 'California'" required/>
+        <input name="state" ng-model="certificate.state" placeholder="State" class="form-control" required/>
         <p ng-show="dnForm.state.$invalid && !dnForm.state.$pristine" class="help-block">You must enter a state</p>
       </div>
     </div>
@@ -26,7 +26,7 @@
         Location
       </label>
       <div class="col-sm-10">
-        <input name="location" ng-model="certificate.location" placeholder="Location" class="form-control" ng-init="certificate.location = 'Los Gatos'"required/>
+        <input name="location" ng-model="certificate.location" placeholder="Location" class="form-control" required/>
         <p ng-show="dnForm.location.$invalid && !dnForm.location.$pristine" class="help-block">You must enter a location</p>
       </div>
     </div>
@@ -36,7 +36,7 @@
         Organization
       </label>
       <div class="col-sm-10">
-        <input name="organization" ng-model="certificate.organization" placeholder="Organization" class="form-control" ng-init="certificate.organization = 'Netflix, Inc.'" required/>
+        <input name="organization" ng-model="certificate.organization" placeholder="Organization" class="form-control" required/>
         <p ng-show="dnForm.organization.$invalid && !dnForm.organization.$pristine" class="help-block">You must enter a organization</p>
       </div>
     </div>
@@ -46,7 +46,7 @@
         Organizational Unit
       </label>
       <div class="col-sm-10">
-        <input name="organizationalUnit" ng-model="certificate.organizationalUnit" placeholder="Organizational Unit" class="form-control" ng-init="certificate.organizationalUnit = 'Operations'"required/>
+        <input name="organizationalUnit" ng-model="certificate.organizationalUnit" placeholder="Organizational Unit" class="form-control" required/>
         <p ng-show="dnForm.organization.$invalid && !dnForm.organizationalUnit.$pristine" class="help-block">You must enter a organizational unit</p>
       </div>
     </div>
