@@ -186,8 +186,10 @@ Verisign/Symantec and CloudCA
 
 Authentication
 --------------
-Lemur currently supports Basic Authentication and Ping OAuth2, additional flows can be added relatively easily
-If you are not using PING you do not need to configure any of these options
+Lemur currently supports Basic Authentication and Ping OAuth2 out of the box, additional flows can be added relatively easily
+If you are not using Ping you do not need to configure any of these options.
+
+For more information about how to use social logins, see: `Satellizer <https://github.com/sahat/satellizer>`_
 
 .. data:: PING_SECRET
     :noindex:
