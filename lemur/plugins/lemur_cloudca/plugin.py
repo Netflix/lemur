@@ -7,6 +7,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
+import re
 import ssl
 import base64
 from json import dumps
@@ -245,6 +246,7 @@ class CloudCAIssuerPlugin(IssuerPlugin, CloudCA):
 
         options['validityStart'] = convert_date_to_utc_time(options['validityStart']).isoformat()
         options['validityEnd'] = convert_date_to_utc_time(options['validityEnd']).isoformat()
+        options['description'] = re.sub(r'[^a-zA-Z0-9]', '', options['caDescription'])
 
         try:
             response = self.session.post(self.url + endpoint, data=dumps(remove_none(options)), timeout=10,
@@ -297,7 +299,7 @@ class CloudCAIssuerPlugin(IssuerPlugin, CloudCA):
             'ownerEmail': options['owner'],
             'caName': options['authority'].name,
             'csr': csr,
-            'comment': options['description']
+            'comment': re.sub(r'[^a-zA-Z0-9]', '', options['description'])
         }
 
         response = self.post(endpoint, remove_none(cloudca_options))
