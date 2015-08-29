@@ -85,13 +85,27 @@ def update(cert_id, owner, description, active, destinations, notifications):
     :param active:
     :return:
     """
+    from lemur.notifications import service as notification_service
     cert = get(cert_id)
-    cert.owner = owner
     cert.active = active
     cert.description = description
 
-    database.update_list(cert, 'notifications', Notification, notifications)
+    # we might have to create new notifications if the owner changes
+    new_notifications = []
+    # get existing names to remove
+    notification_name = "DEFAULT_{0}".format(cert.owner.split('@')[0].upper())
+    for n in notifications:
+        if notification_name not in n.label:
+            new_notifications.append(n)
+
+    notification_name = "DEFAULT_{0}".format(owner.split('@')[0].upper())
+    new_notifications += notification_service.create_default_expiration_notifications(notification_name, owner)
+
+    cert.notifications = new_notifications
+
     database.update_list(cert, 'destinations', Destination, destinations)
+
+    cert.owner = owner
 
     return database.update(cert)
 
