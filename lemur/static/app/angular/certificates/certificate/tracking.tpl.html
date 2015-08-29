@@ -16,8 +16,8 @@
                 Description
             </label>
             <div class="col-sm-10">
-                <textarea name="description" ng-model="certificate.description" placeholder="Something elegant" class="form-control" ng-pattern="/^[\w\-\s]+$/" required></textarea>
-                <p ng-show="trackingForm.description.$invalid && !trackingForm.description.$pristine" class="help-block">You must give a short description about this authority will be used for, this description should only include alphanumeric characters</p>
+                <textarea name="description" ng-model="certificate.description" placeholder="Something elegant" class="form-control" required></textarea>
+                <p ng-show="trackingForm.description.$invalid && !trackingForm.description.$pristine" class="help-block">You must give a short description about this authority will be used for.</p>
             </div>
         </div>
         <div class="form-group"
@@ -47,8 +47,8 @@
                 Common Name
             </label>
             <div class="col-sm-10">
-                <input name="commonName" tooltip="If you need a certificate with multiple domains enter your primary domain here and the rest under 'Subject Alternate Names' in the next few panels" ng-model="certificate.commonName" placeholder="Common Name" class="form-control" required/>
-                <p ng-show="trackingForm.commonName.$invalid && !trackingForm.commonName.$pristine" class="help-block">You must enter a common name</p>
+                <input name="commonName" tooltip="If you need a certificate with multiple domains enter your primary domain here and the rest under 'Subject Alternate Names' in the next few panels" ng-model="certificate.commonName" placeholder="Common Name" class="form-control" ng-maxlength="64" required/>
+                <p ng-show="trackingForm.commonName.$invalid && !trackingForm.commonName.$pristine" class="help-block">You must enter a common name and it must be less than 64 characters</p>
             </div>
         </div>
         <div class="form-group">
