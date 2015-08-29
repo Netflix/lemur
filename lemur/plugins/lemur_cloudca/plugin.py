@@ -7,6 +7,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
+import re
 import ssl
 import base64
 from json import dumps
@@ -297,7 +298,7 @@ class CloudCAIssuerPlugin(IssuerPlugin, CloudCA):
             'ownerEmail': options['owner'],
             'caName': options['authority'].name,
             'csr': csr,
-            'comment': options['description']
+            'comment': re.sub(r'^[\w\-\s]+$', '', options['description'])
         }
 
         response = self.post(endpoint, remove_none(cloudca_options))
