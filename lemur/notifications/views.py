@@ -28,6 +28,36 @@ FIELDS = {
 }
 
 
+def notification(value, name):
+    """
+    Validates a given notification exits
+    :param value:
+    :param name:
+    :return:
+    """
+    n = service.get(value)
+    if not n:
+        raise ValueError("Unable to find notification specified")
+    return n
+
+
+def notification_list(value, name):
+    """
+    Validates a given notification exists and returns a list
+    :param value:
+    :param name:
+    :return:
+    """
+    notifications = []
+    for v in value:
+        try:
+            notifications.append(notification(v['id'], 'id'))
+        except ValueError:
+            pass
+
+    return notifications
+
+
 class NotificationsList(AuthenticatedResource):
     """ Defines the 'notifications' endpoint """
     def __init__(self):

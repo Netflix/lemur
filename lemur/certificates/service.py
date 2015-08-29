@@ -91,18 +91,21 @@ def update(cert_id, owner, description, active, destinations, notifications):
     cert.description = description
 
     # we might have to create new notifications if the owner changes
-    if owner != cert.owner:
-        for n in cert.notifications:
-            notification_name = "DEFAULT_{0}".format(cert.owner.split('@')[0].upper())
-            if n.name == notification_name:
-                cert.notifications.remove(n)
+    new_notifications = []
+    # get existing names to remove
+    notification_name = "DEFAULT_{0}".format(cert.owner.split('@')[0].upper())
+    for n in notifications:
+        if notification_name not in n.label:
+            new_notifications.append(n)
 
-        cert.owner = owner
-        notification_name = "DEFAULT_{0}".format(cert.owner.split('@')[0].upper())
-        notifications = notification_service.create_default_expiration_notifications(notification_name, owner)
+    notification_name = "DEFAULT_{0}".format(owner.split('@')[0].upper())
+    new_notifications += notification_service.create_default_expiration_notifications(notification_name, owner)
 
-    database.update_list(cert, 'notifications', Notification, notifications)
+    cert.notifications = new_notifications
+
     database.update_list(cert, 'destinations', Destination, destinations)
+
+    cert.owner = owner
 
     return database.update(cert)
 
