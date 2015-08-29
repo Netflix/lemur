@@ -138,3 +138,19 @@ def delete_listeners(account_number, region, name, ports):
     :return:
     """
     return assume_service(account_number, 'elb', region).delete_load_balancer_listeners(name, ports)
+
+
+def get_listeners(account_number, region, name):
+    """
+    Gets the listeners configured on an elb and returns a array of tuples
+
+    :param account_number:
+    :param region:
+    :param name:
+    :return: list of tuples
+    """
+
+    conn = assume_service(account_number, 'elb', region)
+    elbs = conn.get_all_load_balancers(load_balancer_names=[name])
+    if elbs:
+        return elbs[0].listeners

@@ -110,7 +110,7 @@ class IPlugin(local):
 
     def get_option(self, name, options):
         for o in options:
-            if o.get(name):
+            if o.get('name') == name:
                 return o['value']
 
 
