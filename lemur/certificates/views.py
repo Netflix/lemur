@@ -332,7 +332,8 @@ class CertificatesUpload(AuthenticatedResource):
                  "intermediateCert": "---Begin Public...",
                  "privateKey": "---Begin Private..."
                  "destinations": [],
-                 "notifications": []
+                 "notifications": [],
+                 "name": "cert1"
               }
 
            **Example response**:
@@ -373,6 +374,7 @@ class CertificatesUpload(AuthenticatedResource):
         """
         self.reqparse.add_argument('description', type=str, location='json')
         self.reqparse.add_argument('owner', type=str, required=True, location='json')
+        self.reqparse.add_argument('name', type=str, location='json')
         self.reqparse.add_argument('publicCert', type=pem_str, required=True, dest='public_cert', location='json')
         self.reqparse.add_argument('destinations', type=list, default=[], dest='destinations', location='json')
         self.reqparse.add_argument('notifications', type=list, default=[], dest='notifications', location='json')
