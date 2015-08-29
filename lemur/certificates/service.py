@@ -168,6 +168,10 @@ def upload(**kwargs):
         kwargs.get('intermediate_cert'),
     )
 
+    # we override the generated name if one is provided
+    if kwargs.get('name'):
+        cert.name = kwargs['name']
+
     cert.description = kwargs.get('description')
 
     cert.owner = kwargs['owner']
