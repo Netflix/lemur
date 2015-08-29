@@ -1,6 +1,10 @@
 Lemur
 =====
 
+.. image:: https://badges.gitter.im/Join%20Chat.svg
+   :alt: Join the chat at https://gitter.im/Netflix/lemur
+   :target: https://gitter.im/Netflix/lemur?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+
 .. image:: https://img.shields.io/pypi/v/lemur.svg
     :target: https://pypi.python.org/pypi/lemur/
     :alt: Latest Version
@@ -15,7 +19,7 @@ Lemur
 
 Lemur manages SSL certificate creation. It provides a central portal for developers to issuer their own SSL certificates with 'sane' defaults.
 
-It works on CPython 2.7. It is known
+It works on CPython 2.7, 3.3, 3.4  It is known
 to work on Ubuntu Linux and OS X.
 
 Project resources
@@ -24,8 +28,3 @@ Project resources
 - `Documentation <http://lemur.readthedocs.org/>`_
 - `Source code <https://github.com/netflix/lemur>`_
 - `Issue tracker <https://github.com/netflix/lemur/issues>`_
-
-
-.. image:: https://badges.gitter.im/Join%20Chat.svg
-   :alt: Join the chat at https://gitter.im/Netflix/lemur
-   :target: https://gitter.im/Netflix/lemur?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
