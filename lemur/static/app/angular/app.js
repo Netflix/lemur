@@ -25,7 +25,7 @@ var lemur = angular
       });
 
     $authProvider.oauth2({
-      name: 'ping',
+      name: 'example',
       url: 'http://localhost:5000/api/1/auth/ping',
       redirectUri: 'http://localhost:3000/',
       clientId: 'client-id',

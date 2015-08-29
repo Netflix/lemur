@@ -183,10 +183,6 @@ class Ping(Resource):
         # update their google 'roles'
         roles = []
 
-        # Legacy edge case - 'admin' has some special privileges associated with it
-        if 'secops@netflix.com' in profile['googleGroups']:
-            roles.append(role_service.get_by_name('admin'))
-
         for group in profile['googleGroups']:
             role = role_service.get_by_name(group)
             if not role:
@@ -196,10 +192,12 @@ class Ping(Resource):
         # if we get an sso user create them an account
         # we still pick a random password in case sso is down
         if not user:
-            # every user is an operator (tied to the verisignCA)
-            v = role_service.get_by_name('verisign')
-            if v:
-                roles.append(v)
+
+            # every user is an operator (tied to a default role)
+            if current_app.config.get('LEMUR_DEFAULT_ROLE'):
+                v = role_service.get_by_name(current_app.config.get('LEMUR_DEFAULT_ROLE'))
+                if v:
+                    roles.append(v)
 
             user = user_service.create(
                 profile['email'],
