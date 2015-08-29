@@ -24,6 +24,8 @@ from lemur.roles import service as role_service
 
 from lemur.common.utils import marshal_items, paginated_parser
 
+from lemur.notifications.views import notification_list
+
 
 mod = Blueprint('certificates', __name__)
 api = Api(mod)
@@ -569,7 +571,7 @@ class Certificates(AuthenticatedResource):
         self.reqparse.add_argument('owner', type=str, location='json')
         self.reqparse.add_argument('description', type=str, location='json')
         self.reqparse.add_argument('destinations', type=list, default=[], location='json')
-        self.reqparse.add_argument('notifications', type=list, default=[], location='json')
+        self.reqparse.add_argument('notifications', type=notification_list, default=[], location='json')
         args = self.reqparse.parse_args()
 
         cert = service.get(certificate_id)
