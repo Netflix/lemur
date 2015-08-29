@@ -102,6 +102,53 @@ Basic Configuration
         LEMUR_ENCRYPTION_KEY = 'supersupersecret'
 
 
+Certificate Default Options
+---------------------------
+
+Lemur allows you to find tune your certificates to your organization. The following defaults are presented in the UI
+and are used when Lemur creates the CSR for your certificates.
+
+
+.. data:: LEMUR_DEFAULT_COUNTRY
+    :noindex:
+
+    ::
+
+        LEMUR_DEFAULT_COUNTRY = "US"
+
+
+.. data:: LEMUR_DEFAULT_STATE
+    :noindex:
+
+    ::
+
+        LEMUR_DEFAULT_STATE = "CA"
+
+
+.. data:: LEMUR_DEFAULT_LOCATION
+    :noindex:
+
+    ::
+
+        LEMUR_DEFAULT_LOCATION = "Los Gatos"
+
+
+.. data:: LEMUR_DEFAULT_ORGANIZATION
+    :noindex:
+
+    ::
+
+        LEMUR_DEFAULT_ORGANIZATION = "Netflix"
+
+
+.. data:: LEMUR_DEFAULT_ORGANIZATION_UNIT
+    :noindex:
+
+    ::
+
+        LEMUR_DEFAULT_ORGANIZATIONAL_UNIT = "Operations"
+
+
 Notification Options
 --------------------
 
