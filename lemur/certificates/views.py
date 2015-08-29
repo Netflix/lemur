@@ -574,7 +574,8 @@ class Certificates(AuthenticatedResource):
 
         cert = service.get(certificate_id)
         role = role_service.get_by_name(cert.owner)
-        permission = UpdateCertificatePermission(certificate_id, role.name)
+
+        permission = UpdateCertificatePermission(certificate_id, getattr(role, 'name', None))
 
         if permission.can():
             return service.update(
