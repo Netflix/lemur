@@ -46,12 +46,31 @@ angular.module('lemur')
     $scope.edit = function (authorityId) {
       var modalInstance = $modal.open({
         animation: true,
-        templateUrl: '/angular/authorities/authority/authorityEdit.tpl.html',
+        templateUrl: '/angular/authorities/authority/edit.tpl.html',
         controller: 'AuthorityEditController',
         size: 'lg',
         resolve: {
           editId: function () {
             return authorityId;
+          }
+        }
+      });
+
+      modalInstance.result.then(function () {
+        $scope.authoritiesTable.reload();
+      });
+
+    };
+
+    $scope.editRole = function (roleId) {
+      var modalInstance = $modal.open({
+        animation: true,
+        templateUrl: '/angular/roles/role/role.tpl.html',
+        controller: 'RolesEditController',
+        size: 'lg',
+        resolve: {
+          editId: function () {
+            return roleId;
           }
         }
       });

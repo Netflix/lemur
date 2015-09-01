@@ -55,7 +55,6 @@ angular.module('lemur')
             title: role.name,
             body: 'Has been successfully created!'
           });
-          $location.path('roles');
         },
         function (response) {
           toaster.pop({
@@ -74,7 +73,6 @@ angular.module('lemur')
             title: role.name,
             body: 'Successfully updated!'
           });
-          $location.path('roles');
         },
         function (response) {
           toaster.pop({
