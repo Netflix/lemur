@@ -4,6 +4,8 @@ import os
 import sys
 import base64
 import time
+import requests
+import json
 from gunicorn.config import make_settings
 
 from cryptography.fernet import Fernet
@@ -678,6 +680,38 @@ class ProvisionELB(Command):
                     raise bse
             else:
                 done = True
+
+
+@manager.command
+def publish_verisign_units():
+    """
+    Simple function that queries verisign for API units and posts the mertics to
+    Atlas API for other teams to consume.
+    :return:
+    """
+    from lemur.plugins import plugins
+    v = plugins.get('verisign-issuer')
+    units = v.get_available_units()
+
+    metrics = {}
+    for item in units:
+        if item['@type'] in metrics.keys():
+            metrics[item['@type']] += int(item['@remaining'])
+        else:
+            metrics.update({item['@type']: int(item['@remaining'])})
+
+    for name, value in metrics.items():
+        metric = [
+            {
+                "timestamp": 1321351651,
+                "type": "GAUGE",
+                "name": "Symantec {0} Unit Count".format(name),
+                "tags": {},
+                "value": value
+            }
+        ]
+
+        requests.post('http://localhost:8078/metrics', data=json.dumps(metric))
 
 
 def main():
