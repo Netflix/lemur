@@ -148,12 +148,15 @@ def check_revoked():
     as `unknown`.
     """
     for cert in cert_service.get_all_certs():
-        if cert.chain:
-            status = verify_string(cert.body, cert.chain)
-        else:
-            status = verify_string(cert.body, "")
+        try:
+            if cert.chain:
+                status = verify_string(cert.body, cert.chain)
+            else:
+                status = verify_string(cert.body, "")
 
-        cert.status = 'valid' if status else "invalid"
+            cert.status = 'valid' if status else 'invalid'
+        except Exception as e:
+            cert.status = 'unknown'
         database.update(cert)
 
 
@@ -183,7 +186,7 @@ def generate_settings():
     return output
 
 
-@manager.option('-s', '--sources', dest='labels', default='', required=False)
+@manager.option('-s', '--sources', dest='labels')
 def sync_sources(labels):
     """
     Attempts to run several methods Certificate discovery. This is
@@ -209,13 +212,14 @@ def sync_sources(labels):
             try:
                 sync_lock.acquire(timeout=10)    # wait up to 10 seconds
 
-                if labels:
-                    sys.stdout.write("[+] Staring to sync sources: {labels}!\n".format(labels=labels))
-                    labels = labels.split(",")
-                else:
-                    sys.stdout.write("[+] Starting to sync ALL sources!\n")
+                sys.stdout.write("[+] Staring to sync sources: {labels}!\n".format(labels=labels))
+                labels = labels.split(",")
 
-                sync(labels=labels)
+                if labels[0] == 'all':
+                    sync()
+                else:
+                    sync(labels=labels)
+
                 sys.stdout.write(
                     "[+] Finished syncing sources. Run Time: {time}\n".format(
                         time=(time.time() - start_time)

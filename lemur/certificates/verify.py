@@ -21,12 +21,12 @@ from tempfile import NamedTemporaryFile
 @contextmanager
 def mktempfile():
     with NamedTemporaryFile(delete=False) as f:
-        fi = f
+        name = f.name
 
     try:
-        yield fi
+        yield name
     finally:
-        os.unlink(fi.name)
+        os.unlink(name)
 
 
 def ocsp_verify(cert_path, issuer_chain_path):
@@ -113,8 +113,10 @@ def verify_string(cert_string, issuer_string):
     :return: True if valid, False otherwise
     """
     with mktempfile() as cert_tmp:
-        cert_tmp.write(cert_string)
+        with open(cert_tmp, 'w') as f:
+            f.write(cert_string)
         with mktempfile() as issuer_tmp:
-            issuer_tmp.write(issuer_string)
-            status = verify(cert_tmp.path, issuer_tmp.path)
+            with open(issuer_tmp, 'w') as f:
+                f.write(issuer_string)
+            status = verify(cert_tmp, issuer_tmp)
     return status
