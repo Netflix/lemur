@@ -8,6 +8,7 @@ from lemur.roles import service as role_service
 
 
 def pytest_addoption(parser):
+    parser.addoption("--lemurconfig", help="override the default test config")
     parser.addoption("--runslow", action="store_true", help="run slow tests")
 
 
@@ -29,12 +30,15 @@ def pytest_runtest_makereport(item, call):
 
 
 @pytest.yield_fixture(scope="session")
-def app():
+def app(request):
     """
     Creates a new Flask application for a test duration.
     Uses application factory `create_app`.
     """
-    _app = create_app(os.path.dirname(os.path.realpath(__file__)) + '/conf.py')
+    if request.config.getoption('--lemurconfig'):
+        _app = create_app(request.config.getoption('--lemurconfig'))
+    else:
+        _app = create_app(os.path.dirname(os.path.realpath(__file__)) + '/conf.py')
     ctx = _app.app_context()
     ctx.push()
 
