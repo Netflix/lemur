@@ -264,7 +264,7 @@ class InitializeApp(Command):
     and be used when certificates are discovered by Lemur.
     """
     option_list = (
-        Option('-p', '--password', dest='password')
+        Option('-p', '--password', dest='password'),
     )
 
     def run(self, password):
