@@ -263,18 +263,23 @@ class InitializeApp(Command):
     Additionally a Lemur user will be created as a default user
     and be used when certificates are discovered by Lemur.
     """
-    def run(self):
+    option_list = (
+        Option('-p', '--password', dest='password')
+    )
+
+    def run(self, password):
         create()
         user = user_service.get_by_username("lemur")
 
         if not user:
-            sys.stdout.write("We need to set Lemur's password to continue!\n")
-            password1 = prompt_pass("Password")
-            password2 = prompt_pass("Confirm Password")
+            if not password:
+                sys.stdout.write("We need to set Lemur's password to continue!\n")
+                password1 = prompt_pass("Password")
+                password2 = prompt_pass("Confirm Password")
 
-            if password1 != password2:
-                sys.stderr.write("[!] Passwords do not match!\n")
-                sys.exit(1)
+                if password1 != password2:
+                    sys.stderr.write("[!] Passwords do not match!\n")
+                    sys.exit(1)
 
             role = role_service.get_by_name('admin')
 
