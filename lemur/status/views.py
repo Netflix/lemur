@@ -5,7 +5,7 @@
 """
 import os
 
-from flask import app, Blueprint, jsonify
+from flask import app, current_app, Blueprint, jsonify
 from flask.ext.restful import Api
 
 from lemur.auth.service import AuthenticatedResource
@@ -25,7 +25,9 @@ class Status(AuthenticatedResource):
             return jsonify({
                 'environment': app.config.get('ENVIRONMENT'),
                 'status': 'degraded',
-                'message': "This Lemur instance is in a degraded state and is unable to issue certificates, please alert secops@netflix.com"})
+                'message': "This Lemur instance is in a degraded state and is unable to issue certificates, please alert {0}".format(
+                    current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL')
+                )})
         else:
             return jsonify({
                 'environment': app.config.get('ENVIRONMENT'),

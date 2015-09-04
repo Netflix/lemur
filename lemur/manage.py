@@ -569,11 +569,11 @@ class ProvisionELB(Command):
             'authority': authority,
             'owner': owner,
             # defaults:
-            'organization': u'Netflix, Inc.',
-            'organizationalUnit': u'Operations',
-            'country': u'US',
-            'state': u'California',
-            'location': u'Los Gatos'
+            'organization': current_app.config.get('LEMUR_DEFAULT_ORGANIZATION'),
+            'organizationalUnit': current_app.config.get('LEMUR_DEFAULT_ORGANIZATIONAL_UNIT'),
+            'country': current_app.config.get('LEMUR_DEFAULT_COUNTRY'),
+            'state': current_app.config.get('LEMUR_DEFAULT_STATE'),
+            'location': current_app.config.get('LEMUR_DEFAULT_LOCATION')
         }
 
         return options
