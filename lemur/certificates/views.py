@@ -7,7 +7,7 @@
 """
 from builtins import str
 
-from flask import Blueprint, current_app, make_response, jsonify
+from flask import Blueprint, make_response, jsonify
 from flask.ext.restful import reqparse, Api, fields
 
 from cryptography import x509
@@ -668,58 +668,9 @@ class NotificationCertificatesList(AuthenticatedResource):
         return service.render(args)
 
 
-class CertificatesDefaults(AuthenticatedResource):
-    """ Defineds the 'certificates' defaults endpoint """
-    def __init__(self):
-        super(CertificatesDefaults)
-
-    def get(self):
-        """
-        .. http:get:: /certificates/defaults
-
-            Returns defaults needed to generate CSRs
-
-           **Example request**:
-
-           .. sourcecode:: http
-
-              GET /certificates/defaults HTTP/1.1
-              Host: example.com
-              Accept: application/json, text/javascript
-
-           **Example response**:
-
-           .. sourcecode:: http
-
-              HTTP/1.1 200 OK
-              Vary: Accept
-              Content-Type: text/javascript
-
-              {
-                 "country": "US",
-                 "state": "CA",
-                 "location": "Los Gatos",
-                 "organization": "Netflix",
-                 "organizationalUnit": "Operations"
-              }
-
-           :reqheader Authorization: OAuth token to authenticate
-           :statuscode 200: no error
-           :statuscode 403: unauthenticated
-        """
-        return dict(
-            country=current_app.config.get('LEMUR_DEFAULT_COUNTRY'),
-            state=current_app.config.get('LEMUR_DEFAULT_STATE'),
-            location=current_app.config.get('LEMUR_DEFAULT_LOCATION'),
-            organization=current_app.config.get('LEMUR_DEFAULT_ORGANIZATION'),
-            organizationalUnit=current_app.config.get('LEMUR_DEFAULT_ORGANIZATIONAL_UNIT')
-        )
-
-
 api.add_resource(CertificatesList, '/certificates', endpoint='certificates')
 api.add_resource(Certificates, '/certificates/<int:certificate_id>', endpoint='certificate')
 api.add_resource(CertificatesStats, '/certificates/stats', endpoint='certificateStats')
 api.add_resource(CertificatesUpload, '/certificates/upload', endpoint='certificateUpload')
 api.add_resource(CertificatePrivateKey, '/certificates/<int:certificate_id>/key', endpoint='privateKeyCertificates')
 api.add_resource(NotificationCertificatesList, '/notifications/<int:notification_id>/certificates', endpoint='notificationCertificates')
-api.add_resource(CertificatesDefaults, '/certificates/defaults', endpoint='certificatesDefault')

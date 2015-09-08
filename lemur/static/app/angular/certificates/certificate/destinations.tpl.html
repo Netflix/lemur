@@ -4,7 +4,7 @@
     </label>
     <div class="col-sm-10">
         <div class="input-group">
-            <input type="text" ng-model="certificate.selectedDestination" placeholder="AWS, TheSecret..."
+            <input type="text" ng-model="certificate.selectedDestination" placeholder="AWS..."
                    typeahead="destination.label for destination in destinationService.findDestinationsByName($viewValue)" typeahead-loading="loadingDestinations"
                    class="form-control input-md" typeahead-on-select="certificate.attachDestination($item)" typeahead-min-wait="50"
                    tooltip="Lemur can upload certificates to any pre-defined destination"

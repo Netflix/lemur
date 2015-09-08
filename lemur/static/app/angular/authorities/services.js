@@ -56,7 +56,7 @@ angular.module('lemur')
     });
     return LemurRestangular.all('authorities');
   })
-  .service('AuthorityService', function ($location, AuthorityApi, toaster) {
+  .service('AuthorityService', function ($location, AuthorityApi, DefaultService, toaster) {
     var AuthorityService = this;
     AuthorityService.findAuthorityByName = function (filterValue) {
       return AuthorityApi.getList({'filter[name]': filterValue})
@@ -114,6 +114,16 @@ angular.module('lemur')
             title: authority.name,
             body: 'Update Failed! ' + response.data.message
           });
+      });
+    };
+
+    AuthorityService.getDefaults = function (authority) {
+      return DefaultService.get().then(function (defaults) {
+        authority.caDN.country = defaults.country;
+        authority.caDN.state = defaults.state;
+        authority.caDN.location = defaults.location;
+        authority.caDN.organization = defaults.organization;
+        authority.caDN.organizationalUnit = defaults.organizationalUnit;
       });
     };
 

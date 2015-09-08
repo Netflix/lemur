@@ -30,6 +30,9 @@ angular.module('lemur')
   .controller('AuthorityCreateController', function ($scope, $modalInstance, AuthorityService, LemurRestangular, RoleService, PluginService, WizardHandler)  {
     $scope.authority = LemurRestangular.restangularizeElement(null, {}, 'authorities');
 
+    // set the defaults
+    AuthorityService.getDefaults($scope.authority);
+
     $scope.loading = false;
     $scope.create = function (authority) {
       WizardHandler.wizard().context.loading = true;

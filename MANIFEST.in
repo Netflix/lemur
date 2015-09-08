@@ -1,0 +1,4 @@
+include setup.py package.json bower.json gulpfile.js README.rst MANIFEST.in LICENSE AUTHORS
+recursive-include lemur/plugins/lemur_email/templates *
+recursive-include lemur/static *
+global-exclude *~
