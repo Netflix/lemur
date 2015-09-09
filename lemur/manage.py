@@ -274,10 +274,10 @@ class InitializeApp(Command):
         if not user:
             if not password:
                 sys.stdout.write("We need to set Lemur's password to continue!\n")
-                password1 = prompt_pass("Password")
-                password2 = prompt_pass("Confirm Password")
+                password = prompt_pass("Password")
+                password1 = prompt_pass("Confirm Password")
 
-                if password1 != password2:
+                if password != password1:
                     sys.stderr.write("[!] Passwords do not match!\n")
                     sys.exit(1)
 
@@ -290,7 +290,7 @@ class InitializeApp(Command):
                 role = role_service.create('admin', description='this is the lemur administrator role')
                 sys.stdout.write("[+] Created 'admin' role\n")
 
-            user_service.create("lemur", password1, 'lemur@nobody', True, None, [role])
+            user_service.create("lemur", password, 'lemur@nobody', True, None, [role])
             sys.stdout.write("[+] Added a 'lemur' user and added it to the 'admin' role!\n")
 
         else:
