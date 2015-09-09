@@ -297,7 +297,7 @@ class InitializeApp(Command):
             sys.stdout.write("[-] Default user has already been created, skipping...!\n")
 
         sys.stdout.write("[+] Creating expiration email notifications!\n")
-        sys.stdout.write("[!] Using {recipients} as specified by LEMUR_SECURITY_TEAM_EMAIL for notifications\n")
+        sys.stdout.write("[!] Using {recipients} as specified by LEMUR_SECURITY_TEAM_EMAIL for notifications\n".format("LEMUR_SECURITY_TEAM_EMAIL"))
 
         intervals = current_app.config.get("LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS", [])
         sys.stdout.write(
