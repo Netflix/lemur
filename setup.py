@@ -100,7 +100,8 @@ class BuildStatic(Command):
         pass
 
     def run(self):
-        log.info("running [npm install --quiet]")
+        log.info("running [npm install --quiet] in {0}".format(ROOT))
+
         check_output(['npm', 'install', '--quiet'], cwd=ROOT)
 
         log.info("running [gulp build]")

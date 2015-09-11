@@ -263,18 +263,23 @@ class InitializeApp(Command):
     Additionally a Lemur user will be created as a default user
     and be used when certificates are discovered by Lemur.
     """
-    def run(self):
+    option_list = (
+        Option('-p', '--password', dest='password'),
+    )
+
+    def run(self, password):
         create()
         user = user_service.get_by_username("lemur")
 
         if not user:
-            sys.stdout.write("We need to set Lemur's password to continue!\n")
-            password1 = prompt_pass("Password")
-            password2 = prompt_pass("Confirm Password")
+            if not password:
+                sys.stdout.write("We need to set Lemur's password to continue!\n")
+                password = prompt_pass("Password")
+                password1 = prompt_pass("Confirm Password")
 
-            if password1 != password2:
-                sys.stderr.write("[!] Passwords do not match!\n")
-                sys.exit(1)
+                if password != password1:
+                    sys.stderr.write("[!] Passwords do not match!\n")
+                    sys.exit(1)
 
             role = role_service.get_by_name('admin')
 
@@ -285,16 +290,16 @@ class InitializeApp(Command):
                 role = role_service.create('admin', description='this is the lemur administrator role')
                 sys.stdout.write("[+] Created 'admin' role\n")
 
-            user_service.create("lemur", password1, 'lemur@nobody', True, None, [role])
+            user_service.create("lemur", password, 'lemur@nobody', True, None, [role])
             sys.stdout.write("[+] Added a 'lemur' user and added it to the 'admin' role!\n")
 
         else:
             sys.stdout.write("[-] Default user has already been created, skipping...!\n")
 
         sys.stdout.write("[+] Creating expiration email notifications!\n")
-        sys.stdout.write("[!] Using {recipients} as specified by LEMUR_SECURITY_TEAM_EMAIL for notifications\n")
+        sys.stdout.write("[!] Using {0} as specified by LEMUR_SECURITY_TEAM_EMAIL for notifications\n".format("LEMUR_SECURITY_TEAM_EMAIL"))
 
-        intervals = current_app.config.get("LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS")
+        intervals = current_app.config.get("LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS", [])
         sys.stdout.write(
             "[!] Creating {num} notifications for {intervals} days as specified by LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS\n".format(
                 num=len(intervals),
