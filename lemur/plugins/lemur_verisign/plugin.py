@@ -147,7 +147,7 @@ class VerisignIssuerPlugin(IssuerPlugin):
         :param issuer_options:
         :return: :raise Exception:
         """
-        url = current_app.config.get("VERISIGN_URL") + '/enroll'
+        url = current_app.config.get("VERISIGN_URL") + '/rest/services/enroll'
 
         data = process_options(issuer_options)
         data['csr'] = csr
@@ -177,6 +177,6 @@ class VerisignIssuerPlugin(IssuerPlugin):
 
         :return:
         """
-        url = current_app.config.get("VERISIGN_URL") + '/getTokens'
+        url = current_app.config.get("VERISIGN_URL") + '/rest/services/getTokens'
         response = self.session.post(url, headers={'content-type': 'application/x-www-form-urlencoded'})
         return handle_response(response.content)['Response']['Order']
