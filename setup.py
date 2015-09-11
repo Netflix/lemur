@@ -135,7 +135,6 @@ setup(
         ],
         'lemur.plugins': [
             'verisign_issuer = lemur.plugins.lemur_verisign.plugin:VerisignIssuerPlugin',
-            'verisign_source = lemur.plugins.lemur_verisign.plugin:VerisignSourcePlugin',
             'cloudca_issuer = lemur.plugins.lemur_cloudca.plugin:CloudCAIssuerPlugin',
             'cloudca_source = lemur.plugins.lemur_cloudca.plugin:CloudCASourcePlugin',
             'aws_destination = lemur.plugins.lemur_aws.plugin:AWSDestinationPlugin',
