@@ -37,7 +37,7 @@ ViewRoleCredentialsNeed = partial(RoleUser, 'roleView')
 
 class ViewRoleCredentialsPermission(Permission):
     def __init__(self, role_id):
-        need = ViewRoleCredentialsNeed(str(role_id))
+        need = ViewRoleCredentialsNeed(role_id)
         super(ViewRoleCredentialsPermission, self).__init__(need, RoleNeed('admin'))
 
 

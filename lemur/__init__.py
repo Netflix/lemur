@@ -17,7 +17,7 @@ from lemur.domains.views import mod as domains_bp
 from lemur.destinations.views import mod as destinations_bp
 from lemur.authorities.views import mod as authorities_bp
 from lemur.certificates.views import mod as certificates_bp
-from lemur.status.views import mod as status_bp
+from lemur.defaults.views import mod as defaults_bp
 from lemur.plugins.views import mod as plugins_bp
 from lemur.notifications.views import mod as notifications_bp
 from lemur.sources.views import mod as sources_bp
@@ -31,7 +31,7 @@ LEMUR_BLUEPRINTS = (
     destinations_bp,
     authorities_bp,
     certificates_bp,
-    status_bp,
+    defaults_bp,
     plugins_bp,
     notifications_bp,
     sources_bp

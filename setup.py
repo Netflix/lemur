@@ -16,7 +16,7 @@ from distutils.core import Command
 from setuptools.command.develop import develop
 from setuptools.command.install import install
 from setuptools.command.sdist import sdist
-from setuptools import setup
+from setuptools import setup, find_packages
 from subprocess import check_output
 
 ROOT = os.path.realpath(os.path.join(os.path.dirname(__file__)))
@@ -39,7 +39,7 @@ install_requires = [
     'six==1.9.0',
     'gunicorn==19.3.0',
     'pycrypto==2.6.1',
-    'cryptography>=1.0dev',
+    'cryptography==1.0.1',
     'pyopenssl==0.15.1',
     'pyjwt==1.0.1',
     'xmltodict==0.9.2',
@@ -110,11 +110,11 @@ class BuildStatic(Command):
 
 setup(
     name='lemur',
-    version='0.1',
+    version='0.1.3',
     author='Kevin Glisson',
     author_email='kglisson@netflix.com',
     long_description=open(os.path.join(ROOT, 'README.rst')).read(),
-    packages=['lemur'],
+    packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
     install_requires=install_requires,
@@ -127,7 +127,6 @@ setup(
         'build_static': BuildStatic,
         'sdist': SdistWithBuildStatic,
         'install': SmartInstall
-
     },
     entry_points={
         'console_scripts': [

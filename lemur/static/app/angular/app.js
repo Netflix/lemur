@@ -60,6 +60,15 @@ lemur.controller('datePickerController', function ($scope, $timeout){
   };
 });
 
+lemur.service('DefaultService', function (LemurRestangular) {
+  var DefaultService = this;
+  DefaultService.get = function () {
+    return LemurRestangular.all('defaults').customGET().then(function (defaults) {
+      return defaults;
+    });
+  };
+});
+
 lemur.factory('LemurRestangular', function (Restangular, $location, $auth) {
   return Restangular.withConfig(function (RestangularConfigurer) {
     RestangularConfigurer.setBaseUrl('http://localhost:5000/api/1');

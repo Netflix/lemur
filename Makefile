@@ -6,8 +6,6 @@ develop: update-submodules setup-git
 	npm install
 	pip install "setuptools>=0.9.8"
 	# order matters here, base package must install first
-	# this is temporary until the version we need is released
-	pip install -e 'git+https://git@github.com/pyca/cryptography.git#egg=cryptography-1.0.dev1'
 	pip install -e .
 	pip install "file://`pwd`#egg=lemur[dev]"
 	pip install "file://`pwd`#egg=lemur[tests]"

@@ -9,7 +9,6 @@
 
 """
 import ssl
-import socket
 
 import arrow
 
@@ -114,8 +113,9 @@ def _get_domain_certificate(name):
     try:
         pub_key = ssl.get_server_certificate((name, 443))
         return cert_service.find_duplicates(pub_key.strip())
-    except socket.gaierror as e:
+    except Exception as e:
         current_app.logger.info(str(e))
+        return []
 
 
 def _find_superseded(cert):

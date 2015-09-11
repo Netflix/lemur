@@ -29,7 +29,7 @@
             </td>
             <td data-title="'Roles'"> <!--filter="{ 'select': 'role' }" filter-data="roleService.getRoleDropDown()">-->
               <div class="btn-group">
-                <a href="#/roles/{{ role.id }}/edit" ng-repeat="role in authority.roles" class="btn btn-sm btn-danger">
+                <a ng-click="editRole(role.id)" ng-repeat="role in authority.roles" class="btn btn-sm btn-danger">
                     {{ role.name }}
                 </a>
               </div>

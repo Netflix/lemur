@@ -22,7 +22,7 @@ from lemur.certificates.models import Certificate
 from lemur.plugins.base import plugins
 
 
-def update(authority_id, active=None, roles=None):
+def update(authority_id, description=None, owner=None, active=None, roles=None):
     """
     Update a an authority with new values.
 
@@ -37,6 +37,9 @@ def update(authority_id, active=None, roles=None):
 
     if active:
         authority.active = active
+
+    authority.description = description
+    authority.owner = owner
     return database.update(authority)
 
 

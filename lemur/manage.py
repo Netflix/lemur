@@ -4,6 +4,8 @@ import os
 import sys
 import base64
 import time
+import requests
+import json
 from gunicorn.config import make_settings
 
 from cryptography.fernet import Fernet
@@ -146,12 +148,15 @@ def check_revoked():
     as `unknown`.
     """
     for cert in cert_service.get_all_certs():
-        if cert.chain:
-            status = verify_string(cert.body, cert.chain)
-        else:
-            status = verify_string(cert.body, "")
+        try:
+            if cert.chain:
+                status = verify_string(cert.body, cert.chain)
+            else:
+                status = verify_string(cert.body, "")
 
-        cert.status = 'valid' if status else "invalid"
+            cert.status = 'valid' if status else 'invalid'
+        except Exception as e:
+            cert.status = 'unknown'
         database.update(cert)
 
 
@@ -181,7 +186,7 @@ def generate_settings():
     return output
 
 
-@manager.option('-s', '--sources', dest='labels', default='', required=False)
+@manager.option('-s', '--sources', dest='labels')
 def sync_sources(labels):
     """
     Attempts to run several methods Certificate discovery. This is
@@ -207,13 +212,14 @@ def sync_sources(labels):
             try:
                 sync_lock.acquire(timeout=10)    # wait up to 10 seconds
 
-                if labels:
-                    sys.stdout.write("[+] Staring to sync sources: {labels}!\n".format(labels=labels))
-                    labels = labels.split(",")
-                else:
-                    sys.stdout.write("[+] Starting to sync ALL sources!\n")
+                sys.stdout.write("[+] Staring to sync sources: {labels}!\n".format(labels=labels))
+                labels = labels.split(",")
 
-                sync(labels=labels)
+                if labels[0] == 'all':
+                    sync()
+                else:
+                    sync(labels=labels)
+
                 sys.stdout.write(
                     "[+] Finished syncing sources. Run Time: {time}\n".format(
                         time=(time.time() - start_time)
@@ -563,11 +569,11 @@ class ProvisionELB(Command):
             'authority': authority,
             'owner': owner,
             # defaults:
-            'organization': u'Netflix, Inc.',
-            'organizationalUnit': u'Operations',
-            'country': u'US',
-            'state': u'California',
-            'location': u'Los Gatos'
+            'organization': current_app.config.get('LEMUR_DEFAULT_ORGANIZATION'),
+            'organizationalUnit': current_app.config.get('LEMUR_DEFAULT_ORGANIZATIONAL_UNIT'),
+            'country': current_app.config.get('LEMUR_DEFAULT_COUNTRY'),
+            'state': current_app.config.get('LEMUR_DEFAULT_STATE'),
+            'location': current_app.config.get('LEMUR_DEFAULT_LOCATION')
         }
 
         return options
@@ -678,6 +684,38 @@ class ProvisionELB(Command):
                     raise bse
             else:
                 done = True
+
+
+@manager.command
+def publish_verisign_units():
+    """
+    Simple function that queries verisign for API units and posts the mertics to
+    Atlas API for other teams to consume.
+    :return:
+    """
+    from lemur.plugins import plugins
+    v = plugins.get('verisign-issuer')
+    units = v.get_available_units()
+
+    metrics = {}
+    for item in units:
+        if item['@type'] in metrics.keys():
+            metrics[item['@type']] += int(item['@remaining'])
+        else:
+            metrics.update({item['@type']: int(item['@remaining'])})
+
+    for name, value in metrics.items():
+        metric = [
+            {
+                "timestamp": 1321351651,
+                "type": "GAUGE",
+                "name": "Symantec {0} Unit Count".format(name),
+                "tags": {},
+                "value": value
+            }
+        ]
+
+        requests.post('http://localhost:8078/metrics', data=json.dumps(metric))
 
 
 def main():
