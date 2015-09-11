@@ -215,6 +215,35 @@ Verisign/Symantec and CloudCA
         This is the path to the mutual SSL certificate used for communicating with Verisign
 
 
+.. data:: VERISIGN_FIRST_NAME
+    :noindex:
+
+        This is the first name to be used when requesting the certificate
+
+
+.. data:: VERISIGN_LAST_NAME
+    :noindex:
+
+        This is the last name to be used when requesting the certificate
+
+.. data:: VERISIGN_EMAIL
+    :noindex:
+
+        This is the email to be used when requesting the certificate
+
+
+.. data:: VERISIGN_INTERMEDIATE
+    :noindex:
+
+        This is the intermediate to be used for your CA chain
+
+
+.. data:: VERISIGN_ROOT
+    :noindex:
+
+        This is the root to be used for your CA chain
+
+
 .. data:: CLOUDCA_URL
     :noindex:
 
@@ -230,6 +259,7 @@ Verisign/Symantec and CloudCA
     :noindex:
 
         This is the path to the CLOUDCA certificate bundle
+
 
 Authentication
 --------------

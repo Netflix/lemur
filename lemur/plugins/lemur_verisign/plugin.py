@@ -13,9 +13,8 @@ import xmltodict
 
 from flask import current_app
 
-from lemur.plugins.bases import IssuerPlugin
+from lemur.plugins.bases import IssuerPlugin, SourcePlugin
 from lemur.plugins import lemur_verisign as verisign
-from lemur.plugins.lemur_verisign import constants
 from lemur.common.utils import get_psuedo_random_string
 
 
@@ -132,7 +131,7 @@ class VerisignIssuerPlugin(IssuerPlugin):
     version = verisign.VERSION
 
     author = 'Kevin Glisson'
-    author_url = 'https://github.com/netflix/lemur'
+    author_url = 'https://github.com/netflix/lemur.git'
 
     def __init__(self, *args, **kwargs):
         self.session = requests.Session()
@@ -156,7 +155,7 @@ class VerisignIssuerPlugin(IssuerPlugin):
 
         response = self.session.post(url, data=data)
         cert = handle_response(response.content)['Response']['Certificate']
-        return cert, constants.VERISIGN_INTERMEDIATE,
+        return cert, current_app.config.get('VERISIGN_INTERMEDIATE'),
 
     @staticmethod
     def create_authority(options):
@@ -168,7 +167,7 @@ class VerisignIssuerPlugin(IssuerPlugin):
         :return:
         """
         role = {'username': '', 'password': '', 'name': 'verisign'}
-        return constants.VERISIGN_ROOT, "", [role]
+        return current_app.config.get('VERISIGN_ROOT'), "", [role]
 
     def get_available_units(self):
         """
@@ -180,3 +179,32 @@ class VerisignIssuerPlugin(IssuerPlugin):
         url = current_app.config.get("VERISIGN_URL") + '/rest/services/getTokens'
         response = self.session.post(url, headers={'content-type': 'application/x-www-form-urlencoded'})
         return handle_response(response.content)['Response']['Order']
+
+
+class VerisignSourcePlugin(SourcePlugin):
+    title = 'Verisign'
+    slug = 'verisign-source'
+    description = 'Allows for the polling of issued certificates from the VICE2.0 verisign API.'
+    version = verisign.VERSION
+
+    author = 'Kevin Glisson'
+    author_url = 'https://github.com/netflix/lemur.git'
+
+    def __init__(self, *args, **kwargs):
+        self.session = requests.Session()
+        self.session.cert = current_app.config.get('VERISIGN_PEM_PATH')
+        super(VerisignSourcePlugin, self).__init__(*args, **kwargs)
+
+    def get_certificates(self):
+        url = current_app.config.get('VERISIGN_URL') + '/reportingws'
+        end = arrow.now()
+        start = end.replace(years=-5)
+        data = {
+            'reportType': 'detail',
+            'startDate': start.format("MM/DD/YYYY"),
+            'endDate': end.format("MM/DD/YYYY"),
+            'structuredRecord': 'Y',
+            'certStatus': 'Valid',
+        }
+        current_app.logger.debug(data)
+        response = self.session.post(url, data=data)
