@@ -194,12 +194,6 @@ You'll use the builtin HttpProxyModule within Nginx to handle proxying
         index index.html;
     }
 
-    location / {
-        root /www/lemur/lemur/static/dist;
-        include mime.types;
-        index index.html;
-    }
-
 See :doc:`../production/index` for more details on using Nginx.
 
 
