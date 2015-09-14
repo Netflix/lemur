@@ -74,8 +74,6 @@ Basic Configuration
 
         The TOKEN_SECRET is the secret used to create JWT tokens that are given out to users. This should be securely generated and be kept private.
 
-        See `SECRET_KEY` for methods on secure secret generation.
-
     ::
 
         LEMUR_TOKEN_SECRET = 'supersecret'
@@ -122,7 +120,7 @@ and are used when Lemur creates the CSR for your certificates.
 
     ::
 
-        LEMUR_DEFAULT_STATE = "CA"
+        LEMUR_DEFAULT_STATE = "California"
 
 
 .. data:: LEMUR_DEFAULT_LOCATION
@@ -152,15 +150,16 @@ and are used when Lemur creates the CSR for your certificates.
 Notification Options
 --------------------
 
-Lemur currently has very basic support for notifications. Notifications are sent to the certificate creator, owner and
-security team as specified by the `SECURITY_TEAM_EMAIL` configuration parameter.
+Lemur currently has very basic support for notifications. Currently only expiration notifications are supported. Actual notification
+is handling by the notification plugins that you have configured. Lemur ships with the 'Email' notification that allows expiration emails
+to be sent to subscribers.
 
-The template for all of these notifications lives under lemur/template/event.html and can be easily modified to fit your
-needs.
+Templates for expiration emails are located under `lemur/plugins/lemur_email/templates` and can be modified for your needs.
+Notifications are sent to the certificate creator, owner and security team as specified by the `LEMUR_SECURITY_TEAM_EMAIL` configuration parameter.
 
 Certificates marked as in-active will **not** be notified of upcoming expiration. This enables a user to essentially
-silence the expiration. If a certificate is active and is expiring the above will be notified at 30, 15, 5, 2 days
-respectively.
+silence the expiration. If a certificate is active and is expiring the above will be notified according to the `LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS` or
+30, 15, 2 days before expiration if no intervals are set.
 
 Lemur supports sending certification expiration notifications through SES and SMTP.
 
@@ -195,6 +194,16 @@ Lemur supports sending certification expiration notifications through SES and SM
         ::
 
         LEMUR_SECURITY_TEAM_EMAIL = ['security@example.com']
+
+
+.. data:: LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS
+    :noindex:
+
+            Lemur notification intervals
+
+        ::
+
+        LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS = [30, 15, 2]
 
 
 Authority Options
@@ -309,9 +318,9 @@ In order for Lemur to manage it's own account and other accounts we must ensure 
 Setting up IAM roles
 --------------------
 
-Lemur's aws plugin uses boto heavily to talk to all the AWS resources it manages. By default it uses the on-instance credentials to make the necessary calls.
+Lemur's AWS plugin uses boto heavily to talk to all the AWS resources it manages. By default it uses the on-instance credentials to make the necessary calls.
 
-In order to limit the permissions we will create a new two IAM roles for Lemur. You can name them whatever you would like but for example sake we will be calling them LemurInstanceProfile and Lemur.
+In order to limit the permissions, we will create two new IAM roles for Lemur. You can name them whatever you would like but for example sake we will be calling them LemurInstanceProfile and Lemur.
 
 Lemur uses to STS to talk to different accounts. For managing one account this isn't necessary but we will still use it so that we can easily add new accounts.
 
@@ -356,6 +365,11 @@ STS-AssumeRole
 
 
 Next we will create the the Lemur IAM role. Lemur
+
+..note::
+
+The default IAM role that Lemur assumes into is called `Lemur`, if you need to change this ensure you set `LEMUR_INSTANCE_PROFILE` to your role name in the configuration.
+
 
 Here is an example policy for Lemur:
 
@@ -614,7 +628,8 @@ that the `Authority` is associated with it Lemur allows that user to user/view/u
 
 This RBAC is also used when determining which users can access which certificate private key. Lemur's current permission
 structure is setup such that if the user is a `Creator` or `Owner` of a given certificate they are allow to view that
-private key.
+private key. Owners can also be a role name, such that any user with the same role as owner will be allowed to view the
+private key information.
 
 These permissions are applied to the user upon login and refreshed on every request.
 

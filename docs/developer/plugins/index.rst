@@ -215,7 +215,7 @@ certificate Lemur does not know about and adding the certificate to it's invento
 The `SourcePlugin` object has one default option of `pollRate`. This controls the number of seconds which to get new certificates.
 
  .. warning::
-    Lemur currently has a very basic polling system of running a cron job every 15min to see which source plugins need to be run. A lock file is generated to guarentee that ]
+    Lemur currently has a very basic polling system of running a cron job every 15min to see which source plugins need to be run. A lock file is generated to guarantee that 
     only one sync is running at a time. It also means that the minimum resolution of a source plugin poll rate is effectively 15min. You can always specify a faster cron
     job if you need a higher resolution sync job.
 

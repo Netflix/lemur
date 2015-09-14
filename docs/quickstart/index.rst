@@ -4,6 +4,8 @@ Quickstart
 This guide will step you through setting up a Python-based virtualenv, installing the required packages, and configuring the basic web service.
 This guide assumes a clean Ubuntu 14.04 instance, commands may differ based on the OS and configuration being used.
 
+Pressed for time? See the Lemur docker file on `Github <https://github.com/Netflix/lemur-docker>`_.
+
 Dependencies
 ------------
 
@@ -17,6 +19,7 @@ Some basic prerequisites which you'll need in order to run Lemur:
 .. note:: Lemur was built with in AWS in mind. This means that things such as databases (RDS), mail (SES), and SSL (ELB),
     are largely handled for us. Lemur does **not** require AWS to function. Our guides and documentation try to be
     be as generic as possible and are not intended to document every step of launching Lemur into a given environment.
+
 
 Setting up an Environment
 -------------------------
