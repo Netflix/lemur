@@ -76,6 +76,22 @@ def get_all_elbs(account_number, region):
 #            return elbs
 
 
+def check_duplicate_listener(elb_name, region, account, sport, dport):
+    """
+    Check to ensure the that there isn't already and HTTPS listener on this ELB.
+    :param elb_name:
+    :param region:
+    :param account:
+    :param sport:
+    :param dport:
+    :return:
+    """
+    listeners = get_listeners(account, region, elb_name)
+    for listener in listeners:
+        if listener[0] == sport and listener[1] == dport:
+            return True
+
+
 def attach_certificate(account_number, region, name, port, certificate_id):
     """
     Attaches a certificate to a listener, throws exception

@@ -53,6 +53,9 @@ class AWSDestinationPlugin(DestinationPlugin):
         if e:
             elb.attach_certificate(kwargs['accountNumber'], ['region'], e['name'], e['port'], e['certificateId'])
 
+    def deploy(self):
+        pass
+
 
 class AWSSourcePlugin(SourcePlugin):
     title = 'AWS'
