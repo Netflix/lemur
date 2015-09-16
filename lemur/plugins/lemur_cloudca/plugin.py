@@ -96,7 +96,7 @@ def convert_date_to_utc_time(date):
     :return:
     """
     d = arrow.get(date)
-    return arrow.utcnow().replace(day=d.naive.day).replace(month=d.naive.month).replace(year=d.naive.year)\
+    return arrow.utcnow().replace(year=d.naive.year).replace(month=d.naive.month).replace(day=d.naive.day)\
         .replace(microsecond=0)
 
 
