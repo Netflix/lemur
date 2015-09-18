@@ -11,7 +11,7 @@ from flask.ext.script import Manager
 from .service import get_all
 
 
-manager = Manager(usage="Perform role operations")
+manager = Manager(usage="Perform destination operations")
 
 
 @manager.command
