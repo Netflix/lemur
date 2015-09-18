@@ -1,8 +1,9 @@
 """
-.. module: elb
+.. module: lemur.plugins.lemur_aws.elb
     :synopsis: Module contains some often used and helpful classes that
     are used to deal with ELBs
-
+    :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
+    :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import boto.ec2
@@ -11,6 +12,20 @@ from flask import current_app
 
 from lemur.exceptions import InvalidListener
 from lemur.plugins.lemur_aws.sts import assume_service
+
+
+def create_arn(account_number, certificate_name):
+    """
+    Creates an amazon specific SSL certificate ARN
+
+    :param account_number:
+    :param certificate_name:
+    :return:
+    """
+    return "arn:aws:iam::{account_number}:server-certificate/{certificate_name}".format(
+        account_number=account_number,
+        certificate_name=certificate_name
+    )
 
 
 def is_valid(listener_tuple):
@@ -28,7 +43,6 @@ def is_valid(listener_tuple):
 
     :param listener_tuple:
     """
-
     current_app.logger.debug(listener_tuple)
     lb_port, i_port, lb_protocol, arn = listener_tuple
     current_app.logger.debug(lb_protocol)
@@ -61,6 +75,8 @@ def get_all_elbs(account_number, region):
     marker = None
     elbs = []
     return assume_service(account_number, 'elb', region).get_all_load_balancers()
+
+
 # TODO create pull request for boto to include elb marker support
 #    while True:
 #        app.logger.debug(response.__dict__)

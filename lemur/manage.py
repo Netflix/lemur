@@ -30,6 +30,10 @@ from lemur.sources.service import sync
 from lemur import create_app
 
 from lemur.deployment.manage import manager as deployment_manager
+from lemur.certificates.manage import manager as certificate_manager
+from lemur.roles.manage import manager as role_manager
+from lemur.destinations.manage import manager as destination_manager
+
 
 # Needed to be imported so that SQLAlchemy create_all can find our models
 from lemur.users.models import User  # noqa
@@ -315,80 +319,6 @@ class InitializeApp(Command):
         sys.stdout.write("[/] Done!\n")
 
 
-class UserCMD(Command):
-    """
-    This command allows for the creation of a new user within Lemur
-    """
-    option_list = (
-        Option('-u', '--username', dest='username', required=True),
-        Option('-e', '--email', dest='email', required=True),
-        Option('-a', '--active', dest='active', default=True),
-        Option('-r', '--roles', dest='roles', default=[])
-    )
-
-    def run(self, username, email, active, roles):
-        role_objs = []
-        for r in roles:
-            role_obj = role_service.get_by_name(r)
-            if role_obj:
-                role_objs.append(role_obj)
-            else:
-                sys.stderr.write("[!] Cannot find role {0}".format(r))
-                sys.exit(1)
-
-        password1 = prompt_pass("Password")
-        password2 = prompt_pass("Confirm Password")
-
-        if password1 != password2:
-            sys.stderr.write("[!] Passwords do not match")
-            sys.exit(1)
-
-        user_service.create(username, password1, email, active, None, role_objs)
-        sys.stdout.write("[+] Created new user: {0}".format(username))
-
-
-class RoleCMD(Command):
-    """
-    This command allows for the creation of a new role within Lemur
-    """
-    option_list = (
-        Option('-n', '--name', dest='name', required=True),
-        Option('-u', '--users', dest='users', default=[]),
-        Option('-d', '--description', dest='description', required=True)
-    )
-
-    def run(self, name, users, description):
-        user_objs = []
-        for u in users:
-            user_obj = user_service.get_by_username(u)
-            if user_obj:
-                user_objs.append(user_obj)
-            else:
-                sys.stderr.write("[!] Cannot find user {0}".format(u))
-                sys.exit(1)
-        role_service.create(name, description=description, users=users)
-        sys.stdout.write("[+] Created new role: {0}".format(name))
-
-
-class DestinationCMD(Command):
-    """
-    This command manipulate Lemur
-    """
-    option_list = (
-        Option('-n', '--name', dest='name', required=True),
-        Option('-u', '--users', dest='users', default=[]),
-        Option('-d', '--description', dest='description', required=True)
-    )
-
-    def destination_table(self):
-        """
-        Provides a pretty table of current destinations
-
-        :return:
-        """
-        pass
-
-
 class LemurServer(Command):
     """
     This is the main Lemur server, it runs the flask app with gunicorn and
@@ -560,10 +490,10 @@ def main():
     manager.add_command("show_urls", ShowUrls())
     manager.add_command("db", MigrateCommand)
     manager.add_command("init", InitializeApp())
-    manager.add_command("user", UserCMD())
-    manager.add_command("role", RoleCMD())
-    manager.add_command("destination", DestinationCMD())
     manager.add_command("deploy", deployment_manager)
+    manager.add_command("certificate", certificate_manager)
+    manager.add_command("role", role_manager)
+    manager.add_command("destination", destination_manager)
     manager.run()
 
 if __name__ == "__main__":
