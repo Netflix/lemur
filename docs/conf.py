@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# security_monkey documentation build configuration file, created by
+# lemur documentation build configuration file, created by
 # sphinx-quickstart on Sat Jun  7 18:43:48 2014.
 #
 # This file is execfile()d with the current directory set to its

@@ -125,7 +125,7 @@ class Ping(Resource):
 
         args = self.reqparse.parse_args()
 
-        # take the information we have received from Meechum to create a new request
+        # take the information we have received from the provider to create a new request
         params = {
             'client_id': args['clientId'],
             'grant_type': 'authorization_code',
@@ -138,7 +138,7 @@ class Ping(Resource):
         access_token_url = current_app.config.get('PING_ACCESS_TOKEN_URL')
         user_api_url = current_app.config.get('PING_USER_API_URL')
 
-        # the secret and cliendId will be given to you when you signup for meechum
+        # the secret and cliendId will be given to you when you signup for the provider
         basic = base64.b64encode('{0}:{1}'.format(args['clientId'], current_app.config.get("PING_SECRET")))
         headers = {'Authorization': 'Basic {0}'.format(basic)}
 
@@ -220,7 +220,7 @@ class Ping(Resource):
                 profile['email'],
                 profile['email'],
                 True,
-                profile.get('thumbnailPhotoUrl'),  # Encase profile isn't google+ enabled
+                profile.get('thumbnailPhotoUrl'),  # incase profile isn't google+ enabled
                 roles
             )
 

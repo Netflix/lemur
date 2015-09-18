@@ -9,7 +9,9 @@ Is an SSL management and orchestration tool.
 """
 from __future__ import absolute_import
 
+import json
 import os.path
+import datetime
 
 from distutils import log
 from distutils.core import Command
@@ -88,9 +90,18 @@ class DevelopWithBuildStatic(develop):
 
 
 class SdistWithBuildStatic(sdist):
-    def make_distribution(self):
+    def make_release_tree(self, *a, **kw):
+        dist_path = self.distribution.get_fullname()
+
+        sdist.make_release_tree(self, *a, **kw)
+
+        self.reinitialize_command('build_static', work_path=dist_path)
         self.run_command('build_static')
-        return sdist.make_distribution(self)
+
+        with open(os.path.join(dist_path, 'lemur-package.json'), 'w') as fp:
+            json.dump({
+                'createdAt': datetime.datetime.utcnow().isoformat() + 'Z',
+            }, fp)
 
 
 class BuildStatic(Command):
@@ -115,6 +126,9 @@ setup(
     version='0.1.3',
     author='Kevin Glisson',
     author_email='kglisson@netflix.com',
+    url='https://github.com/netflix/lemur',
+    download_url='https://github.com/Netflix/lemur/archive/0.1.3.tar.gz',
+    description='Certificate management and orchestration service',
     long_description=open(os.path.join(ROOT, 'README.rst')).read(),
     packages=find_packages(),
     include_package_data=True,
