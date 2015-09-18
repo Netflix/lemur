@@ -19,8 +19,7 @@ Lemur
 
 Lemur manages SSL certificate creation. It provides a central portal for developers to issuer their own SSL certificates with 'sane' defaults.
 
-It works on CPython 2.7, 3.3, 3.4  It is known
-to work on Ubuntu Linux and OS X.
+It works on CPython 2.7, 3.3, 3.4. We deploy on Ubuntu and develop on OS X.
 
 Project resources
 =================
