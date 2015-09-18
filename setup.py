@@ -47,6 +47,7 @@ install_requires = [
     'xmltodict==0.9.2',
     'lockfile==0.10.2',
     'future==0.15.0',
+    'tabulate==0.7.5',
 ]
 
 tests_require = [
@@ -54,12 +55,12 @@ tests_require = [
     'moto==0.4.6',
     'nose==1.3.7',
     'pytest==2.7.2',
-    'pytest-flask==0.8.1'
+    'pytest-flask==0.8.1',
 ]
 
 docs_require = [
     'sphinx',
-    'sphinxcontrib-httpdomain'
+    'sphinxcontrib-httpdomain',
 ]
 
 dev_requires = [
