@@ -13,9 +13,8 @@ Lemur
     :target: https://lemur.readthedocs.org
     :alt: Latest Docs
 
-.. image:: https://magnum.travis-ci.com/Netflix/lemur.svg?branch=master
-      :target: https://magnum.travis-ci.com/Netflix/lemur
-
+.. image:: https://travis-ci.org/Netflix/lemur.svg
+    :target: https://travis-ci.org/Netflix/lemur
 
 Lemur manages SSL certificate creation. It provides a central portal for developers to issuer their own SSL certificates with 'sane' defaults.
 
