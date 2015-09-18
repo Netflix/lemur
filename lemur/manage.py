@@ -33,6 +33,7 @@ from lemur.deployment.manage import manager as deployment_manager
 from lemur.certificates.manage import manager as certificate_manager
 from lemur.roles.manage import manager as role_manager
 from lemur.destinations.manage import manager as destination_manager
+from lemur.users.manage import manager as user_manager
 
 
 # Needed to be imported so that SQLAlchemy create_all can find our models
@@ -491,9 +492,10 @@ def main():
     manager.add_command("db", MigrateCommand)
     manager.add_command("init", InitializeApp())
     manager.add_command("deploy", deployment_manager)
-    manager.add_command("certificate", certificate_manager)
-    manager.add_command("role", role_manager)
-    manager.add_command("destination", destination_manager)
+    manager.add_command("certificates", certificate_manager)
+    manager.add_command("roles", role_manager)
+    manager.add_command("destinations", destination_manager)
+    manager.add_command("users", user_manager)
     manager.run()
 
 if __name__ == "__main__":

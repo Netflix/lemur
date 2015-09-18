@@ -4,26 +4,14 @@
     :license: apache, see license for more details.
 .. moduleauthor:: kevin glisson <kglisson@netflix.com>
 """
-from flask.ext.script import Manager, Command, Option
+import json
+from tabulate import tabulate
+from flask.ext.script import Manager
 
-from .service import create
+from .service import get_all
 
 
 manager = Manager(usage="Perform role operations")
-
-
-class Create(Command):
-    """
-    This command allows for the creation of a new role within Lemur
-    """
-    option_list = (
-        Option('-n', '--name', dest='name', required=True),
-        Option('-d', '--description', dest='description', required=True)
-    )
-
-    def run(self, name, description):
-        create(name, description=description)
-        print("[+] Created new destination: {0}".format(name))
 
 
 @manager.command
@@ -33,7 +21,9 @@ def list():
 
     :return:
     """
-    pass
+    destinations = get_all()
+    table = [["Label", "Description", "Options"]]
+    for r in destinations:
+        table.append([r.label, r.description, json.dumps(r.options)])
 
-
-manager.add_command("create", Create())
+    print(tabulate(table))

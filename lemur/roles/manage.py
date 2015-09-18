@@ -5,12 +5,13 @@
 .. moduleauthor:: kevin glisson <kglisson@netflix.com>
 """
 import sys
+from tabulate import tabulate
+
 from flask.ext.script import Manager, Command, Option
 
 from lemur.users import service as user_service
-
-from .service import create
-
+from lemur.exceptions import DuplicateError
+from .service import create, get_all
 
 manager = Manager(usage="Perform role operations")
 
@@ -34,8 +35,11 @@ class Create(Command):
             else:
                 print("[!] Cannot find user {0}".format(u))
                 sys.exit(1)
-        create(name, description=description, users=users)
-        print("[+] Created new role: {0}".format(name))
+        try:
+            create(name, description=description, users=users)
+            print("[+] Created new role: {0}".format(name))
+        except DuplicateError:
+            print("[\] Role name {0} already exists".format(name))
 
 
 @manager.command
@@ -45,6 +49,12 @@ def list():
 
     :return:
     """
-    pass
+    roles = get_all()
+    table = [["Name", "Description"]]
+    for r in roles:
+        table.append([r.name, r.description])
+
+    print(tabulate(table))
+
 
 manager.add_command("create", Create())
