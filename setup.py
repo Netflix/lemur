@@ -113,13 +113,15 @@ class BuildStatic(Command):
 
     def run(self):
         log.info("running [npm install --quiet] in {0}".format(ROOT))
+        try:
+            check_output(['npm', 'install', '--quiet'], cwd=ROOT)
 
-        check_output(['npm', 'install', '--quiet'], cwd=ROOT)
-
-        log.info("running [gulp build]")
-        check_output([os.path.join(ROOT, 'node_modules', '.bin', 'gulp'), 'build'], cwd=ROOT)
-        log.info("running [gulp package]")
-        check_output([os.path.join(ROOT, 'node_modules', '.bin', 'gulp'), 'package'], cwd=ROOT)
+            log.info("running [gulp build]")
+            check_output([os.path.join(ROOT, 'node_modules', '.bin', 'gulp'), 'build'], cwd=ROOT)
+            log.info("running [gulp package]")
+            check_output([os.path.join(ROOT, 'node_modules', '.bin', 'gulp'), 'package'], cwd=ROOT)
+        except Exception as e:
+            log.warning("Unable to build static content")
 
 setup(
     name='lemur',

@@ -8,7 +8,7 @@ Several interfaces exist for extending Lemur:
 * Source (lemur.plugins.base.source)
 * Notification (lemur.plugins.base.notification)
 
-Each interface has its own function that will need to be defined in order for
+Each interface has its own functions that will need to be defined in order for
 your plugin to work correctly. See :ref:`Plugin Interfaces <PluginInterfaces>` for details.
 
 
