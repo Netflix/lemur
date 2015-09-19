@@ -272,7 +272,7 @@ Verisign/Symantec and CloudCA
 
 Authentication
 --------------
-Lemur currently supports Basic Authentication and Ping OAuth2 out of the box, additional flows can be added relatively easily
+Lemur currently supports Basic Authentication and Ping OAuth2 out of the box, additional flows can be added relatively easily.
 If you are not using Ping you do not need to configure any of these options.
 
 For more information about how to use social logins, see: `Satellizer <https://github.com/sahat/satellizer>`_
@@ -368,7 +368,7 @@ Next we will create the the Lemur IAM role. Lemur
 
 ..note::
 
-The default IAM role that Lemur assumes into is called `Lemur`, if you need to change this ensure you set `LEMUR_INSTANCE_PROFILE` to your role name in the configuration.
+    The default IAM role that Lemur assumes into is called `Lemur`, if you need to change this ensure you set `LEMUR_INSTANCE_PROFILE` to your role name in the configuration.
 
 
 Here is an example policy for Lemur:
@@ -495,7 +495,7 @@ Upgrading Lemur
 ===============
 
 Lemur provides an easy way to upgrade between versions. Simply download the newest
-version of Lemur from pypi and then apply any schema cahnges with the following command.
+version of Lemur from pypi and then apply any schema changes with the following command.
 
 .. code-block:: bash
 
@@ -595,7 +595,7 @@ All commands default to `~/.lemur/lemur.conf.py` if a configuration is not speci
 Sub-commands
 ------------
 
-Lemur includes several sub-commands for interacting with Lemur such as created new users, creating new roles and even
+Lemur includes several sub-commands for interacting with Lemur such as creating new users, creating new roles and even
 issuing certificates.
 
 The best way to discovery these commands is by using the built in help pages
