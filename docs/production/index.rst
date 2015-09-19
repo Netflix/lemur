@@ -6,18 +6,19 @@ There are several steps needed to make Lemur production ready. Here we focus on 
 Basics
 ======
 
-Because of the sensitivity of the information stored and maintain by Lemur it is important that you follow standard host hardening practices:
+Because of the sensitivity of the information stored and maintained by Lemur it is important that you follow standard host hardening practices:
 
 - Run Lemur with a limited user
-- Disabled any unneeded service
+- Disabled any unneeded services
 - Enable remote logging
+- Restrict access to host
 
 .. _CredentialManagement:
 
 Credential Management
 ---------------------
 
-Lemur often contains credentials such as mutual SSL keys that are used to communicate with third party resources and for encrypting stored secrets. Lemur comes with the ability
+Lemur often contains credentials such as mutual TLS keys or API tokens that are used to communicate with third party resources and for encrypting stored secrets. Lemur comes with the ability
 to automatically encrypt these keys such that your keys not be in clear text.
 
 The keys are located within lemur/keys and broken down by environment
@@ -30,7 +31,7 @@ and
 
     ``lemur unlock``
 
-If you choose to use this feature ensure that the KEY are decrypted before Lemur starts as it will have trouble communicating with the database otherwise.
+If you choose to use this feature ensure that the keys are decrypted before Lemur starts as it will have trouble communicating with the database otherwise.
 
 Entropy
 -------
@@ -56,8 +57,8 @@ For additional information about OpenSSL entropy issues:
 - `Managing and Understanding Entropy Usage <https://www.blackhat.com/docs/us-15/materials/us-15-Potter-Understanding-And-Managing-Entropy-Usage.pdf>`_
 
 
-SSL
-====
+TLS/SSL
+=======
 
 Nginx
 -----
@@ -127,10 +128,10 @@ You can make some adjustments to get a better user experience::
 
     }
 
-This makes Nginx serve the favicon and static files which is is much better at than python.
+This makes Nginx serve the favicon and static files which it is much better at than python.
 
-It is highly recommended that you deploy SSL when deploying Lemur. This may be obvious given Lemur's purpose but the
-sensitive nature of Lemur and what it controls makes this essential. This is a sample config for Lemur that also terminates SSL::
+It is highly recommended that you deploy TLS when deploying Lemur. This may be obvious given Lemur's purpose but the
+sensitive nature of Lemur and what it controls makes this essential. This is a sample config for Lemur that also terminates TLS::
 
     server_tokens off;
     add_header X-Frame-Options DENY;
@@ -218,7 +219,7 @@ An example apache config::
         ...
     </VirtualHost>
 
-Also included in the configurations above are several best practices when it comes to deploying SSL. Things like enabling
+Also included in the configurations above are several best practices when it comes to deploying TLS. Things like enabling
 HSTS, disabling vulnerable ciphers are all good ideas when it comes to deploying Lemur into a production environment.
 
 .. note::
