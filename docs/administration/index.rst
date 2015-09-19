@@ -594,19 +594,6 @@ Top level commands:
         lemur sync -list
 
 
-Additionally there are many different sub-commands for manipulating Lemur. To view all of Lemur's commands run::
-
-    lemur --help
-
-Each sub-command comes with additional help, for instance::
-
-    lemur certificates --help
-
-or::
-
-    lemur deploy --help
-
-
 Identity and Access Management
 ==============================
 
