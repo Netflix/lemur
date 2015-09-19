@@ -581,7 +581,7 @@ Top level commands:
 Sub-commands
 ------------
 
-Lemur includes several sub-commands for interacting with Lemur such as creating new users, creating new roles and even
+Lemur includes several sub-commands for interacting with Lemur such as created new users, creating new roles and even
 issuing certificates.
 
 The best way to discovery these commands is by using the built in help pages
