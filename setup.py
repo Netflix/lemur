@@ -121,7 +121,7 @@ class BuildStatic(Command):
             log.info("running [gulp package]")
             check_output([os.path.join(ROOT, 'node_modules', '.bin', 'gulp'), 'package'], cwd=ROOT)
         except Exception as e:
-            log.warning("Unable to build static content")
+            log.warn("Unable to build static content")
 
 setup(
     name='lemur',
