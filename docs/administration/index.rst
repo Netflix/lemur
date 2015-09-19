@@ -568,24 +568,6 @@ All commands default to `~/.lemur/lemur.conf.py` if a configuration is not speci
         lemur db upgrade
 
 
-.. data:: create_user
-
-    Creates new users within Lemur.
-
-    ::
-
-        lemur create_user -u jim -e jim@example.com
-
-
-.. data:: create_role
-
-    Creates new roles within Lemur.
-
-    ::
-
-        lemur create_role -n example -d "a new role"
-
-
 .. data:: check_revoked
 
     Traverses every certificate that Lemur is aware of and attempts to understand it's validity.
@@ -608,6 +590,26 @@ All commands default to `~/.lemur/lemur.conf.py` if a configuration is not speci
     ::
 
         lemur sync -list
+
+
+Sub-commands
+------------
+
+Lemur includes several sub-commands for interacting with Lemur such as created new users, creating new roles and even
+issuing certificates.
+
+The best way to discovery these commands is by using the built in help pages
+
+    ::
+
+        lemur --help
+
+
+and to get help on sub-commands
+
+    ::
+
+        lemur certificates --help
 
 
 Identity and Access Management
