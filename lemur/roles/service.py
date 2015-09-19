@@ -63,6 +63,16 @@ def get(role_id):
     return database.get(Role, role_id)
 
 
+def get_all():
+    """
+    Retrieve all roles
+
+    :return:
+    """
+    query = database.session_query(Role)
+    return database.find_all(query, Role, {}).all()
+
+
 def get_by_name(role_name):
     """
     Retrieve a role by it's name

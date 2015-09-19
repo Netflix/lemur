@@ -526,6 +526,8 @@ Builtin Commands
 
 All commands default to `~/.lemur/lemur.conf.py` if a configuration is not specified.
 
+Top level commands:
+
 .. data:: create_config
 
     Creates a default configuration file for Lemur.
@@ -568,24 +570,6 @@ All commands default to `~/.lemur/lemur.conf.py` if a configuration is not speci
         lemur db upgrade
 
 
-.. data:: create_user
-
-    Creates new users within Lemur.
-
-    ::
-
-        lemur create_user -u jim -e jim@example.com
-
-
-.. data:: create_role
-
-    Creates new roles within Lemur.
-
-    ::
-
-        lemur create_role -n example -d "a new role"
-
-
 .. data:: check_revoked
 
     Traverses every certificate that Lemur is aware of and attempts to understand it's validity.
@@ -608,6 +592,19 @@ All commands default to `~/.lemur/lemur.conf.py` if a configuration is not speci
     ::
 
         lemur sync -list
+
+
+Additionally there are many different sub-commands for manipulating Lemur. To view all of Lemur's commands run::
+
+    lemur --help
+
+Each sub-command comes with additional help, for instance::
+
+    lemur certificates --help
+
+or::
+
+    lemur deploy --help
 
 
 Identity and Access Management

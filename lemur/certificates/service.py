@@ -8,7 +8,7 @@
 import arrow
 
 from sqlalchemy import func, or_
-from flask import g, current_app
+from flask import current_app
 
 from lemur import database
 from lemur.plugins.base import plugins
@@ -123,12 +123,10 @@ def mint(issuer_options):
 
     csr, private_key = create_csr(issuer_options)
 
-    issuer_options['creator'] = g.user.email
     cert_body, cert_chain = issuer.create_certificate(csr, issuer_options)
 
     cert = Certificate(cert_body, private_key, cert_chain)
 
-    cert.user = g.user
     cert.authority = authority
     database.update(cert)
     return cert, private_key, cert_chain,
@@ -191,7 +189,8 @@ def upload(**kwargs):
     cert.owner = kwargs['owner']
     cert = database.create(cert)
 
-    g.user.certificates.append(cert)
+    user = kwargs['user']
+    user.certificates.append(cert)
 
     database.update_list(cert, 'destinations', Destination, kwargs.get('destinations'))
 
@@ -220,10 +219,11 @@ def create(**kwargs):
 
     cert.owner = kwargs['owner']
 
+    user = kwargs['user']
     database.create(cert)
     cert.description = kwargs['description']
-    g.user.certificates.append(cert)
-    database.update(g.user)
+    user.certificates.append(cert)
+    database.update(user)
 
     # do this after the certificate has already been created because if it fails to upload to the third party
     # we do not want to lose the certificate information.
@@ -259,6 +259,7 @@ def render(args):
     destination_id = args.pop('destination_id')
     notification_id = args.pop('notification_id', None)
     show = args.pop('show')
+    user = args.pop('user')
     # owner = args.pop('owner')
     # creator = args.pop('creator')  # TODO we should enabling filtering by owner
 
@@ -288,10 +289,10 @@ def render(args):
             query = database.filter(query, Certificate, terms)
 
     if show:
-        sub_query = database.session_query(Role.name).filter(Role.user_id == g.user.id).subquery()
+        sub_query = database.session_query(Role.name).filter(Role.user_id == user.id).subquery()
         query = query.filter(
             or_(
-                Certificate.user_id == g.user.id,
+                Certificate.user_id == user.id,
                 Certificate.owner.in_(sub_query)
             )
         )

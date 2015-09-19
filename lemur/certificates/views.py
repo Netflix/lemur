@@ -7,7 +7,7 @@
 """
 from builtins import str
 
-from flask import Blueprint, make_response, jsonify
+from flask import Blueprint, make_response, jsonify, g
 from flask.ext.restful import reqparse, Api, fields
 
 from cryptography import x509
@@ -172,6 +172,7 @@ class CertificatesList(AuthenticatedResource):
         parser.add_argument('show', type=str, location='args')
 
         args = parser.parse_args()
+        args['user'] = g.user
         return service.render(args)
 
     @marshal_items(FIELDS)
@@ -301,6 +302,8 @@ class CertificatesList(AuthenticatedResource):
         roles.append(role)
         permission = AuthorityPermission(authority.id, roles)
 
+        args['user'] = g.user
+
         if permission.can():
             return service.create(**args)
 
@@ -384,6 +387,8 @@ class CertificatesUpload(AuthenticatedResource):
         self.reqparse.add_argument('privateKey', type=private_key_str, dest='private_key', location='json')
 
         args = self.reqparse.parse_args()
+        args['user'] = g.user
+
         if args.get('destinations'):
             if args.get('private_key'):
                 return service.upload(**args)
@@ -665,6 +670,7 @@ class NotificationCertificatesList(AuthenticatedResource):
 
         args = parser.parse_args()
         args['notification_id'] = notification_id
+        args['user'] = g.user
         return service.render(args)
 
 
