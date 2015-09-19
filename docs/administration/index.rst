@@ -592,6 +592,25 @@ All commands default to `~/.lemur/lemur.conf.py` if a configuration is not speci
         lemur sync -list
 
 
+Sub-commands
+------------
+
+Lemur includes several sub-commands for interacting with Lemur such as created new users, creating new roles and even
+issuing certificates.
+
+The best way to discovery these commands is by using the built in help pages
+
+    ::
+
+        lemur --help
+
+
+and to get help on sub-commands
+
+    ::
+
+        lemur certificates --help
+
 
 Identity and Access Management
 ==============================
