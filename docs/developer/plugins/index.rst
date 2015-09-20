@@ -91,7 +91,7 @@ Issuer
 Issuer plugins are used when you have an external service that creates certificates or authorities.
 In the simple case the third party only issues certificates (Verisign, DigiCert, etc.).
 
-If you have a third party or internal service that creates authorities (CloudCA, EJBCA, etc.), Lemur has you covered,
+If you have a third party or internal service that creates authorities (EJBCA, etc.), Lemur has you covered,
 it can treat any issuer plugin as both a source of creating new certificates as well as new authorities.
 
 
