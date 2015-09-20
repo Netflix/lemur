@@ -209,8 +209,9 @@ Lemur supports sending certification expiration notifications through SES and SM
 Authority Options
 -----------------
 
-Authorities will each have their own configuration options. There are currently two plugins bundled with Lemur,
-Verisign/Symantec and CloudCA
+Authorities will each have their own configuration options. There are currently just one plugin bundled with Lemur,
+Verisign/Symantec. Additional plugins may define additional options. Refer to the plugins own documentation
+for those plugins.
 
 .. data:: VERISIGN_URL
     :noindex:
@@ -251,23 +252,6 @@ Verisign/Symantec and CloudCA
     :noindex:
 
         This is the root to be used for your CA chain
-
-
-.. data:: CLOUDCA_URL
-    :noindex:
-
-        This is the URL for CLoudCA API
-
-
-.. data:: CLOUDCA_PEM_PATH
-    :noindex:
-
-        This is the path to the mutual SSL Certificate use for communicating with CLOUDCA
-
-.. data:: CLOUDCA_BUNDLE
-    :noindex:
-
-        This is the path to the CLOUDCA certificate bundle
 
 
 Authentication
