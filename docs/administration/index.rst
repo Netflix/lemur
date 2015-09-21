@@ -222,7 +222,7 @@ for those plugins.
 .. data:: VERISIGN_PEM_PATH
     :noindex:
 
-        This is the path to the mutual SSL certificate used for communicating with Verisign
+        This is the path to the mutual TLS certificate used for communicating with Verisign
 
 
 .. data:: VERISIGN_FIRST_NAME
@@ -297,7 +297,7 @@ AWS Plugin Configuration
 
 In order for Lemur to manage it's own account and other accounts we must ensure it has the correct AWS permissions.
 
-.. note:: AWS usage is completely optional. Lemur can upload, find and manage SSL certificates in AWS. But is not required to do so.
+.. note:: AWS usage is completely optional. Lemur can upload, find and manage TLS certificates in AWS. But is not required to do so.
 
 Setting up IAM roles
 --------------------
