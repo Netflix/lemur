@@ -1,8 +1,8 @@
 Lemur
 =====
 
-Lemur is a SSL management service. It attempts to help track and create certificates. By removing common issues with
-CSR creation it gives normal developers 'sane' SSL defaults and helps security teams push SSL usage throughout an organization.
+Lemur is a TLS management service. It attempts to help track and create certificates. By removing common issues with
+CSR creation it gives normal developers 'sane' TLS defaults and helps security teams push TLS usage throughout an organization.
 
 Installation
 ------------
