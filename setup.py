@@ -2,7 +2,7 @@
 Lemur
 =====
 
-Is an SSL management and orchestration tool.
+Is a TLS management and orchestration tool.
 
 :copyright: (c) 2015 by Netflix, see AUTHORS for more
 :license: Apache, see LICENSE for more details.
