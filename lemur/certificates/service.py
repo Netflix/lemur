@@ -232,7 +232,7 @@ def create(**kwargs):
     database.update_list(cert, 'notifications', Notification, kwargs.get('notifications'))
 
     # create default notifications for this certificate if none are provided
-    notifications = []
+    notifications = cert.notifications
     if not kwargs.get('notifications'):
         notification_name = "DEFAULT_{0}".format(cert.owner.split('@')[0].upper())
         notifications += notification_service.create_default_expiration_notifications(notification_name, [cert.owner])
