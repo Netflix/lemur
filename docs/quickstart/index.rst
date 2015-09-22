@@ -56,23 +56,6 @@ And optionally if your database is going to be on the same host as the webserver
     $ sudo apt-get install postgres
 
 
-Installing Lemur
-----------------
-
-Once you've got the environment setup, you can install Lemur and all its dependencies with
-the same command you used to grab virtualenv::
-
-    pip install -U lemur
-
-Once everything is installed, you should be able to execute the Lemur CLI, via ``lemur``, and get something
-like the following:
-
-.. code-block:: bash
-
-  $ lemur
-  usage: lemur [--config=/path/to/settings.py] [command] [options]
-
-
 Installing from Source
 ~~~~~~~~~~~~~~~~~~~~~~
 
