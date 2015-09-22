@@ -14,7 +14,7 @@ Some basic prerequisites which you'll need in order to run Lemur:
 * A UNIX-based operating system. We test on Ubuntu, develop on OS X
 * Python 2.7
 * PostgreSQL
-* Ngnix
+* Nginx
 
 .. note:: Lemur was built with in AWS in mind. This means that things such as databases (RDS), mail (SES), and SSL (ELB),
     are largely handled for us. Lemur does **not** require AWS to function. Our guides and documentation try to be
