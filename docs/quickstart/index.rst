@@ -53,7 +53,7 @@ dependencies::
 
 And optionally if your database is going to be on the same host as the webserver::
 
-    $ sudo apt-get install postgres
+    $ sudo apt-get install postgresql
 
 
 Installing from Source
