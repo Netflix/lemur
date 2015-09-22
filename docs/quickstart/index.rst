@@ -72,7 +72,7 @@ And then run:
 
 .. code-block:: bash
 
-  $ python setup.py install
+  $ make develop
 
 .. Note:: This command will install npm dependencies as well as compile static assets.
 
