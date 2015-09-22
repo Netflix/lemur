@@ -208,6 +208,46 @@ class CertificatesList(AuthenticatedResource):
                     "notAfter": "2015-06-17T15:21:08",
                     "description": "dsfdsf"
                 },
+                "notifications": [
+                    {
+                      "description": "Default 30 day expiration notification",
+                      "notificationOptions": [
+                        {
+                          "name": "interval",
+                          "required": true,
+                          "value": 30,
+                          "helpMessage": "Number of days to be alert before expiration.",
+                          "validation": "^\\d+$",
+                          "type": "int"
+                        },
+                        {
+                          "available": [
+                            "days",
+                            "weeks",
+                            "months"
+                          ],
+                          "name": "unit",
+                          "required": true,
+                          "value": "days",
+                          "helpMessage": "Interval unit",
+                          "validation": "",
+                          "type": "select"
+                        },
+                        {
+                          "name": "recipients",
+                          "required": true,
+                          "value": "bob@example.com",
+                          "helpMessage": "Comma delimited list of email addresses",
+                          "validation": "^([\\w+-.%]+@[\\w-.]+\\.[A-Za-z]{2,4},?)+$",
+                            "type": "str"
+                          }
+                        ],
+                        "label": "DEFAULT_KGLISSON_30_DAY",
+                        "pluginName": "email-notification",
+                        "active": true,
+                        "id": 7
+                    }
+                ],
                 "extensions": {
                     "basicConstraints": {},
                     "keyUsage": {
