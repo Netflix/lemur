@@ -9,6 +9,8 @@ develop: update-submodules setup-git
 	pip install -e .
 	pip install "file://`pwd`#egg=lemur[dev]"
 	pip install "file://`pwd`#egg=lemur[tests]"
+	node_modules/.bin/gulp build
+	node_modules/.bin/gulp package
 	@echo ""
 
 dev-docs:
