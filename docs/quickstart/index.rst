@@ -61,11 +61,18 @@ Installing from Source
 
 If you're installing the Lemur source (e.g. from git), you'll also need to install **npm**.
 
-Once your system is prepared, symlink your source into the virtualenv:
+Once your system is prepared, ensure that your in the virtualenv:
 
 .. code-block:: bash
 
-  $ make develop
+  $ which python
+
+
+And then run:
+
+.. code-block:: bash
+
+  $ python setup.py install
 
 .. Note:: This command will install npm dependencies as well as compile static assets.
 
@@ -154,8 +161,8 @@ Setup a Reverse Proxy
 ---------------------
 
 By default, Lemur runs on port 5000. Even if you change this, under normal conditions you won't be able to bind to
-port 80. To get around this (and to avoid running Lemur as a privileged user, which you shouldn't), we recommend
-you setup a simple web proxy.
+port 80. To get around this (and to avoid running Lemur as a privileged user, which you shouldn't), we need setup a
+simple web proxy. There are many different web servers you can use for this, we like and recommend Nginx.
 
 Proxying with Nginx
 ~~~~~~~~~~~~~~~~~~~
