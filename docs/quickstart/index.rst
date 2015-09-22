@@ -61,7 +61,7 @@ Installing from Source
 
 If you're installing the Lemur source (e.g. from git), you'll also need to install **npm**.
 
-Once your system is prepared, ensure that your in the virtualenv:
+Once your system is prepared, ensure that you are in the virtualenv:
 
 .. code-block:: bash
 
