@@ -3,22 +3,25 @@
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 """
+from builtins import str
+
 from datetime import timedelta
 from flask import make_response, request, current_app
 
 from functools import update_wrapper
 
 
+# this is only used for dev
 def crossdomain(origin=None, methods=None, headers=None,
                 max_age=21600, attach_to_all=True,
-                automatic_options=True):
+                automatic_options=True):  # pragma: no cover
     if methods is not None:
         methods = ', '.join(sorted(x.upper() for x in methods))
 
-    if headers is not None and not isinstance(headers, basestring):
+    if headers is not None and not isinstance(headers, str):
         headers = ', '.join(x.upper() for x in headers)
 
-    if not isinstance(origin, basestring):
+    if not isinstance(origin, str):
         origin = ', '.join(origin)
 
     if isinstance(max_age, timedelta):
@@ -44,12 +47,10 @@ def crossdomain(origin=None, methods=None, headers=None,
             h['Access-Control-Allow-Origin'] = origin
             h['Access-Control-Allow-Methods'] = get_methods()
             h['Access-Control-Max-Age'] = str(max_age)
-            #if headers is not None:
-            h['Access-Control-Allow-Headers'] = "Origin, X-Requested-With, Content-Type, Accept, Authorization "  # headers
+            h['Access-Control-Allow-Headers'] = "Origin, X-Requested-With, Content-Type, Accept, Authorization "
             h['Access-Control-Allow-Credentials'] = 'true'
             return resp
 
         f.provide_automatic_options = False
         return update_wrapper(wrapped_function, f)
     return decorator
-

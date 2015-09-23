@@ -1,3 +1,5 @@
+'use strict';
+
 angular.module('lemur')
   .service('RoleApi', function (LemurRestangular) {
     LemurRestangular.extendModel('roles', function (obj) {
@@ -32,20 +34,27 @@ angular.module('lemur')
     };
 
     RoleService.getUsers = function (role) {
-      role.customGET('users').then(function (users) {
+      return role.getList('users').then(function (users) {
         role.users = users;
       });
     };
 
+    RoleService.loadMoreUsers = function (role, page) {
+      role.getList('users', {page: page}).then(function (users) {
+        _.each(users, function (user) {
+          role.users.push(user);
+        });
+      });
+    };
+
     RoleService.create = function (role) {
-      RoleApi.post(role).then(
+      return RoleApi.post(role).then(
         function () {
           toaster.pop({
             type: 'success',
             title: role.name,
             body: 'Has been successfully created!'
           });
-          $location.path('roles');
         },
         function (response) {
           toaster.pop({
@@ -57,14 +66,13 @@ angular.module('lemur')
     };
 
     RoleService.update = function (role) {
-      role.put().then(
+      return role.put().then(
         function () {
           toaster.pop({
             type: 'success',
             title: role.name,
             body: 'Successfully updated!'
           });
-          $location.path('roles');
         },
         function (response) {
           toaster.pop({
@@ -108,7 +116,7 @@ angular.module('lemur')
             role.username = response.username;
           }
         },
-        function (response) {
+        function () {
           toaster.pop({
             type: 'error',
             title: role.name,

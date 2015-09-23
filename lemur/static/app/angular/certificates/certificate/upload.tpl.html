@@ -1,136 +1,91 @@
-<h2 class="featurette-heading">Upload a certificate <span class="text-muted"><small>encrypt all the things
-</small></span></h2>
-<div class="panel panel-default">
-  <div class="panel-heading">
-    <a href="/#/certificates/" class="btn btn-danger pull-right">Cancel</a>
-    <div class="clearfix"></div>
-  </div>
-  <div class="panel-body">
-    <form name="uploadForm" class="form-horizontal" role="form" novalidate>
-      <div class="form-group"
-           ng-class="{'has-error': uploadForm.owner.$invalid, 'has-success': !uploadForm.owner.$invalid&&uploadForm.owner.$dirty}">
-        <label class="control-label col-sm-2">
-          Owner
-        </label>
+<div class="modal-header">
+    <div class="modal-title">
+        <h3 class="modal-header">Upload a certificate <span class="text-muted"><small>encrypt all the things</small></span></h3>
+    </div>
+    <div class="modal-body">
+        <form name="uploadForm" class="form-horizontal" role="form" novalidate>
+            <div class="form-group"
+                 ng-class="{'has-error': uploadForm.owner.$invalid, 'has-success': !uploadForm.owner.$invalid&&uploadForm.owner.$dirty}">
+                <label class="control-label col-sm-2">
+                    Owner
+                </label>
 
-        <div class="col-sm-10">
-          <input type="email" name="owner" ng-model="certificate.owner" placeholder="owner@netflix.com"
-                 class="form-control" required/>
+                <div class="col-sm-10">
+                    <input type="email" name="owner" ng-model="certificate.owner" placeholder="owner@example.com"
+                           class="form-control" required/>
 
-          <p ng-show="uploadForm.owner.$invalid && !uploadForm.owner.$pristine" class="help-block">Enter a valid
-            email.</p>
-        </div>
-      </div>
-      <div class="form-group"
-           ng-class="{'has-error': uploadForm.publicCert.$invalid, 'has-success': !uploadForm.publicCert.$invalid&&uploadForm.publicCert.$dirty}">
-        <label class="control-label col-sm-2">
-          Public Certificate
-        </label>
+                    <p ng-show="uploadForm.owner.$invalid && !uploadForm.owner.$pristine" class="help-block">Enter a valid
+                        email.</p>
+                </div>
+            </div>
+            <div class="form-group"
+                 ng-class="{'has-error': uploadForm.name.$invalid, 'has-success': !uploadForm.name.$invalid&&uploadForm.name.$dirty}">
+                <label class="control-label col-sm-2" tooltip="If no name is provided, Lemur will generate a name for you">
+                    Custom Name <span class="glyphicon glyphicon-question-sign"></span>
+                </label>
+                <div class="col-sm-10">
+                    <input name="name" ng-model="certificate.name" placeholder="the.example.net-SymantecCorporation-20150828-20160830" class="form-control"/>
+                </div>
+            </div>
+            <div class="form-group"
+                 ng-class="{'has-error': uploadForm.description.$invalid, 'has-success': !uploadForm.$invalid&&uploadForm.description.$dirty}">
+                <label class="control-label col-sm-2">
+                    Description
+                </label>
+                <div class="col-sm-10">
+                    <textarea name="description" ng-model="certificate.description" placeholder="Something elegant" class="form-control" required></textarea>
+                    <p ng-show="uploadForm.description.$invalid && !uploadForm.description.$pristine" class="help-block">You must give a short description about this authority will be used for.</p>
+                </div>
+            </div>
+            <div class="form-group"
+                 ng-class="{'has-error': uploadForm.publicCert.$invalid, 'has-success': !uploadForm.publicCert.$invalid&&uploadForm.publicCert.$dirty}">
+                <label class="control-label col-sm-2">
+                    Public Certificate
+                </label>
 
-        <div class="col-sm-10">
+                <div class="col-sm-10">
                 <textarea name="publicCert" ng-model="certificate.publicCert" placeholder="PEM encoded string..."
                           class="form-control" ng-pattern="/^-----BEGIN CERTIFICATE-----/" required></textarea>
 
-          <p ng-show="uploadForm.publicCert.$invalid && !uploadForm.publicCert.$pristine" class="help-block">Enter
-            a valid certificate.</p>
-        </div>
-      </div>
-      <div class="form-group"
-           ng-class="{'has-error': uploadForm.privateKey.$invalid&&uploadForm.privateKey.$dirty, 'has-success': !uploadForm.privateKey.$invalid&&uploadForm.privateKey.$dirty}">
-        <label class="control-label col-sm-2">
-          Private Key
-        </label>
+                    <p ng-show="uploadForm.publicCert.$invalid && !uploadForm.publicCert.$pristine" class="help-block">Enter
+                        a valid certificate.</p>
+                </div>
+            </div>
+            <div class="form-group"
+                 ng-class="{'has-error': uploadForm.privateKey.$invalid&&uploadForm.privateKey.$dirty, 'has-success': !uploadForm.privateKey.$invalid&&uploadForm.privateKey.$dirty}">
+                <label class="control-label col-sm-2">
+                    Private Key
+                </label>
 
-        <div class="col-sm-10">
+                <div class="col-sm-10">
                 <textarea name="privateKey" ng-model="certificate.privateKey" placeholder="PEM encoded string..."
                           class="form-control" ng-pattern="/^-----BEGIN RSA PRIVATE KEY-----/"></textarea>
 
-          <p ng-show="uploadForm.privateKey.$invalid && !uploadForm.privateKey.$pristine" class="help-block">Enter
-            a valid certificate.</p>
-        </div>
-      </div>
-      <div class="form-group"
-           ng-class="{'has-error': uploadForm.owner.$invalid&&uploadform.intermediateCert.$dirty, 'has-success': !uploadForm.intermediateCert.$invalid&&uploadForm.intermediateCert.$dirty}">
-        <label class="control-label col-sm-2">
-          Intermediate Certificate
-        </label>
+                    <p ng-show="uploadForm.privateKey.$invalid && !uploadForm.privateKey.$pristine" class="help-block">Enter
+                        a valid certificate.</p>
+                </div>
+            </div>
+            <div class="form-group"
+                 ng-class="{'has-error': uploadForm.owner.$invalid&&uploadform.intermediateCert.$dirty, 'has-success': !uploadForm.intermediateCert.$invalid&&uploadForm.intermediateCert.$dirty}">
+                <label class="control-label col-sm-2">
+                    Intermediate Certificate
+                </label>
 
-        <div class="col-sm-10">
+                <div class="col-sm-10">
                 <textarea name="intermediateCert" ng-model="certificate.intermediateCert"
                           placeholder="PEM encoded string..." class="form-control"
                           ng-pattern="/^-----BEGIN CERTIFICATE-----/"></textarea>
 
-          <p ng-show="uploadForm.intermediateCert.$invalid && !uploadForm.intemediateCert.$pristine"
-             class="help-block">Enter a valid certificate.</p>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="control-label col-sm-2">
-          Accounts
-        </label>
-        <div class="col-sm-10">
-          <div class="input-group">
-            <input type="text" ng-model="certificate.selectedAccount" placeholder="Account Name"
-                   typeahead="account.label for account in accountService.findAccountsByName($viewValue)" typeahead-loading="loadingAccounts"
-                   class="form-control" typeahead-on-select="certificate.attachAccount($item)" typeahead-min-wait="50"
-                   tooltip="Lemur can upload the certificate to any AWS account."
-                   tooltip-trigger="focus" tooltip-placement="top">
-          <span class="input-group-btn">
-            <button ng-model="certificate.accounts" class="btn btn-default" btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
-              <span class="badge">{{ certificate.accounts.length || 0 }}</span>
-            </button>
-          </span>
-          </div>
-          <table ng-show="certificate.accounts" class="table">
-            <tr ng-repeat="account in certificate.accounts track by $index">
-              <td><a class="btn btn-sm btn-info" href="#/accounts/{{ account.id }}/certificates">{{ account.label }}</a></td>
-              <td><span class="text-muted">{{ account.comments }}</span></td>
-              <td>
-                <button type="button" ng-click="certificate.removeAccount($index)" class="btn btn-danger btn-sm pull-right">
-                  Remove
-                </button>
-              </td>
-            </tr>
-          </table>
-        </div>
-      </div>
-      <!--<div class="form-group">
-        <label class="control-label col-sm-2">
-          ELBs
-        </label>
-        <div class="col-sm-10">
-          <div class="input-group">
-            <input type="text" ng-model="certificate.selectedELB" placeholder="ELB Name"
-                   typeahead="elb.name for elb in elbService.findELBByName($viewValue)" typeahead-loading="loadingAccounts"
-                   class="form-control" typeahead-on-select="attachELB($item)" typeahead-min-wait="50"
-                   tooltip="Lemur can upload a certificate to one or more ELBs searching will be limited to the accounts selected above"
-                   tooltip-trigger="focus" tooltip-placement="top">
-            <span class="input-group-btn">
-                <button ng-model="certificate.elbs" class="btn btn-default" btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
-                  <span class="badge">{{ certificate.elbs.length || 0 }}</span>
-                </button>
-            </span>
+                    <p ng-show="uploadForm.intermediateCert.$invalid && !uploadForm.intemediateCert.$pristine"
+                       class="help-block">Enter a valid certificate.</p>
+                </div>
             </div>
-            <table ng-show="certificate.elbs" class="table">
-              <tr ng-repeat="elb in certificate.elbs track by $index">
-                <td><a class="btn btn-sm btn-info" href="#/accounts/{{ elb.id }}/elbs">{{ elb.name }}</a></td>
-                <td>{{ elb.region }}</td>
-                <td>{{ elb.scheme }}</td>
-                <td>{{ elb.vpcId }}</td>
-                <td><a class="btn btn-info" ng-model="elb.showListeners" btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">View Listeners</a></td>
-                <td>
-                  <button type="button" ng-click="certificate.removeAccount($index)" class="btn btn-danger btn-sm pull-right">
-                    Remove
-                  </button>
-                </td>
-              </tr>
-            </table>
-        </div>
-      </div>-->
-    </form>
-  </div>
-  <div class="panel-footer">
-    <button type="submit" ng-click="upload(certificate)" ng-disabled="uploadForm.$invalid" class="btn btn-success pull-right">Upload</button>
-    <div class="clearfix"></div>
-  </div>
+            <div ng-include="'angular/certificates/certificate/notifications.tpl.html'"></div>
+            <div ng-include="'angular/certificates/certificate/destinations.tpl.html'"></div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button type="submit" ng-click="save(certificate)" ng-disabled="uploadForm.$invalid" class="btn btn-success">Import</button>
+        <button ng-click="cancel()" class="btn btn-danger">Cancel</button>
+    </div>
 </div>

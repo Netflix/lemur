@@ -1,6 +1,5 @@
-/**
- * Created by kglisson on 1/19/15.
- */
+'use strict';
+
 angular.module('lemur')
   .service('CertificateApi', function (LemurRestangular, DomainService) {
     LemurRestangular.extendModel('certificates', function (obj) {
@@ -58,28 +57,28 @@ angular.module('lemur')
         removeCustom: function (index) {
           this.extensions.custom.splice(index, 1);
         },
-        attachAccount: function (account) {
-          this.selectedAccount = null;
-          if (this.accounts === undefined) {
-            this.accounts = [];
+        attachDestination: function (destination) {
+          this.selectedDestination = null;
+          if (this.destinations === undefined) {
+            this.destinations = [];
           }
-          this.accounts.push(account);
+          this.destinations.push(destination);
         },
-        removeAccount: function (index) {
-          this.accounts.splice(index, 1);
+        removeDestination: function (index) {
+          this.destinations.splice(index, 1);
         },
-        attachELB: function (elb) {
-          this.selectedELB = null;
-          if (this.elbs === undefined) {
-            this.elbs = [];
+        attachNotification: function (notification) {
+          this.selectedNotification = null;
+          if (this.notifications === undefined) {
+            this.notifications = [];
           }
-          this.elbs.push(elb);
+          this.notifications.push(notification);
         },
-        removeELB: function (index) {
-          this.elbs.splice(index, 1);
+        removeNotification: function (index) {
+          this.notifications.splice(index, 1);
         },
         findDuplicates: function () {
-          DomainService.findDomainByName(this.extensions.subAltNames[0]).then(function (domains) { //We should do a better job of searchin multiple domains
+          DomainService.findDomainByName(this.extensions.subAltNames[0]).then(function (domains) { //We should do a better job of searching for multiple domains
             this.duplicates = domains.total;
           });
         },
@@ -90,7 +89,7 @@ angular.module('lemur')
     });
     return LemurRestangular.all('certificates');
   })
-  .service('CertificateService', function ($location, CertificateApi, toaster) {
+  .service('CertificateService', function ($location, CertificateApi, LemurRestangular, DefaultService, toaster) {
     var CertificateService = this;
     CertificateService.findCertificatesByName = function (filterValue) {
       return CertificateApi.getList({'filter[name]': filterValue})
@@ -99,23 +98,15 @@ angular.module('lemur')
         });
     };
 
-    CertificateService.getARNs = function (certificate) {
-      certificate.arns = [];
-      _.each(certificate.accounts, function (account) {
-        certificate.arns.push('arn:aws:iam::' + account.accountNumber + ':server-certificate/' + certificate.name);
-      });
-    };
-
     CertificateService.create = function (certificate) {
       certificate.attachSubAltName();
       return CertificateApi.post(certificate).then(
-        function (response) {
+        function () {
           toaster.pop({
             type: 'success',
             title: certificate.name,
             body: 'Successfully created!'
           });
-          $location.path('/certificates');
         },
         function (response) {
           toaster.pop({
@@ -128,25 +119,31 @@ angular.module('lemur')
     };
 
     CertificateService.update = function (certificate) {
-      certificate.put().then(function () {
-        toaster.pop({
-          type: 'success',
-          title: certificate.name,
-          body: 'Successfully updated!'
+      return LemurRestangular.copy(certificate).put().then(
+        function () {
+          toaster.pop({
+            type: 'success',
+            title: certificate.name,
+            body: 'Successfully updated!'
+          });
+        },
+        function (response) {
+          toaster.pop({
+            type: 'error',
+            title: certificate.name,
+            body: 'Failed to update ' + response.data.message
+          });
         });
-        $location.path('certificates');
-      });
     };
 
     CertificateService.upload = function (certificate) {
-      CertificateApi.customPOST(certificate, "upload").then(
-        function (response) {
+      return CertificateApi.customPOST(certificate, 'upload').then(
+        function () {
           toaster.pop({
             type: 'success',
             title: certificate.name,
             body: 'Successfully uploaded!'
           });
-          $location.path('/certificates');
         },
         function (response) {
           toaster.pop({
@@ -158,7 +155,7 @@ angular.module('lemur')
     };
 
     CertificateService.loadPrivateKey = function (certificate) {
-      certificate.customGET('key').then(
+      return certificate.customGET('key').then(
         function (response) {
           if (response.key === null) {
             toaster.pop({
@@ -170,7 +167,7 @@ angular.module('lemur')
             certificate.privateKey = response.key;
           }
         },
-        function (response) {
+        function () {
           toaster.pop({
             type: 'error',
             title: certificate.name,
@@ -180,44 +177,47 @@ angular.module('lemur')
     };
 
     CertificateService.getAuthority = function (certificate) {
-      certificate.customGET('authority').then(function (authority) {
+      return certificate.customGET('authority').then(function (authority) {
         certificate.authority = authority;
       });
     };
 
     CertificateService.getCreator = function (certificate) {
-      certificate.customGET('creator').then(function (creator) {
+      return certificate.customGET('creator').then(function (creator) {
         certificate.creator = creator;
       });
     };
 
-    CertificateService.getAccounts = function (certificate) {
-      certificate.getList('accounts').then(function (accounts) {
-        certificate.accounts = accounts;
-        CertificateService.getARNs(certificate);
+    CertificateService.getDestinations = function (certificate) {
+      return certificate.getList('destinations').then(function (destinations) {
+        certificate.destinations = destinations;
       });
     };
 
-    CertificateService.getListeners = function (certificate) {
-      certificate.getList('listeners').then(function (listeners) {
-        certificate.listeners = listeners;
-      });
-    };
-
-    CertificateService.getELBs = function (certificate) {
-      certificate.getList('listeners').then(function (elbs) {
-        certificate.elbs = elbs;
+    CertificateService.getNotifications = function (certificate) {
+      return certificate.getList('notifications').then(function (notifications) {
+        certificate.notifications = notifications;
       });
     };
 
     CertificateService.getDomains = function (certificate) {
-      certificate.getList('domains').then(function (domains) {
+      return certificate.getList('domains').then(function (domains) {
         certificate.domains = domains;
       });
     };
 
+    CertificateService.getDefaults = function (certificate) {
+      return DefaultService.get().then(function (defaults) {
+        certificate.country = defaults.country;
+        certificate.state = defaults.state;
+        certificate.location = defaults.location;
+        certificate.organization = defaults.organization;
+        certificate.organizationalUnit = defaults.organizationalUnit;
+      });
+    };
+
     CertificateService.updateActive = function (certificate) {
-      certificate.put().then(
+      return certificate.put().then(
           function () {
             toaster.pop({
               type: 'success',

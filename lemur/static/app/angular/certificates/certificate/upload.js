@@ -2,25 +2,25 @@
 
 angular.module('lemur')
 
-  .config(function config($routeProvider) {
-    $routeProvider.when('/certificates/upload', {
-      templateUrl: '/angular/certificates/certificate/upload.tpl.html',
-      controller: 'CertificatesUploadController'
-    });
-  })
-
-  .controller('CertificatesUploadController', function ($scope, CertificateService, LemurRestangular, AccountService, ELBService) {
+  .controller('CertificateUploadController', function ($scope, $modalInstance, CertificateService, LemurRestangular, DestinationService, NotificationService, PluginService) {
     $scope.certificate = LemurRestangular.restangularizeElement(null, {}, 'certificates');
     $scope.upload = CertificateService.upload;
 
-    $scope.accountService = AccountService;
-    $scope.elbService = ELBService;
+    $scope.destinationService = DestinationService;
+    $scope.notificationService = NotificationService;
 
+    PluginService.getByType('destination').then(function (plugins) {
+        $scope.plugins = plugins;
+    });
 
-    $scope.attachELB = function (elb) {
-      $scope.certificate.attachELB(elb);
-      ELBService.getListeners(elb).then(function (listeners) {
-        $scope.certificate.elb.listeners = listeners;
+    $scope.save = function (certificate) {
+      CertificateService.upload(certificate).then(function () {
+        $modalInstance.close();
       });
     };
+
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+
   });

@@ -9,7 +9,7 @@ angular.module('lemur')
     });
   })
 
-  .controller('CertificatesViewController', function ($q, $scope, CertificateApi, CertificateService, MomentService, ngTableParams) {
+  .controller('CertificatesViewController', function ($q, $scope, $modal, CertificateApi, CertificateService, MomentService, ngTableParams) {
     $scope.filter = {};
     $scope.certificateTable = new ngTableParams({
       page: 1,            // show first page
@@ -26,8 +26,8 @@ angular.module('lemur')
             // TODO we should attempt to resolve all of these in parallel
             _.each(data, function (certificate) {
               CertificateService.getDomains(certificate);
-              CertificateService.getAccounts(certificate);
-              CertificateService.getListeners(certificate);
+              CertificateService.getDestinations(certificate);
+              CertificateService.getNotifications(certificate);
               CertificateService.getAuthority(certificate);
               CertificateService.getCreator(certificate);
             });
@@ -48,7 +48,7 @@ angular.module('lemur')
 
     $scope.getCertificateStatus = function () {
       var def = $q.defer();
-      def.resolve([{'title': 'Active', 'id': true}, {'title': 'Inactive', 'id': false}])
+      def.resolve([{'title': 'Active', 'id': true}, {'title': 'Inactive', 'id': false}]);
       return def;
     };
 
@@ -59,5 +59,49 @@ angular.module('lemur')
 
     $scope.toggleFilter = function (params) {
       params.settings().$scope.show_filter = !params.settings().$scope.show_filter;
+    };
+
+    $scope.create = function () {
+      var modalInstance = $modal.open({
+        animation: true,
+        controller: 'CertificateCreateController',
+        templateUrl: '/angular/certificates/certificate/certificateWizard.tpl.html',
+        size: 'lg'
+      });
+
+      modalInstance.result.then(function () {
+        $scope.certificateTable.reload();
+      });
+    };
+
+    $scope.edit = function (certificateId) {
+      var modalInstance = $modal.open({
+        animation: true,
+        controller: 'CertificateEditController',
+        templateUrl: '/angular/certificates/certificate/edit.tpl.html',
+        size: 'lg',
+        resolve: {
+          editId: function () {
+            return certificateId;
+          }
+        }
+      });
+
+      modalInstance.result.then(function () {
+        $scope.certificateTable.reload();
+      });
+    };
+
+    $scope.import = function () {
+      var modalInstance = $modal.open({
+        animation: true,
+        controller: 'CertificateUploadController',
+        templateUrl: '/angular/certificates/certificate/upload.tpl.html',
+        size: 'lg'
+      });
+
+      modalInstance.result.then(function () {
+        $scope.certificateTable.reload();
+      });
     };
   });

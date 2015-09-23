@@ -5,6 +5,8 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+from builtins import str
+
 from flask import Blueprint, make_response, jsonify
 from flask.ext.restful import reqparse, Api, fields
 
@@ -21,6 +23,8 @@ from lemur.auth.permissions import ViewKeyPermission, AuthorityPermission, Updat
 from lemur.roles import service as role_service
 
 from lemur.common.utils import marshal_items, paginated_parser
+
+from lemur.notifications.views import notification_list
 
 
 mod = Blueprint('certificates', __name__)
@@ -51,7 +55,7 @@ def valid_authority(authority_options):
     """
     Defends against invalid authorities
 
-    :param authority_name:
+    :param authority_options:
     :return: :raise ValueError:
     """
     name = authority_options['name']
@@ -75,8 +79,8 @@ def pem_str(value, name):
     :return: :raise ValueError:
     """
     try:
-        x509.load_pem_x509_certificate(str(value), default_backend())
-    except Exception as e:
+        x509.load_pem_x509_certificate(bytes(value), default_backend())
+    except Exception:
         raise ValueError("The parameter '{0}' needs to be a valid PEM string".format(name))
     return value
 
@@ -90,11 +94,10 @@ def private_key_str(value, name):
     :return: :raise ValueError:
     """
     try:
-        serialization.load_pem_private_key(str(value), None, backend=default_backend())
-    except Exception as e:
+        serialization.load_pem_private_key(bytes(value), None, backend=default_backend())
+    except Exception:
         raise ValueError("The parameter '{0}' needs to be a valid RSA private key".format(name))
     return value
-
 
 
 class CertificatesList(AuthenticatedResource):
@@ -164,7 +167,7 @@ class CertificatesList(AuthenticatedResource):
         parser.add_argument('owner', type=bool, location='args')
         parser.add_argument('id', type=str, location='args')
         parser.add_argument('active', type=bool, location='args')
-        parser.add_argument('accountId', type=int, dest="account_id", location='args')
+        parser.add_argument('destinationId', type=int, dest="destination_id", location='args')
         parser.add_argument('creator', type=str, location='args')
         parser.add_argument('show', type=str, location='args')
 
@@ -186,7 +189,7 @@ class CertificatesList(AuthenticatedResource):
               Host: example.com
               Accept: application/json, text/javascript
 
-             {
+              {
                 "country": "US",
                 "state": "CA",
                 "location": "A Place",
@@ -205,6 +208,46 @@ class CertificatesList(AuthenticatedResource):
                     "notAfter": "2015-06-17T15:21:08",
                     "description": "dsfdsf"
                 },
+                "notifications": [
+                    {
+                      "description": "Default 30 day expiration notification",
+                      "notificationOptions": [
+                        {
+                          "name": "interval",
+                          "required": true,
+                          "value": 30,
+                          "helpMessage": "Number of days to be alert before expiration.",
+                          "validation": "^\\d+$",
+                          "type": "int"
+                        },
+                        {
+                          "available": [
+                            "days",
+                            "weeks",
+                            "months"
+                          ],
+                          "name": "unit",
+                          "required": true,
+                          "value": "days",
+                          "helpMessage": "Interval unit",
+                          "validation": "",
+                          "type": "select"
+                        },
+                        {
+                          "name": "recipients",
+                          "required": true,
+                          "value": "bob@example.com",
+                          "helpMessage": "Comma delimited list of email addresses",
+                          "validation": "^([\\w+-.%]+@[\\w-.]+\\.[A-Za-z]{2,4},?)+$",
+                            "type": "str"
+                          }
+                        ],
+                        "label": "DEFAULT_KGLISSON_30_DAY",
+                        "pluginName": "email-notification",
+                        "active": true,
+                        "id": 7
+                    }
+                ],
                 "extensions": {
                     "basicConstraints": {},
                     "keyUsage": {
@@ -226,7 +269,7 @@ class CertificatesList(AuthenticatedResource):
                 "commonName": "test",
                 "validityStart": "2015-06-05T07:00:00.000Z",
                 "validityEnd": "2015-06-16T07:00:00.000Z"
-            }
+             }
 
            **Example response**:
 
@@ -271,11 +314,11 @@ class CertificatesList(AuthenticatedResource):
            :statuscode 403: unauthenticated
         """
         self.reqparse.add_argument('extensions', type=dict, location='json')
-        self.reqparse.add_argument('accounts', type=list, location='json')
-        self.reqparse.add_argument('elbs', type=list, location='json')
+        self.reqparse.add_argument('destinations', type=list, default=[], location='json')
+        self.reqparse.add_argument('notifications', type=list, default=[], location='json')
         self.reqparse.add_argument('owner', type=str, location='json')
-        self.reqparse.add_argument('validityStart', type=str, location='json') # parse date
-        self.reqparse.add_argument('validityEnd', type=str, location='json') # parse date
+        self.reqparse.add_argument('validityStart', type=str, location='json')  # TODO validate
+        self.reqparse.add_argument('validityEnd', type=str, location='json')  # TODO validate
         self.reqparse.add_argument('authority', type=valid_authority, location='json')
         self.reqparse.add_argument('description', type=str, location='json')
         self.reqparse.add_argument('country', type=str, location='json')
@@ -330,7 +373,9 @@ class CertificatesUpload(AuthenticatedResource):
                  "publicCert": "---Begin Public...",
                  "intermediateCert": "---Begin Public...",
                  "privateKey": "---Begin Private..."
-                 "accounts": []
+                 "destinations": [],
+                 "notifications": [],
+                 "name": "cert1"
               }
 
            **Example response**:
@@ -364,19 +409,22 @@ class CertificatesUpload(AuthenticatedResource):
            :arg publicCert: valid PEM public key for certificate
            :arg intermediateCert valid PEM intermediate key for certificate
            :arg privateKey: valid PEM private key for certificate
-           :arg accounts: list of aws accounts to upload the certificate to
+           :arg destinations: list of aws destinations to upload the certificate to
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 403: unauthenticated
            :statuscode 200: no error
         """
+        self.reqparse.add_argument('description', type=str, location='json')
         self.reqparse.add_argument('owner', type=str, required=True, location='json')
+        self.reqparse.add_argument('name', type=str, location='json')
         self.reqparse.add_argument('publicCert', type=pem_str, required=True, dest='public_cert', location='json')
-        self.reqparse.add_argument('accounts', type=list, dest='accounts', location='json')
+        self.reqparse.add_argument('destinations', type=list, default=[], dest='destinations', location='json')
+        self.reqparse.add_argument('notifications', type=list, default=[], dest='notifications', location='json')
         self.reqparse.add_argument('intermediateCert', type=pem_str, dest='intermediate_cert', location='json')
         self.reqparse.add_argument('privateKey', type=private_key_str, dest='private_key', location='json')
 
         args = self.reqparse.parse_args()
-        if args.get('accounts'):
+        if args.get('destinations'):
             if args.get('private_key'):
                 return service.upload(**args)
             else:
@@ -393,7 +441,7 @@ class CertificatesStats(AuthenticatedResource):
     def get(self):
         self.reqparse.add_argument('metric', type=str, location='args')
         self.reqparse.add_argument('range', default=32, type=int, location='args')
-        self.reqparse.add_argument('accountId', dest='account_id', location='args')
+        self.reqparse.add_argument('destinationId', dest='destination_id', location='args')
         self.reqparse.add_argument('active', type=str, default='true', location='args')
 
         args = self.reqparse.parse_args()
@@ -442,7 +490,7 @@ class CertificatePrivateKey(AuthenticatedResource):
 
         role = role_service.get_by_name(cert.owner)
 
-        permission = ViewKeyPermission(certificate_id, hasattr(role, 'id'))
+        permission = ViewKeyPermission(certificate_id, getattr(role, 'name', None))
 
         if permission.can():
             response = make_response(jsonify(key=cert.private_key), 200)
@@ -524,6 +572,8 @@ class Certificates(AuthenticatedResource):
               {
                  "owner": "jimbob@example.com",
                  "active": false
+                 "notifications": [],
+                 "destinations": []
               }
 
            **Example response**:
@@ -550,7 +600,7 @@ class Certificates(AuthenticatedResource):
                 "notBefore": "2015-06-05T17:09:39",
                 "notAfter": "2015-06-10T17:09:39",
                 "cn": "example.com",
-                "status": "unknown"
+                "status": "unknown",
               }
 
            :reqheader Authorization: OAuth token to authenticate
@@ -559,16 +609,103 @@ class Certificates(AuthenticatedResource):
         """
         self.reqparse.add_argument('active', type=bool, location='json')
         self.reqparse.add_argument('owner', type=str, location='json')
+        self.reqparse.add_argument('description', type=str, location='json')
+        self.reqparse.add_argument('destinations', type=list, default=[], location='json')
+        self.reqparse.add_argument('notifications', type=notification_list, default=[], location='json')
         args = self.reqparse.parse_args()
 
         cert = service.get(certificate_id)
         role = role_service.get_by_name(cert.owner)
-        permission = UpdateCertificatePermission(certificate_id, hasattr(role, 'id'))
+
+        permission = UpdateCertificatePermission(certificate_id, getattr(role, 'name', None))
 
         if permission.can():
-            return service.update(certificate_id, args['owner'], args['active'])
+            return service.update(
+                certificate_id,
+                args['owner'],
+                args['description'],
+                args['active'],
+                args['destinations'],
+                args['notifications']
+            )
 
         return dict(message='You are not authorized to update this certificate'), 403
+
+
+class NotificationCertificatesList(AuthenticatedResource):
+    """ Defines the 'certificates' endpoint """
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        super(NotificationCertificatesList, self).__init__()
+
+    @marshal_items(FIELDS)
+    def get(self, notification_id):
+        """
+        .. http:get:: /notifications/1/certificates
+
+           The current list of certificates for a given notification
+
+           **Example request**:
+
+           .. sourcecode:: http
+
+              GET /notifications/1/certificates HTTP/1.1
+              Host: example.com
+              Accept: application/json, text/javascript
+
+           **Example response**:
+
+           .. sourcecode:: http
+
+              HTTP/1.1 200 OK
+              Vary: Accept
+              Content-Type: text/javascript
+
+              {
+                "items": [
+                    {
+                      "id": 1,
+                      "name": "cert1",
+                      "description": "this is cert1",
+                      "bits": 2048,
+                      "deleted": false,
+                      "issuer": "ExampeInc.",
+                      "serial": "123450",
+                      "chain": "-----Begin ...",
+                      "body": "-----Begin ...",
+                      "san": true,
+                      "owner": 'bob@example.com",
+                      "active": true,
+                      "notBefore": "2015-06-05T17:09:39",
+                      "notAfter": "2015-06-10T17:09:39",
+                      "cn": "example.com",
+                      "status": "unknown"
+                    }
+                  ]
+                "total": 1
+              }
+
+           :query sortBy: field to sort on
+           :query sortDir: acs or desc
+           :query page: int. default is 1
+           :query filter: key value pair. format is k=v;
+           :query limit: limit number. default is 10
+           :reqheader Authorization: OAuth token to authenticate
+           :statuscode 200: no error
+           :statuscode 403: unauthenticated
+        """
+        parser = paginated_parser.copy()
+        parser.add_argument('timeRange', type=int, dest='time_range', location='args')
+        parser.add_argument('owner', type=bool, location='args')
+        parser.add_argument('id', type=str, location='args')
+        parser.add_argument('active', type=bool, location='args')
+        parser.add_argument('destinationId', type=int, dest="destination_id", location='args')
+        parser.add_argument('creator', type=str, location='args')
+        parser.add_argument('show', type=str, location='args')
+
+        args = parser.parse_args()
+        args['notification_id'] = notification_id
+        return service.render(args)
 
 
 api.add_resource(CertificatesList, '/certificates', endpoint='certificates')
@@ -576,3 +713,4 @@ api.add_resource(Certificates, '/certificates/<int:certificate_id>', endpoint='c
 api.add_resource(CertificatesStats, '/certificates/stats', endpoint='certificateStats')
 api.add_resource(CertificatesUpload, '/certificates/upload', endpoint='certificateUpload')
 api.add_resource(CertificatePrivateKey, '/certificates/<int:certificate_id>/key', endpoint='privateKeyCertificates')
+api.add_resource(NotificationCertificatesList, '/notifications/<int:notification_id>/certificates', endpoint='notificationCertificates')

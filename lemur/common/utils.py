@@ -6,14 +6,26 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+import string
+import random
 from functools import wraps
 
 from flask import current_app
 
 from flask.ext.restful import marshal
 from flask.ext.restful.reqparse import RequestParser
-
 from flask.ext.sqlalchemy import Pagination
+
+
+def get_psuedo_random_string():
+    """
+    Create a random and strongish challenge.
+    """
+    challenge = ''.join(random.choice(string.ascii_uppercase) for x in range(6))  # noqa
+    challenge += ''.join(random.choice("~!@#$%^&*()_+") for x in range(6))  # noqa
+    challenge += ''.join(random.choice(string.ascii_lowercase) for x in range(6))
+    challenge += ''.join(random.choice(string.digits) for x in range(6))  # noqa
+    return challenge
 
 
 class marshal_items(object):
@@ -41,7 +53,7 @@ class marshal_items(object):
                     return {'items': _filter_items(resp.items), 'total': resp.total}
 
                 if isinstance(resp, list):
-                    return _filter_items(resp)
+                    return {'items': _filter_items(resp), 'total': len(resp)}
 
                 return marshal(resp, self.fields)
             except Exception as e:
@@ -53,7 +65,7 @@ class marshal_items(object):
                     else:
                         return {'message': 'unknown'}, 400
                 else:
-                    return {'message': e.message}, 400
+                    return {'message': str(e)}, 400
         return wrapper
 
 

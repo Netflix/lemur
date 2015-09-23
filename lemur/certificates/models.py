@@ -5,28 +5,29 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import os
 import datetime
-from cryptography import x509
-from cryptography.hazmat.backends import default_backend
-
 from flask import current_app
 
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
 from sqlalchemy.orm import relationship
-from sqlalchemy import Integer, ForeignKey, String, DateTime, PassiveDefault, func, Column, Text, Boolean
+from sqlalchemy import event, Integer, ForeignKey, String, DateTime, PassiveDefault, func, Column, Text, Boolean
 
 from sqlalchemy_utils import EncryptedType
 
+from lemur.utils import get_key
 from lemur.database import db
+from lemur.plugins.base import plugins
 
 from lemur.domains.models import Domain
-from lemur.users import service as user_service
 
-from lemur.constants import SAN_NAMING_TEMPLATE, DEFAULT_NAMING_TEMPLATE, NONSTANDARD_NAMING_TEMPLATE
-from lemur.models import certificate_associations, certificate_account_associations
+from lemur.constants import SAN_NAMING_TEMPLATE, DEFAULT_NAMING_TEMPLATE
+
+from lemur.models import certificate_associations, certificate_source_associations, \
+    certificate_destination_associations, certificate_notification_associations
 
 
-def create_name(issuer, not_before, not_after, common_name, san):
+def create_name(issuer, not_before, not_after, subject, san):
     """
     Create a name for our certificate. A naming standard
     is based on a series of templates. The name includes
@@ -36,11 +37,6 @@ def create_name(issuer, not_before, not_after, common_name, san):
     :rtype : str
     :return:
     """
-    delchars = ''.join(c for c in map(chr, range(256)) if not c.isalnum())
-    # aws doesn't allow special chars
-    subject = common_name.replace('*', "WILDCARD")
-    issuer = issuer.translate(None, delchars)
-
     if san:
         t = SAN_NAMING_TEMPLATE
     else:
@@ -53,7 +49,18 @@ def create_name(issuer, not_before, not_after, common_name, san):
         not_after=not_after.strftime('%Y%m%d')
     )
 
-    return temp
+    # NOTE we may want to give more control over naming
+    # aws doesn't allow special chars except '-'
+    disallowed_chars = ''.join(c for c in map(chr, range(256)) if not c.isalnum())
+    disallowed_chars = disallowed_chars.replace("-", "")
+    disallowed_chars = disallowed_chars.replace(".", "")
+    temp = temp.replace('*', "WILDCARD")
+
+    for c in disallowed_chars:
+        temp = temp.replace(c, "")
+
+    # white space is silly too
+    return temp.replace(" ", "-")
 
 
 def cert_get_cn(cert):
@@ -75,7 +82,7 @@ def cert_get_domains(cert):
     return the common name.
 
     :param cert:
-    :return: List of domainss
+    :return: List of domains
     """
     domains = []
     try:
@@ -86,10 +93,6 @@ def cert_get_domains(cert):
     except Exception as e:
         current_app.logger.warning("Failed to get SubjectAltName: {0}".format(e))
 
-    # do a simple check to make sure it's a real domain
-    common_name = cert_get_cn(cert)
-    if '.' in common_name:
-        domains.append(common_name)
     return domains
 
 
@@ -111,10 +114,8 @@ def cert_is_san(cert):
     :param cert:
     :return: Bool
     """
-    domains = cert_get_domains(cert)
-    if len(domains) > 1:
+    if len(cert_get_domains(cert)) > 1:
         return True
-    return False
 
 
 def cert_is_wildcard(cert):
@@ -127,7 +128,9 @@ def cert_is_wildcard(cert):
     domains = cert_get_domains(cert)
     if len(domains) == 1 and domains[0][0:1] == "*":
         return True
-    return False
+
+    if cert.subject.get_attributes_for_oid(x509.OID_COMMON_NAME)[0].value[0:1] == "*":
+        return True
 
 
 def cert_get_bitstrength(cert):
@@ -149,8 +152,10 @@ def cert_get_issuer(cert):
     """
     delchars = ''.join(c for c in map(chr, range(256)) if not c.isalnum())
     try:
-        issuer = str(cert.subject.get_attributes_for_oid(x509.OID_ORGANIZATION_NAME)[0].value)
-        return issuer.translate(None, delchars)
+        issuer = str(cert.issuer.get_attributes_for_oid(x509.OID_ORGANIZATION_NAME)[0].value)
+        for c in delchars:
+            issuer = issuer.replace(c, "")
+        return issuer
     except Exception as e:
         current_app.logger.error("Unable to get issuer! {0}".format(e))
 
@@ -204,9 +209,7 @@ class Certificate(db.Model):
     id = Column(Integer, primary_key=True)
     owner = Column(String(128))
     body = Column(Text())
-    private_key = Column(EncryptedType(String, os.environ.get('LEMUR_ENCRYPTION_KEY')))
-    challenge = Column(EncryptedType(String, os.environ.get('LEMUR_ENCRYPTION_KEY')))
-    csr_config = Column(Text())
+    private_key = Column(EncryptedType(String, get_key))
     status = Column(String(128))
     deleted = Column(Boolean, index=True)
     name = Column(String(128))
@@ -223,17 +226,16 @@ class Certificate(db.Model):
     date_created = Column(DateTime, PassiveDefault(func.now()), nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'))
     authority_id = Column(Integer, ForeignKey('authorities.id'))
-    accounts = relationship("Account", secondary=certificate_account_associations, backref='certificate')
+    notifications = relationship("Notification", secondary=certificate_notification_associations, backref='certificate')
+    destinations = relationship("Destination", secondary=certificate_destination_associations, backref='certificate')
+    sources = relationship("Source", secondary=certificate_source_associations, backref='certificate')
     domains = relationship("Domain", secondary=certificate_associations, backref="certificate")
-    elb_listeners = relationship("Listener", lazy='dynamic', backref='certificate')
 
-    def __init__(self, body, private_key=None, challenge=None, chain=None, csr_config=None):
+    def __init__(self, body, private_key=None, chain=None):
         self.body = body
         # We encrypt the private_key on creation
         self.private_key = private_key
         self.chain = chain
-        self.csr_config = csr_config
-        self.challenge = challenge
         cert = x509.load_pem_x509_certificate(str(self.body), default_backend())
         self.bits = cert_get_bitstrength(cert)
         self.issuer = cert_get_issuer(cert)
@@ -277,3 +279,8 @@ class Certificate(db.Model):
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
+
+@event.listens_for(Certificate.destinations, 'append')
+def update_destinations(target, value, initiator):
+    destination_plugin = plugins.get(value.plugin_name)
+    destination_plugin.upload(target.name, target.body, target.private_key, target.chain, value.options)

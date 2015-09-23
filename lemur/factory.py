@@ -12,14 +12,14 @@
 import os
 import imp
 import errno
+import pkg_resources
 
 from logging import Formatter
 from logging.handlers import RotatingFileHandler
 
 from flask import Flask
 from lemur.common.health import mod as health
-from lemur.exceptions import NoEncryptionKeyFound
-from lemur.extensions import db, migrate, principal
+from lemur.extensions import db, migrate, principal, smtp_mail
 
 
 DEFAULT_BLUEPRINTS = (
@@ -51,6 +51,7 @@ def create_app(app_name=None, blueprints=None, config=None):
     configure_blueprints(app, blueprints)
     configure_extensions(app)
     configure_logging(app)
+    install_plugins(app)
 
     @app.teardown_appcontext
     def teardown(exception=None):
@@ -94,11 +95,10 @@ def configure_app(app, config=None):
     except RuntimeError:
         if config and config != 'None':
             app.config.from_object(from_file(config))
-        else:
+        elif os.path.isfile(os.path.expanduser("~/.lemur/lemur.conf.py")):
             app.config.from_object(from_file(os.path.expanduser("~/.lemur/lemur.conf.py")))
-
-    if not app.config.get('ENCRYPTION_KEY'):
-        raise NoEncryptionKeyFound
+        else:
+            app.config.from_object(from_file(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'default.conf.py')))
 
 
 def configure_extensions(app):
@@ -111,6 +111,7 @@ def configure_extensions(app):
     db.init_app(app)
     migrate.init_app(app, db)
     principal.init_app(app)
+    smtp_mail.init_app(app)
 
 
 def configure_blueprints(app, blueprints):
@@ -142,3 +143,25 @@ def configure_logging(app):
     app.logger.setLevel(app.config.get('LOG_LEVEL', 'DEBUG'))
     app.logger.addHandler(handler)
 
+
+def install_plugins(app):
+    """
+    Installs new issuers that are not currently bundled with Lemur.
+
+    :param settings:
+    :return:
+    """
+    from lemur.plugins.base import register
+    # entry_points={
+    #    'lemur.plugins': [
+    #         'verisign = lemur_verisign.plugin:VerisignPlugin'
+    #     ],
+    # },
+    for ep in pkg_resources.iter_entry_points('lemur.plugins'):
+        try:
+            plugin = ep.load()
+        except Exception:
+            import traceback
+            app.logger.error("Failed to load plugin %r:\n%s\n" % (ep.name, traceback.format_exc()))
+        else:
+            register(plugin)

@@ -63,26 +63,6 @@ Basic Configuration
         SQLALCHEMY_DATABASE_URI = 'postgresql://<user>:<password>@<hostname>:5432/lemur'
 
 
-.. data:: LEMUR_MAIL
-    :noindex:
-
-        Lemur mail service
-
-    ::
-
-        LEMUR_MAIL = 'lemur.example.com'
-
-
-.. data:: LEMUR_SECURITY_TEAM_EMAIL
-    :noindex:
-
-        This is an email or list of emails that should be notified when a certificate is expiring. It is also the contact email address for any discovered certificate.
-
-    ::
-
-        LEMUR_SECURITY_TEAM_EMAIL = ['security@example.com']
-
-
 .. data:: LEMUR_RESTRICTED_DOMAINS
     :noindex:
 
@@ -93,8 +73,6 @@ Basic Configuration
     :noindex:
 
         The TOKEN_SECRET is the secret used to create JWT tokens that are given out to users. This should be securely generated and be kept private.
-
-        See `SECRET_KEY` for methods on secure secret generation.
 
     ::
 
@@ -122,11 +100,118 @@ Basic Configuration
         LEMUR_ENCRYPTION_KEY = 'supersupersecret'
 
 
+Certificate Default Options
+---------------------------
+
+Lemur allows you to find tune your certificates to your organization. The following defaults are presented in the UI
+and are used when Lemur creates the CSR for your certificates.
+
+
+.. data:: LEMUR_DEFAULT_COUNTRY
+    :noindex:
+
+    ::
+
+        LEMUR_DEFAULT_COUNTRY = "US"
+
+
+.. data:: LEMUR_DEFAULT_STATE
+    :noindex:
+
+    ::
+
+        LEMUR_DEFAULT_STATE = "California"
+
+
+.. data:: LEMUR_DEFAULT_LOCATION
+    :noindex:
+
+    ::
+
+        LEMUR_DEFAULT_LOCATION = "Los Gatos"
+
+
+.. data:: LEMUR_DEFAULT_ORGANIZATION
+    :noindex:
+
+    ::
+
+        LEMUR_DEFAULT_ORGANIZATION = "Netflix"
+
+
+.. data:: LEMUR_DEFAULT_ORGANIZATION_UNIT
+    :noindex:
+
+    ::
+
+        LEMUR_DEFAULT_ORGANIZATIONAL_UNIT = "Operations"
+
+
+Notification Options
+--------------------
+
+Lemur currently has very basic support for notifications. Currently only expiration notifications are supported. Actual notification
+is handling by the notification plugins that you have configured. Lemur ships with the 'Email' notification that allows expiration emails
+to be sent to subscribers.
+
+Templates for expiration emails are located under `lemur/plugins/lemur_email/templates` and can be modified for your needs.
+Notifications are sent to the certificate creator, owner and security team as specified by the `LEMUR_SECURITY_TEAM_EMAIL` configuration parameter.
+
+Certificates marked as in-active will **not** be notified of upcoming expiration. This enables a user to essentially
+silence the expiration. If a certificate is active and is expiring the above will be notified according to the `LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS` or
+30, 15, 2 days before expiration if no intervals are set.
+
+Lemur supports sending certification expiration notifications through SES and SMTP.
+
+
+.. data:: LEMUR_EMAIL_SENDER
+    :noindex:
+
+            Specifies which service will be delivering notification emails. Valid values are `SMTP` or `SES`
+
+.. note::
+    If using STMP as your provider you will need to define additional configuration options as specified by Flask-Mail.
+    See: `Flask-Mail <https://pythonhosted.org/Flask-Mail>`_
+
+    If you are using SES the email specified by the `LEMUR_MAIL` configuration will need to be verified by AWS before
+    you can send any mail. See: `Verifying Email Address in Amazon SES <http://docs.aws.amazon.com/ses/latest/DeveloperGuide/verify-email-addresses.html>`_
+
+.. data:: LEMUR_MAIL
+    :noindex:
+
+            Lemur sender's email
+
+        ::
+
+        LEMUR_MAIL = 'lemur.example.com'
+
+
+.. data:: LEMUR_SECURITY_TEAM_EMAIL
+    :noindex:
+
+            This is an email or list of emails that should be notified when a certificate is expiring. It is also the contact email address for any discovered certificate.
+
+        ::
+
+        LEMUR_SECURITY_TEAM_EMAIL = ['security@example.com']
+
+
+.. data:: LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS
+    :noindex:
+
+            Lemur notification intervals
+
+        ::
+
+        LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS = [30, 15, 2]
+
+
 Authority Options
 -----------------
 
-Authorities will each have their own configuration options. There are currently two plugins bundled with Lemur,
-Verisign/Symantec and CloudCA
+Authorities will each have their own configuration options. There are currently just one plugin bundled with Lemur,
+Verisign/Symantec. Additional plugins may define additional options. Refer to the plugins own documentation
+for those plugins.
 
 .. data:: VERISIGN_URL
     :noindex:
@@ -137,29 +222,44 @@ Verisign/Symantec and CloudCA
 .. data:: VERISIGN_PEM_PATH
     :noindex:
 
-        This is the path to the mutual SSL certificate used for communicating with Verisign
+        This is the path to the mutual TLS certificate used for communicating with Verisign
 
 
-.. data:: CLOUDCA_URL
+.. data:: VERISIGN_FIRST_NAME
     :noindex:
 
-        This is the URL for CLoudCA API
+        This is the first name to be used when requesting the certificate
 
 
-.. data:: CLOUDCA_PEM_PATH
+.. data:: VERISIGN_LAST_NAME
     :noindex:
 
-        This is the path to the mutual SSL Certificate use for communicating with CLOUDCA
+        This is the last name to be used when requesting the certificate
 
-.. data:: CLOUDCA_BUNDLE
+.. data:: VERISIGN_EMAIL
     :noindex:
 
-        This is the path to the CLOUDCA certificate bundle
+        This is the email to be used when requesting the certificate
+
+
+.. data:: VERISIGN_INTERMEDIATE
+    :noindex:
+
+        This is the intermediate to be used for your CA chain
+
+
+.. data:: VERISIGN_ROOT
+    :noindex:
+
+        This is the root to be used for your CA chain
+
 
 Authentication
 --------------
-Lemur currently supports Basic Authentication and Ping OAuth2, additional flows can be added relatively easily
-If you are not using PING you do not need to configure any of these options
+Lemur currently supports Basic Authentication and Ping OAuth2 out of the box, additional flows can be added relatively easily.
+If you are not using Ping you do not need to configure any of these options.
+
+For more information about how to use social logins, see: `Satellizer <https://github.com/sahat/satellizer>`_
 
 .. data:: PING_SECRET
     :noindex:
@@ -191,51 +291,20 @@ If you are not using PING you do not need to configure any of these options
         PING_JWKS_URL = "https://<yourpingserver>/pf/JWKS"
 
 
-Notifications
-=============
 
-Lemur currently has very basic support for notifications. Notifications are send to the certificate creator, owner and
-security team as specified by the `SECURITY_TEAM_EMAIL` configuration parameter.
-
-The template for all of these notifications lives under lemur/template/event.html and can be easily modified to fit your
-needs.
-
-Certificates marked as in-active will **not** be notified of upcoming expiration. This enables a user to essentially
-silence the expiration. If a certificate is active and is expiring the above will be notified at 30, 15, 5, 2 days
-respectively. Lemur will not attempt to notify about certificate that have already expired.
-
-
-AWS Configuration
-=================
+AWS Plugin Configuration
+========================
 
 In order for Lemur to manage it's own account and other accounts we must ensure it has the correct AWS permissions.
 
-.. note:: AWS usage is completely optional. Lemur can upload, find and manage SSL certificates in AWS. But is not required to do so.
-
-AWS Configuration Options
--------------------------
-
-.. data:: AWS_ACCOUNT_MAPPINGS
-    :noindex:
-
-        Lemur maintains it's own internal table of AWS accounts with their alias and account numbers, this variable is used during setup to bootstrap
-        your particular enviroment.
-
-        Defaults to ``{}``.
-
-    ::
-
-        AWS_ACCOUNT_MAPPINGS = {
-            'awsaccountalias': 111111111111
-        }
-
+.. note:: AWS usage is completely optional. Lemur can upload, find and manage TLS certificates in AWS. But is not required to do so.
 
 Setting up IAM roles
 --------------------
 
-Lemur uses boto heavily to talk to all the AWS resources it manages. By default it uses the on-instance credentials to make the necessary calls.
+Lemur's AWS plugin uses boto heavily to talk to all the AWS resources it manages. By default it uses the on-instance credentials to make the necessary calls.
 
-In order to limit the permissions we will create a new two IAM roles for Lemur. You can name them whatever you would like but for example sake we will be calling them LemurInstanceProfile and Lemur.
+In order to limit the permissions, we will create two new IAM roles for Lemur. You can name them whatever you would like but for example sake we will be calling them LemurInstanceProfile and Lemur.
 
 Lemur uses to STS to talk to different accounts. For managing one account this isn't necessary but we will still use it so that we can easily add new accounts.
 
@@ -280,6 +349,11 @@ STS-AssumeRole
 
 
 Next we will create the the Lemur IAM role. Lemur
+
+..note::
+
+    The default IAM role that Lemur assumes into is called `Lemur`, if you need to change this ensure you set `LEMUR_INSTANCE_PROFILE` to your role name in the configuration.
+
 
 Here is an example policy for Lemur:
 
@@ -405,7 +479,7 @@ Upgrading Lemur
 ===============
 
 Lemur provides an easy way to upgrade between versions. Simply download the newest
-version of Lemur from pypi and then apply any schema cahnges with the following command.
+version of Lemur from pypi and then apply any schema changes with the following command.
 
 .. code-block:: bash
 
@@ -478,24 +552,6 @@ All commands default to `~/.lemur/lemur.conf.py` if a configuration is not speci
         lemur db upgrade
 
 
-.. data:: create_user
-
-    Creates new users within Lemur.
-
-    ::
-
-        lemur create_user -u jim -e jim@example.com
-
-
-.. data:: create_role
-
-    Creates new roles within Lemur.
-
-    ::
-
-        lemur create_role -n example -d "a new role"
-
-
 .. data:: check_revoked
 
     Traverses every certificate that Lemur is aware of and attempts to understand it's validity.
@@ -505,11 +561,39 @@ All commands default to `~/.lemur/lemur.conf.py` if a configuration is not speci
 
 .. data:: sync
 
-    Sync attempts to discover certificates in the environment that were not created by Lemur. There
+    Sync attempts to discover certificates in the environment that were not created by Lemur. If you wish to only sync
+    a few sources you can pass a comma delimited list of sources to sync
 
     ::
 
-        lemur sync --all
+        lemur sync source1,source2
+
+
+    Additionally you can also list the available sources that Lemur can sync
+
+    ::
+
+        lemur sync -list
+
+
+Sub-commands
+------------
+
+Lemur includes several sub-commands for interacting with Lemur such as creating new users, creating new roles and even
+issuing certificates.
+
+The best way to discovery these commands is by using the built in help pages
+
+    ::
+
+        lemur --help
+
+
+and to get help on sub-commands
+
+    ::
+
+        lemur certificates --help
 
 
 Identity and Access Management
@@ -530,11 +614,10 @@ that the `Authority` is associated with it Lemur allows that user to user/view/u
 
 This RBAC is also used when determining which users can access which certificate private key. Lemur's current permission
 structure is setup such that if the user is a `Creator` or `Owner` of a given certificate they are allow to view that
-private key.
+private key. Owners can also be a role name, such that any user with the same role as owner will be allowed to view the
+private key information.
 
 These permissions are applied to the user upon login and refreshed on every request.
 
 .. seealso::
     `Flask-Principal <https://pythonhosted.org/Flask-Principal>`_
-
-

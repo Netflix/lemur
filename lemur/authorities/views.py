@@ -20,6 +20,7 @@ from lemur.common.utils import paginated_parser, marshal_items
 
 FIELDS = {
     'name': fields.String,
+    'owner': fields.String,
     'description': fields.String,
     'options': fields.Raw,
     'pluginName': fields.String,
@@ -183,8 +184,8 @@ class AuthoritiesList(AuthenticatedResource):
         self.reqparse.add_argument('caDescription', type=str, location='json', required=False)
         self.reqparse.add_argument('ownerEmail', type=str, location='json', required=True)
         self.reqparse.add_argument('caDN', type=dict, location='json', required=False)
-        self.reqparse.add_argument('validityStart', type=str, location='json', required=False) # TODO validate
-        self.reqparse.add_argument('validityEnd', type=str, location='json', required=False) # TODO validate
+        self.reqparse.add_argument('validityStart', type=str, location='json', required=False)  # TODO validate
+        self.reqparse.add_argument('validityEnd', type=str, location='json', required=False)  # TODO validate
         self.reqparse.add_argument('extensions', type=dict, location='json', required=False)
         self.reqparse.add_argument('pluginName', type=str, location='json', required=True)
         self.reqparse.add_argument('caType', type=str, location='json', required=False)
@@ -264,7 +265,9 @@ class Authorities(AuthenticatedResource):
 
               {
                  "roles": [],
-                 "active": false
+                 "active": false,
+                 "owner": "bob@example.com",
+                 "description": "this is authority1"
               }
 
            **Example response**:
@@ -279,12 +282,12 @@ class Authorities(AuthenticatedResource):
                 "id": 1,
                 "name": "authority1",
                 "description": "this is authority1",
-                "pluginname": null,
+                "pluginName": null,
                 "chain": "-----begin ...",
                 "body": "-----begin ...",
                 "active": false,
-                "notbefore": "2015-06-05t17:09:39",
-                "notafter": "2015-06-10t17:09:39"
+                "notBefore": "2015-06-05t17:09:39",
+                "notAfter": "2015-06-10t17:09:39"
                 "options": null
               }
 
@@ -292,8 +295,10 @@ class Authorities(AuthenticatedResource):
            :statuscode 200: no error
            :statuscode 403: unauthenticated
         """
-        self.reqparse.add_argument('roles', type=list, location='json')
-        self.reqparse.add_argument('active', type=str, location='json')
+        self.reqparse.add_argument('roles', type=list, default=[], location='json')
+        self.reqparse.add_argument('active', type=str, location='json', required=True)
+        self.reqparse.add_argument('owner', type=str, location='json', required=True)
+        self.reqparse.add_argument('description', type=str, location='json', required=True)
         args = self.reqparse.parse_args()
 
         authority = service.get(authority_id)
@@ -315,7 +320,13 @@ class Authorities(AuthenticatedResource):
                 return dict(message="You are not allowed to associate a role which you are not a member of"), 400
 
         if permission.can():
-            return service.update(authority_id, active=args['active'], roles=args['roles'])
+            return service.update(
+                authority_id,
+                owner=args['owner'],
+                description=args['description'],
+                active=args['active'],
+                roles=args['roles']
+            )
 
         return dict(message="You are not authorized to update this authority"), 403
 

@@ -28,7 +28,7 @@ angular.module('lemur')
     AuthenticationService.authenticate = function (provider) {
       $auth.authenticate(provider)
         .then(
-          function (user) {
+          function () {
             UserService.getCurrentUser();
             $rootScope.$emit('user:login');
             $location.url('/certificates');
@@ -41,7 +41,7 @@ angular.module('lemur')
             });
           }
       );
-    }
+    };
 
     AuthenticationService.logout = function () {
       if (!$auth.isAuthenticated()) {
@@ -56,7 +56,7 @@ angular.module('lemur')
             body: 'You have been successfully logged out.'
           });
           $location.path('/');
-        })
+        });
     };
 
   });

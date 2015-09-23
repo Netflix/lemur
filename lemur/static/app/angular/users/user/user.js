@@ -2,19 +2,8 @@
 
 angular.module('lemur')
 
-  .config(function config($routeProvider) {
-    $routeProvider.when('/users/create', {
-      templateUrl: '/angular/users/user/user.tpl.html',
-      controller: 'UsersCreateController'
-    });
-    $routeProvider.when('/users/:id/edit', {
-      templateUrl: '/angular/users/user/user.tpl.html',
-      controller: 'UsersEditController'
-    });
-  })
-
-  .controller('UsersEditController', function ($scope, $routeParams, UserApi, UserService, RoleService) {
-    UserApi.get($routeParams.id).then(function (user) {
+  .controller('UsersEditController', function ($scope, $modalInstance, UserApi, UserService, RoleService, editId) {
+    UserApi.get(editId).then(function (user) {
       UserService.getRoles(user);
       $scope.user = user;
     });
@@ -24,15 +13,36 @@ angular.module('lemur')
 
     $scope.rolePage = 1;
 
+
+    $scope.save = function (user) {
+      UserService.update(user).then(function () {
+        $modalInstance.close();
+      });
+    };
+
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+
     $scope.loadMoreRoles = function () {
       $scope.rolePage += 1;
       UserService.loadMoreRoles($scope.user, $scope.rolePage);
     };
   })
 
-  .controller('UsersCreateController', function ($scope, UserService, LemurRestangular, RoleService) {
+  .controller('UsersCreateController', function ($scope, $modalInstance, UserService, LemurRestangular, RoleService) {
     $scope.user = LemurRestangular.restangularizeElement(null, {}, 'users');
     $scope.save = UserService.create;
     $scope.roleService = RoleService;
+
+    $scope.create = function (user) {
+      UserService.create(user).then(function () {
+        $modalInstance.close();
+      });
+    };
+
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
 
   });

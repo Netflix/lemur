@@ -5,6 +5,7 @@ certificates Package
 ------------------------
 
 .. automodule:: lemur.certificates.exceptions
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -13,6 +14,7 @@ certificates Package
 --------------------
 
 .. automodule:: lemur.certificates.models
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -21,14 +23,7 @@ certificates Package
 ---------------------
 
 .. automodule:: lemur.certificates.service
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`sync` Module
-------------------
-
-.. automodule:: lemur.certificates.sync
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -37,7 +32,16 @@ certificates Package
 --------------------
 
 .. automodule:: lemur.certificates.verify
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
 
+:mod:`views` Module
+-------------------
+
+.. automodule:: lemur.certificates.views
+    :noindex:
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -1,6 +1,6 @@
 from json import dumps
-from lemur.roles.service import *
-from lemur.roles.views import *
+from lemur.roles.service import *  # noqa
+from lemur.roles.views import *  # noqa
 
 
 def test_crud(session):
@@ -18,11 +18,11 @@ def test_role_get(client):
 
 
 def test_role_post(client):
-    assert client.post(api.url_for(Roles, role_id=1), {}).status_code == 405
+    assert client.post(api.url_for(Roles, role_id=1), data={}).status_code == 405
 
 
 def test_role_put(client):
-    assert client.put(api.url_for(Roles, role_id=1), {}).status_code == 401
+    assert client.put(api.url_for(Roles, role_id=1), data={}).status_code == 401
 
 
 def test_role_delete(client):
@@ -30,7 +30,7 @@ def test_role_delete(client):
 
 
 def test_role_patch(client):
-    assert client.patch(api.url_for(Roles, role_id=1), {}).status_code == 405
+    assert client.patch(api.url_for(Roles, role_id=1), data={}).status_code == 405
 
 
 def test_roles_get(client):
@@ -38,11 +38,11 @@ def test_roles_get(client):
 
 
 def test_roles_post(client):
-    assert client.post(api.url_for(RolesList), {}).status_code == 401
+    assert client.post(api.url_for(RolesList), data={}).status_code == 401
 
 
 def test_roles_put(client):
-    assert client.put(api.url_for(RolesList), {}).status_code == 405
+    assert client.put(api.url_for(RolesList), data={}).status_code == 405
 
 
 def test_roles_delete(client):
@@ -50,7 +50,7 @@ def test_roles_delete(client):
 
 
 def test_roles_patch(client):
-    assert client.patch(api.url_for(RolesList), {}).status_code == 405
+    assert client.patch(api.url_for(RolesList), data={}).status_code == 405
 
 
 def test_role_credentials_get(client):
@@ -58,11 +58,11 @@ def test_role_credentials_get(client):
 
 
 def test_role_credentials_post(client):
-    assert client.post(api.url_for(RoleViewCredentials, role_id=1), {}).status_code == 405
+    assert client.post(api.url_for(RoleViewCredentials, role_id=1), data={}).status_code == 405
 
 
 def test_role_credentials_put(client):
-    assert client.put(api.url_for(RoleViewCredentials, role_id=1), {}).status_code == 405
+    assert client.put(api.url_for(RoleViewCredentials, role_id=1), data={}).status_code == 405
 
 
 def test_role_credentials_delete(client):
@@ -70,7 +70,7 @@ def test_role_credentials_delete(client):
 
 
 def test_role_credentials_patch(client):
-    assert client.patch(api.url_for(RoleViewCredentials, role_id=1), {}).status_code == 405
+    assert client.patch(api.url_for(RoleViewCredentials, role_id=1), data={}).status_code == 405
 
 
 def test_user_roles_get(client):
@@ -78,11 +78,11 @@ def test_user_roles_get(client):
 
 
 def test_user_roles_post(client):
-    assert client.post(api.url_for(UserRolesList, user_id=1), {}).status_code == 405
+    assert client.post(api.url_for(UserRolesList, user_id=1), data={}).status_code == 405
 
 
 def test_user_roles_put(client):
-    assert client.put(api.url_for(UserRolesList, user_id=1), {}).status_code == 405
+    assert client.put(api.url_for(UserRolesList, user_id=1), data={}).status_code == 405
 
 
 def test_user_roles_delete(client):
@@ -90,7 +90,7 @@ def test_user_roles_delete(client):
 
 
 def test_user_roles_patch(client):
-    assert client.patch(api.url_for(UserRolesList, user_id=1), {}).status_code == 405
+    assert client.patch(api.url_for(UserRolesList, user_id=1), data={}).status_code == 405
 
 
 def test_authority_roles_get(client):
@@ -98,11 +98,11 @@ def test_authority_roles_get(client):
 
 
 def test_authority_roles_post(client):
-    assert client.post(api.url_for(AuthorityRolesList, authority_id=1), {}).status_code == 405
+    assert client.post(api.url_for(AuthorityRolesList, authority_id=1), data={}).status_code == 405
 
 
 def test_authority_roles_put(client):
-    assert client.put(api.url_for(AuthorityRolesList, authority_id=1), {}).status_code == 405
+    assert client.put(api.url_for(AuthorityRolesList, authority_id=1), data={}).status_code == 405
 
 
 def test_authority_roles_delete(client):
@@ -110,7 +110,7 @@ def test_authority_roles_delete(client):
 
 
 def test_authority_roles_patch(client):
-    assert client.patch(api.url_for(AuthorityRolesList, authority_id=1), {}).status_code == 405
+    assert client.patch(api.url_for(AuthorityRolesList, authority_id=1), data={}).status_code == 405
 
 
 VALID_USER_HEADER_TOKEN = {
@@ -122,7 +122,7 @@ def test_auth_role_get(client):
 
 
 def test_auth_role_post_(client):
-    assert client.post(api.url_for(Roles, role_id=1), {}, headers=VALID_USER_HEADER_TOKEN).status_code == 405
+    assert client.post(api.url_for(Roles, role_id=1), data={}, headers=VALID_USER_HEADER_TOKEN).status_code == 405
 
 
 def test_auth_role_put(client):
@@ -134,7 +134,7 @@ def test_auth_role_delete(client):
 
 
 def test_auth_role_patch(client):
-    assert client.patch(api.url_for(Roles, role_id=1), {}, headers=VALID_USER_HEADER_TOKEN).status_code == 405
+    assert client.patch(api.url_for(Roles, role_id=1), data={}, headers=VALID_USER_HEADER_TOKEN).status_code == 405
 
 
 def test_auth_roles_get(client):
@@ -142,7 +142,7 @@ def test_auth_roles_get(client):
 
 
 def test_auth_roles_post(client):
-    assert client.post(api.url_for(RolesList), {}, headers=VALID_USER_HEADER_TOKEN).status_code == 403
+    assert client.post(api.url_for(RolesList), data={}, headers=VALID_USER_HEADER_TOKEN).status_code == 403
 
 
 def test_auth_role_credentials_get(client):
@@ -150,11 +150,11 @@ def test_auth_role_credentials_get(client):
 
 
 def test_auth_role_credentials_post(client):
-    assert client.post(api.url_for(RoleViewCredentials, role_id=1), {}, headers=VALID_USER_HEADER_TOKEN).status_code == 405
+    assert client.post(api.url_for(RoleViewCredentials, role_id=1), data={}, headers=VALID_USER_HEADER_TOKEN).status_code == 405
 
 
 def test_auth_role_credentials_put(client):
-    assert client.put(api.url_for(RoleViewCredentials, role_id=1), {}, headers=VALID_USER_HEADER_TOKEN).status_code == 405
+    assert client.put(api.url_for(RoleViewCredentials, role_id=1), data={}, headers=VALID_USER_HEADER_TOKEN).status_code == 405
 
 
 def test_auth_role_credentials_delete(client):
@@ -162,7 +162,7 @@ def test_auth_role_credentials_delete(client):
 
 
 def test_auth_role_credentials_patch(client):
-    assert client.patch(api.url_for(RoleViewCredentials, role_id=1), {}, headers=VALID_USER_HEADER_TOKEN).status_code == 405
+    assert client.patch(api.url_for(RoleViewCredentials, role_id=1), data={}, headers=VALID_USER_HEADER_TOKEN).status_code == 405
 
 
 def test_auth_user_roles_get(client):
@@ -170,11 +170,11 @@ def test_auth_user_roles_get(client):
 
 
 def test_auth_user_roles_post(client):
-    assert client.post(api.url_for(UserRolesList, user_id=1), {}, headers=VALID_USER_HEADER_TOKEN).status_code == 405
+    assert client.post(api.url_for(UserRolesList, user_id=1), data={}, headers=VALID_USER_HEADER_TOKEN).status_code == 405
 
 
 def test_auth_user_roles_put(client):
-    assert client.put(api.url_for(UserRolesList, user_id=1), {}, headers=VALID_USER_HEADER_TOKEN).status_code == 405
+    assert client.put(api.url_for(UserRolesList, user_id=1), data={}, headers=VALID_USER_HEADER_TOKEN).status_code == 405
 
 
 def test_auth_user_roles_delete(client):
@@ -182,7 +182,7 @@ def test_auth_user_roles_delete(client):
 
 
 def test_auth_user_roles_patch(client):
-    assert client.patch(api.url_for(UserRolesList, user_id=1), {}, headers=VALID_USER_HEADER_TOKEN).status_code == 405
+    assert client.patch(api.url_for(UserRolesList, user_id=1), data={}, headers=VALID_USER_HEADER_TOKEN).status_code == 405
 
 
 def test_auth_authority_roles_get(client):
@@ -190,11 +190,11 @@ def test_auth_authority_roles_get(client):
 
 
 def test_auth_authority_roles_post(client):
-    assert client.post(api.url_for(AuthorityRolesList, authority_id=1), {}, headers=VALID_USER_HEADER_TOKEN).status_code == 405
+    assert client.post(api.url_for(AuthorityRolesList, authority_id=1), data={}, headers=VALID_USER_HEADER_TOKEN).status_code == 405
 
 
 def test_auth_authority_roles_put(client):
-    assert client.put(api.url_for(AuthorityRolesList, authority_id=1), {}, headers=VALID_USER_HEADER_TOKEN).status_code == 405
+    assert client.put(api.url_for(AuthorityRolesList, authority_id=1), data={}, headers=VALID_USER_HEADER_TOKEN).status_code == 405
 
 
 def test_auth_authority_roles_delete(client):
@@ -202,7 +202,7 @@ def test_auth_authority_roles_delete(client):
 
 
 def test_auth_authority_roles_patch(client):
-    assert client.patch(api.url_for(AuthorityRolesList, authority_id=1), {}, headers=VALID_USER_HEADER_TOKEN).status_code == 405
+    assert client.patch(api.url_for(AuthorityRolesList, authority_id=1), data={}, headers=VALID_USER_HEADER_TOKEN).status_code == 405
 
 
 VALID_ADMIN_HEADER_TOKEN = {
@@ -214,7 +214,7 @@ def test_admin_role_get(client):
 
 
 def test_admin_role_post(client):
-    assert client.post(api.url_for(Roles, role_id=1), {}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
+    assert client.post(api.url_for(Roles, role_id=1), data={}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
 
 
 def test_admin_role_put(client):
@@ -226,7 +226,7 @@ def test_admin_role_delete(client):
 
 
 def test_admin_role_patch(client):
-    assert client.patch(api.url_for(Roles, role_id=1), {}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
+    assert client.patch(api.url_for(Roles, role_id=1), data={}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
 
 
 def test_admin_roles_get(client):
@@ -240,11 +240,11 @@ def test_admin_role_credentials_get(client):
 
 
 def test_admin_role_credentials_post(client):
-    assert client.post(api.url_for(RolesList), {}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 400
+    assert client.post(api.url_for(RolesList), data={}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 400
 
 
 def test_admin_role_credentials_put(client):
-    assert client.put(api.url_for(RolesList), {}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
+    assert client.put(api.url_for(RolesList), data={}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
 
 
 def test_admin_role_credentials_delete(client):
@@ -252,7 +252,7 @@ def test_admin_role_credentials_delete(client):
 
 
 def test_admin_role_credentials_patch(client):
-    assert client.patch(api.url_for(RolesList), {}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
+    assert client.patch(api.url_for(RolesList), data={}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
 
 
 def test_admin_user_roles_get(client):
@@ -260,11 +260,11 @@ def test_admin_user_roles_get(client):
 
 
 def test_admin_user_roles_post(client):
-    assert client.post(api.url_for(UserRolesList, user_id=1), {}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
+    assert client.post(api.url_for(UserRolesList, user_id=1), data={}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
 
 
 def test_admin_user_roles_put(client):
-    assert client.put(api.url_for(UserRolesList, user_id=1), {}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
+    assert client.put(api.url_for(UserRolesList, user_id=1), data={}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
 
 
 def test_admin_user_roles_delete(client):
@@ -272,7 +272,7 @@ def test_admin_user_roles_delete(client):
 
 
 def test_admin_user_roles_patch(client):
-    assert client.patch(api.url_for(UserRolesList, user_id=1), {}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
+    assert client.patch(api.url_for(UserRolesList, user_id=1), data={}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
 
 
 def test_admin_authority_roles_get(client):
@@ -280,11 +280,11 @@ def test_admin_authority_roles_get(client):
 
 
 def test_admin_authority_roles_post(client):
-    assert client.post(api.url_for(AuthorityRolesList, authority_id=1), {}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
+    assert client.post(api.url_for(AuthorityRolesList, authority_id=1), data={}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
 
 
 def test_admin_authority_roles_put(client):
-    assert client.put(api.url_for(AuthorityRolesList, authority_id=1), {}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
+    assert client.put(api.url_for(AuthorityRolesList, authority_id=1), data={}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
 
 
 def test_admin_authority_roles_delete(client):
@@ -292,7 +292,7 @@ def test_admin_authority_roles_delete(client):
 
 
 def test_admin_authority_roles_patch(client):
-    assert client.patch(api.url_for(AuthorityRolesList, authority_id=1), {}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
+    assert client.patch(api.url_for(AuthorityRolesList, authority_id=1), data={}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
 
 
 def test_admin_roles_crud(client):

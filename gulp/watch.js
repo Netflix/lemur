@@ -3,7 +3,7 @@
 var gulp = require('gulp');
 
 
-gulp.task('watch', ['dev:styles', 'dev:scripts', 'dev:inject'] ,function () {
+gulp.task('watch', ['dev:styles', 'dev:scripts', 'dev:inject', 'dev:fonts'] ,function () {
   gulp.watch('app/styles/**/*.less', ['dev:styles']);
   gulp.watch('app/styles/**/*.css', ['dev:styles']);
   gulp.watch('app/**/*.js', ['dev:scripts']);

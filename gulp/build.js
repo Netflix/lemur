@@ -26,8 +26,8 @@ var gulp = require('gulp'),
   imagemin = require('gulp-imagemin'),
   minifyHtml = require('gulp-minify-html'),
   bowerFiles = require('main-bower-files'),
-  replace = require('gulp-replace-task');
-
+  karma = require('karma'),
+  replace = require('gulp-replace');
 
 gulp.task('default', ['clean'], function () {
   gulp.start('fonts', 'styles');
@@ -37,10 +37,19 @@ gulp.task('clean', function (cb) {
   del(['.tmp', 'lemur/static/dist'], cb);
 });
 
+gulp.task('test', function (done) {
+  new karma.Server({
+    configFile: __dirname + '/karma.conf.js',
+    singleRun: true
+  }, function() {
+    done();
+  }).start();
+});
+
 gulp.task('dev:fonts', function () {
   var fileList = [
-    'lemur/static/app/vendor/bower_components/bootstrap/dist/fonts/*',
-    'lemur/static/app/vendor/bower_components/fontawesome/fonts/*'
+    'bower_components/bootstrap/dist/fonts/*',
+    'bower_components/fontawesome/fonts/*'
   ];
 
   return gulp.src(fileList)
@@ -48,7 +57,7 @@ gulp.task('dev:fonts', function () {
 });
 
 gulp.task('dev:styles', function () {
-  var baseContent = '@import "lemur/static/app/vendor/bower_components/bootstrap/less/bootstrap.less";@import "lemur/static/app/vendor/bower_components/bootswatch/$theme$/variables.less";@import "lemur/static/app/vendor/bower_components/bootswatch/$theme$/bootswatch.less";@import "lemur/static/app/vendor/bower_components/bootstrap/less/utilities.less";';
+  var baseContent = '@import "bower_components/bootstrap/less/bootstrap.less";@import "bower_components/bootswatch/$theme$/variables.less";@import "bower_components/bootswatch/$theme$/bootswatch.less";@import "bower_components/bootstrap/less/utilities.less";';
   var isBootswatchFile = function (file) {
 
     var suffix = 'bootswatch.less';
@@ -64,15 +73,15 @@ gulp.task('dev:styles', function () {
 
   var fileList = [
     'lemur/static/app/styles/lemur.css',
-    'lemur/static/app/vendor/bower_components/bootswatch/sandstone/bootswatch.less',
-    'lemur/static/app/vendor/bower_components/fontawesome/css/font-awesome.css',
-    'lemur/static/app/vendor/bower_components/angular-spinkit/src/angular-spinkit.css',
-    'lemur/static/app/vendor/bower_components/angular-chart.js/dist/angular-chart.css',
-    'lemur/static/app/vendor/bower_components/angular-loading-bar/src/loading-bar.css',
-    'lemur/static/app/vendor/bower_components/angular-ui-switch/angular-ui-switch.css',
-    'lemur/static/app/vendor/bower_components/angular-wizard/dist/angular-wizard.css',
-    'lemur/static/app/vendor/bower_components/ng-table/ng-table.css',
-    'lemur/static/app/vendor/bower_components/angularjs-toaster/toaster.css'
+    'bower_components/bootswatch/sandstone/bootswatch.less',
+    'bower_components/fontawesome/css/font-awesome.css',
+    'bower_components/angular-spinkit/src/angular-spinkit.css',
+    'bower_components/angular-chart.js/dist/angular-chart.css',
+    'bower_components/angular-loading-bar/src/loading-bar.css',
+    'bower_components/angular-ui-switch/angular-ui-switch.css',
+    'bower_components/angular-wizard/dist/angular-wizard.css',
+    'bower_components/ng-table/ng-table.css',
+    'bower_components/angularjs-toaster/toaster.css'
   ];
 
   return gulp.src(fileList)
@@ -227,5 +236,15 @@ gulp.task('build:images', function () {
     .pipe(size());
 });
 
+gulp.task('package:strip', function () {
+  return gulp.src(['lemur/static/dist/scripts/main*'])
+    .pipe(replace('http:\/\/localhost:5000', ''))
+    .pipe(replace('http:\/\/localhost:3000', ''))
+    .pipe(useref())
+    .pipe(revReplace())
+    .pipe(gulp.dest('lemur/static/dist/scripts'))
+    .pipe(size());
+});
 
 gulp.task('build', ['build:ngviews', 'build:inject', 'build:images', 'build:fonts', 'build:html', 'build:extras']);
+gulp.task('package', ['package:strip']);

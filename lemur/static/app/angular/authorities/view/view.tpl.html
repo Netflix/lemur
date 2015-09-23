@@ -5,7 +5,7 @@
     <div class="panel panel-default">
       <div class="panel-heading">
         <div class="btn-group pull-right">
-          <a href="#/authorities/create" class="btn btn-primary">Create</a>
+          <button class="btn btn-primary" ng-click="create()">Create</button>
         </div>
         <div class="btn-group">
           <button ng-click="toggleFilter(authoritiesTable)" class="btn btn-default">Filter</button>
@@ -29,16 +29,16 @@
             </td>
             <td data-title="'Roles'"> <!--filter="{ 'select': 'role' }" filter-data="roleService.getRoleDropDown()">-->
               <div class="btn-group">
-                <button ng-repeat="role in authority.roles" class="btn btn-sm btn-danger">
+                <a ng-click="editRole(role.id)" ng-repeat="role in authority.roles" class="btn btn-sm btn-danger">
                     {{ role.name }}
-                </button>
+                </a>
               </div>
             </td>
             <td data-title="''">
               <div class="btn-group-vertical pull-right">
-                <a tooltip="Edit Authority" href="#/authorities/{{ authority.id }}/edit" class="btn btn-sm btn-info">
+                <button tooltip="Edit Authority" ng-click="edit(authority.id)" class="btn btn-sm btn-info">
                   Edit
-                </a>
+                </button>
               </div>
             </td>
           </tr>

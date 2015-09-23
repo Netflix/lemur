@@ -9,18 +9,16 @@ import jwt
 import base64
 import requests
 
-from flask import g, Blueprint, current_app, abort
+from flask import g, Blueprint, current_app
 
 from flask.ext.restful import reqparse, Resource, Api
 from flask.ext.principal import Identity, identity_changed
 
-from lemur.common.crypto import unlock
+from lemur.common.utils import get_psuedo_random_string
 
-from lemur.auth.permissions import admin_permission
 from lemur.users import service as user_service
 from lemur.roles import service as role_service
-from lemur.certificates import service as cert_service
-from lemur.auth.service import AuthenticatedResource, create_token, fetch_token_header, get_rsa_public_key
+from lemur.auth.service import create_token, fetch_token_header, get_rsa_public_key
 
 
 mod = Blueprint('auth', __name__)
@@ -127,7 +125,7 @@ class Ping(Resource):
 
         args = self.reqparse.parse_args()
 
-        # take the information we have received from Meechum to create a new request
+        # take the information we have received from the provider to create a new request
         params = {
             'client_id': args['clientId'],
             'grant_type': 'authorization_code',
@@ -140,7 +138,7 @@ class Ping(Resource):
         access_token_url = current_app.config.get('PING_ACCESS_TOKEN_URL')
         user_api_url = current_app.config.get('PING_USER_API_URL')
 
-        # the secret and cliendId will be given to you when you signup for meechum
+        # the secret and cliendId will be given to you when you signup for the provider
         basic = base64.b64encode('{0}:{1}'.format(args['clientId'], current_app.config.get("PING_SECRET")))
         headers = {'Authorization': 'Basic {0}'.format(basic)}
 
@@ -185,10 +183,6 @@ class Ping(Resource):
         # update their google 'roles'
         roles = []
 
-        # Legacy edge case - 'admin' has some special privileges associated with it
-        if 'secops@netflix.com' in profile['googleGroups']:
-            roles.append(role_service.get_by_name('admin'))
-
         for group in profile['googleGroups']:
             role = role_service.get_by_name(group)
             if not role:
@@ -198,14 +192,16 @@ class Ping(Resource):
         # if we get an sso user create them an account
         # we still pick a random password in case sso is down
         if not user:
-            # every user is an operator (tied to the verisignCA)
-            v = role_service.get_by_name('verisign')
-            if v:
-                roles.append(v)
+
+            # every user is an operator (tied to a default role)
+            if current_app.config.get('LEMUR_DEFAULT_ROLE'):
+                v = role_service.get_by_name(current_app.config.get('LEMUR_DEFAULT_ROLE'))
+                if v:
+                    roles.append(v)
 
             user = user_service.create(
                 profile['email'],
-                cert_service.create_challenge(),
+                get_psuedo_random_string(),
                 profile['email'],
                 True,
                 profile.get('thumbnailPhotoUrl'),
@@ -224,7 +220,7 @@ class Ping(Resource):
                 profile['email'],
                 profile['email'],
                 True,
-                profile.get('thumbnailPhotoUrl'), # incase profile isn't google+ enabled
+                profile.get('thumbnailPhotoUrl'),  # incase profile isn't google+ enabled
                 roles
             )
 
@@ -234,24 +230,5 @@ class Ping(Resource):
         return dict(token=create_token(user))
 
 
-class Unlock(AuthenticatedResource):
-    def __init__(self):
-        self.reqparse = reqparse.RequestParser()
-        super(Unlock, self).__init__()
-
-    @admin_permission.require(http_exception=403)
-    def post(self):
-        self.reqparse.add_argument('password', type=str, required=True, location='json')
-        args = self.reqparse.parse_args()
-        unlock(args['password'])
-        return {
-            "message": "You have successfully unlocked this Lemur instance",
-            "type": "success"
-        }
-
-
 api.add_resource(Login, '/auth/login', endpoint='login')
 api.add_resource(Ping, '/auth/ping', endpoint='ping')
-api.add_resource(Unlock, '/auth/unlock', endpoint='unlock')
-
-

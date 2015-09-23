@@ -9,10 +9,18 @@ Authentication
     :undoc-members:
     :show-inheritance:
 
-Accounts
---------
+Destinations
+------------
 
-.. automodule:: lemur.accounts.views
+.. automodule:: lemur.destinations.views
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Notifications
+-------------
+
+.. automodule:: lemur.notifications.views
     :members:
     :undoc-members:
     :show-inheritance:
@@ -56,5 +64,3 @@ Domains
     :members:
     :undoc-members:
     :show-inheritance:
-
-

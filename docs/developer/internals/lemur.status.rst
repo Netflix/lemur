@@ -5,7 +5,7 @@ status Package
 -------------------
 
 .. automodule:: lemur.status.views
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
-

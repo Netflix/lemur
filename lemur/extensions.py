@@ -3,7 +3,6 @@
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 """
-
 from flask.ext.sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
@@ -16,3 +15,5 @@ bcrypt = Bcrypt()
 from flask.ext.principal import Principal
 principal = Principal()
 
+from flask_mail import Mail
+smtp_mail = Mail()

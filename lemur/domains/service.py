@@ -61,4 +61,3 @@ def render(args):
         query = database.sort(query, Domain, sort_by, sort_dir)
 
     return database.paginate(query, page, count)
-

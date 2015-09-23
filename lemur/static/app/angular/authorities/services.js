@@ -56,12 +56,25 @@ angular.module('lemur')
     });
     return LemurRestangular.all('authorities');
   })
-  .service('AuthorityService', function ($location, AuthorityApi, toaster) {
+  .service('AuthorityService', function ($location, AuthorityApi, DefaultService, toaster) {
     var AuthorityService = this;
     AuthorityService.findAuthorityByName = function (filterValue) {
       return AuthorityApi.getList({'filter[name]': filterValue})
         .then(function (authorites) {
           return authorites;
+        });
+    };
+
+    AuthorityService.findActiveAuthorityByName = function (filterValue) {
+      return AuthorityApi.getList({'filter[name]': filterValue})
+        .then(function (authorities) {
+          var activeAuthorities = [];
+          _.each(authorities, function (authority) {
+              if (authority.active) {
+                activeAuthorities.push(authority);
+              }
+          });
+          return activeAuthorities;
         });
     };
 
@@ -86,7 +99,7 @@ angular.module('lemur')
     };
 
     AuthorityService.update = function (authority) {
-      authority.put().then(
+      return authority.put().then(
         function () {
           toaster.pop({
             type: 'success',
@@ -104,14 +117,24 @@ angular.module('lemur')
       });
     };
 
+    AuthorityService.getDefaults = function (authority) {
+      return DefaultService.get().then(function (defaults) {
+        authority.caDN.country = defaults.country;
+        authority.caDN.state = defaults.state;
+        authority.caDN.location = defaults.location;
+        authority.caDN.organization = defaults.organization;
+        authority.caDN.organizationalUnit = defaults.organizationalUnit;
+      });
+    };
+
     AuthorityService.getRoles = function (authority) {
-      authority.getList('roles').then(function (roles) {
+      return authority.getList('roles').then(function (roles) {
         authority.roles = roles;
       });
     };
 
     AuthorityService.updateActive = function (authority) {
-      authority.put().then(
+      return authority.put().then(
         function () {
           toaster.pop({
             type: 'success',

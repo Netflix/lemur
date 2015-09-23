@@ -7,15 +7,7 @@ angular.module('lemur')
       controller: 'DashboardController'
     });
   })
-  .controller('DashboardController', function ($scope, $rootScope, $filter, $location, LemurRestangular, ngTableParams) {
-
-    var baseStats = LemurRestangular.all('stats');
-    var baseAccounts = LemurRestangular.all('accounts');
-
-    baseAccounts.getList()
-      .then(function (data) {
-        $scope.accounts = data;
-      });
+  .controller('DashboardController', function ($scope, $rootScope, $filter, $location, LemurRestangular) {
 
     $scope.colours = [
       {
@@ -78,16 +70,21 @@ angular.module('lemur')
 
     LemurRestangular.all('certificates').customGET('stats', {metric: 'issuer'})
       .then(function (data) {
-        $scope.issuers = data['items'];
+        $scope.issuers = data.items;
       });
 
     LemurRestangular.all('certificates').customGET('stats', {metric: 'bits'})
       .then(function (data) {
-        $scope.bits = data['items'];
+        $scope.bits = data.items;
       });
 
     LemurRestangular.all('certificates').customGET('stats', {metric: 'not_after'})
       .then(function (data) {
-        $scope.expiring = {labels: data['items']['labels'], values: [data['items']['values']]};
+        $scope.expiring = {labels: data.items.labels, values: [data.items.values]};
+      });
+
+    LemurRestangular.all('destinations').customGET('stats', {metric: 'certificates'})
+      .then(function (data) {
+        $scope.destinations = {labels: data.items.labels, values: [data.items.values]};
       });
   });

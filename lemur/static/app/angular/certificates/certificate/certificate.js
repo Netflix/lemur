@@ -1,35 +1,38 @@
 'use strict';
 
 angular.module('lemur')
-  .config(function config($routeProvider) {
-    $routeProvider.when('/certificates/create', {
-      templateUrl: '/angular/certificates/certificate/certificateWizard.tpl.html',
-      controller: 'CertificateCreateController'
-    });
-
-    $routeProvider.when('/certificates/:id/edit', {
-      templateUrl: '/angular/certificates/certificate/edit.tpl.html',
-      controller: 'CertificateEditController'
-    });
-  })
-
-  .controller('CertificateEditController', function ($scope, $routeParams, CertificateApi, CertificateService, MomentService) {
-    CertificateApi.get($routeParams.id).then(function (certificate) {
+  .controller('CertificateEditController', function ($scope, $modalInstance, CertificateApi, CertificateService, DestinationService, NotificationService, editId) {
+    CertificateApi.get(editId).then(function (certificate) {
+      CertificateService.getNotifications(certificate);
+      CertificateService.getDestinations(certificate);
       $scope.certificate = certificate;
     });
 
-    $scope.momentService = MomentService;
-    $scope.save = CertificateService.update;
-
-  })
-
-  .controller('CertificateCreateController', function ($scope, $modal, CertificateApi, CertificateService, AccountService, ELBService, AuthorityService, MomentService, LemurRestangular) {
-    $scope.certificate = LemurRestangular.restangularizeElement(null, {}, 'certificates');
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
 
     $scope.save = function (certificate) {
-      var loadingModal = $modal.open({backdrop: 'static', template: '<wave-spinner></wave-spinner>', windowTemplateUrl: 'angular/loadingModal.html', size: 'large'});
-      CertificateService.create(certificate).then(function (response) {
-        loadingModal.close();
+      CertificateService.update(certificate).then(function () {
+        $modalInstance.close();
+      });
+    };
+
+    $scope.destinationService = DestinationService;
+    $scope.notificationService = NotificationService;
+  })
+
+  .controller('CertificateCreateController', function ($scope, $modalInstance, CertificateApi, CertificateService, DestinationService, AuthorityService, PluginService, MomentService, WizardHandler, LemurRestangular, NotificationService) {
+    $scope.certificate = LemurRestangular.restangularizeElement(null, {}, 'certificates');
+
+    // set the defaults
+    CertificateService.getDefaults($scope.certificate);
+
+    $scope.create = function (certificate) {
+      WizardHandler.wizard().context.loading = true;
+      CertificateService.create(certificate).then(function () {
+        WizardHandler.wizard().context.loading = false;
+        $modalInstance.close();
       });
     };
 
@@ -88,7 +91,11 @@ angular.module('lemur')
 
     };
 
-    $scope.elbService = ELBService;
+    PluginService.getByType('destination').then(function (plugins) {
+        $scope.plugins = plugins;
+    });
+
     $scope.authorityService = AuthorityService;
-    $scope.accountService = AccountService;
+    $scope.destinationService = DestinationService;
+    $scope.notificationService = NotificationService;
   });

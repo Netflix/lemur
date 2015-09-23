@@ -2,6 +2,9 @@ Quickstart
 **********
 
 This guide will step you through setting up a Python-based virtualenv, installing the required packages, and configuring the basic web service.
+This guide assumes a clean Ubuntu 14.04 instance, commands may differ based on the OS and configuration being used.
+
+Pressed for time? See the Lemur docker file on `Github <https://github.com/Netflix/lemur-docker>`_.
 
 Dependencies
 ------------
@@ -11,11 +14,12 @@ Some basic prerequisites which you'll need in order to run Lemur:
 * A UNIX-based operating system. We test on Ubuntu, develop on OS X
 * Python 2.7
 * PostgreSQL
-* Ngnix
+* Nginx
 
 .. note:: Lemur was built with in AWS in mind. This means that things such as databases (RDS), mail (SES), and SSL (ELB),
     are largely handled for us. Lemur does **not** require AWS to function. Our guides and documentation try to be
     be as generic as possible and are not intended to document every step of launching Lemur into a given environment.
+
 
 Setting up an Environment
 -------------------------
@@ -38,21 +42,18 @@ Finally, activate your virtualenv::
           install into the virtualenv by default.
 
 
-Installing Lemur
-----------------
+Installing build dependencies
+-----------------------------
 
-Once you've got the environment setup, you can install Lemur and all its dependencies with
-the same command you used to grab virtualenv::
+If installing Lemur on truely bare Ubuntu OS you will need to grab the following packages so that Lemur can correctly build it's
+dependencies::
 
-    pip install -U lemur
+    $ sudo apt-get update
+    $ sudo apt-get install nodejs-legacy python-pip libpq-dev python-dev build-essential libssl-dev libffi-dev nginx git supervisor
 
-Once everything is installed, you should be able to execute the Lemur CLI, via ``lemur``, and get something
-like the following:
+And optionally if your database is going to be on the same host as the webserver::
 
-.. code-block:: bash
-
-  $ lemur
-  usage: lemur [--config=/path/to/settings.py] [command] [options]
+    $ sudo apt-get install postgres
 
 
 Installing from Source
@@ -60,11 +61,18 @@ Installing from Source
 
 If you're installing the Lemur source (e.g. from git), you'll also need to install **npm**.
 
-Once your system is prepared, symlink your source into the virtualenv:
+Once your system is prepared, ensure that you are in the virtualenv:
 
 .. code-block:: bash
 
-  $ python setup.py develop
+  $ which python
+
+
+And then run:
+
+.. code-block:: bash
+
+  $ make develop
 
 .. Note:: This command will install npm dependencies as well as compile static assets.
 
@@ -89,16 +97,56 @@ You can specify `-c` or `--config` to any Lemur command to specify the current e
 you are working in. Lemur will also look under the environmental variable `LEMUR_CONF` should
 that be easier to setup in your environment.
 
+Update your configuration
+-------------------------
+
 Once created you will need to update the configuration file with information about your environment,
 such as which database to talk to, where keys are stores etc..
+
+.. Note:: If you are unfamiliar with with the SQLALCHEMY_DATABASE_URI string it can be broken up like so:
+      postgresql://userame:password@databasefqdn:databaseport/databasename
+
+Setup Postgres
+--------------
+
+For production a dedicated database is recommended, for this guide we will assume postgres has been installed and is on
+the same machine that Lemur is installed on.
+
+First, set a password for the postgres user.  For this guide, we will use **lemur** as an example but you should use the database password generated for by Lemur::
+
+     $ sudo -u postgres psql postgres
+     # \password postgres
+     Enter new password: lemur
+     Enter it again: lemur
+
+Type CTRL-D to exit psql once you have changed the password.
+
+Next, we will create our a new database::
+
+     $ sudo -u postgres createdb lemur
+
+.. _InitializingLemur:
 
 Initializing Lemur
 ------------------
 
 Lemur provides a helpful command that will initialize your database for you. It creates a default user (lemur) that is
 used by Lemur to help associate certificates that do not currently have an owner. This is most commonly the case when
-Lemur has discovered certificates from a third party resource. This is also a default user that can be used to
+Lemur has discovered certificates from a third party source. This is also a default user that can be used to
 administer Lemur.
+
+In addition to create a new User, Lemur also creates a few default email notifications. These notifications are based
+on a few configuration options such as `LEMUR_SECURITY_TEAM_EMAIL` they basically garentee that every cerificate within
+Lemur will send one expiration notification to the security team.
+
+Additional notifications can be created through the UI or API.
+See :ref:`Creating Notifications <CreatingNotifications>` and :ref:`Command Line Interface <CommandLineInterface>` for details.
+
+**Make note of the password used as this will be used during first login to the Lemur UI**
+
+.. code-block:: bash
+
+    $ lemur db init
 
 .. code-block:: bash
 
@@ -109,10 +157,37 @@ administer Lemur.
     for them or be enrolled automatically through SSO. This can be done through the CLI or UI.
     See :ref:`Creating Users <CreatingUsers>` and :ref:`Command Line Interface <CommandLineInterface>` for details
 
-.. note::
-    This assumes you have already created a postgres database and have specified the right postgres URI in the
-    lemur configuration. See the `Postgres Documentation <http://www.postgresql.org/docs/9.0/static/tutorial-createdb.html>`_
-    for details.
+Setup a Reverse Proxy
+---------------------
+
+By default, Lemur runs on port 5000. Even if you change this, under normal conditions you won't be able to bind to
+port 80. To get around this (and to avoid running Lemur as a privileged user, which you shouldn't), we need setup a
+simple web proxy. There are many different web servers you can use for this, we like and recommend Nginx.
+
+Proxying with Nginx
+~~~~~~~~~~~~~~~~~~~
+
+You'll use the builtin HttpProxyModule within Nginx to handle proxying
+
+::
+
+   location /api {
+        proxy_pass  http://127.0.0.1:5000;
+        proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
+        proxy_redirect off;
+        proxy_buffering off;
+        proxy_set_header        Host            $host;
+        proxy_set_header        X-Real-IP       $remote_addr;
+        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+    
+    location / {
+        root /www/lemur/lemur/static/dist;
+        include mime.types;
+        index index.html;
+    }
+
+See :doc:`../production/index` for more details on using Nginx.
 
 
 Starting the Web Service
@@ -123,52 +198,17 @@ Lemur provides a built-in webserver (powered by gunicorn and eventlet) to get yo
 To start the webserver, you simply use ``lemur start``. If you opted to use an alternative configuration path
 you can pass that via the --config option.
 
+.. note::
+    You can login with the default user created during :ref:`Initializing Lemur <InitializingLemur>` or any other
+    user you may have created.
+
 ::
 
   # Lemur's server runs on port 5000 by default. Make sure your client reflects
   # the correct host and port!
-  lemur --config=/etc/lemur.conf.py start
+  lemur --config=/etc/lemur.conf.py start -b 127.0.0.1:5000
 
 You should now be able to test the web service by visiting `http://localhost:5000/`.
-
-Setup a Reverse Proxy
----------------------
-
-By default, Lemur runs on port 5000. Even if you change this, under normal conditions you won't be able to bind to
-port 80. To get around this (and to avoid running Lemur as a privileged user, which you shouldn't), we recommend
-you setup a simple web proxy.
-
-Proxying with Nginx
-~~~~~~~~~~~~~~~~~~~
-
-You'll use the builtin HttpProxyModule within Nginx to handle proxying::
-
-    location / {
-      proxy_pass         http://localhost:5000;
-      proxy_redirect     off;
-
-      proxy_set_header   Host              $host;
-      proxy_set_header   X-Real-IP         $remote_addr;
-      proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
-      proxy_set_header   X-Forwarded-Proto $scheme;
-    }
-
-See :doc:`../production/index` for more details on using Nginx.
-
-Proxying with Apache
-~~~~~~~~~~~~~~~~~~~~
-
-Apache requires the use of mod_proxy for forwarding requests::
-
-    ProxyPass / http://localhost:5000/
-    ProxyPassReverse / http://localhost:5000/
-    ProxyPreserveHost On
-    RequestHeader set X-Forwarded-Proto "https" env=HTTPS
-
-You will need to enable ``headers``, ``proxy``, and ``proxy_http`` apache modules to use these settings.
-
-See :doc:`../production/index` for more details on using Apache.
-
 
 Running Lemur as a Service
 ---------------------------
@@ -204,7 +244,7 @@ of Lemur, but we do our best to reconcile those changes.
 .. code-block:: bash
 
   $ crontab -e
-  * 3 * * * lemur sync
+  * 3 * * * lemur sync --all
   * 3 * * * lemur check_revoked
 
 Additional Utilities
@@ -234,4 +274,3 @@ The above gets you going, but for production there are several different securit
 remember Lemur is handling sensitive data and security is imperative.
 
 See :doc:`../production/index` for more details on how to configure Lemur for production.
-

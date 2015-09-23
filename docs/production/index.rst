@@ -6,18 +6,19 @@ There are several steps needed to make Lemur production ready. Here we focus on 
 Basics
 ======
 
-Because of the sensitivity of the information stored and maintain by Lemur it is important that you follow standard host hardening practices:
+Because of the sensitivity of the information stored and maintained by Lemur it is important that you follow standard host hardening practices:
 
 - Run Lemur with a limited user
-- Disabled any unneeded service
+- Disabled any unneeded services
 - Enable remote logging
+- Restrict access to host
 
 .. _CredentialManagement:
 
 Credential Management
 ---------------------
 
-Lemur often contains credentials such as mutual SSL keys that are used to communicate with third party resources and for encrypting stored secrets. Lemur comes with the ability
+Lemur often contains credentials such as mutual TLS keys or API tokens that are used to communicate with third party resources and for encrypting stored secrets. Lemur comes with the ability
 to automatically encrypt these keys such that your keys not be in clear text.
 
 The keys are located within lemur/keys and broken down by environment
@@ -30,10 +31,34 @@ and
 
     ``lemur unlock``
 
-If you choose to use this feature ensure that the KEY are decrypted before Lemur starts as it will have trouble communicating with the database otherwise.
+If you choose to use this feature ensure that the keys are decrypted before Lemur starts as it will have trouble communicating with the database otherwise.
 
-SSL
-====
+Entropy
+-------
+
+Lemur generates private keys for the certificates it creates. This means that it is vitally important that Lemur has enough entropy to draw from. To generate private keys Lemur uses the python library `Cryptography <https://cryptography.io>`_. In turn Cryptography uses OpenSSL bindings to generate
+keys just like you might from the OpenSSL command line. OpenSSL draws it's initial entropy from system during startup and uses PRNGs to generate a stream of random bytes (as output by /dev/urandom) whenever it needs to do a cryptographic operation.
+
+What does all this mean? Well in order for the keys
+that Lemur generates to be strong, the system needs to interact with the outside world. This is typically accomplished through the systems hardware (thermal, sound, video user-input, etc.) since the physical world is much more "random" than the computer world.
+
+If you are running Lemur on its own server with its own hardware "bare metal" then the entropy of the system is typically "good enough" for generating keys. If however you are using an VM on shared hardware there is a potential that your initial seed data (data that was initially
+fed to the PRNG) is not very good. What's more VMs have been known to be unable to inject more entropy into the system once it has been started. This is because there is typically very little interaction with the server once it has been started.
+
+The amount of effort you wish to expend ensuring that Lemur has good entropy to draw from is up to your specific risk tolerance and how Lemur is configured.
+
+If you wish to generate more entropy for your system we would suggest you take a look at the following resources:
+
+- `WES-entropy-client <https://github.com/WhitewoodCrypto/WES-entropy-client>`_
+- `haveaged <http://www.issihosts.com/haveged/>`_
+
+For additional information about OpenSSL entropy issues:
+
+- `Managing and Understanding Entropy Usage <https://www.blackhat.com/docs/us-15/materials/us-15-Potter-Understanding-And-Managing-Entropy-Usage.pdf>`_
+
+
+TLS/SSL
+=======
 
 Nginx
 -----
@@ -63,17 +88,6 @@ You will benefit from having:
 
 You must create a Nginx configuration file for Lemur. On GNU/Linux, they usually
 go into /etc/nginx/conf.d/. Name it lemur.conf.
-
-The minimal configuration file to run the site is::
-
-    server {
-        listen       80;
-        server_name www.yourwebsite.com;
-
-        location / {
-            proxy_pass http://127.0.0.1:5000;
-        }
-    }
 
 `proxy_pass` just passes the external request to the Python process.
 The port much match the one used by the 0bin process of course.
@@ -106,17 +120,18 @@ You can make some adjustments to get a better user experience::
         }
 
         location / {
-            root /apps/lemur/lemur/static/dist;
+            root /path/to/lemur/static/dist;
+            include mime.types;
             index index.html;
         }
 
 
     }
 
-This makes Nginx serve the favicon and static files which is is much better at than python.
+This makes Nginx serve the favicon and static files which it is much better at than python.
 
-It is highly recommended that you deploy SSL when deploying Lemur. This may be obvious given Lemur's purpose but the
-sensitive nature of Lemur and what it controls makes this essential. This is a sample config for Lemur that also terminates SSL::
+It is highly recommended that you deploy TLS when deploying Lemur. This may be obvious given Lemur's purpose but the
+sensitive nature of Lemur and what it controls makes this essential. This is a sample config for Lemur that also terminates TLS::
 
     server_tokens off;
     add_header X-Frame-Options DENY;
@@ -171,12 +186,15 @@ sensitive nature of Lemur and what it controls makes this essential. This is a s
         }
 
         location / {
-            root /apps/lemur/lemur/static/dist;
+            root /path/to/lemur/static/dist;
+            include mime.types;
             index index.html;
         }
 
 
     }
+
+.. Note:: Some paths will have to be adjusted based on where you have choose to install Lemur.
 
 Apache
 ------
@@ -201,8 +219,11 @@ An example apache config::
         ...
     </VirtualHost>
 
-Also included in the configurations above are several best practices when it comes to deploying SSL. Things like enabling
+Also included in the configurations above are several best practices when it comes to deploying TLS. Things like enabling
 HSTS, disabling vulnerable ciphers are all good ideas when it comes to deploying Lemur into a production environment.
+
+.. note::
+    This is a rather incomplete apache config for running Lemur (needs mod_wsgi etc.,), if you have a working apache config please let us know!
 
 .. seealso::
     `Mozilla SSL Configuration Generator <https://mozilla.github.io/server-side-tls/ssl-config-generator/>`_

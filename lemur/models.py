@@ -8,23 +8,35 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-
 from sqlalchemy import Column, Integer, ForeignKey
-
 from lemur.database import db
 
 certificate_associations = db.Table('certificate_associations',
-    Column('domain_id', Integer, ForeignKey('domains.id')),
-    Column('certificate_id', Integer, ForeignKey('certificates.id'))
-)
+                                    Column('domain_id', Integer, ForeignKey('domains.id')),
+                                    Column('certificate_id', Integer, ForeignKey('certificates.id'))
+                                    )
 
-certificate_account_associations = db.Table('certificate_account_associations',
-    Column('account_id', Integer, ForeignKey('accounts.id', ondelete='cascade')),
-    Column('certificate_id', Integer, ForeignKey('certificates.id', ondelete='cascade'))
-)
+certificate_destination_associations = db.Table('certificate_destination_associations',
+                                                Column('destination_id', Integer,
+                                                       ForeignKey('destinations.id', ondelete='cascade')),
+                                                Column('certificate_id', Integer,
+                                                       ForeignKey('certificates.id', ondelete='cascade'))
+                                                )
 
+certificate_source_associations = db.Table('certificate_source_associations',
+                                           Column('source_id', Integer,
+                                                  ForeignKey('sources.id', ondelete='cascade')),
+                                           Column('certificate_id', Integer,
+                                                  ForeignKey('certificates.id', ondelete='cascade'))
+                                           )
+
+certificate_notification_associations = db.Table('certificate_notification_associations',
+                                                 Column('notification_id', Integer,
+                                                        ForeignKey('notifications.id', ondelete='cascade')),
+                                                 Column('certificate_id', Integer,
+                                                        ForeignKey('certificates.id', ondelete='cascade'))
+                                                 )
 roles_users = db.Table('roles_users',
-    Column('user_id', Integer, ForeignKey('users.id')),
-    Column('role_id', Integer, ForeignKey('roles.id'))
-)
-
+                       Column('user_id', Integer, ForeignKey('users.id')),
+                       Column('role_id', Integer, ForeignKey('roles.id'))
+                       )

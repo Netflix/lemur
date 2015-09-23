@@ -5,7 +5,7 @@
     <div class="panel panel-default">
       <div class="panel-heading">
         <div class="btn-group pull-right">
-          <a data-placement="left" data-title="Create Role" bs-tooltip href="#/roles/create" class="btn btn-primary">Create</a>
+          <button ng-click="create()" class="btn btn-primary">Create</button>
         </div>
         <div class="btn-group">
           <button ng-click="toggleFilter(rolesTable)" class="btn btn-default">Filter</button>
@@ -24,9 +24,9 @@
             </td>
             <td data-title="''">
               <div class="btn-group-vertical pull-right">
-                <a href="#/roles/{{ role.id }}/edit" class="btn btn-sm btn-info">
+                <button ng-click="edit(role.id)" class="btn btn-sm btn-info">
                   Edit
-                </a>
+                </button>
                 <a ng-click="remove(role)" class="btn btn-sm btn-danger">
                   Remove
                 </a>

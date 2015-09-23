@@ -1,18 +1,20 @@
 common Package
 ==============
 
-:mod:`crypto` Module
---------------------
-
-.. automodule:: lemur.common.crypto
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`health` Module
 --------------------
 
 .. automodule:: lemur.common.health
+    :noindex:
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`managers` Module
+----------------------
+
+.. automodule:: lemur.common.managers
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
@@ -21,14 +23,7 @@ common Package
 -------------------
 
 .. automodule:: lemur.common.utils
+    :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
-
-Subpackages
------------
-
-.. toctree::
-
-    lemur.common.services
-

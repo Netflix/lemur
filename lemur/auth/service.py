@@ -8,10 +8,13 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
+from __future__ import unicode_literals
+from builtins import bytes
 import jwt
 import json
 import base64
 import binascii
+
 from functools import wraps
 from datetime import datetime, timedelta
 
@@ -27,24 +30,21 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
 
 from lemur.users import service as user_service
-from lemur.auth.permissions import CertificateOwnerNeed, CertificateCreatorNeed, \
-    AuthorityCreatorNeed, AuthorityOwnerNeed, ViewRoleCredentialsNeed
+from lemur.auth.permissions import CertificateCreatorNeed, \
+    AuthorityCreatorNeed, ViewRoleCredentialsNeed
 
 
 def base64url_decode(data):
-    if isinstance(data, unicode):
-        data = str(data)
-
     rem = len(data) % 4
 
     if rem > 0:
-        data += b'=' * (4 - rem)
+        data += '=' * (4 - rem)
 
-    return base64.urlsafe_b64decode(data)
+    return base64.urlsafe_b64decode(bytes(data.encode('latin-1')))
 
 
 def base64url_encode(data):
-    return base64.urlsafe_b64encode(data).replace(b'=', b'')
+    return base64.urlsafe_b64encode(data).replace('=', '')
 
 
 def get_rsa_public_key(n, e):
@@ -72,13 +72,13 @@ def create_token(user):
     :param user:
     :return:
     """
-    expiration_delta = timedelta(days=int(current_app.config.get('TOKEN_EXPIRATION', 1)))
+    expiration_delta = timedelta(days=int(current_app.config.get('LEMUR_TOKEN_EXPIRATION', 1)))
     payload = {
         'sub': user.id,
         'iat': datetime.now(),
         'exp': datetime.now() + expiration_delta
     }
-    token = jwt.encode(payload, current_app.config['TOKEN_SECRET'])
+    token = jwt.encode(payload, current_app.config['LEMUR_TOKEN_SECRET'])
     return token.decode('unicode_escape')
 
 
@@ -102,7 +102,7 @@ def login_required(f):
             return dict(message='Token is invalid'), 403
 
         try:
-            payload = jwt.decode(token, current_app.config['TOKEN_SECRET'])
+            payload = jwt.decode(token, current_app.config['LEMUR_TOKEN_SECRET'])
         except jwt.DecodeError:
             return dict(message='Token is invalid'), 403
         except jwt.ExpiredSignatureError:
@@ -139,9 +139,12 @@ def fetch_token_header(token):
 
     try:
         return json.loads(base64url_decode(header_segment))
-    except TypeError, binascii.Error:
+    except TypeError as e:
+        current_app.logger.exception(e)
         raise jwt.DecodeError('Invalid header padding')
-
+    except binascii.Error as e:
+        current_app.logger.exception(e)
+        raise jwt.DecodeError('Invalid header padding')
 
 
 @identity_loaded.connect
@@ -162,19 +165,18 @@ def on_identity_loaded(sender, identity):
     # identity with the roles that the user provides
     if hasattr(user, 'roles'):
         for role in user.roles:
-            identity.provides.add(CertificateOwnerNeed(unicode(role.id)))
-            identity.provides.add(ViewRoleCredentialsNeed(unicode(role.id)))
+            identity.provides.add(ViewRoleCredentialsNeed(role.id))
             identity.provides.add(RoleNeed(role.name))
 
     # apply ownership for authorities
     if hasattr(user, 'authorities'):
         for authority in user.authorities:
-            identity.provides.add(AuthorityCreatorNeed(unicode(authority.id)))
+            identity.provides.add(AuthorityCreatorNeed(authority.id))
 
     # apply ownership of certificates
     if hasattr(user, 'certificates'):
         for certificate in user.certificates:
-            identity.provides.add(CertificateCreatorNeed(unicode(certificate.id)))
+            identity.provides.add(CertificateCreatorNeed(certificate.id))
 
     g.user = user
 
@@ -187,5 +189,3 @@ class AuthenticatedResource(Resource):
 
     def __init__(self):
         super(AuthenticatedResource, self).__init__()
-
-
