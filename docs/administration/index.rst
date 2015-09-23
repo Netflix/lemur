@@ -578,8 +578,6 @@ Top level commands:
         lemur sync -list
 
 
-<<<<<<< HEAD
-=======
 Sub-commands
 ------------
 
