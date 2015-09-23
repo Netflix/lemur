@@ -2,7 +2,7 @@ Configuration
 =============
 
 .. warning::
-    There are many secrets that Lemur uses that must be protected. All of these options are set via the Lemur configruation
+    There are many secrets that Lemur uses that must be protected. All of these options are set via the Lemur configuration
     file. It is highly advised that you do not store your secrets in this file! Lemur provides functions
     that allow you to encrypt files at rest and decrypt them when it's time for deployment. See :ref:`Credential Management <CredentialManagement>`
     for more information.
@@ -151,7 +151,7 @@ Notification Options
 --------------------
 
 Lemur currently has very basic support for notifications. Currently only expiration notifications are supported. Actual notification
-is handling by the notification plugins that you have configured. Lemur ships with the 'Email' notification that allows expiration emails
+is handled by the notification plugins that you have configured. Lemur ships with the 'Email' notification that allows expiration emails
 to be sent to subscribers.
 
 Templates for expiration emails are located under `lemur/plugins/lemur_email/templates` and can be modified for your needs.
@@ -209,7 +209,7 @@ Lemur supports sending certification expiration notifications through SES and SM
 Authority Options
 -----------------
 
-Authorities will each have their own configuration options. There are currently just one plugin bundled with Lemur,
+Authorities will each have their own configuration options. There is currently just one plugin bundled with Lemur,
 Verisign/Symantec. Additional plugins may define additional options. Refer to the plugins own documentation
 for those plugins.
 
@@ -310,7 +310,7 @@ Lemur uses to STS to talk to different accounts. For managing one account this i
 
 LemurInstanceProfile is the IAM role you will launch your instance with. It actually has almost no rights. In fact it should really only be able to use STS to assume role to the Lemur role.
 
-Here is are example polices for the LemurInstanceProfile:
+Here are example policies for the LemurInstanceProfile:
 
 SES-SendEmail
 
@@ -582,7 +582,7 @@ Sub-commands
 Lemur includes several sub-commands for interacting with Lemur such as creating new users, creating new roles and even
 issuing certificates.
 
-The best way to discovery these commands is by using the built in help pages
+The best way to discover these commands is by using the built in help pages
 
     ::
 
@@ -600,7 +600,7 @@ Identity and Access Management
 ==============================
 
 Lemur uses a Role Based Access Control (RBAC) mechanism to control which users have access to which resources. When a
-user is first created in Lemur the can be assigned one or more roles. These roles are typically dynamically created
+user is first created in Lemur they can be assigned one or more roles. These roles are typically dynamically created
 depending on a external identity provider (Google, LDAP, etc.,) or are hardcoded within Lemur and associated with special
 meaning.
 
