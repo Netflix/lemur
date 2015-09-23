@@ -24,7 +24,7 @@ class Update(Command):
     """
 
     option_list = (
-        Option('-e', '--elb', dest='elb_name', required=True),
+        Option('-e', '--elb', dest='elb_names', action='append', required=True),
         Option('-a', '--account', dest='account', required=True),
         Option('-c', '--certificate', dest='certificate_name', required=True),
         Option('-r', '--region', dest='region', default='us-east-1'),
@@ -33,7 +33,7 @@ class Update(Command):
         Option('--dry-run', dest='dryrun', action='store_true')
     )
 
-    def run(self, elb_name, certificate_name, account, region, dport, sport, dryrun):
+    def run(self, elb_names, certificate_name, account, region, dport, sport, dryrun):
         if dryrun:
             print("Starting ELB Update DRYRUN, changes will NOT be reflected to AWS!")
 
@@ -44,7 +44,7 @@ class Update(Command):
             sys.exit(1)
 
         for dest in certificate.destinations:
-            if dest.name == account:
+            if dest.label == account:
                 account_number = dest.plugin.get_option('accountNumber', dest.options)
                 arn = create_arn(account_number, certificate.name)
                 break
@@ -65,7 +65,7 @@ class Update(Command):
                     ))
                     if not dryrun:
                         certificate.destinations.append(dest)
-                        sys.stdout("[!] Waiting 15secs so that certificate becomes available")
+                        print("[!] Waiting 15secs so that certificate becomes available")
                         time.sleep(15)
 
                     account_number = dest.plugin.get_option('accountNumber', dest.options)
@@ -78,17 +78,19 @@ class Update(Command):
                 print('[/] Certificate not available in ELB account, nothing to do here.')
                 sys.exit(0)
 
-        print('[+] Configuring elb {} from port {} to port {} in region {} with cert {}'
-              .format(elb_name, sport, dport, region, arn))
+        for elb_name in elb_names:
+            print('[+] Configuring elb {} from port {} to port {} in region {} with cert {}'
+                  .format(elb_name, sport, dport, region, arn))
 
-        if not dryrun:
-            if check_duplicate_listener(elb_name, region, account, sport, dport):
-                print("[/] ELB {} already has a listener {}->{} Attempting update...".format(elb_name, sport, dport))
-                update_listeners(account, region, elb_name, [(sport, dport, 'HTTPS', arn)])
-            else:
-                print("[/] Attempting create...".format(elb_name, sport, dport))
-                create_new_listeners(account, region, elb_name, [(sport, dport, 'HTTPS', arn)])
+            if not dryrun:
+                if check_duplicate_listener(elb_name, region, account_number, sport, dport):
+                    print("[!] ELB {} already has a listener {}->{} Attempting update...".format(elb_name, sport, dport))
+                    update_listeners(account_number, region, elb_name, [(sport, dport, 'HTTPS', arn)], [int(sport)])
+                else:
+                    print("[!] Attempting create...".format(elb_name, sport, dport))
+                    create_new_listeners(account_number, region, elb_name, [(sport, dport, 'HTTPS', arn)])
 
+                print("[+] Success! ELB {0} is not in the desired state".format(elb_name))
         print("[/] Done!")
 
 
