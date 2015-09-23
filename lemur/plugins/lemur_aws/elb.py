@@ -104,7 +104,7 @@ def check_duplicate_listener(elb_name, region, account, sport, dport):
     """
     listeners = get_listeners(account, region, elb_name)
     for listener in listeners:
-        if listener[0] == sport and listener[1] == dport:
+        if int(listener[0]) == int(sport) and int(listener[1]) == int(dport):
             return True
 
 
