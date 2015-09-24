@@ -3,45 +3,14 @@ User Guide
 
 These guides are quick tutorials on how to perform basic tasks in Lemur.
 
-Create a New User
-~~~~~~~~~~~~~~~~~
-.. figure:: settings.png
-
-    From the settings dropdown select "Users"
-
-.. figure:: create.png
-
-    In the user table select "Create"
-
-.. figure:: create_user.png
-
-    Enter the username, email and password for the user. You can also assign any
-    roles that the user will need when they login. While there is no deletion
-    (we want to track creators forever) you can mark a user as 'Inactive' that will
-    not allow them to login to Lemur.
-
-
-Create a New Role
-~~~~~~~~~~~~~~~~~
-
-.. figure:: settings.png
-
-    From the settings dropdown select "Roles"
-
-.. figure:: create.png
-
-    In the role table select "Create"
-
-.. figure:: create_role.png
-
-    Enter a role name and short description about the role. You can optionally store
-    a user/password on the role. This is useful if your authority require specific roles.
-    You can then accurately map those roles onto Lemur users. Also optional you can assign
-    users to your new role.
-
 
 Create a New Authority
 ~~~~~~~~~~~~~~~~~~~~~~
+
+Before Lemur can issue certificates you must configure the authority you wish use. Lemur itself does
+not issue certificates, it relies on external CAs and the plugins associated with those CAs to create the certificate
+that Lemur can then manage.
+
 
 .. figure:: create.png
 
@@ -92,4 +61,43 @@ Import an Existing Certificate
     a certificate name but you can override that by passing a value to the `Custom Name` field.
 
     You can add notification options and upload the created certificate to a destination, both
-    of these are editable features and can be changed after the certificate has been created.  
+    of these are editable features and can be changed after the certificate has been created.
+
+
+Create a New User
+~~~~~~~~~~~~~~~~~
+.. figure:: settings.png
+
+    From the settings dropdown select "Users"
+
+.. figure:: create.png
+
+    In the user table select "Create"
+
+.. figure:: create_user.png
+
+    Enter the username, email and password for the user. You can also assign any
+    roles that the user will need when they login. While there is no deletion
+    (we want to track creators forever) you can mark a user as 'Inactive' that will
+    not allow them to login to Lemur.
+
+
+Create a New Role
+~~~~~~~~~~~~~~~~~
+
+.. figure:: settings.png
+
+    From the settings dropdown select "Roles"
+
+.. figure:: create.png
+
+    In the role table select "Create"
+
+.. figure:: create_role.png
+
+    Enter a role name and short description about the role. You can optionally store
+    a user/password on the role. This is useful if your authority require specific roles.
+    You can then accurately map those roles onto Lemur users. Also optional you can assign
+    users to your new role.
+
+

@@ -270,7 +270,9 @@ Decrypts sensitive key material - Used to decrypt the secrets stored in source d
 What's Next?
 ------------
 
-The above gets you going, but for production there are several different security considerations to take into account,
+Get familiar with how Lemur works by reviewing the :doc:`../guide/index`. When you're ready
+see :doc:`../production/index` for more details on how to configure Lemur for production.
+
+Remember the above just gets you going, but for production there are several different security considerations to take into account,
 remember Lemur is handling sensitive data and security is imperative.
 
-See :doc:`../production/index` for more details on how to configure Lemur for production.
