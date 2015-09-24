@@ -316,18 +316,17 @@ class CertificatesList(AuthenticatedResource):
         self.reqparse.add_argument('extensions', type=dict, location='json')
         self.reqparse.add_argument('destinations', type=list, default=[], location='json')
         self.reqparse.add_argument('notifications', type=list, default=[], location='json')
-        self.reqparse.add_argument('owner', type=str, location='json')
         self.reqparse.add_argument('validityStart', type=str, location='json')  # TODO validate
         self.reqparse.add_argument('validityEnd', type=str, location='json')  # TODO validate
-        self.reqparse.add_argument('authority', type=valid_authority, location='json')
-        self.reqparse.add_argument('description', type=str, location='json')
-        self.reqparse.add_argument('country', type=str, location='json')
-        self.reqparse.add_argument('state', type=str, location='json')
-        self.reqparse.add_argument('location', type=str, location='json')
-        self.reqparse.add_argument('organization', type=str, location='json')
-        self.reqparse.add_argument('organizationalUnit', type=str, location='json')
-        self.reqparse.add_argument('owner', type=str, location='json')
-        self.reqparse.add_argument('commonName', type=str, location='json')
+        self.reqparse.add_argument('authority', type=valid_authority, location='json', required=True)
+        self.reqparse.add_argument('description', type=str, location='json', required=True)
+        self.reqparse.add_argument('country', type=str, location='json', required=True)
+        self.reqparse.add_argument('state', type=str, location='json', required=True)
+        self.reqparse.add_argument('location', type=str, location='json', required=True)
+        self.reqparse.add_argument('organization', type=str, location='json', required=True)
+        self.reqparse.add_argument('organizationalUnit', type=str, location='json', required=True)
+        self.reqparse.add_argument('owner', type=str, location='json', required=True)
+        self.reqparse.add_argument('commonName', type=str, location='json', required=True)
 
         args = self.reqparse.parse_args()
 
