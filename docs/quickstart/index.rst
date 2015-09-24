@@ -16,7 +16,7 @@ Some basic prerequisites which you'll need in order to run Lemur:
 * PostgreSQL
 * Nginx
 
-.. note:: Lemur was built with in AWS in mind. This means that things such as databases (RDS), mail (SES), and SSL (ELB),
+.. note:: Lemur was built with in AWS in mind. This means that things such as databases (RDS), mail (SES), and TLS (ELB),
     are largely handled for us. Lemur does **not** require AWS to function. Our guides and documentation try to be
     be as generic as possible and are not intended to document every step of launching Lemur into a given environment.
 
