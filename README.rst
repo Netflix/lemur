@@ -23,6 +23,7 @@ It works on CPython 2.7, 3.3, 3.4. We deploy on Ubuntu and develop on OS X.
 Project resources
 =================
 
+- `Lemur Blog Post <http://techblog.netflix.com/2015/09/introducing-lemur.html>`_
 - `Documentation <http://lemur.readthedocs.org/>`_
 - `Source code <https://github.com/netflix/lemur>`_
 - `Issue tracker <https://github.com/netflix/lemur/issues>`_
