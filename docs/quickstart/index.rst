@@ -16,7 +16,7 @@ Some basic prerequisites which you'll need in order to run Lemur:
 * PostgreSQL
 * Nginx
 
-.. note:: Lemur was built with in AWS in mind. This means that things such as databases (RDS), mail (SES), and SSL (ELB),
+.. note:: Lemur was built with in AWS in mind. This means that things such as databases (RDS), mail (SES), and TLS (ELB),
     are largely handled for us. Lemur does **not** require AWS to function. Our guides and documentation try to be
     be as generic as possible and are not intended to document every step of launching Lemur into a given environment.
 
@@ -270,7 +270,9 @@ Decrypts sensitive key material - Used to decrypt the secrets stored in source d
 What's Next?
 ------------
 
-The above gets you going, but for production there are several different security considerations to take into account,
+Get familiar with how Lemur works by reviewing the :doc:`../guide/index`. When you're ready
+see :doc:`../production/index` for more details on how to configure Lemur for production.
+
+Remember the above just gets you going, but for production there are several different security considerations to take into account,
 remember Lemur is handling sensitive data and security is imperative.
 
-See :doc:`../production/index` for more details on how to configure Lemur for production.
