@@ -27,3 +27,4 @@ Project resources
 - `Documentation <http://lemur.readthedocs.org/>`_
 - `Source code <https://github.com/netflix/lemur>`_
 - `Issue tracker <https://github.com/netflix/lemur/issues>`_
+- `Docker <https://github.com/Netflix/lemur-docker>`_
