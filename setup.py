@@ -124,7 +124,7 @@ class BuildStatic(Command):
 
 setup(
     name='lemur',
-    version='0.1.3',
+    version='0.1.4',
     author='Kevin Glisson',
     author_email='kglisson@netflix.com',
     url='https://github.com/netflix/lemur',
