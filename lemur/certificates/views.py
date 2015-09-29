@@ -319,7 +319,7 @@ class CertificatesList(AuthenticatedResource):
         self.reqparse.add_argument('validityStart', type=str, location='json')  # TODO validate
         self.reqparse.add_argument('validityEnd', type=str, location='json')  # TODO validate
         self.reqparse.add_argument('authority', type=valid_authority, location='json', required=True)
-        self.reqparse.add_argument('description', type=str, location='json', required=True)
+        self.reqparse.add_argument('description', type=str, location='json')
         self.reqparse.add_argument('country', type=str, location='json', required=True)
         self.reqparse.add_argument('state', type=str, location='json', required=True)
         self.reqparse.add_argument('location', type=str, location='json', required=True)
