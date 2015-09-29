@@ -1,3 +1,6 @@
+.. image:: https://badge.waffle.io/Netflix/lemur.png?label=ready&title=Ready 
+ :target: https://waffle.io/Netflix/lemur
+ :alt: 'Stories in Ready'
 Lemur
 =====
 
