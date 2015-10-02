@@ -22,7 +22,8 @@ class InstanceManager(object):
 
     def add(self, class_path):
         self.cache = None
-        self.class_list.append(class_path)
+        if class_path not in self.class_list:
+            self.class_list.append(class_path)
 
     def remove(self, class_path):
         self.cache = None

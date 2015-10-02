@@ -86,7 +86,7 @@ class PluginsList(AuthenticatedResource):
         if args['type']:
             return list(plugins.all(plugin_type=args['type']))
 
-        return plugins.all()
+        return list(plugins.all())
 
 
 class Plugins(AuthenticatedResource):
