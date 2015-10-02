@@ -13,7 +13,8 @@ var lemur = angular
     'toaster',
     'uiSwitch',
     'mgo-angular-wizard',
-    'satellizer'
+    'satellizer',
+    'ngLetterAvatar'
   ])
   .config(function ($routeProvider, $authProvider) {
     $routeProvider
