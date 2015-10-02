@@ -69,14 +69,19 @@
                   <li><a href="/#/login">Login</a></li>
                 </ul>
                 <ul ng-show="currentUser.username" class="nav navbar-nav navbar-right">
-                  <li class="dropdown" dropdown on-toggle="toggled(open)">
-                    <a href class="dropdown-toggle profile-nav" dropdown-toggle>
-                      {{ currentUser.username }}<img ng-if="currentUser.profileImage" src="{{ currentUser.profileImage }}" class="profile img-circle">
-                    </a>
-                    <ul class="dropdown-menu">
-                      <li><a ng-click="logout()">Logout</a></li>
-                    </ul>
-                  </li>
+                    <li class="dropdown" dropdown on-toggle="toggled(open)">
+                        <a href class="dropdown-toggle profile-nav" dropdown-toggle>
+                            <span ng-show="currentUser.profileImage">
+                                {{ currentUser.username }}<img src="{{ currentUser.profileImage }}" class="profile img-circle">
+                            </span>
+                            <span ng-show="!currentUser.profileImage">
+                                {{ currentUser.username }}<ng-letter-avatar height="35" width="35" data="currentUser.username" shape="round"></ng-letter-avatar>
+                            </span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a ng-click="logout()">Logout</a></li>
+                        </ul>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -87,7 +92,10 @@
     </div>
     <footer class="footer">
       <div class="container">
-        <p class="text-muted">Lemur is broken regularly by <a href="https://github.com/Netflix/lemur.git">Netflix</a>.</p>
+        <p class="text-muted">
+            <span>Lemur is broken regularly by <a href="https://github.com/Netflix/lemur.git">Netflix</a>.</span>
+            <span class="pull-right">Confused? Check out our <a href="https://lemur.readthedocs.org/en/latest">docs</a>!</span>
+        </p>
       </div>
     </footer>
 </body>
