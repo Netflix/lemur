@@ -14,9 +14,10 @@ var lemur = angular
     'uiSwitch',
     'mgo-angular-wizard',
     'satellizer',
-    'ngLetterAvatar'
+    'ngLetterAvatar',
+    'zeroclipboard'
   ])
-  .config(function ($stateProvider, $urlRouterProvider, $authProvider) {
+  .config(function ($stateProvider, $urlRouterProvider, $authProvider, uiZeroclipConfigProvider) {
     $urlRouterProvider.otherwise('/welcome');
 
     $stateProvider
@@ -35,6 +36,11 @@ var lemur = angular
       scopeDelimiter: ' ',
       authorizationEndpoint: 'https://example.com/as/authorization.oauth2',
       requiredUrlParams: ['scope']
+    });
+
+    // config ZeroClipboard
+    uiZeroclipConfigProvider.setZcConf({
+      swfPath: 'ZeroClipboard.swf'
     });
   });
 

@@ -136,7 +136,7 @@ gulp.task('dev:scripts', function () {
 });
 
 gulp.task('build:extras', function () {
-  return gulp.src(['lemur/static/app/*.*', '!lemur/static/app/*.html'])
+  return gulp.src(['lemur/static/app/*.*', 'bower_components/zeroclipboard/dist/ZeroClipboard.swf', '!lemur/static/app/*.html'])
     .pipe(gulp.dest('lemur/static/dist'));
 });
 
