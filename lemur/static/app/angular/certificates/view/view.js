@@ -2,15 +2,23 @@
 
 angular.module('lemur')
 
-  .config(function config($routeProvider) {
-    $routeProvider.when('/certificates', {
-      templateUrl: '/angular/certificates/view/view.tpl.html',
-      controller: 'CertificatesViewController'
-    });
+  .config(function config($stateProvider) {
+
+    $stateProvider
+      .state('certificates', {
+        url: "/certificates",
+        templateUrl: '/angular/certificates/view/view.tpl.html',
+        controller: 'CertificatesViewController'
+      })
+      .state('certificate', {
+        url: "/certificates/:name",
+        templateUrl: '/angular/certificates/view/view.tpl.html',
+        controller: 'CertificatesViewController'
+      });
   })
 
-  .controller('CertificatesViewController', function ($q, $scope, $modal, CertificateApi, CertificateService, MomentService, ngTableParams) {
-    $scope.filter = {};
+  .controller('CertificatesViewController', function ($q, $scope, $modal, $stateParams, CertificateApi, CertificateService, MomentService, ngTableParams) {
+    $scope.filter = $stateParams;
     $scope.certificateTable = new ngTableParams({
       page: 1,            // show first page
       count: 10,          // count per page

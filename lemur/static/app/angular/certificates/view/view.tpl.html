@@ -42,6 +42,9 @@
               {{ certificate.cn }}
             </td>
             <td data-title="''">
+              <a ui-sref="certificate({'name': '{{ certificate.name }}'})">Permalink</a>
+            </td>
+            <td data-title="''">
               <div class="btn-group pull-right">
                   <button ng-model="certificate.toggle" class="btn btn-sm btn-info" btn-checkbox btn-checkbox-true="1" butn-checkbox-false="0">More</button>
                   <button class="btn btn-sm btn-warning" ng-click="edit(certificate.id)">Edit</button>
@@ -122,6 +125,7 @@
                         </div>
                     </tab>
               </tabset>
+
               <tabset justified="true" class="col-md-6">
                 <tab heading="Chain">
                   <p>

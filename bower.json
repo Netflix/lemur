@@ -30,7 +30,8 @@
     "angular-chart.js": "~0.7.1",
     "satellizer": "~0.9.4",
     "angularjs-toaster": "~0.4.14",
-    "ngletteravatar": "~3.0.1"
+    "ngletteravatar": "~3.0.1",
+    "angular-ui-router": "~0.2.15"
   },
   "devDependencies": {
     "angular-mocks": "~1.3",

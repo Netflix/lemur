@@ -2,8 +2,9 @@
 
 angular.module('lemur')
 
-  .config(function config($routeProvider) {
-    $routeProvider.when('/notifications', {
+  .config(function config($stateProvider) {
+    $stateProvider.state('notifications', {
+      url: '/notifications',
       templateUrl: '/angular/notifications/view/view.tpl.html',
       controller: 'NotificationsViewController'
     });

@@ -1,8 +1,9 @@
 'use strict';
 
 angular.module('lemur')
-  .config(function config($routeProvider) {
-    $routeProvider.when('/login', {
+  .config(function config($stateProvider) {
+    $stateProvider.state('login', {
+      url: '/login',
       templateUrl: '/angular/authentication/login/login.tpl.html',
       controller: 'LoginController'
     });

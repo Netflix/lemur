@@ -2,7 +2,7 @@
 
 var lemur = angular
   .module('lemur', [
-    'ngRoute',
+    'ui.router',
     'ngTable',
     'ngAnimate',
     'chart.js',
@@ -16,13 +16,13 @@ var lemur = angular
     'satellizer',
     'ngLetterAvatar'
   ])
-  .config(function ($routeProvider, $authProvider) {
-    $routeProvider
-      .when('/', {
+  .config(function ($stateProvider, $urlRouterProvider, $authProvider) {
+    $urlRouterProvider.otherwise("/welcome");
+
+    $stateProvider
+      .state('welcome', {
+        url: "/welcome",
         templateUrl: 'angular/welcome/welcome.html'
-      })
-      .otherwise({
-        redirectTo: '/'
       });
 
     $authProvider.oauth2({
