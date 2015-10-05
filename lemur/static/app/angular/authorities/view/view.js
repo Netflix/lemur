@@ -2,15 +2,22 @@
 
 angular.module('lemur')
 
-  .config(function config($routeProvider) {
-    $routeProvider.when('/authorities', {
-      templateUrl: '/angular/authorities/view/view.tpl.html',
-      controller: 'AuthoritiesViewController'
-    });
+  .config(function config($stateProvider) {
+    $stateProvider
+      .state('authorities', {
+        url: '/authorities',
+        templateUrl: '/angular/authorities/view/view.tpl.html',
+        controller: 'AuthoritiesViewController'
+      })
+      .state('authority', {
+        url: '/authorities/:name',
+        templateUrl: '/angular/authorities/view/view.tpl.html',
+        controller: 'AuthoritiesViewController'
+      });
   })
 
-  .controller('AuthoritiesViewController', function ($scope, $q, $modal, AuthorityApi, AuthorityService, ngTableParams) {
-    $scope.filter = {};
+  .controller('AuthoritiesViewController', function ($scope, $q, $modal, $stateParams, AuthorityApi, AuthorityService, ngTableParams) {
+    $scope.filter = $stateParams;
     $scope.authoritiesTable = new ngTableParams({
       page: 1,            // show first page
       count: 10,          // count per page

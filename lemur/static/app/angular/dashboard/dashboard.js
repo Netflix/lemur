@@ -1,8 +1,9 @@
 'use strict';
 
 angular.module('lemur')
-  .config(function config($routeProvider) {
-    $routeProvider.when('/dashboard', {
+  .config(function config($stateProvider) {
+    $stateProvider.state('dashboard', {
+      url: '/dashboard',
       templateUrl: '/angular/dashboard/dashboard.tpl.html',
       controller: 'DashboardController'
     });

@@ -2,8 +2,9 @@
 
 angular.module('lemur')
 
-  .config(function config($routeProvider) {
-    $routeProvider.when('/destinations', {
+  .config(function config($stateProvider) {
+    $stateProvider.state('destinations', {
+      url: '/destinations',
       templateUrl: '/angular/destinations/view/view.tpl.html',
       controller: 'DestinationsViewController'
     });

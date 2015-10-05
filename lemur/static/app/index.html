@@ -49,24 +49,24 @@
             </div>
             <div class="navbar-collapse collapse" ng-controller="LoginController">
                 <ul class="nav navbar-nav navbar-left">
-                    <li><a href="/#/dashboard">Dashboard</a></li>
-                    <li><a href="/#/certificates">Certificates</a></li>
-                    <li><a href="/#/authorities">Authorities</a></li>
-                    <li><a href="/#/notifications">Notifications</a></li>
-                    <li><a href="/#/destinations">Destinations</a></li>
-                    <li><a href="/#/sources">Sources</a></li>
+                    <li><a ui-sref="dashboard">Dashboard</a></li>
+                    <li><a ui-sref="certificates">Certificates</a></li>
+                    <li><a ui-sref="authorities">Authorities</a></li>
+                    <li><a ui-sref="notifications">Notifications</a></li>
+                    <li><a ui-sref="destinations">Destinations</a></li>
+                    <li><a ui-sref="sources">Sources</a></li>
                     <li></li>
                     <li class="dropdown" dropdown on-toggle="toggled(open)">
                         <a href class="dropdown-toggle" dropdown-toggle>Settings <span class="caret"></span></a>
                         <ul class="dropdown-menu">
-                            <li><a href="/#/roles">Roles</a></li>
-                            <li><a href="/#/users">Users</a></li>
-                            <li><a href="/#/domains">Domains</a></li>
+                            <li><a ui-sref="roles">Roles</a></li>
+                            <li><a ui-sref="users">Users</a></li>
+                            <li><a ui-sref="domains">Domains</a></li>
                         </ul>
                     </li>
                 </ul>
                 <ul ng-show="!currentUser.username" class="nav navbar-nav navbar-right">
-                  <li><a href="/#/login">Login</a></li>
+                  <li><a ui-sref="login">Login</a></li>
                 </ul>
                 <ul ng-show="currentUser.username" class="nav navbar-nav navbar-right">
                     <li class="dropdown" dropdown on-toggle="toggled(open)">
@@ -88,7 +88,7 @@
     </div>
     <!-- Add your site or application content here -->
     <div class="container-fluid">
-      <div ng-view></div>
+      <div ui-view></div>
     </div>
     <footer class="footer">
       <div class="container">
