@@ -5,12 +5,12 @@ angular.module('lemur')
   .config(function config($stateProvider) {
     $stateProvider
       .state('authorities', {
-        url: "/authorities",
+        url: '/authorities',
         templateUrl: '/angular/authorities/view/view.tpl.html',
         controller: 'AuthoritiesViewController'
       })
       .state('authority', {
-        url: "/authorities/:name",
+        url: '/authorities/:name',
         templateUrl: '/angular/authorities/view/view.tpl.html',
         controller: 'AuthoritiesViewController'
       });

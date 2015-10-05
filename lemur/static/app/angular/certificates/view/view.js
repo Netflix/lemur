@@ -6,12 +6,12 @@ angular.module('lemur')
 
     $stateProvider
       .state('certificates', {
-        url: "/certificates",
+        url: '/certificates',
         templateUrl: '/angular/certificates/view/view.tpl.html',
         controller: 'CertificatesViewController'
       })
       .state('certificate', {
-        url: "/certificates/:name",
+        url: '/certificates/:name',
         templateUrl: '/angular/certificates/view/view.tpl.html',
         controller: 'CertificatesViewController'
       });
