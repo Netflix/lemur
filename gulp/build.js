@@ -72,7 +72,6 @@ gulp.task('dev:styles', function () {
   };
 
   var fileList = [
-    'lemur/static/app/styles/lemur.css',
     'bower_components/bootswatch/sandstone/bootswatch.less',
     'bower_components/fontawesome/css/font-awesome.css',
     'bower_components/angular-spinkit/src/angular-spinkit.css',
@@ -81,7 +80,8 @@ gulp.task('dev:styles', function () {
     'bower_components/angular-ui-switch/angular-ui-switch.css',
     'bower_components/angular-wizard/dist/angular-wizard.css',
     'bower_components/ng-table/ng-table.css',
-    'bower_components/angularjs-toaster/toaster.css'
+    'bower_components/angularjs-toaster/toaster.css',
+    'lemur/static/app/styles/lemur.css'
   ];
 
   return gulp.src(fileList)

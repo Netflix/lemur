@@ -31,7 +31,8 @@
     "satellizer": "~0.9.4",
     "angularjs-toaster": "~0.4.14",
     "ngletteravatar": "~3.0.1",
-    "angular-ui-router": "~0.2.15"
+    "angular-ui-router": "~0.2.15",
+    "angular-clipboard": "~1.1.1"
   },
   "devDependencies": {
     "angular-mocks": "~1.3",

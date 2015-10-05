@@ -14,7 +14,8 @@ var lemur = angular
     'uiSwitch',
     'mgo-angular-wizard',
     'satellizer',
-    'ngLetterAvatar'
+    'ngLetterAvatar',
+    'angular-clipboard'
   ])
   .config(function ($stateProvider, $urlRouterProvider, $authProvider) {
     $urlRouterProvider.otherwise('/welcome');

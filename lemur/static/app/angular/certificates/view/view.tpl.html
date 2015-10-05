@@ -6,11 +6,11 @@
       <div class="panel-heading">
         <div class="btn-group pull-right">
           <button data-placement="left" data-title="Create Certificate" bs-tooltip ng-click="create()"
-             class="btn btn-primary">
+                  class="btn btn-primary">
             Create
           </button>
           <button data-placement="left" data-title="Import Certificate" bs-tooltip ng-click="import()"
-             class="btn btn-info">
+                  class="btn btn-info">
             Import
           </button>
         </div>
@@ -32,7 +32,8 @@
             </td>
             <td data-title="'Active'" filter="{ 'active': 'select' }" filter-data="getCertificateStatus()">
               <form>
-                <switch ng-change="certificateService.updateActive(certificate)" id="status" name="status" ng-model="certificate.active" class="green small"></switch>
+                <switch ng-change="certificateService.updateActive(certificate)" id="status" name="status"
+                        ng-model="certificate.active" class="green small"></switch>
               </form>
             </td>
             <td data-title="'Issuer'" sortable="'issuer'" filter="{ 'issuer': 'text' }">
@@ -46,104 +47,121 @@
             </td>
             <td data-title="''">
               <div class="btn-group pull-right">
-                  <button ng-model="certificate.toggle" class="btn btn-sm btn-info" btn-checkbox btn-checkbox-true="1" butn-checkbox-false="0">More</button>
-                  <button class="btn btn-sm btn-warning" ng-click="edit(certificate.id)">Edit</button>
+                <button ng-model="certificate.toggle" class="btn btn-sm btn-info" btn-checkbox btn-checkbox-true="1"
+                        butn-checkbox-false="0">More
+                </button>
+                <button class="btn btn-sm btn-warning" ng-click="edit(certificate.id)">Edit</button>
               </div>
             </td>
           </tr>
           <tr class="warning" ng-show="certificate.toggle" ng-repeat-end>
             <td colspan="6">
-                <tabset justified="true" class="col-md-6">
-                    <tab heading="Basic Info">
-                        <ul class="list-group">
-                            <li class="list-group-item">
-                                <strong>Creator</strong>
-                                <span class="pull-right">
-                                  {{ certificate.creator.email }}
-                                </span>
-                            </li>
-                            <li class="list-group-item">
-                                <strong>Not Before</strong>
-                                <span class="pull-right" tooltip="{{ certificate.notBefore }}">
-                                  {{ momentService.createMoment(certificate.notBefore) }}
-                                </span>
-                            </li>
-                            <li class="list-group-item">
-                                <strong>Not After</strong>
-                                <span class="pull-right" tooltip="{{ certificate.notAfter }}">
-                                  {{ momentService.createMoment(certificate.notAfter) }}
-                                </span>
-                            </li>
-                            <li class="list-group-item">
-                                <strong>San</strong>
-                                <span class="pull-right">
-                                    <i class="glyphicon glyphicon-ok" ng-show="certificate.san"></i>
-                                    <i class="glyphicon glyphicon-remove" ng-show="!certificate.san"></i>
-                                </span>
-                                        </li>
-                                        <li class="list-group-item">
-                                            <strong>Bits</strong>
-                                            <span class="pull-right">{{ certificate.bits }}</span>
-                                        </li>
-                                        <li class="list-group-item">
-                                            <strong>Serial</strong>
-                                            <span class="pull-right">{{ certificate.serial }}</span>
-                                        </li>
-                                        <li tooltip="Lemur will attempt to check a certificates validity, this is used to track whether a certificate as been revoked" class="list-group-item">
-                                            <strong>Validity</strong>
-                                <span class="pull-right">
-                                  <span ng-show="!certificate.status" class="label label-warning">Unknown</span>
-                                  <span ng-show="certificate.status == 'revoked'" class="label label-danger">Revoked</span>
-                                  <span ng-show="certificate.status == 'valid'" class="label label-success">Valid</span>
-                                </span>
-                            </li>
-                            <li class="list-group-item">
-                                <strong>Description</strong>
-                                <span class="pull-right">{{ certificate.description }}</span>
-                            </li>
-                        </ul>
-                    </tab>
-                    <tab heading="Notifications">
-                        <ul class="list-group">
-                            <li class="list-group-item" ng-repeat="notification in certificate.notifications">
-                                <strong>{{ notification.label }}</strong>
-                                <span class="pull-right">{{ notification.description}}</span>
-                            </li>
-                        </ul>
-                    </tab>
-                    <tab heading="Destinations">
-                        <ul class="list-group">
-                            <li class="list-group-item" ng-repeat="destination in certificate.destinations">
-                                <strong>{{ destination.label }}</strong>
-                                <span class="pull-right">{{ destination.description }}</span>
-                            </li>
-                        </ul>
-                    </tab>
-                    <tab heading="Domains">
-                        <div class="list-group">
-                            <a href="#/domains/{{ domain.id }}" class="list-group-item" ng-repeat="domain in certificate.domains">{{ domain.name }}</a>
-                        </div>
-                    </tab>
-              </tabset>
-
               <tabset justified="true" class="col-md-6">
-                <tab heading="Chain">
-                  <p>
-                    <pre style="width: 550px">{{ certificate.chain }}</pre>
-                  </p>
+                <tab>
+                  <tab-heading>Basic Info</tab-heading>
+                  <ul class="list-group">
+                    <li class="list-group-item">
+                      <strong>Creator</strong>
+                        <span class="pull-right">
+                          {{ certificate.creator.email }}
+                        </span>
+                    </li>
+                    <li class="list-group-item">
+                      <strong>Not Before</strong>
+                        <span class="pull-right" tooltip="{{ certificate.notBefore }}">
+                          {{ momentService.createMoment(certificate.notBefore) }}
+                        </span>
+                    </li>
+                    <li class="list-group-item">
+                      <strong>Not After</strong>
+                        <span class="pull-right" tooltip="{{ certificate.notAfter }}">
+                          {{ momentService.createMoment(certificate.notAfter) }}
+                          </span>
+                    </li>
+                    <li class="list-group-item">
+                      <strong>San</strong>
+                      <span class="pull-right">
+                        <i class="glyphicon glyphicon-ok" ng-show="certificate.san"></i>
+                        <i class="glyphicon glyphicon-remove" ng-show="!certificate.san"></i>
+                      </span>
+                    </li>
+                    <li class="list-group-item">
+                      <strong>Bits</strong>
+                      <span class="pull-right">{{ certificate.bits }}</span>
+                    </li>
+                    <li class="list-group-item">
+                      <strong>Serial</strong>
+                      <span class="pull-right">{{ certificate.serial }}</span>
+                    </li>
+                    <li
+                      tooltip="Lemur will attempt to check a certificates validity, this is used to track whether a certificate as been revoked"
+                      class="list-group-item">
+                      <strong>Validity</strong>
+                      <span class="pull-right">
+                        <span ng-show="!certificate.status" class="label label-warning">Unknown</span>
+                        <span ng-show="certificate.status == 'revoked'" class="label label-danger">Revoked</span>
+                        <span ng-show="certificate.status == 'valid'" class="label label-success">Valid</span>
+                      </span>
+                    </li>
+                    <li class="list-group-item">
+                      <strong>Description</strong>
+                      <span class="pull-right">{{ certificate.description }}</span>
+                    </li>
+                  </ul>
                 </tab>
-                <tab heading="Public Certificate">
-                  <p>
-                    <pre style="width: 550px">{{ certificate.body }}</pre>
-                  </p>
+                <tab>
+                  <tab-heading>Notifications</tab-heading>
+                  <ul class="list-group">
+                    <li class="list-group-item" ng-repeat="notification in certificate.notifications">
+                      <strong>{{ notification.label }}</strong>
+                      <span class="pull-right">{{ notification.description}}</span>
+                    </li>
+                  </ul>
+                </tab>
+                <tab>
+                  <tab-heading>Destinations</tab-heading>
+                  <ul class="list-group">
+                    <li class="list-group-item" ng-repeat="destination in certificate.destinations">
+                      <strong>{{ destination.label }}</strong>
+                      <span class="pull-right">{{ destination.description }}</span>
+                    </li>
+                  </ul>
+                </tab>
+                <tab>
+                  <tab-heading>Domains</tab-heading>
+                  <div class="list-group">
+                    <a href="#/domains/{{ domain.id }}" class="list-group-item"
+                       ng-repeat="domain in certificate.domains">{{ domain.name }}</a>
+                  </div>
+                </tab>
+              </tabset>
+              <tabset justified="true" class="col-md-6">
+                <tab>
+                  <tab-heading>
+                    Chain
+                    <button class="btn btn-xs btn-default clipboard-btn glyphicon glyphicon-copy"
+                            tooltip="Copy chain to clipboard" tooltip-trigger="mouseenter" clipboard
+                            text="certificate.chain"></button>
+                  </tab-heading>
+                  <pre style="width: 100%">{{ certificate.chain }}</pre>
+                </tab>
+                <tab>
+                  <tab-heading>
+                    Public Certificate
+                    <button class="btn btn-xs btn-default clipboard-btn glyphicon glyphicon-copy"
+                            tooltip="Copy certificate to clipboard" tooltip-trigger="mouseenter" clipboard
+                            text="certificate.body"></button>
+                  </tab-heading>
+                  <pre style="width: 100%">{{ certificate.body }}</pre>
                 </tab>
                 <tab ng-click="certificateService.loadPrivateKey(certificate)">
                   <tab-heading>
                     Private Key
+                    <button class="btn btn-xs btn-default clipboard-btn glyphicon glyphicon-copy"
+                            tooltip="Copy key to clipboard" tooltip-trigger="mouseenter" clipboard
+                            text="certificate.privateKey"></button>
                   </tab-heading>
-                  <p>
-                    <pre style="width: 550px">{{ certificate.privateKey }}</pre>
-                  </p>
+                  <pre style="width: 100%">{{ certificate.privateKey }}</pre>
                 </tab>
               </tabset>
             </td>
