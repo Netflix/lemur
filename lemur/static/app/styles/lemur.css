@@ -169,3 +169,13 @@ a {
     background-color: #FFFFFF !important;
 }
 
+.clipboard-btn {
+    border-width: 0;
+    background-color: transparent;
+    color: #777;
+    display: inline-block;
+    top: 0;
+    line-height: 1;
+}
+
+
