@@ -17,11 +17,11 @@ var lemur = angular
     'ngLetterAvatar'
   ])
   .config(function ($stateProvider, $urlRouterProvider, $authProvider) {
-    $urlRouterProvider.otherwise("/welcome");
+    $urlRouterProvider.otherwise('/welcome');
 
     $stateProvider
       .state('welcome', {
-        url: "/welcome",
+        url: '/welcome',
         templateUrl: 'angular/welcome/welcome.html'
       });
 
