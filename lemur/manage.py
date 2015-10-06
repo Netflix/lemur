@@ -716,6 +716,24 @@ def publish_verisign_units():
         requests.post('http://localhost:8078/metrics', data=json.dumps(metric))
 
 
+@manager.command
+def backfill_signing_algo():
+    """
+    Will attempt to backfill the signing_algorithm column
+
+    :return:
+    """
+    from cryptography import x509
+    from cryptography.hazmat.backends import default_backend
+    from lemur.certificates.models import get_signing_algorithm
+    for c in cert_service.get_all_certs():
+        cert = x509.load_pem_x509_certificate(str(c.body), default_backend())
+        c.signing_algorithm = get_signing_algorithm(cert)
+        c.signing_algorithm
+        database.update(c)
+        print c.signing_algorithm
+
+
 def main():
     manager.add_command("start", LemurServer())
     manager.add_command("runserver", Server(host='127.0.0.1'))

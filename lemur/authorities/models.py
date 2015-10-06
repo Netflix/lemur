@@ -14,7 +14,7 @@ from sqlalchemy import Column, Integer, String, Text, func, ForeignKey, DateTime
 from sqlalchemy.dialects.postgresql import JSON
 
 from lemur.database import db
-from lemur.certificates.models import cert_get_cn, cert_get_not_after, cert_get_not_before
+from lemur.certificates.models import get_cn, get_not_after, get_not_before
 
 
 class Authority(db.Model):
@@ -44,9 +44,9 @@ class Authority(db.Model):
         self.owner = owner
         self.plugin_name = plugin_name
         cert = x509.load_pem_x509_certificate(str(body), default_backend())
-        self.cn = cert_get_cn(cert)
-        self.not_before = cert_get_not_before(cert)
-        self.not_after = cert_get_not_after(cert)
+        self.cn = get_cn(cert)
+        self.not_before = get_not_before(cert)
+        self.not_after = get_not_after(cert)
         self.roles = roles
         self.description = description
 

@@ -46,6 +46,7 @@ FIELDS = {
     'notBefore': fields.DateTime(dt_format='iso8601', attribute='not_before'),
     'notAfter': fields.DateTime(dt_format='iso8601', attribute='not_after'),
     'cn': fields.String,
+    'signingAlgorithm': fields.String(attribute='signing_algorithm'),
     'status': fields.String,
     'body': fields.String
 }
@@ -400,6 +401,7 @@ class CertificatesUpload(AuthenticatedResource):
                  "active": true,
                  "notBefore": "2015-06-05T17:09:39",
                  "notAfter": "2015-06-10T17:09:39",
+                 "signingAlgorithm": "sha2"
                  "cn": "example.com",
                  "status": "unknown"
               }
@@ -543,6 +545,7 @@ class Certificates(AuthenticatedResource):
                 "active": true,
                 "notBefore": "2015-06-05T17:09:39",
                 "notAfter": "2015-06-10T17:09:39",
+                "signingAlgorithm": "sha2",
                 "cn": "example.com",
                 "status": "unknown"
               }
@@ -677,6 +680,7 @@ class NotificationCertificatesList(AuthenticatedResource):
                       "active": true,
                       "notBefore": "2015-06-05T17:09:39",
                       "notAfter": "2015-06-10T17:09:39",
+                      "signingAlgorithm": "sha2",
                       "cn": "example.com",
                       "status": "unknown"
                     }

@@ -14,6 +14,22 @@ I am seeing Lemur's javascript load in my browser but not the CSS.
   :doc:`production/index` for example configurations.
 
 
+Running 'lemur db upgrade' seems stuck.
+  Most likely, the upgrade is stuck because an existing query on the database is holding onto a lock that the
+  migration needs.
+
+  To resolve, login to your lemur database and run:
+
+    SELECT * FROM pg_locks l INNER JOIN pg_stat_activity s ON (l.pid = s.pid) WHERE waiting AND NOT granted;
+
+  This will give you a list of queries that are currently waiting to be executed. From there attempt to idenity the PID
+  of the query blocking the migration. Once found execute:
+
+    select pg_terminate_backend(<blocking-pid>);
+
+  See `<http://stackoverflow.com/questions/22896496/alembic-migration-stuck-with-postgresql>`_ for more.
+
+
 How do I
 --------
 
