@@ -79,6 +79,11 @@ angular.module('lemur')
         $scope.bits = data.items;
       });
 
+		LemurRestangular.all('certificates').customGET('stats', {metric: 'signing_algorithm'})
+			.then(function (data) {
+				$scope.algos = data.items;
+			});
+
     LemurRestangular.all('certificates').customGET('stats', {metric: 'not_after'})
       .then(function (data) {
         $scope.expiring = {labels: data.items.labels, values: [data.items.values]};

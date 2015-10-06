@@ -63,7 +63,11 @@ def create_name(issuer, not_before, not_after, subject, san):
     return temp.replace(" ", "-")
 
 
-def cert_get_cn(cert):
+def get_signing_algorithm(cert):
+    return cert.signature_hash_algorithm.name
+
+
+def get_cn(cert):
     """
     Attempts to get a sane common name from a given certificate.
 
@@ -75,7 +79,7 @@ def cert_get_cn(cert):
     )[0].value.strip()
 
 
-def cert_get_domains(cert):
+def get_domains(cert):
     """
     Attempts to get an domains listed in a certificate.
     If 'subjectAltName' extension is not available we simply
@@ -96,7 +100,7 @@ def cert_get_domains(cert):
     return domains
 
 
-def cert_get_serial(cert):
+def get_serial(cert):
     """
     Fetch the serial number from the certificate.
 
@@ -106,7 +110,7 @@ def cert_get_serial(cert):
     return cert.serial
 
 
-def cert_is_san(cert):
+def is_san(cert):
     """
     Determines if a given certificate is a SAN certificate.
     SAN certificates are simply certificates that cover multiple domains.
@@ -114,18 +118,18 @@ def cert_is_san(cert):
     :param cert:
     :return: Bool
     """
-    if len(cert_get_domains(cert)) > 1:
+    if len(get_domains(cert)) > 1:
         return True
 
 
-def cert_is_wildcard(cert):
+def is_wildcard(cert):
     """
     Determines if certificate is a wildcard certificate.
 
     :param cert:
     :return: Bool
     """
-    domains = cert_get_domains(cert)
+    domains = get_domains(cert)
     if len(domains) == 1 and domains[0][0:1] == "*":
         return True
 
@@ -133,7 +137,7 @@ def cert_is_wildcard(cert):
         return True
 
 
-def cert_get_bitstrength(cert):
+def get_bitstrength(cert):
     """
     Calculates a certificates public key bit length.
 
@@ -143,7 +147,7 @@ def cert_get_bitstrength(cert):
     return cert.public_key().key_size
 
 
-def cert_get_issuer(cert):
+def get_issuer(cert):
     """
     Gets a sane issuer from a given certificate.
 
@@ -160,7 +164,7 @@ def cert_get_issuer(cert):
         current_app.logger.error("Unable to get issuer! {0}".format(e))
 
 
-def cert_get_not_before(cert):
+def get_not_before(cert):
     """
     Gets the naive datetime of the certificates 'not_before' field.
     This field denotes the first date in time which the given certificate
@@ -172,7 +176,7 @@ def cert_get_not_before(cert):
     return cert.not_valid_before
 
 
-def cert_get_not_after(cert):
+def get_not_after(cert):
     """
     Gets the naive datetime of the certificates 'not_after' field.
     This field denotes the last date in time which the given certificate
@@ -224,6 +228,7 @@ class Certificate(db.Model):
     not_before = Column(DateTime)
     not_after = Column(DateTime)
     date_created = Column(DateTime, PassiveDefault(func.now()), nullable=False)
+    signing_algorithm = Column(String(128))
     user_id = Column(Integer, ForeignKey('users.id'))
     authority_id = Column(Integer, ForeignKey('authorities.id'))
     notifications = relationship("Notification", secondary=certificate_notification_associations, backref='certificate')
@@ -237,16 +242,17 @@ class Certificate(db.Model):
         self.private_key = private_key
         self.chain = chain
         cert = x509.load_pem_x509_certificate(str(self.body), default_backend())
-        self.bits = cert_get_bitstrength(cert)
-        self.issuer = cert_get_issuer(cert)
-        self.serial = cert_get_serial(cert)
-        self.cn = cert_get_cn(cert)
-        self.san = cert_is_san(cert)
-        self.not_before = cert_get_not_before(cert)
-        self.not_after = cert_get_not_after(cert)
+        self.signing_algorithm = get_signing_algorithm(cert)
+        self.bits = get_bitstrength(cert)
+        self.issuer = get_issuer(cert)
+        self.serial = get_serial(cert)
+        self.cn = get_cn(cert)
+        self.san = is_san(cert)
+        self.not_before = get_not_before(cert)
+        self.not_after = get_not_after(cert)
         self.name = create_name(self.issuer, self.not_before, self.not_after, self.cn, self.san)
 
-        for domain in cert_get_domains(cert):
+        for domain in get_domains(cert):
             self.domains.append(Domain(name=domain))
 
     @property

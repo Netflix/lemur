@@ -23,8 +23,7 @@
         <h3 class="panel-title">Issuers</h3>
       </div>
       <div class="panel-body">
-        <canvas id="issuersPie" class="chart chart-pie" data="issuers.values" labels="issuers.labels" colours="colours"
-                legend="true"></canvas>
+        <canvas id="issuersPie" class="chart chart-pie" data="issuers.values" labels="issuers.labels" colours="colours"></canvas>
       </div>
     </div>
   </div>
@@ -34,8 +33,7 @@
         <h3 class="panel-title">Bit Strength</h3>
       </div>
       <div class="panel-body">
-        <canvas id="bitsPie" class="chart chart-pie" data="bits.values" labels="bits.labels" colours="colours"
-                legend="true"></canvas>
+        <canvas id="bitsPie" class="chart chart-pie" data="bits.values" labels="bits.labels" colours="colours"></canvas>
       </div>
     </div>
   </div>
@@ -47,7 +45,18 @@
       </div>
       <div class="panel-body">
         <canvas id="destinationPie" class="chart chart-pie" data="destinations.values" labels="destinations.labels"
-                colours="colours" legend="true"></canvas>
+                colours="colours"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Signing Algorithms</h3>
+      </div>
+      <div class="panel-body">
+        <canvas id="signingPie" class="chart chart-pie" data="algos.values" labels="algos.labels"
+                colours="colours"></canvas>
       </div>
     </div>
   </div>
