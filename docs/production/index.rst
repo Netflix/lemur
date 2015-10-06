@@ -21,7 +21,7 @@ Credential Management
 Lemur often contains credentials such as mutual TLS keys or API tokens that are used to communicate with third party resources and for encrypting stored secrets. Lemur comes with the ability
 to automatically encrypt these keys such that your keys not be in clear text.
 
-The keys are located within lemur/keys and broken down by environment
+The keys are located within lemur/keys and broken down by environment.
 
 To utilize this ability use the following commands:
 
@@ -72,7 +72,7 @@ Nginx is a very popular choice to serve a Python project:
 Nginx doesn't run any Python process, it only serves requests from outside to
 the Python server.
 
-Therefor there are two steps:
+Therefore there are two steps:
 
 - Run the Python process.
 - Run Nginx.
@@ -90,7 +90,7 @@ You must create a Nginx configuration file for Lemur. On GNU/Linux, they usually
 go into /etc/nginx/conf.d/. Name it lemur.conf.
 
 `proxy_pass` just passes the external request to the Python process.
-The port much match the one used by the 0bin process of course.
+The port must match the one used by the Lemur process of course.
 
 You can make some adjustments to get a better user experience::
 
@@ -271,7 +271,7 @@ Create a configuration file named supervisor.ini::
 The 4 first entries are just boiler plate to get you started, you can copy
 them verbatim.
 
-The last one define one (you can have many) process supervisor should manage.
+The last one defines one (you can have many) process supervisor should manage.
 
 It means it will run the command::
 
@@ -293,6 +293,6 @@ Then you can manage the process by running::
 
     supervisorctl -c /path/to/supervisor.ini
 
-It will start a shell from were you can start/stop/restart the service
+It will start a shell from which you can start/stop/restart the service.
 
-You can read all errors that might occurs from /tmp/lemur.log.
+You can read all errors that might occur from /tmp/lemur.log.

@@ -72,7 +72,7 @@ Basic Configuration
 .. data:: LEMUR_TOKEN_SECRET
     :noindex:
 
-        The TOKEN_SECRET is the secret used to create JWT tokens that are given out to users. This should be securely generated and be kept private.
+        The TOKEN_SECRET is the secret used to create JWT tokens that are given out to users. This should be securely generated and kept private.
 
     ::
 
@@ -210,13 +210,13 @@ Authority Options
 -----------------
 
 Authorities will each have their own configuration options. There is currently just one plugin bundled with Lemur,
-Verisign/Symantec. Additional plugins may define additional options. Refer to the plugins own documentation
+Verisign/Symantec. Additional plugins may define additional options. Refer to the plugin's own documentation
 for those plugins.
 
 .. data:: VERISIGN_URL
     :noindex:
 
-        This is the url for the verisign API
+        This is the url for the Verisign API
 
 
 .. data:: VERISIGN_PEM_PATH
@@ -256,7 +256,7 @@ for those plugins.
 
 Authentication
 --------------
-Lemur currently supports Basic Authentication and Ping OAuth2 out of the box, additional flows can be added relatively easily.
+Lemur currently supports Basic Authentication and Ping OAuth2 out of the box. Additional flows can be added relatively easily.
 If you are not using Ping you do not need to configure any of these options.
 
 For more information about how to use social logins, see: `Satellizer <https://github.com/sahat/satellizer>`_
@@ -295,7 +295,7 @@ For more information about how to use social logins, see: `Satellizer <https://g
 AWS Plugin Configuration
 ========================
 
-In order for Lemur to manage it's own account and other accounts we must ensure it has the correct AWS permissions.
+In order for Lemur to manage its own account and other accounts we must ensure it has the correct AWS permissions.
 
 .. note:: AWS usage is completely optional. Lemur can upload, find and manage TLS certificates in AWS. But is not required to do so.
 
@@ -348,9 +348,9 @@ STS-AssumeRole
 
 
 
-Next we will create the the Lemur IAM role. Lemur
+Next we will create the the Lemur IAM role.
 
-..note::
+.. note::
 
     The default IAM role that Lemur assumes into is called `Lemur`, if you need to change this ensure you set `LEMUR_INSTANCE_PROFILE` to your role name in the configuration.
 
@@ -470,7 +470,7 @@ The configuration::
 
     LEMUR_MAIL = 'lemur.example.com'
 
-Will be sender of all notifications, so ensure that it is verified with AWS.
+Will be the sender of all notifications, so ensure that it is verified with AWS.
 
 SES if the default notification gateway and will be used unless SMTP settings are configured in the application configuration
 settings.
@@ -554,9 +554,9 @@ All commands default to `~/.lemur/lemur.conf.py` if a configuration is not speci
 
 .. data:: check_revoked
 
-    Traverses every certificate that Lemur is aware of and attempts to understand it's validity.
+    Traverses every certificate that Lemur is aware of and attempts to understand its validity.
     It utilizes both OCSP and CRL. If Lemur is unable to come to a conclusion about a certificates
-    validity it's status is marked 'unknown'
+    validity its status is marked 'unknown'
 
 
 .. data:: sync
@@ -607,10 +607,10 @@ meaning.
 Within Lemur there are three main permissions: AdminPermission, CreatorPermission, OwnerPermission. Sub-permissions such
 as ViewPrivateKeyPermission are compositions of these three main Permissions.
 
-Lets take a look at how these permissions used:
+Lets take a look at how these permissions are used:
 
 Each `Authority` has a set of roles associated with it. If a user is also associated with the same roles
-that the `Authority` is associated with it Lemur allows that user to user/view/update that `Authority`.
+that the `Authority` is associated with, Lemur allows that user to user/view/update that `Authority`.
 
 This RBAC is also used when determining which users can access which certificate private key. Lemur's current permission
 structure is setup such that if the user is a `Creator` or `Owner` of a given certificate they are allow to view that

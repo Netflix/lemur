@@ -101,7 +101,7 @@ Update your configuration
 -------------------------
 
 Once created you will need to update the configuration file with information about your environment,
-such as which database to talk to, where keys are stores etc..
+such as which database to talk to, where keys are stored etc..
 
 .. Note:: If you are unfamiliar with with the SQLALCHEMY_DATABASE_URI string it can be broken up like so:
       postgresql://userame:password@databasefqdn:databaseport/databasename
@@ -121,7 +121,7 @@ First, set a password for the postgres user.  For this guide, we will use **lemu
 
 Type CTRL-D to exit psql once you have changed the password.
 
-Next, we will create our a new database::
+Next, we will create our new database::
 
      $ sudo -u postgres createdb lemur
 
@@ -135,8 +135,8 @@ used by Lemur to help associate certificates that do not currently have an owner
 Lemur has discovered certificates from a third party source. This is also a default user that can be used to
 administer Lemur.
 
-In addition to create a new User, Lemur also creates a few default email notifications. These notifications are based
-on a few configuration options such as `LEMUR_SECURITY_TEAM_EMAIL` they basically garentee that every cerificate within
+In addition to creating a new user, Lemur also creates a few default email notifications. These notifications are based
+on a few configuration options such as `LEMUR_SECURITY_TEAM_EMAIL`. They basically guarantee that every cerificate within
 Lemur will send one expiration notification to the security team.
 
 Additional notifications can be created through the UI or API.
@@ -238,7 +238,7 @@ See :ref:`Using Supervisor <UsingSupervisor>` for more details on using Supervis
 Syncing
 -------
 
-Lemur uses periodic sync tasks to make sure it is up-to-date with it's environment. As always things can change outside
+Lemur uses periodic sync tasks to make sure it is up-to-date with its environment. As always things can change outside
 of Lemur, but we do our best to reconcile those changes.
 
 .. code-block:: bash
@@ -254,7 +254,7 @@ If you're familiar with Python you'll quickly find yourself at home, and even mo
 ``lemur`` command is just a simple wrapper around Flask's ``manage.py``, which means you get all of the
 power and flexibility that goes with it.
 
-Some of those which you'll likely find useful are:
+Some of the features which you'll likely find useful are:
 
 lock
 ~~~~
@@ -273,6 +273,6 @@ What's Next?
 Get familiar with how Lemur works by reviewing the :doc:`../guide/index`. When you're ready
 see :doc:`../production/index` for more details on how to configure Lemur for production.
 
-Remember the above just gets you going, but for production there are several different security considerations to take into account,
-remember Lemur is handling sensitive data and security is imperative.
+The above just gets you going, but for production there are several different security considerations to take into account.
+Remember, Lemur is handling sensitive data and security is imperative.
 

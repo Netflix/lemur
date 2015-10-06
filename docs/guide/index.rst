@@ -37,7 +37,7 @@ Create a New Certificate
 
 .. figure:: create_certificate.png
 
-    Enter a owner, short description and the authority you wish to issue this certificate.
+    Enter an owner, short description and the authority you wish to issue this certificate.
     Enter a common name into the certificate, if no validity range is selected two years is
     the default.
 
