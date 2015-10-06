@@ -41,44 +41,44 @@ def test_create_basic_csr():
 
 def test_cert_get_cn():
     from lemur.tests.certs import INTERNAL_VALID_LONG_CERT
-    from lemur.certificates.models import cert_get_cn
+    from lemur.certificates.models import get_cn
 
-    assert cert_get_cn(INTERNAL_VALID_LONG_CERT) == 'long.lived.com'
+    assert get_cn(INTERNAL_VALID_LONG_CERT) == 'long.lived.com'
 
 
 def test_cert_get_subAltDomains():
     from lemur.tests.certs import INTERNAL_VALID_SAN_CERT, INTERNAL_VALID_LONG_CERT
-    from lemur.certificates.models import cert_get_domains
+    from lemur.certificates.models import get_domains
 
-    assert cert_get_domains(INTERNAL_VALID_LONG_CERT) == []
-    assert cert_get_domains(INTERNAL_VALID_SAN_CERT) == ['example2.long.com', 'example3.long.com']
+    assert get_domains(INTERNAL_VALID_LONG_CERT) == []
+    assert get_domains(INTERNAL_VALID_SAN_CERT) == ['example2.long.com', 'example3.long.com']
 
 
 def test_cert_is_san():
     from lemur.tests.certs import INTERNAL_VALID_SAN_CERT, INTERNAL_VALID_LONG_CERT
-    from lemur.certificates.models import cert_is_san
+    from lemur.certificates.models import is_san
 
-    assert cert_is_san(INTERNAL_VALID_LONG_CERT) == None  # noqa
-    assert cert_is_san(INTERNAL_VALID_SAN_CERT) == True  # noqa
+    assert is_san(INTERNAL_VALID_LONG_CERT) == None  # noqa
+    assert is_san(INTERNAL_VALID_SAN_CERT) == True  # noqa
 
 
 def test_cert_is_wildcard():
     from lemur.tests.certs import INTERNAL_VALID_WILDCARD_CERT, INTERNAL_VALID_LONG_CERT
-    from lemur.certificates.models import cert_is_wildcard
-    assert cert_is_wildcard(INTERNAL_VALID_WILDCARD_CERT) == True  # noqa
-    assert cert_is_wildcard(INTERNAL_VALID_LONG_CERT) == None  # noqa
+    from lemur.certificates.models import is_wildcard
+    assert is_wildcard(INTERNAL_VALID_WILDCARD_CERT) == True  # noqa
+    assert is_wildcard(INTERNAL_VALID_LONG_CERT) == None  # noqa
 
 
 def test_cert_get_bitstrength():
     from lemur.tests.certs import INTERNAL_VALID_LONG_CERT
-    from lemur.certificates.models import cert_get_bitstrength
-    assert cert_get_bitstrength(INTERNAL_VALID_LONG_CERT) == 2048
+    from lemur.certificates.models import get_bitstrength
+    assert get_bitstrength(INTERNAL_VALID_LONG_CERT) == 2048
 
 
 def test_cert_get_issuer():
     from lemur.tests.certs import INTERNAL_VALID_LONG_CERT
-    from lemur.certificates.models import cert_get_issuer
-    assert cert_get_issuer(INTERNAL_VALID_LONG_CERT) == 'Example'
+    from lemur.certificates.models import get_issuer
+    assert get_issuer(INTERNAL_VALID_LONG_CERT) == 'Example'
 
 
 def test_get_name_from_arn():
