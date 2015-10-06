@@ -8,6 +8,7 @@
 from sqlalchemy import func
 
 from lemur import database
+from lemur.models import certificate_destination_associations
 from lemur.destinations.models import Destination
 from lemur.certificates.models import Certificate
 
@@ -117,10 +118,9 @@ def stats(**kwargs):
     :param kwargs:
     :return:
     """
-    attr = getattr(Destination, kwargs.get('metric'))
-    query = database.db.session.query(attr, func.count(attr))
-
-    items = query.group_by(attr).all()
+    items = database.db.session.query(Destination.label, func.count(certificate_destination_associations.c.certificate_id))\
+        .join(certificate_destination_associations)\
+        .group_by(Destination.label).all()
 
     keys = []
     values = []

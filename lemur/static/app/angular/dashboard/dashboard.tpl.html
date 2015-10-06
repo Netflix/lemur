@@ -10,43 +10,45 @@
           <h3 class="panel-title">Expiring Certificates</h3>
         </div>
         <div class="panel-body">
-          <canvas id="expiringBar" class="chart chart-bar" data="expiring.values" labels="expiring.labels" colours="colours"></canvas>
+          <canvas id="expiringBar" class="chart chart-bar" data="expiring.values" labels="expiring.labels"
+                  colours="colours"></canvas>
         </div>
       </div>
     </div>
   </div>
   <div class="row"></div>
-    <div class="col-md-6">
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <h3 class="panel-title">Issuers</h3>
-        </div>
-        <div class="panel-body">
-          <canvas id="issuersPie" class="chart chart-pie" data="issuers.values" labels="issuers.labels" colours="colours" legend="true"></canvas>
-        </div>
+  <div class="col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Issuers</h3>
       </div>
-    </div>
-    <div class="col-md-6">
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <h3 class="panel-title">Bit Strength</h3>
-        </div>
-        <div class="panel-body">
-          <canvas id="bitsPie" class="chart chart-pie" data="bits.values" labels="bits.labels" colours="colours" legend="true"></canvas>
-        </div>
+      <div class="panel-body">
+        <canvas id="issuersPie" class="chart chart-pie" data="issuers.values" labels="issuers.labels" colours="colours"
+                legend="true"></canvas>
       </div>
-    </div>
-    <div class="row"></div>
-    <div class="col-md-6">
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h3 class="panel-title">Destinations</h3>
-            </div>
-            <div class="panel-body">
-                <canvas id="destinationPie" class="chart chart-pie" data="destinations.values" labels="destinations.labels" colours="colours" legend="true"></canvas>
-            </div>
-        </div>
     </div>
   </div>
-  <!-- /.row -->
+  <div class="col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Bit Strength</h3>
+      </div>
+      <div class="panel-body">
+        <canvas id="bitsPie" class="chart chart-pie" data="bits.values" labels="bits.labels" colours="colours"
+                legend="true"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="row"></div>
+  <div class="col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Destinations</h3>
+      </div>
+      <div class="panel-body">
+        <canvas id="destinationPie" class="chart chart-pie" data="destinations.values" labels="destinations.labels"
+                colours="colours" legend="true"></canvas>
+      </div>
+    </div>
+  </div>
 </div>

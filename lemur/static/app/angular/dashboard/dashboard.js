@@ -84,8 +84,8 @@ angular.module('lemur')
         $scope.expiring = {labels: data.items.labels, values: [data.items.values]};
       });
 
-    LemurRestangular.all('destinations').customGET('stats', {metric: 'certificates'})
+    LemurRestangular.all('destinations').customGET('stats', {metric: 'certificate'})
       .then(function (data) {
-        $scope.destinations = {labels: data.items.labels, values: [data.items.values]};
+        $scope.destinations = data.items;
       });
   });
