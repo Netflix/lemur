@@ -731,7 +731,7 @@ def backfill_signing_algo():
         c.signing_algorithm = get_signing_algorithm(cert)
         c.signing_algorithm
         database.update(c)
-        print c.signing_algorithm
+        print(c.signing_algorithm)
 
 
 def main():
