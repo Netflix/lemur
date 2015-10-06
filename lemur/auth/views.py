@@ -35,7 +35,7 @@ class Login(Resource):
 
         Authorization:Bearer <token>
 
-    Tokens have a set expiration date. You can inspect the token expiration be base64 decoding the token and inspecting
+    Tokens have a set expiration date. You can inspect the token expiration by base64 decoding the token and inspecting
     it's contents.
 
     .. note:: It is recommended that the token expiration is fairly short lived (hours not days). This will largely depend \
