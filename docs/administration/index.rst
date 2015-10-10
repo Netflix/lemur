@@ -87,17 +87,23 @@ Basic Configuration
         >>> secret_key = secret_key + ''.join(random.choice(string.digits) for x in range(6))
 
 
-.. data:: LEMUR_ENCRYPTION_KEY
+.. data:: LEMUR_ENCRYPTION_KEYS
     :noindex:
 
-        The LEMUR_ENCRYPTION_KEY is used to encrypt data at rest within Lemur's database. Without this key Lemur will refuse
-        to start.
+        The LEMUR_ENCRYPTION_KEYS is used to encrypt data at rest within Lemur's database. Without a key Lemur will refuse
+        to start. Multiple keys can be provided to facilitate key rotation. The first key in the list is used for
+        encryption and all keys are tried for decryption until one works. Each key must be 32 URL safe base-64 encoded bytes.
 
-        See `LEMUR_TOKEN_SECRET` for methods of secure secret generation.
+        Running lemur create_config will securely generate a key for your configuration file.
+        If you would like to generate your own, we recommend the following method:
+
+            >>> import os
+            >>> import base64
+            >>> base64.urlsafe_b64encode(os.urandom(32))
 
     ::
 
-        LEMUR_ENCRYPTION_KEY = 'supersupersecret'
+        LEMUR_ENCRYPTION_KEYS = ['1YeftooSbxCiX2zo8m1lXtpvQjy27smZcUUaGmffhMY=', 'LAfQt6yrkLqOK5lwpvQcT4jf2zdeTQJV1uYeh9coT5s=']
 
 
 Certificate Default Options

@@ -12,9 +12,8 @@
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Integer, String, Text, ForeignKey
 
-from sqlalchemy_utils import EncryptedType
 from lemur.database import db
-from lemur.utils import get_key
+from lemur.utils import Vault
 from lemur.models import roles_users
 
 
@@ -23,7 +22,7 @@ class Role(db.Model):
     id = Column(Integer, primary_key=True)
     name = Column(String(128), unique=True)
     username = Column(String(128))
-    password = Column(EncryptedType(String, get_key))
+    password = Column(Vault)
     description = Column(Text)
     authority_id = Column(Integer, ForeignKey('authorities.id'))
     user_id = Column(Integer, ForeignKey('users.id'))
