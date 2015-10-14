@@ -72,7 +72,7 @@ SECRET_KEY = '{flask_secret_key}'
 
 # You should consider storing these separately from your config
 LEMUR_TOKEN_SECRET = '{secret_token}'
-LEMUR_ENCRYPTION_KEY = '{encryption_key}'
+LEMUR_ENCRYPTION_KEYS = '{encryption_key}'
 
 # this is a list of domains as regexes that only admins can issue
 LEMUR_RESTRICTED_DOMAINS = []
@@ -171,7 +171,9 @@ def generate_settings():
     settings file.
     """
     output = CONFIG_TEMPLATE.format(
-        encryption_key=base64.b64encode(os.urandom(KEY_LENGTH)),
+        # we use Fernet.generate_key to make sure that the key length is
+        # compatible with Fernet
+        encryption_key=Fernet.generate_key(),
         secret_token=base64.b64encode(os.urandom(KEY_LENGTH)),
         flask_secret_key=base64.b64encode(os.urandom(KEY_LENGTH)),
     )

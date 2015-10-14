@@ -13,9 +13,7 @@ from cryptography.hazmat.backends import default_backend
 from sqlalchemy.orm import relationship
 from sqlalchemy import event, Integer, ForeignKey, String, DateTime, PassiveDefault, func, Column, Text, Boolean
 
-from sqlalchemy_utils import EncryptedType
-
-from lemur.utils import get_key
+from lemur.utils import Vault
 from lemur.database import db
 from lemur.plugins.base import plugins
 
@@ -213,7 +211,7 @@ class Certificate(db.Model):
     id = Column(Integer, primary_key=True)
     owner = Column(String(128))
     body = Column(Text())
-    private_key = Column(EncryptedType(String, get_key))
+    private_key = Column(Vault)
     status = Column(String(128))
     deleted = Column(Boolean, index=True)
     name = Column(String(128))
