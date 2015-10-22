@@ -41,7 +41,7 @@ install_requires = [
     'six==1.9.0',
     'gunicorn==19.3.0',
     'pycrypto==2.6.1',
-    'cryptography==1.0.1',
+    'cryptography==1.0.2',
     'pyopenssl==0.15.1',
     'pyjwt==1.0.1',
     'xmltodict==0.9.2',
