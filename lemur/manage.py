@@ -316,7 +316,7 @@ class CreateUser(Command):
         Option('-u', '--username', dest='username', required=True),
         Option('-e', '--email', dest='email', required=True),
         Option('-a', '--active', dest='active', default=True),
-        Option('-r', '--roles', dest='roles', default=[])
+        Option('-r', '--roles', dest='roles', action='append', default=[])
     )
 
     def run(self, username, email, active, roles):
