@@ -1,6 +1,3 @@
-.. image:: https://badge.waffle.io/Netflix/lemur.png?label=ready&title=Ready 
- :target: https://waffle.io/Netflix/lemur
- :alt: 'Stories in Ready'
 Lemur
 =====
 
@@ -19,11 +16,15 @@ Lemur
 .. image:: https://travis-ci.org/Netflix/lemur.svg
     :target: https://travis-ci.org/Netflix/lemur
 
+.. image:: https://badge.waffle.io/Netflix/lemur.png?label=ready&title=Ready
+    :target: https://waffle.io/Netflix/lemur
+    :alt: 'Stories in Ready'
+
 Lemur manages TLS certificate creation. While not able to issue certificates itself, Lemur acts as a broker between CAs
 and environments providing a central portal for developers to issue TLS certificates with 'sane' defaults.
 
-
 It works on CPython 2.7, 3.3, 3.4. We deploy on Ubuntu and develop on OS X.
+
 
 Project resources
 =================

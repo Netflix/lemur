@@ -627,3 +627,34 @@ These permissions are applied to the user upon login and refreshed on every requ
 
 .. seealso::
     `Flask-Principal <https://pythonhosted.org/Flask-Principal>`_
+
+
+Upgrading Lemur
+===============
+
+To upgrade Lemur to the newest release you will need to ensure you have the lastest code and have run any needed
+database migrations.
+
+To get the latest code from github run
+
+    ::
+
+        cd <lemur-source-directory>
+        git pull -t <version>
+        python setup.py develop
+
+
+.. note::
+    It's important to grab the latest release by specifying the release tag. This tags denote stable versions of Lemur.
+    If you want to try the bleeding edge version of Lemur you can by using the master branch.
+
+
+After you have the latest version of the Lemur code base you must run any needed database migrations. To run migrations
+
+    ::
+
+        cd <lemur-source-directory>/lemur
+        lemur db upgrade
+
+
+This will ensure that any needed tables or columns are created or destroyed.
