@@ -10,7 +10,7 @@ angular.module('lemur')
   })
   .controller('DashboardController', function ($scope, $rootScope, $filter, $location, LemurRestangular) {
 
-    $scope.colours = [
+    $scope.colors = [
       {
         fillColor: 'rgba(41, 171, 224, 0.2)',
         strokeColor: 'rgba(41, 171, 224, 1)',
