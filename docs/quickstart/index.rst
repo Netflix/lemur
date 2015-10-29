@@ -136,7 +136,7 @@ Lemur has discovered certificates from a third party source. This is also a defa
 administer Lemur.
 
 In addition to creating a new user, Lemur also creates a few default email notifications. These notifications are based
-on a few configuration options such as `LEMUR_SECURITY_TEAM_EMAIL`. They basically guarantee that every cerificate within
+on a few configuration options such as `LEMUR_SECURITY_TEAM_EMAIL`. They basically guarantee that every ceritificate within
 Lemur will send one expiration notification to the security team.
 
 Additional notifications can be created through the UI or API.
