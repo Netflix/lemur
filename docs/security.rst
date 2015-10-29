@@ -44,7 +44,7 @@ containing:
   new releases, and publicly disclose the issue.
 
 Simultaneously, the reporter of the issue will receive notification of the date
-on which we plan to take the issue public.
+on which we plan to make the issue public.
 
 On the day of disclosure, we will take the following steps:
 
@@ -59,7 +59,7 @@ known exploit in the wild, for example – the time between advance notification
 and public disclosure may be shortened considerably.
 
 The list of people and organizations who receives advanced notification of
-security issues is not and will not be made public. This list generally
+security issues is not, and will not, be made public. This list generally
 consists of high profile downstream distributors and is entirely at the
 discretion of the ``lemur`` team.
 
