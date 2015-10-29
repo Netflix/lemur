@@ -163,7 +163,7 @@ to be sent to subscribers.
 Templates for expiration emails are located under `lemur/plugins/lemur_email/templates` and can be modified for your needs.
 Notifications are sent to the certificate creator, owner and security team as specified by the `LEMUR_SECURITY_TEAM_EMAIL` configuration parameter.
 
-Certificates marked as in-active will **not** be notified of upcoming expiration. This enables a user to essentially
+Certificates marked as inactive will **not** be notified of upcoming expiration. This enables a user to essentially
 silence the expiration. If a certificate is active and is expiring the above will be notified according to the `LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS` or
 30, 15, 2 days before expiration if no intervals are set.
 
