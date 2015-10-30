@@ -173,7 +173,7 @@ Lemur supports sending certification expiration notifications through SES and SM
 .. data:: LEMUR_EMAIL_SENDER
     :noindex:
 
-            Specifies which service will be delivering notification emails. Valid values are `SMTP` or `SES`
+            Specifies which service will be delivering notification emails. Valid values are `SMTP`, `Mandrill`, or `SES`
 
 .. note::
     If using STMP as your provider you will need to define additional configuration options as specified by Flask-Mail.
@@ -191,6 +191,15 @@ Lemur supports sending certification expiration notifications through SES and SM
 
         LEMUR_MAIL = 'lemur.example.com'
 
+
+.. data:: MANDRILL_KEY
+    :noindex:
+
+            This is the API key for use with Mandrill's API. It is generated from Mandrill's website.
+
+        ::
+
+        MANDRILL_KEY = 'KEY'
 
 .. data:: LEMUR_SECURITY_TEAM_EMAIL
     :noindex:

@@ -7,6 +7,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import boto.ses
+import mandrill
 from flask import current_app
 from flask_mail import Message
 
@@ -49,7 +50,7 @@ class EmailNotificationPlugin(ExpirationNotificationPlugin):
         subject = 'Notification: Lemur'
 
         if event_type == 'expiration':
-            subject = 'Notification: SSL Certificate Expiration '
+            subject = 'Notification: SSL Certificate Expiration'
 
         # jinja template depending on type
         template = env.get_template('{}.html'.format(event_type))
@@ -59,6 +60,22 @@ class EmailNotificationPlugin(ExpirationNotificationPlugin):
         if s_type == 'ses':
             conn = boto.connect_ses()
             conn.send_email(current_app.config.get("LEMUR_EMAIL"), subject, body, targets, format='html')
+
+        elif s_type == 'mandrill':
+            if isinstance(targets, str):
+                # If the targets are listed as a comma-delimited string, we split.
+                # This might actually already be done, but in case...
+                targets = targets.split(',')
+
+            m_client = mandrill.Mandrill(current_app.config.get('MANDRILL_KEY'))
+            msg = {
+                'from_email': current_app.config.get('LEMUR_EMAIL'),
+                'subject': subject,
+                'html': body,
+                'auto_text': True,
+                'to': [{'email': e} for e in targets],  # Mandrill expects addresses in a specific format
+            }
+            m_client.messages.send(message=msg)
 
         elif s_type == 'smtp':
             msg = Message(subject, recipients=targets)

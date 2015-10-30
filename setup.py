@@ -47,6 +47,7 @@ install_requires = [
     'xmltodict==0.9.2',
     'lockfile==0.10.2',
     'future==0.15.0',
+    'mandrill==1.0.57',  # it might be good to make this optional
 ]
 
 tests_require = [
