@@ -42,11 +42,9 @@
             <td data-title="'Common Name'" filter="{ 'cn': 'text'}">
               {{ certificate.cn }}
             </td>
-            <td data-title="''">
-              <a ui-sref="certificate({'name': '{{ certificate.name }}'})">Permalink</a>
-            </td>
-            <td data-title="''">
+            <td class="col-md-2" data-title="''">
               <div class="btn-group pull-right">
+                <a class="btn btn-sm btn-default" ui-sref="certificate({name: certificate.name})">Permalink</a>
                 <button ng-model="certificate.toggle" class="btn btn-sm btn-info" btn-checkbox btn-checkbox-true="1"
                         butn-checkbox-false="0">More
                 </button>
