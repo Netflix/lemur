@@ -92,7 +92,7 @@ lemur.factory('LemurRestangular', function (Restangular, $location, $auth) {
     });
 
     RestangularConfigurer.setErrorInterceptor(function(response) {
-      if (response.status == 400) {
+      if (response.status === 400) {
         if (response.data.message) {
           var data = '';
           _.each(response.data.message, function (value, key) {
