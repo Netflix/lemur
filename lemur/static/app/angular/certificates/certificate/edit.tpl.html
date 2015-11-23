@@ -23,7 +23,7 @@
                     Description
                 </label>
                 <div class="col-sm-10">
-                    <textarea name="description" ng-model="certificate.description" placeholder="Something elegant" class="form-control" ng-pattern="/^[\w\-\s]+$/" required></textarea>
+                    <textarea name="description" ng-model="certificate.description" placeholder="Something elegant" class="form-control" required></textarea>
                     <p ng-show="editForm.description.$invalid && !editForm.description.$pristine" class="help-block">You must give a short description about this authority will be used for, this description should only include alphanumeric characters</p>
                 </div>
             </div>

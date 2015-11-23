@@ -2,24 +2,32 @@
 
 angular.module('lemur')
 
-  .controller('AuthorityEditController', function ($scope, $modalInstance, AuthorityApi, AuthorityService, RoleService, editId){
+  .controller('AuthorityEditController', function ($scope, $modalInstance, AuthorityApi, AuthorityService, RoleService, toaster, editId){
     AuthorityApi.get(editId).then(function (authority) {
       AuthorityService.getRoles(authority);
       $scope.authority = authority;
     });
 
-    $scope.authorityService = AuthorityService;
     $scope.roleService = RoleService;
 
     $scope.save = function (authority) {
       AuthorityService.update(authority).then(
         function () {
+          toaster.pop({
+            type: 'success',
+            title: authority.name,
+            body: 'Successfully updated!'
+          });
           $modalInstance.close();
         },
-        function () {
-
-        }
-      );
+        function (response) {
+          toaster.pop({
+            type: 'error',
+            title: authority.name,
+            body: 'Update Failed! ' + response.data.message,
+            timeout: 100000
+          });
+        });
     };
 
     $scope.cancel = function () {
@@ -27,18 +35,31 @@ angular.module('lemur')
     };
   })
 
-  .controller('AuthorityCreateController', function ($scope, $modalInstance, AuthorityService, LemurRestangular, RoleService, PluginService, WizardHandler)  {
+  .controller('AuthorityCreateController', function ($scope, $modalInstance, AuthorityService, LemurRestangular, RoleService, PluginService, WizardHandler, toaster)  {
     $scope.authority = LemurRestangular.restangularizeElement(null, {}, 'authorities');
 
     // set the defaults
     AuthorityService.getDefaults($scope.authority);
 
-    $scope.loading = false;
     $scope.create = function (authority) {
       WizardHandler.wizard().context.loading = true;
-      AuthorityService.create(authority).then(function () {
-        WizardHandler.wizard().context.loading = false;
-        $modalInstance.close();
+      AuthorityService.create(authority).then(
+				function () {
+          toaster.pop({
+            type: 'success',
+            title: authority.name,
+            body: 'Was created!'
+          });
+					$modalInstance.close();
+				},
+				function (response) {
+					toaster.pop({
+						type: 'error',
+						title: authority.name,
+						body: 'Was not created! ' + response.data.message,
+            timeout: 100000
+					});
+          WizardHandler.wizard().context.loading = false;
       });
     };
 

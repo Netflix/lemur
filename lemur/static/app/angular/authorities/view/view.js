@@ -16,7 +16,7 @@ angular.module('lemur')
       });
   })
 
-  .controller('AuthoritiesViewController', function ($scope, $q, $modal, $stateParams, AuthorityApi, AuthorityService, ngTableParams) {
+  .controller('AuthoritiesViewController', function ($scope, $q, $modal, $stateParams, AuthorityApi, AuthorityService, ngTableParams, toaster) {
     $scope.filter = $stateParams;
     $scope.authoritiesTable = new ngTableParams({
       page: 1,            // show first page
@@ -38,7 +38,24 @@ angular.module('lemur')
       }
     });
 
-    $scope.authorityService = AuthorityService;
+    $scope.updateActive = function (authority) {
+      AuthorityService.updateActive(authority).then(
+				function () {
+					toaster.pop({
+						type: 'success',
+						title: authority.name,
+						body: 'Successfully updated!'
+					});
+				},
+				function (response) {
+					toaster.pop({
+						type: 'error',
+						title: authority.name,
+						body: 'Update Failed! ' + response.data.message,
+            timeout: 100000
+					});
+				});
+    };
 
     $scope.getAuthorityStatus = function () {
       var def = $q.defer();
