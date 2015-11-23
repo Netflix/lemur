@@ -32,7 +32,7 @@
             </td>
             <td data-title="'Active'" filter="{ 'active': 'select' }" filter-data="getCertificateStatus()">
               <form>
-                <switch ng-change="certificateService.updateActive(certificate)" id="status" name="status"
+                <switch ng-change="updateActive(certificate)" id="status" name="status"
                         ng-model="certificate.active" class="green small"></switch>
               </form>
             </td>
@@ -158,7 +158,7 @@
                   </tab-heading>
                   <pre style="width: 100%">{{ certificate.body }}</pre>
                 </tab>
-                <tab ng-click="certificateService.loadPrivateKey(certificate)">
+                <tab ng-click="loadPrivateKey(certificate)">
                   <tab-heading>
                     Private Key
                     <button class="btn btn-xs btn-default clipboard-btn glyphicon glyphicon-copy"

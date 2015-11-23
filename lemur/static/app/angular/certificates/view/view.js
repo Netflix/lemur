@@ -17,7 +17,7 @@ angular.module('lemur')
       });
   })
 
-  .controller('CertificatesViewController', function ($q, $scope, $modal, $stateParams, CertificateApi, CertificateService, MomentService, ngTableParams) {
+  .controller('CertificatesViewController', function ($q, $scope, $modal, $stateParams, CertificateApi, CertificateService, MomentService, ngTableParams, toaster) {
     $scope.filter = $stateParams;
     $scope.certificateTable = new ngTableParams({
       page: 1,            // show first page
@@ -45,15 +45,64 @@ angular.module('lemur')
       }
     });
 
-    $scope.certificateService = CertificateService;
     $scope.momentService = MomentService;
 
     $scope.remove = function (certificate) {
-      certificate.remove().then(function () {
-        $scope.certificateTable.reload();
-      });
+      certificate.remove().then(
+        function () {
+          $scope.certificateTable.reload();
+        },
+        function (response) {
+          toaster.pop({
+            type: 'error',
+            title: certificate.name,
+            body: 'Unable to remove certificate! ' + response.data.message,
+            timeout: 100000
+          });
+        });
     };
 
+    $scope.loadPrivateKey = function (certificate) {
+      CertificateService.loadPrivateKey(certificate).then(
+        function (response) {
+          if (response.key === null) {
+            toaster.pop({
+              type: 'warning',
+              title: certificate.name,
+              body: 'No private key found!'
+            });
+          } else {
+            certificate.privateKey = response.key;
+          }
+        },
+        function () {
+          toaster.pop({
+            type: 'error',
+            title: certificate.name,
+            body: 'You do not have permission to view this key!',
+            timeout: 100000
+          });
+        });
+    };
+
+    $scope.updateActive = function (certificate) {
+      CertificateService.updateActive(certificate).then(
+        function () {
+          toaster.pop({
+            type: 'success',
+            title: certificate.name,
+            body: 'Updated!'
+          });
+        },
+        function (response) {
+          toaster.pop({
+            type: 'error',
+            title: certificate.name,
+            body: 'Unable to update! ' + response.data.message,
+            timeout: 100000
+          });
+        });
+    };
     $scope.getCertificateStatus = function () {
       var def = $q.defer();
       def.resolve([{'title': 'Active', 'id': true}, {'title': 'Inactive', 'id': false}]);

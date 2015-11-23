@@ -100,80 +100,15 @@ angular.module('lemur')
 
     CertificateService.create = function (certificate) {
       certificate.attachSubAltName();
-      return CertificateApi.post(certificate).then(
-        function () {
-          toaster.pop({
-            type: 'success',
-            title: certificate.name,
-            body: 'Successfully created!'
-          });
-        },
-        function (response) {
-          toaster.pop({
-            type: 'error',
-            title: certificate.name,
-            body: 'Was not created! ' + response.data.message
-          });
-        }
-      );
+      return CertificateApi.post(certificate);
     };
 
     CertificateService.update = function (certificate) {
-      return LemurRestangular.copy(certificate).put().then(
-        function () {
-          toaster.pop({
-            type: 'success',
-            title: certificate.name,
-            body: 'Successfully updated!'
-          });
-        },
-        function (response) {
-          toaster.pop({
-            type: 'error',
-            title: certificate.name,
-            body: 'Failed to update ' + response.data.message
-          });
-        });
+      return LemurRestangular.copy(certificate).put();
     };
 
     CertificateService.upload = function (certificate) {
-      return CertificateApi.customPOST(certificate, 'upload').then(
-        function () {
-          toaster.pop({
-            type: 'success',
-            title: certificate.name,
-            body: 'Successfully uploaded!'
-          });
-        },
-        function (response) {
-          toaster.pop({
-            type: 'error',
-            title: certificate.name,
-            body: 'Failed to upload ' + response.data.message
-          });
-      });
-    };
-
-    CertificateService.loadPrivateKey = function (certificate) {
-      return certificate.customGET('key').then(
-        function (response) {
-          if (response.key === null) {
-            toaster.pop({
-              type: 'warning',
-              title: certificate.name,
-              body: 'No private key found!'
-            });
-          } else {
-            certificate.privateKey = response.key;
-          }
-        },
-        function () {
-          toaster.pop({
-            type: 'error',
-            title: certificate.name,
-            body: 'You do not have permission to view this key!'
-          });
-        });
+      return CertificateApi.customPOST(certificate, 'upload');
     };
 
     CertificateService.getAuthority = function (certificate) {
@@ -216,22 +151,12 @@ angular.module('lemur')
       });
     };
 
+    CertificateService.loadPrivateKey = function (certificate) {
+      return certificate.customGET('key');
+    };
+
     CertificateService.updateActive = function (certificate) {
-      return certificate.put().then(
-          function () {
-            toaster.pop({
-              type: 'success',
-              title: certificate.name,
-              body: 'Successfully updated!'
-            });
-          },
-          function (response) {
-            toaster.pop({
-              type: 'error',
-              title: certificate.name,
-              body: 'Was not updated! ' + response.data.message
-            });
-          });
+      return certificate.put();
     };
 
     return CertificateService;

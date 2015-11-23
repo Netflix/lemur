@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('lemur')
-  .controller('CertificateEditController', function ($scope, $modalInstance, CertificateApi, CertificateService, DestinationService, NotificationService, editId) {
+  .controller('CertificateEditController', function ($scope, $modalInstance, CertificateApi, CertificateService, DestinationService, NotificationService, toaster, editId) {
     CertificateApi.get(editId).then(function (certificate) {
       CertificateService.getNotifications(certificate);
       CertificateService.getDestinations(certificate);
@@ -13,16 +13,30 @@ angular.module('lemur')
     };
 
     $scope.save = function (certificate) {
-      CertificateService.update(certificate).then(function () {
-        $modalInstance.close();
-      });
+      CertificateService.update(certificate).then(
+        function () {
+          toaster.pop({
+            type: 'success',
+            title: certificate.name,
+            body: 'Successfully updated!'
+          });
+          $modalInstance.close();
+        },
+        function (response) {
+          toaster.pop({
+            type: 'error',
+            title: certificate.name,
+            body: 'Failed to update ' + response.data.message,
+            timeout: 100000
+          });
+        });
     };
 
     $scope.destinationService = DestinationService;
     $scope.notificationService = NotificationService;
   })
 
-  .controller('CertificateCreateController', function ($scope, $modalInstance, CertificateApi, CertificateService, DestinationService, AuthorityService, PluginService, MomentService, WizardHandler, LemurRestangular, NotificationService) {
+  .controller('CertificateCreateController', function ($scope, $modalInstance, CertificateApi, CertificateService, DestinationService, AuthorityService, PluginService, MomentService, WizardHandler, LemurRestangular, NotificationService, toaster) {
     $scope.certificate = LemurRestangular.restangularizeElement(null, {}, 'certificates');
 
     // set the defaults
@@ -30,10 +44,24 @@ angular.module('lemur')
 
     $scope.create = function (certificate) {
       WizardHandler.wizard().context.loading = true;
-      CertificateService.create(certificate).then(function () {
-        WizardHandler.wizard().context.loading = false;
-        $modalInstance.close();
-      });
+      CertificateService.create(certificate).then(
+        function () {
+          toaster.pop({
+            type: 'success',
+            title: certificate.name,
+            body: 'Successfully created!'
+          });
+          $modalInstance.close();
+        },
+        function (response) {
+          toaster.pop({
+            type: 'error',
+            title: certificate.name,
+            body: 'Was not created! ' + response.data.message,
+            timeout: 100000
+          });
+          WizardHandler.wizard().context.loading = false;
+        });
     };
 
     $scope.templates = [

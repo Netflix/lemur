@@ -87,7 +87,20 @@ lemur.factory('LemurRestangular', function (Restangular, $location, $auth) {
       } else {
         extractedData = data;
       }
+
       return extractedData;
+    });
+
+    RestangularConfigurer.setErrorInterceptor(function(response) {
+      if (response.status == 400) {
+        if (response.data.message) {
+          var data = "";
+          _.each(response.data.message, function (value, key) {
+            data = data + " " + key + " " + value;
+          });
+          response.data.message = data;
+        }
+      }
     });
 
     RestangularConfigurer.addFullRequestInterceptor(function (element, operation, route, url, headers, params) {

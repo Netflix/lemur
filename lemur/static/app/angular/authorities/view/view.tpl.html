@@ -24,7 +24,7 @@
             </td>
             <td data-title="'Active'" filter="{ 'active': 'select' }" filter-data="getAuthorityStatus()">
               <form>
-                <switch ng-change="authorityService.updateActive(authority)" id="status" name="status" ng-model="authority.active" class="green small"></switch>
+                <switch ng-change="updateActive(authority)" id="status" name="status" ng-model="authority.active" class="green small"></switch>
               </form>
             </td>
             <td data-title="'Roles'"> <!--filter="{ 'select': 'role' }" filter-data="roleService.getRoleDropDown()">-->
@@ -35,7 +35,7 @@
               </div>
             </td>
             <td data-title="''">
-                <a ui-sref="authority({'name': '{{ authority.name }}'})">Permalink</a>
+                <a ui-sref="authority({name: authority.name})">Permalink</a>
             </td>
             <td data-title="''">
               <div class="btn-group-vertical pull-right">

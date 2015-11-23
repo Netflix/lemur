@@ -63,9 +63,9 @@ class marshal_items(object):
                     if hasattr(e, 'data'):
                         return {'message': e.data['message']}, 400
                     else:
-                        return {'message': 'unknown'}, 400
+                        return {'message': {'exception': 'unknown'}}, 400
                 else:
-                    return {'message': str(e)}, 400
+                    return {'message': {'exception': str(e)}}, 400
         return wrapper
 
 

@@ -80,41 +80,11 @@ angular.module('lemur')
 
     AuthorityService.create = function (authority) {
       authority.attachSubAltName();
-      return AuthorityApi.post(authority).then(
-        function () {
-          toaster.pop({
-            type: 'success',
-            title: authority.name,
-            body: 'Successfully created!'
-          });
-          $location.path('/authorities');
-        },
-        function (response) {
-          toaster.pop({
-            type: 'error',
-            title: authority.name,
-            body: 'Was not created! ' + response.data.message
-          });
-        });
+      return AuthorityApi.post(authority);
     };
 
     AuthorityService.update = function (authority) {
-      return authority.put().then(
-        function () {
-          toaster.pop({
-            type: 'success',
-            title: authority.name,
-            body: 'Successfully updated!'
-          });
-          $location.path('/authorities');
-        },
-        function (response) {
-          toaster.pop({
-            type: 'error',
-            title: authority.name,
-            body: 'Update Failed! ' + response.data.message
-          });
-      });
+      return authority.put();
     };
 
     AuthorityService.getDefaults = function (authority) {
@@ -134,20 +104,7 @@ angular.module('lemur')
     };
 
     AuthorityService.updateActive = function (authority) {
-      return authority.put().then(
-        function () {
-          toaster.pop({
-            type: 'success',
-            title: authority.name,
-            body: 'Successfully updated!'
-          });
-        },
-        function (response) {
-          toaster.pop({
-            type: 'error',
-            title: authority.name,
-            body: 'Update Failed! ' + response.data.message
-          });
-        });
+      return authority.put();
     };
+
   });
