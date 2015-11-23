@@ -58,7 +58,15 @@ def create(kwargs):
 
     cert = Certificate(cert_body, chain=intermediate)
     cert.owner = kwargs['ownerEmail']
-    cert.description = "This is the ROOT certificate for the {0} certificate authority".format(kwargs.get('caName'))
+
+    if kwargs['caType'] == 'subca':
+        cert.description = "This is the ROOT certificate for the {0} sub certificate authority the parent \
+                                authority is {1}.".format(kwargs.get('caName'), kwargs.get('caParent'))
+    else:
+        cert.description = "This is the ROOT certificate for the {0} certificate authority.".format(
+            kwargs.get('caName')
+        )
+
     cert.user = g.current_user
 
     cert.notifications = notification_service.create_default_expiration_notifications(
