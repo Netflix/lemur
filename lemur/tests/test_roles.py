@@ -10,7 +10,7 @@ def test_crud(session):
     role = update(role.id, 'role_new', None, [])
     assert role.name == 'role_new'
     delete(role.id)
-    assert get(role.id) == None
+    assert not get(role.id)
 
 
 def test_role_get(client):

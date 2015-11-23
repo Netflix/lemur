@@ -25,36 +25,36 @@ ROOT = os.path.realpath(os.path.join(os.path.dirname(__file__)))
 
 install_requires = [
     'Flask==0.10.1',
-    'Flask-RESTful==0.3.3',
-    'Flask-SQLAlchemy==2.0',
+    'Flask-RESTful==0.3.4',
+    'Flask-SQLAlchemy==2.1',
     'Flask-Script==2.0.5',
-    'Flask-Migrate==1.4.0',
-    'Flask-Bcrypt==0.6.2',
+    'Flask-Migrate==1.6.0',
+    'Flask-Bcrypt==0.7.1',
     'Flask-Principal==0.4.0',
     'Flask-Mail==0.9.1',
-    'SQLAlchemy-Utils==0.30.11',
-    'BeautifulSoup4',
-    'requests==2.7.0',
+    'SQLAlchemy-Utils==0.31.3',
+    'BeautifulSoup4==4.4.1',
+    'requests==2.8.1',
     'psycopg2==2.6.1',
-    'arrow==0.5.4',
+    'arrow==0.7.0',
     'boto==2.38.0',  # we might make this optional
     'six==1.9.0',
     'gunicorn==19.3.0',
     'pycrypto==2.6.1',
-    'cryptography==1.0.2',
+    'cryptography==1.1.1',
     'pyopenssl==0.15.1',
-    'pyjwt==1.0.1',
+    'pyjwt==1.4.0',
     'xmltodict==0.9.2',
-    'lockfile==0.10.2',
-    'future==0.15.0',
+    'lockfile==0.11.0',
+    'future==0.15.2',
 ]
 
 tests_require = [
     'pyflakes',
-    'moto==0.4.6',
+    'moto==0.4.18',
     'nose==1.3.7',
-    'pytest==2.7.2',
-    'pytest-flask==0.8.1'
+    'pytest==2.8.3',
+    'pytest-flask==0.10.0'
 ]
 
 docs_require = [
@@ -63,7 +63,7 @@ docs_require = [
 ]
 
 dev_requires = [
-    'flake8>=2.0,<2.1',
+    'flake8>=2.0,<2.5.0',
 ]
 
 
