@@ -56,7 +56,7 @@ angular.module('lemur')
     });
     return LemurRestangular.all('authorities');
   })
-  .service('AuthorityService', function ($location, AuthorityApi, DefaultService, toaster) {
+  .service('AuthorityService', function ($location, AuthorityApi, DefaultService) {
     var AuthorityService = this;
     AuthorityService.findAuthorityByName = function (filterValue) {
       return AuthorityApi.getList({'filter[name]': filterValue})

@@ -94,9 +94,9 @@ lemur.factory('LemurRestangular', function (Restangular, $location, $auth) {
     RestangularConfigurer.setErrorInterceptor(function(response) {
       if (response.status == 400) {
         if (response.data.message) {
-          var data = "";
+          var data = '';
           _.each(response.data.message, function (value, key) {
-            data = data + " " + key + " " + value;
+            data = data + ' ' + key + ' ' + value;
           });
           response.data.message = data;
         }

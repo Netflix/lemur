@@ -89,7 +89,7 @@ angular.module('lemur')
     });
     return LemurRestangular.all('certificates');
   })
-  .service('CertificateService', function ($location, CertificateApi, LemurRestangular, DefaultService, toaster) {
+  .service('CertificateService', function ($location, CertificateApi, LemurRestangular, DefaultService) {
     var CertificateService = this;
     CertificateService.findCertificatesByName = function (filterValue) {
       return CertificateApi.getList({'filter[name]': filterValue})
