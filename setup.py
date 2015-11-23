@@ -38,7 +38,7 @@ install_requires = [
     'psycopg2==2.6.1',
     'arrow==0.7.0',
     'boto==2.38.0',  # we might make this optional
-    'six==1.9.0',
+    'six==1.10.0',
     'gunicorn==19.3.0',
     'pycrypto==2.6.1',
     'cryptography==1.1.1',
@@ -63,7 +63,7 @@ docs_require = [
 ]
 
 dev_requires = [
-    'flake8>=2.0,<2.5.0',
+    'flake8>=2.0,<3.0',
 ]
 
 
