@@ -29,7 +29,7 @@
                 <div class="input-group col-sm-12">
                     <input name="selectedAuthority" tooltip="If you are unsure which authority you need; you most likely want to use 'verisign'" type="text" ng-model="certificate.selectedAuthority" placeholder="Authority Name" typeahead-on-select="certificate.attachAuthority($item)"
                            typeahead="authority.name for authority in authorityService.findActiveAuthorityByName($viewValue)" typeahead-loading="loadingAuthorities"
-                           class="form-control" typeahead-wait-ms="100" typeahead-template-url="angular/authorities/authority/select.tpl.html" required>
+                           class="form-control" typeahead-wait-ms="1000" typeahead-template-url="angular/authorities/authority/select.tpl.html" required>
                 </div>
             </div>
         </div>
