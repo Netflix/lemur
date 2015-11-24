@@ -27,6 +27,7 @@
                     <p ng-show="editForm.description.$invalid && !editForm.description.$pristine" class="help-block">You must give a short description about this authority will be used for, this description should only include alphanumeric characters</p>
                 </div>
             </div>
+            <div ng-include="'angular/certificates/certificate/replaces.tpl.html'"></div>
             <div ng-include="'angular/certificates/certificate/notifications.tpl.html'"></div>
             <div ng-include="'angular/certificates/certificate/destinations.tpl.html'"></div>
         </form>

@@ -76,13 +76,16 @@ def find_duplicates(cert_body):
     return Certificate.query.filter_by(body=cert_body).all()
 
 
-def update(cert_id, owner, description, active, destinations, notifications):
+def update(cert_id, owner, description, active, destinations, notifications, replaces):
     """
-    Updates a certificate.
-
+    Updates a certificate
     :param cert_id:
     :param owner:
+    :param description:
     :param active:
+    :param destinations:
+    :param notifications:
+    :param replaces:
     :return:
     """
     from lemur.notifications import service as notification_service
@@ -104,6 +107,7 @@ def update(cert_id, owner, description, active, destinations, notifications):
     cert.notifications = new_notifications
 
     database.update_list(cert, 'destinations', Destination, destinations)
+    database.update_list(cert, 'replaces', Certificate, replaces)
 
     cert.owner = owner
 
@@ -165,6 +169,7 @@ def import_certificate(**kwargs):
 
     notification_name = 'DEFAULT_SECURITY'
     notifications = notification_service.create_default_expiration_notifications(notification_name, current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL'))
+    database.update_list(cert, 'replaces', Certificate, kwargs['replacements'])
     cert.notifications = notifications
 
     cert = database.create(cert)
@@ -194,8 +199,8 @@ def upload(**kwargs):
     g.user.certificates.append(cert)
 
     database.update_list(cert, 'destinations', Destination, kwargs.get('destinations'))
-
     database.update_list(cert, 'notifications', Notification, kwargs.get('notifications'))
+    database.update_list(cert, 'replaces', Certificate, kwargs['replacements'])
 
     # create default notifications for this certificate if none are provided
     notifications = []
@@ -228,7 +233,7 @@ def create(**kwargs):
     # do this after the certificate has already been created because if it fails to upload to the third party
     # we do not want to lose the certificate information.
     database.update_list(cert, 'destinations', Destination, kwargs.get('destinations'))
-
+    database.update_list(cert, 'replaces', Certificate, kwargs['replacements'])
     database.update_list(cert, 'notifications', Notification, kwargs.get('notifications'))
 
     # create default notifications for this certificate if none are provided

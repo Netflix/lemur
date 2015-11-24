@@ -36,6 +36,7 @@ angular.module('lemur')
               CertificateService.getDomains(certificate);
               CertificateService.getDestinations(certificate);
               CertificateService.getNotifications(certificate);
+              CertificateService.getReplacements(certificate);
               CertificateService.getAuthority(certificate);
               CertificateService.getCreator(certificate);
             });
@@ -101,6 +102,7 @@ angular.module('lemur')
             body: 'Unable to update! ' + response.data.message,
             timeout: 100000
           });
+          certificate.active = false;
         });
     };
     $scope.getCertificateStatus = function () {

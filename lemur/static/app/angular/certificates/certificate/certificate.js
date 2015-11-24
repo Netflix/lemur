@@ -5,6 +5,7 @@ angular.module('lemur')
     CertificateApi.get(editId).then(function (certificate) {
       CertificateService.getNotifications(certificate);
       CertificateService.getDestinations(certificate);
+      CertificateService.getReplacements(certificate);
       $scope.certificate = certificate;
     });
 
@@ -32,6 +33,7 @@ angular.module('lemur')
         });
     };
 
+    $scope.certificateService = CertificateService;
     $scope.destinationService = DestinationService;
     $scope.notificationService = NotificationService;
   })
@@ -123,6 +125,7 @@ angular.module('lemur')
         $scope.plugins = plugins;
     });
 
+    $scope.certificateService = CertificateService;
     $scope.authorityService = AuthorityService;
     $scope.destinationService = DestinationService;
     $scope.notificationService = NotificationService;

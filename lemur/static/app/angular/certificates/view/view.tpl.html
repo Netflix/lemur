@@ -26,8 +26,8 @@
           <tr ng-class="{'even-row': $even }" ng-repeat-start="certificate in $data track by $index">
             <td data-title="'Name'" sortable="'name'" filter="{ 'name': 'text' }">
               <ul class="list-unstyled">
-                <li>{{ certificate.name }}</li>
-                <li><span class="text-muted">{{ certificate.owner }}</span></li>
+                <li>{{ ::certificate.name }}</li>
+                <li><span class="text-muted">{{ ::certificate.owner }}</span></li>
               </ul>
             </td>
             <td data-title="'Active'" filter="{ 'active': 'select' }" filter-data="getCertificateStatus()">
@@ -37,10 +37,10 @@
               </form>
             </td>
             <td data-title="'Issuer'" sortable="'issuer'" filter="{ 'issuer': 'text' }">
-              {{ certificate.authority.name || certificate.issuer }}
+              {{ ::certificate.authority.name || certificate.issuer }}
             </td>
             <td data-title="'Common Name'" filter="{ 'cn': 'text'}">
-              {{ certificate.cn }}
+              {{ ::certificate.cn }}
             </td>
             <td class="col-md-2" data-title="''">
               <div class="btn-group pull-right">
@@ -61,19 +61,19 @@
                     <li class="list-group-item">
                       <strong>Creator</strong>
                         <span class="pull-right">
-                          {{ certificate.creator.email }}
+                          {{ ::certificate.creator.email }}
                         </span>
                     </li>
                     <li class="list-group-item">
                       <strong>Not Before</strong>
-                        <span class="pull-right" tooltip="{{ certificate.notBefore }}">
-                          {{ momentService.createMoment(certificate.notBefore) }}
+                        <span class="pull-right" tooltip="{{ ::certificate.notBefore }}">
+                          {{ ::momentService.createMoment(certificate.notBefore) }}
                         </span>
                     </li>
                     <li class="list-group-item">
                       <strong>Not After</strong>
-                        <span class="pull-right" tooltip="{{ certificate.notAfter }}">
-                          {{ momentService.createMoment(certificate.notAfter) }}
+                        <span class="pull-right" tooltip="{{ ::certificate.notAfter }}">
+                          {{ ::momentService.createMoment(certificate.notAfter) }}
                           </span>
                     </li>
                     <li class="list-group-item">
@@ -85,15 +85,15 @@
                     </li>
                     <li class="list-group-item">
                       <strong>Bits</strong>
-                      <span class="pull-right">{{ certificate.bits }}</span>
+                      <span class="pull-right">{{ ::certificate.bits }}</span>
                     </li>
                     <li class="list-group-item">
                       <strong>Signing Algorithm</strong>
-                      <span class="pull-right">{{ certificate.signingAlgorithm }}</span>
+                      <span class="pull-right">{{ ::certificate.signingAlgorithm }}</span>
                     </li>
                     <li class="list-group-item">
                       <strong>Serial</strong>
-                      <span class="pull-right">{{ certificate.serial }}</span>
+                      <span class="pull-right">{{ ::certificate.serial }}</span>
                     </li>
                     <li
                       tooltip="Lemur will attempt to check a certificates validity, this is used to track whether a certificate as been revoked"
@@ -107,7 +107,7 @@
                     </li>
                     <li class="list-group-item">
                       <strong>Description</strong>
-                      <p>{{ certificate.description }}</p>
+                      <p>{{ ::certificate.description }}</p>
                     </li>
                   </ul>
                 </tab>
@@ -115,8 +115,8 @@
                   <tab-heading>Notifications</tab-heading>
                   <ul class="list-group">
                     <li class="list-group-item" ng-repeat="notification in certificate.notifications">
-                      <strong>{{ notification.label }}</strong>
-                      <span class="pull-right">{{ notification.description}}</span>
+                      <strong>{{ ::notification.label }}</strong>
+                      <span class="pull-right">{{ ::notification.description}}</span>
                     </li>
                   </ul>
                 </tab>
@@ -124,17 +124,26 @@
                   <tab-heading>Destinations</tab-heading>
                   <ul class="list-group">
                     <li class="list-group-item" ng-repeat="destination in certificate.destinations">
-                      <strong>{{ destination.label }}</strong>
-                      <span class="pull-right">{{ destination.description }}</span>
+                      <strong>{{ ::destination.label }}</strong>
+                      <span class="pull-right">{{ ::destination.description }}</span>
                     </li>
                   </ul>
                 </tab>
                 <tab>
                   <tab-heading>Domains</tab-heading>
                   <div class="list-group">
-                    <a href="#/domains/{{ domain.id }}" class="list-group-item"
-                       ng-repeat="domain in certificate.domains">{{ domain.name }}</a>
+                    <a href="#/domains/{{ ::domain.id }}" class="list-group-item"
+                       ng-repeat="domain in certificate.domains">{{ ::domain.name }}</a>
                   </div>
+                </tab>
+                <tab>
+                  <tab-heading>Replaces</tab-heading>
+                  <ul class="list-group">
+                    <li class="list-group-item" ng-repeat="replacement in certificate.replacements">
+                      <strong>{{ ::replacement.name }}</strong>
+                      <p>{{ ::replacement.description}}</p>
+                    </li>
+                  </ul>
                 </tab>
               </tabset>
               <tabset justified="true" class="col-md-6">
@@ -145,7 +154,7 @@
                             tooltip="Copy chain to clipboard" tooltip-trigger="mouseenter" clipboard
                             text="certificate.chain"></button>
                   </tab-heading>
-                  <pre style="width: 100%">{{ certificate.chain }}</pre>
+                  <pre style="width: 100%">{{ ::certificate.chain }}</pre>
                 </tab>
                 <tab>
                   <tab-heading>
@@ -154,7 +163,7 @@
                             tooltip="Copy certificate to clipboard" tooltip-trigger="mouseenter" clipboard
                             text="certificate.body"></button>
                   </tab-heading>
-                  <pre style="width: 100%">{{ certificate.body }}</pre>
+                  <pre style="width: 100%">{{ ::certificate.body }}</pre>
                 </tab>
                 <tab ng-click="loadPrivateKey(certificate)">
                   <tab-heading>
@@ -163,7 +172,7 @@
                             tooltip="Copy key to clipboard" tooltip-trigger="mouseenter" clipboard
                             text="certificate.privateKey"></button>
                   </tab-heading>
-                  <pre style="width: 100%">{{ certificate.privateKey }}</pre>
+                  <pre style="width: 100%">{{ ::certificate.privateKey }}</pre>
                 </tab>
               </tabset>
             </td>

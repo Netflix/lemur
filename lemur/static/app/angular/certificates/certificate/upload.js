@@ -8,6 +8,7 @@ angular.module('lemur')
 
     $scope.destinationService = DestinationService;
     $scope.notificationService = NotificationService;
+    $scope.certificateService = CertificateService;
 
     PluginService.getByType('destination').then(function (plugins) {
         $scope.plugins = plugins;
