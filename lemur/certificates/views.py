@@ -269,7 +269,10 @@ class CertificatesList(AuthenticatedResource):
                 },
                 "commonName": "test",
                 "validityStart": "2015-06-05T07:00:00.000Z",
-                "validityEnd": "2015-06-16T07:00:00.000Z"
+                "validityEnd": "2015-06-16T07:00:00.000Z",
+                "replacements": [
+                    {'id': 123}
+                ]
              }
 
            **Example response**:
@@ -317,6 +320,7 @@ class CertificatesList(AuthenticatedResource):
         self.reqparse.add_argument('extensions', type=dict, location='json')
         self.reqparse.add_argument('destinations', type=list, default=[], location='json')
         self.reqparse.add_argument('notifications', type=list, default=[], location='json')
+        self.reqparse.add_argument('replacements', type=list, default=[], location='json')
         self.reqparse.add_argument('validityStart', type=str, location='json')  # TODO validate
         self.reqparse.add_argument('validityEnd', type=str, location='json')  # TODO validate
         self.reqparse.add_argument('authority', type=valid_authority, location='json', required=True)
@@ -375,6 +379,7 @@ class CertificatesUpload(AuthenticatedResource):
                  "privateKey": "---Begin Private..."
                  "destinations": [],
                  "notifications": [],
+                 "replacements": [],
                  "name": "cert1"
               }
 
@@ -419,8 +424,9 @@ class CertificatesUpload(AuthenticatedResource):
         self.reqparse.add_argument('owner', type=str, required=True, location='json')
         self.reqparse.add_argument('name', type=str, location='json')
         self.reqparse.add_argument('publicCert', type=pem_str, required=True, dest='public_cert', location='json')
-        self.reqparse.add_argument('destinations', type=list, default=[], dest='destinations', location='json')
-        self.reqparse.add_argument('notifications', type=list, default=[], dest='notifications', location='json')
+        self.reqparse.add_argument('destinations', type=list, default=[], location='json')
+        self.reqparse.add_argument('notifications', type=list, default=[], location='json')
+        self.reqparse.add_argument('replacements', type=list, default=[], location='json')
         self.reqparse.add_argument('intermediateCert', type=pem_str, dest='intermediate_cert', location='json')
         self.reqparse.add_argument('privateKey', type=private_key_str, dest='private_key', location='json')
 
@@ -575,7 +581,8 @@ class Certificates(AuthenticatedResource):
                  "owner": "jimbob@example.com",
                  "active": false
                  "notifications": [],
-                 "destinations": []
+                 "destinations": [],
+                 "replacements": []
               }
 
            **Example response**:
@@ -614,6 +621,7 @@ class Certificates(AuthenticatedResource):
         self.reqparse.add_argument('description', type=str, location='json')
         self.reqparse.add_argument('destinations', type=list, default=[], location='json')
         self.reqparse.add_argument('notifications', type=notification_list, default=[], location='json')
+        self.reqparse.add_argument('replacements', type=list, default=[], location='json')
         args = self.reqparse.parse_args()
 
         cert = service.get(certificate_id)
@@ -628,7 +636,8 @@ class Certificates(AuthenticatedResource):
                 args['description'],
                 args['active'],
                 args['destinations'],
-                args['notifications']
+                args['notifications'],
+                args['replacements']
             )
 
         return dict(message='You are not authorized to update this certificate'), 403
@@ -711,9 +720,65 @@ class NotificationCertificatesList(AuthenticatedResource):
         return service.render(args)
 
 
+class CertificatesReplacementsList(AuthenticatedResource):
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        super(CertificatesReplacementsList, self).__init__()
+
+    @marshal_items(FIELDS)
+    def get(self, certificate_id):
+        """
+        .. http:get:: /certificates/1/replacements
+
+           One certificate
+
+           **Example request**:
+
+           .. sourcecode:: http
+
+              GET /certificates/1/replacements HTTP/1.1
+              Host: example.com
+              Accept: application/json, text/javascript
+
+           **Example response**:
+
+           .. sourcecode:: http
+
+              HTTP/1.1 200 OK
+              Vary: Accept
+              Content-Type: text/javascript
+
+              [{
+                "id": 1,
+                "name": "cert1",
+                "description": "this is cert1",
+                "bits": 2048,
+                "deleted": false,
+                "issuer": "ExampeInc.",
+                "serial": "123450",
+                "chain": "-----Begin ...",
+                "body": "-----Begin ...",
+                "san": true,
+                "owner": "bob@example.com",
+                "active": true,
+                "notBefore": "2015-06-05T17:09:39",
+                "notAfter": "2015-06-10T17:09:39",
+                "signingAlgorithm": "sha2",
+                "cn": "example.com",
+                "status": "unknown"
+              }]
+
+           :reqheader Authorization: OAuth token to authenticate
+           :statuscode 200: no error
+           :statuscode 403: unauthenticated
+        """
+        return service.get(certificate_id).replaces
+
+
 api.add_resource(CertificatesList, '/certificates', endpoint='certificates')
 api.add_resource(Certificates, '/certificates/<int:certificate_id>', endpoint='certificate')
 api.add_resource(CertificatesStats, '/certificates/stats', endpoint='certificateStats')
 api.add_resource(CertificatesUpload, '/certificates/upload', endpoint='certificateUpload')
 api.add_resource(CertificatePrivateKey, '/certificates/<int:certificate_id>/key', endpoint='privateKeyCertificates')
 api.add_resource(NotificationCertificatesList, '/notifications/<int:notification_id>/certificates', endpoint='notificationCertificates')
+api.add_resource(CertificatesReplacementsList, '/certificates/<int:certificate_id>/replacements', endpoint='replacements')

@@ -22,7 +22,8 @@ from lemur.domains.models import Domain
 from lemur.constants import SAN_NAMING_TEMPLATE, DEFAULT_NAMING_TEMPLATE
 
 from lemur.models import certificate_associations, certificate_source_associations, \
-    certificate_destination_associations, certificate_notification_associations
+    certificate_destination_associations, certificate_notification_associations, \
+    certificate_replacement_associations
 
 
 def create_name(issuer, not_before, not_after, subject, san):
@@ -32,6 +33,11 @@ def create_name(issuer, not_before, not_after, subject, san):
     useful information such as Common Name, Validation dates,
     and Issuer.
 
+    :param san:
+    :param subject:
+    :param not_after:
+    :param issuer:
+    :param not_before:
     :rtype : str
     :return:
     """
@@ -231,6 +237,11 @@ class Certificate(db.Model):
     authority_id = Column(Integer, ForeignKey('authorities.id'))
     notifications = relationship("Notification", secondary=certificate_notification_associations, backref='certificate')
     destinations = relationship("Destination", secondary=certificate_destination_associations, backref='certificate')
+    replaces = relationship("Certificate",
+                            secondary=certificate_replacement_associations,
+                            primaryjoin=id == certificate_replacement_associations.c.certificate_id,  # noqa
+                            secondaryjoin=id == certificate_replacement_associations.c.replaced_certificate_id,  # noqa
+                            backref='replaced')
     sources = relationship("Source", secondary=certificate_source_associations, backref='certificate')
     domains = relationship("Domain", secondary=certificate_associations, backref="certificate")
 
@@ -280,11 +291,44 @@ class Certificate(db.Model):
         """
         return "arn:aws:iam::{}:server-certificate/{}".format(account_number, self.name)
 
-    def as_dict(self):
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
-
 
 @event.listens_for(Certificate.destinations, 'append')
 def update_destinations(target, value, initiator):
+    """
+    Attempt to upload the new certificate to the new destination
+
+    :param target:
+    :param value:
+    :param initiator:
+    :return:
+    """
     destination_plugin = plugins.get(value.plugin_name)
     destination_plugin.upload(target.name, target.body, target.private_key, target.chain, value.options)
+
+
+@event.listens_for(Certificate.replaces, 'append')
+def update_replacement(target, value, initiator):
+    """
+    When a certificate is marked as 'replaced' it is then marked as in-active
+
+    :param target:
+    :param value:
+    :param initiator:
+    :return:
+    """
+    value.active = False
+
+
+@event.listens_for(Certificate, 'before_update')
+def protect_active(mapper, connection, target):
+    """
+    When a certificate has a replacement do not allow it to be marked as 'active'
+
+    :param connection:
+    :param mapper:
+    :param target:
+    :return:
+    """
+    if target.active:
+        if target.replaced:
+            raise Exception("Cannot mark certificate as active, certificate has been marked as replaced.")

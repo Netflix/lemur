@@ -67,6 +67,16 @@ angular.module('lemur')
         removeDestination: function (index) {
           this.destinations.splice(index, 1);
         },
+        attachReplacement: function (replacement) {
+          this.selectedReplacement = null;
+          if (this.replacements === undefined) {
+            this.replacements = [];
+          }
+          this.replacements.push(replacement);
+        },
+        removeReplacement: function (index) {
+          this.replacements.splice(index, 1);
+        },
         attachNotification: function (notification) {
           this.selectedNotification = null;
           if (this.notifications === undefined) {
@@ -146,6 +156,12 @@ angular.module('lemur')
     CertificateService.getDomains = function (certificate) {
       return certificate.getList('domains').then(function (domains) {
         certificate.domains = domains;
+      });
+    };
+
+    CertificateService.getReplacements = function (certificate) {
+      return certificate.getList('replacements').then(function (replacements) {
+        certificate.replacements = replacements;
       });
     };
 
