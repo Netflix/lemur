@@ -89,7 +89,7 @@ angular.module('lemur')
     });
     return LemurRestangular.all('certificates');
   })
-  .service('CertificateService', function ($location, CertificateApi, LemurRestangular, DefaultService) {
+  .service('CertificateService', function ($location, CertificateApi, AuthorityService, LemurRestangular, DefaultService) {
     var CertificateService = this;
     CertificateService.findCertificatesByName = function (filterValue) {
       return CertificateApi.getList({'filter[name]': filterValue})
@@ -100,6 +100,14 @@ angular.module('lemur')
 
     CertificateService.create = function (certificate) {
       certificate.attachSubAltName();
+      // Help users who may have just typed in their authority
+      if (!certificate.authority) {
+        AuthorityService.findActiveAuthorityByName(certificate.selectedAuthority).then(function (authorities) {
+          if (authorities.length > 0) {
+            certificate.authority = authorities[0];
+          }
+        });
+      }
       return CertificateApi.post(certificate);
     };
 

@@ -17,7 +17,7 @@ Lemur
     :target: https://travis-ci.org/Netflix/lemur
 
 .. image:: https://requires.io/github/kevgliss/lemur/requirements.svg?branch=master
-    :target: https://requires.io/github/kevgliss/lemur/requirements/?branch=master
+    :target: https://requires.io/github/Netflix/lemur/requirements/?branch=master
     :alt: Requirements Status
 
 .. image:: https://badge.waffle.io/Netflix/lemur.png?label=ready&title=Ready
