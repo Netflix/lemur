@@ -5,10 +5,34 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+import os
 import six
 from flask import current_app
 from cryptography.fernet import Fernet, MultiFernet
 import sqlalchemy.types as types
+
+from contextlib import contextmanager
+import tempfile
+
+
+@contextmanager
+def mktempfile():
+    with tempfile.NamedTemporaryFile(delete=False) as f:
+        name = f.name
+
+    try:
+        yield name
+    finally:
+        os.unlink(name)
+
+
+@contextmanager
+def mktemppath():
+    try:
+        path = os.path.join(tempfile._get_default_tempdir(), next(tempfile._get_candidate_names()))
+        yield path
+    finally:
+        os.unlink(path)
 
 
 def get_keys():
@@ -26,7 +50,7 @@ def get_keys():
     # the fact that there is not a current_app with a config at that point
     try:
         keys = current_app.config.get('LEMUR_ENCRYPTION_KEYS')
-    except:
+    except Exception:
         print("no encryption keys")
         return []
 

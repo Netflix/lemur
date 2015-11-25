@@ -775,6 +775,55 @@ class CertificatesReplacementsList(AuthenticatedResource):
         return service.get(certificate_id).replaces
 
 
+class CertficiateExport(AuthenticatedResource):
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        super(CertficiateExport, self).__init__()
+
+    def post(self, certificate_id):
+        """
+        .. http:post:: /certificates/1/export
+
+           Export a certificate
+
+           **Example request**:
+
+           .. sourcecode:: http
+
+              PUT /certificates/1/export HTTP/1.1
+              Host: example.com
+              Accept: application/json, text/javascript
+
+
+           **Example response**:
+
+           .. sourcecode:: http
+
+              HTTP/1.1 200 OK
+              Vary: Accept
+              Content-Type: text/javascript
+
+
+           :reqheader Authorization: OAuth token to authenticate
+           :statuscode 200: no error
+           :statuscode 403: unauthenticated
+        """
+        args = self.reqparse.parse_args()
+
+        cert = service.get(certificate_id)
+        role = role_service.get_by_name(cert.owner)
+
+        permission = UpdateCertificatePermission(certificate_id, getattr(role, 'name', None))
+
+        if permission.can():
+            data = service.export(certificate_id)
+            response = make_response(data)
+            response.headers['content-type'] = 'application/octet-stream'
+            return response
+
+        return dict(message='You are not authorized to export this certificate'), 403
+
+
 api.add_resource(CertificatesList, '/certificates', endpoint='certificates')
 api.add_resource(Certificates, '/certificates/<int:certificate_id>', endpoint='certificate')
 api.add_resource(CertificatesStats, '/certificates/stats', endpoint='certificateStats')
