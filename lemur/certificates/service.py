@@ -17,6 +17,7 @@ from lemur.certificates.models import Certificate
 from lemur.destinations.models import Destination
 from lemur.notifications.models import Notification
 from lemur.authorities.models import Authority
+from lemur.domains.models import Domain
 
 from lemur.roles.models import Role
 
@@ -271,6 +272,7 @@ def render(args):
 
     if filt:
         terms = filt.split(';')
+
         if 'issuer' in terms:
             # we can't rely on issuer being correct in the cert directly so we combine queries
             sub_query = database.session_query(Authority.id)\
@@ -285,10 +287,17 @@ def render(args):
             )
             return database.sort_and_page(query, Certificate, args)
 
-        if 'destination' in terms:
+        elif 'destination' in terms:
             query = query.filter(Certificate.destinations.any(Destination.id == terms[1]))
         elif 'active' in filt:  # this is really weird but strcmp seems to not work here??
             query = query.filter(Certificate.active == terms[1])
+        elif 'cn' in terms:
+            query = query.filter(
+                or_(
+                    Certificate.cn.ilike('%{0}%'.format(terms[1])),
+                    Certificate.domains.any(Domain.name.ilike('%{0}%'.format(terms[1])))
+                )
+            )
         else:
             query = database.filter(query, Certificate, terms)
 
