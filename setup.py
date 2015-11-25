@@ -39,13 +39,13 @@ install_requires = [
     'arrow==0.7.0',
     'boto==2.38.0',  # we might make this optional
     'six==1.10.0',
-    'gunicorn==19.3.0',
+    'gunicorn==19.4.1',
     'pycrypto==2.6.1',
     'cryptography==1.1.1',
     'pyopenssl==0.15.1',
     'pyjwt==1.4.0',
     'xmltodict==0.9.2',
-    'lockfile==0.11.0',
+    'lockfile==0.12.2',
     'future==0.15.2',
 ]
 
