@@ -10,6 +10,10 @@ from lemur.plugins.base import Plugin
 
 
 class ExportPlugin(Plugin):
+    """
+    This is the base class from which all supported
+    exporters will inherit from.
+    """
     type = 'export'
 
     def export(self):

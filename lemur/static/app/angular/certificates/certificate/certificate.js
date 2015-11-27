@@ -1,6 +1,39 @@
 'use strict';
 
 angular.module('lemur')
+  .controller('CertificateExportController', function ($scope, $modalInstance, CertificateApi, CertificateService, PluginService, toaster, editId) {
+    CertificateApi.get(editId).then(function (certificate) {
+      $scope.certificate = certificate;
+    });
+
+    PluginService.getByType('export').then(function (plugins) {
+      $scope.plugins = plugins;
+    });
+
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+
+    $scope.save = function (certificate) {
+      CertificateService.export(certificate).then(
+        function () {
+          toaster.pop({
+            type: 'success',
+            title: certificate.name,
+            body: 'Successfully exported!'
+          });
+          $modalInstance.close();
+        },
+        function (response) {
+          toaster.pop({
+            type: 'error',
+            title: certificate.name,
+            body: 'Failed to export ' + response.data.message,
+            timeout: 100000
+          });
+        });
+    };
+  })
   .controller('CertificateEditController', function ($scope, $modalInstance, CertificateApi, CertificateService, DestinationService, NotificationService, toaster, editId) {
     CertificateApi.get(editId).then(function (certificate) {
       CertificateService.getNotifications(certificate);

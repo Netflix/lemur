@@ -108,10 +108,11 @@ class IPlugin(local):
         """
         return self.resource_links
 
-    def get_option(self, name, options):
+    @staticmethod
+    def get_option(name, options):
         for o in options:
             if o.get('name') == name:
-                return o['value']
+                return o.get('value')
 
 
 class Plugin(IPlugin):

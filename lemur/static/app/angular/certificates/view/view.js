@@ -163,4 +163,18 @@ angular.module('lemur')
         $scope.certificateTable.reload();
       });
     };
+
+    $scope.export = function (certificateId) {
+      var modalInstance = $modal.open({
+        animation: true,
+        controller: 'CertificateExportController',
+        templateUrl: '/angular/certificates/certificate/export.tpl.html',
+        size: 'lg',
+        resolve: {
+          editId: function () {
+            return certificateId;
+          }
+        }
+      });
+    };
   });

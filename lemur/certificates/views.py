@@ -775,10 +775,10 @@ class CertificatesReplacementsList(AuthenticatedResource):
         return service.get(certificate_id).replaces
 
 
-class CertficiateExport(AuthenticatedResource):
+class CertificateExport(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(CertficiateExport, self).__init__()
+        super(CertificateExport, self).__init__()
 
     def post(self, certificate_id):
         """
@@ -808,6 +808,7 @@ class CertficiateExport(AuthenticatedResource):
            :statuscode 200: no error
            :statuscode 403: unauthenticated
         """
+        self.reqparse.add_argument('export', type=dict, required=True, location='json')
         args = self.reqparse.parse_args()
 
         cert = service.get(certificate_id)
@@ -816,7 +817,7 @@ class CertficiateExport(AuthenticatedResource):
         permission = UpdateCertificatePermission(certificate_id, getattr(role, 'name', None))
 
         if permission.can():
-            data = service.export(certificate_id)
+            passphrase, data = service.export(cert, args['export']['plugin'])
             response = make_response(data)
             response.headers['content-type'] = 'application/octet-stream'
             return response
@@ -829,5 +830,6 @@ api.add_resource(Certificates, '/certificates/<int:certificate_id>', endpoint='c
 api.add_resource(CertificatesStats, '/certificates/stats', endpoint='certificateStats')
 api.add_resource(CertificatesUpload, '/certificates/upload', endpoint='certificateUpload')
 api.add_resource(CertificatePrivateKey, '/certificates/<int:certificate_id>/key', endpoint='privateKeyCertificates')
+api.add_resource(CertificateExport, '/certificates/<int:certificate_id>/export', endpoint='exportCertificate')
 api.add_resource(NotificationCertificatesList, '/notifications/<int:notification_id>/certificates', endpoint='notificationCertificates')
 api.add_resource(CertificatesReplacementsList, '/certificates/<int:certificate_id>/replacements', endpoint='replacements')

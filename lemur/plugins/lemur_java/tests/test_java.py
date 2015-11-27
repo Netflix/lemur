@@ -59,5 +59,5 @@ def test_export_certificate_to_jks(app):
     from lemur.plugins.base import plugins
     p = plugins.get('java-export')
     options = {'passphrase': 'test1234'}
-    raw = p.export(EXTERNAL_VALID_STR, PRIVATE_KEY_STR, options)
+    raw = p.export(EXTERNAL_VALID_STR, "", PRIVATE_KEY_STR, options)
     assert raw != b""

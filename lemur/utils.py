@@ -23,7 +23,10 @@ def mktempfile():
     try:
         yield name
     finally:
-        os.unlink(name)
+        try:
+            os.unlink(name)
+        except OSError as e:
+            current_app.logger.debug("No file {0}".format(name))
 
 
 @contextmanager
@@ -32,7 +35,10 @@ def mktemppath():
         path = os.path.join(tempfile._get_default_tempdir(), next(tempfile._get_candidate_names()))
         yield path
     finally:
-        os.unlink(path)
+        try:
+            os.unlink(path)
+        except OSError as e:
+            current_app.logger.debug("No file {0}".format(path))
 
 
 def get_keys():

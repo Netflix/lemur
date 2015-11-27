@@ -32,6 +32,26 @@ def run_process(command):
         raise Exception(stderr)
 
 
+def split_chain(chain):
+    """
+    Split the chain into individual certificates for import into keystore
+
+    :param chain:
+    :return:
+    """
+    certs = []
+    lines = chain.split('\n')
+
+    cert = []
+    for line in lines:
+        cert.append(line + '\n')
+        if line == '-----END CERTIFICATE-----':
+            certs.append("".join(cert))
+            cert = []
+
+    return certs
+
+
 class JavaExportPlugin(ExportPlugin):
     title = 'Java'
     slug = 'java-export'
@@ -41,19 +61,20 @@ class JavaExportPlugin(ExportPlugin):
     author = 'Kevin Glisson'
     author_url = 'https://github.com/netflix/lemur'
 
-    additional_options = [
+    options = [
         {
             'name': 'type',
             'type': 'select',
             'required': True,
-            'available': ['jks'],
+            'available': ['Java Key Store (JKS)'],
             'helpMessage': 'Choose the format you wish to export',
         },
         {
             'name': 'passphrase',
             'type': 'str',
             'required': False,
-            'helpMessage': 'If no passphrase is generated one will be generated for you.',
+            'helpMessage': 'If no passphrase is given one will be generated for you, we highly recommend this. Minimum length is 8.',
+            'validation': '^.{8}$'
         },
         {
             'name': 'alias',
@@ -63,20 +84,26 @@ class JavaExportPlugin(ExportPlugin):
         }
     ]
 
-    @staticmethod
-    def export(body, key, options, **kwargs):
+    def export(self, body, chain, key, options, **kwargs):
         """
         Generates a Java Keystore or Truststore
 
         :param key:
-        :param kwargs:
+        :param chain:
         :param body:
         :param options:
+        :param kwargs:
         """
-        if options.get('passphrase'):
-            passphrase = options['passphrase']
+
+        if self.get_option('passphrase', options):
+            passphrase = self.get_option('passphrase', options)
         else:
             passphrase = get_psuedo_random_string()
+
+        if self.get_option('alias', options):
+            alias = self.get_option('alias', options)
+        else:
+            alias = "blah"
 
         with mktempfile() as cert_tmp:
             with open(cert_tmp, 'w') as f:
@@ -91,7 +118,7 @@ class JavaExportPlugin(ExportPlugin):
                         "openssl",
                         "pkcs12",
                         "-export",
-                        "-name", options.get('alias', 'cert'),
+                        "-name", alias,
                         "-in", cert_tmp,
                         "-inkey", key_tmp,
                         "-out", p12_tmp,
@@ -106,23 +133,39 @@ class JavaExportPlugin(ExportPlugin):
                             "-destkeystore", jks_tmp,
                             "-srckeystore", p12_tmp,
                             "-srcstoretype", "PKCS12",
-                            "-alias", options.get('alias', 'cert'),
+                            "-alias", alias,
                             "-srcstorepass", passphrase,
                             "-deststorepass", passphrase
                         ])
 
-                        # Import signed cert in to JKS keystore
+                        # Import leaf cert in to JKS keystore
                         run_process([
                             "keytool",
                             "-importcert",
                             "-file", cert_tmp,
                             "-keystore", jks_tmp,
-                            "-alias", "{0}_cert".format(options.get('alias'), 'cert'),
+                            "-alias", "{0}_cert".format(alias),
                             "-storepass", passphrase,
                             "-noprompt"
                         ])
 
+                        # Import the entire chain
+                        for idx, cert in enumerate(split_chain(chain)):
+                            with mktempfile() as c_tmp:
+                                with open(c_tmp, 'w') as f:
+                                    f.write(cert)
+                                # Import signed cert in to JKS keystore
+                                run_process([
+                                    "keytool",
+                                    "-importcert",
+                                    "-file", c_tmp,
+                                    "-keystore", jks_tmp,
+                                    "-alias", "{0}_cert_{1}".format(alias, idx),
+                                    "-storepass", passphrase,
+                                    "-noprompt"
+                                ])
+
                         with open(jks_tmp, 'rb') as f:
                             raw = f.read()
 
-                        return raw
+                        return passphrase, raw
