@@ -28,8 +28,8 @@ from lemur.common.utils import get_psuedo_random_string
 
 conn = op.get_bind()
 
-#op.drop_table('encrypted_keys')
-#op.drop_table('encrypted_passwords')
+op.drop_table('encrypted_keys')
+op.drop_table('encrypted_passwords')
 
 # helper tables to migrate data
 temp_key_table = op.create_table('encrypted_keys',
