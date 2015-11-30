@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+import base64
 from builtins import str
 
 from flask import Blueprint, make_response, jsonify
@@ -817,10 +818,9 @@ class CertificateExport(AuthenticatedResource):
         permission = UpdateCertificatePermission(certificate_id, getattr(role, 'name', None))
 
         if permission.can():
-            passphrase, data = service.export(cert, args['export']['plugin'])
-            response = make_response(data)
-            response.headers['content-type'] = 'application/octet-stream'
-            return response
+            extension, passphrase, data = service.export(cert, args['export']['plugin'])
+            # we take a hit in message size when b64 encoding
+            return dict(extension=extension, passphrase=passphrase, data=base64.b64encode(data))
 
         return dict(message='You are not authorized to export this certificate'), 403
 

@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('lemur')
-  .controller('CertificateExportController', function ($scope, $modalInstance, CertificateApi, CertificateService, PluginService, toaster, editId) {
+  .controller('CertificateExportController', function ($scope, $modalInstance, CertificateApi, CertificateService, PluginService, FileSaver, Blob, toaster, editId) {
     CertificateApi.get(editId).then(function (certificate) {
       $scope.certificate = certificate;
     });
@@ -16,13 +16,26 @@ angular.module('lemur')
 
     $scope.save = function (certificate) {
       CertificateService.export(certificate).then(
-        function () {
-          toaster.pop({
-            type: 'success',
-            title: certificate.name,
-            body: 'Successfully exported!'
-          });
-          $modalInstance.close();
+        function (response) {
+            var byteCharacters = atob(response.data);
+            var byteArrays = [];
+
+            for (var offset = 0; offset < byteCharacters.length; offset += 512) {
+              var slice = byteCharacters.slice(offset, offset + 512);
+
+              var byteNumbers = new Array(slice.length);
+              for (var i = 0; i < slice.length; i++) {
+                byteNumbers[i] = slice.charCodeAt(i);
+              }
+
+              var byteArray = new Uint8Array(byteNumbers);
+
+              byteArrays.push(byteArray);
+            }
+
+          var blob = new Blob(byteArrays, {type: 'application/octet-stream'});
+          saveAs(blob, certificate.name + "." + response.extension);
+          $scope.passphrase = response.passphrase;
         },
         function (response) {
           toaster.pop({

@@ -74,7 +74,7 @@ class JavaExportPlugin(ExportPlugin):
             'type': 'str',
             'required': False,
             'helpMessage': 'If no passphrase is given one will be generated for you, we highly recommend this. Minimum length is 8.',
-            'validation': '^.{8}$'
+            'validation': '^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$'
         },
         {
             'name': 'alias',
@@ -105,9 +105,13 @@ class JavaExportPlugin(ExportPlugin):
         else:
             alias = "blah"
 
+        if not key:
+            raise Exception("Unable to export, no private key found.")
+
         with mktempfile() as cert_tmp:
             with open(cert_tmp, 'w') as f:
                 f.write(body)
+
             with mktempfile() as key_tmp:
                 with open(key_tmp, 'w') as f:
                     f.write(key)
@@ -168,4 +172,4 @@ class JavaExportPlugin(ExportPlugin):
                         with open(jks_tmp, 'rb') as f:
                             raw = f.read()
 
-                        return passphrase, raw
+                        return "jks", passphrase, raw
