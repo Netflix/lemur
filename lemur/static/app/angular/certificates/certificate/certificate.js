@@ -34,7 +34,7 @@ angular.module('lemur')
             }
 
           var blob = new Blob(byteArrays, {type: 'application/octet-stream'});
-          saveAs(blob, certificate.name + "." + response.extension);
+          FileSaver.saveAs(blob, certificate.name + '.' + response.extension);
           $scope.passphrase = response.passphrase;
         },
         function (response) {

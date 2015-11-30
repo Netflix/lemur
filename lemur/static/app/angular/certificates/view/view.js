@@ -165,7 +165,7 @@ angular.module('lemur')
     };
 
     $scope.export = function (certificateId) {
-      var modalInstance = $modal.open({
+      $modal.open({
         animation: true,
         controller: 'CertificateExportController',
         templateUrl: '/angular/certificates/certificate/export.tpl.html',
