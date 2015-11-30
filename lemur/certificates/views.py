@@ -7,30 +7,21 @@
 """
 import base64
 from builtins import str
-
 from flask import Blueprint, make_response, jsonify
 from flask.ext.restful import reqparse, Api, fields
-
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
-
 from lemur.certificates import service
 from lemur.authorities.models import Authority
-
 from lemur.auth.service import AuthenticatedResource
 from lemur.auth.permissions import ViewKeyPermission, AuthorityPermission, UpdateCertificatePermission
-
 from lemur.roles import service as role_service
-
 from lemur.common.utils import marshal_items, paginated_parser
-
 from lemur.notifications.views import notification_list
-
 
 mod = Blueprint('certificates', __name__)
 api = Api(mod)
-
 
 FIELDS = {
     'name': fields.String,
@@ -104,6 +95,7 @@ def private_key_str(value, name):
 
 class CertificatesList(AuthenticatedResource):
     """ Defines the 'certificates' endpoint """
+
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(CertificatesList, self).__init__()
@@ -354,6 +346,7 @@ class CertificatesList(AuthenticatedResource):
 
 class CertificatesUpload(AuthenticatedResource):
     """ Defines the 'certificates' upload endpoint """
+
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(CertificatesUpload, self).__init__()
@@ -442,6 +435,7 @@ class CertificatesUpload(AuthenticatedResource):
 
 class CertificatesStats(AuthenticatedResource):
     """ Defines the 'certificates' stats endpoint """
+
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(CertificatesStats, self).__init__()
@@ -646,6 +640,7 @@ class Certificates(AuthenticatedResource):
 
 class NotificationCertificatesList(AuthenticatedResource):
     """ Defines the 'certificates' endpoint """
+
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(NotificationCertificatesList, self).__init__()
@@ -795,6 +790,38 @@ class CertificateExport(AuthenticatedResource):
               Host: example.com
               Accept: application/json, text/javascript
 
+              {
+                "export": {
+                    "plugin": {
+                        "pluginOptions": [{
+                            "available": ["Java Key Store (JKS)"],
+                            "required": true,
+                            "type": "select",
+                            "name": "type",
+                            "helpMessage": "Choose the format you wish to export",
+                            "value": "Java Key Store (JKS)"
+                        }, {
+                            "required": false,
+                            "type": "str",
+                            "name": "passphrase",
+                            "validation": "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[$@$!%*#?&])[A-Za-z\\d$@$!%*#?&]{8,}$",
+                            "helpMessage": "If no passphrase is given one will be generated for you, we highly recommend this. Minimum length is 8."
+                        }, {
+                            "required": false,
+                            "type": "str",
+                            "name": "alias",
+                            "helpMessage": "Enter the alias you wish to use for the keystore."
+                        }],
+                        "version": "unknown",
+                        "description": "Attempts to generate a JKS keystore or truststore",
+                        "title": "Java",
+                        "author": "Kevin Glisson",
+                        "type": "export",
+                        "slug": "java-export"
+                    }
+                }
+              }
+
 
            **Example response**:
 
@@ -804,6 +831,11 @@ class CertificateExport(AuthenticatedResource):
               Vary: Accept
               Content-Type: text/javascript
 
+              {
+                "data": "base64encodedstring",
+                "passphrase": "UAWOHW#&@_%!tnwmxh832025",
+                "extension": "jks"
+              }
 
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
@@ -831,5 +863,7 @@ api.add_resource(CertificatesStats, '/certificates/stats', endpoint='certificate
 api.add_resource(CertificatesUpload, '/certificates/upload', endpoint='certificateUpload')
 api.add_resource(CertificatePrivateKey, '/certificates/<int:certificate_id>/key', endpoint='privateKeyCertificates')
 api.add_resource(CertificateExport, '/certificates/<int:certificate_id>/export', endpoint='exportCertificate')
-api.add_resource(NotificationCertificatesList, '/notifications/<int:notification_id>/certificates', endpoint='notificationCertificates')
-api.add_resource(CertificatesReplacementsList, '/certificates/<int:certificate_id>/replacements', endpoint='replacements')
+api.add_resource(NotificationCertificatesList, '/notifications/<int:notification_id>/certificates',
+                 endpoint='notificationCertificates')
+api.add_resource(CertificatesReplacementsList, '/certificates/<int:certificate_id>/replacements',
+                 endpoint='replacements')
