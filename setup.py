@@ -25,7 +25,7 @@ ROOT = os.path.realpath(os.path.join(os.path.dirname(__file__)))
 
 install_requires = [
     'Flask==0.10.1',
-    'Flask-RESTful==0.3.4',
+    'Flask-RESTful==0.3.3',
     'Flask-SQLAlchemy==2.1',
     'Flask-Script==2.0.5',
     'Flask-Migrate==1.6.0',
