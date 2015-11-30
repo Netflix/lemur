@@ -43,7 +43,7 @@ LOG_FILE = "lemur.log"
 
 # modify this if you are not using a local database
 SQLALCHEMY_DATABASE_URI = 'postgresql://lemur:lemur@localhost:5432/lemur'
-
+SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 # AWS
 

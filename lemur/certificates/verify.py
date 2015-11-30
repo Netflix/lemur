@@ -5,7 +5,6 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import os
 import requests
 import subprocess
 from OpenSSL import crypto
@@ -13,20 +12,7 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 
 from flask import current_app
-
-from contextlib import contextmanager
-from tempfile import NamedTemporaryFile
-
-
-@contextmanager
-def mktempfile():
-    with NamedTemporaryFile(delete=False) as f:
-        name = f.name
-
-    try:
-        yield name
-    finally:
-        os.unlink(name)
+from lemur.utils import mktempfile
 
 
 def ocsp_verify(cert_path, issuer_chain_path):

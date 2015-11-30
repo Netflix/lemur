@@ -77,6 +77,20 @@ def find_duplicates(cert_body):
     return Certificate.query.filter_by(body=cert_body).all()
 
 
+def export(cert, export_plugin):
+    """
+    Exports a certificate to the requested format. This format
+    may be a binary format.
+
+    :param export_plugin:
+    :param cert:
+    :return:
+    """
+    plugin = plugins.get(export_plugin['slug'])
+
+    return plugin.export(cert.body, cert.chain, cert.private_key, export_plugin['pluginOptions'])
+
+
 def update(cert_id, owner, description, active, destinations, notifications, replaces):
     """
     Updates a certificate

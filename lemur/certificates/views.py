@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+import base64
 from builtins import str
 
 from flask import Blueprint, make_response, jsonify
@@ -775,10 +776,60 @@ class CertificatesReplacementsList(AuthenticatedResource):
         return service.get(certificate_id).replaces
 
 
+class CertificateExport(AuthenticatedResource):
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        super(CertificateExport, self).__init__()
+
+    def post(self, certificate_id):
+        """
+        .. http:post:: /certificates/1/export
+
+           Export a certificate
+
+           **Example request**:
+
+           .. sourcecode:: http
+
+              PUT /certificates/1/export HTTP/1.1
+              Host: example.com
+              Accept: application/json, text/javascript
+
+
+           **Example response**:
+
+           .. sourcecode:: http
+
+              HTTP/1.1 200 OK
+              Vary: Accept
+              Content-Type: text/javascript
+
+
+           :reqheader Authorization: OAuth token to authenticate
+           :statuscode 200: no error
+           :statuscode 403: unauthenticated
+        """
+        self.reqparse.add_argument('export', type=dict, required=True, location='json')
+        args = self.reqparse.parse_args()
+
+        cert = service.get(certificate_id)
+        role = role_service.get_by_name(cert.owner)
+
+        permission = UpdateCertificatePermission(certificate_id, getattr(role, 'name', None))
+
+        if permission.can():
+            extension, passphrase, data = service.export(cert, args['export']['plugin'])
+            # we take a hit in message size when b64 encoding
+            return dict(extension=extension, passphrase=passphrase, data=base64.b64encode(data))
+
+        return dict(message='You are not authorized to export this certificate'), 403
+
+
 api.add_resource(CertificatesList, '/certificates', endpoint='certificates')
 api.add_resource(Certificates, '/certificates/<int:certificate_id>', endpoint='certificate')
 api.add_resource(CertificatesStats, '/certificates/stats', endpoint='certificateStats')
 api.add_resource(CertificatesUpload, '/certificates/upload', endpoint='certificateUpload')
 api.add_resource(CertificatePrivateKey, '/certificates/<int:certificate_id>/key', endpoint='privateKeyCertificates')
+api.add_resource(CertificateExport, '/certificates/<int:certificate_id>/export', endpoint='exportCertificate')
 api.add_resource(NotificationCertificatesList, '/notifications/<int:notification_id>/certificates', endpoint='notificationCertificates')
 api.add_resource(CertificatesReplacementsList, '/certificates/<int:certificate_id>/replacements', endpoint='replacements')

@@ -1,6 +1,52 @@
 'use strict';
 
 angular.module('lemur')
+  .controller('CertificateExportController', function ($scope, $modalInstance, CertificateApi, CertificateService, PluginService, FileSaver, Blob, toaster, editId) {
+    CertificateApi.get(editId).then(function (certificate) {
+      $scope.certificate = certificate;
+    });
+
+    PluginService.getByType('export').then(function (plugins) {
+      $scope.plugins = plugins;
+    });
+
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+
+    $scope.save = function (certificate) {
+      CertificateService.export(certificate).then(
+        function (response) {
+            var byteCharacters = atob(response.data);
+            var byteArrays = [];
+
+            for (var offset = 0; offset < byteCharacters.length; offset += 512) {
+              var slice = byteCharacters.slice(offset, offset + 512);
+
+              var byteNumbers = new Array(slice.length);
+              for (var i = 0; i < slice.length; i++) {
+                byteNumbers[i] = slice.charCodeAt(i);
+              }
+
+              var byteArray = new Uint8Array(byteNumbers);
+
+              byteArrays.push(byteArray);
+            }
+
+          var blob = new Blob(byteArrays, {type: 'application/octet-stream'});
+          FileSaver.saveAs(blob, certificate.name + '.' + response.extension);
+          $scope.passphrase = response.passphrase;
+        },
+        function (response) {
+          toaster.pop({
+            type: 'error',
+            title: certificate.name,
+            body: 'Failed to export ' + response.data.message,
+            timeout: 100000
+          });
+        });
+    };
+  })
   .controller('CertificateEditController', function ($scope, $modalInstance, CertificateApi, CertificateService, DestinationService, NotificationService, toaster, editId) {
     CertificateApi.get(editId).then(function (certificate) {
       CertificateService.getNotifications(certificate);

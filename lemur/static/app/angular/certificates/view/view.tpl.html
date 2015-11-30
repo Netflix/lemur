@@ -5,12 +5,10 @@
     <div class="panel panel-default">
       <div class="panel-heading">
         <div class="btn-group pull-right">
-          <button data-placement="left" data-title="Create Certificate" bs-tooltip ng-click="create()"
-                  class="btn btn-primary">
+          <button ng-click="create()" class="btn btn-primary">
             Create
           </button>
-          <button data-placement="left" data-title="Import Certificate" bs-tooltip ng-click="import()"
-                  class="btn btn-info">
+          <button ng-click="import()" class="btn btn-info">
             Import
           </button>
         </div>
@@ -47,6 +45,9 @@
                 <a class="btn btn-sm btn-default" ui-sref="certificate({name: certificate.name})">Permalink</a>
                 <button ng-model="certificate.toggle" class="btn btn-sm btn-info" btn-checkbox btn-checkbox-true="1"
                         butn-checkbox-false="0">More
+                </button>
+                <button ng-click="export(certificate.id)" class="btn btn-sm btn-success">
+                  Export
                 </button>
                 <button class="btn btn-sm btn-warning" ng-click="edit(certificate.id)">Edit</button>
               </div>
