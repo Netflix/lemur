@@ -21,6 +21,8 @@ from setuptools.command.sdist import sdist
 from setuptools import setup, find_packages
 from subprocess import check_output
 
+from version import get_version
+
 ROOT = os.path.realpath(os.path.join(os.path.dirname(__file__)))
 
 install_requires = [
@@ -124,11 +126,11 @@ class BuildStatic(Command):
 
 setup(
     name='lemur',
-    version='0.1.5',
+    version=get_version(),
     author='Kevin Glisson',
     author_email='kglisson@netflix.com',
     url='https://github.com/netflix/lemur',
-    download_url='https://github.com/Netflix/lemur/archive/0.1.3.tar.gz',
+    download_url='https://github.com/Netflix/lemur/archive/{0}.tar.gz'.format(get_version()),
     description='Certificate management and orchestration service',
     long_description=open(os.path.join(ROOT, 'README.rst')).read(),
     packages=find_packages(),
