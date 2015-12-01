@@ -14,6 +14,11 @@ I am seeing Lemur's javascript load in my browser but not the CSS.
   :doc:`production/index` for example configurations.
 
 
+After installing Lemur I am unable to login
+  Ensure that you are trying to login with the credentials you entered during `lemur init`. These are separate
+  from the postgres database credentials.
+
+
 Running 'lemur db upgrade' seems stuck.
   Most likely, the upgrade is stuck because an existing query on the database is holding onto a lock that the
   migration needs.
