@@ -9,6 +9,7 @@ Is a TLS management and orchestration tool.
 """
 from __future__ import absolute_import
 
+import sys
 import json
 import os.path
 import datetime
@@ -21,9 +22,16 @@ from setuptools.command.sdist import sdist
 from setuptools import setup, find_packages
 from subprocess import check_output
 
-from version import get_version
-
 ROOT = os.path.realpath(os.path.join(os.path.dirname(__file__)))
+
+# When executing the setup.py, we need to be able to import ourselves, this
+# means that we need to add the src/ directory to the sys.path.
+sys.path.insert(0, ROOT)
+
+about = {}
+with open(os.path.join(ROOT, "lemur", "__about__.py")) as f:
+    exec(f.read(), about)
+
 
 install_requires = [
     'Flask==0.10.1',
@@ -125,13 +133,12 @@ class BuildStatic(Command):
             log.warn("Unable to build static content")
 
 setup(
-    name='lemur',
-    version=get_version(),
-    author='Kevin Glisson',
-    author_email='kglisson@netflix.com',
-    url='https://github.com/netflix/lemur',
-    download_url='https://github.com/Netflix/lemur/archive/{0}.tar.gz'.format(get_version()),
-    description='Certificate management and orchestration service',
+    name=about["__title__"],
+    version=about["__version__"],
+    author=about["__author__"],
+    author_email=about["__email__"],
+    url=about["__uri__"],
+    description=about["__summary__"],
     long_description=open(os.path.join(ROOT, 'README.rst')).read(),
     packages=find_packages(),
     include_package_data=True,
@@ -164,6 +171,12 @@ setup(
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
         'Operating System :: OS Independent',
-        'Topic :: Software Development'
+        'Topic :: Software Development',
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.3",
+        "Programming Language :: Python :: 3.4",
+        "Natural Language :: English",
+        "License :: OSI Approved :: Apache Software License"
     ]
 )
