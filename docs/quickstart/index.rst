@@ -21,45 +21,57 @@ Some basic prerequisites which you'll need in order to run Lemur:
     be as generic as possible and are not intended to document every step of launching Lemur into a given environment.
 
 
-Setting up an Environment
--------------------------
-
-The first thing you'll need is the Python ``virtualenv`` package. You probably already
-have this, but if not, you can install it with::
-
-  pip install -U virtualenv
-
-Once that's done, choose a location for the environment, and create it with the ``virtualenv``
-command. For our guide, we're going to choose ``/www/lemur/``::
-
-  virtualenv /www/lemur/
-
-Finally, activate your virtualenv::
-
-  source /www/lemur/bin/activate
-
-.. note:: Activating the environment adjusts your PATH, so that things like pip now
-          install into the virtualenv by default.
-
-
 Installing build dependencies
 -----------------------------
 
 If installing Lemur on truely bare Ubuntu OS you will need to grab the following packages so that Lemur can correctly build it's
 dependencies::
 
+.. code-block:: bash
+
     $ sudo apt-get update
-    $ sudo apt-get install nodejs-legacy python-pip libpq-dev python-dev build-essential libssl-dev libffi-dev nginx git supervisor
+    $ sudo apt-get install install nodejs-legacy python-pip python-dev libpq-dev build-essential libssl-dev libffi-dev nginx git supervisor npm postgresql
 
-And optionally if your database is going to be on the same host as the webserver::
+.. note:: PostgreSQL is only required if your database is going to be on the same host as the webserver.  npm is needed if you're installing the Lemur source (e.g. from git).
 
-    $ sudo apt-get install postgresql
+Now, install Python ``virtualenv`` package::
+
+.. code-block:: bash
+
+    $ sudo pip install -U virtualenv
+
+
+Setting up an Environment
+-------------------------
+
+In this guide Lemur will be installed in ``/www``, so you need to create that structure first::
+
+.. code-block:: bash
+
+    $ sudo mkdir /www
+    $ cd /www
+
+Clone Lemur inside this directory and give your user permission to write in it (assume your user is lemur here)::
+
+.. code-block:: bash
+
+    $ sudo git clone https://github.com/Netflix/lemur
+    $ sudo chown -R lemur lemur/
+
+Create the virtual environment, activate it and enter the Lemur's directory::
+
+.. code-block:: bash
+
+    $ virtualenv lemur
+    $ source /www/lemur/bin/activate
+    $ cd lemur
+
+.. note:: Activating the environment adjusts your PATH, so that things like pip now
+          install into the virtualenv by default.
 
 
 Installing from Source
 ~~~~~~~~~~~~~~~~~~~~~~
-
-If you're installing the Lemur source (e.g. from git), you'll also need to install **npm**.
 
 Once your system is prepared, ensure that you are in the virtualenv:
 
@@ -67,14 +79,13 @@ Once your system is prepared, ensure that you are in the virtualenv:
 
   $ which python
 
-
 And then run:
 
 .. code-block:: bash
 
   $ make develop
 
-.. Note:: This command will install npm dependencies as well as compile static assets.
+.. note:: This command will install npm dependencies as well as compile static assets.
 
 
 Creating a configuration
@@ -84,18 +95,19 @@ Before we run Lemur we must create a valid configuration file for it.
 
 The Lemur cli comes with a simple command to get you up and running quickly.
 
-Simply run:
+Simply run::
 
 .. code-block:: bash
 
   $ lemur create_config
 
-.. Note:: This command will create a default configuration under `~/.lemur/lemur.conf.py` you
+.. note:: This command will create a default configuration under `~/.lemur/lemur.conf.py` you
     can specify this location by passing the `config_path` parameter to the `create_config` command.
 
 You can specify `-c` or `--config` to any Lemur command to specify the current environment
 you are working in. Lemur will also look under the environmental variable `LEMUR_CONF` should
 that be easier to setup in your environment.
+
 
 Update your configuration
 -------------------------
@@ -103,8 +115,9 @@ Update your configuration
 Once created you will need to update the configuration file with information about your environment,
 such as which database to talk to, where keys are stored etc..
 
-.. Note:: If you are unfamiliar with with the SQLALCHEMY_DATABASE_URI string it can be broken up like so:
+.. note:: If you are unfamiliar with with the SQLALCHEMY_DATABASE_URI string it can be broken up like so:
       postgresql://userame:password@databasefqdn:databaseport/databasename
+
 
 Setup Postgres
 --------------
@@ -114,18 +127,28 @@ the same machine that Lemur is installed on.
 
 First, set a password for the postgres user.  For this guide, we will use **lemur** as an example but you should use the database password generated for by Lemur::
 
-     $ sudo -u postgres psql postgres
-     # \password postgres
-     Enter new password: lemur
-     Enter it again: lemur
+    $ sudo -u postgres psql postgres
+    # \password postgres
+    Enter new password: lemur
+    Enter it again: lemur
 
 Type CTRL-D to exit psql once you have changed the password.
 
 Next, we will create our new database::
 
-     $ sudo -u postgres createdb lemur
+    $ sudo -u postgres createdb lemur
 
 .. _InitializingLemur:
+
+Set a password for lemur user inside Postgres:
+
+    $ sudo -u postgres psql postgres
+    \password lemur
+    Enter new password: lemur
+    Enter it again: lemur
+
+Again, type CTRL-D to exit psql.
+
 
 Initializing Lemur
 ------------------
@@ -157,6 +180,7 @@ See :ref:`Creating Notifications <CreatingNotifications>` and :ref:`Command Line
     for them or be enrolled automatically through SSO. This can be done through the CLI or UI.
     See :ref:`Creating Users <CreatingUsers>` and :ref:`Command Line Interface <CommandLineInterface>` for details
 
+
 Setup a Reverse Proxy
 ---------------------
 
@@ -164,10 +188,11 @@ By default, Lemur runs on port 5000. Even if you change this, under normal condi
 port 80. To get around this (and to avoid running Lemur as a privileged user, which you shouldn't), we need setup a
 simple web proxy. There are many different web servers you can use for this, we like and recommend Nginx.
 
+
 Proxying with Nginx
 ~~~~~~~~~~~~~~~~~~~
 
-You'll use the builtin HttpProxyModule within Nginx to handle proxying
+You'll use the builtin HttpProxyModule within Nginx to handle proxying.  Edit the ``/etc/nginx/sites-available/default`` file according to the lines below::
 
 ::
 
@@ -180,14 +205,18 @@ You'll use the builtin HttpProxyModule within Nginx to handle proxying
         proxy_set_header        X-Real-IP       $remote_addr;
         proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
     }
-    
+
     location / {
         root /www/lemur/lemur/static/dist;
         include mime.types;
         index index.html;
     }
 
-See :doc:`../production/index` for more details on using Nginx.
+.. note:: See :doc:`../production/index` for more details on using Nginx.
+
+After making these changes, restart Nginx service to apply them::
+
+    $ sudo service nginx restart
 
 
 Starting the Web Service
@@ -210,11 +239,13 @@ you can pass that via the --config option.
 
 You should now be able to test the web service by visiting `http://localhost:5000/`.
 
+
 Running Lemur as a Service
 ---------------------------
 
 We recommend using whatever software you are most familiar with for managing Lemur processes. One option is
 `Supervisor <http://supervisord.org/>`_.
+
 
 Configure ``supervisord``
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -235,6 +266,7 @@ folder and you're good to go.
 
 See :ref:`Using Supervisor <UsingSupervisor>` for more details on using Supervisor.
 
+
 Syncing
 -------
 
@@ -247,6 +279,7 @@ of Lemur, but we do our best to reconcile those changes.
   * 3 * * * lemur sync --all
   * 3 * * * lemur check_revoked
 
+
 Additional Utilities
 --------------------
 
@@ -256,10 +289,12 @@ power and flexibility that goes with it.
 
 Some of the features which you'll likely find useful are:
 
+
 lock
 ~~~~
 
 Encrypts sensitive key material - This is most useful for storing encrypted secrets in source code.
+
 
 unlock
 ~~~~~~
@@ -275,4 +310,3 @@ see :doc:`../production/index` for more details on how to configure Lemur for pr
 
 The above just gets you going, but for production there are several different security considerations to take into account.
 Remember, Lemur is handling sensitive data and security is imperative.
-
