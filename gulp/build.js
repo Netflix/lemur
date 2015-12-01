@@ -238,8 +238,8 @@ gulp.task('build:images', function () {
 
 gulp.task('package:strip', function () {
   return gulp.src(['lemur/static/dist/scripts/main*'])
-    .pipe(replace('http:\/\/localhost:5000', ''))
     .pipe(replace('http:\/\/localhost:3000', ''))
+    .pipe(replace('http:\/\/localhost:8000', ''))
     .pipe(useref())
     .pipe(revReplace())
     .pipe(gulp.dest('lemur/static/dist/scripts'))

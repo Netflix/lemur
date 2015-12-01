@@ -74,7 +74,7 @@ lemur.service('DefaultService', function (LemurRestangular) {
 
 lemur.factory('LemurRestangular', function (Restangular, $location, $auth) {
   return Restangular.withConfig(function (RestangularConfigurer) {
-    RestangularConfigurer.setBaseUrl('http://localhost:5000/api/1');
+    RestangularConfigurer.setBaseUrl('http://localhost:8000/api/1');
     RestangularConfigurer.setDefaultHttpFields({withCredentials: true});
 
     RestangularConfigurer.addResponseInterceptor(function (data, operation) {
