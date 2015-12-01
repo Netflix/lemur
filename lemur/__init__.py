@@ -8,6 +8,8 @@
 
 
 """
+from __future__ import absolute_import, division, print_function
+
 from lemur import factory
 
 from lemur.users.views import mod as users_bp
@@ -22,6 +24,16 @@ from lemur.plugins.views import mod as plugins_bp
 from lemur.notifications.views import mod as notifications_bp
 from lemur.sources.views import mod as sources_bp
 
+from lemur.__about__ import (
+    __author__, __copyright__, __email__, __license__, __summary__, __title__,
+    __uri__, __version__
+)
+
+
+__all__ = [
+    "__title__", "__summary__", "__uri__", "__version__", "__author__",
+    "__email__", "__license__", "__copyright__",
+]
 
 LEMUR_BLUEPRINTS = (
     users_bp,
