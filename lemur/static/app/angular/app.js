@@ -29,7 +29,7 @@ var lemur = angular
 
     $authProvider.oauth2({
       name: 'example',
-      url: 'http://localhost:5000/api/1/auth/ping',
+      url: 'http://localhost:8000/api/1/auth/ping',
       redirectUri: 'http://localhost:3000/',
       clientId: 'client-id',
       responseType: 'code',
