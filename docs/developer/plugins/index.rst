@@ -215,7 +215,7 @@ certificate Lemur does not know about and adding the certificate to it's invento
 The `SourcePlugin` object has one default option of `pollRate`. This controls the number of seconds which to get new certificates.
 
  .. warning::
-    Lemur currently has a very basic polling system of running a cron job every 15min to see which source plugins need to be run. A lock file is generated to guarantee that 
+Lemur currently has a very basic polling system of running a cron job every 15min to see which source plugins need to be run. A lock file is generated to guarantee that
     only one sync is running at a time. It also means that the minimum resolution of a source plugin poll rate is effectively 15min. You can always specify a faster cron
     job if you need a higher resolution sync job.
 
@@ -227,7 +227,29 @@ The `SourcePlugin` object requires implementation of one function::
 
 
 .. Note::
-    Often times to facilitate code re-use it makes sense put source and destination plugins into one package.
+Often times to facilitate code re-use it makes sense put source and destination plugins into one package.
+
+
+Export
+------
+
+Formats, formats and more formats. That's the current PKI landscape. See the always relevant `xkcd <https://xkcd.com/927/>`_.
+Thankfully Lemur supports the ability to output your certificates into whatever format you want. This integration comes by the way
+of Export plugins. Support is still new and evolving, the goal of these plugins is to return raw data in a new format that
+can then be used by any number of applications. Included in Lemur is the `JavaExportPlugin` which currently supports generating
+a Java Key Store (JKS) file for use in Java based applications.
+
+
+The `ExportPlugin` object requires the implementation of one function::
+
+    def export(self, body, chain, key, options, **kwargs):
+        # sys.call('openssl hokuspocus')
+        # return "extension", passphrase, raw
+
+
+.. Note::
+Support of various formats sometimes relies on external tools system calls. Always be mindful of sanitizing any input to
+these calls.
 
 
 Testing
