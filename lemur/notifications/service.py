@@ -36,13 +36,16 @@ def _get_message_data(cert):
     :param cert:
     :return:
     """
-    cert_dict = cert.as_dict()
+    cert_dict = {}
 
     if cert.user:
         cert_dict['creator'] = cert.user.email
 
-    cert_dict['domains'] = [x .name for x in cert.domains]
-    cert_dict['superseded'] = list(set([x.name for x in _find_superseded(cert) if cert.name != x]))
+    cert_dict['not_after'] = cert.not_after
+    cert_dict['owner'] = cert.owner
+    cert_dict['name'] = cert.name
+    cert_dict['body'] = cert.body
+
     return cert_dict
 
 
