@@ -493,6 +493,11 @@ version of Lemur from pypi and then apply any schema changes with the following 
 
 .. note:: Internally, this uses `Alembic <https://alembic.readthedocs.org/en/latest/>`_ to manage database migrations.
 
+.. note:: By default Alembic looks for the `migrations` folder in the current working directory. 
+The migrations folder is located under `<LEMUR_HOME>/lemur/migrations` if you are running the lemur command from any
+location besides `<LEMUR_HOME>/lemur` you will need to pass the `-d` flag to specify the absolute file path to the 
+`migrations` folder.
+
 .. _CommandLineInterface:
 
 Command Line Interface
