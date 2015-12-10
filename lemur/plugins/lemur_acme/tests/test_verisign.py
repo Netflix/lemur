@@ -1,0 +1,5 @@
+
+def test_get_certificates(app):
+    from lemur.plugins.base import plugins
+    p = plugins.get('verisign-source')
+    p.get_certificates()
