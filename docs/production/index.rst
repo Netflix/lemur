@@ -257,13 +257,12 @@ Create a configuration file named supervisor.ini::
     nodaemon=false
     minfds=1024
     minprocs=200
-    user=lemur
 
     [program:lemur]
     command=python /path/to/lemur/manage.py manage.py start
 
     directory=/path/to/lemur/
-    environment=PYTHONPATH='/path/to/lemur/'
+    environment=PYTHONPATH='/path/to/lemur/',LEMUR_CONF='/home/lemur/.lemur/lemur.conf.py'
     user=lemur
     autostart=true
     autorestart=true
