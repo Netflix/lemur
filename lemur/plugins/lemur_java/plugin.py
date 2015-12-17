@@ -52,6 +52,74 @@ def split_chain(chain):
     return certs
 
 
+def create_truststore(cert, chain, jks_tmp, alias, passphrase):
+    with mktempfile() as cert_tmp:
+        with open(cert_tmp, 'w') as f:
+            f.write(cert)
+
+        run_process([
+            "keytool",
+            "-importcert",
+            "-file", cert_tmp,
+            "-keystore", jks_tmp,
+            "-alias", "{0}_cert".format(alias),
+            "-storepass", passphrase,
+            "-noprompt"
+        ])
+
+        # Import the entire chain
+        for idx, cert in enumerate(split_chain(chain)):
+            with mktempfile() as c_tmp:
+                with open(c_tmp, 'w') as f:
+                    f.write(cert)
+
+                # Import signed cert in to JKS keystore
+                run_process([
+                    "keytool",
+                    "-importcert",
+                    "-file", c_tmp,
+                    "-keystore", jks_tmp,
+                    "-alias", "{0}_cert_{1}".format(alias, idx),
+                    "-storepass", passphrase,
+                    "-noprompt"
+                ])
+
+
+def create_keystore(cert, jks_tmp, key, alias, passphrase):
+    with mktempfile() as key_tmp:
+        with open(key_tmp, 'w') as f:
+            f.write(key)
+
+        # Create PKCS12 keystore from private key and public certificate
+        with mktempfile() as cert_tmp:
+            with open(cert_tmp, 'w') as f:
+                f.write(cert)
+
+            with mktempfile() as p12_tmp:
+                run_process([
+                    "openssl",
+                    "pkcs12",
+                    "-export",
+                    "-name", alias,
+                    "-in", cert_tmp,
+                    "-inkey", key_tmp,
+                    "-out", p12_tmp,
+                    "-password", "pass:{}".format(passphrase)
+                ])
+
+                # Convert PKCS12 keystore into a JKS keystore
+                run_process([
+                    "keytool",
+                    "-importkeystore",
+                    "-destkeystore", jks_tmp,
+                    "-srckeystore", p12_tmp,
+                    "-srcstoretype", "PKCS12",
+                    "-alias", alias,
+                    "-srcstorepass", passphrase,
+                    "-deststorepass", passphrase
+                ])
+
+
 class JavaExportPlugin(ExportPlugin):
     title = 'Java'
     slug = 'java-export'
@@ -66,7 +134,7 @@ class JavaExportPlugin(ExportPlugin):
             'name': 'type',
             'type': 'select',
             'required': True,
-            'available': ['Java Key Store (JKS)'],
+            'available': ['Truststore (JKS)', 'Keystore (JKS)'],
             'helpMessage': 'Choose the format you wish to export',
         },
         {
@@ -105,71 +173,23 @@ class JavaExportPlugin(ExportPlugin):
         else:
             alias = "blah"
 
-        if not key:
-            raise Exception("Unable to export, no private key found.")
+        type = self.get_option('type', options)
 
-        with mktempfile() as cert_tmp:
-            with open(cert_tmp, 'w') as f:
-                f.write(body)
+        with mktemppath() as jks_tmp:
+            if type == 'Truststore (JKS)':
+                create_truststore(body, chain, jks_tmp, alias, passphrase)
 
-            with mktempfile() as key_tmp:
-                with open(key_tmp, 'w') as f:
-                    f.write(key)
+            elif type == 'Keystore (JKS)':
+                if not key:
+                    raise Exception("Unable to export, no private key found.")
 
-                # Create PKCS12 keystore from private key and public certificate
-                with mktempfile() as p12_tmp:
-                    run_process([
-                        "openssl",
-                        "pkcs12",
-                        "-export",
-                        "-name", alias,
-                        "-in", cert_tmp,
-                        "-inkey", key_tmp,
-                        "-out", p12_tmp,
-                        "-password", "pass:{}".format(passphrase)
-                    ])
+                create_truststore(body, chain, jks_tmp, alias, passphrase)
+                create_keystore(body, jks_tmp, key, alias, passphrase)
 
-                    # Convert PKCS12 keystore into a JKS keystore
-                    with mktemppath() as jks_tmp:
-                        run_process([
-                            "keytool",
-                            "-importkeystore",
-                            "-destkeystore", jks_tmp,
-                            "-srckeystore", p12_tmp,
-                            "-srcstoretype", "PKCS12",
-                            "-alias", alias,
-                            "-srcstorepass", passphrase,
-                            "-deststorepass", passphrase
-                        ])
+            else:
+                raise Exception("Unable to export, unsupported type: {0}".format(type))
 
-                        # Import leaf cert in to JKS keystore
-                        run_process([
-                            "keytool",
-                            "-importcert",
-                            "-file", cert_tmp,
-                            "-keystore", jks_tmp,
-                            "-alias", "{0}_cert".format(alias),
-                            "-storepass", passphrase,
-                            "-noprompt"
-                        ])
+            with open(jks_tmp, 'rb') as f:
+                raw = f.read()
 
-                        # Import the entire chain
-                        for idx, cert in enumerate(split_chain(chain)):
-                            with mktempfile() as c_tmp:
-                                with open(c_tmp, 'w') as f:
-                                    f.write(cert)
-                                # Import signed cert in to JKS keystore
-                                run_process([
-                                    "keytool",
-                                    "-importcert",
-                                    "-file", c_tmp,
-                                    "-keystore", jks_tmp,
-                                    "-alias", "{0}_cert_{1}".format(alias, idx),
-                                    "-storepass", passphrase,
-                                    "-noprompt"
-                                ])
-
-                        with open(jks_tmp, 'rb') as f:
-                            raw = f.read()
-
-                        return "jks", passphrase, raw
+        return "jks", passphrase, raw
