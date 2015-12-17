@@ -74,6 +74,8 @@ docs_require = [
 
 dev_requires = [
     'flake8>=2.0,<3.0',
+    'invoke',
+    'twine'
 ]
 
 
@@ -164,6 +166,7 @@ setup(
             'aws_source = lemur.plugins.lemur_aws.plugin:AWSSourcePlugin',
             'email_notification = lemur.plugins.lemur_email.plugin:EmailNotificationPlugin',
             'java_export = lemur.plugins.lemur_java.plugin:JavaExportPlugin'
+            'openssl_export = lemur.plugins.lemur_openssl.plugin:OpenSSLExportPlugin'
         ],
     },
     classifiers=[
