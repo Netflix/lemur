@@ -503,11 +503,34 @@ def unicode_(data):
     return data
 
 
+class RotateELBs(Command):
+    """
+    Rotates existing certificates to a new one on an ELB
+    """
+    option_list = (
+        Option('-c', '--cert-name', dest='cert_name', required=True),
+        Option('-a', '--account-id', dest='account_id', required=True),
+        Option('-e', '--elb-list', dest='elb_list', required=True)
+    )
+
+    def run(self, cert_name, account_id, elb_list):
+        from lemur.plugins.lemur_aws import elb
+        arn = "arn:aws:iam::{0}:server-certificate/{1}".format(account_id, cert_name)
+
+        for e in open(elb_list, 'r').readlines():
+            for region in elb.get_all_regions():
+                if str(region) in e:
+                    name = "-".join(e.split('.')[0].split('-')[:-1])
+                    if name.startswith("internal"):
+                        name = "-".join(name.split("-")[1:])
+                    elb.update_listeners(account_id, str(region), name, [(443, 7001, 'https', arn)], [443])
+                    sys.out.write("[+] Updated {0} to use {1} on 443\n".format(name, cert_name))
+
+
 class ProvisionELB(Command):
     """
     Creates and provisions a certificate on an ELB based on command line arguments
     """
-
     option_list = (
         Option('-d', '--dns', dest='dns', action='append', required=True, type=unicode_),
         Option('-e', '--elb', dest='elb_name', required=True, type=unicode_),
@@ -746,6 +769,7 @@ def main():
     manager.add_command("create_user", CreateUser())
     manager.add_command("create_role", CreateRole())
     manager.add_command("provision_elb", ProvisionELB())
+    manager.add_command("rotate_elbs", RotateELBs())
     manager.run()
 
 if __name__ == "__main__":
