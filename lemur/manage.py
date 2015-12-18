@@ -524,7 +524,7 @@ class RotateELBs(Command):
                     if name.startswith("internal"):
                         name = "-".join(name.split("-")[1:])
                     elb.update_listeners(account_id, str(region), name, [(443, 7001, 'https', arn)], [443])
-                    print "updated {0} to use {1} on 443".format(name, cert_name)
+                    sys.out.write("[+] Updated {0} to use {1} on 443\n".format(name, cert_name))
 
 
 class ProvisionELB(Command):
