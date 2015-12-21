@@ -157,7 +157,7 @@ class UsersList(AuthenticatedResource):
         """
         self.reqparse.add_argument('username', type=str, location='json', required=True)
         self.reqparse.add_argument('email', type=str, location='json', required=True)
-        self.reqparse.add_argument('password', type=str, location='json', required=True)
+        self.reqparse.add_argument('password', type=str, location='json', default=None)
         self.reqparse.add_argument('active', type=bool, default=True, location='json')
         self.reqparse.add_argument('roles', type=roles, default=[], location='json')
 
