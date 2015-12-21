@@ -4,6 +4,7 @@ import os
 import sys
 import base64
 import time
+import arrow
 import requests
 import json
 from gunicorn.config import make_settings
@@ -576,6 +577,144 @@ class RotateELBs(Command):
             sys.stdout.write("[+] Updated {0} to use {1}\n".format(elb_name, new_certificate.name))
 
 
+class CreateCert(Command):
+    """
+    Creates and provisions a certificate based on command line arguments.
+    need to refactor this
+    """
+    option_list = (
+        Option('-d', '--dns', dest='dns', action='append', required=True, type=unicode_),
+        Option('-o', '--owner', dest='owner', type=unicode_),
+        Option('-u', '--user', dest='user', type=unicode_),
+        Option('-a', '--authority', dest='authority', required=True, type=unicode_),
+        Option('-s', '--description', dest='description', default=u'Command line provisioned keypair', type=unicode_),
+        Option('-t', '--destination', dest='destinations', action='append', type=unicode_, default=[]),
+        Option('-n', '--notification', dest='notifications', action='append', type=unicode_, default=[]),
+        Option('--dry-run', dest='dryrun', action='store_true')
+    )
+
+    def get_destinations(self, destination_names):
+        from lemur.destinations import service
+
+        destinations = []
+
+        for destination_name in destination_names:
+            destination = service.get_by_label(destination_name)
+
+            if not destination:
+                sys.stderr.write("Invalid destination specified: '{}'\nAborting...\n".format(destination_name))
+                sys.exit(1)
+
+            destinations.append(service.get_by_label(destination_name))
+
+        return destinations
+
+    def configure_user(self, owner):
+        from flask import g
+        import lemur.users.service
+
+        # grab the user
+        g.user = lemur.users.service.get_by_username(owner)
+        # get the first user by default
+        if not g.user:
+            g.user = lemur.users.service.get_all()[0]
+
+        return g.user.username
+
+    def get_destination_account(self, destinations):
+        for destination in self.get_destinations(destinations):
+            if destination.plugin_name == 'aws-destination':
+
+                account_number = destination.plugin.get_option('accountNumber', destination.options)
+                return account_number
+
+        sys.stderr.write("No destination AWS account provided, failing\n")
+        sys.exit(1)
+
+    def build_cert_options(self, destinations, notifications, description, owner, dns, authority, validityStart, validityEnd):
+        from sqlalchemy.orm.exc import NoResultFound
+        from lemur.certificates.views import valid_authority
+        import sys
+
+        # convert argument lists to arrays, or empty sets
+        destinations = self.get_destinations(destinations)
+
+        # get the primary CN
+        common_name = dns[0]
+
+        # If there are more than one fqdn, add them as alternate names
+        extensions = {}
+        if len(dns) > 1:
+            extensions['subAltNames'] = {'names': map(lambda x: {'nameType': 'DNSName', 'value': x}, dns)}
+
+        try:
+            authority = valid_authority({"name": authority})
+        except NoResultFound:
+            sys.stderr.write("Invalid authority specified: '{}'\naborting\n".format(authority))
+            sys.exit(1)
+
+        options = {
+            # Convert from the Destination model to the JSON input expected further in the code
+            'destinations': map(lambda x: {'id': x.id, 'label': x.label}, destinations),
+            'description': description,
+            'notifications': notifications,
+            'commonName': common_name,
+            'extensions': extensions,
+            'authority': authority,
+            'owner': owner,
+            # defaults:
+            'organization': unicode_(current_app.config.get('LEMUR_DEFAULT_ORGANIZATION')),
+            'organizationalUnit': unicode_(current_app.config.get('LEMUR_DEFAULT_ORGANIZATIONAL_UNIT')),
+            'country': unicode_(current_app.config.get('LEMUR_DEFAULT_COUNTRY')),
+            'state': unicode_(current_app.config.get('LEMUR_DEFAULT_STATE')),
+            'location': unicode_(current_app.config.get('LEMUR_DEFAULT_LOCATION')),
+            'replacements': [],
+            'validityStart': validityStart,
+            'validityEnd': validityEnd
+        }
+
+        return options
+
+    def run(self, dns, owner, user, authority, description, notifications, destinations, dryrun):
+        from lemur.certificates import service
+        from datetime import date
+        ts = date.today()
+
+        # configure the owner if we can find it, or go for default, and put it in the global
+        self.configure_user(user)
+
+        # make a config blob from the command line arguments
+        cert_options = self.build_cert_options(
+            destinations=destinations,
+            notifications=notifications,
+            description=description,
+            owner=owner,
+            dns=dns,
+            authority=authority,
+            validityStart=ts.strftime("%Y/%m/%d"),
+            validityEnd=ts.replace(year=ts.year + 2).strftime('%Y/%m/%d'))
+
+        if dryrun:
+            import json
+
+            cert_options['authority'] = cert_options['authority'].name
+            sys.stdout.write('Will create certificate using options: {}\n'
+                             .format(json.dumps(cert_options, sort_keys=True, indent=2)))
+            sys.exit(0)
+
+        # create the certificate
+        try:
+            sys.stdout.write('Creating certificate for {}\n'.format(cert_options['commonName']))
+            cert = service.create(**cert_options)
+        except Exception as e:
+            if e.message == 'Duplicate certificate: a certificate with the same common name exists already':
+                sys.stderr.write("Certificate already exists named: {}\n".format(dns[0]))
+                sys.exit(1)
+            raise e
+
+        sys.stdout.write("Created certificate {}\n".format(cert.name))
+
+
 class ProvisionELB(Command):
     """
     Creates and provisions a certificate on an ELB based on command line arguments
@@ -790,6 +929,48 @@ def publish_verisign_units():
         requests.post('http://localhost:8078/metrics', data=json.dumps(metric))
 
 
+class Rolling(Command):
+    """
+    Rotates existing certificates to a new one on an ELB
+    """
+    option_list = (
+        Option('-w', '--window', dest='window', default=24),
+    )
+
+    def run(self, window):
+        """
+        Simple function that queries verisign for API units and posts the mertics to
+        Atlas API for other teams to consume.
+        :return:
+        """
+        end = arrow.utcnow()
+        start = end.replace(hours=-window)
+        items = Certificate.query.filter(Certificate.not_before <= end.format('YYYY-MM-DD')) \
+            .filter(Certificate.not_before >= start.format('YYYY-MM-DD')).all()
+
+        metrics = {}
+        for i in items:
+            name = "{0},{1}".format(i.owner, i.issuer)
+            if metrics.get(name):
+                metrics[name] += 1
+            else:
+                metrics[name] = 1
+
+        for name, value in metrics.iteritems():
+            owner, issuer = name.split(",")
+            metric = [
+                {
+                    "timestamp": 1321351651,
+                    "type": "GAUGE",
+                    "name": "Issued Certificates",
+                    "tags": {"owner": owner, "issuer": issuer, "window": window},
+                    "value": value
+                }
+            ]
+
+            requests.post('http://localhost:8078/metrics', data=json.dumps(metric))
+
+
 def main():
     manager.add_command("start", LemurServer())
     manager.add_command("runserver", Server(host='127.0.0.1'))
@@ -801,6 +982,8 @@ def main():
     manager.add_command("create_role", CreateRole())
     manager.add_command("provision_elb", ProvisionELB())
     manager.add_command("rotate_elbs", RotateELBs())
+    manager.add_command("create_cert", CreateCert())
+    manager.add_command("rolling", Rolling())
     manager.run()
 
 if __name__ == "__main__":
