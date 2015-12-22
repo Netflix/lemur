@@ -3,8 +3,8 @@
   <div class="login">
     <div class="row">
       <div class="col-xs-12 col-sm-12 col-md-12">
-        <button class="btn btn-block btn-default" ng-click="authenticate('Example')">
-          Login with Example
+        <button class="btn btn-block btn-default" ng-repeat="(key, value) in get_providers()" ng-click="authenticate(key)">
+          Login with {{key}}
         </button>
       </div>
     </div>

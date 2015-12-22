@@ -12,6 +12,7 @@ angular.module('lemur')
     $scope.login = AuthenticationService.login;
     $scope.authenticate = AuthenticationService.authenticate;
     $scope.logout = AuthenticationService.logout;
+    $scope.get_providers = AuthenticationService.get_providers;
 
     UserService.getCurrentUser().then(function (user) {
       $scope.currentUser = user;

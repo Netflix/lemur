@@ -270,6 +270,40 @@ class Google(Resource):
             return dict(token=create_token(user))
 
 
+class Providers(Resource):
+
+    def get(self):
+
+        active_providers = dict()
+
+        for provider in current_app.config.get("ACTIVE_PROVIDERS"):
+            provider = provider.lower()
+
+            if provider == "google":
+
+                active_providers["google"] = {
+                    'clientId': current_app.config.get("GOOGLE_CLIENT_ID"),
+                    'url': api.url_for(Google)
+                }
+
+            elif provider == "ping":
+
+                active_providers["oauth2"] = {
+                    'name': current_app.config.get("PING_NAME"),
+                    'url': api.url_for(Ping),
+                    'redirectUri': '',  # TODO
+                    'clientId': current_app.config.get("PING_CLIENT_ID"),
+                    'responseType': 'code',
+                    'scope': ['openid', 'email', 'profile', 'address'],
+                    'scopeDelimeter': ' ',
+                    'authorizationEndpoint': '',  # TODO
+                    'requiredUrlParams': ['scope']
+                }
+
+        return active_providers
+
+
 api.add_resource(Login, '/auth/login', endpoint='login')
 api.add_resource(Ping, '/auth/ping', endpoint='ping')
 api.add_resource(Google, '/auth/google', endpoint='google')
+api.add_resource(Providers, '/auth/providers', endpoint='providers')

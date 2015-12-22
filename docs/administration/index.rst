@@ -262,10 +262,17 @@ for those plugins.
 
 Authentication
 --------------
-Lemur currently supports Basic Authentication and Ping OAuth2 out of the box. Additional flows can be added relatively easily.
-If you are not using Ping you do not need to configure any of these options.
+Lemur currently supports Basic Authentication, Ping OAuth2, and Google out of the box. Additional flows can be added relatively easily.
+If you are not using an authentication provider you do not need to configure any of these options.
 
 For more information about how to use social logins, see: `Satellizer <https://github.com/sahat/satellizer>`_
+
+.. data:: ACTIVE_PROVIDERS
+    :noindex:
+
+    ::
+
+        ACTIVE_PROVIDERS = ["ping", "google"]
 
 .. data:: PING_SECRET
     :noindex:
@@ -296,6 +303,33 @@ For more information about how to use social logins, see: `Satellizer <https://g
 
         PING_JWKS_URL = "https://<yourpingserver>/pf/JWKS"
 
+.. data:: PING_NAME
+    :noindex:
+
+    ::
+
+        PING_NAME = "Example Oauth2 Provider"
+
+.. data:: PING_CLIENT_ID
+    :noindex:
+
+    ::
+
+        PING_CLIENT_ID = "client-id"
+
+.. data:: GOOGLE_CLIENT_ID
+    :noindex:
+
+    ::
+
+        GOOGLE_CLIENT_ID = "client-id"
+
+.. data:: GOOGLE_SECRET
+    :noindex:
+
+    ::
+
+        GOOGLE_SECRET = "somethingsecret"
 
 
 AWS Plugin Configuration
