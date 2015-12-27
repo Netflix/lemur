@@ -54,8 +54,6 @@ class User(db.Model):
         """
         if self.password:
             return bcrypt.check_password_hash(self.password, password)
-        else:
-            return False
 
     def hash_password(self):
         """
@@ -66,8 +64,6 @@ class User(db.Model):
         if self.password:
             self.password = bcrypt.generate_password_hash(self.password)
             return self.password
-        else:
-            return None
 
     @property
     def is_admin(self):
