@@ -20,7 +20,6 @@
       'ngFileSaver'
     ]);
 
-  fetchData().then(bootstrapApplication);
 
   function fetchData() {
     var initInjector = angular.injector(['ng']);
@@ -29,15 +28,17 @@
     return $http.get('http://localhost:8000/api/1/auth/providers').then(function(response) {
       lemur.constant('providers', response.data);
     }, function(errorResponse) {
-      // Handle error case
+      console.log('Could not fetch SSO providers')
     });
   }
 
   function bootstrapApplication() {
     angular.element(document).ready(function() {
-      angular.bootstrap(document, ["lemur"]);
+      angular.bootstrap(document, ['lemur']);
     });
   }
+
+  fetchData().then(bootstrapApplication);
 
   lemur.config(function ($stateProvider, $urlRouterProvider, $authProvider, providers) {
     $urlRouterProvider.otherwise('/welcome');
