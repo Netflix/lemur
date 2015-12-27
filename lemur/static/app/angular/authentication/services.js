@@ -6,6 +6,10 @@ angular.module('lemur')
   .service('AuthenticationService', function ($location, $rootScope, AuthenticationApi, UserService, toaster, $auth) {
     var AuthenticationService = this;
 
+    AuthenticationService.get_providers = function () {
+        return AuthenticationApi.one('providers').get();
+    };
+
     AuthenticationService.login = function (username, password) {
       AuthenticationApi.customPOST({'username': username, 'password': password}, 'login')
         .then(

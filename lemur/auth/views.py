@@ -230,5 +230,80 @@ class Ping(Resource):
         return dict(token=create_token(user))
 
 
+class Google(Resource):
+
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        super(Google, self).__init__()
+
+    def post(self):
+        access_token_url = 'https://accounts.google.com/o/oauth2/token'
+        people_api_url = 'https://www.googleapis.com/plus/v1/people/me/openIdConnect'
+
+        self.reqparse.add_argument('clientId', type=str, required=True, location='json')
+        self.reqparse.add_argument('redirectUri', type=str, required=True, location='json')
+        self.reqparse.add_argument('code', type=str, required=True, location='json')
+
+        args = self.reqparse.parse_args()
+
+        # Step 1. Exchange authorization code for access token
+        payload = {
+            'client_id': args['clientId'],
+            'grant_type': 'authorization_code',
+            'redirect_uri': args['redirectUri'],
+            'code': args['code'],
+            'client_secret': current_app.config.get('GOOGLE_SECRET')
+        }
+
+        r = requests.post(access_token_url, data=payload)
+        token = r.json()
+
+        # Step 2. Retrieve information about the current user
+        headers = {'Authorization': 'Bearer {0}'.format(token['access_token'])}
+
+        r = requests.get(people_api_url, headers=headers)
+        profile = r.json()
+
+        user = user_service.get_by_email(profile['email'])
+
+        if user:
+            return dict(token=create_token(user))
+
+
+class Providers(Resource):
+
+    def get(self):
+
+        active_providers = dict()
+
+        for provider in current_app.config.get("ACTIVE_PROVIDERS"):
+            provider = provider.lower()
+
+            if provider == "google":
+
+                active_providers["google"] = {
+                    'clientId': current_app.config.get("GOOGLE_CLIENT_ID"),
+                    'url': api.url_for(Google)
+                }
+
+            elif provider == "ping":
+
+                active_providers["oauth2"] = {
+                    'name': current_app.config.get("PING_NAME"),
+                    'url': api.url_for(Ping),
+                    'redirectUri': '',  # TODO
+                    'clientId': current_app.config.get("PING_CLIENT_ID"),
+                    'responseType': 'code',
+                    'scope': ['openid', 'email', 'profile', 'address'],
+                    'scopeDelimeter': ' ',
+                    'authorizationEndpoint': '',  # TODO
+                    'requiredUrlParams': ['scope']
+                }
+
+        return active_providers
+
+
 api.add_resource(Login, '/auth/login', endpoint='login')
 api.add_resource(Ping, '/auth/ping', endpoint='ping')
+api.add_resource(Google, '/auth/google', endpoint='google')
+api.add_resource(Providers, '/auth/providers', endpoint='providers')

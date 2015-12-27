@@ -18,7 +18,7 @@ var lemur = angular
     'angular-clipboard',
     'ngFileSaver'
   ])
-  .config(function ($stateProvider, $urlRouterProvider, $authProvider) {
+  .config(function ($stateProvider, $urlRouterProvider, $authProvider, AuthenticationService) {
     $urlRouterProvider.otherwise('/welcome');
 
     $stateProvider
@@ -27,17 +27,18 @@ var lemur = angular
         templateUrl: 'angular/welcome/welcome.html'
       });
 
-    $authProvider.oauth2({
-      name: 'example',
-      url: 'http://localhost:8000/api/1/auth/ping',
-      redirectUri: 'http://localhost:3000/',
-      clientId: 'client-id',
-      responseType: 'code',
-      scope: ['openid', 'email', 'profile', 'address'],
-      scopeDelimiter: ' ',
-      authorizationEndpoint: 'https://example.com/as/authorization.oauth2',
-      requiredUrlParams: ['scope']
-    });
+    AuthenticationService.get_providers().then(function (active_providers) {
+      var provider_names = [];
+      for (var key in active_providers) {
+        if (active_providers.hasOwnProperty(key)) {
+          provider_names.push(key);
+        }
+      }
+
+      for (var i=0; i < provider_names.length; i++) {
+        $authProvider[provider_names[i]](active_providers[provider_names[i]]);
+      }
+    }
   });
 
 lemur.service('MomentService', function () {
