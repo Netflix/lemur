@@ -28,7 +28,7 @@
     return $http.get('http://localhost:8000/api/1/auth/providers').then(function(response) {
       lemur.constant('providers', response.data);
     }, function(errorResponse) {
-      console.log('Could not fetch SSO providers')
+      console.log('Could not fetch SSO providers' + errorResponse);
     });
   }
 
