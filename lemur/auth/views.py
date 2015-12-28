@@ -231,7 +231,6 @@ class Ping(Resource):
 
 
 class Google(Resource):
-
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(Google, self).__init__()
@@ -271,34 +270,32 @@ class Google(Resource):
 
 
 class Providers(Resource):
-
     def get(self):
-
-        active_providers = dict()
+        active_providers = []
 
         for provider in current_app.config.get("ACTIVE_PROVIDERS"):
             provider = provider.lower()
 
             if provider == "google":
-
-                active_providers["google"] = {
+                active_providers.append({
+                    'name': 'google',
                     'clientId': current_app.config.get("GOOGLE_CLIENT_ID"),
                     'url': api.url_for(Google)
-                }
+                })
 
             elif provider == "ping":
-
-                active_providers["oauth2"] = {
+                active_providers.append({
                     'name': current_app.config.get("PING_NAME"),
-                    'url': api.url_for(Ping),
-                    'redirectUri': '',  # TODO
+                    'url': current_app.config.get('PING_REDIRECT_URI'),
+                    'redirectUri': current_app.config.get("PING_REDIRECT_URI"),
                     'clientId': current_app.config.get("PING_CLIENT_ID"),
                     'responseType': 'code',
                     'scope': ['openid', 'email', 'profile', 'address'],
                     'scopeDelimeter': ' ',
-                    'authorizationEndpoint': '',  # TODO
-                    'requiredUrlParams': ['scope']
-                }
+                    'authorizationEndpoint': current_app.config.get("PING_AUTH_ENDPOINT"),
+                    'requiredUrlParams': ['scope'],
+                    'type': '2.0'
+                })
 
         return active_providers
 

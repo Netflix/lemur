@@ -8,11 +8,12 @@ angular.module('lemur')
       controller: 'LoginController'
     });
   })
-  .controller('LoginController', function ($rootScope, $scope, AuthenticationService, UserService) {
+  .controller('LoginController', function ($rootScope, $scope, AuthenticationService, UserService, providers) {
     $scope.login = AuthenticationService.login;
     $scope.authenticate = AuthenticationService.authenticate;
     $scope.logout = AuthenticationService.logout;
-    $scope.get_providers = AuthenticationService.get_providers;
+
+    $scope.providers = providers;
 
     UserService.getCurrentUser().then(function (user) {
       $scope.currentUser = user;
