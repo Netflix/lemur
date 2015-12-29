@@ -1,17 +1,10 @@
 Changelog
 =========
 
-0.2.2 - `master` _
+0.2.1 - `master` _
 ~~~~~~~~~~~~~~~~~~
 
 .. note:: This version not yet released and is under active development
-
-0.2.1 - 2015-12-14
-~~~~~~~~~~~~~~~~~~
-
-* Fixed an issue with email templates
-* Fixed bug with search not refreshing values
-* Cleaned up documentation, including working supervisor example (thanks rpicard!)
 
 0.2.0 - 2015-12-02
 ~~~~~~~~~~~~~~~~~~~

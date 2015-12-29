@@ -192,6 +192,7 @@ class CertificatesList(AuthenticatedResource):
                 "owner": "bob@example.com",
                 "description": "test",
                 "selectedAuthority": "timetest2",
+                "csr",
                 "authority": {
                     "body": "-----BEGIN...",
                     "name": "timetest2",
@@ -325,6 +326,7 @@ class CertificatesList(AuthenticatedResource):
         self.reqparse.add_argument('organizationalUnit', type=str, location='json', required=True)
         self.reqparse.add_argument('owner', type=str, location='json', required=True)
         self.reqparse.add_argument('commonName', type=str, location='json', required=True)
+        self.reqparse.add_argument('csr', type=str, location='json')
 
         args = self.reqparse.parse_args()
 

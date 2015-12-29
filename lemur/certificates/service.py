@@ -140,7 +140,12 @@ def mint(issuer_options):
 
     issuer = plugins.get(authority.plugin_name)
 
-    csr, private_key = create_csr(issuer_options)
+    # allow the CSR to be specified by the user
+    if not issuer_options.get('csr'):
+        csr, private_key = create_csr(issuer_options)
+    else:
+        csr = issuer_options.get('csr')
+        private_key = None
 
     issuer_options['creator'] = g.user.email
     cert_body, cert_chain = issuer.create_certificate(csr, issuer_options)
