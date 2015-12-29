@@ -48,7 +48,7 @@
         </div>
       </div>
     </div>
-    <div ng-show="certificate.authority" class="form-group">
+    <div class="form-group">
       <label class="control-label col-sm-2">
         Certificate Template
       </label>
@@ -108,6 +108,20 @@
             </span>
           </div>
         </div>
+      </div>
+    </div>
+    <div class="form-group"
+         ng-class="{'has-error': trackingForm.csr.$invalid&&trackingForm.csr.$dirty, 'has-success': !trackingForm.csr.$invalid&&trackingForm.csr.$dirty}">
+      <label class="control-label col-sm-2">
+        Certificate Signing Request (CSR)
+      </label>
+      <div class="col-sm-10">
+                <textarea tooltip="Values defined in the CSR will take precedence" name="certificate signing request" ng-model="certificate.csr"
+                          placeholder="PEM encoded string..." class="form-control"
+                          ng-pattern="/^-----BEGIN CERTIFICATE REQUEST-----/"></textarea>
+
+        <p ng-show="trackingForm.csr.$invalid && !trackingForm.csr.$pristine"
+           class="help-block">Enter a valid certificate signing request.</p>
       </div>
     </div>
     <div ng-include="'angular/certificates/certificate/replaces.tpl.html'"></div>
