@@ -32,6 +32,43 @@ def get_all():
     return database.find_all(query, Domain, {}).all()
 
 
+def get_by_name(name):
+    """
+    Fetches domain by it's name
+
+    :param name:
+    :return:
+    """
+    return database.get_all(Domain, name, field="name").all()
+
+
+def create(name, sensitive):
+    """
+    Create a new domain
+
+    :param name:
+    :param sensitive:
+    :return:
+    """
+    domain = Domain(name=name, sensitive=sensitive)
+    return database.create(domain)
+
+
+def update(domain_id, name, sensitive):
+    """
+    Update an existing domain
+
+    :param domain_id:
+    :param name:
+    :param sensitive:
+    :return:
+    """
+    domain = get(domain_id)
+    domain.name = name
+    domain.sensitive = sensitive
+    database.update(domain)
+
+
 def render(args):
     """
     Helper to parse REST Api requests
