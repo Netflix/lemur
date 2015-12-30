@@ -30,6 +30,17 @@ from lemur.plugins.bases import IssuerPlugin
 from lemur.plugins import lemur_acme as acme
 
 
+def create_JWKRSA(pem):
+    """
+    Will parse the current private key pem and create a comparable JWKRSA token to be
+    used to sign requests.
+    :param pem:
+    :return:
+    """
+    key = load_pem_private_key(pem, None, backend=default_backend())
+    return jose.JWKRSA(key=jose.ComparableRSAKey(key))
+
+
 class ACMEIssuerPlugin(IssuerPlugin):
     title = 'Acme'
     slug = 'acme-issuer'
@@ -40,7 +51,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
     author_url = 'https://github.com/netflix/lemur.git'
 
     def __init__(self, *args, **kwargs):
-        self.key = current_app.config.get('ACME_PUBLIC_KEY')
+        self.key = create_JWKRSA(current_app.config.get('ACME_PRIVATE_KEY').strip())
         self.acme_uri = current_app.config.get('ACME_URL')
         self.authzr_uri = '{}/acme/authz/1'.format(self.acme_uri)
         self.acme_email = current_app.config.get('ACME_EMAIL')
