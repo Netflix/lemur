@@ -10,7 +10,7 @@ angular.module('lemur')
     });
   })
 
-  .controller('DomainsViewController', function ($scope, DomainApi, ngTableParams) {
+  .controller('DomainsViewController', function ($scope, $modal, DomainApi, DomainService, ngTableParams, toaster) {
     $scope.filter = {};
     $scope.domainsTable = new ngTableParams({
       page: 1,            // show first page
@@ -28,6 +28,40 @@ angular.module('lemur')
           });
       }
     });
+
+    $scope.updateSensitive = function (domain) {
+      DomainService.updateSensitive(domain).then(
+        function () {
+          toaster.pop({
+            type: 'success',
+            title: domain.name,
+            body: 'Updated!'
+          });
+        },
+        function (response) {
+          toaster.pop({
+            type: 'error',
+            title: domain.name,
+            body: 'Unable to update! ' + response.data.message,
+            timeout: 100000
+          });
+          domain.sensitive = domain.sensitive ? false : true;
+        });
+    };
+
+    $scope.create = function () {
+      var modalInstance = $modal.open({
+        animation: true,
+        controller: 'DomainsCreateController',
+        templateUrl: '/angular/domains/domain/domain.tpl.html',
+        size: 'lg'
+      });
+
+      modalInstance.result.then(function () {
+        $scope.domainsTable.reload();
+      });
+
+    };
 
     $scope.toggleFilter = function (params) {
       params.settings().$scope.show_filter = !params.settings().$scope.show_filter;

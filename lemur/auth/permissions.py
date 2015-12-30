@@ -19,6 +19,11 @@ CertificateCreator = namedtuple('certificate', ['method', 'value'])
 CertificateCreatorNeed = partial(CertificateCreator, 'key')
 
 
+class SensitiveDomainPermission(Permission):
+    def __init__(self):
+        super(SensitiveDomainPermission, self).__init__(RoleNeed('admin'))
+
+
 class ViewKeyPermission(Permission):
     def __init__(self, certificate_id, owner):
         c_need = CertificateCreatorNeed(certificate_id)

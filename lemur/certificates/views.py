@@ -7,16 +7,24 @@
 """
 import base64
 from builtins import str
+
 from flask import Blueprint, make_response, jsonify
 from flask.ext.restful import reqparse, Api, fields
+
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
+
+from lemur.auth.service import AuthenticatedResource
+from lemur.auth.permissions import ViewKeyPermission
+from lemur.auth.permissions import AuthorityPermission
+from lemur.auth.permissions import UpdateCertificatePermission
+from lemur.auth.permissions import SensitiveDomainPermission
+
 from lemur.certificates import service
 from lemur.authorities.models import Authority
-from lemur.auth.service import AuthenticatedResource
-from lemur.auth.permissions import ViewKeyPermission, AuthorityPermission, UpdateCertificatePermission
 from lemur.roles import service as role_service
+from lemur.domains import service as domain_service
 from lemur.common.utils import marshal_items, paginated_parser
 from lemur.notifications.views import notification_list
 
@@ -61,6 +69,34 @@ def valid_authority(authority_options):
         raise ValueError("Selected authority [{0}] is not currently active".format(name))
 
     return authority
+
+
+def get_domains_from_options(options):
+    """
+    Retrive all domains from certificate options
+    :param options:
+    :return:
+    """
+    domains = [options['commonName']]
+    for k, v in options['extensions']['subAltNames']['names']:
+        if k == 'DNSName':
+            domains.append(v)
+    return domains
+
+
+def check_sensitive_domains(domains):
+    """
+    Determines if any certificates in the given certificate
+    are marked as sensitive
+    :param domains:
+    :return:
+    """
+    for domain in domains:
+        domain_objs = domain_service.get_by_name(domain)
+        for d in domain_objs:
+            if d.sensitive:
+                raise ValueError("The domain {0} has been marked as sensitive. Contact an administrator to "
+                                 "issue this certificate".format(d.name))
 
 
 def pem_str(value, name):
@@ -338,9 +374,12 @@ class CertificatesList(AuthenticatedResource):
 
         # allow "owner" roles by team DL
         roles.append(role)
-        permission = AuthorityPermission(authority.id, roles)
+        authority_permission = AuthorityPermission(authority.id, roles)
 
-        if permission.can():
+        if authority_permission.can():
+            # if we are not admins lets make sure we aren't issuing anything sensitive
+            if not SensitiveDomainPermission().can():
+                check_sensitive_domains(get_domains_from_options(args))
             return service.create(**args)
 
         return dict(message="You are not authorized to use {0}".format(args['authority'].name)), 403

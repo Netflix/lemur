@@ -12,4 +12,12 @@ angular.module('lemur')
           return domains;
         });
     };
+
+    DomainService.updateSensitive = function (domain) {
+      return domain.put();
+    };
+
+    DomainService.create = function (domain) {
+      return DomainApi.post(domain);
+    };
   });
