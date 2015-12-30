@@ -1,10 +1,22 @@
 Changelog
 =========
 
-0.2.1 - `master` _
+0.2.2 - `master` _
 ~~~~~~~~~~~~~~~~~~
 
 .. note:: This version not yet released and is under active development
+
+
+0.2.1 - 2015-12-14
+~~~~~~~~~~~~~~~~~~
+
+* Fixed bug with search not refreshing values
+* Cleaned up documentation, including working supervisor example (thanks rpicard!)
+* Closed #165 - Fixed an issue with email templates
+* Closed #188 - Added ability to submit third party CSR
+* Closed #176 - Java-export should allow user to specify truststore/keystore
+* Closed #176 - Extended support for exporting certificate in P12 format
+
 
 0.2.0 - 2015-12-02
 ~~~~~~~~~~~~~~~~~~~
