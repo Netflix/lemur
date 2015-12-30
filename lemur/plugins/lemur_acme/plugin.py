@@ -1,7 +1,7 @@
 """
 .. module: lemur.plugins.lemur_acme.acme
     :platform: Unix
-    :synopsis: This module is responsible for communicating with the VeriSign VICE 2.0 API.
+    :synopsis: This module is responsible for communicating with a ACME CA.
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 
@@ -9,12 +9,26 @@
 """
 from flask import current_app
 
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.serialization import load_pem_private_key
+
 from acme.client import Client
 from acme import jose
 from acme import messages
 
 from lemur.plugins.bases import IssuerPlugin
 from lemur.plugins import lemur_acme as acme
+
+
+def create_JWKRSA(pem):
+    """
+    Will parse the current private key pem and create a comparable JWKRSA token to be
+    used to sign requests.
+    :param pem:
+    :return:
+    """
+    key = load_pem_private_key(pem, None, backend=default_backend())
+    return jose.JWKRSA(key=jose.ComparableRSAKey(key))
 
 
 class ACMEIssuerPlugin(IssuerPlugin):
@@ -27,7 +41,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
     author_url = 'https://github.com/netflix/lemur.git'
 
     def __init__(self, *args, **kwargs):
-        self.key = current_app.config.get('ACME_PUBLIC_KEY')
+        self.key = create_JWKRSA(current_app.config.get('ACME_PRIVATE_KEY').strip())
         self.acme_uri = current_app.config.get('ACME_URL')
         self.authzr_uri = '{}/acme/authz/1'.format(self.acme_uri)
         self.acme_email = current_app.config.get('ACME_EMAIL')
@@ -63,6 +77,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
             challenges[domain] = self.client.request_domain_challenges(domain, self.authzr_uri)
         return challenges
 
+    @staticmethod
     def _solve_challenges(self, challenges):
         for chall in challenges:
             print chall.token
@@ -77,7 +92,6 @@ class ACMEIssuerPlugin(IssuerPlugin):
         """
         # Registration
         regr = self.client.register()
-
         regr.body.update(agreement=regr.terms_of_service, key=self.key, contact=self.contact)
         self.client.update_registration(regr, regr.update(body=regr.body))
         self.client.agree_to_tos(regr)
