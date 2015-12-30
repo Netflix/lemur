@@ -10,7 +10,7 @@ def test_domain_post(client):
 
 
 def test_domain_put(client):
-    assert client.put(api.url_for(Domains, domain_id=1), data={}).status_code == 405
+    assert client.put(api.url_for(Domains, domain_id=1), data={}).status_code == 401
 
 
 def test_domain_delete(client):
@@ -34,7 +34,7 @@ def test_auth_domain_post_(client):
 
 
 def test_auth_domain_put(client):
-    assert client.put(api.url_for(Domains, domain_id=1), data={}, headers=VALID_USER_HEADER_TOKEN).status_code == 405
+    assert client.put(api.url_for(Domains, domain_id=1), data={}, headers=VALID_USER_HEADER_TOKEN).status_code == 403
 
 
 def test_auth_domain_delete(client):
@@ -58,7 +58,7 @@ def test_admin_domain_post(client):
 
 
 def test_admin_domain_put(client):
-    assert client.put(api.url_for(Domains, domain_id=1), data={}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
+    assert client.put(api.url_for(Domains, domain_id=1), data={}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 400
 
 
 def test_admin_domain_delete(client):
@@ -74,7 +74,7 @@ def test_domains_get(client):
 
 
 def test_domains_post(client):
-    assert client.post(api.url_for(DomainsList), data={}).status_code == 405
+    assert client.post(api.url_for(DomainsList), data={}).status_code == 401
 
 
 def test_domains_put(client):
