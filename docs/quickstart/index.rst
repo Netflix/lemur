@@ -219,7 +219,7 @@ you can pass that via the ``--config`` option.
   # the correct host and port!
   lemur --config=/etc/lemur.conf.py start -b 127.0.0.1:8000
 
-You should now be able to test the web service by visiting ``http://localhost:5000/``.
+You should now be able to test the web service by visiting ``http://localhost:8000/``.
 
 
 Running Lemur as a Service
