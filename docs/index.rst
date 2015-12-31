@@ -27,8 +27,7 @@ Administration
 .. toctree::
     :maxdepth: 2
 
-    administration/index
-    plugins/index
+    administration
 
 Developers
 ----------
@@ -38,14 +37,21 @@ Developers
 
     developer/index
 
-
-REST API
+Security
 --------
 
 .. toctree::
     :maxdepth: 2
 
-    developer/rest
+    security
+
+Doing a Release
+---------------
+
+.. toctree::
+    :maxdepth: 1
+
+    doing-a-release
 
 FAQ
 ----

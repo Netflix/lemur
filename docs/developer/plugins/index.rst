@@ -1,6 +1,3 @@
-Writing a Plugin
-================
-
 Several interfaces exist for extending Lemur:
 
 * Issuer (lemur.plugins.base.issuer)
