@@ -24,7 +24,6 @@ Basic Configuration
 
         LOG_FILE = "/logs/lemur/lemur-test.log"
 
-
 .. data:: debug
     :noindex:
 
@@ -33,7 +32,6 @@ Basic Configuration
     ::
 
         debug = False
-
 
     .. warning::
         This should never be used in a production environment as it exposes Lemur to
@@ -173,47 +171,123 @@ Lemur supports sending certification expiration notifications through SES and SM
 .. data:: LEMUR_EMAIL_SENDER
     :noindex:
 
-            Specifies which service will be delivering notification emails. Valid values are `SMTP` or `SES`
+    Specifies which service will be delivering notification emails. Valid values are `SMTP` or `SES`
 
-.. note::
-    If using STMP as your provider you will need to define additional configuration options as specified by Flask-Mail.
-    See: `Flask-Mail <https://pythonhosted.org/Flask-Mail>`_
+    .. note::
+        If using SMP as your provider you will need to define additional configuration options as specified by Flask-Mail.
+        See: `Flask-Mail <https://pythonhosted.org/Flask-Mail>`_
 
-    If you are using SES the email specified by the `LEMUR_MAIL` configuration will need to be verified by AWS before
-    you can send any mail. See: `Verifying Email Address in Amazon SES <http://docs.aws.amazon.com/ses/latest/DeveloperGuide/verify-email-addresses.html>`_
+        If you are using SES the email specified by the `LEMUR_MAIL` configuration will need to be verified by AWS before
+        you can send any mail. See: `Verifying Email Address in Amazon SES <http://docs.aws.amazon.com/ses/latest/DeveloperGuide/verify-email-addresses.html>`_
+
 
 .. data:: LEMUR_MAIL
     :noindex:
 
-            Lemur sender's email
+        Lemur sender's email
 
         ::
 
-        LEMUR_MAIL = 'lemur.example.com'
+            LEMUR_MAIL = 'lemur.example.com'
 
 
 .. data:: LEMUR_SECURITY_TEAM_EMAIL
     :noindex:
 
-            This is an email or list of emails that should be notified when a certificate is expiring. It is also the contact email address for any discovered certificate.
+        This is an email or list of emails that should be notified when a certificate is expiring. It is also the contact email address for any discovered certificate.
 
         ::
 
-        LEMUR_SECURITY_TEAM_EMAIL = ['security@example.com']
+            LEMUR_SECURITY_TEAM_EMAIL = ['security@example.com']
 
 
 .. data:: LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS
     :noindex:
 
-            Lemur notification intervals
+        Lemur notification intervals
 
         ::
 
-        LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS = [30, 15, 2]
+            LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS = [30, 15, 2]
 
 
-Authority Options
------------------
+Authentication Options
+----------------------
+Lemur currently supports Basic Authentication, Ping OAuth2, and Google out of the box. Additional flows can be added relatively easily.
+If you are not using an authentication provider you do not need to configure any of these options.
+
+For more information about how to use social logins, see: `Satellizer <https://github.com/sahat/satellizer>`_
+
+.. data:: ACTIVE_PROVIDERS
+    :noindex:
+
+        ::
+
+            ACTIVE_PROVIDERS = ["ping", "google"]
+
+.. data:: PING_SECRET
+    :noindex:
+
+        ::
+
+            PING_SECRET = 'somethingsecret'
+
+.. data:: PING_ACCESS_TOKEN_URL
+    :noindex:
+
+        ::
+
+            PING_ACCESS_TOKEN_URL = "https://<yourpingserver>/as/token.oauth2"
+
+
+.. data:: PING_USER_API_URL
+    :noindex:
+
+        ::
+
+            PING_USER_API_URL = "https://<yourpingserver>/idp/userinfo.openid"
+
+.. data:: PING_JWKS_URL
+    :noindex:
+
+        ::
+
+            PING_JWKS_URL = "https://<yourpingserver>/pf/JWKS"
+
+.. data:: PING_NAME
+    :noindex:
+
+        ::
+
+            PING_NAME = "Example Oauth2 Provider"
+
+.. data:: PING_CLIENT_ID
+    :noindex:
+
+        ::
+
+            PING_CLIENT_ID = "client-id"
+
+.. data:: GOOGLE_CLIENT_ID
+    :noindex:
+
+        ::
+
+        GOOGLE_CLIENT_ID = "client-id"
+
+.. data:: GOOGLE_SECRET
+    :noindex:
+
+        ::
+
+            GOOGLE_SECRET = "somethingsecret"
+
+
+Plugin Specific Options
+-----------------------
+
+Verisign Issuer Plugin
+^^^^^^^^^^^^^^^^^^^^^^
 
 Authorities will each have their own configuration options. There is currently just one plugin bundled with Lemur,
 Verisign/Symantec. Additional plugins may define additional options. Refer to the plugin's own documentation
@@ -260,87 +334,16 @@ for those plugins.
         This is the root to be used for your CA chain
 
 
-Authentication
---------------
-Lemur currently supports Basic Authentication, Ping OAuth2, and Google out of the box. Additional flows can be added relatively easily.
-If you are not using an authentication provider you do not need to configure any of these options.
 
-For more information about how to use social logins, see: `Satellizer <https://github.com/sahat/satellizer>`_
-
-.. data:: ACTIVE_PROVIDERS
-    :noindex:
-
-    ::
-
-        ACTIVE_PROVIDERS = ["ping", "google"]
-
-.. data:: PING_SECRET
-    :noindex:
-
-    ::
-
-        PING_SECRET = 'somethingsecret'
-
-.. data:: PING_ACCESS_TOKEN_URL
-    :noindex:
-
-    ::
-
-        PING_ACCESS_TOKEN_URL = "https://<yourpingserver>/as/token.oauth2"
-
-
-.. data:: PING_USER_API_URL
-    :noindex:
-
-    ::
-
-        PING_USER_API_URL = "https://<yourpingserver>/idp/userinfo.openid"
-
-.. data:: PING_JWKS_URL
-    :noindex:
-
-    ::
-
-        PING_JWKS_URL = "https://<yourpingserver>/pf/JWKS"
-
-.. data:: PING_NAME
-    :noindex:
-
-    ::
-
-        PING_NAME = "Example Oauth2 Provider"
-
-.. data:: PING_CLIENT_ID
-    :noindex:
-
-    ::
-
-        PING_CLIENT_ID = "client-id"
-
-.. data:: GOOGLE_CLIENT_ID
-    :noindex:
-
-    ::
-
-        GOOGLE_CLIENT_ID = "client-id"
-
-.. data:: GOOGLE_SECRET
-    :noindex:
-
-    ::
-
-        GOOGLE_SECRET = "somethingsecret"
-
-
-AWS Plugin Configuration
-========================
+AWS Source/Destination Plugin
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In order for Lemur to manage its own account and other accounts we must ensure it has the correct AWS permissions.
 
 .. note:: AWS usage is completely optional. Lemur can upload, find and manage TLS certificates in AWS. But is not required to do so.
 
 Setting up IAM roles
---------------------
+""""""""""""""""""""
 
 Lemur's AWS plugin uses boto heavily to talk to all the AWS resources it manages. By default it uses the on-instance credentials to make the necessary calls.
 
@@ -445,7 +448,8 @@ IAM-ServerCertificate
 
 
 Setting up STS access
----------------------
+"""""""""""""""""""""
+
 Once we have setup our accounts we need to ensure that we create a trust relationship so that LemurInstanceProfile can assume the Lemur role.
 
 In the AWS console select the Lemur IAM role and select the Trust Relationships tab and click Edit Trust Relationship
@@ -472,7 +476,7 @@ Below is an example policy:
 
 
 Adding N+1 accounts
--------------------
+"""""""""""""""""""
 
 To add another account we go to the new account and create a new Lemur IAM role with the same policy as above.
 
@@ -500,7 +504,7 @@ An example policy:
     }
 
 Setting up SES
---------------
+""""""""""""""
 
 Lemur has built in support for sending it's certificate notifications via Amazon's simple email service (SES). To force
 Lemur to use SES ensure you are the running as the IAM role defined above and that you have followed the steps outlined
@@ -514,23 +518,6 @@ Will be the sender of all notifications, so ensure that it is verified with AWS.
 
 SES if the default notification gateway and will be used unless SMTP settings are configured in the application configuration
 settings.
-
-Upgrading Lemur
-===============
-
-Lemur provides an easy way to upgrade between versions. Simply download the newest
-version of Lemur from pypi and then apply any schema changes with the following command.
-
-.. code-block:: bash
-
-    $ lemur db upgrade
-
-.. note:: Internally, this uses `Alembic <https://alembic.readthedocs.org/en/latest/>`_ to manage database migrations.
-
-.. note:: By default Alembic looks for the `migrations` folder in the current working directory. 
-The migrations folder is located under `<LEMUR_HOME>/lemur/migrations` if you are running the lemur command from any
-location besides `<LEMUR_HOME>/lemur` you will need to pass the `-d` flag to specify the absolute file path to the 
-`migrations` folder.
 
 .. _CommandLineInterface:
 
@@ -641,32 +628,6 @@ and to get help on sub-commands
         lemur certificates --help
 
 
-Identity and Access Management
-==============================
-
-Lemur uses a Role Based Access Control (RBAC) mechanism to control which users have access to which resources. When a
-user is first created in Lemur they can be assigned one or more roles. These roles are typically dynamically created
-depending on a external identity provider (Google, LDAP, etc.,) or are hardcoded within Lemur and associated with special
-meaning.
-
-Within Lemur there are three main permissions: AdminPermission, CreatorPermission, OwnerPermission. Sub-permissions such
-as ViewPrivateKeyPermission are compositions of these three main Permissions.
-
-Lets take a look at how these permissions are used:
-
-Each `Authority` has a set of roles associated with it. If a user is also associated with the same roles
-that the `Authority` is associated with, Lemur allows that user to user/view/update that `Authority`.
-
-This RBAC is also used when determining which users can access which certificate private key. Lemur's current permission
-structure is setup such that if the user is a `Creator` or `Owner` of a given certificate they are allow to view that
-private key. Owners can also be a role name, such that any user with the same role as owner will be allowed to view the
-private key information.
-
-These permissions are applied to the user upon login and refreshed on every request.
-
-.. seealso::
-    `Flask-Principal <https://pythonhosted.org/Flask-Principal>`_
-
 
 Upgrading Lemur
 ===============
@@ -697,3 +658,61 @@ After you have the latest version of the Lemur code base you must run any needed
 
 
 This will ensure that any needed tables or columns are created or destroyed.
+
+.. note::
+    Internally, this uses `Alembic <https://alembic.readthedocs.org/en/latest/>`_ to manage database migrations.
+
+.. note::
+    By default Alembic looks for the `migrations` folder in the current working directory.The migrations folder is
+    located under `<LEMUR_HOME>/lemur/migrations` if you are running the lemur command from any location besides
+    `<LEMUR_HOME>/lemur` you will need to pass the `-d` flag to specify the absolute file path to the `migrations` folder.
+
+Plugins
+=======
+
+There are several interfaces currently available to extend Lemur. These are a work in
+progress and the API is not frozen.
+
+Bundled Plugins
+---------------
+
+Lemur includes several plugins by default. Including extensive support for AWS, VeriSign/Symantec and CloudCA services.
+
+3rd Party Extensions
+--------------------
+
+The following extensions are available and maintained by members of the Lemur community:
+
+Have an extension that should be listed here? Submit a `pull request <https://github.com/netflix/lemur>`_ and we'll
+get it added.
+
+Want to create your own extension? See :doc:`../developer/plugins/index` to get started.
+
+
+Identity and Access Management
+==============================
+
+Lemur uses a Role Based Access Control (RBAC) mechanism to control which users have access to which resources. When a
+user is first created in Lemur they can be assigned one or more roles. These roles are typically dynamically created
+depending on a external identity provider (Google, LDAP, etc.,) or are hardcoded within Lemur and associated with special
+meaning.
+
+Within Lemur there are three main permissions: AdminPermission, CreatorPermission, OwnerPermission. Sub-permissions such
+as ViewPrivateKeyPermission are compositions of these three main Permissions.
+
+Lets take a look at how these permissions are used:
+
+Each `Authority` has a set of roles associated with it. If a user is also associated with the same roles
+that the `Authority` is associated with, Lemur allows that user to user/view/update that `Authority`.
+
+This RBAC is also used when determining which users can access which certificate private key. Lemur's current permission
+structure is setup such that if the user is a `Creator` or `Owner` of a given certificate they are allow to view that
+private key. Owners can also be a role name, such that any user with the same role as owner will be allowed to view the
+private key information.
+
+These permissions are applied to the user upon login and refreshed on every request.
+
+.. seealso::
+
+    `Flask-Principal <https://pythonhosted.org/Flask-Principal>`_
+

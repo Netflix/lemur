@@ -96,5 +96,4 @@ Subpackages
     lemur.notifications
     lemur.plugins
     lemur.roles
-    lemur.status
     lemur.users

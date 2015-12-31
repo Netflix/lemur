@@ -28,7 +28,6 @@ def update(authority_id, description=None, owner=None, active=None, roles=None):
 
     :param authority_id:
     :param roles: roles that are allowed to use this authority
-    :rtype : Authority
     :return:
     """
     authority = get(authority_id)
@@ -47,7 +46,6 @@ def create(kwargs):
     """
     Create a new authority.
 
-    :rtype : Authority
     :return:
     """
 
@@ -123,7 +121,6 @@ def get(authority_id):
     """
     Retrieves an authority given it's ID
 
-    :rtype : Authority
     :param authority_id:
     :return:
     """
@@ -135,7 +132,6 @@ def get_by_name(authority_name):
     Retrieves an authority given it's name.
 
     :param authority_name:
-    :rtype : Authority
     :return:
     """
     return database.get(Authority, authority_name, field='name')
