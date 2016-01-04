@@ -49,7 +49,7 @@ install_requires = [
     'arrow==0.7.0',
     'boto==2.38.0',  # we might make this optional
     'six==1.10.0',
-    'gunicorn==19.4.4',
+    'gunicorn==19.4.1',
     'pycrypto==2.6.1',
     'cryptography==1.1.2',
     'pyopenssl==0.15.1',
