@@ -8,20 +8,20 @@ Flask==0.10.1
 Flask-RESTful==0.3.3
 Flask-SQLAlchemy==2.1
 Flask-Script==2.0.5
-Flask-Migrate==1.6.0
+Flask-Migrate==1.7.0
 Flask-Bcrypt==0.7.1
 Flask-Principal==0.4.0
 Flask-Mail==0.9.1
-SQLAlchemy-Utils==0.31.3
+SQLAlchemy-Utils==0.31.4
 BeautifulSoup4
-requests==2.8.1
+requests==2.9.1
 psycopg2==2.6.1
 arrow==0.7.0
 boto==2.38.0  # we might make this optional
 six==1.10.0
-gunicorn==19.4.1
+gunicorn==19.4.4
 pycrypto==2.6.1
-cryptography==1.1.1
+cryptography==1.1.2
 pyopenssl==0.15.1
 pyjwt==1.4.0
 xmltodict==0.9.2
