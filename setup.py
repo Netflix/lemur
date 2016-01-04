@@ -165,7 +165,7 @@ setup(
             'aws_destination = lemur.plugins.lemur_aws.plugin:AWSDestinationPlugin',
             'aws_source = lemur.plugins.lemur_aws.plugin:AWSSourcePlugin',
             'email_notification = lemur.plugins.lemur_email.plugin:EmailNotificationPlugin',
-            'java_export = lemur.plugins.lemur_java.plugin:JavaExportPlugin'
+            'java_export = lemur.plugins.lemur_java.plugin:JavaExportPlugin',
             'openssl_export = lemur.plugins.lemur_openssl.plugin:OpenSSLExportPlugin'
         ],
     },
