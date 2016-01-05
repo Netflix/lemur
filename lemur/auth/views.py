@@ -291,7 +291,7 @@ class Providers(Resource):
                     'clientId': current_app.config.get("PING_CLIENT_ID"),
                     'responseType': 'code',
                     'scope': ['openid', 'email', 'profile', 'address'],
-                    'scopeDelimeter': ' ',
+                    'scopeDelimiter': ' ',
                     'authorizationEndpoint': current_app.config.get("PING_AUTH_ENDPOINT"),
                     'requiredUrlParams': ['scope'],
                     'type': '2.0'
