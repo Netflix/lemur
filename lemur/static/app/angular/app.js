@@ -50,7 +50,7 @@
 
     _.each(providers, function(provider) {
       if ($authProvider.hasOwnProperty(provider.name)) {
-        $authProvider[provider.name] = provider;
+        $authProvider[provider.name](provider);
       } else {
         $authProvider.oauth2(provider);
       }
