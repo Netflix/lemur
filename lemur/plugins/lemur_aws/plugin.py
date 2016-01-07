@@ -43,15 +43,18 @@ class AWSDestinationPlugin(DestinationPlugin):
     # }
 
     def upload(self, name, body, private_key, cert_chain, options, **kwargs):
-        try:
-            iam.upload_cert(find_value('accountNumber', options), name, body, private_key, cert_chain=cert_chain)
-        except BotoServerError as e:
-            if e.error_code != 'EntityAlreadyExists':
-                raise Exception(e)
+        if private_key:
+            try:
+                iam.upload_cert(find_value('accountNumber', options), name, body, private_key, cert_chain=cert_chain)
+            except BotoServerError as e:
+                if e.error_code != 'EntityAlreadyExists':
+                    raise Exception(e)
 
-        e = find_value('elb', options)
-        if e:
-            elb.attach_certificate(kwargs['accountNumber'], ['region'], e['name'], e['port'], e['certificateId'])
+            e = find_value('elb', options)
+            if e:
+                elb.attach_certificate(kwargs['accountNumber'], ['region'], e['name'], e['port'], e['certificateId'])
+        else:
+            raise Exception("Unable to upload to AWS, private key is required")
 
 
 class AWSSourcePlugin(SourcePlugin):
