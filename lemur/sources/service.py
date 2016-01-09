@@ -76,7 +76,7 @@ def sync(labels=None):
             if source.label not in labels:
                 continue
 
-        current_app.logger.error("Retrieving certificates from {0}".format(source.label))
+        current_app.logger.debug("Retrieving certificates from {0}".format(source.label))
         s = plugins.get(source.plugin_name)
         certificates = s.get_certificates(source.options)
 
