@@ -44,7 +44,9 @@ Setting up an Environment
 In this guide, Lemur will be installed in ``/www``, so you need to create that structure first:
 
 .. code-block:: bash
-
+    $ sudo adduser lemur
+    $ sudo adduser lemur sudo
+    $ sudo -s lemur
     $ sudo mkdir /www
     $ cd /www
 
@@ -138,9 +140,17 @@ Set a password for lemur user inside Postgres:
 .. code-block:: bash
 
     $ sudo -u postgres psql postgres
+    \CREATE USER lemur WITH PASSWORD 'lemur';
+    \GRANT ALL PRIVILEGES ON DATABASE "lemur" to lemur;
     \password lemur
     Enter new password: lemur
     Enter it again: lemur
+    \connect lemur
+    create table encrypted_keys (ID int primary key not null);
+    alter table encrypted_keys owner to lemur;
+    create table encrypted_passwords (ID int primary key not null);
+    alter table encrypted_passwords owner to lemur;
+    
 
 Again, enter CTRL-D to exit the Postgres shell.
 
@@ -217,7 +227,7 @@ you can pass that via the ``--config`` option.
 
   # Lemur's server runs on port 8000 by default. Make sure your client reflects
   # the correct host and port!
-  lemur --config=/etc/lemur.conf.py start -b 127.0.0.1:8000
+  lemur --config=/~/lemur/.lemur/lemur.conf.py start -b 127.0.0.1:8000
 
 You should now be able to test the web service by visiting ``http://localhost:8000/``.
 
