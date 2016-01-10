@@ -11,7 +11,9 @@
 """
 from sqlalchemy import exc
 from sqlalchemy.sql import and_, or_
+from sqlalchemy.orm import make_transient
 from sqlalchemy.orm.exc import NoResultFound
+
 
 from lemur.extensions import db
 from lemur.exceptions import AttrNotFound, DuplicateError
@@ -251,6 +253,18 @@ def update_list(model, model_attr, item_model, items):
         else:
             getattr(model, model_attr).append(get(item_model, i['id']))
 
+    return model
+
+
+def clone(model):
+    """
+    Clones the given model and removes it's primary key
+    :param model:
+    :return:
+    """
+    db.session.expunge(model)
+    make_transient(model)
+    model.id = None
     return model
 
 
