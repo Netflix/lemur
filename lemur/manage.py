@@ -24,7 +24,11 @@ from lemur.certificates import service as cert_service
 from lemur.sources import service as source_service
 from lemur.notifications import service as notification_service
 
+from lemur.certificates.models import get_name_from_arn
 from lemur.certificates.verify import verify_string
+
+from lemur.plugins.lemur_aws import elb
+
 from lemur.sources.service import sync
 
 from lemur import create_app
@@ -510,23 +514,66 @@ class RotateELBs(Command):
     Rotates existing certificates to a new one on an ELB
     """
     option_list = (
-        Option('-c', '--cert-name', dest='cert_name', required=True),
-        Option('-a', '--account-id', dest='account_id', required=True),
-        Option('-e', '--elb-list', dest='elb_list', required=True)
+        Option('-e', '--elb-list', dest='elb_list', required=True),
+        Option('-p', '--chain-path', dest='chain_path'),
+        Option('-c', '--cert-name', dest='cert_name'),
+        Option('-a', '--cert-prefix', dest='cert_prefix'),
+        Option('-d', '--description', dest='description')
     )
 
-    def run(self, cert_name, account_id, elb_list):
-        from lemur.plugins.lemur_aws import elb
-        arn = "arn:aws:iam::{0}:server-certificate/{1}".format(account_id, cert_name)
+    def run(self, elb_list, chain_path, cert_name, cert_prefix, description):
 
         for e in open(elb_list, 'r').readlines():
-            for region in elb.get_all_regions():
-                if str(region) in e:
-                    name = "-".join(e.split('.')[0].split('-')[:-1])
-                    if name.startswith("internal"):
-                        name = "-".join(name.split("-")[1:])
-                    elb.update_listeners(account_id, str(region), name, [(443, 7001, 'https', arn)], [443])
-                    sys.out.write("[+] Updated {0} to use {1} on 443\n".format(name, cert_name))
+            elb_name, account_id, region, from_port, to_port, protocol = e.strip().split(',')
+
+            if cert_name:
+                arn = "arn:aws:iam::{0}:server-certificate/{1}".format(account_id, cert_name)
+
+            else:
+                # if no cert name is provided we need to discover it
+                listeners = elb.get_listeners(account_id, region, elb_name)
+
+                # get the listener we care about
+                for listener in listeners:
+                    if listener[0] == int(from_port) and listener[1] == int(to_port):
+                        arn = listener[4]
+                        name = get_name_from_arn(arn)
+                        certificate = cert_service.get_by_name(name)
+                        break
+                else:
+                    sys.stdout.write("[-] Could not find ELB {0}".format(elb_name))
+                    continue
+
+                if not certificate:
+                    sys.stdout.write("[-] Could not find certificate {0} in Lemur".format(name))
+                    continue
+
+                dests = []
+                for d in certificate.destinations:
+                    dests.append({'id': d.id})
+
+                nots = []
+                for n in certificate.notifications:
+                    nots.append({'id': n.id})
+
+                new_certificate = database.clone(certificate)
+
+                if cert_prefix:
+                    new_certificate.name = "{0}-{1}".format(cert_prefix, new_certificate.name)
+
+                new_certificate.chain = open(chain_path, 'r').read()
+                new_certificate.description = "{0} - {1}".format(new_certificate.description, description)
+
+                new_certificate = database.create(new_certificate)
+                database.update_list(new_certificate, 'destinations', Destination, dests)
+                database.update_list(new_certificate, 'notifications', Notification, nots)
+                database.update(new_certificate)
+
+                arn = new_certificate.get_arn(account_id)
+
+            elb.update_listeners(account_id, region, elb_name, [(from_port, to_port, protocol, arn)], [from_port])
+
+            sys.stdout.write("[+] Updated {0} to use {1}\n".format(elb_name, new_certificate.name))
 
 
 class ProvisionELB(Command):
@@ -741,24 +788,6 @@ def publish_verisign_units():
         ]
 
         requests.post('http://localhost:8078/metrics', data=json.dumps(metric))
-
-
-@manager.command
-def backfill_signing_algo():
-    """
-    Will attempt to backfill the signing_algorithm column
-
-    :return:
-    """
-    from cryptography import x509
-    from cryptography.hazmat.backends import default_backend
-    from lemur.certificates.models import get_signing_algorithm
-    for c in cert_service.get_all_certs():
-        cert = x509.load_pem_x509_certificate(str(c.body), default_backend())
-        c.signing_algorithm = get_signing_algorithm(cert)
-        c.signing_algorithm
-        database.update(c)
-        print(c.signing_algorithm)
 
 
 def main():
