@@ -79,7 +79,7 @@ def process_options(options):
 
     if options.get('validityEnd'):
         end_date, period = get_default_issuance(options)
-        data['specificEndDate'] = end_date
+        data['specificEndDate'] = str(end_date)
         data['validityPeriod'] = period
 
     return data
