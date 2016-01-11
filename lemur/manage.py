@@ -4,6 +4,7 @@ import os
 import sys
 import base64
 import time
+import arrow
 import requests
 import json
 from gunicorn.config import make_settings
@@ -790,6 +791,48 @@ def publish_verisign_units():
         requests.post('http://localhost:8078/metrics', data=json.dumps(metric))
 
 
+class Rolling(Command):
+    """
+    Rotates existing certificates to a new one on an ELB
+    """
+    option_list = (
+        Option('-w', '--window', dest='window', default=24),
+    )
+
+    def run(self, window):
+        """
+        Simple function that queries verisign for API units and posts the mertics to
+        Atlas API for other teams to consume.
+        :return:
+        """
+        end = arrow.utcnow()
+        start = end.replace(hours=-window)
+        items = Certificate.query.filter(Certificate.not_before <= end.format('YYYY-MM-DD')) \
+            .filter(Certificate.not_before >= start.format('YYYY-MM-DD')).all()
+
+        metrics = {}
+        for i in items:
+            name = "{0},{1}".format(i.owner, i.issuer)
+            if metrics.get(name):
+                metrics[name] += 1
+            else:
+                metrics[name] = 1
+
+        for name, value in metrics.iteritems():
+            owner, issuer = name.split(",")
+            metric = [
+                {
+                    "timestamp": 1321351651,
+                    "type": "GAUGE",
+                    "name": "Issued Certificates",
+                    "tags": {"owner": owner, "issuer": issuer, "window": window},
+                    "value": value
+                }
+            ]
+
+            requests.post('http://localhost:8078/metrics', data=json.dumps(metric))
+
+
 def main():
     manager.add_command("start", LemurServer())
     manager.add_command("runserver", Server(host='127.0.0.1'))
@@ -801,6 +844,7 @@ def main():
     manager.add_command("create_role", CreateRole())
     manager.add_command("provision_elb", ProvisionELB())
     manager.add_command("rotate_elbs", RotateELBs())
+    manager.add_command("rolling", Rolling())
     manager.run()
 
 if __name__ == "__main__":
