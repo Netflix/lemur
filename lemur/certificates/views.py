@@ -78,9 +78,11 @@ def get_domains_from_options(options):
     :return:
     """
     domains = [options['commonName']]
-    for k, v in options['extensions']['subAltNames']['names']:
-        if k == 'DNSName':
-            domains.append(v)
+    if options.get('extensions'):
+        if options['extensions'].get('subAltNames'):
+            for k, v in options['extensions']['subAltNames']['names']:
+                if k == 'DNSName':
+                    domains.append(v)
     return domains
 
 
