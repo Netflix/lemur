@@ -30,7 +30,7 @@ class EjbcaIssuerPlugin(IssuerPlugin):
         super(EjbcaIssuerPlugin, self).__init__(*args, **kwargs)
 
     def create_certificate(self, csr, issuer_options):
-        entity = self.getClient().factory.create('userDataVOWS')
+        entity = self.get_client().factory.create('userDataVOWS')
         entity.caName = issuer_options['authority'].cn
         entity.certificateProfileName = "ENDUSER"
         entity.clearPwd = True
@@ -52,44 +52,44 @@ class EjbcaIssuerPlugin(IssuerPlugin):
             subjectDN.append("cn=" + issuer_options['commonName'])
         entity.subjectDN = ", ".join(subjectDN)
 
-        entity.startTime = self.toDateFormat(issuer_options['validityStart'])
-        entity.endTime = self.toDateFormat(issuer_options['validityEnd'])
+        entity.startTime = self.to_date_format(issuer_options['validityStart'])
+        entity.endTime = self.to_date_format(issuer_options['validityEnd'])
 
         entity.tokenType = "USERGENERATED"
         entity.username = issuer_options['commonName']
         entity.email = issuer_options['owner']
 
-        self.getClient().service.editUser(entity)
+        self.get_client().service.editUser(entity)
 
-        response = self.getClient().service.pkcs10Request(entity.username, entity.password, csr, None, 'CERTIFICATE')
+        response = self.get_client().service.pkcs10Request(entity.username, entity.password, csr, None, 'CERTIFICATE')
 
-        full_chain = self.getClient().service.getLastCAChain(issuer_options['authority'].cn)
+        full_chain = self.get_client().service.getLastCAChain(issuer_options['authority'].cn)
         # Omit the root cert from the chain
         server_chain = full_chain[:-1]
 
-        return self.toPem(response.data), self.toPemChain(server_chain)
+        return self.to_pem(response.data), self.to_pem_chain(server_chain)
 
     def create_authority(self, options):
-        chain = self.getClient().service.getLastCAChain(options.caName)
-        pem_cert = self.toPem(chain[0].certificateData)
+        chain = self.get_client().service.getLastCAChain(options.caName)
+        pem_cert = self.to_pem(chain[0].certificateData)
 
         pem_chain = ""
         if len(chain) > 1:
-            pem_chain = self.toPemChain(chain[1:])
+            pem_chain = self.to_pem_chain(chain[1:])
 
         role = {'username': '', 'password': '', 'name': options.caName}
         return pem_cert, pem_chain, [role]
 
-    def toPemChain(self, certificates):
-        return "\n".join([self.toPem(certificate.certificateData) for certificate in certificates])
+    def to_pem_chain(self, certificates):
+        return "\n".join([self.to_pem(certificate.certificateData) for certificate in certificates])
 
-    def toPem(self, base64cert):
+    def to_pem(self, base64cert):
         return "-----BEGIN CERTIFICATE-----" + "\n" +\
                base64.decodestring(base64cert) + "\n" + "-----END CERTIFICATE-----"
 
-    def getClient(self):
+    def get_client(self):
         transport = SslAuthenticatedTransport(cert=(self.client_cert, self.client_key))
         return Client(self.client_url + '/ejbcaws/ejbcaws?wsdl', transport=transport)
 
-    def toDateFormat(self, isodate):
+    def to_date_format(self, isodate):
         return dateutil.parser.parse(isodate).astimezone(dateutil.tz.tzutc()).strftime("%Y-%m-%d %H:%M:%S") + "+00:00"
