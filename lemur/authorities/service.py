@@ -101,6 +101,10 @@ def create(kwargs):
     database.update(cert)
     authority = database.create(authority)
 
+    # the owning dl or role should have this authority associated with it
+    owner_role = role_service.get_by_name(kwargs['ownerEmail'])
+    owner_role.authority = authority
+
     g.current_user.authorities.append(authority)
 
     return authority
