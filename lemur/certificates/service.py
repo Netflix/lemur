@@ -189,7 +189,10 @@ def import_certificate(**kwargs):
 
     notification_name = 'DEFAULT_SECURITY'
     notifications = notification_service.create_default_expiration_notifications(notification_name, current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL'))
-    database.update_list(cert, 'replaces', Certificate, kwargs['replacements'])
+
+    if kwargs.get('replacements'):
+        database.update_list(cert, 'replaces', Certificate, kwargs['replacements'])
+
     cert.notifications = notifications
 
     cert = database.create(cert)
