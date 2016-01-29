@@ -158,6 +158,7 @@ Additional notifications can be created through the UI or API.  See :ref:`Creati
 
 .. code-block:: bash
 
+    $ cd /www/lemur/lemur
     $ lemur init
 
 .. note:: It is recommended that once the ``lemur`` user is created that you create individual users for every day access.  There is currently no way for a user to self enroll for Lemur access, they must have an administrator create an account for them or be enrolled automatically through SSO.  This can be done through the CLI or UI.  See :ref:`Creating Users <CreatingUsers>` and :ref:`Command Line Interface <CommandLineInterface>` for details.
