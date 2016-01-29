@@ -120,10 +120,11 @@ def create_keystore(cert, jks_tmp, key, alias, passphrase):
                 ])
 
 
-class JavaExportPlugin(ExportPlugin):
-    title = 'Java'
-    slug = 'java-export'
-    description = 'Attempts to generate a JKS keystore or truststore'
+class JavaTruststoreExportPlugin(ExportPlugin):
+    title = 'Java Truststore (JKS)'
+    slug = 'java-truststore-jks'
+    description = 'Attempts to generate a JKS truststore'
+    requires_key = False
     version = java.VERSION
 
     author = 'Kevin Glisson'
@@ -131,12 +132,60 @@ class JavaExportPlugin(ExportPlugin):
 
     options = [
         {
-            'name': 'type',
-            'type': 'select',
-            'required': True,
-            'available': ['Truststore (JKS)', 'Keystore (JKS)'],
-            'helpMessage': 'Choose the format you wish to export',
+            'name': 'alias',
+            'type': 'str',
+            'required': False,
+            'helpMessage': 'Enter the alias you wish to use for the truststore.',
         },
+        {
+            'name': 'passphrase',
+            'type': 'str',
+            'required': False,
+            'helpMessage': 'If no passphrase is given one will be generated for you, we highly recommend this. Minimum length is 8.',
+            'validation': ''
+        },
+    ]
+
+    def export(self, body, chain, key, options, **kwargs):
+        """
+        Generates a Java Truststore
+
+        :param key:
+        :param chain:
+        :param body:
+        :param options:
+        :param kwargs:
+        """
+
+        if self.get_option('alias', options):
+            alias = self.get_option('alias', options)
+        else:
+            alias = "blah"
+
+        if self.get_option('passphrase', options):
+            passphrase = self.get_option('passphrase', options)
+        else:
+            passphrase = get_psuedo_random_string()
+
+        with mktemppath() as jks_tmp:
+            create_truststore(body, chain, jks_tmp, alias, passphrase)
+
+            with open(jks_tmp, 'rb') as f:
+                raw = f.read()
+
+        return "jks", passphrase, raw
+
+
+class JavaKeystoreExportPlugin(ExportPlugin):
+    title = 'Java Keystore (JKS)'
+    slug = 'java-keystore-jks'
+    description = 'Attempts to generate a JKS keystore'
+    version = java.VERSION
+
+    author = 'Kevin Glisson'
+    author_url = 'https://github.com/netflix/lemur'
+
+    options = [
         {
             'name': 'passphrase',
             'type': 'str',
@@ -154,7 +203,7 @@ class JavaExportPlugin(ExportPlugin):
 
     def export(self, body, chain, key, options, **kwargs):
         """
-        Generates a Java Keystore or Truststore
+        Generates a Java Keystore
 
         :param key:
         :param chain:
@@ -173,21 +222,12 @@ class JavaExportPlugin(ExportPlugin):
         else:
             alias = "blah"
 
-        type = self.get_option('type', options)
-
         with mktemppath() as jks_tmp:
-            if type == 'Truststore (JKS)':
-                create_truststore(body, chain, jks_tmp, alias, passphrase)
+            if not key:
+                raise Exception("Unable to export, no private key found.")
 
-            elif type == 'Keystore (JKS)':
-                if not key:
-                    raise Exception("Unable to export, no private key found.")
-
-                create_truststore(body, chain, jks_tmp, alias, passphrase)
-                create_keystore(body, jks_tmp, key, alias, passphrase)
-
-            else:
-                raise Exception("Unable to export, unsupported type: {0}".format(type))
+            create_truststore(body, chain, jks_tmp, alias, passphrase)
+            create_keystore(body, jks_tmp, key, alias, passphrase)
 
             with open(jks_tmp, 'rb') as f:
                 raw = f.read()

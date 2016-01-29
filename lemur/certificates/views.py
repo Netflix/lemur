@@ -15,6 +15,8 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 
+from lemur.plugins import plugins
+
 from lemur.auth.service import AuthenticatedResource
 from lemur.auth.permissions import ViewKeyPermission
 from lemur.auth.permissions import AuthorityPermission
@@ -892,12 +894,17 @@ class CertificateExport(AuthenticatedResource):
 
         permission = UpdateCertificatePermission(certificate_id, getattr(role, 'name', None))
 
-        if permission.can():
-            extension, passphrase, data = service.export(cert, args['export']['plugin'])
-            # we take a hit in message size when b64 encoding
-            return dict(extension=extension, passphrase=passphrase, data=base64.b64encode(data))
+        plugin = plugins.get(args['export']['plugin']['slug'])
+        if plugin.requires_key:
+            if permission.can():
+                extension, passphrase, data = plugin.export(cert.body, cert.chain, cert.private_key, args['export']['plugin']['pluginOptions'])
+            else:
+                return dict(message='You are not authorized to export this certificate'), 403
+        else:
+            extension, passphrase, data = plugin.export(cert.body, cert.chain, cert.private_key, args['export']['plugin']['pluginOptions'])
 
-        return dict(message='You are not authorized to export this certificate'), 403
+        # we take a hit in message size when b64 encoding
+        return dict(extension=extension, passphrase=passphrase, data=base64.b64encode(data))
 
 
 api.add_resource(CertificatesList, '/certificates', endpoint='certificates')
