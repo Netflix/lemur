@@ -133,9 +133,9 @@ class NotificationsList(AuthenticatedResource):
 
            :query sortBy: field to sort on
            :query sortDir: acs or desc
-           :query page: int. default is 1
-           :query filter: key value pair. format is k=v;
-           :query limit: limit number. default is 10
+           :query page: int default is 1
+           :query filter: key value pair format is k;v
+           :query limit: limit number default is 10
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
@@ -470,9 +470,9 @@ class CertificateNotifications(AuthenticatedResource):
 
            :query sortBy: field to sort on
            :query sortDir: acs or desc
-           :query page: int. default is 1
-           :query filter: key value pair. format is k=v;
-           :query limit: limit number. default is 10
+           :query page: int default is 1
+           :query filter: key value pair format is k;v
+           :query limit: limit number default is 10
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
