@@ -16,14 +16,14 @@
         <ng-form name="subForm" class="form-horizontal" role="form" novalidate>
           <div ng-class="{'has-error': subForm.sub.$invalid, 'has-success': !subForm.sub.$invalid&&subForm.sub.$dirty}">
             <label class="control-label col-sm-2">
-              {{ ::item.name | titleCase }}
+              {{ item.name | titleCase }}
             </label>
             <div class="col-sm-10">
               <input name="sub" ng-if="item.type == 'int'" type="number" ng-pattern="/^[0-9]{12,12}$/" class="form-control" ng-model="item.value"/>
               <select name="sub" ng-if="item.type == 'select'" class="form-control" ng-options="i for i in item.available" ng-model="item.value"></select>
               <input name="sub" ng-if="item.type == 'bool'" class="form-control" type="checkbox" ng-model="item.value">
-              <input name="sub" ng-if="item.type == 'str'" type="text" class="form-control" ng-model="item.value" ng-pattern="{{ ::item.validation }}"/>
-              <p ng-show="subForm.sub.$invalid && !subForm.sub.$pristine" class="help-block">{{ ::item.helpMessage }}</p>
+              <input name="sub" ng-if="item.type == 'str'" type="text" class="form-control" ng-model="item.value" ng-pattern="item.validation"/>
+              <p ng-show="subForm.sub.$invalid && !subForm.sub.$pristine" class="help-block">{{ item.helpMessage }}</p>
             </div>
           </div>
         </ng-form>

@@ -142,7 +142,7 @@ class JavaExportPlugin(ExportPlugin):
             'type': 'str',
             'required': False,
             'helpMessage': 'If no passphrase is given one will be generated for you, we highly recommend this. Minimum length is 8.',
-            'validation': '^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$'
+            'validation': ''
         },
         {
             'name': 'alias',
