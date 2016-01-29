@@ -15,6 +15,7 @@ class ExportPlugin(Plugin):
     exporters will inherit from.
     """
     type = 'export'
+    requires_key = True
 
     def export(self):
         raise NotImplemented
