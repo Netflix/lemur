@@ -2,20 +2,26 @@ Changelog
 =========
 
 
+0.2.3 - `master`
+~~~~~~~~~~~~~~~~
+
+.. note:: This version is not yet released and is under active development
+
+
 0.2.2 - 2016-02-05
 ~~~~~~~~~~~~~~~~~~
 
-* Closed [#234](https://github.com/Netflix/lemur/issues/234) - Allows export plugins to define whether they need
+* Closed `#234 <https://github.com/Netflix/lemur/issues/234>`_ - Allows export plugins to define whether they need
     private key material (default is True)
-* Closed [#231](https://github.com/Netflix/lemur/issues/231) - Authorities were not respecting 'owning' roles and their
+* Closed `#231 <https://github.com/Netflix/lemur/issues/231>`_ - Authorities were not respecting 'owning' roles and their
     users
-* Closed [#228](https://github.com/Netflix/lemur/issues/228) - Fixed documentation with correct filter values
-* Closed [#226](https://github.com/Netflix/lemur/issues/226) - Fixes issue were `import_certificate` was requiring
+* Closed `#228 <https://github.com/Netflix/lemur/issues/228>`_ - Fixed documentation with correct filter values
+* Closed `#226 <https://github.com/Netflix/lemur/issues/226>`_ - Fixes issue were `import_certificate` was requiring
     replacement certificates to be specified
-* Closed [#224](https://github.com/Netflix/lemur/issues/224) - Fixed an issue where NPM might not be globally available (thanks AlexClineBB!)
-* Closed [#221](https://github.com/Netflix/lemur/issues/234) - Fixes several reported issues where older migration scripts were
+* Closed `#224 <https://github.com/Netflix/lemur/issues/224>`_ - Fixed an issue where NPM might not be globally available (thanks AlexClineBB!)
+* Closed `#221 <https://github.com/Netflix/lemur/issues/234>`_ - Fixes several reported issues where older migration scripts were
     missing tables, this change removes pre 0.2 migration scripts
-* Closed [#218](https://github.com/Netflix/lemur/issues/234) - Fixed an issue where export passphrases would not validate
+* Closed `#218 <https://github.com/Netflix/lemur/issues/234>`_ - Fixed an issue where export passphrases would not validate
 
 
 0.2.1 - 2015-12-14
