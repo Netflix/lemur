@@ -9,7 +9,7 @@ import jwt
 import base64
 import requests
 
-from flask import g, Blueprint, current_app
+from flask import Blueprint, current_app
 
 from flask.ext.restful import reqparse, Resource, Api
 from flask.ext.principal import Identity, identity_changed
@@ -99,9 +99,6 @@ class Login(Resource):
             return dict(token=create_token(user))
 
         return dict(message='The supplied credentials are invalid'), 401
-
-    def get(self):
-        return {'username': g.current_user.username, 'roles': [r.name for r in g.current_user.roles]}
 
 
 class Ping(Resource):
