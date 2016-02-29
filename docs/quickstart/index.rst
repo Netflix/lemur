@@ -118,7 +118,7 @@ First, set a password for the postgres user.  For this guide, we will use ``lemu
 
 .. code-block:: bash
 
-    $ sudo -u postgres psql postgres
+    $ sudo -u postgres -i
     # \password postgres
     Enter new password: lemur
     Enter it again: lemur
@@ -137,7 +137,7 @@ Set a password for lemur user inside Postgres:
 
 .. code-block:: bash
 
-    $ sudo -u postgres psql postgres
+    $ sudo -u postgres -i
     \password lemur
     Enter new password: lemur
     Enter it again: lemur
@@ -178,7 +178,7 @@ You'll use the builtin ``HttpProxyModule`` within Nginx to handle proxying.  Edi
 ::
 
    location /api {
-        proxy_pass  http://127.0.0.1:5000;
+        proxy_pass  http://127.0.0.1:8000;
         proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
         proxy_redirect off;
         proxy_buffering off;
