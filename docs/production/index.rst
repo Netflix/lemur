@@ -110,7 +110,7 @@ You can make some adjustments to get a better user experience::
        error_log   /var/log/nginx/log/lemur.error.log;
 
        location /api {
-            proxy_pass  http://127.0.0.1:5000;
+            proxy_pass  http://127.0.0.1:8000;
             proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
             proxy_redirect off;
             proxy_buffering off;
@@ -176,7 +176,7 @@ sensitive nature of Lemur and what it controls makes this essential. This is a s
        resolver <IP DNS resolver>;
 
        location /api {
-            proxy_pass  http://127.0.0.1:5000;
+            proxy_pass  http://127.0.0.1:8000;
             proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
             proxy_redirect off;
             proxy_buffering off;
