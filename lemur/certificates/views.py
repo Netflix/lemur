@@ -232,7 +232,7 @@ class CertificatesList(AuthenticatedResource):
                 "owner": "bob@example.com",
                 "description": "test",
                 "selectedAuthority": "timetest2",
-                "csr",
+                "csr": "----BEGIN CERTIFICATE REQUEST-----...",
                 "authority": {
                     "body": "-----BEGIN...",
                     "name": "timetest2",

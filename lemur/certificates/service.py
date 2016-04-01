@@ -144,7 +144,7 @@ def mint(issuer_options):
     if not issuer_options.get('csr'):
         csr, private_key = create_csr(issuer_options)
     else:
-        csr = issuer_options.get('csr')
+        csr = str(issuer_options.get('csr'))
         private_key = None
 
     issuer_options['creator'] = g.user.email
