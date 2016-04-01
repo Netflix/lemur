@@ -8,27 +8,27 @@ angular.module('lemur')
           this.authority = authority;
           this.authority.maxDate = moment(this.authority.notAfter).subtract(1, 'days').format('YYYY/MM/DD');
         },
-       attachSubAltName: function () {
-         if (this.extensions === undefined) {
-           this.extensions = {};
-         }
+        attachSubAltName: function () {
+          if (this.extensions === undefined) {
+            this.extensions = {};
+          }
 
-         if (this.extensions.subAltNames === undefined) {
-           this.extensions.subAltNames = {'names': []};
-         }
+          if (this.extensions.subAltNames === undefined) {
+            this.extensions.subAltNames = {'names': []};
+          }
 
-         if (!angular.isString(this.subAltType)) {
-           this.subAltType = 'CNAME';
-         }
+          if (!angular.isString(this.subAltType)) {
+            this.subAltType = 'CNAME';
+          }
 
-         if (angular.isString(this.subAltValue) && angular.isString(this.subAltType)) {
-           this.extensions.subAltNames.names.push({'nameType': this.subAltType, 'value': this.subAltValue});
-           this.findDuplicates();
-         }
+          if (angular.isString(this.subAltValue) && angular.isString(this.subAltType)) {
+            this.extensions.subAltNames.names.push({'nameType': this.subAltType, 'value': this.subAltValue});
+            this.findDuplicates();
+          }
 
-         this.subAltType = null;
-         this.subAltValue = null;
-       },
+          this.subAltType = null;
+          this.subAltValue = null;
+        },
         removeSubAltName: function (index) {
           this.extensions.subAltNames.names.splice(index, 1);
           this.findDuplicates();
@@ -110,6 +110,7 @@ angular.module('lemur')
 
     CertificateService.create = function (certificate) {
       certificate.attachSubAltName();
+      certificate.attachCustom();
       // Help users who may have just typed in their authority
       if (!certificate.authority) {
         AuthorityService.findActiveAuthorityByName(certificate.selectedAuthority).then(function (authorities) {
