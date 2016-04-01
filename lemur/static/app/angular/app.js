@@ -17,7 +17,9 @@
       'satellizer',
       'ngLetterAvatar',
       'angular-clipboard',
-      'ngFileSaver'
+      'ngFileSaver',
+      'ngSanitize',
+      'ui.select'
     ]);
 
 
