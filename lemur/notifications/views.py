@@ -376,7 +376,7 @@ class Notifications(AuthenticatedResource):
            :statuscode 200: no error
         """
         self.reqparse.add_argument('label', type=str, location='json', required=True)
-        self.reqparse.add_argument('plugin', type=dict, location='json', required=True)
+        self.reqparse.add_argument('notificationOptions', type=list, location='json')
         self.reqparse.add_argument('active', type=bool, location='json')
         self.reqparse.add_argument('certificates', type=list, default=[], location='json')
         self.reqparse.add_argument('description', type=str, location='json')
@@ -385,7 +385,7 @@ class Notifications(AuthenticatedResource):
         return service.update(
             notification_id,
             args['label'],
-            args['plugin']['pluginOptions'],
+            args['notificationOptions'],
             args['description'],
             args['active'],
             args['certificates']
