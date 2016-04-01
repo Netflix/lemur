@@ -9,6 +9,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from sqlalchemy import Column, Integer, ForeignKey
+
 from lemur.database import db
 
 certificate_associations = db.Table('certificate_associations',
@@ -44,7 +45,12 @@ certificate_replacement_associations = db.Table('certificate_replacement_associa
                                                        ForeignKey('certificates.id', ondelete='cascade'))
                                                 )
 
-roles_users = db.Table('roles_users',
+roles_authorities = db.table('roles_authorities',
+                             Column('authority_id', Integer, ForeignKey('authorities.id')),
+                             Column('role_id', Integer, ForeignKey('roles.id'))
+                             )
+
+roles_users = db.table('roles_users',
                        Column('user_id', Integer, ForeignKey('users.id')),
                        Column('role_id', Integer, ForeignKey('roles.id'))
                        )
