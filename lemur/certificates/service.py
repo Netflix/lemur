@@ -11,6 +11,7 @@ from sqlalchemy import func, or_
 from flask import g, current_app
 
 from lemur import database
+from lemur.extensions import metrics
 from lemur.plugins.base import plugins
 from lemur.certificates.models import Certificate
 
@@ -271,6 +272,7 @@ def create(**kwargs):
     cert.notifications = notifications
 
     database.update(cert)
+    metrics.send('certificate_issued', 'counter', 1, metric_tags=dict(owner=cert.owner, issuer=cert.issuer))
     return cert
 
 

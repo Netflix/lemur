@@ -17,3 +17,6 @@ principal = Principal()
 
 from flask_mail import Mail
 smtp_mail = Mail()
+
+from lemur.metrics import Metrics
+metrics = Metrics()
