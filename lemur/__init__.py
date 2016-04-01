@@ -11,6 +11,7 @@
 from __future__ import absolute_import, division, print_function
 
 from lemur import factory
+from lemur.extensions import metrics
 
 from lemur.users.views import mod as users_bp
 from lemur.roles.views import mod as roles_bp
@@ -70,8 +71,17 @@ def configure_hook(app):
         def after(response):
             return response
 
+    @app.errorhandler(500)
+    def internal_error(error):
+        metrics.send('500_status_code', 'counter', 1)
+
+    @app.errorhandler(400)
+    def response_error(error):
+        metrics.send('400_status_code', 'counter', 1)
+
     @app.errorhandler(PermissionDenied)
-    def handle_invalid_usage(error):
+    def permission_denied_error(error):
+        metrics.send('403_status_code', 'counter', 1)
         response = {'message': 'You are not allow to access this resource'}
         response.status_code = 403
         return response

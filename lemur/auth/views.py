@@ -14,6 +14,7 @@ from flask import Blueprint, current_app
 from flask.ext.restful import reqparse, Resource, Api
 from flask.ext.principal import Identity, identity_changed
 
+from lemur.extensions import metrics
 from lemur.common.utils import get_psuedo_random_string
 
 from lemur.users import service as user_service
@@ -96,8 +97,10 @@ class Login(Resource):
             # Tell Flask-Principal the identity changed
             identity_changed.send(current_app._get_current_object(),
                                   identity=Identity(user.id))
+            metrics.send('successful_login', 'counter', 1)
             return dict(token=create_token(user))
 
+        metrics.send('invalid_login', 'counter', 1)
         return dict(message='The supplied credentials are invalid'), 401
 
 
@@ -176,6 +179,7 @@ class Ping(Resource):
         profile = r.json()
 
         user = user_service.get_by_email(profile['email'])
+        metrics.send('successful_login', 'counter', 1)
 
         # update their google 'roles'
         roles = []
@@ -263,6 +267,7 @@ class Google(Resource):
         user = user_service.get_by_email(profile['email'])
 
         if user:
+            metrics.send('successful_login', 'counter', 1)
             return dict(token=create_token(user))
 
 

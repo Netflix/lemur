@@ -167,7 +167,8 @@ setup(
             'email_notification = lemur.plugins.lemur_email.plugin:EmailNotificationPlugin',
             'java_truststore_export = lemur.plugins.lemur_java.plugin:JavaTruststoreExportPlugin',
             'java_keystore_export = lemur.plugins.lemur_java.plugin:JavaKeystoreExportPlugin',
-            'openssl_export = lemur.plugins.lemur_openssl.plugin:OpenSSLExportPlugin'
+            'openssl_export = lemur.plugins.lemur_openssl.plugin:OpenSSLExportPlugin',
+            'atlas_metric = lemur.plugins.lemur_atlas.plugin:AtlasMetricPlugin'
         ],
     },
     classifiers=[
