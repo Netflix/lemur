@@ -36,15 +36,16 @@
       </label>
 
       <div class="col-sm-10">
-        <div class="input-group col-sm-12">
-          <input name="selectedAuthority"
-                 tooltip="If you are unsure which authority you need; you most likely want to use 'verisign'"
-                 type="text" ng-model="certificate.selectedAuthority" placeholder="Authority Name"
-                 typeahead-on-select="certificate.attachAuthority($item)"
-                 typeahead="authority.name for authority in authorityService.findActiveAuthorityByName($viewValue)"
-                 typeahead-loading="loadingAuthorities"
-                 class="form-control" typeahead-wait-ms="1000"
-                 typeahead-template-url="angular/authorities/authority/select.tpl.html" required>
+        <div>
+          <ui-select ng-model="certificate.authority"
+                     theme="bootstrap">
+            <ui-select-match class="ui-select-match" placeholder="My Authority">{{ $select.selected.name }}</ui-select-match>
+            <ui-select-choices class="ui-select-choices" repeat="authority in authorities track by $index"
+                               refresh="authorityService.findActiveAuthorityByName($select.search)"
+                               refresh-delay="0">
+              <div ng-bind-html="authority.formatted | highlight: $select.search"></div>
+            </ui-select-choices>
+          </ui-select>
         </div>
       </div>
     </div>
@@ -116,7 +117,8 @@
         Certificate Signing Request (CSR)
       </label>
       <div class="col-sm-10">
-                <textarea tooltip="Values defined in the CSR will take precedence" name="certificate signing request" ng-model="certificate.csr"
+                <textarea tooltip="Values defined in the CSR will take precedence" name="certificate signing request"
+                          ng-model="certificate.csr"
                           placeholder="PEM encoded string..." class="form-control"
                           ng-pattern="/^-----BEGIN CERTIFICATE REQUEST-----/"></textarea>
 
