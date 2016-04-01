@@ -103,6 +103,10 @@ def create(kwargs):
 
     # the owning dl or role should have this authority associated with it
     owner_role = role_service.get_by_name(kwargs['ownerEmail'])
+
+    if not owner_role:
+        owner_role = role_service.create(kwargs['ownerEmail'])
+
     owner_role.authority = authority
 
     g.current_user.authorities.append(authority)
