@@ -55,6 +55,7 @@ angular.module('lemur')
         templateUrl: '/angular/sources/source/source.tpl.html',
         controller: 'SourcesEditController',
         size: 'lg',
+        backdrop: 'static',
         resolve: {
             editId: function () {
               return sourceId;
@@ -73,7 +74,8 @@ angular.module('lemur')
         animation: true,
         controller: 'SourcesCreateController',
         templateUrl: '/angular/sources/source/source.tpl.html',
-        size: 'lg'
+        size: 'lg',
+        backdrop: 'static'
       });
 
       modalInstance.result.then(function () {

@@ -61,6 +61,7 @@ angular.module('lemur')
         templateUrl: '/angular/notifications/notification/notification.tpl.html',
         controller: 'NotificationsEditController',
         size: 'lg',
+        backdrop: 'static',
         resolve: {
           editId: function () {
             return notificationId;
@@ -79,7 +80,8 @@ angular.module('lemur')
         animation: true,
         controller: 'NotificationsCreateController',
         templateUrl: '/angular/notifications/notification/notification.tpl.html',
-        size: 'lg'
+        size: 'lg',
+        backdrop: 'static'
       });
 
       modalInstance.result.then(function () {

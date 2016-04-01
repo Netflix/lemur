@@ -73,6 +73,7 @@ angular.module('lemur')
         templateUrl: '/angular/authorities/authority/edit.tpl.html',
         controller: 'AuthorityEditController',
         size: 'lg',
+        backdrop: 'static',
         resolve: {
           editId: function () {
             return authorityId;
@@ -92,6 +93,7 @@ angular.module('lemur')
         templateUrl: '/angular/roles/role/role.tpl.html',
         controller: 'RolesEditController',
         size: 'lg',
+        backdrop: 'static',
         resolve: {
           editId: function () {
             return roleId;
@@ -110,7 +112,8 @@ angular.module('lemur')
         animation: true,
         controller: 'AuthorityCreateController',
         templateUrl: '/angular/authorities/authority/authorityWizard.tpl.html',
-        size: 'lg'
+        size: 'lg',
+        backdrop: 'static',
       });
 
       modalInstance.result.then(function () {

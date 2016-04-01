@@ -125,7 +125,8 @@ angular.module('lemur')
         animation: true,
         controller: 'CertificateCreateController',
         templateUrl: '/angular/certificates/certificate/certificateWizard.tpl.html',
-        size: 'lg'
+        size: 'lg',
+        backdrop: 'static'
       });
 
       modalInstance.result.then(function () {
@@ -139,6 +140,7 @@ angular.module('lemur')
         controller: 'CertificateEditController',
         templateUrl: '/angular/certificates/certificate/edit.tpl.html',
         size: 'lg',
+        backdrop: 'static',
         resolve: {
           editId: function () {
             return certificateId;
@@ -156,7 +158,8 @@ angular.module('lemur')
         animation: true,
         controller: 'CertificateUploadController',
         templateUrl: '/angular/certificates/certificate/upload.tpl.html',
-        size: 'lg'
+        size: 'lg',
+        backdrop: 'static'
       });
 
       modalInstance.result.then(function () {
@@ -170,6 +173,7 @@ angular.module('lemur')
         controller: 'CertificateExportController',
         templateUrl: '/angular/certificates/certificate/export.tpl.html',
         size: 'lg',
+        backdrop: 'static',
         resolve: {
           editId: function () {
             return certificateId;

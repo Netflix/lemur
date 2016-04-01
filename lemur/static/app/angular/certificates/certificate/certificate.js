@@ -90,6 +90,10 @@ angular.module('lemur')
     // set the defaults
     CertificateService.getDefaults($scope.certificate);
 
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+
     $scope.create = function (certificate) {
       WizardHandler.wizard().context.loading = true;
       CertificateService.create(certificate).then(

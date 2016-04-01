@@ -54,7 +54,8 @@ angular.module('lemur')
         animation: true,
         controller: 'DomainsCreateController',
         templateUrl: '/angular/domains/domain/domain.tpl.html',
-        size: 'lg'
+        size: 'lg',
+        backdrop: 'static'
       });
 
       modalInstance.result.then(function () {
