@@ -133,17 +133,8 @@ Next, we will create our new database:
 
 .. _InitializingLemur:
 
-Set a password for lemur user inside Postgres:
-
-.. code-block:: bash
-
-    $ sudo -u postgres -i
-    \password lemur
-    Enter new password: lemur
-    Enter it again: lemur
-
-Again, enter CTRL-D to exit the Postgres shell.
-
+.. note::
+    For this guide we assume you will use the `postgres` user to connect to your database, when deploying to a VM or container this is often all you will need. If you have a shared database it is recommend you give Lemur it's own user.
 
 Initializing Lemur
 ------------------
@@ -160,6 +151,7 @@ Additional notifications can be created through the UI or API.  See :ref:`Creati
 
     $ cd /www/lemur/lemur
     $ lemur init
+
 
 .. note:: It is recommended that once the ``lemur`` user is created that you create individual users for every day access.  There is currently no way for a user to self enroll for Lemur access, they must have an administrator create an account for them or be enrolled automatically through SSO.  This can be done through the CLI or UI.  See :ref:`Creating Users <CreatingUsers>` and :ref:`Command Line Interface <CommandLineInterface>` for details.
 
