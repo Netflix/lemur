@@ -1,85 +1,93 @@
 <div class="modal-header">
-    <div class="modal-title">
-        <h3 class="modal-header"><span ng-show="!user.fromServer">Create</span><span ng-show="user.fromServer">Edit</span> User <span class="text-muted"><small>what was your name again?</small></span></h3>
+  <button type="button" class="close" ng-click="cancel()" aria-label="Close"><span aria-hidden="true">&times;</span>
+  </button>
+  <h3><span ng-show="!user.fromServer">Create</span><span ng-show="user.fromServer">Edit</span> User <span
+    class="text-muted"><small>what was your name again?</small></span></h3>
+</div>
+<div class="modal-body">
+  <form name="createForm" class="form-horizontal" role="form" novalidate>
+    <div class="form-group"
+         ng-class="{'has-error': createForm.username.$invalid, 'has-success': !createForm.username.$invalid&&createForm.username.$dirty}">
+      <label class="control-label col-sm-2">
+        Name
+      </label>
+      <div class="col-sm-10">
+        <input name="username" ng-model="user.username" placeholder="Name" class="form-control" required/>
+        <p ng-show="createForm.username.$invalid && !createForm.username.$pristine" class="help-block">You must enter a
+          username</p>
+      </div>
     </div>
-    <div class="modal-body">
-        <form name="createForm" class="form-horizontal" role="form" novalidate>
-            <div class="form-group"
-                 ng-class="{'has-error': createForm.username.$invalid, 'has-success': !createForm.username.$invalid&&createForm.username.$dirty}">
-                <label class="control-label col-sm-2">
-                    Name
-                </label>
-                <div class="col-sm-10">
-                    <input name="username" ng-model="user.username" placeholder="Name" class="form-control" required/>
-                    <p ng-show="createForm.username.$invalid && !createForm.username.$pristine" class="help-block">You must enter a username</p>
-                </div>
-            </div>
-            <div class="form-group"
-                 ng-class="{'has-error': createForm.email.$invalid, 'has-success': !createForm.email.$invalid&&createForm.email.$dirty}">
-                <label class="control-label col-sm-2">
-                    Email
-                </label>
-                <div class="col-sm-10">
-                    <input type="email" name="email" ng-model="user.email" placeholder="hi@example.com" class="form-control" required/>
-                    <p ng-show="createForm.email.$invalid && !createForm.email.$pristine" class="help-block">You must enter an email</p>
-                </div>
-            </div>
-            <div ng-if="!user.id" class="form-group"
-                 ng-class="{'has-error': createForm.password.$invalid, 'has-success': !createForm.password.$invalid&&createForm.password.$dirty}">
-                <label class="control-label col-sm-2">
-                    Password
-                </label>
-                <div class="col-sm-10">
-                    <input type="password" name="password" ng-model="user.password" placeholder="hunter2" class="form-control" />
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="control-label col-sm-2">
-                    Active
-                </label>
-                <div class="col-sm-10">
-                    <div class="checkbox col-sm-10">
-                        <switch ng-model="user.active" id="active" name="active" ng-init="user.active=true" class="green small"></switch>
-                    </div>
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="control-label col-sm-2">
-                    Roles
-                </label>
-                <div class="col-sm-10">
-                    <div class="input-group">
-                        <input type="text" ng-model="user.selectedRole" placeholder="Role Name"
-                               typeahead="role.name for role in roleService.findRoleByName($viewValue)" typeahead-loading="loadingRoles"
-                               class="form-control input-md" typeahead-on-select="user.attachRole($item)" typeahead-min-wait="50"
-                               tooltip="Roles control which authorities a user can issue certificates from"
-                               tooltip-trigger="focus" tooltip-placement="top">
-                        <span class="input-group-btn">
-                            <button ng-model="roles.show" class="btn btn-md btn-default" btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
-                                <span class="badge">{{ user.roles.total || 0 }}</span>
-                            </button>
-                        </span>
-                    </div>
-                    <table ng-show="user.roles" class="table">
-                        <tr ng-repeat="role in user.roles track by $index">
-                            <td><a class="btn btn-sm btn-info" href="#/roles/{{ role.id }}/edit">{{ role.name }}</a></td>
-                            <td><span class="text-muted">{{ role.description }}</span></td>
-                            <td>
-                                <button type="button" ng-click="user.removeRole($index)" class="btn btn-danger btn-sm pull-right">Remove</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td></td>
-                            <td><a class="pull-right" ng-click="loadMoreRoles()"><strong>More</strong></a></td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-        </form>
-        <div class="modal-footer">
-            <button ng-click="save(user)" type="submit" ng-disabled="createForm.$invalid" class="btn btn-primary">Save</button>
-            <button ng-click="cancel()" class="btn btn-danger">Cancel</button>
+    <div class="form-group"
+         ng-class="{'has-error': createForm.email.$invalid, 'has-success': !createForm.email.$invalid&&createForm.email.$dirty}">
+      <label class="control-label col-sm-2">
+        Email
+      </label>
+      <div class="col-sm-10">
+        <input type="email" name="email" ng-model="user.email" placeholder="hi@example.com" class="form-control"
+               required/>
+        <p ng-show="createForm.email.$invalid && !createForm.email.$pristine" class="help-block">You must enter an
+          email</p>
+      </div>
+    </div>
+    <div ng-if="!user.id" class="form-group"
+         ng-class="{'has-error': createForm.password.$invalid, 'has-success': !createForm.password.$invalid&&createForm.password.$dirty}">
+      <label class="control-label col-sm-2">
+        Password
+      </label>
+      <div class="col-sm-10">
+        <input type="password" name="password" ng-model="user.password" placeholder="hunter2" class="form-control"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="control-label col-sm-2">
+        Active
+      </label>
+      <div class="col-sm-10">
+        <div class="checkbox col-sm-10">
+          <switch ng-model="user.active" id="active" name="active" ng-init="user.active=true"
+                  class="green small"></switch>
         </div>
+      </div>
     </div>
+    <div class="form-group">
+      <label class="control-label col-sm-2">
+        Roles
+      </label>
+      <div class="col-sm-10">
+        <div class="input-group">
+          <input type="text" ng-model="user.selectedRole" placeholder="Role Name"
+                 typeahead="role.name for role in roleService.findRoleByName($viewValue)"
+                 typeahead-loading="loadingRoles"
+                 class="form-control input-md" typeahead-on-select="user.attachRole($item)" typeahead-min-wait="50"
+                 tooltip="Roles control which authorities a user can issue certificates from"
+                 tooltip-trigger="focus" tooltip-placement="top">
+                    <span class="input-group-btn">
+                        <button ng-model="roles.show" class="btn btn-md btn-default" btn-checkbox btn-checkbox-true="1"
+                                btn-checkbox-false="0">
+                          <span class="badge">{{ user.roles.total || 0 }}</span>
+                        </button>
+                    </span>
+        </div>
+        <table ng-show="user.roles" class="table">
+          <tr ng-repeat="role in user.roles track by $index">
+            <td><a class="btn btn-sm btn-info" href="#/roles/{{ role.id }}/edit">{{ role.name }}</a></td>
+            <td><span class="text-muted">{{ role.description }}</span></td>
+            <td>
+              <button type="button" ng-click="user.removeRole($index)" class="btn btn-danger btn-sm pull-right">Remove
+              </button>
+            </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td></td>
+            <td><a class="pull-right" ng-click="loadMoreRoles()"><strong>More</strong></a></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </form>
+  <div class="modal-footer">
+    <button ng-click="save(user)" type="submit" ng-disabled="createForm.$invalid" class="btn btn-primary">Save</button>
+    <button ng-click="cancel()" class="btn btn-danger">Cancel</button>
+  </div>
 </div>

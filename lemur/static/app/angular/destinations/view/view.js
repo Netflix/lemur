@@ -55,6 +55,7 @@ angular.module('lemur')
         templateUrl: '/angular/destinations/destination/destination.tpl.html',
         controller: 'DestinationsEditController',
         size: 'lg',
+        backdrop: 'static',
         resolve: {
             editId: function () {
               return destinationId;
@@ -73,7 +74,8 @@ angular.module('lemur')
         animation: true,
         controller: 'DestinationsCreateController',
         templateUrl: '/angular/destinations/destination/destination.tpl.html',
-        size: 'lg'
+        size: 'lg',
+        backdrop: 'static'
       });
 
       modalInstance.result.then(function () {

@@ -47,6 +47,7 @@ angular.module('lemur')
         templateUrl: '/angular/roles/role/role.tpl.html',
         controller: 'RolesEditController',
         size: 'lg',
+        backdrop: 'static',
         resolve: {
           editId: function () {
             return roleId;
@@ -65,7 +66,8 @@ angular.module('lemur')
         animation: true,
         controller: 'RolesCreateController',
         templateUrl: '/angular/roles/role/role.tpl.html',
-        size: 'lg'
+        size: 'lg',
+        backdrop: 'static'
       });
 
       modalInstance.result.then(function () {

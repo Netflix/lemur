@@ -41,6 +41,10 @@ angular.module('lemur')
     // set the defaults
     AuthorityService.getDefaults($scope.authority);
 
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+
     $scope.create = function (authority) {
       WizardHandler.wizard().context.loading = true;
       AuthorityService.create(authority).then(

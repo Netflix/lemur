@@ -43,6 +43,7 @@ angular.module('lemur')
         templateUrl: '/angular/users/user/user.tpl.html',
         controller: 'UsersEditController',
         size: 'lg',
+        backdrop: 'static',
         resolve: {
           editId: function () {
             return userId;
@@ -61,7 +62,8 @@ angular.module('lemur')
         animation: true,
         controller: 'UsersCreateController',
         templateUrl: '/angular/users/user/user.tpl.html',
-        size: 'lg'
+        size: 'lg',
+        backdrop: 'static'
       });
 
       modalInstance.result.then(function () {
