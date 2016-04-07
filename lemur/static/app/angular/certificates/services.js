@@ -23,7 +23,7 @@ angular.module('lemur')
 
           if (angular.isString(this.subAltValue) && angular.isString(this.subAltType)) {
             this.extensions.subAltNames.names.push({'nameType': this.subAltType, 'value': this.subAltValue});
-            this.findDuplicates();
+            //this.findDuplicates();
           }
 
           this.subAltType = null;
@@ -31,10 +31,14 @@ angular.module('lemur')
         },
         removeSubAltName: function (index) {
           this.extensions.subAltNames.names.splice(index, 1);
-          this.findDuplicates();
+          //this.findDuplicates();
         },
         attachCustom: function () {
-          if (this.extensions === undefined || this.extensions.custom === undefined) {
+          if (this.extensions === undefined) {
+            this.extensions = {};
+          }
+
+          if (this.extensions.custom === undefined) {
             this.extensions = {'custom': []};
           }
 

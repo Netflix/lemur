@@ -1,5 +1,5 @@
 """
-.. module: elb
+.. module: lemur.plugins.lemur_aws.elb
     :synopsis: Module contains some often used and helpful classes that
     are used to deal with ELBs
 
@@ -28,7 +28,6 @@ def is_valid(listener_tuple):
 
     :param listener_tuple:
     """
-
     current_app.logger.debug(listener_tuple)
     lb_port, i_port, lb_protocol, arn = listener_tuple
     current_app.logger.debug(lb_protocol)
