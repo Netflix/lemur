@@ -29,7 +29,11 @@ angular.module('lemur')
           this.extensions.subAltNames.names.splice(index, 1);
         },
         attachCustom: function () {
-          if (this.extensions === undefined || this.extensions.custom === undefined) {
+          if (this.extensions === undefined) {
+            this.extensions = {};
+          }
+
+          if (this.extensions.custom === undefined) {
             this.extensions = {'custom': []};
           }
 
@@ -80,6 +84,7 @@ angular.module('lemur')
 
     AuthorityService.create = function (authority) {
       authority.attachSubAltName();
+      authority.attachCustom();
       return AuthorityApi.post(authority);
     };
 
