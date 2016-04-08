@@ -79,24 +79,32 @@
              tooltip="If no date is selected Lemur attempts to issue a 2 year certificate">
         Validity Range <span class="glyphicon glyphicon-question-sign"></span>
       </label>
-
-      <div class="col-sm-4">
-        <div>
-          <div class="input-group">
-            <input tooltip="Starting Date (yyyy/MM/dd)" class="form-control" datepicker-popup="yyyy/MM/dd"
-                   is-open="$parent.openNotBefore.isOpen" min-date="certificate.authority.notBefore"
-                   max-date="certificate.authority.maxDate" ng-model="certificate.validityStart"/>
-          <span class="input-group-btn">
-            <button class="btn btn-default" ng-click="openNotBefore($event)"><i
-              class="glyphicon glyphicon-calendar"></i></button>
-          </span>
-          </div>
+      <div class="col-sm-2">
+        <select ng-model="certificate.validityYears" class="form-control">
+          <option value="1">1 year</option>
+          <option value="2">2 years</option>
+          <option value="3">3 years</option>
+          <option value="4">4 years</option>
+        </select>
+      </div>
+      <span style="padding-top: 15px" class="text-center col-sm-1">
+        <strong>- or -</strong>
+      </span>
+      <div class="col-sm-3">
+        <div class="input-group">
+          <input tooltip="Starting Date (yyyy/MM/dd)" class="form-control" datepicker-popup="yyyy/MM/dd"
+                 is-open="$parent.openNotBefore.isOpen" min-date="certificate.authority.notBefore"
+                 max-date="certificate.authority.maxDate" ng-model="certificate.validityStart"/>
+        <span class="input-group-btn">
+          <button class="btn btn-default" ng-click="openNotBefore($event)"><i
+            class="glyphicon glyphicon-calendar"></i></button>
+        </span>
         </div>
       </div>
-      <span style="padding-top: 15px" class="text-center col-sm-2"><label><span
+      <span style="padding-top: 15px" class="text-center col-sm-1"><label><span
         class="glyphicon glyphicon-resize-horizontal"></span></label></span>
 
-      <div class="col-sm-4">
+      <div class="col-sm-3">
         <div>
           <div class="input-group">
             <input tooltip="Ending Date (yyyy/MM/dd)" class="form-control" datepicker-popup="yyyy/MM/dd"

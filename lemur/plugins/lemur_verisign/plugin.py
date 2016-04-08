@@ -82,6 +82,12 @@ def process_options(options):
         data['specificEndDate'] = str(end_date)
         data['validityPeriod'] = period
 
+    elif options.get('validityYears'):
+        if options['validityYears'] in [1, 2]:
+            data['validityPeriod'] = str(options['validityYears']) + 'Y'
+        else:
+            raise Exception("Verisign issued certificates cannot exceed two years in validity")
+
     return data
 
 
