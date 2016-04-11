@@ -39,7 +39,7 @@ angular.module('lemur')
           }
 
           if (this.extensions.custom === undefined) {
-            this.extensions = {'custom': []};
+            this.extensions.custom = [];
           }
 
           if (angular.isString(this.customOid) && angular.isString(this.customEncoding) && angular.isString(this.customValue)) {
