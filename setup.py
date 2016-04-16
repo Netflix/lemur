@@ -63,7 +63,7 @@ tests_require = [
     'pyflakes',
     'moto==0.4.23',
     'nose==1.3.7',
-    'pytest==2.8.5',
+    'pytest==2.9.1',
     'pytest-flask==0.10.0'
 ]
 
