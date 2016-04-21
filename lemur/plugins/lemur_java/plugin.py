@@ -10,10 +10,11 @@ import subprocess
 
 from flask import current_app
 
+from cryptography.fernet import Fernet
+
 from lemur.utils import mktempfile, mktemppath
 from lemur.plugins.bases import ExportPlugin
 from lemur.plugins import lemur_java as java
-from lemur.common.utils import get_psuedo_random_string
 
 
 def run_process(command):
@@ -29,6 +30,7 @@ def run_process(command):
     if p.returncode != 0:
         current_app.logger.debug(" ".join(command))
         current_app.logger.error(stderr)
+        current_app.logger.error(stdout)
         raise Exception(stderr)
 
 
@@ -85,39 +87,36 @@ def create_truststore(cert, chain, jks_tmp, alias, passphrase):
                 ])
 
 
-def create_keystore(cert, jks_tmp, key, alias, passphrase):
-    with mktempfile() as key_tmp:
-        with open(key_tmp, 'w') as f:
-            f.write(key)
+def create_keystore(cert, chain, jks_tmp, key, alias, passphrase):
+    # Create PKCS12 keystore from private key and public certificate
+    with mktempfile() as cert_tmp:
+        with open(cert_tmp, 'w') as f:
+            f.writelines([key + "\n", cert + "\n", chain + "\n"])
 
-        # Create PKCS12 keystore from private key and public certificate
-        with mktempfile() as cert_tmp:
-            with open(cert_tmp, 'w') as f:
-                f.write(cert)
+        with mktempfile() as p12_tmp:
+            run_process([
+                "openssl",
+                "pkcs12",
+                "-export",
+                "-nodes",
+                "-name", alias,
+                "-in", cert_tmp,
+                "-out", p12_tmp,
+                "-password", "pass:{}".format(passphrase)
+            ])
 
-            with mktempfile() as p12_tmp:
-                run_process([
-                    "openssl",
-                    "pkcs12",
-                    "-export",
-                    "-name", alias,
-                    "-in", cert_tmp,
-                    "-inkey", key_tmp,
-                    "-out", p12_tmp,
-                    "-password", "pass:{}".format(passphrase)
-                ])
-
-                # Convert PKCS12 keystore into a JKS keystore
-                run_process([
-                    "keytool",
-                    "-importkeystore",
-                    "-destkeystore", jks_tmp,
-                    "-srckeystore", p12_tmp,
-                    "-srcstoretype", "PKCS12",
-                    "-alias", alias,
-                    "-srcstorepass", passphrase,
-                    "-deststorepass", passphrase
-                ])
+            # Convert PKCS12 keystore into a JKS keystore
+            run_process([
+                "keytool",
+                "-importkeystore",
+                "-destkeystore", jks_tmp,
+                "-srckeystore", p12_tmp,
+                "-srcstoretype", "pkcs12",
+                "-deststoretype", "JKS",
+                "-alias", alias,
+                "-srcstorepass", passphrase,
+                "-deststorepass", passphrase
+            ])
 
 
 class JavaTruststoreExportPlugin(ExportPlugin):
@@ -165,7 +164,7 @@ class JavaTruststoreExportPlugin(ExportPlugin):
         if self.get_option('passphrase', options):
             passphrase = self.get_option('passphrase', options)
         else:
-            passphrase = get_psuedo_random_string()
+            passphrase = Fernet.generate_key()
 
         with mktemppath() as jks_tmp:
             create_truststore(body, chain, jks_tmp, alias, passphrase)
@@ -215,7 +214,7 @@ class JavaKeystoreExportPlugin(ExportPlugin):
         if self.get_option('passphrase', options):
             passphrase = self.get_option('passphrase', options)
         else:
-            passphrase = get_psuedo_random_string()
+            passphrase = Fernet.generate_key()
 
         if self.get_option('alias', options):
             alias = self.get_option('alias', options)
@@ -226,8 +225,7 @@ class JavaKeystoreExportPlugin(ExportPlugin):
             if not key:
                 raise Exception("Unable to export, no private key found.")
 
-            create_truststore(body, chain, jks_tmp, alias, passphrase)
-            create_keystore(body, jks_tmp, key, alias, passphrase)
+            create_keystore(body, chain, jks_tmp, key, alias, passphrase)
 
             with open(jks_tmp, 'rb') as f:
                 raw = f.read()
