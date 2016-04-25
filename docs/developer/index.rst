@@ -151,7 +151,7 @@ This is accomplished with a Gulp task:
 
 ::
 
-    gulp serve
+    ./node_modules/.bin/gulp serve
 
 The gulp task compiles all the JS/CSS/HTML files and opens the Lemur welcome page in your default browsers. Additionally any changes to made to the JS/CSS/HTML with be reloaded in your browsers.
 
