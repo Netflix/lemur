@@ -243,13 +243,14 @@ See :ref:`Using Supervisor <UsingSupervisor>` for more details on using Supervis
 Syncing
 -------
 
-Lemur uses periodic sync tasks to make sure it is up-to-date with its environment. As always, things can change outside of Lemur, but we do our best to reconcile those changes, for example, using Cron:
+Lemur uses periodic sync tasks to make sure it is up-to-date with its environment. Things change outside of Lemur we do our best to reconcile those changes. The recommended method is to use CRON:
 
 .. code-block:: bash
 
   $ crontab -e
-  * 3 * * * lemur sync --all
-  * 3 * * * lemur check_revoked
+  */15 * * * * lemur sync -s all
+  0 22 * * * lemur check_revoked
+  0 22 * * * lemur notify
 
 
 Additional Utilities

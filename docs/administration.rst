@@ -588,24 +588,33 @@ All commands default to `~/.lemur/lemur.conf.py` if a configuration is not speci
 
     Traverses every certificate that Lemur is aware of and attempts to understand its validity.
     It utilizes both OCSP and CRL. If Lemur is unable to come to a conclusion about a certificates
-    validity its status is marked 'unknown'
+    validity its status is marked 'unknown'.
 
 
 .. data:: sync
 
     Sync attempts to discover certificates in the environment that were not created by Lemur. If you wish to only sync
-    a few sources you can pass a comma delimited list of sources to sync
+    a few sources you can pass a comma delimited list of sources to sync.
 
     ::
 
-        lemur sync source1,source2
+        lemur sync -s source1,source2
 
 
-    Additionally you can also list the available sources that Lemur can sync
+    Additionally you can also list the available sources that Lemur can sync.
 
     ::
 
-        lemur sync -list
+        lemur sync
+
+
+.. data:: notify
+
+    Will traverse all current notifications and see if any of them need to be triggered.
+
+    ::
+
+        lemur notify
 
 
 Sub-commands

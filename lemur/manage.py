@@ -30,7 +30,7 @@ from lemur.certificates.verify import verify_string
 
 from lemur.plugins.lemur_aws import elb
 
-from lemur.sources.service import sync
+from lemur.sources.service import sync as source_sync
 
 from lemur import create_app
 
@@ -189,7 +189,7 @@ def generate_settings():
 
 
 @manager.option('-s', '--sources', dest='labels')
-def sync_sources(labels):
+def sync(labels):
     """
     Attempts to run several methods Certificate discovery. This is
     run on a periodic basis and updates the Lemur datastore with the
@@ -218,9 +218,9 @@ def sync_sources(labels):
                 labels = labels.split(",")
 
                 if labels[0] == 'all':
-                    sync()
+                    source_sync()
                 else:
-                    sync(labels=labels)
+                    source_sync(labels=labels)
 
                 sys.stdout.write(
                     "[+] Finished syncing sources. Run Time: {time}\n".format(
