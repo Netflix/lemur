@@ -295,3 +295,25 @@ Then you can manage the process by running::
 It will start a shell from which you can start/stop/restart the service.
 
 You can read all errors that might occur from /tmp/lemur.log.
+
+
+Periodic Tasks
+==============
+
+Lemur contains a few tasks that are run and scheduled basis, currently the recommend way to run these tasks is to create
+a cron job that runs the commands.
+
+There are currently three commands that could/should be run on a periodic basis:
+
+- `notify`
+- `check_revoked`
+- `sync`
+
+How often you run these commands is largely up to the user. `notify` and `check_revoked` are typically run at least once a day.
+`sync` is typically run every 15 minutes.
+
+Example cron entries::
+
+    0 22 * * * lemuruser export LEMUR_CONF=/Users/me/.lemur/lemur.conf.py; /www/lemur/bin/lemur notify
+    */15 * * * * lemuruser export LEMUR_CONF=/Users/me/.lemur/lemur.conf.py; /www/lemur/bin/lemur sync -s all
+    0 22 * * * lemuruser export LEMUR_CONF=/Users/me/.lemur/lemur.conf.py; /www/lemur/bin/lemur check_revoked
