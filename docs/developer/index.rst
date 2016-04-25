@@ -144,6 +144,17 @@ If you've made changes and need to compile them by hand for any reason, you can 
 
 The minified and processed files should be committed alongside the unprocessed changes.
 
+It's also important to note that Lemur's frontend and API are not tied together. The API does not serve any of the static assets, we rely on nginx or some other file server to server all of the static assets.
+During development that means we need an additional server to serve those static files for the GUI.
+
+This is accomplished with a Gulp task:
+
+::
+
+    gulp serve
+
+The gulp task compiles all the JS/CSS/HTML files and opens the Lemur welcome page in your default browsers. Additionally any changes to made to the JS/CSS/HTML with be reloaded in your browsers.
+
 Developing with Flask
 ----------------------
 
