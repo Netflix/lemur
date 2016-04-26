@@ -35,35 +35,35 @@ with open(os.path.join(ROOT, "lemur", "__about__.py")) as f:
 
 install_requires = [
     'Flask==0.10.1',
-    'Flask-RESTful==0.3.3',
+    'Flask-RESTful==0.3.5',
     'Flask-SQLAlchemy==2.1',
     'Flask-Script==2.0.5',
-    'Flask-Migrate==1.7.0',
+    'Flask-Migrate==1.8.0',
     'Flask-Bcrypt==0.7.1',
     'Flask-Principal==0.4.0',
     'Flask-Mail==0.9.1',
-    'SQLAlchemy-Utils==0.31.4',
+    'SQLAlchemy-Utils==0.32.1',
     'BeautifulSoup4==4.4.1',
     'requests==2.9.1',
     'psycopg2==2.6.1',
     'arrow==0.7.0',
-    'boto==2.38.0',  # we might make this optional
+    'boto==2.39.0',  # we might make this optional
     'six==1.10.0',
-    'gunicorn==19.4.1',
+    'gunicorn==19.4.5',
     'pycrypto==2.6.1',
-    'cryptography==1.1.2',
-    'pyopenssl==0.15.1',
+    'cryptography==1.3.1',
+    'pyopenssl==16.0.0',
     'pyjwt==1.4.0',
-    'xmltodict==0.9.2',
+    'xmltodict==0.10.1',
     'lockfile==0.12.2',
     'future==0.15.2',
 ]
 
 tests_require = [
     'pyflakes',
-    'moto==0.4.19',
+    'moto==0.4.23',
     'nose==1.3.7',
-    'pytest==2.8.5',
+    'pytest==2.9.1',
     'pytest-flask==0.10.0'
 ]
 
