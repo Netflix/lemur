@@ -306,7 +306,8 @@ class CertificatesList(AuthenticatedResource):
                 "validityEnd": "2015-06-16T07:00:00.000Z",
                 "replacements": [
                     {'id': 123}
-                ]
+                ],
+                "name": "TestCertificate"
              }
 
            **Example response**:
@@ -366,6 +367,7 @@ class CertificatesList(AuthenticatedResource):
         self.reqparse.add_argument('organization', type=str, location='json', required=True)
         self.reqparse.add_argument('organizationalUnit', type=str, location='json', required=True)
         self.reqparse.add_argument('owner', type=str, location='json', required=True)
+        self.reqparse.add_argument('name', type=str, location='json')
         self.reqparse.add_argument('commonName', type=str, location='json', required=True)
         self.reqparse.add_argument('csr', type=str, location='json')
 
