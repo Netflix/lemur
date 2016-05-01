@@ -41,7 +41,9 @@ angular.module('lemur')
           toaster.pop({
             type: 'error',
             title: certificate.name,
-            body: 'Failed to export ' + response.data.message,
+            body: 'lemur-bad-request',
+            bodyOutputType: 'directive',
+            directiveData: response.data,
             timeout: 100000
           });
         });
@@ -73,7 +75,9 @@ angular.module('lemur')
           toaster.pop({
             type: 'error',
             title: certificate.name,
-            body: 'Failed to update ' + response.data.message,
+            body: 'lemur-bad-request',
+            bodyOutputType: 'directive',
+            directiveData: response.data,
             timeout: 100000
           });
         });
@@ -109,9 +113,12 @@ angular.module('lemur')
           toaster.pop({
             type: 'error',
             title: certificate.name,
-            body: 'Was not created! ' + response.data.message,
+            body: 'lemur-bad-request',
+            bodyOutputType: 'directive',
+            directiveData: response.data,
             timeout: 100000
           });
+
           WizardHandler.wizard().context.loading = false;
         });
     };

@@ -246,14 +246,14 @@ class CertificatesList(AuthenticatedResource):
            :statuscode 200: no error
            :statuscode 403: unauthenticated
         """
-        role = role_service.get_by_name(data.authority.owner)
+        role = role_service.get_by_name(data['authority'].owner)
 
         # all the authority role members should be allowed
-        roles = [x.name for x in data.authority.roles]
+        roles = [x.name for x in data['authority'].roles]
 
         # allow "owner" roles by team DL
         roles.append(role)
-        authority_permission = AuthorityPermission(data.authority.id, roles)
+        authority_permission = AuthorityPermission(data['authority'].id, roles)
 
         if authority_permission.can():
             return service.create(**data)

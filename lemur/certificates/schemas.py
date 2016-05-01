@@ -196,9 +196,9 @@ class CertificateInputSchema(LemurInputSchema):
     validity_end = fields.DateTime()
     validity_years = fields.Integer()
 
-    destinations = fields.Nested(AssociatedDestinationSchema, many=True)
-    notifications = fields.Nested(AssociatedNotificationSchema, many=True)
-    replacements = fields.Nested(AssociatedCertificateSchema, many=True)
+    destinations = fields.Nested(AssociatedDestinationSchema, missing=[], many=True)
+    notifications = fields.Nested(AssociatedNotificationSchema, missing=[], many=True)
+    replacements = fields.Nested(AssociatedCertificateSchema, missing=[], many=True)
 
     csr = fields.String(validate=validate_csr)
 
@@ -226,10 +226,10 @@ class CertificateInputSchema(LemurInputSchema):
             if not data['validity_start'] < data['validity_end']:
                 raise ValidationError('Validity start must be before validity end.')
 
-            if data.get('validity_start') < data['authority'].not_before:
+            if data.get('validity_start').replace(tzinfo=None) < data['authority'].not_before:
                 raise ValidationError('Validity start must not be before {0}'.format(data['authority'].not_before))
 
-            if data.get('validity_end') > data['authority'].not_after:
+            if data.get('validity_end').replace(tzinfo=None) > data['authority'].not_after:
                 raise ValidationError('Validity end must not be after {0}'.format(data['authority'].not_after))
 
         if data.get('validity_years'):
@@ -243,7 +243,7 @@ class CertificateInputSchema(LemurInputSchema):
                 raise ValidationError('Validity end must not be after {0}'.format(data['authority'].not_after))
 
 
-class CertificateOuputSchema(LemurOutputSchema):
+class CertificateOutputSchema(LemurOutputSchema):
     id = fields.Integer()
     active = fields.Boolean()
     bits = fields.Integer()
@@ -266,18 +266,18 @@ class CertificateUploadInputSchema(LemurInputSchema):
     name = fields.String()
     owner = fields.Email(required=True)
     description = fields.String()
-    active = fields.Boolean()
+    active = fields.Boolean(missing=True)
 
     private_key = fields.String(validate=validate_private_key)
-    body = fields.String(required=True, validate=validate_public_certificate)
+    public_cert = fields.String(required=True, validate=validate_public_certificate)
     chain = fields.String(validate=validate_public_certificate)
 
-    destinations = fields.Nested(AssociatedDestinationSchema, many=True)
-    notifications = fields.Nested(AssociatedNotificationSchema, many=True)
-    replacements = fields.Nested(AssociatedCertificateSchema, many=True)
+    destinations = fields.Nested(AssociatedDestinationSchema, missing=[], many=True)
+    notifications = fields.Nested(AssociatedNotificationSchema, missing=[], many=True)
+    replacements = fields.Nested(AssociatedCertificateSchema, missing=[], many=True)
 
     @validates_schema
-    def destinations(self, data):
+    def keys(self, data):
         if data.get('destinations'):
             if not data.get('private_key'):
                 raise ValidationError('Destinations require private key.')
@@ -288,7 +288,7 @@ class CertificateExportInputSchema(LemurInputSchema):
 
 
 certificate_input_schema = CertificateInputSchema()
-certificate_output_schema = CertificateOuputSchema()
-certificates_output_schema = CertificateOuputSchema(many=True)
+certificate_output_schema = CertificateOutputSchema()
+certificates_output_schema = CertificateOutputSchema(many=True)
 certificate_upload_input_schema = CertificateUploadInputSchema()
 certificate_export_input_schema = CertificateExportInputSchema()

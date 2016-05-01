@@ -88,7 +88,6 @@ def export(cert, export_plugin):
     :return:
     """
     plugin = plugins.get(export_plugin['slug'])
-
     return plugin.export(cert.body, cert.chain, cert.private_key, export_plugin['pluginOptions'])
 
 
@@ -222,8 +221,8 @@ def upload(**kwargs):
 
     g.user.certificates.append(cert)
 
-    database.update_list(cert, 'destinations', Destination, kwargs.get('destinations'))
-    database.update_list(cert, 'notifications', Notification, kwargs.get('notifications'))
+    database.update_list(cert, 'destinations', Destination, kwargs['destinations'])
+    database.update_list(cert, 'notifications', Notification, kwargs['notifications'])
     database.update_list(cert, 'replaces', Certificate, kwargs['replacements'])
 
     # create default notifications for this certificate if none are provided
@@ -256,9 +255,9 @@ def create(**kwargs):
 
     # do this after the certificate has already been created because if it fails to upload to the third party
     # we do not want to lose the certificate information.
-    database.update_list(cert, 'destinations', Destination, kwargs.get('destinations'))
+    database.update_list(cert, 'destinations', Destination, kwargs['destinations'])
     database.update_list(cert, 'replaces', Certificate, kwargs['replacements'])
-    database.update_list(cert, 'notifications', Notification, kwargs.get('notifications'))
+    database.update_list(cert, 'notifications', Notification, kwargs['notifications'])
 
     # create default notifications for this certificate if none are provided
     notifications = cert.notifications
