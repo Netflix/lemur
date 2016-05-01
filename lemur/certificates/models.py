@@ -228,7 +228,7 @@ class Certificate(db.Model):
     cn = Column(String(128))
     description = Column(String(1024))
     active = Column(Boolean, default=True)
-    san = Column(String(1024))
+    san = Column(String(1024))  # TODO this should be migrated to boolean
     not_before = Column(DateTime)
     not_after = Column(DateTime)
     date_created = Column(DateTime, PassiveDefault(func.now()), nullable=False)

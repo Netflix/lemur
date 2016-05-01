@@ -1,15 +1,15 @@
 import os
 import pytest
 
+from flask import current_app
+
+from flask.ext.principal import identity_changed, Identity
+
 from lemur import create_app
 from lemur.database import db as _db
-from lemur.users import service as user_service
-from lemur.roles import service as role_service
 
-
-def pytest_addoption(parser):
-    parser.addoption("--lemurconfig", help="override the default test config")
-    parser.addoption("--runslow", action="store_true", help="run slow tests")
+from .factories import AuthorityFactory, NotificationFactory, DestinationFactory, \
+    CertificateFactory, UserFactory, RoleFactory
 
 
 def pytest_runtest_setup(item):
@@ -35,10 +35,7 @@ def app(request):
     Creates a new Flask application for a test duration.
     Uses application factory `create_app`.
     """
-    if request.config.getoption('--lemurconfig'):
-        _app = create_app(request.config.getoption('--lemurconfig'))
-    else:
-        _app = create_app(os.path.dirname(os.path.realpath(__file__)) + '/conf.py')
+    _app = create_app(os.path.dirname(os.path.realpath(__file__)) + '/conf.py')
     ctx = _app.app_context()
     ctx.push()
 
@@ -54,9 +51,10 @@ def db(app, request):
 
     _db.app = app
 
-    user = user_service.create('user', 'test', 'user@example.com', True, None, [])
-    admin_role = role_service.create('admin')
-    admin = user_service.create('admin', 'admin', 'admin@example.com', True, None, [admin_role])
+    UserFactory()
+    r = RoleFactory(name='admin')
+    UserFactory(roles=[r])
+
     _db.session.commit()
     yield _db
 
@@ -68,10 +66,52 @@ def session(db, request):
     for test duration.
     """
     db.session.begin_nested()
-    yield session
+    yield db.session
     db.session.rollback()
 
 
 @pytest.yield_fixture(scope="function")
 def client(app, session, client):
     yield client
+
+
+@pytest.fixture
+def authority(session):
+    a = AuthorityFactory()
+    session.commit()
+    return a
+
+
+@pytest.fixture
+def destination(session):
+    d = DestinationFactory()
+    session.commit()
+    return d
+
+
+@pytest.fixture
+def notification(session):
+    n = NotificationFactory()
+    session.commit()
+    return n
+
+
+@pytest.fixture
+def certificate(session):
+    c = CertificateFactory()
+    session.commit()
+    return c
+
+
+@pytest.yield_fixture(scope="function")
+def logged_in_user(app, user):
+    with app.test_request_context():
+        identity_changed.send(current_app._get_current_object(), identity=Identity(user.id))
+        yield
+
+
+@pytest.yield_fixture(scope="function")
+def logged_in_admin(app, admin_user):
+    with app.test_request_context():
+        identity_changed.send(current_app._get_current_object(), identity=Identity(admin_user.id))
+        yield
