@@ -100,7 +100,7 @@ def test_certificate_input_schema(client, authority):
     assert data['country'] == 'US'
     assert data['location'] == 'Los Gatos'
 
-    assert len(data.keys()) == 9
+    assert len(data.keys()) == 12
 
 
 def test_certificate_input_with_extensions(client, authority):
