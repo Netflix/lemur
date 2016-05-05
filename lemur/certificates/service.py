@@ -249,7 +249,7 @@ def create(**kwargs):
     cert.owner = kwargs['owner']
 
     database.create(cert)
-    cert.description = kwargs['description']
+    cert.description = kwargs.get('description')
     g.user.certificates.append(cert)
     database.update(g.user)
 

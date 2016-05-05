@@ -18,11 +18,15 @@ from lemur.plugins import plugins
 
 
 class AssociatedAuthoritySchema(LemurInputSchema):
-    id = fields.Int(required=True)
+    id = fields.Int()
+    name = fields.String()
 
     @post_load
     def get_object(self, data, many=False):
-        return Authority.query.filter(Authority.id == data['id']).one()
+        if data.get('id'):
+            return Authority.query.filter(Authority.id == data['id']).one()
+        elif data.get('name'):
+            return Authority.query.filter(Authority.name == data['name']).one()
 
 
 class AssociatedDestinationSchema(LemurInputSchema):
