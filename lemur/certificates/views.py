@@ -9,128 +9,23 @@ import base64
 from builtins import str
 
 from flask import Blueprint, make_response, jsonify
-from flask.ext.restful import reqparse, Api, fields
+from flask.ext.restful import reqparse, Api
 
-from cryptography import x509
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import serialization
-
-from lemur.plugins import plugins
+from lemur.common.schema import validate_schema
+from lemur.common.utils import paginated_parser
 
 from lemur.auth.service import AuthenticatedResource
-from lemur.auth.permissions import ViewKeyPermission
-from lemur.auth.permissions import AuthorityPermission
-from lemur.auth.permissions import UpdateCertificatePermission
-from lemur.auth.permissions import SensitiveDomainPermission
+from lemur.auth.permissions import ViewKeyPermission, AuthorityPermission, UpdateCertificatePermission
 
 from lemur.certificates import service
-from lemur.authorities.models import Authority
+from lemur.certificates.schemas import certificate_input_schema, certificate_output_schema, \
+    certificate_upload_input_schema, certificates_output_schema, certificate_export_input_schema
+
 from lemur.roles import service as role_service
-from lemur.domains import service as domain_service
-from lemur.common.utils import marshal_items, paginated_parser
-from lemur.notifications.views import notification_list
+
 
 mod = Blueprint('certificates', __name__)
 api = Api(mod)
-
-FIELDS = {
-    'name': fields.String,
-    'id': fields.Integer,
-    'bits': fields.Integer,
-    'deleted': fields.String,
-    'issuer': fields.String,
-    'serial': fields.String,
-    'owner': fields.String,
-    'chain': fields.String,
-    'san': fields.String,
-    'active': fields.Boolean,
-    'description': fields.String,
-    'notBefore': fields.DateTime(dt_format='iso8601', attribute='not_before'),
-    'notAfter': fields.DateTime(dt_format='iso8601', attribute='not_after'),
-    'cn': fields.String,
-    'signingAlgorithm': fields.String(attribute='signing_algorithm'),
-    'status': fields.String,
-    'body': fields.String
-}
-
-
-def valid_authority(authority_options):
-    """
-    Defends against invalid authorities
-
-    :param authority_options:
-    :return: :raise ValueError:
-    """
-    name = authority_options['name']
-    authority = Authority.query.filter(Authority.name == name).one()
-
-    if not authority:
-        raise ValueError("Unable to find authority specified")
-
-    if not authority.active:
-        raise ValueError("Selected authority [{0}] is not currently active".format(name))
-
-    return authority
-
-
-def get_domains_from_options(options):
-    """
-    Retrive all domains from certificate options
-    :param options:
-    :return:
-    """
-    domains = [options['commonName']]
-    if options.get('extensions'):
-        if options['extensions'].get('subAltNames'):
-            for k, v in options['extensions']['subAltNames']['names']:
-                if k == 'DNSName':
-                    domains.append(v)
-    return domains
-
-
-def check_sensitive_domains(domains):
-    """
-    Determines if any certificates in the given certificate
-    are marked as sensitive
-    :param domains:
-    :return:
-    """
-    for domain in domains:
-        domain_objs = domain_service.get_by_name(domain)
-        for d in domain_objs:
-            if d.sensitive:
-                raise ValueError("The domain {0} has been marked as sensitive. Contact an administrator to "
-                                 "issue this certificate".format(d.name))
-
-
-def pem_str(value, name):
-    """
-    Used to validate that the given string is a PEM formatted string
-
-    :param value:
-    :param name:
-    :return: :raise ValueError:
-    """
-    try:
-        x509.load_pem_x509_certificate(bytes(value), default_backend())
-    except Exception:
-        raise ValueError("The parameter '{0}' needs to be a valid PEM string".format(name))
-    return value
-
-
-def private_key_str(value, name):
-    """
-    User to validate that a given string is a RSA private key
-
-    :param value:
-    :param name:
-    :return: :raise ValueError:
-    """
-    try:
-        serialization.load_pem_private_key(bytes(value), None, backend=default_backend())
-    except Exception:
-        raise ValueError("The parameter '{0}' needs to be a valid RSA private key".format(name))
-    return value
 
 
 class CertificatesList(AuthenticatedResource):
@@ -140,7 +35,7 @@ class CertificatesList(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(CertificatesList, self).__init__()
 
-    @marshal_items(FIELDS)
+    @validate_schema(None, certificates_output_schema)
     def get(self):
         """
         .. http:get:: /certificates
@@ -208,8 +103,8 @@ class CertificatesList(AuthenticatedResource):
         args = parser.parse_args()
         return service.render(args)
 
-    @marshal_items(FIELDS)
-    def post(self):
+    @validate_schema(certificate_input_schema, certificate_output_schema)
+    def post(self, data=None):
         """
         .. http:post:: /certificates
 
@@ -347,49 +242,24 @@ class CertificatesList(AuthenticatedResource):
            :arg state: state for the CSR
            :arg location: location for the CSR
            :arg organization: organization for CSR
-           :arg commonName: certiifcate common name
+           :arg commonName: certificate common name
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
            :statuscode 403: unauthenticated
         """
-        self.reqparse.add_argument('extensions', type=dict, location='json')
-        self.reqparse.add_argument('destinations', type=list, default=[], location='json')
-        self.reqparse.add_argument('notifications', type=list, default=[], location='json')
-        self.reqparse.add_argument('replacements', type=list, default=[], location='json')
-        self.reqparse.add_argument('validityStart', type=str, location='json')  # TODO validate
-        self.reqparse.add_argument('validityEnd', type=str, location='json')  # TODO validate
-        self.reqparse.add_argument('validityYears', type=int, location='json')  # TODO validate
-        self.reqparse.add_argument('authority', type=valid_authority, location='json', required=True)
-        self.reqparse.add_argument('description', type=str, location='json')
-        self.reqparse.add_argument('country', type=str, location='json', required=True)
-        self.reqparse.add_argument('state', type=str, location='json', required=True)
-        self.reqparse.add_argument('location', type=str, location='json', required=True)
-        self.reqparse.add_argument('organization', type=str, location='json', required=True)
-        self.reqparse.add_argument('organizationalUnit', type=str, location='json', required=True)
-        self.reqparse.add_argument('owner', type=str, location='json', required=True)
-        self.reqparse.add_argument('name', type=str, location='json')
-        self.reqparse.add_argument('commonName', type=str, location='json', required=True)
-        self.reqparse.add_argument('csr', type=str, location='json')
-
-        args = self.reqparse.parse_args()
-
-        authority = args['authority']
-        role = role_service.get_by_name(authority.owner)
+        role = role_service.get_by_name(data['authority'].owner)
 
         # all the authority role members should be allowed
-        roles = [x.name for x in authority.roles]
+        roles = [x.name for x in data['authority'].roles]
 
         # allow "owner" roles by team DL
         roles.append(role)
-        authority_permission = AuthorityPermission(authority.id, roles)
+        authority_permission = AuthorityPermission(data['authority'].id, roles)
 
         if authority_permission.can():
-            # if we are not admins lets make sure we aren't issuing anything sensitive
-            if not SensitiveDomainPermission().can():
-                check_sensitive_domains(get_domains_from_options(args))
-            return service.create(**args)
+            return service.create(**data)
 
-        return dict(message="You are not authorized to use {0}".format(args['authority'].name)), 403
+        return dict(message="You are not authorized to use {0}".format(data['authority'].name)), 403
 
 
 class CertificatesUpload(AuthenticatedResource):
@@ -399,8 +269,8 @@ class CertificatesUpload(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(CertificatesUpload, self).__init__()
 
-    @marshal_items(FIELDS)
-    def post(self):
+    @validate_schema(certificate_upload_input_schema, certificate_output_schema)
+    def post(self, data=None):
         """
         .. http:post:: /certificates/upload
 
@@ -462,23 +332,12 @@ class CertificatesUpload(AuthenticatedResource):
            :statuscode 403: unauthenticated
            :statuscode 200: no error
         """
-        self.reqparse.add_argument('description', type=str, location='json')
-        self.reqparse.add_argument('owner', type=str, required=True, location='json')
-        self.reqparse.add_argument('name', type=str, location='json')
-        self.reqparse.add_argument('publicCert', type=pem_str, required=True, dest='public_cert', location='json')
-        self.reqparse.add_argument('destinations', type=list, default=[], location='json')
-        self.reqparse.add_argument('notifications', type=list, default=[], location='json')
-        self.reqparse.add_argument('replacements', type=list, default=[], location='json')
-        self.reqparse.add_argument('intermediateCert', type=pem_str, dest='intermediate_cert', location='json')
-        self.reqparse.add_argument('privateKey', type=private_key_str, dest='private_key', location='json')
-
-        args = self.reqparse.parse_args()
-        if args.get('destinations'):
-            if args.get('private_key'):
-                return service.upload(**args)
+        if data.get('destinations'):
+            if data.get('private_key'):
+                return service.upload(**data)
             else:
                 raise Exception("Private key must be provided in order to upload certificate to AWS")
-        return service.upload(**args)
+        return service.upload(**data)
 
 
 class CertificatesStats(AuthenticatedResource):
@@ -556,7 +415,7 @@ class Certificates(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(Certificates, self).__init__()
 
-    @marshal_items(FIELDS)
+    @validate_schema(None, certificate_output_schema)
     def get(self, certificate_id):
         """
         .. http:get:: /certificates/1
@@ -605,8 +464,8 @@ class Certificates(AuthenticatedResource):
         """
         return service.get(certificate_id)
 
-    @marshal_items(FIELDS)
-    def put(self, certificate_id):
+    @validate_schema(certificate_upload_input_schema, certificate_output_schema)
+    def put(self, certificate_id, data=None):
         """
         .. http:put:: /certificates/1
 
@@ -659,14 +518,6 @@ class Certificates(AuthenticatedResource):
            :statuscode 200: no error
            :statuscode 403: unauthenticated
         """
-        self.reqparse.add_argument('active', type=bool, location='json')
-        self.reqparse.add_argument('owner', type=str, location='json')
-        self.reqparse.add_argument('description', type=str, location='json')
-        self.reqparse.add_argument('destinations', type=list, default=[], location='json')
-        self.reqparse.add_argument('notifications', type=notification_list, default=[], location='json')
-        self.reqparse.add_argument('replacements', type=list, default=[], location='json')
-        args = self.reqparse.parse_args()
-
         cert = service.get(certificate_id)
         role = role_service.get_by_name(cert.owner)
 
@@ -675,12 +526,12 @@ class Certificates(AuthenticatedResource):
         if permission.can():
             return service.update(
                 certificate_id,
-                args['owner'],
-                args['description'],
-                args['active'],
-                args['destinations'],
-                args['notifications'],
-                args['replacements']
+                data['owner'],
+                data['description'],
+                data['active'],
+                data['destinations'],
+                data['notifications'],
+                data['replacements']
             )
 
         return dict(message='You are not authorized to update this certificate'), 403
@@ -693,7 +544,7 @@ class NotificationCertificatesList(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(NotificationCertificatesList, self).__init__()
 
-    @marshal_items(FIELDS)
+    @validate_schema(None, certificates_output_schema)
     def get(self, notification_id):
         """
         .. http:get:: /notifications/1/certificates
@@ -769,7 +620,7 @@ class CertificatesReplacementsList(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(CertificatesReplacementsList, self).__init__()
 
-    @marshal_items(FIELDS)
+    @validate_schema(None, certificates_output_schema)
     def get(self, certificate_id):
         """
         .. http:get:: /certificates/1/replacements
@@ -824,7 +675,8 @@ class CertificateExport(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(CertificateExport, self).__init__()
 
-    def post(self, certificate_id):
+    @validate_schema(None, certificate_export_input_schema)
+    def post(self, certificate_id, data=None):
         """
         .. http:post:: /certificates/1/export
 
@@ -889,22 +741,21 @@ class CertificateExport(AuthenticatedResource):
            :statuscode 200: no error
            :statuscode 403: unauthenticated
         """
-        self.reqparse.add_argument('export', type=dict, required=True, location='json')
-        args = self.reqparse.parse_args()
-
         cert = service.get(certificate_id)
         role = role_service.get_by_name(cert.owner)
 
         permission = UpdateCertificatePermission(certificate_id, getattr(role, 'name', None))
 
-        plugin = plugins.get(args['export']['plugin']['slug'])
+        options = data['export']['plugin']['plugin_options']
+        plugin = data['export']['plugin']
+
         if plugin.requires_key:
             if permission.can():
-                extension, passphrase, data = plugin.export(cert.body, cert.chain, cert.private_key, args['export']['plugin']['pluginOptions'])
+                extension, passphrase, data = plugin.export(cert.body, cert.chain, cert.private_key, options)
             else:
                 return dict(message='You are not authorized to export this certificate'), 403
         else:
-            extension, passphrase, data = plugin.export(cert.body, cert.chain, cert.private_key, args['export']['plugin']['pluginOptions'])
+            extension, passphrase, data = plugin.export(cert.body, cert.chain, cert.private_key, options)
 
         # we take a hit in message size when b64 encoding
         return dict(extension=extension, passphrase=passphrase, data=base64.b64encode(data))

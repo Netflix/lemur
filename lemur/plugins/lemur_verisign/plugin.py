@@ -77,14 +77,14 @@ def process_options(options):
         'email': current_app.config.get("VERISIGN_EMAIL")
     }
 
-    if options.get('validityEnd'):
+    if options.get('validity_end'):
         end_date, period = get_default_issuance(options)
         data['specificEndDate'] = str(end_date)
         data['validityPeriod'] = period
 
-    elif options.get('validityYears'):
-        if options['validityYears'] in [1, 2]:
-            data['validityPeriod'] = str(options['validityYears']) + 'Y'
+    elif options.get('validity_years'):
+        if options['validity_years'] in [1, 2]:
+            data['validityPeriod'] = str(options['validity_years']) + 'Y'
         else:
             raise Exception("Verisign issued certificates cannot exceed two years in validity")
 
@@ -98,10 +98,10 @@ def get_default_issuance(options):
     :param options:
     :return:
     """
-    specific_end_date = arrow.get(options['validityEnd']).replace(days=-1).format("MM/DD/YYYY")
+    specific_end_date = arrow.get(options['validity_end']).replace(days=-1).format("MM/DD/YYYY")
 
     now = arrow.utcnow()
-    then = arrow.get(options['validityEnd'])
+    then = arrow.get(options['validity_end'])
 
     if then < now.replace(years=+1):
         validity_period = '1Y'

@@ -2,7 +2,7 @@ from moto import mock_iam, mock_sts
 
 from lemur.certificates.models import Certificate
 
-from lemur.tests.certs import EXTERNAL_VALID_STR, PRIVATE_KEY_STR
+from lemur.tests.vectors import EXTERNAL_VALID_STR, PRIVATE_KEY_STR
 
 
 def test_get_name_from_arn():

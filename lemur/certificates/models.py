@@ -228,7 +228,7 @@ class Certificate(db.Model):
     cn = Column(String(128))
     description = Column(String(1024))
     active = Column(Boolean, default=True)
-    san = Column(String(1024))
+    san = Column(String(1024))  # TODO this should be migrated to boolean
     not_before = Column(DateTime)
     not_after = Column(DateTime)
     date_created = Column(DateTime, PassiveDefault(func.now()), nullable=False)
@@ -250,7 +250,7 @@ class Certificate(db.Model):
         # We encrypt the private_key on creation
         self.private_key = private_key
         self.chain = chain
-        cert = x509.load_pem_x509_certificate(str(self.body), default_backend())
+        cert = x509.load_pem_x509_certificate(bytes(self.body), default_backend())
         self.signing_algorithm = get_signing_algorithm(cert)
         self.bits = get_bitstrength(cert)
         self.issuer = get_issuer(cert)
