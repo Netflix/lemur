@@ -43,6 +43,10 @@ def test_certificate_info_access_schema():
     assert not errors
     assert data == {'include_aia': True}
 
+    data, errors = CertificateInfoAccessSchema().dump(data)
+    assert not errors
+    assert data == input_data
+
 
 def test_subject_key_identifier_schema():
     from lemur.certificates.schemas import SubjectKeyIdentifierSchema
@@ -52,6 +56,9 @@ def test_subject_key_identifier_schema():
     data, errors = SubjectKeyIdentifierSchema().load(input_data)
     assert not errors
     assert data == {'include_ski': True}
+    data, errors = SubjectKeyIdentifierSchema().dump(data)
+    assert not errors
+    assert data == input_data
 
 
 def test_extension_schema():
@@ -76,7 +83,6 @@ def test_extension_schema():
     }
 
     data, errors = ExtensionSchema().load(input_data)
-
     assert not errors
 
 

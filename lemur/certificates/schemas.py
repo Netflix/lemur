@@ -128,6 +128,10 @@ class AuthorityKeyIdentifierSchema(BaseExtensionSchema):
 class CertificateInfoAccessSchema(BaseExtensionSchema):
     include_aia = fields.Boolean()
 
+    @post_dump
+    def handle_keys(self, data):
+        return {'includeAIA': data['include_aia']}
+
 
 class KeyUsageSchema(BaseExtensionSchema):
     use_crl_sign = fields.Boolean()
@@ -151,6 +155,10 @@ class ExtendedKeyUsageSchema(BaseExtensionSchema):
 
 class SubjectKeyIdentifierSchema(BaseExtensionSchema):
     include_ski = fields.Boolean()
+
+    @post_dump
+    def handle_keys(self, data):
+        return {'includeSKI': data['include_ski']}
 
 
 class SubAltNameSchema(BaseExtensionSchema):
