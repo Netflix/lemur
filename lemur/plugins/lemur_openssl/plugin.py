@@ -33,11 +33,12 @@ def run_process(command):
         raise Exception(stderr)
 
 
-def create_pkcs12(cert, p12_tmp, key, alias, passphrase):
+def create_pkcs12(cert, chain, p12_tmp, key, alias, passphrase):
     """
     Creates a pkcs12 formated file.
     :param cert:
-    :param jks_tmp:
+    :param chain:
+    :param p12_tmp:
     :param key:
     :param alias:
     :param passphrase:
@@ -49,7 +50,7 @@ def create_pkcs12(cert, p12_tmp, key, alias, passphrase):
         # Create PKCS12 keystore from private key and public certificate
         with mktempfile() as cert_tmp:
             with open(cert_tmp, 'w') as f:
-                f.write(cert)
+                f.writelines([cert + "\n", chain + "\n"])
 
             run_process([
                 "openssl",
@@ -119,7 +120,7 @@ class OpenSSLExportPlugin(ExportPlugin):
 
         with mktemppath() as output_tmp:
             if type == 'PKCS12 (.p12)':
-                create_pkcs12(body, output_tmp, key, alias, passphrase)
+                create_pkcs12(body, chain, output_tmp, key, alias, passphrase)
                 extension = "p12"
             else:
                 raise Exception("Unable to export, unsupported type: {0}".format(type))
