@@ -89,6 +89,15 @@
     };
   });
 
+  lemur.directive('lemurBadRequest', [function () {
+			return {
+				template: '<h4>{{ directiveData.message }}</h4>' +
+									'<div ng-repeat="(key, value) in directiveData.reasons">' +
+										'<strong>{{ key | titleCase }}</strong> - {{ value }}</strong>' +
+				          '</div>'
+			};
+		}]);
+
   lemur.factory('LemurRestangular', function (Restangular, $location, $auth) {
     return Restangular.withConfig(function (RestangularConfigurer) {
       RestangularConfigurer.setBaseUrl('http://localhost:8000/api/1');
@@ -107,18 +116,6 @@
         }
 
         return extractedData;
-      });
-
-      RestangularConfigurer.setErrorInterceptor(function(response) {
-        if (response.status === 400) {
-          if (response.data.message) {
-            var data = '';
-            _.each(response.data.message, function (value, key) {
-              data = data + ' ' + key + ' ' + value;
-            });
-            response.data.message = data;
-          }
-        }
       });
 
       RestangularConfigurer.addFullRequestInterceptor(function (element, operation, route, url, headers, params) {

@@ -287,4 +287,7 @@ def sort_and_page(query, model, args):
     if sort_by and sort_dir:
         query = sort(query, model, sort_by, sort_dir)
 
-    return paginate(query, page, count)
+    total = query.count()
+
+    items = query.offset(count * page).limit(count).all()
+    return dict(items=items, total=total)

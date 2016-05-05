@@ -42,13 +42,15 @@ class Authority(db.Model):
         self.body = body
         self.chain = chain
         self.owner = owner
+        self.description = description
         self.plugin_name = plugin_name
-        cert = x509.load_pem_x509_certificate(str(body), default_backend())
+        cert = x509.load_pem_x509_certificate(bytes(body), default_backend())
         self.cn = get_cn(cert)
         self.not_before = get_not_before(cert)
         self.not_after = get_not_after(cert)
-        self.roles = roles
-        self.description = description
+
+        if roles:
+            self.roles = roles
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}

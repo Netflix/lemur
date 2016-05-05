@@ -88,7 +88,6 @@ def export(cert, export_plugin):
     :return:
     """
     plugin = plugins.get(export_plugin['slug'])
-
     return plugin.export(cert.body, cert.chain, cert.private_key, export_plugin['pluginOptions'])
 
 
@@ -222,8 +221,8 @@ def upload(**kwargs):
 
     g.user.certificates.append(cert)
 
-    database.update_list(cert, 'destinations', Destination, kwargs.get('destinations'))
-    database.update_list(cert, 'notifications', Notification, kwargs.get('notifications'))
+    database.update_list(cert, 'destinations', Destination, kwargs['destinations'])
+    database.update_list(cert, 'notifications', Notification, kwargs['notifications'])
     database.update_list(cert, 'replaces', Certificate, kwargs['replacements'])
 
     # create default notifications for this certificate if none are provided
@@ -256,9 +255,9 @@ def create(**kwargs):
 
     # do this after the certificate has already been created because if it fails to upload to the third party
     # we do not want to lose the certificate information.
-    database.update_list(cert, 'destinations', Destination, kwargs.get('destinations'))
+    database.update_list(cert, 'destinations', Destination, kwargs['destinations'])
     database.update_list(cert, 'replaces', Certificate, kwargs['replacements'])
-    database.update_list(cert, 'notifications', Notification, kwargs.get('notifications'))
+    database.update_list(cert, 'notifications', Notification, kwargs['notifications'])
 
     # create default notifications for this certificate if none are provided
     notifications = cert.notifications
@@ -364,9 +363,9 @@ def create_csr(csr_config):
     # TODO When we figure out a better way to validate these options they should be parsed as str
     builder = x509.CertificateSigningRequestBuilder()
     builder = builder.subject_name(x509.Name([
-        x509.NameAttribute(x509.OID_COMMON_NAME, csr_config['commonName']),
+        x509.NameAttribute(x509.OID_COMMON_NAME, csr_config['common_name']),
         x509.NameAttribute(x509.OID_ORGANIZATION_NAME, csr_config['organization']),
-        x509.NameAttribute(x509.OID_ORGANIZATIONAL_UNIT_NAME, csr_config['organizationalUnit']),
+        x509.NameAttribute(x509.OID_ORGANIZATIONAL_UNIT_NAME, csr_config['organizational_unit']),
         x509.NameAttribute(x509.OID_COUNTRY_NAME, csr_config['country']),
         x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, csr_config['state']),
         x509.NameAttribute(x509.OID_LOCALITY_NAME, csr_config['location']),
@@ -378,11 +377,11 @@ def create_csr(csr_config):
 
     if csr_config.get('extensions'):
         for k, v in csr_config.get('extensions', {}).items():
-            if k == 'subAltNames':
+            if k == 'sub_alt_names':
                 # map types to their x509 objects
                 general_names = []
                 for name in v['names']:
-                    if name['nameType'] == 'DNSName':
+                    if name['name_type'] == 'DNSName':
                         general_names.append(x509.DNSName(name['value']))
 
                 builder = builder.add_extension(
