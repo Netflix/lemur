@@ -2,13 +2,14 @@ from __future__ import unicode_literals    # at top of module
 
 import pytest
 import json
+
 from lemur.certificates.views import *  # noqa
 
 from .vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN
 
 
 def test_authority_identifier_schema():
-    from lemur.certificates.schemas import AuthorityIdentifierSchema
+    from lemur.schemas import AuthorityIdentifierSchema
     input_data = {'useAuthorityCert': True}
 
     data, errors = AuthorityIdentifierSchema().load(input_data)
@@ -22,7 +23,7 @@ def test_authority_identifier_schema():
 
 
 def test_authority_key_identifier_schema():
-    from lemur.certificates.schemas import AuthorityKeyIdentifierSchema
+    from lemur.schemas import AuthorityKeyIdentifierSchema
     input_data = {'useKeyIdentifier': True}
 
     data, errors = AuthorityKeyIdentifierSchema().load(input_data)
@@ -36,7 +37,7 @@ def test_authority_key_identifier_schema():
 
 
 def test_certificate_info_access_schema():
-    from lemur.certificates.schemas import CertificateInfoAccessSchema
+    from lemur.schemas import CertificateInfoAccessSchema
     input_data = {'includeAIA': True}
 
     data, errors = CertificateInfoAccessSchema().load(input_data)
@@ -49,7 +50,7 @@ def test_certificate_info_access_schema():
 
 
 def test_subject_key_identifier_schema():
-    from lemur.certificates.schemas import SubjectKeyIdentifierSchema
+    from lemur.schemas import SubjectKeyIdentifierSchema
 
     input_data = {'includeSKI': True}
 
@@ -61,7 +62,7 @@ def test_subject_key_identifier_schema():
     assert data == input_data
 
 
-def test_extension_schema():
+def test_extension_schema(client):
     from lemur.certificates.schemas import ExtensionSchema
 
     input_data = {
@@ -194,7 +195,7 @@ def test_certificate_valid_dates(client, authority):
 
 
 def test_sub_alt_name_schema():
-    from lemur.certificates.schemas import SubAltNameSchema, SubAltNamesSchema
+    from lemur.schemas import SubAltNameSchema, SubAltNamesSchema
     input_data = {'nameType': 'DNSName', 'value': 'test.example.com'}
 
     data, errors = SubAltNameSchema().load(input_data)
@@ -217,7 +218,7 @@ def test_sub_alt_name_schema():
 
 
 def test_key_usage_schema():
-    from lemur.certificates.schemas import KeyUsageSchema
+    from lemur.schemas import KeyUsageSchema
 
     input_data = {
         'useCRLSign': True,
@@ -244,7 +245,7 @@ def test_key_usage_schema():
 
 
 def test_extended_key_usage_schema():
-    from lemur.certificates.schemas import ExtendedKeyUsageSchema
+    from lemur.schemas import ExtendedKeyUsageSchema
 
     input_data = {
         'useServerAuthentication': True,

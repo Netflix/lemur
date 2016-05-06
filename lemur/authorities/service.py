@@ -170,10 +170,6 @@ def render(args):
     :return:
     """
     query = database.session_query(Authority)
-    sort_by = args.pop('sort_by')
-    sort_dir = args.pop('sort_dir')
-    page = args.pop('page')
-    count = args.pop('count')
     filt = args.pop('filter')
 
     if filt:
@@ -191,9 +187,4 @@ def render(args):
                 authority_ids.append(role.authority.id)
         query = query.filter(Authority.id.in_(authority_ids))
 
-    query = database.find_all(query, Authority, args)
-
-    if sort_by and sort_dir:
-        query = database.sort(query, Authority, sort_by, sort_dir)
-
-    return database.paginate(query, page, count)
+    return database.sort_and_page(query, Authority, args)
