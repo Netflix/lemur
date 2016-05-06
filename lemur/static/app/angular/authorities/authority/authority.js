@@ -69,6 +69,7 @@ angular.module('lemur')
 
     PluginService.getByType('issuer').then(function (plugins) {
         $scope.plugins = plugins;
+        $scope.authority.plugin = plugins[0];
     });
 
     $scope.roleService = RoleService;

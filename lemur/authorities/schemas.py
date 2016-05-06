@@ -32,7 +32,7 @@ class AuthorityInputSchema(LemurInputSchema):
     country = fields.String(missing=lambda: current_app.config.get('LEMUR_DEFAULT_COUNTRY'))
     state = fields.String(missing=lambda: current_app.config.get('LEMUR_DEFAULT_STATE'))
 
-    plugin_name = fields.Nested(PluginSchema)
+    plugin = fields.Nested(PluginSchema)
 
     # signing related options
     type = fields.String(validate=validate.OneOf(['root', 'subca']), missing='root')

@@ -168,7 +168,7 @@ class AuthoritiesList(AuthenticatedResource):
            :statuscode 403: unauthenticated
            :statuscode 200: no error
         """
-        return service.create(**data)
+        return service.create(data)
 
 
 class Authorities(AuthenticatedResource):
