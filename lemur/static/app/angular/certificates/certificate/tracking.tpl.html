@@ -94,7 +94,7 @@
         <div class="input-group">
           <input tooltip="Starting Date (yyyy/MM/dd)" class="form-control" datepicker-popup="yyyy/MM/dd"
                  is-open="$parent.openNotBefore.isOpen" min-date="certificate.authority.notBefore"
-                 max-date="certificate.authority.maxDate" ng-model="certificate.validityStart"/>
+                 max-date="certificate.authority.notAfter" ng-model="certificate.validityStart"/>
         <span class="input-group-btn">
           <button class="btn btn-default" ng-click="openNotBefore($event)"><i
             class="glyphicon glyphicon-calendar"></i></button>
@@ -109,7 +109,7 @@
           <div class="input-group">
             <input tooltip="Ending Date (yyyy/MM/dd)" class="form-control" datepicker-popup="yyyy/MM/dd"
                    is-open="$parent.openNotAfter.isOpen" min-date="certificate.authority.notBefore"
-                   max-date="certificate.authority.maxDate" ng-model="certificate.validityEnd"/>
+                   max-date="certificate.authority.notAfter" ng-model="certificate.validityEnd"/>
             <span class="input-group-btn">
               <button class="btn btn-default" ng-click="openNotAfter($event)"><i
                 class="glyphicon glyphicon-calendar"></i></button>

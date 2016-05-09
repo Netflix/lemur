@@ -35,6 +35,7 @@ class AssociatedAuthoritySchema(LemurInputSchema):
 
 class AssociatedRoleSchema(LemurInputSchema):
     id = fields.Int(required=True)
+    name = fields.String()
 
     @post_load
     def get_object(self, data, many=False):
@@ -47,6 +48,7 @@ class AssociatedRoleSchema(LemurInputSchema):
 
 class AssociatedDestinationSchema(LemurInputSchema):
     id = fields.Int(required=True)
+    name = fields.String()
 
     @post_load
     def get_object(self, data, many=False):

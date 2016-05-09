@@ -289,5 +289,7 @@ def sort_and_page(query, model, args):
 
     total = query.count()
 
+    # offset calculated at zero
+    page -= 1
     items = query.offset(count * page).limit(count).all()
     return dict(items=items, total=total)

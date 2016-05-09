@@ -9,6 +9,7 @@ from flask import current_app
 
 from marshmallow import fields, validates_schema
 from marshmallow import validate
+from marshmallow.exceptions import ValidationError
 
 from lemur.schemas import PluginSchema, ExtensionSchema, AssociatedAuthoritySchema, AssociatedRoleSchema
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
@@ -36,7 +37,7 @@ class AuthorityInputSchema(LemurInputSchema):
 
     # signing related options
     type = fields.String(validate=validate.OneOf(['root', 'subca']), missing='root')
-    parent = fields.Nested(AssociatedAuthoritySchema)
+    authority = fields.Nested(AssociatedAuthoritySchema)
     signing_algorithm = fields.String(validate=validate.OneOf(['sha256WithRSA', 'sha1WithRSA']), missing='sha256WithRSA')
     key_type = fields.String(validate=validate.OneOf(['RSA2048', 'RSA4096']), missing='RSA2048')
     key_name = fields.String()
@@ -52,6 +53,12 @@ class AuthorityInputSchema(LemurInputSchema):
     def validate_dates(self, data):
         validators.dates(data)
 
+    @validates_schema
+    def validate_subca(self, data):
+        if data['type'] == 'subca':
+            if not data.get('authority'):
+                raise ValidationError("If generating a subca parent 'authority' must be specified.")
+
 
 class AuthorityOutputSchema(LemurOutputSchema):
     id = fields.Integer()
@@ -64,6 +71,7 @@ class AuthorityOutputSchema(LemurOutputSchema):
     chain = fields.String()
     active = fields.Boolean()
     options = fields.Dict()
+    roles = fields.List(fields.Nested(AssociatedRoleSchema))
 
 
 authority_input_schema = AuthorityInputSchema()

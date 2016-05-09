@@ -29,9 +29,6 @@ angular.module('lemur')
       total: 0,           // length of data
       getData: function ($defer, params) {
         AuthorityApi.getList(params.url()).then(function (data) {
-          _.each(data, function(authority) {
-            AuthorityService.getRoles(authority);
-          });
           params.total(data.total);
           $defer.resolve(data);
         });

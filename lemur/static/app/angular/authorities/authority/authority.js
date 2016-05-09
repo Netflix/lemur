@@ -4,7 +4,6 @@ angular.module('lemur')
 
   .controller('AuthorityEditController', function ($scope, $modalInstance, AuthorityApi, AuthorityService, RoleService, toaster, editId){
     AuthorityApi.get(editId).then(function (authority) {
-      AuthorityService.getRoles(authority);
       $scope.authority = authority;
     });
 

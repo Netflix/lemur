@@ -1,26 +1,6 @@
 <div class="form-horizontal">
   <div class="form-group">
     <label class="control-label col-sm-2">
-      Type
-    </label>
-    <div class="col-sm-10">
-      <select class="form-control" ng-model="authority.type" ng-options="option for option in ['root', 'subca']" ng-init="authority.type = 'root'"required></select>
-    </div>
-  </div>
-  <div ng-show="authority.type == 'subca'" class="form-group">
-    <label class="control-label col-sm-2">
-      Parent Authority
-    </label>
-    <div class="col-sm-10">
-      <input type="text" ng-model="authority.parent" placeholder="Parent Authority Name"
-             typeahead="authority.name for authority in authorityService.findAuthorityByName($viewValue)" typeahead-loading="loadingAuthorities"
-             class="form-control input-md" typeahead-min-wait="50"
-             tooltip="When you specify a subordinate certificate authority you must specific the parent authority"
-             tooltip-trigger="focus" tooltip-placement="top">
-    </div>
-  </div>
-  <div class="form-group">
-    <label class="control-label col-sm-2">
       Signing Algorithm
     </label>
     <div class="col-sm-10">

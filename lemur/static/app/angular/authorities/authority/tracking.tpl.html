@@ -40,15 +40,47 @@
         <p ng-show="trackingForm.commonName.$invalid && !trackingForm.commonName.$pristine" class="help-block">You must enter a common name and it must be less than 64 characters in length</p>
       </div>
     </div>
+    <div class="form-group">
+      <label class="control-label col-sm-2">
+          Type
+      </label>
+      <div class="col-sm-10">
+          <select class="form-control" ng-model="authority.type" ng-options="option for option in ['root', 'subca']" ng-init="authority.type = 'root'"required></select>
+      </div>
+    </div>
+    <div ng-show="authority.type == 'subca'" class="form-group">
+      <label class="control-label col-sm-2">
+          Parent Authority
+      </label>
+      <div class="col-sm-10">
+          <input type="text" ng-model="authority.authority" placeholder="Parent Authority Name"
+                 typeahead="authority as authority.name for authority in authorityService.findAuthorityByName($viewValue)" typeahead-loading="loadingAuthorities"
+                 class="form-control input-md" typeahead-min-wait="50"
+                 tooltip="When you specify a subordinate certificate authority you must specify the parent authority"
+                 tooltip-trigger="focus" tooltip-placement="top">
+      </div>
+    </div>
     <div class="form-group"
         ng-class="{'has-error': trackingForm.validityEnd.$invalid || trackingForm.validityStart.$invalid, 'has-success': !trackingForm.$invalid&&trackingForm.validityEnd.$dirty&&trackingForm.validityStart.$dirty}">
       <label class="control-label col-sm-2">
         Validity Range
       </label>
-      <div class="col-sm-4">
+      <div class="col-sm-2">
+        <select ng-model="authority.validityYears" class="form-control">
+          <option value="5">5 years</option>
+          <option value="10">10 years</option>
+          <option value="20">20 years</option>
+          <option value="30">30 years</option>
+        </select>
+      </div>
+      <span style="padding-top: 15px" class="text-center col-sm-1">
+        <strong>- or -</strong>
+      </span>
+      <div class="col-sm-3">
         <div>
           <div class="input-group">
-            <input name="validityStart" tooltip="Starting Date" class="form-control" datepicker-popup="yyyy/MM/dd" is-open="opened1" ng-model="authority.validityStart" required/>
+            <input name="validityStart" tooltip="Starting Date" class="form-control" datepicker-popup="yyyy/MM/dd" is-open="opened1" ng-model="authority.validityStart" min-date="authority.authority.notBefore"
+                 max-date="authority.authority.notAfter" required/>
             <p ng-show="trackingForm.validityStart.$invalid && !trackingForm.validityStart.$pristine" class="help-block">A start date is required!</p>
             <span class="input-group-btn">
                 <button class="btn btn-default" ng-click="open($event)"><i class="glyphicon glyphicon-calendar"></i></button>
@@ -56,11 +88,12 @@
           </div>
         </div>
       </div>
-      <span style="padding-top: 15px" class="text-center col-sm-2"><label><span class="glyphicon glyphicon-resize-horizontal"></span></label></span>
-      <div class="col-sm-4">
+      <span style="padding-top: 15px" class="text-center col-sm-1"><label><span class="glyphicon glyphicon-resize-horizontal"></span></label></span>
+      <div class="col-sm-3">
         <div>
           <div class="input-group">
-            <input name="validityEnd" tooltip="Ending Date" class="form-control" datepicker-popup="yyyy/MM/dd" is-open="opened2" ng-model="authority.validityEnd" required/>
+            <input name="validityEnd" tooltip="Ending Date" class="form-control" datepicker-popup="yyyy/MM/dd" is-open="opened2" ng-model="authority.validityEnd" min-date="authority.authority.notBefore"
+                 max-date="authority.authority.notAfter" required/>
             <p ng-show="trackingForm.validityEnd.$invalid && !trackingForm.validityEnd.$pristine" class="help-block">A end date is required!</p>
             <span class="input-group-btn">
                 <button class="btn btn-default" ng-click="open2($event)"><i class="glyphicon glyphicon-calendar"></i></button>
