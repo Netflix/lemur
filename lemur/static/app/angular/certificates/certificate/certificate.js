@@ -145,6 +145,19 @@ angular.module('lemur')
       opened: false
     };
 
+    var formatAuthorities = function (authorities) {
+      var newAuthorities = [];
+      angular.forEach(authorities, function (authority) {
+        authority.formatted = authority.name + '<span class="text-muted"> - ' + authority.description + '</span>';
+        newAuthorities.push(authority);
+      });
+      return newAuthorities;
+    };
+
+    AuthorityService.findActiveAuthorityByName().then(function (authorities) {
+      $scope.authorities = formatAuthorities(authorities);
+    });
+
     $scope.create = function (certificate) {
       WizardHandler.wizard().context.loading = true;
       CertificateService.create(certificate).then(
