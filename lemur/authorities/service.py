@@ -19,8 +19,6 @@ from lemur.notifications import service as notification_service
 from lemur.roles.models import Role
 from lemur.certificates.models import Certificate
 
-from lemur.plugins.base import plugins
-
 
 def update(authority_id, description=None, owner=None, active=None, roles=None):
     """
@@ -49,20 +47,20 @@ def create(kwargs):
     :return:
     """
 
-    issuer = plugins.get(kwargs.get('pluginName'))
+    issuer = kwargs['plugin']
 
     kwargs['creator'] = g.current_user.email
     cert_body, intermediate, issuer_roles = issuer.create_authority(kwargs)
 
     cert = Certificate(cert_body, chain=intermediate)
-    cert.owner = kwargs['ownerEmail']
+    cert.owner = kwargs['owner']
 
-    if kwargs['caType'] == 'subca':
+    if kwargs['type'] == 'subca':
         cert.description = "This is the ROOT certificate for the {0} sub certificate authority the parent \
-                                authority is {1}.".format(kwargs.get('caName'), kwargs.get('caParent'))
+                                authority is {1}.".format(kwargs.get('name'), kwargs.get('parent'))
     else:
         cert.description = "This is the ROOT certificate for the {0} certificate authority.".format(
-            kwargs.get('caName')
+            kwargs.get('name')
         )
 
     cert.user = g.current_user
@@ -79,7 +77,7 @@ def create(kwargs):
         role = role_service.create(
             r['name'],
             password=r['password'],
-            description="{0} auto generated role".format(kwargs.get('pluginName')),
+            description="{0} auto generated role".format(kwargs['plugin'].title),
             username=r['username'])
 
         # the user creating the authority should be able to administer it
@@ -89,11 +87,11 @@ def create(kwargs):
         role_objs.append(role)
 
     authority = Authority(
-        kwargs.get('caName'),
-        kwargs['ownerEmail'],
-        kwargs['pluginName'],
+        kwargs.get('name'),
+        kwargs['owner'],
+        kwargs['plugin'].slug,
         cert_body,
-        description=kwargs['caDescription'],
+        description=kwargs['description'],
         chain=intermediate,
         roles=role_objs
     )
@@ -102,10 +100,10 @@ def create(kwargs):
     authority = database.create(authority)
 
     # the owning dl or role should have this authority associated with it
-    owner_role = role_service.get_by_name(kwargs['ownerEmail'])
+    owner_role = role_service.get_by_name(kwargs['owner'])
 
     if not owner_role:
-        owner_role = role_service.create(kwargs['ownerEmail'])
+        owner_role = role_service.create(kwargs['owner'])
 
     owner_role.authority = authority
 
@@ -170,10 +168,6 @@ def render(args):
     :return:
     """
     query = database.session_query(Authority)
-    sort_by = args.pop('sort_by')
-    sort_dir = args.pop('sort_dir')
-    page = args.pop('page')
-    count = args.pop('count')
     filt = args.pop('filter')
 
     if filt:
@@ -191,9 +185,4 @@ def render(args):
                 authority_ids.append(role.authority.id)
         query = query.filter(Authority.id.in_(authority_ids))
 
-    query = database.find_all(query, Authority, args)
-
-    if sort_by and sort_dir:
-        query = database.sort(query, Authority, sort_by, sort_dir)
-
-    return database.paginate(query, page, count)
+    return database.sort_and_page(query, Authority, args)

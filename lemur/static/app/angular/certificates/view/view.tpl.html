@@ -53,7 +53,7 @@
               </div>
             </td>
           </tr>
-          <tr class="warning" ng-show="certificate.toggle" ng-repeat-end>
+          <tr class="warning" ng-if="certificate.toggle" ng-repeat-end>
             <td colspan="6">
               <tabset justified="true" class="col-md-6">
                 <tab>
@@ -80,8 +80,8 @@
                     <li class="list-group-item">
                       <strong>San</strong>
                       <span class="pull-right">
-                        <i class="glyphicon glyphicon-ok" ng-show="certificate.san"></i>
-                        <i class="glyphicon glyphicon-remove" ng-show="!certificate.san"></i>
+                        <i class="glyphicon glyphicon-ok" ng-if="certificate.san"></i>
+                        <i class="glyphicon glyphicon-remove" ng-if="!certificate.san"></i>
                       </span>
                     </li>
                     <li class="list-group-item">
@@ -101,9 +101,9 @@
                       class="list-group-item">
                       <strong>Validity</strong>
                       <span class="pull-right">
-                        <span ng-show="!certificate.status" class="label label-warning">Unknown</span>
-                        <span ng-show="certificate.status == 'revoked'" class="label label-danger">Revoked</span>
-                        <span ng-show="certificate.status == 'valid'" class="label label-success">Valid</span>
+                        <span ng-if="!certificate.status" class="label label-warning">Unknown</span>
+                        <span ng-if="certificate.status == 'revoked'" class="label label-danger">Revoked</span>
+                        <span ng-if="certificate.status == 'valid'" class="label label-success">Valid</span>
                       </span>
                     </li>
                     <li class="list-group-item">

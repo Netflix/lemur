@@ -6,31 +6,19 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from flask import Blueprint, g
-from flask.ext.restful import reqparse, fields, Api
+from flask.ext.restful import reqparse, Api
 
-from lemur.authorities import service
-from lemur.roles import service as role_service
-from lemur.certificates import service as certificate_service
+from lemur.common.utils import paginated_parser
+from lemur.common.schema import validate_schema
 from lemur.auth.service import AuthenticatedResource
-
 from lemur.auth.permissions import AuthorityPermission
 
-from lemur.common.utils import paginated_parser, marshal_items
+from lemur.roles import service as role_service
+from lemur.certificates import service as certificate_service
 
+from lemur.authorities import service
+from lemur.authorities.schemas import authority_input_schema, authority_output_schema, authorities_output_schema
 
-FIELDS = {
-    'name': fields.String,
-    'owner': fields.String,
-    'description': fields.String,
-    'options': fields.Raw,
-    'pluginName': fields.String,
-    'body': fields.String,
-    'chain': fields.String,
-    'active': fields.Boolean,
-    'notBefore': fields.DateTime(dt_format='iso8601', attribute='not_before'),
-    'notAfter': fields.DateTime(dt_format='iso8601', attribute='not_after'),
-    'id': fields.Integer,
-}
 
 mod = Blueprint('authorities', __name__)
 api = Api(mod)
@@ -42,7 +30,7 @@ class AuthoritiesList(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(AuthoritiesList, self).__init__()
 
-    @marshal_items(FIELDS)
+    @validate_schema(None, authorities_output_schema)
     def get(self):
         """
         .. http:get:: /authorities
@@ -98,8 +86,8 @@ class AuthoritiesList(AuthenticatedResource):
         args = parser.parse_args()
         return service.render(args)
 
-    @marshal_items(FIELDS)
-    def post(self):
+    @validate_schema(authority_input_schema, authority_output_schema)
+    def post(self, data=None):
         """
         .. http:post:: /authorities
 
@@ -180,25 +168,7 @@ class AuthoritiesList(AuthenticatedResource):
            :statuscode 403: unauthenticated
            :statuscode 200: no error
         """
-        self.reqparse.add_argument('caName', type=str, location='json', required=True)
-        self.reqparse.add_argument('caDescription', type=str, location='json', required=False)
-        self.reqparse.add_argument('ownerEmail', type=str, location='json', required=True)
-        self.reqparse.add_argument('caDN', type=dict, location='json', required=False)
-        self.reqparse.add_argument('validityStart', type=str, location='json', required=False)  # TODO validate
-        self.reqparse.add_argument('validityEnd', type=str, location='json', required=False)  # TODO validate
-        self.reqparse.add_argument('extensions', type=dict, location='json', required=False)
-        self.reqparse.add_argument('pluginName', type=str, location='json', required=True)
-        self.reqparse.add_argument('caType', type=str, location='json', required=False)
-        self.reqparse.add_argument('caParent', type=str, location='json', required=False)
-        self.reqparse.add_argument('caSigningAlgo', type=str, location='json', required=False)
-        self.reqparse.add_argument('keyType', type=str, location='json', required=False)
-        self.reqparse.add_argument('caSensitivity', type=str, location='json', required=False)
-        self.reqparse.add_argument('caKeyName', type=str, location='json', required=False)
-        self.reqparse.add_argument('caSerialNumber', type=int, location='json', required=False)
-        self.reqparse.add_argument('caFirstSerial', type=int, location='json', required=False)
-
-        args = self.reqparse.parse_args()
-        return service.create(args)
+        return service.create(data)
 
 
 class Authorities(AuthenticatedResource):
@@ -206,7 +176,7 @@ class Authorities(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(Authorities, self).__init__()
 
-    @marshal_items(FIELDS)
+    @validate_schema(None, authority_output_schema)
     def get(self, authority_id):
         """
         .. http:get:: /authorities/1
@@ -248,8 +218,8 @@ class Authorities(AuthenticatedResource):
         """
         return service.get(authority_id)
 
-    @marshal_items(FIELDS)
-    def put(self, authority_id):
+    @validate_schema(authority_input_schema, authority_output_schema)
+    def put(self, authority_id, data=None):
         """
         .. http:put:: /authorities/1
 
@@ -295,12 +265,6 @@ class Authorities(AuthenticatedResource):
            :statuscode 200: no error
            :statuscode 403: unauthenticated
         """
-        self.reqparse.add_argument('roles', type=list, default=[], location='json')
-        self.reqparse.add_argument('active', type=str, location='json', required=True)
-        self.reqparse.add_argument('owner', type=str, location='json', required=True)
-        self.reqparse.add_argument('description', type=str, location='json', required=True)
-        args = self.reqparse.parse_args()
-
         authority = service.get(authority_id)
         role = role_service.get_by_name(authority.owner)
 
@@ -313,7 +277,7 @@ class Authorities(AuthenticatedResource):
 
         # we want to make sure that we cannot add roles that we are not members of
         if not g.current_user.is_admin:
-            role_ids = set([r['id'] for r in args['roles']])
+            role_ids = set([r['id'] for r in data['roles']])
             user_role_ids = set([r.id for r in g.current_user.roles])
 
             if not role_ids.issubset(user_role_ids):
@@ -322,10 +286,10 @@ class Authorities(AuthenticatedResource):
         if permission.can():
             return service.update(
                 authority_id,
-                owner=args['owner'],
-                description=args['description'],
-                active=args['active'],
-                roles=args['roles']
+                owner=data['owner'],
+                description=data['description'],
+                active=data['active'],
+                roles=data['roles']
             )
 
         return dict(message="You are not authorized to update this authority"), 403
@@ -333,10 +297,9 @@ class Authorities(AuthenticatedResource):
 
 class CertificateAuthority(AuthenticatedResource):
     def __init__(self):
-        self.reqparse = reqparse.RequestParser()
         super(CertificateAuthority, self).__init__()
 
-    @marshal_items(FIELDS)
+    @validate_schema(None, authority_output_schema)
     def get(self, certificate_id):
         """
         .. http:get:: /certificates/1/authority

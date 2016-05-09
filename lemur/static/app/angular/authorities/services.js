@@ -94,11 +94,11 @@ angular.module('lemur')
 
     AuthorityService.getDefaults = function (authority) {
       return DefaultService.get().then(function (defaults) {
-        authority.caDN.country = defaults.country;
-        authority.caDN.state = defaults.state;
-        authority.caDN.location = defaults.location;
-        authority.caDN.organization = defaults.organization;
-        authority.caDN.organizationalUnit = defaults.organizationalUnit;
+        authority.country = defaults.country;
+        authority.state = defaults.state;
+        authority.location = defaults.location;
+        authority.organization = defaults.organization;
+        authority.organizationalUnit = defaults.organizationalUnit;
       });
     };
 

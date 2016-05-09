@@ -1,33 +1,33 @@
 <form name="trackingForm" novalidate>
   <div class="form-horizontal">
     <div class="form-group"
-         ng-class="{'has-error': trackingForm.caName.$invalid, 'has-success': !trackingForm.caName.$invalid&&trackingForm.caName.$dirty}">
+         ng-class="{'has-error': trackingForm.name.$invalid, 'has-success': !trackingForm.name.$invalid&&trackingForm.name.$dirty}">
       <label class="control-label col-sm-2">
         Name
       </label>
       <div class="col-sm-10">
-        <input name="caName" ng-model="authority.caName" placeholder="Name" tooltip="This will be the name of your authority, it is the name you will reference when creating new certificates" class="form-control" ng-pattern="/^[A-Za-z0-9_-]+$/" required/>
-        <p ng-show="trackingForm.caName.$invalid && !trackingForm.caName.$pristine" class="help-block">You must enter a valid authority name, spaces are not allowed</p>
+        <input name="name" ng-model="authority.name" placeholder="Name" tooltip="This will be the name of your authority, it is the name you will reference when creating new certificates" class="form-control" ng-pattern="/^[A-Za-z0-9_-]+$/" required/>
+        <p ng-show="trackingForm.name.$invalid && !trackingForm.name.$pristine" class="help-block">You must enter a valid authority name, spaces are not allowed</p>
       </div>
     </div>
     <div class="form-group"
-         ng-class="{'has-error': trackingForm.ownerEmail.$invalid, 'has-success': !trackingForm.$invalid&&trackingForm.ownerEmail.$dirty}">
+         ng-class="{'has-error': trackingForm.owner.$invalid, 'has-success': !trackingForm.$invalid&&trackingForm.owner.$dirty}">
       <label class="control-label col-sm-2">
         Owner
       </label>
       <div class="col-sm-10">
-        <input type="email" name="ownerEmail" ng-model="authority.ownerEmail" placeholder="TeamDL@example.com" tooltip="This is the authorities team distribution list or the main point of contact for this authority" class="form-control" required/>
-        <p ng-show="trackingForm.ownerEmail.$invalid && !trackingForm.ownerEmail.$pristine" class="help-block">You must enter an Certificate Authority owner</p>
+        <input type="email" name="owner" ng-model="authority.owner" placeholder="TeamDL@example.com" tooltip="This is the authorities team distribution list or the main point of contact for this authority" class="form-control" required/>
+        <p ng-show="trackingForm.owner.$invalid && !trackingForm.owner.$pristine" class="help-block">You must enter an Certificate Authority owner</p>
       </div>
     </div>
     <div class="form-group"
-      ng-class="{'has-error': trackingForm.caDescription.$invalid, 'has-success': !trackingForm.$invalid&&trackingForm.caDescription.$dirty}">
+      ng-class="{'has-error': trackingForm.description.$invalid, 'has-success': !trackingForm.$invalid&&trackingForm.description.$dirty}">
       <label class="control-label col-sm-2">
         Description
       </label>
       <div class="col-sm-10">
-        <textarea name="caDescription" ng-model="authority.caDescription" placeholder="Something elegant" class="form-control" ng-maxlength="250" required></textarea>
-        <p ng-show="trackingForm.caDescription.$invalid && !trackingForm.caDescription.$pristine" class="help-block">You must give a short description about this authority will be used for</p>
+        <textarea name="description" ng-model="authority.description" placeholder="Something elegant" class="form-control" ng-maxlength="250" required></textarea>
+        <p ng-show="trackingForm.description.$invalid && !trackingForm.description.$pristine" class="help-block">You must give a short description about this authority will be used for</p>
       </div>
     </div>
     <div class="form-group"
@@ -36,8 +36,28 @@
         Common Name
       </label>
       <div class="col-sm-10">
-        <input name="commonName" ng-model="authority.caDN.commonName" placeholder="Common Name" class="form-control" ng-maxlength="64" required/>
+        <input name="commonName" ng-model="authority.commonName" placeholder="Common Name" class="form-control" ng-maxlength="64" required/>
         <p ng-show="trackingForm.commonName.$invalid && !trackingForm.commonName.$pristine" class="help-block">You must enter a common name and it must be less than 64 characters in length</p>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="control-label col-sm-2">
+          Type
+      </label>
+      <div class="col-sm-10">
+          <select class="form-control" ng-model="authority.type" ng-options="option for option in ['root', 'subca']" ng-init="authority.type = 'root'"required></select>
+      </div>
+    </div>
+    <div ng-show="authority.type == 'subca'" class="form-group">
+      <label class="control-label col-sm-2">
+          Parent Authority
+      </label>
+      <div class="col-sm-10">
+          <input type="text" ng-model="authority.authority" placeholder="Parent Authority Name"
+                 typeahead="authority as authority.name for authority in authorityService.findAuthorityByName($viewValue)" typeahead-loading="loadingAuthorities"
+                 class="form-control input-md" typeahead-min-wait="50"
+                 tooltip="When you specify a subordinate certificate authority you must specify the parent authority"
+                 tooltip-trigger="focus" tooltip-placement="top">
       </div>
     </div>
     <div class="form-group"
@@ -45,10 +65,22 @@
       <label class="control-label col-sm-2">
         Validity Range
       </label>
-      <div class="col-sm-4">
+      <div class="col-sm-2">
+        <select ng-model="authority.validityYears" class="form-control">
+          <option value="5">5 years</option>
+          <option value="10">10 years</option>
+          <option value="20">20 years</option>
+          <option value="30">30 years</option>
+        </select>
+      </div>
+      <span style="padding-top: 15px" class="text-center col-sm-1">
+        <strong>- or -</strong>
+      </span>
+      <div class="col-sm-3">
         <div>
           <div class="input-group">
-            <input name="validityStart" tooltip="Starting Date" class="form-control" datepicker-popup="yyyy/MM/dd" is-open="opened1" ng-model="authority.validityStart" required/>
+            <input name="validityStart" tooltip="Starting Date" class="form-control" datepicker-popup="yyyy/MM/dd" is-open="opened1" ng-model="authority.validityStart" min-date="authority.authority.notBefore"
+                 max-date="authority.authority.notAfter" required/>
             <p ng-show="trackingForm.validityStart.$invalid && !trackingForm.validityStart.$pristine" class="help-block">A start date is required!</p>
             <span class="input-group-btn">
                 <button class="btn btn-default" ng-click="open($event)"><i class="glyphicon glyphicon-calendar"></i></button>
@@ -56,11 +88,12 @@
           </div>
         </div>
       </div>
-      <span style="padding-top: 15px" class="text-center col-sm-2"><label><span class="glyphicon glyphicon-resize-horizontal"></span></label></span>
-      <div class="col-sm-4">
+      <span style="padding-top: 15px" class="text-center col-sm-1"><label><span class="glyphicon glyphicon-resize-horizontal"></span></label></span>
+      <div class="col-sm-3">
         <div>
           <div class="input-group">
-            <input name="validityEnd" tooltip="Ending Date" class="form-control" datepicker-popup="yyyy/MM/dd" is-open="opened2" ng-model="authority.validityEnd" required/>
+            <input name="validityEnd" tooltip="Ending Date" class="form-control" datepicker-popup="yyyy/MM/dd" is-open="opened2" ng-model="authority.validityEnd" min-date="authority.authority.notBefore"
+                 max-date="authority.authority.notAfter" required/>
             <p ng-show="trackingForm.validityEnd.$invalid && !trackingForm.validityEnd.$pristine" class="help-block">A end date is required!</p>
             <span class="input-group-btn">
                 <button class="btn btn-default" ng-click="open2($event)"><i class="glyphicon glyphicon-calendar"></i></button>

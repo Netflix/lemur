@@ -103,6 +103,13 @@ def certificate(session):
     return c
 
 
+@pytest.fixture
+def role(session):
+    r = RoleFactory()
+    session.commit()
+    return r
+
+
 @pytest.yield_fixture(scope="function")
 def logged_in_user(app, user):
     with app.test_request_context():
