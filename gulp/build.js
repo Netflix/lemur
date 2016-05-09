@@ -81,6 +81,7 @@ gulp.task('dev:styles', function () {
     'bower_components/angular-wizard/dist/angular-wizard.css',
     'bower_components/ng-table/ng-table.css',
     'bower_components/angularjs-toaster/toaster.css',
+    'bower_components/selectize/dist/css/selectize.bootstrap3.css',
     'lemur/static/app/styles/lemur.css'
   ];
 

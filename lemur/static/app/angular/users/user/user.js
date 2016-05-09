@@ -2,7 +2,7 @@
 
 angular.module('lemur')
 
-  .controller('UsersEditController', function ($scope, $modalInstance, UserApi, UserService, RoleService, editId) {
+  .controller('UsersEditController', function ($scope, $uibModalInstance, UserApi, UserService, RoleService, editId) {
     UserApi.get(editId).then(function (user) {
       UserService.getRoles(user);
       $scope.user = user;
@@ -16,12 +16,12 @@ angular.module('lemur')
 
     $scope.save = function (user) {
       UserService.update(user).then(function () {
-        $modalInstance.close();
+        $uibModalInstance.close();
       });
     };
 
     $scope.cancel = function () {
-      $modalInstance.dismiss('cancel');
+      $uibModalInstance.dismiss('cancel');
     };
 
     $scope.loadMoreRoles = function () {
@@ -30,19 +30,19 @@ angular.module('lemur')
     };
   })
 
-  .controller('UsersCreateController', function ($scope, $modalInstance, UserService, LemurRestangular, RoleService) {
+  .controller('UsersCreateController', function ($scope, $uibModalInstance, UserService, LemurRestangular, RoleService) {
     $scope.user = LemurRestangular.restangularizeElement(null, {}, 'users');
     $scope.save = UserService.create;
     $scope.roleService = RoleService;
 
     $scope.create = function (user) {
       UserService.create(user).then(function () {
-        $modalInstance.close();
+        $uibModalInstance.close();
       });
     };
 
     $scope.cancel = function () {
-      $modalInstance.dismiss('cancel');
+      $uibModalInstance.dismiss('cancel');
     };
 
   });

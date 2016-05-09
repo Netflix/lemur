@@ -5,10 +5,11 @@
     <div class="col-sm-10">
         <div class="input-group">
             <input type="text" ng-model="certificate.selectedDestination" placeholder="AWS..."
-                   typeahead="destination.label for destination in destinationService.findDestinationsByName($viewValue)" typeahead-loading="loadingDestinations"
-                   class="form-control input-md" typeahead-on-select="certificate.attachDestination($item)" typeahead-min-wait="50"
-                   tooltip="Lemur can upload certificates to any pre-defined destination"
-                   tooltip-trigger="focus" tooltip-placement="top">
+                   uib-typeahead="destination.label for destination in destinationService.findDestinationsByName($viewValue)" typeahead-loading="loadingDestinations"
+                   class="form-control input-md" typeahead-on-select="certificate.attachDestination($item)"
+                   uib-tooltip="Lemur can upload certificates to any pre-defined destination"
+                   uib-tooltip-trigger="focus" uib-tooltip-placement="top"
+                   typeahead-wait-ms="500">
           <span class="input-group-btn">
             <button ng-model="destinations.show" class="btn btn-md btn-default" btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
                 <span class="badge">{{ certificate.destinations.length || 0 }}</span>

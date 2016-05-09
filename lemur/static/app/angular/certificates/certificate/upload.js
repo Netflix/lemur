@@ -2,7 +2,7 @@
 
 angular.module('lemur')
 
-  .controller('CertificateUploadController', function ($scope, $modalInstance, CertificateService, LemurRestangular, DestinationService, NotificationService, PluginService, toaster) {
+  .controller('CertificateUploadController', function ($scope, $uibModalInstance, CertificateService, LemurRestangular, DestinationService, NotificationService, PluginService, toaster) {
     $scope.certificate = LemurRestangular.restangularizeElement(null, {}, 'certificates');
     $scope.upload = CertificateService.upload;
 
@@ -22,7 +22,7 @@ angular.module('lemur')
             title: certificate.name,
             body: 'Successfully uploaded!'
           });
-          $modalInstance.close();
+          $uibModalInstance.close();
         },
         function (response) {
           toaster.pop({
@@ -35,7 +35,7 @@ angular.module('lemur')
     };
 
     $scope.cancel = function () {
-      $modalInstance.dismiss('cancel');
+      $uibModalInstance.dismiss('cancel');
     };
 
   });

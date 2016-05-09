@@ -17,7 +17,7 @@ angular.module('lemur')
       });
   })
 
-  .controller('CertificatesViewController', function ($q, $scope, $modal, $stateParams, CertificateApi, CertificateService, MomentService, ngTableParams, toaster) {
+  .controller('CertificatesViewController', function ($q, $scope, $uibModal, $stateParams, CertificateApi, CertificateService, MomentService, ngTableParams, toaster) {
     $scope.filter = $stateParams;
     $scope.certificateTable = new ngTableParams({
       page: 1,            // show first page
@@ -121,7 +121,7 @@ angular.module('lemur')
     };
 
     $scope.create = function () {
-      var modalInstance = $modal.open({
+      var uibModalInstance = $uibModal.open({
         animation: true,
         controller: 'CertificateCreateController',
         templateUrl: '/angular/certificates/certificate/certificateWizard.tpl.html',
@@ -129,13 +129,13 @@ angular.module('lemur')
         backdrop: 'static'
       });
 
-      modalInstance.result.then(function () {
+      uibModalInstance.result.then(function () {
         $scope.certificateTable.reload();
       });
     };
 
     $scope.edit = function (certificateId) {
-      var modalInstance = $modal.open({
+      var uibModalInstance = $uibModal.open({
         animation: true,
         controller: 'CertificateEditController',
         templateUrl: '/angular/certificates/certificate/edit.tpl.html',
@@ -148,13 +148,13 @@ angular.module('lemur')
         }
       });
 
-      modalInstance.result.then(function () {
+      uibModalInstance.result.then(function () {
         $scope.certificateTable.reload();
       });
     };
 
     $scope.import = function () {
-      var modalInstance = $modal.open({
+      var uibModalInstance = $uibModal.open({
         animation: true,
         controller: 'CertificateUploadController',
         templateUrl: '/angular/certificates/certificate/upload.tpl.html',
@@ -162,13 +162,13 @@ angular.module('lemur')
         backdrop: 'static'
       });
 
-      modalInstance.result.then(function () {
+      uibModalInstance.result.then(function () {
         $scope.certificateTable.reload();
       });
     };
 
     $scope.export = function (certificateId) {
-      $modal.open({
+      $uibModal.open({
         animation: true,
         controller: 'CertificateExportController',
         templateUrl: '/angular/certificates/certificate/export.tpl.html',

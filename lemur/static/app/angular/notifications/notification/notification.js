@@ -2,7 +2,7 @@
 
 angular.module('lemur')
 
-  .controller('NotificationsCreateController', function ($scope, $modalInstance, PluginService, NotificationService, CertificateService, LemurRestangular){
+  .controller('NotificationsCreateController', function ($scope, $uibModalInstance, PluginService, NotificationService, CertificateService, LemurRestangular){
     $scope.notification = LemurRestangular.restangularizeElement(null, {}, 'notifications');
 
     PluginService.getByType('notification').then(function (plugins) {
@@ -11,7 +11,7 @@ angular.module('lemur')
     $scope.save = function (notification) {
       NotificationService.create(notification).then(
         function () {
-          $modalInstance.close();
+          $uibModalInstance.close();
         },
         function () {
 
@@ -20,13 +20,13 @@ angular.module('lemur')
     };
 
     $scope.cancel = function () {
-      $modalInstance.dismiss('cancel');
+      $uibModalInstance.dismiss('cancel');
     };
 
     $scope.certificateService = CertificateService;
   })
 
-  .controller('NotificationsEditController', function ($scope, $modalInstance, NotificationService, NotificationApi, PluginService, CertificateService, editId) {
+  .controller('NotificationsEditController', function ($scope, $uibModalInstance, NotificationService, NotificationApi, PluginService, CertificateService, editId) {
     NotificationApi.get(editId).then(function (notification) {
       $scope.notification = notification;
       PluginService.getByType('notification').then(function (plugins) {
@@ -53,12 +53,12 @@ angular.module('lemur')
 
     $scope.save = function (notification) {
       NotificationService.update(notification).then(function () {
-        $modalInstance.close();
+        $uibModalInstance.close();
       });
     };
 
     $scope.cancel = function () {
-      $modalInstance.dismiss('cancel');
+      $uibModalInstance.dismiss('cancel');
     };
 
     $scope.certificateService = CertificateService;

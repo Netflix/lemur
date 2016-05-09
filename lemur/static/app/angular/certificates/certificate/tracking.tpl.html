@@ -8,7 +8,7 @@
 
             <div class="col-sm-10">
                 <input type="email" name="ownerEmail" ng-model="certificate.owner" placeholder="TeamDL@example.com"
-                       tooltip="This is the certificates team distribution list or main point of contact"
+                       uib-tooltip="This is the certificates team distribution list or main point of contact"
                        class="form-control"
                        required/>
 
@@ -18,7 +18,7 @@
         </div>
         <div class="form-group"
              ng-class="{'has-error': trackingForm.name.$invalid, 'has-success': !trackingForm.name.$invalid&&trackingForm.name.$dirty}">
-            <label class="control-label col-sm-2" tooltip="If no name is provided, Lemur will generate a name for you">
+            <label class="control-label col-sm-2" uib-tooltip="If no name is provided, Lemur will generate a name for you">
                 Custom Name <span class="glyphicon glyphicon-question-sign"></span>
             </label>
             <div class="col-sm-10">
@@ -46,16 +46,8 @@
                 Certificate Authority
             </label>
             <div class="col-sm-10">
-                <div class="input-group col-sm-12">
-                    <input name="selectedAuthority"
-                           tooltip="If you are unsure which authority you need; you most likely want to use 'verisign'"
-                           type="text" ng-model="certificate.selectedAuthority" placeholder="Authority Name"
-                           typeahead-on-select="certificate.attachAuthority($item)"
-                           typeahead="authority.name for authority in authorityService.findActiveAuthorityByName($viewValue)"
-                           typeahead-loading="loadingAuthorities"
-                           class="form-control" typeahead-wait-ms="1000"
-                           typeahead-template-url="angular/authorities/authority/select.tpl.html" required>
-                </div>
+                <selectize name="selectedAuthority" placeholder="Select an Authority..." options="authorities" config="authorityConfig"
+                           ng-model="certificate.selectedAuthority" required="true"></selectize>
             </div>
         </div>
         <div class="form-group">
@@ -76,7 +68,7 @@
 
             <div class="col-sm-10">
                 <input name="commonName"
-                       tooltip="If you need a certificate with multiple domains enter your primary domain here and the rest under 'Subject Alternate Names' in the next few panels"
+                       uib-tooltip="If you need a certificate with multiple domains enter your primary domain here and the rest under 'Subject Alternate Names' in the next few panels"
                        ng-model="certificate.commonName" placeholder="Common Name" class="form-control"
                        ng-maxlength="64"
                        required/>
@@ -88,7 +80,7 @@
         </div>
         <div class="form-group">
             <label class="control-label col-sm-2"
-                   tooltip="If no date is selected Lemur attempts to issue a 2 year certificate">
+                   uib-tooltip="If no date is selected Lemur attempts to issue a 2 year certificate">
                 Validity Range <span class="glyphicon glyphicon-question-sign"></span>
             </label>
             <div class="col-sm-2">
@@ -99,55 +91,64 @@
                     <option value="4">4 years</option>
                 </select>
             </div>
-      <span style="padding-top: 15px" class="text-center col-sm-1">
-        <strong>- or -</strong>
-      </span>
-      <div class="col-sm-3">
-        <div class="input-group">
-          <input tooltip="Starting Date (yyyy/MM/dd)" class="form-control" datepicker-popup="yyyy/MM/dd"
-                 is-open="$parent.openNotBefore.isOpen" min-date="certificate.authority.notBefore"
-                 max-date="certificate.authority.notAfter" ng-model="certificate.validityStart"/>
-        <span class="input-group-btn">
-          <button class="btn btn-default" ng-click="openNotBefore($event)"><i
-            class="glyphicon glyphicon-calendar"></i></button>
-        </span>
+            <span style="padding-top: 15px" class="text-center col-sm-1">
+                <strong>- or -</strong>
+            </span>
+            <div class="col-sm-3">
+                <div class="input-group">
+                    <input type="text" class="form-control"
+                           uib-datepicker-popup="yyyy/MM/dd"
+                           ng-model="certificate.validityStart"
+                           is-open="popup1.opened"
+                           datepicker-options="dateOptions"
+                           close-text="Close"
+                           max-date="certificate.authority.notAfter"
+                           min-date="certificate.authority.notBefore"
+                           alt-input-formats="altInputFormats"/>
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-default" ng-click="open1()"><i
+                          class="glyphicon glyphicon-calendar"></i></button>
+                    </span>
                 </div>
             </div>
-      <span style="padding-top: 15px" class="text-center col-sm-1"><label><span
-        class="glyphicon glyphicon-resize-horizontal"></span></label></span>
-      <div class="col-sm-3">
-        <div>
-          <div class="input-group">
-            <input tooltip="Ending Date (yyyy/MM/dd)" class="form-control" datepicker-popup="yyyy/MM/dd"
-                   is-open="$parent.openNotAfter.isOpen" min-date="certificate.authority.notBefore"
-                   max-date="certificate.authority.notAfter" ng-model="certificate.validityEnd"/>
-            <span class="input-group-btn">
-              <button class="btn btn-default" ng-click="openNotAfter($event)"><i
-                class="glyphicon glyphicon-calendar"></i></button>
-            </span>
-                    </div>
+            <span style="padding-top: 15px" class="text-center col-sm-1"><label><span
+              class="glyphicon glyphicon-resize-horizontal"></span></label></span>
+            <div class="col-sm-3">
+                <div class="input-group">
+                    <input type="text" class="form-control"
+                           uib-datepicker-popup="yyyy/MM/dd"
+                           ng-model="certificate.validityEnd"
+                           is-open="popup2.opened"
+                           datepicker-options="dateOptions"
+                           close-text="Close"
+                           max-date="certificate.authority.notAfter"
+                           min-date="certificate.authority.notBefore"
+                           alt-input-formats="altInputFormats"/>
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-default" ng-click="open2()"><i
+                          class="glyphicon glyphicon-calendar"></i></button>
+                    </span>
                 </div>
             </div>
         </div>
-      </div>
-    </div>
-    <div class="form-group"
-         ng-class="{'has-error': trackingForm.csr.$invalid&&trackingForm.csr.$dirty, 'has-success': !trackingForm.csr.$invalid&&trackingForm.csr.$dirty}">
-      <label class="control-label col-sm-2">
-        Certificate Signing Request (CSR)
-      </label>
-      <div class="col-sm-10">
-        <textarea tooltip="Values defined in the CSR will take precedence" name="certificate signing request"
-                  ng-model="certificate.csr"
-                  placeholder="PEM encoded string..." class="form-control"
-                  ng-pattern="/^-----BEGIN CERTIFICATE REQUEST-----/"></textarea>
+        <div class="form-group"
+             ng-class="{'has-error': trackingForm.csr.$invalid&&trackingForm.csr.$dirty, 'has-success': !trackingForm.csr.$invalid&&trackingForm.csr.$dirty}">
+            <label class="control-label col-sm-2">
+                Certificate Signing Request (CSR)
+            </label>
+            <div class="col-sm-10">
+                <textarea uib-tooltip="Values defined in the CSR will take precedence" name="certificate signing request"
+                          ng-model="certificate.csr"
+                          placeholder="PEM encoded string..." class="form-control"
+                          ng-pattern="/^-----BEGIN CERTIFICATE REQUEST-----/"></textarea>
 
-        <p ng-show="trackingForm.csr.$invalid && !trackingForm.csr.$pristine"
-           class="help-block">Enter a valid certificate signing request.</p>
-      </div>
-      <div ng-include="'angular/certificates/certificate/replaces.tpl.html'"></div>
-      <div ng-include="'angular/certificates/certificate/notifications.tpl.html'"></div>
-      <div ng-include="'angular/certificates/certificate/destinations.tpl.html'"></div>
+                <p ng-show="trackingForm.csr.$invalid && !trackingForm.csr.$pristine"
+                   class="help-block">Enter a valid certificate signing request.</p>
+            </div>
+        </div>
+        <div ng-include="'angular/certificates/certificate/replaces.tpl.html'"></div>
+        <div ng-include="'angular/certificates/certificate/notifications.tpl.html'"></div>
+        <div ng-include="'angular/certificates/certificate/destinations.tpl.html'"></div>
     </div>
 </form>
 

@@ -16,7 +16,7 @@ angular.module('lemur')
       });
   })
 
-  .controller('AuthoritiesViewController', function ($scope, $q, $modal, $stateParams, AuthorityApi, AuthorityService, ngTableParams, toaster) {
+  .controller('AuthoritiesViewController', function ($scope, $q, $uibModal, $stateParams, AuthorityApi, AuthorityService, ngTableParams, toaster) {
     $scope.filter = $stateParams;
     $scope.authoritiesTable = new ngTableParams({
       page: 1,            // show first page
@@ -65,7 +65,7 @@ angular.module('lemur')
     };
 
     $scope.edit = function (authorityId) {
-      var modalInstance = $modal.open({
+      var uibModalInstance = $uibModal.open({
         animation: true,
         templateUrl: '/angular/authorities/authority/edit.tpl.html',
         controller: 'AuthorityEditController',
@@ -78,14 +78,14 @@ angular.module('lemur')
         }
       });
 
-      modalInstance.result.then(function () {
+      uibModalInstance.result.then(function () {
         $scope.authoritiesTable.reload();
       });
 
     };
 
     $scope.editRole = function (roleId) {
-      var modalInstance = $modal.open({
+      var uibModalInstance = $uibModal.open({
         animation: true,
         templateUrl: '/angular/roles/role/role.tpl.html',
         controller: 'RolesEditController',
@@ -98,14 +98,14 @@ angular.module('lemur')
         }
       });
 
-      modalInstance.result.then(function () {
+      uibModalInstance.result.then(function () {
         $scope.authoritiesTable.reload();
       });
 
     };
 
     $scope.create = function () {
-      var modalInstance = $modal.open({
+      var uibModalInstance = $uibModal.open({
         animation: true,
         controller: 'AuthorityCreateController',
         templateUrl: '/angular/authorities/authority/authorityWizard.tpl.html',
@@ -113,7 +113,7 @@ angular.module('lemur')
         backdrop: 'static',
       });
 
-      modalInstance.result.then(function () {
+      uibModalInstance.result.then(function () {
         $scope.authoritiesTable.reload();
       });
 

@@ -2,7 +2,7 @@
 
 angular.module('lemur')
 
-  .controller('SourcesCreateController', function ($scope, $modalInstance, PluginService, SourceService, LemurRestangular){
+  .controller('SourcesCreateController', function ($scope, $uibModalInstance, PluginService, SourceService, LemurRestangular){
     $scope.source = LemurRestangular.restangularizeElement(null, {}, 'sources');
 
     PluginService.getByType('source').then(function (plugins) {
@@ -11,16 +11,16 @@ angular.module('lemur')
 
     $scope.save = function (source) {
       SourceService.create(source).then(function () {
-        $modalInstance.close();
+        $uibModalInstance.close();
       });
     };
 
     $scope.cancel = function () {
-      $modalInstance.dismiss('cancel');
+      $uibModalInstance.dismiss('cancel');
     };
   })
 
-  .controller('SourcesEditController', function ($scope, $modalInstance, SourceService, SourceApi, PluginService, editId) {
+  .controller('SourcesEditController', function ($scope, $uibModalInstance, SourceService, SourceApi, PluginService, editId) {
     SourceApi.get(editId).then(function (source) {
       $scope.source = source;
       PluginService.getByType('source').then(function (plugins) {
@@ -46,11 +46,11 @@ angular.module('lemur')
 
     $scope.save = function (source) {
       SourceService.update(source).then(function () {
-        $modalInstance.close();
+        $uibModalInstance.close();
       });
     };
 
     $scope.cancel = function () {
-      $modalInstance.dismiss('cancel');
+      $uibModalInstance.dismiss('cancel');
     };
   });
