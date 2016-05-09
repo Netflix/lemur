@@ -201,7 +201,8 @@ class CertificatesList(AuthenticatedResource):
                 "validityEnd": "2015-06-16T07:00:00.000Z",
                 "replacements": [
                     {'id': 123}
-                ]
+                ],
+                "name": "TestCertificate"
              }
 
            **Example response**:

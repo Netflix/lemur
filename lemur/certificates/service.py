@@ -248,6 +248,10 @@ def create(**kwargs):
 
     cert.owner = kwargs['owner']
 
+    # we override the generated name if one is provided
+    if kwargs.get('name'):
+        cert.name = kwargs['name']
+
     database.create(cert)
     cert.description = kwargs.get('description')
     g.user.certificates.append(cert)
