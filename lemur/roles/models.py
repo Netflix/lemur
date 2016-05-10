@@ -26,4 +26,4 @@ class Role(db.Model):
     description = Column(Text)
     authority_id = Column(Integer, ForeignKey('authorities.id'))
     user_id = Column(Integer, ForeignKey('users.id'))
-    users = relationship("User", secondary=roles_users, passive_deletes=True, backref="role", cascade='all,delete')
+    users = relationship("User", secondary=roles_users, viewonly=True, backref="role")
