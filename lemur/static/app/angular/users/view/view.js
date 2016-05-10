@@ -10,7 +10,7 @@ angular.module('lemur')
     });
   })
 
-  .controller('UsersViewController', function ($scope, $modal, UserApi, UserService, ngTableParams) {
+  .controller('UsersViewController', function ($scope, $uibModal, UserApi, UserService, ngTableParams) {
     $scope.filter = {};
     $scope.usersTable = new ngTableParams({
       page: 1,            // show first page
@@ -38,7 +38,7 @@ angular.module('lemur')
     };
 
     $scope.edit = function (userId) {
-      var modalInstance = $modal.open({
+      var uibModalInstance = $uibModal.open({
         animation: true,
         templateUrl: '/angular/users/user/user.tpl.html',
         controller: 'UsersEditController',
@@ -51,14 +51,14 @@ angular.module('lemur')
         }
       });
 
-      modalInstance.result.then(function () {
+      uibModalInstance.result.then(function () {
         $scope.usersTable.reload();
       });
 
     };
 
     $scope.create = function () {
-      var modalInstance = $modal.open({
+      var uibModalInstance = $uibModal.open({
         animation: true,
         controller: 'UsersCreateController',
         templateUrl: '/angular/users/user/user.tpl.html',
@@ -66,7 +66,7 @@ angular.module('lemur')
         backdrop: 'static'
       });
 
-      modalInstance.result.then(function () {
+      uibModalInstance.result.then(function () {
         $scope.usersTable.reload();
       });
 

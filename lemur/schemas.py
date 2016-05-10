@@ -97,7 +97,7 @@ class AssociatedUserSchema(LemurInputSchema):
 
 
 class PluginSchema(LemurInputSchema):
-    plugin_options = fields.Dict()
+    plugin_options = fields.List(fields.Dict())
     slug = fields.String()
     title = fields.String()
     description = fields.String()

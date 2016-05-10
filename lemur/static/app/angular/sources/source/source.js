@@ -10,9 +10,24 @@ angular.module('lemur')
     });
 
     $scope.save = function (source) {
-      SourceService.create(source).then(function () {
-        $uibModalInstance.close();
-      });
+      SourceService.create(source).then(
+        function () {
+          toaster.pop({
+            type: 'success',
+            title: source.name,
+            body: 'Successfully Created!'
+          })
+          $uibModalInstance.close();
+        }, function (response) {
+          toaster.pop({
+            type: 'error',
+            title: certificate.name,
+            body: 'lemur-bad-request',
+            bodyOutputType: 'directive',
+            directiveData: response.data,
+            timeout: 100000
+          });
+        });
     };
 
     $scope.cancel = function () {
@@ -27,7 +42,6 @@ angular.module('lemur')
         $scope.plugins = plugins;
         _.each($scope.plugins, function (plugin) {
           if (plugin.slug === $scope.source.pluginName) {
-            plugin.pluginOptions = $scope.source.sourceOptions;
             $scope.source.plugin = plugin;
           }
         });
@@ -38,15 +52,29 @@ angular.module('lemur')
       $scope.plugins = plugins;
       _.each($scope.plugins, function (plugin) {
         if (plugin.slug === $scope.source.pluginName) {
-          plugin.pluginOptions = $scope.source.sourceOptions;
           $scope.source.plugin = plugin;
         }
       });
     });
 
     $scope.save = function (source) {
-      SourceService.update(source).then(function () {
-        $uibModalInstance.close();
+      SourceService.update(source).then(
+        function () {
+          toaster.pop({
+            type: 'success',
+            title: source.name,
+            body: 'Successfully Updated!'
+          })
+          $uibModalInstance.close();
+        }, function (response) {
+          toaster.pop({
+            type: 'error',
+            title: certificate.name,
+            body: 'lemur-bad-request',
+            bodyOutputType: 'directive',
+            directiveData: response.data,
+            timeout: 100000
+          });
       });
     };
 
