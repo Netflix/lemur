@@ -129,19 +129,10 @@ def render(args):
     """
     query = database.session_query(User)
 
-    sort_by = args.pop('sort_by')
-    sort_dir = args.pop('sort_dir')
-    page = args.pop('page')
-    count = args.pop('count')
     filt = args.pop('filter')
 
     if filt:
         terms = filt.split(';')
         query = database.filter(query, User, terms)
 
-    query = database.find_all(query, User, args)
-
-    if sort_by and sort_dir:
-        query = database.sort(query, User, sort_by, sort_dir)
-
-    return database.paginate(query, page, count)
+    database.sort_and_page(query, User, args)

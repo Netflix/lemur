@@ -77,12 +77,5 @@ class User(db.Model):
             if role.name == 'admin':
                 return True
 
-    def as_dict(self):
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
-
-    def serialize(self):
-        blob = self.as_dict()
-        return blob
-
 
 listen(User, 'before_insert', hash_password)

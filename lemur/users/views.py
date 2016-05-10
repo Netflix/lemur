@@ -6,43 +6,23 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from flask import g, Blueprint
-from flask.ext.restful import reqparse, Api, fields
+from flask.ext.restful import reqparse, Api
+
+from lemur.common.schema import validate_schema
+from lemur.common.utils import paginated_parser
+
+from lemur.auth.service import AuthenticatedResource
+from lemur.auth.permissions import admin_permission
 
 from lemur.users import service
 from lemur.certificates import service as certificate_service
 from lemur.roles import service as role_service
-from lemur.auth.service import AuthenticatedResource
-from lemur.auth.permissions import admin_permission
-from lemur.common.utils import marshal_items, paginated_parser
+
+from lemur.users.schemas import user_input_schema, user_output_schema, users_output_schema
 
 
 mod = Blueprint('users', __name__)
 api = Api(mod)
-
-
-FIELDS = {
-    'username': fields.String,
-    'active': fields.Boolean,
-    'email': fields.String,
-    'profileImage': fields.String(attribute='profile_picture'),
-    'id': fields.Integer,
-}
-
-
-def roles(values):
-    """
-    Validate that the passed in roles exist.
-
-    :param values:
-    :return: :raise ValueError:
-    """
-    rs = []
-    for role in values:
-        r = role_service.get(role['id'])
-        if not r:
-            raise ValueError("Role {0} does not exist".format(role['name']))
-        rs.append(r)
-    return rs
 
 
 class UsersList(AuthenticatedResource):
@@ -51,7 +31,7 @@ class UsersList(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(UsersList, self).__init__()
 
-    @marshal_items(FIELDS)
+    @validate_schema(None, users_output_schema)
     def get(self):
         """
         .. http:get:: /users
@@ -109,8 +89,8 @@ class UsersList(AuthenticatedResource):
         return service.render(args)
 
     @admin_permission.require(http_exception=403)
-    @marshal_items(FIELDS)
-    def post(self):
+    @validate_schema(user_input_schema, user_output_schema)
+    def post(self, data=None):
         """
         .. http:post:: /users
 
@@ -155,14 +135,7 @@ class UsersList(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
-        self.reqparse.add_argument('username', type=str, location='json', required=True)
-        self.reqparse.add_argument('email', type=str, location='json', required=True)
-        self.reqparse.add_argument('password', type=str, location='json', default=None)
-        self.reqparse.add_argument('active', type=bool, default=True, location='json')
-        self.reqparse.add_argument('roles', type=roles, default=[], location='json')
-
-        args = self.reqparse.parse_args()
-        return service.create(args['username'], args['password'], args['email'], args['active'], None, args['roles'])
+        return service.create(data['username'], data['password'], data['email'], data['active'], None, data['roles'])
 
 
 class Users(AuthenticatedResource):
@@ -170,7 +143,7 @@ class Users(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(Users, self).__init__()
 
-    @marshal_items(FIELDS)
+    @validate_schema(None, user_output_schema)
     def get(self, user_id):
         """
         .. http:get:: /users/1
@@ -207,8 +180,8 @@ class Users(AuthenticatedResource):
         return service.get(user_id)
 
     @admin_permission.require(http_exception=403)
-    @marshal_items(FIELDS)
-    def put(self, user_id):
+    @validate_schema(user_input_schema, user_output_schema)
+    def put(self, user_id, data=None):
         """
         .. http:put:: /users/1
 
@@ -248,13 +221,7 @@ class Users(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
-        self.reqparse.add_argument('username', type=str, location='json', required=True)
-        self.reqparse.add_argument('email', type=str, location='json', required=True)
-        self.reqparse.add_argument('active', type=bool, location='json', required=True)
-        self.reqparse.add_argument('roles', type=roles, default=[], location='json', required=True)
-
-        args = self.reqparse.parse_args()
-        return service.update(user_id, args['username'], args['email'], args['active'], None, args['roles'])
+        return service.update(user_id, data['username'], data['email'], data['active'], None, data['roles'])
 
 
 class CertificateUsers(AuthenticatedResource):
@@ -262,7 +229,7 @@ class CertificateUsers(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(CertificateUsers, self).__init__()
 
-    @marshal_items(FIELDS)
+    @validate_schema(None, user_output_schema)
     def get(self, certificate_id):
         """
         .. http:get:: /certificates/1/creator
@@ -304,7 +271,7 @@ class RoleUsers(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(RoleUsers, self).__init__()
 
-    @marshal_items(FIELDS)
+    @validate_schema(None, user_output_schema)
     def get(self, role_id):
         """
         .. http:get:: /roles/1/users
@@ -357,7 +324,7 @@ class Me(AuthenticatedResource):
     def __init__(self):
         super(Me, self).__init__()
 
-    @marshal_items(FIELDS)
+    @validate_schema(None, user_output_schema)
     def get(self):
         """
         .. http:get:: /auth/me
@@ -391,7 +358,7 @@ class Me(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
-        return g.current_user.as_dict()
+        return g.current_user
 
 
 api.add_resource(Me, '/auth/me', endpoint='me')
