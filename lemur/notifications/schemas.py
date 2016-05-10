@@ -11,11 +11,11 @@ from lemur.schemas import PluginSchema, AssociatedCertificateSchema
 
 
 class NotificationInputSchema(LemurInputSchema):
-    label = fields.String()
+    label = fields.String(required=True)
+    options = fields.Dict(required=True)
     description = fields.String()
-    options = fields.Dict()
     active = fields.Boolean()
-    plugin = fields.Nested(PluginSchema)
+    plugin = fields.Nested(PluginSchema, required=True)
     certificates = fields.Nested(AssociatedCertificateSchema, many=True)
 
 
