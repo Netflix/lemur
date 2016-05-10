@@ -9,23 +9,19 @@
 """
 from flask import Blueprint
 from flask import make_response, jsonify, abort, g
-from flask.ext.restful import reqparse, fields, Api
+from flask.ext.restful import reqparse, Api
 
 from lemur.roles import service
 from lemur.auth.service import AuthenticatedResource
 from lemur.auth.permissions import ViewRoleCredentialsPermission, admin_permission
-from lemur.common.utils import marshal_items, paginated_parser
+from lemur.common.utils import paginated_parser
+
+from lemur.common.schema import validate_schema
+from lemur.roles.schemas import role_input_schema, role_output_schema, roles_output_schema
 
 
 mod = Blueprint('roles', __name__)
 api = Api(mod)
-
-
-FIELDS = {
-    'name': fields.String,
-    'description': fields.String,
-    'id': fields.Integer,
-}
 
 
 class RolesList(AuthenticatedResource):
@@ -34,7 +30,7 @@ class RolesList(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(RolesList, self).__init__()
 
-    @marshal_items(FIELDS)
+    @validate_schema(None, role_output_schema)
     def get(self):
         """
         .. http:get:: /roles
@@ -90,8 +86,8 @@ class RolesList(AuthenticatedResource):
         return service.render(args)
 
     @admin_permission.require(http_exception=403)
-    @marshal_items(FIELDS)
-    def post(self):
+    @validate_schema(role_input_schema, role_output_schema)
+    def post(self, data=None):
         """
         .. http:post:: /roles
 
@@ -136,15 +132,8 @@ class RolesList(AuthenticatedResource):
            :statuscode 200: no error
            :statuscode 403: unauthenticated
         """
-        self.reqparse.add_argument('name', type=str, location='json', required=True)
-        self.reqparse.add_argument('description', type=str, location='json')
-        self.reqparse.add_argument('username', type=str, location='json')
-        self.reqparse.add_argument('password', type=str, location='json')
-        self.reqparse.add_argument('users', type=list, location='json')
-
-        args = self.reqparse.parse_args()
-        return service.create(args['name'], args.get('password'), args.get('description'), args.get('username'),
-                              args.get('users'))
+        return service.create(data['name'], data.get('password'), data.get('description'), data.get('username'),
+                              data.get('users'))
 
 
 class RoleViewCredentials(AuthenticatedResource):
@@ -197,7 +186,7 @@ class Roles(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(Roles, self).__init__()
 
-    @marshal_items(FIELDS)
+    @validate_schema(None, role_output_schema)
     def get(self, role_id):
         """
         .. http:get:: /roles/1
@@ -238,8 +227,8 @@ class Roles(AuthenticatedResource):
 
         return service.get(role_id)
 
-    @marshal_items(FIELDS)
-    def put(self, role_id):
+    @validate_schema(role_input_schema, role_output_schema)
+    def put(self, role_id, data=None):
         """
         .. http:put:: /roles/1
 
@@ -278,11 +267,7 @@ class Roles(AuthenticatedResource):
         """
         permission = ViewRoleCredentialsPermission(role_id)
         if permission.can():
-            self.reqparse.add_argument('name', type=str, location='json', required=True)
-            self.reqparse.add_argument('description', type=str, location='json')
-            self.reqparse.add_argument('users', type=list, location='json')
-            args = self.reqparse.parse_args()
-            return service.update(role_id, args['name'], args.get('description'), args.get('users'))
+            return service.update(role_id, data['name'], data.get('description'), data.get('users'))
         abort(403)
 
     @admin_permission.require(http_exception=403)
@@ -326,7 +311,7 @@ class UserRolesList(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(UserRolesList, self).__init__()
 
-    @marshal_items(FIELDS)
+    @validate_schema(None, roles_output_schema)
     def get(self, user_id):
         """
         .. http:get:: /users/1/roles
@@ -385,7 +370,7 @@ class AuthorityRolesList(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(AuthorityRolesList, self).__init__()
 
-    @marshal_items(FIELDS)
+    @validate_schema(None, roles_output_schema)
     def get(self, authority_id):
         """
         .. http:get:: /authorities/1/roles

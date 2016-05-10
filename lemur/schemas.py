@@ -14,6 +14,7 @@ from lemur.authorities.models import Authority
 from lemur.destinations.models import Destination
 from lemur.certificates.models import Certificate
 from lemur.notifications.models import Notification
+from lemur.users.models import User
 
 from lemur.common import validators
 from lemur.common.schema import LemurSchema, LemurInputSchema
@@ -81,6 +82,18 @@ class AssociatedCertificateSchema(LemurInputSchema):
             return Certificate.query.filter(Certificate.id.in_(ids)).all()
         else:
             return Certificate.query.filter(Certificate.id == data['id']).one()
+
+
+class AssociatedUserSchema(LemurInputSchema):
+    id = fields.Int(required=True)
+
+    @post_load
+    def get_object(self, data, many=False):
+        if many:
+            ids = [d['id'] for d in data]
+            return User.query.filter(User.id.in_(ids)).all()
+        else:
+            return User.query.filter(User.id == data['id']).one()
 
 
 class PluginSchema(LemurInputSchema):
