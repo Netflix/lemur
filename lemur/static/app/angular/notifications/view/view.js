@@ -10,7 +10,7 @@ angular.module('lemur')
     });
   })
 
-  .controller('NotificationsViewController', function ($q, $scope, $modal, NotificationApi, NotificationService, ngTableParams, toaster) {
+  .controller('NotificationsViewController', function ($q, $scope, $uibModal, NotificationApi, NotificationService, ngTableParams, toaster) {
     $scope.filter = {};
     $scope.notificationsTable = new ngTableParams({
       page: 1,            // show first page
@@ -56,7 +56,7 @@ angular.module('lemur')
     };
 
     $scope.edit = function (notificationId) {
-      var modalInstance = $modal.open({
+      var uibModalInstance = $uibModal.open({
         animation: true,
         templateUrl: '/angular/notifications/notification/notification.tpl.html',
         controller: 'NotificationsEditController',
@@ -69,14 +69,14 @@ angular.module('lemur')
         }
       });
 
-      modalInstance.result.then(function () {
+      uibModalInstance.result.then(function () {
         $scope.notificationsTable.reload();
       });
 
     };
 
     $scope.create = function () {
-      var modalInstance = $modal.open({
+      var uibModalInstance = $uibModal.open({
         animation: true,
         controller: 'NotificationsCreateController',
         templateUrl: '/angular/notifications/notification/notification.tpl.html',
@@ -84,7 +84,7 @@ angular.module('lemur')
         backdrop: 'static'
       });
 
-      modalInstance.result.then(function () {
+      uibModalInstance.result.then(function () {
         $scope.notificationsTable.reload();
       });
 

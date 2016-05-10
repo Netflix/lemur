@@ -2,7 +2,7 @@
 
 angular.module('lemur')
 
-  .controller('AuthorityEditController', function ($scope, $modalInstance, AuthorityApi, AuthorityService, RoleService, toaster, editId){
+  .controller('AuthorityEditController', function ($scope, $uibModalInstance, AuthorityApi, AuthorityService, RoleService, toaster, editId){
     AuthorityApi.get(editId).then(function (authority) {
       $scope.authority = authority;
     });
@@ -17,7 +17,7 @@ angular.module('lemur')
             title: authority.name,
             body: 'Successfully updated!'
           });
-          $modalInstance.close();
+          $uibModalInstance.close();
         },
         function (response) {
           toaster.pop({
@@ -30,18 +30,41 @@ angular.module('lemur')
     };
 
     $scope.cancel = function () {
-      $modalInstance.dismiss('cancel');
+      $uibModalInstance.dismiss('cancel');
     };
   })
 
-  .controller('AuthorityCreateController', function ($scope, $modalInstance, AuthorityService, LemurRestangular, RoleService, PluginService, WizardHandler, toaster)  {
+  .controller('AuthorityCreateController', function ($scope, $uibModalInstance, AuthorityService, AuthorityApi, LemurRestangular, RoleService, PluginService, WizardHandler, toaster)  {
     $scope.authority = LemurRestangular.restangularizeElement(null, {}, 'authorities');
+
+    $scope.authorities = [];
+    AuthorityApi.getList().then(function (authorities) {
+      angular.extend($scope.authorities, authorities);
+    });
+
+    $scope.authorityConfig = {
+      valueField: 'id',
+      labelField: 'name',
+      placeholder: 'Select Authority',
+      maxItems: 1,
+      onChange: function (value) {
+        angular.forEach($scope.authorities, function (authority) {
+          if (authority.id === parseInt(value)) {
+            $scope.authority.authority = authority;
+          }
+        });
+      }
+    };
 
     // set the defaults
     AuthorityService.getDefaults($scope.authority);
 
+    AuthorityApi.getList().then(function (authorities) {
+      $scope.authorities = authorities;
+    });
+
     $scope.cancel = function () {
-      $modalInstance.dismiss('cancel');
+      $uibModalInstance.dismiss('cancel');
     };
 
     $scope.create = function (authority) {
@@ -53,7 +76,7 @@ angular.module('lemur')
             title: authority.name,
             body: 'Was created!'
           });
-					$modalInstance.close();
+					$uibModalInstance.close();
 				},
 				function (response) {
 					toaster.pop({
@@ -72,20 +95,38 @@ angular.module('lemur')
     });
 
     $scope.roleService = RoleService;
-
     $scope.authorityService = AuthorityService;
 
-    $scope.open = function($event) {
-      $event.preventDefault();
-      $event.stopPropagation();
-
-      $scope.opened1 = true;
+    $scope.dateOptions = {
+      formatYear: 'yy',
+      maxDate: new Date(2020, 5, 22),
+      minDate: new Date(),
+      startingDay: 1
     };
 
-    $scope.open2 = function($event) {
-      $event.preventDefault();
-      $event.stopPropagation();
 
-      $scope.opened2 = true;
+    $scope.open1 = function() {
+      $scope.popup1.opened = true;
     };
+
+    $scope.open2 = function() {
+      $scope.popup2.opened = true;
+    };
+
+    $scope.setDate = function(year, month, day) {
+      $scope.dt = new Date(year, month, day);
+    };
+
+    $scope.formats = ['dd-MMMM-yyyy', 'yyyy/MM/dd', 'dd.MM.yyyy', 'shortDate'];
+    $scope.format = $scope.formats[0];
+    $scope.altInputFormats = ['M!/d!/yyyy'];
+
+    $scope.popup1 = {
+      opened: false
+    };
+
+    $scope.popup2 = {
+      opened: false
+    };
+
   });

@@ -10,7 +10,7 @@ angular.module('lemur')
     });
   })
 
-  .controller('RolesViewController', function ($scope, $modal, RoleApi, RoleService, ngTableParams) {
+  .controller('RolesViewController', function ($scope, $uibModal, RoleApi, RoleService, ngTableParams) {
     $scope.filter = {};
     $scope.rolesTable = new ngTableParams({
       page: 1,            // show first page
@@ -42,7 +42,7 @@ angular.module('lemur')
 
 
     $scope.edit = function (roleId) {
-      var modalInstance = $modal.open({
+      var uibModalInstance = $uibModal.open({
         animation: true,
         templateUrl: '/angular/roles/role/role.tpl.html',
         controller: 'RolesEditController',
@@ -55,14 +55,14 @@ angular.module('lemur')
         }
       });
 
-      modalInstance.result.then(function () {
+      uibModalInstance.result.then(function () {
         $scope.rolesTable.reload();
       });
 
     };
 
     $scope.create = function () {
-      var modalInstance = $modal.open({
+      var uibModalInstance = $uibModal.open({
         animation: true,
         controller: 'RolesCreateController',
         templateUrl: '/angular/roles/role/role.tpl.html',
@@ -70,7 +70,7 @@ angular.module('lemur')
         backdrop: 'static'
       });
 
-      modalInstance.result.then(function () {
+      uibModalInstance.result.then(function () {
         $scope.rolesTable.reload();
       });
 

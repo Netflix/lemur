@@ -10,7 +10,7 @@ angular.module('lemur')
     });
   })
 
-  .controller('SourcesViewController', function ($scope, $modal, SourceApi, SourceService, ngTableParams, toaster) {
+  .controller('SourcesViewController', function ($scope, $uibModal, SourceApi, SourceService, ngTableParams, toaster) {
     $scope.filter = {};
     $scope.sourcesTable = new ngTableParams({
       page: 1,            // show first page
@@ -50,7 +50,7 @@ angular.module('lemur')
     };
 
     $scope.edit = function (sourceId) {
-      var modalInstance = $modal.open({
+      var uibModalInstance = $uibModal.open({
         animation: true,
         templateUrl: '/angular/sources/source/source.tpl.html',
         controller: 'SourcesEditController',
@@ -63,14 +63,14 @@ angular.module('lemur')
         }
       });
 
-      modalInstance.result.then(function () {
+      uibModalInstance.result.then(function () {
         $scope.sourcesTable.reload();
       });
 
     };
 
     $scope.create = function () {
-      var modalInstance = $modal.open({
+      var uibModalInstance = $uibModal.open({
         animation: true,
         controller: 'SourcesCreateController',
         templateUrl: '/angular/sources/source/source.tpl.html',
@@ -78,7 +78,7 @@ angular.module('lemur')
         backdrop: 'static'
       });
 
-      modalInstance.result.then(function () {
+      uibModalInstance.result.then(function () {
         $scope.sourcesTable.reload();
       });
 

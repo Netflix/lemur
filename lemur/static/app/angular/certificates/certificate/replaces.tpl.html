@@ -5,10 +5,10 @@
   <div class="col-sm-10">
     <div class="input-group">
       <input type="text" ng-model="certificate.selectedReplacement" placeholder="Certificate123..."
-             typeahead="certificate.name for certificate in certificateService.findCertificatesByName($viewValue)" typeahead-loading="loadingCertificates"
-             class="form-control input-md" typeahead-on-select="certificate.attachReplacement($item)" typeahead-min-wait="100"
-             tooltip="Lemur will mark any certificates being replaced as 'inactive'"
-             tooltip-trigger="focus" tooltip-placement="top">
+             uib-typeahead="certificate.name for certificate in certificateService.findCertificatesByName($viewValue)" typeahead-loading="loadingCertificates"
+             class="form-control input-md" typeahead-on-select="certificate.attachReplacement($item)"
+             uib-tooltip="Lemur will mark any certificates being replaced as 'inactive'"
+             uib-tooltip-trigger="focus" uib-tooltip-placement="top" typeahead-wait-ms="500">
           <span class="input-group-btn">
             <button ng-model="replacements.show" class="btn btn-md btn-default" btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
               <span class="badge">{{ certificate.replacements.length || 0 }}</span>

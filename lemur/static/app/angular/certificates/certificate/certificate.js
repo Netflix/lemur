@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('lemur')
-  .controller('CertificateExportController', function ($scope, $modalInstance, CertificateApi, CertificateService, PluginService, FileSaver, Blob, toaster, editId) {
+  .controller('CertificateExportController', function ($scope, $uibModalInstance, CertificateApi, CertificateService, PluginService, FileSaver, Blob, toaster, editId) {
     CertificateApi.get(editId).then(function (certificate) {
       $scope.certificate = certificate;
     });
@@ -11,7 +11,7 @@ angular.module('lemur')
     });
 
     $scope.cancel = function () {
-      $modalInstance.dismiss('cancel');
+      $uibModalInstance.dismiss('cancel');
     };
 
     $scope.save = function (certificate) {
@@ -49,7 +49,7 @@ angular.module('lemur')
         });
     };
   })
-  .controller('CertificateEditController', function ($scope, $modalInstance, CertificateApi, CertificateService, DestinationService, NotificationService, toaster, editId) {
+  .controller('CertificateEditController', function ($scope, $uibModalInstance, CertificateApi, CertificateService, DestinationService, NotificationService, toaster, editId) {
     CertificateApi.get(editId).then(function (certificate) {
       CertificateService.getNotifications(certificate);
       CertificateService.getDestinations(certificate);
@@ -58,7 +58,7 @@ angular.module('lemur')
     });
 
     $scope.cancel = function () {
-      $modalInstance.dismiss('cancel');
+      $uibModalInstance.dismiss('cancel');
     };
 
     $scope.save = function (certificate) {
@@ -69,7 +69,7 @@ angular.module('lemur')
             title: certificate.name,
             body: 'Successfully updated!'
           });
-          $modalInstance.close();
+          $uibModalInstance.close();
         },
         function (response) {
           toaster.pop({
@@ -88,15 +88,75 @@ angular.module('lemur')
     $scope.notificationService = NotificationService;
   })
 
-  .controller('CertificateCreateController', function ($scope, $modalInstance, CertificateApi, CertificateService, DestinationService, AuthorityService, PluginService, MomentService, WizardHandler, LemurRestangular, NotificationService, toaster) {
+  .controller('CertificateCreateController', function ($scope, $uibModalInstance, CertificateApi, CertificateService, DestinationService, AuthorityService, AuthorityApi, PluginService, MomentService, WizardHandler, LemurRestangular, NotificationService, toaster) {
     $scope.certificate = LemurRestangular.restangularizeElement(null, {}, 'certificates');
 
     // set the defaults
     CertificateService.getDefaults($scope.certificate);
 
     $scope.cancel = function () {
-      $modalInstance.dismiss('cancel');
+      $uibModalInstance.dismiss('cancel');
     };
+
+    $scope.authorities = [];
+    AuthorityApi.getList().then(function (authorities) {
+      angular.extend($scope.authorities, authorities);
+    });
+
+    $scope.authorityConfig = {
+      valueField: 'id',
+      labelField: 'name',
+      placeholder: 'Select Authority',
+      maxItems: 1,
+      onChange: function (value) {
+        angular.forEach($scope.authorities, function (authority) {
+          if (authority.id === parseInt(value)) {
+            $scope.certificate.authority = authority;
+          }
+        });
+      }
+    };
+
+    $scope.dateOptions = {
+      formatYear: 'yy',
+      maxDate: new Date(2020, 5, 22),
+      minDate: new Date(),
+      startingDay: 1
+    };
+
+
+    $scope.open1 = function() {
+      $scope.popup1.opened = true;
+    };
+
+    $scope.open2 = function() {
+      $scope.popup2.opened = true;
+    };
+
+    $scope.formats = ['dd-MMMM-yyyy', 'yyyy/MM/dd', 'dd.MM.yyyy', 'shortDate'];
+    $scope.format = $scope.formats[0];
+    $scope.altInputFormats = ['M!/d!/yyyy'];
+
+    $scope.popup1 = {
+      opened: false
+    };
+
+    $scope.popup2 = {
+      opened: false
+    };
+
+    var formatAuthorities = function (authorities) {
+      var newAuthorities = [];
+      angular.forEach(authorities, function (authority) {
+        authority.formatted = authority.name + '<span class="text-muted"> - ' + authority.description + '</span>';
+        newAuthorities.push(authority);
+      });
+      return newAuthorities;
+    };
+
+    AuthorityService.findActiveAuthorityByName().then(function (authorities) {
+      $scope.authorities = formatAuthorities(authorities);
+    });
 
     $scope.create = function (certificate) {
       WizardHandler.wizard().context.loading = true;
@@ -107,7 +167,7 @@ angular.module('lemur')
             title: certificate.name,
             body: 'Successfully created!'
           });
-          $modalInstance.close();
+          $uibModalInstance.close();
         },
         function (response) {
           toaster.pop({
@@ -163,20 +223,6 @@ angular.module('lemur')
       }
     ];
 
-    $scope.openNotBefore = function($event) {
-      $event.preventDefault();
-      $event.stopPropagation();
-
-      $scope.openNotBefore.isOpen = true;
-    };
-
-    $scope.openNotAfter = function($event) {
-      $event.preventDefault();
-      $event.stopPropagation();
-
-      $scope.openNotAfter.isOpen = true;
-
-    };
 
     PluginService.getByType('destination').then(function (plugins) {
         $scope.plugins = plugins;

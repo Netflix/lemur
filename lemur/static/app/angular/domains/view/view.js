@@ -10,7 +10,7 @@ angular.module('lemur')
     });
   })
 
-  .controller('DomainsViewController', function ($scope, $modal, DomainApi, DomainService, ngTableParams, toaster) {
+  .controller('DomainsViewController', function ($scope, $uibModal, DomainApi, DomainService, ngTableParams, toaster) {
     $scope.filter = {};
     $scope.domainsTable = new ngTableParams({
       page: 1,            // show first page
@@ -50,7 +50,7 @@ angular.module('lemur')
     };
 
     $scope.create = function () {
-      var modalInstance = $modal.open({
+      var uibModalInstance = $uibModal.open({
         animation: true,
         controller: 'DomainsCreateController',
         templateUrl: '/angular/domains/domain/domain.tpl.html',
@@ -58,7 +58,7 @@ angular.module('lemur')
         backdrop: 'static'
       });
 
-      modalInstance.result.then(function () {
+      uibModalInstance.result.then(function () {
         $scope.domainsTable.reload();
       });
 
