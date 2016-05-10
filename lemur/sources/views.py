@@ -7,26 +7,19 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from flask import Blueprint
-from flask.ext.restful import Api, reqparse, fields
+from flask.ext.restful import Api, reqparse
 from lemur.sources import service
+
+from lemur.common.schema import validate_schema
+from lemur.sources.schemas import source_input_schema, source_output_schema, sources_output_schema
 
 from lemur.auth.service import AuthenticatedResource
 from lemur.auth.permissions import admin_permission
-from lemur.common.utils import paginated_parser, marshal_items
+from lemur.common.utils import paginated_parser
 
 
 mod = Blueprint('sources', __name__)
 api = Api(mod)
-
-
-FIELDS = {
-    'description': fields.String,
-    'sourceOptions': fields.Raw(attribute='options'),
-    'pluginName': fields.String(attribute='plugin_name'),
-    'lastRun': fields.DateTime(attribute='last_run', dt_format='iso8061'),
-    'label': fields.String,
-    'id': fields.Integer,
-}
 
 
 class SourcesList(AuthenticatedResource):
@@ -35,7 +28,7 @@ class SourcesList(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(SourcesList, self).__init__()
 
-    @marshal_items(FIELDS)
+    @validate_schema(None, sources_output_schema)
     def get(self):
         """
         .. http:get:: /sources
@@ -94,8 +87,8 @@ class SourcesList(AuthenticatedResource):
         return service.render(args)
 
     @admin_permission.require(http_exception=403)
-    @marshal_items(FIELDS)
-    def post(self):
+    @validate_schema(source_input_schema, source_output_schema)
+    def post(self, data=None):
         """
         .. http:post:: /sources
 
@@ -158,12 +151,7 @@ class SourcesList(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
-        self.reqparse.add_argument('label', type=str, location='json', required=True)
-        self.reqparse.add_argument('plugin', type=dict, location='json', required=True)
-        self.reqparse.add_argument('description', type=str, location='json')
-
-        args = self.reqparse.parse_args()
-        return service.create(args['label'], args['plugin']['slug'], args['plugin']['pluginOptions'], args['description'])
+        return service.create(data['label'], data['plugin']['slug'], data['plugin']['pluginOptions'], data['description'])
 
 
 class Sources(AuthenticatedResource):
@@ -171,7 +159,7 @@ class Sources(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(Sources, self).__init__()
 
-    @marshal_items(FIELDS)
+    @validate_schema(None, source_output_schema)
     def get(self, source_id):
         """
         .. http:get:: /sources/1
@@ -218,8 +206,8 @@ class Sources(AuthenticatedResource):
         return service.get(source_id)
 
     @admin_permission.require(http_exception=403)
-    @marshal_items(FIELDS)
-    def put(self, source_id):
+    @validate_schema(source_input_schema, source_output_schema)
+    def put(self, source_id, data=None):
         """
         .. http:put:: /sources/1
 
@@ -283,12 +271,7 @@ class Sources(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
-        self.reqparse.add_argument('label', type=str, location='json', required=True)
-        self.reqparse.add_argument('plugin', type=dict, location='json', required=True)
-        self.reqparse.add_argument('description', type=str, location='json')
-
-        args = self.reqparse.parse_args()
-        return service.update(source_id, args['label'], args['plugin']['pluginOptions'], args['description'])
+        return service.update(source_id, data['label'], data['plugin']['pluginOptions'], data['description'])
 
     @admin_permission.require(http_exception=403)
     def delete(self, source_id):
@@ -301,7 +284,7 @@ class CertificateSources(AuthenticatedResource):
     def __init__(self):
         super(CertificateSources, self).__init__()
 
-    @marshal_items(FIELDS)
+    @validate_schema(None, sources_output_schema)
     def get(self, certificate_id):
         """
         .. http:get:: /certificates/1/sources
