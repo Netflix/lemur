@@ -11,7 +11,7 @@ angular.module('lemur')
           this.certificates.push(certificate);
         },
         removeCertificate: function (index) {
-          this.certificate.splice(index, 1);
+          this.certificates.splice(index, 1);
         }
       });
     });
