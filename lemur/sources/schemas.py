@@ -13,7 +13,7 @@ from lemur.common.schema import LemurInputSchema, LemurOutputSchema
 
 class SourceInputSchema(LemurInputSchema):
     label = fields.String(required=True)
-    options = fields.Dict(load_from='sourceOptions', required=True)
+    options = fields.Dict(load_from='source_options', required=True)
     description = fields.String()
     plugin = fields.Nested(PluginSchema)
     active = fields.Boolean()
@@ -21,7 +21,7 @@ class SourceInputSchema(LemurInputSchema):
 
 class SourceOutputSchema(LemurOutputSchema):
     label = fields.String()
-    options = fields.Dict(dump_to='sourceOptions')
+    options = fields.Dict(dump_to='source_options')
     description = fields.String()
     plugin = fields.Nested(PluginSchema)
     fields.Boolean()

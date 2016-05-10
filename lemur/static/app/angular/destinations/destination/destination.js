@@ -2,7 +2,7 @@
 
 angular.module('lemur')
 
-  .controller('DestinationsCreateController', function ($scope, $modalInstance, PluginService, DestinationService, LemurRestangular){
+  .controller('DestinationsCreateController', function ($scope, $uibModalInstance, PluginService, DestinationService, LemurRestangular){
     $scope.destination = LemurRestangular.restangularizeElement(null, {}, 'destinations');
 
     PluginService.getByType('destination').then(function (plugins) {
@@ -11,16 +11,16 @@ angular.module('lemur')
 
     $scope.save = function (destination) {
       DestinationService.create(destination).then(function () {
-        $modalInstance.close();
+        $uibModalInstance.close();
       });
     };
 
     $scope.cancel = function () {
-      $modalInstance.dismiss('cancel');
+      $uibModalInstance.dismiss('cancel');
     };
   })
 
-  .controller('DestinationsEditController', function ($scope, $modalInstance, DestinationService, DestinationApi, PluginService, editId) {
+  .controller('DestinationsEditController', function ($scope, $uibModalInstance, DestinationService, DestinationApi, PluginService, editId) {
     DestinationApi.get(editId).then(function (destination) {
       $scope.destination = destination;
       PluginService.getByType('destination').then(function (plugins) {
@@ -36,11 +36,11 @@ angular.module('lemur')
     
     $scope.save = function (destination) {
       DestinationService.update(destination).then(function () {
-        $modalInstance.close();
+        $uibModalInstance.close();
       });
     };
 
     $scope.cancel = function () {
-      $modalInstance.dismiss('cancel');
+      $uibModalInstance.dismiss('cancel');
     };
   });

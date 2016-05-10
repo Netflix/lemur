@@ -10,7 +10,7 @@ angular.module('lemur')
     });
   })
 
-  .controller('DestinationsViewController', function ($scope, $modal, DestinationApi, DestinationService, ngTableParams, toaster) {
+  .controller('DestinationsViewController', function ($scope, $uibModal, DestinationApi, DestinationService, ngTableParams, toaster) {
     $scope.filter = {};
     $scope.destinationsTable = new ngTableParams({
       page: 1,            // show first page
@@ -50,7 +50,7 @@ angular.module('lemur')
     };
 
     $scope.edit = function (destinationId) {
-      var modalInstance = $modal.open({
+      var uibModalInstance = $uibModal.open({
         animation: true,
         templateUrl: '/angular/destinations/destination/destination.tpl.html',
         controller: 'DestinationsEditController',
@@ -63,14 +63,14 @@ angular.module('lemur')
         }
       });
 
-      modalInstance.result.then(function () {
+      uibModalInstance.result.then(function () {
         $scope.destinationsTable.reload();
       });
 
     };
 
     $scope.create = function () {
-      var modalInstance = $modal.open({
+      var uibModalInstance = $uibModal.open({
         animation: true,
         controller: 'DestinationsCreateController',
         templateUrl: '/angular/destinations/destination/destination.tpl.html',
@@ -78,7 +78,7 @@ angular.module('lemur')
         backdrop: 'static'
       });
 
-      modalInstance.result.then(function () {
+      uibModalInstance.result.then(function () {
         $scope.destinationsTable.reload();
       });
 
