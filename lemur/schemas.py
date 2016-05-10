@@ -86,6 +86,8 @@ class AssociatedCertificateSchema(LemurInputSchema):
 class PluginSchema(LemurInputSchema):
     plugin_options = fields.Dict()
     slug = fields.String()
+    title = fields.String()
+    description = fields.String()
 
     @post_load
     def get_object(self, data, many=False):

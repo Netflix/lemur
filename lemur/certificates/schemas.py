@@ -57,6 +57,7 @@ class CertificateOutputSchema(LemurOutputSchema):
     description = fields.String()
     issuer = fields.String()
     name = fields.String()
+    common_name = fields.String()
     not_after = fields.DateTime()
     not_before = fields.DateTime()
     owner = fields.Email()

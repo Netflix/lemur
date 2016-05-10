@@ -319,10 +319,6 @@ def get_all():
 
 
 def render(args):
-    sort_by = args.pop('sort_by')
-    sort_dir = args.pop('sort_dir')
-    page = args.pop('page')
-    count = args.pop('count')
     filt = args.pop('filter')
     certificate_id = args.pop('certificate_id', None)
 
@@ -341,9 +337,4 @@ def render(args):
         else:
             query = database.filter(query, Notification, terms)
 
-    query = database.find_all(query, Notification, args)
-
-    if sort_by and sort_dir:
-        query = database.sort(query, Notification, sort_by, sort_dir)
-
-    return database.paginate(query, page, count)
+    return database.sort_and_page(query, Notification, args)

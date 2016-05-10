@@ -7,55 +7,18 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from flask import Blueprint
-from flask.ext.restful import Api, reqparse, fields
+from flask.ext.restful import Api, reqparse
 from lemur.notifications import service
+from lemur.notifications.schemas import notification_input_schema, notification_output_schema, notifications_output_schema
 
 from lemur.auth.service import AuthenticatedResource
-from lemur.common.utils import paginated_parser, marshal_items
+from lemur.common.utils import paginated_parser
+
+from lemur.common.schema import validate_schema
 
 
 mod = Blueprint('notifications', __name__)
 api = Api(mod)
-
-
-FIELDS = {
-    'description': fields.String,
-    'notificationOptions': fields.Raw(attribute='options'),
-    'pluginName': fields.String(attribute='plugin_name'),
-    'label': fields.String,
-    'active': fields.Boolean,
-    'id': fields.Integer,
-}
-
-
-def notification(value, name):
-    """
-    Validates a given notification exits
-    :param value:
-    :param name:
-    :return:
-    """
-    n = service.get(value)
-    if not n:
-        raise ValueError("Unable to find notification specified")
-    return n
-
-
-def notification_list(value, name):
-    """
-    Validates a given notification exists and returns a list
-    :param value:
-    :param name:
-    :return:
-    """
-    notifications = []
-    for v in value:
-        try:
-            notifications.append(notification(v['id'], 'id'))
-        except ValueError:
-            pass
-
-    return notifications
 
 
 class NotificationsList(AuthenticatedResource):
@@ -64,7 +27,7 @@ class NotificationsList(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(NotificationsList, self).__init__()
 
-    @marshal_items(FIELDS)
+    @validate_schema(None, notifications_output_schema)
     def get(self):
         """
         .. http:get:: /notifications
@@ -144,8 +107,8 @@ class NotificationsList(AuthenticatedResource):
         args = parser.parse_args()
         return service.render(args)
 
-    @marshal_items(FIELDS)
-    def post(self):
+    @validate_schema(notification_input_schema, notification_output_schema)
+    def post(self, data=None):
         """
         .. http:post:: /notifications
 
@@ -251,18 +214,12 @@ class NotificationsList(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
-        self.reqparse.add_argument('label', type=str, location='json', required=True)
-        self.reqparse.add_argument('plugin', type=dict, location='json', required=True)
-        self.reqparse.add_argument('description', type=str, location='json')
-        self.reqparse.add_argument('certificates', type=list, default=[], location='json')
-
-        args = self.reqparse.parse_args()
         return service.create(
-            args['label'],
-            args['plugin']['slug'],
-            args['plugin']['pluginOptions'],
-            args['description'],
-            args['certificates']
+            data['label'],
+            data['plugin']['slug'],
+            data['plugin']['pluginOptions'],
+            data['description'],
+            data['certificates']
         )
 
 
@@ -271,7 +228,7 @@ class Notifications(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(Notifications, self).__init__()
 
-    @marshal_items(FIELDS)
+    @validate_schema(None, notification_output_schema)
     def get(self, notification_id):
         """
         .. http:get:: /notifications/1
@@ -338,8 +295,8 @@ class Notifications(AuthenticatedResource):
         """
         return service.get(notification_id)
 
-    @marshal_items(FIELDS)
-    def put(self, notification_id):
+    @validate_schema(notification_input_schema, notification_output_schema)
+    def put(self, notification_id, data=None):
         """
         .. http:put:: /notifications/1
 
@@ -375,20 +332,13 @@ class Notifications(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
-        self.reqparse.add_argument('label', type=str, location='json', required=True)
-        self.reqparse.add_argument('notificationOptions', type=list, location='json')
-        self.reqparse.add_argument('active', type=bool, location='json')
-        self.reqparse.add_argument('certificates', type=list, default=[], location='json')
-        self.reqparse.add_argument('description', type=str, location='json')
-
-        args = self.reqparse.parse_args()
         return service.update(
             notification_id,
-            args['label'],
-            args['notificationOptions'],
-            args['description'],
-            args['active'],
-            args['certificates']
+            data['label'],
+            data['notificationOptions'],
+            data['description'],
+            data['active'],
+            data['certificates']
         )
 
     def delete(self, notification_id):
@@ -401,8 +351,8 @@ class CertificateNotifications(AuthenticatedResource):
     def __init__(self):
         super(CertificateNotifications, self).__init__()
 
-    @marshal_items(FIELDS)
-    def get(self, certificate_id):
+    @validate_schema(None, notifications_output_schema)
+    def get(self, certificate_id, data=None):
         """
         .. http:get:: /certificates/1/notifications
 
@@ -476,11 +426,8 @@ class CertificateNotifications(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
-        parser = paginated_parser.copy()
-        parser.add_argument('active', type=bool, location='args')
-        args = parser.parse_args()
-        args['certificate_id'] = certificate_id
-        return service.render(args)
+        data['certificate_id'] = certificate_id
+        return service.render(data)
 
 
 api.add_resource(NotificationsList, '/notifications', endpoint='notifications')
