@@ -7,25 +7,19 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from flask import Blueprint
-from flask.ext.restful import Api, reqparse, fields
+from flask.ext.restful import Api, reqparse
 from lemur.destinations import service
 
 from lemur.auth.service import AuthenticatedResource
 from lemur.auth.permissions import admin_permission
-from lemur.common.utils import paginated_parser, marshal_items
+from lemur.common.utils import paginated_parser
+
+from lemur.common.schema import validate_schema
+from lemur.destinations.schemas import destinations_output_schema, destination_input_schema, destination_output_schema
 
 
 mod = Blueprint('destinations', __name__)
 api = Api(mod)
-
-
-FIELDS = {
-    'description': fields.String,
-    'destinationOptions': fields.Raw(attribute='options'),
-    'pluginName': fields.String(attribute='plugin_name'),
-    'label': fields.String,
-    'id': fields.Integer,
-}
 
 
 class DestinationsList(AuthenticatedResource):
@@ -34,7 +28,7 @@ class DestinationsList(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(DestinationsList, self).__init__()
 
-    @marshal_items(FIELDS)
+    @validate_schema(None, destinations_output_schema)
     def get(self):
         """
         .. http:get:: /destinations
@@ -92,8 +86,8 @@ class DestinationsList(AuthenticatedResource):
         return service.render(args)
 
     @admin_permission.require(http_exception=403)
-    @marshal_items(FIELDS)
-    def post(self):
+    @validate_schema(destination_input_schema, destination_output_schema)
+    def post(self, data=None):
         """
         .. http:post:: /destinations
 
@@ -154,12 +148,7 @@ class DestinationsList(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
-        self.reqparse.add_argument('label', type=str, location='json', required=True)
-        self.reqparse.add_argument('plugin', type=dict, location='json', required=True)
-        self.reqparse.add_argument('description', type=str, location='json')
-
-        args = self.reqparse.parse_args()
-        return service.create(args['label'], args['plugin']['slug'], args['plugin']['pluginOptions'], args['description'])
+        return service.create(data['label'], data['plugin']['slug'], data['plugin']['pluginOptions'], data['description'])
 
 
 class Destinations(AuthenticatedResource):
@@ -167,7 +156,7 @@ class Destinations(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(Destinations, self).__init__()
 
-    @marshal_items(FIELDS)
+    @validate_schema(None, destination_output_schema)
     def get(self, destination_id):
         """
         .. http:get:: /destinations/1
@@ -213,8 +202,8 @@ class Destinations(AuthenticatedResource):
         return service.get(destination_id)
 
     @admin_permission.require(http_exception=403)
-    @marshal_items(FIELDS)
-    def put(self, destination_id):
+    @validate_schema(destination_input_schema, destination_output_schema)
+    def put(self, destination_id, data=None):
         """
         .. http:put:: /destinations/1
 
@@ -276,12 +265,7 @@ class Destinations(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
-        self.reqparse.add_argument('label', type=str, location='json', required=True)
-        self.reqparse.add_argument('plugin', type=dict, location='json', required=True)
-        self.reqparse.add_argument('description', type=str, location='json')
-
-        args = self.reqparse.parse_args()
-        return service.update(destination_id, args['label'], args['plugin']['pluginOptions'], args['description'])
+        return service.update(destination_id, data['label'], data['plugin']['pluginOptions'], data['description'])
 
     @admin_permission.require(http_exception=403)
     def delete(self, destination_id):
@@ -294,7 +278,7 @@ class CertificateDestinations(AuthenticatedResource):
     def __init__(self):
         super(CertificateDestinations, self).__init__()
 
-    @marshal_items(FIELDS)
+    @validate_schema(None, destination_output_schema)
     def get(self, certificate_id):
         """
         .. http:get:: /certificates/1/destinations

@@ -1,134 +1,105 @@
-from lemur.destinations.service import *  # noqa
+import pytest
+
 from lemur.destinations.views import *  # noqa
 
-from json import dumps
+
+from .vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN
 
 
-def test_crud(session):
-    destination = create('testdest', 'aws-destination', {}, description='destination1')
-    assert destination.id > 0
+def test_destination_input_schema(client, destination):
+    from lemur.destinations.schemas import DestinationInputSchema
 
-    destination = update(destination.id, 'testdest2', {}, 'destination2')
-    assert destination.label == 'testdest2'
+    input_data = {
+        'label': 'destination1',
+        'options': {},
+        'description': 'my destination',
+        'active': True,
+        'plugin': {
+            'slug': 'aws-destination'
+        }
+    }
 
-    assert len(get_all()) == 1
+    data, errors = DestinationInputSchema().load(input_data)
 
-    delete(1)
-    assert len(get_all()) == 0
-
-
-def test_destination_get(client):
-    assert client.get(api.url_for(Destinations, destination_id=1)).status_code == 401
-
-
-def test_destination_post(client):
-    assert client.post(api.url_for(Destinations, destination_id=1), data={}).status_code == 405
+    assert not errors
 
 
-def test_destination_put(client):
-    assert client.put(api.url_for(Destinations, destination_id=1), data={}).status_code == 401
+@pytest.mark.parametrize("token,status", [
+    (VALID_USER_HEADER_TOKEN, 404),
+    (VALID_ADMIN_HEADER_TOKEN, 404),
+    ('', 401)
+])
+def test_destination_get(client, token, status):
+    assert client.get(api.url_for(Destinations, destination_id=1), headers=token).status_code == status
 
 
-def test_destination_delete(client):
-    assert client.delete(api.url_for(Destinations, destination_id=1)).status_code == 401
+@pytest.mark.parametrize("token,status", [
+    (VALID_USER_HEADER_TOKEN, 405),
+    (VALID_ADMIN_HEADER_TOKEN, 405),
+    ('', 405)
+])
+def test_destination_post_(client, token, status):
+    assert client.post(api.url_for(Destinations, destination_id=1), data={}, headers=token).status_code == status
 
 
-def test_destination_patch(client):
-    assert client.patch(api.url_for(Destinations, destination_id=1), data={}).status_code == 405
+@pytest.mark.parametrize("token,status", [
+    (VALID_USER_HEADER_TOKEN, 403),
+    (VALID_ADMIN_HEADER_TOKEN, 400),
+    ('', 401)
+])
+def test_destination_put(client, token, status):
+    assert client.put(api.url_for(Destinations, destination_id=1), data={}, headers=token).status_code == status
 
 
-VALID_USER_HEADER_TOKEN = {
-    'Authorization': 'Basic ' + 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0MzUyMzMzNjksInN1YiI6MSwiZXhwIjoxNTIxNTQ2OTY5fQ.1qCi0Ip7mzKbjNh0tVd3_eJOrae3rNa_9MCVdA4WtQI'}
+@pytest.mark.parametrize("token,status", [
+    (VALID_USER_HEADER_TOKEN, 403),
+    (VALID_ADMIN_HEADER_TOKEN, 200),
+    ('', 401)
+])
+def test_destination_delete(client, token, status):
+    assert client.delete(api.url_for(Destinations, destination_id=1), headers=token).status_code == status
 
 
-def test_auth_destination_get(client):
-    assert client.get(api.url_for(Destinations, destination_id=1), headers=VALID_USER_HEADER_TOKEN).status_code == 200
+@pytest.mark.parametrize("token,status", [
+    (VALID_USER_HEADER_TOKEN, 405),
+    (VALID_ADMIN_HEADER_TOKEN, 405),
+    ('', 405)
+])
+def test_destination_patch(client, token, status):
+    assert client.patch(api.url_for(Destinations, destination_id=1), data={}, headers=token).status_code == status
 
 
-def test_auth_destination_post_(client):
-    assert client.post(api.url_for(Destinations, destination_id=1), data={}, headers=VALID_USER_HEADER_TOKEN).status_code == 405
+@pytest.mark.parametrize("token,status", [
+    (VALID_USER_HEADER_TOKEN, 403),
+    (VALID_ADMIN_HEADER_TOKEN, 400),
+    ('', 401)
+])
+def test_destination_list_post_(client, token, status):
+    assert client.post(api.url_for(DestinationsList), data={}, headers=token).status_code == status
 
 
-def test_auth_destination_put(client):
-    assert client.put(api.url_for(Destinations, destination_id=1), data={}, headers=VALID_USER_HEADER_TOKEN).status_code == 403
+@pytest.mark.parametrize("token,status", [
+    (VALID_USER_HEADER_TOKEN, 200),
+    (VALID_ADMIN_HEADER_TOKEN, 200),
+    ('', 401)
+])
+def test_destination_list_get(client, token, status):
+    assert client.get(api.url_for(DestinationsList), headers=token).status_code == status
 
 
-def test_auth_destination_delete(client):
-    assert client.delete(api.url_for(Destinations, destination_id=1), headers=VALID_USER_HEADER_TOKEN).status_code == 403
+@pytest.mark.parametrize("token,status", [
+    (VALID_USER_HEADER_TOKEN, 405),
+    (VALID_ADMIN_HEADER_TOKEN, 405),
+    ('', 405)
+])
+def test_destination_list_delete(client, token, status):
+    assert client.delete(api.url_for(DestinationsList), headers=token).status_code == status
 
 
-def test_auth_destination_patch(client):
-    assert client.patch(api.url_for(Destinations, destination_id=1), data={}, headers=VALID_USER_HEADER_TOKEN).status_code == 405
-
-
-VALID_ADMIN_HEADER_TOKEN = {
-    'Authorization': 'Basic ' + 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0MzUyNTAyMTgsInN1YiI6MiwiZXhwIjoxNTIxNTYzODE4fQ.6mbq4-Ro6K5MmuNiTJBB153RDhlM5LGJBjI7GBKkfqA'}
-
-
-def test_admin_destination_get(client):
-    assert client.get(api.url_for(Destinations, destination_id=1), headers=VALID_ADMIN_HEADER_TOKEN).status_code == 200
-
-
-def test_admin_destination_post(client):
-    assert client.post(api.url_for(Destinations, destination_id=1), data={}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
-
-
-def test_admin_destination_put(client):
-    assert client.put(api.url_for(Destinations, destination_id=1), data={}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 400
-
-
-def test_admin_destination_delete(client):
-    assert client.delete(api.url_for(Destinations, destination_id=1), headers=VALID_ADMIN_HEADER_TOKEN).status_code == 200
-
-
-def test_admin_destination_patch(client):
-    assert client.patch(api.url_for(Destinations, destination_id=1), data={}, headers=VALID_ADMIN_HEADER_TOKEN).status_code == 405
-
-
-def test_destinations_get(client):
-    assert client.get(api.url_for(DestinationsList)).status_code == 401
-
-
-def test_destinations_post(client):
-    assert client.post(api.url_for(DestinationsList), data={}).status_code == 401
-
-
-def test_destinations_put(client):
-    assert client.put(api.url_for(DestinationsList), data={}).status_code == 405
-
-
-def test_destinations_delete(client):
-    assert client.delete(api.url_for(DestinationsList)).status_code == 405
-
-
-def test_destinations_patch(client):
-    assert client.patch(api.url_for(DestinationsList), data={}).status_code == 405
-
-
-def test_auth_destinations_get(client):
-    assert client.get(api.url_for(DestinationsList), headers=VALID_USER_HEADER_TOKEN).status_code == 200
-
-
-def test_auth_destinations_post(client):
-    assert client.post(api.url_for(DestinationsList), data={}, headers=VALID_USER_HEADER_TOKEN).status_code == 403
-
-
-def test_admin_destinations_get(client):
-    resp = client.get(api.url_for(DestinationsList), headers=VALID_ADMIN_HEADER_TOKEN)
-    assert resp.status_code == 200
-    assert resp.json == {'items': [], 'total': 0}
-
-
-def test_admin_destinations_crud(client):
-    assert client.post(api.url_for(DestinationsList), headers=VALID_ADMIN_HEADER_TOKEN).status_code == 400
-    data = {'plugin': {'slug': 'aws-destination', 'pluginOptions': {}}, 'label': 'test', 'description': 'test'}
-    resp = client.post(api.url_for(DestinationsList), data=dumps(data), content_type='application/json', headers=VALID_ADMIN_HEADER_TOKEN)
-    assert resp.status_code == 200
-    assert client.get(api.url_for(Destinations, destination_id=resp.json['id']), headers=VALID_ADMIN_HEADER_TOKEN).status_code == 200
-    resp = client.get(api.url_for(DestinationsList), headers=VALID_ADMIN_HEADER_TOKEN)
-    assert resp.status_code == 200
-    assert resp.json['items'][0]['description'] == 'test'
-    assert client.delete(api.url_for(Destinations, destination_id=2), headers=VALID_ADMIN_HEADER_TOKEN).status_code == 200
-    resp = client.get(api.url_for(DestinationsList), headers=VALID_ADMIN_HEADER_TOKEN)
-    assert resp.status_code == 200
-    assert resp.json == {'items': [], 'total': 0}
+@pytest.mark.parametrize("token,status", [
+    (VALID_USER_HEADER_TOKEN, 405),
+    (VALID_ADMIN_HEADER_TOKEN, 405),
+    ('', 405)
+])
+def test_destination_list_patch(client, token, status):
+    assert client.patch(api.url_for(DestinationsList), data={}, headers=token).status_code == status
