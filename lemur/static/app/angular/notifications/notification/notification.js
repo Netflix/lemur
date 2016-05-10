@@ -11,12 +11,22 @@ angular.module('lemur')
     $scope.save = function (notification) {
       NotificationService.create(notification).then(
         function () {
+          toaster.pop({
+            type: 'success',
+            title: notification.label,
+            body: 'Successfully Created!'
+          });
           $uibModalInstance.close();
-        },
-        function () {
-
-        }
-      );
+        }, function (response) {
+          toaster.pop({
+            type: 'error',
+            title: notification.label,
+            body: 'lemur-bad-request',
+            bodyOutputType: 'directive',
+            directiveData: response.data,
+            timeout: 100000
+          });
+        });
     };
 
     $scope.cancel = function () {
@@ -52,9 +62,24 @@ angular.module('lemur')
     });
 
     $scope.save = function (notification) {
-      NotificationService.update(notification).then(function () {
-        $uibModalInstance.close();
-      });
+      NotificationService.update(notification).then(
+        function () {
+          toaster.pop({
+            type: 'success',
+            title: notification.label,
+            body: 'Successfully Created!'
+          });
+          $uibModalInstance.close();
+        }, function (response) {
+          toaster.pop({
+            type: 'error',
+            title: notification.label,
+            body: 'lemur-bad-request',
+            bodyOutputType: 'directive',
+            directiveData: response.data,
+            timeout: 100000
+          });
+        });
     };
 
     $scope.cancel = function () {

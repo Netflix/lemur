@@ -15,9 +15,24 @@ angular.module('lemur')
 
 
     $scope.save = function (user) {
-      UserService.update(user).then(function () {
-        $uibModalInstance.close();
-      });
+      UserService.update(user).then(
+        function () {
+          toaster.pop({
+            type: 'success',
+            title: user.username,
+            body: 'Successfully Updated!'
+          });
+          $uibModalInstance.close();
+        }, function (response) {
+          toaster.pop({
+            type: 'error',
+            title: user.username,
+            body: 'lemur-bad-request',
+            bodyOutputType: 'directive',
+            directiveData: response.data,
+            timeout: 100000
+          });
+        });
     };
 
     $scope.cancel = function () {
@@ -36,9 +51,24 @@ angular.module('lemur')
     $scope.roleService = RoleService;
 
     $scope.create = function (user) {
-      UserService.create(user).then(function () {
-        $uibModalInstance.close();
-      });
+      UserService.create(user).then(
+        function () {
+          toaster.pop({
+            type: 'success',
+            title: user.username,
+            body: 'Successfully Created!'
+          });
+          $uibModalInstance.close();
+        }, function (response) {
+          toaster.pop({
+            type: 'error',
+            title: user.username,
+            body: 'lemur-bad-request',
+            bodyOutputType: 'directive',
+            directiveData: response.data,
+            timeout: 100000
+          });
+        });
     };
 
     $scope.cancel = function () {

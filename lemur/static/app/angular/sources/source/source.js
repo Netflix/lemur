@@ -14,14 +14,14 @@ angular.module('lemur')
         function () {
           toaster.pop({
             type: 'success',
-            title: source.name,
+            title: source.label,
             body: 'Successfully Created!'
-          })
+          });
           $uibModalInstance.close();
         }, function (response) {
           toaster.pop({
             type: 'error',
-            title: certificate.name,
+            title: source.label,
             body: 'lemur-bad-request',
             bodyOutputType: 'directive',
             directiveData: response.data,
@@ -62,14 +62,14 @@ angular.module('lemur')
         function () {
           toaster.pop({
             type: 'success',
-            title: source.name,
+            title: source.label,
             body: 'Successfully Updated!'
-          })
+          });
           $uibModalInstance.close();
         }, function (response) {
           toaster.pop({
             type: 'error',
-            title: certificate.name,
+            title: source.label,
             body: 'lemur-bad-request',
             bodyOutputType: 'directive',
             directiveData: response.data,

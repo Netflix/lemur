@@ -10,8 +10,23 @@ angular.module('lemur')
     });
 
     $scope.save = function (destination) {
-      DestinationService.create(destination).then(function () {
-        $uibModalInstance.close();
+      DestinationService.create(destination).then(
+       function () {
+          toaster.pop({
+            type: 'success',
+            title: destination.label,
+            body: 'Successfully Created!'
+          });
+          $uibModalInstance.close();
+        }, function (response) {
+          toaster.pop({
+            type: 'error',
+            title: destination.label,
+            body: 'lemur-bad-request',
+            bodyOutputType: 'directive',
+            directiveData: response.data,
+            timeout: 100000
+          });
       });
     };
 
@@ -27,7 +42,6 @@ angular.module('lemur')
         $scope.plugins = plugins;
         _.each($scope.plugins, function (plugin) {
           if (plugin.slug === $scope.destination.pluginName) {
-            plugin.pluginOptions = $scope.destination.destinationOptions;
             $scope.destination.plugin = plugin;
           }
         });
@@ -35,9 +49,24 @@ angular.module('lemur')
     });
     
     $scope.save = function (destination) {
-      DestinationService.update(destination).then(function () {
-        $uibModalInstance.close();
-      });
+      DestinationService.update(destination).then(
+        function () {
+          toaster.pop({
+            type: 'success',
+            title: destination.label,
+            body: 'Successfully Updated!'
+          });
+          $uibModalInstance.close();
+        }, function (response) {
+          toaster.pop({
+            type: 'error',
+            title: destination.label,
+            body: 'lemur-bad-request',
+            bodyOutputType: 'directive',
+            directiveData: response.data,
+            timeout: 100000
+          });
+        });
     };
 
     $scope.cancel = function () {

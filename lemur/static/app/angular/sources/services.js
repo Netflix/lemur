@@ -3,7 +3,7 @@ angular.module('lemur')
   .service('SourceApi', function (LemurRestangular) {
     return LemurRestangular.all('sources');
   })
-  .service('SourceService', function ($location,  SourceApi, PluginService, toaster) {
+  .service('SourceService', function ($location,  SourceApi, PluginService) {
     var SourceService = this;
     SourceService.findSourcesByName = function (filterValue) {
       return SourceApi.getList({'filter[label]': filterValue})
