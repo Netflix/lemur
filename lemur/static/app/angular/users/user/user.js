@@ -2,7 +2,7 @@
 
 angular.module('lemur')
 
-  .controller('UsersEditController', function ($scope, $uibModalInstance, UserApi, UserService, RoleService, editId) {
+  .controller('UsersEditController', function ($scope, $uibModalInstance, UserApi, UserService, RoleService, toaster, editId) {
     UserApi.get(editId).then(function (user) {
       UserService.getRoles(user);
       $scope.user = user;
@@ -45,7 +45,7 @@ angular.module('lemur')
     };
   })
 
-  .controller('UsersCreateController', function ($scope, $uibModalInstance, UserService, LemurRestangular, RoleService) {
+  .controller('UsersCreateController', function ($scope, $uibModalInstance, UserService, LemurRestangular, RoleService, toaster) {
     $scope.user = LemurRestangular.restangularizeElement(null, {}, 'users');
     $scope.save = UserService.create;
     $scope.roleService = RoleService;

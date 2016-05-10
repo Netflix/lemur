@@ -2,7 +2,7 @@
 
 angular.module('lemur')
 
-  .controller('SourcesCreateController', function ($scope, $uibModalInstance, PluginService, SourceService, LemurRestangular){
+  .controller('SourcesCreateController', function ($scope, $uibModalInstance, PluginService, SourceService, LemurRestangular, toaster){
     $scope.source = LemurRestangular.restangularizeElement(null, {}, 'sources');
 
     PluginService.getByType('source').then(function (plugins) {
@@ -35,7 +35,7 @@ angular.module('lemur')
     };
   })
 
-  .controller('SourcesEditController', function ($scope, $uibModalInstance, SourceService, SourceApi, PluginService, editId) {
+  .controller('SourcesEditController', function ($scope, $uibModalInstance, SourceService, SourceApi, PluginService, toaster, editId) {
     SourceApi.get(editId).then(function (source) {
       $scope.source = source;
       PluginService.getByType('source').then(function (plugins) {

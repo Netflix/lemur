@@ -2,7 +2,7 @@
 
 angular.module('lemur')
 
-  .controller('DestinationsCreateController', function ($scope, $uibModalInstance, PluginService, DestinationService, LemurRestangular){
+  .controller('DestinationsCreateController', function ($scope, $uibModalInstance, PluginService, DestinationService, LemurRestangular, toaster){
     $scope.destination = LemurRestangular.restangularizeElement(null, {}, 'destinations');
 
     PluginService.getByType('destination').then(function (plugins) {
@@ -35,7 +35,7 @@ angular.module('lemur')
     };
   })
 
-  .controller('DestinationsEditController', function ($scope, $uibModalInstance, DestinationService, DestinationApi, PluginService, editId) {
+  .controller('DestinationsEditController', function ($scope, $uibModalInstance, DestinationService, DestinationApi, PluginService, toaster, editId) {
     DestinationApi.get(editId).then(function (destination) {
       $scope.destination = destination;
       PluginService.getByType('destination').then(function (plugins) {

@@ -2,7 +2,7 @@
 
 angular.module('lemur')
 
-  .controller('NotificationsCreateController', function ($scope, $uibModalInstance, PluginService, NotificationService, CertificateService, LemurRestangular){
+  .controller('NotificationsCreateController', function ($scope, $uibModalInstance, PluginService, NotificationService, CertificateService, LemurRestangular, toaster){
     $scope.notification = LemurRestangular.restangularizeElement(null, {}, 'notifications');
 
     PluginService.getByType('notification').then(function (plugins) {
@@ -36,7 +36,7 @@ angular.module('lemur')
     $scope.certificateService = CertificateService;
   })
 
-  .controller('NotificationsEditController', function ($scope, $uibModalInstance, NotificationService, NotificationApi, PluginService, CertificateService, editId) {
+  .controller('NotificationsEditController', function ($scope, $uibModalInstance, NotificationService, NotificationApi, PluginService, CertificateService, toaster, editId) {
     NotificationApi.get(editId).then(function (notification) {
       $scope.notification = notification;
       PluginService.getByType('notification').then(function (plugins) {
