@@ -24,9 +24,6 @@ angular.module('lemur')
       getData: function ($defer, params) {
         NotificationApi.getList(params.url()).then(
           function (data) {
-            _.each(data, function (notification) {
-              NotificationService.getPlugin(notification);
-            });
             params.total(data.total);
             $defer.resolve(data);
           }
