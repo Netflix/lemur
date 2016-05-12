@@ -17,7 +17,7 @@ from lemur.notifications.models import Notification
 from lemur.users.models import User
 
 from lemur.common import validators
-from lemur.common.schema import LemurSchema, LemurInputSchema
+from lemur.common.schema import LemurSchema, LemurInputSchema, LemurOutputSchema
 
 from lemur.plugins import plugins
 
@@ -96,18 +96,26 @@ class AssociatedUserSchema(LemurInputSchema):
             return User.query.filter(User.id == data['id']).one()
 
 
-class PluginSchema(LemurInputSchema):
-    plugin_options = fields.Dict()
-    slug = fields.String()
+class PluginInputSchema(LemurInputSchema):
+    plugin_options = fields.List(fields.Dict())
+    slug = fields.String(required=True)
     title = fields.String()
     description = fields.String()
 
     @post_load
     def get_object(self, data, many=False):
-        if many:
-            return [plugins.get(plugin['slug']) for plugin in data]
-        else:
-            return plugins.get(data['slug'])
+        data['plugin_object'] = plugins.get(data['slug'])
+        return data
+
+
+class PluginOutputSchema(LemurOutputSchema):
+    id = fields.Integer()
+    label = fields.String()
+    description = fields.String()
+    active = fields.Boolean()
+    plugin_options = fields.List(fields.Dict())
+    slug = fields.String()
+    title = fields.String()
 
 
 class BaseExtensionSchema(LemurSchema):

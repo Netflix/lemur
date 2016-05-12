@@ -135,4 +135,4 @@ def render(args):
         terms = filt.split(';')
         query = database.filter(query, User, terms)
 
-    database.sort_and_page(query, User, args)
+    return database.sort_and_page(query, User, args)

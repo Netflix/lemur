@@ -18,7 +18,7 @@ angular.module('lemur')
     });
     return LemurRestangular.all('roles');
   })
-  .service('RoleService', function ($location, RoleApi, toaster) {
+  .service('RoleService', function ($location, RoleApi) {
     var RoleService = this;
     RoleService.findRoleByName = function (filterValue) {
       return RoleApi.getList({'filter[name]': filterValue})
@@ -48,80 +48,18 @@ angular.module('lemur')
     };
 
     RoleService.create = function (role) {
-      return RoleApi.post(role).then(
-        function () {
-          toaster.pop({
-            type: 'success',
-            title: role.name,
-            body: 'Has been successfully created!'
-          });
-        },
-        function (response) {
-          toaster.pop({
-            type: 'error',
-            title: role.name,
-            body: 'Has not been created! ' + response.data.message
-          });
-        });
+      return RoleApi.post(role);
     };
 
     RoleService.update = function (role) {
-      return role.put().then(
-        function () {
-          toaster.pop({
-            type: 'success',
-            title: role.name,
-            body: 'Successfully updated!'
-          });
-        },
-        function (response) {
-          toaster.pop({
-            type: 'error',
-            title: role.name,
-            body: 'Was not updated!' + response.data.message
-          });
-        });
+      return role.put();
     };
 
     RoleService.remove = function (role) {
-      return role.remove().then(
-        function () {
-          toaster.pop({
-            type: 'success',
-            title: role.name,
-            body: 'Successfully deleted!'
-          });
-        },
-        function (response) {
-          toaster.pop({
-            type: 'error',
-            title: role.name,
-            body: 'Was not deleted!' + response.data.message
-          });
-        }
-      );
+      return role.remove();
     };
 
     RoleService.loadPassword = function (role) {
-      return role.customGET('credentials').then(
-        function (response) {
-          if ( response.password === null) {
-            toaster.pop({
-              type: 'info',
-              title: role.name,
-              body: 'Has no password associated'
-            });
-          } else {
-            role.password = response.password;
-            role.username = response.username;
-          }
-        },
-        function () {
-          toaster.pop({
-            type: 'error',
-            title: role.name,
-            body: 'You do not have permission to view this password!'
-          });
-        });
+      return role.customGET('credentials');
     };
   });

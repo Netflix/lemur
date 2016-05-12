@@ -73,8 +73,8 @@ def test_role_list_post_(client, token, status):
 
 
 @pytest.mark.parametrize("token,status", [
-    (VALID_USER_HEADER_TOKEN, 404),
-    (VALID_ADMIN_HEADER_TOKEN, 404),
+    (VALID_USER_HEADER_TOKEN, 200),
+    (VALID_ADMIN_HEADER_TOKEN, 200),
     ('', 401)
 ])
 def test_role_list_get(client, token, status):

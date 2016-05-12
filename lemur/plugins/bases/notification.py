@@ -45,7 +45,7 @@ class ExpirationNotificationPlugin(NotificationPlugin):
     ]
 
     @property
-    def options(self):
+    def plugin_options(self):
         return list(self.default_options) + self.additional_options
 
     def send(self):

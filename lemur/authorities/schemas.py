@@ -11,7 +11,7 @@ from marshmallow import fields, validates_schema
 from marshmallow import validate
 from marshmallow.exceptions import ValidationError
 
-from lemur.schemas import PluginSchema, ExtensionSchema, AssociatedAuthoritySchema, AssociatedRoleSchema
+from lemur.schemas import PluginInputSchema, ExtensionSchema, AssociatedAuthoritySchema, AssociatedRoleSchema
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
 from lemur.common import validators
 
@@ -33,7 +33,7 @@ class AuthorityInputSchema(LemurInputSchema):
     country = fields.String(missing=lambda: current_app.config.get('LEMUR_DEFAULT_COUNTRY'))
     state = fields.String(missing=lambda: current_app.config.get('LEMUR_DEFAULT_STATE'))
 
-    plugin = fields.Nested(PluginSchema)
+    plugin = fields.Nested(PluginInputSchema)
 
     # signing related options
     type = fields.String(validate=validate.OneOf(['root', 'subca']), missing='root')

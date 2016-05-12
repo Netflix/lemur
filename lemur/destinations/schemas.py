@@ -6,22 +6,31 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 
-from marshmallow import fields
+from marshmallow import fields, post_dump
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
-from lemur.schemas import PluginSchema
+from lemur.schemas import PluginInputSchema, PluginOutputSchema
 
 
 class DestinationInputSchema(LemurInputSchema):
+    id = fields.Integer()
     label = fields.String(required=True)
-    options = fields.Dict(required=True)
-    description = fields.String()
-    plugin = fields.Nested(PluginSchema, required=True)
+    description = fields.String(required=True)
+    active = fields.Boolean()
+    plugin = fields.Nested(PluginInputSchema, required=True)
 
 
 class DestinationOutputSchema(LemurOutputSchema):
+    id = fields.Integer()
     label = fields.String()
-    options = fields.Dict(dump_to='destination_options')
     description = fields.String()
+    active = fields.Boolean()
+    plugin = fields.Nested(PluginOutputSchema)
+    options = fields.List(fields.Dict())
+
+    @post_dump
+    def fill_object(self, data):
+        data['plugin']['pluginOptions'] = data['options']
+        return data
 
 
 destination_input_schema = DestinationInputSchema()

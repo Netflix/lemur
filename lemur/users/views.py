@@ -229,7 +229,7 @@ class CertificateUsers(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(CertificateUsers, self).__init__()
 
-    @validate_schema(None, user_output_schema)
+    @validate_schema(None, users_output_schema)
     def get(self, certificate_id):
         """
         .. http:get:: /certificates/1/creator
@@ -271,7 +271,7 @@ class RoleUsers(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(RoleUsers, self).__init__()
 
-    @validate_schema(None, user_output_schema)
+    @validate_schema(None, users_output_schema)
     def get(self, role_id):
         """
         .. http:get:: /roles/1/users

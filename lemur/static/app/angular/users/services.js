@@ -20,7 +20,7 @@ angular.module('lemur')
     });
     return LemurRestangular.all('users');
   })
-  .service('UserService', function ($location, UserApi, AuthenticationApi, toaster) {
+  .service('UserService', function ($location, UserApi, AuthenticationApi) {
     var UserService = this;
     UserService.getCurrentUser = function () {
       return AuthenticationApi.customGET('me').then(function (user) {
@@ -50,40 +50,10 @@ angular.module('lemur')
     };
 
     UserService.create = function (user) {
-      return UserApi.post(user).then(
-        function () {
-          toaster.pop({
-            type: 'success',
-            title: user.username,
-            body: 'Has been successfully created!'
-          });
-          $location.path('users');
-        },
-        function (response) {
-          toaster.pop({
-            type: 'error',
-            title: user.username,
-            body: 'Has not been created!' + response.data.message
-          });
-        });
+      return UserApi.post(user);
     };
 
     UserService.update = function (user) {
-      return user.put().then(
-        function () {
-          toaster.pop({
-            type: 'success',
-            title: user.username,
-            body: 'Has been successfully updated!'
-          });
-          $location.path('users');
-        },
-        function (response) {
-          toaster.pop({
-            type: 'error',
-            title: user.username,
-            body: 'Has not been updated!' + response.data.message
-          });
-        });
+      return user.put();
     };
   });

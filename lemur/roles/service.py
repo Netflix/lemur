@@ -113,4 +113,4 @@ def render(args):
         terms = filt.split(';')
         query = database.filter(query, Role, terms)
 
-    database.sort_and_page(query, Role, args)
+    return database.sort_and_page(query, Role, args)

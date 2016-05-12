@@ -5,28 +5,33 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from marshmallow import fields
+from marshmallow import fields, post_dump
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
-from lemur.schemas import PluginSchema, AssociatedCertificateSchema
+from lemur.schemas import PluginInputSchema, PluginOutputSchema, AssociatedCertificateSchema
 
 
 class NotificationInputSchema(LemurInputSchema):
+    id = fields.Integer()
     label = fields.String(required=True)
-    options = fields.Dict(required=True)
     description = fields.String()
     active = fields.Boolean()
-    plugin = fields.Nested(PluginSchema, required=True)
-    certificates = fields.Nested(AssociatedCertificateSchema, many=True)
+    plugin = fields.Nested(PluginInputSchema, required=True)
+    certificates = fields.Nested(AssociatedCertificateSchema, many=True, missing=[])
 
 
 class NotificationOutputSchema(LemurOutputSchema):
     id = fields.Integer()
     label = fields.String()
     description = fields.String()
-    options = fields.Dict(dump_to='notification_options')
     active = fields.Boolean()
-    plugin = fields.Nested(PluginSchema)
-    certificates = fields.Nested(AssociatedCertificateSchema, many=True)
+    options = fields.List(fields.Dict())
+    plugin = fields.Nested(PluginOutputSchema)
+    certificates = fields.Nested(AssociatedCertificateSchema, many=True, missing=[])
+
+    @post_dump
+    def fill_object(self, data):
+        data['plugin']['pluginOptions'] = data['options']
+        return data
 
 
 notification_input_schema = NotificationInputSchema()

@@ -17,7 +17,7 @@ angular.module('lemur')
     });
     return LemurRestangular.all('notifications');
   })
-  .service('NotificationService', function ($location,  NotificationApi, PluginService, toaster) {
+  .service('NotificationService', function ($location,  NotificationApi, PluginService) {
     var NotificationService = this;
     NotificationService.findNotificationsByName = function (filterValue) {
       return NotificationApi.getList({'filter[label]': filterValue})
@@ -48,59 +48,15 @@ angular.module('lemur')
     };
 
     NotificationService.create = function (notification) {
-      return NotificationApi.post(notification).then(
-        function () {
-          toaster.pop({
-            type: 'success',
-            title: notification.label,
-            body: 'Successfully created!'
-          });
-          $location.path('notifications');
-        },
-        function (response) {
-          toaster.pop({
-            type: 'error',
-            title: notification.label,
-            body: 'Was not created! ' + response.data.message
-          });
-        });
+      return NotificationApi.post(notification);
     };
 
     NotificationService.update = function (notification) {
-      return notification.put().then(
-        function () {
-          toaster.pop({
-            type: 'success',
-            title: notification.label,
-            body: 'Successfully updated!'
-          });
-          $location.path('notifications');
-        },
-        function (response) {
-          toaster.pop({
-            type: 'error',
-            title: notification.label,
-            body: 'Was not updated! ' + response.data.message
-          });
-        });
+      return notification.put();
     };
 
     NotificationService.updateActive = function (notification) {
-      notification.put().then(
-        function () {
-          toaster.pop({
-            type: 'success',
-            title: notification.name,
-            body: 'Successfully updated!'
-          });
-        },
-        function (response) {
-          toaster.pop({
-            type: 'error',
-            title: notification.name,
-            body: 'Was not updated! ' + response.data.message
-          });
-        });
+      notification.put();
     };
     return NotificationService;
   });
