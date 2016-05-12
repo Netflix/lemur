@@ -217,7 +217,7 @@ class NotificationsList(AuthenticatedResource):
         return service.create(
             data['label'],
             data['plugin']['slug'],
-            data['plugin']['pluginOptions'],
+            data['plugin']['plugin_options'],
             data['description'],
             data['certificates']
         )

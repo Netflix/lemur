@@ -21,6 +21,7 @@ class UserInputSchema(LemurInputSchema):
 
 
 class UserOutputSchema(LemurOutputSchema):
+    id = fields.Integer()
     username = fields.String()
     email = fields.Email()
     password = fields.String()

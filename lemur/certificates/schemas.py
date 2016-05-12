@@ -11,7 +11,7 @@ from marshmallow import fields, validates_schema
 from marshmallow.exceptions import ValidationError
 
 from lemur.schemas import AssociatedAuthoritySchema, AssociatedDestinationSchema, AssociatedCertificateSchema, \
-    AssociatedNotificationSchema, PluginSchema, ExtensionSchema
+    AssociatedNotificationSchema, PluginInputSchema, ExtensionSchema
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
 from lemur.common import validators
 
@@ -89,7 +89,7 @@ class CertificateUploadInputSchema(LemurInputSchema):
 
 
 class CertificateExportInputSchema(LemurInputSchema):
-    export = fields.Nested(PluginSchema)
+    export = fields.Nested(PluginInputSchema)
 
 
 certificate_input_schema = CertificateInputSchema()

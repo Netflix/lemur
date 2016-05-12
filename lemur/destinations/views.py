@@ -148,7 +148,7 @@ class DestinationsList(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
-        return service.create(data['label'], data['plugin']['slug'], data['plugin']['pluginOptions'], data['description'])
+        return service.create(data['label'], data['plugin']['slug'], data['plugin']['plugin_options'], data['description'])
 
 
 class Destinations(AuthenticatedResource):
@@ -265,7 +265,7 @@ class Destinations(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
-        return service.update(destination_id, data['label'], data['plugin']['pluginOptions'], data['description'])
+        return service.update(destination_id, data['label'], data['plugin']['plugin_options'], data['description'])
 
     @admin_permission.require(http_exception=403)
     def delete(self, destination_id):

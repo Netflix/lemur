@@ -11,6 +11,7 @@ from lemur.schemas import AssociatedUserSchema, AssociatedAuthoritySchema
 
 
 class RoleInputSchema(LemurInputSchema):
+    id = fields.Integer()
     name = fields.String(required=True)
     username = fields.String()
     password = fields.String()
@@ -20,6 +21,7 @@ class RoleInputSchema(LemurInputSchema):
 
 
 class RoleOutputSchema(LemurOutputSchema):
+    id = fields.Integer()
     name = fields.String()
     username = fields.String()
     password = fields.String()
