@@ -273,7 +273,7 @@ def update(notification_id, label, options, description, active, certificates):
     notification.options = options
     notification.description = description
     notification.active = active
-    notification = database.update_list(notification, 'certificates', Certificate, certificates)
+    notification.certificates = certificates
 
     return database.update(notification)
 

@@ -30,7 +30,7 @@ class RolesList(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(RolesList, self).__init__()
 
-    @validate_schema(None, role_output_schema)
+    @validate_schema(None, roles_output_schema)
     def get(self):
         """
         .. http:get:: /roles

@@ -56,10 +56,10 @@
       <div class="col-sm-10">
         <div class="input-group">
           <input type="text" ng-model="user.selectedRole" placeholder="Role Name"
-                 typeahead="role.name for role in roleService.findRoleByName($viewValue)"
+                 uib-typeahead="role.name for role in roleService.findRoleByName($viewValue)"
                  typeahead-loading="loadingRoles"
-                 class="form-control input-md" typeahead-on-select="user.attachRole($item)" typeahead-min-wait="50"
-                 tooltip="Roles control which authorities a user can issue certificates from"
+                 class="form-control input-md" typeahead-on-select="user.attachRole($item)" typeahead-wait-ms="500"
+                 uib-tooltip="Roles control which authorities a user can issue certificates from"
                  tooltip-trigger="focus" tooltip-placement="top">
                     <span class="input-group-btn">
                         <button ng-model="roles.show" class="btn btn-md btn-default" btn-checkbox btn-checkbox-true="1"

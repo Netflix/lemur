@@ -67,13 +67,13 @@
                     </li>
                     <li class="list-group-item">
                       <strong>Not Before</strong>
-                        <span class="pull-right" tooltip="{{ certificate.notBefore }}">
+                        <span class="pull-right" uib-tooltip="{{ certificate.notBefore }}">
                           {{ momentService.createMoment(certificate.notBefore) }}
                         </span>
                     </li>
                     <li class="list-group-item">
                       <strong>Not After</strong>
-                        <span class="pull-right" tooltip="{{ certificate.notAfter }}">
+                        <span class="pull-right" uib-tooltip="{{ certificate.notAfter }}">
                           {{ momentService.createMoment(certificate.notAfter) }}
                           </span>
                     </li>
@@ -97,7 +97,7 @@
                       <span class="pull-right">{{ certificate.serial }}</span>
                     </li>
                     <li
-                      tooltip="Lemur will attempt to check a certificates validity, this is used to track whether a certificate as been revoked"
+                      uib-tooltip="Lemur will attempt to check a certificates validity, this is used to track whether a certificate as been revoked"
                       class="list-group-item">
                       <strong>Validity</strong>
                       <span class="pull-right">
@@ -152,7 +152,7 @@
                   <tab-heading>
                     Chain
                     <button class="btn btn-xs btn-default clipboard-btn glyphicon glyphicon-copy"
-                            tooltip="Copy chain to clipboard" tooltip-trigger="mouseenter" clipboard
+                            uib-tooltip="Copy chain to clipboard" tooltip-trigger="mouseenter" clipboard
                             text="certificate.chain"></button>
                   </tab-heading>
                   <pre style="width: 100%">{{ certificate.chain }}</pre>
@@ -161,7 +161,7 @@
                   <tab-heading>
                     Public Certificate
                     <button class="btn btn-xs btn-default clipboard-btn glyphicon glyphicon-copy"
-                            tooltip="Copy certificate to clipboard" tooltip-trigger="mouseenter" clipboard
+                            uib-tooltip="Copy certificate to clipboard" tooltip-trigger="mouseenter" clipboard
                             text="certificate.body"></button>
                   </tab-heading>
                   <pre style="width: 100%">{{ certificate.body }}</pre>
@@ -170,7 +170,7 @@
                   <tab-heading>
                     Private Key
                     <button class="btn btn-xs btn-default clipboard-btn glyphicon glyphicon-copy"
-                            tooltip="Copy key to clipboard" tooltip-trigger="mouseenter" clipboard
+                            uib-tooltip="Copy key to clipboard" tooltip-trigger="mouseenter" clipboard
                             text="certificate.privateKey"></button>
                   </tab-heading>
                   <pre style="width: 100%">{{ certificate.privateKey }}</pre>

@@ -7,27 +7,16 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from flask import Blueprint
-from flask.ext.restful import Api, reqparse, fields
+from flask.ext.restful import Api, reqparse
 from lemur.auth.service import AuthenticatedResource
 
-from lemur.common.utils import marshal_items
 
+from lemur.schemas import plugins_output_schema, plugin_output_schema
+from lemur.common.schema import validate_schema
 from lemur.plugins.base import plugins
 
 mod = Blueprint('plugins', __name__)
 api = Api(mod)
-
-
-FIELDS = {
-    'title': fields.String,
-    'pluginOptions': fields.Raw(attribute='options'),
-    'description': fields.String,
-    'version': fields.String,
-    'author': fields.String,
-    'authorUrl': fields.String,
-    'type': fields.String,
-    'slug': fields.String,
-}
 
 
 class PluginsList(AuthenticatedResource):
@@ -36,7 +25,7 @@ class PluginsList(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(PluginsList, self).__init__()
 
-    @marshal_items(FIELDS)
+    @validate_schema(None, plugins_output_schema)
     def get(self):
         """
         .. http:get:: /plugins
@@ -94,7 +83,7 @@ class Plugins(AuthenticatedResource):
     def __init__(self):
         super(Plugins, self).__init__()
 
-    @marshal_items(FIELDS)
+    @validate_schema(None, plugin_output_schema)
     def get(self, name):
         """
         .. http:get:: /plugins/<name>

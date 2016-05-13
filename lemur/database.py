@@ -239,9 +239,6 @@ def update_list(model, model_attr, item_model, items):
     """
     ids = []
 
-    for i in items:
-        ids.append(i['id'])
-
     for i in getattr(model, model_attr):
         if i.id not in ids:
             getattr(model, model_attr).remove(i)

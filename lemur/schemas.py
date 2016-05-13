@@ -118,6 +118,10 @@ class PluginOutputSchema(LemurOutputSchema):
     title = fields.String()
 
 
+plugins_output_schema = PluginOutputSchema(many=True)
+plugin_output_schema = PluginOutputSchema
+
+
 class BaseExtensionSchema(LemurSchema):
     @pre_load(pass_many=True)
     def preprocess(self, data, many):

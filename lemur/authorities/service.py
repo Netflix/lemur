@@ -47,7 +47,7 @@ def create(kwargs):
     :return:
     """
 
-    issuer = kwargs['plugin']
+    issuer = kwargs['plugin']['plugin_object']
 
     kwargs['creator'] = g.current_user.email
     cert_body, intermediate, issuer_roles = issuer.create_authority(kwargs)
@@ -77,7 +77,7 @@ def create(kwargs):
         role = role_service.create(
             r['name'],
             password=r['password'],
-            description="{0} auto generated role".format(kwargs['plugin'].title),
+            description="{0} auto generated role".format(issuer.title),
             username=r['username'])
 
         # the user creating the authority should be able to administer it
@@ -89,7 +89,7 @@ def create(kwargs):
     authority = Authority(
         kwargs.get('name'),
         kwargs['owner'],
-        kwargs['plugin'].slug,
+        issuer.slug,
         cert_body,
         description=kwargs['description'],
         chain=intermediate,

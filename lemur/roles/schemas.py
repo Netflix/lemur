@@ -6,6 +6,8 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from marshmallow import fields
+from lemur.users.schemas import UserOutputSchema
+from lemur.authorities.schemas import AuthorityOutputSchema
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
 from lemur.schemas import AssociatedUserSchema, AssociatedAuthoritySchema
 
@@ -23,12 +25,9 @@ class RoleInputSchema(LemurInputSchema):
 class RoleOutputSchema(LemurOutputSchema):
     id = fields.Integer()
     name = fields.String()
-    username = fields.String()
-    password = fields.String()
     description = fields.String()
-    authorities = fields.Nested(AssociatedAuthoritySchema, many=True)
-    users = fields.Nested(AssociatedUserSchema, many=True)
-    users = fields.Nested(AssociatedUserSchema, many=True)
+    authorities = fields.Nested(AuthorityOutputSchema, many=True)
+    users = fields.Nested(UserOutputSchema, many=True)
 
 
 role_input_schema = RoleInputSchema()
