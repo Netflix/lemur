@@ -4,7 +4,6 @@ angular.module('lemur')
 
   .controller('UsersEditController', function ($scope, $uibModalInstance, UserApi, UserService, RoleService, toaster, editId) {
     UserApi.get(editId).then(function (user) {
-      UserService.getRoles(user);
       $scope.user = user;
     });
 

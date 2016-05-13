@@ -15,16 +15,15 @@ class UserInputSchema(LemurInputSchema):
     email = fields.Email(required=True)
     password = fields.String(required=True)  # TODO add complexity requirements
     active = fields.Boolean()
-    roles = fields.Nested(AssociatedRoleSchema, many=True)
-    certificates = fields.Nested(AssociatedCertificateSchema, many=True)
-    authorities = fields.Nested(AssociatedAuthoritySchema, many=True)
+    roles = fields.Nested(AssociatedRoleSchema, many=True, missing=[])
+    certificates = fields.Nested(AssociatedCertificateSchema, many=True, missing=[])
+    authorities = fields.Nested(AssociatedAuthoritySchema, many=True, missing=[])
 
 
 class UserOutputSchema(LemurOutputSchema):
     id = fields.Integer()
     username = fields.String()
     email = fields.Email()
-    password = fields.String()
     active = fields.Boolean()
     roles = fields.Nested(AssociatedRoleSchema, many=True)
     certificates = fields.Nested(AssociatedCertificateSchema, many=True)

@@ -335,7 +335,7 @@ class Notifications(AuthenticatedResource):
         return service.update(
             notification_id,
             data['label'],
-            data['notificationOptions'],
+            data['plugin']['plugin_options'],
             data['description'],
             data['active'],
             data['certificates']
@@ -352,7 +352,7 @@ class CertificateNotifications(AuthenticatedResource):
         super(CertificateNotifications, self).__init__()
 
     @validate_schema(None, notifications_output_schema)
-    def get(self, certificate_id, data=None):
+    def get(self, certificate_id):
         """
         .. http:get:: /certificates/1/notifications
 
@@ -426,8 +426,7 @@ class CertificateNotifications(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
-        data['certificate_id'] = certificate_id
-        return service.render(data)
+        return service.render({'certificate_id': certificate_id})
 
 
 api.add_resource(NotificationsList, '/notifications', endpoint='notifications')

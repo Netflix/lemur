@@ -58,9 +58,9 @@
         <div class="form-group">
             <label class="control-label col-sm-2">User(s)</label>
             <div class="col-sm-10">
-                <input tooltip="You can attach any user to this role, once attached they will have access as defined by this role"
-                       typeahead="user.username for user in userService.findUserByName($viewValue)" typeahead-loading="loadingUsers"
-                       typeahead-min-wait="100" typeahead-on-select="role.addUser($item)"
+                <input uib-tooltip="You can attach any user to this role, once attached they will have access as defined by this role"
+                       uib-typeahead="user.username for user in userService.findUserByName($viewValue)" typeahead-loading="loadingUsers"
+                       typeahead-wait-ms="500" typeahead-on-select="role.addUser($item)"
                        type="text" name="user" ng-model="role.selectedUser" placeholder="Username..." class="form-control"/>
                 <table ng-show="role.users" class="table">
                     <tr ng-repeat="user in role.users track by $index">

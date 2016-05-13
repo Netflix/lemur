@@ -67,7 +67,7 @@ angular.module('lemur')
           toaster.pop({
             type: 'success',
             title: notification.label,
-            body: 'Successfully Created!'
+            body: 'Successfully Updated!'
           });
           $uibModalInstance.close();
         }, function (response) {

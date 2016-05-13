@@ -11,7 +11,7 @@ from marshmallow import fields, validates_schema
 from marshmallow import validate
 from marshmallow.exceptions import ValidationError
 
-from lemur.schemas import PluginInputSchema, ExtensionSchema, AssociatedAuthoritySchema, AssociatedRoleSchema
+from lemur.schemas import PluginInputSchema, PluginOutputSchema, ExtensionSchema, AssociatedAuthoritySchema, AssociatedRoleSchema
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
 from lemur.common import validators
 
@@ -66,7 +66,7 @@ class AuthorityOutputSchema(LemurOutputSchema):
     owner = fields.Email()
     not_before = fields.DateTime()
     not_after = fields.DateTime()
-    plugin_name = fields.String()
+    plugin = fields.Nested(PluginOutputSchema)
     body = fields.String()
     chain = fields.String()
     active = fields.Boolean()

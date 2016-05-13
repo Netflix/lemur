@@ -8,7 +8,7 @@
     </div>
     <div class="col-sm-5">
       <div class="input-group">
-        <input tooltip-trigger="focus" tooltip-placement="top" tooltip="String or Base64-encoded DER ASN.1 structure for the value" class="form-control" name="value" ng-model="authority.subAltValue" placeholder="Value" class="form-control" required/>
+        <input tooltip-trigger="focus" tooltip-placement="top" uib-tooltip="String or Base64-encoded DER ASN.1 structure for the value" class="form-control" name="value" ng-model="authority.subAltValue" placeholder="Value" class="form-control" required/>
         <span class="input-group-btn">
           <button ng-click="authority.attachSubAltName()" class="btn btn-info">Add</button>
         </span>
@@ -132,12 +132,12 @@
     </label>
     <div class="col-sm-10">
       <div class="checkbox">
-        <label tooltip-trigger="mouseenter" tooltip-placement="top" tooltip="Put Issuer's keyIdentifier in this extension" >
+        <label tooltip-trigger="mouseenter" tooltip-placement="top" uib-tooltip="Put Issuer's keyIdentifier in this extension" >
           <input type="checkbox" ng-model="authority.extensions.authorityKeyIdentifier.useKeyIdentifier">Key Identifier
         </label>
       </div>
       <div class="checkbox">
-        <label tooltip-trigger="mouseenter" tooltip-placement="top" tooltip="Put Issuer's Name and Serial number" >
+        <label tooltip-trigger="mouseenter" tooltip-placement="top" uib-tooltip="Put Issuer's Name and Serial number" >
           <input type="checkbox" ng-model="authority.extensions.authorityKeyIdentifier.useAuthorityCert">Authority Certificate
         </label>
       </div>
@@ -149,7 +149,7 @@
     </label>
     <div class="col-sm-10">
       <div class="checkbox">
-        <label tooltip-trigger="mouseenter" tooltip-placement="top" tooltip="Ask CA to include/not include AIA extension" >
+        <label tooltip-trigger="mouseenter" tooltip-placement="top" uib-tooltip="Ask CA to include/not include AIA extension" >
           <input type="checkbox" ng-model="authority.extensions.authorityInfoAccess.includeAIA">Include AIA
         </label>
       </div>
@@ -161,7 +161,7 @@
     </label>
     <div class="col-sm-10">
       <div class="checkbox">
-        <label tooltip-trigger="mouseenter" tooltip-placement="top" tooltip="Ask CA to include/not include Subject Key Identifier" >
+        <label tooltip-trigger="mouseenter" tooltip-placement="top" uib-tooltip="Ask CA to include/not include Subject Key Identifier" >
           <input type="checkbox" ng-model="authority.extensions.subjectKeyIdentifier.includeSKI">Include SKI
         </label>
       </div>
@@ -180,14 +180,14 @@
       Custom
     </label>
     <div class="col-sm-2">
-      <input tooltip-trigger="focus" tooltip-placement="top" tooltip="OID for the custom extension e.g. 1.12.123.12.10" class="form-control" name="oid" ng-model="authority.customOid" placeholder="Oid" class="form-control" required/>
+      <input tooltip-trigger="focus" tooltip-placement="top" uib-tooltip="OID for the custom extension e.g. 1.12.123.12.10" class="form-control" name="oid" ng-model="authority.customOid" placeholder="Oid" class="form-control" required/>
     </div>
     <div class="col-sm-2">
-      <select tooltip-trigger="focus" tooltip-placement="top" tooltip="Encoding for value" class="form-control col-sm-2" ng-model="authority.customEncoding" ng-options="item for item in ['b64asn1', 'string', 'ia5string']"></select>
+      <select tooltip-trigger="focus" tooltip-placement="top" uib-tooltip="Encoding for value" class="form-control col-sm-2" ng-model="authority.customEncoding" ng-options="item for item in ['b64asn1', 'string', 'ia5string']"></select>
     </div>
     <div class="col-sm-4">
       <div class="input-group">
-        <input tooltip-trigger="focus" tooltip-placement="top" tooltip="String or Base64-encoded DER ASN.1 structure for the value" class="form-control" name="value" ng-model="authority.customValue" placeholder="Value" class="form-control" required/>
+        <input tooltip-trigger="focus" tooltip-placement="top" uib-tooltip="String or Base64-encoded DER ASN.1 structure for the value" class="form-control" name="value" ng-model="authority.customValue" placeholder="Value" class="form-control" required/>
         <span class="input-group-btn">
           <button ng-click="authority.attachCustom()" class="btn btn-info">Add</button>
         </span>
