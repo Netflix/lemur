@@ -40,7 +40,7 @@ angular.module('lemur')
             toaster.pop({
               type: 'error',
               title: 'Opps',
-              body: 'I see what you did there' + response.data.message
+              body: 'I see what you did there: ' + response.data.message
             });
           }
       );

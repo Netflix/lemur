@@ -60,8 +60,15 @@ class AuthorityInputSchema(LemurInputSchema):
                 raise ValidationError("If generating a subca parent 'authority' must be specified.")
 
 
+class AuthorityUpdateSchema(LemurInputSchema):
+    owner = fields.Email()
+    description = fields.String()
+    roles = fields.Nested(AssociatedRoleSchema(many=True))
+
+
 class AuthorityOutputSchema(LemurOutputSchema):
     id = fields.Integer()
+    description = fields.String()
     name = fields.String()
     owner = fields.Email()
     not_before = fields.DateTime()
@@ -73,7 +80,7 @@ class AuthorityOutputSchema(LemurOutputSchema):
     options = fields.Dict()
     roles = fields.List(fields.Nested(AssociatedRoleSchema))
 
-
+authority_update_schema = AuthorityUpdateSchema()
 authority_input_schema = AuthorityInputSchema()
 authority_output_schema = AuthorityOutputSchema()
 authorities_output_schema = AuthorityOutputSchema(many=True)
