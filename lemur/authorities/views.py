@@ -266,6 +266,10 @@ class Authorities(AuthenticatedResource):
            :statuscode 403: unauthenticated
         """
         authority = service.get(authority_id)
+
+        if not authority:
+            return dict(message='Not Found'), 404
+
         role = role_service.get_by_name(authority.owner)
 
         # all the authority role members should be allowed
