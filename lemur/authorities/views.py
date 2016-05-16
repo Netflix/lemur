@@ -17,7 +17,7 @@ from lemur.roles import service as role_service
 from lemur.certificates import service as certificate_service
 
 from lemur.authorities import service
-from lemur.authorities.schemas import authority_input_schema, authority_output_schema, authorities_output_schema
+from lemur.authorities.schemas import authority_input_schema, authority_output_schema, authorities_output_schema, authority_update_schema
 
 
 mod = Blueprint('authorities', __name__)
@@ -218,7 +218,7 @@ class Authorities(AuthenticatedResource):
         """
         return service.get(authority_id)
 
-    @validate_schema(authority_input_schema, authority_output_schema)
+    @validate_schema(authority_update_schema, authority_output_schema)
     def put(self, authority_id, data=None):
         """
         .. http:put:: /authorities/1
@@ -266,6 +266,10 @@ class Authorities(AuthenticatedResource):
            :statuscode 403: unauthenticated
         """
         authority = service.get(authority_id)
+
+        if not authority:
+            return dict(message='Not Found'), 404
+
         role = role_service.get_by_name(authority.owner)
 
         # all the authority role members should be allowed
@@ -277,7 +281,7 @@ class Authorities(AuthenticatedResource):
 
         # we want to make sure that we cannot add roles that we are not members of
         if not g.current_user.is_admin:
-            role_ids = set([r['id'] for r in data['roles']])
+            role_ids = set([r.id for r in data['roles']])
             user_role_ids = set([r.id for r in g.current_user.roles])
 
             if not role_ids.issubset(user_role_ids):

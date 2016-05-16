@@ -5,7 +5,6 @@ angular.module('lemur')
   .controller('RolesEditController', function ($scope, $uibModalInstance, RoleApi, RoleService, UserService, toaster, editId) {
     RoleApi.get(editId).then(function (role) {
       $scope.role = role;
-      RoleService.getUsers(role);
     });
 
     $scope.save = function (role) {
@@ -40,7 +39,23 @@ angular.module('lemur')
     };
 
     $scope.userService = UserService;
-    $scope.roleService = RoleService;
+
+    $scope.loadPassword = function (role) {
+      RoleService.loadPassword(role).then(
+        function (response) {
+          $scope.role.password = response.password;
+          $scope.role.username = response.username;
+        }, function (response) {
+          toaster.pop({
+            type: 'error',
+            title: role.name,
+            body: 'lemur-bad-request',
+            bodyOutputType: 'directive',
+            directiveData: response.data,
+            timeout: 100000
+          });
+        });
+    };
   })
 
   .controller('RolesCreateController', function ($scope,$uibModalInstance, RoleApi, RoleService, UserService, LemurRestangular, toaster) {

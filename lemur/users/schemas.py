@@ -30,6 +30,14 @@ class UserOutputSchema(LemurOutputSchema):
     authorities = fields.Nested(AssociatedAuthoritySchema, many=True)
 
 
+class UserNestedOutputSchema(LemurOutputSchema):
+    __envelope__ = False
+    id = fields.Integer()
+    username = fields.String()
+    email = fields.Email()
+    active = fields.Boolean()
+
+
 user_input_schema = UserInputSchema()
 user_output_schema = UserOutputSchema()
 users_output_schema = UserOutputSchema(many=True)

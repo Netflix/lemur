@@ -113,7 +113,7 @@ class PluginOutputSchema(LemurOutputSchema):
     label = fields.String()
     description = fields.String()
     active = fields.Boolean()
-    plugin_options = fields.List(fields.Dict())
+    options = fields.List(fields.Dict(), dump_to='pluginOptions')
     slug = fields.String()
     title = fields.String()
 
