@@ -10,7 +10,7 @@
              uib-tooltip="Lemur will mark any certificates being replaced as 'inactive'"
              uib-tooltip-trigger="focus" uib-tooltip-placement="top" typeahead-wait-ms="500">
           <span class="input-group-btn">
-            <button ng-model="replacements.show" class="btn btn-md btn-default" btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
+            <button ng-model="replacements.show" class="btn btn-md btn-default" uib-btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
               <span class="badge">{{ certificate.replacements.length || 0 }}</span>
             </button>
           </span>

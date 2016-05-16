@@ -19,7 +19,7 @@ from lemur.auth.permissions import ViewKeyPermission, AuthorityPermission, Updat
 
 from lemur.certificates import service
 from lemur.certificates.schemas import certificate_input_schema, certificate_output_schema, \
-    certificate_upload_input_schema, certificates_output_schema, certificate_export_input_schema
+    certificate_upload_input_schema, certificates_output_schema, certificate_export_input_schema, certificate_edit_input_schema
 
 from lemur.roles import service as role_service
 
@@ -464,7 +464,7 @@ class Certificates(AuthenticatedResource):
         """
         return service.get(certificate_id)
 
-    @validate_schema(certificate_upload_input_schema, certificate_output_schema)
+    @validate_schema(certificate_edit_input_schema, certificate_output_schema)
     def put(self, certificate_id, data=None):
         """
         .. http:put:: /certificates/1

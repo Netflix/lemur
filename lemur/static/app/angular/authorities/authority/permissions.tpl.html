@@ -10,7 +10,7 @@
              uib-tooltip="These are the User roles you wish to associated with your authority"
              tooltip-trigger="focus" tooltip-placement="top">
       <span class="input-group-btn">
-        <button ng-model="roles.show" class="btn btn-md btn-default" btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
+        <button ng-model="roles.show" class="btn btn-md btn-default" uib-btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
           <span class="badge">{{ authority.roles.length || 0 }}</span>
         </button>
       </span>

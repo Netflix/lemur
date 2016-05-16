@@ -33,6 +33,10 @@ class DestinationOutputSchema(LemurOutputSchema):
         return data
 
 
+class DestinationNestedOutputSchema(DestinationOutputSchema):
+    __envelope__ = False
+
+
 destination_input_schema = DestinationInputSchema()
 destinations_output_schema = DestinationOutputSchema(many=True)
 destination_output_schema = DestinationOutputSchema()

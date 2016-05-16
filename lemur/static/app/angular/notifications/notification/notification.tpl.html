@@ -56,7 +56,7 @@
                            uib-typeahead="certificate.name for certificate in certificateService.findCertificatesByName($viewValue)" typeahead-loading="loadingCertificates"
                            class="form-control input-md" typeahead-on-select="notification.attachCertificate($item)" typeahead-wait-ms="500">
                     <span class="input-group-btn">
-                        <button ng-model="certificates.show" class="btn btn-md btn-default" btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
+                        <button ng-model="certificates.show" class="btn btn-md btn-default" uib-btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
                             <span class="badge">{{ notification.certificates.total || 0 }}</span>
                         </button>
                     </span>

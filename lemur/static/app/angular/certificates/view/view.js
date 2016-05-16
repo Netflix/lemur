@@ -31,15 +31,6 @@ angular.module('lemur')
       getData: function ($defer, params) {
         CertificateApi.getList(params.url())
           .then(function (data) {
-            // TODO we should attempt to resolve all of these in parallel
-            _.each(data, function (certificate) {
-              CertificateService.getDomains(certificate);
-              CertificateService.getDestinations(certificate);
-              CertificateService.getNotifications(certificate);
-              CertificateService.getReplacements(certificate);
-              CertificateService.getAuthority(certificate);
-              CertificateService.getCreator(certificate);
-            });
             params.total(data.total);
             $defer.resolve(data);
           });

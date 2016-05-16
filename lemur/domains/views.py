@@ -8,19 +8,16 @@
 
 """
 from flask import Blueprint
-from flask.ext.restful import reqparse, Api, fields
+from flask.ext.restful import reqparse, Api
 
 from lemur.domains import service
 from lemur.auth.service import AuthenticatedResource
 from lemur.auth.permissions import SensitiveDomainPermission
 
-from lemur.common.utils import paginated_parser, marshal_items
+from lemur.common.schema import validate_schema
+from lemur.common.utils import paginated_parser
 
-FIELDS = {
-    'id': fields.Integer,
-    'name': fields.String,
-    'sensitive': fields.Boolean
-}
+from lemur.domains.schemas import domain_input_schema, domain_output_schema, domains_output_schema
 
 mod = Blueprint('domains', __name__)
 api = Api(mod)
@@ -31,7 +28,7 @@ class DomainsList(AuthenticatedResource):
     def __init__(self):
         super(DomainsList, self).__init__()
 
-    @marshal_items(FIELDS)
+    @validate_schema(None, domains_output_schema)
     def get(self):
         """
         .. http:get:: /domains
@@ -83,8 +80,8 @@ class DomainsList(AuthenticatedResource):
         args = parser.parse_args()
         return service.render(args)
 
-    @marshal_items(FIELDS)
-    def post(self):
+    @validate_schema(domain_input_schema, domain_output_schema)
+    def post(self, data=None):
         """
         .. http:post:: /domains
 
@@ -126,10 +123,7 @@ class DomainsList(AuthenticatedResource):
            :statuscode 200: no error
            :statuscode 403: unauthenticated
         """
-        self.reqparse.add_argument('name', type=str, location='json')
-        self.reqparse.add_argument('sensitive', type=bool, default=False, location='json')
-        args = self.reqparse.parse_args()
-        return service.create(args['name'], args['sensitive'])
+        return service.create(data['name'], data['sensitive'])
 
 
 class Domains(AuthenticatedResource):
@@ -137,7 +131,7 @@ class Domains(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(Domains, self).__init__()
 
-    @marshal_items(FIELDS)
+    @validate_schema(None, domain_output_schema)
     def get(self, domain_id):
         """
         .. http:get:: /domains/1
@@ -172,8 +166,8 @@ class Domains(AuthenticatedResource):
         """
         return service.get(domain_id)
 
-    @marshal_items(FIELDS)
-    def put(self, domain_id):
+    @validate_schema(domain_input_schema, domain_output_schema)
+    def put(self, domain_id, data=None):
         """
         .. http:get:: /domains/1
 
@@ -210,12 +204,8 @@ class Domains(AuthenticatedResource):
            :statuscode 200: no error
            :statuscode 403: unauthenticated
         """
-        self.reqparse.add_argument('name', type=str, location='json')
-        self.reqparse.add_argument('sensitive', type=bool, default=False, location='json')
-        args = self.reqparse.parse_args()
-
         if SensitiveDomainPermission().can():
-            return service.update(domain_id, args['name'], args['sensitive'])
+            return service.update(domain_id, data['name'], data['sensitive'])
 
         return dict(message='You are not authorized to modify this domain'), 403
 
@@ -225,7 +215,7 @@ class CertificateDomains(AuthenticatedResource):
     def __init__(self):
         super(CertificateDomains, self).__init__()
 
-    @marshal_items(FIELDS)
+    @validate_schema(None, domains_output_schema)
     def get(self, certificate_id):
         """
         .. http:get:: /certificates/1/domains
