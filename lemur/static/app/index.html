@@ -72,7 +72,7 @@
                     <li class="dropdown" dropdown on-toggle="toggled(open)">
                         <a href class="dropdown-toggle profile-nav" dropdown-toggle>
                             <span ng-if="currentUser.profileImage">
-                                {{ currentUser.username }}<img src="{{ currentUser.profileImage }}" class="profile img-circle">
+                                {{ currentUser.username }}<img ng-src="{{ currentUser.profileImage }}" class="profile img-circle">
                             </span>
                             <span ng-if="!currentUser.profileImage">
                                 {{ currentUser.username }}<ng-letter-avatar height="35" width="35" data="currentUser.username" shape="round"></ng-letter-avatar>

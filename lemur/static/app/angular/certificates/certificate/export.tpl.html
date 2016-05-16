@@ -10,10 +10,10 @@
           Plugin
         </label>
         <div class="col-sm-10">
-          <select class="form-control" ng-model="certificate.export.plugin" ng-options="plugin.title for plugin in plugins" required></select>
+          <select class="form-control" ng-model="certificate.plugin" ng-options="plugin.title for plugin in plugins" required></select>
         </div>
       </div>
-      <div class="form-group" ng-repeat="item in certificate.export.plugin.pluginOptions">
+      <div class="form-group" ng-repeat="item in certificate.plugin.pluginOptions">
         <ng-form name="subForm" class="form-horizontal" role="form" novalidate>
           <div ng-class="{'has-error': subForm.sub.$invalid, 'has-success': !subForm.sub.$invalid&&subForm.sub.$dirty}">
             <label class="control-label col-sm-2">

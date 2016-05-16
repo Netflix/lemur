@@ -53,8 +53,6 @@ def create_name(issuer, not_before, not_after, subject, san):
         not_after=not_after.strftime('%Y%m%d')
     )
 
-    # NOTE we may want to give more control over naming
-    # aws doesn't allow special chars except '-'
     disallowed_chars = ''.join(c for c in map(chr, range(256)) if not c.isalnum())
     disallowed_chars = disallowed_chars.replace("-", "")
     disallowed_chars = disallowed_chars.replace(".", "")
@@ -64,7 +62,13 @@ def create_name(issuer, not_before, not_after, subject, san):
         temp = temp.replace(c, "")
 
     # white space is silly too
-    return temp.replace(" ", "-")
+    final = temp.replace(" ", "-")
+
+    # we don't want any overlapping certificate names
+    if Certificate.query.fitler(Certificate.name == final).all():
+        final += '-1'
+
+    return final
 
 
 def get_signing_algorithm(cert):
