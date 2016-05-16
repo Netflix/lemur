@@ -675,7 +675,7 @@ class CertificateExport(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(CertificateExport, self).__init__()
 
-    @validate_schema(None, certificate_export_input_schema)
+    @validate_schema(certificate_export_input_schema, None)
     def post(self, certificate_id, data=None):
         """
         .. http:post:: /certificates/1/export
@@ -743,11 +743,10 @@ class CertificateExport(AuthenticatedResource):
         """
         cert = service.get(certificate_id)
         role = role_service.get_by_name(cert.owner)
-
         permission = UpdateCertificatePermission(certificate_id, getattr(role, 'name', None))
 
-        options = data['export']['plugin']['plugin_options']
-        plugin = data['export']['plugin']
+        options = data['plugin']['plugin_options']
+        plugin = data['plugin']['plugin_object']
 
         if plugin.requires_key:
             if permission.can():

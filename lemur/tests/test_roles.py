@@ -19,7 +19,7 @@ def test_role_input_schema(client):
 
 
 @pytest.mark.parametrize("token,status", [
-    (VALID_USER_HEADER_TOKEN, 200),
+    (VALID_USER_HEADER_TOKEN, 403),
     (VALID_ADMIN_HEADER_TOKEN, 200),
     ('', 401)
 ])

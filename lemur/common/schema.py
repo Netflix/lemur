@@ -134,6 +134,9 @@ def validate_schema(input_schema, output_schema):
 
             resp = f(*args, **kwargs)
 
+            if isinstance(resp, tuple):
+                return resp[0], resp[1]
+
             if not resp:
                 return dict(message="No data found"), 404
 

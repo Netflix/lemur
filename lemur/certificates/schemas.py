@@ -129,7 +129,7 @@ class CertificateUploadInputSchema(LemurInputSchema):
 
 
 class CertificateExportInputSchema(LemurInputSchema):
-    export = fields.Nested(PluginInputSchema)
+    plugin = fields.Nested(PluginInputSchema)
 
 
 certificate_input_schema = CertificateInputSchema()

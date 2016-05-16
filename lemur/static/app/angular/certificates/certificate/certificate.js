@@ -51,9 +51,6 @@ angular.module('lemur')
   })
   .controller('CertificateEditController', function ($scope, $uibModalInstance, CertificateApi, CertificateService, DestinationService, NotificationService, toaster, editId) {
     CertificateApi.get(editId).then(function (certificate) {
-      CertificateService.getNotifications(certificate);
-      CertificateService.getDestinations(certificate);
-      CertificateService.getReplacements(certificate);
       $scope.certificate = certificate;
     });
 
@@ -90,7 +87,6 @@ angular.module('lemur')
 
   .controller('CertificateCreateController', function ($scope, $uibModalInstance, CertificateApi, CertificateService, DestinationService, AuthorityService, AuthorityApi, PluginService, MomentService, WizardHandler, LemurRestangular, NotificationService, toaster) {
     $scope.certificate = LemurRestangular.restangularizeElement(null, {}, 'certificates');
-
     // set the defaults
     CertificateService.getDefaults($scope.certificate);
 
