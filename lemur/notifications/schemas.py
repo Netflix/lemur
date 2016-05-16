@@ -34,6 +34,10 @@ class NotificationOutputSchema(LemurOutputSchema):
         return data
 
 
+class NotificationNestedOutputSchema(NotificationOutputSchema):
+    __envelope__ = False
+
+
 notification_input_schema = NotificationInputSchema()
 notification_output_schema = NotificationOutputSchema()
 notifications_output_schema = NotificationOutputSchema(many=True)

@@ -80,6 +80,21 @@ class AuthorityOutputSchema(LemurOutputSchema):
     options = fields.Dict()
     roles = fields.List(fields.Nested(AssociatedRoleSchema))
 
+
+class AuthorityNestedOutputSchema(LemurOutputSchema):
+    id = fields.Integer()
+    description = fields.String()
+    name = fields.String()
+    owner = fields.Email()
+    not_before = fields.DateTime()
+    not_after = fields.DateTime()
+    plugin = fields.Nested(PluginOutputSchema)
+    body = fields.String()
+    chain = fields.String()
+    active = fields.Boolean()
+    options = fields.Dict()
+
+
 authority_update_schema = AuthorityUpdateSchema()
 authority_input_schema = AuthorityInputSchema()
 authority_output_schema = AuthorityOutputSchema()

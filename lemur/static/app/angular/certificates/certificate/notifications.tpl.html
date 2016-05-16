@@ -10,7 +10,7 @@
                    uib-tooltip="By default Lemur will always notify you about this certificate through Email notifications."
                    uib-tooltip-trigger="focus" tooltip-placement="top" typeahead-wait-ms="500">
           <span class="input-group-btn">
-            <button ng-model="notifications.show" class="btn btn-md btn-default" btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
+            <button ng-model="notifications.show" class="btn btn-md btn-default" uib-btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
                 <span class="badge">{{ certificate.notifications.length || 0 }}</span>
             </button>
           </span>

@@ -77,11 +77,6 @@ def render(args):
     :return:
     """
     query = database.session_query(Domain).join(Certificate, Domain.certificate)
-
-    sort_by = args.pop('sort_by')
-    sort_dir = args.pop('sort_dir')
-    page = args.pop('page')
-    count = args.pop('count')
     filt = args.pop('filter')
     certificate_id = args.pop('certificate_id', None)
 
@@ -92,9 +87,4 @@ def render(args):
     if certificate_id:
         query = query.filter(Certificate.id == certificate_id)
 
-    query = database.find_all(query, Domain, args)
-
-    if sort_by and sort_dir:
-        query = database.sort(query, Domain, sort_by, sort_dir)
-
-    return database.paginate(query, page, count)
+    return database.sort_and_page(query, Domain, args)

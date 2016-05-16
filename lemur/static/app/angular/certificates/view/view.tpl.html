@@ -37,14 +37,14 @@
             <td data-title="'Issuer'" sortable="'issuer'" filter="{ 'issuer': 'text' }">
               {{ certificate.authority.name || certificate.issuer }}
             </td>
-            <td data-title="'Domains'" filter="{ 'cn': 'text'}">
+            <td data-title="'Common Name'" filter="{ 'cn': 'text'}">
               {{ certificate.cn }}
             </td>
             <td class="col-md-2" data-title="''">
               <div class="btn-group pull-right">
                 <a class="btn btn-sm btn-default" ui-sref="certificate({name: certificate.name})">Permalink</a>
-                <button ng-model="certificate.toggle" class="btn btn-sm btn-info" btn-checkbox btn-checkbox-true="1"
-                        butn-checkbox-false="0">More
+                <button ng-model="certificate.toggle" class="btn btn-sm btn-info" uib-btn-checkbox btn-checkbox-true="1"
+                        btn-checkbox-false="0">More
                 </button>
                 <button ng-click="export(certificate.id)" class="btn btn-sm btn-success">
                   Export
@@ -54,15 +54,15 @@
             </td>
           </tr>
           <tr class="warning" ng-if="certificate.toggle" ng-repeat-end>
-            <td colspan="6">
-              <tabset justified="true" class="col-md-6">
-                <tab>
-                  <tab-heading>Basic Info</tab-heading>
+            <td colspan="12">
+              <uib-tabset justified="true" class="col-md-6">
+                <uib-tab>
+                  <uib-tab-heading>Basic Info</uib-tab-heading>
                   <ul class="list-group">
                     <li class="list-group-item">
                       <strong>Creator</strong>
                         <span class="pull-right">
-                          {{ certificate.creator.email }}
+                          {{ certificate.user.email }}
                         </span>
                     </li>
                     <li class="list-group-item">
@@ -111,71 +111,71 @@
                       <p>{{ certificate.description }}</p>
                     </li>
                   </ul>
-                </tab>
-                <tab>
-                  <tab-heading>Notifications</tab-heading>
+                </uib-tab>
+                <uib-tab>
+                  <uib-tab-heading>Notifications</uib-tab-heading>
                   <ul class="list-group">
                     <li class="list-group-item" ng-repeat="notification in certificate.notifications">
                       <strong>{{ notification.label }}</strong>
                       <span class="pull-right">{{ notification.description}}</span>
                     </li>
                   </ul>
-                </tab>
-                <tab>
-                  <tab-heading>Destinations</tab-heading>
+                </uib-tab>
+                <uib-tab>
+                  <uib-tab-heading>Destinations</uib-tab-heading>
                   <ul class="list-group">
                     <li class="list-group-item" ng-repeat="destination in certificate.destinations">
                       <strong>{{ destination.label }}</strong>
                       <span class="pull-right">{{ destination.description }}</span>
                     </li>
                   </ul>
-                </tab>
-                <tab>
-                  <tab-heading>Domains</tab-heading>
+                </uib-tab>
+                <uib-tab>
+                  <uib-tab-heading>Domains</uib-tab-heading>
                   <div class="list-group">
                     <a href="#/domains/{{ domain.id }}" class="list-group-item"
                        ng-repeat="domain in certificate.domains">{{ domain.name }}</a>
                   </div>
-                </tab>
-                <tab>
-                  <tab-heading>Replaces</tab-heading>
+                </uib-tab>
+                <uib-tab>
+                  <uib-tab-heading>Replaces</uib-tab-heading>
                   <ul class="list-group">
-                    <li class="list-group-item" ng-repeat="replacement in certificate.replacements">
+                    <li class="list-group-item" ng-repeat="replacement in certificate.replaces">
                       <strong>{{ replacement.name }}</strong>
                       <p>{{ replacement.description}}</p>
                     </li>
                   </ul>
-                </tab>
-              </tabset>
-              <tabset justified="true" class="col-md-6">
-                <tab>
-                  <tab-heading>
+                </uib-tab>
+              </uib-tabset>
+              <uib-tabset justified="true" class="col-md-6">
+                <uib-tab>
+                  <uib-tab-heading>
                     Chain
                     <button class="btn btn-xs btn-default clipboard-btn glyphicon glyphicon-copy"
                             uib-tooltip="Copy chain to clipboard" tooltip-trigger="mouseenter" clipboard
                             text="certificate.chain"></button>
-                  </tab-heading>
+                  </uib-tab-heading>
                   <pre style="width: 100%">{{ certificate.chain }}</pre>
-                </tab>
-                <tab>
-                  <tab-heading>
+                </uib-tab>
+                <uib-tab>
+                  <uib-tab-heading>
                     Public Certificate
                     <button class="btn btn-xs btn-default clipboard-btn glyphicon glyphicon-copy"
                             uib-tooltip="Copy certificate to clipboard" tooltip-trigger="mouseenter" clipboard
                             text="certificate.body"></button>
-                  </tab-heading>
+                  </uib-tab-heading>
                   <pre style="width: 100%">{{ certificate.body }}</pre>
-                </tab>
-                <tab ng-click="loadPrivateKey(certificate)">
-                  <tab-heading>
+                </uib-tab>
+                <uib-tab ng-click="loadPrivateKey(certificate)">
+                  <uib-tab-heading>
                     Private Key
                     <button class="btn btn-xs btn-default clipboard-btn glyphicon glyphicon-copy"
                             uib-tooltip="Copy key to clipboard" tooltip-trigger="mouseenter" clipboard
                             text="certificate.privateKey"></button>
-                  </tab-heading>
+                  </uib-tab-heading>
                   <pre style="width: 100%">{{ certificate.privateKey }}</pre>
-                </tab>
-              </tabset>
+                </uib-tab>
+              </uib-tabset>
             </td>
           </tr>
           </tbody>

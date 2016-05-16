@@ -62,7 +62,7 @@
                  uib-tooltip="Roles control which authorities a user can issue certificates from"
                  tooltip-trigger="focus" tooltip-placement="top">
                     <span class="input-group-btn">
-                        <button ng-model="roles.show" class="btn btn-md btn-default" btn-checkbox btn-checkbox-true="1"
+                        <button ng-model="roles.show" class="btn btn-md btn-default" uib-btn-checkbox btn-checkbox-true="1"
                                 btn-checkbox-false="0">
                           <span class="badge">{{ user.roles.total || 0 }}</span>
                         </button>
