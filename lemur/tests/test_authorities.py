@@ -44,8 +44,8 @@ def test_authority_post(client, token, status):
 
 
 @pytest.mark.parametrize("token,status", [
-    (VALID_USER_HEADER_TOKEN, 200),
-    (VALID_ADMIN_HEADER_TOKEN, 200),
+    (VALID_USER_HEADER_TOKEN, 404),
+    (VALID_ADMIN_HEADER_TOKEN, 404),
     ('', 401)
 ])
 def test_authority_put(client, token, status):

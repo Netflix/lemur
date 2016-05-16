@@ -223,7 +223,7 @@ class Roles(AuthenticatedResource):
         if not g.current_user.is_admin:
             user_role_ids = set([r.id for r in g.current_user.roles])
             if role_id not in user_role_ids:
-                return dict(message="You are not allowed to view a role which you are not a member of"), 400
+                return dict(message="You are not allowed to view a role which you are not a member of"), 403
 
         return service.get(role_id)
 

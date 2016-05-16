@@ -65,7 +65,7 @@ def create_name(issuer, not_before, not_after, subject, san):
     final = temp.replace(" ", "-")
 
     # we don't want any overlapping certificate names
-    if Certificate.query.fitler(Certificate.name == final).all():
+    if Certificate.query.filter(Certificate.name == final).all():
         final += '-1'
 
     return final
