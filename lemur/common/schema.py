@@ -132,7 +132,10 @@ def validate_schema(input_schema, output_schema):
 
                 kwargs['data'] = data
 
-            resp = f(*args, **kwargs)
+            try:
+                resp = f(*args, **kwargs)
+            except Exception as e:
+                return dict(message=e.message), 500
 
             if isinstance(resp, tuple):
                 return resp[0], resp[1]
