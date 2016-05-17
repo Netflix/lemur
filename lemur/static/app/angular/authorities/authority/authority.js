@@ -53,6 +53,23 @@ angular.module('lemur')
             $scope.authority.authority = authority;
           }
         });
+      },
+      render: {
+        option: function(item) {
+            return '<div><dl>' +
+                '<dt>' +
+                    '<span>' + item.name + ' <small>' + item.owner + '</small></span>' +
+                '</dt>' +
+                '<dd>' +
+                  '<span>' + item.description + '</span>' +
+                '</dd>' +
+            '</dl></div>';
+        }
+      },
+      load: function (value) {
+        AuthorityService.findAuthorityByName(value).then(function (authorities) {
+          $scope.authorities = authorities;
+        })
       }
     };
 
