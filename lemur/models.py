@@ -50,6 +50,11 @@ roles_authorities = db.table('roles_authorities',
                              Column('role_id', Integer, ForeignKey('roles.id'))
                              )
 
+roles_certificates = db.table('roles_certificates',
+                             Column('certificate_id', Integer, ForeignKey('certificates.id')),
+                             Column('role_id', Integer, ForeignKey('roles.id'))
+                             )
+
 roles_users = db.table('roles_users',
                        Column('user_id', Integer, ForeignKey('users.id')),
                        Column('role_id', Integer, ForeignKey('roles.id'))
