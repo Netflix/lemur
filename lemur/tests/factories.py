@@ -56,15 +56,8 @@ class CertificateFactory(BaseFactory):
     owner = 'joe@example.com'
     status = FuzzyChoice(['valid', 'revoked', 'unknown'])
     deleted = False
-    bits = 2048
-    issuer = 'Example'
-    serial = FuzzyText(length=128)
-    cn = 'test.example.com'
     description = FuzzyText(length=128)
     active = True
-    san = 'true'
-    not_before = FuzzyDate(date(2016, 1, 1), date(2020, 1, 1))
-    not_after = FuzzyDate(date(2016, 1, 1), date(2020, 1, 1))
     date_created = FuzzyDate(date(2016, 1, 1), date(2020, 1, 1))
 
     class Meta:
@@ -131,6 +124,15 @@ class CertificateFactory(BaseFactory):
         if extracted:
             for domain in extracted:
                 self.domains.append(domain)
+
+    @post_generation
+    def roles(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for domain in extracted:
+                self.roles.append(domain)
 
 
 class DestinationFactory(BaseFactory):

@@ -1,6 +1,7 @@
 import pytest
 
 from lemur.roles.views import *  # noqa
+from lemur.tests.factories import RoleFactory, AuthorityFactory, CertificateFactory
 
 
 from .vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN
@@ -16,6 +17,25 @@ def test_role_input_schema(client):
     data, errors = RoleInputSchema().load(input_data)
 
     assert not errors
+
+
+def test_multiple_authority_certificate_association(session, client):
+    role = RoleFactory()
+    authority = AuthorityFactory()
+    certificate = CertificateFactory()
+    authority1 = AuthorityFactory()
+    certificate1 = CertificateFactory()
+
+    role.authorities.append(authority)
+    role.authorities.append(authority1)
+    role.certificates.append(certificate)
+    role.certificates.append(certificate1)
+
+    session.commit()
+    assert role.authorities[0].name == authority.name
+    assert role.authorities[1].name == authority1.name
+    assert role.certificates[0].name == certificate.name
+    assert role.certificates[1].name == certificate1.name
 
 
 @pytest.mark.parametrize("token,status", [

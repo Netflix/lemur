@@ -8,7 +8,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from sqlalchemy import Column, Integer, ForeignKey
+from sqlalchemy import Column, Integer, ForeignKey, Index
 
 from lemur.database import db
 
@@ -17,12 +17,16 @@ certificate_associations = db.Table('certificate_associations',
                                     Column('certificate_id', Integer, ForeignKey('certificates.id'))
                                     )
 
+Index('certificate_associations_ix', certificate_associations.c.domain_id, certificate_associations.c.certificate_id)
+
 certificate_destination_associations = db.Table('certificate_destination_associations',
                                                 Column('destination_id', Integer,
                                                        ForeignKey('destinations.id', ondelete='cascade')),
                                                 Column('certificate_id', Integer,
                                                        ForeignKey('certificates.id', ondelete='cascade'))
                                                 )
+
+Index('certificate_destination_associations_ix', certificate_destination_associations.c.destination_id, certificate_destination_associations.c.certificate_id)
 
 certificate_source_associations = db.Table('certificate_source_associations',
                                            Column('source_id', Integer,
@@ -31,12 +35,16 @@ certificate_source_associations = db.Table('certificate_source_associations',
                                                   ForeignKey('certificates.id', ondelete='cascade'))
                                            )
 
+Index('certificate_source_associations_ix', certificate_source_associations.c.source_id, certificate_source_associations.c.certificate_id)
+
 certificate_notification_associations = db.Table('certificate_notification_associations',
                                                  Column('notification_id', Integer,
                                                         ForeignKey('notifications.id', ondelete='cascade')),
                                                  Column('certificate_id', Integer,
                                                         ForeignKey('certificates.id', ondelete='cascade'))
                                                  )
+
+Index('certificate_notification_associations_ix', certificate_notification_associations.c.notification_id, certificate_notification_associations.c.certificate_id)
 
 certificate_replacement_associations = db.Table('certificate_replacement_associations',
                                                 Column('replaced_certificate_id', Integer,
@@ -45,17 +53,26 @@ certificate_replacement_associations = db.Table('certificate_replacement_associa
                                                        ForeignKey('certificates.id', ondelete='cascade'))
                                                 )
 
-roles_authorities = db.table('roles_authorities',
+Index('certificate_replacement_associations_ix', certificate_replacement_associations.c.certificate_id, certificate_replacement_associations.c.certificate_id)
+
+roles_authorities = db.Table('roles_authorities',
                              Column('authority_id', Integer, ForeignKey('authorities.id')),
                              Column('role_id', Integer, ForeignKey('roles.id'))
                              )
 
-roles_certificates = db.table('roles_certificates',
+Index('roles_authorities_ix', roles_authorities.c.authority_id, roles_authorities.c.role_id)
+
+roles_certificates = db.Table('roles_certificates',
                              Column('certificate_id', Integer, ForeignKey('certificates.id')),
                              Column('role_id', Integer, ForeignKey('roles.id'))
                              )
 
-roles_users = db.table('roles_users',
+Index('roles_certificates_ix', roles_certificates.c.certificate_id, roles_certificates.c.role_id)
+
+
+roles_users = db.Table('roles_users',
                        Column('user_id', Integer, ForeignKey('users.id')),
                        Column('role_id', Integer, ForeignKey('roles.id'))
                        )
+
+Index('roles_users_ix', roles_users.c.user_id, roles_users.c.role_id)

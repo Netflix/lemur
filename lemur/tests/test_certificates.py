@@ -336,13 +336,13 @@ def test_cert_get_issuer(client):
 
 
 def test_get_name_from_arn(client):
-    from lemur.certificates.models import get_name_from_arn
+    from lemur.certificates.service import get_name_from_arn
     arn = 'arn:aws:iam::11111111:server-certificate/mycertificate'
     assert get_name_from_arn(arn) == 'mycertificate'
 
 
 def test_get_account_number(client):
-    from lemur.certificates.models import get_account_number
+    from lemur.certificates.service import get_account_number
     arn = 'arn:aws:iam::11111111:server-certificate/mycertificate'
     assert get_account_number(arn) == '11111111'
 
