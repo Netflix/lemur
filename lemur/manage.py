@@ -317,7 +317,7 @@ class InitializeApp(Command):
 
 class CreateUser(Command):
     """
-    This command allows for the creation of a new user within Lemur
+    This command allows for the creation of a new user within Lemur.
     """
     option_list = (
         Option('-u', '--username', dest='username', required=True),
@@ -333,18 +333,46 @@ class CreateUser(Command):
             if role_obj:
                 role_objs.append(role_obj)
             else:
-                sys.stderr.write("[!] Cannot find role {0}".format(r))
+                sys.stderr.write("[!] Cannot find role {0}\n".format(r))
                 sys.exit(1)
 
         password1 = prompt_pass("Password")
         password2 = prompt_pass("Confirm Password")
 
         if password1 != password2:
-            sys.stderr.write("[!] Passwords do not match")
+            sys.stderr.write("[!] Passwords do not match!\n")
             sys.exit(1)
 
         user_service.create(username, password1, email, active, None, role_objs)
-        sys.stdout.write("[+] Created new user: {0}".format(username))
+        sys.stdout.write("[+] Created new user: {0}\n".format(username))
+
+
+class ResetPassword(Command):
+    """
+    This command allows you to reset a user's password.
+    """
+    option_list = (
+        Option('-u', '--username', dest='username', required=True),
+    )
+
+    def run(self, username):
+        user = user_service.get_by_username(username)
+
+        if not user:
+            sys.stderr.write("[!] No user found for username: {0}\n".format(username))
+            sys.exit(1)
+
+        sys.stderr.write("[+] Resetting password for {0}\n".format(username))
+        password1 = prompt_pass("Password")
+        password2 = prompt_pass("Confirm Password")
+
+        if password1 != password2:
+            sys.stderr.write("[!] Passwords do not match\n")
+            sys.exit(1)
+
+        user.password = password1
+        user.hash_password()
+        database.commit()
 
 
 class CreateRole(Command):
@@ -841,6 +869,7 @@ def main():
     manager.add_command("db", MigrateCommand)
     manager.add_command("init", InitializeApp())
     manager.add_command("create_user", CreateUser())
+    manager.add_command("reset_password", ResetPassword())
     manager.add_command("create_role", CreateRole())
     manager.add_command("provision_elb", ProvisionELB())
     manager.add_command("rotate_elbs", RotateELBs())
