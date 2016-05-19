@@ -127,7 +127,7 @@ angular.module('lemur')
       load: function (value) {
         AuthorityService.findAuthorityByName(value).then(function (authorities) {
           $scope.authorities = authorities;
-        })
+        });
       }
     };
 
