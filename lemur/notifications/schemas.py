@@ -34,8 +34,14 @@ class NotificationOutputSchema(LemurOutputSchema):
         return data
 
 
-class NotificationNestedOutputSchema(NotificationOutputSchema):
+class NotificationNestedOutputSchema(LemurOutputSchema):
     __envelope__ = False
+    id = fields.Integer()
+    label = fields.String()
+    description = fields.String()
+    active = fields.Boolean()
+    options = fields.List(fields.Dict())
+    plugin = fields.Nested(PluginOutputSchema)
 
 
 notification_input_schema = NotificationInputSchema()
