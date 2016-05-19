@@ -186,8 +186,8 @@ def test_certificate_valid_dates(client, authority):
         'owner': 'jim@example.com',
         'authority': {'id': authority.id},
         'description': 'testtestest',
-        'validityStart': '2017-04-30T00:12:34.513631',
-        'validityEnd': '2018-04-30T00:12:34.513631'
+        'validityStart': '2020-01-01T00:21:34.513631',
+        'validityEnd': '2020-01-01T00:22:34.513631'
     }
 
     data, errors = CertificateInputSchema().load(input_data)
@@ -293,48 +293,6 @@ def test_create_basic_csr(client):
         assert name.value in csr_config.values()
 
 
-def test_cert_get_cn(client):
-    from .vectors import INTERNAL_VALID_LONG_CERT
-    from lemur.certificates.models import get_cn
-
-    assert get_cn(INTERNAL_VALID_LONG_CERT) == 'long.lived.com'
-
-
-def test_cert_get_sub_alt_domains(client):
-    from .vectors import INTERNAL_VALID_SAN_CERT, INTERNAL_VALID_LONG_CERT
-    from lemur.certificates.models import get_domains
-
-    assert get_domains(INTERNAL_VALID_LONG_CERT) == []
-    assert get_domains(INTERNAL_VALID_SAN_CERT) == ['example2.long.com', 'example3.long.com']
-
-
-def test_cert_is_san(client):
-    from .vectors import INTERNAL_VALID_SAN_CERT, INTERNAL_VALID_LONG_CERT
-    from lemur.certificates.models import is_san
-
-    assert not is_san(INTERNAL_VALID_LONG_CERT)
-    assert is_san(INTERNAL_VALID_SAN_CERT)
-
-
-def test_cert_is_wildcard(client):
-    from .vectors import INTERNAL_VALID_WILDCARD_CERT, INTERNAL_VALID_LONG_CERT
-    from lemur.certificates.models import is_wildcard
-    assert is_wildcard(INTERNAL_VALID_WILDCARD_CERT)
-    assert not is_wildcard(INTERNAL_VALID_LONG_CERT)
-
-
-def test_cert_get_bitstrength(client):
-    from .vectors import INTERNAL_VALID_LONG_CERT
-    from lemur.certificates.models import get_bitstrength
-    assert get_bitstrength(INTERNAL_VALID_LONG_CERT) == 2048
-
-
-def test_cert_get_issuer(client):
-    from .vectors import INTERNAL_VALID_LONG_CERT
-    from lemur.certificates.models import get_issuer
-    assert get_issuer(INTERNAL_VALID_LONG_CERT) == 'Example'
-
-
 def test_get_name_from_arn(client):
     from lemur.certificates.service import get_name_from_arn
     arn = 'arn:aws:iam::11111111:server-certificate/mycertificate'
@@ -345,25 +303,6 @@ def test_get_account_number(client):
     from lemur.certificates.service import get_account_number
     arn = 'arn:aws:iam::11111111:server-certificate/mycertificate'
     assert get_account_number(arn) == '11111111'
-
-
-def test_create_name(client):
-    from lemur.certificates.models import create_name
-    from datetime import datetime
-    assert create_name(
-        'Example Inc,',
-        datetime(2015, 5, 7, 0, 0, 0),
-        datetime(2015, 5, 12, 0, 0, 0),
-        'example.com',
-        False
-    ) == 'example.com-ExampleInc-20150507-20150512'
-    assert create_name(
-        'Example Inc,',
-        datetime(2015, 5, 7, 0, 0, 0),
-        datetime(2015, 5, 12, 0, 0, 0),
-        'example.com',
-        True
-    ) == 'SAN-example.com-ExampleInc-20150507-20150512'
 
 
 @pytest.mark.parametrize("token,status", [

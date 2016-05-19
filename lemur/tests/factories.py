@@ -14,7 +14,7 @@ from lemur.notifications.models import Notification
 from lemur.users.models import User
 from lemur.roles.models import Role
 
-from .vectors import INTERNAL_VALID_SAN_STR, PRIVATE_KEY_STR
+from .vectors import INTERNAL_VALID_LONG_STR, INTERNAL_VALID_SAN_STR, PRIVATE_KEY_STR
 
 
 class BaseFactory(SQLAlchemyModelFactory):
@@ -31,7 +31,7 @@ class AuthorityFactory(BaseFactory):
     name = Sequence(lambda n: 'authority{0}'.format(n))
     owner = 'joe@example.com'
     plugin_name = 'TheRing'
-    body = INTERNAL_VALID_SAN_STR
+    body = INTERNAL_VALID_LONG_STR
 
     class Meta:
         """Factory configuration."""

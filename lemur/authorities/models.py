@@ -47,7 +47,7 @@ class Authority(db.Model):
         self.description = description
         self.plugin_name = plugin_name
         self.cn = defaults.common_name(cert)
-        self.not_before = defaults.not_after(cert)
+        self.not_before = defaults.not_before(cert)
         self.not_after = defaults.not_after(cert)
 
         if roles:
