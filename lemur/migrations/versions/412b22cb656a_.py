@@ -12,6 +12,9 @@ down_revision = '4c50b903d1ae'
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.sql import text
+
+
 
 
 def upgrade():
@@ -36,7 +39,15 @@ def upgrade():
     op.create_index('certificate_replacement_associations_ix', 'certificate_replacement_associations', ['certificate_id', 'certificate_id'], unique=True)
     op.create_index('certificate_source_associations_ix', 'certificate_source_associations', ['source_id', 'certificate_id'], unique=True)
     op.create_index('roles_users_ix', 'roles_users', ['user_id', 'role_id'], unique=True)
+
     ### end Alembic commands ###
+
+    # migrate existing authority_id relationship to many_to_many
+    conn = op.get_bind()
+    for id, authority_id in conn.execute(text('select id, authority_id from roles where authority_id is not null')):
+        stmt = text('insert into roles_authorities (role_id, authority_id) values (:role_id, :authority_id)')
+        stmt = stmt.bindparams(role_id=id, authority_id=authority_id)
+        op.execute(stmt)
 
 
 def downgrade():
