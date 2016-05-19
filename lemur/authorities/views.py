@@ -279,15 +279,15 @@ class Authorities(AuthenticatedResource):
         roles.append(role)
         permission = AuthorityPermission(authority_id, roles)
 
-        # we want to make sure that we cannot add roles that we are not members of
-        if not g.current_user.is_admin:
-            role_ids = set([r.id for r in data['roles']])
-            user_role_ids = set([r.id for r in g.current_user.roles])
-
-            if not role_ids.issubset(user_role_ids):
-                return dict(message="You are not allowed to associate a role which you are not a member of"), 400
-
         if permission.can():
+            # we want to make sure that we cannot add roles that we are not members of
+            if not g.current_user.is_admin:
+                role_ids = set([r.id for r in data['roles']])
+                user_role_ids = set([r.id for r in g.current_user.roles])
+
+                if not role_ids.issubset(user_role_ids):
+                    return dict(message="You are not allowed to associate a role which you are not a member of."), 403
+
             return service.update(
                 authority_id,
                 owner=data['owner'],
@@ -296,7 +296,7 @@ class Authorities(AuthenticatedResource):
                 roles=data['roles']
             )
 
-        return dict(message="You are not authorized to update this authority"), 403
+        return dict(message="You are not authorized to update this authority."), 403
 
 
 class CertificateAuthority(AuthenticatedResource):
@@ -345,7 +345,7 @@ class CertificateAuthority(AuthenticatedResource):
         """
         cert = certificate_service.get(certificate_id)
         if not cert:
-            return dict(message="Certificate not found"), 404
+            return dict(message="Certificate not found."), 404
 
         return cert.authority
 

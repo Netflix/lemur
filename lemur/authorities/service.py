@@ -16,7 +16,6 @@ from lemur.authorities.models import Authority
 from lemur.roles import service as role_service
 from lemur.notifications import service as notification_service
 
-from lemur.roles.models import Role
 from lemur.certificates.models import Certificate
 
 
@@ -29,8 +28,9 @@ def update(authority_id, description=None, owner=None, active=None, roles=None):
     :return:
     """
     authority = get(authority_id)
+
     if roles:
-        authority = database.update_list(authority, 'roles', Role, roles)
+        authority.roles = roles
 
     if active:
         authority.active = active
@@ -52,8 +52,7 @@ def create(kwargs):
     kwargs['creator'] = g.current_user.email
     cert_body, intermediate, issuer_roles = issuer.create_authority(kwargs)
 
-    cert = Certificate(cert_body, chain=intermediate)
-    cert.owner = kwargs['owner']
+    cert = Certificate(body=cert_body, chain=intermediate, **kwargs)
 
     if kwargs['type'] == 'subca':
         cert.description = "This is the ROOT certificate for the {0} sub certificate authority the parent \

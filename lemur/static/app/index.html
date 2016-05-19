@@ -70,7 +70,7 @@
                 </ul>
                 <ul ng-show="currentUser.username" class="nav navbar-nav navbar-right">
                     <li class="dropdown" uib-dropdown on-toggle="toggled(open)">
-                        <a href class="dropdown-toggle profile-nav" dropdown-toggle>
+                        <a href class="dropdown-toggle profile-nav" uib-dropdown-toggle>
                             <span ng-if="currentUser.profileImage">
                                 {{ currentUser.username }}<img ng-src="{{ currentUser.profileImage }}" class="profile img-circle">
                             </span>
