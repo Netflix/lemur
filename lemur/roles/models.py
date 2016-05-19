@@ -14,7 +14,7 @@ from sqlalchemy import Column, Integer, String, Text, ForeignKey
 
 from lemur.database import db
 from lemur.utils import Vault
-from lemur.models import roles_users
+from lemur.models import roles_users, roles_authorities, roles_certificates
 
 
 class Role(db.Model):
@@ -25,5 +25,7 @@ class Role(db.Model):
     password = Column(Vault)
     description = Column(Text)
     authority_id = Column(Integer, ForeignKey('authorities.id'))
+    authorities = relationship("Authority", secondary=roles_authorities, passive_deletes=True, backref="role", cascade='all,delete')
     user_id = Column(Integer, ForeignKey('users.id'))
     users = relationship("User", secondary=roles_users, viewonly=True, backref="role")
+    certificates = relationship("Certificate", secondary=roles_certificates, backref="role")

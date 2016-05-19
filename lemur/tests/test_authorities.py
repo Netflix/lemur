@@ -25,6 +25,26 @@ def test_authority_input_schema(client, role):
     assert not errors
 
 
+@pytest.mark.parametrize("token, count", [
+    (VALID_USER_HEADER_TOKEN, 0),
+    (VALID_ADMIN_HEADER_TOKEN, 1)
+])
+def test_admin_authority(client, authority, token, count):
+    assert client.get(api.url_for(AuthoritiesList), headers=token).json['total'] == count
+
+
+def test_user_authority(session, client, authority, role, user):
+    assert client.get(api.url_for(AuthoritiesList), headers=user['token']).json['total'] == 0
+    u = user['user']
+    u.roles.append(role)
+    authority.roles.append(role)
+    session.commit()
+    assert client.get(api.url_for(AuthoritiesList), headers=user['token']).json['total'] == 1
+    u.roles.remove(role)
+    session.commit()
+    assert client.get(api.url_for(AuthoritiesList), headers=user['token']).json['total'] == 0
+
+
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 404),
     (VALID_ADMIN_HEADER_TOKEN, 404),

@@ -25,7 +25,7 @@ from lemur.certificates import service as cert_service
 from lemur.sources import service as source_service
 from lemur.notifications import service as notification_service
 
-from lemur.certificates.models import get_name_from_arn
+from lemur.certificates.service import get_name_from_arn
 from lemur.certificates.verify import verify_string
 
 from lemur.plugins.lemur_aws import elb

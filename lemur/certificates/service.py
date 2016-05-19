@@ -481,3 +481,23 @@ def stats(**kwargs):
         values.append(count)
 
     return {'labels': keys, 'values': values}
+
+
+def get_account_number(arn):
+    """
+    Extract the account number from an arn.
+
+    :param arn: IAM SSL arn
+    :return: account number associated with ARN
+    """
+    return arn.split(":")[4]
+
+
+def get_name_from_arn(arn):
+    """
+    Extract the certificate name from an arn.
+
+    :param arn: IAM SSL arn
+    :return: name of the certificate as uploaded to AWS
+    """
+    return arn.split("/", 1)[1]

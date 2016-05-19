@@ -16,7 +16,6 @@ from lemur.authorities.models import Authority
 from lemur.roles import service as role_service
 from lemur.notifications import service as notification_service
 
-from lemur.roles.models import Role
 from lemur.certificates.models import Certificate
 
 
@@ -29,8 +28,9 @@ def update(authority_id, description=None, owner=None, active=None, roles=None):
     :return:
     """
     authority = get(authority_id)
+
     if roles:
-        authority = database.update_list(authority, 'roles', Role, roles)
+        authority.roles = roles
 
     if active:
         authority.active = active
@@ -52,8 +52,7 @@ def create(kwargs):
     kwargs['creator'] = g.current_user.email
     cert_body, intermediate, issuer_roles = issuer.create_authority(kwargs)
 
-    cert = Certificate(cert_body, chain=intermediate)
-    cert.owner = kwargs['owner']
+    cert = Certificate(body=cert_body, chain=intermediate, **kwargs)
 
     if kwargs['type'] == 'subca':
         cert.description = "This is the ROOT certificate for the {0} sub certificate authority the parent \
@@ -73,7 +72,6 @@ def create(kwargs):
     # we create and attach any roles that the issuer gives us
     role_objs = []
     for r in issuer_roles:
-
         role = role_service.create(
             r['name'],
             password=r['password'],
@@ -85,6 +83,16 @@ def create(kwargs):
             g.current_user.roles.append(role)
 
         role_objs.append(role)
+
+    # create an role for the owner and assign it
+    owner_role = role_service.get_by_name(kwargs['owner'])
+    if not owner_role:
+        owner_role = role_service.create(
+            kwargs['owner'],
+            description="Auto generated role based on owner: {0}".format(kwargs['owner'])
+        )
+
+    role_objs.append(owner_role)
 
     authority = Authority(
         kwargs.get('name'),
@@ -98,14 +106,6 @@ def create(kwargs):
 
     database.update(cert)
     authority = database.create(authority)
-
-    # the owning dl or role should have this authority associated with it
-    owner_role = role_service.get_by_name(kwargs['owner'])
-
-    if not owner_role:
-        owner_role = role_service.create(kwargs['owner'])
-
-    owner_role.authority = authority
 
     g.current_user.authorities.append(authority)
 
@@ -181,8 +181,8 @@ def render(args):
     if not g.current_user.is_admin:
         authority_ids = []
         for role in g.current_user.roles:
-            if role.authority:
-                authority_ids.append(role.authority.id)
+            for authority in role.authorities:
+                authority_ids.append(authority.id)
         query = query.filter(Authority.id.in_(authority_ids))
 
     return database.sort_and_page(query, Authority, args)

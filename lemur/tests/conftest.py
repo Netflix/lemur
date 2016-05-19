@@ -7,6 +7,7 @@ from flask.ext.principal import identity_changed, Identity
 
 from lemur import create_app
 from lemur.database import db as _db
+from lemur.auth.service import create_token
 
 from .factories import AuthorityFactory, NotificationFactory, DestinationFactory, \
     CertificateFactory, UserFactory, RoleFactory
@@ -108,6 +109,15 @@ def role(session):
     r = RoleFactory()
     session.commit()
     return r
+
+
+@pytest.fixture
+def user(session):
+    u = UserFactory()
+    session.commit()
+    user_token = create_token(u)
+    token = {'Authorization': 'Basic ' + user_token}
+    return {'user': u, 'token': token}
 
 
 @pytest.yield_fixture(scope="function")
