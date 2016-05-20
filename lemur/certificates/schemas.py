@@ -7,7 +7,7 @@
 """
 from flask import current_app
 
-from marshmallow import fields, validates_schema
+from marshmallow import fields, validates_schema, post_load
 from marshmallow.exceptions import ValidationError
 
 from lemur.schemas import AssociatedAuthoritySchema, AssociatedDestinationSchema, AssociatedCertificateSchema, \
@@ -21,12 +21,26 @@ from lemur.users.schemas import UserNestedOutputSchema
 
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
 from lemur.common import validators
+from lemur.notifications import service as notification_service
 
 
-class CertificateInputSchema(LemurInputSchema):
-    name = fields.String()
+class CertificateSchema(LemurInputSchema):
     owner = fields.Email(required=True)
     description = fields.String()
+
+    @post_load
+    def default_notifications(self, data):
+        if not data['notifications']:
+            notification_name = "DEFAULT_{0}".format(data['owner'].split('@')[0].upper())
+            data['notifications'] += notification_service.create_default_expiration_notifications(notification_name, [data['owner']])
+
+        notification_name = 'DEFAULT_SECURITY'
+        data['notifications'] += notification_service.create_default_expiration_notifications(notification_name, current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL'))
+        return data
+
+
+class CertificateInputSchema(CertificateSchema):
+    name = fields.String()
     common_name = fields.String(required=True, validate=validators.sensitive_domain)
     authority = fields.Nested(AssociatedAuthoritySchema, required=True)
 
@@ -54,9 +68,7 @@ class CertificateInputSchema(LemurInputSchema):
         validators.dates(data)
 
 
-class CertificateEditInputSchema(LemurInputSchema):
-    owner = fields.Email(required=True)
-    description = fields.String()
+class CertificateEditInputSchema(CertificateSchema):
     active = fields.Boolean()
     destinations = fields.Nested(AssociatedDestinationSchema, missing=[], many=True)
     notifications = fields.Nested(AssociatedNotificationSchema, missing=[], many=True)
@@ -107,14 +119,12 @@ class CertificateOutputSchema(LemurOutputSchema):
     authority = fields.Nested(AuthorityNestedOutputSchema)
 
 
-class CertificateUploadInputSchema(LemurInputSchema):
+class CertificateUploadInputSchema(CertificateSchema):
     name = fields.String()
-    owner = fields.Email(required=True)
-    description = fields.String()
     active = fields.Boolean(missing=True)
 
     private_key = fields.String(validate=validators.private_key)
-    public_cert = fields.String(required=True, validate=validators.public_certificate)
+    body = fields.String(required=True, validate=validators.public_certificate)
     chain = fields.String(validate=validators.public_certificate)  # TODO this could be multiple certificates
 
     destinations = fields.Nested(AssociatedDestinationSchema, missing=[], many=True)

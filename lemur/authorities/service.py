@@ -157,8 +157,9 @@ def get_authority_role(ca_name):
     else:
         for role in g.current_user.roles:
             if role.authority:
-                if role.authority.name == ca_name:
-                    return role
+                for authority in role.authorities:
+                    if authority.name == ca_name:
+                        return role
 
 
 def render(args):

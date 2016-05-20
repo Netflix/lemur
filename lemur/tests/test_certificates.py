@@ -5,7 +5,8 @@ import json
 
 from lemur.certificates.views import *  # noqa
 
-from .vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN
+from .vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN, CSR_STR, \
+    INTERNAL_VALID_LONG_STR, INTERNAL_VALID_SAN_STR, PRIVATE_KEY_STR
 
 
 def test_authority_identifier_schema():
@@ -285,7 +286,7 @@ def test_create_basic_csr(client):
         location='A place',
         extensions=dict(names=dict(sub_alt_names=['test.example.com', 'test2.example.com']))
     )
-    csr, pem = create_csr(csr_config)
+    csr, pem = create_csr(**csr_config)
 
     private_key = serialization.load_pem_private_key(pem, password=None, backend=default_backend())
     csr = x509.load_pem_x509_csr(csr, default_backend())
@@ -305,9 +306,66 @@ def test_get_account_number(client):
     assert get_account_number(arn) == '11111111'
 
 
+def test_mint_certificate(issuer_plugin, authority, logged_in_admin):
+    from lemur.certificates.service import mint
+    cert_body, private_key, chain = mint(authority=authority, csr=CSR_STR)
+    assert cert_body == INTERNAL_VALID_LONG_STR, INTERNAL_VALID_SAN_STR
+
+
+def test_create_certificate(issuer_plugin, authority, logged_in_admin):
+    from lemur.certificates.service import create
+    cert = create(authority=authority, csr=CSR_STR, owner='joe@example.com')
+    assert str(cert.not_after) == '2040-01-01 20:30:52'
+    assert str(cert.not_before) == '2015-06-26 20:30:52'
+    assert cert.issuer == 'Example'
+    assert cert.name == 'long.lived.com-Example-20150626-20400101'
+
+    cert = create(authority=authority, csr=CSR_STR, owner='joe@example.com', name='ACustomName1')
+    assert cert.name == 'ACustomName1'
+
+
+def test_create_csr():
+    from lemur.certificates.service import create_csr
+
+    csr, private_key = create_csr(common_name='ACommonName', organization='test', organizational_unit='Meters', country='US',
+                                  state='CA', location='Here')
+    assert csr
+    assert private_key
+
+    extensions = {'sub_alt_names': {'names': [{'name_type': 'DNSName', 'value': 'AnotherCommonName'}]}}
+    csr, private_key = create_csr(common_name='ACommonName', organization='test', organizational_unit='Meters', country='US',
+                                  state='CA', location='Here', extensions=extensions)
+    assert csr
+    assert private_key
+
+
+def test_import(logged_in_user):
+    from lemur.certificates.service import import_certificate
+    cert = import_certificate(body=INTERNAL_VALID_LONG_STR, chain=INTERNAL_VALID_SAN_STR, private_key=PRIVATE_KEY_STR)
+    assert str(cert.not_after) == '2040-01-01 20:30:52'
+    assert str(cert.not_before) == '2015-06-26 20:30:52'
+    assert cert.issuer == 'Example'
+    assert cert.name == 'long.lived.com-Example-20150626-20400101-1'
+
+    cert = import_certificate(body=INTERNAL_VALID_LONG_STR, chain=INTERNAL_VALID_SAN_STR, private_key=PRIVATE_KEY_STR, owner='joe@example.com', name='ACustomName2')
+    assert cert.name == 'ACustomName2'
+
+
+def test_upload(logged_in_user):
+    from lemur.certificates.service import upload
+    cert = upload(body=INTERNAL_VALID_LONG_STR, chain=INTERNAL_VALID_SAN_STR, private_key=PRIVATE_KEY_STR, owner='joe@example.com')
+    assert str(cert.not_after) == '2040-01-01 20:30:52'
+    assert str(cert.not_before) == '2015-06-26 20:30:52'
+    assert cert.issuer == 'Example'
+    assert cert.name == 'long.lived.com-Example-20150626-20400101-2'
+
+    cert = upload(body=INTERNAL_VALID_LONG_STR, chain=INTERNAL_VALID_SAN_STR, private_key=PRIVATE_KEY_STR, owner='joe@example.com', name='ACustomName')
+    assert cert.name == 'ACustomName'
+
+
 @pytest.mark.parametrize("token,status", [
-    (VALID_USER_HEADER_TOKEN, 404),
-    (VALID_ADMIN_HEADER_TOKEN, 404),
+    (VALID_USER_HEADER_TOKEN, 200),
+    (VALID_ADMIN_HEADER_TOKEN, 200),
     ('', 401)
 ])
 def test_certificate_get(client, token, status):
@@ -396,8 +454,8 @@ def test_certificates_patch(client, token, status):
 
 
 @pytest.mark.parametrize("token,status", [
-    (VALID_USER_HEADER_TOKEN, 404),
-    (VALID_ADMIN_HEADER_TOKEN, 404),
+    (VALID_USER_HEADER_TOKEN, 403),
+    (VALID_ADMIN_HEADER_TOKEN, 200),
     ('', 401)
 ])
 def test_certificate_credentials_get(client, token, status):

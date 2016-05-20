@@ -25,8 +25,8 @@ def test_notification_input_schema(client, notification):
 
 
 @pytest.mark.parametrize("token,status", [
-    (VALID_USER_HEADER_TOKEN, 404),
-    (VALID_ADMIN_HEADER_TOKEN, 404),
+    (VALID_USER_HEADER_TOKEN, 200),
+    (VALID_ADMIN_HEADER_TOKEN, 200),
     ('', 401)
 ])
 def test_notification_get(client, token, status):

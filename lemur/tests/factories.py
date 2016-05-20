@@ -30,7 +30,7 @@ class AuthorityFactory(BaseFactory):
     """Authority factory."""
     name = Sequence(lambda n: 'authority{0}'.format(n))
     owner = 'joe@example.com'
-    plugin_name = 'TheRing'
+    plugin_name = 'test-issuer'
     body = INTERNAL_VALID_LONG_STR
 
     class Meta:
