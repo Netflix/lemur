@@ -1,6 +1,8 @@
 <div class="modal-header">
-    <button type="button" class="close" ng-click="cancel()" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <button type="button" class="close" ng-click="cancel()" aria-label="Close"><span aria-hidden="true">&times;</span>
+    </button>
     <h3>Edit <span class="text-muted"><small>{{ authority.name }}</small></span></h3>
+</div>
 <div class="modal-body">
     <form name="createForm" class="form-horizontal" role="form" novalidate>
         <div class="form-group"
@@ -22,41 +24,23 @@
                 Description
             </label>
             <div class="col-sm-10">
-                <textarea name="description" ng-model="authority.description" placeholder="Something elegant" class="form-control" required></textarea>
-                <p ng-show="editForm.description.$invalid && !editForm.description.$pristine" class="help-block">You must give a short description about this authority will be used for, this description should only include alphanumeric characters</p>
+                <textarea name="description" ng-model="authority.description" placeholder="Something elegant"
+                          class="form-control" required></textarea>
+                <p ng-show="editForm.description.$invalid && !editForm.description.$pristine" class="help-block">You
+                    must give a short description about this authority will be used for, this description should only
+                    include alphanumeric characters</p>
             </div>
         </div>
         <div class="form-group">
             <label class="control-label col-sm-2">
                 Roles
             </label>
-            <div class="col-sm-10">
-                <div class="input-group">
-                    <input type="text" ng-model="authority.selectedRole" placeholder="Role Name"
-                           uib-typeahead="role.name for role in roleService.findRoleByName($viewValue)" typeahead-loading="loadingRoles"
-                           class="form-control input-md" typeahead-on-select="authority.attachRole($item)" typeahead-wait-ms="500"
-                           uib-tooltip="Roles control which authorities a user can issue certificates from"
-                           tooltip-trigger="focus" tooltip-placement="top">
-          <span class="input-group-btn">
-            <button ng-model="roles.show" class="btn btn-md btn-default" uib-btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
-                <span class="badge">{{ authority.roles.length || 0 }}</span>
-            </button>
-          </span>
-                </div>
-                <table ng-show="authority.roles" class="table">
-                    <tr ng-repeat="role in authority.roles track by $index">
-                        <td><a class="btn btn-sm btn-info" href="#/roles/{{ role.id }}/edit">{{ role.name }}</a></td>
-                        <td><span class="text-muted">{{ role.description }}</span></td>
-                        <td>
-                            <button type="button" ng-click="authority.removeRole($index)" class="btn btn-danger btn-sm pull-right">Remove</button>
-                        </td>
-                    </tr>
-                </table>
-            </div>
+            <div class="col-sm-10" ng-model="authority" role-select></div>
         </div>
     </form>
 </div>
 <div class="modal-footer">
-    <button ng-click="save(authority)" type="submit" ng-disabled="createForm.$invalid" class="btn btn-primary">Save</button>
+    <button ng-click="save(authority)" type="submit" ng-disabled="createForm.$invalid" class="btn btn-primary">Save
+    </button>
     <button ng-click="cancel()" class="btn btn-danger">Cancel</button>
 </div>

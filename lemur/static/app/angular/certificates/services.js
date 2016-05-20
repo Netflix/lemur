@@ -4,6 +4,16 @@ angular.module('lemur')
   .service('CertificateApi', function (LemurRestangular, DomainService) {
     LemurRestangular.extendModel('certificates', function (obj) {
       return angular.extend(obj, {
+        attachRole: function (role) {
+          this.selectedRole = null;
+          if (this.roles === undefined) {
+            this.roles = [];
+          }
+          this.roles.push(role);
+        },
+        removeRole: function (index) {
+          this.roles.splice(index, 1);
+        },
         attachAuthority: function (authority) {
           this.authority = authority;
           this.authority.maxDate = moment(this.authority.notAfter).subtract(1, 'days').format('YYYY/MM/DD');

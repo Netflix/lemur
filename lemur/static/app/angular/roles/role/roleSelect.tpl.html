@@ -1,0 +1,23 @@
+<div>
+    <div class="input-group">
+        <input type="text" ng-model="ngModel.selectedRole" placeholder="Role Name"
+               uib-typeahead="role.name for role in findRoleByName($viewValue)" typeahead-loading="loadingRoles"
+               class="form-control input-md" typeahead-on-select="ngModel.attachRole($item)" typeahead-wait-ms="500"
+               uib-tooltip="Roles control who can access this resource"
+               tooltip-trigger="focus" tooltip-placement="top">
+          <span class="input-group-btn">
+            <button ng-model="roles.show" class="btn btn-md btn-default" uib-btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
+                <span class="badge">{{ ngModel.roles.length || 0 }}</span>
+            </button>
+          </span>
+    </div>
+    <table ng-show="ngModel.roles" class="table">
+        <tr ng-repeat="role in ngModel.roles track by $index">
+            <td><a class="btn btn-sm btn-info" href="#/roles/{{ role.id }}/edit">{{ role.name }}</a></td>
+            <td><span class="text-muted">{{ role.description }}</span></td>
+            <td>
+                <button type="button" ng-click="ngModel.removeRole($index)" class="btn btn-danger btn-sm pull-right">Remove</button>
+            </td>
+        </tr>
+    </table>
+</div>

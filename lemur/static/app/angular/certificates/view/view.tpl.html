@@ -122,6 +122,15 @@
                   </ul>
                 </uib-tab>
                 <uib-tab>
+                  <uib-tab-heading>Roles</uib-tab-heading>
+                  <ul class="list-group">
+                    <li class="list-group-item" ng-repeat="role in certificate.roles">
+                      <strong>{{ role.name }}</strong>
+                      <span class="pull-right">{{ role.description}}</span>
+                    </li>
+                  </ul>
+                </uib-tab>
+                <uib-tab>
                   <uib-tab-heading>Destinations</uib-tab-heading>
                   <ul class="list-group">
                     <li class="list-group-item" ng-repeat="destination in certificate.destinations">

@@ -9,8 +9,6 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from flask import g
-
 from lemur import database
 from lemur.roles.models import Role
 from lemur.users.models import User
@@ -101,13 +99,6 @@ def render(args):
 
     if authority_id:
         query = query.filter(Role.authority_id == authority_id)
-
-    # we make sure that user can see the role - admins can see all
-    if not g.current_user.is_admin:
-        ids = []
-        for role in g.current_user.roles:
-            ids.append(role.id)
-        query = query.filter(Role.id.in_(ids))
 
     if filt:
         terms = filt.split(';')
