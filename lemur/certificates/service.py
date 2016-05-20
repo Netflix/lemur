@@ -103,59 +103,36 @@ def update(cert_id, owner, description, active, destinations, notifications, rep
     :param replaces:
     :return:
     """
-    from lemur.notifications import service as notification_service
     cert = get(cert_id)
     cert.active = active
     cert.description = description
-
-    # we might have to create new notifications if the owner changes
-    new_notifications = []
-    # get existing names to remove
-    notification_name = "DEFAULT_{0}".format(cert.owner.split('@')[0].upper())
-    for n in notifications:
-        if notification_name not in n.label:
-            new_notifications.append(n)
-
-    notification_name = "DEFAULT_{0}".format(owner.split('@')[0].upper())
-    new_notifications += notification_service.create_default_expiration_notifications(notification_name, owner)
-
-    cert.notifications = new_notifications
-
-    database.update_list(cert, 'destinations', Destination, destinations)
-    database.update_list(cert, 'replaces', Certificate, replaces)
-
+    cert.destinations = destinations
+    cert.replaces = replaces
     cert.owner = owner
 
     return database.update(cert)
 
 
-def mint(issuer_options):
+def mint(**kwargs):
     """
     Minting is slightly different for each authority.
     Support for multiple authorities is handled by individual plugins.
 
     :param issuer_options:
     """
-    authority = issuer_options['authority']
+    authority = kwargs['authority']
 
     issuer = plugins.get(authority.plugin_name)
 
     # allow the CSR to be specified by the user
-    if not issuer_options.get('csr'):
-        csr, private_key = create_csr(issuer_options)
+    if not kwargs.get('csr'):
+        csr, private_key = create_csr(**kwargs)
     else:
-        csr = str(issuer_options.get('csr'))
+        csr = str(kwargs.get('csr'))
         private_key = None
 
-    issuer_options['creator'] = g.user.email
-    cert_body, cert_chain = issuer.create_certificate(csr, issuer_options)
-
-    cert = Certificate(cert_body, private_key, cert_chain)
-
-    cert.user = g.user
-    cert.authority = authority
-    database.update(cert)
-    return cert, private_key, cert_chain,
+    cert_body, cert_chain = issuer.create_certificate(csr, kwargs)
+    return cert_body, private_key, cert_chain,
 
 
 def import_certificate(**kwargs):
@@ -172,68 +149,28 @@ def import_certificate(**kwargs):
     :param kwargs:
     """
     from lemur.users import service as user_service
-    from lemur.notifications import service as notification_service
-    cert = Certificate(kwargs['public_certificate'], chain=kwargs['intermediate_certificate'])
 
-    # TODO future source plugins might have a better understanding of who the 'owner' is we should support this
-    cert.owner = kwargs.get('owner', current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL')[0])
-    cert.creator = kwargs.get('creator', user_service.get_by_email('lemur@nobody'))
+    if not kwargs.get('owner'):
+        kwargs['owner'] = current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL')[0]
 
-    # NOTE existing certs may not follow our naming standard we will
-    # overwrite the generated name with the actual cert name
-    if kwargs.get('name'):
-        cert.name = kwargs.get('name')
+    if not kwargs.get('creator'):
+        kwargs['creator'] = user_service.get_by_email('lemur@nobody')
 
-    if kwargs.get('user'):
-        cert.user = kwargs.get('user')
-
-    notification_name = 'DEFAULT_SECURITY'
-    notifications = notification_service.create_default_expiration_notifications(notification_name, current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL'))
-
-    if kwargs.get('replacements'):
-        database.update_list(cert, 'replaces', Certificate, kwargs['replacements'])
-
-    cert.notifications = notifications
-
-    cert = database.create(cert)
-    return cert
+    return upload(**kwargs)
 
 
 def upload(**kwargs):
     """
     Allows for pre-made certificates to be imported into Lemur.
     """
-    from lemur.notifications import service as notification_service
-    cert = Certificate(
-        kwargs.get('public_cert'),
-        kwargs.get('private_key'),
-        kwargs.get('intermediate_cert'),
-    )
+    cert = Certificate(**kwargs)
 
     # we override the generated name if one is provided
     if kwargs.get('name'):
         cert.name = kwargs['name']
 
-    cert.description = kwargs.get('description')
-
-    cert.owner = kwargs['owner']
     cert = database.create(cert)
-
     g.user.certificates.append(cert)
-
-    database.update_list(cert, 'destinations', Destination, kwargs['destinations'])
-    database.update_list(cert, 'notifications', Notification, kwargs['notifications'])
-    database.update_list(cert, 'replaces', Certificate, kwargs['replacements'])
-
-    # create default notifications for this certificate if none are provided
-    notifications = []
-    if not kwargs.get('notifications'):
-        notification_name = "DEFAULT_{0}".format(cert.owner.split('@')[0].upper())
-        notifications += notification_service.create_default_expiration_notifications(notification_name, [cert.owner])
-
-    notification_name = 'DEFAULT_SECURITY'
-    notifications += notification_service.create_default_expiration_notifications(notification_name, current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL'))
-    cert.notifications = notifications
 
     database.update(cert)
     return cert
@@ -243,38 +180,21 @@ def create(**kwargs):
     """
     Creates a new certificate.
     """
-    from lemur.notifications import service as notification_service
-    cert, private_key, cert_chain = mint(kwargs)
+    kwargs['creator'] = g.user.email
+    cert_body, private_key, cert_chain = mint(**kwargs)
+    kwargs['body'] = cert_body
+    kwargs['private_key'] = private_key
+    kwargs['chain'] = cert_chain
 
-    cert.owner = kwargs['owner']
+    cert = Certificate(**kwargs)
 
     # we override the generated name if one is provided
     if kwargs.get('name'):
         cert.name = kwargs['name']
 
-    database.create(cert)
-    cert.description = kwargs.get('description')
     g.user.certificates.append(cert)
-    database.update(g.user)
+    database.commit()
 
-    # do this after the certificate has already been created because if it fails to upload to the third party
-    # we do not want to lose the certificate information.
-    database.update_list(cert, 'destinations', Destination, kwargs['destinations'])
-    database.update_list(cert, 'replaces', Certificate, kwargs['replacements'])
-    database.update_list(cert, 'notifications', Notification, kwargs['notifications'])
-
-    # create default notifications for this certificate if none are provided
-    notifications = cert.notifications
-    if not kwargs.get('notifications'):
-        notification_name = "DEFAULT_{0}".format(cert.owner.split('@')[0].upper())
-        notifications += notification_service.create_default_expiration_notifications(notification_name, [cert.owner])
-
-    notification_name = 'DEFAULT_SECURITY'
-    notifications += notification_service.create_default_expiration_notifications(notification_name,
-                                                                                  current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL'))
-    cert.notifications = notifications
-
-    database.update(cert)
     metrics.send('certificate_issued', 'counter', 1, metric_tags=dict(owner=cert.owner, issuer=cert.issuer))
     return cert
 
@@ -351,7 +271,7 @@ def render(args):
     return database.sort_and_page(query, Certificate, args)
 
 
-def create_csr(csr_config):
+def create_csr(**csr_config):
     """
     Given a list of domains create the appropriate csr
     for those domains
@@ -440,7 +360,7 @@ def create_csr(csr_config):
     )
 
     # serialize our private key and CSR
-    pem = private_key.private_bytes(
+    private_key = private_key.private_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PrivateFormat.TraditionalOpenSSL,  # would like to use PKCS8 but AWS ELBs don't like it
         encryption_algorithm=serialization.NoEncryption()
@@ -450,7 +370,7 @@ def create_csr(csr_config):
         encoding=serialization.Encoding.PEM
     )
 
-    return csr, pem
+    return csr, private_key
 
 
 def stats(**kwargs):

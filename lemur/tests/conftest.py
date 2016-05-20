@@ -58,6 +58,7 @@ def db(app, request):
 
     _db.session.commit()
     yield _db
+    _db.drop_all()
 
 
 @pytest.yield_fixture(scope="function")
@@ -120,15 +121,33 @@ def user(session):
     return {'user': u, 'token': token}
 
 
+@pytest.fixture
+def admin_user(session):
+    u = UserFactory()
+    admin_role = RoleFactory(name='admin')
+    u.roles.append(admin_role)
+    session.commit()
+    user_token = create_token(u)
+    token = {'Authorization': 'Basic ' + user_token}
+    return {'user': u, 'token': token}
+
+
+@pytest.fixture
+def issuer_plugin():
+    from lemur.plugins.base import register
+    from .plugins.issuer_plugin import TestIssuerPlugin
+    register(TestIssuerPlugin)
+
+
 @pytest.yield_fixture(scope="function")
-def logged_in_user(app, user):
+def logged_in_user(app):
     with app.test_request_context():
-        identity_changed.send(current_app._get_current_object(), identity=Identity(user.id))
+        identity_changed.send(current_app._get_current_object(), identity=Identity(1))
         yield
 
 
 @pytest.yield_fixture(scope="function")
-def logged_in_admin(app, admin_user):
+def logged_in_admin(app):
     with app.test_request_context():
-        identity_changed.send(current_app._get_current_object(), identity=Identity(admin_user.id))
+        identity_changed.send(current_app._get_current_object(), identity=Identity(2))
         yield

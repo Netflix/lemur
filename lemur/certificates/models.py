@@ -7,6 +7,8 @@
 """
 import datetime
 
+from flask import current_app
+
 from sqlalchemy import event, Integer, ForeignKey, String, DateTime, PassiveDefault, func, Column, Text, Boolean
 from sqlalchemy.orm import relationship
 
@@ -22,11 +24,9 @@ from lemur.domains.models import Domain
 
 
 def get_or_increase_name(name):
-    count = Certificate.query.filter(Certificate.name == name).count()
+    count = Certificate.query.filter(Certificate.name.ilike('{0}%'.format(name))).count()
 
-    if count == 1:
-        return name + '-1'
-    elif count > 1:
+    if count >= 1:
         return name + '-' + str(count)
 
     return name
@@ -77,6 +77,11 @@ class Certificate(db.Model):
         self.body = kwargs['body']
         self.private_key = kwargs.get('private_key')
         self.chain = kwargs.get('chain')
+        self.destinations = kwargs.get('destinations', [])
+        self.notifications = kwargs.get('notifications', [])
+        self.description = kwargs.get('description')
+        self.roles = kwargs.get('roles', [])
+        self.replaces = kwargs.get('replacements', [])
         self.signing_algorithm = defaults.signing_algorithm(cert)
         self.bits = defaults.bitstrength(cert)
         self.issuer = defaults.issuer(cert)
@@ -129,7 +134,10 @@ def update_destinations(target, value, initiator):
     :return:
     """
     destination_plugin = plugins.get(value.plugin_name)
-    destination_plugin.upload(target.name, target.body, target.private_key, target.chain, value.options)
+    try:
+        destination_plugin.upload(target.name, target.body, target.private_key, target.chain, value.options)
+    except Exception as e:
+        current_app.logger.exception(e)
 
 
 @event.listens_for(Certificate.replaces, 'append')

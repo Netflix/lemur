@@ -45,7 +45,7 @@
                 </label>
 
                 <div class="col-sm-10">
-                <textarea name="publicCert" ng-model="certificate.publicCert" placeholder="PEM encoded string..."
+                <textarea name="publicCert" ng-model="certificate.body" placeholder="PEM encoded string..."
                           class="form-control" ng-pattern="/^-----BEGIN CERTIFICATE-----/" required></textarea>
 
                     <p ng-show="uploadForm.publicCert.$invalid && !uploadForm.publicCert.$pristine" class="help-block">Enter
@@ -73,7 +73,7 @@
                 </label>
 
                 <div class="col-sm-10">
-                <textarea name="intermediateCert" ng-model="certificate.intermediateCert"
+                <textarea name="intermediateCert" ng-model="certificate.chain"
                           placeholder="PEM encoded string..." class="form-control"
                           ng-pattern="/^-----BEGIN CERTIFICATE-----/"></textarea>
 
