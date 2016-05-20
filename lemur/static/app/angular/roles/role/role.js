@@ -1,7 +1,29 @@
 'use strict';
 
 angular.module('lemur')
+.directive('roleSelect', function (RoleApi) {
+    return {
+      restrict: 'AE',
+      scope: {
+        ngModel: '='
+      },
+      replace: true,
+      require: 'ngModel',
+      templateUrl: '/angular/roles/role/roleSelect.tpl.html',
+      link: function postLink($scope) {
+        RoleApi.getList().then(function (roles) {
+          $scope.roles = roles;
+        });
 
+        $scope.findRoleByName = function (search) {
+          return RoleApi.getList({'filter[name]': search})
+            .then(function (roles) {
+              return roles;
+            });
+        };
+      }
+    };
+  })
   .controller('RolesEditController', function ($scope, $uibModalInstance, RoleApi, RoleService, UserService, toaster, editId) {
     RoleApi.get(editId).then(function (role) {
       $scope.role = role;
