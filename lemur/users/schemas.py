@@ -6,6 +6,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from marshmallow import fields
+
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
 from lemur.schemas import AssociatedRoleSchema, AssociatedCertificateSchema, AssociatedAuthoritySchema
 
@@ -30,14 +31,14 @@ class UserOutputSchema(LemurOutputSchema):
     authorities = fields.Nested(AssociatedAuthoritySchema, many=True)
 
 
+user_input_schema = UserInputSchema()
+user_output_schema = UserOutputSchema()
+users_output_schema = UserOutputSchema(many=True)
+
+
 class UserNestedOutputSchema(LemurOutputSchema):
     __envelope__ = False
     id = fields.Integer()
     username = fields.String()
     email = fields.Email()
     active = fields.Boolean()
-
-
-user_input_schema = UserInputSchema()
-user_output_schema = UserOutputSchema()
-users_output_schema = UserOutputSchema(many=True)

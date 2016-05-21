@@ -9,17 +9,15 @@
 """
 from marshmallow import fields, post_load, pre_load, post_dump, validates_schema
 
-from lemur.roles.models import Role
 from lemur.authorities.models import Authority
-from lemur.destinations.models import Destination
 from lemur.certificates.models import Certificate
-from lemur.notifications.models import Notification
-from lemur.users.models import User
-
 from lemur.common import validators
 from lemur.common.schema import LemurSchema, LemurInputSchema, LemurOutputSchema
-
+from lemur.destinations.models import Destination
+from lemur.notifications.models import Notification
 from lemur.plugins import plugins
+from lemur.roles.models import Role
+from lemur.users.models import User
 
 
 class AssociatedAuthoritySchema(LemurInputSchema):

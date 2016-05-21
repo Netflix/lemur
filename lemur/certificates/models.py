@@ -36,7 +36,7 @@ class Certificate(db.Model):
     __tablename__ = 'certificates'
     id = Column(Integer, primary_key=True)
     owner = Column(String(128), nullable=False)
-    name = Column(String(128), unique=True)
+    name = Column(String(128))  # , unique=True) TODO make all names unique
     description = Column(String(1024))
     active = Column(Boolean, default=True)
 
@@ -59,7 +59,9 @@ class Certificate(db.Model):
     san = Column(String(1024))  # TODO this should be migrated to boolean
 
     user_id = Column(Integer, ForeignKey('users.id'))
-    authority_id = Column(Integer, ForeignKey('authorities.id'))
+    authority_id = Column(Integer, ForeignKey('authorities.id', ondelete="CASCADE"))
+    root_authority_id = Column(Integer, ForeignKey('authorities.id', ondelete="CASCADE"))
+
     notifications = relationship("Notification", secondary=certificate_notification_associations, backref='certificate')
     destinations = relationship("Destination", secondary=certificate_destination_associations, backref='certificate')
     sources = relationship("Source", secondary=certificate_source_associations, backref='certificate')

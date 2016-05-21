@@ -9,7 +9,7 @@ from marshmallow import fields
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
 from lemur.schemas import AssociatedCertificateSchema
 
-from lemur.certificates.schemas import CertificateNestedOutputSchema
+# from lemur.certificates.schemas import CertificateNestedOutputSchema
 
 
 class DomainInputSchema(LemurInputSchema):
@@ -23,7 +23,7 @@ class DomainOutputSchema(LemurOutputSchema):
     id = fields.Integer()
     name = fields.String()
     sensitive = fields.Boolean()
-    certificates = fields.Nested(CertificateNestedOutputSchema, many=True, missing=[])
+    # certificates = fields.Nested(CertificateNestedOutputSchema, many=True, missing=[])
 
 
 class DomainNestedOutputSchema(DomainOutputSchema):

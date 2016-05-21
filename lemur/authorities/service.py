@@ -9,14 +9,13 @@
 
 """
 from flask import g
-from flask import current_app
 
 from lemur import database
+from lemur.extensions import metrics
 from lemur.authorities.models import Authority
 from lemur.roles import service as role_service
-from lemur.notifications import service as notification_service
 
-from lemur.certificates.models import Certificate
+from lemur.certificates.service import upload
 
 
 def update(authority_id, description=None, owner=None, active=None, roles=None):
@@ -40,42 +39,28 @@ def update(authority_id, description=None, owner=None, active=None, roles=None):
     return database.update(authority)
 
 
-def create(kwargs):
+def mint(**kwargs):
     """
-    Create a new authority.
+    Creates the authority based on the plugin provided.
+    """
+    issuer = kwargs['plugin']['plugin_object']
+    body, chain, roles = issuer.create_authority(kwargs)
+    return body, chain, roles
 
+
+def create_authority_roles(roles, **kwargs):
+    """
+    Creates all of the necessary authority roles.
+    :param roles:
+    :param kwargs:
     :return:
     """
-
-    issuer = kwargs['plugin']['plugin_object']
-
-    kwargs['creator'] = g.current_user.email
-    cert_body, intermediate, issuer_roles = issuer.create_authority(kwargs)
-
-    cert = Certificate(body=cert_body, chain=intermediate, **kwargs)
-
-    if kwargs['type'] == 'subca':
-        cert.description = "This is the ROOT certificate for the {0} sub certificate authority the parent \
-                                authority is {1}.".format(kwargs.get('name'), kwargs.get('parent'))
-    else:
-        cert.description = "This is the ROOT certificate for the {0} certificate authority.".format(
-            kwargs.get('name')
-        )
-
-    cert.user = g.current_user
-
-    cert.notifications = notification_service.create_default_expiration_notifications(
-        'DEFAULT_SECURITY',
-        current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL')
-    )
-
-    # we create and attach any roles that the issuer gives us
     role_objs = []
-    for r in issuer_roles:
+    for r in roles:
         role = role_service.create(
             r['name'],
             password=r['password'],
-            description="{0} auto generated role".format(issuer.title),
+            description="Auto generated role for {0}".format(kwargs['plugin']['plugin_object'].title),
             username=r['username'])
 
         # the user creating the authority should be able to administer it
@@ -93,22 +78,39 @@ def create(kwargs):
         )
 
     role_objs.append(owner_role)
+    return role_objs
 
-    authority = Authority(
-        kwargs.get('name'),
-        kwargs['owner'],
-        issuer.slug,
-        cert_body,
-        description=kwargs['description'],
-        chain=intermediate,
-        roles=role_objs
-    )
 
-    database.update(cert)
+def create(**kwargs):
+    """
+    Creates a new authority.
+    """
+    kwargs['creator'] = g.user.email
+    body, chain, roles = mint(**kwargs)
+
+    kwargs['body'] = body
+    kwargs['chain'] = chain
+
+    kwargs['roles'] = create_authority_roles(roles, **kwargs)
+
+    if kwargs['type'] == 'subca':
+        description = "This is the ROOT certificate for the {0} sub certificate authority the parent \
+                                authority is {1}.".format(kwargs.get('name'), kwargs.get('parent'))
+    else:
+        description = "This is the ROOT certificate for the {0} certificate authority.".format(
+            kwargs.get('name')
+        )
+
+    kwargs['description'] = description
+
+    cert = upload(**kwargs)
+    kwargs['authority_certificate'] = cert
+
+    authority = Authority(**kwargs)
     authority = database.create(authority)
+    g.user.authorities.append(authority)
 
-    g.current_user.authorities.append(authority)
-
+    metrics.send('authority_created', 'counter', 1, metric_tags=dict(owner=authority.owner))
     return authority
 
 

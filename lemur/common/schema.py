@@ -8,7 +8,7 @@
 
 """
 from functools import wraps
-from flask import request
+from flask import request, current_app
 
 from sqlalchemy.orm.collections import InstrumentedList
 
@@ -135,6 +135,7 @@ def validate_schema(input_schema, output_schema):
             try:
                 resp = f(*args, **kwargs)
             except Exception as e:
+                current_app.logger.exception(e)
                 return dict(message=e.message), 500
 
             if isinstance(resp, tuple):
