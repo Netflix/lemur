@@ -30,6 +30,13 @@ class RoleOutputSchema(LemurOutputSchema):
     users = fields.Nested(UserNestedOutputSchema, many=True)
 
 
+class RoleNestedOutputSchema(LemurOutputSchema):
+    __envelope__ = False
+    id = fields.Integer()
+    name = fields.String()
+    description = fields.String()
+
+
 role_input_schema = RoleInputSchema()
 role_output_schema = RoleOutputSchema()
 roles_output_schema = RoleOutputSchema(many=True)

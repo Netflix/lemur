@@ -18,6 +18,9 @@ admin_permission = Permission(RoleNeed('admin'))
 CertificateCreator = namedtuple('certificate', ['method', 'value'])
 CertificateCreatorNeed = partial(CertificateCreator, 'key')
 
+CertificateOwner = namedtuple('certificate', ['method', 'value'])
+CertificateOwnerNeed = partial(CertificateOwner, 'role')
+
 
 class SensitiveDomainPermission(Permission):
     def __init__(self):
@@ -34,6 +37,15 @@ class UpdateCertificatePermission(Permission):
     def __init__(self, certificate_id, owner):
         c_need = CertificateCreatorNeed(certificate_id)
         super(UpdateCertificatePermission, self).__init__(c_need, RoleNeed(owner), RoleNeed('admin'))
+
+
+class CertificatePermission(Permission):
+    def __init__(self, certificate_id, roles):
+        needs = [RoleNeed('admin'), CertificateCreatorNeed(certificate_id)]
+        for r in roles:
+            needs.append(CertificateOwnerNeed(str(r)))
+
+        super(CertificatePermission, self).__init__(*needs)
 
 
 RoleUser = namedtuple('role', ['method', 'value'])

@@ -15,7 +15,7 @@ from lemur.common.schema import validate_schema
 from lemur.common.utils import paginated_parser
 
 from lemur.auth.service import AuthenticatedResource
-from lemur.auth.permissions import ViewKeyPermission, AuthorityPermission, UpdateCertificatePermission
+from lemur.auth.permissions import ViewKeyPermission, AuthorityPermission, CertificatePermission
 
 from lemur.certificates import service
 from lemur.certificates.schemas import certificate_input_schema, certificate_output_schema, \
@@ -519,9 +519,8 @@ class Certificates(AuthenticatedResource):
            :statuscode 403: unauthenticated
         """
         cert = service.get(certificate_id)
-        role = role_service.get_by_name(cert.owner)
 
-        permission = UpdateCertificatePermission(certificate_id, getattr(role, 'name', None))
+        permission = CertificatePermission(cert.id, [x.name for x in cert.roles])
 
         if permission.can():
             return service.update(
@@ -531,7 +530,8 @@ class Certificates(AuthenticatedResource):
                 data['active'],
                 data['destinations'],
                 data['notifications'],
-                data['replacements']
+                data['replacements'],
+                data['roles']
             )
 
         return dict(message='You are not authorized to update this certificate'), 403
@@ -742,8 +742,8 @@ class CertificateExport(AuthenticatedResource):
            :statuscode 403: unauthenticated
         """
         cert = service.get(certificate_id)
-        role = role_service.get_by_name(cert.owner)
-        permission = UpdateCertificatePermission(certificate_id, getattr(role, 'name', None))
+
+        permission = CertificatePermission(cert.id, [x.name for x in cert.roles])
 
         options = data['plugin']['plugin_options']
         plugin = data['plugin']['plugin_object']

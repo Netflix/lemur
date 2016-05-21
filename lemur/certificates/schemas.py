@@ -9,11 +9,13 @@ from flask import current_app
 from marshmallow import fields, validates_schema, post_load
 from marshmallow.exceptions import ValidationError
 
+from lemur.schemas import AssociatedAuthoritySchema, AssociatedDestinationSchema, AssociatedCertificateSchema, \
+    AssociatedNotificationSchema, PluginInputSchema, ExtensionSchema, AssociatedRoleSchema
+
 from lemur.authorities.schemas import AuthorityNestedOutputSchema
 from lemur.destinations.schemas import DestinationNestedOutputSchema
 from lemur.notifications.schemas import NotificationNestedOutputSchema
-from lemur.schemas import AssociatedAuthoritySchema, AssociatedDestinationSchema, AssociatedCertificateSchema, \
-    AssociatedNotificationSchema, PluginInputSchema, ExtensionSchema
+from lemur.roles.schemas import RoleNestedOutputSchema
 from lemur.domains.schemas import DomainNestedOutputSchema
 from lemur.users.schemas import UserNestedOutputSchema
 
@@ -49,6 +51,7 @@ class CertificateInputSchema(CertificateSchema):
     destinations = fields.Nested(AssociatedDestinationSchema, missing=[], many=True)
     notifications = fields.Nested(AssociatedNotificationSchema, missing=[], many=True)
     replacements = fields.Nested(AssociatedCertificateSchema, missing=[], many=True)
+    roles = fields.Nested(AssociatedRoleSchema, missing=[], many=True)
 
     csr = fields.String(validate=validators.csr)
 
@@ -71,6 +74,7 @@ class CertificateEditInputSchema(CertificateSchema):
     destinations = fields.Nested(AssociatedDestinationSchema, missing=[], many=True)
     notifications = fields.Nested(AssociatedNotificationSchema, missing=[], many=True)
     replacements = fields.Nested(AssociatedCertificateSchema, missing=[], many=True)
+    roles = fields.Nested(AssociatedRoleSchema, missing=[], many=True)
 
 
 class CertificateNestedOutputSchema(LemurOutputSchema):
@@ -115,6 +119,7 @@ class CertificateOutputSchema(LemurOutputSchema):
     notifications = fields.Nested(NotificationNestedOutputSchema, many=True)
     replaces = fields.Nested(CertificateNestedOutputSchema, many=True)
     authority = fields.Nested(AuthorityNestedOutputSchema)
+    roles = fields.Nested(RoleNestedOutputSchema, many=True)
 
 
 class CertificateUploadInputSchema(CertificateSchema):
@@ -128,6 +133,7 @@ class CertificateUploadInputSchema(CertificateSchema):
     destinations = fields.Nested(AssociatedDestinationSchema, missing=[], many=True)
     notifications = fields.Nested(AssociatedNotificationSchema, missing=[], many=True)
     replacements = fields.Nested(AssociatedCertificateSchema, missing=[], many=True)
+    roles = fields.Nested(AssociatedRoleSchema, missing=[], many=True)
 
     @validates_schema
     def keys(self, data):
