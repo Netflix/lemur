@@ -48,7 +48,7 @@ def mint(**kwargs):
     return body, chain, roles
 
 
-def create_authority_roles(roles, **kwargs):
+def create_authority_roles(**kwargs):
     """
     Creates all of the necessary authority roles.
     :param roles:
@@ -56,7 +56,7 @@ def create_authority_roles(roles, **kwargs):
     :return:
     """
     role_objs = []
-    for r in roles:
+    for r in kwargs['roles']:
         role = role_service.create(
             r['name'],
             password=r['password'],
@@ -90,8 +90,9 @@ def create(**kwargs):
 
     kwargs['body'] = body
     kwargs['chain'] = chain
+    kwargs['roles'] += roles
 
-    kwargs['roles'] = create_authority_roles(roles, **kwargs)
+    kwargs['roles'] = create_authority_roles(**kwargs)
 
     if kwargs['type'] == 'subca':
         description = "This is the ROOT certificate for the {0} sub certificate authority the parent \
