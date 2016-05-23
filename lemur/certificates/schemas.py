@@ -120,6 +120,7 @@ class CertificateOutputSchema(LemurOutputSchema):
     replaces = fields.Nested(CertificateNestedOutputSchema, many=True)
     authority = fields.Nested(AuthorityNestedOutputSchema)
     roles = fields.Nested(RoleNestedOutputSchema, many=True)
+    endpoints = fields.List(fields.Dict(), missing=[])
 
 
 class CertificateUploadInputSchema(CertificateSchema):
