@@ -102,19 +102,19 @@ def dates(data):
             raise ValidationError('Validity start must be before validity end.')
 
         if data.get('authority'):
-            if data.get('validity_start').replace(tzinfo=None) < data['authority'].not_before:
-                raise ValidationError('Validity start must not be before {0}'.format(data['authority'].not_before))
+            if data.get('validity_start').replace(tzinfo=None) < data['authority'].authority_certificate.not_before:
+                raise ValidationError('Validity start must not be before {0}'.format(data['authority'].authority_certificate.not_before))
 
-            if data.get('validity_end').replace(tzinfo=None) > data['authority'].not_after:
-                raise ValidationError('Validity end must not be after {0}'.format(data['authority'].not_after))
+            if data.get('validity_end').replace(tzinfo=None) > data['authority'].authority_certificate.not_after:
+                raise ValidationError('Validity end must not be after {0}'.format(data['authority'].authority_certificate.not_after))
 
     if data.get('validity_years'):
         now = arrow.utcnow()
         end = now.replace(years=+data['validity_years'])
 
         if data.get('authority'):
-            if now.naive < data['authority'].not_before:
-                raise ValidationError('Validity start must not be before {0}'.format(data['authority'].not_before))
+            if now.naive < data['authority'].authority_certificate.not_before:
+                raise ValidationError('Validity start must not be before {0}'.format(data['authority'].authority_certificate.not_before))
 
-            if end.naive > data['authority'].not_after:
-                raise ValidationError('Validity end must not be after {0}'.format(data['authority'].not_after))
+            if end.naive > data['authority'].authority_certificate.not_after:
+                raise ValidationError('Validity end must not be after {0}'.format(data['authority'].authority_certificate.not_after))
