@@ -1,7 +1,7 @@
 
 from datetime import date
 
-from factory import Sequence, post_generation
+from factory import Sequence, post_generation, SubFactory
 from factory.alchemy import SQLAlchemyModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDate
 
@@ -14,7 +14,7 @@ from lemur.notifications.models import Notification
 from lemur.users.models import User
 from lemur.roles.models import Role
 
-from .vectors import INTERNAL_VALID_LONG_STR, INTERNAL_VALID_SAN_STR, PRIVATE_KEY_STR
+from .vectors import INTERNAL_VALID_SAN_STR, PRIVATE_KEY_STR
 
 
 class BaseFactory(SQLAlchemyModelFactory):
@@ -24,27 +24,6 @@ class BaseFactory(SQLAlchemyModelFactory):
         """Factory configuration."""
         abstract = True
         sqlalchemy_session = db.session
-
-
-class AuthorityFactory(BaseFactory):
-    """Authority factory."""
-    name = Sequence(lambda n: 'authority{0}'.format(n))
-    owner = 'joe@example.com'
-    plugin_name = 'test-issuer'
-    body = INTERNAL_VALID_LONG_STR
-
-    class Meta:
-        """Factory configuration."""
-        model = Authority
-
-    @post_generation
-    def roles(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        if extracted:
-            for role in extracted:
-                self.roles.append(role)
 
 
 class CertificateFactory(BaseFactory):
@@ -133,6 +112,27 @@ class CertificateFactory(BaseFactory):
         if extracted:
             for domain in extracted:
                 self.roles.append(domain)
+
+
+class AuthorityFactory(BaseFactory):
+    """Authority factory."""
+    name = Sequence(lambda n: 'authority{0}'.format(n))
+    owner = 'joe@example.com'
+    plugin = {'slug': 'test-issuer'}
+    authority_certificate = SubFactory(CertificateFactory)
+
+    class Meta:
+        """Factory configuration."""
+        model = Authority
+
+    @post_generation
+    def roles(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for role in extracted:
+                self.roles.append(role)
 
 
 class DestinationFactory(BaseFactory):

@@ -120,7 +120,6 @@ def mint(**kwargs):
     Minting is slightly different for each authority.
     Support for multiple authorities is handled by individual plugins.
 
-    :param issuer_options:
     """
     authority = kwargs['authority']
 

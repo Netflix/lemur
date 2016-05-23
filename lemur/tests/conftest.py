@@ -137,6 +137,7 @@ def issuer_plugin():
     from lemur.plugins.base import register
     from .plugins.issuer_plugin import TestIssuerPlugin
     register(TestIssuerPlugin)
+    return TestIssuerPlugin
 
 
 @pytest.yield_fixture(scope="function")
@@ -147,7 +148,7 @@ def logged_in_user(app):
 
 
 @pytest.yield_fixture(scope="function")
-def logged_in_admin(app):
+def logged_in_admin(session, app):
     with app.test_request_context():
         identity_changed.send(current_app._get_current_object(), identity=Identity(2))
         yield

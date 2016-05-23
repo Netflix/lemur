@@ -16,7 +16,7 @@ angular.module('lemur')
       });
   })
 
-  .controller('AuthoritiesViewController', function ($scope, $q, $uibModal, $stateParams, AuthorityApi, AuthorityService, ngTableParams, toaster) {
+  .controller('AuthoritiesViewController', function ($scope, $q, $uibModal, $stateParams, AuthorityApi, AuthorityService, MomentService, ngTableParams, toaster) {
     $scope.filter = $stateParams;
     $scope.authoritiesTable = new ngTableParams({
       page: 1,            // show first page
@@ -34,6 +34,8 @@ angular.module('lemur')
         });
       }
     });
+
+    $scope.momentService = MomentService;
 
     $scope.updateActive = function (authority) {
       AuthorityService.updateActive(authority).then(

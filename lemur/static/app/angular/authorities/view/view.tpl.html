@@ -1,51 +1,120 @@
 <div class="row">
-  <div class="col-md-12">
-    <h2 class="featurette-heading">Authorities
-      <span class="text-muted"><small>The nail that sticks out farthest gets hammered the hardest</small></span></h2>
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <div class="btn-group pull-right">
-          <button class="btn btn-primary" ng-click="create()">Create</button>
+    <div class="col-md-12">
+        <h2 class="featurette-heading">Authorities
+            <span class="text-muted"><small>The nail that sticks out farthest gets hammered the hardest</small></span>
+        </h2>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <div class="btn-group pull-right">
+                    <button class="btn btn-primary" ng-click="create()">Create</button>
+                </div>
+                <div class="btn-group">
+                    <button ng-click="toggleFilter(authoritiesTable)" class="btn btn-default">Filter</button>
+                </div>
+                <div class="clearfix"></div>
+            </div>
+            <div class="table-responsive">
+                <table ng-table="authoritiesTable" class="table table-striped" template-pagination="angular/pager.html"
+                       show-filter="false">
+                    <tbody>
+                    <tr ng-repeat-start="authority in $data track by $index">
+                        <td data-title="'Name'" sortable="'name'" filter="{ 'name': 'text' }">
+                            <ul class="list-unstyled">
+                                <li>{{ authority.name }}</li>
+                                <li><span class="text-muted">{{ authority.owner }}</span></li>
+                            </ul>
+                        </td>
+                        <td data-title="'Active'" filter="{ 'active': 'select' }" filter-data="getAuthorityStatus()">
+                            <form>
+                                <switch ng-change="updateActive(authority)" id="status" name="status"
+                                        ng-model="authority.active" class="green small"></switch>
+                            </form>
+                        </td>
+                        <td data-title="'Common Name'" filter="{ 'cn': 'text'}">
+                            {{ authority.authorityCertificate.cn }}
+                        </td>
+                        <td data-title="''">
+                            <div class="btn-group pull-right">
+                                <a class="btn btn-sm btn-default"
+                                   ui-sref="authority({name: authority.name})">Permalink</a>
+                                <button ng-model="authority.toggle" class="btn btn-sm btn-info" uib-btn-checkbox
+                                        btn-checkbox-true="1"
+                                        btn-checkbox-false="0">More
+                                </button>
+                                <button uib-tooltip="Edit Authority" ng-click="edit(authority.id)"
+                                        class="btn btn-sm btn-warning">
+                                    Edit
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="warning" ng-if="authority.toggle" ng-repeat-end>
+                        <td colspan="12">
+                            <uib-tabset justified="true" class="col-md-6">
+                                <uib-tab>
+                                    <uib-tab-heading>Basic Info</uib-tab-heading>
+                                    <ul class="list-group">
+                                        <li class="list-group-item">
+                                            <strong>Creator</strong>
+                                        <span class="pull-right">
+                                          {{ authority.authorityCertificate.user.email }}
+                                        </span>
+                                        </li>
+                                        <li class="list-group-item">
+                                            <strong>Not Before</strong>
+                                        <span class="pull-right" uib-tooltip="{{ authority.authorityCertificate.notBefore }}">
+                                          {{ momentService.createMoment(authority.authorityCertificate.notBefore) }}
+                                        </span>
+                                        </li>
+                                        <li class="list-group-item">
+                                            <strong>Not After</strong>
+                                            <span class="pull-right" uib-tooltip="{{ authority.authorityCertificate.notAfter }}">
+                                              {{ momentService.createMoment(authority.authorityCertificate.notAfter) }}
+                                            </span>
+                                        </li>
+                                        <li class="list-group-item">
+                                            <strong>Description</strong>
+                                            <p>{{ authority.description }}</p>
+                                        </li>
+                                    </ul>
+                                </uib-tab>
+                                <uib-tab>
+                                    <uib-tab-heading>Roles</uib-tab-heading>
+                                    <ul class="list-group">
+                                        <li class="list-group-item" ng-repeat="role in authority.roles">
+                                            <strong>{{ role.name }}</strong>
+                                            <span class="pull-right">{{ role.description }}</span>
+                                        </li>
+                                    </ul>
+                                </uib-tab>
+                            </uib-tabset>
+                            <uib-tabset justified="true" class="col-md-6">
+                                <uib-tab>
+                                    <uib-tab-heading>
+                                        Chain
+                                        <button class="btn btn-xs btn-default clipboard-btn glyphicon glyphicon-copy"
+                                                uib-tooltip="Copy chain to clipboard" tooltip-trigger="mouseenter"
+                                                clipboard
+                                                text="authority.authorityCertificate.chain"></button>
+                                    </uib-tab-heading>
+                                    <pre style="width: 100%">{{ authority.authorityCertificate.chain }}</pre>
+                                </uib-tab>
+                                <uib-tab>
+                                    <uib-tab-heading>
+                                        Public Certificate
+                                        <button class="btn btn-xs btn-default clipboard-btn glyphicon glyphicon-copy"
+                                                uib-tooltip="Copy authority to clipboard" tooltip-trigger="mouseenter"
+                                                clipboard
+                                                text="authority.authorityCertificate.body"></button>
+                                    </uib-tab-heading>
+                                    <pre style="width: 100%">{{ authority.authorityCertificate.body }}</pre>
+                                </uib-tab>
+                            </uib-tabset>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-        <div class="btn-group">
-          <button ng-click="toggleFilter(authoritiesTable)" class="btn btn-default">Filter</button>
-        </div>
-        <div class="clearfix"></div>
-      </div>
-      <div class="table-responsive">
-        <table ng-table="authoritiesTable" class="table table-striped" template-pagination="angular/pager.html" show-filter="false">
-          <tbody>
-          <tr ng-repeat="authority in $data track by $index">
-            <td data-title="'Name'" sortable="'name'" filter="{ 'name': 'text' }">
-              <ul class="list-unstyled">
-                <li>{{ authority.name }}</li>
-                <li><span class="text-muted">{{ authority.description }}</span></li>
-              </ul>
-            </td>
-            <td data-title="'Active'" filter="{ 'active': 'select' }" filter-data="getAuthorityStatus()">
-              <form>
-                <switch ng-change="updateActive(authority)" id="status" name="status" ng-model="authority.active" class="green small"></switch>
-              </form>
-            </td>
-            <td data-title="'Roles'"> <!--filter="{ 'select': 'role' }" filter-data="roleService.getRoleDropDown()">-->
-              <div class="btn-group">
-                <a ng-click="editRole(role.id)" ng-repeat="role in authority.roles" class="btn btn-sm btn-danger">
-                    {{ role.name }}
-                </a>
-              </div>
-            </td>
-            <td data-title="''">
-              <div class="btn-group pull-right">
-                <a class="btn btn-sm btn-default" ui-sref="authority({name: authority.name})">Permalink</a>
-                <button uib-tooltip="Edit Authority" ng-click="edit(authority.id)" class="btn btn-sm btn-info">
-                  Edit
-                </button>
-              </div>
-            </td>
-          </tr>
-          </tbody>
-        </table>
-      </div>
     </div>
-  </div>
 </div>

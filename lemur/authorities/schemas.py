@@ -12,6 +12,7 @@ from marshmallow import validate
 from marshmallow.exceptions import ValidationError
 
 from lemur.schemas import PluginInputSchema, PluginOutputSchema, ExtensionSchema, AssociatedAuthoritySchema, AssociatedRoleSchema
+from lemur.users.schemas import UserNestedOutputSchema
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
 from lemur.common import validators
 
@@ -61,10 +62,27 @@ class AuthorityInputSchema(LemurInputSchema):
 
 
 class AuthorityUpdateSchema(LemurInputSchema):
-    owner = fields.Email()
+    owner = fields.Email(required=True)
     description = fields.String()
     active = fields.Boolean()
     roles = fields.Nested(AssociatedRoleSchema(many=True))
+
+
+class RootAuthorityCertificateOutputSchema(LemurOutputSchema):
+    __envelope__ = False
+    id = fields.Integer()
+    active = fields.Boolean()
+    bits = fields.Integer()
+    body = fields.String()
+    chain = fields.String()
+    description = fields.String()
+    name = fields.String()
+    cn = fields.String()
+    not_after = fields.DateTime()
+    not_before = fields.DateTime()
+    owner = fields.Email()
+    status = fields.Boolean()
+    user = fields.Nested(UserNestedOutputSchema)
 
 
 class AuthorityOutputSchema(LemurOutputSchema):
@@ -72,14 +90,11 @@ class AuthorityOutputSchema(LemurOutputSchema):
     description = fields.String()
     name = fields.String()
     owner = fields.Email()
-    not_before = fields.DateTime()
-    not_after = fields.DateTime()
     plugin = fields.Nested(PluginOutputSchema)
-    body = fields.String()
-    chain = fields.String()
     active = fields.Boolean()
     options = fields.Dict()
     roles = fields.List(fields.Nested(AssociatedRoleSchema))
+    authority_certificate = fields.Nested(RootAuthorityCertificateOutputSchema)
 
 
 class AuthorityNestedOutputSchema(LemurOutputSchema):
@@ -87,13 +102,8 @@ class AuthorityNestedOutputSchema(LemurOutputSchema):
     description = fields.String()
     name = fields.String()
     owner = fields.Email()
-    not_before = fields.DateTime()
-    not_after = fields.DateTime()
     plugin = fields.Nested(PluginOutputSchema)
-    body = fields.String()
-    chain = fields.String()
     active = fields.Boolean()
-    options = fields.Dict()
 
 
 authority_update_schema = AuthorityUpdateSchema()

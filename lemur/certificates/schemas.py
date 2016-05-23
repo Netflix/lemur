@@ -6,7 +6,6 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from flask import current_app
-
 from marshmallow import fields, validates_schema, post_load
 from marshmallow.exceptions import ValidationError
 
@@ -17,7 +16,7 @@ from lemur.authorities.schemas import AuthorityNestedOutputSchema
 from lemur.destinations.schemas import DestinationNestedOutputSchema
 from lemur.notifications.schemas import NotificationNestedOutputSchema
 from lemur.roles.schemas import RoleNestedOutputSchema
-# from lemur.domains.schemas import DomainNestedOutputSchema
+from lemur.domains.schemas import DomainNestedOutputSchema
 from lemur.users.schemas import UserNestedOutputSchema
 
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
@@ -115,7 +114,7 @@ class CertificateOutputSchema(LemurOutputSchema):
     signing_algorithm = fields.String()
     status = fields.Boolean()
     user = fields.Nested(UserNestedOutputSchema)
-    # domains = fields.Nested(DomainNestedOutputSchema)
+    domains = fields.Nested(DomainNestedOutputSchema)
     destinations = fields.Nested(DestinationNestedOutputSchema, many=True)
     notifications = fields.Nested(NotificationNestedOutputSchema, many=True)
     replaces = fields.Nested(CertificateNestedOutputSchema, many=True)
