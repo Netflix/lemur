@@ -442,6 +442,17 @@ class Certificates(AuthenticatedResource):
                 "id": 1,
                 "name": "cert1",
                 "description": "this is cert1",
+                "authority": {},
+                "destinations": [],
+                "notifications: [],
+                "roles": [],
+                "replaces": [],
+                "user": {
+                    "username": "bob",
+                    "email": "bob@exmaple.com",
+                    "active": true,
+                    "id": 1
+                }
                 "bits": 2048,
                 "deleted": false,
                 "issuer": "ExampeInc.",
