@@ -114,7 +114,7 @@ class CertificateOutputSchema(LemurOutputSchema):
     signing_algorithm = fields.String()
     status = fields.Boolean()
     user = fields.Nested(UserNestedOutputSchema)
-    domains = fields.Nested(DomainNestedOutputSchema)
+    domains = fields.Nested(DomainNestedOutputSchema, many=True)
     destinations = fields.Nested(DestinationNestedOutputSchema, many=True)
     notifications = fields.Nested(NotificationNestedOutputSchema, many=True)
     replaces = fields.Nested(CertificateNestedOutputSchema, many=True)
