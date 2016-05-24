@@ -94,43 +94,12 @@ angular.module('lemur')
       $uibModalInstance.dismiss('cancel');
     };
 
-    $scope.authorities = [];
-    AuthorityApi.getList().then(function (authorities) {
-      angular.extend($scope.authorities, authorities);
-    });
-
-    $scope.authorityConfig = {
-      valueField: 'id',
-      labelField: 'name',
-      highlight: true,
-      placeholder: 'Select Authority',
-      maxItems: 1,
-      onChange: function (value) {
-        angular.forEach($scope.authorities, function (authority) {
-          if (authority.id === parseInt(value)) {
-            $scope.certificate.authority = authority;
-          }
-        });
-      },
-      render: {
-        option: function(item) {
-            return '<div><dl>' +
-                '<dt>' +
-                    '<span>' + item.name + ' <small>' + item.owner + '</small></span>' +
-                '</dt>' +
-                '<dd>' +
-                  '<span>' + item.description + '</span>' +
-                '</dd>' +
-            '</dl></div>';
-        }
-      },
-      load: function (value) {
-        AuthorityService.findAuthorityByName(value).then(function (authorities) {
-          $scope.authorities = authorities;
-        });
-      }
+    $scope.getAuthoritiesByName = function (value) {
+      return AuthorityService.findAuthorityByName(value).then(function (authorities) {
+        $scope.authorities = authorities;
+      });
     };
-
+    
     $scope.dateOptions = {
       formatYear: 'yy',
       maxDate: new Date(2020, 5, 22),

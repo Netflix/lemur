@@ -38,7 +38,7 @@ class AuthorityInputSchema(LemurInputSchema):
 
     # signing related options
     type = fields.String(validate=validate.OneOf(['root', 'subca']), missing='root')
-    authority = fields.Nested(AssociatedAuthoritySchema)
+    parent = fields.Nested(AssociatedAuthoritySchema)
     signing_algorithm = fields.String(validate=validate.OneOf(['sha256WithRSA', 'sha1WithRSA']), missing='sha256WithRSA')
     key_type = fields.String(validate=validate.OneOf(['RSA2048', 'RSA4096']), missing='RSA2048')
     key_name = fields.String()

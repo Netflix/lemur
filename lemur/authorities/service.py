@@ -90,7 +90,11 @@ def create(**kwargs):
 
     kwargs['body'] = body
     kwargs['chain'] = chain
-    kwargs['roles'] += roles
+
+    if kwargs.get('roles'):
+        kwargs['roles'] += roles
+    else:
+        kwargs['roles'] = roles
 
     kwargs['roles'] = create_authority_roles(**kwargs)
 

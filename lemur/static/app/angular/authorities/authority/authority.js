@@ -36,49 +36,14 @@ angular.module('lemur')
 
   .controller('AuthorityCreateController', function ($scope, $uibModalInstance, AuthorityService, AuthorityApi, LemurRestangular, RoleService, PluginService, WizardHandler, toaster)  {
     $scope.authority = LemurRestangular.restangularizeElement(null, {}, 'authorities');
-
-    $scope.authorities = [];
-    AuthorityApi.getList().then(function (authorities) {
-      angular.extend($scope.authorities, authorities);
-    });
-
-    $scope.authorityConfig = {
-      valueField: 'id',
-      labelField: 'name',
-      placeholder: 'Select Authority',
-      maxItems: 1,
-      onChange: function (value) {
-        angular.forEach($scope.authorities, function (authority) {
-          if (authority.id === parseInt(value)) {
-            $scope.authority.authority = authority;
-          }
-        });
-      },
-      render: {
-        option: function(item) {
-            return '<div><dl>' +
-                '<dt>' +
-                    '<span>' + item.name + ' <small>' + item.owner + '</small></span>' +
-                '</dt>' +
-                '<dd>' +
-                  '<span>' + item.description + '</span>' +
-                '</dd>' +
-            '</dl></div>';
-        }
-      },
-      load: function (value) {
-        AuthorityService.findAuthorityByName(value).then(function (authorities) {
-          $scope.authorities = authorities;
-        });
-      }
-    };
-
     // set the defaults
     AuthorityService.getDefaults($scope.authority);
 
-    AuthorityApi.getList().then(function (authorities) {
-      $scope.authorities = authorities;
-    });
+    $scope.getAuthoritiesByName = function (value) {
+      return AuthorityService.findAuthorityByName(value).then(function (authorities) {
+        $scope.authorities = authorities;
+      });
+    };
 
     $scope.cancel = function () {
       $uibModalInstance.dismiss('cancel');
