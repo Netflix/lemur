@@ -19,7 +19,7 @@
       'angular-clipboard',
       'ngFileSaver',
       'ngSanitize',
-      'selectize'
+      'ui.select'
     ]);
 
 
