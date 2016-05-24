@@ -49,7 +49,7 @@
                 <ui-select class="input-md" ng-model="certificate.authority" theme="bootstrap" title="choose an authority">
                   <ui-select-match placeholder="select an authority...">{{$select.selected.name}}</ui-select-match>
                   <ui-select-choices class="form-control" repeat="authority in authorities"
-                                     refresh="getauthoritiesbyname($select.search)"
+                                     refresh="getAuthoritiesByName($select.search)"
                                      refresh-delay="300">
                     <div ng-bind-html="authority.name | highlight: $select.search"></div>
                     <small>
