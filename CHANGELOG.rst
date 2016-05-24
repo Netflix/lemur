@@ -1,11 +1,55 @@
 Changelog
 =========
 
-
-0.2.3 - `master`
+0.3.1 - `master`
 ~~~~~~~~~~~~~~~~
 
 .. note:: This version is not yet released and is under active development
+
+0.3.0 - `master`
+~~~~~~~~~~~~~~~~
+
+This is quite a large upgrade, it is highly advised you backup your database before attempting to upgrade as this release
+requires the migration of database structure as well as data.
+
+
+Upgrading
+---------
+
+Please follow the `documentation <https://lemur.readthedocs.io/en/latest/administration.html#upgrading-lemur>`_ to upgrade Lemur.
+
+
+Issuer Plugin Owners
+--------------------
+
+This release may break your plugins, the keys in `issuer_options` have been changed from `camelCase` to `under_score`.
+This change was made to break a undue reliance on downstream options maintains a more pythonic naming convention. Renaming
+these keys should be fairly trivial, additionally pull requests have been submitted to affected plugins to help ease the transition.
+
+.. note:: This change only affects issuer plugins and does not affect any other types of plugins.
+
+
+* Closed `#63 <https://github.com/Netflix/lemur/issues/63>`_ - Validates all endpoints with Marshmallow schemas, this allows for
+    stricter input validation and better error messages when validation fails.
+* Closed `#146 <https://github.com/Netflix/lemur/issues/146>`_ - Moved authority type to first pane of authority creation wizard.
+* Closed `#147 <https://github.com/Netflix/lemur/issues/147>`_ - Added and refactored the relationship between authorities and their
+    root certificates. Displays the certificates (and chains) next the the authority in question.
+* Closed `#199 <https://github.com/Netflix/lemur/issues/199>`_ - Ensures that the dates submitted to Lemur during authority and
+    certificate creation are actually dates.
+* Closed `#230 <https://github.com/Netflix/lemur/issues/230>`_ - Migrated authority dropdown to a ui-select based dropdown, this
+    should be easier to determine what authorities are available and when an authority has actually been selected.
+* Closed `#254 <https://github.com/Netflix/lemur/issues/254>`_ - Forces certificate names to be generally unique. If a certificate name
+    (generated or otherwise) is found to be a duplicate we increment by appending a counter.
+* Closed `#254 <https://github.com/Netflix/lemur/issues/275>`_ - Switched to using Fernet generated passphrases for exported items.
+    These are more sounds that pseudo random passphrases generated before and have the nice property of being in base64.
+* Closed `#278 <https://github.com/Netflix/lemur/issues/278>`_ - Added ability to specify a custom name to certificate creation, previously
+    this was only available in the certificate import wizard.
+* Closed `#281 <https://github.com/Netflix/lemur/issues/281>`_ - Fixed an issue where notifications could not be removed from a certificate
+    via the UI.
+* Closed `#289 <https://github.com/Netflix/lemur/issues/289>`_ - Fixed and issue where intermediates were not being properly exported.
+* Closed `#315 <https://github.com/Netflix/lemur/issues/315>`_ - Made how roles are associated with certificates and authorities much more
+    explict, including adding the ability to add roles directly to certificates and authorities on creation.
+
 
 
 0.2.2 - 2016-02-05
@@ -36,7 +80,7 @@ Changelog
 
 
 0.2.0 - 2015-12-02
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 * Closed #120 - Error messages not displaying long enough
 * Closed #121 - Certificate create form should not be valid until a Certificate Authority object is available
@@ -52,7 +96,7 @@ Changelog
 
 
 0.1.5 - 2015-10-26
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 * **SECURITY ISSUE**: Switched from use a AES static key to Fernet encryption.
   Affects all versions prior to 0.1.5. If upgrading this will require a data migration.
