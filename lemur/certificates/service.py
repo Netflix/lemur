@@ -21,6 +21,7 @@ from lemur.authorities.models import Authority
 from lemur.domains.models import Domain
 
 from lemur.roles.models import Role
+from lemur.roles import service as role_service
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
@@ -115,6 +116,21 @@ def update(cert_id, owner, description, active, destinations, notifications, rep
     return database.update(cert)
 
 
+def create_certificate_roles(**kwargs):
+    # create an role for the owner and assign it
+    owner_role = role_service.get_by_name(kwargs['owner'])
+    if not owner_role:
+        owner_role = role_service.create(
+            kwargs['owner'],
+            description="Auto generated role based on owner: {0}".format(kwargs['owner'])
+        )
+
+    if kwargs.get('roles'):
+        kwargs['roles'].append(owner_role)
+
+    return kwargs
+
+
 def mint(**kwargs):
     """
     Minting is slightly different for each authority.
@@ -164,6 +180,8 @@ def upload(**kwargs):
     """
     Allows for pre-made certificates to be imported into Lemur.
     """
+    kwargs = create_certificate_roles(**kwargs)
+
     cert = Certificate(**kwargs)
 
     # we override the generated name if one is provided
@@ -186,6 +204,8 @@ def create(**kwargs):
     kwargs['body'] = cert_body
     kwargs['private_key'] = private_key
     kwargs['chain'] = cert_chain
+
+    kwargs = create_certificate_roles(**kwargs)
 
     cert = Certificate(**kwargs)
 
