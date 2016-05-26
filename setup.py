@@ -60,6 +60,7 @@ install_requires = [
     'lockfile==0.12.2',
     'inflection==0.3.1',
     'future==0.15.2',
+    'boto3==1.3.0'
 ]
 
 tests_require = [
