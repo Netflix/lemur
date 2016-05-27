@@ -83,8 +83,8 @@ class AWSSourcePlugin(SourcePlugin):
             cert_body, cert_chain = iam.get_cert_from_arn(arn)
             cert_name = iam.get_name_from_arn(arn)
             cert = dict(
-                public_certificate=cert_body,
-                intermediate_certificate=cert_chain,
+                body=cert_body,
+                chain=cert_chain,
                 name=cert_name
             )
             certs.append(cert)

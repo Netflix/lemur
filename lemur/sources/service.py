@@ -20,7 +20,7 @@ def _disassociate_certs_from_source(current_certificates, found_certificates, so
     missing = []
     for cc in current_certificates:
         for fc in found_certificates:
-            if fc['public_certificate'] == cc.body:
+            if fc['body'] == cc.body:
                 break
         else:
             missing.append(cc)
@@ -81,7 +81,7 @@ def sync(labels=None):
         certificates = s.get_certificates(source.options)
 
         for certificate in certificates:
-            exists = cert_service.find_duplicates(certificate['public_certificate'])
+            exists = cert_service.find_duplicates(certificate['body'])
 
             if not exists:
                 sync_create(certificate, source)
