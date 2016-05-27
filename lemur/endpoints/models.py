@@ -8,7 +8,7 @@
 """
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import JSONType
-from sqlalchemy import Column, Integer, String, func, DateTime, PassiveDefault, Boolean
+from sqlalchemy import Column, Integer, String, func, DateTime, PassiveDefault, Boolean, ForeignKey
 
 from lemur.database import db
 
@@ -23,12 +23,12 @@ class Endpoint(db.Model):
     port = Column(Integer)
     date_created = Column(DateTime, PassiveDefault(func.now()), nullable=False)
     policy = relationship("Policy", backref='endpoint')
-    destinations = relationship("Destination", backref='endpoint')
-    certificate = relationship("Certificate", backref='endpoint')
+    certificate_id = Column(Integer, ForeignKey('certificates.id'))
 
 
 class Policy(db.Model):
     ___tablename__ = 'policies'
     id = Column(Integer, primary_key=True)
+    endpoint_id = Column(Integer, ForeignKey('endpoints.id'))
     name = Column(String(32), nullable=True)
     ciphers = Column(JSONType)

@@ -20,11 +20,11 @@ mod = Blueprint('endpoints', __name__)
 api = Api(mod)
 
 
-class AuthoritiesList(AuthenticatedResource):
+class EndpointsList(AuthenticatedResource):
     """ Defines the 'endpoints' endpoint """
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(AuthoritiesList, self).__init__()
+        super(EndpointsList, self).__init__()
 
     @validate_schema(None, endpoints_output_schema)
     def get(self):
@@ -49,23 +49,6 @@ class AuthoritiesList(AuthenticatedResource):
               Vary: Accept
               Content-Type: text/javascript
 
-              {
-                "items": [
-                    {
-                      "id": 1,
-                      "name": "endpoint1",
-                      "description": "this is endpoint1",
-                      "pluginName": null,
-                      "chain": "-----Begin ...",
-                      "body": "-----Begin ...",
-                      "active": true,
-                      "notBefore": "2015-06-05T17:09:39",
-                      "notAfter": "2015-06-10T17:09:39"
-                      "options": null
-                    }
-                  ]
-                "total": 1
-              }
 
            :query sortBy: field to sort on
            :query sortDir: acs or desc
@@ -83,10 +66,10 @@ class AuthoritiesList(AuthenticatedResource):
         return service.render(args)
 
 
-class Authorities(AuthenticatedResource):
+class Endpoints(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(Authorities, self).__init__()
+        super(Endpoints, self).__init__()
 
     @validate_schema(None, endpoint_output_schema)
     def get(self, endpoint_id):
@@ -111,18 +94,6 @@ class Authorities(AuthenticatedResource):
               Vary: Accept
               Content-Type: text/javascript
 
-              {
-                "id": 1,
-                "name": "endpoint1",
-                "description": "this is endpoint1",
-                "pluginName": null,
-                "chain": "-----Begin ...",
-                "body": "-----Begin ...",
-                "active": true,
-                "notBefore": "2015-06-05T17:09:39",
-                "notAfter": "2015-06-10T17:09:39"
-                "options": null
-              }
 
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
@@ -131,5 +102,5 @@ class Authorities(AuthenticatedResource):
         return service.get(endpoint_id)
 
 
-api.add_resource(AuthoritiesList, '/endpoints', endpoint='endpoints')
-api.add_resource(Authorities, '/endpoints/<int:endpoint_id>', endpoint='endpoint')
+api.add_resource(EndpointsList, '/endpoints', endpoint='endpoints')
+api.add_resource(Endpoints, '/endpoints/<int:endpoint_id>', endpoint='endpoint')
