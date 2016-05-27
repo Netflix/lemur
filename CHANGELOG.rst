@@ -19,6 +19,12 @@ Upgrading
 Please follow the `documentation <https://lemur.readthedocs.io/en/latest/administration.html#upgrading-lemur>`_ to upgrade Lemur.
 
 
+Source Plugin Owners
+--------------------
+
+The dictionary returned from a source plugin has changed keys from `public_certificate` to `body` and `intermediate_certificate` to chain.
+
+
 Issuer Plugin Owners
 --------------------
 
