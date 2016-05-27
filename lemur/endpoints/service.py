@@ -11,6 +11,7 @@
 from flask import g
 
 from lemur import database
+from lemur.extensions import metrics
 from lemur.endpoints.models import Endpoint
 
 
@@ -43,6 +44,19 @@ def get_by_name(endpoint_name):
     :return:
     """
     return database.get(Endpoint, endpoint_name, field='name')
+
+
+def create(**kwargs):
+    """
+    Creates a new endpoint.
+    :param kwargs:
+    :return:
+    """
+    print(kwargs)
+    endpoint = Endpoint(**kwargs)
+    database.commit()
+    metrics.send('endpoint_added', 'counter', 1)
+    return endpoint
 
 
 def render(args):

@@ -72,7 +72,7 @@ class AWSSourcePlugin(SourcePlugin):
         {
             'name': 'regions',
             'type': 'str',
-            'helpMessage': 'Comma separated list of regions to search in, if not region is specified we look in all regions.'
+            'helpMessage': 'Comma separated list of regions to search in, if no region is specified we look in all regions.'
         }
     ]
 
@@ -102,6 +102,7 @@ class AWSSourcePlugin(SourcePlugin):
 
                     endpoint = dict(
                         name=elb['LoadBalancerName'],
+                        dnsname=elb['DNSName'],
                         type='elb',
                         port=listener['Listener']['LoadBalancerPort'],
                         certificate_name=iam.get_name_from_arn(listener['Listener']['SSLCertificateId'])

@@ -17,7 +17,8 @@ class Endpoint(db.Model):
     __tablename__ = 'endpoints'
     id = Column(Integer, primary_key=True)
     owner = Column(String(128), nullable=False)
-    name = Column(String(128), unique=True)
+    name = Column(String(128))
+    dnsname = Column(String(256), unique=True)
     type = Column(String(128))
     active = Column(Boolean, default=True)
     port = Column(Integer)

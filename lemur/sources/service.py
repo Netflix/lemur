@@ -57,14 +57,6 @@ def certificate_update(certificate, source):
     database.update(certificate)
 
 
-def endpoint_create(endpoint, source):
-    pass
-
-
-def endpoint_update(endpoint, source):
-    pass
-
-
 def sync_update_destination(certificate, source):
     dest = destination_service.get_by_label(source.label)
     if dest:
@@ -87,14 +79,21 @@ def sync_endpoints(source):
         return
 
     for endpoint in endpoints:
-        exists = endpoint_service.get_by_name(endpoint['name'])
+        exists = endpoint_service.get_by_name(endpoint['dnsname'])
 
         if not exists:
-            endpoint_create(endpoint, source)
+            certificate_name = endpoint.pop('certificate_name')
+            cert = cert_service.get_by_name(certificate_name)
+
+            if not cert:
+                current_app.logger.error("Unable to find associated certificate, be sure that certificates are sync'ed before endpoints")
+                continue
+
+            endpoint_service.create(**endpoint)
             new += 1
 
         elif len(exists) == 1:
-            endpoint_update(exists[0], source)
+            endpoint_service.update(exists[0].id, **endpoint)
             updated += 1
 
 
@@ -107,7 +106,7 @@ def sync_certificates(source):
     certificates = s.get_certificates(source.options)
 
     for certificate in certificates:
-        exists = cert_service.find_duplicates(certificate['public_certificate'])
+        exists = cert_service.find_duplicates(certificate['body'])
 
         if not exists:
             certificate_create(certificate, source)

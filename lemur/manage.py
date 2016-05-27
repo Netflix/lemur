@@ -212,7 +212,7 @@ def sync(labels):
 
         while not sync_lock.i_am_locking():
             try:
-                sync_lock.acquire(timeout=10)    # wait up to 10 seconds
+                sync_lock.acquire(timeout=2)    # wait up to 10 seconds
 
                 sys.stdout.write("[+] Staring to sync sources: {labels}!\n".format(labels=labels))
                 labels = labels.split(",")
