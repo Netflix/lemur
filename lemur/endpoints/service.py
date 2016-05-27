@@ -12,7 +12,7 @@ from flask import g
 
 from lemur import database
 from lemur.extensions import metrics
-from lemur.endpoints.models import Endpoint
+from lemur.endpoints.models import Endpoint, Policy
 
 
 def get_all():
@@ -36,14 +36,14 @@ def get(endpoint_id):
     return database.get(Endpoint, endpoint_id)
 
 
-def get_by_name(endpoint_name):
+def get_by_dnsname(endpoint_dnsname):
     """
     Retrieves an endpoint given it's name.
 
-    :param endpoint_name:
+    :param endpoint_dnsname:
     :return:
     """
-    return database.get(Endpoint, endpoint_name, field='name')
+    return database.get(Endpoint, endpoint_dnsname, field='dnsname')
 
 
 def create(**kwargs):
@@ -52,10 +52,24 @@ def create(**kwargs):
     :param kwargs:
     :return:
     """
-    print(kwargs)
     endpoint = Endpoint(**kwargs)
-    database.commit()
+    database.create(endpoint)
     metrics.send('endpoint_added', 'counter', 1)
+    return endpoint
+
+
+def create_policy(**kwargs):
+    policy = Policy(**kwargs)
+    database.create(policy)
+    return policy
+
+
+def update(endpoint_id, **kwargs):
+    endpoint = database.get(Endpoint, endpoint_id)
+
+    endpoint.policy = kwargs['policy']
+    endpoint.certificate = kwargs['certificate']
+    database.update(endpoint)
     return endpoint
 
 

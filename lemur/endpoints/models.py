@@ -13,23 +13,23 @@ from sqlalchemy import Column, Integer, String, func, DateTime, PassiveDefault, 
 from lemur.database import db
 
 
-class Endpoint(db.Model):
-    __tablename__ = 'endpoints'
-    id = Column(Integer, primary_key=True)
-    owner = Column(String(128), nullable=False)
-    name = Column(String(128))
-    dnsname = Column(String(256), unique=True)
-    type = Column(String(128))
-    active = Column(Boolean, default=True)
-    port = Column(Integer)
-    date_created = Column(DateTime, PassiveDefault(func.now()), nullable=False)
-    policy = relationship("Policy", backref='endpoint')
-    certificate_id = Column(Integer, ForeignKey('certificates.id'))
-
-
 class Policy(db.Model):
     ___tablename__ = 'policies'
     id = Column(Integer, primary_key=True)
     endpoint_id = Column(Integer, ForeignKey('endpoints.id'))
     name = Column(String(32), nullable=True)
     ciphers = Column(JSONType)
+
+
+class Endpoint(db.Model):
+    __tablename__ = 'endpoints'
+    id = Column(Integer, primary_key=True)
+    owner = Column(String(128))
+    name = Column(String(128))
+    dnsname = Column(String(256))
+    type = Column(String(128))
+    active = Column(Boolean, default=True)
+    port = Column(Integer)
+    date_created = Column(DateTime, PassiveDefault(func.now()), nullable=False)
+    policy = relationship('Policy', backref='endpoint', uselist=False)
+    certificate_id = Column(Integer, ForeignKey('certificates.id'))

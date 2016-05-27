@@ -5,6 +5,8 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+import datetime
+
 from flask import current_app
 
 from lemur import database
@@ -79,21 +81,25 @@ def sync_endpoints(source):
         return
 
     for endpoint in endpoints:
-        exists = endpoint_service.get_by_name(endpoint['dnsname'])
+        exists = endpoint_service.get_by_dnsname(endpoint['dnsname'])
+
+        certificate_name = endpoint.pop('certificate_name')
+        cert = cert_service.get_by_name(certificate_name)
+        endpoint['certificate'] = cert
+
+        if not cert:
+            current_app.logger.error("Unable to find associated certificate, be sure that certificates are sync'ed before endpoints")
+            continue
+
+        policy = endpoint.pop('policy')
+        endpoint['policy'] = endpoint_service.create_policy(**policy)
 
         if not exists:
-            certificate_name = endpoint.pop('certificate_name')
-            cert = cert_service.get_by_name(certificate_name)
-
-            if not cert:
-                current_app.logger.error("Unable to find associated certificate, be sure that certificates are sync'ed before endpoints")
-                continue
-
             endpoint_service.create(**endpoint)
             new += 1
 
-        elif len(exists) == 1:
-            endpoint_service.update(exists[0].id, **endpoint)
+        else:
+            endpoint_service.update(exists.id, **endpoint)
             updated += 1
 
 
@@ -137,6 +143,9 @@ def sync(labels=None, type='all'):
         if type == 'all':
             sync_certificates(source)
             sync_endpoints(source)
+
+        source.last_run = datetime.datetime.utcnow()
+        database.update(source)
 
 
 def create(label, plugin_name, options, description=None):
