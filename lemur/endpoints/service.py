@@ -14,6 +14,8 @@ from lemur import database
 from lemur.extensions import metrics
 from lemur.endpoints.models import Endpoint, Policy
 
+from sqlalchemy import func
+
 
 def get_all():
     """
@@ -98,3 +100,24 @@ def render(args):
         query = query.filter(Endpoint.id.in_(endpoint_ids))
 
     return database.sort_and_page(query, Endpoint, args)
+
+
+def stats(**kwargs):
+    """
+    Helper that defines some useful statistics about endpoints.
+
+    :param kwargs:
+    :return:
+    """
+    attr = getattr(Endpoint, kwargs.get('metric'))
+    query = database.db.session.query(attr, func.count(attr))
+
+    items = query.group_by(attr).all()
+
+    keys = []
+    values = []
+    for key, count in items:
+        keys.append(key)
+        values.append(count)
+
+    return {'labels': keys, 'values': values}
