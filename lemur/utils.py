@@ -101,7 +101,7 @@ class Vault(types.TypeDecorator):
         if not isinstance(value, six.string_types):
             return None
 
-        value = bytes(value)
+        value = bytes(value, 'utf8')
 
         return MultiFernet(self.keys).encrypt(value)
 
