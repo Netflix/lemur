@@ -82,7 +82,7 @@ class Certificate(db.Model):
         self.destinations = kwargs.get('destinations', [])
         self.notifications = kwargs.get('notifications', [])
         self.description = kwargs.get('description')
-        self.roles = kwargs.get('roles', [])
+        self.roles = list(set(kwargs.get('roles', [])))
         self.replaces = kwargs.get('replacements', [])
         self.signing_algorithm = defaults.signing_algorithm(cert)
         self.bits = defaults.bitstrength(cert)
