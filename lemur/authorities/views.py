@@ -335,6 +335,31 @@ class CertificateAuthority(AuthenticatedResource):
 
         return cert.authority
 
+
+class AuthorityVisualizations(AuthenticatedResource):
+    def get(self, authority_id):
+        """
+        {"name": "flare",
+        "children": [
+            {
+                "name": "analytics",
+                "children": [
+                    {
+                        "name": "cluster",
+                        "children": [
+                            {"name": "AgglomerativeCluster", "size": 3938},
+                            {"name": "CommunityStructure", "size": 3812},
+                            {"name": "HierarchicalCluster", "size": 6714},
+                            {"name": "MergeEdge", "size": 743}
+                        ]
+                    }
+            }
+        ]}
+        """
+        authority = service.get(authority_id)
+        return dict(name=authority.name, children=[{"name": c.name} for c in authority.certificates])
+
 api.add_resource(AuthoritiesList, '/authorities', endpoint='authorities')
 api.add_resource(Authorities, '/authorities/<int:authority_id>', endpoint='authority')
+api.add_resource(AuthorityVisualizations, '/authorities/<int:authority_id>/visualize', endpoint='authority_visualizations')
 api.add_resource(CertificateAuthority, '/certificates/<int:certificate_id>/authority', endpoint='certificateAuthority')

@@ -8,7 +8,7 @@
   "eqeqeq": true,
   "immed": true,
   "indent": 2,
-  "latedef": true,
+  "latedef": false,
   "newcap": false,
   "noarg": true,
   "quotmark": "single",
@@ -22,6 +22,8 @@
     "angular": false,
     "moment": false,
     "toaster": false,
+    "d3": false,
+    "self": false,
     "_": false
   }
 }
