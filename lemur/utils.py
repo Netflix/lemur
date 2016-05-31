@@ -6,6 +6,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import os
+import sys
 import six
 from flask import current_app
 from cryptography.fernet import Fernet, MultiFernet
@@ -101,7 +102,10 @@ class Vault(types.TypeDecorator):
         if not isinstance(value, six.string_types):
             return None
 
-        value = bytes(value)
+        if sys.version_info >= (3, 0):
+            value = bytes(value, 'utf8')
+        else:
+            value = bytes(value)
 
         return MultiFernet(self.keys).encrypt(value)
 
