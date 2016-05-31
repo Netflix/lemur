@@ -22,6 +22,8 @@
     "angular": false,
     "moment": false,
     "toaster": false,
+    "d3": false,
+    "self": false,
     "_": false
   }
 }
