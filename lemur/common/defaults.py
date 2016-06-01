@@ -1,4 +1,4 @@
-
+import sys
 from flask import current_app
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
@@ -6,7 +6,10 @@ from lemur.constants import SAN_NAMING_TEMPLATE, DEFAULT_NAMING_TEMPLATE
 
 
 def parse_certificate(body):
-    return x509.load_pem_x509_certificate(bytes(body), default_backend())
+    if sys.version_info >= (3, 0):
+        return x509.load_pem_x509_certificate(body, default_backend())
+    else:
+        return x509.load_pem_x509_certificate(bytes(body), default_backend())
 
 
 def certificate_name(common_name, issuer, not_before, not_after, san):

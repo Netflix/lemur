@@ -187,8 +187,8 @@ def test_certificate_valid_dates(client, authority):
         'owner': 'jim@example.com',
         'authority': {'id': authority.id},
         'description': 'testtestest',
-        'validityStart': '2020-01-01T00:21:34.513631',
-        'validityEnd': '2020-01-01T00:22:34.513631'
+        'validityStart': '2020-01-01T00:00:00',
+        'validityEnd': '2020-01-01T00:00:01'
     }
 
     data, errors = CertificateInputSchema().load(input_data)

@@ -125,10 +125,7 @@ def create_certificate_roles(**kwargs):
             description="Auto generated role based on owner: {0}".format(kwargs['owner'])
         )
 
-    if kwargs.get('roles'):
-        kwargs['roles'].append(owner_role)
-
-    return kwargs
+    return [owner_role]
 
 
 def mint(**kwargs):
@@ -180,7 +177,12 @@ def upload(**kwargs):
     """
     Allows for pre-made certificates to be imported into Lemur.
     """
-    kwargs = create_certificate_roles(**kwargs)
+    roles = create_certificate_roles(**kwargs)
+
+    if kwargs.get('roles'):
+        kwargs['roles'] += roles
+    else:
+        kwargs['roles'] = roles
 
     cert = Certificate(**kwargs)
 
@@ -205,7 +207,12 @@ def create(**kwargs):
     kwargs['private_key'] = private_key
     kwargs['chain'] = cert_chain
 
-    kwargs = create_certificate_roles(**kwargs)
+    roles = create_certificate_roles(**kwargs)
+
+    if kwargs.get('roles'):
+        kwargs['roles'] += roles
+    else:
+        kwargs['roles'] = roles
 
     cert = Certificate(**kwargs)
 
@@ -214,6 +221,7 @@ def create(**kwargs):
         cert.name = kwargs['name']
 
     g.user.certificates.append(cert)
+    cert.authority = kwargs['authority']
     database.commit()
 
     metrics.send('certificate_issued', 'counter', 1, metric_tags=dict(owner=cert.owner, issuer=cert.issuer))
