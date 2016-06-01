@@ -102,10 +102,10 @@ def dates(data):
             raise ValidationError('Validity start must be before validity end.')
 
         if data.get('authority'):
-            if data.get('validity_start').replace(tzinfo=None) < data['authority'].authority_certificate.not_before:
+            if data.get('validity_start').replace(hour=0, minute=0, second=0, tzinfo=None) < data['authority'].authority_certificate.not_before.replace(hour=0, minute=0, second=0):
                 raise ValidationError('Validity start must not be before {0}'.format(data['authority'].authority_certificate.not_before))
 
-            if data.get('validity_end').replace(tzinfo=None) > data['authority'].authority_certificate.not_after:
+            if data.get('validity_end').replace(hour=0, minute=0, second=0, tzinfo=None) > data['authority'].authority_certificate.not_after.replace(hour=0, minute=0, second=0):
                 raise ValidationError('Validity end must not be after {0}'.format(data['authority'].authority_certificate.not_after))
 
     if data.get('validity_years'):

@@ -23,8 +23,8 @@ class AuthorityInputSchema(LemurInputSchema):
     description = fields.String()
     common_name = fields.String(required=True, validate=validators.sensitive_domain)
 
-    validity_start = fields.DateTime()
-    validity_end = fields.DateTime()
+    validity_start = fields.Date()
+    validity_end = fields.Date()
     validity_years = fields.Integer()
 
     # certificate body fields

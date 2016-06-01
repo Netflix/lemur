@@ -45,23 +45,25 @@ def mint(**kwargs):
     """
     issuer = kwargs['plugin']['plugin_object']
     body, chain, roles = issuer.create_authority(kwargs)
+    roles = create_authority_roles(roles, kwargs['owner'], kwargs['plugin']['plugin_object'].title)
     return body, chain, roles
 
 
-def create_authority_roles(**kwargs):
+def create_authority_roles(roles, owner, plugin_title):
     """
     Creates all of the necessary authority roles.
     :param roles:
-    :param kwargs:
     :return:
     """
     role_objs = []
-    for r in kwargs['roles']:
-        role = role_service.create(
-            r['name'],
-            password=r['password'],
-            description="Auto generated role for {0}".format(kwargs['plugin']['plugin_object'].title),
-            username=r['username'])
+    for r in roles:
+        role = role_service.get_by_name(r['name'])
+        if not role:
+            role = role_service.create(
+                r['name'],
+                password=r['password'],
+                description="Auto generated role for {0}".format(plugin_title),
+                username=r['username'])
 
         # the user creating the authority should be able to administer it
         if role.username == 'admin':
@@ -70,11 +72,11 @@ def create_authority_roles(**kwargs):
         role_objs.append(role)
 
     # create an role for the owner and assign it
-    owner_role = role_service.get_by_name(kwargs['owner'])
+    owner_role = role_service.get_by_name(owner)
     if not owner_role:
         owner_role = role_service.create(
-            kwargs['owner'],
-            description="Auto generated role based on owner: {0}".format(kwargs['owner'])
+            owner,
+            description="Auto generated role based on owner: {0}".format(owner)
         )
 
     role_objs.append(owner_role)
@@ -95,8 +97,6 @@ def create(**kwargs):
         kwargs['roles'] += roles
     else:
         kwargs['roles'] = roles
-
-    kwargs['roles'] = create_authority_roles(**kwargs)
 
     if kwargs['type'] == 'subca':
         description = "This is the ROOT certificate for the {0} sub certificate authority the parent \
@@ -162,11 +162,8 @@ def get_authority_role(ca_name):
         # TODO we should pick admin ca roles for admin
         return authority.roles[0]
     else:
-        for role in g.current_user.roles:
-            if role.authority:
-                for authority in role.authorities:
-                    if authority.name == ca_name:
-                        return role
+        authority = get_by_name(ca_name)
+        return authority.roles[1]
 
 
 def render(args):
