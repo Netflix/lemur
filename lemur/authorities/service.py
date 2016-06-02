@@ -158,12 +158,9 @@ def get_authority_role(ca_name):
     :param ca_name:
     """
     if g.current_user.is_admin:
-        authority = get_by_name(ca_name)
-        # TODO we should pick admin ca roles for admin
-        return authority.roles[0]
+        return role_service.get_by_name("{0}_admin".format(ca_name))
     else:
-        authority = get_by_name(ca_name)
-        return authority.roles[1]
+        return role_service.get_by_name("{0}_operator".format(ca_name))
 
 
 def render(args):
