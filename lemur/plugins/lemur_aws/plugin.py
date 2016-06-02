@@ -6,11 +6,64 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+from flask import current_app
 from boto.exception import BotoServerError
+
+from sslyze.plugins_process_pool import PluginsProcessPool
+from sslyze.plugins_finder import PluginsFinder
+from sslyze.server_connectivity import ServerConnectivityInfo
+from sslyze.ssl_settings import TlsWrappedProtocolEnum
+
 from lemur.plugins.bases import DestinationPlugin, SourcePlugin
 from lemur.plugins.lemur_aws import iam
 from lemur.plugins.lemur_aws.elb import get_all_elbs, describe_load_balancer_policies, attach_certificate
+from lemur.plugins.lemur_aws.ec2 import get_all_instances
 from lemur.plugins import lemur_aws as aws
+
+
+def is_available(hostname, port):
+    """
+    Determine if a given endpoint is reachable
+
+    :param hostname:
+    :param port:
+    :return:
+    """
+    try:
+        server_info = ServerConnectivityInfo(hostname=hostname, port=port,
+                                             tls_wrapped_protocol=TlsWrappedProtocolEnum.PLAIN_TLS)
+        server_info.test_connectivity_to_server()
+        return server_info
+    except Exception as e:
+        current_app.logger.error('Error when connecting to {}:{} Reason: {}'.format(hostname, port, e))
+
+
+def get_endpoint_data(server_info):
+    # Get the list of available plugins
+    sslyze_plugins = PluginsFinder()
+
+    # Create a process pool to run scanning commands concurrently
+    plugins_process_pool = PluginsProcessPool(sslyze_plugins)
+
+    # Queue a scan command to get the server's certificate
+    plugins_process_pool.queue_plugin_task(server_info, 'sslv3')
+    plugins_process_pool.queue_plugin_task(server_info, 'certinfo_basic')
+    plugins_process_pool.queue_plugin_task(server_info, 'tlsv1')
+    plugins_process_pool.queue_plugin_task(server_info, 'tlsv1_1')
+    plugins_process_pool.queue_plugin_task(server_info, 'tlsv1_2')
+
+    # Process the result and print the certificate CN
+    data = {'ciphers': [], 'certificate': {}}
+    for plugin_result in plugins_process_pool.get_results():
+        if plugin_result.plugin_command == 'certinfo_basic':
+            data['certificate'] = {
+                'body': plugin_result.certificate_chain[0].as_pem,
+                'chain': "\n".join([x.as_pem for x in plugin_result.certificate_chain[1:]])
+            }
+        else:
+            for cipher in plugin_result.accepted_cipher_list:
+                data['ciphers'].append({'name': cipher.name, 'value': True})
+    return data
 
 
 class AWSDestinationPlugin(DestinationPlugin):
@@ -73,6 +126,16 @@ class AWSSourcePlugin(SourcePlugin):
             'name': 'regions',
             'type': 'str',
             'helpMessage': 'Comma separated list of regions to search in, if no region is specified we look in all regions.'
+        },
+        {
+            'name': 'instances',
+            'type': 'bool',
+            'helpMessage': 'By default we search IAM and ELBs for certificates and endpoints, with instances selected we also attempt to connect indivdual instances to collect endpoint information. This could take a very long time depending on the number of instances.'
+        },
+        {
+            'name': 'securePorts',
+            'type': 'str',
+            'helpMessage': 'Ports to extract endpoint information from, used when "instances" is enabled'
         }
     ]
 
@@ -95,6 +158,7 @@ class AWSSourcePlugin(SourcePlugin):
         account_number = self.get_option('accountNumber', options)
         for region in self.get_option('regions', options).split(','):
             elbs = get_all_elbs(account_number=account_number, region=region)
+            current_app.logger.info("Describing load balancers in {0}-{1}".format(account_number, region))
             for elb in elbs['LoadBalancerDescriptions']:
                 for listener in elb['ListenerDescriptions']:
                     if not listener['Listener'].get('SSLCertificateId'):
@@ -110,14 +174,40 @@ class AWSSourcePlugin(SourcePlugin):
 
                     if listener['PolicyNames']:
                         policy = describe_load_balancer_policies(elb['LoadBalancerName'], listener['PolicyNames'], account_number=account_number, region=region)
-                        endpoint['policy'] = format_cipher_policy(policy)
+                        endpoint['policy'] = format_elb_cipher_policy(policy)
 
                     endpoints.append(endpoint)
+
+            if self.get_option('instances', options):
+                current_app.logger.info("Describing ec2 instances in {0}-{1}".format(account_number, region))
+                secure_ports = [int(x) for x in self.get_option('securePorts', options).split(',')]
+                pages = get_all_instances(account_number=account_number, region=region)
+                for page in pages:
+                    for reservation in page['Reservations']:
+                        for instance in reservation['Instances']:
+                            hostname = instance['PrivateDnsName']
+                            for port in secure_ports:
+                                #  attempt sslyze on common ports
+                                server_info = is_available(hostname, port)
+
+                                if not server_info:
+                                    continue
+
+                                endpoint = get_endpoint_data(server_info)
+
+                                if endpoint:
+                                    endpoints.append(dict(
+                                        dnsname=hostname,
+                                        port=port,
+                                        type='instance',
+                                        certificate=endpoint['certificate'],
+                                        policy=endpoint['cipher']
+                                    ))
 
         return endpoints
 
 
-def format_cipher_policy(policy):
+def format_elb_cipher_policy(policy):
     """
     Attempts to format cipher policy information into a common format.
     :param policy:

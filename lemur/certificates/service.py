@@ -195,8 +195,7 @@ def upload(**kwargs):
         user = user_service.get_by_email('lemur@nobody')
         user.certificates.append(cert)
 
-    database.update(cert)
-    return cert
+    return database.update(cert)
 
 
 def create(**kwargs):

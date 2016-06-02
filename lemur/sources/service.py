@@ -83,13 +83,22 @@ def sync_endpoints(source):
     for endpoint in endpoints:
         exists = endpoint_service.get_by_dnsname(endpoint['dnsname'])
 
-        certificate_name = endpoint.pop('certificate_name')
-        cert = cert_service.get_by_name(certificate_name)
-        endpoint['certificate'] = cert
+        certificate_name = endpoint.pop('certificate_name', None)
+        certificate = endpoint.pop('certificate', None)
+
+        if certificate_name:
+            cert = cert_service.get_by_name(certificate_name)
+
+        elif certificate:
+            cert = cert_service.get_by_body(certificate['body'])
+            if not cert:
+                cert = cert_service.import_certificate(**certificate)
 
         if not cert:
             current_app.logger.error("Unable to find associated certificate, be sure that certificates are sync'ed before endpoints")
             continue
+
+        endpoint['certificate'] = cert
 
         policy = endpoint.pop('policy')
         endpoint['policy'] = endpoint_service.create_policy(**policy)

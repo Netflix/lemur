@@ -47,7 +47,6 @@ install_requires = [
     'requests==2.9.1',
     'psycopg2==2.6.1',
     'arrow==0.7.0',
-    'boto==2.38.0',  # we might make this optional
     'six==1.10.0',
     'gunicorn==19.4.1',
     'marshmallow-sqlalchemy==0.8.0',
@@ -60,6 +59,8 @@ install_requires = [
     'lockfile==0.12.2',
     'inflection==0.3.1',
     'future==0.15.2',
+    'sslyze==0.13.0',
+    'boto==2.38.0',  # we might make this optional
     'boto3==1.3.0'
 ]
 

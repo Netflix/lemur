@@ -10,7 +10,7 @@ angular.module('lemur')
     });
   })
 
-  .controller('EndpointsViewController', function ($q, $scope, $uibModal, EndpointApi, EndpointService, MomentService, ngTableParams, toaster) {
+  .controller('EndpointsViewController', function ($q, $scope, $uibModal, EndpointApi, EndpointService, MomentService, ngTableParams) {
     $scope.filter = {};
     $scope.endpointsTable = new ngTableParams({
       page: 1,            // show first page
