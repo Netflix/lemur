@@ -106,11 +106,6 @@ angular.module('lemur')
 
     $scope.fields = [{title: 'Current User', value: 'currentUser'}, {title: 'All', value: 'all'}];
 
-
-    $scope.toggleFilter = function (params) {
-      params.settings().$scope.show_filter = !params.settings().$scope.show_filter;
-    };
-
     $scope.create = function () {
       var uibModalInstance = $uibModal.open({
         animation: true,
