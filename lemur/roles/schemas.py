@@ -7,7 +7,7 @@
 """
 from marshmallow import fields
 from lemur.users.schemas import UserNestedOutputSchema
-from lemur.authorities.schemas import AuthorityOutputSchema
+from lemur.authorities.schemas import AuthorityNestedOutputSchema
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
 from lemur.schemas import AssociatedUserSchema, AssociatedAuthoritySchema
 
@@ -26,7 +26,7 @@ class RoleOutputSchema(LemurOutputSchema):
     id = fields.Integer()
     name = fields.String()
     description = fields.String()
-    authorities = fields.Nested(AuthorityOutputSchema, many=True)
+    authorities = fields.Nested(AuthorityNestedOutputSchema, many=True)
     users = fields.Nested(UserNestedOutputSchema, many=True)
 
 

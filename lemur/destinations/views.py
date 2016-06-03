@@ -52,24 +52,32 @@ class DestinationsList(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                "items": [
-                    {
-                        "destinationOptions": [
-                            {
-                                "name": "accountNumber",
-                                "required": true,
-                                "value": 111111111112,
-                                "helpMessage": "Must be a valid AWS account number!",
-                                "validation": "/^[0-9]{12,12}$/",
-                                "type": "int"
-                            }
-                        ],
-                        "pluginName": "aws-destination",
-                        "id": 3,
-                        "description": "test",
-                        "label": "test"
-                    }
-                ],
+                "items": [{
+                    "description": "test",
+                    "options": [{
+                        "name": "accountNumber",
+                        "required": true,
+                        "value": "111111111111111",
+                        "helpMessage": "Must be a valid AWS account number!",
+                        "validation": "/^[0-9]{12,12}$/",
+                        "type": "str"
+                    }],
+                    "id": 4,
+                    "plugin": {
+                        "pluginOptions": [{
+                            "name": "accountNumber",
+                            "required": true,
+                            "value": "111111111111111",
+                            "helpMessage": "Must be a valid AWS account number!",
+                            "validation": "/^[0-9]{12,12}$/",
+                            "type": "str"
+                        }],
+                        "description": "Allow the uploading of certificates to AWS IAM",
+                        "slug": "aws-destination",
+                        "title": "AWS"
+                    },
+                    "label": "test546"
+                }
                 "total": 1
               }
 
@@ -77,7 +85,7 @@ class DestinationsList(AuthenticatedResource):
            :query sortDir: acs or desc
            :query page: int. default is 1
            :query filter: key value pair format is k;v
-           :query limit: limit number default is 10
+           :query count: count number default is 10
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
@@ -102,20 +110,30 @@ class DestinationsList(AuthenticatedResource):
               Accept: application/json, text/javascript
 
               {
-                "destinationOptions": [
-                    {
+                "description": "test33",
+                "options": [{
+                    "name": "accountNumber",
+                    "required": true,
+                    "value": "34324324",
+                    "helpMessage": "Must be a valid AWS account number!",
+                    "validation": "/^[0-9]{12,12}$/",
+                    "type": "str"
+                }],
+                "id": 4,
+                "plugin": {
+                    "pluginOptions": [{
                         "name": "accountNumber",
                         "required": true,
-                        "value": 111111111112,
+                        "value": "34324324",
                         "helpMessage": "Must be a valid AWS account number!",
                         "validation": "/^[0-9]{12,12}$/",
-                        "type": "int"
-                    }
-                ],
-                "pluginName": "aws-destination",
-                "id": 3,
-                "description": "test",
-                "label": "test"
+                        "type": "str"
+                    }],
+                    "description": "Allow the uploading of certificates to AWS IAM",
+                    "slug": "aws-destination",
+                    "title": "AWS"
+                },
+                "label": "test546"
               }
 
            **Example response**:
@@ -127,20 +145,30 @@ class DestinationsList(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                "destinationOptions": [
-                    {
+                "description": "test33",
+                "options": [{
+                    "name": "accountNumber",
+                    "required": true,
+                    "value": "34324324",
+                    "helpMessage": "Must be a valid AWS account number!",
+                    "validation": "/^[0-9]{12,12}$/",
+                    "type": "str"
+                }],
+                "id": 4,
+                "plugin": {
+                    "pluginOptions": [{
                         "name": "accountNumber",
                         "required": true,
-                        "value": 111111111112,
+                        "value": "111111111111111",
                         "helpMessage": "Must be a valid AWS account number!",
                         "validation": "/^[0-9]{12,12}$/",
-                        "type": "int"
-                    }
-                ],
-                "pluginName": "aws-destination",
-                "id": 3,
-                "description": "test",
-                "label": "test"
+                        "type": "str"
+                    }],
+                    "description": "Allow the uploading of certificates to AWS IAM",
+                    "slug": "aws-destination",
+                    "title": "AWS"
+                },
+                "label": "test546"
               }
 
            :arg label: human readable account label
@@ -180,20 +208,30 @@ class Destinations(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                "destinationOptions": [
-                    {
+                "description": "test",
+                "options": [{
+                    "name": "accountNumber",
+                    "required": true,
+                    "value": "111111111111111",
+                    "helpMessage": "Must be a valid AWS account number!",
+                    "validation": "/^[0-9]{12,12}$/",
+                    "type": "str"
+                }],
+                "id": 4,
+                "plugin": {
+                    "pluginOptions": [{
                         "name": "accountNumber",
                         "required": true,
-                        "value": 111111111112,
+                        "value": "111111111111111",
                         "helpMessage": "Must be a valid AWS account number!",
                         "validation": "/^[0-9]{12,12}$/",
-                        "type": "int"
-                    }
-                ],
-                "pluginName": "aws-destination",
-                "id": 3,
-                "description": "test",
-                "label": "test"
+                        "type": "str"
+                    }],
+                    "description": "Allow the uploading of certificates to AWS IAM",
+                    "slug": "aws-destination",
+                    "title": "AWS"
+                },
+                "label": "test546"
               }
 
            :reqheader Authorization: OAuth token to authenticate
@@ -217,22 +255,34 @@ class Destinations(AuthenticatedResource):
               Host: example.com
               Accept: application/json, text/javascript
 
+
               {
-                "destinationOptions": [
-                    {
+                "description": "test33",
+                "options": [{
+                    "name": "accountNumber",
+                    "required": true,
+                    "value": "34324324",
+                    "helpMessage": "Must be a valid AWS account number!",
+                    "validation": "/^[0-9]{12,12}$/",
+                    "type": "str"
+                }],
+                "id": 4,
+                "plugin": {
+                    "pluginOptions": [{
                         "name": "accountNumber",
                         "required": true,
-                        "value": 111111111112,
+                        "value": "34324324",
                         "helpMessage": "Must be a valid AWS account number!",
                         "validation": "/^[0-9]{12,12}$/",
-                        "type": "int"
-                    }
-                ],
-                "pluginName": "aws-destination",
-                "id": 3,
-                "description": "test",
-                "label": "test"
+                        "type": "str"
+                    }],
+                    "description": "Allow the uploading of certificates to AWS IAM",
+                    "slug": "aws-destination",
+                    "title": "AWS"
+                },
+                "label": "test546"
               }
+
 
            **Example response**:
 
@@ -243,20 +293,30 @@ class Destinations(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                "destinationOptions": [
-                    {
+                "description": "test",
+                "options": [{
+                    "name": "accountNumber",
+                    "required": true,
+                    "value": "111111111111111",
+                    "helpMessage": "Must be a valid AWS account number!",
+                    "validation": "/^[0-9]{12,12}$/",
+                    "type": "str"
+                }],
+                "id": 4,
+                "plugin": {
+                    "pluginOptions": [{
                         "name": "accountNumber",
                         "required": true,
-                        "value": 111111111112,
+                        "value": "111111111111111",
                         "helpMessage": "Must be a valid AWS account number!",
                         "validation": "/^[0-9]{12,12}$/",
-                        "type": "int"
-                    }
-                ],
-                "pluginName": "aws-destination",
-                "id": 3,
-                "description": "test",
-                "label": "test"
+                        "type": "str"
+                    }],
+                    "description": "Allow the uploading of certificates to AWS IAM",
+                    "slug": "aws-destination",
+                    "title": "AWS"
+                },
+                "label": "test546"
               }
 
            :arg accountNumber: aws account number
@@ -302,24 +362,32 @@ class CertificateDestinations(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                "items": [
-                    {
-                        "destinationOptions": [
-                            {
-                                "name": "accountNumber",
-                                "required": true,
-                                "value": 111111111112,
-                                "helpMessage": "Must be a valid AWS account number!",
-                                "validation": "/^[0-9]{12,12}$/",
-                                "type": "int"
-                            }
-                        ],
-                        "pluginName": "aws-destination",
-                        "id": 3,
-                        "description": "test",
-                        "label": "test"
-                    }
-                ],
+                "items": [{
+                    "description": "test",
+                    "options": [{
+                        "name": "accountNumber",
+                        "required": true,
+                        "value": "111111111111111",
+                        "helpMessage": "Must be a valid AWS account number!",
+                        "validation": "/^[0-9]{12,12}$/",
+                        "type": "str"
+                    }],
+                    "id": 4,
+                    "plugin": {
+                        "pluginOptions": [{
+                            "name": "accountNumber",
+                            "required": true,
+                            "value": "111111111111111",
+                            "helpMessage": "Must be a valid AWS account number!",
+                            "validation": "/^[0-9]{12,12}$/",
+                            "type": "str"
+                        }],
+                        "description": "Allow the uploading of certificates to AWS IAM",
+                        "slug": "aws-destination",
+                        "title": "AWS"
+                    },
+                    "label": "test546"
+                }
                 "total": 1
               }
 
@@ -327,7 +395,7 @@ class CertificateDestinations(AuthenticatedResource):
            :query sortDir: acs or desc
            :query page: int default is 1
            :query filter: key value pair format is k;v
-           :query limit: limit number default is 10
+           :query count: count number default is 10
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
