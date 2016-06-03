@@ -5,10 +5,6 @@ Lemur
    :alt: Join the chat at https://gitter.im/Netflix/lemur
    :target: https://gitter.im/Netflix/lemur?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
-.. image:: https://img.shields.io/pypi/v/lemur.svg
-    :target: https://pypi.python.org/pypi/lemur/
-    :alt: Latest Version
-
 .. image:: https://readthedocs.org/projects/lemur/badge/?version=latest
     :target: https://lemur.readthedocs.org
     :alt: Latest Docs
@@ -19,10 +15,6 @@ Lemur
 .. image:: https://requires.io/github/Netflix/lemur/requirements.svg?branch=master
     :target: https://requires.io/github/Netflix/lemur/requirements/?branch=master
     :alt: Requirements Status
-
-.. image:: https://badge.waffle.io/Netflix/lemur.png?label=ready&title=Ready
-    :target: https://waffle.io/Netflix/lemur
-    :alt: 'Stories in Ready'
 
 Lemur manages TLS certificate creation. While not able to issue certificates itself, Lemur acts as a broker between CAs
 and environments providing a central portal for developers to issue TLS certificates with 'sane' defaults.

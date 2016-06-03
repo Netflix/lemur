@@ -211,8 +211,8 @@ certificate Lemur does not know about and adding the certificate to it's invento
 
 The `SourcePlugin` object has one default option of `pollRate`. This controls the number of seconds which to get new certificates.
 
- .. warning::
-Lemur currently has a very basic polling system of running a cron job every 15min to see which source plugins need to be run. A lock file is generated to guarantee that
+.. warning::
+    Lemur currently has a very basic polling system of running a cron job every 15min to see which source plugins need to be run. A lock file is generated to guarantee that
     only one sync is running at a time. It also means that the minimum resolution of a source plugin poll rate is effectively 15min. You can always specify a faster cron
     job if you need a higher resolution sync job.
 
@@ -223,8 +223,8 @@ The `SourcePlugin` object requires implementation of one function::
           #  request.get("some source of certificates")
 
 
-.. Note::
-Often times to facilitate code re-use it makes sense put source and destination plugins into one package.
+.. note::
+    Often times to facilitate code re-use it makes sense put source and destination plugins into one package.
 
 
 Export
@@ -244,9 +244,8 @@ The `ExportPlugin` object requires the implementation of one function::
         # return "extension", passphrase, raw
 
 
-.. Note::
-Support of various formats sometimes relies on external tools system calls. Always be mindful of sanitizing any input to
-these calls.
+.. note::
+    Support of various formats sometimes relies on external tools system calls. Always be mindful of sanitizing any input to these calls.
 
 
 Testing

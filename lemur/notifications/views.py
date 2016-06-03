@@ -54,7 +54,7 @@ class NotificationsList(AuthenticatedResource):
                 "items": [
                     {
                         "description": "An example",
-                        "notificationOptions": [
+                        "options": [
                             {
                                 "name": "interval",
                                 "required": true,
@@ -98,7 +98,7 @@ class NotificationsList(AuthenticatedResource):
            :query sortDir: acs or desc
            :query page: int default is 1
            :query filter: key value pair format is k;v
-           :query limit: limit number default is 10
+           :query count: count number default is 10
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
@@ -124,7 +124,7 @@ class NotificationsList(AuthenticatedResource):
 
               {
                 "description": "a test",
-                "notificationOptions": [
+                "options": [
                     {
                         "name": "interval",
                         "required": true,
@@ -171,7 +171,7 @@ class NotificationsList(AuthenticatedResource):
 
               {
                 "description": "a test",
-                "notificationOptions": [
+                "options": [
                     {
                         "name": "interval",
                         "required": true,
@@ -253,7 +253,7 @@ class Notifications(AuthenticatedResource):
 
               {
                 "description": "a test",
-                "notificationOptions": [
+                "options": [
                     {
                         "name": "interval",
                         "required": true,
@@ -378,7 +378,7 @@ class CertificateNotifications(AuthenticatedResource):
                 "items": [
                     {
                         "description": "An example",
-                        "notificationOptions": [
+                        "options": [
                             {
                                 "name": "interval",
                                 "required": true,
@@ -422,7 +422,7 @@ class CertificateNotifications(AuthenticatedResource):
            :query sortDir: acs or desc
            :query page: int default is 1
            :query filter: key value pair format is k;v
-           :query limit: limit number default is 10
+           :query count: count number default is 10
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """

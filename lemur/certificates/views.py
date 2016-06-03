@@ -59,26 +59,53 @@ class CertificatesList(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                "items": [
-                    {
-                      "id": 1,
-                      "name": "cert1",
-                      "description": "this is cert1",
-                      "bits": 2048,
-                      "deleted": false,
-                      "issuer": "ExampeInc.",
-                      "serial": "123450",
-                      "chain": "-----Begin ...",
-                      "body": "-----Begin ...",
-                      "san": true,
-                      "owner": 'bob@example.com",
-                      "active": true,
-                      "notBefore": "2015-06-05T17:09:39",
-                      "notAfter": "2015-06-10T17:09:39",
-                      "cn": "example.com",
-                      "status": "unknown"
-                    }
-                  ]
+                "items": [{
+                    "status": null,
+                    "cn": "*.test.example.net",
+                    "chain": "",
+                    "authority": {
+                        "active": true,
+                        "owner": "secure@example.com",
+                        "id": 1,
+                        "description": "verisign test authority",
+                        "name": "verisign"
+                    },
+                    "owner": "joe@example.com",
+                    "serial": "82311058732025924142789179368889309156",
+                    "id": 2288,
+                    "issuer": "SymantecCorporation",
+                    "notBefore": "2016-06-03T00:00:00+00:00",
+                    "notAfter": "2018-01-12T23:59:59+00:00",
+                    "destinations": [],
+                    "bits": 2048,
+                    "body": "-----BEGIN CERTIFICATE-----...",
+                    "description": null,
+                    "deleted": null,
+                    "notifications": [{
+                        "id": 1
+                    }]
+                    "signingAlgorithm": "sha256",
+                    "user": {
+                        "username": "jane",
+                        "active": true,
+                        "email": "jane@example.com",
+                        "id": 2
+                    },
+                    "active": true,
+                    "domains": [{
+                        "sensitive": false,
+                        "id": 1090,
+                        "name": "*.test.example.net"
+                    }],
+                    "replaces": [],
+                    "name": "WILDCARD.test.example.net-SymantecCorporation-20160603-20180112",
+                    "roles": [{
+                        "id": 464,
+                        "description": "This is a google group based role created by Lemur",
+                        "name": "joe@example.com"
+                    }],
+                    "san": null
+                }],
                 "total": 1
               }
 
@@ -86,10 +113,11 @@ class CertificatesList(AuthenticatedResource):
            :query sortDir: acs or desc
            :query page: int. default is 1
            :query filter: key value pair format is k;v
-           :query limit: limit number. default is 10
+           :query count: count number. default is 10
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
            :statuscode 403: unauthenticated
+
         """
         parser = paginated_parser.copy()
         parser.add_argument('timeRange', type=int, dest='time_range', location='args')
@@ -118,92 +146,6 @@ class CertificatesList(AuthenticatedResource):
               Host: example.com
               Accept: application/json, text/javascript
 
-              {
-                "country": "US",
-                "state": "CA",
-                "location": "A Place",
-                "organization": "ExampleInc.",
-                "organizationalUnit": "Operations",
-                "owner": "bob@example.com",
-                "description": "test",
-                "selectedAuthority": "timetest2",
-                "csr": "----BEGIN CERTIFICATE REQUEST-----...",
-                "authority": {
-                    "body": "-----BEGIN...",
-                    "name": "timetest2",
-                    "chain": "",
-                    "notBefore": "2015-06-05T15:20:59",
-                    "active": true,
-                    "id": 50,
-                    "notAfter": "2015-06-17T15:21:08",
-                    "description": "dsfdsf"
-                },
-                "notifications": [
-                    {
-                      "description": "Default 30 day expiration notification",
-                      "notificationOptions": [
-                        {
-                          "name": "interval",
-                          "required": true,
-                          "value": 30,
-                          "helpMessage": "Number of days to be alert before expiration.",
-                          "validation": "^\\d+$",
-                          "type": "int"
-                        },
-                        {
-                          "available": [
-                            "days",
-                            "weeks",
-                            "months"
-                          ],
-                          "name": "unit",
-                          "required": true,
-                          "value": "days",
-                          "helpMessage": "Interval unit",
-                          "validation": "",
-                          "type": "select"
-                        },
-                        {
-                          "name": "recipients",
-                          "required": true,
-                          "value": "bob@example.com",
-                          "helpMessage": "Comma delimited list of email addresses",
-                          "validation": "^([\\w+-.%]+@[\\w-.]+\\.[A-Za-z]{2,4},?)+$",
-                            "type": "str"
-                          }
-                        ],
-                        "label": "DEFAULT_KGLISSON_30_DAY",
-                        "pluginName": "email-notification",
-                        "active": true,
-                        "id": 7
-                    }
-                ],
-                "extensions": {
-                    "basicConstraints": {},
-                    "keyUsage": {
-                        "isCritical": true,
-                        "useKeyEncipherment": true,
-                        "useDigitalSignature": true
-                    },
-                    "extendedKeyUsage": {
-                        "isCritical": true,
-                        "useServerAuthentication": true
-                    },
-                    "subjectKeyIdentifier": {
-                        "includeSKI": true
-                    },
-                    "subAltNames": {
-                        "names": []
-                    }
-                },
-                "commonName": "test",
-                "validityStart": "2015-06-05T07:00:00.000Z",
-                "validityEnd": "2015-06-16T07:00:00.000Z",
-                "replacements": [
-                    {'id': 123}
-                ],
-                "name": "TestCertificate"
-             }
 
            **Example response**:
 
@@ -214,23 +156,53 @@ class CertificatesList(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                "id": 1,
-                "name": "cert1",
-                "description": "this is cert1",
+                "status": null,
+                "cn": "*.test.example.net",
+                "chain": "",
+                "authority": {
+                    "active": true,
+                    "owner": "secure@example.com",
+                    "id": 1,
+                    "description": "verisign test authority",
+                    "name": "verisign"
+                },
+                "owner": "joe@example.com",
+                "serial": "82311058732025924142789179368889309156",
+                "id": 2288,
+                "issuer": "SymantecCorporation",
+                "notBefore": "2016-06-03T00:00:00+00:00",
+                "notAfter": "2018-01-12T23:59:59+00:00",
+                "destinations": [],
                 "bits": 2048,
-                "deleted": false,
-                "issuer": "ExampeInc.",
-                "serial": "123450",
-                "chain": "-----Begin ...",
-                "body": "-----Begin ...",
-                "san": true,
-                "owner": "jimbob@example.com",
-                "active": false,
-                "notBefore": "2015-06-05T17:09:39",
-                "notAfter": "2015-06-10T17:09:39",
-                "cn": "example.com",
-                "status": "unknown"
+                "body": "-----BEGIN CERTIFICATE-----...",
+                "description": null,
+                "deleted": null,
+                "notifications": [{
+                    "id": 1
+                }]
+                "signingAlgorithm": "sha256",
+                "user": {
+                    "username": "jane",
+                    "active": true,
+                    "email": "jane@example.com",
+                    "id": 2
+                },
+                "active": true,
+                "domains": [{
+                    "sensitive": false,
+                    "id": 1090,
+                    "name": "*.test.example.net"
+                }],
+                "replaces": [],
+                "name": "WILDCARD.test.example.net-SymantecCorporation-20160603-20180112",
+                "roles": [{
+                    "id": 464,
+                    "description": "This is a google group based role created by Lemur",
+                    "name": "joe@example.com"
+                }],
+                "san": null
               }
+
 
            :arg extensions: extensions to be used in the certificate
            :arg description: description for new certificate
@@ -246,6 +218,7 @@ class CertificatesList(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
            :statuscode 403: unauthenticated
+
         """
         role = role_service.get_by_name(data['authority'].owner)
 
@@ -304,23 +277,51 @@ class CertificatesUpload(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                 "id": 1,
-                 "name": "cert1",
-                 "description": "this is cert1",
-                 "bits": 2048,
-                 "deleted": false,
-                 "issuer": "ExampeInc.",
-                 "serial": "123450",
-                 "chain": "-----Begin ...",
-                 "body": "-----Begin ...",
-                 "san": true,
-                 "owner": "joe@example.com",
-                 "active": true,
-                 "notBefore": "2015-06-05T17:09:39",
-                 "notAfter": "2015-06-10T17:09:39",
-                 "signingAlgorithm": "sha2"
-                 "cn": "example.com",
-                 "status": "unknown"
+                "status": null,
+                "cn": "*.test.example.net",
+                "chain": "",
+                "authority": {
+                    "active": true,
+                    "owner": "secure@example.com",
+                    "id": 1,
+                    "description": "verisign test authority",
+                    "name": "verisign"
+                },
+                "owner": "joe@example.com",
+                "serial": "82311058732025924142789179368889309156",
+                "id": 2288,
+                "issuer": "SymantecCorporation",
+                "notBefore": "2016-06-03T00:00:00+00:00",
+                "notAfter": "2018-01-12T23:59:59+00:00",
+                "destinations": [],
+                "bits": 2048,
+                "body": "-----BEGIN CERTIFICATE-----...",
+                "description": null,
+                "deleted": null,
+                "notifications": [{
+                    "id": 1
+                }]
+                "signingAlgorithm": "sha256",
+                "user": {
+                    "username": "jane",
+                    "active": true,
+                    "email": "jane@example.com",
+                    "id": 2
+                },
+                "active": true,
+                "domains": [{
+                    "sensitive": false,
+                    "id": 1090,
+                    "name": "*.test.example.net"
+                }],
+                "replaces": [],
+                "name": "WILDCARD.test.example.net-SymantecCorporation-20160603-20180112",
+                "roles": [{
+                    "id": 464,
+                    "description": "This is a google group based role created by Lemur",
+                    "name": "joe@example.com"
+                }],
+                "san": null
               }
 
            :arg owner: owner email for certificate
@@ -331,6 +332,7 @@ class CertificatesUpload(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 403: unauthenticated
            :statuscode 200: no error
+
         """
         if data.get('destinations'):
             if data.get('private_key'):
@@ -439,28 +441,57 @@ class Certificates(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                "id": 1,
-                "name": "cert1",
-                "description": "this is cert1",
+                "status": null,
+                "cn": "*.test.example.net",
+                "chain": "",
+                "authority": {
+                    "active": true,
+                    "owner": "secure@example.com",
+                    "id": 1,
+                    "description": "verisign test authority",
+                    "name": "verisign"
+                },
+                "owner": "joe@example.com",
+                "serial": "82311058732025924142789179368889309156",
+                "id": 2288,
+                "issuer": "SymantecCorporation",
+                "notBefore": "2016-06-03T00:00:00+00:00",
+                "notAfter": "2018-01-12T23:59:59+00:00",
+                "destinations": [],
                 "bits": 2048,
-                "deleted": false,
-                "issuer": "ExampeInc.",
-                "serial": "123450",
-                "chain": "-----Begin ...",
-                "body": "-----Begin ...",
-                "san": true,
-                "owner": "bob@example.com",
+                "body": "-----BEGIN CERTIFICATE-----...",
+                "description": null,
+                "deleted": null,
+                "notifications": [{
+                    "id": 1
+                }]
+                "signingAlgorithm": "sha256",
+                "user": {
+                    "username": "jane",
+                    "active": true,
+                    "email": "jane@example.com",
+                    "id": 2
+                },
                 "active": true,
-                "notBefore": "2015-06-05T17:09:39",
-                "notAfter": "2015-06-10T17:09:39",
-                "signingAlgorithm": "sha2",
-                "cn": "example.com",
-                "status": "unknown"
+                "domains": [{
+                    "sensitive": false,
+                    "id": 1090,
+                    "name": "*.test.example.net"
+                }],
+                "replaces": [],
+                "name": "WILDCARD.test.example.net-SymantecCorporation-20160603-20180112",
+                "roles": [{
+                    "id": 464,
+                    "description": "This is a google group based role created by Lemur",
+                    "name": "joe@example.com"
+                }],
+                "san": null
               }
 
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
            :statuscode 403: unauthenticated
+
         """
         return service.get(certificate_id)
 
@@ -496,27 +527,57 @@ class Certificates(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                "id": 1,
-                "name": "cert1",
-                "description": "this is cert1",
+                "status": null,
+                "cn": "*.test.example.net",
+                "chain": "",
+                "authority": {
+                    "active": true,
+                    "owner": "secure@example.com",
+                    "id": 1,
+                    "description": "verisign test authority",
+                    "name": "verisign"
+                },
+                "owner": "joe@example.com",
+                "serial": "82311058732025924142789179368889309156",
+                "id": 2288,
+                "issuer": "SymantecCorporation",
+                "notBefore": "2016-06-03T00:00:00+00:00",
+                "notAfter": "2018-01-12T23:59:59+00:00",
+                "destinations": [],
                 "bits": 2048,
-                "deleted": false,
-                "issuer": "ExampeInc.",
-                "serial": "123450",
-                "chain": "-----Begin ...",
-                "body": "-----Begin ...",
-                "san": true,
-                "owner": "jimbob@example.com",
-                "active": false,
-                "notBefore": "2015-06-05T17:09:39",
-                "notAfter": "2015-06-10T17:09:39",
-                "cn": "example.com",
-                "status": "unknown",
+                "body": "-----BEGIN CERTIFICATE-----...",
+                "description": null,
+                "deleted": null,
+                "notifications": [{
+                    "id": 1
+                }]
+                "signingAlgorithm": "sha256",
+                "user": {
+                    "username": "jane",
+                    "active": true,
+                    "email": "jane@example.com",
+                    "id": 2
+                },
+                "active": true,
+                "domains": [{
+                    "sensitive": false,
+                    "id": 1090,
+                    "name": "*.test.example.net"
+                }],
+                "replaces": [],
+                "name": "WILDCARD.test.example.net-SymantecCorporation-20160603-20180112",
+                "roles": [{
+                    "id": 464,
+                    "description": "This is a google group based role created by Lemur",
+                    "name": "joe@example.com"
+                }],
+                "san": null
               }
 
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
            :statuscode 403: unauthenticated
+
         """
         cert = service.get(certificate_id)
 
@@ -568,27 +629,53 @@ class NotificationCertificatesList(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                "items": [
-                    {
-                      "id": 1,
-                      "name": "cert1",
-                      "description": "this is cert1",
-                      "bits": 2048,
-                      "deleted": false,
-                      "issuer": "ExampeInc.",
-                      "serial": "123450",
-                      "chain": "-----Begin ...",
-                      "body": "-----Begin ...",
-                      "san": true,
-                      "owner": 'bob@example.com",
-                      "active": true,
-                      "notBefore": "2015-06-05T17:09:39",
-                      "notAfter": "2015-06-10T17:09:39",
-                      "signingAlgorithm": "sha2",
-                      "cn": "example.com",
-                      "status": "unknown"
-                    }
-                  ]
+                "items": [{
+                    "status": null,
+                    "cn": "*.test.example.net",
+                    "chain": "",
+                    "authority": {
+                        "active": true,
+                        "owner": "secure@example.com",
+                        "id": 1,
+                        "description": "verisign test authority",
+                        "name": "verisign"
+                    },
+                    "owner": "joe@example.com",
+                    "serial": "82311058732025924142789179368889309156",
+                    "id": 2288,
+                    "issuer": "SymantecCorporation",
+                    "notBefore": "2016-06-03T00:00:00+00:00",
+                    "notAfter": "2018-01-12T23:59:59+00:00",
+                    "destinations": [],
+                    "bits": 2048,
+                    "body": "-----BEGIN CERTIFICATE-----...",
+                    "description": null,
+                    "deleted": null,
+                    "notifications": [{
+                        "id": 1
+                    }]
+                    "signingAlgorithm": "sha256",
+                    "user": {
+                        "username": "jane",
+                        "active": true,
+                        "email": "jane@example.com",
+                        "id": 2
+                    },
+                    "active": true,
+                    "domains": [{
+                        "sensitive": false,
+                        "id": 1090,
+                        "name": "*.test.example.net"
+                    }],
+                    "replaces": [],
+                    "name": "WILDCARD.test.example.net-SymantecCorporation-20160603-20180112",
+                    "roles": [{
+                        "id": 464,
+                        "description": "This is a google group based role created by Lemur",
+                        "name": "joe@example.com"
+                    }],
+                    "san": null
+                }],
                 "total": 1
               }
 
@@ -596,10 +683,11 @@ class NotificationCertificatesList(AuthenticatedResource):
            :query sortDir: acs or desc
            :query page: int default is 1
            :query filter: key value pair format is k;v
-           :query limit: limit number default is 10
+           :query count: count number default is 10
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
            :statuscode 403: unauthenticated
+
         """
         parser = paginated_parser.copy()
         parser.add_argument('timeRange', type=int, dest='time_range', location='args')
@@ -643,29 +731,61 @@ class CertificatesReplacementsList(AuthenticatedResource):
               Vary: Accept
               Content-Type: text/javascript
 
-              [{
-                "id": 1,
-                "name": "cert1",
-                "description": "this is cert1",
-                "bits": 2048,
-                "deleted": false,
-                "issuer": "ExampeInc.",
-                "serial": "123450",
-                "chain": "-----Begin ...",
-                "body": "-----Begin ...",
-                "san": true,
-                "owner": "bob@example.com",
-                "active": true,
-                "notBefore": "2015-06-05T17:09:39",
-                "notAfter": "2015-06-10T17:09:39",
-                "signingAlgorithm": "sha2",
-                "cn": "example.com",
-                "status": "unknown"
-              }]
+              {
+                "items": [{
+                    "status": null,
+                    "cn": "*.test.example.net",
+                    "chain": "",
+                    "authority": {
+                        "active": true,
+                        "owner": "secure@example.com",
+                        "id": 1,
+                        "description": "verisign test authority",
+                        "name": "verisign"
+                    },
+                    "owner": "joe@example.com",
+                    "serial": "82311058732025924142789179368889309156",
+                    "id": 2288,
+                    "issuer": "SymantecCorporation",
+                    "notBefore": "2016-06-03T00:00:00+00:00",
+                    "notAfter": "2018-01-12T23:59:59+00:00",
+                    "destinations": [],
+                    "bits": 2048,
+                    "body": "-----BEGIN CERTIFICATE-----...",
+                    "description": null,
+                    "deleted": null,
+                    "notifications": [{
+                        "id": 1
+                    }]
+                    "signingAlgorithm": "sha256",
+                    "user": {
+                        "username": "jane",
+                        "active": true,
+                        "email": "jane@example.com",
+                        "id": 2
+                    },
+                    "active": true,
+                    "domains": [{
+                        "sensitive": false,
+                        "id": 1090,
+                        "name": "*.test.example.net"
+                    }],
+                    "replaces": [],
+                    "name": "WILDCARD.test.example.net-SymantecCorporation-20160603-20180112",
+                    "roles": [{
+                        "id": 464,
+                        "description": "This is a google group based role created by Lemur",
+                        "name": "joe@example.com"
+                    }],
+                    "san": null
+                }],
+                "total": 1
+              }
 
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
            :statuscode 403: unauthenticated
+
         """
         return service.get(certificate_id).replaces
 
@@ -740,6 +860,7 @@ class CertificateExport(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
            :statuscode 403: unauthenticated
+
         """
         cert = service.get(certificate_id)
 

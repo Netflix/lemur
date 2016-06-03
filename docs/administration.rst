@@ -273,7 +273,7 @@ For more information about how to use social logins, see: `Satellizer <https://g
 
         ::
 
-        GOOGLE_CLIENT_ID = "client-id"
+            GOOGLE_CLIENT_ID = "client-id"
 
 .. data:: GOOGLE_SECRET
     :noindex:
