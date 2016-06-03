@@ -217,10 +217,6 @@ angular.module('lemur')
       return def;
     };
 
-    $scope.toggleFilter = function (params) {
-      params.settings().$scope.show_filter = !params.settings().$scope.show_filter;
-    };
-
     $scope.edit = function (authorityId) {
       var uibModalInstance = $uibModal.open({
         animation: true,

@@ -72,8 +72,4 @@ angular.module('lemur')
 
     };
 
-    $scope.toggleFilter = function (params) {
-      params.settings().$scope.show_filter = !params.settings().$scope.show_filter;
-    };
-
   });
