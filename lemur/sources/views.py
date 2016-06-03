@@ -54,7 +54,7 @@ class SourcesList(AuthenticatedResource):
               {
                 "items": [
                     {
-                        "sourceOptions": [
+                        "options": [
                             {
                                 "name": "accountNumber",
                                 "required": true,
@@ -78,7 +78,7 @@ class SourcesList(AuthenticatedResource):
            :query sortDir: acs or desc
            :query page: int default is 1
            :query filter: key value pair format is k;v
-           :query limit: limit number default is 10
+           :query count: count number default is 10
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
@@ -103,7 +103,7 @@ class SourcesList(AuthenticatedResource):
               Accept: application/json, text/javascript
 
               {
-                "sourceOptions": [
+                "options": [
                     {
                         "name": "accountNumber",
                         "required": true,
@@ -129,7 +129,7 @@ class SourcesList(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                "sourceOptions": [
+                "options": [
                     {
                         "name": "accountNumber",
                         "required": true,
@@ -183,7 +183,7 @@ class Sources(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                "sourceOptions": [
+                "options": [
                     {
                         "name": "accountNumber",
                         "required": true,
@@ -222,7 +222,7 @@ class Sources(AuthenticatedResource):
               Accept: application/json, text/javascript
 
               {
-                "sourceOptions": [
+                "options": [
                     {
                         "name": "accountNumber",
                         "required": true,
@@ -248,7 +248,7 @@ class Sources(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                "sourceOptions": [
+                "options": [
                     {
                         "name": "accountNumber",
                         "required": true,
@@ -310,7 +310,7 @@ class CertificateSources(AuthenticatedResource):
               {
                 "items": [
                     {
-                        "sourceOptions": [
+                        "options": [
                             {
                                 "name": "accountNumber",
                                 "required": true,
@@ -334,7 +334,7 @@ class CertificateSources(AuthenticatedResource):
            :query sortDir: acs or desc
            :query page: int default is 1
            :query filter: key value pair format is k;v
-           :query limit: limit number default is 10
+           :query count: count number default is 10
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """

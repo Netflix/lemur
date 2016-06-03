@@ -53,20 +53,44 @@ class AuthoritiesList(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                "items": [
-                    {
-                      "id": 1,
-                      "name": "authority1",
-                      "description": "this is authority1",
-                      "pluginName": null,
-                      "chain": "-----Begin ...",
-                      "body": "-----Begin ...",
-                      "active": true,
-                      "notBefore": "2015-06-05T17:09:39",
-                      "notAfter": "2015-06-10T17:09:39"
-                      "options": null
-                    }
-                  ]
+                "items": [{
+                    "name": "TestAuthority",
+                    "roles": [{
+                        "id": 123,
+                        "name": "secure@example.com"
+                    }, {
+                        "id": 564,
+                        "name": "TestAuthority_admin"
+                    }, {
+                        "id": 565,
+                        "name": "TestAuthority_operator"
+                    }],
+                    "options": null,
+                    "active": true,
+                    "authorityCertificate": {
+                        "body": "-----BEGIN CERTIFICATE-----IyMzU5MTVaMHk...",
+                        "status": true,
+                        "cn": "AcommonName",
+                        "description": "This is the ROOT certificate for the TestAuthority certificate authority.",
+                        "chain": "",
+                        "notBefore": "2016-06-02T00:00:15+00:00",
+                        "notAfter": "2023-06-02T23:59:15+00:00",
+                        "owner": "secure@example.com",
+                        "user": {
+                            "username": "joe@example.com",
+                            "active": true,
+                            "email": "joe@example.com",
+                            "id": 3
+                        },
+                        "active": true,
+                        "bits": 2048,
+                        "id": 2235,
+                        "name": "TestAuthority"
+                    },
+                    "owner": "secure@example.com",
+                    "id": 43,
+                    "description": "This is the ROOT certificate for the TestAuthority certificate authority."
+                }
                 "total": 1
               }
 
@@ -74,7 +98,7 @@ class AuthoritiesList(AuthenticatedResource):
            :query sortDir: acs or desc
            :query page: int default is 1
            :query filter: key value pair. format is k;v
-           :query limit: limit number default is 10
+           :query count: count number default is 10
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
            :statuscode 403: unauthenticated
@@ -100,31 +124,30 @@ class AuthoritiesList(AuthenticatedResource):
               Host: example.com
               Accept: application/json, text/javascript
 
-              {
-                "caDN": {
-                  "country": "US",
-                  "state": "CA",
-                  "location": "A Location",
-                  "organization": "ExampleInc",
-                  "organizationalUnit": "Operations",
-                  "commonName": "a common name"
-                },
-                "caType": "root",
-                "caSigningAlgo": "sha256WithRSA",
-                "caSensitivity": "medium",
+             {
+                "country": "US",
+                "state": "California",
+                "location": "Los Gatos",
+                "organization": "Netflix",
+                "organizationalUnit": "Operations",
+                "type": "root",
+                "signingAlgorithm": "sha256WithRSA",
+                "sensitivity": "medium",
                 "keyType": "RSA2048",
-                "pluginName": "cloudca",
-                "validityStart": "2015-06-11T07:00:00.000Z",
-                "validityEnd": "2015-06-13T07:00:00.000Z",
-                "caName": "DoctestCA",
-                "ownerEmail": "jimbob@example.com",
-                "caDescription": "Example CA",
-                "extensions": {
-                  "subAltNames": {
-                    "names": []
-                  }
+                "plugin": {
+                    "slug": "cloudca-issuer",
                 },
-              }
+                "name": "TimeTestAuthority5",
+                "owner": "secure@example.com",
+                "description": "test",
+                "commonName": "AcommonName",
+                "validityYears": "20",
+                "extensions": {
+                    "subAltNames": {
+                        "names": []
+                    },
+                    "custom": []
+             }
 
            **Example response**:
 
@@ -135,34 +158,62 @@ class AuthoritiesList(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                "id": 1,
-                "name": "authority1",
-                "description": "this is authority1",
-                "pluginName": null,
-                "chain": "-----Begin ...",
-                "body": "-----Begin ...",
+                "name": "TestAuthority",
+                "roles": [{
+                    "id": 123,
+                    "name": "secure@example.com"
+                }, {
+                    "id": 564,
+                    "name": "TestAuthority_admin"
+                }, {
+                    "id": 565,
+                    "name": "TestAuthority_operator"
+                }],
+                "options": null,
                 "active": true,
-                "notBefore": "2015-06-05T17:09:39",
-                "notAfter": "2015-06-10T17:09:39"
-                "options": null
+                "authorityCertificate": {
+                    "body": "-----BEGIN CERTIFICATE-----IyMzU5MTVaMHk...",
+                    "status": true,
+                    "cn": "AcommonName",
+                    "description": "This is the ROOT certificate for the TestAuthority certificate authority.",
+                    "chain": "",
+                    "notBefore": "2016-06-02T00:00:15+00:00",
+                    "notAfter": "2023-06-02T23:59:15+00:00",
+                    "owner": "secure@example.com",
+                    "user": {
+                        "username": "joe@example.com",
+                        "active": true,
+                        "email": "joe@example.com",
+                        "id": 3
+                    },
+                    "active": true,
+                    "bits": 2048,
+                    "id": 2235,
+                    "name": "TestAuthority"
+                },
+                "owner": "secure@example.com",
+                "id": 43,
+                "description": "This is the ROOT certificate for the TestAuthority certificate authority."
               }
 
-           :arg caName: authority's name
-           :arg caDescription: a sensible description about what the CA with be used for
-           :arg ownerEmail: the team or person who 'owns' this authority
+
+           :arg name: authority's name
+           :arg description: a sensible description about what the CA with be used for
+           :arg owner: the team or person who 'owns' this authority
            :arg validityStart: when this authority should start issuing certificates
            :arg validityEnd: when this authority should stop issuing certificates
+           :arg validityYears: starting from `now` how many years into the future the authority should be valid
            :arg extensions: certificate extensions
-           :arg pluginName: name of the plugin to create the authority
-           :arg caType: the type of authority (root/subca)
-           :arg caParent: the parent authority if this is to be a subca
-           :arg caSigningAlgo: algorithm used to sign the authority
+           :arg plugin: name of the plugin to create the authority
+           :arg type: the type of authority (root/subca)
+           :arg parent: the parent authority if this is to be a subca
+           :arg signingAlgorithm: algorithm used to sign the authority
            :arg keyType: key type
-           :arg caSensitivity: the sensitivity of the root key, for CloudCA this determines if the root keys are stored
+           :arg sensitivity: the sensitivity of the root key, for CloudCA this determines if the root keys are stored
            in an HSM
-           :arg caKeyName: name of the key to store in the HSM (CloudCA)
-           :arg caSerialNumber: serial number of the authority
-           :arg caFirstSerial: specifies the starting serial number for certificates issued off of this authority
+           :arg keyName: name of the key to store in the HSM (CloudCA)
+           :arg serialNumber: serial number of the authority
+           :arg firstSerial: specifies the starting serial number for certificates issued off of this authority
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 403: unauthenticated
            :statuscode 200: no error
@@ -199,18 +250,28 @@ class Authorities(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                "id": 1,
-                "name": "authority1",
-                "description": "this is authority1",
-                "pluginName": null,
-                "chain": "-----Begin ...",
-                "body": "-----Begin ...",
+                "roles": [{
+                    "id": 123,
+                    "name": "secure@example.com"
+                }, {
+                    "id": 564,
+                    "name": "TestAuthority_admin"
+                }, {
+                    "id": 565,
+                    "name": "TestAuthority_operator"
+                }],
                 "active": true,
-                "notBefore": "2015-06-05T17:09:39",
-                "notAfter": "2015-06-10T17:09:39"
-                "options": null
+                "owner": "secure@example.com",
+                "id": 43,
+                "description": "This is the ROOT certificate for the TestAuthority certificate authority."
               }
 
+           :arg description: a sensible description about what the CA with be used for
+           :arg owner: the team or person who 'owns' this authority
+           :arg active: set whether this authoritity is currently in use
+           :reqheader Authorization: OAuth token to authenticate
+           :statuscode 403: unauthenticated
+           :statuscode 200: no error
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
            :statuscode 403: unauthenticated
@@ -233,11 +294,42 @@ class Authorities(AuthenticatedResource):
               Accept: application/json, text/javascript
 
               {
-                 "roles": [],
-                 "active": false,
-                 "owner": "bob@example.com",
-                 "description": "this is authority1"
-              }
+                "name": "TestAuthority5",
+                "roles": [{
+                    "id": 566,
+                    "name": "TestAuthority5_admin"
+                }, {
+                    "id": 567,
+                    "name": "TestAuthority5_operator"
+                }, {
+                    "id": 123,
+                    "name": "secure@example.com"
+                }],
+                "active": true,
+                "authorityCertificate": {
+                    "body": "-----BEGIN CERTIFICATE-----",
+                    "status": null,
+                    "cn": "AcommonName",
+                    "description": "This is the ROOT certificate for the TestAuthority5 certificate authority.",
+                    "chain": "",
+                    "notBefore": "2016-06-03T00:00:51+00:00",
+                    "notAfter": "2036-06-03T23:59:51+00:00",
+                    "owner": "secure@example.com",
+                    "user": {
+                        "username": "joe@example.com",
+                        "active": true,
+                        "email": "joe@example.com",
+                        "id": 3
+                    },
+                    "active": true,
+                    "bits": 2048,
+                    "id": 2280,
+                    "name": "TestAuthority5"
+                },
+                "owner": "secure@example.com",
+                "id": 44,
+                "description": "This is the ROOT certificate for the TestAuthority5 certificate authority."
+               }
 
            **Example response**:
 
@@ -248,16 +340,42 @@ class Authorities(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                "id": 1,
-                "name": "authority1",
-                "description": "this is authority1",
-                "pluginName": null,
-                "chain": "-----begin ...",
-                "body": "-----begin ...",
-                "active": false,
-                "notBefore": "2015-06-05t17:09:39",
-                "notAfter": "2015-06-10t17:09:39"
-                "options": null
+                "name": "TestAuthority",
+                "roles": [{
+                    "id": 123,
+                    "name": "secure@example.com"
+                }, {
+                    "id": 564,
+                    "name": "TestAuthority_admin"
+                }, {
+                    "id": 565,
+                    "name": "TestAuthority_operator"
+                }],
+                "options": null,
+                "active": true,
+                "authorityCertificate": {
+                    "body": "-----BEGIN CERTIFICATE-----IyMzU5MTVaMHk...",
+                    "status": true,
+                    "cn": "AcommonName",
+                    "description": "This is the ROOT certificate for the TestAuthority certificate authority.",
+                    "chain": "",
+                    "notBefore": "2016-06-02T00:00:15+00:00",
+                    "notAfter": "2023-06-02T23:59:15+00:00",
+                    "owner": "secure@example.com",
+                    "user": {
+                        "username": "joe@example.com",
+                        "active": true,
+                        "email": "joe@example.com",
+                        "id": 3
+                    },
+                    "active": true,
+                    "bits": 2048,
+                    "id": 2235,
+                    "name": "TestAuthority"
+                },
+                "owner": "secure@example.com",
+                "id": 43,
+                "description": "This is the ROOT certificate for the TestAuthority certificate authority."
               }
 
            :reqheader Authorization: OAuth token to authenticate
@@ -313,16 +431,42 @@ class CertificateAuthority(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                "id": 1,
-                "name": "authority1",
-                "description": "this is authority1",
-                "pluginName": null,
-                "chain": "-----Begin ...",
-                "body": "-----Begin ...",
+                "name": "TestAuthority",
+                "roles": [{
+                    "id": 123,
+                    "name": "secure@example.com"
+                }, {
+                    "id": 564,
+                    "name": "TestAuthority_admin"
+                }, {
+                    "id": 565,
+                    "name": "TestAuthority_operator"
+                }],
+                "options": null,
                 "active": true,
-                "notBefore": "2015-06-05T17:09:39",
-                "notAfter": "2015-06-10T17:09:39"
-                "options": null
+                "authorityCertificate": {
+                    "body": "-----BEGIN CERTIFICATE-----IyMzU5MTVaMHk...",
+                    "status": true,
+                    "cn": "AcommonName",
+                    "description": "This is the ROOT certificate for the TestAuthority certificate authority.",
+                    "chain": "",
+                    "notBefore": "2016-06-02T00:00:15+00:00",
+                    "notAfter": "2023-06-02T23:59:15+00:00",
+                    "owner": "secure@example.com",
+                    "user": {
+                        "username": "joe@example.com",
+                        "active": true,
+                        "email": "joe@example.com",
+                        "id": 3
+                    },
+                    "active": true,
+                    "bits": 2048,
+                    "id": 2235,
+                    "name": "TestAuthority"
+                },
+                "owner": "secure@example.com",
+                "id": 43,
+                "description": "This is the ROOT certificate for the TestAuthority certificate authority."
               }
 
            :reqheader Authorization: OAuth token to authenticate
