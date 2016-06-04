@@ -186,10 +186,6 @@ def upload(**kwargs):
 
     cert = Certificate(**kwargs)
 
-    # we override the generated name if one is provided
-    if kwargs.get('name'):
-        cert.name = kwargs['name']
-
     cert = database.create(cert)
     g.user.certificates.append(cert)
 
@@ -215,10 +211,6 @@ def create(**kwargs):
         kwargs['roles'] = roles
 
     cert = Certificate(**kwargs)
-
-    # we override the generated name if one is provided
-    if kwargs.get('name'):
-        cert.name = kwargs['name']
 
     g.user.certificates.append(cert)
     cert.authority = kwargs['authority']
