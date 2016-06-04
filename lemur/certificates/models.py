@@ -75,6 +75,13 @@ class Certificate(db.Model):
 
     def __init__(self, **kwargs):
         cert = defaults.parse_certificate(kwargs['body'])
+
+        # this needs to be first when other destinations are attach, it needs a valid name
+        if kwargs.get('name'):
+            self.name = kwargs['name']
+        else:
+            self.name = get_or_increase_name(defaults.certificate_name(self.cn, self.issuer, self.not_before, self.not_after, self.san))
+
         self.owner = kwargs['owner']
         self.body = kwargs['body']
         self.private_key = kwargs.get('private_key')
@@ -92,7 +99,6 @@ class Certificate(db.Model):
         self.san = defaults.san(cert)
         self.not_before = defaults.not_before(cert)
         self.not_after = defaults.not_after(cert)
-        self.name = get_or_increase_name(defaults.certificate_name(self.cn, self.issuer, self.not_before, self.not_after, self.san))
 
         for domain in defaults.domains(cert):
             self.domains.append(Domain(name=domain))
