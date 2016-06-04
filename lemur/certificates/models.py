@@ -76,7 +76,13 @@ class Certificate(db.Model):
     def __init__(self, **kwargs):
         cert = defaults.parse_certificate(kwargs['body'])
 
-        # this needs to be first, when destinations are appended they require a valid name.
+        self.issuer = defaults.issuer(cert)
+        self.cn = defaults.common_name(cert)
+        self.san = defaults.san(cert)
+        self.not_before = defaults.not_before(cert)
+        self.not_after = defaults.not_after(cert)
+
+        # when destinations are appended they require a valid name.
         if kwargs.get('name'):
             self.name = kwargs['name']
         else:
@@ -93,12 +99,7 @@ class Certificate(db.Model):
         self.replaces = kwargs.get('replacements', [])
         self.signing_algorithm = defaults.signing_algorithm(cert)
         self.bits = defaults.bitstrength(cert)
-        self.issuer = defaults.issuer(cert)
         self.serial = defaults.serial(cert)
-        self.cn = defaults.common_name(cert)
-        self.san = defaults.san(cert)
-        self.not_before = defaults.not_before(cert)
-        self.not_after = defaults.not_after(cert)
 
         for domain in defaults.domains(cert):
             self.domains.append(Domain(name=domain))
