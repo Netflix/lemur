@@ -76,7 +76,7 @@ class Certificate(db.Model):
     def __init__(self, **kwargs):
         cert = defaults.parse_certificate(kwargs['body'])
 
-        # this needs to be first when other destinations are attach, it needs a valid name
+        # this needs to be first, when destinations are appended they require a valid name.
         if kwargs.get('name'):
             self.name = kwargs['name']
         else:
