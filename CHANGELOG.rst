@@ -7,6 +7,7 @@ Changelog
 .. note:: This version is not yet released and is under active development
 
 0.3.0 - `2016-06-06`
+~~~~~~~~~~~~~~~~
 
 This is quite a large upgrade, it is highly advised you backup your database before attempting to upgrade as this release
 requires the migration of database structure as well as data.
