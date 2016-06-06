@@ -85,6 +85,9 @@ angular.module('lemur')
     AuthorityService.create = function (authority) {
       authority.attachSubAltName();
       authority.attachCustom();
+      if (authority.validityYears === '') { // if a user de-selects validity years we ignore it
+        delete authority['validityYears'];
+      }
       return AuthorityApi.post(authority);
     };
 
