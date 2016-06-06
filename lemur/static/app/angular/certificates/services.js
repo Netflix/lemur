@@ -125,13 +125,8 @@ angular.module('lemur')
     CertificateService.create = function (certificate) {
       certificate.attachSubAltName();
       certificate.attachCustom();
-      // Help users who may have just typed in their authority
-      if (!certificate.authority) {
-        AuthorityService.findActiveAuthorityByName(certificate.selectedAuthority).then(function (authorities) {
-          if (authorities.length > 0) {
-            certificate.authority = authorities[0];
-          }
-        });
+      if (certificate.validityYears === '') { // if a user de-selects validity years we ignore it
+        delete certificate.validityYears;
       }
       return CertificateApi.post(certificate);
     };
