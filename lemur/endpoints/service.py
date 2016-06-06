@@ -14,7 +14,7 @@ from lemur import database
 from lemur.extensions import metrics
 from lemur.endpoints.models import Endpoint, Policy
 
-from sqlalchemy import func
+from sqlalchemy import func, and_
 
 
 def get_all():
@@ -88,6 +88,20 @@ def render(args):
         terms = filt.split(';')
         if 'active' in filt:  # this is really weird but strcmp seems to not work here??
             query = query.filter(Endpoint.active == terms[1])
+        elif 'port' in filt:
+            if terms[1] != 'null':  # ng-table adds 'null' if a number is removed
+                query = query.filter(Endpoint.port == terms[1])
+        elif 'cipher' in filt:
+            query = query.filter(
+                and_(
+                    Policy.ciphers[
+                        ('name')
+                    ] == terms[1],  # noqa
+                    Policy.ciphers[
+                        ('value')
+                    ] == True  # noqa
+                )
+            )
         else:
             query = database.filter(query, Endpoint, terms)
 

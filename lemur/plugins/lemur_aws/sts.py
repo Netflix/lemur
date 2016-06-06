@@ -14,7 +14,7 @@ import boto3
 from flask import current_app
 
 
-def assume_service(account_number, service, region=None):
+def assume_service(account_number, service, region='us-east-1'):
     conn = boto.connect_sts()
 
     role = conn.assume_role('arn:aws:iam::{0}:role/{1}'.format(
@@ -55,7 +55,7 @@ def sts_client(service, service_type='client'):
             if service_type == 'client':
                 client = boto3.client(
                     service,
-                    region_name=kwargs.pop('region'),
+                    region_name=kwargs.pop('region', 'us-east-1'),
                     aws_access_key_id=role['Credentials']['AccessKeyId'],
                     aws_secret_access_key=role['Credentials']['SecretAccessKey'],
                     aws_session_token=role['Credentials']['SessionToken']
@@ -64,7 +64,7 @@ def sts_client(service, service_type='client'):
             elif service_type == 'resource':
                 resource = boto3.resource(
                     service,
-                    region_name=kwargs.pop('region'),
+                    region_name=kwargs.pop('region', 'us-east-1'),
                     aws_access_key_id=role['Credentials']['AccessKeyId'],
                     aws_secret_access_key=role['Credentials']['SecretAccessKey'],
                     aws_session_token=role['Credentials']['SessionToken']

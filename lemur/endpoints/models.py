@@ -17,7 +17,7 @@ class Policy(db.Model):
     ___tablename__ = 'policies'
     id = Column(Integer, primary_key=True)
     endpoint_id = Column(Integer, ForeignKey('endpoints.id'))
-    name = Column(String(32), nullable=True)
+    name = Column(String(128), nullable=True)
     ciphers = Column(JSONType)
 
 

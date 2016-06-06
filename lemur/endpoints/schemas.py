@@ -27,7 +27,8 @@ class PolicyNestedOutputSchema(LemurOutputSchema):
     def add_warnings(self, data):
         for cipher in data['ciphers']:
             if cipher['name'] in BAD_CIPHERS:
-                cipher['deprecated'] = True
+                if cipher['value']:
+                    cipher['deprecated'] = True
         return data
 
 
@@ -38,6 +39,7 @@ class EndpointOutputSchema(LemurOutputSchema):
     dnsname = fields.String()
     owner = fields.Email()
     type = fields.String()
+    port = fields.Integer()
     active = fields.Boolean()
     certificate = fields.Nested(CertificateNestedOutputSchema)
     policy = fields.Nested(PolicyNestedOutputSchema)

@@ -31,9 +31,8 @@ angular.module('lemur')
       }
     });
 
-    $scope.toggleFilter = function (params) {
-      params.settings().$scope.show_filter = !params.settings().$scope.show_filter;
-    };
+
+    $scope.ciphers = [{'title': 'Protocol-SSLv3', 'id': 'Protocol-SSLv3'}, {'title': 'Protocol-TLSv1.1', 'id': 'Protocol-TLSv1.1'}];
 
     $scope.momentService = MomentService;
 

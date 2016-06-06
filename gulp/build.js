@@ -79,7 +79,7 @@ gulp.task('dev:styles', function () {
     'bower_components/angular-loading-bar/src/loading-bar.css',
     'bower_components/angular-ui-switch/angular-ui-switch.css',
     'bower_components/angular-wizard/dist/angular-wizard.css',
-    'bower_components/ng-table/ng-table.css',
+    'bower_components/ng-table/dist/ng-table.css',
     'bower_components/angularjs-toaster/toaster.css',
     'bower_components/angular-ui-select/dist/select.css',
     'lemur/static/app/styles/lemur.css'

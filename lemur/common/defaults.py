@@ -132,7 +132,10 @@ def bitstrength(cert):
     :param cert:
     :return: Integer
     """
-    return cert.public_key().key_size
+    try:
+        return cert.public_key().key_size
+    except AttributeError:
+        current_app.logger.debug('Unable to get bitstrength.')
 
 
 def issuer(cert):

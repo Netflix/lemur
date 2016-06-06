@@ -5,12 +5,14 @@
         <div class="panel panel-default">
             <div class="panel-heading">
                 <div class="btn-group">
-                    <button ng-click="toggleFilter(endpointsTable)" class="btn btn-default">Filter</button>
+                    <button ng-model="showFilter" class="btn btn-default" uib-btn-checkbox
+                            btn-checkbox-true="1"
+                            btn-checkbox-false="0">Filter</button>
                 </div>
                 <div class="clearfix"></div>
             </div>
             <div class="table-responsive">
-                <table ng-table="endpointsTable" class="table table-striped" show-filter="false" template-pagination="angular/pager.html" >
+                <table ng-table="endpointsTable" class="table table-striped" show-filter="showFilter" template-pagination="angular/pager.html" >
                     <tbody>
                     <tr ng-repeat-start="endpoint in $data track by $index">
                         <td data-title="'Name'" sortable="'name'" filter="{ 'name': 'text' }">
@@ -19,12 +21,15 @@
                                 <li><span class="text-muted">{{ endpoint.dnsname }}</span></li>
                             </ul>
                         </td>
-                        <td data-title="'Type'">
+                        <td data-title="'Port'" sortable="'port'" filter="{ 'port': 'number' }">
+                            {{ endpoint.port }}
+                        </td>
+                        <td data-title="'Type'" sortable="'type'" filter="{ 'type': 'text'}">
                             <ul class="list-unstyled">
                                 <li><label class="label label-default text-uppercase">{{ endpoint.type }}</label></li>
                             </ul>
                         </td>
-                        <td data-title="''">
+                        <td data-title="''" filter="{ 'ciphers' : 'select'}" filter-data="ciphers">
                             <div class="btn-group-vertical pull-right">
                                 <button ng-model="endpoint.toggle" class="btn btn-sm btn-info" uib-btn-checkbox
                                         btn-checkbox-true="1"
@@ -67,7 +72,7 @@
                             <uib-tabset justified="true" class="col-md-6">
                                 <uib-tab>
                                     <uib-tab-heading>
-                                        Ciphers
+                                        Ciphers/Protocols
                                     </uib-tab-heading>
                                     <ul class="list-group">
                                         <li class="list-group-item" ng-repeat="cipher in endpoint.policy.ciphers">

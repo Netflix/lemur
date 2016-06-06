@@ -11,6 +11,7 @@ from boto.exception import BotoServerError
 
 from lemur.plugins.bases import DestinationPlugin, SourcePlugin
 from lemur.plugins.lemur_aws import iam
+from lemur.plugins.lemur_aws.ec2 import get_regions
 from lemur.plugins.lemur_aws.elb import get_all_elbs, describe_load_balancer_policies, attach_certificate
 from lemur.plugins import lemur_aws as aws
 
@@ -76,16 +77,6 @@ class AWSSourcePlugin(SourcePlugin):
             'type': 'str',
             'helpMessage': 'Comma separated list of regions to search in, if no region is specified we look in all regions.'
         },
-        {
-            'name': 'instances',
-            'type': 'bool',
-            'helpMessage': 'By default we search IAM and ELBs for certificates and endpoints, with instances selected we also attempt to connect indivdual instances to collect endpoint information. This could take a very long time depending on the number of instances.'
-        },
-        {
-            'name': 'securePorts',
-            'type': 'str',
-            'helpMessage': 'Ports to extract endpoint information from, used when "instances" is enabled'
-        }
     ]
 
     def get_certificates(self, options, **kwargs):
@@ -105,7 +96,14 @@ class AWSSourcePlugin(SourcePlugin):
     def get_endpoints(self, options, **kwargs):
         endpoints = []
         account_number = self.get_option('accountNumber', options)
-        for region in self.get_option('regions', options).split(','):
+        regions = self.get_option('regions', options)
+
+        if not regions:
+            regions = get_regions(account_number=account_number)
+        else:
+            regions = regions.split(',')
+
+        for region in regions:
             elbs = get_all_elbs(account_number=account_number, region=region)
             current_app.logger.info("Describing load balancers in {0}-{1}".format(account_number, region))
             for elb in elbs['LoadBalancerDescriptions']:
