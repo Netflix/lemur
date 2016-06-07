@@ -32,7 +32,13 @@ angular.module('lemur')
     });
 
 
-    $scope.ciphers = [{'title': 'Protocol-SSLv3', 'id': 'Protocol-SSLv3'}, {'title': 'Protocol-TLSv1.1', 'id': 'Protocol-TLSv1.1'}];
+    $scope.ciphers = [
+      {'title': 'Protocol-SSLv2', 'id': 'Protocol-SSLv2'},
+      {'title': 'Protocol-SSLv3', 'id': 'Protocol-SSLv3'},
+      {'title': 'Protocol-TLSv1', 'id': 'Protocol-TLSv1'},
+      {'title': 'Protocol-TLSv1.1', 'id': 'Protocol-TLSv1.1'},
+      {'title': 'Protocol-TLSv1.1', 'id': 'Protocol-TLSv1.2'},
+    ];
 
     $scope.momentService = MomentService;
 

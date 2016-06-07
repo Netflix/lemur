@@ -8,16 +8,38 @@
 """
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Integer, String, func, DateTime, PassiveDefault, Boolean, ForeignKey
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.sql.expression import case
 
 from lemur.database import db
 
 from lemur.models import policies_ciphers
 
 
+BAD_CIPHERS = [
+    'Protocol-SSLv3',
+    'Protocol-SSLv2',
+    'Protocol-TLSv1'
+]
+
+
 class Cipher(db.Model):
     __tablename__ = 'ciphers'
     id = Column(Integer, primary_key=True)
     name = Column(String(128), nullable=False)
+
+    @hybrid_property
+    def deprecated(self):
+        return self.name in BAD_CIPHERS
+
+    @deprecated.expression
+    def deprecated(cls):
+        return case(
+            [
+                (cls.name in BAD_CIPHERS, True)
+            ],
+            else_=False
+        )
 
 
 class Policy(db.Model):
@@ -40,3 +62,19 @@ class Endpoint(db.Model):
     policy_id = Column(Integer, ForeignKey('policy.id'))
     policy = relationship('Policy', backref='endpoint')
     certificate_id = Column(Integer, ForeignKey('certificates.id'))
+
+    @property
+    def issues(self):
+        issues = []
+
+        for cipher in self.policy.ciphers:
+            if cipher.deprecated:
+                issues.append({'name': 'deprecated cipher', 'value': '{0} has been deprecated consider removing it.'.format(cipher.name)})
+
+        if self.certificate.expired:
+            issues.append({'name': 'expired certificate', 'value': 'There is an expired certificate attached to this endpoint consider replacing it.'})
+
+        if self.certificate.revoked:
+            issues.append({'name': 'revoked', 'value': 'There is a revoked certificate attached to this endpoint consider replacing it.'})
+
+        return issues

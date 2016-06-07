@@ -17,7 +17,7 @@
                     <tr ng-repeat-start="endpoint in $data track by $index">
                         <td data-title="''" class="centered-cell">
                             <i ng-if="endpoint.issues.length" class="fa fa-exclamation-triangle" uib-tooltip="Issues Found" tooltip-placement="right" style="color: #FF5154;" aria-hidden="true"></i>
-                            <i class="fa fa-check-circle" aria-hidden="true" uib-tooltip="No issues" tooltip-placement="right" style="color: #93c54b;"></i>
+                            <i ng-if="!endpoint.issues.length" class="fa fa-check-circle" aria-hidden="true" uib-tooltip="No issues" tooltip-placement="right" style="color: #93c54b;"></i>
                         </td>
                         <td data-title="'Name'" sortable="'name'" filter="{ 'name': 'text' }">
                             <ul class="list-unstyled">
@@ -69,6 +69,19 @@
                                         <li class="list-group-item">
                                             <strong>Description</strong>
                                             <p>{{ endpoint.certificate.description }}</p>
+                                        </li>
+                                    </ul>
+                                </uib-tab>
+                                <uib-tab>
+                                    <uib-tab-heading>
+                                        Issues
+                                    </uib-tab-heading>
+                                    <ul class="list-group">
+                                        <li class="list-group-item" ng-repeat="issue in endpoint.issues">
+                                            <ul class="list-unstyled">
+                                             <li>{{ issue.name | titleCase }}</li>
+                                             <li><span class="text-muted">{{ issue.value }}</span></li>
+                                            </ul>
                                         </li>
                                     </ul>
                                 </uib-tab>

@@ -5,17 +5,10 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from marshmallow import fields, post_dump
+from marshmallow import fields
 
 from lemur.common.schema import LemurOutputSchema
 from lemur.certificates.schemas import CertificateNestedOutputSchema
-
-
-BAD_CIPHERS = [
-    'Protocol-SSLv3',
-    'Protocol-SSLv2'
-    'Protocol-TLSv1'
-]
 
 
 class CipherNestedOutputSchema(LemurOutputSchema):
@@ -45,19 +38,6 @@ class EndpointOutputSchema(LemurOutputSchema):
     policy = fields.Nested(PolicyNestedOutputSchema)
 
     issues = fields.List(fields.Dict())
-
-    @post_dump
-    def expired_certificate(self, data):
-        return data
-
-    @post_dump
-    def deprecated_ciphers(self, data):
-        if data['policy']:
-            for cipher in data['policy']['ciphers']:
-                if cipher in BAD_CIPHERS:
-                    data['issues'].append("Using deprecated cipher {0}".format(cipher['name']))
-        return data
-
 
 endpoint_output_schema = EndpointOutputSchema()
 endpoints_output_schema = EndpointOutputSchema(many=True)
