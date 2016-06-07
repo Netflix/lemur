@@ -18,18 +18,18 @@ BAD_CIPHERS = [
 ]
 
 
+class CipherNestedOutputSchema(LemurOutputSchema):
+    __envelope__ = False
+    id = fields.Integer()
+    deprecated = fields.Boolean()
+    name = fields.String()
+
+
 class PolicyNestedOutputSchema(LemurOutputSchema):
+    __envelope__ = False
     id = fields.Integer()
     name = fields.String()
-    ciphers = fields.Dict()
-
-    @post_dump
-    def add_warnings(self, data):
-        for cipher in data['ciphers']:
-            if cipher['name'] in BAD_CIPHERS:
-                if cipher['value']:
-                    cipher['deprecated'] = True
-        return data
+    ciphers = fields.Nested(CipherNestedOutputSchema, many=True)
 
 
 class EndpointOutputSchema(LemurOutputSchema):
@@ -43,6 +43,20 @@ class EndpointOutputSchema(LemurOutputSchema):
     active = fields.Boolean()
     certificate = fields.Nested(CertificateNestedOutputSchema)
     policy = fields.Nested(PolicyNestedOutputSchema)
+
+    issues = fields.List(fields.Dict())
+
+    @post_dump
+    def expired_certificate(self, data):
+        return data
+
+    @post_dump
+    def deprecated_ciphers(self, data):
+        if data['policy']:
+            for cipher in data['policy']['ciphers']:
+                if cipher in BAD_CIPHERS:
+                    data['issues'].append("Using deprecated cipher {0}".format(cipher['name']))
+        return data
 
 
 endpoint_output_schema = EndpointOutputSchema()

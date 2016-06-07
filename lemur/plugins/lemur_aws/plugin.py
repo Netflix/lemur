@@ -134,17 +134,15 @@ def format_elb_cipher_policy(policy):
     :param policy:
     :return:
     """
-    lemur_policy = {'ciphers': []}
+    ciphers = []
+    name = None
     for descr in policy['PolicyDescriptions']:
-        lemur_policy['name'] = descr['PolicyName']
         for attr in descr['PolicyAttributeDescriptions']:
-            if attr['AttributeValue'] == 'true':
-                value = True
-            elif attr['AttributeValue'] == 'false':
-                value = False
-            else:
+            if attr['AttributeName'] == 'Reference-Security-Policy':
+                name = attr['AttributeValue']
                 continue
 
-            cipher = {'name': attr['AttributeName'], 'value': value}
-            lemur_policy['ciphers'].append(cipher)
-    return lemur_policy
+            if attr['AttributeValue'] == 'true':
+                ciphers.append(attr['AttributeName'])
+
+    return dict(name=name, ciphers=ciphers)

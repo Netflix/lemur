@@ -12,9 +12,9 @@ from flask import g
 
 from lemur import database
 from lemur.extensions import metrics
-from lemur.endpoints.models import Endpoint, Policy
+from lemur.endpoints.models import Endpoint, Policy, Cipher
 
-from sqlalchemy import func, and_
+from sqlalchemy import func
 
 
 def get_all():
@@ -60,10 +60,24 @@ def create(**kwargs):
     return endpoint
 
 
-def create_policy(**kwargs):
-    policy = Policy(**kwargs)
-    database.create(policy)
+def get_or_create_policy(**kwargs):
+    policy = database.get(Policy, kwargs['name'], field='name')
+
+    if not policy:
+        policy = Policy(**kwargs)
+        database.create(policy)
+
     return policy
+
+
+def get_or_create_cipher(**kwargs):
+    cipher = database.get(Cipher, kwargs['name'], field='name')
+
+    if not cipher:
+        cipher = Cipher(**kwargs)
+        database.create(cipher)
+
+    return cipher
 
 
 def update(endpoint_id, **kwargs):
@@ -91,16 +105,9 @@ def render(args):
         elif 'port' in filt:
             if terms[1] != 'null':  # ng-table adds 'null' if a number is removed
                 query = query.filter(Endpoint.port == terms[1])
-        elif 'cipher' in filt:
+        elif 'ciphers' in filt:
             query = query.filter(
-                and_(
-                    Policy.ciphers[
-                        ('name')
-                    ] == terms[1],  # noqa
-                    Policy.ciphers[
-                        ('value')
-                    ] == True  # noqa
-                )
+                Cipher.name == terms[1]
             )
         else:
             query = database.filter(query, Endpoint, terms)

@@ -101,7 +101,13 @@ def sync_endpoints(source):
         endpoint['certificate'] = cert
 
         policy = endpoint.pop('policy')
-        endpoint['policy'] = endpoint_service.create_policy(**policy)
+
+        policy_ciphers = []
+        for nc in policy['ciphers']:
+            policy_ciphers.append(endpoint_service.get_or_create_cipher(name=nc))
+
+        policy['ciphers'] = policy_ciphers
+        endpoint['policy'] = endpoint_service.get_or_create_policy(**policy)
 
         if not exists:
             endpoint_service.create(**endpoint)
@@ -142,14 +148,18 @@ def sync_certificates(source):
     _disassociate_certs_from_source(c_certificates, certificates, source)
 
 
-def sync(labels=None, type='all'):
+def sync(labels=None, type=None):
     for source in database.get_all(Source, True, field='active'):
         # we should be able to specify, individual sources to sync
         if labels:
             if source.label not in labels:
                 continue
 
-        if type == 'all':
+        if type == 'endpoints':
+            sync_endpoints(source)
+        elif type == 'certificates':
+            sync_certificates(source)
+        else:
             sync_certificates(source)
             sync_endpoints(source)
 

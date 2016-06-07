@@ -7,18 +7,24 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from sqlalchemy.orm import relationship
-from sqlalchemy_utils import JSONType
 from sqlalchemy import Column, Integer, String, func, DateTime, PassiveDefault, Boolean, ForeignKey
 
 from lemur.database import db
+
+from lemur.models import policies_ciphers
+
+
+class Cipher(db.Model):
+    __tablename__ = 'ciphers'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(128), nullable=False)
 
 
 class Policy(db.Model):
     ___tablename__ = 'policies'
     id = Column(Integer, primary_key=True)
-    endpoint_id = Column(Integer, ForeignKey('endpoints.id'))
     name = Column(String(128), nullable=True)
-    ciphers = Column(JSONType)
+    ciphers = relationship('Cipher', secondary=policies_ciphers, backref='policy')
 
 
 class Endpoint(db.Model):
@@ -31,5 +37,6 @@ class Endpoint(db.Model):
     active = Column(Boolean, default=True)
     port = Column(Integer)
     date_created = Column(DateTime, PassiveDefault(func.now()), nullable=False)
-    policy = relationship('Policy', backref='endpoint', uselist=False)
+    policy_id = Column(Integer, ForeignKey('policy.id'))
+    policy = relationship('Policy', backref='endpoint')
     certificate_id = Column(Integer, ForeignKey('certificates.id'))

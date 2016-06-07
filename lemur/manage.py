@@ -189,7 +189,8 @@ def generate_settings():
 
 
 @manager.option('-s', '--sources', dest='labels')
-def sync(labels):
+@manager.option('-t', '--type', dest='type')
+def sync(labels, type):
     """
     Attempts to run several methods Certificate discovery. This is
     run on a periodic basis and updates the Lemur datastore with the
@@ -220,7 +221,7 @@ def sync(labels):
                 if labels[0] == 'all':
                     source_sync()
                 else:
-                    source_sync(labels=labels)
+                    source_sync(labels=labels, type=type)
 
                 sys.stdout.write(
                     "[+] Finished syncing sources. Run Time: {time}\n".format(

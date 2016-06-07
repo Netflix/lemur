@@ -98,16 +98,6 @@ def create(**kwargs):
     else:
         kwargs['roles'] = roles
 
-    if kwargs['type'] == 'subca':
-        description = "This is the ROOT certificate for the {0} sub certificate authority the parent \
-                                authority is {1}.".format(kwargs.get('name'), kwargs.get('parent'))
-    else:
-        description = "This is the ROOT certificate for the {0} certificate authority.".format(
-            kwargs.get('name')
-        )
-
-    kwargs['description'] = description
-
     cert = upload(**kwargs)
     kwargs['authority_certificate'] = cert
 
