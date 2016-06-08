@@ -52,15 +52,15 @@ def sensitive_domain(domain):
                     to issue the certificate.'.format(domain))
 
 
-def oid_type(oid_type):
+def encoding(oid_encoding):
     """
     Determines if the specified oid type is valid.
-    :param oid_type:
+    :param oid_encoding:
     :return:
     """
     valid_types = ['b64asn1', 'string', 'ia5string']
-    if oid_type.lower() not in [o_type.lower() for o_type in valid_types]:
-        raise ValidationError('Invalid Oid Type: {0} choose from {1}'.format(oid_type, ",".join(valid_types)))
+    if oid_encoding.lower() not in [o_type.lower() for o_type in valid_types]:
+        raise ValidationError('Invalid Oid Encoding: {0} choose from {1}'.format(oid_encoding, ",".join(valid_types)))
 
 
 def sub_alt_type(alt_type):
