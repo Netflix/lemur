@@ -196,7 +196,7 @@ class SubAltNamesSchema(BaseExtensionSchema):
 
 class CustomOIDSchema(BaseExtensionSchema):
     oid = fields.String()
-    oid_type = fields.String(validate=validators.oid_type)
+    encoding = fields.String(validate=validators.encoding)
     value = fields.String()
 
 
