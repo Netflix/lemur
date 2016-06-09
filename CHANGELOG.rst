@@ -93,7 +93,7 @@ Issuer Plugin Owners
 --------------------
 
 This release may break your plugins, the keys in `issuer_options` have been changed from `camelCase` to `under_score`.
-This change was made to break a undue reliance on downstream options maintains a more pythonic naming convention. Renaming
+This change was made to break an undue reliance on downstream options maintains a more pythonic naming convention. Renaming
 these keys should be fairly trivial, additionally pull requests have been submitted to affected plugins to help ease the transition.
 
 .. note:: This change only affects issuer plugins and does not affect any other types of plugins.
@@ -103,10 +103,10 @@ these keys should be fairly trivial, additionally pull requests have been submit
     stricter input validation and better error messages when validation fails.
 * Closed `#146 <https://github.com/Netflix/lemur/issues/146>`_ - Moved authority type to first pane of authority creation wizard.
 * Closed `#147 <https://github.com/Netflix/lemur/issues/147>`_ - Added and refactored the relationship between authorities and their
-    root certificates. Displays the certificates (and chains) next the the authority in question.
+    root certificates. Displays the certificates (and chains) next to the authority in question.
 * Closed `#199 <https://github.com/Netflix/lemur/issues/199>`_ - Ensures that the dates submitted to Lemur during authority and
     certificate creation are actually dates.
-* Closed `#230 <https://github.com/Netflix/lemur/issues/230>`_ - Migrated authority dropdown to a ui-select based dropdown, this
+* Closed `#230 <https://github.com/Netflix/lemur/issues/230>`_ - Migrated authority dropdown to an ui-select based dropdown, this
     should be easier to determine what authorities are available and when an authority has actually been selected.
 * Closed `#254 <https://github.com/Netflix/lemur/issues/254>`_ - Forces certificate names to be generally unique. If a certificate name
     (generated or otherwise) is found to be a duplicate we increment by appending a counter.
@@ -168,6 +168,6 @@ these keys should be fairly trivial, additionally pull requests have been submit
 0.1.5 - 2015-10-26
 ~~~~~~~~~~~~~~~~~~
 
-* **SECURITY ISSUE**: Switched from use a AES static key to Fernet encryption.
+* **SECURITY ISSUE**: Switched from use an AES static key to Fernet encryption.
   Affects all versions prior to 0.1.5. If upgrading this will require a data migration.
-  see: `Upgrading Lemur <https://lemur.readthedocs.com/adminstration#UpgradingLemur>`_
+  see: `Upgrading Lemur <https://lemur.readthedocs.io/administration#UpgradingLemur>`_
