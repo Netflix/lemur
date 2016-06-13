@@ -75,8 +75,8 @@ def create_token(user):
     expiration_delta = timedelta(days=int(current_app.config.get('LEMUR_TOKEN_EXPIRATION', 1)))
     payload = {
         'sub': user.id,
-        'iat': datetime.now(),
-        'exp': datetime.now() + expiration_delta
+        'iat': datetime.utcnow(),
+        'exp': datetime.utcnow() + expiration_delta
     }
     token = jwt.encode(payload, current_app.config['LEMUR_TOKEN_SECRET'])
     return token.decode('unicode_escape')
