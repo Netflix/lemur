@@ -14,7 +14,7 @@ from lemur.schemas import AssociatedRoleSchema, AssociatedCertificateSchema, Ass
 class UserInputSchema(LemurInputSchema):
     username = fields.String(required=True)
     email = fields.Email(required=True)
-    password = fields.String(required=True)  # TODO add complexity requirements
+    password = fields.String()  # TODO add complexity requirements
     active = fields.Boolean()
     roles = fields.Nested(AssociatedRoleSchema, many=True, missing=[])
     certificates = fields.Nested(AssociatedCertificateSchema, many=True, missing=[])
