@@ -29,8 +29,8 @@ def create(username, password, email, active, profile_picture, roles):
         email=email,
         active=active,
         profile_picture=profile_picture,
-        role=roles
     )
+    user.roles = roles
     return database.create(user)
 
 
