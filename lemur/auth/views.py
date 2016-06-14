@@ -191,9 +191,7 @@ class Ping(Resource):
             roles.append(role)
 
         # if we get an sso user create them an account
-        # we still pick a random password in case sso is down
         if not user:
-
             # every user is an operator (tied to a default role)
             if current_app.config.get('LEMUR_DEFAULT_ROLE'):
                 v = role_service.get_by_name(current_app.config.get('LEMUR_DEFAULT_ROLE'))
