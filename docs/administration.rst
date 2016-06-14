@@ -334,6 +334,16 @@ for those plugins.
         This is the root to be used for your CA chain
 
 
+OpenSSL Issuer Plugin
+^^^^^^^^^^^^^^^^^^^^^^
+
+OpenSSL Authority allows to issue certificates as a private CA.
+
+.. data:: OPENSSL_DIR
+    :noindex:
+
+        This is the "root" directory where all private keys and trust chains for all OpenSSL private CAs are stored.
+
 
 AWS Source/Destination Plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

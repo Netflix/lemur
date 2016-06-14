@@ -1,3 +1,14 @@
+# coding=utf-8
+import arrow
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+from cryptography.x509 import ExtensionOID, Extension, SubjectAlternativeName, DNSName, IPAddress
+import ipaddress
+
+from lemur.utils import mktemppath
+
 PRIVATE_KEY_STR = b"""
 -----BEGIN RSA PRIVATE KEY-----
 MIIEogIBAAKCAQEAsXn+QZRATxryRmGXI4fdI+0a2oBwuVh8fC/9bcqX6c5eDmgc
@@ -61,3 +72,143 @@ def test_export_certificate_to_jks(app):
     options = {'passphrase': 'test1234'}
     raw = p.export(EXTERNAL_VALID_STR, "", PRIVATE_KEY_STR, options)
     assert raw != b""
+
+def test_openssl_certificate(app):
+    from lemur.authorities.models import Authority
+    from lemur.plugins.base import plugins
+    p = plugins.get('openssl-issuer')
+    ca_options = {
+        "caDN": {
+            "country": "US",
+            "state": "OR",
+            "location": "Portland",
+            "organization": "ExampleInc",
+            "organizationalUnit": "Security",
+            "commonName": "Authority"
+        },
+        "validityStart": "2015-06-11T07:00:00.000Z",
+        "validityEnd": "2015-06-13T07:00:00.000Z",
+        "extensions": {
+            "subAltNames": {
+                "names": ['DNS:example.com']
+            }
+        },
+        "caSigningAlgo": "sha256",
+        "keyType": "RSA4096",
+
+        "caSensitivity": "medium",
+
+        # These get consumed in authority/service.py, but are here for completeness
+        "pluginName": "openssl-issuer",
+        "caName": "DoctestCA",
+        "caType": "root",
+        "caDescription": "Example CA",
+        "ownerEmail": "jimbob@example.com",
+        "creator": "lemur@example.com"
+    }
+    options = {
+        "criticalCaExtension" : True,
+        "country": u'US',
+        "state": u'CA',
+        "location": u'A Place',
+        "organization": u'ExampleInc.',
+        "organizationalUnit": u'Operations',
+
+        "owner": 'bob@example.com',
+        "description": u'test',
+        "authority": {
+            'name': 'DoctestCA'
+        },
+        "extensions": {
+            "subAltNames": {
+                "names": [{
+                    'nameType': 'DNSName',
+                    'value': u'example.com'
+                }, {
+                    'nameType': 'IPAddress',
+                    'value': u'127.0.0.1'
+                }]
+            },
+            "extendedKeyUsage": {
+                "isCritical": True,
+                "clientAuth": True
+            },
+            "subjectKeyIdentifier": {
+                "includeSKI": True,
+                "isCritical": True
+            },
+            "authorityKeyIdentifier": {
+                "isCritical": True
+            },
+            "keyUsage": {
+                "digitalSignature": True,
+                "contentCommitment": False,
+                "keyEncipherment": True,
+                "dataEncipherment": False,
+                "keyAgreement": False,
+                "keyCertSign": False,
+                "crlSign": False,
+                "encipherOnly": False,
+                "decipherOnly": False,
+                "isCritical": False
+            }
+        },
+        "commonName": u'test',
+        "validityStart": '2015-06-05T07:00:00.000Z',
+        "validityEnd": '2015-06-16T07:00:00.000Z',
+    }
+
+    with mktemppath() as ca_temp:
+        app.config['OPENSSL_DIR'] = ca_temp
+        root, intermediate, roles = p.create_authority(ca_options)
+
+        from lemur.certificates.service import create_csr
+
+        options['authority'] = Authority(unicode(ca_options['caName']), unicode(ca_options['ownerEmail']), 'openssl-issuer', root)
+        csr, private_key_pem = create_csr(options, root)
+        cert, root_ca = p.create_certificate(csr, options)
+
+    assert root == root_ca
+
+    assert roles == []
+    assert intermediate == ""
+    ca_cert = x509.load_pem_x509_certificate(str(root_ca), default_backend())
+    cert = x509.load_pem_x509_certificate(str(cert), default_backend())
+
+    assert cert.not_valid_before == arrow.get(options['validityStart']).naive
+    assert cert.not_valid_after == arrow.get(options['validityEnd']).naive
+
+    assert isinstance(cert.public_key(), RSAPublicKey)
+    assert cert.issuer == x509.load_pem_x509_certificate(str(root_ca), default_backend()).subject
+    assert cert.subject == x509.load_pem_x509_csr(csr, default_backend()).subject
+    assert cert.signature_hash_algorithm.name == 'sha256'
+    assert cert.extensions.get_extension_for_oid(ExtensionOID.SUBJECT_ALTERNATIVE_NAME) == Extension(
+        ExtensionOID.SUBJECT_ALTERNATIVE_NAME, critical=True, value=SubjectAlternativeName([
+            DNSName(u'example.com'),
+            IPAddress(ipaddress.ip_address(u'127.0.0.1'))
+        ]))
+
+    assert cert.extensions.get_extension_for_oid(ExtensionOID.EXTENDED_KEY_USAGE) == Extension(
+        ExtensionOID.EXTENDED_KEY_USAGE, critical=True,
+        value=x509.ExtendedKeyUsage([x509.oid.ExtendedKeyUsageOID.CLIENT_AUTH]))
+
+    private_key = serialization.load_pem_private_key(
+        private_key_pem,
+        password=None,
+        backend=default_backend()
+    )
+
+    assert cert.extensions.get_extension_for_oid(ExtensionOID.SUBJECT_KEY_IDENTIFIER) == Extension(
+        ExtensionOID.SUBJECT_KEY_IDENTIFIER, critical=True,
+        value=x509.SubjectKeyIdentifier.from_public_key(private_key.public_key()))
+
+    assert cert.extensions.get_extension_for_oid(ExtensionOID.AUTHORITY_KEY_IDENTIFIER) == Extension(
+        ExtensionOID.AUTHORITY_KEY_IDENTIFIER, critical=True,
+        value=x509.AuthorityKeyIdentifier.from_issuer_public_key(ca_cert.public_key()))
+
+    assert cert.extensions.get_extension_for_oid(ExtensionOID.KEY_USAGE) == Extension(
+        ExtensionOID.KEY_USAGE, critical=False,
+        value=x509.KeyUsage(digital_signature=True, key_encipherment=True, content_commitment=False,
+                            data_encipherment=False, key_agreement=False, key_cert_sign=False,
+                            crl_sign=False, encipher_only=False, decipher_only=False))
+
