@@ -176,7 +176,8 @@ setup(
             'java_keystore_export = lemur.plugins.lemur_java.plugin:JavaKeystoreExportPlugin',
             'openssl_export = lemur.plugins.lemur_openssl.plugin:OpenSSLExportPlugin',
             'atlas_metric = lemur.plugins.lemur_atlas.plugin:AtlasMetricPlugin',
-            'kubernetes_destination = lemur.plugins.lemur_kubernetes.plugin:KubernetesDestinationPlugin'
+            'kubernetes_destination = lemur.plugins.lemur_kubernetes.plugin:KubernetesDestinationPlugin',
+            'aws_s3_destination = lemur.plugins.lemur_aws_s3.plugin:S3DestinationPlugin'
         ],
     },
     classifiers=[
