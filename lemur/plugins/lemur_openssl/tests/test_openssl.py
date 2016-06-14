@@ -73,6 +73,7 @@ def test_export_certificate_to_jks(app):
     raw = p.export(EXTERNAL_VALID_STR, "", PRIVATE_KEY_STR, options)
     assert raw != b""
 
+
 def test_openssl_certificate(app):
     from lemur.authorities.models import Authority
     from lemur.plugins.base import plugins
@@ -107,7 +108,7 @@ def test_openssl_certificate(app):
         "creator": "lemur@example.com"
     }
     options = {
-        "criticalCaExtension" : True,
+        "criticalCaExtension": True,
         "country": u'US',
         "state": u'CA',
         "location": u'A Place',
@@ -211,4 +212,3 @@ def test_openssl_certificate(app):
         value=x509.KeyUsage(digital_signature=True, key_encipherment=True, content_commitment=False,
                             data_encipherment=False, key_agreement=False, key_cert_sign=False,
                             crl_sign=False, encipher_only=False, decipher_only=False))
-
