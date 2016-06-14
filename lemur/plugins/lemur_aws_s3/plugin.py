@@ -114,5 +114,3 @@ class S3DestinationPlugin(DestinationPlugin):
 if __name__ == "__main__":
     ensure_certificate('lemurtest2', 'olo', "Seth")
 
-
-
