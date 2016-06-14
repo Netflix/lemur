@@ -22,6 +22,7 @@ import urllib
 
 DEFAULT_API_VERSION = 'v1'
 
+
 def ensure_resource(k8s_api, k8s_base_uri, namespace, kind, name, data):
 
     # _resolve_uri(k8s_base_uri, namespace, kind, name, api_ver=DEFAULT_API_VERSION)
@@ -38,6 +39,7 @@ def ensure_resource(k8s_api, k8s_base_uri, namespace, kind, name, data):
         return update_resp.content
     return None
 
+
 def _resolve_ns(k8s_base_uri, namespace, api_ver=DEFAULT_API_VERSION,):
     api_group = 'api'
     if '/' in api_ver:
@@ -45,7 +47,7 @@ def _resolve_ns(k8s_base_uri, namespace, api_ver=DEFAULT_API_VERSION,):
     return '{base}/{api_group}/{api_ver}/namespaces'.format(base=k8s_base_uri, api_group=api_group, api_ver=api_ver) + ('/' + namespace if namespace else '')
 
 
-def _resolve_uri(k8s_base_uri, namespace, kind,  name=None, api_ver=DEFAULT_API_VERSION):
+def _resolve_uri(k8s_base_uri, namespace, kind, name=None, api_ver=DEFAULT_API_VERSION):
     if not namespace:
         namespace = 'default'
     return "/".join(itertools.chain.from_iterable([
@@ -53,6 +55,7 @@ def _resolve_uri(k8s_base_uri, namespace, kind,  name=None, api_ver=DEFAULT_API_
         ((kind + 's').lower(),),
         (name,) if name else (),
     ]))
+
 
 class KubernetesDestinationPlugin(DestinationPlugin):
     title = 'Kubernetes'
@@ -128,7 +131,6 @@ class KubernetesDestinationPlugin(DestinationPlugin):
 
         if err is not None:
             raise Exception("Error uploading secret: " + err)
-
 
 
 class K8sSession(requests.Session):
