@@ -10,6 +10,7 @@ import subprocess
 import os
 import arrow
 import uuid
+import string
 
 from flask import current_app
 
@@ -17,7 +18,6 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 
-from flask import current_app
 from lemur.certificates.models import Certificate
 
 from lemur.utils import mktempfile, mktemppath
@@ -31,6 +31,7 @@ supported_hash_algorithms = {
     }
 
 VALID_FILENAME_CHARS = "-_.() %s%s" % (string.ascii_letters, string.digits)
+
 
 def run_process(command):
     """
@@ -79,6 +80,7 @@ def create_pkcs12(cert, chain, p12_tmp, key, alias, passphrase):
                 "-password", "pass:{}".format(passphrase)
             ])
 
+
 def get_ca_key(openssl_cert_path, ca_name):
 
     ca_dir = remove_disallowed_filename_chars(ca_name)
@@ -125,7 +127,7 @@ def create_new_root_ca(openssl_cert_path, ca_name, subject, days, key_size, sign
         "-outform", "PEM",
         "-days", str(days),
         "-keyout", root_ca_key,
-        ])
+    ])
 
     with open(root_ca_cert, 'w') as out:
         out.write(cert)
@@ -151,7 +153,6 @@ def create_new_cert(openssl_cert_path, csr, ca_name, not_before, not_after, algo
                                                          password=None,
                                                          backend=default_backend())
     csr = x509.load_pem_x509_csr(csr, default_backend())
-
 
     current_app.logger.debug("CSR extensions: {0}".format(csr.extensions))
 
