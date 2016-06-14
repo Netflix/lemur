@@ -114,20 +114,21 @@ def create_new_root_ca(openssl_cert_path, ca_name, subject, days, key_size, sign
     """
     Creates a root CA.
     """
-    cert = run_process([
-        "openssl",
-        "req",
-        "-x509",
-        "-%s" % sign_algo,
-        "-subj", subject,
-        "-new",
-        "-nodes",
-        "-newkey", "rsa:%d" % key_size,
-        "-keyform", "PEM",
-        "-outform", "PEM",
-        "-days", str(days),
-        "-keyout", root_ca_key,
-    ])
+    cert = run_process\
+            ([
+                "openssl",
+                "req",
+                "-x509",
+                "-%s" % sign_algo,
+                "-subj", subject,
+                "-new",
+                "-nodes",
+                "-newkey", "rsa:%d" % key_size,
+                "-keyform", "PEM",
+                "-outform", "PEM",
+                "-days", str(days),
+                "-keyout", root_ca_key,
+            ])
 
     with open(root_ca_cert, 'w') as out:
         out.write(cert)
