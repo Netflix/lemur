@@ -59,6 +59,7 @@ from lemur.plugins.bases import IssuerPlugin
 
 DNS_TTL = 30
 
+
 class AuthorizationRecord(object):
     def __init__(self, host, authz, dns_challenge, route53_change_id,
                  route53_zone_id):
@@ -67,6 +68,7 @@ class AuthorizationRecord(object):
         self.dns_challenge = dns_challenge
         self.route53_change_id = route53_change_id
         self.route53_zone_id = route53_zone_id
+
 
 def generate_cert(csr, acme_client, route53_client, hosts):
 
@@ -104,6 +106,7 @@ def change_txt_record(route53_client, action, zone_id, domain, value):
     changes1 = change_set.add_change(action, domain, type="TXT", ttl=DNS_TTL)
     changes1.add_value('\"' + value + '\"')
     return change_set.commit().ChangeInfo
+
 
 def start_dns_challenge(acme_client, route53_client, host):
     current_app.logger.debug(
@@ -187,6 +190,7 @@ def request_certificate(acme_client, authorizations, csr):
     )
     return pem_certificate, pem_certificate_chain
 
+
 def find_dns_challenge(authz):
     for combo in authz.body.resolved_combinations:
         if (
@@ -220,10 +224,12 @@ def acme_client_for_private_key(acme_directory_url, private_key):
         acme_directory_url, key=acme.jose.JWKRSA(key=private_key)
     )
 
+
 def generate_rsa_private_key():
     return rsa.generate_private_key(
         public_exponent=65537, key_size=2048, backend=default_backend()
     )
+
 
 def get_acme_client(url, email):
     current_app.logger.debug("acme-register.generate-key")
@@ -243,6 +249,7 @@ def get_acme_client(url, email):
 
     return acme_client
 
+
 def get_subject_alternative_hosts(options):
     hosts = []
     if options.get('extensions'):
@@ -253,6 +260,7 @@ def get_subject_alternative_hosts(options):
                         hosts = hosts + [name['value']]
     return hosts
 
+
 class AWSLetsEncryptIssuerPlugin(IssuerPlugin):
     title = 'AWSLetsEncrypt'
     slug = 'awsletsencrypt-issuer'
@@ -261,8 +269,10 @@ class AWSLetsEncryptIssuerPlugin(IssuerPlugin):
     author = 'Mikhail Khodorovskiy'
     author_url = 'https://github.com/mik373/lemur'
 
+
     def __init__(self, *args, **kwargs):
         super(AWSLetsEncryptIssuerPlugin, self).__init__(*args, **kwargs)
+
 
     # noinspection PyMethodOverriding
     def create_certificate(self, csr, issuer_options):
@@ -287,6 +297,7 @@ class AWSLetsEncryptIssuerPlugin(IssuerPlugin):
         pem_certificate, pem_certificate_chain = generate_cert(csr, acme_client, route53_client, hosts)
 
         return pem_certificate, pem_certificate_chain
+
 
     # noinspection PyMethodOverriding
     @staticmethod

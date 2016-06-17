@@ -1,13 +1,8 @@
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
-from cryptography import x509
-from cryptography.x509 import ExtensionOID, Extension, SubjectAlternativeName, DNSName, IPAddress
-from cryptography.hazmat.backends import default_backend
+
 from moto import mock_route53
 
 import boto
-import datetime
+
 
 LETS_ENCRYPT_CERT = b"""
 -----BEGIN CERTIFICATE-----
