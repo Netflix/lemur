@@ -27,3 +27,4 @@ pyjwt==1.4.0
 xmltodict==0.9.2
 lockfile==0.12.2
 future==0.15.2
+-e git+https://github.com/wteiken/letsencrypt.git@add_dns01_challenge#egg=acme&subdirectory=acme
