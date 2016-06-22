@@ -3,7 +3,7 @@ Pygments>=1.2
 Sphinx>=1.3
 docutils>=0.7
 markupsafe
-sphinxcontrib-httpdomain
+sphinxcontrib-httpdomain2==1.5.0
 Flask==0.10.1
 Flask-RESTful==0.3.3
 Flask-SQLAlchemy==2.1
