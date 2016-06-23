@@ -15,7 +15,7 @@ from lemur.common.schema import validate_schema
 from lemur.common.utils import paginated_parser
 
 from lemur.auth.service import AuthenticatedResource
-from lemur.auth.permissions import ViewKeyPermission, AuthorityPermission, CertificatePermission
+from lemur.auth.permissions import AuthorityPermission, CertificatePermission
 
 from lemur.certificates import service
 from lemur.certificates.schemas import certificate_input_schema, certificate_output_schema, \
@@ -399,9 +399,8 @@ class CertificatePrivateKey(AuthenticatedResource):
         if not cert:
             return dict(message="Cannot find specified certificate"), 404
 
-        role = role_service.get_by_name(cert.owner)
-
-        permission = ViewKeyPermission(certificate_id, getattr(role, 'name', None))
+        owner_role = role_service.get_by_name(cert.owner)
+        permission = CertificatePermission(cert.id, owner_role, [x.name for x in cert.roles])
 
         if permission.can():
             response = make_response(jsonify(key=cert.private_key), 200)
@@ -581,7 +580,8 @@ class Certificates(AuthenticatedResource):
         """
         cert = service.get(certificate_id)
 
-        permission = CertificatePermission(cert.id, [x.name for x in cert.roles])
+        owner_role = role_service.get_by_name(cert.owner)
+        permission = CertificatePermission(cert.id, owner_role, [x.name for x in cert.roles])
 
         if permission.can():
             return service.update(
@@ -864,7 +864,8 @@ class CertificateExport(AuthenticatedResource):
         """
         cert = service.get(certificate_id)
 
-        permission = CertificatePermission(cert.id, [x.name for x in cert.roles])
+        owner_role = role_service.get_by_name(cert.owner)
+        permission = CertificatePermission(cert.id, owner_role, [x.name for x in cert.roles])
 
         options = data['plugin']['plugin_options']
         plugin = data['plugin']['plugin_object']
