@@ -73,7 +73,8 @@ tests_require = [
 
 docs_require = [
     'sphinx',
-    'sphinxcontrib-httpdomain'
+    'sphinxcontrib-httpdomain',
+    'sphinx-rtd-theme'
 ]
 
 dev_requires = [
