@@ -6,6 +6,8 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import arrow
+from ipaddress import ip_address
+import itertools
 
 from sqlalchemy import func, or_
 from flask import g, current_app
@@ -140,7 +142,7 @@ def mint(**kwargs):
 
     # allow the CSR to be specified by the user
     if not kwargs.get('csr'):
-        csr, private_key = create_csr(**kwargs)
+        csr, private_key = create_csr(authority.body, **kwargs)
     else:
         csr = str(kwargs.get('csr'))
         private_key = None
@@ -292,7 +294,7 @@ def render(args):
     return database.sort_and_page(query, Certificate, args)
 
 
-def create_csr(**csr_config):
+def create_csr(ca_cert_pem, **csr_config):
     """
     Given a list of domains create the appropriate csr
     for those domains
@@ -328,11 +330,52 @@ def create_csr(**csr_config):
                 for name in v['names']:
                     if name['name_type'] == 'DNSName':
                         general_names.append(x509.DNSName(name['value']))
+                    elif name['nameType'] == 'IPAddress':
+                        general_names.append(x509.IPAddress(ip_address(name['value'])))
 
                 builder = builder.add_extension(
                     x509.SubjectAlternativeName(general_names), critical=True
                 )
-
+            elif k == 'keyUsage':
+                builder = builder.add_extension(
+                    x509.KeyUsage(
+                        digital_signature=any([v.get(k) for k in ('digitalSignature', 'useDigitalSignature')]),
+                        content_commitment=bool(v.get('useNonRepudiation')),
+                        key_encipherment=any([v.get(k) for k in ('keyEncipherment', 'useKeyEncipherment')]),
+                        data_encipherment=bool(v.get('useDataEncipherment')),
+                        key_agreement=bool(v.get('useKeyAgreement')),
+                        key_cert_sign=bool(v.get('useKeyCertSign')),
+                        crl_sign=bool(v.get('useCRLSign')),
+                        encipher_only=bool(v.get('useEncipherOnly')),
+                        decipher_only=bool(v.get('useDecipherOnly')),
+                    ),
+                    critical=bool(v.get('isCritical', True))
+                )
+            elif k == 'extendedKeyUsage':
+                builder = builder.add_extension(
+                    x509.ExtendedKeyUsage(list(itertools.chain(
+                        ([x509.oid.ExtendedKeyUsageOID.CLIENT_AUTH]
+                         if any([v.get(k) for k in ('clientAuth', 'useClientAuthentication')]) else []),
+                        ([x509.oid.ExtendedKeyUsageOID.SERVER_AUTH]
+                         if any([v.get(k) for k in ('serverAuth', 'useServerAuthentication')]) else []),
+                        ([x509.oid.ExtendedKeyUsageOID.EMAIL_PROTECTION] if v.get('useEmail') else []),
+                        ([x509.oid.ExtendedKeyUsageOID.TIME_STAMPING] if v.get('useTimestamping') else []),
+                        ([x509.oid.ExtendedKeyUsageOID.OCSP_SIGNING] if v.get('useOCSPSigning') else []),
+                    ))),
+                    critical=bool(v.get('isCritical', True))
+                )
+            elif k == 'subjectKeyIdentifier' and v.get('includeSKI', True):  # Default to true for backwards compatibility
+                public_key = private_key.public_key()
+                builder = builder.add_extension(
+                    x509.SubjectKeyIdentifier.from_public_key(public_key),
+                    critical=bool(v.get('isCritical', True))
+                )
+            elif k == 'authorityKeyIdentifier' and v.get('useKeyIdentifier', True):  # Default to true for backwards compatibility
+                ca_cert = x509.load_pem_x509_certificate(str(ca_cert_pem), default_backend())
+                builder = builder.add_extension(
+                    x509.AuthorityKeyIdentifier.from_issuer_public_key(ca_cert.public_key()),
+                    critical=bool(v.get('isCritical', True))
+                )
     # TODO support more CSR options, none of the authority plugins currently support these options
     #    builder.add_extension(
     #        x509.KeyUsage(

@@ -174,6 +174,7 @@ setup(
             'java_truststore_export = lemur.plugins.lemur_java.plugin:JavaTruststoreExportPlugin',
             'java_keystore_export = lemur.plugins.lemur_java.plugin:JavaKeystoreExportPlugin',
             'openssl_export = lemur.plugins.lemur_openssl.plugin:OpenSSLExportPlugin',
+            'openssl_issuer = lemur.plugins.lemur_openssl.plugin:OpenSSLIssuerPlugin',
             'atlas_metric = lemur.plugins.lemur_atlas.plugin:AtlasMetricPlugin'
         ],
     },
