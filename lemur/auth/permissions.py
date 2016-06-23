@@ -27,21 +27,9 @@ class SensitiveDomainPermission(Permission):
         super(SensitiveDomainPermission, self).__init__(RoleNeed('admin'))
 
 
-class ViewKeyPermission(Permission):
-    def __init__(self, certificate_id, owner):
-        c_need = CertificateCreatorNeed(certificate_id)
-        super(ViewKeyPermission, self).__init__(c_need, RoleNeed(owner), RoleNeed('admin'))
-
-
-class UpdateCertificatePermission(Permission):
-    def __init__(self, certificate_id, owner):
-        c_need = CertificateCreatorNeed(certificate_id)
-        super(UpdateCertificatePermission, self).__init__(c_need, RoleNeed(owner), RoleNeed('admin'))
-
-
 class CertificatePermission(Permission):
-    def __init__(self, certificate_id, roles):
-        needs = [RoleNeed('admin'), CertificateCreatorNeed(certificate_id)]
+    def __init__(self, certificate_id, owner, roles):
+        needs = [RoleNeed('admin'), CertificateCreatorNeed(certificate_id), RoleNeed(owner)]
         for r in roles:
             needs.append(CertificateOwnerNeed(str(r)))
 
