@@ -168,6 +168,7 @@ setup(
         'lemur.plugins': [
             'verisign_issuer = lemur.plugins.lemur_verisign.plugin:VerisignIssuerPlugin',
             'aws_destination = lemur.plugins.lemur_aws.plugin:AWSDestinationPlugin',
+            's3_destination = lemur.plugins.lemur_s3.plugin:S3DestinationPlugin',
             'aws_source = lemur.plugins.lemur_aws.plugin:AWSSourcePlugin',
             'email_notification = lemur.plugins.lemur_email.plugin:EmailNotificationPlugin',
             'slack_notification = lemur.plugins.lemur_slack.plugin:SlackNotificationPlugin',
