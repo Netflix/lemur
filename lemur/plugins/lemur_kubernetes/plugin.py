@@ -4,11 +4,11 @@
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 
-.. moduleauthor:: Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
 
     The plugin inserts certificates and the private key as Kubernetes secret that
      can later be used to secure service endpoints running in Kubernetes pods
 
+.. moduleauthor:: Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
 """
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend

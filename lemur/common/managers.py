@@ -58,8 +58,8 @@ class InstanceManager(object):
                     results.append(cls())
                 else:
                     results.append(cls)
-            except Exception:
-                current_app.logger.exception('Unable to import %s', cls_path)
+            except Exception as e:
+                current_app.logger.exception('Unable to import %s. Reason: %s', cls_path, e)
                 continue
         self.cache = results
 

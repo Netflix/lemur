@@ -168,6 +168,7 @@ setup(
         ],
         'lemur.plugins': [
             'verisign_issuer = lemur.plugins.lemur_verisign.plugin:VerisignIssuerPlugin',
+            'acme_issuer = lemur.plugins.lemur_acme.plugin:ACMEIssuerPlugin',
             'aws_destination = lemur.plugins.lemur_aws.plugin:AWSDestinationPlugin',
             'aws_source = lemur.plugins.lemur_aws.plugin:AWSSourcePlugin',
             'email_notification = lemur.plugins.lemur_email.plugin:EmailNotificationPlugin',
