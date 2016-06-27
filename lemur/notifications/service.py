@@ -45,6 +45,7 @@ def _get_message_data(cert):
     cert_dict['owner'] = cert.owner
     cert_dict['name'] = cert.name
     cert_dict['body'] = cert.body
+    cert_dict['endpoints'] = [{'name': x.name, 'dnsname': x.dnsname} for x in cert.endpoints]
 
     return cert_dict
 

@@ -5,12 +5,15 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+import datetime
+
 from flask import current_app
 
 from lemur import database
 from lemur.sources.models import Source
 from lemur.certificates.models import Certificate
 from lemur.certificates import service as cert_service
+from lemur.endpoints import service as endpoint_service
 from lemur.destinations import service as destination_service
 
 from lemur.plugins.base import plugins
@@ -37,7 +40,7 @@ def _disassociate_certs_from_source(current_certificates, found_certificates, so
                 c.sources.delete(s)
 
 
-def sync_create(certificate, source):
+def certificate_create(certificate, source):
     cert = cert_service.import_certificate(**certificate)
     cert.description = "This certificate was automatically discovered by Lemur"
     cert.sources.append(source)
@@ -45,7 +48,7 @@ def sync_create(certificate, source):
     database.update(cert)
 
 
-def sync_update(certificate, source):
+def certificate_update(certificate, source):
     for s in certificate.sources:
         if s.label == source.label:
             break
@@ -66,40 +69,102 @@ def sync_update_destination(certificate, source):
             certificate.destinations.append(dest)
 
 
-def sync(labels=None):
+def sync_endpoints(source):
+    new, updated = 0, 0
+    current_app.logger.debug("Retrieving endpoints from {0}".format(source.label))
+    s = plugins.get(source.plugin_name)
+
+    try:
+        endpoints = s.get_endpoints(source.options)
+    except NotImplementedError:
+        current_app.logger.warning("Unable to sync endpoints for source {0} plugin has not implemented 'get_endpoints'".format(source.label))
+        return
+
+    for endpoint in endpoints:
+        exists = endpoint_service.get_by_dnsname(endpoint['dnsname'])
+
+        certificate_name = endpoint.pop('certificate_name', None)
+        certificate = endpoint.pop('certificate', None)
+
+        if certificate_name:
+            cert = cert_service.get_by_name(certificate_name)
+
+        elif certificate:
+            cert = cert_service.get_by_body(certificate['body'])
+            if not cert:
+                cert = cert_service.import_certificate(**certificate)
+
+        if not cert:
+            current_app.logger.error("Unable to find associated certificate, be sure that certificates are sync'ed before endpoints")
+            continue
+
+        endpoint['certificate'] = cert
+
+        policy = endpoint.pop('policy')
+
+        policy_ciphers = []
+        for nc in policy['ciphers']:
+            policy_ciphers.append(endpoint_service.get_or_create_cipher(name=nc))
+
+        policy['ciphers'] = policy_ciphers
+        endpoint['policy'] = endpoint_service.get_or_create_policy(**policy)
+
+        if not exists:
+            endpoint_service.create(**endpoint)
+            new += 1
+
+        else:
+            endpoint_service.update(exists.id, **endpoint)
+            updated += 1
+
+
+def sync_certificates(source):
     new, updated = 0, 0
     c_certificates = cert_service.get_all_certs()
 
+    current_app.logger.debug("Retrieving certificates from {0}".format(source.label))
+    s = plugins.get(source.plugin_name)
+    certificates = s.get_certificates(source.options)
+
+    for certificate in certificates:
+        exists = cert_service.find_duplicates(certificate['body'])
+
+        if not exists:
+            certificate_create(certificate, source)
+            new += 1
+
+        # check to make sure that existing certificates have the current source associated with it
+        elif len(exists) == 1:
+            certificate_update(exists[0], source)
+            updated += 1
+        else:
+            current_app.logger.warning(
+                "Multiple certificates found, attempt to deduplicate the following certificates: {0}".format(
+                    ",".join([x.name for x in exists])
+                )
+            )
+
+    # we need to try and find the absent of certificates so we can properly disassociate them when they are deleted
+    _disassociate_certs_from_source(c_certificates, certificates, source)
+
+
+def sync(labels=None, type=None):
     for source in database.get_all(Source, True, field='active'):
         # we should be able to specify, individual sources to sync
         if labels:
             if source.label not in labels:
                 continue
 
-        current_app.logger.debug("Retrieving certificates from {0}".format(source.label))
-        s = plugins.get(source.plugin_name)
-        certificates = s.get_certificates(source.options)
+        if type == 'endpoints':
+            sync_endpoints(source)
+        elif type == 'certificates':
+            sync_certificates(source)
+        else:
+            sync_certificates(source)
+            sync_endpoints(source)
 
-        for certificate in certificates:
-            exists = cert_service.find_duplicates(certificate['body'])
-
-            if not exists:
-                sync_create(certificate, source)
-                new += 1
-
-            # check to make sure that existing certificates have the current source associated with it
-            elif len(exists) == 1:
-                sync_update(exists[0], source)
-                updated += 1
-            else:
-                current_app.logger.warning(
-                    "Multiple certificates found, attempt to deduplicate the following certificates: {0}".format(
-                        ",".join([x.name for x in exists])
-                    )
-                )
-
-        # we need to try and find the absent of certificates so we can properly disassociate them when they are deleted
-        _disassociate_certs_from_source(c_certificates, certificates, source)
+        source.last_run = datetime.datetime.utcnow()
+        database.update(source)
 
 
 def create(label, plugin_name, options, description=None):

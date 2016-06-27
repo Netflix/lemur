@@ -23,7 +23,7 @@
                             <table width="100%" border="0" cellspacing="0" cellpadding="0">
                                 <tbody>
                                 <tr>
-                                    <td align="left" style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:35px;color:#727272;" line-height:1.5">
+                                    <td align="left" style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:35px;color:#727272; line-height:1.5">
                                         Lemur
                                     </td>
                                 </tr>
@@ -83,12 +83,15 @@
                                                             <tr valign="middle">
                                                                 <td width="32px"></td>
                                                                 <td width="16px"></td>
-                                                                <td style="line-height:1.2"><span
-                                                                        style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:20px;color:#202020">{{ message.name }}</span><br><span
-                                                                        style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#727272">{{ message.owner }}
+                                                                <td style="line-height:1.2">
+                                                                    <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:20px;color:#202020">{{ message.name }}</span>
+                                                                    <br>
+                                                                    <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#727272">
+                                                                        {{ message.endpoints | length }} Endpoints
+                                                                        <br>{{ message.owner }}
                                                                         <br>{{ message.not_after | time }}
                                                                         <a href="https://{{ hostname }}/#/certificates/{{ message.name }}" target="_blank">Details</a>
-                                                                        </span>
+                                                                    </span>
                                                                 </td>
                                                             </tr>
                                                                 {%  if not loop.last %}

@@ -14,7 +14,7 @@ import imp
 import errno
 import pkg_resources
 
-from logging import Formatter
+from logging import Formatter, StreamHandler
 from logging.handlers import RotatingFileHandler
 
 from flask import Flask
@@ -143,6 +143,10 @@ def configure_logging(app):
     handler.setLevel(app.config.get('LOG_LEVEL', 'DEBUG'))
     app.logger.setLevel(app.config.get('LOG_LEVEL', 'DEBUG'))
     app.logger.addHandler(handler)
+
+    stream_handler = StreamHandler()
+    stream_handler.setLevel(app.config.get('LOG_LEVEL'))
+    app.logger.addHandler(stream_handler)
 
 
 def install_plugins(app):

@@ -1,0 +1,108 @@
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="featurette-heading">Endpoints
+            <span class="text-muted"><small>443 or bust</small></span></h2>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <div class="btn-group">
+                    <button ng-model="showFilter" class="btn btn-default" uib-btn-checkbox
+                            btn-checkbox-true="1"
+                            btn-checkbox-false="0">Filter</button>
+                </div>
+                <div class="clearfix"></div>
+            </div>
+            <div class="table-responsive">
+                <table ng-table="endpointsTable" class="table table-striped" show-filter="showFilter" template-pagination="angular/pager.html" >
+                    <tbody>
+                    <tr ng-repeat-start="endpoint in $data track by $index">
+                        <td data-title="''" class="centered-cell">
+                            <i ng-if="endpoint.issues.length" class="fa fa-exclamation-triangle" uib-tooltip="Issues Found" tooltip-placement="right" style="color: #FF5154;" aria-hidden="true"></i>
+                            <i ng-if="!endpoint.issues.length" class="fa fa-check-circle" aria-hidden="true" uib-tooltip="No issues" tooltip-placement="right" style="color: #93c54b;"></i>
+                        </td>
+                        <td data-title="'Name'" sortable="'name'" filter="{ 'name': 'text' }">
+                            <ul class="list-unstyled">
+                                <li>{{ endpoint.name }}</li>
+                                <li><span class="text-muted">{{ endpoint.dnsname }}</span></li>
+                            </ul>
+                        </td>
+                        <td data-title="'Port'" sortable="'port'" filter="{ 'port': 'number' }" class="centered-cell">
+                            {{ endpoint.port }}
+                        </td>
+                        <td data-title="'Type'" sortable="'type'" filter="{ 'type': 'text'}" class="centered-cell">
+                            <ul class="list-unstyled">
+                                <li><label class="label label-default text-uppercase">{{ endpoint.type }}</label></li>
+                            </ul>
+                        </td>
+                        <td data-title="''" filter="{ 'ciphers' : 'select'}" filter-data="ciphers" class="centered-cell">
+                            <div class="btn-group-vertical pull-right">
+                                <button ng-model="endpoint.toggle" class="btn btn-sm btn-info" uib-btn-checkbox
+                                        btn-checkbox-true="1"
+                                        btn-checkbox-false="0">More
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="warning" ng-if="endpoint.toggle" ng-repeat-end>
+                        <td colspan="12">
+                            <uib-tabset justified="true" class="col-md-6">
+                                <uib-tab>
+                                    <uib-tab-heading>Certificate</uib-tab-heading>
+                                    <ul class="list-group">
+                                        <li class="list-group-item">
+                                            <strong>Name</strong>
+                                        <span class="pull-right">
+                                          {{ endpoint.certificate.name }}
+                                        </span>
+                                        </li>
+                                        <li class="list-group-item">
+                                            <strong>Not Before</strong>
+                                        <span class="pull-right" uib-tooltip="{{ endpoint.certificate.notBefore }}">
+                                          {{ momentService.createMoment(endpoint.certificate.notBefore) }}
+                                        </span>
+                                        </li>
+                                        <li class="list-group-item">
+                                            <strong>Not After</strong>
+                                            <span class="pull-right" uib-tooltip="{{ endpoint.certificate.notAfter }}">
+                                              {{ momentService.createMoment(endpoint.certificate.notAfter) }}
+                                            </span>
+                                        </li>
+                                        <li class="list-group-item">
+                                            <strong>Description</strong>
+                                            <p>{{ endpoint.certificate.description }}</p>
+                                        </li>
+                                    </ul>
+                                </uib-tab>
+                                <uib-tab>
+                                    <uib-tab-heading>
+                                        Issues
+                                    </uib-tab-heading>
+                                    <ul class="list-group">
+                                        <li class="list-group-item" ng-repeat="issue in endpoint.issues">
+                                            <ul class="list-unstyled">
+                                             <li>{{ issue.name | titleCase }}</li>
+                                             <li><span class="text-muted">{{ issue.value }}</span></li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </uib-tab>
+                            </uib-tabset>
+                            <uib-tabset justified="true" class="col-md-6">
+                                <uib-tab>
+                                    <uib-tab-heading>
+                                        Ciphers/Protocols
+                                    </uib-tab-heading>
+                                    <ul class="list-group">
+                                        <li class="list-group-item" ng-repeat="cipher in endpoint.policy.ciphers">
+                                            <strong>{{ cipher.name }}</strong>
+                                        </li>
+                                    </ul>
+                                </uib-tab>
+                            </uib-tabset>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

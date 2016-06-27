@@ -63,9 +63,9 @@ roles_authorities = db.Table('roles_authorities',
 Index('roles_authorities_ix', roles_authorities.c.authority_id, roles_authorities.c.role_id)
 
 roles_certificates = db.Table('roles_certificates',
-                             Column('certificate_id', Integer, ForeignKey('certificates.id')),
-                             Column('role_id', Integer, ForeignKey('roles.id'))
-                             )
+                              Column('certificate_id', Integer, ForeignKey('certificates.id')),
+                              Column('role_id', Integer, ForeignKey('roles.id'))
+                              )
 
 Index('roles_certificates_ix', roles_certificates.c.certificate_id, roles_certificates.c.role_id)
 
@@ -76,3 +76,10 @@ roles_users = db.Table('roles_users',
                        )
 
 Index('roles_users_ix', roles_users.c.user_id, roles_users.c.role_id)
+
+
+policies_ciphers = db.Table('policies_ciphers',
+                            Column('cipher_id', Integer, ForeignKey('ciphers.id')),
+                            Column('policy_id', Integer, ForeignKey('policy.id')))
+
+Index('policies_ciphers_ix', policies_ciphers.c.cipher_id, policies_ciphers.c.policy_id)

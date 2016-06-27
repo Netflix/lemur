@@ -9,8 +9,10 @@ import datetime
 
 from flask import current_app
 
-from sqlalchemy import event, Integer, ForeignKey, String, DateTime, PassiveDefault, func, Column, Text, Boolean
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql.expression import case
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy import event, Integer, ForeignKey, String, DateTime, PassiveDefault, func, Column, Text, Boolean
 
 from lemur.database import db
 from lemur.models import certificate_associations, certificate_source_associations, \
@@ -73,6 +75,8 @@ class Certificate(db.Model):
                             secondaryjoin=id == certificate_replacement_associations.c.replaced_certificate_id,  # noqa
                             backref='replaced')
 
+    endpoints = relationship("Endpoint", backref='certificate')
+
     def __init__(self, **kwargs):
         cert = defaults.parse_certificate(kwargs['body'])
 
@@ -104,22 +108,33 @@ class Certificate(db.Model):
         for domain in defaults.domains(cert):
             self.domains.append(Domain(name=domain))
 
-    @property
-    def is_expired(self):
-        if self.not_after < datetime.datetime.now():
+    @hybrid_property
+    def expired(self):
+        if self.not_after <= datetime.datetime.now():
             return True
 
-    @property
-    def is_unused(self):
-        if self.elb_listeners.count() == 0:
+    @expired.expression
+    def expired(cls):
+        return case(
+            [
+                (cls.now_after <= datetime.datetime.now(), True)
+            ],
+            else_=False
+        )
+
+    @hybrid_property
+    def revoked(self):
+        if 'revoked' == self.status:
             return True
 
-    @property
-    def is_revoked(self):
-        # we might not yet know the condition of the cert
-        if self.status:
-            if 'revoked' in self.status:
-                return True
+    @revoked.expression
+    def revoked(cls):
+        return case(
+            [
+                (cls.status == 'revoked', True)
+            ],
+            else_=False
+        )
 
     def get_arn(self, account_number):
         """

@@ -10,7 +10,7 @@ from marshmallow import fields, validates_schema, post_load
 from marshmallow.exceptions import ValidationError
 
 from lemur.schemas import AssociatedAuthoritySchema, AssociatedDestinationSchema, AssociatedCertificateSchema, \
-    AssociatedNotificationSchema, PluginInputSchema, ExtensionSchema, AssociatedRoleSchema
+    AssociatedNotificationSchema, PluginInputSchema, ExtensionSchema, AssociatedRoleSchema, EndpointNestedOutputSchema
 
 from lemur.authorities.schemas import AuthorityNestedOutputSchema
 from lemur.destinations.schemas import DestinationNestedOutputSchema
@@ -120,7 +120,7 @@ class CertificateOutputSchema(LemurOutputSchema):
     replaces = fields.Nested(CertificateNestedOutputSchema, many=True)
     authority = fields.Nested(AuthorityNestedOutputSchema)
     roles = fields.Nested(RoleNestedOutputSchema, many=True)
-    endpoints = fields.List(fields.Dict(), missing=[])
+    endpoints = fields.Nested(EndpointNestedOutputSchema, many=True, missing=[])
 
 
 class CertificateUploadInputSchema(CertificateSchema):

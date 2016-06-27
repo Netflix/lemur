@@ -57,7 +57,7 @@
           </tr>
           <tr class="warning" ng-if="certificate.toggle" ng-repeat-end>
             <td colspan="12">
-              <uib-tabset justified="true" class="col-md-6">
+              <uib-tabset justified="true" class="col-md-8">
                 <uib-tab>
                   <uib-tab-heading>Basic Info</uib-tab-heading>
                   <ul class="list-group">
@@ -115,6 +115,18 @@
                   </ul>
                 </uib-tab>
                 <uib-tab>
+                  <uib-tab-heading>Endpoints</uib-tab-heading>
+                  <ul class="list-group">
+                    <li class="list-group-item" ng-repeat="endpoint in certificate.endpoints">
+                      <span class="pull-right"><label class="label label-default">{{ endpoint.type }}</label></span>
+                      <ul class="list-unstyled">
+                        <li>{{ endpoint.name }}</li>
+                        <li><span class="text-muted">{{ endpoint.dnsname }}</span></li>
+                      </ul>
+                    </li>
+                  </ul>
+                </uib-tab>
+                <uib-tab>
                   <uib-tab-heading>Notifications</uib-tab-heading>
                   <ul class="list-group">
                     <li class="list-group-item" ng-repeat="notification in certificate.notifications">
@@ -158,7 +170,7 @@
                   </ul>
                 </uib-tab>
               </uib-tabset>
-              <uib-tabset justified="true" class="col-md-6">
+              <uib-tabset justified="true" class="col-md-4">
                 <uib-tab>
                   <uib-tab-heading>
                     Chain

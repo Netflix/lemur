@@ -177,6 +177,7 @@ def upload(**kwargs):
     """
     Allows for pre-made certificates to be imported into Lemur.
     """
+    from lemur.users import service as user_service
     roles = create_certificate_roles(**kwargs)
 
     if kwargs.get('roles'):
@@ -187,10 +188,14 @@ def upload(**kwargs):
     cert = Certificate(**kwargs)
 
     cert = database.create(cert)
-    g.user.certificates.append(cert)
 
-    database.update(cert)
-    return cert
+    try:
+        g.user.certificates.append(cert)
+    except AttributeError:
+        user = user_service.get_by_email('lemur@nobody')
+        user.certificates.append(cert)
+
+    return database.update(cert)
 
 
 def create(**kwargs):

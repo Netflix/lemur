@@ -210,3 +210,14 @@ class ExtensionSchema(BaseExtensionSchema):
     authority_key_identifier = fields.Nested(AuthorityKeyIdentifierSchema)
     certificate_info_access = fields.Nested(CertificateInfoAccessSchema)
     custom = fields.List(fields.Nested(CustomOIDSchema))
+
+
+class EndpointNestedOutputSchema(LemurOutputSchema):
+    __envelope__ = False
+    id = fields.Integer()
+    description = fields.String()
+    name = fields.String()
+    dnsname = fields.String()
+    owner = fields.Email()
+    type = fields.String()
+    active = fields.Boolean()

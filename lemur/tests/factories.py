@@ -3,7 +3,7 @@ from datetime import date
 
 from factory import Sequence, post_generation, SubFactory
 from factory.alchemy import SQLAlchemyModelFactory
-from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDate
+from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDate, FuzzyInteger
 
 
 from lemur.database import db
@@ -210,3 +210,20 @@ class UserFactory(BaseFactory):
         if extracted:
             for authority in extracted:
                 self.authorities.append(authority)
+
+
+class PolicyFactory(BaseFactory):
+    """Policy Factory."""
+    name = Sequence(lambda n: 'endpoint{0}'.format(n))
+
+
+class EndpointFactory(BaseFactory):
+    """Endpoint Factory."""
+    owner = 'joe@example.com'
+    name = Sequence(lambda n: 'endpoint{0}'.format(n))
+    type = FuzzyChoice(['elb'])
+    active = True
+    port = FuzzyInteger(0, high=65535)
+    policy = SubFactory(PolicyFactory)
+    certificate = SubFactory(CertificateFactory)
+    destination = SubFactory(DestinationFactory)
