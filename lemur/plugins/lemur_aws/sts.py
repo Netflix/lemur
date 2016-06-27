@@ -39,6 +39,13 @@ def assume_service(account_number, service, region='us-east-1'):
             aws_secret_access_key=role.credentials.secret_key,
             security_token=role.credentials.session_token)
 
+    elif service in 's3':
+        return boto.s3.connect_to_region(
+            region,
+            aws_access_key_id=role.credentials.access_key,
+            aws_secret_access_key=role.credentials.secret_key,
+            security_token=role.credentials.session_token)
+
 
 def sts_client(service, service_type='client'):
     def decorator(f):
