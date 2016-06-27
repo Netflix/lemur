@@ -38,7 +38,7 @@ from boto.exception import BotoServerError
 from lemur.plugins.bases import DestinationPlugin, SourcePlugin
 from lemur.plugins.lemur_aws.ec2 import get_regions
 from lemur.plugins.lemur_aws.elb import get_all_elbs, describe_load_balancer_policies, attach_certificate
-from lemur.plugins.lemur_aws import iam, elb, s3
+from lemur.plugins.lemur_aws import iam, s3
 from lemur.plugins import lemur_aws as aws
 
 
