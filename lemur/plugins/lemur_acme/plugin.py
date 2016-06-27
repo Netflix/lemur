@@ -14,13 +14,6 @@ from flask import current_app
 
 from acme.client import Client
 from acme import jose
-
-import time
-import itertools
-from flask import current_app
-
-from acme.client import Client
-from acme import jose
 from acme import messages
 
 from cryptography.hazmat.backends import default_backend
@@ -35,7 +28,6 @@ from lemur.plugins import lemur_acme as acme
 from .route53 import delete_txt_record, create_txt_record, wait_for_change
 
 
-# shamelessly stolen/inspired from https://github.com/alex/letsencrypt-aws/
 def find_dns_challenge(authz):
     for combo in authz.body.resolved_combinations:
         if (
@@ -181,7 +173,7 @@ def get_authorizations(acme_client, domains):
 class ACMEIssuerPlugin(IssuerPlugin):
     title = 'Acme'
     slug = 'acme-issuer'
-    description = 'Enables the creation of certificates via ACME CAs (including Let\'s Encrypt'
+    description = 'Enables the creation of certificates via ACME CAs (including Let\'s Encrypt)'
     version = acme.VERSION
 
     author = 'Kevin Glisson'
