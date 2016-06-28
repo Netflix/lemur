@@ -10,15 +10,13 @@
 
 .. moduleauthor:: Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
 """
-from cryptography import x509
-from cryptography.hazmat.backends import default_backend
-from lemur.certificates.models import get_cn
-from lemur.plugins.bases import DestinationPlugin
-
-import itertools
 import base64
-import requests
 import urllib
+import requests
+import itertools
+
+from lemur.certificates.models import Certificate
+from lemur.plugins.bases import DestinationPlugin
 
 DEFAULT_API_VERSION = 'v1'
 
@@ -109,11 +107,10 @@ class KubernetesDestinationPlugin(DestinationPlugin):
 
         k8s_api = K8sSession(k8_bearer, k8_cert)
 
-        cert = x509.load_pem_x509_certificate(str(body), default_backend())
-        name = get_cn(cert)
+        cert = Certificate(body=body)
 
         # in the future once runtime properties can be passed-in - use passed-in secret name
-        secret_name = 'certs-' + urllib.quote_plus(name)
+        secret_name = 'certs-' + urllib.quote_plus(cert.name)
 
         err = ensure_resource(k8s_api, k8s_base_uri=k8_base_uri, namespace=k8_namespace, kind="secret", name=secret_name, data={
             'apiVersion': 'v1',
