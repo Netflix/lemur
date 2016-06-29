@@ -151,6 +151,14 @@ and are used when Lemur creates the CSR for your certificates.
         LEMUR_DEFAULT_ORGANIZATIONAL_UNIT = "Operations"
 
 
+.. data:: LEMUR_DEFAULT_ISSUER_PLUGIN
+    :noindex:
+
+    ::
+
+        LEMUR_DEFAULT_ISSUER_PLUGIN = "verisign-issuer"
+
+
 Notification Options
 --------------------
 
