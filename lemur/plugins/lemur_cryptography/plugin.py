@@ -68,7 +68,7 @@ def issue_certificate(csr, options):
     builder = x509.CertificateBuilder(
         issuer_name=x509.Name([
             x509.NameAttribute(
-                x509.OID_ISSUER_ALTERNATIVE_NAME,
+                x509.OID_ORGANIZATION_NAME,
                 options['authority'].authority_certificate.issuer
             )]
         ),
