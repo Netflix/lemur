@@ -7,14 +7,14 @@
 """
 from flask import current_app
 
-from marshmallow import fields, validates_schema
+from marshmallow import fields, validates_schema, pre_load
 from marshmallow import validate
 from marshmallow.exceptions import ValidationError
 
 from lemur.schemas import PluginInputSchema, PluginOutputSchema, ExtensionSchema, AssociatedAuthoritySchema, AssociatedRoleSchema
 from lemur.users.schemas import UserNestedOutputSchema
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
-from lemur.common import validators
+from lemur.common import validators, missing
 
 
 class AuthorityInputSchema(LemurInputSchema):
@@ -59,6 +59,10 @@ class AuthorityInputSchema(LemurInputSchema):
         if data['type'] == 'subca':
             if not data.get('parent'):
                 raise ValidationError("If generating a subca parent 'authority' must be specified.")
+
+    @pre_load
+    def ensure_dates(self, data):
+        return missing.dates(data)
 
 
 class AuthorityUpdateSchema(LemurInputSchema):

@@ -94,9 +94,6 @@ def dates(data):
     if not data.get('validity_end') and data.get('validity_start'):
         raise ValidationError('If validity end is specified so must validity start.')
 
-    if data.get('validity_end') and data.get('validity_years'):
-        raise ValidationError('Cannot specify both validity end and validity years.')
-
     if data.get('validity_start') and data.get('validity_end'):
         if not data['validity_start'] < data['validity_end']:
             raise ValidationError('Validity start must be before validity end.')

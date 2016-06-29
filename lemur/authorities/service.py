@@ -44,9 +44,17 @@ def mint(**kwargs):
     Creates the authority based on the plugin provided.
     """
     issuer = kwargs['plugin']['plugin_object']
-    body, chain, roles = issuer.create_authority(kwargs)
+    values = issuer.create_authority(kwargs)
+
+    # support older plugins
+    if len(values) == 3:
+        body, chain, roles = values
+        private_key = None
+    elif len(values) == 4:
+        body, private_key, chain, roles = values
+
     roles = create_authority_roles(roles, kwargs['owner'], kwargs['plugin']['plugin_object'].title)
-    return body, chain, roles
+    return body, private_key, chain, roles
 
 
 def create_authority_roles(roles, owner, plugin_title):
@@ -88,9 +96,10 @@ def create(**kwargs):
     Creates a new authority.
     """
     kwargs['creator'] = g.user.email
-    body, chain, roles = mint(**kwargs)
+    body, private_key, chain, roles = mint(**kwargs)
 
     kwargs['body'] = body
+    kwargs['private_key'] = private_key
     kwargs['chain'] = chain
 
     if kwargs.get('roles'):
@@ -172,6 +181,9 @@ def render(args):
     # we make sure that a user can only use an authority they either own are are a member of - admins can see all
     if not g.current_user.is_admin:
         authority_ids = []
+        for authority in g.current_user.authorities:
+            authority_ids.append(authority.id)
+
         for role in g.current_user.roles:
             for authority in role.authorities:
                 authority_ids.append(authority.id)
