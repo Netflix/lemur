@@ -6,7 +6,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from flask import current_app
-from marshmallow import fields, validates_schema, post_load
+from marshmallow import fields, validates_schema, post_load, pre_load
 from marshmallow.exceptions import ValidationError
 
 from lemur.schemas import AssociatedAuthoritySchema, AssociatedDestinationSchema, AssociatedCertificateSchema, \
@@ -20,7 +20,7 @@ from lemur.domains.schemas import DomainNestedOutputSchema
 from lemur.users.schemas import UserNestedOutputSchema
 
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
-from lemur.common import validators
+from lemur.common import validators, missing
 from lemur.notifications import service as notification_service
 
 
@@ -67,6 +67,10 @@ class CertificateInputSchema(CertificateSchema):
     @validates_schema
     def validate_dates(self, data):
         validators.dates(data)
+
+    @pre_load
+    def ensure_dates(self, data):
+        return missing.dates(data)
 
 
 class CertificateEditInputSchema(CertificateSchema):
