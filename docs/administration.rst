@@ -682,15 +682,150 @@ Plugins
 There are several interfaces currently available to extend Lemur. These are a work in
 progress and the API is not frozen.
 
-Bundled Plugins
----------------
+Lemur includes several plugins by default. Including extensive support for AWS, VeriSign/Symantec.
 
-Lemur includes several plugins by default. Including extensive support for AWS, VeriSign/Symantec and CloudCA services.
+Verisign/Symantec
+-----------------
 
-3rd Party Extensions
---------------------
+:Authors:
+    Kevin Glisson <kglisson@netflix.com>
+:Type:
+    Issuer
+:Description:
+    Basic support for the VICE 2.0 API
 
-The following extensions are available and maintained by members of the Lemur community:
+
+Cryptography
+------------
+
+:Authors:
+    Kevin Glisson <kglisson@netflix.com>,
+    Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
+:Type:
+    Issuer
+:Description:
+    Toy certificate authority that creates self-signed certificate authorities.
+    Allows for the creation of arbitrary authorities and end-entity certificates.
+    This is *not* recommended for production use.
+
+
+Acme
+----
+
+:Authors:
+    Kevin Glisson <kglisson@netflix.com>,
+    Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
+:Type:
+    Issuer
+:Description:
+    Adds support for the ACME protocol (including LetsEncrypt) with domain validation being handled Route53.
+
+
+Atlas
+-----
+
+:Authors:
+    Kevin Glisson <kglisson@netflix.com>
+:Type:
+    Metric
+:Description:
+    Adds basic support for the `Atlas <https://github.com/Netflix/atlas/wiki>`_ telemetry system.
+
+
+Email
+-----
+
+:Authors:
+    Kevin Glisson <kglisson@netflix.com>
+:Type:
+    Notification
+:Description:
+    Adds support for basic email notifications via SES.
+
+
+Slack
+-----
+
+:Authors:
+    Harm Weites <harm@weites.com>
+:Type:
+    Notification
+:Description:
+    Adds support for slack notifications.
+
+
+AWS
+----
+
+:Authors:
+    Kevin Glisson <kglisson@netflix.com>
+:Type:
+    Source
+:Description:
+    Uses AWS IAM as a source of certificates to manage. Supports a multi-account deployment.
+
+
+AWS
+----
+
+:Authors:
+    Kevin Glisson <kglisson@netflix.com>
+:Type:
+    Destination
+:Description:
+    Uses AWS IAM as a destination for Lemur generated certificates. Support a multi-account deployment.
+
+
+Kubernetes
+----------
+
+:Authors:
+    Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
+:Type:
+    Destination
+:Description:
+    Allows Lemur to upload generated certificates to the Kubernetes certificate store.
+
+
+Java
+----
+
+:Authors:
+    Kevin Glisson <kglisson@netflix.com>
+:Type:
+    Export
+:Description:
+    Generates java compatible .jks keystores and truststores from Lemur managed certificates.
+
+
+Openssl
+-------
+
+:Authors:
+    Kevin Glisson <kglisson@netflix.com>
+:Type:
+    Export
+:Description:
+    Leverages Openssl to support additional export formats (pkcs12)
+
+
+3rd Party Plugins
+=================
+
+The following plugins are available and maintained by members of the Lemur community:
+
+Digicert
+--------
+
+:Authors:
+    Chris Dorros
+:Type:
+    Issuer
+:Description:
+    Adds support for basic Digicert
+:Links:
+    https://github.com/opendns/lemur-digicert
+
 
 Have an extension that should be listed here? Submit a `pull request <https://github.com/netflix/lemur>`_ and we'll
 get it added.
