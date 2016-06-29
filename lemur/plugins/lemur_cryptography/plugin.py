@@ -32,7 +32,8 @@ def build_root_certificate(options):
         x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, options['state']),
         x509.NameAttribute(x509.OID_LOCALITY_NAME, options['location']),
         x509.NameAttribute(x509.OID_ORGANIZATION_NAME, options['organization']),
-        x509.NameAttribute(x509.OID_COMMON_NAME, options['organizational_unit'])
+        x509.NameAttribute(x509.OID_ORGANIZATIONAL_UNIT_NAME, options['organizational_unit']),
+        x509.NameAttribute(x509.OID_COMMON_NAME, options['common_name'])
     ])
 
     builder = x509.CertificateBuilder(
@@ -67,7 +68,7 @@ def issue_certificate(csr, options):
     builder = x509.CertificateBuilder(
         issuer_name=x509.Name([
             x509.NameAttribute(
-                x509.OID_ISSUER_ALTERNATIVE_NAME,
+                x509.OID_ORGANIZATION_NAME,
                 options['authority'].authority_certificate.issuer
             )]
         ),

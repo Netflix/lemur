@@ -98,6 +98,8 @@ def create(**kwargs):
     kwargs['creator'] = g.user.email
     body, private_key, chain, roles = mint(**kwargs)
 
+    g.user.roles = list(set(list(g.user.roles) + roles))
+
     kwargs['body'] = body
     kwargs['private_key'] = private_key
     kwargs['chain'] = chain
