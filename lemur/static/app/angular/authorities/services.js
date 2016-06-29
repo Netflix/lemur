@@ -102,6 +102,7 @@ angular.module('lemur')
         authority.location = defaults.location;
         authority.organization = defaults.organization;
         authority.organizationalUnit = defaults.organizationalUnit;
+        authority.defaultIssuerPlugin = defaults.issuerPlugin;
       });
     };
 

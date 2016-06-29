@@ -57,7 +57,8 @@ class LemurDefaults(AuthenticatedResource):
             state=current_app.config.get('LEMUR_DEFAULT_STATE'),
             location=current_app.config.get('LEMUR_DEFAULT_LOCATION'),
             organization=current_app.config.get('LEMUR_DEFAULT_ORGANIZATION'),
-            organizationalUnit=current_app.config.get('LEMUR_DEFAULT_ORGANIZATIONAL_UNIT')
+            organizationalUnit=current_app.config.get('LEMUR_DEFAULT_ORGANIZATIONAL_UNIT'),
+            issuerPlugin=current_app.config.get('LEMUR_DEFAULT_ISSUER_PLUGIN')
         )
 
 api.add_resource(LemurDefaults, '/defaults', endpoint='default')
