@@ -190,6 +190,11 @@ class Ping(Resource):
                 role = role_service.create(group, description='This is a google group based role created by Lemur')
             roles.append(role)
 
+        role = role_service.get_by_name(user.email)
+        if not role:
+            role = role_service.create(user.email, description='This is a user specific role')
+        roles.append(role)
+
         # if we get an sso user create them an account
         if not user:
             # every user is an operator (tied to a default role)
