@@ -1,7 +1,8 @@
-from moto import mock_s3
+from moto import mock_s3, mock_sts
 import boto
 
 
+@mock_sts
 @mock_s3()
 def test_get_name_from_arn():
     conn = boto.connect_s3()
