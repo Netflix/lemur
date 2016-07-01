@@ -277,11 +277,7 @@ The ``conftest.py`` file is our main entry-point for py.test. We need to configu
 
 .. code-block:: python
 
-   from __future__ import absolute_import
-
-   pytest_plugins = [
-       'lemur.utils.pytest'
-   ]
+   from lemur.tests.conftest import *  # noqa
 
 
 Test Cases
@@ -291,14 +287,18 @@ You can now inherit from Lemur's core test classes. These are Django-based and e
 
 .. code-block:: python
 
-   # test_myextension.py
-   from __future__ import absolute_import
+    import pytest
+    from lemur.tests.vectors import INTERNAL_CERTIFICATE_A_STR, INTERNAL_PRIVATE_KEY_A_STR
 
-   from lemur.testutils import TestCase
+    def test_export_keystore(app):
+        from lemur.plugins.base import plugins
+        p = plugins.get('java-keystore-jks')
+        options = [{'name': 'passphrase', 'value': 'test1234'}]
+        with pytest.raises(Exception):
+            p.export(INTERNAL_CERTIFICATE_A_STR, "", "", options)
 
-   class MyExtensionTest(TestCase):
-       def test_simple(self):
-          assert 1 != 2
+        raw = p.export(INTERNAL_CERTIFICATE_A_STR, "", INTERNAL_PRIVATE_KEY_A_STR, options)
+        assert raw != b""
 
 
 Running Tests
@@ -310,13 +310,14 @@ Running tests follows the py.test standard. As long as your test files and metho
 
     $ py.test -v
     ============================== test session starts ==============================
-    platform darwin -- Python 2.7.9 -- py-1.4.26 -- pytest-2.6.4/python2.7
-    plugins: django
-    collected 1 items
+    platform darwin -- Python 2.7.10, pytest-2.8.5, py-1.4.30, pluggy-0.3.1
+    cachedir: .cache
+    plugins: flask-0.10.0
+    collected 346 items
 
-    tests/test_myextension.py::MyExtensionTest::test_simple PASSED
+    lemur/plugins/lemur_acme/tests/test_acme.py::test_get_certificates PASSED
 
     =========================== 1 passed in 0.35 seconds ============================
 
 
-.. SeeAlso:: Lemur bundles several plugins that use the same interfaces mentioned above. View the source: # TODO
+.. SeeAlso:: Lemur bundles several plugins that use the same interfaces mentioned above.
