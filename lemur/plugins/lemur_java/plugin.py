@@ -55,6 +55,12 @@ def split_chain(chain):
 
 
 def create_truststore(cert, chain, jks_tmp, alias, passphrase):
+    if isinstance(cert, bytes):
+        cert = cert.decode('utf-8')
+
+    if isinstance(chain, bytes):
+        chain = chain.decode('utf-8')
+
     with mktempfile() as cert_tmp:
         with open(cert_tmp, 'w') as f:
             f.write(cert)
@@ -88,10 +94,18 @@ def create_truststore(cert, chain, jks_tmp, alias, passphrase):
 
 
 def create_keystore(cert, chain, jks_tmp, key, alias, passphrase):
+    if isinstance(cert, bytes):
+        cert = cert.decode('utf-8')
+
+    if isinstance(chain, bytes):
+        chain = chain.decode('utf-8')
+
+    if isinstance(key, bytes):
+        key = key.decode('utf-8')
     # Create PKCS12 keystore from private key and public certificate
     with mktempfile() as cert_tmp:
         with open(cert_tmp, 'w') as f:
-            f.writelines([key + "\n", cert + "\n", chain + "\n"])
+            f.writelines([key, cert, chain])
 
         with mktempfile() as p12_tmp:
             run_process([
