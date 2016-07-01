@@ -60,7 +60,7 @@ test-js:
 
 test-python:
 	@echo "--> Running Python tests"
-	py.test lemur/tests || exit 1
+	py.test -v || exit 1
 	@echo ""
 
 lint: lint-python lint-js

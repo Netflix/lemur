@@ -6,6 +6,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+from io import open
 import subprocess
 
 from flask import current_app
@@ -43,6 +44,15 @@ def create_pkcs12(cert, chain, p12_tmp, key, alias, passphrase):
     :param alias:
     :param passphrase:
     """
+    if isinstance(cert, bytes):
+        cert = cert.decode('utf-8')
+
+    if isinstance(chain, bytes):
+        chain = chain.decode('utf-8')
+
+    if isinstance(key, bytes):
+        key = key.decode('utf-8')
+
     with mktempfile() as key_tmp:
         with open(key_tmp, 'w') as f:
             f.write(key)
@@ -50,7 +60,7 @@ def create_pkcs12(cert, chain, p12_tmp, key, alias, passphrase):
         # Create PKCS12 keystore from private key and public certificate
         with mktempfile() as cert_tmp:
             with open(cert_tmp, 'w') as f:
-                f.writelines([cert + "\n", chain + "\n"])
+                f.writelines([cert, chain])
 
             run_process([
                 "openssl",
@@ -120,6 +130,9 @@ class OpenSSLExportPlugin(ExportPlugin):
 
         with mktemppath() as output_tmp:
             if type == 'PKCS12 (.p12)':
+                if not key:
+                    raise Exception("Private Key required by {0}".format(type))
+
                 create_pkcs12(body, chain, output_tmp, key, alias, passphrase)
                 extension = "p12"
             else:

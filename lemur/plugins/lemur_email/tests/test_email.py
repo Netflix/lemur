@@ -1,7 +1,5 @@
 from lemur.plugins.lemur_email.templates.config import env
 
-import os.path
-
 
 def test_render():
     messages = [{
@@ -12,5 +10,3 @@ def test_render():
 
     template = env.get_template('{}.html'.format('expiration'))
     body = template.render(dict(messages=messages, hostname='lemur.test.example.com'))
-    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'email.html'), 'w+') as f:
-        f.write(body.encode('utf8'))

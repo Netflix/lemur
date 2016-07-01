@@ -111,7 +111,7 @@ def setup_acme_client():
     key = current_app.config.get('ACME_PRIVATE_KEY').strip()
     acme_email = current_app.config.get('ACME_EMAIL')
     acme_tel = current_app.config.get('ACME_TEL')
-    acme_directory_url = current_app.config('ACME_DIRECTORY_URL'),
+    acme_directory_url = current_app.config.get('ACME_DIRECTORY_URL'),
     contact = ('mailto:{}'.format(acme_email), 'tel:{}'.format(acme_tel))
 
     key = serialization.load_pem_private_key(
@@ -122,7 +122,7 @@ def setup_acme_client():
 
 def acme_client_for_private_key(acme_directory_url, private_key):
     return Client(
-        acme_directory_url, key=acme.jose.JWKRSA(key=private_key)
+        acme_directory_url, key=jose.JWKRSA(key=private_key)
     )
 
 
