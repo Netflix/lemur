@@ -97,6 +97,7 @@ class Login(Resource):
             # Tell Flask-Principal the identity changed
             identity_changed.send(current_app._get_current_object(),
                                   identity=Identity(user.id))
+
             metrics.send('successful_login', 'counter', 1)
             return dict(token=create_token(user))
 
@@ -190,9 +191,9 @@ class Ping(Resource):
                 role = role_service.create(group, description='This is a google group based role created by Lemur')
             roles.append(role)
 
-        role = role_service.get_by_name(user.email)
+        role = role_service.get_by_name(profile['email'])
         if not role:
-            role = role_service.create(user.email, description='This is a user specific role')
+            role = role_service.create(profile['email'], description='This is a user specific role')
         roles.append(role)
 
         # if we get an sso user create them an account
