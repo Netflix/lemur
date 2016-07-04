@@ -244,27 +244,31 @@ def create_default_expiration_notifications(name, recipients):
 
 def create(label, plugin_name, options, description, certificates):
     """
-    Creates a new destination, that can then be used as a destination for certificates.
+    Creates a new notification.
 
-    :param label: Notification common name
+    :param label: Notification label
     :param plugin_name:
     :param options:
     :param description:
+    :param certificates:
     :rtype : Notification
     :return:
     """
     notification = Notification(label=label, options=options, plugin_name=plugin_name, description=description)
-    notification = database.update_list(notification, 'certificates', Certificate, certificates)
+    notification.certificates = certificates
     return database.create(notification)
 
 
 def update(notification_id, label, options, description, active, certificates):
     """
-    Updates an existing destination.
+    Updates an existing notification.
 
-    :param label: Notification common name
+    :param notification_id:
+    :param label: Notification label
     :param options:
     :param description:
+    :param active:
+    :param certificates:
     :rtype : Notification
     :return:
     """

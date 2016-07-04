@@ -12,8 +12,8 @@ from flask import request, current_app
 
 from sqlalchemy.orm.collections import InstrumentedList
 
-from marshmallow import Schema, post_dump, pre_load, pre_dump
 from inflection import camelize, underscore
+from marshmallow import Schema, post_dump, pre_load, pre_dump
 
 
 class LemurSchema(Schema):

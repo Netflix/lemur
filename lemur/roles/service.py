@@ -27,7 +27,8 @@ def update(role_id, name, description, users):
     role = get(role_id)
     role.name = name
     role.description = description
-    role = database.update_list(role, 'users', User, users)
+    if users:
+        role.users = users
     database.update(role)
     return role
 
@@ -44,10 +45,8 @@ def create(name, password=None, description=None, username=None, users=None):
     :return:
     """
     role = Role(name=name, description=description, username=username, password=password)
-
     if users:
-        role = database.update_list(role, 'users', User, users)
-
+        role.users = users
     return database.create(role)
 
 
