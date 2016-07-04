@@ -25,7 +25,7 @@ def test_authority_input_schema(client, role):
     assert not errors
 
 
-def test_user_authority(session, client, authority, role, user):
+def test_user_authority(session, client, authority, role, user, issuer_plugin):
     assert client.get(api.url_for(AuthoritiesList), headers=user['token']).json['total'] == 0
     u = user['user']
     u.roles.append(role)
