@@ -7,17 +7,40 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
-from marshmallow import fields, post_load, pre_load, post_dump, validates_schema
+from sqlalchemy.orm.exc import NoResultFound
 
-from lemur.authorities.models import Authority
-from lemur.certificates.models import Certificate
+from marshmallow import fields, post_load, pre_load, post_dump, validates_schema
+from marshmallow.exceptions import ValidationError
+
 from lemur.common import validators
 from lemur.common.schema import LemurSchema, LemurInputSchema, LemurOutputSchema
-from lemur.destinations.models import Destination
-from lemur.notifications.models import Notification
+
 from lemur.plugins import plugins
 from lemur.roles.models import Role
 from lemur.users.models import User
+from lemur.authorities.models import Authority
+from lemur.certificates.models import Certificate
+from lemur.destinations.models import Destination
+from lemur.notifications.models import Notification
+
+
+def fetch_object(model, field, value):
+    try:
+        return model.query.filter(getattr(model, field) == value).one()
+    except NoResultFound:
+        raise ValidationError('Unable to find {model} with {field}: {data}'.format(model=model, field=field, data=value))
+
+
+def fetch_objects(model, field, values):
+    values = [v[field] for v in values]
+    items = model.query.filter(getattr(model, field).in_(values)).all()
+    found = [getattr(i, field) for i in items]
+    diff = set(values).symmetric_difference(set(found))
+
+    if diff:
+        raise ValidationError('Unable to locate {model} with {field} {diff}'.format(model=model, field=field, diff=",".join([list(diff)])))
+
+    return items
 
 
 class AssociatedAuthoritySchema(LemurInputSchema):
@@ -27,9 +50,10 @@ class AssociatedAuthoritySchema(LemurInputSchema):
     @post_load
     def get_object(self, data, many=False):
         if data.get('id'):
-            return Authority.query.filter(Authority.id == data['id']).one()
+            return fetch_object(Authority, 'id', data['id'])
+
         elif data.get('name'):
-            return Authority.query.filter(Authority.name == data['name']).one()
+            return fetch_object(Authority, 'name', data['name'])
 
 
 class AssociatedRoleSchema(LemurInputSchema):
@@ -39,10 +63,9 @@ class AssociatedRoleSchema(LemurInputSchema):
     @post_load
     def get_object(self, data, many=False):
         if many:
-            ids = [d['id'] for d in data]
-            return Role.query.filter(Role.id.in_(ids)).all()
+            return fetch_objects(Role, 'id', data)
         else:
-            return Role.query.filter(Role.id == data['id']).one()
+            return fetch_object(Role, 'id', data['id'])
 
 
 class AssociatedDestinationSchema(LemurInputSchema):
@@ -52,10 +75,9 @@ class AssociatedDestinationSchema(LemurInputSchema):
     @post_load
     def get_object(self, data, many=False):
         if many:
-            ids = [d['id'] for d in data]
-            return Destination.query.filter(Destination.id.in_(ids)).all()
+            return fetch_objects(Destination, 'id', data)
         else:
-            return Destination.query.filter(Destination.id == data['id']).one()
+            return fetch_object(Destination, 'id', data['id'])
 
 
 class AssociatedNotificationSchema(LemurInputSchema):
@@ -64,10 +86,9 @@ class AssociatedNotificationSchema(LemurInputSchema):
     @post_load
     def get_object(self, data, many=False):
         if many:
-            ids = [d['id'] for d in data]
-            return Notification.query.filter(Notification.id.in_(ids)).all()
+            return fetch_objects(Notification, 'id', data)
         else:
-            return Notification.query.filter(Notification.id == data['id']).one()
+            return fetch_object(Notification, 'id', data['id'])
 
 
 class AssociatedCertificateSchema(LemurInputSchema):
@@ -76,10 +97,9 @@ class AssociatedCertificateSchema(LemurInputSchema):
     @post_load
     def get_object(self, data, many=False):
         if many:
-            ids = [d['id'] for d in data]
-            return Certificate.query.filter(Certificate.id.in_(ids)).all()
+            return fetch_objects(Certificate, 'id', data)
         else:
-            return Certificate.query.filter(Certificate.id == data['id']).one()
+            return fetch_object(Certificate, 'id', data['id'])
 
 
 class AssociatedUserSchema(LemurInputSchema):
@@ -88,10 +108,9 @@ class AssociatedUserSchema(LemurInputSchema):
     @post_load
     def get_object(self, data, many=False):
         if many:
-            ids = [d['id'] for d in data]
-            return User.query.filter(User.id.in_(ids)).all()
+            return fetch_objects(User, 'id', data)
         else:
-            return User.query.filter(User.id == data['id']).one()
+            return fetch_object(User, 'id', data['id'])
 
 
 class PluginInputSchema(LemurInputSchema):
@@ -102,8 +121,11 @@ class PluginInputSchema(LemurInputSchema):
 
     @post_load
     def get_object(self, data, many=False):
-        data['plugin_object'] = plugins.get(data['slug'])
-        return data
+        try:
+            data['plugin_object'] = plugins.get(data['slug'])
+            return data
+        except Exception:
+            raise ValidationError('Unable to find plugin: {0}'.format(data['slug']))
 
 
 class PluginOutputSchema(LemurOutputSchema):

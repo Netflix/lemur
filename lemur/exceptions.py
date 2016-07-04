@@ -36,6 +36,14 @@ class IntegrityError(LemurException):
         return repr(self.message)
 
 
+class AssociatedObjectNotFound(LemurException):
+    def __init__(self, message):
+        self.message = message
+
+    def __str__(self):
+        return repr(self.message)
+
+
 class InvalidListener(LemurException):
     def __str__(self):
         return repr("Invalid listener, ensure you select a certificate if you are using a secure protocol")
