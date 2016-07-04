@@ -7,11 +7,9 @@ angular.module('lemur')
       $scope.user = user;
     });
 
-    $scope.save = UserService.update;
     $scope.roleService = RoleService;
 
     $scope.rolePage = 1;
-
 
     $scope.save = function (user) {
       UserService.update(user).then(
@@ -46,10 +44,9 @@ angular.module('lemur')
 
   .controller('UsersCreateController', function ($scope, $uibModalInstance, UserService, LemurRestangular, RoleService, toaster) {
     $scope.user = LemurRestangular.restangularizeElement(null, {}, 'users');
-    $scope.save = UserService.create;
     $scope.roleService = RoleService;
 
-    $scope.create = function (user) {
+    $scope.save = function (user) {
       UserService.create(user).then(
         function () {
           toaster.pop({
