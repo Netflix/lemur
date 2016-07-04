@@ -11,6 +11,7 @@ from sqlalchemy import Column, Integer, String, Text, func, ForeignKey, DateTime
 from sqlalchemy.dialects.postgresql import JSON
 
 from lemur.database import db
+from lemur.plugins.base import plugins
 from lemur.models import roles_authorities
 
 
@@ -38,3 +39,7 @@ class Authority(db.Model):
         self.description = kwargs.get('description')
         self.authority_certificate = kwargs['authority_certificate']
         self.plugin_name = kwargs['plugin']['slug']
+
+    @property
+    def plugin(self):
+        return plugins.get(self.plugin_name)

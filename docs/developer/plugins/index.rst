@@ -137,6 +137,12 @@ Destination
 Destination plugins allow you to propagate certificates managed by Lemur to additional third parties. This provides flexibility when
 different orchestration systems have their own way of manage certificates or there is an existing system you wish to integrate with Lemur.
 
+By default destination plugins have a private key requirement. If your plugin does not require a certificates private key mark `requires_key = False`
+in the plugins base class like so::
+
+    class MyDestinationPlugin(DestinationPlugin):
+        requires_key = False
+
 The DestinationPlugin requires only one function to be implemented::
 
     def upload(self, cert, private_key, cert_chain, options, **kwargs):

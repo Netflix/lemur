@@ -158,6 +158,7 @@ def update_destinations(target, value, initiator):
     :return:
     """
     destination_plugin = plugins.get(value.plugin_name)
+
     try:
         destination_plugin.upload(target.name, target.body, target.private_key, target.chain, value.options)
     except Exception as e:

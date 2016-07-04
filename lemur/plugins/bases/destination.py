@@ -11,6 +11,7 @@ from lemur.plugins.base import Plugin
 
 class DestinationPlugin(Plugin):
     type = 'destination'
+    requires_key = True
 
     def upload(self):
         raise NotImplemented
