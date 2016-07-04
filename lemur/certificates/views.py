@@ -584,6 +584,11 @@ class Certificates(AuthenticatedResource):
         permission = CertificatePermission(cert.id, owner_role, [x.name for x in cert.roles])
 
         if permission.can():
+            for destination in data['destinations']:
+                if destination.plugin.requires_key:
+                    if not cert.private_key:
+                        return dict('Unable to add destination: {0}. Certificate does not have required private key.'.format(destination.label))
+
             return service.update(
                 certificate_id,
                 data['owner'],
@@ -871,10 +876,13 @@ class CertificateExport(AuthenticatedResource):
         plugin = data['plugin']['plugin_object']
 
         if plugin.requires_key:
-            if permission.can():
-                extension, passphrase, data = plugin.export(cert.body, cert.chain, cert.private_key, options)
+            if cert.private_key:
+                if permission.can():
+                    extension, passphrase, data = plugin.export(cert.body, cert.chain, cert.private_key, options)
+                else:
+                    return dict(message='You are not authorized to export this certificate'), 403
             else:
-                return dict(message='You are not authorized to export this certificate'), 403
+                return dict(message='Unable to export certificate, plugin: {0} requires a private key but no key was found.'.format(plugin.slug))
         else:
             extension, passphrase, data = plugin.export(cert.body, cert.chain, cert.private_key, options)
 

@@ -5,7 +5,6 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import copy
 from sqlalchemy import Column, Integer, String, Text
 from sqlalchemy_utils import JSONType
 from lemur.database import db
@@ -23,7 +22,4 @@ class Destination(db.Model):
 
     @property
     def plugin(self):
-        p = plugins.get(self.plugin_name)
-        c = copy.deepcopy(p)
-        c.options = self.options
-        return c
+        return plugins.get(self.plugin_name)

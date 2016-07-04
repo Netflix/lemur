@@ -236,9 +236,6 @@ class JavaKeystoreExportPlugin(ExportPlugin):
             alias = "blah"
 
         with mktemppath() as jks_tmp:
-            if not key:
-                raise Exception("Unable to export, no private key found.")
-
             create_keystore(body, chain, jks_tmp, key, alias, passphrase)
 
             with open(jks_tmp, 'rb') as f:
