@@ -7,40 +7,11 @@ angular.module('lemur')
     var AuthenticationService = this;
 
     AuthenticationService.login = function (username, password) {
-      AuthenticationApi.customPOST({'username': username, 'password': password}, 'login')
-        .then(
-            function (user) {
-              $auth.setToken(user.token, true);
-              $rootScope.$emit('user:login');
-              $location.url('/certificates');
-            },
-            function (response) {
-              toaster.pop({
-                type: 'error',
-                title: 'Whoa there',
-                body: response.data.message,
-                showCloseButton: true
-              });
-            }
-      );
+      return AuthenticationApi.customPOST({'username': username, 'password': password}, 'login');
     };
 
     AuthenticationService.authenticate = function (provider) {
-      $auth.authenticate(provider)
-        .then(
-          function () {
-            UserService.getCurrentUser();
-            $rootScope.$emit('user:login');
-            $location.url('/certificates');
-          },
-          function (response) {
-            toaster.pop({
-              type: 'error',
-              title: 'Something went wrong',
-              body: response.data.message
-            });
-          }
-      );
+      return $auth.authenticate(provider);
     };
 
     AuthenticationService.logout = function () {
@@ -55,8 +26,7 @@ angular.module('lemur')
             title: 'Good job!',
             body: 'You have been successfully logged out.'
           });
-          $location.path('/');
+          $location.path('/login');
         });
     };
-
   });

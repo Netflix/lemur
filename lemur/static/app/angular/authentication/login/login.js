@@ -5,12 +5,48 @@ angular.module('lemur')
     $stateProvider.state('login', {
       url: '/login',
       templateUrl: '/angular/authentication/login/login.tpl.html',
-      controller: 'LoginController'
+      controller: 'LoginController',
+      params: {
+        'toState': 'certificates',
+        'toParams': {}
+      }
     });
   })
-  .controller('LoginController', function ($rootScope, $scope, AuthenticationService, UserService, providers) {
-    $scope.login = AuthenticationService.login;
-    $scope.authenticate = AuthenticationService.authenticate;
+  .controller('LoginController', function ($rootScope, $scope, $state, $auth, AuthenticationService, UserService, providers, toaster) {
+    $scope.login = function (username, password) {
+      return AuthenticationService.login(username, password).then(
+        function (user) {
+          $auth.setToken(user.token, true);
+          $rootScope.$emit('user:login');
+          $state.go($state.params.toState, $state.params.toParams);
+        },
+        function (response) {
+          toaster.pop({
+            type: 'error',
+            title: 'Whoa there',
+            body: response.data.message,
+            showCloseButton: true
+          });
+        });
+    };
+
+    $scope.authenticate = function (provider) {
+      return AuthenticationService.authenticate(provider).then(
+        function (user) {
+          $auth.setToken(user.token, true);
+          $rootScope.$emit('user:login');
+          $state.go($state.params.toState, $state.params.toParams);
+        },
+        function (response) {
+          toaster.pop({
+            type: 'error',
+            title: 'Whoa there',
+            body: response.data.message,
+            showCloseButton: true
+          });
+        });
+    };
+
     $scope.logout = AuthenticationService.logout;
 
     $scope.providers = providers;

@@ -864,7 +864,7 @@ class Rolling(Command):
 
 def main():
     manager.add_command("start", LemurServer())
-    manager.add_command("runserver", Server(host='127.0.0.1'))
+    manager.add_command("runserver", Server(host='127.0.0.1', threaded=True))
     manager.add_command("clean", Clean())
     manager.add_command("show_urls", ShowUrls())
     manager.add_command("db", MigrateCommand)
