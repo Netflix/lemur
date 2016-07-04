@@ -128,6 +128,12 @@ angular.module('lemur')
       opened: false
     };
 
+    $scope.clearDates = function () {
+      $scope.certificate.validityStart = null;
+      $scope.certificate.validityEnd = null;
+      $scope.certificate.validityYears = null;
+    };
+
     $scope.create = function (certificate) {
       WizardHandler.wizard().context.loading = true;
       CertificateService.create(certificate).then(

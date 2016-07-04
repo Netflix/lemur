@@ -94,6 +94,11 @@ angular.module('lemur')
       startingDay: 1
     };
 
+    $scope.clearDates = function () {
+      $scope.authority.validityStart = null;
+      $scope.authority.validityEnd = null;
+      $scope.authority.validityYears = null;
+    };
 
     $scope.open1 = function() {
       $scope.popup1.opened = true;
