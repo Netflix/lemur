@@ -33,6 +33,8 @@ LEMUR_RESTRICTED_DOMAINS = []
 LEMUR_EMAIL = ''
 LEMUR_SECURITY_TEAM_EMAIL = ['security@example.com']
 
+LEMUR_HOSTNAME = 'lemur.example.com'
+
 # Logging
 
 LOG_LEVEL = "DEBUG"

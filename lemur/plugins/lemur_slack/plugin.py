@@ -17,7 +17,7 @@ import requests
 
 
 def create_certificate_url(name):
-    return 'https://{{ hostname }}/#/certificates/{{ name }}'.format(
+    return 'https://{hostname}/#/certificates/{name}'.format(
         hostname=current_app.config.get('LEMUR_HOSTNAME'),
         name=name
     )
