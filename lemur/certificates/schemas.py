@@ -28,8 +28,10 @@ class CertificateSchema(LemurInputSchema):
     owner = fields.Email(required=True)
     description = fields.String()
 
+
+class CertificateCreationSchema(CertificateSchema):
     @post_load
-    def default_notifications(self, data):
+    def default_notification(self, data):
         if not data['notifications']:
             notification_name = "DEFAULT_{0}".format(data['owner'].split('@')[0].upper())
             data['notifications'] += notification_service.create_default_expiration_notifications(notification_name, [data['owner']])
@@ -39,7 +41,7 @@ class CertificateSchema(LemurInputSchema):
         return data
 
 
-class CertificateInputSchema(CertificateSchema):
+class CertificateInputSchema(CertificateCreationSchema):
     name = fields.String()
     common_name = fields.String(required=True, validate=validators.sensitive_domain)
     authority = fields.Nested(AssociatedAuthoritySchema, required=True)
@@ -127,7 +129,7 @@ class CertificateOutputSchema(LemurOutputSchema):
     endpoints = fields.Nested(EndpointNestedOutputSchema, many=True, missing=[])
 
 
-class CertificateUploadInputSchema(CertificateSchema):
+class CertificateUploadInputSchema(CertificateCreationSchema):
     name = fields.String()
     active = fields.Boolean(missing=True)
 
