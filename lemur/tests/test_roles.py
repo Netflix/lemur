@@ -70,8 +70,8 @@ def test_role_put(client, token, status):
     (VALID_ADMIN_HEADER_TOKEN, 200),
     ('', 401)
 ])
-def test_role_delete(client, token, status):
-    assert client.delete(api.url_for(Roles, role_id=1), headers=token).status_code == status
+def test_role_delete(client, token, status, role):
+    assert client.delete(api.url_for(Roles, role_id=role.id), headers=token).status_code == status
 
 
 @pytest.mark.parametrize("token,status", [
