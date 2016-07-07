@@ -29,7 +29,19 @@ class CertificateSchema(LemurInputSchema):
     description = fields.String()
 
 
-class CertificateInputSchema(CertificateSchema):
+class CertificateCreationSchema(CertificateSchema):
+    @post_load
+    def default_notification(self, data):
+        if not data['notifications']:
+            notification_name = "DEFAULT_{0}".format(data['owner'].split('@')[0].upper())
+            data['notifications'] += notification_service.create_default_expiration_notifications(notification_name, [data['owner']])
+
+        notification_name = 'DEFAULT_SECURITY'
+        data['notifications'] += notification_service.create_default_expiration_notifications(notification_name, current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL'))
+        return data
+
+
+class CertificateInputSchema(CertificateCreationSchema):
     name = fields.String()
     common_name = fields.String(required=True, validate=validators.sensitive_domain)
     authority = fields.Nested(AssociatedAuthoritySchema, required=True)
@@ -53,16 +65,6 @@ class CertificateInputSchema(CertificateSchema):
     state = fields.String(missing=lambda: current_app.config.get('LEMUR_DEFAULT_STATE'))
 
     extensions = fields.Nested(ExtensionSchema)
-
-    @post_load
-    def default_notifications(self, data):
-        if not data['notifications']:
-            notification_name = "DEFAULT_{0}".format(data['owner'].split('@')[0].upper())
-            data['notifications'] += notification_service.create_default_expiration_notifications(notification_name, [data['owner']])
-
-        notification_name = 'DEFAULT_SECURITY'
-        data['notifications'] += notification_service.create_default_expiration_notifications(notification_name, current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL'))
-        return data
 
     @validates_schema
     def validate_dates(self, data):
@@ -127,7 +129,7 @@ class CertificateOutputSchema(LemurOutputSchema):
     endpoints = fields.Nested(EndpointNestedOutputSchema, many=True, missing=[])
 
 
-class CertificateUploadInputSchema(CertificateSchema):
+class CertificateUploadInputSchema(CertificateCreationSchema):
     name = fields.String()
     active = fields.Boolean(missing=True)
 
