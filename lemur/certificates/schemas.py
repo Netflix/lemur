@@ -28,16 +28,6 @@ class CertificateSchema(LemurInputSchema):
     owner = fields.Email(required=True)
     description = fields.String()
 
-    @post_load
-    def default_notifications(self, data):
-        if not data['notifications']:
-            notification_name = "DEFAULT_{0}".format(data['owner'].split('@')[0].upper())
-            data['notifications'] += notification_service.create_default_expiration_notifications(notification_name, [data['owner']])
-
-        notification_name = 'DEFAULT_SECURITY'
-        data['notifications'] += notification_service.create_default_expiration_notifications(notification_name, current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL'))
-        return data
-
 
 class CertificateInputSchema(CertificateSchema):
     name = fields.String()
@@ -63,6 +53,16 @@ class CertificateInputSchema(CertificateSchema):
     state = fields.String(missing=lambda: current_app.config.get('LEMUR_DEFAULT_STATE'))
 
     extensions = fields.Nested(ExtensionSchema)
+
+    @post_load
+    def default_notifications(self, data):
+        if not data['notifications']:
+            notification_name = "DEFAULT_{0}".format(data['owner'].split('@')[0].upper())
+            data['notifications'] += notification_service.create_default_expiration_notifications(notification_name, [data['owner']])
+
+        notification_name = 'DEFAULT_SECURITY'
+        data['notifications'] += notification_service.create_default_expiration_notifications(notification_name, current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL'))
+        return data
 
     @validates_schema
     def validate_dates(self, data):
