@@ -43,7 +43,11 @@ def create(name, password=None, description=None, username=None, users=None):
     :param password:
     :return:
     """
-    role = Role(name=name, description=description, username=username, password=password, users=users)
+    role = Role(name=name, description=description, username=username, password=password)
+
+    if users:
+        role.users = users
+
     return database.create(role)
 
 

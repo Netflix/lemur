@@ -27,5 +27,5 @@ class Role(db.Model):
     authority_id = Column(Integer, ForeignKey('authorities.id'))
     authorities = relationship("Authority", secondary=roles_authorities, passive_deletes=True, backref="role", cascade='all,delete')
     user_id = Column(Integer, ForeignKey('users.id'))
-    users = relationship("User", secondary=roles_users, backref="role")
+    users = relationship("User", secondary=roles_users, passive_deletes=True, backref="role")
     certificates = relationship("Certificate", secondary=roles_certificates, backref="role")
