@@ -102,6 +102,7 @@ class AuthorityOutputSchema(LemurOutputSchema):
 
 
 class AuthorityNestedOutputSchema(LemurOutputSchema):
+    __envelope__ = False
     id = fields.Integer()
     description = fields.String()
     name = fields.String()
