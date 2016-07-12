@@ -5,10 +5,25 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+import botocore
 from flask import current_app
+
+from retrying import retry
 
 from lemur.exceptions import InvalidListener
 from lemur.plugins.lemur_aws.sts import sts_client, assume_service
+
+
+def retry_throttled(exception):
+    """
+    Determiens if this exception is due to throttling
+    :param exception:
+    :return:
+    """
+    if isinstance(exception, botocore.exceptions.ClientError):
+        if 'Throttling' in exception.message:
+            return True
+    return False
 
 
 def is_valid(listener_tuple):
@@ -26,7 +41,6 @@ def is_valid(listener_tuple):
 
     :param listener_tuple:
     """
-    current_app.logger.debug(listener_tuple)
     lb_port, i_port, lb_protocol, arn = listener_tuple
     current_app.logger.debug(lb_protocol)
     if lb_protocol.lower() in ['ssl', 'https']:
@@ -37,11 +51,34 @@ def is_valid(listener_tuple):
 
 
 @sts_client('elb')
+@retry(retry_on_exception=retry_throttled, stop_max_attempt_number=7, wait_exponential_multiplier=1000)
+def get_elbs(**kwargs):
+    """
+    Fetches one page elb objects for a given account and region.
+    """
+    client = kwargs.pop('client')
+    return client.describe_load_balancers(**kwargs)
+
+
 def get_all_elbs(**kwargs):
     """
-    Fetches all elb objects for a given account and region.
+    Fetches all elbs for a given account/region
+
+    :param kwargs:
+    :return:
     """
-    return kwargs['client'].describe_load_balancers()
+    elbs = []
+
+    while True:
+        response = get_elbs(**kwargs)
+
+        elbs += response['LoadBalancerDescriptions']
+
+        if not response.get('IsTruncated'):
+            return elbs
+
+        if response['NextMarker']:
+            kwargs.update(dict(marker=response['NextMarker']))
 
 
 @sts_client('elb')

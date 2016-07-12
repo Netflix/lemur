@@ -5,7 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import copy
+from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean
 from sqlalchemy_utils import JSONType
 from lemur.database import db
@@ -22,10 +22,8 @@ class Source(db.Model):
     plugin_name = Column(String(32))
     active = Column(Boolean, default=True)
     last_run = Column(DateTime)
+    endpoints = relationship("Endpoint", back_populates="source")
 
     @property
     def plugin(self):
-        p = plugins.get(self.plugin_name)
-        c = copy.deepcopy(p)
-        c.options = self.options
-        return c
+        return plugins.get(self.plugin_name)

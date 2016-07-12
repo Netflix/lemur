@@ -131,9 +131,12 @@ class AWSSourcePlugin(SourcePlugin):
         for region in regions:
             elbs = get_all_elbs(account_number=account_number, region=region)
             current_app.logger.info("Describing load balancers in {0}-{1}".format(account_number, region))
-            for elb in elbs['LoadBalancerDescriptions']:
+            for elb in elbs:
                 for listener in elb['ListenerDescriptions']:
                     if not listener['Listener'].get('SSLCertificateId'):
+                        continue
+
+                    if listener['Listener']['SSLCertificateId'] == 'Invalid-Certificate':
                         continue
 
                     endpoint = dict(

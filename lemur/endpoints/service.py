@@ -48,6 +48,15 @@ def get_by_dnsname(endpoint_dnsname):
     return database.get(Endpoint, endpoint_dnsname, field='dnsname')
 
 
+def get_by_source(source_label):
+    """
+    Retrieves all endpoints for a given source.
+    :param source_label:
+    :return:
+    """
+    return Endpoint.query.filter(Endpoint.source.label == source_label).all()  # noqa
+
+
 def create(**kwargs):
     """
     Creates a new endpoint.
