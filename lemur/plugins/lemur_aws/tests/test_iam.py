@@ -10,7 +10,7 @@ def test_get_name_from_arn():
     assert get_name_from_arn(arn) == 'tttt2.netflixtest.net-NetflixInc-20150624-20150625'
 
 
-@pytest.mark.skip(reason="this fails because moto is not currently returning what boto does")
+@pytest.mark.skipif(True, reason="this fails because moto is not currently returning what boto does")
 @mock_sts()
 @mock_iam()
 def test_get_all_server_certs(app):
