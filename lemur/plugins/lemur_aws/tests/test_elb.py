@@ -11,4 +11,4 @@ def test_get_all_elbs(app):
     assert not elbs['LoadBalancerDescriptions']
     conn.create_load_balancer('example-lb', ['us-east-1a', 'us-east-1b'], [(443, 5443, 'tcp')])
     elbs = get_all_elbs(account_number='123456789012', region='us-east-1')
-    assert elbs['LoadBalancerDescriptions']
+    assert elbs
