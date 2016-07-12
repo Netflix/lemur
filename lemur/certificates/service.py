@@ -67,6 +67,16 @@ def get_all_certs():
     return Certificate.query.all()
 
 
+def get_by_source(source_label):
+    """
+    Retrieves all certificates from a given source.
+
+    :param source_label:
+    :return:
+    """
+    return Certificate.query.filter(Certificate.sources.any(label=source_label))
+
+
 def find_duplicates(cert_body):
     """
     Finds certificates that already exist within Lemur. We do this by looking for

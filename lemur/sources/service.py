@@ -19,7 +19,9 @@ from lemur.destinations import service as destination_service
 from lemur.plugins.base import plugins
 
 
-def _disassociate_certs_from_source(current_certificates, found_certificates, source_label):
+# TODO optimize via sql query
+def _disassociate_certs_from_source(found_certificates, source_label):
+    current_certificates = cert_service.get_by_source(source_label=source_label)
     missing = []
     for cc in current_certificates:
         for fc in found_certificates:
@@ -32,12 +34,29 @@ def _disassociate_certs_from_source(current_certificates, found_certificates, so
         for s in c.sources:
             if s.label == source_label:
                 current_app.logger.info(
-                    "Certificate {name} is no longer associated with {source}".format(
+                    "Certificate {name} is no longer associated with {source}.".format(
                         name=c.name,
                         source=source_label
                     )
                 )
                 c.sources.delete(s)
+
+
+# TODO optimize via sql query
+def _disassociate_endpoints_from_source(found_endpoints, source_label):
+    current_endpoints = endpoint_service.get_by_source(source_label=source_label)
+
+    for ce in current_endpoints:
+        for fe in found_endpoints:
+            if ce.dnsname == fe['dnsname']:
+                break
+        else:
+            current_app.logger.info(
+                "Endpoint {dnsname} was not found during sync, removing from inventory.".format(
+                    dnsname=ce.dnsname
+                )
+            )
+            database.delete(ce)
 
 
 def certificate_create(certificate, source):
@@ -117,10 +136,11 @@ def sync_endpoints(source):
             endpoint_service.update(exists.id, **endpoint)
             updated += 1
 
+    _disassociate_endpoints_from_source(endpoints, source)
+
 
 def sync_certificates(source):
     new, updated = 0, 0
-    c_certificates = cert_service.get_all_certs()
 
     current_app.logger.debug("Retrieving certificates from {0}".format(source.label))
     s = plugins.get(source.plugin_name)
@@ -145,7 +165,7 @@ def sync_certificates(source):
             )
 
     # we need to try and find the absent of certificates so we can properly disassociate them when they are deleted
-    _disassociate_certs_from_source(c_certificates, certificates, source)
+    _disassociate_certs_from_source(certificates, source)
 
 
 def sync(labels=None, type=None):

@@ -57,7 +57,7 @@ def get_all_server_certs(account_number):
         result = response['list_server_certificates_response']['list_server_certificates_result']
 
         for cert in result['server_certificate_metadata_list']:
-            certs.append(cert['server_certificate_metadata']['arn'])
+            certs.append(cert['arn'])
 
         if result['is_truncated'] == 'true':
             marker = result['marker']
