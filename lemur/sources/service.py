@@ -10,6 +10,7 @@ import datetime
 from flask import current_app
 
 from lemur import database
+from lemur.extensions import metrics
 from lemur.sources.models import Source
 from lemur.certificates.models import Certificate
 from lemur.certificates import service as cert_service
@@ -56,6 +57,7 @@ def _disassociate_endpoints_from_source(found_endpoints, source_label):
                     dnsname=ce.dnsname
                 )
             )
+            metrics.send('endpoint_removed', 'counter', 1)
             database.delete(ce)
 
 
