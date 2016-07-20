@@ -636,7 +636,7 @@ class Certificates(AuthenticatedResource):
         for destination in data['destinations']:
             if destination.plugin.requires_key:
                 if not cert.private_key:
-                    return dict('Unable to add destination: {0}. Certificate does not have required private key.'.format(destination.label))
+                    return dict(message='Unable to add destination: {0}. Certificate does not have required private key.'.format(destination.label)), 400
 
         return service.update(
             certificate_id,
@@ -926,7 +926,7 @@ class CertificateExport(AuthenticatedResource):
             if not cert.private_key:
                 return dict(
                     message='Unable to export certificate, plugin: {0} requires a private key but no key was found.'.format(
-                        plugin.slug))
+                        plugin.slug)), 400
 
             else:
                 # allow creators
