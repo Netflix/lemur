@@ -62,7 +62,7 @@ install_requires = [
     'boto==2.38.0',  # we might make this optional
     'boto3==1.3.0',
     'acme==0.1.0',
-    'retrying==1.3.3'
+    'retrying==1.3.3', 'tabulate'
 ]
 
 tests_require = [

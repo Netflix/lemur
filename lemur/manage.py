@@ -1,5 +1,8 @@
 from __future__ import unicode_literals    # at top of module
 
+from datetime import datetime, timedelta
+from collections import Counter
+
 import os
 import sys
 import base64
@@ -7,6 +10,8 @@ import time
 import arrow
 import requests
 import json
+
+from tabulate import tabulate
 from gunicorn.config import make_settings
 
 from cryptography.fernet import Fernet
@@ -23,6 +28,7 @@ from lemur.users import service as user_service
 from lemur.roles import service as role_service
 from lemur.certificates import service as cert_service
 from lemur.sources import service as source_service
+from lemur.authorities import service as authority_service
 from lemur.notifications import service as notification_service
 
 from lemur.certificates.service import get_name_from_arn
@@ -862,6 +868,79 @@ class Rolling(Command):
             requests.post('http://localhost:8078/metrics', data=json.dumps(metric))
 
 
+class Report(Command):
+    """
+    Defines a set of reports to be run periodically against Lemur.
+    """
+    option_list = (
+        Option('-n', '--name', dest='name', default=None, help='Name of the report to run.'),
+        Option('-d', '--duration', dest='duration', default=356, help='Number of days to run the report'),
+    )
+
+    def run(self, name, duration):
+
+        end = datetime.utcnow()
+        start = end - timedelta(days=duration)
+
+        self.certificates_issued(name, start, end)
+
+    @staticmethod
+    def certificates_issued(name=None, start=None, end=None):
+        """
+        Generates simple report of number of certificates issued by the authority, if no authority
+        is specified report on total number of certificates.
+
+        :param name:
+        :param start:
+        :param end:
+        :return:
+        """
+
+        def _calculate_row(authority):
+            day_cnt = Counter()
+            month_cnt = Counter()
+            year_cnt = Counter()
+
+            for cert in authority.certificates:
+                date = cert.date_created.date()
+                day_cnt[date.day] += 1
+                month_cnt[date.month] += 1
+                year_cnt[date.year] += 1
+
+            try:
+                day_avg = int(sum(day_cnt.values()) / len(day_cnt.keys()))
+            except ZeroDivisionError:
+                day_avg = 0
+
+            try:
+                month_avg = int(sum(month_cnt.values()) / len(month_cnt.keys()))
+            except ZeroDivisionError:
+                month_avg = 0
+
+            try:
+                year_avg = int(sum(year_cnt.values()) / len(year_cnt.keys()))
+            except ZeroDivisionError:
+                year_avg = 0
+
+            return [authority.name, authority.description, day_avg, month_avg, year_avg]
+
+        rows = []
+        if not name:
+            for authority in authority_service.get_all():
+                rows.append(_calculate_row(authority))
+
+        else:
+            authority = authority_service.get_by_name(name)
+
+            if not authority:
+                sys.stderr.write('[!] Authority {0} was not found.'.format(name))
+                sys.exit(1)
+
+            rows.append(_calculate_row(authority))
+
+        sys.stdout.write(tabulate(rows, headers=["Authority Name", "Description", "Daily Average", "Monthy Average", "Yearly Average"]) + "\n")
+
+
 def main():
     manager.add_command("start", LemurServer())
     manager.add_command("runserver", Server(host='127.0.0.1', threaded=True))
@@ -875,6 +954,7 @@ def main():
     manager.add_command("provision_elb", ProvisionELB())
     manager.add_command("rotate_elbs", RotateELBs())
     manager.add_command("rolling", Rolling())
+    manager.add_command("report", Report())
     manager.run()
 
 if __name__ == "__main__":
