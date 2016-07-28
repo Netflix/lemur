@@ -77,16 +77,16 @@ def get_by_source(source_label):
     return Certificate.query.filter(Certificate.sources.any(label=source_label))
 
 
-def find_duplicates(cert_body):
+def find_duplicates(cert):
     """
     Finds certificates that already exist within Lemur. We do this by looking for
     certificate bodies that are the same. This is the most reliable way to determine
     if a certificate is already being tracked by Lemur.
 
-    :param cert_body:
+    :param cert:
     :return:
     """
-    return Certificate.query.filter_by(body=cert_body).all()
+    return Certificate.query.filter_by(body=cert['body'].strip(), chain=cert['chain'].strip()).all()
 
 
 def export(cert, export_plugin):
@@ -172,13 +172,8 @@ def import_certificate(**kwargs):
 
     :param kwargs:
     """
-    from lemur.users import service as user_service
-
     if not kwargs.get('owner'):
         kwargs['owner'] = current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL')[0]
-
-    if not kwargs.get('creator'):
-        kwargs['creator'] = user_service.get_by_email('lemur@nobody')
 
     return upload(**kwargs)
 
@@ -187,7 +182,6 @@ def upload(**kwargs):
     """
     Allows for pre-made certificates to be imported into Lemur.
     """
-    from lemur.users import service as user_service
     roles = create_certificate_roles(**kwargs)
 
     if kwargs.get('roles'):
@@ -202,8 +196,7 @@ def upload(**kwargs):
     try:
         g.user.certificates.append(cert)
     except AttributeError:
-        user = user_service.get_by_email('lemur@nobody')
-        user.certificates.append(cert)
+        current_app.logger.debug("No user to associate uploaded certificate to.")
 
     return database.update(cert)
 

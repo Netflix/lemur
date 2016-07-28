@@ -7,6 +7,7 @@
 """
 import datetime
 
+import lemur.common.utils
 from flask import current_app
 
 from sqlalchemy.orm import relationship
@@ -38,7 +39,7 @@ class Certificate(db.Model):
     __tablename__ = 'certificates'
     id = Column(Integer, primary_key=True)
     owner = Column(String(128), nullable=False)
-    name = Column(String(128))  # , unique=True) TODO make all names unique
+    name = Column(String(128), unique=True)
     description = Column(String(1024))
     active = Column(Boolean, default=True)
 
@@ -78,7 +79,7 @@ class Certificate(db.Model):
     endpoints = relationship("Endpoint", backref='certificate')
 
     def __init__(self, **kwargs):
-        cert = defaults.parse_certificate(kwargs['body'])
+        cert = lemur.common.utils.parse_certificate(kwargs['body'])
 
         self.issuer = defaults.issuer(cert)
         self.cn = defaults.common_name(cert)
@@ -93,9 +94,14 @@ class Certificate(db.Model):
             self.name = get_or_increase_name(defaults.certificate_name(self.cn, self.issuer, self.not_before, self.not_after, self.san))
 
         self.owner = kwargs['owner']
-        self.body = kwargs['body']
-        self.private_key = kwargs.get('private_key')
-        self.chain = kwargs.get('chain')
+        self.body = kwargs['body'].strip()
+
+        if kwargs.get('private_key'):
+            self.private_key = kwargs['private_key'].strip()
+
+        if kwargs.get('chain'):
+            self.chain = kwargs['chain'].strip()
+
         self.destinations = kwargs.get('destinations', [])
         self.notifications = kwargs.get('notifications', [])
         self.description = kwargs.get('description')

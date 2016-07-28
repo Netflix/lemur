@@ -25,6 +25,12 @@ class SourcePlugin(Plugin):
     def get_certificates(self):
         raise NotImplemented
 
+    def get_endpoints(self):
+        raise NotImplemented
+
+    def clean(self):
+        raise NotImplemented
+
     @property
     def options(self):
         return list(self.default_options) + self.additional_options

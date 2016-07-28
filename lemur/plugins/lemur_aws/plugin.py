@@ -155,6 +155,22 @@ class AWSSourcePlugin(SourcePlugin):
 
         return endpoints
 
+    def clean(self, options, **kwargs):
+        account_number = self.get_option('accountNumber', options)
+        certificates = self.get_certificates(options)
+        endpoints = self.get_endpoints(options)
+
+        orphaned = []
+        for certificate in certificates:
+            for endpoint in endpoints:
+                if certificate['name'] == endpoint['certificate_name']:
+                    break
+            else:
+                orphaned.append(certificate['name'])
+                iam.delete_cert(account_number, certificate)
+
+        return orphaned
+
 
 def format_elb_cipher_policy(policy):
     """
