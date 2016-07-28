@@ -200,7 +200,7 @@ def clean(source):
                 cert.name,
                 source.label
             ))
-            cert.sources.delete(source)
+            cert.sources.remove(source)
 
 
 def create(label, plugin_name, options, description=None):
