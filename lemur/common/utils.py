@@ -39,4 +39,5 @@ def parse_certificate(body):
     if sys.version_info >= (3, 0):
         if isinstance(body, bytes):
             return x509.load_pem_x509_certificate(body, default_backend())
-    return x509.load_pem_x509_certificate(bytes(body, 'utf8'), default_backend())
+        return x509.load_pem_x509_certificate(bytes(body, 'utf8'), default_backend())
+    return x509.load_pem_x509_certificate(body, default_backend())
