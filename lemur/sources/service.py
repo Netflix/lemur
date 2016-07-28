@@ -21,11 +21,11 @@ from lemur.plugins.base import plugins
 
 
 # TODO optimize via sql query
-def _disassociate_certs_from_source(found_certificates, source_label):
-    current_certificates = cert_service.get_by_source(source_label=source_label)
+def _disassociate_certs_from_source(certificates, source):
+    current_certificates = cert_service.get_by_source(source_label=source.label)
     missing = []
     for cc in current_certificates:
-        for fc in found_certificates:
+        for fc in certificates:
             if fc['body'] == cc.body:
                 break
         else:
@@ -33,22 +33,22 @@ def _disassociate_certs_from_source(found_certificates, source_label):
 
     for c in missing:
         for s in c.sources:
-            if s.label == source_label:
+            if s.label == source:
                 current_app.logger.info(
                     "Certificate {name} is no longer associated with {source}.".format(
                         name=c.name,
-                        source=source_label
+                        source=source.label
                     )
                 )
                 c.sources.delete(s)
 
 
 # TODO optimize via sql query
-def _disassociate_endpoints_from_source(found_endpoints, source_label):
-    current_endpoints = endpoint_service.get_by_source(source_label=source_label)
+def _disassociate_endpoints_from_source(endpoints, source):
+    current_endpoints = endpoint_service.get_by_source(source_label=source.label)
 
     for ce in current_endpoints:
-        for fe in found_endpoints:
+        for fe in endpoints:
             if ce.dnsname == fe['dnsname']:
                 break
         else:
@@ -108,6 +108,7 @@ def sync_endpoints(source):
         certificate = endpoint.pop('certificate', None)
 
         if certificate_name:
+            current_app.logger.debug(certificate_name)
             cert = cert_service.get_by_name(certificate_name)
 
         elif certificate:
@@ -116,7 +117,8 @@ def sync_endpoints(source):
                 cert = cert_service.import_certificate(**certificate)
 
         if not cert:
-            current_app.logger.error("Unable to find associated certificate, be sure that certificates are sync'ed before endpoints")
+            current_app.logger.error(
+                "Unable to find associated certificate, be sure that certificates are sync'ed before endpoints")
             continue
 
         endpoint['certificate'] = cert
@@ -149,7 +151,7 @@ def sync_certificates(source):
     certificates = s.get_certificates(source.options)
 
     for certificate in certificates:
-        exists = cert_service.find_duplicates(certificate['body'])
+        exists = cert_service.find_duplicates(certificate)
 
         if not exists:
             certificate_create(certificate, source)
@@ -170,23 +172,35 @@ def sync_certificates(source):
     _disassociate_certs_from_source(certificates, source)
 
 
-def sync(labels=None, type=None):
-    for source in database.get_all(Source, True, field='active'):
-        # we should be able to specify, individual sources to sync
-        if labels:
-            if source.label not in labels:
-                continue
+def sync(source):
+    sync_certificates(source)
+    sync_endpoints(source)
 
-        if type == 'endpoints':
-            sync_endpoints(source)
-        elif type == 'certificates':
-            sync_certificates(source)
-        else:
-            sync_certificates(source)
-            sync_endpoints(source)
+    source.last_run = datetime.datetime.utcnow()
+    database.update(source)
 
-        source.last_run = datetime.datetime.utcnow()
-        database.update(source)
+
+def clean(source):
+    s = plugins.get(source.plugin_name)
+
+    try:
+        certificates = s.clean(source.options)
+    except NotImplemented:
+        current_app.logger.warning("Cannot clean source: {0}, source plugin does not implement 'clean()'".format(
+            source.label
+        ))
+        return
+
+    for certificate in certificates:
+        current_app.logger.debug(certificate)
+        cert = cert_service.get_by_name(certificate)
+
+        if cert:
+            current_app.logger.warning("Removed {0} from source {1} during cleaning".format(
+                cert.name,
+                source.label
+            ))
+            cert.sources.remove(source)
 
 
 def create(label, plugin_name, options, description=None):

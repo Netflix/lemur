@@ -16,8 +16,6 @@ from gunicorn.config import make_settings
 
 from cryptography.fernet import Fernet
 
-from lockfile import LockFile, LockTimeout
-
 from flask import current_app
 from flask.ext.script import Manager, Command, Option, prompt_pass
 from flask.ext.migrate import Migrate, MigrateCommand, stamp
@@ -27,7 +25,6 @@ from lemur import database
 from lemur.users import service as user_service
 from lemur.roles import service as role_service
 from lemur.certificates import service as cert_service
-from lemur.sources import service as source_service
 from lemur.authorities import service as authority_service
 from lemur.notifications import service as notification_service
 
@@ -36,7 +33,7 @@ from lemur.certificates.verify import verify_string
 
 from lemur.plugins.lemur_aws import elb
 
-from lemur.sources.service import sync as source_sync
+from lemur.sources import service as source_service
 
 from lemur import create_app
 
@@ -192,59 +189,6 @@ def generate_settings():
     )
 
     return output
-
-
-@manager.option('-s', '--sources', dest='labels')
-@manager.option('-t', '--type', dest='type')
-def sync(labels, type):
-    """
-    Attempts to run several methods Certificate discovery. This is
-    run on a periodic basis and updates the Lemur datastore with the
-    information it discovers.
-    """
-    if not labels:
-        sys.stdout.write("Active\tLabel\tDescription\n")
-        for source in source_service.get_all():
-            sys.stdout.write(
-                "{active}\t{label}\t{description}!\n".format(
-                    label=source.label,
-                    description=source.description,
-                    active=source.active
-                )
-            )
-    else:
-        start_time = time.time()
-        lock_file = "/tmp/.lemur_lock"
-        sync_lock = LockFile(lock_file)
-
-        while not sync_lock.i_am_locking():
-            try:
-                sync_lock.acquire(timeout=2)    # wait up to 10 seconds
-
-                sys.stdout.write("[+] Staring to sync sources: {labels}!\n".format(labels=labels))
-                labels = labels.split(",")
-
-                if labels[0] == 'all':
-                    source_sync()
-                else:
-                    source_sync(labels=labels, type=type)
-
-                sys.stdout.write(
-                    "[+] Finished syncing sources. Run Time: {time}\n".format(
-                        time=(time.time() - start_time)
-                    )
-                )
-            except LockTimeout:
-                sys.stderr.write(
-                    "[!] Unable to acquire file lock on {file}, is there another sync running?\n".format(
-                        file=lock_file
-                    )
-                )
-                sync_lock.break_lock()
-                sync_lock.acquire()
-                sync_lock.release()
-
-        sync_lock.release()
 
 
 @manager.command
@@ -881,7 +825,6 @@ class Report(Command):
 
         end = datetime.utcnow()
         start = end - timedelta(days=duration)
-
         self.certificates_issued(name, start, end)
 
     @staticmethod
@@ -941,6 +884,61 @@ class Report(Command):
         sys.stdout.write(tabulate(rows, headers=["Authority Name", "Description", "Daily Average", "Monthy Average", "Yearly Average"]) + "\n")
 
 
+class Sources(Command):
+    """
+    Defines a set of actions to take against Lemur's sources.
+    """
+    option_list = (
+        Option('-s', '--sources', dest='sources', action='append', help='Sources to operate on.'),
+        Option('-a', '--action', choices=['sync', 'clean'], dest='action', help='Action to take on source.')
+    )
+
+    def run(self, sources, action):
+        if not sources:
+            table = []
+            for source in source_service.get_all():
+                table.append([source.label, source.active, source.description])
+
+            sys.stdout.write(tabulate(table, headers=['Label', 'Active', 'Description']))
+            sys.exit(1)
+
+        for label in sources:
+            source = source_service.get_by_label(label)
+
+            if not source:
+                sys.stderr.write("Unable to find specified source with label: {0}".format(label))
+
+            if action == 'sync':
+                self.sync(source)
+
+            if action == 'clean':
+                self.clean(source)
+
+    @staticmethod
+    def sync(source):
+        start_time = time.time()
+        sys.stdout.write("[+] Staring to sync source: {label}!\n".format(label=source.label))
+        source_service.sync(source)
+        sys.stdout.write(
+            "[+] Finished syncing source: {label}. Run Time: {time}\n".format(
+                label=source.label,
+                time=(time.time() - start_time)
+            )
+        )
+
+    @staticmethod
+    def clean(source):
+        start_time = time.time()
+        sys.stdout.write("[+] Staring to clean source: {label}!\n".format(label=source.label))
+        source_service.clean(source)
+        sys.stdout.write(
+            "[+] Finished cleaning source: {label}. Run Time: {time}\n".format(
+                label=source.label,
+                time=(time.time() - start_time)
+            )
+        )
+
+
 def main():
     manager.add_command("start", LemurServer())
     manager.add_command("runserver", Server(host='127.0.0.1', threaded=True))
@@ -954,6 +952,7 @@ def main():
     manager.add_command("provision_elb", ProvisionELB())
     manager.add_command("rotate_elbs", RotateELBs())
     manager.add_command("rolling", Rolling())
+    manager.add_command("sources", Sources())
     manager.add_command("report", Report())
     manager.run()
 

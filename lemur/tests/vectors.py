@@ -1,5 +1,4 @@
-from cryptography import x509
-from cryptography.hazmat.backends import default_backend
+from lemur.common.utils import parse_certificate
 
 VALID_USER_HEADER_TOKEN = {
     'Authorization': 'Basic ' + 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0MzUyMzMzNjksInN1YiI6MSwiZXhwIjoxNTIxNTQ2OTY5fQ.1qCi0Ip7mzKbjNh0tVd3_eJOrae3rNa_9MCVdA4WtQI'}
@@ -34,7 +33,7 @@ Ygk1wptlt/tg7uUmstmXZA4vTPx83f4P3KSS3XHIYFIyGFWUDs23C20K6mmW1iXa
 h0S8LN4iv/+vNFPNiM1z9X/SZgfbwZXrLsSi
 -----END CERTIFICATE-----
 """
-INTERNAL_VALID_LONG_CERT = x509.load_pem_x509_certificate(INTERNAL_VALID_LONG_STR, default_backend())
+INTERNAL_VALID_LONG_CERT = parse_certificate(INTERNAL_VALID_LONG_STR)
 
 
 INTERNAL_INVALID_STR = b"""
@@ -63,7 +62,7 @@ T7W3s8mm5bVHhQM7J9tV6dz/sVDmpOSuzL8oZkqeKP+lWU6ytaohFFpbdzaxWipU
 kP+oGWtHvhteUAe8Gloo5NchZJ0/BqlYRCD5aAHcmbXRsDid9mO4ADU=
 -----END CERTIFICATE-----
 """
-INTERNAL_INVALID_CERT = x509.load_pem_x509_certificate(INTERNAL_INVALID_STR, default_backend())
+INTERNAL_INVALID_CERT = parse_certificate(INTERNAL_INVALID_STR)
 
 
 INTERNAL_VALID_SAN_STR = b"""
@@ -93,7 +92,7 @@ YBrY/duF15YpoMKAlFhDBh6R9/nb5kI2n3pY6I5h6LEYfLStazXbIu61M8zu9TM/
 +t5Oz6rmcjohL22+sEmmRz86dQZlrBBUxX0kCQj6OAFB4awtRd4fKtkCkZhvhQ==
 -----END CERTIFICATE-----
 """
-INTERNAL_VALID_SAN_CERT = x509.load_pem_x509_certificate(INTERNAL_VALID_SAN_STR, default_backend())
+INTERNAL_VALID_SAN_CERT = parse_certificate(INTERNAL_VALID_SAN_STR)
 
 
 INTERNAL_VALID_WILDCARD_STR = b"""
@@ -122,7 +121,7 @@ UGniiUh4bAUuppbtSIvUTsRsJuPYOqHC3h8791JZ/3Sr5uB7QbCdz9K14c9zi6Z1
 S0Xb3ZauZJQI7OdHeUPDRVq+8hcG77sopN9pEYrIH08oxvLX2US3GqrowjOxthRa
 -----END CERTIFICATE-----
 """
-INTERNAL_VALID_WILDCARD_CERT = x509.load_pem_x509_certificate(INTERNAL_VALID_WILDCARD_STR, default_backend())
+INTERNAL_VALID_WILDCARD_CERT = parse_certificate(INTERNAL_VALID_WILDCARD_STR)
 
 
 EXTERNAL_VALID_STR = b"""
@@ -157,7 +156,7 @@ Bs63gULVCqWygt5KEbv990m/XGuRMaXuHzHCHB4v5LRM30FiFmqCzyD8d+btzW9B
 1hZ5s3rj+a6UwvpinKJoPfgkgg==
 -----END CERTIFICATE-----
 """
-EXTERNAL_CERT = x509.load_pem_x509_certificate(EXTERNAL_VALID_STR, default_backend())
+EXTERNAL_CERT = parse_certificate(EXTERNAL_VALID_STR)
 
 
 PRIVATE_KEY_STR = b"""

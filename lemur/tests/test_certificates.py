@@ -360,7 +360,7 @@ def test_upload(logged_in_user):
     assert cert.name == 'long.lived.com-Example-20150626-20400101-2'
 
     cert = upload(body=INTERNAL_VALID_LONG_STR, chain=INTERNAL_VALID_SAN_STR, private_key=PRIVATE_KEY_STR, owner='joe@example.com', name='ACustomName')
-    assert cert.name == 'ACustomName'
+    assert 'ACustomName' in cert.name
 
 
 @pytest.mark.parametrize("token,status", [

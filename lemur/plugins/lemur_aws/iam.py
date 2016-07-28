@@ -33,15 +33,15 @@ def upload_cert(account_number, name, body, private_key, cert_chain=None):
                                                                     cert_chain=str(cert_chain))
 
 
-def delete_cert(account_number, cert):
+def delete_cert(account_number, cert_name):
     """
     Delete a certificate from AWS
 
     :param account_number:
-    :param cert:
+    :param cert_name:
     :return:
     """
-    return assume_service(account_number, 'iam').delete_server_cert(cert.name)
+    return assume_service(account_number, 'iam').delete_server_cert(cert_name)
 
 
 def get_all_server_certs(account_number):

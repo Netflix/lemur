@@ -6,6 +6,7 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 
+from lemur.common.utils import parse_certificate
 from lemur.domains import service as domain_service
 from lemur.auth.permissions import SensitiveDomainPermission
 
@@ -18,7 +19,7 @@ def public_certificate(body):
     :return:
     """
     try:
-        x509.load_pem_x509_certificate(bytes(body), default_backend())
+        parse_certificate(body)
     except Exception:
         raise ValidationError('Public certificate presented is not valid.')
 
