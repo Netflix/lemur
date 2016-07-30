@@ -205,7 +205,7 @@ REST API
 ========
 
 Lemur's front end is entirely API driven. Any action that you can accomplish via the UI can also be accomplished by the
-UI. The following is documents and provides examples on how to make requests to the Lemur API.
+API. The following is documents and provides examples on how to make requests to the Lemur API.
 
 Authentication
 --------------
