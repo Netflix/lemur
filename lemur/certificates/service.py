@@ -322,6 +322,7 @@ def create_csr(**csr_config):
         x509.NameAttribute(x509.OID_COUNTRY_NAME, csr_config['country']),
         x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, csr_config['state']),
         x509.NameAttribute(x509.OID_LOCALITY_NAME, csr_config['location']),
+        x509.NameAttribute(x509.OID_EMAIL_ADDRESS, csr_config['owner'])
     ]))
 
     builder = builder.add_extension(
