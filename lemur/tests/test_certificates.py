@@ -328,8 +328,8 @@ def test_create_certificate(issuer_plugin, authority, logged_in_admin):
 def test_create_csr():
     from lemur.certificates.service import create_csr
 
-    csr, private_key = create_csr(common_name='ACommonName', organization='test', organizational_unit='Meters', country='US',
-                                  state='CA', location='Here', owner='joe@example.com')
+    csr, private_key = create_csr(owner='joe@example.com', common_name='ACommonName', organization='test', organizational_unit='Meters', country='US',
+                                  state='CA', location='Here')
     assert csr
     assert private_key
 
