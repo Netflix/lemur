@@ -284,6 +284,7 @@ def test_create_basic_csr(client):
         country='US',
         state='CA',
         location='A place',
+        owner='joe@example.com',
         extensions=dict(names=dict(sub_alt_names=['test.example.com', 'test2.example.com']))
     )
     csr, pem = create_csr(**csr_config)
@@ -328,12 +329,12 @@ def test_create_csr():
     from lemur.certificates.service import create_csr
 
     csr, private_key = create_csr(common_name='ACommonName', organization='test', organizational_unit='Meters', country='US',
-                                  state='CA', location='Here')
+                                  state='CA', location='Here', owner='joe@example.com')
     assert csr
     assert private_key
 
     extensions = {'sub_alt_names': {'names': [{'name_type': 'DNSName', 'value': 'AnotherCommonName'}]}}
-    csr, private_key = create_csr(common_name='ACommonName', organization='test', organizational_unit='Meters', country='US',
+    csr, private_key = create_csr(owner='joe@example.com', common_name='ACommonName', organization='test', organizational_unit='Meters', country='US',
                                   state='CA', location='Here', extensions=extensions)
     assert csr
     assert private_key
