@@ -100,7 +100,7 @@ class Vault(types.TypeDecorator):
 
         # we only support strings and they should be of type bytes for Fernet
         if not isinstance(value, six.string_types):
-            return None
+            return
 
         if sys.version_info >= (3, 0):
             value = bytes(value, 'utf8')
@@ -122,10 +122,12 @@ class Vault(types.TypeDecorator):
 
         # if the value is not a string we aren't going to try to decrypt
         # it. this is for the case where the column is null
-        if not isinstance(value, six.string_types):
-            return None
 
-        # TODO this may raise an InvalidToken exception in certain
-        # cases. Should we handle that?
-        # https://cryptography.io/en/latest/fernet/#cryptography.fernet.Fernet.decrypt
-        return MultiFernet(self.keys).decrypt(value)
+        if not sys.version_info >= (3, 0):
+            if not isinstance(value, six.string_types):
+                return
+            return MultiFernet(self.keys).decrypt(value)
+        else:
+            if not value:
+                return
+            return str(MultiFernet(self.keys).decrypt(value), 'utf8')
