@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+import sys
 import jwt
 import base64
 import requests
@@ -140,8 +141,14 @@ class Ping(Resource):
         user_api_url = current_app.config.get('PING_USER_API_URL')
 
         # the secret and cliendId will be given to you when you signup for the provider
-        basic = base64.b64encode('{0}:{1}'.format(args['clientId'], current_app.config.get("PING_SECRET")))
-        headers = {'Authorization': 'Basic {0}'.format(basic)}
+        token = '{0}:{1}'.format(args['clientId'], current_app.config.get("PING_SECRET"))
+
+        if sys.version_info >= (3, 0):
+            basic = base64.b64encode(bytes(token, 'utf-8'))
+            headers = {'authorization': 'basic {0}'.format(basic.decode('utf-8'))}
+        else:
+            basic = base64.b64encode(token, 'utf-8')
+            headers = {'authorization': 'basic {0}'.format(basic)}
 
         # exchange authorization code for access token.
 
@@ -165,7 +172,10 @@ class Ping(Resource):
 
         # validate your token based on the key it was signed with
         try:
-            jwt.decode(id_token, secret, algorithms=[algo], audience=args['clientId'])
+            if sys.version_info >= (3, 0):
+                jwt.decode(id_token, secret.decode('utf-8'), algorithms=[algo], audience=args['clientId'])
+            else:
+                jwt.decode(id_token, secret, algorithms=[algo], audience=args['clientId'])
         except jwt.DecodeError:
             return dict(message='Token is invalid'), 403
         except jwt.ExpiredSignatureError:
