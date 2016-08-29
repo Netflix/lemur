@@ -8,11 +8,9 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
-from __future__ import unicode_literals
-from builtins import bytes
+import sys
 import jwt
 import json
-import base64
 import binascii
 
 from functools import wraps
@@ -34,19 +32,6 @@ from lemur.auth.permissions import CertificateCreatorNeed, \
     AuthorityCreatorNeed, ViewRoleCredentialsNeed
 
 
-def base64url_decode(data):
-    rem = len(data) % 4
-
-    if rem > 0:
-        data += '=' * (4 - rem)
-
-    return base64.urlsafe_b64decode(bytes(data.encode('latin-1')))
-
-
-def base64url_encode(data):
-    return base64.urlsafe_b64encode(data).replace('=', '')
-
-
 def get_rsa_public_key(n, e):
     """
     Retrieve an RSA public key based on a module and exponent as provided by the JWKS format.
@@ -55,8 +40,13 @@ def get_rsa_public_key(n, e):
     :param e:
     :return: a RSA Public Key in PEM format
     """
-    n = int(binascii.hexlify(base64url_decode(n)), 16)
-    e = int(binascii.hexlify(base64url_decode(e)), 16)
+    if sys.version_info >= (3, 0):
+        n = int(binascii.hexlify(jwt.utils.base64url_decode(bytes(n, 'utf-8'))), 16)
+        e = int(binascii.hexlify(jwt.utils.base64url_decode(bytes(e, 'utf-8'))), 16)
+    else:
+        n = int(binascii.hexlify(jwt.utils.base64url_decode(n)), 16)
+        e = int(binascii.hexlify(jwt.utils.base64url_decode(e, 'utf-8')), 16)
+
     pub = RSAPublicNumbers(e, n).public_key(default_backend())
     return pub.public_bytes(
         encoding=serialization.Encoding.PEM,
@@ -138,11 +128,11 @@ def fetch_token_header(token):
         raise jwt.DecodeError('Not enough segments')
 
     try:
-        return json.loads(base64url_decode(header_segment))
+        if sys.version_info >= (3, 0):
+            return json.loads(jwt.utils.base64url_decode(header_segment).decode('utf-8'))
+        else:
+            return json.loads(jwt.utils.base64url_decode(header_segment))
     except TypeError as e:
-        current_app.logger.exception(e)
-        raise jwt.DecodeError('Invalid header padding')
-    except binascii.Error as e:
         current_app.logger.exception(e)
         raise jwt.DecodeError('Invalid header padding')
 
