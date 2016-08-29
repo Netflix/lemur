@@ -160,6 +160,10 @@ def _is_eligible_for_notifications(cert):
     :param cert:
     :return:
     """
+    # inactive certificates are not notified.
+    if not cert.active:
+        return
+
     now = arrow.utcnow()
     days = (cert.not_after - now.naive).days
 
