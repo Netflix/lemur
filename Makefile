@@ -82,4 +82,24 @@ coverage: develop
 publish:
 	python setup.py sdist bdist_wheel upload
 
-.PHONY: develop dev-postgres dev-docs setup-git build clean update-submodules test testloop test-cli test-js test-python lint lint-python lint-js coverage publish
+OS = $(shell uname -s | tr LD ld)
+/usr/local/bin/rocker:
+	curl -SL https://github.com/grammarly/rocker/releases/download/1.3.0/rocker_$(OS)_amd64.tar.gz | sudo tar -xzC /usr/local/bin 
+	sudo chmod +x /usr/local/bin/rocker
+
+.docker_db_running:
+	docker run -d --name lemur_postgres postgres
+	@echo "--> Waiting for initdb"; sleep 5
+	docker exec lemur_postgres psql -U postgres --command "CREATE DATABASE lemur;"
+	docker exec lemur_postgres psql -U postgres --command "CREATE USER lemur WITH PASSWORD 'lemur';"
+	docker exec lemur_postgres psql -U postgres --command "GRANT ALL PRIVILEGES ON DATABASE lemur to lemur;"
+	touch .docker_db_running
+
+docker: /usr/local/bin/rocker .docker_db_running
+	rocker build .
+	docker run -p 8000:80 --rm -it --link lemur_postgres:postgres netflix/lemur || :
+	@echo "run:"
+	@echo "   docker rm -fv lemur_postgres && rm -f .docker_db_running"
+	@echo "if you want to discard the database"
+
+.PHONY: develop dev-postgres dev-docs setup-git build clean update-submodules test testloop test-cli test-js test-python lint lint-python lint-js coverage publish docker
