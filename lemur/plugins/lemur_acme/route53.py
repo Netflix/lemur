@@ -1,5 +1,6 @@
 import time
 from lemur.plugins.lemur_aws.sts import sts_client
+from flask import current_app
 
 
 @sts_client('route53')
@@ -27,6 +28,15 @@ def find_zone_id(domain, client=None):
         raise ValueError(
             "Unable to find a Route53 hosted zone for {}".format(domain)
         )
+    elif len(zones) > 1:
+        raise ValueError(
+            "Found multiple public zones matching {}: {}".format(
+                domain,
+                [id for (name, id) in zones]
+            )
+        )
+    else:
+        return zones[0][1]
 
 
 @sts_client('route53')
@@ -56,6 +66,7 @@ def change_txt_record(action, zone_id, domain, value, client=None):
 
 def create_txt_record(host, value):
     zone_id = find_zone_id(host)
+    current_app.logger.debug("HOST {1} is in zone {0}".format(zone_id, host))
     change_id = change_txt_record(
         "CREATE",
         zone_id,

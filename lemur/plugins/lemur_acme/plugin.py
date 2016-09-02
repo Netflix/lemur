@@ -12,6 +12,7 @@
 """
 from flask import current_app
 
+from acme.challenges import DNS01
 from acme.client import Client
 from acme import jose
 from acme import messages
@@ -32,7 +33,7 @@ def find_dns_challenge(authz):
     for combo in authz.body.resolved_combinations:
         if (
             len(combo) == 1 and
-            isinstance(combo[0].chall, acme.challenges.DNS01)
+            isinstance(combo[0].chall, DNS01)
         ):
             yield combo[0]
 
@@ -111,7 +112,7 @@ def setup_acme_client():
     key = current_app.config.get('ACME_PRIVATE_KEY').strip()
     acme_email = current_app.config.get('ACME_EMAIL')
     acme_tel = current_app.config.get('ACME_TEL')
-    acme_directory_url = current_app.config.get('ACME_DIRECTORY_URL'),
+    acme_directory_url = current_app.config.get('ACME_DIRECTORY_URL')
     contact = ('mailto:{}'.format(acme_email), 'tel:{}'.format(acme_tel))
 
     key = serialization.load_pem_private_key(
@@ -144,7 +145,7 @@ def get_domains(options):
     :return:
     """
     domains = [options['common_name']]
-    for name in options['extensions']['sub_alt_name']['names']:
+    for name in options['extensions']['sub_alt_names']['names']:
         domains.append(name)
     return domains
 

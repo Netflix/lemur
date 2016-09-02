@@ -6,6 +6,7 @@ develop: update-submodules setup-git
 	npm install
 	pip install "setuptools>=0.9.8"
 	# order matters here, base package must install first
+	pip install -e 'git+https://github.com/certbot/certbot#egg=acme-0.9.0.dev0&subdirectory=acme'
 	pip install -e .
 	pip install "file://`pwd`#egg=lemur[dev]"
 	pip install "file://`pwd`#egg=lemur[tests]"
