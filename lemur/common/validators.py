@@ -1,5 +1,6 @@
 
 import arrow
+from flask import current_app
 from marshmallow.exceptions import ValidationError
 
 from cryptography import x509
@@ -43,11 +44,12 @@ def sensitive_domain(domain):
     :param domain:
     :return:
     """
+    restricted_domains = current_app.config['LEMUR_RESTRICTED_DOMAINS']
     domains = domain_service.get_by_name(domain)
     for domain in domains:
         # we only care about non-admins
         if not SensitiveDomainPermission().can():
-            if domain.sensitive:
+            if domain.sensitive or any([re.match(pattern, domain.name) for pattern in restricted_domains]):
                 raise ValidationError(
                     'Domain {0} has been marked as sensitive, contact and administrator \
                     to issue the certificate.'.format(domain))
