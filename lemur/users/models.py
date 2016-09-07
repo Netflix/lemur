@@ -8,6 +8,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+import sys
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Integer, String, Boolean, DateTime
 from sqlalchemy.event import listen
@@ -62,7 +63,10 @@ class User(db.Model):
         :return:
         """
         if self.password:
-            self.password = bcrypt.generate_password_hash(self.password)
+            if sys.version_info[0] >= 3:
+                self.password = bcrypt.generate_password_hash(self.password).decode('utf-8')
+            else:
+                self.password = bcrypt.generate_password_hash(self.password)
             return self.password
 
     @property

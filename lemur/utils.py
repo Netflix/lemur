@@ -54,11 +54,7 @@ def get_keys():
 
     # when running lemur create_config, this code needs to work despite
     # the fact that there is not a current_app with a config at that point
-    try:
-        keys = current_app.config.get('LEMUR_ENCRYPTION_KEYS')
-    except Exception:
-        print("no encryption keys")
-        return []
+    keys = current_app.config.get('LEMUR_ENCRYPTION_KEYS', [])
 
     # this function is expected to return a list of keys, but we want
     # to let people just specify a single key
