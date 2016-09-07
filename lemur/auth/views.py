@@ -289,7 +289,7 @@ class Providers(Resource):
     def get(self):
         active_providers = []
 
-        for provider in current_app.config.get("ACTIVE_PROVIDERS"):
+        for provider in current_app.config.get("ACTIVE_PROVIDERS", []):
             provider = provider.lower()
 
             if provider == "google":
