@@ -7,7 +7,6 @@
 """
 import os
 import sys
-import six
 from flask import current_app
 from cryptography.fernet import Fernet, MultiFernet
 import sqlalchemy.types as types
@@ -98,16 +97,13 @@ class Vault(types.TypeDecorator):
         # keys that have been base64 encoded).
         self.keys = [Fernet(key) for key in get_keys()]
 
-        # we only support strings and they should be of type bytes for Fernet
-        if not isinstance(value, six.string_types):
+        if not value:
             return
 
-        if sys.version_info >= (3, 0):
-            value = bytes(value, 'utf8')
-        else:
-            value = bytes(value)
-
-        return MultiFernet(self.keys).encrypt(value)
+        # we only support strings and they should be of type bytes for Fernet
+        if sys.version_info[0] >= 3:
+            return MultiFernet(self.keys).encrypt(value)
+        return MultiFernet(self.keys).encrypt(bytes(value))
 
     def process_result_value(self, value, dialect):
         """
@@ -122,12 +118,9 @@ class Vault(types.TypeDecorator):
 
         # if the value is not a string we aren't going to try to decrypt
         # it. this is for the case where the column is null
+        if not value:
+            return
 
-        if not sys.version_info >= (3, 0):
-            if not isinstance(value, six.string_types):
-                return
-            return MultiFernet(self.keys).decrypt(value)
-        else:
-            if not value:
-                return
+        if sys.version_info[0] >= 3:
             return str(MultiFernet(self.keys).decrypt(value), 'utf8')
+        return MultiFernet(self.keys).decrypt(value)
