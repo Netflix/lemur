@@ -17,13 +17,12 @@ if 'VIRTUAL_ENV' in os.environ:
 
 
 def py_lint(files_modified):
-    from flake8.main import DEFAULT_CONFIG
     from flake8.engine import get_style_guide
 
     # remove non-py files and files which no longer exist
     files_modified = filter(lambda x: x.endswith('.py'), files_modified)
 
-    flake8_style = get_style_guide(parse_argv=True, config_file=DEFAULT_CONFIG)
+    flake8_style = get_style_guide(parse_argv=True)
     report = flake8_style.check_files(files_modified)
 
     return report.total_errors != 0
