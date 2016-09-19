@@ -340,7 +340,7 @@ def test_create_csr():
     assert private_key
 
 
-def test_import(logged_in_user):
+def test_import(session):
     from lemur.certificates.service import import_certificate
     cert = import_certificate(body=INTERNAL_VALID_LONG_STR, chain=INTERNAL_VALID_SAN_STR, private_key=PRIVATE_KEY_STR)
     assert str(cert.not_after) == '2040-01-01 20:30:52'
@@ -352,7 +352,7 @@ def test_import(logged_in_user):
     assert cert.name == 'ACustomName2'
 
 
-def test_upload(logged_in_user):
+def test_upload(session):
     from lemur.certificates.service import upload
     cert = upload(body=INTERNAL_VALID_LONG_STR, chain=INTERNAL_VALID_SAN_STR, private_key=PRIVATE_KEY_STR, owner='joe@example.com')
     assert str(cert.not_after) == '2040-01-01 20:30:52'
