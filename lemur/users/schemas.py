@@ -29,6 +29,7 @@ class UserOutputSchema(LemurOutputSchema):
     roles = fields.Nested(AssociatedRoleSchema, many=True)
     certificates = fields.Nested(AssociatedCertificateSchema, many=True)
     authorities = fields.Nested(AssociatedAuthoritySchema, many=True)
+    profileImage = fields.String()
 
 
 user_input_schema = UserInputSchema()
