@@ -141,7 +141,7 @@ def issuer_plugin():
 
 
 @pytest.yield_fixture(scope="function")
-def logged_in_user(app):
+def logged_in_user(session, app):
     with app.test_request_context():
         identity_changed.send(current_app._get_current_object(), identity=Identity(1))
         yield
