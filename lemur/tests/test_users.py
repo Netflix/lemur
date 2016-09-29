@@ -1,5 +1,8 @@
+import json
+
 import pytest
 
+from lemur.tests.factories import UserFactory, RoleFactory
 from lemur.users.views import *  # noqa
 from .vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN
 
@@ -107,3 +110,34 @@ def test_sensitive_filter(client):
 def test_sensitive_sort(client):
     resp = client.get(api.url_for(UsersList) + '?sortBy=password&sortDir=asc', headers=VALID_ADMIN_HEADER_TOKEN)
     assert "'password' is not sortable or filterable" in resp.json['message']
+
+
+def test_user_role_changes(client, session):
+    user = UserFactory()
+    role1 = RoleFactory()
+    role2 = RoleFactory()
+    session.flush()
+
+    data = {
+        'active': True,
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'roles': [
+            {'id': role1.id},
+            {'id': role2.id},
+        ],
+    }
+
+    # PUT two roles
+    resp = client.put(api.url_for(Users, user_id=user.id), data=json.dumps(data), headers=VALID_ADMIN_HEADER_TOKEN)
+    assert resp.status_code == 200
+    assert len(resp.json['roles']) == 2
+    assert set(user.roles) == {role1, role2}
+
+    # Remove one role and PUT again
+    del data['roles'][1]
+    resp = client.put(api.url_for(Users, user_id=user.id), data=json.dumps(data), headers=VALID_ADMIN_HEADER_TOKEN)
+    assert resp.status_code == 200
+    assert len(resp.json['roles']) == 1
+    assert set(user.roles) == {role1}
