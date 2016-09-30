@@ -1,8 +1,6 @@
 import pytest
 
 from lemur.users.views import *  # noqa
-
-
 from .vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN
 
 
@@ -99,3 +97,13 @@ def test_user_list_delete(client, token, status):
 ])
 def test_user_list_patch(client, token, status):
     assert client.patch(api.url_for(UsersList), data={}, headers=token).status_code == status
+
+
+def test_sensitive_filter(client):
+    resp = client.get(api.url_for(UsersList) + '?filter=password;a', headers=VALID_ADMIN_HEADER_TOKEN)
+    assert "'password' is not sortable or filterable" in resp.json['message']
+
+
+def test_sensitive_sort(client):
+    resp = client.get(api.url_for(UsersList) + '?sortBy=password&sortDir=asc', headers=VALID_ADMIN_HEADER_TOKEN)
+    assert "'password' is not sortable or filterable" in resp.json['message']

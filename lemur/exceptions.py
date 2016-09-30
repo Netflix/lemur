@@ -29,7 +29,7 @@ class AttrNotFound(LemurException):
         self.field = field
 
     def __str__(self):
-        return repr("The field '{0}' is not sortable".format(self.field))
+        return repr("The field '{0}' is not sortable or filterable".format(self.field))
 
 
 class InvalidConfiguration(Exception):

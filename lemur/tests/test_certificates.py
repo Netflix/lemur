@@ -1,15 +1,14 @@
-from __future__ import unicode_literals    # at top of module
+from __future__ import unicode_literals  # at top of module
 
-import json
-import pytest
 import datetime
-import arrow
+import json
 
-from freezegun import freeze_time
+import arrow
+import pytest
 from cryptography import x509
+from freezegun import freeze_time
 
 from lemur.certificates.views import *  # noqa
-
 from lemur.tests.vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN, CSR_STR, \
     INTERNAL_VALID_LONG_STR, INTERNAL_VALID_SAN_STR, PRIVATE_KEY_STR
 
@@ -535,3 +534,8 @@ def test_certificates_upload_delete(client, token, status):
 ])
 def test_certificates_upload_patch(client, token, status):
     assert client.patch(api.url_for(CertificatesUpload), data={}, headers=token).status_code == status
+
+
+def test_sensitive_sort(client):
+    resp = client.get(api.url_for(CertificatesList) + '?sortBy=private_key&sortDir=asc', headers=VALID_ADMIN_HEADER_TOKEN)
+    assert "'private_key' is not sortable or filterable" in resp.json['message']
