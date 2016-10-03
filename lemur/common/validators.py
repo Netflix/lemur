@@ -1,9 +1,10 @@
 import re
 
-from flask import current_app
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
+from cryptography.x509 import NameOID
+from flask import current_app
 from marshmallow.exceptions import ValidationError
 
 from lemur.auth.permissions import SensitiveDomainPermission
@@ -41,22 +42,33 @@ def private_key(key):
         raise ValidationError('Private key presented is not valid.')
 
 
+def common_name(value):
+    """If the common name could be a domain name, apply domain validation rules."""
+    # Common name could be a domain name, or a human-readable name of the subject (often used in CA names or client
+    # certificates). As a simple heuristic, we assume that human-readable names always include a space.
+    # However, to avoid confusion for humans, we also don't count spaces at the beginning or end of the string.
+    if ' ' not in value.strip():
+        return sensitive_domain(value)
+
+
 def sensitive_domain(domain):
     """
-    Determines if domain has been marked as sensitive.
-    :param domain:
+    Checks if user has the admin role, the domain does not match sensitive domains and whitelisted domain patterns.
+    :param domain: domain name (str)
     :return:
     """
-    restricted_domains = current_app.config.get('LEMUR_RESTRICTED_DOMAINS', [])
-    if restricted_domains:
-        domains = domain_service.get_by_name(domain)
-        for domain in domains:
-            # we only care about non-admins
-            if not SensitiveDomainPermission().can():
-                if domain.sensitive or any([re.match(pattern, domain.name) for pattern in restricted_domains]):
-                    raise ValidationError(
-                        'Domain {0} has been marked as sensitive, contact and administrator \
-                        to issue the certificate.'.format(domain))
+    if SensitiveDomainPermission().can():
+        # User has permission, no need to check anything
+        return
+
+    whitelist = current_app.config.get('LEMUR_WHITELISTED_DOMAINS', [])
+    if whitelist and not any(re.match(pattern, domain) for pattern in whitelist):
+        raise ValidationError('Domain {0} does not match whitelisted domain patterns. '
+                              'Contact an administrator to issue the certificate.'.format(domain))
+
+    if any(d.sensitive for d in domain_service.get_by_name(domain)):
+        raise ValidationError('Domain {0} has been marked as sensitive. '
+                              'Contact an administrator to issue the certificate.'.format(domain))
 
 
 def encoding(oid_encoding):
@@ -84,14 +96,26 @@ def sub_alt_type(alt_type):
 
 def csr(data):
     """
-    Determines if the CSR is valid.
+    Determines if the CSR is valid and allowed.
     :param data:
     :return:
     """
     try:
-        x509.load_pem_x509_csr(data.encode('utf-8'), default_backend())
+        request = x509.load_pem_x509_csr(data.encode('utf-8'), default_backend())
     except Exception:
         raise ValidationError('CSR presented is not valid.')
+
+    # Validate common name and SubjectAltNames
+    for name in request.subject.get_attributes_for_oid(NameOID.COMMON_NAME):
+        common_name(name.value)
+
+    try:
+        alt_names = request.extensions.get_extension_for_class(x509.SubjectAlternativeName)
+
+        for name in alt_names.value.get_values_for_type(x509.DNSName):
+            sensitive_domain(name)
+    except x509.ExtensionNotFound:
+        pass
 
 
 def dates(data):

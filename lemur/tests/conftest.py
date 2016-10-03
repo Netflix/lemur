@@ -1,5 +1,7 @@
 import os
 import pytest
+from flask import current_app
+from flask_principal import identity_changed, Identity
 
 from lemur import create_app
 from lemur.database import db as _db
@@ -176,3 +178,17 @@ def source_plugin():
     from .plugins.source_plugin import TestSourcePlugin
     register(TestSourcePlugin)
     return TestSourcePlugin
+
+
+@pytest.yield_fixture(scope="function")
+def logged_in_user(session, app):
+    with app.test_request_context():
+        identity_changed.send(current_app._get_current_object(), identity=Identity(1))
+        yield
+
+
+@pytest.yield_fixture(scope="function")
+def logged_in_admin(session, app):
+    with app.test_request_context():
+        identity_changed.send(current_app._get_current_object(), identity=Identity(2))
+        yield

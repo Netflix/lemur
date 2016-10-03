@@ -1,18 +1,18 @@
 
 import pytest
-from lemur.authorities.views import *  # noqa
 
+from lemur.authorities.views import *  # noqa
 from lemur.tests.vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN
 
 
-def test_authority_input_schema(client, role, issuer_plugin):
+def test_authority_input_schema(client, role, issuer_plugin, logged_in_user):
     from lemur.authorities.schemas import AuthorityInputSchema
 
     input_data = {
         'name': 'Example Authority',
         'owner': 'jim@example.com',
         'description': 'An example authority.',
-        'commonName': 'AnExampleAuthority',
+        'commonName': 'An Example Authority',
         'plugin': {'slug': 'test-issuer', 'plugin_options': [{'name': 'test', 'value': 'blah'}]},
         'type': 'root',
         'signingAlgorithm': 'sha256WithRSA',
