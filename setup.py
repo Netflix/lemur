@@ -174,6 +174,7 @@ setup(
             'acme_issuer = lemur.plugins.lemur_acme.plugin:ACMEIssuerPlugin',
             'aws_destination = lemur.plugins.lemur_aws.plugin:AWSDestinationPlugin',
             'aws_source = lemur.plugins.lemur_aws.plugin:AWSSourcePlugin',
+            'aws_s3 = lemur.plugins.lemur_aws.plugin:S3DestinationPlugin',
             'email_notification = lemur.plugins.lemur_email.plugin:EmailNotificationPlugin',
             'slack_notification = lemur.plugins.lemur_slack.plugin:SlackNotificationPlugin',
             'java_truststore_export = lemur.plugins.lemur_java.plugin:JavaTruststoreExportPlugin',
