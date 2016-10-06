@@ -1,5 +1,6 @@
 
-import arrow, re
+import arrow
+import re
 from flask import current_app
 from marshmallow.exceptions import ValidationError
 
@@ -33,7 +34,10 @@ def private_key(key):
     :return: :raise ValueError:
     """
     try:
-        serialization.load_pem_private_key(bytes(key), None, backend=default_backend())
+        if isinstance(key, bytes):
+            serialization.load_pem_private_key(key, None, backend=default_backend())
+        else:
+            serialization.load_pem_private_key(key.encode('utf-8'), None, backend=default_backend())
     except Exception:
         raise ValidationError('Private key presented is not valid.')
 

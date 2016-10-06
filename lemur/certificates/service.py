@@ -189,6 +189,11 @@ def upload(**kwargs):
     else:
         kwargs['roles'] = roles
 
+    if kwargs.get('private_key'):
+        private_key = kwargs['private_key']
+        if not isinstance(private_key, bytes):
+            kwargs['private_key'] = private_key.encode('utf-8')
+
     cert = Certificate(**kwargs)
 
     cert = database.create(cert)
