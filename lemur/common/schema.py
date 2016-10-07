@@ -135,6 +135,11 @@ def validate_schema(input_schema, output_schema):
             try:
                 resp = f(*args, **kwargs)
             except Exception as e:
+                if input_schema:
+                    current_app.logger.error("Error on request: {}".format(request_data))
+                else:
+                    current_app.logger.error("Error on request with no input schema.")
+
                 current_app.logger.exception(e)
                 return dict(message=e.message), 500
 
