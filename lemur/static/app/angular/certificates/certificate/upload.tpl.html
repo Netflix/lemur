@@ -60,7 +60,7 @@
 
                 <div class="col-sm-10">
                 <textarea name="privateKey" ng-model="certificate.privateKey" placeholder="PEM encoded string..."
-                          class="form-control" ng-pattern="/^-----BEGIN RSA PRIVATE KEY-----/"></textarea>
+                          class="form-control" ng-pattern="/^(-----BEGIN RSA PRIVATE KEY-----|-----BEGIN PRIVATE KEY-----)/"></textarea>
 
                     <p ng-show="uploadForm.privateKey.$invalid && !uploadForm.privateKey.$pristine" class="help-block">Enter
                         a valid certificate.</p>
