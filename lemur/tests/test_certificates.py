@@ -364,6 +364,13 @@ def test_upload(logged_in_user):
     assert 'ACustomName' in cert.name
 
 
+# verify upload with a private key as a str
+def test_upload_private_key_str(logged_in_user):
+    from lemur.certificates.service import upload
+    cert = upload(body=INTERNAL_VALID_LONG_STR, chain=INTERNAL_VALID_SAN_STR, private_key=PRIVATE_KEY_STR.decode('utf-8'), owner='joe@example.com', name='ACustomName')
+    assert cert
+
+
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 200),
     (VALID_ADMIN_HEADER_TOKEN, 200),
