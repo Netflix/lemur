@@ -1,6 +1,6 @@
-sudo: false
-
 language: python
+sudo: required
+dist: trusty
 
 node_js:
   - "4.2"
