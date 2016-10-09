@@ -46,7 +46,6 @@ LEMUR_DEFAULT_LOCATION = 'Los Gatos'
 LEMUR_DEFAULT_ORGANIZATION = 'Example, Inc.'
 LEMUR_DEFAULT_ORGANIZATIONAL_UNIT = 'Example'
 
-
 # Database
 
 # modify this if you are not using a local database
@@ -54,7 +53,6 @@ SQLALCHEMY_DATABASE_URI = 'postgresql://lemur:lemur@localhost:5432/lemur'
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 # AWS
-
 LEMUR_INSTANCE_PROFILE = 'Lemur'
 
 # Issuers

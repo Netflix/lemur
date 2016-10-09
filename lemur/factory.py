@@ -153,9 +153,10 @@ def install_plugins(app):
     """
     Installs new issuers that are not currently bundled with Lemur.
 
-    :param settings:
+    :param app:
     :return:
     """
+    from lemur.plugins import plugins
     from lemur.plugins.base import register
     # entry_points={
     #    'lemur.plugins': [
@@ -170,3 +171,11 @@ def install_plugins(app):
             app.logger.error("Failed to load plugin %r:\n%s\n" % (ep.name, traceback.format_exc()))
         else:
             register(plugin)
+
+    # ensure that we have some way to notify
+    with app.app_context():
+        try:
+            slug = app.config.get("LEMUR_DEFAULT_NOTIFICATION_PLUGIN", "email-notification")
+            plugins.get(slug)
+        except KeyError:
+            raise Exception("Unable to location notification plugin: {slug}. Ensure that LEMUR_DEFAULT_NOTIFICATION_PLUGIN is set to a valid and installed notification plugin.".format(slug=slug))

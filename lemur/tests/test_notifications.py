@@ -6,7 +6,7 @@ from lemur.notifications.views import *  # noqa
 from .vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN
 
 
-def test_notification_input_schema(client, notification):
+def test_notification_input_schema(client, notification_plugin, notification):
     from lemur.notifications.schemas import NotificationInputSchema
 
     input_data = {
@@ -15,7 +15,7 @@ def test_notification_input_schema(client, notification):
         'description': 'my notification',
         'active': True,
         'plugin': {
-            'slug': 'email-notification'
+            'slug': 'test-notification'
         }
     }
 
@@ -29,8 +29,8 @@ def test_notification_input_schema(client, notification):
     (VALID_ADMIN_HEADER_TOKEN, 200),
     ('', 401)
 ])
-def test_notification_get(client, token, status):
-    assert client.get(api.url_for(Notifications, notification_id=1), headers=token).status_code == status
+def test_notification_get(client, notification_plugin, notification, token, status):
+    assert client.get(api.url_for(Notifications, notification_id=notification.id), headers=token).status_code == status
 
 
 @pytest.mark.parametrize("token,status", [
@@ -83,7 +83,7 @@ def test_notification_list_post_(client, token, status):
     (VALID_ADMIN_HEADER_TOKEN, 200),
     ('', 401)
 ])
-def test_notification_list_get(client, token, status):
+def test_notification_list_get(client, notification_plugin, notification, token, status):
     assert client.get(api.url_for(NotificationsList), headers=token).status_code == status
 
 

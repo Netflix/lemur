@@ -6,7 +6,7 @@ from lemur.destinations.views import *  # noqa
 from .vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN
 
 
-def test_destination_input_schema(client, destination):
+def test_destination_input_schema(client, destination_plugin, destination):
     from lemur.destinations.schemas import DestinationInputSchema
 
     input_data = {
@@ -15,7 +15,7 @@ def test_destination_input_schema(client, destination):
         'description': 'my destination',
         'active': True,
         'plugin': {
-            'slug': 'aws-destination'
+            'slug': 'test-destination'
         }
     }
 
