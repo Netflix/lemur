@@ -887,7 +887,7 @@ class CertificateExport(AuthenticatedResource):
             extension, passphrase, data = plugin.export(cert.body, cert.chain, cert.private_key, options)
 
         # we take a hit in message size when b64 encoding
-        return dict(extension=extension, passphrase=passphrase, data=base64.b64encode(data))
+        return dict(extension=extension, passphrase=passphrase, data=base64.b64encode(data).decode('utf-8'))
 
 
 api.add_resource(CertificatesList, '/certificates', endpoint='certificates')
