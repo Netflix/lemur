@@ -3,6 +3,13 @@ STATIC_DIR = src/lemur/static/app
 
 develop: update-submodules setup-git
 	@echo "--> Installing dependencies"
+	runner=`whoami` ; \
+    if `whoami` == "root"
+        @echo "WARNING: It looks like you are installing Lemur as root. This is not generally advised."
+        npm install --unsafe-perm
+    then
+        npm install
+    fi
 	npm install
 	pip install "setuptools>=0.9.8"
 	# order matters here, base package must install first
