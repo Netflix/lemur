@@ -1,0 +1,69 @@
+# This is just Python which means you can inherit and tweak settings
+
+import os
+_basedir = os.path.abspath(os.path.dirname(__file__))
+
+ADMINS = frozenset(['lemur'])
+
+THREADS_PER_PAGE = 8
+
+#Auth
+ACTIVE_PROVIDERS=[]
+#ACTIVE_PROVIDERS=['google']
+#GOOGLE_CLIENT_ID=''
+#GOOGLE_SECRET='{{ var `OAUTH_SECRET` }}'
+
+# General
+
+# These will need to be set to `True` if you are developing locally
+CORS = False
+debug = False
+
+# this is the secret key used by flask session management
+SECRET_KEY = '{{ var `FLASK_SECRET_KEY` | default "hvDtIoyjAHT/iiuOxmYbA1SGBZMa5+9sgllk08GVvXoSbQ0kJ9arlA=="}}'
+
+# You should consider storing these separately from your config
+LEMUR_TOKEN_SECRET = '{{ var `TOKEN_SECRET` | default "p1foIa7n5+nB1GnEpR4Wf2B2UgzUiBT1BHtB5WnTNoJSMVKhdXu1FA=="}}'
+LEMUR_ENCRYPTION_KEYS = [{{ var `ENCRYPTION_KEYS` | default `"yWdKiDFE_TAvoTx-E-Cn1sbbktAbmGwjbZGNBXshys4="` }}]
+
+# this is a list of domains as regexes that only admins can issue
+LEMUR_RESTRICTED_DOMAINS = []
+
+METRIC_PROVIDERS = []
+
+# Mail Server
+LEMUR_EMAIL_SENDER = 'SES'
+LEMUR_EMAIL = ''
+LEMUR_SECURITY_TEAM_EMAIL = []
+LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS = [30, 15, 2]
+
+# Certificate Defaults
+
+LEMUR_DEFAULT_COUNTRY = ''
+LEMUR_DEFAULT_STATE = ''
+LEMUR_DEFAULT_LOCATION = ''
+LEMUR_DEFAULT_ORGANIZATION = ''
+LEMUR_DEFAULT_ORGANIZATIONAL_UNIT = ''
+
+
+LEMUR_DEFAULT_ISSUER_PLUGIN='cryptography-issuer'
+# Logging
+LOG_LEVEL = "DEBUG"
+LOG_FILE = "lemur.log"
+
+
+# Database
+SQLALCHEMY_TRACK_MODIFICATIONS = False
+SQLALCHEMY_DATABASE_URI = '{{ var `POSTGRES_URL` | default "postgresql://lemur:lemur@postgres:5432/lemur" }}'
+
+
+# AWS
+LEMUR_INSTANCE_PROFILE = 'Lemur'
+
+# Issuers
+ACME_ROOT = bytes(open('/letsencrypt.crt','r').read(), 'utf-8')
+ACME_DIRECTORY_URL = 'https://acme-v01.api.letsencrypt.org/directory'
+ACME_EMAIL = ''
+ACME_TEL = ''
+# upload to a path of your choosing
+#ACME_PRIVATE_KEY=bytes(open('/letsencrypt_account_key.pem').read(), 'utf-8')
