@@ -60,7 +60,10 @@ def create_pkcs12(cert, chain, p12_tmp, key, alias, passphrase):
         # Create PKCS12 keystore from private key and public certificate
         with mktempfile() as cert_tmp:
             with open(cert_tmp, 'w') as f:
-                f.writelines([cert.strip() + "\n", chain.strip() + "\n"])
+                if chain:
+                    f.writelines([cert.strip() + "\n", chain.strip() + "\n"])
+                else:
+                    f.writelines([cert.strip() + "\n"])
 
             run_process([
                 "openssl",

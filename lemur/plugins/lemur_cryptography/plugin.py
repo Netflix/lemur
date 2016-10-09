@@ -51,7 +51,7 @@ def build_root_certificate(options):
 
     cert_pem = cert.public_bytes(
         encoding=serialization.Encoding.PEM
-    )
+    ).decode('utf-8')
 
     private_key_pem = private_key.private_bytes(
         encoding=serialization.Encoding.PEM,
@@ -82,7 +82,7 @@ def issue_certificate(csr, options):
     builder = builder.serial_number(int(uuid.uuid4()))
 
     private_key = serialization.load_pem_private_key(
-        options['authority'].authority_certificate.private_key,
+        bytes(options['authority'].authority_certificate.private_key, 'utf-8'),
         password=None,
         backend=default_backend()
     )
@@ -91,7 +91,7 @@ def issue_certificate(csr, options):
 
     return cert.public_bytes(
         encoding=serialization.Encoding.PEM
-    )
+    ).decode('utf-8')
 
 
 class CryptographyIssuerPlugin(IssuerPlugin):
