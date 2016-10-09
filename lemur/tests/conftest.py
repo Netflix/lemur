@@ -140,6 +140,22 @@ def issuer_plugin():
     return TestIssuerPlugin
 
 
+@pytest.fixture
+def notification_plugin():
+    from lemur.plugins.base import register
+    from .plugins.notification_plugin import TestNotificationPlugin
+    register(TestNotificationPlugin)
+    return TestNotificationPlugin
+
+
+@pytest.fixture
+def destination_plugin():
+    from lemur.plugins.base import register
+    from .plugins.destination_plugin import TestDestinationPlugin
+    register(TestDestinationPlugin)
+    return TestDestinationPlugin
+
+
 @pytest.yield_fixture(scope="function")
 def logged_in_user(session, app):
     with app.test_request_context():

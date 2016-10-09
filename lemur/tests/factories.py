@@ -137,7 +137,7 @@ class AuthorityFactory(BaseFactory):
 
 class DestinationFactory(BaseFactory):
     """Destination factory."""
-    plugin_name = Sequence(lambda n: 'destination{0}'.format(n))
+    plugin_name = 'test-destination'
     label = Sequence(lambda n: 'destination{0}'.format(n))
 
     class Meta:
@@ -147,7 +147,7 @@ class DestinationFactory(BaseFactory):
 
 class NotificationFactory(BaseFactory):
     """Notification factory."""
-    plugin_name = Sequence(lambda n: 'notification{0}'.format(n))
+    plugin_name = 'test-notification'
     label = Sequence(lambda n: 'notification{0}'.format(n))
 
     class Meta:

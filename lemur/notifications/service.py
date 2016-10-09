@@ -236,7 +236,7 @@ def create_default_expiration_notifications(name, recipients):
             inter.extend(options)
             n = create(
                 label="{name}_{interval}_DAY".format(name=name, interval=i),
-                plugin_name="email-notification",
+                plugin_name=current_app.config.get("LEMUR_DEFAULT_NOTIFICATION_PLUGIN", "email-notification"),
                 options=list(inter),
                 description="Default {interval} day expiration notification".format(interval=i),
                 certificates=[]
