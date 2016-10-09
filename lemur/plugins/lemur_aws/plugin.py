@@ -210,7 +210,7 @@ class S3DestinationPlugin(DestinationPlugin):
         },
         {
             'name': 'accountNumber',
-            'type': 'int',
+            'type': 'str',
             'required': True,
             'validation': '/^[0-9]{12,12}$/',
             'helpMessage': 'A valid AWS account number with permission to access S3',
@@ -257,7 +257,7 @@ class S3DestinationPlugin(DestinationPlugin):
         super(S3DestinationPlugin, self).__init__(*args, **kwargs)
 
     def upload(self, name, body, private_key, cert_chain, options, **kwargs):
-        account_number = self.get_option('accountId', options)
+        account_number = self.get_option('accountNumber', options)
         encrypt = self.get_option('encrypt', options)
         bucket = self.get_option('bucket', options)
         key = self.get_option('key', options)

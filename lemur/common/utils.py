@@ -40,4 +40,4 @@ def parse_certificate(body):
         if isinstance(body, bytes):
             return x509.load_pem_x509_certificate(body, default_backend())
         return x509.load_pem_x509_certificate(bytes(body, 'utf8'), default_backend())
-    return x509.load_pem_x509_certificate(str(body), default_backend())
+    return x509.load_pem_x509_certificate(body.encode('utf-8'), default_backend())
