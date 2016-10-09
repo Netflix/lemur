@@ -1,6 +1,9 @@
-sudo: false
-
 language: python
+sudo: required
+dist: trusty
+
+node_js:
+  - "4.2"
 
 addons:
   postgresql: "9.4"
@@ -24,6 +27,7 @@ env:
 before_script:
   - psql -c "create database lemur;" -U postgres
   - psql -c "create user lemur with password 'lemur;'" -U postgres
+  - npm config set registry https://registry.npmjs.org
   - npm install -g bower
 
 script:

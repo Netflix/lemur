@@ -1,9 +1,16 @@
 NPM_ROOT = ./node_modules
 STATIC_DIR = src/lemur/static/app
 
+USER := $(shell whoami)
+
 develop: update-submodules setup-git
 	@echo "--> Installing dependencies"
+ifeq ($(USER), root)
+	@echo "WARNING: It looks like you are installing Lemur as root. This is not generally advised."
+	npm install --unsafe-perm
+else
 	npm install
+endif
 	pip install "setuptools>=0.9.8"
 	# order matters here, base package must install first
 	pip install -e .
