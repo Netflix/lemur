@@ -178,7 +178,7 @@ class JavaTruststoreExportPlugin(ExportPlugin):
         if self.get_option('passphrase', options):
             passphrase = self.get_option('passphrase', options)
         else:
-            passphrase = Fernet.generate_key()
+            passphrase = Fernet.generate_key().decode('utf-8')
 
         with mktemppath() as jks_tmp:
             create_truststore(body, chain, jks_tmp, alias, passphrase)
@@ -228,7 +228,7 @@ class JavaKeystoreExportPlugin(ExportPlugin):
         if self.get_option('passphrase', options):
             passphrase = self.get_option('passphrase', options)
         else:
-            passphrase = Fernet.generate_key()
+            passphrase = Fernet.generate_key().decode('utf-8')
 
         if self.get_option('alias', options):
             alias = self.get_option('alias', options)
