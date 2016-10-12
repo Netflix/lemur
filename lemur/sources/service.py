@@ -17,6 +17,8 @@ from lemur.certificates import service as cert_service
 from lemur.endpoints import service as endpoint_service
 from lemur.destinations import service as destination_service
 
+from lemur.certificates.schemas import CertificateUploadInputSchema
+
 from lemur.plugins.base import plugins
 
 
@@ -62,11 +64,17 @@ def _disassociate_endpoints_from_source(endpoints, source):
 
 
 def certificate_create(certificate, source):
-    cert = cert_service.import_certificate(**certificate)
+    data, errors = CertificateUploadInputSchema().load(certificate)
+
+    if errors:
+        raise Exception("Unable to import certificate: {reasons}".format(reasons=errors))
+
+    cert = cert_service.import_certificate(**data)
     cert.description = "This certificate was automatically discovered by Lemur"
     cert.sources.append(source)
     sync_update_destination(cert, source)
     database.update(cert)
+    return cert
 
 
 def certificate_update(certificate, source):
