@@ -8,12 +8,12 @@
 
 """
 from flask import Blueprint
-from flask import make_response, jsonify, abort, g
+from flask import make_response, jsonify
 from flask.ext.restful import reqparse, Api
 
 from lemur.roles import service
 from lemur.auth.service import AuthenticatedResource
-from lemur.auth.permissions import ViewRoleCredentialsPermission, admin_permission
+from lemur.auth.permissions import RoleMemberPermission, admin_permission
 from lemur.common.utils import paginated_parser
 
 from lemur.common.schema import validate_schema
@@ -171,14 +171,14 @@ class RoleViewCredentials(AuthenticatedResource):
            :statuscode 200: no error
            :statuscode 403: unauthenticated
         """
-        permission = ViewRoleCredentialsPermission(role_id)
+        permission = RoleMemberPermission(role_id)
         if permission.can():
             role = service.get(role_id)
             response = make_response(jsonify(username=role.username, password=role.password), 200)
             response.headers['cache-control'] = 'private, max-age=0, no-cache, no-store'
             response.headers['pragma'] = 'no-cache'
             return response
-        abort(403)
+        return dict(message='You are not authorized to view the credentials for this role.'), 403
 
 
 class Roles(AuthenticatedResource):
@@ -220,12 +220,11 @@ class Roles(AuthenticatedResource):
            :statuscode 403: unauthenticated
         """
         # we want to make sure that we cannot view roles that we are not members of
-        if not g.current_user.is_admin:
-            user_role_ids = set([r.id for r in g.current_user.roles])
-            if role_id not in user_role_ids:
-                return dict(message="You are not allowed to view a role which you are not a member of"), 403
+        permission = RoleMemberPermission(role_id)
+        if permission.can():
+            return service.get(role_id)
 
-        return service.get(role_id)
+        return dict(message="You are not allowed to view a role which you are not a member of."), 403
 
     @validate_schema(role_input_schema, role_output_schema)
     def put(self, role_id, data=None):
@@ -265,10 +264,10 @@ class Roles(AuthenticatedResource):
            :statuscode 200: no error
            :statuscode 403: unauthenticated
         """
-        permission = ViewRoleCredentialsPermission(role_id)
+        permission = RoleMemberPermission(role_id)
         if permission.can():
             return service.update(role_id, data['name'], data.get('description'), data.get('users'))
-        abort(403)
+        return dict(message='You are not authorized to modify this role.'), 403
 
     @admin_permission.require(http_exception=403)
     def delete(self, role_id):
