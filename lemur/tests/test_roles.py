@@ -91,6 +91,7 @@ def test_role_put_with_data_and_user(client, session):
     from lemur.auth.service import create_token
     user = UserFactory()
     role = RoleFactory(users=[user])
+    role1 = RoleFactory()
     user1 = UserFactory()
     session.commit()
 
@@ -101,13 +102,15 @@ def test_role_put_with_data_and_user(client, session):
 
     data = {
         'users': [
-            {'id': user1.id}
+            {'id': user1.id},
+            {'id': user.id}
         ],
         'id': role.id,
         'name': role.name
     }
 
     assert client.put(api.url_for(Roles, role_id=role.id), data=json.dumps(data), headers=headers).status_code == 200
+    assert client.get(api.url_for(RolesList), data={}, headers=headers).json['total'] == 1
 
 
 @pytest.mark.parametrize("token,status", [
