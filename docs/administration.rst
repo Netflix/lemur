@@ -276,6 +276,20 @@ For more information about how to use social logins, see: `Satellizer <https://g
 
             PING_CLIENT_ID = "client-id"
 
+.. data:: PING_REDIRECT_URI
+    :noindex:
+
+        ::
+
+            PING_REDIRECT_URI = "https://<yourlemurserver>/api/1/auth/ping"
+
+.. data:: PING_AUTH_ENDPOINT
+    :noindex:
+
+        ::
+
+            PING_AUTH_ENDPOINT = "https://<yourpingserver>/oauth2/authorize"
+
 .. data:: GOOGLE_CLIENT_ID
     :noindex:
 
