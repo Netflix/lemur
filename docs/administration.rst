@@ -120,6 +120,12 @@ Basic Configuration
         LEMUR_ENCRYPTION_KEYS = ['1YeftooSbxCiX2zo8m1lXtpvQjy27smZcUUaGmffhMY=', 'LAfQt6yrkLqOK5lwpvQcT4jf2zdeTQJV1uYeh9coT5s=']
 
 
+.. data:: DEBUG_DUMP
+    :noindex:
+
+        Dump all imported or generated CSR and certificate details to stdout using OpenSSL. (default: `False`)
+
+
 Certificate Default Options
 ---------------------------
 

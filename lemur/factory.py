@@ -18,6 +18,8 @@ from logging import Formatter, StreamHandler
 from logging.handlers import RotatingFileHandler
 
 from flask import Flask
+
+from lemur.certificates.hooks import activate_debug_dump
 from lemur.common.health import mod as health
 from lemur.extensions import db, migrate, principal, smtp_mail, metrics, sentry
 
@@ -156,6 +158,9 @@ def configure_logging(app):
     stream_handler = StreamHandler()
     stream_handler.setLevel(app.config.get('LOG_LEVEL', 'DEBUG'))
     app.logger.addHandler(stream_handler)
+
+    if app.config.get('DEBUG_DUMP', False):
+        activate_debug_dump()
 
 
 def install_plugins(app):
