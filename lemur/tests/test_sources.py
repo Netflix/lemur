@@ -2,7 +2,7 @@ import pytest
 
 from lemur.sources.views import *  # noqa
 
-from .vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN
+from .vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN, INTERNAL_PRIVATE_KEY_A_STR, INTERNAL_VALID_WILDCARD_STR
 
 
 def validate_source_schema(client):
@@ -16,6 +16,22 @@ def validate_source_schema(client):
 
     data, errors = SourceInputSchema().load(input_data)
     assert not errors
+
+
+def test_create_certificate(source):
+    from lemur.sources.service import certificate_create
+
+    with pytest.raises(Exception):
+        certificate_create({}, source)
+
+    data = {
+        'body': INTERNAL_VALID_WILDCARD_STR,
+        'private_key': INTERNAL_PRIVATE_KEY_A_STR,
+        'owner': 'bob@example.com'
+    }
+
+    cert = certificate_create(data, source)
+    assert cert.notifications
 
 
 @pytest.mark.parametrize("token,status", [
