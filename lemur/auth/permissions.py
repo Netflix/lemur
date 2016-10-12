@@ -36,14 +36,14 @@ class CertificatePermission(Permission):
         super(CertificatePermission, self).__init__(*needs)
 
 
-RoleUser = namedtuple('role', ['method', 'value'])
-ViewRoleCredentialsNeed = partial(RoleUser, 'roleView')
+RoleMember = namedtuple('role', ['method', 'value'])
+RoleMemberNeed = partial(RoleMember, 'member')
 
 
-class ViewRoleCredentialsPermission(Permission):
+class RoleMemberPermission(Permission):
     def __init__(self, role_id):
-        need = ViewRoleCredentialsNeed(role_id)
-        super(ViewRoleCredentialsPermission, self).__init__(need, RoleNeed('admin'))
+        needs = [RoleNeed('admin'), RoleMemberNeed(role_id)]
+        super(RoleMemberPermission, self).__init__(*needs)
 
 
 AuthorityCreator = namedtuple('authority', ['method', 'value'])

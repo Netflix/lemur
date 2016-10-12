@@ -880,7 +880,7 @@ class CertificateExport(AuthenticatedResource):
                 if permission.can():
                     extension, passphrase, data = plugin.export(cert.body, cert.chain, cert.private_key, options)
                 else:
-                    return dict(message='You are not authorized to export this certificate'), 403
+                    return dict(message='You are not authorized to export this certificate.'), 403
             else:
                 return dict(message='Unable to export certificate, plugin: {0} requires a private key but no key was found.'.format(plugin.slug))
         else:

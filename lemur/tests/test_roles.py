@@ -1,7 +1,8 @@
+import json
 import pytest
 
 from lemur.roles.views import *  # noqa
-from lemur.tests.factories import RoleFactory, AuthorityFactory, CertificateFactory
+from lemur.tests.factories import RoleFactory, AuthorityFactory, CertificateFactory, UserFactory
 
 
 from .vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN
@@ -63,6 +64,50 @@ def test_role_post_(client, token, status):
 ])
 def test_role_put(client, token, status):
     assert client.put(api.url_for(Roles, role_id=1), data={}, headers=token).status_code == status
+
+
+@pytest.mark.parametrize("token,status", [
+    (VALID_USER_HEADER_TOKEN, 403),
+    (VALID_ADMIN_HEADER_TOKEN, 200),
+    ('', 401)
+])
+def test_role_put_with_data(client, session, token, status):
+    user = UserFactory()
+    role = RoleFactory()
+    session.commit()
+
+    data = {
+        'users': [
+            {'id': user.id}
+        ],
+        'id': role.id,
+        'name': role.name
+    }
+
+    assert client.put(api.url_for(Roles, role_id=role.id), data=json.dumps(data), headers=token).status_code == status
+
+
+def test_role_put_with_data_and_user(client, session):
+    from lemur.auth.service import create_token
+    user = UserFactory()
+    role = RoleFactory(users=[user])
+    user1 = UserFactory()
+    session.commit()
+
+    headers = {
+        'Authorization': 'Basic ' + create_token(user),
+        'Content-Type': 'application/json'
+    }
+
+    data = {
+        'users': [
+            {'id': user1.id}
+        ],
+        'id': role.id,
+        'name': role.name
+    }
+
+    assert client.put(api.url_for(Roles, role_id=role.id), data=json.dumps(data), headers=headers).status_code == 200
 
 
 @pytest.mark.parametrize("token,status", [
