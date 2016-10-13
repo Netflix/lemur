@@ -55,6 +55,10 @@ angular.module('lemur')
     };
 
     $scope.loadPrivateKey = function (certificate) {
+      if (certificate.privateKey !== undefined) {
+        return;
+      }
+
       CertificateService.loadPrivateKey(certificate).then(
         function (response) {
           if (response.key === null) {
