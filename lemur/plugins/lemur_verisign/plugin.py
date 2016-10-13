@@ -56,6 +56,8 @@ VERISIGN_ERRORS = {
     "0x3043": "Certificates must have a validity of at least 1 day",
     "0x950b": "CSR: Invalid State",
     "0x3105": "Organization Name Not Matched",
+    "0x300a": "Domain/SubjectAltName Mismatched -- make sure that the SANs have the proper domain suffix",
+    "0x950e": "Invalid Common Name -- make sure the CN has a proper domain suffix",
 }
 
 
