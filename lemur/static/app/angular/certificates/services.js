@@ -189,7 +189,7 @@ angular.module('lemur')
       return certificate.customGET('key');
     };
 
-    CertificateService.updateActive = function (certificate) {
+    CertificateService.updateNotify = function (certificate) {
       return certificate.put();
     };
 

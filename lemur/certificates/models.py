@@ -41,7 +41,7 @@ class Certificate(db.Model):
     owner = Column(String(128), nullable=False)
     name = Column(String(128), unique=True)
     description = Column(String(1024))
-    active = Column(Boolean, default=True)
+    notify = Column(Boolean, default=True)
 
     body = Column(Text(), nullable=False)
     chain = Column(Text())
@@ -113,6 +113,11 @@ class Certificate(db.Model):
 
         for domain in defaults.domains(cert):
             self.domains.append(Domain(name=domain))
+
+    @property
+    def active(self):
+        if self.endpoints:
+            return True
 
     @hybrid_property
     def expired(self):
@@ -195,5 +200,7 @@ def protect_active(mapper, connection, target):
     :return:
     """
     if target.active:
-        if target.replaced:
-            raise Exception("Cannot mark certificate as active, certificate has been marked as replaced.")
+        if not target.notify:
+            raise Exception(
+                "Cannot silence notification for a certificate Lemur has been found to be currently deployed onto endpoints"
+            )

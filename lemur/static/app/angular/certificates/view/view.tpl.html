@@ -30,10 +30,10 @@
                 <li><span class="text-muted">{{ certificate.owner }}</span></li>
               </ul>
             </td>
-            <td data-title="'Active'" filter="{ 'active': 'select' }" filter-data="getCertificateStatus()">
+            <td data-title="'Notify'" filter="{ 'notify': 'select' }" filter-data="getCertificateStatus()">
               <form>
-                <switch ng-change="updateActive(certificate)" id="status" name="status"
-                        ng-model="certificate.active" class="green small"></switch>
+                <switch ng-change="updateNotify(certificate)" id="status" name="status"
+                        ng-model="certificate.notify" class="green small"></switch>
               </form>
             </td>
             <td data-title="'Issuer'" sortable="'issuer'" filter="{ 'issuer': 'text' }">
