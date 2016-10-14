@@ -46,6 +46,8 @@ LEMUR_DEFAULT_LOCATION = 'Los Gatos'
 LEMUR_DEFAULT_ORGANIZATION = 'Example, Inc.'
 LEMUR_DEFAULT_ORGANIZATIONAL_UNIT = 'Example'
 
+LEMUR_ALLOW_WEEKEND_EXPIRATION = False
+
 # Database
 
 # modify this if you are not using a local database
