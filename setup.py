@@ -63,7 +63,8 @@ install_requires = [
     'boto3==1.3.0',
     'acme==0.1.0',
     'retrying==1.3.3',
-    'tabulate==0.7.5'
+    'tabulate==0.7.5',
+    'freezegun==0.3.7',
 ]
 
 tests_require = [
