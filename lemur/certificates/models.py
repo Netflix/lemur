@@ -27,6 +27,7 @@ from lemur.domains.models import Domain
 
 
 def get_or_increase_name(name):
+    name = '-'.join(name.strip().split(' '))
     count = Certificate.query.filter(Certificate.name.ilike('{0}%'.format(name))).count()
 
     if count >= 1:
