@@ -160,8 +160,7 @@ def _is_eligible_for_notifications(cert):
     :param cert:
     :return:
     """
-    # inactive certificates are not notified.
-    if not cert.active:
+    if not cert.notify:
         return
 
     now = arrow.utcnow()

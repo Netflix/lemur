@@ -76,7 +76,7 @@ class CertificateInputSchema(CertificateCreationSchema):
 
 
 class CertificateEditInputSchema(CertificateSchema):
-    active = fields.Boolean()
+    notify = fields.Boolean()
     destinations = fields.Nested(AssociatedDestinationSchema, missing=[], many=True)
     notifications = fields.Nested(AssociatedNotificationSchema, missing=[], many=True)
     replacements = fields.Nested(AssociatedCertificateSchema, missing=[], many=True)
@@ -104,6 +104,7 @@ class CertificateNestedOutputSchema(LemurOutputSchema):
 class CertificateOutputSchema(LemurOutputSchema):
     id = fields.Integer()
     active = fields.Boolean()
+    notify = fields.Boolean()
     bits = fields.Integer()
     body = fields.String()
     chain = fields.String()
@@ -131,7 +132,7 @@ class CertificateOutputSchema(LemurOutputSchema):
 
 class CertificateUploadInputSchema(CertificateCreationSchema):
     name = fields.String()
-    active = fields.Boolean(missing=True)
+    notify = fields.Boolean(missing=True)
 
     private_key = fields.String(validate=validators.private_key)
     body = fields.String(required=True, validate=validators.public_certificate)

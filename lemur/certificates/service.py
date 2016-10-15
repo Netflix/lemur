@@ -270,7 +270,7 @@ def render(args):
 
         elif 'destination' in terms:
             query = query.filter(Certificate.destinations.any(Destination.id == terms[1]))
-        elif 'active' in filt:  # this is really weird but strcmp seems to not work here??
+        elif 'active' in filt:
             query = query.filter(Certificate.active == terms[1])
         elif 'cn' in terms:
             query = query.filter(
