@@ -51,7 +51,7 @@ Basic Configuration
         CORS = False
 
 
-.. data:: SQLACHEMY_DATABASE_URI
+.. data:: SQLALCHEMY_DATABASE_URI
     :noindex:
 
         If you have ever used sqlalchemy before this is the standard connection string used. Lemur uses a postgres database and the connection string would look something like:
@@ -60,6 +60,11 @@ Basic Configuration
 
         SQLALCHEMY_DATABASE_URI = 'postgresql://<user>:<password>@<hostname>:5432/lemur'
 
+
+.. data:: LEMUR_ALLOW_WEEKEND_EXPIRATION
+    :noindex:
+
+        Specifies whether to allow certificates created by Lemur to expire on weekends. Default is True.
 
 .. data:: LEMUR_RESTRICTED_DOMAINS
     :noindex:

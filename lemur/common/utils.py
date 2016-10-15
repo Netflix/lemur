@@ -41,3 +41,14 @@ def parse_certificate(body):
             return x509.load_pem_x509_certificate(body, default_backend())
         return x509.load_pem_x509_certificate(bytes(body, 'utf8'), default_backend())
     return x509.load_pem_x509_certificate(body.encode('utf-8'), default_backend())
+
+
+def is_weekend(date):
+    """
+    Determines if a given date is on a weekend.
+
+    :param date:
+    :return:
+    """
+    if date.weekday() > 5:
+        return True

@@ -72,7 +72,7 @@ class CertificateInputSchema(CertificateCreationSchema):
 
     @pre_load
     def ensure_dates(self, data):
-        return missing.dates(data)
+        return missing.convert_validity_years(data)
 
 
 class CertificateEditInputSchema(CertificateSchema):

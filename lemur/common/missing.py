@@ -1,13 +1,26 @@
 import arrow
+from flask import current_app
+
+from lemur.common.utils import is_weekend
 
 
-def dates(data):
-    # ensure that validity_start and validity_end are always set
-    if not(data.get('validity_start') and data.get('validity_end')):
-        if data.get('validity_years'):
-            num_years = data['validity_years']
-            now = arrow.utcnow()
-            then = now.replace(years=+int(num_years))
+def convert_validity_years(data):
+    """
+    Convert validity years to validity_start and validity_end
 
-            data['validity_start'] = now.isoformat()
-            data['validity_end'] = then.isoformat()
+    :param data:
+    :return:
+    """
+    if data.get('validity_years'):
+        now = arrow.utcnow()
+        data['validity_start'] = now.date().isoformat()
+
+        end = now.replace(years=+int(data['validity_years']))
+        data['validity_end'] = end.date().isoformat()
+
+        if not current_app.config.get('LEMUR_ALLOW_WEEKEND_EXPIRATION', True):
+            if is_weekend(end):
+                end = end.replace(days=-2)
+                data['validity_end'] = end.date().isoformat()
+
+    return data
