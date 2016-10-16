@@ -39,8 +39,8 @@ def test_create_certificate(source):
     (VALID_ADMIN_HEADER_TOKEN, 404),
     ('', 401)
 ])
-def test_source_get(client, token, status):
-    assert client.get(api.url_for(Sources, source_id=1), headers=token).status_code == status
+def test_source_get(client, source_plugin, token, status):
+    assert client.get(api.url_for(Sources, source_id=43543), headers=token).status_code == status
 
 
 @pytest.mark.parametrize("token,status", [
@@ -84,7 +84,7 @@ def test_source_patch(client, token, status):
     (VALID_ADMIN_HEADER_TOKEN, 200),
     ('', 401)
 ])
-def test_sources_list_get(client, token, status):
+def test_sources_list_get(client, source_plugin, token, status):
     assert client.get(api.url_for(SourcesList), headers=token).status_code == status
 
 
