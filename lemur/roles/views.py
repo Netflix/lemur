@@ -108,7 +108,9 @@ class RolesList(AuthenticatedResource):
                  "description": "this is role3",
                  "username": null,
                  "password": null,
-                 "users": []
+                 "users": [
+                    {'id': 1}
+                 ]
               }
 
            **Example response**:
