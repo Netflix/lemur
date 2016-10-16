@@ -108,7 +108,9 @@ class UsersList(AuthenticatedResource):
                  "username": "user3",
                  "email": "user3@example.com",
                  "active": true,
-                 "roles": []
+                 "roles": [
+                    {'id': 1} - or - {'name': 'myRole'}
+                 ]
               }
 
            **Example response**:
@@ -199,7 +201,9 @@ class Users(AuthenticatedResource):
                  "username": "user1",
                  "email": "user1@example.com",
                  "active": false,
-                 "roles": []
+                 "roles": [
+                     {'id': 1} - or - {'name': 'myRole'}
+                 ]
               }
 
            **Example response**:
