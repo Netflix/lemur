@@ -163,6 +163,14 @@ def destination_plugin():
     return TestDestinationPlugin
 
 
+@pytest.fixture
+def source_plugin():
+    from lemur.plugins.base import register
+    from .plugins.source_plugin import TestSourcePlugin
+    register(TestSourcePlugin)
+    return TestSourcePlugin
+
+
 @pytest.yield_fixture(scope="function")
 def logged_in_user(session, app):
     with app.test_request_context():
