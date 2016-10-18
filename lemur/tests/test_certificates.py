@@ -9,6 +9,14 @@ from lemur.tests.vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKE
     INTERNAL_VALID_LONG_STR, INTERNAL_VALID_SAN_STR, PRIVATE_KEY_STR
 
 
+def test_certificate_edit_schema(session):
+    from lemur.certificates.schemas import CertificateEditInputSchema
+
+    input_data = {'owner': 'bob@example.com'}
+    data, errors = CertificateEditInputSchema().load(input_data)
+    assert len(data['notifications']) == 3
+
+
 def test_authority_identifier_schema():
     from lemur.schemas import AuthorityIdentifierSchema
     input_data = {'useAuthorityCert': True}

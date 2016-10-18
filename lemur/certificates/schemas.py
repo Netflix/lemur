@@ -77,10 +77,24 @@ class CertificateInputSchema(CertificateCreationSchema):
 
 class CertificateEditInputSchema(CertificateSchema):
     notify = fields.Boolean()
+    owner = fields.String()
     destinations = fields.Nested(AssociatedDestinationSchema, missing=[], many=True)
     notifications = fields.Nested(AssociatedNotificationSchema, missing=[], many=True)
     replacements = fields.Nested(AssociatedCertificateSchema, missing=[], many=True)
     roles = fields.Nested(AssociatedRoleSchema, missing=[], many=True)
+
+    @post_load
+    def enforce_notifications(self, data):
+        """
+        Ensures that when an owner changes, default notifications are added for the new owner.
+        Old owner notifications are retained unless explicitly removed.
+        :param data:
+        :return:
+        """
+        if data['owner']:
+            notification_name = "DEFAULT_{0}".format(data['owner'].split('@')[0].upper())
+            data['notifications'] += notification_service.create_default_expiration_notifications(notification_name, [data['owner']])
+        return data
 
 
 class CertificateNestedOutputSchema(LemurOutputSchema):
