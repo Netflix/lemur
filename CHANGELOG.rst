@@ -1,13 +1,39 @@
 Changelog
 =========
 
-0.3.1 - `master`
-~~~~~~~~~~~~~~~~
+0.5 - `master`
+~~~~~~~~~~~~~~
 
 .. note:: This version is not yet released and is under active development
 
+
+0.4 - ``
+~~~~~~~~
+
+There have been quite a few issues closed in this release. Some notables:
+
+* Closed `#284 <https://github.com/Netflix/lemur/issues/284>`_ - Created new models for `Endpoints` created associated
+AWS ELB endpoint tracking code. This was the major stated goal of this milestone and should serve as the basis for
+future enhancements of Lemur's certificate 'deployment' capabilities.
+
+* Closed `#334 <https://github.com/Netflix/lemur/issues/334>`_ - Lemur not has the ability
+to restrict certificate expiration dates to weekdays.
+
+Several fixes/tweaks to Lemurs python3 support (thanks chadhendrie!)
+
+This will most likely be the last release to support python2.7 moving Lemur to target python3 exclusively. Please comment
+on issue #340 if this negatively affects your usage of Lemur.
+
+Upgrading
+---------
+
+See the full list of issues closed in `0.4 <https://github.com/Netflix/lemur/milestone/3>`_.
+
+.. note:: This release will need a slight migration change. Please follow the `documentation <https://lemur.readthedocs.io/en/latest/administration.html#upgrading-lemur>`_ to upgrade Lemur.
+
+
 0.3.0 - `2016-06-06`
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 
 This is quite a large upgrade, it is highly advised you backup your database before attempting to upgrade as this release
 requires the migration of database structure as well as data.
