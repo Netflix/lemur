@@ -1,5 +1,5 @@
 """
-.. module: lemur.plugins.lemur_cfssl.cfssl
+.. module: lemur.plugins.lemur_cfssl.plugin
     :platform: Unix
     :synopsis: This module is responsible for communicating with the CFSSL private CA.
     :copyright: (c) 2016 by Thomson Reuters
