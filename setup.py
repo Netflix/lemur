@@ -184,6 +184,7 @@ setup(
             'atlas_metric = lemur.plugins.lemur_atlas.plugin:AtlasMetricPlugin',
             'kubernetes_destination = lemur.plugins.lemur_kubernetes.plugin:KubernetesDestinationPlugin',
             'cryptography_issuer = lemur.plugins.lemur_cryptography.plugin:CryptographyIssuerPlugin',
+            'cfssl_issuer = lemur.plugins.lemur_cfssl.plugin:CfsslIssuerPlugin',
         ],
     },
     classifiers=[

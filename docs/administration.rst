@@ -361,6 +361,26 @@ for those plugins.
         This is the root to be used for your CA chain
 
 
+CFSSL Issuer Plugin
+^^^^^^^^^^^^^^^^^^^
+
+The following configuration properties are required to use the the CFSSL issuer plugin.
+
+.. data:: CFSSL_URL
+    :noindex:
+
+        This is the URL for the CFSSL API
+
+.. data:: CFSSL_ROOT
+    :noindex:
+
+        This is the root to be used for your CA chain
+
+.. data:: CFSSL_INTERMEDIATE
+    :noindex:
+
+        This is the intermediate to be used for your CA chain
+
 
 AWS Source/Destination Plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -836,6 +856,17 @@ Openssl
     Leverages Openssl to support additional export formats (pkcs12)
 
 
+CFSSL
+-----
+
+:Authors:
+    Charles Hendrie <chad.hendrie@thomsonreuters.com>
+:Type:
+    Issuer
+:Description:
+    Basic support for generating certificates from the private certificate authority CFSSL
+
+
 3rd Party Plugins
 =================
 
@@ -886,4 +917,3 @@ These permissions are applied to the user upon login and refreshed on every requ
 .. seealso::
 
     `Flask-Principal <https://pythonhosted.org/Flask-Principal>`_
-
