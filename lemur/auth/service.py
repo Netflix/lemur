@@ -44,8 +44,8 @@ def get_rsa_public_key(n, e):
         n = int(binascii.hexlify(jwt.utils.base64url_decode(bytes(n, 'utf-8'))), 16)
         e = int(binascii.hexlify(jwt.utils.base64url_decode(bytes(e, 'utf-8'))), 16)
     else:
-        n = int(binascii.hexlify(jwt.utils.base64url_decode(n)), 16)
-        e = int(binascii.hexlify(jwt.utils.base64url_decode(e, 'utf-8')), 16)
+        n = int(binascii.hexlify(jwt.utils.base64url_decode(str(n))), 16)
+        e = int(binascii.hexlify(jwt.utils.base64url_decode(str(e))), 16)
 
     pub = RSAPublicNumbers(e, n).public_key(default_backend())
     return pub.public_bytes(
