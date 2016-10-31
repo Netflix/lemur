@@ -107,7 +107,9 @@ def notification(session):
 
 @pytest.fixture
 def certificate(session):
-    c = CertificateFactory()
+    u = UserFactory()
+    a = AuthorityFactory()
+    c = CertificateFactory(user=u, authority=a)
     session.commit()
     return c
 

@@ -890,12 +890,24 @@ class CertificateExport(AuthenticatedResource):
         return dict(extension=extension, passphrase=passphrase, data=base64.b64encode(data).decode('utf-8'))
 
 
+class CertificateClone(AuthenticatedResource):
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        super(CertificateExport, self).__init__()
+
+    @validate_schema(None, certificate_output_schema)
+    def get(self, certificate_id):
+
+        pass
+
+
 api.add_resource(CertificatesList, '/certificates', endpoint='certificates')
 api.add_resource(Certificates, '/certificates/<int:certificate_id>', endpoint='certificate')
 api.add_resource(CertificatesStats, '/certificates/stats', endpoint='certificateStats')
 api.add_resource(CertificatesUpload, '/certificates/upload', endpoint='certificateUpload')
 api.add_resource(CertificatePrivateKey, '/certificates/<int:certificate_id>/key', endpoint='privateKeyCertificates')
 api.add_resource(CertificateExport, '/certificates/<int:certificate_id>/export', endpoint='exportCertificate')
+api.add_resource(CertificateClone, '/certificates/<int:certificate_id>/clone', endpoint='cloneCertificate')
 api.add_resource(NotificationCertificatesList, '/notifications/<int:notification_id>/certificates',
                  endpoint='notificationCertificates')
 api.add_resource(CertificatesReplacementsList, '/certificates/<int:certificate_id>/replacements',

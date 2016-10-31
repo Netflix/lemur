@@ -456,3 +456,51 @@ def get_name_from_arn(arn):
     :return: name of the certificate as uploaded to AWS
     """
     return arn.split("/", 1)[1]
+
+
+def calculate_reissue_range(start, end):
+    """
+    Determine what the new validity_start and validity_end dates should be.
+    :param start:
+    :param end:
+    :return:
+    """
+    span = end - start
+
+    new_start = arrow.utcnow().date()
+    new_end = new_start + span
+
+    return new_start, new_end
+
+
+# TODO pull the OU, O, CN, etc + other extensions.
+def get_certificate_primitives(certificate):
+    """
+    Retrieve key primitive from a certificate such that the certificate
+    could be recreated with new expiration or be used to build upon.
+    :param certificate:
+    :return: dict of certificate primitives, should be enough to effectively re-issue
+    certificate via `create`.
+    """
+    start, end = calculate_reissue_range(certificate.not_before, certificate.not_after)
+    names = [{'name_type': 'DNSName', 'value': x.name} for x in certificate.domains]
+
+    extensions = {
+        'sub_alt_names': {
+            'names': names
+        }
+    }
+
+    return dict(
+        authority=certificate.authority,
+        common_name=certificate.cn,
+        description=certificate.description,
+        validity_start=start,
+        validity_end=end,
+        destinations=certificate.destinations,
+        roles=certificate.roles,
+        extensions=extensions,
+        owner=certificate.owner
+    )
+
+

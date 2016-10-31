@@ -115,6 +115,12 @@ class CertificateNestedOutputSchema(LemurOutputSchema):
     issuer = fields.Nested(AuthorityNestedOutputSchema)
 
 
+class CertificateCloneSchema(LemurOutputSchema):
+    __envelope__ = False
+    description = fields.String()
+    common_name = fields.String()
+
+
 class CertificateOutputSchema(LemurOutputSchema):
     id = fields.Integer()
     active = fields.Boolean()

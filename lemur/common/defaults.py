@@ -15,7 +15,7 @@ def certificate_name(common_name, issuer, not_before, not_after, san):
     :param not_after:
     :param issuer:
     :param not_before:
-    :rtype : str
+    :rtype: str
     :return:
     """
     if san:
