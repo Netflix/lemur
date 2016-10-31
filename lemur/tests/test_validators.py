@@ -14,6 +14,13 @@ def test_private_key(session):
         private_key('invalid_private_key')
 
 
+def test_sub_alt_type(session):
+    from lemur.common.validators import sub_alt_type
+
+    with pytest.raises(ValidationError):
+        sub_alt_type('CNAME')
+
+
 def test_dates(session):
     from lemur.common.validators import dates
 

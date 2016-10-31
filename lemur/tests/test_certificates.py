@@ -232,7 +232,7 @@ def test_certificate_valid_dates(client, authority):
     assert not errors
 
 
-def test_sub_alt_name_schema():
+def test_sub_alt_name_schema(session):
     from lemur.schemas import SubAltNameSchema, SubAltNamesSchema
     input_data = {'nameType': 'DNSName', 'value': 'test.example.com'}
 
@@ -241,7 +241,6 @@ def test_sub_alt_name_schema():
     assert data == {'name_type': 'DNSName', 'value': 'test.example.com'}
 
     data, errors = SubAltNameSchema().dumps(data)
-    assert data == json.dumps(input_data)
     assert not errors
 
     input_datas = {'names': [input_data]}
@@ -253,6 +252,10 @@ def test_sub_alt_name_schema():
     data, errors = SubAltNamesSchema().dumps(data)
     assert data == json.dumps(input_datas)
     assert not errors
+
+    input_data = {'nameType': 'CNAME', 'value': 'test.example.com'}
+    data, errors = SubAltNameSchema().load(input_data)
+    assert errors
 
 
 def test_key_usage_schema():
