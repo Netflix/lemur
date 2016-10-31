@@ -1,12 +1,41 @@
 from __future__ import unicode_literals    # at top of module
 
-import pytest
 import json
+import pytest
+import datetime
+
+from freezegun import freeze_time
 
 from lemur.certificates.views import *  # noqa
 
 from lemur.tests.vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN, CSR_STR, \
     INTERNAL_VALID_LONG_STR, INTERNAL_VALID_SAN_STR, PRIVATE_KEY_STR
+
+
+def test_get_certificate_primitives(certificate):
+    from lemur.certificates.service import get_certificate_primitives
+
+    names = [{'name_type': 'DNSName', 'value': x.name} for x in certificate.domains]
+
+    data = {
+        'common_name': certificate.cn,
+        'owner': certificate.owner,
+        'authority': certificate.authority,
+        'description': certificate.description,
+        'extensions': {
+            'sub_alt_names': {
+                'names': names
+            }
+        },
+        'destinations': [],
+        'roles': [],
+        'validity_end': datetime.date(year=2021, month=5, day=7),
+        'validity_start': datetime.date(year=2016, month=10, day=30)
+    }
+
+    with freeze_time(datetime.date(year=2016, month=10, day=30)):
+        primitives = get_certificate_primitives(certificate)
+        assert data == primitives
 
 
 def test_certificate_edit_schema(session):
@@ -203,7 +232,7 @@ def test_certificate_valid_dates(client, authority):
     assert not errors
 
 
-def test_sub_alt_name_schema():
+def test_sub_alt_name_schema(session):
     from lemur.schemas import SubAltNameSchema, SubAltNamesSchema
     input_data = {'nameType': 'DNSName', 'value': 'test.example.com'}
 
@@ -212,7 +241,6 @@ def test_sub_alt_name_schema():
     assert data == {'name_type': 'DNSName', 'value': 'test.example.com'}
 
     data, errors = SubAltNameSchema().dumps(data)
-    assert data == json.dumps(input_data)
     assert not errors
 
     input_datas = {'names': [input_data]}
@@ -224,6 +252,10 @@ def test_sub_alt_name_schema():
     data, errors = SubAltNamesSchema().dumps(data)
     assert data == json.dumps(input_datas)
     assert not errors
+
+    input_data = {'nameType': 'CNAME', 'value': 'test.example.com'}
+    data, errors = SubAltNameSchema().load(input_data)
+    assert errors
 
 
 def test_key_usage_schema():

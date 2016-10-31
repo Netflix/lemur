@@ -47,7 +47,7 @@ angular.module('lemur')
         });
       });
     });
-    
+
     PluginService.getByType('source').then(function (plugins) {
       $scope.plugins = plugins;
       _.each($scope.plugins, function (plugin) {

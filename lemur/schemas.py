@@ -220,7 +220,7 @@ class SubAltNameSchema(BaseExtensionSchema):
 
     @validates_schema
     def check_sensitive(self, data):
-        if data['name_type'] == 'DNSName':
+        if data.get('name_type') == 'DNSName':
             validators.sensitive_domain(data['value'])
 
 

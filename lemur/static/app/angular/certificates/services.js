@@ -28,7 +28,7 @@ angular.module('lemur')
           }
 
           if (!angular.isString(this.subAltType)) {
-            this.subAltType = 'CNAME';
+            this.subAltType = 'DNSName';
           }
 
           if (angular.isString(this.subAltValue) && angular.isString(this.subAltType)) {
