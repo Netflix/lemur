@@ -60,8 +60,8 @@ install_requires = [
     'inflection==0.3.1',
     'future==0.15.2',
     'boto==2.38.0',  # we might make this optional
-    'boto3==1.3.0',
-    'acme==0.1.0',
+    'boto3==1.4.0',
+    'acme==0.9.0.dev0',
     'retrying==1.3.3',
     'tabulate==0.7.5',
     'freezegun==0.3.7',
