@@ -502,5 +502,3 @@ def get_certificate_primitives(certificate):
         extensions=extensions,
         owner=certificate.owner
     )
-
-

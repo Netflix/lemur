@@ -47,7 +47,7 @@ angular.module('lemur')
         });
       });
     });
-    
+
     $scope.save = function (destination) {
       DestinationService.update(destination).then(
         function () {
