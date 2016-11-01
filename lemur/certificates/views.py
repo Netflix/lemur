@@ -593,7 +593,7 @@ class Certificates(AuthenticatedResource):
                 certificate_id,
                 data['owner'],
                 data['description'],
-                data['active'],
+                data['notify'],
                 data['destinations'],
                 data['notifications'],
                 data['replacements'],
