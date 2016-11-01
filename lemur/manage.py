@@ -7,7 +7,6 @@ import os
 import sys
 import base64
 import time
-import arrow
 import requests
 import json
 
@@ -770,46 +769,17 @@ def publish_verisign_units():
         requests.post('http://localhost:8078/metrics', data=json.dumps(metric))
 
 
-class Rolling(Command):
+@manager.command
+def publish_unapproved_verisign_certificates():
     """
-    Rotates existing certificates to a new one on an ELB
+    Query the Verisign for any certificates that need to be approved.
+    :return:
     """
-    option_list = (
-        Option('-w', '--window', dest='window', default=24),
-    )
-
-    def run(self, window):
-        """
-        Simple function that queries verisign for API units and posts the mertics to
-        Atlas API for other teams to consume.
-        :return:
-        """
-        end = arrow.utcnow()
-        start = end.replace(hours=-window)
-        items = Certificate.query.filter(Certificate.not_before <= end.format('YYYY-MM-DD')) \
-            .filter(Certificate.not_before >= start.format('YYYY-MM-DD')).all()
-
-        metrics = {}
-        for i in items:
-            name = "{0},{1}".format(i.owner, i.issuer)
-            if metrics.get(name):
-                metrics[name] += 1
-            else:
-                metrics[name] = 1
-
-        for name, value in metrics.iteritems():
-            owner, issuer = name.split(",")
-            metric = [
-                {
-                    "timestamp": 1321351651,
-                    "type": "GAUGE",
-                    "name": "Issued Certificates",
-                    "tags": {"owner": owner, "issuer": issuer, "window": window},
-                    "value": value
-                }
-            ]
-
-            requests.post('http://localhost:8078/metrics', data=json.dumps(metric))
+    from lemur.plugins import plugins
+    from lemur.extensions import metrics
+    v = plugins.get('verisign-issuer')
+    certs = v.get_pending_certificates()
+    metrics.send('pending_certificates', 'gauge', certs)
 
 
 class Report(Command):
@@ -951,7 +921,6 @@ def main():
     manager.add_command("create_role", CreateRole())
     manager.add_command("provision_elb", ProvisionELB())
     manager.add_command("rotate_elbs", RotateELBs())
-    manager.add_command("rolling", Rolling())
     manager.add_command("sources", Sources())
     manager.add_command("report", Report())
     manager.run()
