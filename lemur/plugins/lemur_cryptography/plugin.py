@@ -82,7 +82,7 @@ def issue_certificate(csr, options):
     builder = builder.serial_number(int(uuid.uuid4()))
 
     private_key = serialization.load_pem_private_key(
-        bytes(options['authority'].authority_certificate.private_key, 'utf-8'),
+        bytes(str(options['authority'].authority_certificate.private_key).encode('utf-8')),
         password=None,
         backend=default_backend()
     )
