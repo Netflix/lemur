@@ -82,5 +82,5 @@ def configure_hook(app):
             return response
         return json_handler
 
-    for code in default_exceptions.iterkeys():
+    for code, value in default_exceptions.items():
         app.error_handler_spec[None][code] = make_json_handler(code)
