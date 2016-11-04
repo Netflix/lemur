@@ -186,6 +186,7 @@ setup(
             'kubernetes_destination = lemur.plugins.lemur_kubernetes.plugin:KubernetesDestinationPlugin',
             'cryptography_issuer = lemur.plugins.lemur_cryptography.plugin:CryptographyIssuerPlugin',
             'cfssl_issuer = lemur.plugins.lemur_cfssl.plugin:CfsslIssuerPlugin',
+            'digicert_issuer = lemur.plugins.lemur_digicert.plugin:DigiCertIssuerPlugin',
         ],
     },
     classifiers=[
