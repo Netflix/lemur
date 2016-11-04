@@ -102,20 +102,20 @@ def export(cert, export_plugin):
     return plugin.export(cert.body, cert.chain, cert.private_key, export_plugin['pluginOptions'])
 
 
-def update(cert_id, owner, description, active, destinations, notifications, replaces, roles):
+def update(cert_id, owner, description, notify, destinations, notifications, replaces, roles):
     """
     Updates a certificate
     :param cert_id:
     :param owner:
     :param description:
-    :param active:
+    :param notify:
     :param destinations:
     :param notifications:
     :param replaces:
     :return:
     """
     cert = get(cert_id)
-    cert.active = active
+    cert.notify = notify
     cert.description = description
     cert.destinations = destinations
     cert.notifications = notifications
