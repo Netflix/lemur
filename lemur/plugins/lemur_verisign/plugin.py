@@ -21,7 +21,6 @@ from lemur.common.utils import get_psuedo_random_string
 # https://support.venafi.com/entries/66445046-Info-VeriSign-Error-Codes
 VERISIGN_ERRORS = {
     "0x30c5": "Domain Mismatch when enrolling for an SSL certificate, a domain in your request has not been added to verisign",
-    "0x482d": "Cannot issue SHA1 certificates expiring after 31/12/2016",
     "0x3a10": "Invalid X509 certificate format.: an unsupported certificate format was submitted",
     "0x4002": "Internal QM Error. : Internal Database connection error.",
     "0x3301": "Bad transaction id or parent cert not renewable.: User try to renew a certificate that is not yet ready for renew or the transaction id is wrong",
@@ -58,6 +57,7 @@ VERISIGN_ERRORS = {
     "0x3105": "Organization Name Not Matched",
     "0x300a": "Domain/SubjectAltName Mismatched -- make sure that the SANs have the proper domain suffix",
     "0x950e": "Invalid Common Name -- make sure the CN has a proper domain suffix",
+    "0xa00e": "Pending. (Insufficient number of tokens.)"
 }
 
 

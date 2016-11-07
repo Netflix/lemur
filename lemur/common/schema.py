@@ -136,7 +136,7 @@ def validate_schema(input_schema, output_schema):
                 resp = f(*args, **kwargs)
             except Exception as e:
                 current_app.logger.exception(e)
-                return dict(message=e.message), 500
+                return dict(message=str(e)), 500
 
             if isinstance(resp, tuple):
                 return resp[0], resp[1]
