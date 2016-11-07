@@ -69,6 +69,12 @@ LEMUR_INSTANCE_PROFILE = 'Lemur'
 # number of years to issue if not specified
 # CLOUDCA_DEFAULT_VALIDITY = 2
 
+
+DIGICERT_URL = 'https://www.digicert.com'
+DIGICERT_API_KEY = 'api-key'
+DIGICERT_ORG_ID = 000000
+
+
 VERISIGN_URL = 'http://example.com'
 VERISIGN_PEM_PATH = '~/'
 VERISIGN_FIRST_NAME = 'Jim'
