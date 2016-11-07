@@ -64,7 +64,7 @@ install_requires = [
     'acme==0.1.0',
     'retrying==1.3.3',
     'tabulate==0.7.5',
-    'freezegun==0.3.7',
+    'pem==16.1.0'
 ]
 
 tests_require = [
@@ -73,7 +73,8 @@ tests_require = [
     'nose==1.3.7',
     'pytest==2.8.5',
     'factory-boy==2.7.0',
-    'pytest-flask==0.10.0'
+    'pytest-flask==0.10.0',
+    'freezegun==0.3.7'
 ]
 
 docs_require = [

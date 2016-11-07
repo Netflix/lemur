@@ -5,30 +5,6 @@ from freezegun import freeze_time
 from lemur.tests.vectors import CSR_STR
 
 
-def test_create_certificate(app):
-    from lemur.plugins.base import plugins
-    p = plugins.get('digicert-issuer')
-
-    names = ['one.example.com', 'two.example.com', 'three.example.com']
-
-    options = {
-        'common_name': 'example.com',
-        'owner': 'bob@example.com',
-        'description': 'test certificate',
-        'extensions': {
-            'sub_alt_names': {
-                'names': [{'name_type': 'DNSName', 'value': x} for x in names]
-            }
-        },
-        'validity_end': arrow.get(2017, 5, 7),
-        'validity_start': arrow.get(2016, 10, 30)
-    }
-
-    server_cert, int_cert = p.create_certificate(CSR_STR, options)
-    assert server_cert == ''
-    assert int_cert == ''
-
-
 def test_process_options(app):
     from lemur.plugins.lemur_digicert.plugin import process_options
 

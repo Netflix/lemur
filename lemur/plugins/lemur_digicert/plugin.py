@@ -18,6 +18,8 @@ import json
 import arrow
 import requests
 
+import pem
+
 from flask import current_app
 
 from lemur.extensions import metrics
@@ -203,15 +205,16 @@ class DigiCertIssuerPlugin(IssuerPlugin):
             # get order info
             order_url = "{0}/services/v2/order/certificate/{1}".format(base_url, order_id)
             response_data = handle_response(self.session.get(order_url))
-            if response['status'] == 'issued':
+            if response_data['status'] == 'issued':
                 break
             time.sleep(10)
 
         certificate_id = response_data['certificate']['id']
 
         # retrieve certificate
-        certificate_url = "{0}/certificate/{1}/download/format/pem_all".format(base_url, certificate_id)
-        response_data = handle_response(self.session.get(certificate_url))
+        certificate_url = "{0}/services/v2/certificate/{1}/download/format/pem_all".format(base_url, certificate_id)
+        root, intermediate, end_enitity = pem.parse(self.session.get(certificate_url).content)
+        return str(end_enitity), str(intermediate)
 
     @staticmethod
     def create_authority(options):
