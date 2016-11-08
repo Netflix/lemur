@@ -130,6 +130,23 @@ def handle_response(response):
     return response.json()
 
 
+def verify_configuration():
+    if not current_app.config.get('DIGICERT_API_KEY'):
+        raise Exception("No Digicert API key found. Ensure that 'DIGICERT_API_KEY' is set in the Lemur conf.")
+
+    if not current_app.config.get('DIGICERT_URL'):
+        raise Exception("No Digicert URL found. Ensure that 'DIGICERT_URL' is set in the Lemur conf.")
+
+    if not current_app.config.get('DIGICERT_ORG_ID'):
+        raise Exception("No Digicert organization ID found. Ensure that 'DIGICERT_ORG_ID' is set in Lemur conf.")
+
+    if not current_app.config.get('DIGICERT_ROOT'):
+        raise Exception("No Digicert root found. Ensure that 'DIGICERT_ROOT' is set in the Lemur conf.")
+
+    if not current_app.config.get('DIGICERT_INTERMEDIATE'):
+        raise Exception("No Digicert intermediate found. Ensure that 'DIGICERT_INTERMEDIATE is set in Lemur conf.")
+
+
 class DigiCertSourcePlugin(SourcePlugin):
     """Wrap the Digicert Certifcate API."""
     title = 'DigiCert'
@@ -142,8 +159,7 @@ class DigiCertSourcePlugin(SourcePlugin):
 
     def __init__(self, *args, **kwargs):
         """Initialize source with appropriate details."""
-        if not current_app.config.get('DIGICERT_API_KEY'):
-            raise Exception("No Digicert API key found. Ensure that 'DIGICERT_API_KEY' is set in the Lemur conf.")
+        verify_configuration()
 
         self.session = requests.Session()
         self.session.headers.update(
@@ -173,8 +189,7 @@ class DigiCertIssuerPlugin(IssuerPlugin):
 
     def __init__(self, *args, **kwargs):
         """Initialize the issuer with the appropriate details."""
-        if not current_app.config.get('DIGICERT_API_KEY'):
-            raise Exception("No Digicert API key found. Ensure that 'DIGICERT_API_KEY' is set in the Lemur conf.")
+        verify_configuration()
 
         self.session = requests.Session()
         self.session.headers.update(
