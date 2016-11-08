@@ -361,6 +361,43 @@ for those plugins.
         This is the root to be used for your CA chain
 
 
+Digicert Issuer Plugin
+~~~~~~~~~~~~~~~~~~~~~~
+
+The following configuration properties are required to use the Digicert issuer plugin.
+
+
+.. data:: DIGICERT_URL
+    :noindex:
+
+            This is the url for the Digicert API
+
+
+.. data:: DIGICERT_API_KEY
+    :noindex:
+
+            This is the Digicert API key
+
+
+.. data:: DIGICERT_ORG_ID
+    :noindex:
+
+            This is the Digicert organization ID tied to your API key
+
+
+.. data:: DIGICERT_INTERMEDIATE
+    :noindex:
+
+            This is the intermediate to be used for your CA chain
+
+
+.. data:: DIGICERT_ROOT
+    :noindex:
+
+            This is the root to be used for your CA chain
+
+
+
 CFSSL Issuer Plugin
 ^^^^^^^^^^^^^^^^^^^
 
