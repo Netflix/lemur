@@ -21,7 +21,6 @@ from lemur.common.utils import get_psuedo_random_string
 # https://support.venafi.com/entries/66445046-Info-VeriSign-Error-Codes
 VERISIGN_ERRORS = {
     "0x30c5": "Domain Mismatch when enrolling for an SSL certificate, a domain in your request has not been added to verisign",
-    "0x482d": "Cannot issue SHA1 certificates expiring after 31/12/2016",
     "0x3a10": "Invalid X509 certificate format.: an unsupported certificate format was submitted",
     "0x4002": "Internal QM Error. : Internal Database connection error.",
     "0x3301": "Bad transaction id or parent cert not renewable.: User try to renew a certificate that is not yet ready for renew or the transaction id is wrong",
@@ -56,6 +55,9 @@ VERISIGN_ERRORS = {
     "0x3043": "Certificates must have a validity of at least 1 day",
     "0x950b": "CSR: Invalid State",
     "0x3105": "Organization Name Not Matched",
+    "0x300a": "Domain/SubjectAltName Mismatched -- make sure that the SANs have the proper domain suffix",
+    "0x950e": "Invalid Common Name -- make sure the CN has a proper domain suffix",
+    "0xa00e": "Pending. (Insufficient number of tokens.)"
 }
 
 
@@ -185,6 +187,25 @@ class VerisignIssuerPlugin(IssuerPlugin):
         url = current_app.config.get("VERISIGN_URL") + '/rest/services/getTokens'
         response = self.session.post(url, headers={'content-type': 'application/x-www-form-urlencoded'})
         return handle_response(response.content)['Response']['Order']
+
+    def get_pending_certificates(self):
+        """
+        Uses Verisign to fetch the number of certificate awaiting approval.
+
+        :return:
+        """
+        url = current_app.config.get("VERISIGN_URL") + '/reportingws'
+
+        end = arrow.now()
+        start = end.replace(days=-7)
+        data = {
+            'reportType': 'summary',
+            'certProductType': 'Server',
+            'startDate': start.format("MM/DD/YYYY"),
+            'endDate': end.format("MM/DD/YYYY"),
+        }
+        response = self.session.post(url, data=data)
+        return response.json()['certificateSummary'][0]['Pending']
 
 
 class VerisignSourcePlugin(SourcePlugin):

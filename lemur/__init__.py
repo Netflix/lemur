@@ -65,7 +65,8 @@ def configure_hook(app):
     :param app:
     :return:
     """
-    from flask.ext.principal import PermissionDenied
+    from flask import jsonify
+    from werkzeug.exceptions import default_exceptions
     from lemur.decorators import crossdomain
     if app.config.get('CORS'):
         @app.after_request
@@ -73,17 +74,13 @@ def configure_hook(app):
         def after(response):
             return response
 
-    @app.errorhandler(500)
-    def internal_error(error):
-        metrics.send('500_status_code', 'counter', 1)
+    def make_json_handler(code):
+        def json_handler(error):
+            metrics.send('{}_status_code'.format(code), 'counter', 1)
+            response = jsonify(message=str(error))
+            response.status_code = code
+            return response
+        return json_handler
 
-    @app.errorhandler(400)
-    def response_error(error):
-        metrics.send('400_status_code', 'counter', 1)
-
-    @app.errorhandler(PermissionDenied)
-    def permission_denied_error(error):
-        metrics.send('403_status_code', 'counter', 1)
-        response = {'message': 'You are not allow to access this resource'}
-        response.status_code = 403
-        return response
+    for code, value in default_exceptions.items():
+        app.error_handler_spec[None][code] = make_json_handler(code)

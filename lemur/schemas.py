@@ -24,23 +24,51 @@ from lemur.destinations.models import Destination
 from lemur.notifications.models import Notification
 
 
-def fetch_object(model, field, value):
-    try:
-        return model.query.filter(getattr(model, field) == value).one()
-    except NoResultFound:
-        raise ValidationError('Unable to find {model} with {field}: {data}'.format(model=model, field=field, data=value))
+def get_object_attribute(data, many=False):
+    if many:
+        ids = [d.get('id') for d in data]
+        names = [d.get('name') for d in data]
+
+        if None in ids:
+            if None in names:
+                raise ValidationError('Associated object require a name or id.')
+            else:
+                return 'name'
+        return 'id'
+    else:
+        if data.get('id'):
+            return 'id'
+        elif data.get('name'):
+            return 'name'
+        else:
+            raise ValidationError('Associated object require a name or id.')
 
 
-def fetch_objects(model, field, values):
-    values = [v[field] for v in values]
-    items = model.query.filter(getattr(model, field).in_(values)).all()
-    found = [getattr(i, field) for i in items]
-    diff = set(values).symmetric_difference(set(found))
+def fetch_objects(model, data, many=False):
+    attr = get_object_attribute(data, many=many)
 
-    if diff:
-        raise ValidationError('Unable to locate {model} with {field} {diff}'.format(model=model, field=field, diff=",".join([list(diff)])))
+    if many:
+        values = [v[attr] for v in data]
+        items = model.query.filter(getattr(model, attr).in_(values)).all()
+        found = [getattr(i, attr) for i in items]
+        diff = set(values).symmetric_difference(set(found))
 
-    return items
+        if diff:
+            raise ValidationError('Unable to locate {model} with {attr} {diff}'.format(
+                model=model,
+                attr=attr,
+                diff=",".join(list(diff))))
+
+        return items
+
+    else:
+        try:
+            return model.query.filter(getattr(model, attr) == data[attr]).one()
+        except NoResultFound:
+            raise ValidationError('Unable to find {model} with {attr}: {data}'.format(
+                model=model,
+                attr=attr,
+                data=data[attr]))
 
 
 class AssociatedAuthoritySchema(LemurInputSchema):
@@ -49,68 +77,52 @@ class AssociatedAuthoritySchema(LemurInputSchema):
 
     @post_load
     def get_object(self, data, many=False):
-        if data.get('id'):
-            return fetch_object(Authority, 'id', data['id'])
-
-        elif data.get('name'):
-            return fetch_object(Authority, 'name', data['name'])
+        return fetch_objects(Authority, data, many=many)
 
 
 class AssociatedRoleSchema(LemurInputSchema):
-    id = fields.Int(required=True)
+    id = fields.Int()
     name = fields.String()
 
     @post_load
     def get_object(self, data, many=False):
-        if many:
-            return fetch_objects(Role, 'id', data)
-        else:
-            return fetch_object(Role, 'id', data['id'])
+        return fetch_objects(Role, data, many=many)
 
 
 class AssociatedDestinationSchema(LemurInputSchema):
-    id = fields.Int(required=True)
+    id = fields.Int()
     name = fields.String()
 
     @post_load
     def get_object(self, data, many=False):
-        if many:
-            return fetch_objects(Destination, 'id', data)
-        else:
-            return fetch_object(Destination, 'id', data['id'])
+        return fetch_objects(Destination, data, many=many)
 
 
 class AssociatedNotificationSchema(LemurInputSchema):
-    id = fields.Int(required=True)
+    id = fields.Int()
+    name = fields.String()
 
     @post_load
     def get_object(self, data, many=False):
-        if many:
-            return fetch_objects(Notification, 'id', data)
-        else:
-            return fetch_object(Notification, 'id', data['id'])
+        return fetch_objects(Notification, data, many=many)
 
 
 class AssociatedCertificateSchema(LemurInputSchema):
-    id = fields.Int(required=True)
+    id = fields.Int()
+    name = fields.String()
 
     @post_load
     def get_object(self, data, many=False):
-        if many:
-            return fetch_objects(Certificate, 'id', data)
-        else:
-            return fetch_object(Certificate, 'id', data['id'])
+        return fetch_objects(Certificate, data, many=many)
 
 
 class AssociatedUserSchema(LemurInputSchema):
-    id = fields.Int(required=True)
+    id = fields.Int()
+    name = fields.String()
 
     @post_load
     def get_object(self, data, many=False):
-        if many:
-            return fetch_objects(User, 'id', data)
-        else:
-            return fetch_object(User, 'id', data['id'])
+        return fetch_objects(User, data, many=many)
 
 
 class PluginInputSchema(LemurInputSchema):
@@ -208,7 +220,7 @@ class SubAltNameSchema(BaseExtensionSchema):
 
     @validates_schema
     def check_sensitive(self, data):
-        if data['name_type'] == 'DNSName':
+        if data.get('name_type') == 'DNSName':
             validators.sensitive_domain(data['value'])
 
 

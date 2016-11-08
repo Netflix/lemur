@@ -10,6 +10,7 @@ from lemur.database import db
 from lemur.authorities.models import Authority
 from lemur.certificates.models import Certificate
 from lemur.destinations.models import Destination
+from lemur.sources.models import Source
 from lemur.notifications.models import Notification
 from lemur.users.models import User
 from lemur.roles.models import Role
@@ -143,6 +144,16 @@ class DestinationFactory(BaseFactory):
     class Meta:
         """Factory Configuration."""
         model = Destination
+
+
+class SourceFactory(BaseFactory):
+    """Source factory."""
+    plugin_name = 'test-source'
+    label = Sequence(lambda n: 'source{0}'.format(n))
+
+    class Meta:
+        """Factory Configuration."""
+        model = Source
 
 
 class NotificationFactory(BaseFactory):

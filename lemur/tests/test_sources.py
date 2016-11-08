@@ -2,7 +2,7 @@ import pytest
 
 from lemur.sources.views import *  # noqa
 
-from .vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN
+from .vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN, INTERNAL_PRIVATE_KEY_A_STR, INTERNAL_VALID_WILDCARD_STR
 
 
 def validate_source_schema(client):
@@ -18,13 +18,29 @@ def validate_source_schema(client):
     assert not errors
 
 
+def test_create_certificate(source):
+    from lemur.sources.service import certificate_create
+
+    with pytest.raises(Exception):
+        certificate_create({}, source)
+
+    data = {
+        'body': INTERNAL_VALID_WILDCARD_STR,
+        'private_key': INTERNAL_PRIVATE_KEY_A_STR,
+        'owner': 'bob@example.com'
+    }
+
+    cert = certificate_create(data, source)
+    assert cert.notifications
+
+
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 404),
     (VALID_ADMIN_HEADER_TOKEN, 404),
     ('', 401)
 ])
-def test_source_get(client, token, status):
-    assert client.get(api.url_for(Sources, source_id=1), headers=token).status_code == status
+def test_source_get(client, source_plugin, token, status):
+    assert client.get(api.url_for(Sources, source_id=43543), headers=token).status_code == status
 
 
 @pytest.mark.parametrize("token,status", [
@@ -68,7 +84,7 @@ def test_source_patch(client, token, status):
     (VALID_ADMIN_HEADER_TOKEN, 200),
     ('', 401)
 ])
-def test_sources_list_get(client, token, status):
+def test_sources_list_get(client, source_plugin, token, status):
     assert client.get(api.url_for(SourcesList), headers=token).status_code == status
 
 

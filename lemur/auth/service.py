@@ -29,7 +29,7 @@ from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
 
 from lemur.users import service as user_service
 from lemur.auth.permissions import CertificateCreatorNeed, \
-    AuthorityCreatorNeed, ViewRoleCredentialsNeed
+    AuthorityCreatorNeed, RoleMemberNeed
 
 
 def get_rsa_public_key(n, e):
@@ -44,8 +44,8 @@ def get_rsa_public_key(n, e):
         n = int(binascii.hexlify(jwt.utils.base64url_decode(bytes(n, 'utf-8'))), 16)
         e = int(binascii.hexlify(jwt.utils.base64url_decode(bytes(e, 'utf-8'))), 16)
     else:
-        n = int(binascii.hexlify(jwt.utils.base64url_decode(n)), 16)
-        e = int(binascii.hexlify(jwt.utils.base64url_decode(e, 'utf-8')), 16)
+        n = int(binascii.hexlify(jwt.utils.base64url_decode(str(n))), 16)
+        e = int(binascii.hexlify(jwt.utils.base64url_decode(str(e))), 16)
 
     pub = RSAPublicNumbers(e, n).public_key(default_backend())
     return pub.public_bytes(
@@ -155,8 +155,8 @@ def on_identity_loaded(sender, identity):
     # identity with the roles that the user provides
     if hasattr(user, 'roles'):
         for role in user.roles:
-            identity.provides.add(ViewRoleCredentialsNeed(role.name))
             identity.provides.add(RoleNeed(role.name))
+            identity.provides.add(RoleMemberNeed(role.id))
 
     # apply ownership for authorities
     if hasattr(user, 'authorities'):

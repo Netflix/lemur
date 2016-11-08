@@ -63,7 +63,8 @@ install_requires = [
     'boto3==1.3.0',
     'acme==0.1.0',
     'retrying==1.3.3',
-    'tabulate==0.7.5'
+    'tabulate==0.7.5',
+    'pem==16.1.0'
 ]
 
 tests_require = [
@@ -72,7 +73,8 @@ tests_require = [
     'nose==1.3.7',
     'pytest==2.8.5',
     'factory-boy==2.7.0',
-    'pytest-flask==0.10.0'
+    'pytest-flask==0.10.0',
+    'freezegun==0.3.7'
 ]
 
 docs_require = [
@@ -83,6 +85,7 @@ docs_require = [
 
 dev_requires = [
     'flake8>=2.0,<3.0',
+    'pre-commit',
     'invoke',
     'twine'
 ]
@@ -183,6 +186,8 @@ setup(
             'atlas_metric = lemur.plugins.lemur_atlas.plugin:AtlasMetricPlugin',
             'kubernetes_destination = lemur.plugins.lemur_kubernetes.plugin:KubernetesDestinationPlugin',
             'cryptography_issuer = lemur.plugins.lemur_cryptography.plugin:CryptographyIssuerPlugin',
+            'cfssl_issuer = lemur.plugins.lemur_cfssl.plugin:CfsslIssuerPlugin',
+            'digicert_issuer = lemur.plugins.lemur_digicert.plugin:DigiCertIssuerPlugin',
         ],
     },
     classifiers=[

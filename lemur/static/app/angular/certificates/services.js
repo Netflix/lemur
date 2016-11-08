@@ -28,7 +28,7 @@ angular.module('lemur')
           }
 
           if (!angular.isString(this.subAltType)) {
-            this.subAltType = 'CNAME';
+            this.subAltType = 'DNSName';
           }
 
           if (angular.isString(this.subAltValue) && angular.isString(this.subAltType)) {
@@ -189,7 +189,7 @@ angular.module('lemur')
       return certificate.customGET('key');
     };
 
-    CertificateService.updateActive = function (certificate) {
+    CertificateService.updateNotify = function (certificate) {
       return certificate.put();
     };
 

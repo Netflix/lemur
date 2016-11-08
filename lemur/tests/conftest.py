@@ -10,7 +10,7 @@ from lemur.database import db as _db
 from lemur.auth.service import create_token
 
 from .factories import AuthorityFactory, NotificationFactory, DestinationFactory, \
-    CertificateFactory, UserFactory, RoleFactory
+    CertificateFactory, UserFactory, RoleFactory, SourceFactory
 
 
 def pytest_runtest_setup(item):
@@ -92,6 +92,13 @@ def destination(session):
 
 
 @pytest.fixture
+def source(session):
+    s = SourceFactory()
+    session.commit()
+    return s
+
+
+@pytest.fixture
 def notification(session):
     n = NotificationFactory()
     session.commit()
@@ -100,7 +107,9 @@ def notification(session):
 
 @pytest.fixture
 def certificate(session):
-    c = CertificateFactory()
+    u = UserFactory()
+    a = AuthorityFactory()
+    c = CertificateFactory(user=u, authority=a)
     session.commit()
     return c
 
@@ -154,6 +163,14 @@ def destination_plugin():
     from .plugins.destination_plugin import TestDestinationPlugin
     register(TestDestinationPlugin)
     return TestDestinationPlugin
+
+
+@pytest.fixture
+def source_plugin():
+    from lemur.plugins.base import register
+    from .plugins.source_plugin import TestSourcePlugin
+    register(TestSourcePlugin)
+    return TestSourcePlugin
 
 
 @pytest.yield_fixture(scope="function")

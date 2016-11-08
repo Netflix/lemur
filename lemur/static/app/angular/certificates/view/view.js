@@ -77,8 +77,8 @@ angular.module('lemur')
         });
     };
 
-    $scope.updateActive = function (certificate) {
-      CertificateService.updateActive(certificate).then(
+    $scope.updateNotify = function (certificate) {
+      CertificateService.updateNotify(certificate).then(
         function () {
           toaster.pop({
             type: 'success',

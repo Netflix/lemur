@@ -51,7 +51,7 @@ Basic Configuration
         CORS = False
 
 
-.. data:: SQLACHEMY_DATABASE_URI
+.. data:: SQLALCHEMY_DATABASE_URI
     :noindex:
 
         If you have ever used sqlalchemy before this is the standard connection string used. Lemur uses a postgres database and the connection string would look something like:
@@ -60,6 +60,11 @@ Basic Configuration
 
         SQLALCHEMY_DATABASE_URI = 'postgresql://<user>:<password>@<hostname>:5432/lemur'
 
+
+.. data:: LEMUR_ALLOW_WEEKEND_EXPIRATION
+    :noindex:
+
+        Specifies whether to allow certificates created by Lemur to expire on weekends. Default is True.
 
 .. data:: LEMUR_RESTRICTED_DOMAINS
     :noindex:
@@ -143,7 +148,7 @@ and are used when Lemur creates the CSR for your certificates.
         LEMUR_DEFAULT_ORGANIZATION = "Netflix"
 
 
-.. data:: LEMUR_DEFAULT_ORGANIZATION_UNIT
+.. data:: LEMUR_DEFAULT_ORGANIZATIONAL_UNIT
     :noindex:
 
     ::
@@ -355,6 +360,26 @@ for those plugins.
 
         This is the root to be used for your CA chain
 
+
+CFSSL Issuer Plugin
+^^^^^^^^^^^^^^^^^^^
+
+The following configuration properties are required to use the the CFSSL issuer plugin.
+
+.. data:: CFSSL_URL
+    :noindex:
+
+        This is the URL for the CFSSL API
+
+.. data:: CFSSL_ROOT
+    :noindex:
+
+        This is the root to be used for your CA chain
+
+.. data:: CFSSL_INTERMEDIATE
+    :noindex:
+
+        This is the intermediate to be used for your CA chain
 
 
 AWS Source/Destination Plugin
@@ -831,6 +856,17 @@ Openssl
     Leverages Openssl to support additional export formats (pkcs12)
 
 
+CFSSL
+-----
+
+:Authors:
+    Charles Hendrie <chad.hendrie@thomsonreuters.com>
+:Type:
+    Issuer
+:Description:
+    Basic support for generating certificates from the private certificate authority CFSSL
+
+
 3rd Party Plugins
 =================
 
@@ -881,4 +917,3 @@ These permissions are applied to the user upon login and refreshed on every requ
 .. seealso::
 
     `Flask-Principal <https://pythonhosted.org/Flask-Principal>`_
-

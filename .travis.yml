@@ -29,6 +29,7 @@ before_script:
   - psql -c "create user lemur with password 'lemur;'" -U postgres
   - npm config set registry https://registry.npmjs.org
   - npm install -g bower
+  - pip install --upgrade setuptools
 
 script:
   - make test

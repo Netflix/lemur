@@ -1,16 +1,14 @@
-
-import arrow
 import re
-from flask import current_app
-from marshmallow.exceptions import ValidationError
 
+from flask import current_app
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
+from marshmallow.exceptions import ValidationError
 
-from lemur.common.utils import parse_certificate
-from lemur.domains import service as domain_service
 from lemur.auth.permissions import SensitiveDomainPermission
+from lemur.common.utils import parse_certificate, is_weekend
+from lemur.domains import service as domain_service
 
 
 def public_certificate(body):
@@ -48,15 +46,16 @@ def sensitive_domain(domain):
     :param domain:
     :return:
     """
-    restricted_domains = current_app.config['LEMUR_RESTRICTED_DOMAINS']
-    domains = domain_service.get_by_name(domain)
-    for domain in domains:
-        # we only care about non-admins
-        if not SensitiveDomainPermission().can():
-            if domain.sensitive or any([re.match(pattern, domain.name) for pattern in restricted_domains]):
-                raise ValidationError(
-                    'Domain {0} has been marked as sensitive, contact and administrator \
-                    to issue the certificate.'.format(domain))
+    restricted_domains = current_app.config.get('LEMUR_RESTRICTED_DOMAINS', [])
+    if restricted_domains:
+        domains = domain_service.get_by_name(domain)
+        for domain in domains:
+            # we only care about non-admins
+            if not SensitiveDomainPermission().can():
+                if domain.sensitive or any([re.match(pattern, domain.name) for pattern in restricted_domains]):
+                    raise ValidationError(
+                        'Domain {0} has been marked as sensitive, contact and administrator \
+                        to issue the certificate.'.format(domain))
 
 
 def encoding(oid_encoding):
@@ -102,6 +101,10 @@ def dates(data):
         raise ValidationError('If validity end is specified so must validity start.')
 
     if data.get('validity_start') and data.get('validity_end'):
+        if not current_app.config.get('LEMUR_ALLOW_WEEKEND_EXPIRATION', True):
+            if is_weekend(data.get('validity_end')):
+                raise ValidationError('Validity end must not land on a weekend.')
+
         if not data['validity_start'] < data['validity_end']:
             raise ValidationError('Validity start must be before validity end.')
 
@@ -112,13 +115,4 @@ def dates(data):
             if data.get('validity_end').replace(hour=0, minute=0, second=0, tzinfo=None) > data['authority'].authority_certificate.not_after.replace(hour=0, minute=0, second=0):
                 raise ValidationError('Validity end must not be after {0}'.format(data['authority'].authority_certificate.not_after))
 
-    if data.get('validity_years'):
-        now = arrow.utcnow()
-        end = now.replace(years=+data['validity_years'])
-
-        if data.get('authority'):
-            if now.naive < data['authority'].authority_certificate.not_before:
-                raise ValidationError('Validity start must not be before {0}'.format(data['authority'].authority_certificate.not_before))
-
-            if end.naive > data['authority'].authority_certificate.not_after:
-                raise ValidationError('Validity end must not be after {0}'.format(data['authority'].authority_certificate.not_after))
+    return data

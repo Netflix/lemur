@@ -72,15 +72,29 @@ class CertificateInputSchema(CertificateCreationSchema):
 
     @pre_load
     def ensure_dates(self, data):
-        return missing.dates(data)
+        return missing.convert_validity_years(data)
 
 
 class CertificateEditInputSchema(CertificateSchema):
-    active = fields.Boolean()
+    notify = fields.Boolean()
+    owner = fields.String()
     destinations = fields.Nested(AssociatedDestinationSchema, missing=[], many=True)
     notifications = fields.Nested(AssociatedNotificationSchema, missing=[], many=True)
     replacements = fields.Nested(AssociatedCertificateSchema, missing=[], many=True)
     roles = fields.Nested(AssociatedRoleSchema, missing=[], many=True)
+
+    @post_load
+    def enforce_notifications(self, data):
+        """
+        Ensures that when an owner changes, default notifications are added for the new owner.
+        Old owner notifications are retained unless explicitly removed.
+        :param data:
+        :return:
+        """
+        if data['owner']:
+            notification_name = "DEFAULT_{0}".format(data['owner'].split('@')[0].upper())
+            data['notifications'] += notification_service.create_default_expiration_notifications(notification_name, [data['owner']])
+        return data
 
 
 class CertificateNestedOutputSchema(LemurOutputSchema):
@@ -101,9 +115,16 @@ class CertificateNestedOutputSchema(LemurOutputSchema):
     issuer = fields.Nested(AuthorityNestedOutputSchema)
 
 
+class CertificateCloneSchema(LemurOutputSchema):
+    __envelope__ = False
+    description = fields.String()
+    common_name = fields.String()
+
+
 class CertificateOutputSchema(LemurOutputSchema):
     id = fields.Integer()
     active = fields.Boolean()
+    notify = fields.Boolean()
     bits = fields.Integer()
     body = fields.String()
     chain = fields.String()
@@ -131,7 +152,7 @@ class CertificateOutputSchema(LemurOutputSchema):
 
 class CertificateUploadInputSchema(CertificateCreationSchema):
     name = fields.String()
-    active = fields.Boolean(missing=True)
+    notify = fields.Boolean(missing=True)
 
     private_key = fields.String(validate=validators.private_key)
     body = fields.String(required=True, validate=validators.public_certificate)

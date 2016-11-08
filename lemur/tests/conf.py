@@ -46,6 +46,8 @@ LEMUR_DEFAULT_LOCATION = 'Los Gatos'
 LEMUR_DEFAULT_ORGANIZATION = 'Example, Inc.'
 LEMUR_DEFAULT_ORGANIZATIONAL_UNIT = 'Example'
 
+LEMUR_ALLOW_WEEKEND_EXPIRATION = False
+
 # Database
 
 # modify this if you are not using a local database
@@ -66,6 +68,12 @@ LEMUR_INSTANCE_PROFILE = 'Lemur'
 
 # number of years to issue if not specified
 # CLOUDCA_DEFAULT_VALIDITY = 2
+
+
+DIGICERT_URL = 'https://www.digicert.com'
+DIGICERT_API_KEY = 'api-key'
+DIGICERT_ORG_ID = 000000
+
 
 VERISIGN_URL = 'http://example.com'
 VERISIGN_PEM_PATH = '~/'
