@@ -3,6 +3,7 @@ from __future__ import unicode_literals    # at top of module
 import json
 import pytest
 import datetime
+import arrow
 
 from freezegun import freeze_time
 
@@ -133,6 +134,8 @@ def test_certificate_input_schema(client, authority):
         'owner': 'jim@example.com',
         'authority': {'id': authority.id},
         'description': 'testtestest',
+        'validityEnd': arrow.get(2016, 11, 9).isoformat(),
+        'validityStart': arrow.get(2015, 11, 9).isoformat()
     }
 
     data, errors = CertificateInputSchema().load(input_data)
@@ -145,7 +148,7 @@ def test_certificate_input_schema(client, authority):
     assert data['country'] == 'US'
     assert data['location'] == 'Los Gatos'
 
-    assert len(data.keys()) == 13
+    assert len(data.keys()) == 15
 
 
 def test_certificate_input_with_extensions(client, authority):

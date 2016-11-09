@@ -80,8 +80,8 @@ def process_options(options):
     }
 
     if options.get('validity_end'):
-        end_date, period = get_default_issuance(options)
-        data['specificEndDate'] = str(end_date)
+        period = get_default_issuance(options)
+        data['specificEndDate'] = options['validity_end'].format("MM/DD/YYYY")
         data['validityPeriod'] = period
 
     elif options.get('validity_years'):
@@ -100,19 +100,16 @@ def get_default_issuance(options):
     :param options:
     :return:
     """
-    specific_end_date = arrow.get(options['validity_end']).replace(days=-1).format("MM/DD/YYYY")
-
     now = arrow.utcnow()
-    then = arrow.get(options['validity_end'])
 
-    if then < now.replace(years=+1):
+    if options['validity_end'] < now.replace(years=+1):
         validity_period = '1Y'
-    elif then < now.replace(years=+2):
+    elif options['validity_end'] < now.replace(years=+2):
         validity_period = '2Y'
     else:
         raise Exception("Verisign issued certificates cannot exceed two years in validity")
 
-    return specific_end_date, validity_period
+    return validity_period
 
 
 def handle_response(content):

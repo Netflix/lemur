@@ -23,6 +23,8 @@ from lemur.common.schema import LemurInputSchema, LemurOutputSchema
 from lemur.common import validators, missing
 from lemur.notifications import service as notification_service
 
+from lemur.common.fields import ArrowDateTime
+
 
 class CertificateSchema(LemurInputSchema):
     owner = fields.Email(required=True)
@@ -46,8 +48,8 @@ class CertificateInputSchema(CertificateCreationSchema):
     common_name = fields.String(required=True, validate=validators.sensitive_domain)
     authority = fields.Nested(AssociatedAuthoritySchema, required=True)
 
-    validity_start = fields.DateTime()
-    validity_end = fields.DateTime()
+    validity_start = ArrowDateTime()
+    validity_end = ArrowDateTime()
     validity_years = fields.Integer()
 
     destinations = fields.Nested(AssociatedDestinationSchema, missing=[], many=True)
