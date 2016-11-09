@@ -56,13 +56,12 @@ def determine_validity_years(end_date):
     :return: str validity in years
     """
     now = arrow.utcnow()
-    then = arrow.get(end_date)
 
-    if then < now.replace(years=+1):
+    if end_date < now.replace(years=+1):
         return 1
-    elif then < now.replace(years=+2):
+    elif end_date < now.replace(years=+2):
         return 2
-    elif then < now.replace(years=+3):
+    elif end_date < now.replace(years=+3):
         return 3
 
     raise Exception("DigiCert issued certificates cannot exceed three"
@@ -75,9 +74,8 @@ def get_issuance(options):
     :param options:
     :return:
     """
-    end_date = arrow.get(options['validity_end'])
-    validity_years = determine_validity_years(end_date)
-    return end_date, validity_years
+    validity_years = determine_validity_years(options['validity_end'])
+    return validity_years
 
 
 def process_options(options, csr):
@@ -109,8 +107,8 @@ def process_options(options, csr):
 
         data['certificate']['dns_names'] = dns_names
 
-    end_date, validity_years = get_issuance(options)
-    data['custom_expiration_date'] = end_date.format('YYYY-MM-DD')
+    validity_years = get_issuance(options)
+    data['custom_expiration_date'] = options['validity_end'].format('YYYY-MM-DD')
     data['validity_years'] = validity_years
 
     return data

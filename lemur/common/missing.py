@@ -13,14 +13,12 @@ def convert_validity_years(data):
     """
     if data.get('validity_years'):
         now = arrow.utcnow()
-        data['validity_start'] = now.date().isoformat()
+        data['validity_start'] = now.isoformat()
 
         end = now.replace(years=+int(data['validity_years']))
-        data['validity_end'] = end.date().isoformat()
-
         if not current_app.config.get('LEMUR_ALLOW_WEEKEND_EXPIRATION', True):
             if is_weekend(end):
                 end = end.replace(days=-2)
-                data['validity_end'] = end.date().isoformat()
 
+        data['validity_end'] = end.isoformat()
     return data
