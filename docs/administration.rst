@@ -187,7 +187,7 @@ Lemur supports sending certification expiration notifications through SES and SM
     Specifies which service will be delivering notification emails. Valid values are `SMTP` or `SES`
 
     .. note::
-        If using SMP as your provider you will need to define additional configuration options as specified by Flask-Mail.
+        If using SMTP as your provider you will need to define additional configuration options as specified by Flask-Mail.
         See: `Flask-Mail <https://pythonhosted.org/Flask-Mail>`_
 
         If you are using SES the email specified by the `LEMUR_MAIL` configuration will need to be verified by AWS before
