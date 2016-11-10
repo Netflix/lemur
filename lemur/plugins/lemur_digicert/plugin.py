@@ -74,7 +74,7 @@ def get_issuance(options):
     :param options:
     :return:
     """
-    if not options['validity_end']:
+    if not options.get('validity_end'):
         options['validity_end'] = arrow.utcnow().replace(years=current_app.config.get('DIGICERT_DEFAULT_VALIDITY', 1))
 
     validity_years = determine_validity_years(options['validity_end'])
@@ -149,12 +149,12 @@ def verify_configuration():
         raise Exception("No Digicert intermediate found. Ensure that 'DIGICERT_INTERMEDIATE is set in Lemur conf.")
 
 
-@retry(stop_max_attempt_number=10, wait_fixed=100000)
+@retry(stop_max_attempt_number=10, wait_fixed=10000)
 def get_certificate_id(session, base_url, order_id):
     """Retrieve certificate order id from Digicert API."""
     order_url = "{0}/services/v2/order/certificate/{1}".format(base_url, order_id)
     response_data = handle_response(session.get(order_url))
-    if response_data['status'] == 'issued':
+    if response_data['status'] != 'issued':
         raise Exception("Order not in issued state.")
 
     return response_data['certificate']['id']
