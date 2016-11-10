@@ -13,12 +13,12 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import time
 import json
 import arrow
 import requests
 
 import pem
+from retrying import retry
 
 from flask import current_app
 
@@ -74,6 +74,9 @@ def get_issuance(options):
     :param options:
     :return:
     """
+    if not options['validity_end']:
+        options['validity_end'] = arrow.utcnow().replace(years=current_app.config.get('DIGICERT_DEFAULT_VALIDITY', 1))
+
     validity_years = determine_validity_years(options['validity_end'])
     return validity_years
 
@@ -129,6 +132,7 @@ def handle_response(response):
 
 
 def verify_configuration():
+    """Verify that needed configuration variables are set before plugin startup."""
     if not current_app.config.get('DIGICERT_API_KEY'):
         raise Exception("No Digicert API key found. Ensure that 'DIGICERT_API_KEY' is set in the Lemur conf.")
 
@@ -143,6 +147,17 @@ def verify_configuration():
 
     if not current_app.config.get('DIGICERT_INTERMEDIATE'):
         raise Exception("No Digicert intermediate found. Ensure that 'DIGICERT_INTERMEDIATE is set in Lemur conf.")
+
+
+@retry(stop_max_attempt_number=10, wait_fixed=100000)
+def get_certificate_id(session, base_url, order_id):
+    """Retrieve certificate order id from Digicert API."""
+    order_url = "{0}/services/v2/order/certificate/{1}".format(base_url, order_id)
+    response_data = handle_response(session.get(order_url))
+    if response_data['status'] == 'issued':
+        raise Exception("Order not in issued state.")
+
+    return response_data['certificate']['id']
 
 
 class DigiCertSourcePlugin(SourcePlugin):
@@ -214,20 +229,12 @@ class DigiCertIssuerPlugin(IssuerPlugin):
         response = self.session.post(determinator_url, data=json.dumps(data))
         order_id = response.json()['id']
 
-        while True:
-            # get order info
-            order_url = "{0}/services/v2/order/certificate/{1}".format(base_url, order_id)
-            response_data = handle_response(self.session.get(order_url))
-            if response_data['status'] == 'issued':
-                break
-            time.sleep(10)
-
-        certificate_id = response_data['certificate']['id']
+        certificate_id = get_certificate_id(self.session, base_url, order_id)
 
         # retrieve certificate
         certificate_url = "{0}/services/v2/certificate/{1}/download/format/pem_all".format(base_url, certificate_id)
-        root, intermediate, end_enitity = pem.parse(self.session.get(certificate_url).content)
-        return str(end_enitity), str(intermediate)
+        end_entity, intermediate, root = pem.parse(self.session.get(certificate_url).content)
+        return str(end_entity), str(intermediate)
 
     @staticmethod
     def create_authority(options):

@@ -397,6 +397,12 @@ The following configuration properties are required to use the Digicert issuer p
             This is the root to be used for your CA chain
 
 
+.. data:: DIGICERT_DEFAULT_VALIDITY
+    :noindex:
+
+            This is the default validity (in years), if no end date is specified. (Default: 1)
+
+
 
 CFSSL Issuer Plugin
 ^^^^^^^^^^^^^^^^^^^
