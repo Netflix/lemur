@@ -164,7 +164,7 @@ class CertificatesList(AuthenticatedResource):
                       ]
                     }
                   },
-                  "replaces": [{
+                  "replacements": [{
                     "id": 1
                   },
                   "validityEnd": "2026-01-01T08:00:00.000Z",
