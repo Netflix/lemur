@@ -21,6 +21,7 @@ from flask.ext.migrate import Migrate, MigrateCommand, stamp
 from flask_script.commands import ShowUrls, Clean, Server
 
 from lemur import database
+from lemur.extensions import metrics
 from lemur.users import service as user_service
 from lemur.roles import service as role_service
 from lemur.certificates import service as cert_service
@@ -888,13 +889,23 @@ class Sources(Command):
     def sync(source):
         start_time = time.time()
         sys.stdout.write("[+] Staring to sync source: {label}!\n".format(label=source.label))
-        source_service.sync(source)
-        sys.stdout.write(
-            "[+] Finished syncing source: {label}. Run Time: {time}\n".format(
-                label=source.label,
-                time=(time.time() - start_time)
+
+        try:
+            source_service.sync(source)
+            sys.stdout.write(
+                "[+] Finished syncing source: {label}. Run Time: {time}\n".format(
+                    label=source.label,
+                    time=(time.time() - start_time)
+                )
             )
-        )
+        except Exception as e:
+            current_app.logger.exception(e)
+
+            sys.stdout.write(
+                "[X] Failed syncing source {label}!\n".format(labe=source.label)
+            )
+
+            metrics.send('{0}_sync_failed'.format(source.label), 'counter', 1)
 
     @staticmethod
     def clean(source):
