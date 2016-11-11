@@ -27,11 +27,7 @@ from lemur.certificates import service as cert_service
 from lemur.authorities import service as authority_service
 from lemur.notifications import service as notification_service
 
-from lemur.certificates.service import get_name_from_arn
 from lemur.certificates.verify import verify_string
-
-from lemur.plugins.lemur_aws import elb
-
 from lemur.sources import service as source_service
 
 from lemur import create_app
@@ -488,253 +484,54 @@ def unicode_(data):
     return data
 
 
-class RotateELBs(Command):
+class RotateCertificate(Command):
     """
-    Rotates existing certificates to a new one on an ELB
-    """
-    option_list = (
-        Option('-e', '--elb-list', dest='elb_list', required=True),
-        Option('-p', '--chain-path', dest='chain_path'),
-        Option('-c', '--cert-name', dest='cert_name'),
-        Option('-a', '--cert-prefix', dest='cert_prefix'),
-        Option('-d', '--description', dest='description')
-    )
-
-    def run(self, elb_list, chain_path, cert_name, cert_prefix, description):
-
-        for e in open(elb_list, 'r').readlines():
-            elb_name, account_id, region, from_port, to_port, protocol = e.strip().split(',')
-
-            if cert_name:
-                arn = "arn:aws:iam::{0}:server-certificate/{1}".format(account_id, cert_name)
-
-            else:
-                # if no cert name is provided we need to discover it
-                listeners = elb.get_listeners(account_id, region, elb_name)
-
-                # get the listener we care about
-                for listener in listeners:
-                    if listener[0] == int(from_port) and listener[1] == int(to_port):
-                        arn = listener[4]
-                        name = get_name_from_arn(arn)
-                        certificate = cert_service.get_by_name(name)
-                        break
-                else:
-                    sys.stdout.write("[-] Could not find ELB {0}".format(elb_name))
-                    continue
-
-                if not certificate:
-                    sys.stdout.write("[-] Could not find certificate {0} in Lemur".format(name))
-                    continue
-
-                dests = []
-                for d in certificate.destinations:
-                    dests.append({'id': d.id})
-
-                nots = []
-                for n in certificate.notifications:
-                    nots.append({'id': n.id})
-
-                new_certificate = database.clone(certificate)
-
-                if cert_prefix:
-                    new_certificate.name = "{0}-{1}".format(cert_prefix, new_certificate.name)
-
-                new_certificate.chain = open(chain_path, 'r').read()
-                new_certificate.description = "{0} - {1}".format(new_certificate.description, description)
-
-                new_certificate = database.create(new_certificate)
-                database.update_list(new_certificate, 'destinations', Destination, dests)
-                database.update_list(new_certificate, 'notifications', Notification, nots)
-                database.update(new_certificate)
-
-                arn = new_certificate.get_arn(account_id)
-
-            elb.update_listeners(account_id, region, elb_name, [(from_port, to_port, protocol, arn)], [from_port])
-
-            sys.stdout.write("[+] Updated {0} to use {1}\n".format(elb_name, new_certificate.name))
-
-
-class ProvisionELB(Command):
-    """
-    Creates and provisions a certificate on an ELB based on command line arguments
+    Rotates certificate on all endpoints managed by Lemur.
     """
     option_list = (
-        Option('-d', '--dns', dest='dns', action='append', required=True, type=unicode_),
-        Option('-e', '--elb', dest='elb_name', required=True, type=unicode_),
-        Option('-o', '--owner', dest='owner', type=unicode_),
-        Option('-a', '--authority', dest='authority', required=True, type=unicode_),
-        Option('-s', '--description', dest='description', default=u'Command line provisioned keypair', type=unicode_),
-        Option('-t', '--destination', dest='destinations', action='append', type=unicode_, required=True),
-        Option('-n', '--notification', dest='notifications', action='append', type=unicode_, default=[]),
-        Option('-r', '--region', dest='region', default=u'us-east-1', type=unicode_),
-        Option('-p', '--dport', '--port', dest='dport', default=7002),
-        Option('--src-port', '--source-port', '--sport', dest='sport', default=443),
-        Option('--dry-run', dest='dryrun', action='store_true')
+        Option('-n', '--cert-name', dest='new_cert_name'),
+        Option('-o', '--old-cert-name', dest='old_cert_name', required=True),
+        Option('-c', '--commit', dest='commit', action='store_true', default=False)
     )
 
-    def configure_user(self, owner):
-        from flask import g
-        import lemur.users.service
+    def run(self, new_cert_name, old_cert_name, commit):
+        from lemur.certificates.service import get_by_name, reissue_certificate
+        from lemur.endpoints.service import rotate_certificate
 
-        # grab the user
-        g.user = lemur.users.service.get_by_username(owner)
-        # get the first user by default
-        if not g.user:
-            g.user = lemur.users.service.get_all()[0]
+        old_cert = get_by_name(old_cert_name)
 
-        return g.user.username
+        if commit:
+            sys.stdout.write("WARNING: Running in COMMIT mode.\n")
 
-    def build_cert_options(self, destinations, notifications, description, owner, dns, authority):
-        from sqlalchemy.orm.exc import NoResultFound
-        from lemur.certificates.views import valid_authority
-        import sys
-
-        # convert argument lists to arrays, or empty sets
-        destinations = self.get_destinations(destinations)
-        if not destinations:
-            sys.stderr.write("Valid destinations provided\n")
+        if not old_cert:
+            sys.stdout.write("No certificate found with name: {0}\n".format(old_cert_name))
             sys.exit(1)
 
-        # get the primary CN
-        common_name = dns[0]
+        if not new_cert_name:
+            sys.stdout.write("No new certificate provided. Attempting to re-issue old certificate: {0}.\n".format(old_cert_name))
 
-        # If there are more than one fqdn, add them as alternate names
-        extensions = {}
-        if len(dns) > 1:
-            extensions['subAltNames'] = {'names': map(lambda x: {'nameType': 'DNSName', 'value': x}, dns)}
+            details = {}
+            sys.stdout.write("Re-issuing certificate with the following details: {0} \n".format(json.dumps(details)))
 
-        try:
-            authority = valid_authority({"name": authority})
-        except NoResultFound:
-            sys.stderr.write("Invalid authority specified: '{}'\naborting\n".format(authority))
-            sys.exit(1)
+            if commit:
+                reissue_certificate(old_cert)
 
-        options = {
-            # Convert from the Destination model to the JSON input expected further in the code
-            'destinations': map(lambda x: {'id': x.id, 'label': x.label}, destinations),
-            'description': description,
-            'notifications': notifications,
-            'commonName': common_name,
-            'extensions': extensions,
-            'authority': authority,
-            'owner': owner,
-            # defaults:
-            'organization': current_app.config.get('LEMUR_DEFAULT_ORGANIZATION'),
-            'organizationalUnit': current_app.config.get('LEMUR_DEFAULT_ORGANIZATIONAL_UNIT'),
-            'country': current_app.config.get('LEMUR_DEFAULT_COUNTRY'),
-            'state': current_app.config.get('LEMUR_DEFAULT_STATE'),
-            'location': current_app.config.get('LEMUR_DEFAULT_LOCATION')
-        }
+            sys.stdout.write("Done! \n")
+        else:
+            new_cert = get_by_name(new_cert_name)
 
-        return options
-
-    def get_destinations(self, destination_names):
-        from lemur.destinations import service
-
-        destinations = []
-
-        for destination_name in destination_names:
-            destination = service.get_by_label(destination_name)
-
-            if not destination:
-                sys.stderr.write("Invalid destination specified: '{}'\nAborting...\n".format(destination_name))
+            if not new_cert:
+                sys.stdout.write("No certificate found with name: {0}\n".format(old_cert_name))
                 sys.exit(1)
 
-            destinations.append(service.get_by_label(destination_name))
+        for endpoint in old_cert.endpoints:
+            sys.stdout.write("Certificate found deployed onto {0}\n ".format(endpoint.name))
+            sys.stdout.write("Rotating certificate from: {0} to: {1}\n ".format(old_cert_name, new_cert_name))
 
-        return destinations
+            if commit:
+                rotate_certificate(endpoint, new_cert_name)
 
-    def check_duplicate_listener(self, elb_name, region, account, sport, dport):
-        from lemur.plugins.lemur_aws import elb
-
-        listeners = elb.get_listeners(account, region, elb_name)
-        for listener in listeners:
-            if listener[0] == sport and listener[1] == dport:
-                return True
-        return False
-
-    def get_destination_account(self, destinations):
-        for destination in self.get_destinations(destinations):
-            if destination.plugin_name == 'aws-destination':
-
-                account_number = destination.plugin.get_option('accountNumber', destination.options)
-                return account_number
-
-        sys.stderr.write("No destination AWS account provided, failing\n")
-        sys.exit(1)
-
-    def run(self, dns, elb_name, owner, authority, description, notifications, destinations, region, dport, sport,
-            dryrun):
-        from lemur.certificates import service
-        from lemur.plugins.lemur_aws import elb
-        from boto.exception import BotoServerError
-
-        # configure the owner if we can find it, or go for default, and put it in the global
-        owner = self.configure_user(owner)
-
-        # make a config blob from the command line arguments
-        cert_options = self.build_cert_options(
-            destinations=destinations,
-            notifications=notifications,
-            description=description,
-            owner=owner,
-            dns=dns,
-            authority=authority)
-
-        aws_account = self.get_destination_account(destinations)
-
-        if dryrun:
-            import json
-
-            cert_options['authority'] = cert_options['authority'].name
-            sys.stdout.write('Will create certificate using options: {}\n'
-                             .format(json.dumps(cert_options, sort_keys=True, indent=2)))
-            sys.stdout.write('Will create listener {}->{} HTTPS using the new certificate to elb {}\n'
-                             .format(sport, dport, elb_name))
-            sys.exit(0)
-
-        if self.check_duplicate_listener(elb_name, region, aws_account, sport, dport):
-            sys.stderr.write("ELB {} already has a listener {}->{}\nAborting...\n".format(elb_name, sport, dport))
-            sys.exit(1)
-
-        # create the certificate
-        try:
-            sys.stdout.write('Creating certificate for {}\n'.format(cert_options['commonName']))
-            cert = service.create(**cert_options)
-        except Exception as e:
-            if e.message == 'Duplicate certificate: a certificate with the same common name exists already':
-                sys.stderr.write("Certificate already exists named: {}\n".format(dns[0]))
-                sys.exit(1)
-            raise e
-
-        cert_arn = cert.get_arn(aws_account)
-        sys.stderr.write('cert arn: {}\n'.format(cert_arn))
-
-        sys.stderr.write('Configuring elb {} from port {} to port {} in region {} with cert {}\n'
-                         .format(elb_name, sport, dport, region, cert_arn))
-
-        delay = 1
-        done = False
-        retries = 5
-        while not done and retries > 0:
-            try:
-                elb.create_new_listeners(aws_account, region, elb_name, [(sport, dport, 'HTTPS', cert_arn)])
-            except BotoServerError as bse:
-                # if the server returns ad error, the certificate
-                if bse.error_code == 'CertificateNotFound':
-                    sys.stderr.write('Certificate not available yet in the AWS account, waiting {}, {} retries left\n'
-                                     .format(delay, retries))
-                    time.sleep(delay)
-                    delay *= 2
-                    retries -= 1
-                elif bse.error_code == 'DuplicateListener':
-                    sys.stderr.write('ELB {} already has a listener {}->{}'.format(elb_name, sport, dport))
-                    sys.exit(1)
-                else:
-                    raise bse
-            else:
-                done = True
+            sys.stdout.write("Done! \n")
 
 
 @manager.command
@@ -919,8 +716,6 @@ def main():
     manager.add_command("create_user", CreateUser())
     manager.add_command("reset_password", ResetPassword())
     manager.add_command("create_role", CreateRole())
-    manager.add_command("provision_elb", ProvisionELB())
-    manager.add_command("rotate_elbs", RotateELBs())
     manager.add_command("sources", Sources())
     manager.add_command("report", Report())
     manager.run()

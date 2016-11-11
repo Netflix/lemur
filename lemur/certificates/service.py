@@ -502,3 +502,13 @@ def get_certificate_primitives(certificate):
         extensions=extensions,
         owner=certificate.owner
     )
+
+
+def reissue_certificate(certificate):
+    """
+    Reissue certificate with the same properties of the given certificate.
+    :param certificate:
+    :return:
+    """
+    primitives = get_certificate_primitives(certificate)
+    return create(primitives)

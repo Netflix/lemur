@@ -98,6 +98,11 @@ def update(endpoint_id, **kwargs):
     return endpoint
 
 
+def rotate_certificate(endpoint, new_cert):
+    """Rotates a certificate on a given endpoint."""
+    pass
+
+
 def render(args):
     """
     Helper that helps us render the REST Api responses.
