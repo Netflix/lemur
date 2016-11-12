@@ -167,6 +167,7 @@ class CertificatesList(AuthenticatedResource):
                   "replacements": [{
                     "id": 1
                   },
+                  "notify": true,
                   "validityEnd": "2026-01-01T08:00:00.000Z",
                   "authority": {
                     "name": "verisign"
