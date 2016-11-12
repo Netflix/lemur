@@ -103,6 +103,7 @@ class Certificate(db.Model):
         if kwargs.get('chain'):
             self.chain = kwargs['chain'].strip()
 
+        self.notify = kwargs.get('notify', True)
         self.destinations = kwargs.get('destinations', [])
         self.notifications = kwargs.get('notifications', [])
         self.description = kwargs.get('description')

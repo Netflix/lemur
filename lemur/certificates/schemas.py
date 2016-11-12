@@ -59,6 +59,8 @@ class CertificateInputSchema(CertificateCreationSchema):
 
     csr = fields.String(validate=validators.csr)
 
+    notify = fields.Boolean(default=True)
+
     # certificate body fields
     organizational_unit = fields.String(missing=lambda: current_app.config.get('LEMUR_DEFAULT_ORGANIZATIONAL_UNIT'))
     organization = fields.String(missing=lambda: current_app.config.get('LEMUR_DEFAULT_ORGANIZATION'))
