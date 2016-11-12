@@ -473,7 +473,6 @@ def calculate_reissue_range(start, end):
     return new_start, new_end
 
 
-# TODO pull the OU, O, CN, etc + other extensions.
 def get_certificate_primitives(certificate):
     """
     Retrieve key primitive from a certificate such that the certificate
@@ -485,6 +484,7 @@ def get_certificate_primitives(certificate):
     start, end = calculate_reissue_range(certificate.not_before, certificate.not_after)
     names = [{'name_type': 'DNSName', 'value': x.name} for x in certificate.domains]
 
+    # TODO pull additional extensions
     extensions = {
         'sub_alt_names': {
             'names': names
@@ -500,7 +500,12 @@ def get_certificate_primitives(certificate):
         destinations=certificate.destinations,
         roles=certificate.roles,
         extensions=extensions,
-        owner=certificate.owner
+        owner=certificate.owner,
+        organiztion=certificate.organization,
+        organizational_unit=certificate.organizational_unit,
+        country=certificate.country,
+        state=certificate.state,
+        location=certificate.location
     )
 
 
@@ -511,4 +516,4 @@ def reissue_certificate(certificate):
     :return:
     """
     primitives = get_certificate_primitives(certificate)
-    return create(primitives)
+    return create(**primitives)

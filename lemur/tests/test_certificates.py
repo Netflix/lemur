@@ -368,6 +368,11 @@ def test_create_certificate(issuer_plugin, authority, logged_in_admin):
     assert cert.name == 'ACustomName1'
 
 
+def test_reissue_certificate(issuer_plugin, authority, certificate, logged_in_admin):
+    from lemur.certificates.service import reissue_certificate
+    new_cert = reissue_certificate(certificate)
+
+
 def test_create_csr():
     from lemur.certificates.service import create_csr
 

@@ -120,6 +120,31 @@ class Certificate(db.Model):
         if self.endpoints:
             return True
 
+    @property
+    def organization(self):
+        cert = lemur.common.utils.parse_certificate(self.body)
+        return defaults.organization(cert)
+
+    @property
+    def organizational_unit(self):
+        cert = lemur.common.utils.parse_certificate(self.body)
+        return defaults.organization(cert)
+
+    @property
+    def country(self):
+        cert = lemur.common.utils.parse_certificate(self.body)
+        return defaults.organization(cert)
+
+    @property
+    def state(self):
+        cert = lemur.common.utils.parse_certificate(self.body)
+        return defaults.organization(cert)
+
+    @property
+    def location(self):
+        cert = lemur.common.utils.parse_certificate(self.body)
+        return defaults.organization(cert)
+
     @hybrid_property
     def expired(self):
         if self.not_after <= datetime.datetime.now():
@@ -147,16 +172,6 @@ class Certificate(db.Model):
             ],
             else_=False
         )
-
-    def get_arn(self, account_number):
-        """
-        Generate a valid AWS IAM arn
-
-        :rtype : str
-        :param account_number:
-        :return:
-        """
-        return "arn:aws:iam::{}:server-certificate/{}".format(account_number, self.name)
 
 
 @event.listens_for(Certificate.destinations, 'append')
