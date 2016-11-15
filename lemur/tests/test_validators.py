@@ -8,7 +8,6 @@ def test_private_key(session):
     from lemur.common.validators import private_key
 
     private_key(PRIVATE_KEY_STR)
-    private_key(PRIVATE_KEY_STR.decode('utf-8'))
 
     with pytest.raises(ValidationError):
         private_key('invalid_private_key')

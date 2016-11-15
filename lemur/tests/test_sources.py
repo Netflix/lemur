@@ -18,7 +18,7 @@ def validate_source_schema(client):
     assert not errors
 
 
-def test_create_certificate(source):
+def test_create_certificate(user, source):
     from lemur.sources.service import certificate_create
 
     with pytest.raises(Exception):
@@ -27,7 +27,8 @@ def test_create_certificate(source):
     data = {
         'body': INTERNAL_VALID_WILDCARD_STR,
         'private_key': INTERNAL_PRIVATE_KEY_A_STR,
-        'owner': 'bob@example.com'
+        'owner': 'bob@example.com',
+        'creator': user['user']
     }
 
     cert = certificate_create(data, source)

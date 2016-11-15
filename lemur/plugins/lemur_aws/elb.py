@@ -103,6 +103,7 @@ def describe_load_balancer_types(policies, **kwargs):
     return kwargs['client'].describe_load_balancer_policy_types(PolicyTypeNames=policies)
 
 
+@sts_client('elb')
 def attach_certificate(account_number, region, name, port, certificate_id):
     """
     Attaches a certificate to a listener, throws exception
@@ -115,69 +116,3 @@ def attach_certificate(account_number, region, name, port, certificate_id):
     :param certificate_id:
     """
     return assume_service(account_number, 'elb', region).set_lb_listener_SSL_certificate(name, port, certificate_id)
-
-
-# def create_new_listeners(account_number, region, name, listeners=None):
-#     """
-#     Creates a new listener and attaches it to the ELB.
-#
-#     :param account_number:
-#     :param region:
-#     :param name:
-#     :param listeners:
-#     :return:
-#     """
-#     listeners = [is_valid(x) for x in listeners]
-#     return assume_service(account_number, 'elb', region).create_load_balancer_listeners(name, listeners=listeners)
-#
-#
-# def update_listeners(account_number, region, name, listeners, ports):
-#     """
-#     We assume that a listener with a specified port already exists. We can then
-#     delete the old listener on the port and create a new one in it's place.
-#
-#     If however we are replacing a listener e.g. changing a port from 80 to 443 we need
-#     to make sure we kept track of which ports we needed to delete so that we don't create
-#     two listeners (one 80 and one 443)
-#
-#     :param account_number:
-#     :param region:
-#     :param name:
-#     :param listeners:
-#     :param ports:
-#     """
-#     # you cannot update a listeners port/protocol instead we remove the only one and
-#     # create a new one in it's place
-#     listeners = [is_valid(x) for x in listeners]
-#
-#     assume_service(account_number, 'elb', region).delete_load_balancer_listeners(name, ports)
-#     return create_new_listeners(account_number, region, name, listeners=listeners)
-#
-#
-# def delete_listeners(account_number, region, name, ports):
-#     """
-#     Deletes a listener from an ELB.
-#
-#     :param account_number:
-#     :param region:
-#     :param name:
-#     :param ports:
-#     :return:
-#     """
-#     return assume_service(account_number, 'elb', region).delete_load_balancer_listeners(name, ports)
-#
-#
-# def get_listeners(account_number, region, name):
-#     """
-#     Gets the listeners configured on an elb and returns a array of tuples
-#
-#     :param account_number:
-#     :param region:
-#     :param name:
-#     :return: list of tuples
-#     """
-#
-#     conn = assume_service(account_number, 'elb', region)
-#     elbs = conn.get_all_load_balancers(load_balancer_names=[name])
-#     if elbs:
-#         return elbs[0].listeners

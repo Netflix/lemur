@@ -5,22 +5,24 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import datetime
+import arrow
 
-import lemur.common.utils
 from flask import current_app
 
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import case
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy import event, Integer, ForeignKey, String, DateTime, PassiveDefault, func, Column, Text, Boolean
+from sqlalchemy import event, Integer, ForeignKey, String, PassiveDefault, func, Column, Text, Boolean
 
+import lemur.common.utils
 from lemur.database import db
 from lemur.models import certificate_associations, certificate_source_associations, \
     certificate_destination_associations, certificate_notification_associations, \
     certificate_replacement_associations, roles_certificates
 from lemur.plugins.base import plugins
 from lemur.utils import Vault
+
+from sqlalchemy_utils.types.arrow import ArrowType
 
 from lemur.common import defaults
 from lemur.domains.models import Domain
@@ -53,9 +55,9 @@ class Certificate(db.Model):
     cn = Column(String(128))
     deleted = Column(Boolean, index=True)
 
-    not_before = Column(DateTime)
-    not_after = Column(DateTime)
-    date_created = Column(DateTime, PassiveDefault(func.now()), nullable=False)
+    not_before = Column(ArrowType)
+    not_after = Column(ArrowType)
+    date_created = Column(ArrowType, PassiveDefault(func.now()), nullable=False)
 
     signing_algorithm = Column(String(128))
     status = Column(String(128))
@@ -128,33 +130,33 @@ class Certificate(db.Model):
     @property
     def organizational_unit(self):
         cert = lemur.common.utils.parse_certificate(self.body)
-        return defaults.organization(cert)
+        return defaults.organizational_unit(cert)
 
     @property
     def country(self):
         cert = lemur.common.utils.parse_certificate(self.body)
-        return defaults.organization(cert)
+        return defaults.country(cert)
 
     @property
     def state(self):
         cert = lemur.common.utils.parse_certificate(self.body)
-        return defaults.organization(cert)
+        return defaults.state(cert)
 
     @property
     def location(self):
         cert = lemur.common.utils.parse_certificate(self.body)
-        return defaults.organization(cert)
+        return defaults.location(cert)
 
     @hybrid_property
     def expired(self):
-        if self.not_after <= datetime.datetime.now():
+        if self.not_after <= arrow.utcnow():
             return True
 
     @expired.expression
     def expired(cls):
         return case(
             [
-                (cls.now_after <= datetime.datetime.now(), True)
+                (cls.now_after <= arrow.utcnow(), True)
             ],
             else_=False
         )

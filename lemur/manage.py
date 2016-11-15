@@ -1,5 +1,6 @@
 from __future__ import unicode_literals    # at top of module
 
+import arrow
 from datetime import datetime, timedelta
 from collections import Counter
 
@@ -484,6 +485,38 @@ def unicode_(data):
     return data
 
 
+def print_certificate_details(details):
+    """
+    Print the certificate details with formatting.
+    :param details:
+    :return:
+    """
+    sys.stdout.write("[+] Re-issuing certificate with the following details:  \n")
+    sys.stdout.write(
+        "[+] Common Name: {common_name}\n"
+        "[+] Subject Alternate Names: {sans}\n"
+        "[+] Authority: {authority_name}\n"
+        "[+] Validity Start: {validity_start}\n"
+        "[+] Validity End: {validity_end}\n"
+        "[+] Organization: {organization}\n"
+        "[+] Organizational Unit: {organizational_unit}\n"
+        "[+] Country: {country}\n"
+        "[+] State: {state}\n"
+        "[+] Location: {location}\n".format(
+            common_name=details['common_name'],
+            sans=",".join(x['value'] for x in details['extensions']['sub_alt_names']['names']),
+            authority_name=details['authority'].name,
+            validity_start=details['validity_start'].isoformat(),
+            validity_end=details['validity_end'].isoformat(),
+            organization=details['organization'],
+            organizational_unit=details['organizational_unit'],
+            country=details['country'],
+            state=details['state'],
+            location=details['location']
+        )
+    )
+
+
 class RotateCertificate(Command):
     """
     Rotates certificate on all endpoints managed by Lemur.
@@ -495,43 +528,79 @@ class RotateCertificate(Command):
     )
 
     def run(self, new_cert_name, old_cert_name, commit):
-        from lemur.certificates.service import get_by_name, reissue_certificate
+        from lemur.certificates.service import get_by_name, reissue_certificate, get_certificate_primitives
         from lemur.endpoints.service import rotate_certificate
 
         old_cert = get_by_name(old_cert_name)
 
-        if commit:
-            sys.stdout.write("WARNING: Running in COMMIT mode.\n")
-
         if not old_cert:
-            sys.stdout.write("No certificate found with name: {0}\n".format(old_cert_name))
+            sys.stdout.write("[-] No certificate found with name: {0}\n".format(old_cert_name))
             sys.exit(1)
 
-        if not new_cert_name:
-            sys.stdout.write("No new certificate provided. Attempting to re-issue old certificate: {0}.\n".format(old_cert_name))
-
-            details = {}
-            sys.stdout.write("Re-issuing certificate with the following details: {0} \n".format(json.dumps(details)))
-
-            if commit:
-                reissue_certificate(old_cert)
-
-            sys.stdout.write("Done! \n")
-        else:
+        if new_cert_name:
             new_cert = get_by_name(new_cert_name)
 
             if not new_cert:
-                sys.stdout.write("No certificate found with name: {0}\n".format(old_cert_name))
+                sys.stdout.write("[-] No certificate found with name: {0}\n".format(old_cert_name))
                 sys.exit(1)
 
-        for endpoint in old_cert.endpoints:
-            sys.stdout.write("Certificate found deployed onto {0}\n ".format(endpoint.name))
-            sys.stdout.write("Rotating certificate from: {0} to: {1}\n ".format(old_cert_name, new_cert_name))
+        if commit:
+            sys.stdout.write("[!] Running in COMMIT mode.\n")
+
+        if not new_cert_name:
+            sys.stdout.write("[!] No new certificate provided. Attempting to re-issue old certificate: {0}.\n".format(old_cert_name))
+
+            details = get_certificate_primitives(old_cert)
+            print_certificate_details(details)
 
             if commit:
-                rotate_certificate(endpoint, new_cert_name)
+                new_cert = reissue_certificate(old_cert, replace=True)
+                sys.stdout.write("[+] Issued new certificate named: {0}\n".format(new_cert.name))
 
-            sys.stdout.write("Done! \n")
+            sys.stdout.write("[+] Done! \n")
+
+        if len(old_cert.endpoints) > 0:
+            for endpoint in old_cert.endpoints:
+                sys.stdout.write("[+] Certificate found deployed onto {0}\n ".format(endpoint.name))
+                sys.stdout.write("[+] Rotating certificate from: {0} to: {1}\n ".format(old_cert_name, new_cert.name))
+
+                if commit:
+                    rotate_certificate(endpoint, new_cert_name)
+
+                sys.stdout.write("[+] Done! \n")
+        else:
+            sys.stdout.write("[!] Certificate not found on any existing endpoints. Nothing to rotate.\n")
+
+
+class ReissueCertificate(Command):
+    """
+    Reissues a certificate based on a given certificate.
+    """
+    option_list = (
+        Option('-o', '--old-cert-name', dest='old_cert_name', required=True),
+        Option('-c', '--commit', dest='commit', action='store_true', default=False)
+    )
+
+    def run(self, old_cert_name, commit):
+        from lemur.certificates.service import get_by_name, reissue_certificate, get_certificate_primitives
+
+        old_cert = get_by_name(old_cert_name)
+
+        if not old_cert:
+            sys.stdout.write("[-] No certificate found with name: {0}\n".format(old_cert_name))
+            sys.exit(1)
+
+        if commit:
+            sys.stdout.write("[!] Running in COMMIT mode.\n")
+
+        details = get_certificate_primitives(old_cert)
+        print_certificate_details(details)
+
+        if commit:
+            new_cert = reissue_certificate(old_cert, replace=True)
+            sys.stdout.write("[+] Issued new certificate named: {0}\n".format(new_cert.name))
+
+        sys.stdout.write("[+] Done! \n")
 
 
 @manager.command
@@ -589,10 +658,32 @@ class Report(Command):
     )
 
     def run(self, name, duration):
-
         end = datetime.utcnow()
         start = end - timedelta(days=duration)
-        self.certificates_issued(name, start, end)
+
+        if name == 'authority':
+            self.certificates_issued(name, start, end)
+
+        elif name == 'activeFQDNS':
+            self.active_fqdns()
+
+    @staticmethod
+    def active_fqdns():
+        """
+        Generates a report that gives the number of active fqdns, but root domain.
+        :return:
+        """
+        from lemur.certificates.service import get_all_certs
+        sys.stdout.write("FQDN, Root Domain, Issuer, Total Length (days), Time until expiration (days)\n")
+        for cert in get_all_certs():
+            if not cert.expired:
+                now = arrow.utcnow()
+                ttl = now - cert.not_before
+                total_length = cert.not_after - cert.not_before
+
+                for fqdn in cert.domains:
+                    root_domain = ".".join(fqdn.name.split('.')[-2:])
+                    sys.stdout.write(", ".join([fqdn.name, root_domain, cert.issuer, str(total_length.days), str(ttl.days)]) + "\n")
 
     @staticmethod
     def certificates_issued(name=None, start=None, end=None):
@@ -718,6 +809,8 @@ def main():
     manager.add_command("create_role", CreateRole())
     manager.add_command("sources", Sources())
     manager.add_command("report", Report())
+    manager.add_command("rotate_certificate", RotateCertificate())
+    manager.add_command("reissue_certificate", ReissueCertificate())
     manager.run()
 
 if __name__ == "__main__":

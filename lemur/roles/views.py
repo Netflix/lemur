@@ -83,8 +83,7 @@ class RolesList(AuthenticatedResource):
         parser.add_argument('id', type=str, location='args')
 
         args = parser.parse_args()
-        if not g.current_user.is_admin:
-            args['user_id'] = g.current_user.id
+        args['user'] = g.current_user
         return service.render(args)
 
     @admin_permission.require(http_exception=403)

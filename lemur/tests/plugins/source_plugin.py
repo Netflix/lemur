@@ -14,3 +14,6 @@ class TestSourcePlugin(SourcePlugin):
 
     def get_certificates(self):
         return
+
+    def update_endpoint(self, endpoint, certificate):
+        return

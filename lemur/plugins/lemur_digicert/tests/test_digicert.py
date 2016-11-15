@@ -27,7 +27,7 @@ def test_process_options(app):
 
     assert data == {
         'certificate': {
-            'csr': CSR_STR.decode('utf-8'),
+            'csr': CSR_STR,
             'common_name': 'example.com',
             'dns_names': names,
             'signature_hash': 'sha256'

@@ -58,6 +58,61 @@ def common_name(cert):
     )[0].value.strip()
 
 
+def organization(cert):
+    """
+    Attempt to get the organization name from a given certificate.
+    :param cert:
+    :return:
+    """
+    return cert.subject.get_attributes_for_oid(
+        x509.OID_ORGANIZATION_NAME
+    )[0].value.strip()
+
+
+def organizational_unit(cert):
+    """
+    Attempt to get the organization unit from a given certificate.
+    :param cert:
+    :return:
+    """
+    return cert.subject.get_attributes_for_oid(
+        x509.OID_ORGANIZATIONAL_UNIT_NAME
+    )[0].value.strip()
+
+
+def country(cert):
+    """
+    Attempt to get the country from a given certificate.
+    :param cert:
+    :return:
+    """
+    return cert.subject.get_attributes_for_oid(
+        x509.OID_COUNTRY_NAME
+    )[0].value.strip()
+
+
+def state(cert):
+    """
+    Attempt to get the from a given certificate.
+    :param cert:
+    :return:
+    """
+    return cert.subject.get_attributes_for_oid(
+        x509.OID_STATE_OR_PROVINCE_NAME
+    )[0].value.strip()
+
+
+def location(cert):
+    """
+    Attempt to get the location name from a given certificate.
+    :param cert:
+    :return:
+    """
+    return cert.subject.get_attributes_for_oid(
+        x509.OID_LOCALITY_NAME
+    )[0].value.strip()
+
+
 def domains(cert):
     """
     Attempts to get an domains listed in a certificate.

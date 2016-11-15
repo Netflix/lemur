@@ -8,7 +8,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
-from flask import g
+from flask import current_app
 
 from lemur import database
 from lemur.extensions import metrics
@@ -100,7 +100,13 @@ def update(endpoint_id, **kwargs):
 
 def rotate_certificate(endpoint, new_cert):
     """Rotates a certificate on a given endpoint."""
-    pass
+    try:
+        endpoint.source.plugin.update_endpoint(endpoint, new_cert)
+        endpoint.certificate = new_cert
+    except Exception as e:
+        metrics.send('rotate_failure', 'counter', 1, tags={'endpoint': endpoint.name})
+        current_app.logger.exception(e)
+        raise e
 
 
 def render(args):
@@ -127,9 +133,9 @@ def render(args):
             query = database.filter(query, Endpoint, terms)
 
     # we make sure that a user can only use an endpoint they either own are are a member of - admins can see all
-    if not g.current_user.is_admin:
+    if not args['user'].is_admin:
         endpoint_ids = []
-        for role in g.current_user.roles:
+        for role in args['user'].roles:
             for endpoint in role.endpoints:
                 endpoint_ids.append(endpoint.id)
         query = query.filter(Endpoint.id.in_(endpoint_ids))
