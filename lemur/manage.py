@@ -65,8 +65,6 @@ CONFIG_TEMPLATE = """
 import os
 _basedir = os.path.abspath(os.path.dirname(__file__))
 
-ADMINS = frozenset([''])
-
 THREADS_PER_PAGE = 8
 
 # General
