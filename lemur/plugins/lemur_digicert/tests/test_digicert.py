@@ -27,13 +27,13 @@ def test_process_options(app):
 
     assert data == {
         'certificate': {
-            'csr': CSR_STR,
+            'csr': CSR_STR.decode('utf-8'),
             'common_name': 'example.com',
             'dns_names': names,
             'signature_hash': 'sha256'
         },
-        'organization': {'id': 'org-id'},
-        'validity_years': '1',
+        'organization': {'id': 111111},
+        'validity_years': 1,
         'custom_expiration_date': arrow.get(2017, 5, 7).format('YYYY-MM-DD')
     }
 
@@ -47,18 +47,14 @@ def test_issuance():
             'validity_start': arrow.get(2016, 10, 30)
         }
 
-        end_date, period = get_issuance(options)
-
-        assert period == '2'
+        assert get_issuance(options) == 2
 
         options = {
             'validity_end': arrow.get(2017, 5, 7),
             'validity_start': arrow.get(2016, 10, 30)
         }
 
-        end_date, period = get_issuance(options)
-
-        assert period == '1'
+        assert get_issuance(options) == 1
 
         options = {
             'validity_end': arrow.get(2020, 5, 7),
@@ -66,7 +62,7 @@ def test_issuance():
         }
 
         with pytest.raises(Exception):
-            end_date, period = get_issuance(options)
+            period = get_issuance(options)
 
 
 def test_signature_hash(app):

@@ -16,6 +16,8 @@ from lemur.users.schemas import UserNestedOutputSchema
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
 from lemur.common import validators, missing
 
+from lemur.common.fields import ArrowDateTime
+
 
 class AuthorityInputSchema(LemurInputSchema):
     name = fields.String(required=True)
@@ -23,8 +25,8 @@ class AuthorityInputSchema(LemurInputSchema):
     description = fields.String()
     common_name = fields.String(required=True, validate=validators.sensitive_domain)
 
-    validity_start = fields.DateTime()
-    validity_end = fields.DateTime()
+    validity_start = ArrowDateTime()
+    validity_end = ArrowDateTime()
     validity_years = fields.Integer()
 
     # certificate body fields

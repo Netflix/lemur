@@ -13,12 +13,12 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import time
 import json
 import arrow
 import requests
 
 import pem
+from retrying import retry
 
 from flask import current_app
 
@@ -56,13 +56,12 @@ def determine_validity_years(end_date):
     :return: str validity in years
     """
     now = arrow.utcnow()
-    then = arrow.get(end_date)
 
-    if then < now.replace(years=+1):
+    if end_date < now.replace(years=+1):
         return 1
-    elif then < now.replace(years=+2):
+    elif end_date < now.replace(years=+2):
         return 2
-    elif then < now.replace(years=+3):
+    elif end_date < now.replace(years=+3):
         return 3
 
     raise Exception("DigiCert issued certificates cannot exceed three"
@@ -75,9 +74,11 @@ def get_issuance(options):
     :param options:
     :return:
     """
-    end_date = arrow.get(options['validity_end'])
-    validity_years = determine_validity_years(end_date)
-    return end_date, validity_years
+    if not options.get('validity_end'):
+        options['validity_end'] = arrow.utcnow().replace(years=current_app.config.get('DIGICERT_DEFAULT_VALIDITY', 1))
+
+    validity_years = determine_validity_years(options['validity_end'])
+    return validity_years
 
 
 def process_options(options, csr):
@@ -109,8 +110,8 @@ def process_options(options, csr):
 
         data['certificate']['dns_names'] = dns_names
 
-    end_date, validity_years = get_issuance(options)
-    data['custom_expiration_date'] = end_date.format('YYYY-MM-DD')
+    validity_years = get_issuance(options)
+    data['custom_expiration_date'] = options['validity_end'].format('YYYY-MM-DD')
     data['validity_years'] = validity_years
 
     return data
@@ -130,6 +131,35 @@ def handle_response(response):
     return response.json()
 
 
+def verify_configuration():
+    """Verify that needed configuration variables are set before plugin startup."""
+    if not current_app.config.get('DIGICERT_API_KEY'):
+        raise Exception("No Digicert API key found. Ensure that 'DIGICERT_API_KEY' is set in the Lemur conf.")
+
+    if not current_app.config.get('DIGICERT_URL'):
+        raise Exception("No Digicert URL found. Ensure that 'DIGICERT_URL' is set in the Lemur conf.")
+
+    if not current_app.config.get('DIGICERT_ORG_ID'):
+        raise Exception("No Digicert organization ID found. Ensure that 'DIGICERT_ORG_ID' is set in Lemur conf.")
+
+    if not current_app.config.get('DIGICERT_ROOT'):
+        raise Exception("No Digicert root found. Ensure that 'DIGICERT_ROOT' is set in the Lemur conf.")
+
+    if not current_app.config.get('DIGICERT_INTERMEDIATE'):
+        raise Exception("No Digicert intermediate found. Ensure that 'DIGICERT_INTERMEDIATE is set in Lemur conf.")
+
+
+@retry(stop_max_attempt_number=10, wait_fixed=10000)
+def get_certificate_id(session, base_url, order_id):
+    """Retrieve certificate order id from Digicert API."""
+    order_url = "{0}/services/v2/order/certificate/{1}".format(base_url, order_id)
+    response_data = handle_response(session.get(order_url))
+    if response_data['status'] != 'issued':
+        raise Exception("Order not in issued state.")
+
+    return response_data['certificate']['id']
+
+
 class DigiCertSourcePlugin(SourcePlugin):
     """Wrap the Digicert Certifcate API."""
     title = 'DigiCert'
@@ -142,8 +172,7 @@ class DigiCertSourcePlugin(SourcePlugin):
 
     def __init__(self, *args, **kwargs):
         """Initialize source with appropriate details."""
-        if not current_app.config.get('DIGICERT_API_KEY'):
-            raise Exception("No Digicert API key found. Ensure that 'DIGICERT_API_KEY' is set in the Lemur conf.")
+        verify_configuration()
 
         self.session = requests.Session()
         self.session.headers.update(
@@ -173,8 +202,7 @@ class DigiCertIssuerPlugin(IssuerPlugin):
 
     def __init__(self, *args, **kwargs):
         """Initialize the issuer with the appropriate details."""
-        if not current_app.config.get('DIGICERT_API_KEY'):
-            raise Exception("No Digicert API key found. Ensure that 'DIGICERT_API_KEY' is set in the Lemur conf.")
+        verify_configuration()
 
         self.session = requests.Session()
         self.session.headers.update(
@@ -201,20 +229,12 @@ class DigiCertIssuerPlugin(IssuerPlugin):
         response = self.session.post(determinator_url, data=json.dumps(data))
         order_id = response.json()['id']
 
-        while True:
-            # get order info
-            order_url = "{0}/services/v2/order/certificate/{1}".format(base_url, order_id)
-            response_data = handle_response(self.session.get(order_url))
-            if response_data['status'] == 'issued':
-                break
-            time.sleep(10)
-
-        certificate_id = response_data['certificate']['id']
+        certificate_id = get_certificate_id(self.session, base_url, order_id)
 
         # retrieve certificate
         certificate_url = "{0}/services/v2/certificate/{1}/download/format/pem_all".format(base_url, certificate_id)
-        root, intermediate, end_enitity = pem.parse(self.session.get(certificate_url).content)
-        return str(end_enitity), str(intermediate)
+        end_entity, intermediate, root = pem.parse(self.session.get(certificate_url).content)
+        return str(end_entity), str(intermediate)
 
     @staticmethod
     def create_authority(options):

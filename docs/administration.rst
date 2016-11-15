@@ -187,7 +187,7 @@ Lemur supports sending certification expiration notifications through SES and SM
     Specifies which service will be delivering notification emails. Valid values are `SMTP` or `SES`
 
     .. note::
-        If using SMP as your provider you will need to define additional configuration options as specified by Flask-Mail.
+        If using SMTP as your provider you will need to define additional configuration options as specified by Flask-Mail.
         See: `Flask-Mail <https://pythonhosted.org/Flask-Mail>`_
 
         If you are using SES the email specified by the `LEMUR_MAIL` configuration will need to be verified by AWS before
@@ -359,6 +359,49 @@ for those plugins.
     :noindex:
 
         This is the root to be used for your CA chain
+
+
+Digicert Issuer Plugin
+~~~~~~~~~~~~~~~~~~~~~~
+
+The following configuration properties are required to use the Digicert issuer plugin.
+
+
+.. data:: DIGICERT_URL
+    :noindex:
+
+            This is the url for the Digicert API
+
+
+.. data:: DIGICERT_API_KEY
+    :noindex:
+
+            This is the Digicert API key
+
+
+.. data:: DIGICERT_ORG_ID
+    :noindex:
+
+            This is the Digicert organization ID tied to your API key
+
+
+.. data:: DIGICERT_INTERMEDIATE
+    :noindex:
+
+            This is the intermediate to be used for your CA chain
+
+
+.. data:: DIGICERT_ROOT
+    :noindex:
+
+            This is the root to be used for your CA chain
+
+
+.. data:: DIGICERT_DEFAULT_VALIDITY
+    :noindex:
+
+            This is the default validity (in years), if no end date is specified. (Default: 1)
+
 
 
 CFSSL Issuer Plugin
