@@ -43,7 +43,7 @@ def upgrade():
     # migrate existing authority_id relationship to many_to_many
     conn = op.get_bind()
     for id, authority_id in conn.execute(text('select id, authority_id from roles where authority_id is not null')):
-        stmt = text('insert into roles_authorit ties (role_id, authority_id) values (:role_id, :authority_id)')
+        stmt = text('insert into roles_authoritties (role_id, authority_id) values (:role_id, :authority_id)')
         stmt = stmt.bindparams(role_id=id, authority_id=authority_id)
         op.execute(stmt)
 
