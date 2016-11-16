@@ -27,3 +27,6 @@ class Source(db.Model):
     @property
     def plugin(self):
         return plugins.get(self.plugin_name)
+
+    def __repr__(self):
+        return "Source(label={label})".format(label=self.label)

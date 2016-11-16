@@ -159,6 +159,9 @@ class Certificate(db.Model):
         """
         return "arn:aws:iam::{}:server-certificate/{}".format(account_number, self.name)
 
+    def __repr__(self):
+        return "Certificate(name={name})".format(name=self.name)
+
 
 @event.listens_for(Certificate.destinations, 'append')
 def update_destinations(target, value, initiator):

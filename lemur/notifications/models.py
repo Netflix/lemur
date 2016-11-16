@@ -33,3 +33,6 @@ class Notification(db.Model):
     @property
     def plugin(self):
         return plugins.get(self.plugin_name)
+
+    def __repr__(self):
+        return "Notification(label={label})".format(label=self.label)
