@@ -17,3 +17,6 @@ class Domain(db.Model):
     id = Column(Integer, primary_key=True)
     name = Column(String(256))
     sensitive = Column(Boolean, default=False)
+
+    def __repr__(self):
+        return "Domain(name={name})".format(name=self.name)

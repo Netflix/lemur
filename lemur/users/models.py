@@ -81,5 +81,8 @@ class User(db.Model):
             if role.name == 'admin':
                 return True
 
+    def __repr__(self):
+        return "User(username={username})".format(username=self.username)
+
 
 listen(User, 'before_insert', hash_password)

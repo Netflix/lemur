@@ -23,3 +23,6 @@ class Destination(db.Model):
     @property
     def plugin(self):
         return plugins.get(self.plugin_name)
+
+    def __repr__(self):
+        return "Destination(label={label})".format(label=self.label)
