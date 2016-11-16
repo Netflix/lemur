@@ -118,8 +118,7 @@ class Certificate(db.Model):
 
     @property
     def active(self):
-        if self.endpoints:
-            return True
+        return self.notify
 
     @hybrid_property
     def expired(self):
