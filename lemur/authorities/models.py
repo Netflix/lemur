@@ -43,3 +43,6 @@ class Authority(db.Model):
     @property
     def plugin(self):
         return plugins.get(self.plugin_name)
+
+    def __repr__(self):
+        return "Authority(name={name})".format(name=self.name)
