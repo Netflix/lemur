@@ -860,12 +860,13 @@ class Sources(Command):
     Defines a set of actions to take against Lemur's sources.
     """
     option_list = (
-        Option('-s', '--sources', dest='sources', action='append', help='Sources to operate on.'),
+        Option('-s', '--sources', dest='source_strings', action='append', help='Sources to operate on.'),
         Option('-a', '--action', choices=['sync', 'clean'], dest='action', help='Action to take on source.')
     )
 
-    def run(self, sources, action):
-        if not sources:
+    def run(self, source_strings, action):
+        sources = []
+        if not source_strings:
             table = []
             for source in source_service.get_all():
                 table.append([source.label, source.active, source.description])
@@ -873,12 +874,19 @@ class Sources(Command):
             sys.stdout.write(tabulate(table, headers=['Label', 'Active', 'Description']))
             sys.exit(1)
 
-        for label in sources:
-            source = source_service.get_by_label(label)
+        elif 'all' in source_strings:
+            sources = source_service.get_all()
 
-            if not source:
-                sys.stderr.write("Unable to find specified source with label: {0}".format(label))
+        else:
+            for source_str in source_strings:
+                source = source_service.get_by_label(source_str)
 
+                if not source:
+                    sys.stderr.write("Unable to find specified source with label: {0}".format(source_str))
+
+                sources.append(source)
+
+        for source in sources:
             if action == 'sync':
                 self.sync(source)
 
@@ -890,8 +898,10 @@ class Sources(Command):
         start_time = time.time()
         sys.stdout.write("[+] Staring to sync source: {label}!\n".format(label=source.label))
 
+        user = user_service.get_by_username('lemur')
+
         try:
-            source_service.sync(source)
+            source_service.sync(source, user)
             sys.stdout.write(
                 "[+] Finished syncing source: {label}. Run Time: {time}\n".format(
                     label=source.label,
@@ -902,10 +912,10 @@ class Sources(Command):
             current_app.logger.exception(e)
 
             sys.stdout.write(
-                "[X] Failed syncing source {label}!\n".format(labe=source.label)
+                "[X] Failed syncing source {label}!\n".format(label=source.label)
             )
 
-            metrics.send('{0}_sync_failed'.format(source.label), 'counter', 1)
+            metrics.send('sync_failed', 'counter', 1, metric_tags={'source': source.label})
 
     @staticmethod
     def clean(source):
