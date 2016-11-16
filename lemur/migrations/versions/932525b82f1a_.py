@@ -1,4 +1,4 @@
-"""empty message
+"""Changing the column name to the more accurately named 'notify'.
 
 Revision ID: 932525b82f1a
 Revises: 7f71c0cea31a

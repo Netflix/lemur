@@ -1,4 +1,6 @@
-"""Ensures that certificate name is unique
+"""Ensures that certificate name is unique.
+If duplicates are found, we follow the standard naming convention of appending '-X'
+with x being the number of duplicates starting at 1.
 
 Revision ID: 7f71c0cea31a
 Revises: 29d8c8455c86
@@ -17,16 +19,14 @@ from sqlalchemy.sql import text
 
 def upgrade():
     conn = op.get_bind()
-
-    for id, body, chain in conn.execute(text('select id, body, chain from certificates')):
-        if body and chain:
-            stmt = text('update certificates set body=:body, chain=:chain where id=:id')
-            stmt = stmt.bindparams(body=body.strip(), chain=chain.strip(), id=id)
-        else:
-            stmt = text('update certificates set body=:body where id=:id')
-            stmt = stmt.bindparams(body=body.strip(), id=id)
-
-        op.execute(stmt)
+    for name in conn.execute(text('select name from certificates group by name having count(*) > 1')):
+        for idx, id in enumerate(conn.execute(text("select id from certificates where certificates.name like :name order by id ASC").bindparams(name=name[0]))):
+            if not idx:
+                continue
+            new_name = name[0] + '-' + str(idx)
+            stmt = text('update certificates set name=:name where id=:id')
+            stmt = stmt.bindparams(name=new_name, id=id[0])
+            op.execute(stmt)
 
     op.create_unique_constraint(None, 'certificates', ['name'])
 
