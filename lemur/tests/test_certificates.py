@@ -318,7 +318,6 @@ def test_extended_key_usage_schema():
 def test_create_basic_csr(client):
     from cryptography import x509
     from cryptography.hazmat.backends import default_backend
-    from cryptography.hazmat.primitives import serialization
     from lemur.certificates.service import create_csr
     csr_config = dict(
         common_name='example.com',
@@ -332,7 +331,6 @@ def test_create_basic_csr(client):
     )
     csr, pem = create_csr(**csr_config)
 
-    private_key = serialization.load_pem_private_key(pem, password=None, backend=default_backend())
     csr = x509.load_pem_x509_csr(csr, default_backend())
     for name in csr.subject:
         assert name.value in csr_config.values()
