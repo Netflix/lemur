@@ -401,6 +401,9 @@ def create_csr(**csr_config):
         encryption_algorithm=serialization.NoEncryption()
     )
 
+    if isinstance(private_key, bytes):
+        private_key = private_key.decode('utf-8')
+
     csr = request.public_bytes(
         encoding=serialization.Encoding.PEM
     )
