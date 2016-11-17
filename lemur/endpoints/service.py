@@ -8,8 +8,6 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
-from flask import g
-
 from lemur import database
 from lemur.extensions import metrics
 from lemur.endpoints.models import Endpoint, Policy, Cipher
@@ -120,14 +118,6 @@ def render(args):
             )
         else:
             query = database.filter(query, Endpoint, terms)
-
-    # we make sure that a user can only use an endpoint they either own are are a member of - admins can see all
-    if not g.current_user.is_admin:
-        endpoint_ids = []
-        for role in g.current_user.roles:
-            for endpoint in role.endpoints:
-                endpoint_ids.append(endpoint.id)
-        query = query.filter(Endpoint.id.in_(endpoint_ids))
 
     return database.sort_and_page(query, Endpoint, args)
 
