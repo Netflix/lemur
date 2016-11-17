@@ -37,7 +37,20 @@ angular.module('lemur')
   .controller('AuthorityCreateController', function ($scope, $uibModalInstance, AuthorityService, AuthorityApi, LemurRestangular, RoleService, PluginService, WizardHandler, toaster)  {
     $scope.authority = LemurRestangular.restangularizeElement(null, {}, 'authorities');
     // set the defaults
-    AuthorityService.getDefaults($scope.authority);
+    AuthorityService.getDefaults($scope.authority).then(function () {
+      PluginService.getByType('issuer').then(function (plugins) {
+          $scope.plugins = plugins;
+          if ($scope.authority.defaultIssuerPlugin) {
+            plugins.forEach(function(plugin) {
+              if (plugin.slug === $scope.authority.defaultIssuerPlugin) {
+                $scope.authority.plugin = plugin;
+              }
+            });
+          } else {
+            $scope.authority.plugin = plugins[0];
+          }
+      });
+    });
 
     $scope.getAuthoritiesByName = function (value) {
       return AuthorityService.findAuthorityByName(value).then(function (authorities) {
@@ -70,19 +83,6 @@ angular.module('lemur')
           WizardHandler.wizard().context.loading = false;
       });
     };
-
-    PluginService.getByType('issuer').then(function (plugins) {
-        $scope.plugins = plugins;
-        if ($scope.authority.defaultIssuerPlugin) {
-          plugins.forEach(function(plugin) {
-            if (plugin.slug === $scope.authority.defaultIssuerPlugin) {
-              $scope.authority.plugin = plugin;
-            }
-          });
-        } else {
-          $scope.authority.plugin = plugins[0];
-        }
-    });
 
     $scope.roleService = RoleService;
     $scope.authorityService = AuthorityService;
