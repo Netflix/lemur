@@ -858,8 +858,8 @@ class Sources(Command):
     Defines a set of actions to take against Lemur's sources.
     """
     option_list = (
-        Option('-s', '--sources', dest='source_strings', action='append', help='Sources to operate on.'),
-        Option('-a', '--action', choices=['sync', 'clean'], dest='action', help='Action to take on source.')
+        Option('-s', '--sources', dest='source_strings', action='append', help='Sources to operate on.', required=True),
+        Option('-a', '--action', choices=['sync', 'clean'], dest='action', help='Action to take on source.', required=True)
     )
 
     def run(self, source_strings, action):
