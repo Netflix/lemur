@@ -34,8 +34,14 @@ before_script:
   - npm install -g bower
   - pip install --upgrade setuptools
 
+install:
+  - pip install coveralls
+
 script:
   - make test
+
+after_success:
+  - coveralls
 
 notifications:
   email:
