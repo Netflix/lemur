@@ -34,8 +34,13 @@ before_script:
   - npm install -g bower
   - pip install --upgrade setuptools
 
+install:
+  - pip install coveralls
+
 script:
-  - make test
+  - coverage run --source lemur -m py.test
+
+after_success: coveralls
 
 notifications:
   email:
