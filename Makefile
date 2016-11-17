@@ -67,7 +67,7 @@ test-js:
 
 test-python:
 	@echo "--> Running Python tests"
-	py.test -v || exit 1
+	coverage run --source lemur -m py.test
 	@echo ""
 
 lint: lint-python lint-js
