@@ -38,9 +38,10 @@ install:
   - pip install coveralls
 
 script:
-  - coverage run --source lemur -m py.test
+  - make test
 
-after_success: coveralls
+after_success:
+  - coveralls
 
 notifications:
   email:
