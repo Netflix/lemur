@@ -208,4 +208,131 @@ angular.module('lemur')
     $scope.authorityService = AuthorityService;
     $scope.destinationService = DestinationService;
     $scope.notificationService = NotificationService;
+  })
+
+.controller('CertificateCloneController', function ($scope, $uibModalInstance, CertificateApi, CertificateService, DestinationService, AuthorityService, AuthorityApi, PluginService, MomentService, WizardHandler, LemurRestangular, NotificationService, toaster, editId) {
+  CertificateApi.get(editId).then(function (certificate) {
+    $scope.certificate = certificate;
+    $scope.certificate.name = ''; // we should prefer the generated name.
+    CertificateService.getDefaults($scope.certificate);
   });
+
+  $scope.cancel = function () {
+    $uibModalInstance.dismiss('cancel');
+  };
+
+  $scope.getAuthoritiesByName = function (value) {
+    return AuthorityService.findAuthorityByName(value).then(function (authorities) {
+      $scope.authorities = authorities;
+    });
+  };
+
+  $scope.dateOptions = {
+    formatYear: 'yy',
+    maxDate: new Date(2020, 5, 22),
+    minDate: new Date(),
+    startingDay: 1
+  };
+
+
+  $scope.open1 = function() {
+    $scope.popup1.opened = true;
+  };
+
+  $scope.open2 = function() {
+    $scope.popup2.opened = true;
+  };
+
+  $scope.formats = ['dd-MMMM-yyyy', 'yyyy/MM/dd', 'dd.MM.yyyy', 'shortDate'];
+  $scope.format = $scope.formats[0];
+  $scope.altInputFormats = ['M!/d!/yyyy'];
+
+  $scope.popup1 = {
+    opened: false
+  };
+
+  $scope.popup2 = {
+    opened: false
+  };
+
+  $scope.clearDates = function () {
+    $scope.certificate.validityStart = null;
+    $scope.certificate.validityEnd = null;
+    $scope.certificate.validityYears = null;
+  };
+
+  $scope.create = function (certificate) {
+    WizardHandler.wizard().context.loading = true;
+    CertificateService.create(certificate).then(
+      function () {
+        toaster.pop({
+          type: 'success',
+          title: certificate.name,
+          body: 'Successfully created!'
+        });
+        $uibModalInstance.close();
+      },
+      function (response) {
+        toaster.pop({
+          type: 'error',
+          title: certificate.name,
+          body: 'lemur-bad-request',
+          bodyOutputType: 'directive',
+          directiveData: response.data,
+          timeout: 100000
+        });
+
+        WizardHandler.wizard().context.loading = false;
+      });
+  };
+
+  $scope.templates = [
+    {
+      'name': 'Client Certificate',
+      'description': '',
+      'extensions': {
+        'basicConstraints': {},
+        'keyUsage': {
+          'isCritical': true,
+          'useDigitalSignature': true
+        },
+        'extendedKeyUsage': {
+          'isCritical': true,
+          'useClientAuthentication': true
+        },
+        'subjectKeyIdentifier': {
+          'includeSKI': true
+        }
+      }
+    },
+    {
+      'name': 'Server Certificate',
+      'description': '',
+      'extensions' : {
+        'basicConstraints': {},
+        'keyUsage': {
+          'isCritical': true,
+          'useKeyEncipherment': true,
+          'useDigitalSignature': true
+        },
+        'extendedKeyUsage': {
+          'isCritical': true,
+          'useServerAuthentication': true
+        },
+        'subjectKeyIdentifier': {
+          'includeSKI': true
+        }
+      }
+    }
+  ];
+
+
+  PluginService.getByType('destination').then(function (plugins) {
+    $scope.plugins = plugins;
+  });
+
+  $scope.certificateService = CertificateService;
+  $scope.authorityService = AuthorityService;
+  $scope.destinationService = DestinationService;
+  $scope.notificationService = NotificationService;
+});

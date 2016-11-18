@@ -81,3 +81,6 @@ class Endpoint(db.Model):
             issues.append({'name': 'revoked', 'value': 'There is a revoked certificate attached to this endpoint consider replacing it.'})
 
         return issues
+
+    def __repr__(self):
+        return "Endpoint(name={name})".format(name=self.name)

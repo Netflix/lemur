@@ -105,6 +105,7 @@ class Certificate(db.Model):
         if kwargs.get('chain'):
             self.chain = kwargs['chain'].strip()
 
+        self.notify = kwargs.get('notify', True)
         self.destinations = kwargs.get('destinations', [])
         self.notifications = kwargs.get('notifications', [])
         self.description = kwargs.get('description')
@@ -119,8 +120,7 @@ class Certificate(db.Model):
 
     @property
     def active(self):
-        if self.endpoints:
-            return True
+        return self.notify
 
     @property
     def organization(self):
@@ -175,6 +175,32 @@ class Certificate(db.Model):
             else_=False
         )
 
+    @property
+    def extensions(self):
+        # TODO pull the OU, O, CN, etc + other extensions.
+        names = [{'name_type': 'DNSName', 'value': x.name} for x in self.domains]
+
+        extensions = {
+            'sub_alt_names': {
+                'names': names
+            }
+        }
+
+        return extensions
+
+    def get_arn(self, account_number):
+        """
+        Generate a valid AWS IAM arn
+
+        :rtype : str
+        :param account_number:
+        :return:
+        """
+        return "arn:aws:iam::{}:server-certificate/{}".format(account_number, self.name)
+
+    def __repr__(self):
+        return "Certificate(name={name})".format(name=self.name)
+
 
 @event.listens_for(Certificate.destinations, 'append')
 def update_destinations(target, value, initiator):
@@ -197,28 +223,28 @@ def update_destinations(target, value, initiator):
 @event.listens_for(Certificate.replaces, 'append')
 def update_replacement(target, value, initiator):
     """
-    When a certificate is marked as 'replaced' it is then marked as in-active
+    When a certificate is marked as 'replaced' we should not notify.
 
     :param target:
     :param value:
     :param initiator:
     :return:
     """
-    value.active = False
+    value.notify = False
 
 
-@event.listens_for(Certificate, 'before_update')
-def protect_active(mapper, connection, target):
-    """
-    When a certificate has a replacement do not allow it to be marked as 'active'
-
-    :param connection:
-    :param mapper:
-    :param target:
-    :return:
-    """
-    if target.active:
-        if not target.notify:
-            raise Exception(
-                "Cannot silence notification for a certificate Lemur has been found to be currently deployed onto endpoints"
-            )
+# @event.listens_for(Certificate, 'before_update')
+# def protect_active(mapper, connection, target):
+#    """
+#     When a certificate has a replacement do not allow it to be marked as 'active'
+#
+#     :param connection:
+#     :param mapper:
+#     :param target:
+#     :return:
+#     """
+#     if target.active:
+#         if not target.notify:
+#             raise Exception(
+#                 "Cannot silence notification for a certificate Lemur has been found to be currently deployed onto endpoints"
+#             )

@@ -42,17 +42,24 @@
             <td data-title="'Common Name'" filter="{ 'cn': 'text'}">
               {{ certificate.cn }}
             </td>
-            <td class="col-md-2" data-title="''">
-              <div class="btn-group pull-right">
-                <a class="btn btn-sm btn-default" ui-sref="certificate({name: certificate.name})">Permalink</a>
-                <button ng-model="certificate.toggle" class="btn btn-sm btn-info" uib-btn-checkbox btn-checkbox-true="1"
-                        btn-checkbox-false="0">More
-                </button>
-                <button ng-click="export(certificate.id)" class="btn btn-sm btn-success">
-                  Export
-                </button>
-                <button class="btn btn-sm btn-warning" ng-click="edit(certificate.id)">Edit</button>
-              </div>
+            <td data-title="''" style="text-align: center; vertical-align: middle;">
+                <div class="btn-group pull-right" role="group" aria-label="...">
+                  <a class="btn btn-sm btn-primary" ui-sref="certificate({name: certificate.name})">Permalink</a>
+                  <button ng-model="certificate.toggle" class="btn btn-sm btn-info" uib-btn-checkbox btn-checkbox-true="1"
+                            btn-checkbox-false="0">More
+                  </button>
+                  <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      Action
+                      <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li><a href ng-click="edit(certificate.id)">Edit</a></li>
+                      <li><a href ng-click="clone(certificate.id)">Clone</a></li>
+                      <li><a href ng-click="export(certificate.id)">Export</a></li>
+                    </ul>
+                  </div>
+                </div>
             </td>
           </tr>
           <tr class="warning" ng-if="certificate.toggle" ng-repeat-end>

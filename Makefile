@@ -48,7 +48,7 @@ test: develop lint test-python
 
 testloop: develop
 	pip install pytest-xdist
-	py.test tests -f
+	coverage run --source lemur -m py.test
 
 test-cli:
 	@echo "--> Testing CLI"
@@ -67,7 +67,7 @@ test-js:
 
 test-python:
 	@echo "--> Running Python tests"
-	py.test -v || exit 1
+	coverage run --source lemur -m py.test
 	@echo ""
 
 lint: lint-python lint-js

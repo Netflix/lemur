@@ -86,7 +86,10 @@ def find_duplicates(cert):
     :param cert:
     :return:
     """
-    return Certificate.query.filter_by(body=cert['body'].strip(), chain=cert['chain'].strip()).all()
+    if cert.get('chain'):
+        return Certificate.query.filter_by(body=cert['body'].strip(), chain=cert['chain'].strip()).all()
+    else:
+        return Certificate.query.filter_by(body=cert['body'].strip(), chain=None).all()
 
 
 def export(cert, export_plugin):
@@ -395,6 +398,9 @@ def create_csr(**csr_config):
         format=serialization.PrivateFormat.TraditionalOpenSSL,  # would like to use PKCS8 but AWS ELBs don't like it
         encryption_algorithm=serialization.NoEncryption()
     )
+
+    if isinstance(private_key, bytes):
+        private_key = private_key.decode('utf-8')
 
     csr = request.public_bytes(
         encoding=serialization.Encoding.PEM

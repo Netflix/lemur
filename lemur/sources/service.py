@@ -153,7 +153,7 @@ def sync_endpoints(source):
     _disassociate_endpoints_from_source(endpoints, source)
 
 
-def sync_certificates(source):
+def sync_certificates(source, user):
     new, updated = 0, 0
 
     current_app.logger.debug("Retrieving certificates from {0}".format(source.label))
@@ -162,6 +162,9 @@ def sync_certificates(source):
 
     for certificate in certificates:
         exists = cert_service.find_duplicates(certificate)
+
+        certificate['owner'] = user.email
+        certificate['creator'] = user
 
         if not exists:
             certificate_create(certificate, source)
@@ -182,8 +185,8 @@ def sync_certificates(source):
     _disassociate_certs_from_source(certificates, source)
 
 
-def sync(source):
-    sync_certificates(source)
+def sync(source, user):
+    sync_certificates(source, user)
     sync_endpoints(source)
 
     source.last_run = arrow.utcnow()

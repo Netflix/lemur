@@ -108,4 +108,4 @@ def digest_aws_cert_response(response):
     if 'certificate_chain' in cert:
         chain = cert['certificate_chain']
 
-    return str(body), str(chain),
+    return body, chain

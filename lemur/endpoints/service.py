@@ -132,14 +132,6 @@ def render(args):
         else:
             query = database.filter(query, Endpoint, terms)
 
-    # we make sure that a user can only use an endpoint they either own are are a member of - admins can see all
-    if not args['user'].is_admin:
-        endpoint_ids = []
-        for role in args['user'].roles:
-            for endpoint in role.endpoints:
-                endpoint_ids.append(endpoint.id)
-        query = query.filter(Endpoint.id.in_(endpoint_ids))
-
     return database.sort_and_page(query, Endpoint, args)
 
 

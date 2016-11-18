@@ -43,7 +43,7 @@
                                 <tr>
                                     <td width="32px"></td>
                                     <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:24px;color:#ffffff;line-height:1.25">
-                                       Your certificate(s) are expiring!
+                                       Your certificate(s) are being rotated!
                                     </td>
                                     <td width="32px"></td>
                                 </tr>
@@ -56,7 +56,7 @@
                     </tr>
                     <tr>
                         <td>
-                            <table bgcolor="#FAFAFA" width="100%" border="0" cellspacing="0" cellpadding="0"
+                            <table bgcolor="#3681E4" width="100%" border="0" cellspacing="0" cellpadding="0"
                                    style="min-width:332px;max-width:600px;border:1px solid #f0f0f0;border-bottom:1px solid #c0c0c0;border-top:0;border-bottom-left-radius:3px;border-bottom-right-radius:3px">
                                 <tbody>
                                 <tr height="16px">
@@ -75,7 +75,7 @@
                                             </tr>
                                             <tr>
                                                 <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#202020;line-height:1.5">
-                                                    <br>This is a Lemur certificate expiration notice. Please verify that the following certificates are no longer used.
+                                                    <br>Your certificate is ready.
                                                     <table border="0" cellspacing="0" cellpadding="0"
                                                            style="margin-top:48px;margin-bottom:48px">
                                                         <tbody>
@@ -87,7 +87,10 @@
                                                                     <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:20px;color:#202020">{{ message.name }}</span>
                                                                     <br>
                                                                     <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#727272">
-                                                                        {{ message.endpoints | length }} Endpoints
+                                                                        {{ message.body }}
+                                                                    </span>
+                                                                    <br>
+                                                                    <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#727272">
                                                                         <br>{{ message.owner }}
                                                                         <br>{{ message.not_after | time }}
                                                                         <a href="https://{{ hostname }}/#/certificates/{{ message.name }}" target="_blank">Details</a>
@@ -105,11 +108,6 @@
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#202020;line-height:1.5">
-                                                    If the above certificates are still in use. You should re-issue and deploy new certificates as soon as possible.</span>
-                                                </td>
-                                            </tr>
-                                            <tr>
                                             </tr>
                                             <tr>
                                                 <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#202020;line-height:1.5">
@@ -122,7 +120,7 @@
                                                     <table style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:12px;color:#b9b9b9;line-height:1.5">
                                                         <tbody>
                                                         <tr>
-                                                            <td>*All expiration times are in UTC<br></td>
+                                                            <td>*All times are in UTC<br></td>
                                                         </tr>
                                                         </tbody>
                                                     </table>

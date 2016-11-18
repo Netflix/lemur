@@ -147,6 +147,39 @@ class CertificatesList(AuthenticatedResource):
               Host: example.com
               Accept: application/json, text/javascript
 
+              {
+                  "owner": "secure@example.net",
+                  "commonName": "test.example.net",
+                  "country": "US",
+                  "extensions": {
+                    "subAltNames": {
+                      "names": [
+                        {
+                          "nameType": "DNSName",
+                          "value": "*.test.example.net"
+                        },
+                        {
+                          "nameType": "DNSName",
+                          "value": "www.test.example.net"
+                        }
+                      ]
+                    }
+                  },
+                  "replacements": [{
+                    "id": 1
+                  },
+                  "notify": true,
+                  "validityEnd": "2026-01-01T08:00:00.000Z",
+                  "authority": {
+                    "name": "verisign"
+                  },
+                  "organization": "Netflix, Inc.",
+                  "location": "Los Gatos",
+                  "state": "California",
+                  "validityStart": "2016-11-11T04:19:48.000Z",
+                  "organizationalUnit": "Operations"
+              }
+
 
            **Example response**:
 
@@ -194,7 +227,9 @@ class CertificatesList(AuthenticatedResource):
                     "id": 1090,
                     "name": "*.test.example.net"
                 }],
-                "replaces": [],
+                "replaces": [{
+                    "id": 1
+                }],
                 "name": "WILDCARD.test.example.net-SymantecCorporation-20160603-20180112",
                 "roles": [{
                     "id": 464,

@@ -29,3 +29,6 @@ class Role(db.Model):
     user_id = Column(Integer, ForeignKey('users.id'))
     users = relationship("User", secondary=roles_users, passive_deletes=True, backref="role")
     certificates = relationship("Certificate", secondary=roles_certificates, backref="role")
+
+    def __repr__(self):
+        return "Role(name={name})".format(name=self.name)
