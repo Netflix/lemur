@@ -110,9 +110,17 @@ class CertificateNestedOutputSchema(LemurOutputSchema):
     chain = fields.String()
     description = fields.String()
     name = fields.String()
+
+    # Note aliasing  is the first step in deprecating these fields.
     cn = fields.String()
+    common_name = fields.String(attribute='cn')
+
     not_after = fields.DateTime()
+    validity_end = ArrowDateTime(attribute='not_after')
+
     not_before = fields.DateTime()
+    validity_start = ArrowDateTime(attribute='not_before')
+
     owner = fields.Email()
     status = fields.Boolean()
     creator = fields.Nested(UserNestedOutputSchema)
@@ -127,8 +135,6 @@ class CertificateCloneSchema(LemurOutputSchema):
 
 class CertificateOutputSchema(LemurOutputSchema):
     id = fields.Integer()
-    active = fields.Boolean()
-    notify = fields.Boolean()
     bits = fields.Integer()
     body = fields.String()
     chain = fields.String()
@@ -136,15 +142,31 @@ class CertificateOutputSchema(LemurOutputSchema):
     description = fields.String()
     issuer = fields.String()
     name = fields.String()
+
+    # Note aliasing  is the first step in deprecating these fields.
+    notify = fields.Boolean()
+    active = fields.Boolean(attribute='notify')
+
     cn = fields.String()
+    common_name = fields.String(attribute='cn')
+
     not_after = fields.DateTime()
+    validity_end = ArrowDateTime(attribute='not_after')
+
     not_before = fields.DateTime()
+    validity_start = ArrowDateTime(attribute='not_before')
+
     owner = fields.Email()
     san = fields.Boolean()
     serial = fields.String()
     signing_algorithm = fields.String()
+
     status = fields.Boolean()
     user = fields.Nested(UserNestedOutputSchema)
+
+    extensions = fields.Nested(ExtensionSchema)
+
+    # associated objects
     domains = fields.Nested(DomainNestedOutputSchema, many=True)
     destinations = fields.Nested(DestinationNestedOutputSchema, many=True)
     notifications = fields.Nested(NotificationNestedOutputSchema, many=True)

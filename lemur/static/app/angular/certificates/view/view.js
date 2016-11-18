@@ -93,7 +93,7 @@ angular.module('lemur')
             body: 'Unable to update! ' + response.data.message,
             timeout: 100000
           });
-          certificate.active = false;
+          certificate.notify = false;
         });
     };
     $scope.getCertificateStatus = function () {
@@ -113,6 +113,25 @@ angular.module('lemur')
         templateUrl: '/angular/certificates/certificate/certificateWizard.tpl.html',
         size: 'lg',
         backdrop: 'static'
+      });
+
+      uibModalInstance.result.then(function () {
+        $scope.certificateTable.reload();
+      });
+    };
+
+    $scope.clone = function (certificateId) {
+      var uibModalInstance = $uibModal.open({
+        animation: true,
+        controller: 'CertificateCloneController',
+        templateUrl: '/angular/certificates/certificate/certificateWizard.tpl.html',
+        size: 'lg',
+        backdrop: 'static',
+        resolve: {
+          editId: function () {
+            return certificateId;
+          }
+        }
       });
 
       uibModalInstance.result.then(function () {

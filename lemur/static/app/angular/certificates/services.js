@@ -177,11 +177,25 @@ angular.module('lemur')
 
     CertificateService.getDefaults = function (certificate) {
       return DefaultService.get().then(function (defaults) {
-        certificate.country = defaults.country;
-        certificate.state = defaults.state;
-        certificate.location = defaults.location;
-        certificate.organization = defaults.organization;
-        certificate.organizationalUnit = defaults.organizationalUnit;
+        if (!certificate.country) {
+          certificate.country = defaults.country;
+        }
+
+        if (!certificate.state) {
+          certificate.state = defaults.state;
+        }
+
+        if (!certificate.location) {
+          certificate.location = defaults.location;
+        }
+
+        if (!certificate.organization) {
+          certificate.organization = defaults.organization;
+        }
+
+        if (!certificate.organizationalUnit) {
+          certificate.organizationalUnit = defaults.organizationalUnit;
+        }
       });
     };
 
