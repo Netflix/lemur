@@ -94,14 +94,39 @@ def configure_app(app, config=None):
     if config and config != 'None':
         app.config.from_object(from_file(config))
 
-    try:
-        app.config.from_envvar("LEMUR_CONF")
-    except RuntimeError:
-        # look in default paths
-        if os.path.isfile(os.path.expanduser("~/.lemur/lemur.conf.py")):
-            app.config.from_object(from_file(os.path.expanduser("~/.lemur/lemur.conf.py")))
-        else:
-            app.config.from_object(from_file(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'default.conf.py')))
+    else:
+        try:
+            app.config.from_envvar("LEMUR_CONF")
+        except RuntimeError:
+            # look in default paths
+            if os.path.isfile(os.path.expanduser("~/.lemur/lemur.conf.py")):
+                app.config.from_object(from_file(os.path.expanduser("~/.lemur/lemur.conf.py")))
+            else:
+                app.config.from_object(from_file(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'default.conf.py')))
+
+    validate_conf(app)
+
+
+def validate_conf(app):
+    """
+    There are a few configuration variables that are 'required' by Lemur. Here
+    we validate those required variables are set.
+    """
+    required_vars = [
+        'LEMUR_SECURITY_TEAM_EMAIL',
+        'LEMUR_DEFAULT_ORGANIZATIONAL_UNIT',
+        'LEMUR_DEFAULT_ORGANIZATION',
+        'LEMUR_DEFAULT_LOCATION',
+        'LEMUR_DEFAULT_COUNTRY',
+        'LEMUR_DEFAULT_STATE',
+        'SQLALCHEMY_DATABASE_URI'
+    ]
+
+    for var in required_vars:
+        if not app.config.get(var):
+            raise Exception("Required variable {var} is not set, ensure that it is set in Lemur's configuration file".format(
+                var=var
+            ))
 
 
 def configure_extensions(app):
