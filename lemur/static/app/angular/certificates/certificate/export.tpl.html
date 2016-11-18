@@ -1,43 +1,51 @@
 <div class="modal-header">
-  <div class="modal-title">
-    <button type="button" class="close" ng-click="cancel()" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-    <h3 class="modal-header">Export <span class="text-muted"><small>{{ certificate.name }}</small></span></h3>
-  </div>
-  <div class="modal-body">
+    <button type="button" class="close" ng-click="cancel()" aria-label="Close"><span aria-hidden="true">&times;</span>
+    </button>
+    <h3 class="modal-title">Export <span class="text-muted"><small>{{ certificate.name }}</small></span></h3>
+</div>
+<div class="modal-body">
     <form ng-show="!passphrase" name="exportForm" class="form-horizontal" role="form" novalidate>
-      <div class="form-group">
-        <label class="control-label col-sm-2">
-          Plugin
-        </label>
-        <div class="col-sm-10">
-          <select class="form-control" ng-model="certificate.plugin" ng-options="plugin.title for plugin in plugins" required></select>
-        </div>
-      </div>
-      <div class="form-group" ng-repeat="item in certificate.plugin.pluginOptions">
-        <ng-form name="subForm" class="form-horizontal" role="form" novalidate>
-          <div ng-class="{'has-error': subForm.sub.$invalid, 'has-success': !subForm.sub.$invalid&&subForm.sub.$dirty}">
+        <div class="form-group">
             <label class="control-label col-sm-2">
-              {{ item.name | titleCase }}
+                Plugin
             </label>
             <div class="col-sm-10">
-              <input name="sub" ng-if="item.type == 'int'" type="number" ng-pattern="/^[0-9]{12,12}$/" class="form-control" ng-model="item.value"/>
-              <select name="sub" ng-if="item.type == 'select'" class="form-control" ng-options="i for i in item.available" ng-model="item.value"></select>
-              <input name="sub" ng-if="item.type == 'bool'" class="form-control" type="checkbox" ng-model="item.value">
-              <input name="sub" ng-if="item.type == 'str'" type="text" class="form-control" ng-model="item.value" ng-pattern="item.validation"/>
-              <p ng-show="subForm.sub.$invalid && !subForm.sub.$pristine" class="help-block">{{ item.helpMessage }}</p>
+                <select class="form-control" ng-model="certificate.plugin"
+                        ng-options="plugin.title for plugin in plugins" required></select>
             </div>
-          </div>
-        </ng-form>
-      </div>
+        </div>
+        <div class="form-group" ng-repeat="item in certificate.plugin.pluginOptions">
+            <ng-form name="subForm" class="form-horizontal" role="form" novalidate>
+                <div
+                  ng-class="{'has-error': subForm.sub.$invalid, 'has-success': !subForm.sub.$invalid&&subForm.sub.$dirty}">
+                    <label class="control-label col-sm-2">
+                        {{ item.name | titleCase }}
+                    </label>
+                    <div class="col-sm-10">
+                        <input name="sub" ng-if="item.type == 'int'" type="number" ng-pattern="/^[0-9]{12,12}$/"
+                               class="form-control" ng-model="item.value"/>
+                        <select name="sub" ng-if="item.type == 'select'" class="form-control"
+                                ng-options="i for i in item.available" ng-model="item.value"></select>
+                        <input name="sub" ng-if="item.type == 'bool'" class="form-control" type="checkbox"
+                               ng-model="item.value">
+                        <input name="sub" ng-if="item.type == 'str'" type="text" class="form-control"
+                               ng-model="item.value" ng-pattern="item.validation"/>
+                        <p ng-show="subForm.sub.$invalid && !subForm.sub.$pristine"
+                           class="help-block">{{ item.helpMessage }}</p>
+                    </div>
+                </div>
+            </ng-form>
+        </div>
     </form>
     <div ng-show="passphrase">
-      <h3>Successfully exported!</h3>
-      <h4>Your passphrase is: <strong>{{ passphrase }}</strong></h4>
-      <p ng-show="additional">{{ additional }}</p>
+        <h3>Successfully exported!</h3>
+        <h4>Your passphrase is: <strong>{{ passphrase }}</strong></h4>
+        <p ng-show="additional">{{ additional }}</p>
     </div>
-  </div>
-  <div class="modal-footer">
-    <button type="submit" ng-show="!passphrase" ng-click="save(certificate)" ng-disabled="exportForm.$invalid" class="btn btn-success">Export</button>
+</div>
+<div class="modal-footer">
+    <button type="submit" ng-show="!passphrase" ng-click="save(certificate)" ng-disabled="exportForm.$invalid"
+            class="btn btn-success">Export
+    </button>
     <button ng-click="cancel()" class="btn btn-danger">{{ passphrase ? "Close" : "Cancel" }}</button>
-  </div>
 </div>

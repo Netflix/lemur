@@ -148,6 +148,19 @@ class Certificate(db.Model):
             else_=False
         )
 
+    @property
+    def extensions(self):
+        # TODO pull the OU, O, CN, etc + other extensions.
+        names = [{'name_type': 'DNSName', 'value': x.name} for x in self.domains]
+
+        extensions = {
+            'sub_alt_names': {
+                'names': names
+            }
+        }
+
+        return extensions
+
     def get_arn(self, account_number):
         """
         Generate a valid AWS IAM arn
