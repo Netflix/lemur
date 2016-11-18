@@ -5,7 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from flask import Blueprint
+from flask import Blueprint, g
 from flask.ext.restful import reqparse, Api
 
 from lemur.common.utils import paginated_parser
@@ -63,6 +63,7 @@ class EndpointsList(AuthenticatedResource):
         """
         parser = paginated_parser.copy()
         args = parser.parse_args()
+        args['user'] = g.current_user
         return service.render(args)
 
 

@@ -37,9 +37,9 @@ def test_user_authority(session, client, authority, role, user, issuer_plugin):
     assert client.get(api.url_for(AuthoritiesList), headers=user['token']).json['total'] == 0
 
 
-def test_create_authority(issuer_plugin, logged_in_admin):
+def test_create_authority(issuer_plugin, user):
     from lemur.authorities.service import create
-    authority = create(plugin={'plugin_object': issuer_plugin, 'slug': issuer_plugin.slug}, owner='jim@example.com', type='root')
+    authority = create(plugin={'plugin_object': issuer_plugin, 'slug': issuer_plugin.slug}, owner='jim@example.com', type='root', creator=user['user'])
     assert authority.authority_certificate
 
 
@@ -47,7 +47,7 @@ def test_create_authority(issuer_plugin, logged_in_admin):
     (VALID_USER_HEADER_TOKEN, 0),
     (VALID_ADMIN_HEADER_TOKEN, 3)
 ])
-def test_admin_authority(client, authority, token, count):
+def test_admin_authority(client, authority, issuer_plugin, token, count):
     assert client.get(api.url_for(AuthoritiesList), headers=token).json['total'] == count
 
 

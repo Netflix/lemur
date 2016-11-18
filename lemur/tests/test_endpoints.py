@@ -1,9 +1,19 @@
 import pytest
 
 from lemur.endpoints.views import *  # noqa
+from lemur.tests.factories import EndpointFactory, CertificateFactory
 
 
 from .vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN
+
+
+def test_rotate_certificate(client, source_plugin):
+    from lemur.endpoints.service import rotate_certificate
+    new_certificate = CertificateFactory()
+    endpoint = EndpointFactory()
+
+    rotate_certificate(endpoint, new_certificate)
+    assert endpoint.certificate == new_certificate
 
 
 @pytest.mark.parametrize("token,status", [

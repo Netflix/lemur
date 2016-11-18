@@ -8,8 +8,6 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
-from flask import g
-
 from lemur import database
 from lemur.extensions import metrics
 from lemur.authorities.models import Authority
@@ -53,13 +51,14 @@ def mint(**kwargs):
     elif len(values) == 4:
         body, private_key, chain, roles = values
 
-    roles = create_authority_roles(roles, kwargs['owner'], kwargs['plugin']['plugin_object'].title)
+    roles = create_authority_roles(roles, kwargs['owner'], kwargs['plugin']['plugin_object'].title, None)
     return body, private_key, chain, roles
 
 
-def create_authority_roles(roles, owner, plugin_title):
+def create_authority_roles(roles, owner, plugin_title, creator):
     """
     Creates all of the necessary authority roles.
+    :param creator:
     :param roles:
     :return:
     """
@@ -75,7 +74,7 @@ def create_authority_roles(roles, owner, plugin_title):
 
         # the user creating the authority should be able to administer it
         if role.username == 'admin':
-            g.current_user.roles.append(role)
+            creator.roles.append(role)
 
         role_objs.append(role)
 
@@ -95,10 +94,9 @@ def create(**kwargs):
     """
     Creates a new authority.
     """
-    kwargs['creator'] = g.user.email
     body, private_key, chain, roles = mint(**kwargs)
 
-    g.user.roles = list(set(list(g.user.roles) + roles))
+    kwargs['creator'].roles = list(set(list(kwargs['creator'].roles) + roles))
 
     kwargs['body'] = body
     kwargs['private_key'] = private_key
@@ -114,7 +112,7 @@ def create(**kwargs):
 
     authority = Authority(**kwargs)
     authority = database.create(authority)
-    g.user.authorities.append(authority)
+    kwargs['creator'].authorities.append(authority)
 
     metrics.send('authority_created', 'counter', 1, metric_tags=dict(owner=authority.owner))
     return authority
@@ -151,14 +149,14 @@ def get_by_name(authority_name):
     return database.get(Authority, authority_name, field='name')
 
 
-def get_authority_role(ca_name):
+def get_authority_role(ca_name, creator):
     """
     Attempts to get the authority role for a given ca uses current_user
     as a basis for accomplishing that.
 
     :param ca_name:
     """
-    if g.current_user.is_admin:
+    if creator.is_admin:
         return role_service.get_by_name("{0}_admin".format(ca_name))
     else:
         return role_service.get_by_name("{0}_operator".format(ca_name))
@@ -181,12 +179,12 @@ def render(args):
             query = database.filter(query, Authority, terms)
 
     # we make sure that a user can only use an authority they either own are are a member of - admins can see all
-    if not g.current_user.is_admin:
+    if not args['user'].is_admin:
         authority_ids = []
-        for authority in g.current_user.authorities:
+        for authority in args['user'].authorities:
             authority_ids.append(authority.id)
 
-        for role in g.current_user.roles:
+        for role in args['user'].roles:
             for authority in role.authorities:
                 authority_ids.append(authority.id)
         query = query.filter(Authority.id.in_(authority_ids))

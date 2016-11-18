@@ -274,6 +274,9 @@ def sort_and_page(query, model, args):
     page = args.pop('page')
     count = args.pop('count')
 
+    if args.get('user'):
+        user = args.pop('user')
+
     query = find_all(query, model, args)
 
     if sort_by and sort_dir:

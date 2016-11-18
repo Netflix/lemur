@@ -80,6 +80,20 @@ def get_cert_from_arn(arn):
     return digest_aws_cert_response(response)
 
 
+def create_arn_from_cert(account_number, region, certificate_name):
+    """
+    Create an ARN from a certificate.
+    :param account_number:
+    :param region:
+    :param certificate_name:
+    :return:
+    """
+    return "arn:aws:iam:{region}:{account_number}:{certificate_name}".format(
+        region=region,
+        account_number=account_number,
+        certificate_name=certificate_name)
+
+
 def digest_aws_cert_response(response):
     """
     Processes an AWS certifcate response and retrieves the certificate body and chain.

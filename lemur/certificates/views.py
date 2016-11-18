@@ -8,7 +8,7 @@
 import base64
 from builtins import str
 
-from flask import Blueprint, make_response, jsonify
+from flask import Blueprint, make_response, jsonify, g
 from flask.ext.restful import reqparse, Api
 
 from lemur.common.schema import validate_schema
@@ -129,6 +129,7 @@ class CertificatesList(AuthenticatedResource):
         parser.add_argument('show', type=str, location='args')
 
         args = parser.parse_args()
+        args['user'] = g.user
         return service.render(args)
 
     @validate_schema(certificate_input_schema, certificate_output_schema)
@@ -265,6 +266,7 @@ class CertificatesList(AuthenticatedResource):
         authority_permission = AuthorityPermission(data['authority'].id, roles)
 
         if authority_permission.can():
+            data['creator'] = g.user
             return service.create(**data)
 
         return dict(message="You are not authorized to use {0}".format(data['authority'].name)), 403
@@ -371,6 +373,7 @@ class CertificatesUpload(AuthenticatedResource):
         """
         if data.get('destinations'):
             if data.get('private_key'):
+                data['creator'] = g.user
                 return service.upload(**data)
             else:
                 raise Exception("Private key must be provided in order to upload certificate to AWS")
@@ -740,6 +743,7 @@ class NotificationCertificatesList(AuthenticatedResource):
 
         args = parser.parse_args()
         args['notification_id'] = notification_id
+        args['user'] = g.current_user
         return service.render(args)
 
 

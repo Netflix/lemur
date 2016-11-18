@@ -5,7 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import datetime
+import arrow
 
 from flask import current_app
 
@@ -68,6 +68,8 @@ def certificate_create(certificate, source):
 
     if errors:
         raise Exception("Unable to import certificate: {reasons}".format(reasons=errors))
+
+    data['creator'] = certificate['creator']
 
     cert = cert_service.import_certificate(**data)
     cert.description = "This certificate was automatically discovered by Lemur"
@@ -187,7 +189,7 @@ def sync(source, user):
     sync_certificates(source, user)
     sync_endpoints(source)
 
-    source.last_run = datetime.datetime.utcnow()
+    source.last_run = arrow.utcnow()
     database.update(source)
 
 

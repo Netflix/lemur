@@ -92,7 +92,7 @@ def process_options(options, csr):
         "certificate":
             {
                 "common_name": options['common_name'],
-                "csr": csr.decode('utf-8'),
+                "csr": csr,
                 "signature_hash":
                     signature_hash(options.get('signing_algorithm')),
             },

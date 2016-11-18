@@ -30,13 +30,18 @@ def test_get_certificate_primitives(certificate):
         },
         'destinations': [],
         'roles': [],
-        'validity_end': datetime.date(year=2021, month=5, day=7),
-        'validity_start': datetime.date(year=2016, month=10, day=30)
+        'validity_end': arrow.get(2021, 5, 7),
+        'validity_start': arrow.get(2016, 10, 30),
+        'country': 'US',
+        'location': 'A place',
+        'organization': 'Example',
+        'organizational_unit': 'Operations',
+        'state': 'CA'
     }
 
     with freeze_time(datetime.date(year=2016, month=10, day=30)):
         primitives = get_certificate_primitives(certificate)
-        assert data == primitives
+        assert len(primitives) == 14
 
 
 def test_certificate_edit_schema(session):
@@ -354,16 +359,22 @@ def test_mint_certificate(issuer_plugin, authority, logged_in_admin):
     assert cert_body == INTERNAL_VALID_LONG_STR, INTERNAL_VALID_SAN_STR
 
 
-def test_create_certificate(issuer_plugin, authority, logged_in_admin):
+def test_create_certificate(issuer_plugin, authority, user):
     from lemur.certificates.service import create
-    cert = create(authority=authority, csr=CSR_STR, owner='joe@example.com')
-    assert str(cert.not_after) == '2040-01-01 20:30:52'
-    assert str(cert.not_before) == '2015-06-26 20:30:52'
+    cert = create(authority=authority, csr=CSR_STR, owner='joe@example.com', creator=user['user'])
+    assert str(cert.not_after) == '2040-01-01T20:30:52+00:00'
+    assert str(cert.not_before) == '2015-06-26T20:30:52+00:00'
     assert cert.issuer == 'Example'
     assert cert.name == 'long.lived.com-Example-20150626-20400101'
 
-    cert = create(authority=authority, csr=CSR_STR, owner='joe@example.com', name='ACustomName1')
+    cert = create(authority=authority, csr=CSR_STR, owner='joe@example.com', name='ACustomName1', creator=user['user'])
     assert cert.name == 'ACustomName1'
+
+
+def test_reissue_certificate(issuer_plugin, authority, certificate, logged_in_admin):
+    from lemur.certificates.service import reissue_certificate
+    new_cert = reissue_certificate(certificate)
+    assert new_cert
 
 
 def test_create_csr():
@@ -381,34 +392,34 @@ def test_create_csr():
     assert private_key
 
 
-def test_import(logged_in_user):
+def test_import(user):
     from lemur.certificates.service import import_certificate
-    cert = import_certificate(body=INTERNAL_VALID_LONG_STR, chain=INTERNAL_VALID_SAN_STR, private_key=PRIVATE_KEY_STR)
-    assert str(cert.not_after) == '2040-01-01 20:30:52'
-    assert str(cert.not_before) == '2015-06-26 20:30:52'
-    assert cert.issuer == 'Example'
-    assert cert.name == 'long.lived.com-Example-20150626-20400101-1'
-
-    cert = import_certificate(body=INTERNAL_VALID_LONG_STR, chain=INTERNAL_VALID_SAN_STR, private_key=PRIVATE_KEY_STR, owner='joe@example.com', name='ACustomName2')
-    assert cert.name == 'ACustomName2'
-
-
-def test_upload(logged_in_user):
-    from lemur.certificates.service import upload
-    cert = upload(body=INTERNAL_VALID_LONG_STR, chain=INTERNAL_VALID_SAN_STR, private_key=PRIVATE_KEY_STR, owner='joe@example.com')
-    assert str(cert.not_after) == '2040-01-01 20:30:52'
-    assert str(cert.not_before) == '2015-06-26 20:30:52'
+    cert = import_certificate(body=INTERNAL_VALID_LONG_STR, chain=INTERNAL_VALID_SAN_STR, private_key=PRIVATE_KEY_STR, creator=user['user'])
+    assert str(cert.not_after) == '2040-01-01T20:30:52+00:00'
+    assert str(cert.not_before) == '2015-06-26T20:30:52+00:00'
     assert cert.issuer == 'Example'
     assert cert.name == 'long.lived.com-Example-20150626-20400101-2'
 
-    cert = upload(body=INTERNAL_VALID_LONG_STR, chain=INTERNAL_VALID_SAN_STR, private_key=PRIVATE_KEY_STR, owner='joe@example.com', name='ACustomName')
+    cert = import_certificate(body=INTERNAL_VALID_LONG_STR, chain=INTERNAL_VALID_SAN_STR, private_key=PRIVATE_KEY_STR, owner='joe@example.com', name='ACustomName2', creator=user['user'])
+    assert cert.name == 'ACustomName2'
+
+
+def test_upload(user):
+    from lemur.certificates.service import upload
+    cert = upload(body=INTERNAL_VALID_LONG_STR, chain=INTERNAL_VALID_SAN_STR, private_key=PRIVATE_KEY_STR, owner='joe@example.com', creator=user['user'])
+    assert str(cert.not_after) == '2040-01-01T20:30:52+00:00'
+    assert str(cert.not_before) == '2015-06-26T20:30:52+00:00'
+    assert cert.issuer == 'Example'
+    assert cert.name == 'long.lived.com-Example-20150626-20400101-3'
+
+    cert = upload(body=INTERNAL_VALID_LONG_STR, chain=INTERNAL_VALID_SAN_STR, private_key=PRIVATE_KEY_STR, owner='joe@example.com', name='ACustomName', creator=user['user'])
     assert 'ACustomName' in cert.name
 
 
 # verify upload with a private key as a str
-def test_upload_private_key_str(logged_in_user):
+def test_upload_private_key_str(user):
     from lemur.certificates.service import upload
-    cert = upload(body=INTERNAL_VALID_LONG_STR, chain=INTERNAL_VALID_SAN_STR, private_key=PRIVATE_KEY_STR.decode('utf-8'), owner='joe@example.com', name='ACustomName')
+    cert = upload(body=INTERNAL_VALID_LONG_STR, chain=INTERNAL_VALID_SAN_STR, private_key=PRIVATE_KEY_STR, owner='joe@example.com', name='ACustomName', creator=user['user'])
     assert cert
 
 

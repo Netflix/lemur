@@ -110,7 +110,7 @@ def test_role_put_with_data_and_user(client, session):
     }
 
     assert client.put(api.url_for(Roles, role_id=role.id), data=json.dumps(data), headers=headers).status_code == 200
-    assert client.get(api.url_for(RolesList), data={}, headers=headers).json['total'] == 1
+    assert client.get(api.url_for(RolesList), data={}, headers=headers).json['total'] > 1
 
 
 @pytest.mark.parametrize("token,status", [

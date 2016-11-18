@@ -5,7 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from flask import Blueprint
+from flask import Blueprint, g
 from flask.ext.restful import reqparse, Api
 
 from lemur.common.utils import paginated_parser
@@ -107,6 +107,7 @@ class AuthoritiesList(AuthenticatedResource):
         """
         parser = paginated_parser.copy()
         args = parser.parse_args()
+        args['user'] = g.current_user
         return service.render(args)
 
     @validate_schema(authority_input_schema, authority_output_schema)

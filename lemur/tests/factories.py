@@ -14,6 +14,7 @@ from lemur.sources.models import Source
 from lemur.notifications.models import Notification
 from lemur.users.models import User
 from lemur.roles.models import Role
+from lemur.endpoints.models import Policy, Endpoint
 
 from .vectors import INTERNAL_VALID_SAN_STR, PRIVATE_KEY_STR
 
@@ -227,6 +228,10 @@ class PolicyFactory(BaseFactory):
     """Policy Factory."""
     name = Sequence(lambda n: 'endpoint{0}'.format(n))
 
+    class Meta:
+        """Factory Configuration."""
+        model = Policy
+
 
 class EndpointFactory(BaseFactory):
     """Endpoint Factory."""
@@ -237,4 +242,8 @@ class EndpointFactory(BaseFactory):
     port = FuzzyInteger(0, high=65535)
     policy = SubFactory(PolicyFactory)
     certificate = SubFactory(CertificateFactory)
-    destination = SubFactory(DestinationFactory)
+    source = SubFactory(SourceFactory)
+
+    class Meta:
+        """Factory Configuration."""
+        model = Endpoint

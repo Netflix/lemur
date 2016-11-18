@@ -36,9 +36,7 @@ from flask import current_app
 from boto.exception import BotoServerError
 
 from lemur.plugins.bases import DestinationPlugin, SourcePlugin
-from lemur.plugins.lemur_aws.ec2 import get_regions
-from lemur.plugins.lemur_aws.elb import get_all_elbs, describe_load_balancer_policies, attach_certificate
-from lemur.plugins.lemur_aws import iam, s3
+from lemur.plugins.lemur_aws import iam, s3, elb, ec2
 from lemur.plugins import lemur_aws as aws
 
 
@@ -77,7 +75,10 @@ class AWSDestinationPlugin(DestinationPlugin):
 
         e = self.get_option('elb', options)
         if e:
-            attach_certificate(kwargs['accountNumber'], ['region'], e['name'], e['port'], e['certificateId'])
+            iam.attach_certificate(kwargs['accountNumber'], ['region'], e['name'], e['port'], e['certificateId'])
+
+    def deploy(self, elb_name, account, region, certificate):
+        pass
 
 
 class AWSSourcePlugin(SourcePlugin):
@@ -124,15 +125,15 @@ class AWSSourcePlugin(SourcePlugin):
         regions = self.get_option('regions', options)
 
         if not regions:
-            regions = get_regions(account_number=account_number)
+            regions = ec2.get_regions(account_number=account_number)
         else:
             regions = regions.split(',')
 
         for region in regions:
-            elbs = get_all_elbs(account_number=account_number, region=region)
+            elbs = elb.get_all_elbs(account_number=account_number, region=region)
             current_app.logger.info("Describing load balancers in {0}-{1}".format(account_number, region))
-            for elb in elbs:
-                for listener in elb['ListenerDescriptions']:
+            for e in elbs:
+                for listener in e['ListenerDescriptions']:
                     if not listener['Listener'].get('SSLCertificateId'):
                         continue
 
@@ -140,20 +141,28 @@ class AWSSourcePlugin(SourcePlugin):
                         continue
 
                     endpoint = dict(
-                        name=elb['LoadBalancerName'],
-                        dnsname=elb['DNSName'],
-                        type='elb',
+                        name=e['LoadBalancerName'],
+                        dnsname=e['DNSName'],
+                        type='e',
                         port=listener['Listener']['LoadBalancerPort'],
                         certificate_name=iam.get_name_from_arn(listener['Listener']['SSLCertificateId'])
                     )
 
                     if listener['PolicyNames']:
-                        policy = describe_load_balancer_policies(elb['LoadBalancerName'], listener['PolicyNames'], account_number=account_number, region=region)
+                        policy = e.describe_load_balancer_policies(e['LoadBalancerName'], listener['PolicyNames'], account_number=account_number, region=region)
                         endpoint['policy'] = format_elb_cipher_policy(policy)
 
                     endpoints.append(endpoint)
 
         return endpoints
+
+    def update_endpoint(self, options, endpoint, certificate):
+        account_number = self.get_option('accountNumber', options)
+        regions = self.get_option('regions', options)
+
+        for region in regions:
+            arn = iam.create_arn_from_cert(account_number, region, certificate.name)
+            elb.attach_certificate(account_number, region, certificate.name, endpoint.port, arn)
 
     def clean(self, options, **kwargs):
         account_number = self.get_option('accountNumber', options)

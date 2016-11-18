@@ -8,7 +8,7 @@
 import arrow
 
 from sqlalchemy import func, or_
-from flask import g, current_app
+from flask import current_app
 
 from lemur import database
 from lemur.extensions import metrics
@@ -201,11 +201,7 @@ def upload(**kwargs):
 
     cert = database.create(cert)
 
-    try:
-        g.user.certificates.append(cert)
-    except AttributeError:
-        current_app.logger.debug("No user to associate uploaded certificate to.")
-
+    kwargs['creator'].certificates.append(cert)
     return database.update(cert)
 
 
@@ -213,7 +209,6 @@ def create(**kwargs):
     """
     Creates a new certificate.
     """
-    kwargs['creator'] = g.user.email
     cert_body, private_key, cert_chain = mint(**kwargs)
     kwargs['body'] = cert_body
     kwargs['private_key'] = private_key
@@ -228,7 +223,7 @@ def create(**kwargs):
 
     cert = Certificate(**kwargs)
 
-    g.user.certificates.append(cert)
+    kwargs['creator'].certificates.append(cert)
     cert.authority = kwargs['authority']
     database.commit()
 
@@ -286,10 +281,10 @@ def render(args):
             query = database.filter(query, Certificate, terms)
 
     if show:
-        sub_query = database.session_query(Role.name).filter(Role.user_id == g.user.id).subquery()
+        sub_query = database.session_query(Role.name).filter(Role.user_id == args['user'].id).subquery()
         query = query.filter(
             or_(
-                Certificate.user_id == g.user.id,
+                Certificate.user_id == args['user'].id,
                 Certificate.owner.in_(sub_query)
             )
         )
@@ -476,10 +471,9 @@ def calculate_reissue_range(start, end):
     new_start = arrow.utcnow().date()
     new_end = new_start + span
 
-    return new_start, new_end
+    return new_start, arrow.get(new_end)
 
 
-# TODO pull the OU, O, CN, etc + other extensions.
 def get_certificate_primitives(certificate):
     """
     Retrieve key primitive from a certificate such that the certificate
@@ -491,6 +485,7 @@ def get_certificate_primitives(certificate):
     start, end = calculate_reissue_range(certificate.not_before, certificate.not_after)
     names = [{'name_type': 'DNSName', 'value': x.name} for x in certificate.domains]
 
+    # TODO pull additional extensions
     extensions = {
         'sub_alt_names': {
             'names': names
@@ -506,5 +501,31 @@ def get_certificate_primitives(certificate):
         destinations=certificate.destinations,
         roles=certificate.roles,
         extensions=extensions,
-        owner=certificate.owner
+        owner=certificate.owner,
+        organization=certificate.organization,
+        organizational_unit=certificate.organizational_unit,
+        country=certificate.country,
+        state=certificate.state,
+        location=certificate.location
     )
+
+
+def reissue_certificate(certificate, replace=None, user=None):
+    """
+    Reissue certificate with the same properties of the given certificate.
+    :param certificate:
+    :return:
+    """
+    primitives = get_certificate_primitives(certificate)
+
+    if not user:
+        primitives['creator'] = certificate.user
+    else:
+        primitives['creator'] = user
+
+    new_cert = create(**primitives)
+
+    if replace:
+        certificate.notify = False
+
+    return new_cert

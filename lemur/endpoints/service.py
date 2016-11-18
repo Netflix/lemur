@@ -8,6 +8,8 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
+from flask import current_app
+
 from lemur import database
 from lemur.extensions import metrics
 from lemur.endpoints.models import Endpoint, Policy, Cipher
@@ -94,6 +96,17 @@ def update(endpoint_id, **kwargs):
     endpoint.certificate = kwargs['certificate']
     database.update(endpoint)
     return endpoint
+
+
+def rotate_certificate(endpoint, new_cert):
+    """Rotates a certificate on a given endpoint."""
+    try:
+        endpoint.source.plugin.update_endpoint(endpoint, new_cert)
+        endpoint.certificate = new_cert
+    except Exception as e:
+        metrics.send('rotate_failure', 'counter', 1, tags={'endpoint': endpoint.name})
+        current_app.logger.exception(e)
+        raise e
 
 
 def render(args):
