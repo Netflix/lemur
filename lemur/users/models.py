@@ -85,10 +85,8 @@ class View(db.Model):
     __tablename__ = 'views'
     id = Column(Integer, primary_key=True)
     certificate_id = Column(Integer, ForeignKey('certificates.id'))
-    certificates = relationship("Certificate", backref='views')
     viewed_at = Column(ArrowType(), PassiveDefault(func.now()), nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'))
-    users = relationship("User", backref="views")
 
 
 listen(User, 'before_insert', hash_password)

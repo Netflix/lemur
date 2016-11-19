@@ -138,8 +138,8 @@ def log_private_key_view(certificate, user):
     :param user:
     :return:
     """
-    view = View(user=user)
-    certificate.views.append(view)
+    view = View(user_id=user.id, certificate_id=certificate.id)
+    database.add(view)
     database.commit()
 
 
