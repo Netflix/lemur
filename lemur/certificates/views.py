@@ -22,6 +22,7 @@ from lemur.certificates.schemas import certificate_input_schema, certificate_out
     certificate_upload_input_schema, certificates_output_schema, certificate_export_input_schema, certificate_edit_input_schema
 
 from lemur.roles import service as role_service
+from lemur.logs import service as log_service
 
 
 mod = Blueprint('certificates', __name__)
@@ -444,7 +445,7 @@ class CertificatePrivateKey(AuthenticatedResource):
             if not permission.can():
                 return dict(message='You are not authorized to view this key'), 403
 
-        service.log_private_key_view(cert, g.current_user)
+        log_service.create(g.current_user, 'key_view', certificate=cert)
         response = make_response(jsonify(key=cert.private_key), 200)
         response.headers['cache-control'] = 'private, max-age=0, no-cache, no-store'
         response.headers['pragma'] = 'no-cache'
@@ -931,7 +932,7 @@ class CertificateExport(AuthenticatedResource):
 
         options = data['plugin']['plugin_options']
 
-        service.log_private_key_view(cert, g.current_user)
+        log_service.create(g.current_user, 'key_view', certificate=cert)
         extension, passphrase, data = plugin.export(cert.body, cert.chain, cert.private_key, options)
 
         # we take a hit in message size when b64 encoding

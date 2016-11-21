@@ -43,6 +43,7 @@ from lemur.destinations.models import Destination  # noqa
 from lemur.domains.models import Domain  # noqa
 from lemur.notifications.models import Notification  # noqa
 from lemur.sources.models import Source  # noqa
+from lemur.logs.models import Log  # noqa
 
 
 manager = Manager(create_app)

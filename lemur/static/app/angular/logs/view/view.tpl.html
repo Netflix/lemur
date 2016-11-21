@@ -1,0 +1,32 @@
+<div class="row">
+  <div class="col-md-12">
+    <h2 class="featurette-heading">Logs
+      <span class="text-muted"><small>I see what you did there</small></span></h2>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <div class="btn-group">
+          <button ng-model="showFilter" class="btn btn-default" uib-btn-checkbox
+                  btn-checkbox-true="1"
+                  btn-checkbox-false="0">Filter</button>
+        </div>
+        <div class="clearfix"></div>
+      </div>
+      <div class="table-responsive">
+        <table ng-table="domainsTable" class="table table-striped" show-filter="showFilter" template-pagination="angular/pager.html">
+          <tbody>
+          <tr ng-repeat="log in $data track by $index">
+            <td data-title="'Logged At'" sortable="'logged_at'" filter="{ 'logged_at': 'text' }">
+              {{ log.logged_at }}
+            </td>
+            <td data-title="'User'" sortable="'user'" filter="{ 'user.email': 'text' }">
+              {{ log.user.email }}
+            </td>
+            <td data-title="'Type'" sortable="'type'" filter="{ 'type': 'text' }">
+              {{ log.type }}
+             </td>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
