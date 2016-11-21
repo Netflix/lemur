@@ -84,7 +84,7 @@ docs_require = [
 ]
 
 dev_requires = [
-    'flake8>=2.0,<3.0',
+    'flake8>=3.2,<4.0',
     'pre-commit',
     'invoke',
     'twine'
