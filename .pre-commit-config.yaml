@@ -3,3 +3,8 @@
     hooks:
     -   id: trailing-whitespace
     -   id: flake8
+    -   id: check-merge-conflict
+-   repo: git://github.com/pre-commit/mirrors-jshint
+    sha: e72140112bdd29b18b0c8257956c896c4c3cebcb
+    hooks:
+    -   id: jshint
