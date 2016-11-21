@@ -61,20 +61,20 @@ install_requires = [
     'future==0.15.2',
     'boto==2.38.0',  # we might make this optional
     'boto3==1.3.0',
-    'acme==0.1.0',
+    'acme==0.9.3',
     'retrying==1.3.3',
-    'tabulate==0.7.5',
+    'tabulate==0.7.7',
     'pem==16.1.0'
 ]
 
 tests_require = [
     'pyflakes',
-    'moto==0.4.19',
+    'moto==0.4.30',
     'nose==1.3.7',
-    'pytest==2.8.5',
+    'pytest==3.0.4',
     'factory-boy==2.7.0',
     'pytest-flask==0.10.0',
-    'freezegun==0.3.7'
+    'freezegun==0.3.8'
 ]
 
 docs_require = [
