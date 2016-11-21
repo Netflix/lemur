@@ -58,7 +58,7 @@ install_requires = [
     'xmltodict==0.10.2',
     'lockfile==0.12.2',
     'inflection==0.3.1',
-    'future==0.15.2',
+    'future==0.16.0',
     'boto==2.38.0',  # we might make this optional
     'boto3==1.3.0',
     'acme==0.1.0',
