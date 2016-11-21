@@ -9,7 +9,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from sqlalchemy.orm import relationship
-from sqlalchemy import Integer, ForeignKey, String, PassiveDefault, func, Column, Boolean
+from sqlalchemy import Integer, String, Column, Boolean
 from sqlalchemy.event import listen
 
 from sqlalchemy_utils.types.arrow import ArrowType
@@ -79,14 +79,6 @@ class User(db.Model):
 
     def __repr__(self):
         return "User(username={username})".format(username=self.username)
-
-
-class View(db.Model):
-    __tablename__ = 'views'
-    id = Column(Integer, primary_key=True)
-    certificate_id = Column(Integer, ForeignKey('certificates.id'))
-    viewed_at = Column(ArrowType(), PassiveDefault(func.now()), nullable=False)
-    user_id = Column(Integer, ForeignKey('users.id'))
 
 
 listen(User, 'before_insert', hash_password)
