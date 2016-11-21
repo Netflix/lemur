@@ -68,7 +68,7 @@ def configure_hook(app):
     :return:
     """
     from flask import jsonify
-    from werkzeug.exceptions import default_exceptions
+    from werkzeug.exceptions import HTTPException
     from lemur.decorators import crossdomain
     if app.config.get('CORS'):
         @app.after_request
@@ -76,13 +76,11 @@ def configure_hook(app):
         def after(response):
             return response
 
-    def make_json_handler(code):
-        def json_handler(error):
-            metrics.send('{}_status_code'.format(code), 'counter', 1)
-            response = jsonify(message=str(error))
-            response.status_code = code
-            return response
-        return json_handler
+    @app.errorhandler(Exception)
+    def handle_error(e):
+        code = 500
+        if isinstance(e, HTTPException):
+            code = e.code
 
-    for code, value in default_exceptions.items():
-        app.error_handler_spec[None][code] = make_json_handler(code)
+        metrics.send('{}_status_code'.format(code), 'counter', 1)
+        return jsonify(error=str(e)), code

@@ -2,7 +2,7 @@
 import pytest
 from lemur.authorities.views import *  # noqa
 
-from .vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN
+from lemur.tests.vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN
 
 
 def test_authority_input_schema(client, role):

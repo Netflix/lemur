@@ -34,11 +34,11 @@ with open(os.path.join(ROOT, "lemur", "__about__.py")) as f:
 
 
 install_requires = [
-    'Flask==0.10.1',
+    'Flask==0.11.1',
     'Flask-RESTful==0.3.5',
     'Flask-SQLAlchemy==2.1',
     'Flask-Script==2.0.5',
-    'Flask-Migrate==2.0.1',
+    'Flask-Migrate==2.0.0',
     'Flask-Bcrypt==0.7.1',
     'Flask-Principal==0.4.0',
     'Flask-Mail==0.9.1',
@@ -52,14 +52,14 @@ install_requires = [
     'marshmallow==2.4.0',
     'pycrypto==2.6.1',
     'cryptography==1.5',
-    'pyopenssl==16.2.0',
+    'pyopenssl==16.1.0',
     'pyjwt==1.4.2',
     'xmltodict==0.10.2',
     'lockfile==0.12.2',
     'inflection==0.3.1',
     'future==0.16.0',
     'boto==2.43.0',  # we might make this optional
-    'boto3==1.4.0',
+    'boto3==1.4.1',
     'acme==0.9.3',
     'retrying==1.3.3',
     'tabulate==0.7.7',
