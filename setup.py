@@ -61,7 +61,7 @@ install_requires = [
     'future==0.16.0',
     'boto==2.43.0',  # we might make this optional
     'boto3==1.4.1',
-    'acme==0.1.0',
+    'acme==0.9.3',
     'retrying==1.3.3',
     'tabulate==0.7.5',
     'pem==16.1.0'
