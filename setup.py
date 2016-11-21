@@ -63,7 +63,7 @@ install_requires = [
     'boto3==1.4.1',
     'acme==0.9.3',
     'retrying==1.3.3',
-    'tabulate==0.7.5',
+    'tabulate==0.7.7',
     'pem==16.1.0'
 ]
 
