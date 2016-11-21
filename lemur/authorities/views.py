@@ -504,6 +504,7 @@ class AuthorityVisualizations(AuthenticatedResource):
         authority = service.get(authority_id)
         return dict(name=authority.name, children=[{"name": c.name} for c in authority.certificates])
 
+
 api.add_resource(AuthoritiesList, '/authorities', endpoint='authorities')
 api.add_resource(Authorities, '/authorities/<int:authority_id>', endpoint='authority')
 api.add_resource(AuthorityVisualizations, '/authorities/<int:authority_id>/visualize', endpoint='authority_visualizations')

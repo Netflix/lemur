@@ -35,45 +35,45 @@ with open(os.path.join(ROOT, "lemur", "__about__.py")) as f:
 
 install_requires = [
     'Flask==0.10.1',
-    'Flask-RESTful==0.3.3',
+    'Flask-RESTful==0.3.5',
     'Flask-SQLAlchemy==2.1',
     'Flask-Script==2.0.5',
-    'Flask-Migrate==1.7.0',
+    'Flask-Migrate==2.0.1',
     'Flask-Bcrypt==0.7.1',
     'Flask-Principal==0.4.0',
     'Flask-Mail==0.9.1',
-    'SQLAlchemy-Utils==0.31.4',
-    'BeautifulSoup4==4.4.1',
-    'requests==2.11.1',
-    'psycopg2==2.6.1',
-    'arrow==0.7.0',
-    'gunicorn==19.4.1',
-    'marshmallow-sqlalchemy==0.8.0',
+    'SQLAlchemy-Utils==0.32.9',
+    'requests==2.12.1',
+    'psycopg2==2.6.2',
+    'arrow==0.8.0',
+    'six==1.10.0',
+    'gunicorn==19.6.0',
+    'marshmallow-sqlalchemy==0.12.0',
     'marshmallow==2.4.0',
     'pycrypto==2.6.1',
     'cryptography==1.5',
-    'pyopenssl==0.15.1',
-    'pyjwt==1.4.0',
-    'xmltodict==0.9.2',
+    'pyopenssl==16.2.0',
+    'pyjwt==1.4.2',
+    'xmltodict==0.10.2',
     'lockfile==0.12.2',
     'inflection==0.3.1',
-    'future==0.15.2',
-    'boto==2.38.0',  # we might make this optional
-    'boto3==1.3.0',
-    'acme==0.1.0',
+    'future==0.16.0',
+    'boto==2.43.0',  # we might make this optional
+    'boto3==1.4.0',
+    'acme==0.9.3',
     'retrying==1.3.3',
-    'tabulate==0.7.5',
+    'tabulate==0.7.7',
     'pem==16.1.0'
 ]
 
 tests_require = [
     'pyflakes',
-    'moto==0.4.19',
+    'moto==0.4.30',
     'nose==1.3.7',
-    'pytest==2.8.5',
+    'pytest==3.0.4',
     'factory-boy==2.7.0',
     'pytest-flask==0.10.0',
-    'freezegun==0.3.7'
+    'freezegun==0.3.8'
 ]
 
 docs_require = [
@@ -83,7 +83,7 @@ docs_require = [
 ]
 
 dev_requires = [
-    'flake8>=2.0,<3.0',
+    'flake8>=3.2,<4.0',
     'pre-commit',
     'invoke',
     'twine'

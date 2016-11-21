@@ -61,4 +61,5 @@ class LemurDefaults(AuthenticatedResource):
             issuerPlugin=current_app.config.get('LEMUR_DEFAULT_ISSUER_PLUGIN')
         )
 
+
 api.add_resource(LemurDefaults, '/defaults', endpoint='default')

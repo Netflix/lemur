@@ -825,5 +825,6 @@ def main():
     manager.add_command("reissue_certificate", ReissueCertificate())
     manager.run()
 
+
 if __name__ == "__main__":
     main()
