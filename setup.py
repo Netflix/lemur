@@ -71,7 +71,7 @@ tests_require = [
     'pyflakes',
     'moto==0.4.30',
     'nose==1.3.7',
-    'pytest==2.8.5',
+    'pytest==3.0.4',
     'factory-boy==2.7.0',
     'pytest-flask==0.10.0',
     'freezegun==0.3.7'
