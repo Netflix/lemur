@@ -46,7 +46,7 @@ install_requires = [
     'BeautifulSoup4==4.5.1',
     'requests==2.12.1',
     'psycopg2==2.6.2',
-    'arrow==0.7.0',
+    'arrow==0.8.0',
     'six==1.10.0',
     'gunicorn==19.4.1',
     'marshmallow-sqlalchemy==0.8.0',
