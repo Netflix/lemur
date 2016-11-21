@@ -42,7 +42,7 @@ install_requires = [
     'Flask-Bcrypt==0.7.1',
     'Flask-Principal==0.4.0',
     'Flask-Mail==0.9.1',
-    'SQLAlchemy-Utils==0.32.11.4',
+    'SQLAlchemy-Utils==0.32.9',
     'requests==2.12.1',
     'psycopg2==2.6.2',
     'arrow==0.8.0',
