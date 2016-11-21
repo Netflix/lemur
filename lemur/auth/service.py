@@ -8,7 +8,6 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
-import sys
 import jwt
 import json
 import binascii
@@ -40,12 +39,8 @@ def get_rsa_public_key(n, e):
     :param e:
     :return: a RSA Public Key in PEM format
     """
-    if sys.version_info >= (3, 0):
-        n = int(binascii.hexlify(jwt.utils.base64url_decode(bytes(n, 'utf-8'))), 16)
-        e = int(binascii.hexlify(jwt.utils.base64url_decode(bytes(e, 'utf-8'))), 16)
-    else:
-        n = int(binascii.hexlify(jwt.utils.base64url_decode(str(n))), 16)
-        e = int(binascii.hexlify(jwt.utils.base64url_decode(str(e))), 16)
+    n = int(binascii.hexlify(jwt.utils.base64url_decode(bytes(n, 'utf-8'))), 16)
+    e = int(binascii.hexlify(jwt.utils.base64url_decode(bytes(e, 'utf-8'))), 16)
 
     pub = RSAPublicNumbers(e, n).public_key(default_backend())
     return pub.public_bytes(
@@ -128,10 +123,7 @@ def fetch_token_header(token):
         raise jwt.DecodeError('Not enough segments')
 
     try:
-        if sys.version_info >= (3, 0):
-            return json.loads(jwt.utils.base64url_decode(header_segment).decode('utf-8'))
-        else:
-            return json.loads(jwt.utils.base64url_decode(header_segment))
+        return json.loads(jwt.utils.base64url_decode(header_segment).decode('utf-8'))
     except TypeError as e:
         current_app.logger.exception(e)
         raise jwt.DecodeError('Invalid header padding')
