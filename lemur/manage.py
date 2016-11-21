@@ -477,14 +477,6 @@ def unlock(path=None):
     sys.stdout.write("[+] Keys have been unencrypted!\n")
 
 
-def unicode_(data):
-    import sys
-
-    if sys.version_info.major < 3:
-        return data.decode('UTF-8')
-    return data
-
-
 def print_certificate_details(details):
     """
     Print the certificate details with formatting.

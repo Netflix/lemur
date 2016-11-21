@@ -6,8 +6,6 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import six
-import sys
 import string
 import random
 
@@ -37,10 +35,7 @@ def get_psuedo_random_string():
 
 
 def parse_certificate(body):
-    if sys.version_info[0] <= 2:
-        return x509.load_pem_x509_certificate(bytes(body), default_backend())
-
-    if isinstance(body, six.string_types):
+    if isinstance(body, str):
         body = body.encode('utf-8')
 
     return x509.load_pem_x509_certificate(body, default_backend())

@@ -6,8 +6,6 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import os
-import sys
-import six
 from flask import current_app
 from cryptography.fernet import Fernet, MultiFernet
 import sqlalchemy.types as types
@@ -97,11 +95,8 @@ class Vault(types.TypeDecorator):
         if not value:
             return
 
-        if sys.version_info[0] <= 2:
-            return MultiFernet(self.keys).encrypt(bytes(value))
-
         # ensure bytes for fernet
-        if isinstance(value, six.string_types):
+        if isinstance(value, str):
             value = value.encode('utf-8')
 
         return MultiFernet(self.keys).encrypt(value)
@@ -122,6 +117,4 @@ class Vault(types.TypeDecorator):
         if not value:
             return
 
-        if sys.version_info[0] <= 2:
-            return MultiFernet(self.keys).decrypt(value)
         return MultiFernet(self.keys).decrypt(value).decode('utf8')
