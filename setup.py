@@ -34,7 +34,7 @@ with open(os.path.join(ROOT, "lemur", "__about__.py")) as f:
 
 
 install_requires = [
-    'Flask==0.10.1',
+    'Flask==0.11.1',
     'Flask-RESTful==0.3.3',
     'Flask-SQLAlchemy==2.1',
     'Flask-Script==2.0.5',
