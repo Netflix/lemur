@@ -19,6 +19,7 @@ from lemur.destinations.models import Destination
 from lemur.notifications.models import Notification
 from lemur.authorities.models import Authority
 from lemur.domains.models import Domain
+from lemur.users.models import View
 
 from lemur.roles.models import Role
 from lemur.roles import service as role_service
@@ -127,6 +128,19 @@ def update(cert_id, owner, description, notify, destinations, notifications, rep
     cert.owner = owner
 
     return database.update(cert)
+
+
+def log_private_key_view(certificate, user):
+    """
+    Creates a record each time a certificates private key is viewed.
+
+    :param certificate:
+    :param user:
+    :return:
+    """
+    view = View(user_id=user.id, certificate_id=certificate.id)
+    database.add(view)
+    database.commit()
 
 
 def create_certificate_roles(**kwargs):

@@ -1,2 +1,4 @@
 [report]
 include = lemur/*.py
+omit = lemur/migrations/*
+

@@ -79,6 +79,7 @@ class Certificate(db.Model):
                             secondaryjoin=id == certificate_replacement_associations.c.replaced_certificate_id,  # noqa
                             backref='replaced')
 
+    views = relationship("View", backref="certificate")
     endpoints = relationship("Endpoint", backref='certificate')
 
     def __init__(self, **kwargs):

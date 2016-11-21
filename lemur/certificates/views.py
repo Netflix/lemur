@@ -437,16 +437,18 @@ class CertificatePrivateKey(AuthenticatedResource):
         if not cert:
             return dict(message="Cannot find specified certificate"), 404
 
-        owner_role = role_service.get_by_name(cert.owner)
-        permission = CertificatePermission(cert.id, owner_role, [x.name for x in cert.roles])
+        if not g.current_user.is_admin:
+            owner_role = role_service.get_by_name(cert.owner)
+            permission = CertificatePermission(cert.id, owner_role, [x.name for x in cert.roles])
 
-        if permission.can():
-            response = make_response(jsonify(key=cert.private_key), 200)
-            response.headers['cache-control'] = 'private, max-age=0, no-cache, no-store'
-            response.headers['pragma'] = 'no-cache'
-            return response
+            if not permission.can():
+                return dict(message='You are not authorized to view this key'), 403
 
-        return dict(message='You are not authorized to view this key'), 403
+        service.log_private_key_view(cert, g.current_user)
+        response = make_response(jsonify(key=cert.private_key), 200)
+        response.headers['cache-control'] = 'private, max-age=0, no-cache, no-store'
+        response.headers['pragma'] = 'no-cache'
+        return response
 
 
 class Certificates(AuthenticatedResource):
@@ -908,36 +910,32 @@ class CertificateExport(AuthenticatedResource):
         """
         cert = service.get(certificate_id)
 
-        owner_role = role_service.get_by_name(cert.owner)
-        permission = CertificatePermission(cert.id, owner_role, [x.name for x in cert.roles])
+        if not cert:
+            return dict(message="Cannot find specified certificate"), 404
 
-        options = data['plugin']['plugin_options']
         plugin = data['plugin']['plugin_object']
 
         if plugin.requires_key:
-            if cert.private_key:
-                if permission.can():
-                    extension, passphrase, data = plugin.export(cert.body, cert.chain, cert.private_key, options)
-                else:
-                    return dict(message='You are not authorized to export this certificate.'), 403
+            if not cert.private_key:
+                return dict(
+                    message='Unable to export certificate, plugin: {0} requires a private key but no key was found.'.format(
+                        plugin.slug))
+
             else:
-                return dict(message='Unable to export certificate, plugin: {0} requires a private key but no key was found.'.format(plugin.slug))
-        else:
-            extension, passphrase, data = plugin.export(cert.body, cert.chain, cert.private_key, options)
+                if not g.current_user.is_admin:
+                    owner_role = role_service.get_by_name(cert.owner)
+                    permission = CertificatePermission(cert.id, owner_role, [x.name for x in cert.roles])
+
+                    if not permission.can():
+                        return dict(message='You are not authorized to export this certificate.'), 403
+
+        options = data['plugin']['plugin_options']
+
+        service.log_private_key_view(cert, g.current_user)
+        extension, passphrase, data = plugin.export(cert.body, cert.chain, cert.private_key, options)
 
         # we take a hit in message size when b64 encoding
         return dict(extension=extension, passphrase=passphrase, data=base64.b64encode(data).decode('utf-8'))
-
-
-class CertificateClone(AuthenticatedResource):
-    def __init__(self):
-        self.reqparse = reqparse.RequestParser()
-        super(CertificateExport, self).__init__()
-
-    @validate_schema(None, certificate_output_schema)
-    def get(self, certificate_id):
-
-        pass
 
 
 api.add_resource(CertificatesList, '/certificates', endpoint='certificates')
@@ -946,7 +944,6 @@ api.add_resource(CertificatesStats, '/certificates/stats', endpoint='certificate
 api.add_resource(CertificatesUpload, '/certificates/upload', endpoint='certificateUpload')
 api.add_resource(CertificatePrivateKey, '/certificates/<int:certificate_id>/key', endpoint='privateKeyCertificates')
 api.add_resource(CertificateExport, '/certificates/<int:certificate_id>/export', endpoint='exportCertificate')
-api.add_resource(CertificateClone, '/certificates/<int:certificate_id>/clone', endpoint='cloneCertificate')
 api.add_resource(NotificationCertificatesList, '/notifications/<int:notification_id>/certificates',
                  endpoint='notificationCertificates')
 api.add_resource(CertificatesReplacementsList, '/certificates/<int:certificate_id>/replacements',

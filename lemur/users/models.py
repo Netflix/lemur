@@ -8,11 +8,11 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import sys
 from sqlalchemy.orm import relationship
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy import Integer, ForeignKey, String, PassiveDefault, func, Column, Boolean
 from sqlalchemy.event import listen
 
+from sqlalchemy_utils.types.arrow import ArrowType
 
 from lemur.database import db
 from lemur.models import roles_users
@@ -37,7 +37,7 @@ class User(db.Model):
     id = Column(Integer, primary_key=True)
     password = Column(String(128))
     active = Column(Boolean())
-    confirmed_at = Column(DateTime())
+    confirmed_at = Column(ArrowType())
     username = Column(String(255), nullable=False, unique=True)
     email = Column(String(128), unique=True)
     profile_picture = Column(String(255))
@@ -63,11 +63,7 @@ class User(db.Model):
         :return:
         """
         if self.password:
-            if sys.version_info[0] >= 3:
-                self.password = bcrypt.generate_password_hash(self.password).decode('utf-8')
-            else:
-                self.password = bcrypt.generate_password_hash(self.password)
-            return self.password
+            self.password = bcrypt.generate_password_hash(self.password).decode('utf-8')
 
     @property
     def is_admin(self):
@@ -83,6 +79,14 @@ class User(db.Model):
 
     def __repr__(self):
         return "User(username={username})".format(username=self.username)
+
+
+class View(db.Model):
+    __tablename__ = 'views'
+    id = Column(Integer, primary_key=True)
+    certificate_id = Column(Integer, ForeignKey('certificates.id'))
+    viewed_at = Column(ArrowType(), PassiveDefault(func.now()), nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id'))
 
 
 listen(User, 'before_insert', hash_password)

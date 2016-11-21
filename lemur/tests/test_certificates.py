@@ -423,6 +423,21 @@ def test_upload_private_key_str(user):
     assert cert
 
 
+def test_private_key_audit(client, certificate):
+    assert len(certificate.views) == 0
+    client.get(api.url_for(CertificatePrivateKey, certificate_id=certificate.id), headers=VALID_ADMIN_HEADER_TOKEN)
+    assert len(certificate.views) == 1
+
+
+@pytest.mark.parametrize("token,status", [
+    (VALID_USER_HEADER_TOKEN, 200),
+    (VALID_ADMIN_HEADER_TOKEN, 200),
+    ('', 401)
+])
+def test_certificate_get_private_key(client, token, status):
+    assert client.get(api.url_for(Certificates, certificate_id=1), headers=token).status_code == status
+
+
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 200),
     (VALID_ADMIN_HEADER_TOKEN, 200),
@@ -511,15 +526,6 @@ def test_certificates_delete(client, token, status):
 ])
 def test_certificates_patch(client, token, status):
     assert client.patch(api.url_for(CertificatesList), data={}, headers=token).status_code == status
-
-
-@pytest.mark.parametrize("token,status", [
-    (VALID_USER_HEADER_TOKEN, 403),
-    (VALID_ADMIN_HEADER_TOKEN, 200),
-    ('', 401)
-])
-def test_certificate_credentials_get(client, token, status):
-    assert client.get(api.url_for(CertificatePrivateKey, certificate_id=1), headers=token).status_code == status
 
 
 @pytest.mark.parametrize("token,status", [
