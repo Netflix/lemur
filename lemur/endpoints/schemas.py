@@ -39,5 +39,6 @@ class EndpointOutputSchema(LemurOutputSchema):
 
     issues = fields.List(fields.Dict())
 
+
 endpoint_output_schema = EndpointOutputSchema()
 endpoints_output_schema = EndpointOutputSchema(many=True)

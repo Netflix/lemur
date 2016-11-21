@@ -9,4 +9,5 @@ env = Environment(loader=loader)
 def human_time(time):
     return arrow.get(time).format('dddd, MMMM D, YYYY')
 
+
 env.filters['time'] = human_time
