@@ -49,7 +49,7 @@ install_requires = [
     'six==1.10.0',
     'gunicorn==19.6.0',
     'marshmallow-sqlalchemy==0.12.0',
-    'marshmallow==2.4.0',
+    'marshmallow==2.10.4',
     'pycrypto==2.6.1',
     'cryptography==1.6',
     'pyopenssl==16.1.0',

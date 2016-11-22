@@ -13,7 +13,7 @@ from flask import request, current_app
 from sqlalchemy.orm.collections import InstrumentedList
 
 from inflection import camelize, underscore
-from marshmallow import Schema, post_dump, pre_load, pre_dump
+from marshmallow import Schema, post_dump, pre_load
 
 
 class LemurSchema(Schema):
@@ -68,10 +68,9 @@ class LemurOutputSchema(LemurSchema):
             data = self.unwrap_envelope(data, many)
         return self.under(data, many=many)
 
-    @pre_dump(pass_many=True)
     def unwrap_envelope(self, data, many):
         if many:
-            if data:
+            if data['items']:
                 if isinstance(data, InstrumentedList) or isinstance(data, list):
                     self.context['total'] = len(data)
                     return data
@@ -115,6 +114,18 @@ def wrap_errors(messages):
     return errors
 
 
+def unwrap_pagination(data, output_schema):
+    if isinstance(data, dict):
+        if data.get('total') == 0:
+            return data
+        else:
+            marshaled_data = {'total': data['total']}
+            marshaled_data['items'] = output_schema.dump(data['items'], many=True)
+            return marshaled_data
+    else:
+        return output_schema.dump(data).data
+
+
 def validate_schema(input_schema, output_schema):
     def decorator(f):
         @wraps(f)
@@ -144,10 +155,7 @@ def validate_schema(input_schema, output_schema):
             if not resp:
                 return dict(message="No data found"), 404
 
-            if output_schema:
-                data = output_schema.dump(resp)
-                return data.data, 200
-            return resp, 200
+            return unwrap_pagination(resp, output_schema), 200
 
         return decorated_function
     return decorator
