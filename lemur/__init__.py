@@ -83,4 +83,6 @@ def configure_hook(app):
             code = e.code
 
         metrics.send('{}_status_code'.format(code), 'counter', 1)
+
+        app.logger.exception(e)
         return jsonify(error=str(e)), code

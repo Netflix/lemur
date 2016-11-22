@@ -29,7 +29,8 @@ class DestinationOutputSchema(LemurOutputSchema):
 
     @post_dump
     def fill_object(self, data):
-        data['plugin']['pluginOptions'] = data['options']
+        if data:
+            data['plugin']['pluginOptions'] = data['options']
         return data
 
 
