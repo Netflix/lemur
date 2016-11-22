@@ -51,7 +51,7 @@ install_requires = [
     'marshmallow-sqlalchemy==0.12.0',
     'marshmallow==2.4.0',
     'pycrypto==2.6.1',
-    'cryptography==1.5',
+    'cryptography==1.6',
     'pyopenssl==16.1.0',
     'pyjwt==1.4.2',
     'xmltodict==0.10.2',
