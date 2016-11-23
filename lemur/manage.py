@@ -364,10 +364,16 @@ class LemurServer(Command):
 
     def get_options(self):
         settings = make_settings()
-        options = (
-            Option(*klass.cli, action=klass.action)
-            for setting, klass in settings.items() if klass.cli
-        )
+        options = []
+        for setting, klass in settings.items():
+            if klass.cli:
+                if klass.action:
+                    if klass.action == 'store_const':
+                        options.append(Option(*klass.cli, const=klass.const, action=klass.action))
+                    else:
+                        options.append(Option(*klass.cli, action=klass.action))
+                else:
+                    options.append(Option(*klass.cli))
 
         return options
 
