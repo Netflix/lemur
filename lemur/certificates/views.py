@@ -9,7 +9,7 @@ import base64
 from builtins import str
 
 from flask import Blueprint, make_response, jsonify, g
-from flask.ext.restful import reqparse, Api
+from flask_restful import reqparse, Api
 
 from lemur.common.schema import validate_schema
 from lemur.common.utils import paginated_parser

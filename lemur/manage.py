@@ -17,8 +17,8 @@ from gunicorn.config import make_settings
 from cryptography.fernet import Fernet
 
 from flask import current_app
-from flask.ext.script import Manager, Command, Option, prompt_pass
-from flask.ext.migrate import Migrate, MigrateCommand, stamp
+from flask_script import Manager, Command, Option, prompt_pass
+from flask_migrate import Migrate, MigrateCommand, stamp
 from flask_script.commands import ShowUrls, Clean, Server
 
 from lemur import database

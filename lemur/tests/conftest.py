@@ -3,7 +3,7 @@ import pytest
 
 from flask import current_app
 
-from flask.ext.principal import identity_changed, Identity
+from flask_principal import identity_changed, Identity
 
 from lemur import create_app
 from lemur.database import db as _db

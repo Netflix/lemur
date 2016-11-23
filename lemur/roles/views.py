@@ -9,7 +9,7 @@
 """
 from flask import Blueprint, g
 from flask import make_response, jsonify
-from flask.ext.restful import reqparse, Api
+from flask_restful import reqparse, Api
 
 from lemur.roles import service
 from lemur.auth.service import AuthenticatedResource
