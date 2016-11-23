@@ -12,7 +12,7 @@ import random
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 
-from flask.ext.restful.reqparse import RequestParser
+from flask_restful.reqparse import RequestParser
 
 paginated_parser = RequestParser()
 

@@ -7,7 +7,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from flask import Blueprint
-from flask.ext.restful import Api, reqparse
+from flask_restful import Api, reqparse
 from lemur.sources import service
 
 from lemur.common.schema import validate_schema

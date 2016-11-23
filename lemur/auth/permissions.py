@@ -9,7 +9,7 @@
 from functools import partial
 from collections import namedtuple
 
-from flask.ext.principal import Permission, RoleNeed
+from flask_principal import Permission, RoleNeed
 
 # Permissions
 operator_permission = Permission(RoleNeed('operator'))

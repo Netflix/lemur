@@ -17,10 +17,10 @@ from datetime import datetime, timedelta
 
 from flask import g, current_app, jsonify, request
 
-from flask.ext.restful import Resource
-from flask.ext.principal import identity_loaded, RoleNeed, UserNeed
+from flask_restful import Resource
+from flask_principal import identity_loaded, RoleNeed, UserNeed
 
-from flask.ext.principal import Identity, identity_changed
+from flask_principal import Identity, identity_changed
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization

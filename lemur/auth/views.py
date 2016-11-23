@@ -11,8 +11,8 @@ import requests
 
 from flask import Blueprint, current_app
 
-from flask.ext.restful import reqparse, Resource, Api
-from flask.ext.principal import Identity, identity_changed
+from flask_restful import reqparse, Resource, Api
+from flask_principal import Identity, identity_changed
 
 from lemur.extensions import metrics
 from lemur.common.utils import get_psuedo_random_string
