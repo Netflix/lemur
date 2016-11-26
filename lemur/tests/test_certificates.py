@@ -461,7 +461,7 @@ def test_certificate_put(client, token, status):
 
 def test_certificate_put_with_data(client, certificate, issuer_plugin):
     resp = client.put(api.url_for(Certificates, certificate_id=certificate.id), data=json.dumps({'owner': 'bob@example.com', 'description': 'test', 'notify': True}), headers=VALID_ADMIN_HEADER_TOKEN)
-    assert resp.status_code == 20
+    assert resp.status_code == 200
 
 
 @pytest.mark.parametrize("token,status", [
