@@ -132,11 +132,17 @@ def update(cert_id, owner, description, notify, destinations, notifications, rep
 def create_certificate_roles(**kwargs):
     # create an role for the owner and assign it
     owner_role = role_service.get_by_name(kwargs['owner'])
+
     if not owner_role:
         owner_role = role_service.create(
             kwargs['owner'],
             description="Auto generated role based on owner: {0}".format(kwargs['owner'])
         )
+
+    # ensure that the authority's owner is also associated with the certificate
+    if kwargs.get('authority'):
+        authority_owner_role = role_service.get_by_name(kwargs['authority'].owner)
+        return [owner_role, authority_owner_role]
 
     return [owner_role]
 
