@@ -438,9 +438,10 @@ class CertificatePrivateKey(AuthenticatedResource):
         if not cert:
             return dict(message="Cannot find specified certificate"), 404
 
-        if not g.current_user.is_admin:
+        # allow creators
+        if g.current_user != cert.user:
             owner_role = role_service.get_by_name(cert.owner)
-            permission = CertificatePermission(cert.id, owner_role, [x.name for x in cert.roles])
+            permission = CertificatePermission(owner_role, [x.name for x in cert.roles])
 
             if not permission.can():
                 return dict(message='You are not authorized to view this key'), 403
@@ -622,7 +623,7 @@ class Certificates(AuthenticatedResource):
         cert = service.get(certificate_id)
 
         owner_role = role_service.get_by_name(cert.owner)
-        permission = CertificatePermission(cert.id, owner_role, [x.name for x in cert.roles])
+        permission = CertificatePermission(owner_role, [x.name for x in cert.roles])
 
         if permission.can():
             for destination in data['destinations']:
@@ -925,7 +926,7 @@ class CertificateExport(AuthenticatedResource):
             else:
                 if not g.current_user.is_admin:
                     owner_role = role_service.get_by_name(cert.owner)
-                    permission = CertificatePermission(cert.id, owner_role, [x.name for x in cert.roles])
+                    permission = CertificatePermission(owner_role, [x.name for x in cert.roles])
 
                     if not permission.can():
                         return dict(message='You are not authorized to export this certificate.'), 403

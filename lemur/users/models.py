@@ -42,8 +42,9 @@ class User(db.Model):
     email = Column(String(128), unique=True)
     profile_picture = Column(String(255))
     roles = relationship('Role', secondary=roles_users, passive_deletes=True, backref=db.backref('user'), lazy='dynamic')
-    certificates = relationship("Certificate", backref=db.backref('user'), lazy='dynamic')
-    authorities = relationship("Authority", backref=db.backref('user'), lazy='dynamic')
+    certificates = relationship('Certificate', backref=db.backref('user'), lazy='dynamic')
+    authorities = relationship('Authority', backref=db.backref('user'), lazy='dynamic')
+    logs = relationship('Log', backref=db.backref('user'), lazy='dynamic')
 
     def check_password(self, password):
         """

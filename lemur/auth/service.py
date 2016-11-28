@@ -27,8 +27,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
 
 from lemur.users import service as user_service
-from lemur.auth.permissions import CertificateCreatorNeed, \
-    AuthorityCreatorNeed, RoleMemberNeed
+from lemur.auth.permissions import AuthorityCreatorNeed, RoleMemberNeed
 
 
 def get_rsa_public_key(n, e):
@@ -154,11 +153,6 @@ def on_identity_loaded(sender, identity):
     if hasattr(user, 'authorities'):
         for authority in user.authorities:
             identity.provides.add(AuthorityCreatorNeed(authority.id))
-
-    # apply ownership of certificates
-    if hasattr(user, 'certificates'):
-        for certificate in user.certificates:
-            identity.provides.add(CertificateCreatorNeed(certificate.id))
 
     g.user = user
 

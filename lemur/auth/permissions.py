@@ -15,9 +15,6 @@ from flask_principal import Permission, RoleNeed
 operator_permission = Permission(RoleNeed('operator'))
 admin_permission = Permission(RoleNeed('admin'))
 
-CertificateCreator = namedtuple('certificate', ['method', 'value'])
-CertificateCreatorNeed = partial(CertificateCreator, 'key')
-
 CertificateOwner = namedtuple('certificate', ['method', 'value'])
 CertificateOwnerNeed = partial(CertificateOwner, 'role')
 
@@ -28,8 +25,8 @@ class SensitiveDomainPermission(Permission):
 
 
 class CertificatePermission(Permission):
-    def __init__(self, certificate_id, owner, roles):
-        needs = [RoleNeed('admin'), CertificateCreatorNeed(certificate_id), RoleNeed(owner)]
+    def __init__(self, owner, roles):
+        needs = [RoleNeed('admin'), RoleNeed(owner), RoleNeed('creator')]
         for r in roles:
             needs.append(CertificateOwnerNeed(str(r)))
 
