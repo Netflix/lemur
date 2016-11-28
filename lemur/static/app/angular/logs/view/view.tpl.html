@@ -12,17 +12,22 @@
         <div class="clearfix"></div>
       </div>
       <div class="table-responsive">
-        <table ng-table="domainsTable" class="table table-striped" show-filter="showFilter" template-pagination="angular/pager.html">
+        <table ng-table="logsTable" class="table table-striped" show-filter="showFilter" template-pagination="angular/pager.html">
           <tbody>
           <tr ng-repeat="log in $data track by $index">
-            <td data-title="'Logged At'" sortable="'logged_at'" filter="{ 'logged_at': 'text' }">
-              {{ log.logged_at }}
+            <td data-title="'Logged'" sortable="'logged_at'" filter="{ 'logged_at': 'text' }">
+              <span class="pull-right" uib-tooltip="{{ log.loggedAt }}">
+                {{ momentService.createMoment(log.loggedAt) }}
+              </span>
+            </td>
+            <td data-title="'Certificate'" sortable="'certificate'" filter="{ 'certificate.name': 'text' }">
+              {{ log.certificate.name }}
             </td>
             <td data-title="'User'" sortable="'user'" filter="{ 'user.email': 'text' }">
               {{ log.user.email }}
             </td>
             <td data-title="'Type'" sortable="'type'" filter="{ 'type': 'text' }">
-              {{ log.type }}
+              {{ log.logType }}
              </td>
           </tbody>
         </table>

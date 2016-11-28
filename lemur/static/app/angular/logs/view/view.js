@@ -6,11 +6,11 @@ angular.module('lemur')
     $stateProvider.state('logs', {
       url: '/logs',
       templateUrl: '/angular/logs/view/view.tpl.html',
-      controller: 'DomainsViewController'
+      controller: 'LogsViewController'
     });
   })
 
-  .controller('DomainsViewController', function ($scope, $uibModal, DomainApi, DomainService, ngTableParams) {
+  .controller('LogsViewController', function ($scope, $uibModal, LogApi, LogService, ngTableParams, MomentService) {
     $scope.filter = {};
     $scope.logsTable = new ngTableParams({
       page: 1,            // show first page
@@ -22,10 +22,12 @@ angular.module('lemur')
     }, {
       total: 0,           // length of data
       getData: function ($defer, params) {
-        DomainApi.getList(params.url()).then(function (data) {
+        LogApi.getList(params.url()).then(function (data) {
             params.total(data.total);
             $defer.resolve(data);
           });
       }
     });
+
+    $scope.momentService = MomentService;
   });

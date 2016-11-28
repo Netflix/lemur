@@ -15,7 +15,7 @@ from lemur.database import db
 
 
 class Log(db.Model):
-    __tablename__ = 'log'
+    __tablename__ = 'logs'
     id = Column(Integer, primary_key=True)
     certificate_id = Column(Integer, ForeignKey('certificates.id'))
     log_type = Column(Enum('key_view', name='log_type'), nullable=False)

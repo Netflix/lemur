@@ -68,19 +68,19 @@ class Certificate(db.Model):
     authority_id = Column(Integer, ForeignKey('authorities.id', ondelete="CASCADE"))
     root_authority_id = Column(Integer, ForeignKey('authorities.id', ondelete="CASCADE"))
 
-    notifications = relationship("Notification", secondary=certificate_notification_associations, backref='certificate')
-    destinations = relationship("Destination", secondary=certificate_destination_associations, backref='certificate')
-    sources = relationship("Source", secondary=certificate_source_associations, backref='certificate')
-    domains = relationship("Domain", secondary=certificate_associations, backref="certificate")
-    roles = relationship("Role", secondary=roles_certificates, backref="certificate")
-    replaces = relationship("Certificate",
+    notifications = relationship('Notification', secondary=certificate_notification_associations, backref='certificate')
+    destinations = relationship('Destination', secondary=certificate_destination_associations, backref='certificate')
+    sources = relationship('Source', secondary=certificate_source_associations, backref='certificate')
+    domains = relationship('Domain', secondary=certificate_associations, backref='certificate')
+    roles = relationship('Role', secondary=roles_certificates, backref='certificate')
+    replaces = relationship('Certificate',
                             secondary=certificate_replacement_associations,
                             primaryjoin=id == certificate_replacement_associations.c.certificate_id,  # noqa
                             secondaryjoin=id == certificate_replacement_associations.c.replaced_certificate_id,  # noqa
                             backref='replaced')
 
-    logs = relationship("Log", backref="certificate")
-    endpoints = relationship("Endpoint", backref='certificate')
+    logs = relationship('Log', backref='certificate')
+    endpoints = relationship('Endpoint', backref='certificate')
 
     def __init__(self, **kwargs):
         cert = lemur.common.utils.parse_certificate(kwargs['body'])
