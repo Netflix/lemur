@@ -50,3 +50,17 @@ def is_weekend(date):
     """
     if date.weekday() > 5:
         return True
+
+
+def validate_conf(app, required_vars):
+    """
+    Ensures that the given fields are set in the applications conf.
+
+    :param app:
+    :param required_vars: list
+    """
+    for var in required_vars:
+        if not app.config.get(var):
+            raise Exception("Required variable {var} is not set, ensure that it is set in Lemur's configuration file".format(
+                var=var
+            ))

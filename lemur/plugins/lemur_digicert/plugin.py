@@ -27,6 +27,8 @@ from lemur.plugins.bases import IssuerPlugin, SourcePlugin
 
 from lemur.plugins import lemur_digicert as digicert
 
+from lemur.common.utils import validate_conf
+
 
 def signature_hash(signing_algorithm):
     """Converts Lemur's signing algorithm into a format DigiCert understands.
@@ -81,7 +83,22 @@ def get_issuance(options):
     return validity_years
 
 
-def process_options(options, csr):
+def get_additional_names(options):
+    """
+    Return a list of strings to be added to a SAN certificates.
+
+    :param options:
+    :return:
+    """
+    names = []
+    # add SANs if present
+    if options.get('extensions', 'sub_alt_names'):
+        for san in options['extensions']['sub_alt_names']['names']:
+            names.append(san['value'])
+    return names
+
+
+def map_fields(options, csr):
     """Set the incoming issuer options to DigiCert fields/options.
 
     :param options:
@@ -102,17 +119,35 @@ def process_options(options, csr):
             },
     }
 
-    # add SANs if present
-    if options.get('extensions', 'sub_alt_names'):
-        dns_names = []
-        for san in options['extensions']['sub_alt_names']['names']:
-            dns_names.append(san['value'])
-
-        data['certificate']['dns_names'] = dns_names
-
+    data['certificate']['dns_names'] = get_additional_names(options)
     validity_years = get_issuance(options)
     data['custom_expiration_date'] = options['validity_end'].format('YYYY-MM-DD')
     data['validity_years'] = validity_years
+
+    return data
+
+
+def map_cis_fields(options, csr):
+    """
+    MAP issuer options to DigiCert CIS fields/options.
+
+    :param options:
+    :param csr:
+    :return:
+    """
+    data = {
+        "common_name": options['common_name'],
+        "additional_dns_names": get_additional_names(options),
+        "csr": csr,
+        "signature_hash": signature_hash(options.get('signing_algorithm')),
+        "validity": {
+            "valid_to": options['validity_end'].format('YYYY-MM-DD')
+        },
+        "organization": {
+            "name": options['organization'],
+            "units": [options['organizational_unit']]
+        }
+    }
 
     return data
 
@@ -125,28 +160,10 @@ def handle_response(response):
     """
     metrics.send('digicert_status_code_{0}'.format(response.status_code), 'counter', 1)
 
-    if response.status_code not in [200, 201, 302, 301]:
+    if response.status_code > 399:
         raise Exception(response.json()['message'])
 
     return response.json()
-
-
-def verify_configuration():
-    """Verify that needed configuration variables are set before plugin startup."""
-    if not current_app.config.get('DIGICERT_API_KEY'):
-        raise Exception("No Digicert API key found. Ensure that 'DIGICERT_API_KEY' is set in the Lemur conf.")
-
-    if not current_app.config.get('DIGICERT_URL'):
-        raise Exception("No Digicert URL found. Ensure that 'DIGICERT_URL' is set in the Lemur conf.")
-
-    if not current_app.config.get('DIGICERT_ORG_ID'):
-        raise Exception("No Digicert organization ID found. Ensure that 'DIGICERT_ORG_ID' is set in Lemur conf.")
-
-    if not current_app.config.get('DIGICERT_ROOT'):
-        raise Exception("No Digicert root found. Ensure that 'DIGICERT_ROOT' is set in the Lemur conf.")
-
-    if not current_app.config.get('DIGICERT_INTERMEDIATE'):
-        raise Exception("No Digicert intermediate found. Ensure that 'DIGICERT_INTERMEDIATE is set in Lemur conf.")
 
 
 @retry(stop_max_attempt_number=10, wait_fixed=10000)
@@ -155,9 +172,26 @@ def get_certificate_id(session, base_url, order_id):
     order_url = "{0}/services/v2/order/certificate/{1}".format(base_url, order_id)
     response_data = handle_response(session.get(order_url))
     if response_data['status'] != 'issued':
+        metrics.send('digicert_retries', 'counter', 1)
         raise Exception("Order not in issued state.")
 
     return response_data['certificate']['id']
+
+
+@retry(stop_max_attempt_number=10, wait_fixed=10000)
+def get_cis_certificate(session, base_url, order_id):
+    """Retrieve certificate order id from Digicert API."""
+    certificate_url = '{0}/platform/cis/certificate/{1}'.format(base_url, order_id)
+    session.headers.update(
+        {'Accept': 'application/x-pem-file'}
+    )
+    response = session.get(certificate_url)
+
+    if response.status_code == 404:
+        metrics.send('digicert_retries', 'counter', 1)
+        raise Exception("Order not in issued state.")
+
+    return response.content
 
 
 class DigiCertSourcePlugin(SourcePlugin):
@@ -172,12 +206,19 @@ class DigiCertSourcePlugin(SourcePlugin):
 
     def __init__(self, *args, **kwargs):
         """Initialize source with appropriate details."""
-        verify_configuration()
+        required_vars = [
+            'DIGICERT_API_KEY',
+            'DIGICERT_URL',
+            'DIGICERT_ORG_ID',
+            'DIGICERT_ROOT',
+            'DIGICERT_INTERMEDIATE'
+        ]
+        validate_conf(current_app, required_vars)
 
         self.session = requests.Session()
         self.session.headers.update(
             {
-                'X-DC-DEVKEY': current_app.config.get('DIGICERT_API_KEY'),
+                'X-DC-DEVKEY': current_app.config['DIGICERT_API_KEY'],
                 'Content-Type': 'application/json'
             }
         )
@@ -190,7 +231,6 @@ class DigiCertSourcePlugin(SourcePlugin):
 
 class DigiCertIssuerPlugin(IssuerPlugin):
     """Wrap the Digicert Issuer API."""
-
     title = 'DigiCert'
     slug = 'digicert-issuer'
     description = "Enables the creation of certificates by"
@@ -202,12 +242,20 @@ class DigiCertIssuerPlugin(IssuerPlugin):
 
     def __init__(self, *args, **kwargs):
         """Initialize the issuer with the appropriate details."""
-        verify_configuration()
+        required_vars = [
+            'DIGICERT_API_KEY',
+            'DIGICERT_URL',
+            'DIGICERT_ORG_ID',
+            'DIGICERT_ROOT',
+            'DIGICERT_INTERMEDIATE'
+        ]
+
+        validate_conf(current_app, required_vars)
 
         self.session = requests.Session()
         self.session.headers.update(
             {
-                'X-DC-DEVKEY': current_app.config.get('DIGICERT_API_KEY'),
+                'X-DC-DEVKEY': current_app.config['DIGICERT_API_KEY'],
                 'Content-Type': 'application/json'
             }
         )
@@ -225,7 +273,7 @@ class DigiCertIssuerPlugin(IssuerPlugin):
 
         # make certificate request
         determinator_url = "{0}/services/v2/order/certificate/ssl".format(base_url)
-        data = process_options(issuer_options, csr)
+        data = map_fields(issuer_options, csr)
         response = self.session.post(determinator_url, data=json.dumps(data))
         order_id = response.json()['id']
 
@@ -249,3 +297,67 @@ class DigiCertIssuerPlugin(IssuerPlugin):
         """
         role = {'username': '', 'password': '', 'name': 'digicert'}
         return current_app.config.get('DIGICERT_ROOT'), "", [role]
+
+
+class DigiCertCISIssuerPlugin(IssuerPlugin):
+    """Wrap the Digicert Certificate Issuing API."""
+    title = 'DigiCert CIS'
+    slug = 'digicert-cis-issuer'
+    description = "Enables the creation of certificates by the DigiCert CIS REST API."
+    version = digicert.VERSION
+
+    author = 'Kevin Glisson'
+    author_url = 'https://github.com/netflix/lemur.git'
+
+    def __init__(self, *args, **kwargs):
+        """Initialize the issuer with the appropriate details."""
+        required_vars = [
+            'DIGICERT_CIS_API_KEY',
+            'DIGICERT_CIS_URL',
+            'DIGICERT_CIS_ORG_ID',
+            'DIGICERT_CIS_ROOT',
+            'DIGICERT_CIS_INTERMEDIATE',
+            'DIGICERT_CIS_PROFILE_NAME'
+        ]
+
+        validate_conf(current_app, required_vars)
+
+        self.session = requests.Session()
+        self.session.headers.update(
+            {
+                'X-DC-DEVKEY': current_app.config['DIGICERT_CIS_API_KEY'],
+                'Content-Type': 'application/json'
+            }
+        )
+
+        super(DigiCertCISIssuerPlugin, self).__init__(*args, **kwargs)
+
+    def create_certificate(self, csr, issuer_options):
+        """Create a DigiCert certificate."""
+        base_url = current_app.config.get('DIGICERT_CIS_URL')
+
+        # make certificate request
+        create_url = '{0}/platform/cis/certificate'
+
+        data = map_cis_fields(issuer_options, csr)
+        response = self.session.post(create_url, data=json.dumps(data))
+        order_id = response.json()['id']
+
+        # retrieve certificate
+        certificate_pem = get_cis_certificate(self.session, base_url, order_id)
+        end_entity, intermediate, root = pem.parse(certificate_pem)
+        return str(end_entity), str(intermediate)
+
+    @staticmethod
+    def create_authority(options):
+        """Create an authority.
+
+        Creates an authority, this authority is then used by Lemur to
+        allow a user to specify which Certificate Authority they want
+        to sign their certificate.
+
+        :param options:
+        :return:
+        """
+        role = {'username': '', 'password': '', 'name': 'digicert'}
+        return current_app.config.get('DIGICERT_CIS_ROOT'), "", [role]
