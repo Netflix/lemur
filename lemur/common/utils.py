@@ -14,6 +14,8 @@ from cryptography.hazmat.backends import default_backend
 
 from flask_restful.reqparse import RequestParser
 
+from lemur.exceptions import InvalidConfiguration
+
 paginated_parser = RequestParser()
 
 paginated_parser.add_argument('count', type=int, default=10, location='args')
@@ -61,6 +63,4 @@ def validate_conf(app, required_vars):
     """
     for var in required_vars:
         if not app.config.get(var):
-            raise Exception("Required variable {var} is not set, ensure that it is set in Lemur's configuration file".format(
-                var=var
-            ))
+            raise InvalidConfiguration("Required variable '{var}' is not set in Lemur's conf.".format(var=var))

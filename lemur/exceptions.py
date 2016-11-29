@@ -7,8 +7,8 @@ from flask import current_app
 
 
 class LemurException(Exception):
-    def __init__(self):
-        current_app.logger.error(self)
+    def __init__(self, *args, **kwargs):
+        current_app.logger.exception(self)
 
 
 class DuplicateError(LemurException):
@@ -19,39 +19,9 @@ class DuplicateError(LemurException):
         return repr("Duplicate found! Could not create: {0}".format(self.key))
 
 
-class AuthenticationFailedException(LemurException):
-    def __init__(self, remote_ip, user_agent):
-        self.remote_ip = remote_ip
-        self.user_agent = user_agent
-
-    def __str__(self):
-        return repr("Failed login from: {} {}".format(self.remote_ip, self.user_agent))
-
-
-class IntegrityError(LemurException):
-    def __init__(self, message):
-        self.message = message
-
-    def __str__(self):
-        return repr(self.message)
-
-
-class AssociatedObjectNotFound(LemurException):
-    def __init__(self, message):
-        self.message = message
-
-    def __str__(self):
-        return repr(self.message)
-
-
 class InvalidListener(LemurException):
     def __str__(self):
         return repr("Invalid listener, ensure you select a certificate if you are using a secure protocol")
-
-
-class CertificateUnavailable(LemurException):
-    def __str__(self):
-        return repr("The certificate requested is not available")
 
 
 class AttrNotFound(LemurException):
@@ -62,16 +32,5 @@ class AttrNotFound(LemurException):
         return repr("The field '{0}' is not sortable".format(self.field))
 
 
-class NoPersistanceFound(Exception):
-    def __str__(self):
-        return repr("No peristence method found, Lemur cannot persist sensitive information")
-
-
-class NoEncryptionKeyFound(Exception):
-    def __str__(self):
-        return repr("Aborting... Lemur cannot locate db encryption key, is ENCRYPTION_KEY set?")
-
-
-class InvalidToken(Exception):
-    def __str__(self):
-        return repr("Invalid token")
+class InvalidConfiguration(Exception):
+    pass
