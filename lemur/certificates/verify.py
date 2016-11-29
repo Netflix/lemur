@@ -7,12 +7,11 @@
 """
 import requests
 import subprocess
-from OpenSSL import crypto
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 
-from flask import current_app
 from lemur.utils import mktempfile
+from lemur.common.utils import parse_certificate
 
 
 def ocsp_verify(cert_path, issuer_chain_path):
@@ -33,13 +32,16 @@ def ocsp_verify(cert_path, issuer_chain_path):
                            '-cert', cert_path, "-url", url.strip()], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     message, err = p2.communicate()
-    if 'error' in message or 'Error' in message:
+
+    p_message = message.decode('utf-8')
+
+    if 'error' in p_message or 'Error' in p_message:
         raise Exception("Got error when parsing OCSP url")
 
-    elif 'revoked' in message:
+    elif 'revoked' in p_message:
         return
 
-    elif 'good' not in message:
+    elif 'good' not in p_message:
         raise Exception("Did not receive a valid response")
 
     return True
@@ -54,17 +56,27 @@ def crl_verify(cert_path):
     :raise Exception: If certificate does not have CRL
     """
     with open(cert_path, 'rt') as c:
-        cert = x509.load_pem_x509_certificate(c.read(), default_backend())
+        cert = parse_certificate(c.read())
 
     distribution_points = cert.extensions.get_extension_for_oid(x509.OID_CRL_DISTRIBUTION_POINTS).value
+
     for p in distribution_points:
         point = p.full_name[0].value
-        response = requests.get(point)
-        crl = crypto.load_crl(crypto.FILETYPE_ASN1, response.content)  # TODO this should be switched to cryptography when support exists
-        revoked = crl.get_revoked()
-        for r in revoked:
-            if cert.serial == r.get_serial():
+
+        try:
+            response = requests.get(point)
+
+            if response.status_code != 200:
+                raise Exception("Unable to retrieve CRL: {0}".format(point))
+        except ConnectionError:
+            raise Exception("Unable to retrieve CRL: {0}".format(point))
+
+        crl = x509.load_der_x509_crl(response.content, backend=default_backend())
+
+        for r in crl:
+            if cert.serial == r.serial_number:
                 return
+
     return True
 
 
@@ -81,13 +93,10 @@ def verify(cert_path, issuer_chain_path):
     try:
         return ocsp_verify(cert_path, issuer_chain_path)
     except Exception as e:
-        current_app.logger.debug("Could not use OCSP: {0}".format(e))
         try:
             return crl_verify(cert_path)
         except Exception as e:
-            current_app.logger.debug("Could not use CRL: {0}".format(e))
             raise Exception("Failed to verify")
-        raise Exception("Failed to verify")
 
 
 def verify_string(cert_string, issuer_string):
