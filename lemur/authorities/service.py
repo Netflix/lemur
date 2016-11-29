@@ -149,17 +149,17 @@ def get_by_name(authority_name):
     return database.get(Authority, authority_name, field='name')
 
 
-def get_authority_role(ca_name, creator):
+def get_authority_role(ca_name, creator=None):
     """
     Attempts to get the authority role for a given ca uses current_user
     as a basis for accomplishing that.
 
     :param ca_name:
     """
-    if creator.is_admin:
-        return role_service.get_by_name("{0}_admin".format(ca_name))
-    else:
-        return role_service.get_by_name("{0}_operator".format(ca_name))
+    if creator:
+        if creator.is_admin:
+            return role_service.get_by_name("{0}_admin".format(ca_name))
+    return role_service.get_by_name("{0}_operator".format(ca_name))
 
 
 def render(args):
