@@ -8,6 +8,8 @@
 """
 from flask import current_app
 
+from lemur.exceptions import InvalidConfiguration
+
 
 # inspired by https://github.com/getsentry/sentry
 class InstanceManager(object):
@@ -58,8 +60,10 @@ class InstanceManager(object):
                     results.append(cls())
                 else:
                     results.append(cls)
+            except InvalidConfiguration as e:
+                current_app.logger.warning("Plugin '{0}' may not work correctly. {1}".format(class_name, e))
             except Exception as e:
-                current_app.logger.exception('Unable to import %s. Reason: %s', cls_path, e)
+                current_app.logger.exception("Unable to import {0}. Reason: {1}".format(cls_path, e))
                 continue
         self.cache = results
 
