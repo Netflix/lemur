@@ -314,7 +314,6 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
         required_vars = [
             'DIGICERT_CIS_API_KEY',
             'DIGICERT_CIS_URL',
-            'DIGICERT_CIS_ORG_ID',
             'DIGICERT_CIS_ROOT',
             'DIGICERT_CIS_INTERMEDIATE',
             'DIGICERT_CIS_PROFILE_NAME'
