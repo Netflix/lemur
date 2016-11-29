@@ -118,12 +118,17 @@ def unwrap_pagination(data, output_schema):
     if isinstance(data, dict):
         if data.get('total') == 0:
             return data
-        else:
-            marshaled_data = {'total': data['total']}
-            marshaled_data['items'] = output_schema.dump(data['items'], many=True).data
-            return marshaled_data
-    else:
-        return output_schema.dump(data).data
+
+        marshaled_data = {'total': data['total']}
+        marshaled_data['items'] = output_schema.dump(data['items'], many=True).data
+        return marshaled_data
+
+    elif isinstance(data, list):
+        marshaled_data = {'total': len(data)}
+        marshaled_data['items'] = output_schema.dump(data, many=True).data
+        return marshaled_data
+
+    return output_schema.dump(data).data
 
 
 def validate_schema(input_schema, output_schema):
