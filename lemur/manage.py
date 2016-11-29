@@ -154,8 +154,11 @@ def check_revoked():
                 status = verify_string(cert.body, "")
 
             cert.status = 'valid' if status else 'invalid'
+
         except Exception as e:
+            current_app.logger.exception(e)
             cert.status = 'unknown'
+
         database.update(cert)
 
 
