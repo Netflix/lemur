@@ -141,6 +141,7 @@ def sync_endpoints(source):
 
         policy['ciphers'] = policy_ciphers
         endpoint['policy'] = endpoint_service.get_or_create_policy(**policy)
+        endpoint['source'] = source
 
         if not exists:
             endpoint_service.create(**endpoint)

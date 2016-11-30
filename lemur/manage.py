@@ -518,81 +518,32 @@ def print_certificate_details(details):
     )
 
 
-class RotateCertificate(Command):
-    """
-    Rotates certificate on all endpoints managed by Lemur.
-    """
-    option_list = (
-        Option('-n', '--cert-name', dest='new_cert_name'),
-        Option('-o', '--old-cert-name', dest='old_cert_name', required=True),
-        Option('-c', '--commit', dest='commit', action='store_true', default=False)
-    )
+certificate_manager = Manager(usage="Handles all certificate related tasks.")
 
-    def run(self, new_cert_name, old_cert_name, commit):
-        from lemur.certificates.service import get_by_name, reissue_certificate, get_certificate_primitives
-        from lemur.endpoints.service import rotate_certificate
 
-        old_cert = get_by_name(old_cert_name)
+@certificate_manager.command
+def rotate(new_certificate_name, old_certificate_name, commit=False):
+    from lemur.certificates.service import get_by_name, reissue_certificate, get_certificate_primitives
+    from lemur.endpoints.service import rotate_certificate
 
-        if not old_cert:
-            sys.stdout.write("[-] No certificate found with name: {0}\n".format(old_cert_name))
+    old_cert = get_by_name(old_certificate_name)
+
+    if not old_cert:
+        sys.stdout.write("[-] No certificate found with name: {0}\n".format(old_certificate_name))
+        sys.exit(1)
+
+    if new_certificate_name:
+        new_cert = get_by_name(new_certificate_name)
+
+        if not new_cert:
+            sys.stdout.write("[-] No certificate found with name: {0}\n".format(old_certificate_name))
             sys.exit(1)
 
-        if new_cert_name:
-            new_cert = get_by_name(new_cert_name)
+    if commit:
+        sys.stdout.write("[!] Running in COMMIT mode.\n")
 
-            if not new_cert:
-                sys.stdout.write("[-] No certificate found with name: {0}\n".format(old_cert_name))
-                sys.exit(1)
-
-        if commit:
-            sys.stdout.write("[!] Running in COMMIT mode.\n")
-
-        if not new_cert_name:
-            sys.stdout.write("[!] No new certificate provided. Attempting to re-issue old certificate: {0}.\n".format(old_cert_name))
-
-            details = get_certificate_primitives(old_cert)
-            print_certificate_details(details)
-
-            if commit:
-                new_cert = reissue_certificate(old_cert, replace=True)
-                sys.stdout.write("[+] Issued new certificate named: {0}\n".format(new_cert.name))
-
-            sys.stdout.write("[+] Done! \n")
-
-        if len(old_cert.endpoints) > 0:
-            for endpoint in old_cert.endpoints:
-                sys.stdout.write("[+] Certificate found deployed onto {0}\n ".format(endpoint.name))
-                sys.stdout.write("[+] Rotating certificate from: {0} to: {1}\n ".format(old_cert_name, new_cert.name))
-
-                if commit:
-                    rotate_certificate(endpoint, new_cert_name)
-
-                sys.stdout.write("[+] Done! \n")
-        else:
-            sys.stdout.write("[!] Certificate not found on any existing endpoints. Nothing to rotate.\n")
-
-
-class ReissueCertificate(Command):
-    """
-    Reissues a certificate based on a given certificate.
-    """
-    option_list = (
-        Option('-o', '--old-cert-name', dest='old_cert_name', required=True),
-        Option('-c', '--commit', dest='commit', action='store_true', default=False)
-    )
-
-    def run(self, old_cert_name, commit):
-        from lemur.certificates.service import get_by_name, reissue_certificate, get_certificate_primitives
-
-        old_cert = get_by_name(old_cert_name)
-
-        if not old_cert:
-            sys.stdout.write("[-] No certificate found with name: {0}\n".format(old_cert_name))
-            sys.exit(1)
-
-        if commit:
-            sys.stdout.write("[!] Running in COMMIT mode.\n")
+    if not new_certificate_name:
+        sys.stdout.write("[!] No new certificate provided. Attempting to re-issue old certificate: {0}.\n".format(old_certificate_name))
 
         details = get_certificate_primitives(old_cert)
         print_certificate_details(details)
@@ -602,6 +553,48 @@ class ReissueCertificate(Command):
             sys.stdout.write("[+] Issued new certificate named: {0}\n".format(new_cert.name))
 
         sys.stdout.write("[+] Done! \n")
+
+    if len(old_cert.endpoints) > 0:
+        for endpoint in old_cert.endpoints:
+            sys.stdout.write(
+                "[+] Certificate deployed on endpoint: name:{name} dnsname:{dnsname} port:{port} type:{type}\n".format(
+                    name=endpoint.name,
+                    dnsname=endpoint.dnsname,
+                    port=endpoint.port,
+                    type=endpoint.type
+                )
+            )
+            sys.stdout.write("[+] Rotating certificate from: {0} to: {1}\n".format(old_certificate_name, new_cert.name))
+
+            if commit:
+                rotate_certificate(endpoint, new_cert)
+
+            sys.stdout.write("[+] Done! \n")
+    else:
+        sys.stdout.write("[!] Certificate not found on any existing endpoints. Nothing to rotate.\n")
+
+
+@certificate_manager.command
+def reissue(old_certificate_name, commit=False):
+    from lemur.certificates.service import get_by_name, reissue_certificate, get_certificate_primitives
+
+    old_cert = get_by_name(old_certificate_name)
+
+    if not old_cert:
+        sys.stdout.write("[-] No certificate found with name: {0}\n".format(old_certificate_name))
+        sys.exit(1)
+
+    if commit:
+        sys.stdout.write("[!] Running in COMMIT mode.\n")
+
+    details = get_certificate_primitives(old_cert)
+    print_certificate_details(details)
+
+    if commit:
+        new_cert = reissue_certificate(old_cert, replace=True)
+        sys.stdout.write("[+] Issued new certificate named: {0}\n".format(new_cert.name))
+
+    sys.stdout.write("[+] Done! \n")
 
 
 @manager.command
@@ -743,46 +736,37 @@ class Report(Command):
         sys.stdout.write(tabulate(rows, headers=["Authority Name", "Description", "Daily Average", "Monthy Average", "Yearly Average"]) + "\n")
 
 
-class Sources(Command):
-    """
-    Defines a set of actions to take against Lemur's sources.
-    """
-    option_list = (
-        Option('-s', '--sources', dest='source_strings', action='append', help='Sources to operate on.', required=True),
-        Option('-a', '--action', choices=['sync', 'clean'], dest='action', help='Action to take on source.', required=True)
-    )
+source_manager = Manager(usage="Handles all source related tasks.")
 
-    def run(self, source_strings, action):
-        sources = []
-        if not source_strings:
-            table = []
-            for source in source_service.get_all():
-                table.append([source.label, source.active, source.description])
 
-            sys.stdout.write(tabulate(table, headers=['Label', 'Active', 'Description']))
-            sys.exit(1)
+def validate_sources(source_strings):
+    sources = []
+    if not source_strings:
+        table = []
+        for source in source_service.get_all():
+            table.append([source.label, source.active, source.description])
 
-        elif 'all' in source_strings:
-            sources = source_service.get_all()
+        sys.stdout.write("No source specified choose from below:\n")
+        sys.stdout.write(tabulate(table, headers=['Label', 'Active', 'Description']))
+        sys.exit(1)
 
-        else:
-            for source_str in source_strings:
-                source = source_service.get_by_label(source_str)
+    if 'all' in source_strings:
+        sources = source_service.get_all()
 
-                if not source:
-                    sys.stderr.write("Unable to find specified source with label: {0}".format(source_str))
+    for source_str in source_strings:
+        source = source_service.get_by_label(source_str)
 
-                sources.append(source)
+        if not source:
+            sys.stderr.write("Unable to find specified source with label: {0}".format(source_str))
 
-        for source in sources:
-            if action == 'sync':
-                self.sync(source)
+        sources.append(source)
+    return sources
 
-            if action == 'clean':
-                self.clean(source)
 
-    @staticmethod
-    def sync(source):
+@source_manager.option('-s', '--sources', dest='source_strings', action='append', help='Sources to operate on.')
+def sync(source_strings):
+    source_objs = validate_sources(source_strings)
+    for source in source_objs:
         start_time = time.time()
         sys.stdout.write("[+] Staring to sync source: {label}!\n".format(label=source.label))
 
@@ -805,8 +789,11 @@ class Sources(Command):
 
             metrics.send('sync_failed', 'counter', 1, metric_tags={'source': source.label})
 
-    @staticmethod
-    def clean(source):
+
+@source_manager.option('-s', '--sources', dest='source_strings', action='append', help='Sources to operate on.')
+def clean(source_strings):
+    source_objs = validate_sources(source_strings)
+    for source in source_objs:
         start_time = time.time()
         sys.stdout.write("[+] Staring to clean source: {label}!\n".format(label=source.label))
         source_service.clean(source)
@@ -828,10 +815,9 @@ def main():
     manager.add_command("create_user", CreateUser())
     manager.add_command("reset_password", ResetPassword())
     manager.add_command("create_role", CreateRole())
-    manager.add_command("sources", Sources())
+    manager.add_command("source", source_manager)
     manager.add_command("report", Report())
-    manager.add_command("rotate_certificate", RotateCertificate())
-    manager.add_command("reissue_certificate", ReissueCertificate())
+    manager.add_command("certificate", certificate_manager)
     manager.run()
 
 

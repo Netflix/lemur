@@ -94,6 +94,8 @@ def update(endpoint_id, **kwargs):
 
     endpoint.policy = kwargs['policy']
     endpoint.certificate = kwargs['certificate']
+    endpoint.source = kwargs['source']
+    metrics.send('endpoint_added', 'counter', 1)
     database.update(endpoint)
     return endpoint
 
@@ -104,7 +106,7 @@ def rotate_certificate(endpoint, new_cert):
         endpoint.source.plugin.update_endpoint(endpoint, new_cert)
         endpoint.certificate = new_cert
     except Exception as e:
-        metrics.send('rotate_failure', 'counter', 1, tags={'endpoint': endpoint.name})
+        metrics.send('rotate_failure', 'counter', 1, metric_tags={'endpoint': endpoint.name})
         current_app.logger.exception(e)
         raise e
 
