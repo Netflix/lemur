@@ -33,7 +33,6 @@ def test_map_fields(app):
             'signature_hash': 'sha256'
         },
         'organization': {'id': 111111},
-        'validity_years': 1,
         'custom_expiration_date': arrow.get(2017, 5, 7).format('YYYY-MM-DD')
     }
 
@@ -68,7 +67,8 @@ def test_map_cis_fields(app):
         'organization': {'name': 'Example, Inc.', 'units': ['Example Org']},
         'validity': {
             'valid_to': arrow.get(2017, 5, 7).format('YYYY-MM-DD')
-        }
+        },
+        'profile_name': None
     }
 
 
