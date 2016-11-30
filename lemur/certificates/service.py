@@ -410,7 +410,7 @@ def create_csr(**csr_config):
 
     csr = request.public_bytes(
         encoding=serialization.Encoding.PEM
-    )
+    ).decode('utf-8')
 
     return csr, private_key
 
