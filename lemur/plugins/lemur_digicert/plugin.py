@@ -168,6 +168,20 @@ def handle_response(response):
     return response.json()
 
 
+def handle_cis_response(response):
+    """
+    Handle the DigiCert CIS API response and any errors it might have experienced.
+    :param response:
+    :return:
+    """
+    metrics.send('digicert_cis_status_code_{0}'.format(response.status_code), 'counter', 1)
+
+    if response.status_code > 399:
+        raise Exception(response.json()['errors'][0]['message'])
+
+    return response.json()
+
+
 @retry(stop_max_attempt_number=10, wait_fixed=10000)
 def get_certificate_id(session, base_url, order_id):
     """Retrieve certificate order id from Digicert API."""
@@ -341,15 +355,10 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
 
         data = map_cis_fields(issuer_options, csr)
         response = self.session.post(create_url, data=json.dumps(data))
-
-        current_app.logger.debug(data)
-        if response.status_code > 399:
-            raise Exception(response.json()['errors'][0]['message'])
-
-        order_id = response.json()['id']
+        data = handle_cis_response(response)
 
         # retrieve certificate
-        certificate_pem = get_cis_certificate(self.session, base_url, order_id)
+        certificate_pem = get_cis_certificate(self.session, base_url, data['id'])
         end_entity = pem.parse(certificate_pem)[0]
         return str(end_entity), current_app.config.get('DIGICERT_CIS_INTERMEDIATE')
 

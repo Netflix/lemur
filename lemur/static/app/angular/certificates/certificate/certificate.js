@@ -214,8 +214,8 @@ angular.module('lemur')
   CertificateApi.get(editId).then(function (certificate) {
     $scope.certificate = certificate;
     $scope.certificate.name = ''; // we should prefer the generated name
-    $scope.validityStart = null; // we should rely the defaults
-    $scope.validityEnd = null; // we should rely on the defaults
+    $scope.certificate.validityStart = Date.parse($scope.certificate.validityStart); // we should rely the defaults
+    $scope.certificate.validityEnd = Date.parse($scope.certificate.validityEnd); // we should rely on the defaults
     CertificateService.getDefaults($scope.certificate);
   });
 
