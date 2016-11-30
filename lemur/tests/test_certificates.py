@@ -336,7 +336,7 @@ def test_create_basic_csr(client):
     )
     csr, pem = create_csr(**csr_config)
 
-    csr = x509.load_pem_x509_csr(csr, default_backend())
+    csr = x509.load_pem_x509_csr(csr.encode('utf-8'), default_backend())
     for name in csr.subject:
         assert name.value in csr_config.values()
 

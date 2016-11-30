@@ -79,8 +79,8 @@ def get_issuance(options):
     if not options.get('validity_end'):
         options['validity_end'] = arrow.utcnow().replace(years=current_app.config.get('DIGICERT_DEFAULT_VALIDITY', 1))
 
-    validity_years = determine_validity_years(options['validity_end'])
-    return validity_years
+    options['validity_years'] = determine_validity_years(options['validity_end'])
+    return options
 
 
 def get_additional_names(options):
@@ -105,6 +105,8 @@ def map_fields(options, csr):
     :param csr:
     :return: dict or valid DigiCert options
     """
+    options = get_issuance(options)
+
     data = {
         "certificate":
             {
@@ -120,9 +122,7 @@ def map_fields(options, csr):
     }
 
     data['certificate']['dns_names'] = get_additional_names(options)
-    validity_years = get_issuance(options)
     data['custom_expiration_date'] = options['validity_end'].format('YYYY-MM-DD')
-    data['validity_years'] = validity_years
 
     return data
 
@@ -135,7 +135,9 @@ def map_cis_fields(options, csr):
     :param csr:
     :return:
     """
+    options = get_issuance(options)
     data = {
+        "profile_name": current_app.config.get('DIGICERT_CIS_PROFILE_NAME'),
         "common_name": options['common_name'],
         "additional_dns_names": get_additional_names(options),
         "csr": csr,
@@ -243,11 +245,6 @@ class DigiCertIssuerPlugin(IssuerPlugin):
     def __init__(self, *args, **kwargs):
         """Initialize the issuer with the appropriate details."""
         required_vars = [
-            'DIGICERT_API_KEY',
-            'DIGICERT_URL',
-            'DIGICERT_ORG_ID',
-            'DIGICERT_ROOT',
-            'DIGICERT_INTERMEDIATE'
         ]
 
         validate_conf(current_app, required_vars)
@@ -275,11 +272,15 @@ class DigiCertIssuerPlugin(IssuerPlugin):
         determinator_url = "{0}/services/v2/order/certificate/ssl".format(base_url)
         data = map_fields(issuer_options, csr)
         response = self.session.post(determinator_url, data=json.dumps(data))
+
+        if response.status_code > 399:
+            raise Exception(response.json()['message'])
+
         order_id = response.json()['id']
 
         certificate_id = get_certificate_id(self.session, base_url, order_id)
 
-        # retrieve certificate
+        # retrieve ceqrtificate
         certificate_url = "{0}/services/v2/certificate/{1}/download/format/pem_all".format(base_url, certificate_id)
         end_entity, intermediate, root = pem.parse(self.session.get(certificate_url).content)
         return str(end_entity), str(intermediate)
@@ -314,7 +315,6 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
         required_vars = [
             'DIGICERT_CIS_API_KEY',
             'DIGICERT_CIS_URL',
-            'DIGICERT_CIS_ORG_ID',
             'DIGICERT_CIS_ROOT',
             'DIGICERT_CIS_INTERMEDIATE',
             'DIGICERT_CIS_PROFILE_NAME'
@@ -337,16 +337,21 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
         base_url = current_app.config.get('DIGICERT_CIS_URL')
 
         # make certificate request
-        create_url = '{0}/platform/cis/certificate'
+        create_url = '{0}/platform/cis/certificate'.format(base_url)
 
         data = map_cis_fields(issuer_options, csr)
         response = self.session.post(create_url, data=json.dumps(data))
+
+        current_app.logger.debug(data)
+        if response.status_code > 399:
+            raise Exception(response.json()['errors'][0]['message'])
+
         order_id = response.json()['id']
 
         # retrieve certificate
         certificate_pem = get_cis_certificate(self.session, base_url, order_id)
-        end_entity, intermediate, root = pem.parse(certificate_pem)
-        return str(end_entity), str(intermediate)
+        end_entity = pem.parse(certificate_pem)[0]
+        return str(end_entity), current_app.config.get('DIGICERT_CIS_INTERMEDIATE')
 
     @staticmethod
     def create_authority(options):

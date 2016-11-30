@@ -219,6 +219,7 @@ class AuthoritiesList(AuthenticatedResource):
            :statuscode 403: unauthenticated
            :statuscode 200: no error
         """
+        data['creator'] = g.current_user
         return service.create(**data)
 
 

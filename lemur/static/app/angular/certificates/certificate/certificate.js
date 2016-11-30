@@ -213,7 +213,9 @@ angular.module('lemur')
 .controller('CertificateCloneController', function ($scope, $uibModalInstance, CertificateApi, CertificateService, DestinationService, AuthorityService, AuthorityApi, PluginService, MomentService, WizardHandler, LemurRestangular, NotificationService, toaster, editId) {
   CertificateApi.get(editId).then(function (certificate) {
     $scope.certificate = certificate;
-    $scope.certificate.name = ''; // we should prefer the generated name.
+    $scope.certificate.name = ''; // we should prefer the generated name
+    $scope.validityStart = null; // we should rely the defaults
+    $scope.validityEnd = null; // we should rely on the defaults
     CertificateService.getDefaults($scope.certificate);
   });
 
