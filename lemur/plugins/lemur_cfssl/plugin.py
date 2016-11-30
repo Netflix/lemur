@@ -42,7 +42,7 @@ class CfsslIssuerPlugin(IssuerPlugin):
 
         url = "{0}{1}".format(current_app.config.get('CFSSL_URL'), '/api/v1/cfssl/sign')
 
-        data = {'certificate_request': csr.decode('utf_8')}
+        data = {'certificate_request': csr}
         data = json.dumps(data)
 
         response = self.session.post(url, data=data.encode(encoding='utf_8', errors='strict'))

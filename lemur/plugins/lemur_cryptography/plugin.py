@@ -63,7 +63,7 @@ def build_root_certificate(options):
 
 
 def issue_certificate(csr, options):
-    csr = x509.load_pem_x509_csr(csr, default_backend())
+    csr = x509.load_pem_x509_csr(csr.encode('utf-8'), default_backend())
 
     builder = x509.CertificateBuilder(
         issuer_name=x509.Name([
