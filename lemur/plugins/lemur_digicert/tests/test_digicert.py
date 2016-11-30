@@ -81,14 +81,16 @@ def test_issuance():
             'validity_start': arrow.get(2016, 10, 30)
         }
 
-        assert get_issuance(options) == 2
+        new_options = get_issuance(options)
+        assert new_options['validity_years'] == 2
 
         options = {
             'validity_end': arrow.get(2017, 5, 7),
             'validity_start': arrow.get(2016, 10, 30)
         }
 
-        assert get_issuance(options) == 1
+        new_options = get_issuance(options)
+        assert new_options['validity_years'] == 1
 
         options = {
             'validity_end': arrow.get(2020, 5, 7),
