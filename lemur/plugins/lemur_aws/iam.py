@@ -88,8 +88,7 @@ def create_arn_from_cert(account_number, region, certificate_name):
     :param certificate_name:
     :return:
     """
-    return "arn:aws:iam:{region}:{account_number}:{certificate_name}".format(
-        region=region,
+    return "arn:aws:iam::{account_number}:server-certificate/{certificate_name}".format(
         account_number=account_number,
         certificate_name=certificate_name)
 

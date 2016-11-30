@@ -259,6 +259,11 @@ class DigiCertIssuerPlugin(IssuerPlugin):
     def __init__(self, *args, **kwargs):
         """Initialize the issuer with the appropriate details."""
         required_vars = [
+            'DIGICERT_API_KEY',
+            'DIGICERT_URL',
+            'DIGICERT_ORG_ID',
+            'DIGICERT_ROOT',
+            'DIGICERT_INTERMEDIATE'
         ]
 
         validate_conf(current_app, required_vars)

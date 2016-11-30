@@ -40,6 +40,10 @@ from lemur.plugins.lemur_aws import iam, s3, elb, ec2
 from lemur.plugins import lemur_aws as aws
 
 
+def get_region_from_dns(dns):
+    return dns.split('.')[-4]
+
+
 class AWSDestinationPlugin(DestinationPlugin):
     title = 'AWS'
     slug = 'aws-destination'
@@ -149,20 +153,21 @@ class AWSSourcePlugin(SourcePlugin):
                     )
 
                     if listener['PolicyNames']:
-                        policy = e.describe_load_balancer_policies(e['LoadBalancerName'], listener['PolicyNames'], account_number=account_number, region=region)
+                        policy = elb.describe_load_balancer_policies(e['LoadBalancerName'], listener['PolicyNames'], account_number=account_number, region=region)
                         endpoint['policy'] = format_elb_cipher_policy(policy)
 
                     endpoints.append(endpoint)
 
         return endpoints
 
-    def update_endpoint(self, options, endpoint, certificate):
+    def update_endpoint(self, endpoint, certificate):
+        options = endpoint.source.options
         account_number = self.get_option('accountNumber', options)
-        regions = self.get_option('regions', options)
 
-        for region in regions:
-            arn = iam.create_arn_from_cert(account_number, region, certificate.name)
-            elb.attach_certificate(account_number, region, certificate.name, endpoint.port, arn)
+        # relies on the fact that region is included in DNS name
+        region = get_region_from_dns(endpoint.dnsname)
+        arn = iam.create_arn_from_cert(account_number, region, certificate.name)
+        elb.attach_certificate(endpoint.name, endpoint.port, arn, account_number=account_number, region=region)
 
     def clean(self, options, **kwargs):
         account_number = self.get_option('accountNumber', options)

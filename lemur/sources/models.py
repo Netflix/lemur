@@ -6,11 +6,12 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from sqlalchemy.orm import relationship
-from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, Text, Boolean
 from sqlalchemy_utils import JSONType
 from lemur.database import db
 
 from lemur.plugins.base import plugins
+from sqlalchemy_utils import ArrowType
 
 
 class Source(db.Model):
@@ -21,7 +22,7 @@ class Source(db.Model):
     description = Column(Text())
     plugin_name = Column(String(32))
     active = Column(Boolean, default=True)
-    last_run = Column(DateTime)
+    last_run = Column(ArrowType)
     endpoints = relationship("Endpoint", back_populates="source")
 
     @property

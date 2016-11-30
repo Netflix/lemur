@@ -11,7 +11,7 @@ from flask import current_app
 from retrying import retry
 
 from lemur.exceptions import InvalidListener
-from lemur.plugins.lemur_aws.sts import sts_client, assume_service
+from lemur.plugins.lemur_aws.sts import sts_client
 
 
 def retry_throttled(exception):
@@ -104,15 +104,13 @@ def describe_load_balancer_types(policies, **kwargs):
 
 
 @sts_client('elb')
-def attach_certificate(account_number, region, name, port, certificate_id):
+def attach_certificate(name, port, certificate_id, **kwargs):
     """
     Attaches a certificate to a listener, throws exception
     if certificate specified does not exist in a particular account.
 
-    :param account_number:
-    :param region:
     :param name:
     :param port:
     :param certificate_id:
     """
-    return assume_service(account_number, 'elb', region).set_lb_listener_SSL_certificate(name, port, certificate_id)
+    return kwargs['client'].set_load_balancer_listener_ssl_certificate(LoadBalancerName=name, LoadBalancerPort=port, SSLCertificateId=certificate_id)
