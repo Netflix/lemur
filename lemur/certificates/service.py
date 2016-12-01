@@ -515,7 +515,8 @@ def get_certificate_primitives(certificate):
         organizational_unit=certificate.organizational_unit,
         country=certificate.country,
         state=certificate.state,
-        location=certificate.location
+        location=certificate.location,
+        key_type=certificate.key_type
     )
 
 
