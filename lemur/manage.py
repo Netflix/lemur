@@ -223,6 +223,33 @@ class InitializeApp(Command):
         create()
         user = user_service.get_by_username("lemur")
 
+        admin_role = role_service.get_by_name('admin')
+
+        if admin_role:
+            sys.stdout.write("[-] Admin role already created, skipping...!\n")
+        else:
+            # we create an admin role
+            admin_role = role_service.create('admin', description='This is the Lemur administrator role.')
+            sys.stdout.write("[+] Created 'admin' role\n")
+
+        operator_role = role_service.get_by_name('operator')
+
+        if operator_role:
+            sys.stdout.write("[-] Operator role already created, skipping...!\n")
+        else:
+            # we create an admin role
+            operator_role = role_service.create('operator', description='This is the Lemur operator role.')
+            sys.stdout.write("[+] Created 'operator' role\n")
+
+        read_only_role = role_service.get_by_name('read-only')
+
+        if read_only_role:
+            sys.stdout.write("[-] Operator role already created, skipping...!\n")
+        else:
+            # we create an admin role
+            read_only_role = role_service.create('read-only', description='This is the Lemur read only role.')
+            sys.stdout.write("[+] Created 'read-only' role\n")
+
         if not user:
             if not password:
                 sys.stdout.write("We need to set Lemur's password to continue!\n")
@@ -233,17 +260,8 @@ class InitializeApp(Command):
                     sys.stderr.write("[!] Passwords do not match!\n")
                     sys.exit(1)
 
-            role = role_service.get_by_name('admin')
-
-            if role:
-                sys.stdout.write("[-] Admin role already created, skipping...!\n")
-            else:
-                # we create an admin role
-                role = role_service.create('admin', description='this is the lemur administrator role')
-                sys.stdout.write("[+] Created 'admin' role\n")
-
-            user_service.create("lemur", password, 'lemur@nobody', True, None, [role])
-            sys.stdout.write("[+] Added a 'lemur' user and added it to the 'admin' role!\n")
+            user_service.create("lemur", password, 'lemur@nobody', True, None, [admin_role])
+            sys.stdout.write("[+] Created the user 'lemur' and granted it the 'admin' role!\n")
 
         else:
             sys.stdout.write("[-] Default user has already been created, skipping...!\n")
