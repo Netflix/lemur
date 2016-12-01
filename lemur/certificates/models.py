@@ -9,6 +9,8 @@ import arrow
 
 from flask import current_app
 
+from cryptography.hazmat.primitives.asymmetric import rsa
+
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import case
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -147,6 +149,12 @@ class Certificate(db.Model):
     def location(self):
         cert = lemur.common.utils.parse_certificate(self.body)
         return defaults.location(cert)
+
+    @property
+    def key_type(self):
+        cert = lemur.common.utils.parse_certificate(self.body)
+        if isinstance(cert.public_key(), rsa.RSAPublicKey):
+            return 'RSA{key_size}'.format(key_size=cert.public_key().key_size)
 
     @hybrid_property
     def expired(self):
