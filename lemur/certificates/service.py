@@ -316,11 +316,14 @@ def create_csr(**csr_config):
 
     :param csr_config:
     """
-    private_key = rsa.generate_private_key(
-        public_exponent=65537,
-        key_size=2048,
-        backend=default_backend()
-    )
+
+    if 'RSA' in csr_config.get('key_type'):
+        key_size = int(csr_config.get('key_type')[3:])
+        private_key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=key_size,
+            backend=default_backend()
+        )
 
     # TODO When we figure out a better way to validate these options they should be parsed as str
     builder = x509.CertificateSigningRequestBuilder()

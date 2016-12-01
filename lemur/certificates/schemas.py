@@ -6,7 +6,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from flask import current_app
-from marshmallow import fields, validates_schema, post_load, pre_load
+from marshmallow import fields, validate, validates_schema, post_load, pre_load
 from marshmallow.exceptions import ValidationError
 
 from lemur.schemas import AssociatedAuthoritySchema, AssociatedDestinationSchema, AssociatedCertificateSchema, \
@@ -58,6 +58,7 @@ class CertificateInputSchema(CertificateCreationSchema):
     roles = fields.Nested(AssociatedRoleSchema, missing=[], many=True)
 
     csr = fields.String(validate=validators.csr)
+    key_type = fields.String(validate=validate.OneOf(['RSA2048', 'RSA4096']), missing='RSA2048')
 
     notify = fields.Boolean(default=True)
 
