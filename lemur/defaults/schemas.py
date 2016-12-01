@@ -19,4 +19,5 @@ class DefaultOutputSchema(LemurOutputSchema):
     organization = fields.String()
     organizationalUnit = fields.String()
 
+
 default_output_schema = DefaultOutputSchema()
