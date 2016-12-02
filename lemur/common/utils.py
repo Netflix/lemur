@@ -11,6 +11,7 @@ import random
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.asymmetric import rsa
 
 from flask_restful.reqparse import RequestParser
 
@@ -37,10 +38,42 @@ def get_psuedo_random_string():
 
 
 def parse_certificate(body):
+    """
+    Helper function that parses a PEM certificate.
+
+    :param body:
+    :return:
+    """
     if isinstance(body, str):
         body = body.encode('utf-8')
 
     return x509.load_pem_x509_certificate(body, default_backend())
+
+
+def generate_private_key(key_type):
+    """
+    Generates a new private key based on key_type.
+
+    Valid key types: RSA2048, RSA4096
+
+    :param key_type:
+    :return:
+    """
+    valid_key_types = ['RSA2048', 'RSA4096']
+
+    if key_type not in valid_key_types:
+        raise Exception("Invalid key type: {key_type}. Supported key types: {choices}".format(
+            key_type=key_type,
+            choices=",".join(valid_key_types)
+        ))
+
+    if 'RSA' in key_type:
+        key_size = int(key_type[3:])
+        return rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=key_size,
+            backend=default_backend()
+        )
 
 
 def is_weekend(date):

@@ -16,9 +16,10 @@ from acme.client import Client
 from acme import jose
 from acme import messages
 
+from lemur.common.utils import generate_private_key
+
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
 
 import OpenSSL.crypto
 
@@ -101,12 +102,6 @@ def request_certificate(acme_client, authorizations, csr):
     return pem_certificate, pem_certificate_chain
 
 
-def generate_rsa_private_key():
-    return rsa.generate_private_key(
-        public_exponent=65537, key_size=2048, backend=default_backend()
-    )
-
-
 def setup_acme_client():
     key = current_app.config.get('ACME_PRIVATE_KEY').strip()
     acme_email = current_app.config.get('ACME_EMAIL')
@@ -127,7 +122,7 @@ def acme_client_for_private_key(acme_directory_url, private_key):
 
 
 def register(email):
-    private_key = generate_rsa_private_key()
+    private_key = generate_private_key('RSA2048')
     acme_client = acme_client_for_private_key(current_app.config('ACME_DIRECTORY_URL'), private_key)
 
     registration = acme_client.register(

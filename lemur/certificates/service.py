@@ -13,12 +13,12 @@ from flask import current_app
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
 
 from lemur import database
 from lemur.extensions import metrics
 from lemur.plugins.base import plugins
 from lemur.certificates.models import Certificate
+from lemur.common.utils import generate_private_key
 
 from lemur.destinations.models import Destination
 from lemur.notifications.models import Notification
@@ -317,13 +317,7 @@ def create_csr(**csr_config):
     :param csr_config:
     """
 
-    if 'RSA' in csr_config.get('key_type'):
-        key_size = int(csr_config.get('key_type')[3:])
-        private_key = rsa.generate_private_key(
-            public_exponent=65537,
-            key_size=key_size,
-            backend=default_backend()
-        )
+    private_key = generate_private_key(csr_config.get('key_type'))
 
     # TODO When we figure out a better way to validate these options they should be parsed as str
     builder = x509.CertificateSigningRequestBuilder()
