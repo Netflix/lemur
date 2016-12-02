@@ -39,7 +39,7 @@ def log_status_code(r, *args, **kwargs):
     :param kwargs:
     :return:
     """
-    metrics.send('digicert_status_code_{}'.format(r.status_code))
+    metrics.send('digicert_status_code_{}'.format(r.status_code), 'counter', 1)
 
 
 def signature_hash(signing_algorithm):

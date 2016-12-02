@@ -73,7 +73,7 @@ def log_status_code(r, *args, **kwargs):
     :param kwargs:
     :return:
     """
-    metrics.send('symantec_status_code_{}'.format(r.status_code))
+    metrics.send('symantec_status_code_{}'.format(r.status_code), 'counter', 1)
 
 
 def process_options(options):
