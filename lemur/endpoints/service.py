@@ -95,7 +95,7 @@ def update(endpoint_id, **kwargs):
     endpoint.policy = kwargs['policy']
     endpoint.certificate = kwargs['certificate']
     endpoint.source = kwargs['source']
-    metrics.send('endpoint_added', 'counter', 1)
+    metrics.send('endpoint_updated', 'counter', 1)
     database.update(endpoint)
     return endpoint
 
