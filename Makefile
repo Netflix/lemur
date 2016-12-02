@@ -20,6 +20,21 @@ endif
 	node_modules/.bin/gulp package
 	@echo ""
 
+release:
+	@echo "--> Installing dependencies"
+ifeq ($(USER), root)
+	@echo "WARNING: It looks like you are installing Lemur as root. This is not generally advised."
+	npm install --unsafe-perm
+else
+	npm install
+endif
+	pip install "setuptools>=0.9.8"
+	# order matters here, base package must install first
+	pip install -e .
+	node_modules/.bin/gulp build
+	node_modules/.bin/gulp package
+	@echo ""
+
 dev-docs:
 	pip install -r docs/requirements.txt
 
@@ -89,4 +104,4 @@ coverage: develop
 publish:
 	python setup.py sdist bdist_wheel upload
 
-.PHONY: develop dev-postgres dev-docs setup-git build clean update-submodules test testloop test-cli test-js test-python lint lint-python lint-js coverage publish
+.PHONY: develop dev-postgres dev-docs setup-git build clean update-submodules test testloop test-cli test-js test-python lint lint-python lint-js coverage publish release
