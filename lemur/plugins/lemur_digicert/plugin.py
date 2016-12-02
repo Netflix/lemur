@@ -30,6 +30,18 @@ from lemur.plugins import lemur_digicert as digicert
 from lemur.common.utils import validate_conf
 
 
+def log_status_code(r, *args, **kwargs):
+    """
+    Is a request hook that logs all status codes to the digicert api.
+
+    :param r:
+    :param args:
+    :param kwargs:
+    :return:
+    """
+    metrics.send('digicert_status_code_{}'.format(r.status_code))
+
+
 def signature_hash(signing_algorithm):
     """Converts Lemur's signing algorithm into a format DigiCert understands.
 
@@ -160,8 +172,6 @@ def handle_response(response):
     :param response:
     :return:
     """
-    metrics.send('digicert_status_code_{0}'.format(response.status_code), 'counter', 1)
-
     if response.status_code > 399:
         raise Exception(response.json()['message'])
 
@@ -174,8 +184,6 @@ def handle_cis_response(response):
     :param response:
     :return:
     """
-    metrics.send('digicert_cis_status_code_{0}'.format(response.status_code), 'counter', 1)
-
     if response.status_code > 399:
         raise Exception(response.json()['errors'][0]['message'])
 
@@ -188,7 +196,6 @@ def get_certificate_id(session, base_url, order_id):
     order_url = "{0}/services/v2/order/certificate/{1}".format(base_url, order_id)
     response_data = handle_response(session.get(order_url))
     if response_data['status'] != 'issued':
-        metrics.send('digicert_retries', 'counter', 1)
         raise Exception("Order not in issued state.")
 
     return response_data['certificate']['id']
@@ -204,7 +211,6 @@ def get_cis_certificate(session, base_url, order_id):
     response = session.get(certificate_url)
 
     if response.status_code == 404:
-        metrics.send('digicert_retries', 'counter', 1)
         raise Exception("Order not in issued state.")
 
     return response.content
@@ -238,6 +244,8 @@ class DigiCertSourcePlugin(SourcePlugin):
                 'Content-Type': 'application/json'
             }
         )
+
+        self.session.hooks = dict(response=log_status_code)
 
         super(DigiCertSourcePlugin, self).__init__(*args, **kwargs)
 
@@ -275,6 +283,8 @@ class DigiCertIssuerPlugin(IssuerPlugin):
                 'Content-Type': 'application/json'
             }
         )
+
+        self.session.hooks = dict(response=log_status_code)
 
         super(DigiCertIssuerPlugin, self).__init__(*args, **kwargs)
 
@@ -348,6 +358,8 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
                 'Content-Type': 'application/json'
             }
         )
+
+        self.session.hooks = dict(response=log_status_code)
 
         super(DigiCertCISIssuerPlugin, self).__init__(*args, **kwargs)
 

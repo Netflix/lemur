@@ -13,8 +13,11 @@ import xmltodict
 
 from flask import current_app
 
-from lemur.plugins.bases import IssuerPlugin, SourcePlugin
+from lemur.extensions import metrics
+
 from lemur.plugins import lemur_verisign as verisign
+from lemur.plugins.bases import IssuerPlugin, SourcePlugin
+
 from lemur.common.utils import get_psuedo_random_string
 
 
@@ -59,6 +62,18 @@ VERISIGN_ERRORS = {
     "0x950e": "Invalid Common Name -- make sure the CN has a proper domain suffix",
     "0xa00e": "Pending. (Insufficient number of tokens.)"
 }
+
+
+def log_status_code(r, *args, **kwargs):
+    """
+    Is a request hook that logs all status codes to the verisign api.
+
+    :param r:
+    :param args:
+    :param kwargs:
+    :return:
+    """
+    metrics.send('symantec_status_code_{}'.format(r.status_code))
 
 
 def process_options(options):
@@ -141,6 +156,7 @@ class VerisignIssuerPlugin(IssuerPlugin):
     def __init__(self, *args, **kwargs):
         self.session = requests.Session()
         self.session.cert = current_app.config.get('VERISIGN_PEM_PATH')
+        self.session.hooks = dict(response=log_status_code)
         super(VerisignIssuerPlugin, self).__init__(*args, **kwargs)
 
     def create_certificate(self, csr, issuer_options):
