@@ -105,6 +105,7 @@ def rotate_certificate(endpoint, new_cert):
     try:
         endpoint.source.plugin.update_endpoint(endpoint, new_cert)
         endpoint.certificate = new_cert
+        database.update(endpoint)
     except Exception as e:
         metrics.send('rotate_failure', 'counter', 1, metric_tags={'endpoint': endpoint.name})
         current_app.logger.exception(e)

@@ -372,9 +372,9 @@ class CertificatesUpload(AuthenticatedResource):
            :statuscode 200: no error
 
         """
+        data['creator'] = g.user
         if data.get('destinations'):
             if data.get('private_key'):
-                data['creator'] = g.user
                 return service.upload(**data)
             else:
                 raise Exception("Private key must be provided in order to upload certificate to AWS")
