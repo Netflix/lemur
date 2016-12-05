@@ -21,7 +21,7 @@ def retry_throttled(exception):
     :return:
     """
     if isinstance(exception, botocore.exceptions.ClientError):
-        if 'Throttling' in exception.message:
+        if exception.response['Error']['Code'] == 'LoadBalancerNotFound':
             return True
     return False
 
@@ -104,6 +104,7 @@ def describe_load_balancer_types(policies, **kwargs):
 
 
 @sts_client('elb')
+@retry(retry_on_exception=retry_throttled, stop_max_attempt_number=7, wait_exponential_multiplier=1000)
 def attach_certificate(name, port, certificate_id, **kwargs):
     """
     Attaches a certificate to a listener, throws exception
@@ -113,4 +114,10 @@ def attach_certificate(name, port, certificate_id, **kwargs):
     :param port:
     :param certificate_id:
     """
-    return kwargs['client'].set_load_balancer_listener_ssl_certificate(LoadBalancerName=name, LoadBalancerPort=port, SSLCertificateId=certificate_id)
+    try:
+        return kwargs['client'].set_load_balancer_listener_ssl_certificate(LoadBalancerName=name, LoadBalancerPort=port, SSLCertificateId=certificate_id)
+    except botocore.exceptions.ClientError as e:
+        if e.response['Error']['Code'] == 'LoadBalancerNotFound':
+            current_app.logger.warning("Loadbalancer does not exist.")
+        else:
+            raise e
