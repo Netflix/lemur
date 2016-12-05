@@ -6,27 +6,23 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import arrow
-
-from sqlalchemy import func, or_
-from flask import current_app
-
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
+from flask import current_app
+from sqlalchemy import func, or_
 
 from lemur import database
-from lemur.extensions import metrics
-from lemur.plugins.base import plugins
+from lemur.authorities.models import Authority
 from lemur.certificates.models import Certificate
 from lemur.common.utils import generate_private_key
-
 from lemur.destinations.models import Destination
-from lemur.notifications.models import Notification
-from lemur.authorities.models import Authority
 from lemur.domains.models import Domain
-
-from lemur.roles.models import Role
+from lemur.extensions import metrics
+from lemur.notifications.models import Notification
+from lemur.plugins.base import plugins
 from lemur.roles import service as role_service
+from lemur.roles.models import Role
 
 
 def get(cert_id):

@@ -542,7 +542,7 @@ certificate_manager = Manager(usage="Handles all certificate related tasks.")
 @certificate_manager.command
 def rotate(new_certificate_name, old_certificate_name, commit=False):
     from lemur.certificates.service import get_by_name, reissue_certificate, get_certificate_primitives
-    from lemur.endpoints.service import rotate_certificate
+    from lemur.deployment.service import rotate_certificate
 
     old_cert = get_by_name(old_certificate_name)
 

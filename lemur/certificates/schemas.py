@@ -201,9 +201,20 @@ class CertificateExportInputSchema(LemurInputSchema):
     plugin = fields.Nested(PluginInputSchema)
 
 
+def CertificateNotificationOutputSchema(LemurOutputSchema):
+    description = fields.String()
+    issuer = fields.String()
+    name = fields.String()
+    owner = fields.Email()
+    user = fields.Nested(UserNestedOutputSchema)
+    replaces = fields.Nested(CertificateNestedOutputSchema, many=True)
+    endpoints = fields.Nested(EndpointNestedOutputSchema, many=True, missing=[])
+
+
 certificate_input_schema = CertificateInputSchema()
 certificate_output_schema = CertificateOutputSchema()
 certificates_output_schema = CertificateOutputSchema(many=True)
 certificate_upload_input_schema = CertificateUploadInputSchema()
 certificate_export_input_schema = CertificateExportInputSchema()
 certificate_edit_input_schema = CertificateEditInputSchema()
+certificate_notification_output_schema = CertificateNotificationOutputSchema()
