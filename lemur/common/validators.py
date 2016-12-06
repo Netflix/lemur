@@ -88,7 +88,7 @@ def csr(data):
     :return:
     """
     try:
-        x509.load_pem_x509_csr(bytes(data), default_backend())
+        x509.load_pem_x509_csr(data.encode('utf-8'), default_backend())
     except Exception:
         raise ValidationError('CSR presented is not valid.')
 
