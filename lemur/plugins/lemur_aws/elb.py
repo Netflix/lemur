@@ -42,7 +42,6 @@ def is_valid(listener_tuple):
     :param listener_tuple:
     """
     lb_port, i_port, lb_protocol, arn = listener_tuple
-    current_app.logger.debug(lb_protocol)
     if lb_protocol.lower() in ['ssl', 'https']:
         if not arn:
             raise InvalidListener

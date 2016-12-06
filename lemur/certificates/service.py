@@ -86,10 +86,10 @@ def find_duplicates(cert):
     :param cert:
     :return:
     """
-    if cert.chain:
-        return Certificate.query.filter_by(body=cert.body.strip(), chain=cert.chain.strip()).all()
+    if cert['chain']:
+        return Certificate.query.filter_by(body=cert['body'].strip(), chain=cert['chain'].strip()).all()
     else:
-        return Certificate.query.filter_by(body=cert.body.strip(), chain=None).all()
+        return Certificate.query.filter_by(body=cert['body'].strip(), chain=None).all()
 
 
 def export(cert, export_plugin):

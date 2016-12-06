@@ -118,7 +118,6 @@ def sync_endpoints(source):
         certificate = endpoint.pop('certificate', None)
 
         if certificate_name:
-            current_app.logger.debug(certificate_name)
             cert = cert_service.get_by_name(certificate_name)
 
         elif certificate:
@@ -206,7 +205,6 @@ def clean(source):
         return
 
     for certificate in certificates:
-        current_app.logger.debug(certificate)
         cert = cert_service.get_by_name(certificate)
 
         if cert:
