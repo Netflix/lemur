@@ -787,14 +787,15 @@ def validate_sources(source_strings):
 
     if 'all' in source_strings:
         sources = source_service.get_all()
+    else:
+        for source_str in source_strings:
+            source = source_service.get_by_label(source_str)
 
-    for source_str in source_strings:
-        source = source_service.get_by_label(source_str)
+            if not source:
+                sys.stderr.write("Unable to find specified source with label: {0}\n".format(source_str))
+                sys.exit(1)
 
-        if not source:
-            sys.stderr.write("Unable to find specified source with label: {0}".format(source_str))
-
-        sources.append(source)
+            sources.append(source)
     return sources
 
 
