@@ -312,7 +312,7 @@ class DigiCertIssuerPlugin(IssuerPlugin):
         # retrieve ceqrtificate
         certificate_url = "{0}/services/v2/certificate/{1}/download/format/pem_all".format(base_url, certificate_id)
         end_entity, intermediate, root = pem.parse(self.session.get(certificate_url).content)
-        return str(end_entity), str(intermediate)
+        return "\n".join(str(end_entity).splitlines()), "\n".join(str(end_entity).splitlines())
 
     @staticmethod
     def create_authority(options):
@@ -377,7 +377,7 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
         # retrieve certificate
         certificate_pem = get_cis_certificate(self.session, base_url, data['id'])
         end_entity = pem.parse(certificate_pem)[0]
-        return str(end_entity), current_app.config.get('DIGICERT_CIS_INTERMEDIATE')
+        return "\n".join(str(end_entity).splitlines()), current_app.config.get('DIGICERT_CIS_INTERMEDIATE')
 
     @staticmethod
     def create_authority(options):

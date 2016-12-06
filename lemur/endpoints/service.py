@@ -8,6 +8,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
+from flask import current_app
 
 from sqlalchemy import func
 
@@ -64,7 +65,7 @@ def create(**kwargs):
     """
     endpoint = Endpoint(**kwargs)
     database.create(endpoint)
-    metrics.send('endpoint_added', 'counter', 1)
+    metrics.send('endpoint_added', 'counter', 1, metric_tags={'source': endpoint.source.label})
     return endpoint
 
 
@@ -94,9 +95,22 @@ def update(endpoint_id, **kwargs):
     endpoint.policy = kwargs['policy']
     endpoint.certificate = kwargs['certificate']
     endpoint.source = kwargs['source']
-    metrics.send('endpoint_added', 'counter', 1)
+    metrics.send('endpoint_updated', 'counter', 1, metric_tags={'source': endpoint.source.label})
     database.update(endpoint)
     return endpoint
+
+
+def rotate_certificate(endpoint, new_cert):
+    """Rotates a certificate on a given endpoint."""
+    try:
+        endpoint.source.plugin.update_endpoint(endpoint, new_cert)
+        endpoint.certificate = new_cert
+        database.update(endpoint)
+        metrics.send('certificate_rotate_success', 'counter', 1, metric_tags={'endpoint': endpoint.name, 'source': endpoint.source.label})
+    except Exception as e:
+        metrics.send('certificate_rotate_failure', 'counter', 1, metric_tags={'endpoint': endpoint.name})
+        current_app.logger.exception(e)
+        raise e
 
 
 def render(args):
