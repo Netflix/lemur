@@ -1,5 +1,5 @@
 """
-.. module: lemur.notifications
+.. module: lemur.notifications.service
     :platform: Unix
 
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
@@ -8,106 +8,11 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
-import arrow
-
 from flask import current_app
 
 from lemur import database
-from lemur.extensions import metrics
-from lemur.plugins.base import plugins
-from lemur.plugins.utils import get_plugin_option
-
-from lemur.notifications.models import Notification
 from lemur.certificates.models import Certificate
-
-from lemur.certificates.schemas import certificate_notification_output_schema
-
-
-def send_expiration_notifications():
-    """
-    This function will check for upcoming certificate expiration,
-    and send out notification emails at given intervals.
-    """
-    for plugin in plugins.all(plugin_type='notification'):
-        notifications = database.db.session.query(Notification)\
-            .filter(Notification.plugin_name == plugin.slug)\
-            .filter(Notification.active == True).all()  # noqa
-
-        messages = []
-        for n in notifications:
-            for certificate in n.certificates:
-                if _is_eligible_for_notifications(certificate):
-                    data = certificate_notification_output_schema.dump(certificate).data
-                    messages.append((data, n.options))
-
-        for data, targets, options in messages:
-            try:
-                plugin.send('expiration', data, targets, options)
-                metrics.send('expiration_notification_sent', 'counter', 1)
-            except Exception as e:
-                metrics.send('expiration_notification_failure', 'counter', 1)
-                current_app.logger.exception(e)
-
-
-def send_rotation_notifications(certificates):
-    """
-    Sends a report to certificate owners when their certificate as been
-    rotated.
-    :return:
-    """
-    plugin = plugins.get(current_app.config.get('LEMUR_DEFAULT_NOTIFICATION_PLUGIN'))
-
-    messages = {}
-
-    for certificate in certificates:
-        data = certificate_notification_output_schema.dump(certificate).data
-
-        if data.owner in messages.keys():
-            messages[data.owner].append(data)
-        else:
-            messages[data.owner] = [data]
-
-        for owner, data in messages:
-            try:
-                plugin.send('rotation', data, [owner])
-                metrics.send('rotation_notification_sent', 'counter', 1)
-            except Exception as e:
-                metrics.send('rotation_notification_failure', 'counter', 1)
-                current_app.logger.exception(e)
-
-
-def _is_eligible_for_notifications(cert):
-    """
-    Determine if notifications for a given certificate should
-    currently be sent
-
-    :param cert:
-    :return:
-    """
-    if not cert.notify:
-        return
-
-    now = arrow.utcnow()
-    days = (cert.not_after - now.naive).days
-
-    for notification in cert.notifications:
-        interval = get_plugin_option('interval', notification.options)
-        unit = get_plugin_option('unit', notification.options)
-
-        if unit == 'weeks':
-            interval *= 7
-
-        elif unit == 'months':
-            interval *= 30
-
-        elif unit == 'days':  # it's nice to be explicit about the base unit
-            pass
-
-        else:
-            raise Exception("Invalid base unit for expiration interval: {0}".format(unit))
-
-        if days == interval:
-            return cert
+from lemur.notifications.models import Notification
 
 
 def create_default_expiration_notifications(name, recipients):

@@ -201,7 +201,7 @@ class CertificateExportInputSchema(LemurInputSchema):
     plugin = fields.Nested(PluginInputSchema)
 
 
-def CertificateNotificationOutputSchema(LemurOutputSchema):
+class CertificateNotificationOutputSchema(LemurOutputSchema):
     description = fields.String()
     issuer = fields.String()
     name = fields.String()
