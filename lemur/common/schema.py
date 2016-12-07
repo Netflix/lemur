@@ -115,6 +115,8 @@ def wrap_errors(messages):
 
 
 def unwrap_pagination(data, output_schema):
+    if not output_schema:
+        return data
 
     if isinstance(data, dict):
         if 'total' in data.keys():
