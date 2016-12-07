@@ -32,6 +32,8 @@ from lemur.notifications import service as notification_service
 from lemur.certificates.verify import verify_string
 from lemur.sources import service as source_service
 
+from lemur.common.utils import validate_conf
+
 from lemur import create_app
 
 # Needed to be imported so that SQLAlchemy create_all can find our models
@@ -51,11 +53,20 @@ manager.add_option('-c', '--config', dest='config')
 
 migrate = Migrate(create_app)
 
+REQUIRED_VARIABLES = [
+    'LEMUR_SECURITY_TEAM_EMAIL',
+    'LEMUR_DEFAULT_ORGANIZATIONAL_UNIT',
+    'LEMUR_DEFAULT_ORGANIZATION',
+    'LEMUR_DEFAULT_LOCATION',
+    'LEMUR_DEFAULT_COUNTRY',
+    'LEMUR_DEFAULT_STATE',
+    'SQLALCHEMY_DATABASE_URI'
+]
+
 KEY_LENGTH = 40
 DEFAULT_CONFIG_PATH = '~/.lemur/lemur.conf.py'
 DEFAULT_SETTINGS = 'lemur.conf.server'
 SETTINGS_ENVVAR = 'LEMUR_CONF'
-
 
 CONFIG_TEMPLATE = """
 # This is just Python which means you can inherit and tweak settings
@@ -182,9 +193,9 @@ def generate_settings():
     output = CONFIG_TEMPLATE.format(
         # we use Fernet.generate_key to make sure that the key length is
         # compatible with Fernet
-        encryption_key=Fernet.generate_key(),
-        secret_token=base64.b64encode(os.urandom(KEY_LENGTH)),
-        flask_secret_key=base64.b64encode(os.urandom(KEY_LENGTH)),
+        encryption_key=Fernet.generate_key().decode('utf-8'),
+        secret_token=base64.b64encode(os.urandom(KEY_LENGTH)).decode('utf-8'),
+        flask_secret_key=base64.b64encode(os.urandom(KEY_LENGTH)).decode('utf-8'),
     )
 
     return output
@@ -402,6 +413,11 @@ class LemurServer(Command):
         from gunicorn.app.wsgiapp import WSGIApplication
 
         app = WSGIApplication()
+
+        # run startup tasks on a app like object
+        pre_app = create_app(kwargs.get('config'))
+        validate_conf(pre_app, REQUIRED_VARIABLES)
+
         app.app_uri = 'lemur:create_app(config="{0}")'.format(kwargs.get('config'))
 
         return app.run()
@@ -417,6 +433,7 @@ def create_config(config_path=None):
 
     config_path = os.path.expanduser(config_path)
     dir = os.path.dirname(config_path)
+
     if not os.path.exists(dir):
         os.makedirs(dir)
 
@@ -770,14 +787,15 @@ def validate_sources(source_strings):
 
     if 'all' in source_strings:
         sources = source_service.get_all()
+    else:
+        for source_str in source_strings:
+            source = source_service.get_by_label(source_str)
 
-    for source_str in source_strings:
-        source = source_service.get_by_label(source_str)
+            if not source:
+                sys.stderr.write("Unable to find specified source with label: {0}\n".format(source_str))
+                sys.exit(1)
 
-        if not source:
-            sys.stderr.write("Unable to find specified source with label: {0}".format(source_str))
-
-        sources.append(source)
+            sources.append(source)
     return sources
 
 

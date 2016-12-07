@@ -11,13 +11,13 @@ from lemur.authorities.schemas import AuthorityNestedOutputSchema
 
 
 class DefaultOutputSchema(LemurOutputSchema):
-    __envelope__ = False
     authority = fields.Nested(AuthorityNestedOutputSchema)
     country = fields.String()
     state = fields.String()
     location = fields.String()
     organization = fields.String()
-    organizationalUnit = fields.String()
+    organizational_unit = fields.String()
+    issuer_plugin = fields.String()
 
 
 default_output_schema = DefaultOutputSchema()

@@ -76,13 +76,16 @@ def configure_hook(app):
         def after(response):
             return response
 
+    @app.after_request
+    def log_status(response):
+        metrics.send('status_code_{}'.format(response.status_code), 'counter', 1)
+        return response
+
     @app.errorhandler(Exception)
     def handle_error(e):
         code = 500
         if isinstance(e, HTTPException):
             code = e.code
-
-        metrics.send('{}_status_code'.format(code), 'counter', 1)
 
         app.logger.exception(e)
         return jsonify(error=str(e)), code
