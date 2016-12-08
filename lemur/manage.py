@@ -22,6 +22,7 @@ from flask_script.commands import ShowUrls, Clean, Server
 
 from lemur.sources.cli import manager as source_manager
 from lemur.certificates.cli import manager as certificate_manager
+from lemur.notifications.cli import manager as notification_manager
 
 from lemur import database
 from lemur.users import service as user_service
@@ -627,8 +628,9 @@ def main():
     manager.add_command("reset_password", ResetPassword())
     manager.add_command("create_role", CreateRole())
     manager.add_command("source", source_manager)
-    manager.add_command("report", Report())
     manager.add_command("certificate", certificate_manager)
+    manager.add_command("notify", notification_manager)
+    manager.add_command("report", Report())
     manager.run()
 
 
