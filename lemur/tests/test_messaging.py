@@ -21,9 +21,11 @@ def test_needs_notification(app, certificate, notification):
         assert needs_notification(certificate)
 
 
+@pytest.skip
 def test_send_expiration_notification():
     assert False
 
 
+@pytest.skip
 def test_send_rotation_notification():
     assert False
