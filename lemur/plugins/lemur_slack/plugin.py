@@ -23,28 +23,28 @@ def create_certificate_url(name):
     )
 
 
-def create_expiration_attachments(messages):
+def create_expiration_attachments(certificates):
     attachments = []
-    for message in messages:
+    for certificate in certificates:
         attachments.append({
-            'title': message['name'],
-            'title_link': create_certificate_url(message['name']),
+            'title': certificate['name'],
+            'title_link': create_certificate_url(certificate['name']),
             'color': 'danger',
             'fallback': '',
             'fields': [
                 {
                     'title': 'Owner',
-                    'value': message['owner'],
+                    'value': certificate['owner'],
                     'short': True
                 },
                 {
                     'title': 'Expires',
-                    'value': arrow.get(message['not_after']).format('dddd, MMMM D, YYYY'),
+                    'value': arrow.get(certificate['validityEnd']).format('dddd, MMMM D, YYYY'),
                     'short': True
                 },
                 {
                     'title': 'Endpoints Detected',
-                    'value': len(message['endpoints']),
+                    'value': len(certificate['endpoints']),
                     'short': True
                 }
             ],
@@ -52,6 +52,37 @@ def create_expiration_attachments(messages):
             'mrkdwn_in': ['text']
         })
     return attachments
+
+
+def create_rotation_attachments(certificate):
+    return {
+        'title': certificate['name'],
+        'title_link': create_certificate_url(certificate['name']),
+        'fields': [
+            {
+                {
+                    'title': 'Owner',
+                    'value': certificate['owner'],
+                    'short': True
+                },
+                {
+                    'title': 'Expires',
+                    'value': arrow.get(certificate['validityEnd']).format('dddd, MMMM D, YYYY'),
+                    'short': True
+                },
+                {
+                    'title': 'Replaced By',
+                    'value': len(certificate['replaced'][0]['name']),
+                    'short': True
+                },
+                {
+                    'title': 'Endpoints Rotated',
+                    'value': len(certificate['endpoints']),
+                    'short': True
+                }
+            }
+        ]
+    }
 
 
 class SlackNotificationPlugin(ExpirationNotificationPlugin):
@@ -94,11 +125,14 @@ class SlackNotificationPlugin(ExpirationNotificationPlugin):
         if notification_type == 'expiration':
             attachments = create_expiration_attachments(message)
 
+        elif notification_type == 'rotation':
+            attachments = create_rotation_attachments(message)
+
         if not attachments:
             raise Exception('Unable to create message attachments')
 
         body = {
-            'text': 'Lemur Expiration Notification',
+            'text': 'Lemur {0} Notification'.format(notification_type.capitalize()),
             'attachments': attachments,
             'channel': self.get_option('recipients', options),
             'username': self.get_option('username', options)
