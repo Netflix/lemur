@@ -147,7 +147,7 @@ class AWSSourcePlugin(SourcePlugin):
                     endpoint = dict(
                         name=e['LoadBalancerName'],
                         dnsname=e['DNSName'],
-                        type='e',
+                        type='elb',
                         port=listener['Listener']['LoadBalancerPort'],
                         certificate_name=iam.get_name_from_arn(listener['Listener']['SSLCertificateId'])
                     )
