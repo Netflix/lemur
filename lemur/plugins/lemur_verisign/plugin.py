@@ -94,6 +94,10 @@ def process_options(options):
         'email': current_app.config.get("VERISIGN_EMAIL")
     }
 
+    if options.get('extensions'):
+        if options['extensions'].get('sub_alt_names'):
+            data['subject_alt_names'] = ",".join(x['value'] for x in options['extensions']['sub_alt_names']['names'])
+
     if options.get('validity_end'):
         period = get_default_issuance(options)
         data['specificEndDate'] = options['validity_end'].format("MM/DD/YYYY")
