@@ -13,7 +13,7 @@ manager = Manager(usage="Handles notification related tasks.")
 
 
 @manager.command
-def notify():
+def expirations():
     """
     Runs Lemur's notification engine, that looks for expired certificates and sends
     notifications out to those that have subscribed to them.
