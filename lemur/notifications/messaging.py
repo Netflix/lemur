@@ -24,6 +24,7 @@ def send_expiration_notifications():
     This function will check for upcoming certificate expiration,
     and send out notification emails at given intervals.
     """
+    sent = 0
     for plugin in plugins.all(plugin_type='notification'):
         notifications = database.db.session.query(Notification)\
             .filter(Notification.plugin_name == plugin.slug)\
@@ -36,16 +37,18 @@ def send_expiration_notifications():
                     data = certificate_notification_output_schema.dump(certificate).data
                     messages.append((data, n.options))
 
-        for data, targets, options in messages:
+        for data, options in messages:
             try:
-                plugin.send('expiration', data, targets, options)
+                plugin.send('expiration', data, [data['owner']], options)
                 metrics.send('expiration_notification_sent', 'counter', 1)
+                sent += 1
             except Exception as e:
                 metrics.send('expiration_notification_failure', 'counter', 1)
                 current_app.logger.exception(e)
+    return sent
 
 
-def send_rotation_notification(certificate):
+def send_rotation_notification(certificate, notification_plugin=None):
     """
     Sends a report to certificate owners when their certificate as been
     rotated.
@@ -53,12 +56,13 @@ def send_rotation_notification(certificate):
     :param certificate:
     :return:
     """
-    plugin = plugins.get(current_app.config.get('LEMUR_DEFAULT_NOTIFICATION_PLUGIN'))
+    if not notification_plugin:
+        notification_plugin = plugins.get(current_app.config.get('LEMUR_DEFAULT_NOTIFICATION_PLUGIN'))
 
     data = certificate_notification_output_schema.dump(certificate).data
 
     try:
-        plugin.send('rotation', data, [data.owner])
+        notification_plugin.send('rotation', data, [data['owner']])
         metrics.send('rotation_notification_sent', 'counter', 1)
     except Exception as e:
         metrics.send('rotation_notification_failure', 'counter', 1)

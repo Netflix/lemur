@@ -43,7 +43,7 @@
                                 <tr>
                                     <td width="32px"></td>
                                     <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:24px;color:#ffffff;line-height:1.25">
-                                       Your certificate(s) have been rotated!
+                                       Your certificate has been rotated!
                                     </td>
                                     <td width="32px"></td>
                                 </tr>
@@ -75,43 +75,30 @@
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:20px;color:#202020;line-height:1.5">
-                                                    Impacted Certificate:
-                                                </td>
-                                            </tr>
-                                            <tr>
                                                 <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#202020;line-height:1.5">
                                                     <table border="0" cellspacing="0" cellpadding="0"
                                                            style="margin-top:48px;margin-bottom:48px">
                                                         <tbody>
-                                                        {%  for message in messages %}
                                                             <tr valign="middle">
                                                                 <td width="32px"></td>
                                                                 <td width="16px"></td>
                                                                 <td style="line-height:1.2">
-                                                                    <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:20px;color:#202020">{{ message.name }}</span>
+                                                                    <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:20px;color:#202020">{{ certificate.name }}</span>
                                                                     <br>
                                                                     <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#727272">
-                                                                        {{ message.endpoints | length }} Endpoints
-                                                                        <br>{{ message.owner }}
-                                                                        <br>{{ message.not_after | time }}
-                                                                        <a href="https://{{ hostname }}/#/certificates/{{ message.name }}" target="_blank">Details</a>
+                                                                        <br>{{ certificate.owner }}
+                                                                        <br>{{ certificate.validityEnd | time }}
+                                                                        <a href="https://{{ hostname }}/#/certificates/{{ certificate.name }}" target="_blank">Details</a>
                                                                     </span>
                                                                 </td>
                                                             </tr>
-                                                                {%  if not loop.last %}
-                                                                <tr valign="middle">
-                                                                    <td width="32px" height="24px"></td>
-                                                                </tr>
-                                                                {% endif %}
-                                                        {%  endfor %}
                                                         </tbody>
                                                     </table>
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:20px;color:#202020;line-height:1.5">
-                                                    Impacted Endpoints:
+                                                <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:15px;color:#202020;line-height:1.5">
+                                                    Replaced by:
                                                 </td>
                                             </tr>
                                             <tr>
@@ -119,18 +106,43 @@
                                                     <table border="0" cellspacing="0" cellpadding="0"
                                                            style="margin-top:48px;margin-bottom:48px">
                                                         <tbody>
-                                                        {%  for message in messages %}
+                                                        <tr valign="middle">
+                                                            <td width="32px"></td>
+                                                            <td width="16px"></td>
+                                                            <td style="line-height:1.2">
+                                                                <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:20px;color:#202020">{{ certificate.replaced.name }}</span>
+                                                                <br>
+                                                                <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#727272">
+                                                                        <br>{{ certificate.replaced[0].owner }}
+                                                                        <br>{{ certificate.replaced[0].validityEnd | time }}
+                                                                        <a href="https://{{ hostname }}/#/certificates/{{ certificate.replaced[0].name }}" target="_blank">Details</a>
+                                                                    </span>
+                                                            </td>
+                                                        </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:15px;color:#202020;line-height:1.5">
+                                                    Endpoints Rotated:
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#202020;line-height:1.5">
+                                                    <table border="0" cellspacing="0" cellpadding="0"
+                                                           style="margin-top:48px;margin-bottom:48px">
+                                                        <tbody>
+                                                        {%  for endpoint in certificate.endpoints %}
                                                             <tr valign="middle">
                                                                 <td width="32px"></td>
                                                                 <td width="16px"></td>
                                                                 <td style="line-height:1.2">
-                                                                    <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:20px;color:#202020">{{ message.name }}</span>
+                                                                    <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:20px;color:#202020">{{ endpoint.name }}</span>
                                                                     <br>
                                                                     <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#727272">
-                                                                        {{ message.endpoints | length }} Endpoints
-                                                                        <br>{{ message.owner }}
-                                                                        <br>{{ message.not_after | time }}
-                                                                        <a href="https://{{ hostname }}/#/certificates/{{ message.name }}" target="_blank">Details</a>
+                                                                        <br>{{ endpoint.dnsname }} | {{ endpoint.port }}
+                                                                        <a href="https://{{ hostname }}/#/endpoints/{{ endpoint.name }}" target="_blank">Details</a>
                                                                     </span>
                                                                 </td>
                                                             </tr>

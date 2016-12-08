@@ -354,7 +354,7 @@ def test_get_account_number(client):
     assert get_account_number(arn) == '11111111'
 
 
-def test_mint_certificate(issuer_plugin, authority, logged_in_admin):
+def test_mint_certificate(issuer_plugin, authority):
     from lemur.certificates.service import mint
     cert_body, private_key, chain = mint(authority=authority, csr=CSR_STR)
     assert cert_body == INTERNAL_VALID_LONG_STR, INTERNAL_VALID_SAN_STR
@@ -372,7 +372,7 @@ def test_create_certificate(issuer_plugin, authority, user):
     assert cert.name == 'ACustomName1'
 
 
-def test_reissue_certificate(issuer_plugin, authority, certificate, logged_in_admin):
+def test_reissue_certificate(issuer_plugin, authority, certificate):
     from lemur.certificates.service import reissue_certificate
     new_cert = reissue_certificate(certificate)
     assert new_cert
