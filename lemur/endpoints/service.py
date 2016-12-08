@@ -10,11 +10,11 @@
 """
 from flask import current_app
 
-from lemur import database
-from lemur.extensions import metrics
-from lemur.endpoints.models import Endpoint, Policy, Cipher
-
 from sqlalchemy import func
+
+from lemur import database
+from lemur.endpoints.models import Endpoint, Policy, Cipher
+from lemur.extensions import metrics
 
 
 def get_all():

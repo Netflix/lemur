@@ -34,7 +34,7 @@
                     <tr height="16"></tr>
                     <tr>
                         <td>
-                            <table bgcolor="#F44336" width="100%" border="0" cellspacing="0" cellpadding="0"
+                            <table bgcolor="#3681E4" width="100%" border="0" cellspacing="0" cellpadding="0"
                                    style="min-width:332px;max-width:600px;border:1px solid #e0e0e0;border-bottom:0;border-top-left-radius:3px;border-top-right-radius:3px">
                                 <tbody>
                                 <tr>
@@ -43,7 +43,7 @@
                                 <tr>
                                     <td width="32px"></td>
                                     <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:24px;color:#ffffff;line-height:1.25">
-                                       Your certificate(s) are being rotated!
+                                       Your certificate(s) have been rotated!
                                     </td>
                                     <td width="32px"></td>
                                 </tr>
@@ -56,7 +56,7 @@
                     </tr>
                     <tr>
                         <td>
-                            <table bgcolor="#3681E4" width="100%" border="0" cellspacing="0" cellpadding="0"
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0"
                                    style="min-width:332px;max-width:600px;border:1px solid #f0f0f0;border-bottom:1px solid #c0c0c0;border-top:0;border-bottom-left-radius:3px;border-bottom-right-radius:3px">
                                 <tbody>
                                 <tr height="16px">
@@ -71,11 +71,51 @@
                                             <tr>
                                                 <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#202020;line-height:1.5">
                                                     Hi,
+                                                    <br>This is a Lemur certificate rotation notice. Your certificate has been re-issued and re-provisioned.
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:20px;color:#202020;line-height:1.5">
+                                                    Impacted Certificate:
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#202020;line-height:1.5">
-                                                    <br>This is a Lemur certificate rotation notice. This a purely informational notice. The following certificates will be rotated on any associated endpoints.
+                                                    <table border="0" cellspacing="0" cellpadding="0"
+                                                           style="margin-top:48px;margin-bottom:48px">
+                                                        <tbody>
+                                                        {%  for message in messages %}
+                                                            <tr valign="middle">
+                                                                <td width="32px"></td>
+                                                                <td width="16px"></td>
+                                                                <td style="line-height:1.2">
+                                                                    <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:20px;color:#202020">{{ message.name }}</span>
+                                                                    <br>
+                                                                    <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#727272">
+                                                                        {{ message.endpoints | length }} Endpoints
+                                                                        <br>{{ message.owner }}
+                                                                        <br>{{ message.not_after | time }}
+                                                                        <a href="https://{{ hostname }}/#/certificates/{{ message.name }}" target="_blank">Details</a>
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
+                                                                {%  if not loop.last %}
+                                                                <tr valign="middle">
+                                                                    <td width="32px" height="24px"></td>
+                                                                </tr>
+                                                                {% endif %}
+                                                        {%  endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:20px;color:#202020;line-height:1.5">
+                                                    Impacted Endpoints:
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#202020;line-height:1.5">
                                                     <table border="0" cellspacing="0" cellpadding="0"
                                                            style="margin-top:48px;margin-bottom:48px">
                                                         <tbody>
