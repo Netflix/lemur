@@ -207,7 +207,8 @@ class CertificateNotificationOutputSchema(LemurOutputSchema):
     name = fields.String()
     owner = fields.Email()
     user = fields.Nested(UserNestedOutputSchema)
-    replaces = fields.Nested(CertificateNestedOutputSchema, many=True)
+    validity_end = ArrowDateTime(attribute='not_after')
+    replaced = fields.Nested(CertificateNestedOutputSchema, many=True)
     endpoints = fields.Nested(EndpointNestedOutputSchema, many=True, missing=[])
 
 

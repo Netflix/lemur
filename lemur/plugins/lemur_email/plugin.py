@@ -85,10 +85,10 @@ class EmailNotificationPlugin(ExpirationNotificationPlugin):
             raise InvalidConfiguration('Email sender type {0} is not recognized.')
 
     @staticmethod
-    def send(template_name, message, targets, **kwargs):
-        subject = 'Lemur: Expiration Notification'
+    def send(notification_type, message, targets, options, **kwargs):
+        subject = 'Lemur: {0} Notification'.format(notification_type.capitalize())
 
-        body = render_html(template_name, message)
+        body = render_html(notification_type, message)
 
         s_type = current_app.config.get("LEMUR_EMAIL_SENDER", 'ses').lower()
 

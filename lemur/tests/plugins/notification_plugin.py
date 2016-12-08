@@ -13,5 +13,5 @@ class TestNotificationPlugin(NotificationPlugin):
         super(TestNotificationPlugin, self).__init__(*args, **kwargs)
 
     @staticmethod
-    def send(event_type, message, targets, options, **kwargs):
+    def send(notification_type, message, targets, options, **kwargs):
         return

@@ -85,12 +85,13 @@ class SlackNotificationPlugin(ExpirationNotificationPlugin):
         },
     ]
 
-    def send(self, event_type, message, targets, options, **kwargs):
+    def send(self, notification_type, message, targets, options, **kwargs):
         """
         A typical check can be performed using the notify command:
         `lemur notify`
         """
-        if event_type == 'expiration':
+        attachments = None
+        if notification_type == 'expiration':
             attachments = create_expiration_attachments(message)
 
         if not attachments:
@@ -104,6 +105,8 @@ class SlackNotificationPlugin(ExpirationNotificationPlugin):
         }
 
         r = requests.post(self.get_option('webhook', options), json.dumps(body))
+
         if r.status_code not in [200]:
             raise Exception('Failed to send message')
+
         current_app.logger.error("Slack response: {0} Message Body: {1}".format(r.status_code, body))

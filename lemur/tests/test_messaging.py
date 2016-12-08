@@ -3,6 +3,8 @@ from freezegun import freeze_time
 
 from datetime import timedelta
 
+from moto import mock_ses
+
 
 def test_needs_notification(app, certificate, notification):
     from lemur.notifications.messaging import needs_notification
@@ -21,11 +23,24 @@ def test_needs_notification(app, certificate, notification):
         assert needs_notification(certificate)
 
 
-@pytest.skip
-def test_send_expiration_notification():
-    assert False
+@mock_ses
+def test_send_expiration_notification(certificate, notification, notification_plugin):
+    from lemur.notifications.messaging import send_expiration_notifications
+    notification.options = [{'name': 'interval', 'value': 10}, {'name': 'unit', 'value': 'days'}]
+    certificate.notifications.append(notification)
+    delta = certificate.not_after - timedelta(days=10)
+
+    with freeze_time(delta.datetime):
+        sent = send_expiration_notifications()
+        assert sent == 1
+
+        certificate.notify = False
+
+        sent = send_expiration_notifications()
+        assert sent == 0
 
 
-@pytest.skip
-def test_send_rotation_notification():
-    assert False
+@mock_ses
+def test_send_rotation_notification(notification_plugin, certificate):
+    from lemur.notifications.messaging import send_rotation_notification
+    send_rotation_notification(certificate, notification_plugin=notification_plugin)
