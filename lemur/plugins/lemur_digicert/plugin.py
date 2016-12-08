@@ -104,7 +104,7 @@ def get_additional_names(options):
     """
     names = []
     # add SANs if present
-    if options.get('extensions', 'sub_alt_names'):
+    if options.get('extensions'):
         for san in options['extensions']['sub_alt_names']['names']:
             names.append(san['value'])
     return names
