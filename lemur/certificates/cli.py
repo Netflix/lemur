@@ -121,8 +121,6 @@ def rotate(new_certificate_name=False, old_certificate_name=False, message=False
 
 @manager.command
 def reissue(old_certificate_name, commit=False):
-    from lemur.certificates.service import get_by_name, reissue_certificate, get_certificate_primitives
-
     old_cert = get_by_name(old_certificate_name)
 
     if not old_cert:

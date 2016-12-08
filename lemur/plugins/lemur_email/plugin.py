@@ -31,7 +31,7 @@ def render_html(template_name, message):
     return template.render(dict(messages=message, hostname=current_app.config.get('LEMUR_HOSTNAME')))
 
 
-def send_via_ses(subject, body, targets):
+def send_via_smtp(subject, body, targets):
     """
     Attempts to deliver email notification via SES service.
 
@@ -46,7 +46,7 @@ def send_via_ses(subject, body, targets):
     smtp_mail.send(msg)
 
 
-def send_via_smtp(subject, body, targets):
+def send_via_ses(subject, body, targets):
     """
     Attempts to deliver email notification via SMTP.
     :param subject:
