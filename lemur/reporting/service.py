@@ -2,7 +2,7 @@ from lemur import database
 from lemur.certificates.models import Certificate
 
 
-def certificates(validity=None, deployed=None):
+def certificates(owner=None, issuer=None, validity=None, deployed=None):
     """
     Filters certificates by the given dimensions.
 
@@ -21,12 +21,15 @@ def certificates(validity=None, deployed=None):
     return query.all()
 
 
-def fqdns(validity=None, deployed=None):
+def fqdns(owner=None, issuer=None, validity=None, deployed=None):
     """
     Returns an FQDN report.
+    :param owner:
+    :param issuer:
     :param validity:
     :param deployed:
     :return:
     """
     for cert in certificates(validity=validity, deployed=deployed):
+        headers = ['FQDN', 'Root Domain', 'Issuer', 'Total Length (days), Time Until Expiration (days)']
         pass
