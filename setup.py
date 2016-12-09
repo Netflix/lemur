@@ -56,7 +56,7 @@ install_requires = [
     'lockfile==0.12.2',
     'inflection==0.3.1',
     'future==0.16.0',
-    'boto==2.43.0',  # we might make this optional
+    'boto==2.44.0',  # we might make this optional
     'boto3==1.4.1',
     'acme==0.9.3',
     'retrying==1.3.3',
