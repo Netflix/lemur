@@ -376,6 +376,8 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
 
         # retrieve certificate
         certificate_pem = get_cis_certificate(self.session, base_url, data['id'])
+
+        self.session.headers.pop('Accept')
         end_entity = pem.parse(certificate_pem)[0]
         return "\n".join(str(end_entity).splitlines()), current_app.config.get('DIGICERT_CIS_INTERMEDIATE')
 
