@@ -11,6 +11,8 @@
 from itertools import groupby
 from collections import defaultdict
 
+from sqlalchemy.orm import joinedload
+
 import arrow
 from flask import current_app
 
@@ -28,6 +30,7 @@ def get_certificates():
     :return:
     """
     return database.session_query(Certificate)\
+        .options(joinedload('notifications'))\
         .filter(Certificate.notify == True)\
         .filter(Certificate.expired == False)\
         .filter(Certificate.notifications.any()).all()  # noqa
@@ -38,37 +41,40 @@ def get_eligible_certificates():
     Finds all certificates that are eligible for certificate expiration.
     :return:
     """
-    certificates = defaultdict(list)
+    certificates = defaultdict(dict)
+    certs = get_certificates()
 
-    for owner, items in groupby(get_certificates(), lambda x: x.owner):
+    # group by owner
+    for owner, items in groupby(certs, lambda x: x.owner):
         notification_groups = []
 
         for certificate in items:
             notification = needs_notification(certificate)
 
             if notification:
-                notification_groups.append((certificate, notification))
+                notification_groups.append((notification, certificate))
 
-        certificates[owner].extend(notification_groups)
+        # group by notification
+        for notification, items in groupby(notification_groups, lambda x: x[0].label):
+            certificates[owner][notification] = list(items)
 
     return certificates
 
 
-def send_notification(event_type, data, targets, options, slug):
+def send_notification(event_type, data, targets, notification):
     """
     Executes the plugin and handles failure.
 
     :param event_type:
     :param data:
     :param targets:
-    :param options:
+    :param notification:
     :return:
     """
-    plugin = plugins.get(slug)
     try:
-        plugin.send(event_type, data, targets, options)
+        notification.plugin.send(event_type, data, targets, notification.options)
         metrics.send('{0}_notification_sent'.format(event_type), 'counter', 1)
-
+        return True
     except Exception as e:
         metrics.send('{0}_notification_failure'.format(event_type), 'counter', 1)
         current_app.logger.exception(e)
@@ -79,23 +85,36 @@ def send_expiration_notifications():
     This function will check for upcoming certificate expiration,
     and send out notification emails at given intervals.
     """
+    success = failure = 0
+
     # security team gets all
     security_email = current_app.config.get('LEMUR_SECURITY_EMAIL')
 
     security_data = []
     for owner, notification_group in get_eligible_certificates().items():
 
-        for certificates, notification in notification_group.items():
+        for notification_label, certificates in notification_group.items():
             notification_data = []
 
-            for certificate in certificates:
+            notification = certificates[0][0]
+
+            for data in certificates:
+                n, certificate = data
                 cert_data = certificate_notification_output_schema.dump(certificate).data
                 notification_data.append(cert_data)
                 security_data.append(cert_data)
 
-            send_notification('expiration', notification_data, [owner], notification.options)
+            if send_notification('expiration', notification_data, [owner], notification):
+                success += 1
+            else:
+                failure += 1
 
-    send_notification('expiration', security_data, [security_email], None)
+    if send_notification('expiration', security_data, [security_email], notification):
+        success += 1
+    else:
+        failure += 1
+
+    return success, failure
 
 
 def send_rotation_notification(certificate, notification_plugin=None):
@@ -114,6 +133,7 @@ def send_rotation_notification(certificate, notification_plugin=None):
     try:
         notification_plugin.send('rotation', data, [data['owner']])
         metrics.send('rotation_notification_sent', 'counter', 1)
+        return True
     except Exception as e:
         metrics.send('rotation_notification_failure', 'counter', 1)
         current_app.logger.exception(e)
