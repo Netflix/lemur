@@ -50,7 +50,7 @@ install_requires = [
     'gunicorn==19.6.0',
     'marshmallow-sqlalchemy==0.12.0',
     'marshmallow==2.10.4',
-    'cryptography==1.6',
+    'cryptography==1.7',
     'pyjwt==1.4.2',
     'xmltodict==0.10.2',
     'lockfile==0.12.2',
