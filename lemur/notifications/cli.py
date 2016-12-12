@@ -21,9 +21,10 @@ def expirations():
     :return:
     """
     print("Starting to notify subscribers about expiring certificates!")
-    count = send_expiration_notifications()
+    success, failed = send_expiration_notifications()
     print(
-        "Finished notifying subscribers about expiring certificates! Sent {count} notifications!".format(
-            count=count
+        "Finished notifying subscribers about expiring certificates! Sent: {success} Failed: {failed}".format(
+            success=success,
+            failed=failed
         )
     )

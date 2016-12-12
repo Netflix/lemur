@@ -167,7 +167,7 @@ class Certificate(db.Model):
     def expired(cls):
         return case(
             [
-                (cls.now_after <= arrow.utcnow(), True)
+                (cls.not_after <= arrow.utcnow(), True)
             ],
             else_=False
         )

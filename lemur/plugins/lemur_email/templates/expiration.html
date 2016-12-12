@@ -43,7 +43,7 @@
                                 <tr>
                                     <td width="32px"></td>
                                     <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:24px;color:#ffffff;line-height:1.25">
-                                       Your certificate(s) are expiring!
+                                       Your certificate(s) are expiring in {{ message.options | interval }} {{ message.options | unit }}!
                                     </td>
                                     <td width="32px"></td>
                                 </tr>
@@ -79,7 +79,7 @@
                                                     <table border="0" cellspacing="0" cellpadding="0"
                                                            style="margin-top:48px;margin-bottom:48px">
                                                         <tbody>
-                                                        {%  for certificate in certificates %}
+                                                        {%  for certificate in message.certificates %}
                                                             <tr valign="middle">
                                                                 <td width="32px"></td>
                                                                 <td width="16px"></td>
