@@ -20,7 +20,6 @@ var gulp = require('gulp'),
   csso = require('gulp-csso'),
   useref = require('gulp-useref'),
   filter = require('gulp-filter'),
-  rev = require('gulp-rev'),
   revReplace = require('gulp-rev-replace'),
   imagemin = require('gulp-imagemin'),
   minifyHtml = require('gulp-minify-html'),
@@ -166,8 +165,7 @@ function injectHtml(isDev) {
         addRootSlash: false
       })
     )
-  )
-    .pipe(gulp.dest('.tmp/'));
+  ).pipe(gulp.dest('.tmp/'));
 }
 
 gulp.task('dev:inject', ['dev:styles', 'dev:scripts'], function () {
@@ -190,15 +188,16 @@ gulp.task('build:ngviews', function () {
 });
 
 gulp.task('build:html', ['dev:styles', 'dev:scripts', 'build:ngviews', 'build:inject'], function () {
-  var jsFilter = filter('**/*.js');
-  var cssFilter = filter('**/*.css');
+  var jsFilter = filter(['**/*.js'], {'restore': true});
+  var cssFilter = filter(['**/*.css'], {'restore': true});
 
   return gulp.src('.tmp/index.html')
-    .pipe(rev())
     .pipe(jsFilter)
     .pipe(ngAnnotate())
+    .pipe(jsFilter.restore)
     .pipe(cssFilter)
     .pipe(csso())
+    .pipe(cssFilter.restore)
     .pipe(useref())
     .pipe(revReplace())
     .pipe(gulp.dest('lemur/static/dist'))
