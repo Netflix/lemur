@@ -12,8 +12,8 @@ Dependencies
 Some basic prerequisites which you'll need in order to run Lemur:
 
 * A UNIX-based operating system (we test on Ubuntu, develop on OS X)
-* Python 2.7
-* PostgreSQL
+* Python 3.5 or greater
+* PostgreSQL 9.4 or greater
 * Nginx
 
 .. note:: Lemur was built with in AWS in mind. This means that things such as databases (RDS), mail (SES), and TLS (ELB), are largely handled for us.  Lemur does **not** require AWS to function. Our guides and documentation try to be be as generic as possible and are not intended to document every step of launching Lemur into a given environment.
@@ -135,6 +135,9 @@ Next, we will create our new database:
 
 .. note::
     For this guide we assume you will use the `postgres` user to connect to your database, when deploying to a VM or container this is often all you will need. If you have a shared database it is recommend you give Lemur it's own user.
+
+.. note::
+    Postgres 9.4 or greater is required as Lemur relies advanced data columns (e.g. JSON Column type)
 
 Initializing Lemur
 ------------------
