@@ -1,13 +1,12 @@
+'use strict';
+
 var gulp = require('gulp'),
   minifycss = require('gulp-minify-css'),
   concat = require('gulp-concat'),
   less = require('gulp-less'),
   gulpif = require('gulp-if'),
-  order = require('gulp-order'),
   gutil = require('gulp-util'),
-  rename = require('gulp-rename'),
   foreach = require('gulp-foreach'),
-  debug = require('gulp-debug'),
   path =require('path'),
   merge = require('merge-stream'),
   del = require('del'),
@@ -89,9 +88,9 @@ gulp.task('dev:styles', function () {
     .pipe(gulpif(isBootswatchFile, foreach(function (stream, file) {
       var themeName = path.basename(path.dirname(file.path)),
         content = replaceAll(baseContent, '$theme$', themeName),
-        file = string_src('bootstrap-' +  themeName + '.less', content);
+        file2 = string_src('bootstrap-' +  themeName + '.less', content);
 
-      return file;
+      return file2;
     })))
     .pipe(less())
     .pipe(gulpif(isBootstrapFile, foreach(function (stream, file) {
@@ -101,7 +100,7 @@ gulp.task('dev:styles', function () {
       // http://stackoverflow.com/questions/21719833/gulp-how-to-add-src-files-in-the-middle-of-a-pipe
       // https://github.com/gulpjs/gulp/blob/master/docs/recipes/using-multiple-sources-in-one-task.md
       return merge(stream, gulp.src(['.tmp/styles/font-awesome.css', '.tmp/styles/lemur.css']))
-        .pipe(concat('style-' + themeName + ".css"));
+        .pipe(concat('style-' + themeName + '.css'));
     })))
     .pipe(plumber())
     .pipe(concat('styles.css'))
@@ -113,7 +112,7 @@ gulp.task('dev:styles', function () {
 
 // http://stackoverflow.com/questions/1144783/replacing-all-occurrences-of-a-string-in-javascript
 function escapeRegExp(string) {
-  return string.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+  return string.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1');
 }
 
 function replaceAll(string, find, replace) {
@@ -123,7 +122,7 @@ function replaceAll(string, find, replace) {
 function string_src(filename, string) {
   var src = require('stream').Readable({ objectMode: true });
   src._read = function () {
-    this.push(new gutil.File({ cwd: "", base: "", path: filename, contents: new Buffer(string) }));
+    this.push(new gutil.File({ cwd: '', base: '', path: filename, contents: new Buffer(string) }));
     this.push(null);
   };
   return src;
@@ -144,26 +143,18 @@ gulp.task('build:extras', function () {
 function injectHtml(isDev) {
   return gulp.src('lemur/static/app/index.html')
     .pipe(
-    inject(gulp.src(bowerFiles({ base: 'app' }), {
-      read: false
-    }), {
+    inject(gulp.src(bowerFiles({ base: 'app' })), {
       starttag: '<!-- inject:bower:{{ext}} -->',
       addRootSlash: false,
       ignorePath: isDev ? ['lemur/static/app/', '.tmp/'] : null
     })
   )
-    .pipe(inject(gulp.src(['lemur/static/app/angular/**/*.js'], {
-      read: false
-    }), {
-      read: false,
+    .pipe(inject(gulp.src(['lemur/static/app/angular/**/*.js']), {
       starttag: '<!-- inject:{{ext}} -->',
       addRootSlash: false,
       ignorePath: isDev ? ['lemur/static/app/', '.tmp/'] : null
     }))
-    .pipe(inject(gulp.src(['.tmp/styles/**/*.css'], {
-      read: false
-    }), {
-      read: false,
+    .pipe(inject(gulp.src(['.tmp/styles/**/*.css']), {
       starttag: '<!-- inject:{{ext}} -->',
       addRootSlash: false,
       ignorePath: isDev ? ['lemur/static/app/', '.tmp/'] : null
@@ -171,7 +162,6 @@ function injectHtml(isDev) {
     .pipe(
     gulpif(!isDev,
       inject(gulp.src('lemur/static/dist/ngviews/ngviews.min.js'), {
-        read: false,
         starttag: '<!-- inject:ngviews -->',
         addRootSlash: false
       })
@@ -203,18 +193,12 @@ gulp.task('build:html', ['dev:styles', 'dev:scripts', 'build:ngviews', 'build:in
   var jsFilter = filter('**/*.js');
   var cssFilter = filter('**/*.css');
 
-  var assets = useref.assets();
-
   return gulp.src('.tmp/index.html')
-    .pipe(assets)
     .pipe(rev())
     .pipe(jsFilter)
     .pipe(ngAnnotate())
-    .pipe(jsFilter.restore())
     .pipe(cssFilter)
     .pipe(csso())
-    .pipe(cssFilter.restore())
-    .pipe(assets.restore())
     .pipe(useref())
     .pipe(revReplace())
     .pipe(gulp.dest('lemur/static/dist'))
