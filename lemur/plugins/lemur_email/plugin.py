@@ -1,5 +1,5 @@
 """
-.. module: lemur.plugins.lemur_aws.aws
+.. module: lemur.plugins.lemur_email.plugin
     :platform: Unix
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
@@ -11,12 +11,51 @@ from flask import current_app
 from flask_mail import Message
 
 from lemur.extensions import smtp_mail
+from lemur.exceptions import InvalidConfiguration
 
 from lemur.plugins.bases import ExpirationNotificationPlugin
 from lemur.plugins import lemur_email as email
 
-
 from lemur.plugins.lemur_email.templates.config import env
+
+
+def render_html(template_name, message):
+    """
+    Renders the html for our email notification.
+
+    :param template_name:
+    :param message:
+    :return:
+    """
+    template = env.get_template('{}.html'.format(template_name))
+    return template.render(dict(message=message, hostname=current_app.config.get('LEMUR_HOSTNAME')))
+
+
+def send_via_smtp(subject, body, targets):
+    """
+    Attempts to deliver email notification via SES service.
+
+    :param subject:
+    :param body:
+    :param targets:
+    :return:
+    """
+    msg = Message(subject, recipients=targets)
+    msg.body = ""  # kinda a weird api for sending html emails
+    msg.html = body
+    smtp_mail.send(msg)
+
+
+def send_via_ses(subject, body, targets):
+    """
+    Attempts to deliver email notification via SMTP.
+    :param subject:
+    :param body:
+    :param targets:
+    :return:
+    """
+    conn = boto.connect_ses()
+    conn.send_email(current_app.config.get("LEMUR_EMAIL"), subject, body, targets, format='html')
 
 
 class EmailNotificationPlugin(ExpirationNotificationPlugin):
@@ -38,33 +77,25 @@ class EmailNotificationPlugin(ExpirationNotificationPlugin):
         },
     ]
 
+    def __init__(self, *args, **kwargs):
+        """Initialize the plugin with the appropriate details."""
+        sender = current_app.config.get('LEMUR_EMAIL_SENDER', 'ses').lower()
+
+        if sender not in ['ses', 'smtp']:
+            raise InvalidConfiguration('Email sender type {0} is not recognized.')
+
     @staticmethod
-    def send(event_type, message, targets, options, **kwargs):
-        """
-        Configures all Lemur email messaging
+    def send(notification_type, message, targets, options, **kwargs):
 
-        :param event_type:
-        :param options:
-        """
-        subject = 'Notification: Lemur'
+        subject = 'Lemur: {0} Notification'.format(notification_type.capitalize())
 
-        if event_type == 'expiration':
-            subject = 'Notification: SSL Certificate Expiration '
-
-        # jinja template depending on type
-        template = env.get_template('{}.html'.format(event_type))
-        body = template.render(dict(messages=message, hostname=current_app.config.get('LEMUR_HOSTNAME')))
+        data = {'options': options, 'certificates': message}
+        body = render_html(notification_type, data)
 
         s_type = current_app.config.get("LEMUR_EMAIL_SENDER", 'ses').lower()
+
         if s_type == 'ses':
-            conn = boto.connect_ses()
-            conn.send_email(current_app.config.get("LEMUR_EMAIL"), subject, body, targets, format='html')
+            send_via_ses(subject, body, targets)
 
         elif s_type == 'smtp':
-            msg = Message(subject, recipients=targets)
-            msg.body = ""  # kinda a weird api for sending html emails
-            msg.html = body
-            smtp_mail.send(msg)
-
-        else:
-            current_app.logger.error("No mail carrier specified, notification emails were not able to be sent!")
+            send_via_smtp(subject, body, targets)

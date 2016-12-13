@@ -3,7 +3,7 @@ sudo: required
 dist: trusty
 
 node_js:
-  - "4.2"
+  - "6.2.0"
 
 addons:
   postgresql: "9.4"

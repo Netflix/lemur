@@ -13,8 +13,11 @@ import xmltodict
 
 from flask import current_app
 
-from lemur.plugins.bases import IssuerPlugin, SourcePlugin
+from lemur.extensions import metrics
+
 from lemur.plugins import lemur_verisign as verisign
+from lemur.plugins.bases import IssuerPlugin, SourcePlugin
+
 from lemur.common.utils import get_psuedo_random_string
 
 
@@ -61,6 +64,18 @@ VERISIGN_ERRORS = {
 }
 
 
+def log_status_code(r, *args, **kwargs):
+    """
+    Is a request hook that logs all status codes to the verisign api.
+
+    :param r:
+    :param args:
+    :param kwargs:
+    :return:
+    """
+    metrics.send('symantec_status_code_{}'.format(r.status_code), 'counter', 1)
+
+
 def process_options(options):
     """
     Processes and maps the incoming issuer options to fields/options that
@@ -78,6 +93,10 @@ def process_options(options):
         'signatureAlgorithm': 'sha256WithRSAEncryption',
         'email': current_app.config.get("VERISIGN_EMAIL")
     }
+
+    if options.get('extensions'):
+        if options['extensions'].get('sub_alt_names'):
+            data['subject_alt_names'] = ",".join(x['value'] for x in options['extensions']['sub_alt_names']['names'])
 
     if options.get('validity_end'):
         period = get_default_issuance(options)
@@ -141,6 +160,7 @@ class VerisignIssuerPlugin(IssuerPlugin):
     def __init__(self, *args, **kwargs):
         self.session = requests.Session()
         self.session.cert = current_app.config.get('VERISIGN_PEM_PATH')
+        self.session.hooks = dict(response=log_status_code)
         super(VerisignIssuerPlugin, self).__init__(*args, **kwargs)
 
     def create_certificate(self, csr, issuer_options):

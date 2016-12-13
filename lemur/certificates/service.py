@@ -1,31 +1,32 @@
 """
-.. module: service
+.. module: lemur.certificate.service
     :platform: Unix
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import arrow
+from datetime import timedelta
 
-from sqlalchemy import func, or_
 from flask import current_app
+from sqlalchemy import func, or_
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
 
 from lemur import database
 from lemur.extensions import metrics
 from lemur.plugins.base import plugins
-from lemur.certificates.models import Certificate
-
-from lemur.destinations.models import Destination
-from lemur.notifications.models import Notification
-from lemur.authorities.models import Authority
-from lemur.domains.models import Domain
+from lemur.common.utils import generate_private_key
 
 from lemur.roles.models import Role
+from lemur.domains.models import Domain
+from lemur.authorities.models import Authority
+from lemur.destinations.models import Destination
+from lemur.certificates.models import Certificate
+from lemur.notifications.models import Notification
+
 from lemur.roles import service as role_service
 
 
@@ -77,6 +78,24 @@ def get_by_source(source_label):
     return Certificate.query.filter(Certificate.sources.any(label=source_label))
 
 
+def get_all_pending_rotation():
+    """
+    Retrieves all certificates that need to be rotated.
+
+    Must be X days from expiration, uses `LEMUR_DEFAULT_ROTATION_INTERVAL`
+    to determine how many days from expiration the certificate must be
+    for rotation to be pending.
+
+    :return:
+    """
+    now = arrow.utcnow()
+    interval = current_app.config.get('LEMUR_DEFAULT_ROTATION_INTERVAL', 30)
+    end = now + timedelta(days=interval)
+
+    return Certificate.query.filter(Certificate.rotation == True)\
+        .filter(Certificate.not_after <= end.format('YYYY-MM-DD')).all()  # noqa
+
+
 def find_duplicates(cert):
     """
     Finds certificates that already exist within Lemur. We do this by looking for
@@ -86,7 +105,7 @@ def find_duplicates(cert):
     :param cert:
     :return:
     """
-    if cert.get('chain'):
+    if cert['chain']:
         return Certificate.query.filter_by(body=cert['body'].strip(), chain=cert['chain'].strip()).all()
     else:
         return Certificate.query.filter_by(body=cert['body'].strip(), chain=None).all()
@@ -316,11 +335,8 @@ def create_csr(**csr_config):
 
     :param csr_config:
     """
-    private_key = rsa.generate_private_key(
-        public_exponent=65537,
-        key_size=2048,
-        backend=default_backend()
-    )
+
+    private_key = generate_private_key(csr_config.get('key_type'))
 
     # TODO When we figure out a better way to validate these options they should be parsed as str
     builder = x509.CertificateSigningRequestBuilder()
@@ -512,7 +528,8 @@ def get_certificate_primitives(certificate):
         organizational_unit=certificate.organizational_unit,
         country=certificate.country,
         state=certificate.state,
-        location=certificate.location
+        location=certificate.location,
+        key_type=certificate.key_type
     )
 
 
@@ -529,9 +546,9 @@ def reissue_certificate(certificate, replace=None, user=None):
     else:
         primitives['creator'] = user
 
-    new_cert = create(**primitives)
-
     if replace:
-        certificate.notify = False
+        primitives['replaces'] = certificate
+
+    new_cert = create(**primitives)
 
     return new_cert

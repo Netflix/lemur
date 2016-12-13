@@ -113,7 +113,7 @@ angular.module('lemur')
     });
     return LemurRestangular.all('certificates');
   })
-  .service('CertificateService', function ($location, CertificateApi, AuthorityService, LemurRestangular, DefaultService) {
+  .service('CertificateService', function ($location, CertificateApi, AuthorityService, AuthorityApi, LemurRestangular, DefaultService) {
     var CertificateService = this;
     CertificateService.findCertificatesByName = function (filterValue) {
       return CertificateApi.getList({'filter[name]': filterValue})
@@ -195,6 +195,17 @@ angular.module('lemur')
 
         if (!certificate.organizationalUnit) {
           certificate.organizationalUnit = defaults.organizationalUnit;
+        }
+
+        if (!certificate.authority) {
+          if (!defaults.authority) {
+            // set the default authority
+            AuthorityApi.getList().then(function(authorities) {
+              certificate.authority = authorities[0];
+            });
+          } else {
+            certificate.authority = defaults.authority;
+          }
         }
       });
     };

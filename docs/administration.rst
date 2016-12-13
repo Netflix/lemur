@@ -164,6 +164,14 @@ and are used when Lemur creates the CSR for your certificates.
         LEMUR_DEFAULT_ISSUER_PLUGIN = "verisign-issuer"
 
 
+.. data:: LEMUR_DEFAULT_AUTHORITY
+    :noindex:
+
+    ::
+
+        LEMUR_DEFAULT_AUTHORITY = "verisign"
+
+
 Notification Options
 --------------------
 

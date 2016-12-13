@@ -7,7 +7,6 @@ from collections import Counter
 import os
 import sys
 import base64
-import time
 import requests
 import json
 
@@ -21,16 +20,19 @@ from flask_script import Manager, Command, Option, prompt_pass
 from flask_migrate import Migrate, MigrateCommand, stamp
 from flask_script.commands import ShowUrls, Clean, Server
 
+from lemur.sources.cli import manager as source_manager
+from lemur.certificates.cli import manager as certificate_manager
+from lemur.notifications.cli import manager as notification_manager
+from lemur.endpoints.cli import manager as endpoint_manager
+
 from lemur import database
-from lemur.extensions import metrics
 from lemur.users import service as user_service
 from lemur.roles import service as role_service
-from lemur.certificates import service as cert_service
 from lemur.authorities import service as authority_service
 from lemur.notifications import service as notification_service
 
-from lemur.certificates.verify import verify_string
-from lemur.sources import service as source_service
+
+from lemur.common.utils import validate_conf
 
 from lemur import create_app
 
@@ -51,11 +53,20 @@ manager.add_option('-c', '--config', dest='config')
 
 migrate = Migrate(create_app)
 
+REQUIRED_VARIABLES = [
+    'LEMUR_SECURITY_TEAM_EMAIL',
+    'LEMUR_DEFAULT_ORGANIZATIONAL_UNIT',
+    'LEMUR_DEFAULT_ORGANIZATION',
+    'LEMUR_DEFAULT_LOCATION',
+    'LEMUR_DEFAULT_COUNTRY',
+    'LEMUR_DEFAULT_STATE',
+    'SQLALCHEMY_DATABASE_URI'
+]
+
 KEY_LENGTH = 40
 DEFAULT_CONFIG_PATH = '~/.lemur/lemur.conf.py'
 DEFAULT_SETTINGS = 'lemur.conf.server'
 SETTINGS_ENVVAR = 'LEMUR_CONF'
-
 
 CONFIG_TEMPLATE = """
 # This is just Python which means you can inherit and tweak settings
@@ -137,31 +148,6 @@ def drop_all():
     database.db.drop_all()
 
 
-@manager.command
-def check_revoked():
-    """
-    Function attempts to update Lemur's internal cache with revoked
-    certificates. This is called periodically by Lemur. It checks both
-    CRLs and OCSP to see if a certificate is revoked. If Lemur is unable
-    encounters an issue with verification it marks the certificate status
-    as `unknown`.
-    """
-    for cert in cert_service.get_all_certs():
-        try:
-            if cert.chain:
-                status = verify_string(cert.body, cert.chain)
-            else:
-                status = verify_string(cert.body, "")
-
-            cert.status = 'valid' if status else 'invalid'
-
-        except Exception as e:
-            current_app.logger.exception(e)
-            cert.status = 'unknown'
-
-        database.update(cert)
-
-
 @manager.shell
 def make_shell_context():
     """
@@ -182,29 +168,12 @@ def generate_settings():
     output = CONFIG_TEMPLATE.format(
         # we use Fernet.generate_key to make sure that the key length is
         # compatible with Fernet
-        encryption_key=Fernet.generate_key(),
-        secret_token=base64.b64encode(os.urandom(KEY_LENGTH)),
-        flask_secret_key=base64.b64encode(os.urandom(KEY_LENGTH)),
+        encryption_key=Fernet.generate_key().decode('utf-8'),
+        secret_token=base64.b64encode(os.urandom(KEY_LENGTH)).decode('utf-8'),
+        flask_secret_key=base64.b64encode(os.urandom(KEY_LENGTH)).decode('utf-8'),
     )
 
     return output
-
-
-@manager.command
-def notify():
-    """
-    Runs Lemur's notification engine, that looks for expired certificates and sends
-    notifications out to those that bave subscribed to them.
-
-    :return:
-    """
-    sys.stdout.write("Starting to notify subscribers about expiring certificates!\n")
-    count = notification_service.send_expiration_notifications()
-    sys.stdout.write(
-        "Finished notifying subscribers about expiring certificates! Sent {count} notifications!\n".format(
-            count=count
-        )
-    )
 
 
 class InitializeApp(Command):
@@ -223,6 +192,33 @@ class InitializeApp(Command):
         create()
         user = user_service.get_by_username("lemur")
 
+        admin_role = role_service.get_by_name('admin')
+
+        if admin_role:
+            sys.stdout.write("[-] Admin role already created, skipping...!\n")
+        else:
+            # we create an admin role
+            admin_role = role_service.create('admin', description='This is the Lemur administrator role.')
+            sys.stdout.write("[+] Created 'admin' role\n")
+
+        operator_role = role_service.get_by_name('operator')
+
+        if operator_role:
+            sys.stdout.write("[-] Operator role already created, skipping...!\n")
+        else:
+            # we create an admin role
+            operator_role = role_service.create('operator', description='This is the Lemur operator role.')
+            sys.stdout.write("[+] Created 'operator' role\n")
+
+        read_only_role = role_service.get_by_name('read-only')
+
+        if read_only_role:
+            sys.stdout.write("[-] Operator role already created, skipping...!\n")
+        else:
+            # we create an admin role
+            read_only_role = role_service.create('read-only', description='This is the Lemur read only role.')
+            sys.stdout.write("[+] Created 'read-only' role\n")
+
         if not user:
             if not password:
                 sys.stdout.write("We need to set Lemur's password to continue!\n")
@@ -233,17 +229,8 @@ class InitializeApp(Command):
                     sys.stderr.write("[!] Passwords do not match!\n")
                     sys.exit(1)
 
-            role = role_service.get_by_name('admin')
-
-            if role:
-                sys.stdout.write("[-] Admin role already created, skipping...!\n")
-            else:
-                # we create an admin role
-                role = role_service.create('admin', description='this is the lemur administrator role')
-                sys.stdout.write("[+] Created 'admin' role\n")
-
-            user_service.create("lemur", password, 'lemur@nobody', True, None, [role])
-            sys.stdout.write("[+] Added a 'lemur' user and added it to the 'admin' role!\n")
+            user_service.create("lemur", password, 'lemur@nobody', True, None, [admin_role])
+            sys.stdout.write("[+] Created the user 'lemur' and granted it the 'admin' role!\n")
 
         else:
             sys.stdout.write("[-] Default user has already been created, skipping...!\n")
@@ -384,6 +371,11 @@ class LemurServer(Command):
         from gunicorn.app.wsgiapp import WSGIApplication
 
         app = WSGIApplication()
+
+        # run startup tasks on a app like object
+        pre_app = create_app(kwargs.get('config'))
+        validate_conf(pre_app, REQUIRED_VARIABLES)
+
         app.app_uri = 'lemur:create_app(config="{0}")'.format(kwargs.get('config'))
 
         return app.run()
@@ -399,6 +391,7 @@ def create_config(config_path=None):
 
     config_path = os.path.expanduser(config_path)
     dir = os.path.dirname(config_path)
+
     if not os.path.exists(dir):
         os.makedirs(dir)
 
@@ -484,117 +477,6 @@ def unlock(path=None):
                 sys.stdout.write("[+] Writing file: {0} Source: {1}\n".format(dest, source))
 
     sys.stdout.write("[+] Keys have been unencrypted!\n")
-
-
-def print_certificate_details(details):
-    """
-    Print the certificate details with formatting.
-    :param details:
-    :return:
-    """
-    sys.stdout.write("[+] Re-issuing certificate with the following details:  \n")
-    sys.stdout.write(
-        "[+] Common Name: {common_name}\n"
-        "[+] Subject Alternate Names: {sans}\n"
-        "[+] Authority: {authority_name}\n"
-        "[+] Validity Start: {validity_start}\n"
-        "[+] Validity End: {validity_end}\n"
-        "[+] Organization: {organization}\n"
-        "[+] Organizational Unit: {organizational_unit}\n"
-        "[+] Country: {country}\n"
-        "[+] State: {state}\n"
-        "[+] Location: {location}\n".format(
-            common_name=details['common_name'],
-            sans=",".join(x['value'] for x in details['extensions']['sub_alt_names']['names']),
-            authority_name=details['authority'].name,
-            validity_start=details['validity_start'].isoformat(),
-            validity_end=details['validity_end'].isoformat(),
-            organization=details['organization'],
-            organizational_unit=details['organizational_unit'],
-            country=details['country'],
-            state=details['state'],
-            location=details['location']
-        )
-    )
-
-
-certificate_manager = Manager(usage="Handles all certificate related tasks.")
-
-
-@certificate_manager.command
-def rotate(new_certificate_name, old_certificate_name, commit=False):
-    from lemur.certificates.service import get_by_name, reissue_certificate, get_certificate_primitives
-    from lemur.endpoints.service import rotate_certificate
-
-    old_cert = get_by_name(old_certificate_name)
-
-    if not old_cert:
-        sys.stdout.write("[-] No certificate found with name: {0}\n".format(old_certificate_name))
-        sys.exit(1)
-
-    if new_certificate_name:
-        new_cert = get_by_name(new_certificate_name)
-
-        if not new_cert:
-            sys.stdout.write("[-] No certificate found with name: {0}\n".format(old_certificate_name))
-            sys.exit(1)
-
-    if commit:
-        sys.stdout.write("[!] Running in COMMIT mode.\n")
-
-    if not new_certificate_name:
-        sys.stdout.write("[!] No new certificate provided. Attempting to re-issue old certificate: {0}.\n".format(old_certificate_name))
-
-        details = get_certificate_primitives(old_cert)
-        print_certificate_details(details)
-
-        if commit:
-            new_cert = reissue_certificate(old_cert, replace=True)
-            sys.stdout.write("[+] Issued new certificate named: {0}\n".format(new_cert.name))
-
-        sys.stdout.write("[+] Done! \n")
-
-    if len(old_cert.endpoints) > 0:
-        for endpoint in old_cert.endpoints:
-            sys.stdout.write(
-                "[+] Certificate deployed on endpoint: name:{name} dnsname:{dnsname} port:{port} type:{type}\n".format(
-                    name=endpoint.name,
-                    dnsname=endpoint.dnsname,
-                    port=endpoint.port,
-                    type=endpoint.type
-                )
-            )
-            sys.stdout.write("[+] Rotating certificate from: {0} to: {1}\n".format(old_certificate_name, new_cert.name))
-
-            if commit:
-                rotate_certificate(endpoint, new_cert)
-
-            sys.stdout.write("[+] Done! \n")
-    else:
-        sys.stdout.write("[!] Certificate not found on any existing endpoints. Nothing to rotate.\n")
-
-
-@certificate_manager.command
-def reissue(old_certificate_name, commit=False):
-    from lemur.certificates.service import get_by_name, reissue_certificate, get_certificate_primitives
-
-    old_cert = get_by_name(old_certificate_name)
-
-    if not old_cert:
-        sys.stdout.write("[-] No certificate found with name: {0}\n".format(old_certificate_name))
-        sys.exit(1)
-
-    if commit:
-        sys.stdout.write("[!] Running in COMMIT mode.\n")
-
-    details = get_certificate_primitives(old_cert)
-    print_certificate_details(details)
-
-    if commit:
-        new_cert = reissue_certificate(old_cert, replace=True)
-        sys.stdout.write("[+] Issued new certificate named: {0}\n".format(new_cert.name))
-
-    sys.stdout.write("[+] Done! \n")
 
 
 @manager.command
@@ -736,75 +618,6 @@ class Report(Command):
         sys.stdout.write(tabulate(rows, headers=["Authority Name", "Description", "Daily Average", "Monthy Average", "Yearly Average"]) + "\n")
 
 
-source_manager = Manager(usage="Handles all source related tasks.")
-
-
-def validate_sources(source_strings):
-    sources = []
-    if not source_strings:
-        table = []
-        for source in source_service.get_all():
-            table.append([source.label, source.active, source.description])
-
-        sys.stdout.write("No source specified choose from below:\n")
-        sys.stdout.write(tabulate(table, headers=['Label', 'Active', 'Description']))
-        sys.exit(1)
-
-    if 'all' in source_strings:
-        sources = source_service.get_all()
-
-    for source_str in source_strings:
-        source = source_service.get_by_label(source_str)
-
-        if not source:
-            sys.stderr.write("Unable to find specified source with label: {0}".format(source_str))
-
-        sources.append(source)
-    return sources
-
-
-@source_manager.option('-s', '--sources', dest='source_strings', action='append', help='Sources to operate on.')
-def sync(source_strings):
-    source_objs = validate_sources(source_strings)
-    for source in source_objs:
-        start_time = time.time()
-        sys.stdout.write("[+] Staring to sync source: {label}!\n".format(label=source.label))
-
-        user = user_service.get_by_username('lemur')
-
-        try:
-            source_service.sync(source, user)
-            sys.stdout.write(
-                "[+] Finished syncing source: {label}. Run Time: {time}\n".format(
-                    label=source.label,
-                    time=(time.time() - start_time)
-                )
-            )
-        except Exception as e:
-            current_app.logger.exception(e)
-
-            sys.stdout.write(
-                "[X] Failed syncing source {label}!\n".format(label=source.label)
-            )
-
-            metrics.send('sync_failed', 'counter', 1, metric_tags={'source': source.label})
-
-
-@source_manager.option('-s', '--sources', dest='source_strings', action='append', help='Sources to operate on.')
-def clean(source_strings):
-    source_objs = validate_sources(source_strings)
-    for source in source_objs:
-        start_time = time.time()
-        sys.stdout.write("[+] Staring to clean source: {label}!\n".format(label=source.label))
-        source_service.clean(source)
-        sys.stdout.write(
-            "[+] Finished cleaning source: {label}. Run Time: {time}\n".format(
-                label=source.label,
-                time=(time.time() - start_time)
-            )
-        )
-
-
 def main():
     manager.add_command("start", LemurServer())
     manager.add_command("runserver", Server(host='127.0.0.1', threaded=True))
@@ -816,8 +629,10 @@ def main():
     manager.add_command("reset_password", ResetPassword())
     manager.add_command("create_role", CreateRole())
     manager.add_command("source", source_manager)
-    manager.add_command("report", Report())
     manager.add_command("certificate", certificate_manager)
+    manager.add_command("notify", notification_manager)
+    manager.add_command("endpoint", endpoint_manager)
+    manager.add_command("report", Report())
     manager.run()
 
 

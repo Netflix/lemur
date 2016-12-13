@@ -51,7 +51,7 @@ def mint(**kwargs):
     elif len(values) == 4:
         body, private_key, chain, roles = values
 
-    roles = create_authority_roles(roles, kwargs['owner'], kwargs['plugin']['plugin_object'].title, None)
+    roles = create_authority_roles(roles, kwargs['owner'], kwargs['plugin']['plugin_object'].title, kwargs['creator'])
     return body, private_key, chain, roles
 
 

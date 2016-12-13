@@ -58,13 +58,14 @@ class Endpoint(db.Model):
     type = Column(String(128))
     active = Column(Boolean, default=True)
     port = Column(Integer)
-    date_created = Column(DateTime, PassiveDefault(func.now()), nullable=False)
     policy_id = Column(Integer, ForeignKey('policy.id'))
     policy = relationship('Policy', backref='endpoint')
     certificate_id = Column(Integer, ForeignKey('certificates.id'))
     source_id = Column(Integer, ForeignKey('sources.id'))
     sensitive = Column(Boolean, default=False)
     source = relationship('Source', back_populates='endpoints')
+    last_updated = Column(DateTime, PassiveDefault(func.now()), onupdate=func.now(), nullable=False)
+    date_created = Column(DateTime, PassiveDefault(func.now()), nullable=False)
 
     @property
     def issues(self):
