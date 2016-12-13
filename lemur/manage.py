@@ -356,9 +356,6 @@ class LemurServer(Command):
         options = []
         for setting, klass in settings.items():
             if klass.cli:
-                if klass.name == 'config':
-                    continue
-
                 if klass.action:
                     if klass.action == 'store_const':
                         options.append(Option(*klass.cli, const=klass.const, action=klass.action))
