@@ -198,7 +198,7 @@ def clean(source):
 
     try:
         certificates = s.clean(source.options)
-    except NotImplemented:
+    except NotImplementedError:
         current_app.logger.warning("Cannot clean source: {0}, source plugin does not implement 'clean()'".format(
             source.label
         ))

@@ -94,7 +94,7 @@ it can treat any issuer plugin as both a source of creating new certificates as 
 
 The `IssuerPlugin` exposes two functions::
 
-    def create_certificate(self, options):
+    def create_certificate(self, csr, issuer_options):
         # requests.get('a third party')
 
 Lemur will pass a dictionary of all possible options for certificate creation. Including a valid CSR, and the raw options associated with the request.
@@ -145,7 +145,7 @@ in the plugins base class like so::
 
 The DestinationPlugin requires only one function to be implemented::
 
-    def upload(self, cert, private_key, cert_chain, options, **kwargs):
+    def upload(self, name, body, private_key, cert_chain, options, **kwargs):
         # request.post('a third party')
 
 Additionally the DestinationPlugin allows the plugin author to add additional options
@@ -202,7 +202,7 @@ The second is `ExpirationNotificationPlugin`, this object inherits from `Notific
 You will most likely want to base your plugin on, if you want to add new channels for expiration notices (Slack, Hipcat, Jira, etc.). It adds default options that are required by
 all expiration notifications (interval, unit). This interface expects for the child to define the following function::
 
-    def send(self):
+    def send(self, notification_type, message, targets, options, **kwargs):
         #  request.post("some alerting infrastructure")
 
 
@@ -225,7 +225,7 @@ The `SourcePlugin` object has one default option of `pollRate`. This controls th
 
 The `SourcePlugin` object requires implementation of one function::
 
-      def get_certificates(self, **kwargs):
+      def get_certificates(self, options, **kwargs):
           #  request.get("some source of certificates")
 
 

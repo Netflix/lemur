@@ -13,5 +13,5 @@ class DestinationPlugin(Plugin):
     type = 'destination'
     requires_key = True
 
-    def upload(self):
-        raise NotImplemented
+    def upload(self, name, body, private_key, cert_chain, options, **kwargs):
+        raise NotImplementedError

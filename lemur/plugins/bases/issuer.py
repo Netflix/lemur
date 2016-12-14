@@ -16,8 +16,8 @@ class IssuerPlugin(Plugin):
     """
     type = 'issuer'
 
-    def create_certificate(self):
+    def create_certificate(self, csr, issuer_options):
         raise NotImplementedError
 
-    def create_authority(self):
-        raise NotImplemented
+    def create_authority(self, options):
+        raise NotImplementedError
