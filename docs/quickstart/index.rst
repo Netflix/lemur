@@ -16,7 +16,7 @@ Some basic prerequisites which you'll need in order to run Lemur:
 * PostgreSQL 9.4 or greater
 * Nginx
 
-.. note:: Lemur was built with in AWS in mind. This means that things such as databases (RDS), mail (SES), and TLS (ELB), are largely handled for us.  Lemur does **not** require AWS to function. Our guides and documentation try to be be as generic as possible and are not intended to document every step of launching Lemur into a given environment.
+.. note:: Lemur was built with in AWS in mind. This means that things such as databases (RDS), mail (SES), and TLS (ELB), are largely handled for us.  Lemur does **not** require AWS to function. Our guides and documentation try to be as generic as possible and are not intended to document every step of launching Lemur into a given environment.
 
 
 Installing Build Dependencies
@@ -105,7 +105,7 @@ Update your configuration
 
 Once created, you will need to update the configuration file with information about your environment, such as which database to talk to, where keys are stored etc.
 
-.. note:: If you are unfamiliar with with the SQLALCHEMY_DATABASE_URI string it can be broken up like so:
+.. note:: If you are unfamiliar with the SQLALCHEMY_DATABASE_URI string it can be broken up like so:
       ``postgresql://userame:password@<database-fqdn>:<database-port>/<database-name>``
 
 
@@ -134,7 +134,7 @@ Next, we will create our new database:
 .. _InitializingLemur:
 
 .. note::
-    For this guide we assume you will use the `postgres` user to connect to your database, when deploying to a VM or container this is often all you will need. If you have a shared database it is recommend you give Lemur it's own user.
+    For this guide we assume you will use the `postgres` user to connect to your database, when deploying to a VM or container this is often all you will need. If you have a shared database it is recommend you give Lemur its own user.
 
 .. note::
     Postgres 9.4 or greater is required as Lemur relies advanced data columns (e.g. JSON Column type)

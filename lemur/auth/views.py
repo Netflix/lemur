@@ -108,7 +108,7 @@ class Login(Resource):
 class Ping(Resource):
     """
     This class serves as an example of how one might implement an SSO provider for use with Lemur. In
-    this example we use a OpenIDConnect authentication flow, that is essentially OAuth2 underneath. If you have an
+    this example we use an OpenIDConnect authentication flow, that is essentially OAuth2 underneath. If you have an
     OAuth2 provider you want to use Lemur there would be two steps:
 
     1. Define your own class that inherits from :class:`flask.ext.restful.Resource` and create the HTTP methods the \

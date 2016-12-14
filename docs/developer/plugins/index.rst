@@ -154,20 +154,20 @@ that can be used to help define sub-destinations.
 For example, if we look at the aws-destination plugin we can see that it defines an `accountNumber` option::
 
     options = [
-      {
-          'name': 'accountNumber',
-          'type': 'int',
-          'required': True,
-          'validation': '/^[0-9]{12,12}$/',
-          'helpMessage': 'Must be a valid AWS account number!',
-      }
+        {
+            'name': 'accountNumber',
+            'type': 'int',
+            'required': True,
+            'validation': '/^[0-9]{12,12}$/',
+            'helpMessage': 'Must be a valid AWS account number!',
+        }
     ]
 
 By defining an `accountNumber` we can make this plugin handle many N number of AWS accounts instead of just one.
 
 The schema for defining plugin options are pretty straightforward:
 
-  - **Name**: name of the variable you wish to present the user, snake case (snakeCase) is preferrred as Lemur
+  - **Name**: name of the variable you wish to present the user, snake case (snakeCase) is preferred as Lemur
     will parse these and create pretty variable titles
   - **Type** there are currently four supported variable types
       - **Int** creates an html integer box for the user to enter integers into
@@ -200,7 +200,7 @@ You would also then need to build additional code to trigger the new notificatio
 
 The second is `ExpirationNotificationPlugin`, this object inherits from `NotificationPlugin` object.
 You will most likely want to base your plugin on, if you want to add new channels for expiration notices (Slack, Hipcat, Jira, etc.). It adds default options that are required by
-by all expiration notifications (interval, unit). This interface expects for the child to define the following function::
+all expiration notifications (interval, unit). This interface expects for the child to define the following function::
 
     def send(self):
         #  request.post("some alerting infrastructure")
@@ -210,10 +210,10 @@ Source
 ------
 
 When building Lemur we realized that although it would be nice if every certificate went through Lemur to get issued, but this is not
-always be the case. Often times there are third parties that will issue certificates on your behalf and these can get deployed
+always be the case. Oftentimes there are third parties that will issue certificates on your behalf and these can get deployed
 to infrastructure without any interaction with Lemur. In an attempt to combat this and try to track every certificate, Lemur has a notion of
 certificate **Sources**. Lemur will contact the source at periodic intervals and attempt to **sync** against the source. This means downloading or discovering any
-certificate Lemur does not know about and adding the certificate to it's inventory to be tracked and alerted on.
+certificate Lemur does not know about and adding the certificate to its inventory to be tracked and alerted on.
 
 The `SourcePlugin` object has one default option of `pollRate`. This controls the number of seconds which to get new certificates.
 
@@ -230,7 +230,7 @@ The `SourcePlugin` object requires implementation of one function::
 
 
 .. note::
-    Often times to facilitate code re-use it makes sense put source and destination plugins into one package.
+    Oftentimes to facilitate code re-use it makes sense put source and destination plugins into one package.
 
 
 Export
@@ -270,9 +270,9 @@ Augment your setup.py to ensure at least the following:
 
    setup(
        # ...
-      install_requires=[
+       install_requires=[
           'lemur',
-      ]
+       ]
    )
 
 

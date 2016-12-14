@@ -127,7 +127,7 @@ def delete(notification_id):
 
 def get(notification_id):
     """
-    Retrieves an notification by it's lemur assigned ID.
+    Retrieves an notification by its lemur assigned ID.
 
     :param notification_id: Lemur assigned ID
     :rtype : Notification
@@ -138,7 +138,7 @@ def get(notification_id):
 
 def get_by_label(label):
     """
-    Retrieves a notification by it's label
+    Retrieves a notification by its label
 
     :param label:
     :return:

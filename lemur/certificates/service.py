@@ -32,7 +32,7 @@ from lemur.roles import service as role_service
 
 def get(cert_id):
     """
-    Retrieves certificate by it's ID.
+    Retrieves certificate by its ID.
 
     :param cert_id:
     :return:
@@ -42,7 +42,7 @@ def get(cert_id):
 
 def get_by_name(name):
     """
-    Retrieves certificate by it's Name.
+    Retrieves certificate by its Name.
 
     :param name:
     :return:

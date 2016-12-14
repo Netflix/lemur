@@ -1,7 +1,7 @@
 """
-.. module: lemur.plugins.lemur_acme.acme
+.. module: lemur.plugins.lemur_acme.plugin
     :platform: Unix
-    :synopsis: This module is responsible for communicating with a ACME CA.
+    :synopsis: This module is responsible for communicating with an ACME CA.
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 
@@ -179,7 +179,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
 
     def create_certificate(self, csr, issuer_options):
         """
-        Creates a ACME certificate.
+        Creates an ACME certificate.
 
         :param csr:
         :param issuer_options:

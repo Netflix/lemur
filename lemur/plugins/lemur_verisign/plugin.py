@@ -1,5 +1,5 @@
 """
-.. module: lemur.plugins.lemur_verisign.verisign
+.. module: lemur.plugins.lemur_verisign.plugin
     :platform: Unix
     :synopsis: This module is responsible for communicating with the VeriSign VICE 2.0 API.
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
@@ -196,7 +196,7 @@ class VerisignIssuerPlugin(IssuerPlugin):
 
     def get_available_units(self):
         """
-        Uses the Verisign to fetch the number of available unit's left. This can be used to get tabs
+        Uses the Verisign to fetch the number of available units left. This can be used to get tabs
         on the number of certificates that can be issued.
 
         :return:

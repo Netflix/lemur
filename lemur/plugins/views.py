@@ -79,7 +79,7 @@ class PluginsList(AuthenticatedResource):
 
 
 class Plugins(AuthenticatedResource):
-    """ Defines the the 'plugins' endpoint """
+    """ Defines the 'plugins' endpoint """
     def __init__(self):
         super(Plugins, self).__init__()
 
