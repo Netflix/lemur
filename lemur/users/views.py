@@ -1,5 +1,5 @@
 """
-.. module: lemur.user.views
+.. module: lemur.users.views
     :platform: Unix
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
@@ -55,27 +55,27 @@ class UsersList(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                "items": [
+                 "items": [
                     {
-                      "id": 2,
-                      "active": True,
-                      "email": "user2@example.com",
-                      "username": "user2",
-                      "profileImage": null
+                       "id": 2,
+                       "active": True,
+                       "email": "user2@example.com",
+                       "username": "user2",
+                       "profileImage": null
                     },
                     {
-                      "id": 1,
-                      "active": False,
-                      "email": "user1@example.com",
-                      "username": "user1",
-                      "profileImage": null
+                       "id": 1,
+                       "active": False,
+                       "email": "user1@example.com",
+                       "username": "user1",
+                       "profileImage": null
                     }
-                  ]
-                "total": 2
+                 ]
+                 "total": 2
               }
 
            :query sortBy: field to sort on
-           :query sortDir: acs or desc
+           :query sortDir: asc or desc
            :query page: int default is 1
            :query filter: key value pair format is k;v
            :query count: count number default is 10

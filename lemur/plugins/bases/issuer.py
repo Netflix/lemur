@@ -1,5 +1,5 @@
 """
-.. module: lemur.bases.issuer
+.. module: lemur.plugins.bases.issuer
     :platform: Unix
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.

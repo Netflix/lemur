@@ -63,7 +63,7 @@ def get(role_id):
 
 def get_by_name(role_name):
     """
-    Retrieve a role by it's name
+    Retrieve a role by its name
 
     :param role_name:
     :return:

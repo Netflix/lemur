@@ -34,7 +34,7 @@ def get_all():
 
 def get_by_name(name):
     """
-    Fetches domain by it's name
+    Fetches domain by its name
 
     :param name:
     :return:
