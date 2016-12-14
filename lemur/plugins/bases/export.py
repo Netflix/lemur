@@ -17,5 +17,5 @@ class ExportPlugin(Plugin):
     type = 'export'
     requires_key = True
 
-    def export(self):
-        raise NotImplemented
+    def export(self, body, chain, key, options, **kwargs):
+        raise NotImplementedError
