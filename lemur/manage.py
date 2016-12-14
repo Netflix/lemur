@@ -119,7 +119,6 @@ LOG_FILE = "lemur.log"
 # modify this if you are not using a local database
 SQLALCHEMY_DATABASE_URI = 'postgresql://lemur:lemur@localhost:5432/lemur'
 
-
 # AWS
 
 #LEMUR_INSTANCE_PROFILE = 'Lemur'
@@ -372,11 +371,10 @@ class LemurServer(Command):
 
         app = WSGIApplication()
 
-        # run startup tasks on an app like object
-        pre_app = create_app(kwargs.get('config'))
-        validate_conf(pre_app, REQUIRED_VARIABLES)
+        # run startup tasks on a app like object
+        validate_conf(current_app, REQUIRED_VARIABLES)
 
-        app.app_uri = 'lemur:create_app(config="{0}")'.format(kwargs.get('config'))
+        app.app_uri = 'lemur:create_app(config="{0}")'.format(current_app.config.get('CONFIG_PATH'))
 
         return app.run()
 

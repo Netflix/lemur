@@ -92,6 +92,7 @@ def configure_app(app, config=None):
     """
     # respect the config first
     if config and config != 'None':
+        app.config['CONFIG_PATH'] = config
         app.config.from_object(from_file(config))
     else:
         try:
@@ -102,6 +103,9 @@ def configure_app(app, config=None):
                 app.config.from_object(from_file(os.path.expanduser("~/.lemur/lemur.conf.py")))
             else:
                 app.config.from_object(from_file(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'default.conf.py')))
+
+    # we don't use this
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
 def configure_extensions(app):
