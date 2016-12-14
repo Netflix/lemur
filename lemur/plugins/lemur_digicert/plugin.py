@@ -1,5 +1,5 @@
 """
-.. module: lemur.plugins.lemur_digicert.digicert
+.. module: lemur.plugins.lemur_digicert.plugin
     :platform: Unix
     :synopsis: This module is responsible for communicating with the DigiCert '
     Advanced API.

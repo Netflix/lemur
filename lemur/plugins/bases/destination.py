@@ -1,5 +1,5 @@
 """
-.. module: lemur.bases.destination
+.. module: lemur.plugins.bases.destination
     :platform: Unix
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.

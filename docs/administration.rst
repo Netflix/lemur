@@ -415,7 +415,7 @@ The following configuration properties are required to use the Digicert issuer p
 CFSSL Issuer Plugin
 ^^^^^^^^^^^^^^^^^^^
 
-The following configuration properties are required to use the the CFSSL issuer plugin.
+The following configuration properties are required to use the CFSSL issuer plugin.
 
 .. data:: CFSSL_URL
     :noindex:
@@ -489,7 +489,7 @@ STS-AssumeRole
 
 
 
-Next we will create the the Lemur IAM role.
+Next we will create the Lemur IAM role.
 
 .. note::
 
@@ -739,7 +739,7 @@ and to get help on sub-commands
 Upgrading Lemur
 ===============
 
-To upgrade Lemur to the newest release you will need to ensure you have the lastest code and have run any needed
+To upgrade Lemur to the newest release you will need to ensure you have the latest code and have run any needed
 database migrations.
 
 To get the latest code from github run
@@ -947,7 +947,7 @@ Identity and Access Management
 
 Lemur uses a Role Based Access Control (RBAC) mechanism to control which users have access to which resources. When a
 user is first created in Lemur they can be assigned one or more roles. These roles are typically dynamically created
-depending on a external identity provider (Google, LDAP, etc.,) or are hardcoded within Lemur and associated with special
+depending on an external identity provider (Google, LDAP, etc.), or are hardcoded within Lemur and associated with special
 meaning.
 
 Within Lemur there are three main permissions: AdminPermission, CreatorPermission, OwnerPermission. Sub-permissions such

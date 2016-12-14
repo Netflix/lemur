@@ -1,7 +1,7 @@
 """
 .. module: lemur.endpoints.models
     :platform: unix
-    :synopsis: This module contains all of the models need to create a authority within Lemur.
+    :synopsis: This module contains all of the models need to create an authority within Lemur.
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>

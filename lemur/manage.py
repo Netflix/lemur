@@ -372,7 +372,7 @@ class LemurServer(Command):
 
         app = WSGIApplication()
 
-        # run startup tasks on a app like object
+        # run startup tasks on an app like object
         pre_app = create_app(kwargs.get('config'))
         validate_conf(pre_app, REQUIRED_VARIABLES)
 

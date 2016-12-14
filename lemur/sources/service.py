@@ -257,7 +257,7 @@ def delete(source_id):
 
 def get(source_id):
     """
-    Retrieves an source by it's lemur assigned ID.
+    Retrieves an source by its lemur assigned ID.
 
     :param source_id: Lemur assigned ID
     :rtype : Source
@@ -268,7 +268,7 @@ def get(source_id):
 
 def get_by_label(label):
     """
-    Retrieves a source by it's label
+    Retrieves a source by its label
 
     :param label:
     :return:

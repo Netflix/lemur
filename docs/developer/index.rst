@@ -48,7 +48,7 @@ of Lemur. You'll want to make sure you have a few things on your local system fi
 * pip
 * virtualenv (ideally virtualenvwrapper)
 * node.js (for npm and building css/javascript)
-* (Optional) Potgresql
+* (Optional) PostgreSQL
 
 Once you've got all that, the rest is simple:
 
@@ -156,7 +156,7 @@ This is accomplished with a Gulp task:
 The gulp task compiles all the JS/CSS/HTML files and opens the Lemur welcome page in your default browsers. Additionally any changes to made to the JS/CSS/HTML with be reloaded in your browsers.
 
 Developing with Flask
-----------------------
+---------------------
 
 Because Lemur is just Flask, you can use all of the standard Flask functionality. The only difference is you'll be accessing commands that would normally go through manage.py using the ``lemur`` CLI helper instead.
 
@@ -175,7 +175,7 @@ Schema changes should always introduce the new schema in a commit, and then intr
 
 Removing columns and tables requires a slightly more painful flow, and should resemble the follow multi-commit flow:
 
-- Remove all references to the column or table (but dont remove the Model itself)
+- Remove all references to the column or table (but don't remove the Model itself)
 - Remove the model code
 - Remove the table or column
 

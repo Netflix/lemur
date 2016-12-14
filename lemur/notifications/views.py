@@ -95,7 +95,7 @@ class NotificationsList(AuthenticatedResource):
                }
 
            :query sortBy: field to sort on
-           :query sortDir: acs or desc
+           :query sortDir: asc or desc
            :query page: int default is 1
            :query filter: key value pair format is k;v
            :query count: count number default is 10
@@ -419,7 +419,7 @@ class CertificateNotifications(AuthenticatedResource):
                }
 
            :query sortBy: field to sort on
-           :query sortDir: acs or desc
+           :query sortDir: asc or desc
            :query page: int default is 1
            :query filter: key value pair format is k;v
            :query count: count number default is 10
