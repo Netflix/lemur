@@ -101,7 +101,7 @@ class IPlugin(local):
         Returns a list of tuples pointing to various resources for this plugin.
         >>> def get_resource_links(self):
         >>>     return [
-        >>>         ('Documentation', 'http://lemury.readthedocs.org'),
+        >>>         ('Documentation', 'https://lemur.readthedocs.io'),
         >>>         ('Bug Tracker', 'https://github.com/Netflix/lemur/issues'),
         >>>         ('Source', 'https://github.com/Netflix/lemur'),
         >>>     ]

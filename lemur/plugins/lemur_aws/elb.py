@@ -98,7 +98,7 @@ def get_all_elbs_v2(**kwargs):
 @retry(retry_on_exception=retry_throttled, stop_max_attempt_number=7, wait_exponential_multiplier=1000)
 def get_listener_arn_from_endpoint(endpoint_name, endpoint_port, **kwargs):
     """
-    Get a listener ARN from a endpoint.
+    Get a listener ARN from an endpoint.
     :param endpoint_name:
     :param endpoint_port:
     :return:

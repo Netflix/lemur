@@ -98,7 +98,7 @@ class OpenSSLExportPlugin(ExportPlugin):
             'name': 'passphrase',
             'type': 'str',
             'required': False,
-            'helpMessage': 'If no passphrase is given one will be generated for you, we highly recommend this. Minimum length is 8.',
+            'helpMessage': 'If no passphrase is given one will be generated for you, we highly recommend this.',
             'validation': ''
         },
         {
@@ -111,7 +111,7 @@ class OpenSSLExportPlugin(ExportPlugin):
 
     def export(self, body, chain, key, options, **kwargs):
         """
-        Generates a Java Keystore or Truststore
+        Generates a PKCS#12 archive.
 
         :param key:
         :param chain:

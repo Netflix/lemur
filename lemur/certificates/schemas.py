@@ -146,7 +146,7 @@ class CertificateNestedOutputSchema(LemurOutputSchema):
     notify = fields.Boolean()
     rotation_policy = fields.Nested(RotationPolicyNestedOutputSchema)
 
-    # Note aliasing  is the first step in deprecating these fields.
+    # Note aliasing is the first step in deprecating these fields.
     cn = fields.String()  # deprecated
     common_name = fields.String(attribute='cn')
 
@@ -177,7 +177,7 @@ class CertificateOutputSchema(LemurOutputSchema):
 
     rotation = fields.Boolean()
 
-    # Note aliasing  is the first step in deprecating these fields.
+    # Note aliasing is the first step in deprecating these fields.
     notify = fields.Boolean()
     active = fields.Boolean(attribute='notify')
 

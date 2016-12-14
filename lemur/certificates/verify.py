@@ -19,7 +19,7 @@ def ocsp_verify(cert_path, issuer_chain_path):
     """
     Attempts to verify a certificate via OCSP. OCSP is a more modern version
     of CRL in that it will query the OCSP URI in order to determine if the
-    certificate as been revoked
+    certificate has been revoked
 
     :param cert_path:
     :param issuer_chain_path:

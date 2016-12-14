@@ -143,7 +143,7 @@ def send_expiration_notifications(exclude):
 
 def send_rotation_notification(certificate, notification_plugin=None):
     """
-    Sends a report to certificate owners when their certificate as been
+    Sends a report to certificate owners when their certificate has been
     rotated.
 
     :param certificate:
