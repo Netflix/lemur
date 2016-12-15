@@ -186,19 +186,23 @@ def bitstrength(cert):
 
 def issuer(cert):
     """
-    Gets a sane issuer from a given certificate.
+    Gets a sane issuer name from a given certificate.
 
     :param cert:
     :return: Issuer
     """
     delchars = ''.join(c for c in map(chr, range(256)) if not c.isalnum())
     try:
-        issuer = str(cert.issuer.get_attributes_for_oid(x509.OID_ORGANIZATION_NAME)[0].value)
+        # Try organization name or fall back to CN
+        issuer = (cert.issuer.get_attributes_for_oid(x509.OID_ORGANIZATION_NAME)
+                  or cert.issuer.get_attributes_for_oid(x509.OID_COMMON_NAME))
+        issuer = str(issuer[0].value)
         for c in delchars:
             issuer = issuer.replace(c, "")
         return issuer
     except Exception as e:
         current_app.logger.error("Unable to get issuer! {0}".format(e))
+        return "Unknown"
 
 
 def not_before(cert):
