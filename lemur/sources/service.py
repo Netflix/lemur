@@ -10,7 +10,6 @@ import arrow
 from flask import current_app
 
 from lemur import database
-from lemur.extensions import metrics
 from lemur.sources.models import Source
 from lemur.certificates.models import Certificate
 from lemur.certificates import service as cert_service
@@ -43,24 +42,6 @@ def _disassociate_certs_from_source(certificates, source):
                     )
                 )
                 c.sources.delete(s)
-
-
-# TODO optimize via sql query
-def _disassociate_endpoints_from_source(endpoints, source):
-    current_endpoints = endpoint_service.get_by_source(source_label=source.label)
-
-    for ce in current_endpoints:
-        for fe in endpoints:
-            if ce.dnsname == fe['dnsname']:
-                break
-        else:
-            current_app.logger.info(
-                "Endpoint {dnsname} was not found during sync, removing from inventory.".format(
-                    dnsname=ce.dnsname
-                )
-            )
-            metrics.send('endpoint_removed', 'counter', 1)
-            database.delete(ce)
 
 
 def certificate_create(certificate, source):
@@ -121,7 +102,7 @@ def sync_endpoints(source):
             cert = cert_service.get_by_name(certificate_name)
 
         elif certificate:
-            cert = cert_service.get_by_body(certificate['body'])
+            cert = cert_service.find_duplicates(certificate)
             if not cert:
                 cert = cert_service.import_certificate(**certificate)
 
@@ -150,7 +131,7 @@ def sync_endpoints(source):
             endpoint_service.update(exists.id, **endpoint)
             updated += 1
 
-    _disassociate_endpoints_from_source(endpoints, source)
+    return new, updated
 
 
 def sync_certificates(source, user):
@@ -184,13 +165,17 @@ def sync_certificates(source, user):
     # we need to try and find the absent of certificates so we can properly disassociate them when they are deleted
     _disassociate_certs_from_source(certificates, source)
 
+    return new, updated
+
 
 def sync(source, user):
-    sync_certificates(source, user)
-    sync_endpoints(source)
+    new, updated = sync_certificates(source, user)
+    new, updated = sync_endpoints(source)
 
     source.last_run = arrow.utcnow()
     database.update(source)
+
+    return {'endpoints': (new, updated), 'certificates': (new, updated)}
 
 
 def clean(source):
