@@ -8,6 +8,8 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
+import arrow
+
 from flask import current_app
 
 from sqlalchemy import func
@@ -95,6 +97,7 @@ def update(endpoint_id, **kwargs):
     endpoint.policy = kwargs['policy']
     endpoint.certificate = kwargs['certificate']
     endpoint.source = kwargs['source']
+    endpoint.last_updated = arrow.utcnow()
     metrics.send('endpoint_updated', 'counter', 1, metric_tags={'source': endpoint.source.label})
     database.update(endpoint)
     return endpoint

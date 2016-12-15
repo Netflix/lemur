@@ -6,10 +6,13 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+import arrow
 from sqlalchemy.orm import relationship
-from sqlalchemy import Column, Integer, String, func, DateTime, PassiveDefault, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql.expression import case
+
+from sqlalchemy_utils import ArrowType
 
 from lemur.database import db
 
@@ -64,8 +67,8 @@ class Endpoint(db.Model):
     source_id = Column(Integer, ForeignKey('sources.id'))
     sensitive = Column(Boolean, default=False)
     source = relationship('Source', back_populates='endpoints')
-    last_updated = Column(DateTime, PassiveDefault(func.now()), onupdate=func.now(), nullable=False)
-    date_created = Column(DateTime, PassiveDefault(func.now()), nullable=False)
+    last_updated = Column(ArrowType, default=arrow.utcnow, nullable=False)
+    date_created = Column(ArrowType, default=arrow.utcnow, onupdate=arrow.utcnow, nullable=False)
 
     @property
     def issues(self):
