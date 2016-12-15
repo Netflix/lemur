@@ -41,7 +41,7 @@ def test_get_certificate_primitives(certificate):
 
     with freeze_time(datetime.date(year=2016, month=10, day=30)):
         primitives = get_certificate_primitives(certificate)
-        assert len(primitives) == 15
+        assert len(primitives) == 16
 
 
 def test_certificate_edit_schema(session):
