@@ -93,6 +93,7 @@ def get_all_pending_rotation():
     end = now + timedelta(days=interval)
 
     return Certificate.query.filter(Certificate.rotation == True)\
+        .filter(Certificate.endpoints.any())\
         .filter(Certificate.not_after <= end.format('YYYY-MM-DD')).all()  # noqa
 
 
