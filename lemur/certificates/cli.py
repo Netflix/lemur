@@ -6,12 +6,14 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import sys
+import time
 
 from flask import current_app
 
 from flask_script import Manager
 
 from lemur import database
+from lemur.extensions import metrics
 from lemur.deployment.service import rotate_certificate
 from lemur.notifications.messaging import send_rotation_notification
 from lemur.certificates.service import reissue_certificate, get_certificate_primitives, get_all_pending_rotation, get_by_name, get_all_certs
@@ -31,12 +33,21 @@ def reissue_and_rotate(old_certificate, new_certificate=None, commit=False, mess
             if commit:
                 new_certificate = reissue_certificate(old_certificate, replace=True)
                 print("[+] Issued new certificate named: {0}".format(new_certificate.name))
+                time.sleep(10)
+                print("[!] Sleeping to ensure that certificate propagates before rotating.")
+            else:
+                new_certificate = old_certificate
 
             print("[+] Done!")
 
         else:
-            new_certificate = old_certificate.replaced
-            print("[!] Certificate has been replaced by: {0}".format(old_certificate.replaced.name))
+            if len(old_certificate.replaced) > 1:
+                raise Exception(
+                    "Unable to rotate certificate based on replacement, found more than one!"
+                )
+            else:
+                new_certificate = old_certificate.replaced[0]
+                print("[!] Certificate has been replaced by: {0}".format(old_certificate.replaced[0].name))
 
     if len(old_certificate.endpoints) > 0:
         for endpoint in old_certificate.endpoints:
@@ -67,18 +78,18 @@ def print_certificate_details(details):
     """
     print("[+] Re-issuing certificate with the following details: ")
     print(
-        "[+] Common Name: {common_name}\n"
-        "[+] Subject Alternate Names: {sans}\n"
-        "[+] Authority: {authority_name}\n"
-        "[+] Validity Start: {validity_start}\n"
-        "[+] Validity End: {validity_end}\n"
-        "[+] Organization: {organization}\n"
-        "[+] Organizational Unit: {organizational_unit}\n"
-        "[+] Country: {country}\n"
-        "[+] State: {state}\n"
-        "[+] Location: {location}\n".format(
+        "\t[+] Common Name: {common_name}\n"
+        "\t[+] Subject Alternate Names: {sans}\n"
+        "\t[+] Authority: {authority_name}\n"
+        "\t[+] Validity Start: {validity_start}\n"
+        "\t[+] Validity End: {validity_end}\n"
+        "\t[+] Organization: {organization}\n"
+        "\t[+] Organizational Unit: {organizational_unit}\n"
+        "\t[+] Country: {country}\n"
+        "\t[+] State: {state}\n"
+        "\t[+] Location: {location}".format(
             common_name=details['common_name'],
-            sans=",".join(x['value'] for x in details['extensions']['sub_alt_names']['names']),
+            sans=",".join(x['value'] for x in details['extensions']['sub_alt_names']['names']) or None,
             authority_name=details['authority'].name,
             validity_start=details['validity_start'].isoformat(),
             validity_end=details['validity_end'].isoformat(),
@@ -91,8 +102,15 @@ def print_certificate_details(details):
     )
 
 
-@manager.command
-def rotate(new_certificate_name=False, old_certificate_name=False, message=False, commit=False):
+@manager.option('-n', '--new-certificate', dest='new_certificate_name', help='Name of the certificate you wish to rotate to.')
+@manager.option('-o', '--old-certificate', dest='old_certificate_name', help='Name of the certificate you wish to rotate.')
+@manager.option('-a', '--notify', dest='message', help='Send a rotation notification to the certificates owner.')
+@manager.option('-c', '--commit', dest='commit', action='store_true', default=False, help='Persist changes.')
+def rotate(new_certificate_name, old_certificate_name, message, commit):
+    """
+    Rotates a certificate and reissues it if it has not already been replaced. If it has
+    been replaced, will use the replacement certificate for the rotation.
+    """
     new_cert = old_cert = None
 
     if commit:
@@ -113,14 +131,42 @@ def rotate(new_certificate_name=False, old_certificate_name=False, message=False
             sys.exit(1)
 
     if old_cert and new_cert:
-        reissue_and_rotate(old_cert, new_certificate=new_cert, commit=commit, message=message)
+        try:
+            reissue_and_rotate(old_cert, new_certificate=new_cert, commit=commit, message=message)
+
+            if commit:
+                metrics.send('certificate_rotation_success', 'counter', 1)
+
+        except Exception as e:
+            current_app.logger.exception(e)
+
+            if commit:
+                metrics.send('certificate_rotation_failure', 'counter', 1)
     else:
         for certificate in get_all_pending_rotation():
-            reissue_and_rotate(certificate, commit=commit, message=message)
+            try:
+                reissue_and_rotate(certificate, commit=commit, message=message)
+
+                if commit:
+                    metrics.send('certificate_rotation_success', 'counter', 1)
+
+            except Exception as e:
+                current_app.logger.exception(e)
+
+                if commit:
+                    metrics.send('certificate_rotation_failure', 'counter', 1)
 
 
-@manager.command
-def reissue(old_certificate_name, commit=False):
+@manager.option('-o', '--old-certificate', dest='old_certificate_name', help='Name of the certificate you wish to reissue.')
+@manager.option('-s', '--validity-start', dest='validity_start', help='Validity starting date. Format: YYYY-MM-DD.')
+@manager.option('-e', '--validity-end', dest='validity_end', help='Validity ending date. Format: YYYY-MM-DD.')
+@manager.option('-c', '--commit', dest='commit', action='store_true', default=False, help='Persist changes.')
+def reissue(old_certificate_name, validity_start, validity_end, commit):
+    """
+    Reissues certificate with the same parameters as it was originally issued with.
+    If not time period is provided, reissues certificate as valid from today to
+    today + length of original.
+    """
     old_cert = get_by_name(old_certificate_name)
 
     if not old_cert:

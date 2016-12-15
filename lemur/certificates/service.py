@@ -490,7 +490,7 @@ def calculate_reissue_range(start, end):
     """
     span = end - start
 
-    new_start = arrow.utcnow().date()
+    new_start = arrow.utcnow()
     new_end = new_start + span
 
     return new_start, arrow.get(new_end)
@@ -529,7 +529,8 @@ def get_certificate_primitives(certificate):
         country=certificate.country,
         state=certificate.state,
         location=certificate.location,
-        key_type=certificate.key_type
+        key_type=certificate.key_type,
+        notifications=certificate.notifications
     )
 
 
@@ -537,6 +538,8 @@ def reissue_certificate(certificate, replace=None, user=None):
     """
     Reissue certificate with the same properties of the given certificate.
     :param certificate:
+    :param replace:
+    :param user:
     :return:
     """
     primitives = get_certificate_primitives(certificate)
@@ -547,7 +550,7 @@ def reissue_certificate(certificate, replace=None, user=None):
         primitives['creator'] = user
 
     if replace:
-        primitives['replaces'] = certificate
+        primitives['replacements'] = [certificate]
 
     new_cert = create(**primitives)
 
