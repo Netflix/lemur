@@ -88,7 +88,7 @@ def send_expiration_notifications():
     success = failure = 0
 
     # security team gets all
-    security_email = current_app.config.get('LEMUR_SECURITY_EMAIL')
+    security_email = current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL')
 
     security_data = []
     for owner, notification_group in get_eligible_certificates().items():
@@ -109,7 +109,7 @@ def send_expiration_notifications():
             else:
                 failure += 1
 
-    if send_notification('expiration', security_data, [security_email], notification):
+    if send_notification('expiration', security_data, security_email, notification):
         success += 1
     else:
         failure += 1
