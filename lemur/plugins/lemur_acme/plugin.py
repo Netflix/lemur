@@ -23,6 +23,7 @@ from cryptography.hazmat.primitives import serialization
 
 import OpenSSL.crypto
 
+from lemur.common.utils import validate_conf
 from lemur.plugins.bases import IssuerPlugin
 from lemur.plugins import lemur_acme as acme
 
@@ -58,6 +59,7 @@ def start_dns_challenge(acme_client, host):
         dns_challenge.validation(acme_client.key),
 
     )
+
     return AuthorizationRecord(
         host,
         authz,
@@ -76,6 +78,7 @@ def complete_dns_challenge(acme_client, authz_record):
         authz_record.host,
         acme_client.key.public_key()
     )
+
     if not verified:
         raise ValueError("Failed verification")
 
@@ -92,13 +95,16 @@ def request_certificate(acme_client, authorizations, csr):
         ),
         authzrs=[authz_record.authz for authz_record in authorizations],
     )
+
     pem_certificate = OpenSSL.crypto.dump_certificate(
         OpenSSL.crypto.FILETYPE_PEM, cert_response.body
     )
+
     pem_certificate_chain = "\n".join(
         OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, cert)
         for cert in acme_client.fetch_chain(cert_response)
     )
+
     return pem_certificate, pem_certificate_chain
 
 
@@ -112,6 +118,7 @@ def setup_acme_client():
     key = serialization.load_pem_private_key(
         key, password=None, backend=default_backend()
     )
+
     return acme_client_for_private_key(acme_directory_url, key)
 
 
@@ -128,6 +135,7 @@ def register(email):
     registration = acme_client.register(
         messages.NewRegistration.from_data(email=email)
     )
+
     acme_client.agree_to_tos(registration)
     return private_key
 
@@ -175,6 +183,15 @@ class ACMEIssuerPlugin(IssuerPlugin):
     author_url = 'https://github.com/netflix/lemur.git'
 
     def __init__(self, *args, **kwargs):
+        required_vars = [
+            'ACME_DIRECTORY_URL',
+            'ACME_TEL',
+            'ACME_EMAIL',
+            'ACME_PRIVATE_KEY',
+            'ACME_ROOT'
+        ]
+
+        validate_conf(current_app, required_vars)
         super(ACMEIssuerPlugin, self).__init__(*args, **kwargs)
 
     def create_certificate(self, csr, issuer_options):
