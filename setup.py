@@ -70,6 +70,7 @@ tests_require = [
     'nose==1.3.7',
     'pytest==3.0.5',
     'factory-boy==2.7.0',
+    'fake-factory==0.7.2',
     'pytest-flask==0.10.0',
     'freezegun==0.3.8'
 ]
@@ -142,6 +143,7 @@ class BuildStatic(Command):
             check_output([os.path.join(ROOT, 'node_modules', '.bin', 'gulp'), 'package'], cwd=ROOT)
         except Exception as e:
             log.warn("Unable to build static content")
+
 
 setup(
     name=about["__title__"],
