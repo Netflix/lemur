@@ -9,7 +9,7 @@ import arrow
 from datetime import timedelta
 
 from flask import current_app
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, cast, Boolean
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
@@ -294,6 +294,8 @@ def render(args):
 
         elif 'destination' in terms:
             query = query.filter(Certificate.destinations.any(Destination.id == terms[1]))
+        elif 'notify' in filt:
+            query = query.filter(Certificate.notify == cast(terms[1], Boolean))
         elif 'active' in filt:
             query = query.filter(Certificate.active == terms[1])
         elif 'cn' in terms:
