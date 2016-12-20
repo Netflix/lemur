@@ -68,7 +68,7 @@ def create_token(user):
 
 def login_required(f):
     """
-    Validates the JWT and ensures that is has not expired.
+    Validates the JWT and ensures that is has not expired and the user is still active.
 
     :param f:
     :return:
@@ -94,7 +94,12 @@ def login_required(f):
         except jwt.InvalidTokenError:
             return dict(message='Token is invalid'), 403
 
-        g.current_user = user_service.get(payload['sub'])
+        user = user_service.get(payload['sub'])
+
+        if not user.active:
+            return dict(message='User is not currently active'), 403
+
+        g.current_user = user
 
         if not g.current_user:
             return dict(message='You are not logged in'), 403
