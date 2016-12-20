@@ -93,7 +93,7 @@ class Login(Resource):
         else:
             user = user_service.get_by_username(args['username'])
 
-        if user and user.check_password(args['password']):
+        if user and user.check_password(args['password']) and user.active:
             # Tell Flask-Principal the identity changed
             identity_changed.send(current_app._get_current_object(),
                                   identity=Identity(user.id))
@@ -194,6 +194,7 @@ class Ping(Resource):
             roles.append(role)
 
         role = role_service.get_by_name(profile['email'])
+
         if not role:
             role = role_service.create(profile['email'], description='This is a user specific role')
         roles.append(role)
@@ -231,9 +232,14 @@ class Ping(Resource):
                 roles
             )
 
+        if not user.active:
+            metrics.send('invalid_login', 'counter', 1)
+            return dict(message='The supplied credentials are invalid'), 403
+
         # Tell Flask-Principal the identity changed
         identity_changed.send(current_app._get_current_object(), identity=Identity(user.id))
 
+        metrics.send('successful_login', 'counter', 1)
         return dict(token=create_token(user))
 
 
@@ -272,9 +278,15 @@ class Google(Resource):
 
         user = user_service.get_by_email(profile['email'])
 
+        if not user.active:
+            metrics.send('invalid_login', 'counter', 1)
+            return dict(message='The supplied credentials are invalid.'), 401
+
         if user:
             metrics.send('successful_login', 'counter', 1)
             return dict(token=create_token(user))
+
+        metrics.send('invalid_login', 'counter', 1)
 
 
 class Providers(Resource):
