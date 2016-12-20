@@ -1,16 +1,11 @@
 from __future__ import unicode_literals    # at top of module
 
-import arrow
-from datetime import datetime, timedelta
-from collections import Counter
-
 import os
 import sys
 import base64
 import requests
 import json
 
-from tabulate import tabulate
 from gunicorn.config import make_settings
 
 from cryptography.fernet import Fernet
@@ -24,11 +19,10 @@ from lemur.sources.cli import manager as source_manager
 from lemur.certificates.cli import manager as certificate_manager
 from lemur.notifications.cli import manager as notification_manager
 from lemur.endpoints.cli import manager as endpoint_manager
-
+from lemur.reporting.cli import manager as report_manager
 from lemur import database
 from lemur.users import service as user_service
 from lemur.roles import service as role_service
-from lemur.authorities import service as authority_service
 from lemur.notifications import service as notification_service
 
 
@@ -522,100 +516,6 @@ def publish_unapproved_verisign_certificates():
     metrics.send('pending_certificates', 'gauge', certs)
 
 
-class Report(Command):
-    """
-    Defines a set of reports to be run periodically against Lemur.
-    """
-    option_list = (
-        Option('-n', '--name', dest='name', default=None, help='Name of the report to run.'),
-        Option('-d', '--duration', dest='duration', default=356, help='Number of days to run the report'),
-    )
-
-    def run(self, name, duration):
-        end = datetime.utcnow()
-        start = end - timedelta(days=duration)
-
-        if name == 'authority':
-            self.certificates_issued(name, start, end)
-
-        elif name == 'activeFQDNS':
-            self.active_fqdns()
-
-    @staticmethod
-    def active_fqdns():
-        """
-        Generates a report that gives the number of active fqdns, but root domain.
-        :return:
-        """
-        from lemur.certificates.service import get_all_certs
-        sys.stdout.write("FQDN, Root Domain, Issuer, Total Length (days), Time until expiration (days)\n")
-        for cert in get_all_certs():
-            if not cert.expired:
-                now = arrow.utcnow()
-                ttl = now - cert.not_before
-                total_length = cert.not_after - cert.not_before
-
-                for fqdn in cert.domains:
-                    root_domain = ".".join(fqdn.name.split('.')[-2:])
-                    sys.stdout.write(", ".join([fqdn.name, root_domain, cert.issuer, str(total_length.days), str(ttl.days)]) + "\n")
-
-    @staticmethod
-    def certificates_issued(name=None, start=None, end=None):
-        """
-        Generates simple report of number of certificates issued by the authority, if no authority
-        is specified report on total number of certificates.
-
-        :param name:
-        :param start:
-        :param end:
-        :return:
-        """
-
-        def _calculate_row(authority):
-            day_cnt = Counter()
-            month_cnt = Counter()
-            year_cnt = Counter()
-
-            for cert in authority.certificates:
-                date = cert.date_created.date()
-                day_cnt[date.day] += 1
-                month_cnt[date.month] += 1
-                year_cnt[date.year] += 1
-
-            try:
-                day_avg = int(sum(day_cnt.values()) / len(day_cnt.keys()))
-            except ZeroDivisionError:
-                day_avg = 0
-
-            try:
-                month_avg = int(sum(month_cnt.values()) / len(month_cnt.keys()))
-            except ZeroDivisionError:
-                month_avg = 0
-
-            try:
-                year_avg = int(sum(year_cnt.values()) / len(year_cnt.keys()))
-            except ZeroDivisionError:
-                year_avg = 0
-
-            return [authority.name, authority.description, day_avg, month_avg, year_avg]
-
-        rows = []
-        if not name:
-            for authority in authority_service.get_all():
-                rows.append(_calculate_row(authority))
-
-        else:
-            authority = authority_service.get_by_name(name)
-
-            if not authority:
-                sys.stderr.write('[!] Authority {0} was not found.'.format(name))
-                sys.exit(1)
-
-            rows.append(_calculate_row(authority))
-
-        sys.stdout.write(tabulate(rows, headers=["Authority Name", "Description", "Daily Average", "Monthy Average", "Yearly Average"]) + "\n")
-
-
 def main():
     manager.add_command("start", LemurServer())
     manager.add_command("runserver", Server(host='127.0.0.1', threaded=True))
@@ -630,7 +530,7 @@ def main():
     manager.add_command("certificate", certificate_manager)
     manager.add_command("notify", notification_manager)
     manager.add_command("endpoint", endpoint_manager)
-    manager.add_command("report", Report())
+    manager.add_command("report", report_manager)
     manager.run()
 
 
