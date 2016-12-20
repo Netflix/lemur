@@ -158,6 +158,14 @@ class Certificate(db.Model):
         if isinstance(cert.public_key(), rsa.RSAPublicKey):
             return 'RSA{key_size}'.format(key_size=cert.public_key().key_size)
 
+    @property
+    def validity_remaining(self):
+        return abs(self.not_after - arrow.utcnow())
+
+    @property
+    def validity_range(self):
+        return self.not_after - self.not_before
+
     @hybrid_property
     def expired(self):
         if self.not_after <= arrow.utcnow():
