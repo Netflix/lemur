@@ -56,7 +56,19 @@ def sync(source_strings):
         user = user_service.get_by_username('lemur')
 
         try:
-            source_service.sync(source, user)
+            data = source_service.sync(source, user)
+            print(
+                "[+] Certificates: New: {new} Updated: {updated}".format(
+                    new=data['certificates'][0],
+                    updated=data['certificates'][1]
+                )
+            )
+            print(
+                "[+] Endpoints: New: {new} Updated: {updated}".format(
+                    new=data['endpoints'][0],
+                    updated=data['endpoints'][1]
+                )
+            )
             print(
                 "[+] Finished syncing source: {label}. Run Time: {time}".format(
                     label=source.label,

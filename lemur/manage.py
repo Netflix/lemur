@@ -20,7 +20,6 @@ from lemur.certificates.cli import manager as certificate_manager
 from lemur.notifications.cli import manager as notification_manager
 from lemur.endpoints.cli import manager as endpoint_manager
 from lemur.reporting.cli import manager as report_manager
-
 from lemur import database
 from lemur.users import service as user_service
 from lemur.roles import service as role_service
@@ -113,7 +112,6 @@ LOG_FILE = "lemur.log"
 
 # modify this if you are not using a local database
 SQLALCHEMY_DATABASE_URI = 'postgresql://lemur:lemur@localhost:5432/lemur'
-
 
 # AWS
 
@@ -368,10 +366,9 @@ class LemurServer(Command):
         app = WSGIApplication()
 
         # run startup tasks on a app like object
-        pre_app = create_app(kwargs.get('config'))
-        validate_conf(pre_app, REQUIRED_VARIABLES)
+        validate_conf(current_app, REQUIRED_VARIABLES)
 
-        app.app_uri = 'lemur:create_app(config="{0}")'.format(kwargs.get('config'))
+        app.app_uri = 'lemur:create_app(config="{0}")'.format(current_app.config.get('CONFIG_PATH'))
 
         return app.run()
 

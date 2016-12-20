@@ -1,5 +1,5 @@
 """
-.. module: lemur.bases.issuer
+.. module: lemur.plugins.bases.issuer
     :platform: Unix
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
@@ -16,8 +16,8 @@ class IssuerPlugin(Plugin):
     """
     type = 'issuer'
 
-    def create_certificate(self):
+    def create_certificate(self, csr, issuer_options):
         raise NotImplementedError
 
-    def create_authority(self):
-        raise NotImplemented
+    def create_authority(self, options):
+        raise NotImplementedError

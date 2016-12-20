@@ -70,7 +70,7 @@ class Vault(types.TypeDecorator):
     """
     A custom SQLAlchemy column type that transparently handles encryption.
 
-    This uses the MultiFernet from the cryptography package to faciliate
+    This uses the MultiFernet from the cryptography package to facilitate
     key rotation. That class handles encryption and signing.
 
     Fernet uses AES in CBC mode with 128-bit keys and PKCS7 padding. It

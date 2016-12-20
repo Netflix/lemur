@@ -54,7 +54,7 @@ Doing a Release
     doing-a-release
 
 FAQ
-----
+---
 
 .. toctree::
     :maxdepth: 1

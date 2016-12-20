@@ -28,7 +28,7 @@ def render_html(template_name, message):
     :return:
     """
     template = env.get_template('{}.html'.format(template_name))
-    return template.render(dict(messages=message, hostname=current_app.config.get('LEMUR_HOSTNAME')))
+    return template.render(dict(message=message, hostname=current_app.config.get('LEMUR_HOSTNAME')))
 
 
 def send_via_smtp(subject, body, targets):
@@ -86,9 +86,11 @@ class EmailNotificationPlugin(ExpirationNotificationPlugin):
 
     @staticmethod
     def send(notification_type, message, targets, options, **kwargs):
+
         subject = 'Lemur: {0} Notification'.format(notification_type.capitalize())
 
-        body = render_html(notification_type, message)
+        data = {'options': options, 'certificates': message}
+        body = render_html(notification_type, data)
 
         s_type = current_app.config.get("LEMUR_EMAIL_SENDER", 'ses').lower()
 

@@ -1,5 +1,5 @@
 """
-.. module: lemur.plugins.lemur_aws.elb
+.. module: lemur.plugins.lemur_aws.ec2
     :synopsis: Module contains some often used and helpful classes that
     are used to deal with ELBs
 

@@ -8,15 +8,76 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
+from itertools import groupby
+from collections import defaultdict
+
+from sqlalchemy.orm import joinedload
 
 import arrow
 from flask import current_app
 
 from lemur import database, metrics
 from lemur.certificates.schemas import certificate_notification_output_schema
-from lemur.notifications.models import Notification
+from lemur.certificates.models import Certificate
+
 from lemur.plugins import plugins
 from lemur.plugins.utils import get_plugin_option
+
+
+def get_certificates():
+    """
+    Finds all certificates that are eligible for notifications.
+    :return:
+    """
+    return database.session_query(Certificate)\
+        .options(joinedload('notifications'))\
+        .filter(Certificate.notify == True)\
+        .filter(Certificate.expired == False)\
+        .filter(Certificate.notifications.any()).all()  # noqa
+
+
+def get_eligible_certificates():
+    """
+    Finds all certificates that are eligible for certificate expiration.
+    :return:
+    """
+    certificates = defaultdict(dict)
+    certs = get_certificates()
+
+    # group by owner
+    for owner, items in groupby(certs, lambda x: x.owner):
+        notification_groups = []
+
+        for certificate in items:
+            notification = needs_notification(certificate)
+
+            if notification:
+                notification_groups.append((notification, certificate))
+
+        # group by notification
+        for notification, items in groupby(notification_groups, lambda x: x[0].label):
+            certificates[owner][notification] = list(items)
+
+    return certificates
+
+
+def send_notification(event_type, data, targets, notification):
+    """
+    Executes the plugin and handles failure.
+
+    :param event_type:
+    :param data:
+    :param targets:
+    :param notification:
+    :return:
+    """
+    try:
+        notification.plugin.send(event_type, data, targets, notification.options)
+        metrics.send('{0}_notification_sent'.format(event_type), 'counter', 1)
+        return True
+    except Exception as e:
+        metrics.send('{0}_notification_failure'.format(event_type), 'counter', 1)
+        current_app.logger.exception(e)
 
 
 def send_expiration_notifications():
@@ -24,28 +85,36 @@ def send_expiration_notifications():
     This function will check for upcoming certificate expiration,
     and send out notification emails at given intervals.
     """
-    sent = 0
-    for plugin in plugins.all(plugin_type='notification'):
-        notifications = database.db.session.query(Notification)\
-            .filter(Notification.plugin_name == plugin.slug)\
-            .filter(Notification.active == True).all()  # noqa
+    success = failure = 0
 
-        messages = []
-        for n in notifications:
-            for certificate in n.certificates:
-                if needs_notification(certificate):
-                    data = certificate_notification_output_schema.dump(certificate).data
-                    messages.append((data, n.options))
+    # security team gets all
+    security_email = current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL')
 
-        for data, options in messages:
-            try:
-                plugin.send('expiration', data, [data['owner']], options)
-                metrics.send('expiration_notification_sent', 'counter', 1)
-                sent += 1
-            except Exception as e:
-                metrics.send('expiration_notification_failure', 'counter', 1)
-                current_app.logger.exception(e)
-    return sent
+    security_data = []
+    for owner, notification_group in get_eligible_certificates().items():
+
+        for notification_label, certificates in notification_group.items():
+            notification_data = []
+
+            notification = certificates[0][0]
+
+            for data in certificates:
+                n, certificate = data
+                cert_data = certificate_notification_output_schema.dump(certificate).data
+                notification_data.append(cert_data)
+                security_data.append(cert_data)
+
+            if send_notification('expiration', notification_data, [owner], notification):
+                success += 1
+            else:
+                failure += 1
+
+    if send_notification('expiration', security_data, security_email, notification):
+        success += 1
+    else:
+        failure += 1
+
+    return success, failure
 
 
 def send_rotation_notification(certificate, notification_plugin=None):
@@ -64,6 +133,7 @@ def send_rotation_notification(certificate, notification_plugin=None):
     try:
         notification_plugin.send('rotation', data, [data['owner']])
         metrics.send('rotation_notification_sent', 'counter', 1)
+        return True
     except Exception as e:
         metrics.send('rotation_notification_failure', 'counter', 1)
         current_app.logger.exception(e)
@@ -77,12 +147,6 @@ def needs_notification(certificate):
     :param certificate:
     :return:
     """
-    if not certificate.notify:
-        return
-
-    if not certificate.notifications:
-        return
-
     now = arrow.utcnow()
     days = (certificate.not_after - now).days
 
@@ -103,4 +167,4 @@ def needs_notification(certificate):
             raise Exception("Invalid base unit for expiration interval: {0}".format(unit))
 
         if days == interval:
-            return certificate
+            return notification

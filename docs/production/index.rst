@@ -37,13 +37,13 @@ Entropy
 -------
 
 Lemur generates private keys for the certificates it creates. This means that it is vitally important that Lemur has enough entropy to draw from. To generate private keys Lemur uses the python library `Cryptography <https://cryptography.io>`_. In turn Cryptography uses OpenSSL bindings to generate
-keys just like you might from the OpenSSL command line. OpenSSL draws it's initial entropy from system during startup and uses PRNGs to generate a stream of random bytes (as output by /dev/urandom) whenever it needs to do a cryptographic operation.
+keys just like you might from the OpenSSL command line. OpenSSL draws its initial entropy from system during startup and uses PRNGs to generate a stream of random bytes (as output by /dev/urandom) whenever it needs to do a cryptographic operation.
 
 What does all this mean? Well in order for the keys
 that Lemur generates to be strong, the system needs to interact with the outside world. This is typically accomplished through the systems hardware (thermal, sound, video user-input, etc.) since the physical world is much more "random" than the computer world.
 
-If you are running Lemur on its own server with its own hardware "bare metal" then the entropy of the system is typically "good enough" for generating keys. If however you are using an VM on shared hardware there is a potential that your initial seed data (data that was initially
-fed to the PRNG) is not very good. What's more VMs have been known to be unable to inject more entropy into the system once it has been started. This is because there is typically very little interaction with the server once it has been started.
+If you are running Lemur on its own server with its own hardware "bare metal" then the entropy of the system is typically "good enough" for generating keys. If however you are using a VM on shared hardware there is a potential that your initial seed data (data that was initially
+fed to the PRNG) is not very good. What's more, VMs have been known to be unable to inject more entropy into the system once it has been started. This is because there is typically very little interaction with the server once it has been started.
 
 The amount of effort you wish to expend ensuring that Lemur has good entropy to draw from is up to your specific risk tolerance and how Lemur is configured.
 
@@ -72,7 +72,7 @@ Nginx is a very popular choice to serve a Python project:
 Nginx doesn't run any Python process, it only serves requests from outside to
 the Python server.
 
-Therefore there are two steps:
+Therefore, there are two steps:
 
 - Run the Python process.
 - Run Nginx.
@@ -223,7 +223,7 @@ Also included in the configurations above are several best practices when it com
 HSTS, disabling vulnerable ciphers are all good ideas when it comes to deploying Lemur into a production environment.
 
 .. note::
-    This is a rather incomplete apache config for running Lemur (needs mod_wsgi etc.,), if you have a working apache config please let us know!
+    This is a rather incomplete apache config for running Lemur (needs mod_wsgi etc.), if you have a working apache config please let us know!
 
 .. seealso::
     `Mozilla SSL Configuration Generator <https://mozilla.github.io/server-side-tls/ssl-config-generator/>`_

@@ -18,7 +18,7 @@ from lemur.certificates.service import upload
 
 def update(authority_id, description=None, owner=None, active=None, roles=None):
     """
-    Update a an authority with new values.
+    Update an authority with new values.
 
     :param authority_id:
     :param roles: roles that are allowed to use this authority
@@ -178,7 +178,7 @@ def render(args):
         else:
             query = database.filter(query, Authority, terms)
 
-    # we make sure that a user can only use an authority they either own are are a member of - admins can see all
+    # we make sure that a user can only use an authority they either own are a member of - admins can see all
     if not args['user'].is_admin:
         authority_ids = []
         for authority in args['user'].authorities:

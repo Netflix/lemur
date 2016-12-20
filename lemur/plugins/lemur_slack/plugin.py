@@ -1,5 +1,5 @@
 """
-.. module: lemur.plugins.lemur_slack.slack
+.. module: lemur.plugins.lemur_slack.plugin
     :platform: Unix
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.

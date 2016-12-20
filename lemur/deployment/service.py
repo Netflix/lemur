@@ -1,5 +1,4 @@
-from flask import current_app
-from lemur.extensions import metrics
+from lemur import database
 
 
 def rotate_certificate(endpoint, new_cert):
@@ -10,10 +9,6 @@ def rotate_certificate(endpoint, new_cert):
     :param new_cert:
     :return:
     """
-    try:
-        endpoint.source.plugin.update_endpoint(endpoint, new_cert)
-        endpoint.certificate = new_cert
-        metrics.send('rotation_success', 'counter', 1, metric_tags={'endpoint': endpoint.name})
-    except Exception as e:
-        metrics.send('rotation_failure', 'counter', 1, metric_tags={'endpoint': endpoint.name})
-        current_app.logger.exception(e)
+    endpoint.source.plugin.update_endpoint(endpoint, new_cert)
+    endpoint.certificate = new_cert
+    database.update(endpoint)

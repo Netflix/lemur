@@ -105,6 +105,15 @@
       RestangularConfigurer.setBaseUrl('http://localhost:8000/api/1');
       RestangularConfigurer.setDefaultHttpFields({withCredentials: true});
 
+      // handle situation where our token has become invalid.
+      RestangularConfigurer.setErrorInterceptor(function (response) {
+        if (response.status === 403) {
+          $auth.logout();
+          $location.path('/login');
+          return false;
+        }
+      });
+
       RestangularConfigurer.addResponseInterceptor(function (data, operation) {
         var extractedData;
 

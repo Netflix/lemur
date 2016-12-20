@@ -1,5 +1,5 @@
 """
-.. module: lemur.bases.source
+.. module: lemur.plugins.bases.source
     :platform: Unix
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
@@ -22,14 +22,14 @@ class SourcePlugin(Plugin):
         }
     ]
 
-    def get_certificates(self):
-        raise NotImplemented
+    def get_certificates(self, options, **kwargs):
+        raise NotImplementedError
 
-    def get_endpoints(self):
-        raise NotImplemented
+    def get_endpoints(self, options, **kwargs):
+        raise NotImplementedError
 
-    def clean(self):
-        raise NotImplemented
+    def clean(self, options, **kwargs):
+        raise NotImplementedError
 
     @property
     def options(self):

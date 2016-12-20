@@ -32,7 +32,7 @@ from lemur.roles import service as role_service
 
 def get(cert_id):
     """
-    Retrieves certificate by it's ID.
+    Retrieves certificate by its ID.
 
     :param cert_id:
     :return:
@@ -42,7 +42,7 @@ def get(cert_id):
 
 def get_by_name(name):
     """
-    Retrieves certificate by it's Name.
+    Retrieves certificate by its Name.
 
     :param name:
     :return:
@@ -93,6 +93,7 @@ def get_all_pending_rotation():
     end = now + timedelta(days=interval)
 
     return Certificate.query.filter(Certificate.rotation == True)\
+        .filter(Certificate.endpoints.any())\
         .filter(Certificate.not_after <= end.format('YYYY-MM-DD')).all()  # noqa
 
 
@@ -490,7 +491,7 @@ def calculate_reissue_range(start, end):
     """
     span = end - start
 
-    new_start = arrow.utcnow().date()
+    new_start = arrow.utcnow()
     new_end = new_start + span
 
     return new_start, arrow.get(new_end)
@@ -529,7 +530,8 @@ def get_certificate_primitives(certificate):
         country=certificate.country,
         state=certificate.state,
         location=certificate.location,
-        key_type=certificate.key_type
+        key_type=certificate.key_type,
+        notifications=certificate.notifications
     )
 
 
@@ -537,6 +539,8 @@ def reissue_certificate(certificate, replace=None, user=None):
     """
     Reissue certificate with the same properties of the given certificate.
     :param certificate:
+    :param replace:
+    :param user:
     :return:
     """
     primitives = get_certificate_primitives(certificate)
@@ -547,7 +551,7 @@ def reissue_certificate(certificate, replace=None, user=None):
         primitives['creator'] = user
 
     if replace:
-        primitives['replaces'] = certificate
+        primitives['replacements'] = [certificate]
 
     new_cert = create(**primitives)
 
