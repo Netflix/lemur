@@ -99,6 +99,7 @@ class CertificatesList(AuthenticatedResource):
                         "name": "*.test.example.net"
                     }],
                     "replaces": [],
+                    "replaced": [],
                     "name": "WILDCARD.test.example.net-SymantecCorporation-20160603-20180112",
                     "roles": [{
                         "id": 464,
@@ -520,6 +521,7 @@ class Certificates(AuthenticatedResource):
                     "name": "*.test.example.net"
                 }],
                 "replaces": [],
+                "replaced": [],
                 "name": "WILDCARD.test.example.net-SymantecCorporation-20160603-20180112",
                 "roles": [{
                     "id": 464,
@@ -720,6 +722,7 @@ class NotificationCertificatesList(AuthenticatedResource):
                         "name": "*.test.example.net"
                     }],
                     "replaces": [],
+                    "replaced": [],
                     "name": "WILDCARD.test.example.net-SymantecCorporation-20160603-20180112",
                     "roles": [{
                         "id": 464,
@@ -824,6 +827,7 @@ class CertificatesReplacementsList(AuthenticatedResource):
                         "name": "*.test.example.net"
                     }],
                     "replaces": [],
+                    "replaced": [],
                     "name": "WILDCARD.test.example.net-SymantecCorporation-20160603-20180112",
                     "roles": [{
                         "id": 464,
