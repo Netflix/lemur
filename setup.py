@@ -69,7 +69,7 @@ tests_require = [
     'moto==0.4.30',
     'nose==1.3.7',
     'pytest==3.0.5',
-    'factory-boy==2.7.0',
+    'factory-boy==2.8.1',
     'fake-factory==0.7.2',
     'pytest-flask==0.10.0',
     'freezegun==0.3.8'
