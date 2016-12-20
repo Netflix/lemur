@@ -70,7 +70,7 @@ tests_require = [
     'nose==1.3.7',
     'pytest==3.0.5',
     'factory-boy==2.7.0',
-    'fake-factory==0.7.2',
+    'fake-factory==9999.9.9',
     'pytest-flask==0.10.0',
     'freezegun==0.3.8'
 ]
