@@ -1,5 +1,5 @@
 """
-.. module: lemur.bases.notification
+.. module: lemur.plugins.bases.notification
     :platform: Unix
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
@@ -16,7 +16,7 @@ class NotificationPlugin(Plugin):
     """
     type = 'notification'
 
-    def send(self):
+    def send(self, notification_type, message, targets, options, **kwargs):
         raise NotImplementedError
 
 
@@ -48,5 +48,5 @@ class ExpirationNotificationPlugin(NotificationPlugin):
     def options(self):
         return list(self.default_options) + self.additional_options
 
-    def send(self):
+    def send(self, notification_type, message, targets, options, **kwargs):
         raise NotImplementedError

@@ -1,5 +1,5 @@
 """
-.. module: lemur.bases.destination
+.. module: lemur.plugins.bases.destination
     :platform: Unix
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
@@ -13,5 +13,5 @@ class DestinationPlugin(Plugin):
     type = 'destination'
     requires_key = True
 
-    def upload(self):
-        raise NotImplemented
+    def upload(self, name, body, private_key, cert_chain, options, **kwargs):
+        raise NotImplementedError

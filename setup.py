@@ -38,26 +38,26 @@ install_requires = [
     'Flask-RESTful==0.3.5',
     'Flask-SQLAlchemy==2.1',
     'Flask-Script==2.0.5',
-    'Flask-Migrate==2.0.0',
+    'Flask-Migrate==2.0.2',
     'Flask-Bcrypt==0.7.1',
     'Flask-Principal==0.4.0',
     'Flask-Mail==0.9.1',
-    'SQLAlchemy-Utils==0.32.9',
+    'SQLAlchemy-Utils==0.32.12',
     'requests==2.12.4',
     'psycopg2==2.6.2',
-    'arrow==0.9.0',
+    'arrow==0.10.0',
     'six==1.10.0',
     'gunicorn==19.6.0',
     'marshmallow-sqlalchemy==0.12.0',
-    'marshmallow==2.10.4',
-    'cryptography==1.6',
+    'marshmallow==2.10.5',
+    'cryptography==1.7',
     'pyjwt==1.4.2',
     'xmltodict==0.10.2',
     'lockfile==0.12.2',
     'inflection==0.3.1',
     'future==0.16.0',
-    'boto==2.43.0',  # we might make this optional
-    'boto3==1.4.1',
+    'boto3==1.4.3',
+    'boto==2.45.0',  # we might make this optional
     'acme==0.9.3',
     'retrying==1.3.3',
     'tabulate==0.7.7',
@@ -68,8 +68,9 @@ tests_require = [
     'pyflakes',
     'moto==0.4.30',
     'nose==1.3.7',
-    'pytest==3.0.4',
-    'factory-boy==2.7.0',
+    'pytest==3.0.5',
+    'factory-boy==2.8.1',
+    'fake-factory==0.7.2',
     'pytest-flask==0.10.0',
     'freezegun==0.3.8'
 ]
@@ -142,6 +143,7 @@ class BuildStatic(Command):
             check_output([os.path.join(ROOT, 'node_modules', '.bin', 'gulp'), 'package'], cwd=ROOT)
         except Exception as e:
             log.warn("Unable to build static content")
+
 
 setup(
     name=about["__title__"],

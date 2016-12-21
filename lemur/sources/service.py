@@ -10,7 +10,6 @@ import arrow
 from flask import current_app
 
 from lemur import database
-from lemur.extensions import metrics
 from lemur.sources.models import Source
 from lemur.certificates.models import Certificate
 from lemur.certificates import service as cert_service
@@ -43,24 +42,6 @@ def _disassociate_certs_from_source(certificates, source):
                     )
                 )
                 c.sources.delete(s)
-
-
-# TODO optimize via sql query
-def _disassociate_endpoints_from_source(endpoints, source):
-    current_endpoints = endpoint_service.get_by_source(source_label=source.label)
-
-    for ce in current_endpoints:
-        for fe in endpoints:
-            if ce.dnsname == fe['dnsname']:
-                break
-        else:
-            current_app.logger.info(
-                "Endpoint {dnsname} was not found during sync, removing from inventory.".format(
-                    dnsname=ce.dnsname
-                )
-            )
-            metrics.send('endpoint_removed', 'counter', 1)
-            database.delete(ce)
 
 
 def certificate_create(certificate, source):
@@ -118,11 +99,10 @@ def sync_endpoints(source):
         certificate = endpoint.pop('certificate', None)
 
         if certificate_name:
-            current_app.logger.debug(certificate_name)
             cert = cert_service.get_by_name(certificate_name)
 
         elif certificate:
-            cert = cert_service.get_by_body(certificate['body'])
+            cert = cert_service.find_duplicates(certificate)
             if not cert:
                 cert = cert_service.import_certificate(**certificate)
 
@@ -141,6 +121,7 @@ def sync_endpoints(source):
 
         policy['ciphers'] = policy_ciphers
         endpoint['policy'] = endpoint_service.get_or_create_policy(**policy)
+        endpoint['source'] = source
 
         if not exists:
             endpoint_service.create(**endpoint)
@@ -150,7 +131,7 @@ def sync_endpoints(source):
             endpoint_service.update(exists.id, **endpoint)
             updated += 1
 
-    _disassociate_endpoints_from_source(endpoints, source)
+    return new, updated
 
 
 def sync_certificates(source, user):
@@ -184,13 +165,17 @@ def sync_certificates(source, user):
     # we need to try and find the absent of certificates so we can properly disassociate them when they are deleted
     _disassociate_certs_from_source(certificates, source)
 
+    return new, updated
+
 
 def sync(source, user):
-    sync_certificates(source, user)
-    sync_endpoints(source)
+    new_certs, updated_certs = sync_certificates(source, user)
+    new_endpoints, updated_endpoints = sync_endpoints(source)
 
     source.last_run = arrow.utcnow()
     database.update(source)
+
+    return {'endpoints': (new_endpoints, updated_endpoints), 'certificates': (new_certs, updated_certs)}
 
 
 def clean(source):
@@ -198,14 +183,13 @@ def clean(source):
 
     try:
         certificates = s.clean(source.options)
-    except NotImplemented:
+    except NotImplementedError:
         current_app.logger.warning("Cannot clean source: {0}, source plugin does not implement 'clean()'".format(
             source.label
         ))
         return
 
     for certificate in certificates:
-        current_app.logger.debug(certificate)
         cert = cert_service.get_by_name(certificate)
 
         if cert:
@@ -258,7 +242,7 @@ def delete(source_id):
 
 def get(source_id):
     """
-    Retrieves an source by it's lemur assigned ID.
+    Retrieves an source by its lemur assigned ID.
 
     :param source_id: Lemur assigned ID
     :rtype : Source
@@ -269,7 +253,7 @@ def get(source_id):
 
 def get_by_label(label):
     """
-    Retrieves a source by it's label
+    Retrieves a source by its label
 
     :param label:
     :return:

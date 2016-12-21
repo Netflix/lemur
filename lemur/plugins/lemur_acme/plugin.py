@@ -1,7 +1,7 @@
 """
-.. module: lemur.plugins.lemur_acme.acme
+.. module: lemur.plugins.lemur_acme.plugin
     :platform: Unix
-    :synopsis: This module is responsible for communicating with a ACME CA.
+    :synopsis: This module is responsible for communicating with an ACME CA.
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 
@@ -16,12 +16,14 @@ from acme.client import Client
 from acme import jose
 from acme import messages
 
+from lemur.common.utils import generate_private_key
+
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
 
 import OpenSSL.crypto
 
+from lemur.common.utils import validate_conf
 from lemur.plugins.bases import IssuerPlugin
 from lemur.plugins import lemur_acme as acme
 
@@ -57,6 +59,7 @@ def start_dns_challenge(acme_client, host):
         dns_challenge.validation(acme_client.key),
 
     )
+
     return AuthorizationRecord(
         host,
         authz,
@@ -75,6 +78,7 @@ def complete_dns_challenge(acme_client, authz_record):
         authz_record.host,
         acme_client.key.public_key()
     )
+
     if not verified:
         raise ValueError("Failed verification")
 
@@ -91,20 +95,17 @@ def request_certificate(acme_client, authorizations, csr):
         ),
         authzrs=[authz_record.authz for authz_record in authorizations],
     )
+
     pem_certificate = OpenSSL.crypto.dump_certificate(
         OpenSSL.crypto.FILETYPE_PEM, cert_response.body
     )
+
     pem_certificate_chain = "\n".join(
         OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, cert)
         for cert in acme_client.fetch_chain(cert_response)
     )
+
     return pem_certificate, pem_certificate_chain
-
-
-def generate_rsa_private_key():
-    return rsa.generate_private_key(
-        public_exponent=65537, key_size=2048, backend=default_backend()
-    )
 
 
 def setup_acme_client():
@@ -117,6 +118,7 @@ def setup_acme_client():
     key = serialization.load_pem_private_key(
         key, password=None, backend=default_backend()
     )
+
     return acme_client_for_private_key(acme_directory_url, key)
 
 
@@ -127,12 +129,13 @@ def acme_client_for_private_key(acme_directory_url, private_key):
 
 
 def register(email):
-    private_key = generate_rsa_private_key()
+    private_key = generate_private_key('RSA2048')
     acme_client = acme_client_for_private_key(current_app.config('ACME_DIRECTORY_URL'), private_key)
 
     registration = acme_client.register(
         messages.NewRegistration.from_data(email=email)
     )
+
     acme_client.agree_to_tos(registration)
     return private_key
 
@@ -180,11 +183,20 @@ class ACMEIssuerPlugin(IssuerPlugin):
     author_url = 'https://github.com/netflix/lemur.git'
 
     def __init__(self, *args, **kwargs):
+        required_vars = [
+            'ACME_DIRECTORY_URL',
+            'ACME_TEL',
+            'ACME_EMAIL',
+            'ACME_PRIVATE_KEY',
+            'ACME_ROOT'
+        ]
+
+        validate_conf(current_app, required_vars)
         super(ACMEIssuerPlugin, self).__init__(*args, **kwargs)
 
     def create_certificate(self, csr, issuer_options):
         """
-        Creates a ACME certificate.
+        Creates an ACME certificate.
 
         :param csr:
         :param issuer_options:

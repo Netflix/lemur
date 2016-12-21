@@ -41,7 +41,7 @@ def test_get_certificate_primitives(certificate):
 
     with freeze_time(datetime.date(year=2016, month=10, day=30)):
         primitives = get_certificate_primitives(certificate)
-        assert len(primitives) == 14
+        assert len(primitives) == 16
 
 
 def test_certificate_edit_schema(session):
@@ -153,7 +153,7 @@ def test_certificate_input_schema(client, authority):
     assert data['country'] == 'US'
     assert data['location'] == 'Los Gatos'
 
-    assert len(data.keys()) == 15
+    assert len(data.keys()) == 16
 
 
 def test_certificate_input_with_extensions(client, authority):
@@ -332,6 +332,7 @@ def test_create_basic_csr(client):
         state='CA',
         location='A place',
         owner='joe@example.com',
+        key_type='RSA2048',
         extensions=dict(names=dict(sub_alt_names=['test.example.com', 'test2.example.com']))
     )
     csr, pem = create_csr(**csr_config)
@@ -353,7 +354,7 @@ def test_get_account_number(client):
     assert get_account_number(arn) == '11111111'
 
 
-def test_mint_certificate(issuer_plugin, authority, logged_in_admin):
+def test_mint_certificate(issuer_plugin, authority):
     from lemur.certificates.service import mint
     cert_body, private_key, chain = mint(authority=authority, csr=CSR_STR)
     assert cert_body == INTERNAL_VALID_LONG_STR, INTERNAL_VALID_SAN_STR
@@ -371,7 +372,7 @@ def test_create_certificate(issuer_plugin, authority, user):
     assert cert.name == 'ACustomName1'
 
 
-def test_reissue_certificate(issuer_plugin, authority, certificate, logged_in_admin):
+def test_reissue_certificate(issuer_plugin, authority, certificate):
     from lemur.certificates.service import reissue_certificate
     new_cert = reissue_certificate(certificate)
     assert new_cert
@@ -381,13 +382,13 @@ def test_create_csr():
     from lemur.certificates.service import create_csr
 
     csr, private_key = create_csr(owner='joe@example.com', common_name='ACommonName', organization='test', organizational_unit='Meters', country='US',
-                                  state='CA', location='Here')
+                                  state='CA', location='Here', key_type='RSA2048')
     assert csr
     assert private_key
 
     extensions = {'sub_alt_names': {'names': [{'name_type': 'DNSName', 'value': 'AnotherCommonName'}]}}
     csr, private_key = create_csr(owner='joe@example.com', common_name='ACommonName', organization='test', organizational_unit='Meters', country='US',
-                                  state='CA', location='Here', extensions=extensions)
+                                  state='CA', location='Here', extensions=extensions, key_type='RSA2048')
     assert csr
     assert private_key
 

@@ -8,13 +8,15 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
+import arrow
+
 from flask import current_app
 
-from lemur import database
-from lemur.extensions import metrics
-from lemur.endpoints.models import Endpoint, Policy, Cipher
-
 from sqlalchemy import func
+
+from lemur import database
+from lemur.endpoints.models import Endpoint, Policy, Cipher
+from lemur.extensions import metrics
 
 
 def get_all():
@@ -65,7 +67,7 @@ def create(**kwargs):
     """
     endpoint = Endpoint(**kwargs)
     database.create(endpoint)
-    metrics.send('endpoint_added', 'counter', 1)
+    metrics.send('endpoint_added', 'counter', 1, metric_tags={'source': endpoint.source.label})
     return endpoint
 
 
@@ -94,6 +96,9 @@ def update(endpoint_id, **kwargs):
 
     endpoint.policy = kwargs['policy']
     endpoint.certificate = kwargs['certificate']
+    endpoint.source = kwargs['source']
+    endpoint.last_updated = arrow.utcnow()
+    metrics.send('endpoint_updated', 'counter', 1, metric_tags={'source': endpoint.source.label})
     database.update(endpoint)
     return endpoint
 
@@ -103,8 +108,10 @@ def rotate_certificate(endpoint, new_cert):
     try:
         endpoint.source.plugin.update_endpoint(endpoint, new_cert)
         endpoint.certificate = new_cert
+        database.update(endpoint)
+        metrics.send('certificate_rotate_success', 'counter', 1, metric_tags={'endpoint': endpoint.name, 'source': endpoint.source.label})
     except Exception as e:
-        metrics.send('rotate_failure', 'counter', 1, tags={'endpoint': endpoint.name})
+        metrics.send('certificate_rotate_failure', 'counter', 1, metric_tags={'endpoint': endpoint.name})
         current_app.logger.exception(e)
         raise e
 

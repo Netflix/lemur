@@ -18,7 +18,7 @@ that Lemur can then manage.
 
 .. figure:: create_authority.png
 
-    Enter a authority name and short description about the authority. Enter an owner,
+    Enter an authority name and short description about the authority. Enter an owner,
     and certificate common name. Depending on the authority and the authority/issuer plugin
     these values may or may not be used.
 
@@ -56,7 +56,7 @@ Import an Existing Certificate
 
 .. figure:: upload_certificate.png
 
-    Enter a owner, short description and public certificate. If there are intermediates and private keys
+    Enter an owner, short description and public certificate. If there are intermediates and private keys
     Lemur will track them just as it does if the certificate were created through Lemur. Lemur generates
     a certificate name but you can override that by passing a value to the `Custom Name` field.
 

@@ -1,5 +1,5 @@
 """
-.. module: lemur.common.services.aws.sts
+.. module: lemur.plugins.lemur_aws.sts
     :platform: Unix
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.

@@ -115,13 +115,19 @@ def wrap_errors(messages):
 
 
 def unwrap_pagination(data, output_schema):
-    if isinstance(data, dict):
-        if data.get('total') == 0:
-            return data
+    if not output_schema:
+        return data
 
-        marshaled_data = {'total': data['total']}
-        marshaled_data['items'] = output_schema.dump(data['items'], many=True).data
-        return marshaled_data
+    if isinstance(data, dict):
+        if 'total' in data.keys():
+            if data.get('total') == 0:
+                return data
+
+            marshaled_data = {'total': data['total']}
+            marshaled_data['items'] = output_schema.dump(data['items'], many=True).data
+            return marshaled_data
+
+        return output_schema.dump(data).data
 
     elif isinstance(data, list):
         marshaled_data = {'total': len(data)}

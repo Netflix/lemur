@@ -8,7 +8,7 @@ from .vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN
 
 
 def test_rotate_certificate(client, source_plugin):
-    from lemur.endpoints.service import rotate_certificate
+    from lemur.deployment.service import rotate_certificate
     new_certificate = CertificateFactory()
     endpoint = EndpointFactory()
 

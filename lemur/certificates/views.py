@@ -99,6 +99,7 @@ class CertificatesList(AuthenticatedResource):
                         "name": "*.test.example.net"
                     }],
                     "replaces": [],
+                    "replaced": [],
                     "name": "WILDCARD.test.example.net-SymantecCorporation-20160603-20180112",
                     "roles": [{
                         "id": 464,
@@ -111,7 +112,7 @@ class CertificatesList(AuthenticatedResource):
               }
 
            :query sortBy: field to sort on
-           :query sortDir: acs or desc
+           :query sortDir: asc or desc
            :query page: int. default is 1
            :query filter: key value pair format is k;v
            :query count: count number. default is 10
@@ -296,10 +297,10 @@ class CertificatesUpload(AuthenticatedResource):
               Accept: application/json, text/javascript
 
               {
-                 "owner": "joe@exmaple.com",
-                 "publicCert": "---Begin Public...",
-                 "intermediateCert": "---Begin Public...",
-                 "privateKey": "---Begin Private..."
+                 "owner": "joe@example.com",
+                 "publicCert": "-----BEGIN CERTIFICATE-----...",
+                 "intermediateCert": "-----BEGIN CERTIFICATE-----...",
+                 "privateKey": "-----BEGIN RSA PRIVATE KEY-----..."
                  "destinations": [],
                  "notifications": [],
                  "replacements": [],
@@ -372,9 +373,9 @@ class CertificatesUpload(AuthenticatedResource):
            :statuscode 200: no error
 
         """
+        data['creator'] = g.user
         if data.get('destinations'):
             if data.get('private_key'):
-                data['creator'] = g.user
                 return service.upload(**data)
             else:
                 raise Exception("Private key must be provided in order to upload certificate to AWS")
@@ -427,7 +428,7 @@ class CertificatePrivateKey(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                 "key": "----Begin ...",
+                 "key": "-----BEGIN ...",
               }
 
            :reqheader Authorization: OAuth token to authenticate
@@ -520,6 +521,7 @@ class Certificates(AuthenticatedResource):
                     "name": "*.test.example.net"
                 }],
                 "replaces": [],
+                "replaced": [],
                 "name": "WILDCARD.test.example.net-SymantecCorporation-20160603-20180112",
                 "roles": [{
                     "id": 464,
@@ -636,7 +638,7 @@ class Certificates(AuthenticatedResource):
         for destination in data['destinations']:
             if destination.plugin.requires_key:
                 if not cert.private_key:
-                    return dict('Unable to add destination: {0}. Certificate does not have required private key.'.format(destination.label))
+                    return dict(message='Unable to add destination: {0}. Certificate does not have required private key.'.format(destination.label)), 400
 
         return service.update(
             certificate_id,
@@ -720,6 +722,7 @@ class NotificationCertificatesList(AuthenticatedResource):
                         "name": "*.test.example.net"
                     }],
                     "replaces": [],
+                    "replaced": [],
                     "name": "WILDCARD.test.example.net-SymantecCorporation-20160603-20180112",
                     "roles": [{
                         "id": 464,
@@ -732,7 +735,7 @@ class NotificationCertificatesList(AuthenticatedResource):
               }
 
            :query sortBy: field to sort on
-           :query sortDir: acs or desc
+           :query sortDir: asc or desc
            :query page: int default is 1
            :query filter: key value pair format is k;v
            :query count: count number default is 10
@@ -824,6 +827,7 @@ class CertificatesReplacementsList(AuthenticatedResource):
                         "name": "*.test.example.net"
                     }],
                     "replaces": [],
+                    "replaced": [],
                     "name": "WILDCARD.test.example.net-SymantecCorporation-20160603-20180112",
                     "roles": [{
                         "id": 464,
@@ -926,7 +930,7 @@ class CertificateExport(AuthenticatedResource):
             if not cert.private_key:
                 return dict(
                     message='Unable to export certificate, plugin: {0} requires a private key but no key was found.'.format(
-                        plugin.slug))
+                        plugin.slug)), 400
 
             else:
                 # allow creators

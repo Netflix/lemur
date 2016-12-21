@@ -1,12 +1,16 @@
 """
-.. module: lemur.status.views
+.. module: lemur.defaults.views
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 """
 from flask import current_app, Blueprint
 from flask_restful import Api
 
+from lemur.common.schema import validate_schema
+from lemur.authorities.service import get_by_name
 from lemur.auth.service import AuthenticatedResource
+
+from lemur.defaults.schemas import default_output_schema
 
 
 mod = Blueprint('default', __name__)
@@ -18,6 +22,7 @@ class LemurDefaults(AuthenticatedResource):
     def __init__(self):
         super(LemurDefaults)
 
+    @validate_schema(None, default_output_schema)
     def get(self):
         """
         .. http:get:: /defaults
@@ -52,13 +57,17 @@ class LemurDefaults(AuthenticatedResource):
            :statuscode 200: no error
            :statuscode 403: unauthenticated
         """
+
+        default_authority = get_by_name(current_app.config.get('LEMUR_DEFAULT_AUTHORITY'))
+
         return dict(
             country=current_app.config.get('LEMUR_DEFAULT_COUNTRY'),
             state=current_app.config.get('LEMUR_DEFAULT_STATE'),
             location=current_app.config.get('LEMUR_DEFAULT_LOCATION'),
             organization=current_app.config.get('LEMUR_DEFAULT_ORGANIZATION'),
-            organizationalUnit=current_app.config.get('LEMUR_DEFAULT_ORGANIZATIONAL_UNIT'),
-            issuerPlugin=current_app.config.get('LEMUR_DEFAULT_ISSUER_PLUGIN')
+            organizational_unit=current_app.config.get('LEMUR_DEFAULT_ORGANIZATIONAL_UNIT'),
+            issuer_plugin=current_app.config.get('LEMUR_DEFAULT_ISSUER_PLUGIN'),
+            authority=default_authority
         )
 
 

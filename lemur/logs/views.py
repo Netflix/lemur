@@ -1,5 +1,5 @@
 """
-.. module: lemur.log.views
+.. module: lemur.logs.views
     :platform: Unix
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
@@ -57,7 +57,7 @@ class LogsList(AuthenticatedResource):
               }
 
            :query sortBy: field to sort on
-           :query sortDir: acs or desc
+           :query sortDir: asc or desc
            :query page: int default is 1
            :query filter: key value pair format is k;v
            :query count: count number default is 10

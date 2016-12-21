@@ -9,6 +9,8 @@ import arrow
 
 from flask import current_app
 
+from cryptography.hazmat.primitives.asymmetric import rsa
+
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import case
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -63,6 +65,8 @@ class Certificate(db.Model):
     status = Column(String(128))
     bits = Column(Integer())
     san = Column(String(1024))  # TODO this should be migrated to boolean
+
+    rotation = Column(Boolean)
 
     user_id = Column(Integer, ForeignKey('users.id'))
     authority_id = Column(Integer, ForeignKey('authorities.id', ondelete="CASCADE"))
@@ -148,6 +152,20 @@ class Certificate(db.Model):
         cert = lemur.common.utils.parse_certificate(self.body)
         return defaults.location(cert)
 
+    @property
+    def key_type(self):
+        cert = lemur.common.utils.parse_certificate(self.body)
+        if isinstance(cert.public_key(), rsa.RSAPublicKey):
+            return 'RSA{key_size}'.format(key_size=cert.public_key().key_size)
+
+    @property
+    def validity_remaining(self):
+        return abs(self.not_after - arrow.utcnow())
+
+    @property
+    def validity_range(self):
+        return self.not_after - self.not_before
+
     @hybrid_property
     def expired(self):
         if self.not_after <= arrow.utcnow():
@@ -157,7 +175,7 @@ class Certificate(db.Model):
     def expired(cls):
         return case(
             [
-                (cls.now_after <= arrow.utcnow(), True)
+                (cls.not_after <= arrow.utcnow(), True)
             ],
             else_=False
         )

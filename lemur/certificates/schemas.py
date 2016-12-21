@@ -6,7 +6,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from flask import current_app
-from marshmallow import fields, validates_schema, post_load, pre_load
+from marshmallow import fields, validate, validates_schema, post_load, pre_load
 from marshmallow.exceptions import ValidationError
 
 from lemur.schemas import AssociatedAuthoritySchema, AssociatedDestinationSchema, AssociatedCertificateSchema, \
@@ -58,6 +58,7 @@ class CertificateInputSchema(CertificateCreationSchema):
     roles = fields.Nested(AssociatedRoleSchema, missing=[], many=True)
 
     csr = fields.String(validate=validators.csr)
+    key_type = fields.String(validate=validate.OneOf(['RSA2048', 'RSA4096']), missing='RSA2048')
 
     notify = fields.Boolean(default=True)
 
@@ -174,6 +175,7 @@ class CertificateOutputSchema(LemurOutputSchema):
     authority = fields.Nested(AuthorityNestedOutputSchema)
     roles = fields.Nested(RoleNestedOutputSchema, many=True)
     endpoints = fields.Nested(EndpointNestedOutputSchema, many=True, missing=[])
+    replaced = fields.Nested(CertificateNestedOutputSchema, many=True)
 
 
 class CertificateUploadInputSchema(CertificateCreationSchema):
@@ -200,9 +202,21 @@ class CertificateExportInputSchema(LemurInputSchema):
     plugin = fields.Nested(PluginInputSchema)
 
 
+class CertificateNotificationOutputSchema(LemurOutputSchema):
+    description = fields.String()
+    issuer = fields.String()
+    name = fields.String()
+    owner = fields.Email()
+    user = fields.Nested(UserNestedOutputSchema)
+    validity_end = ArrowDateTime(attribute='not_after')
+    replaced = fields.Nested(CertificateNestedOutputSchema, many=True)
+    endpoints = fields.Nested(EndpointNestedOutputSchema, many=True, missing=[])
+
+
 certificate_input_schema = CertificateInputSchema()
 certificate_output_schema = CertificateOutputSchema()
 certificates_output_schema = CertificateOutputSchema(many=True)
 certificate_upload_input_schema = CertificateUploadInputSchema()
 certificate_export_input_schema = CertificateExportInputSchema()
 certificate_edit_input_schema = CertificateEditInputSchema()
+certificate_notification_output_schema = CertificateNotificationOutputSchema()

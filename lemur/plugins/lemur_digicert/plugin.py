@@ -1,5 +1,5 @@
 """
-.. module: lemur.plugins.lemur_digicert.digicert
+.. module: lemur.plugins.lemur_digicert.plugin
     :platform: Unix
     :synopsis: This module is responsible for communicating with the DigiCert '
     Advanced API.
@@ -28,6 +28,18 @@ from lemur.plugins.bases import IssuerPlugin, SourcePlugin
 from lemur.plugins import lemur_digicert as digicert
 
 from lemur.common.utils import validate_conf
+
+
+def log_status_code(r, *args, **kwargs):
+    """
+    Is a request hook that logs all status codes to the digicert api.
+
+    :param r:
+    :param args:
+    :param kwargs:
+    :return:
+    """
+    metrics.send('digicert_status_code_{}'.format(r.status_code), 'counter', 1)
 
 
 def signature_hash(signing_algorithm):
@@ -92,7 +104,7 @@ def get_additional_names(options):
     """
     names = []
     # add SANs if present
-    if options.get('extensions', 'sub_alt_names'):
+    if options.get('extensions'):
         for san in options['extensions']['sub_alt_names']['names']:
             names.append(san['value'])
     return names
@@ -160,10 +172,20 @@ def handle_response(response):
     :param response:
     :return:
     """
-    metrics.send('digicert_status_code_{0}'.format(response.status_code), 'counter', 1)
-
     if response.status_code > 399:
         raise Exception(response.json()['message'])
+
+    return response.json()
+
+
+def handle_cis_response(response):
+    """
+    Handle the DigiCert CIS API response and any errors it might have experienced.
+    :param response:
+    :return:
+    """
+    if response.status_code > 399:
+        raise Exception(response.json()['errors'][0]['message'])
 
     return response.json()
 
@@ -174,7 +196,6 @@ def get_certificate_id(session, base_url, order_id):
     order_url = "{0}/services/v2/order/certificate/{1}".format(base_url, order_id)
     response_data = handle_response(session.get(order_url))
     if response_data['status'] != 'issued':
-        metrics.send('digicert_retries', 'counter', 1)
         raise Exception("Order not in issued state.")
 
     return response_data['certificate']['id']
@@ -190,7 +211,6 @@ def get_cis_certificate(session, base_url, order_id):
     response = session.get(certificate_url)
 
     if response.status_code == 404:
-        metrics.send('digicert_retries', 'counter', 1)
         raise Exception("Order not in issued state.")
 
     return response.content
@@ -225,6 +245,8 @@ class DigiCertSourcePlugin(SourcePlugin):
             }
         )
 
+        self.session.hooks = dict(response=log_status_code)
+
         super(DigiCertSourcePlugin, self).__init__(*args, **kwargs)
 
     def get_certificates(self):
@@ -245,6 +267,11 @@ class DigiCertIssuerPlugin(IssuerPlugin):
     def __init__(self, *args, **kwargs):
         """Initialize the issuer with the appropriate details."""
         required_vars = [
+            'DIGICERT_API_KEY',
+            'DIGICERT_URL',
+            'DIGICERT_ORG_ID',
+            'DIGICERT_ROOT',
+            'DIGICERT_INTERMEDIATE'
         ]
 
         validate_conf(current_app, required_vars)
@@ -256,6 +283,8 @@ class DigiCertIssuerPlugin(IssuerPlugin):
                 'Content-Type': 'application/json'
             }
         )
+
+        self.session.hooks = dict(response=log_status_code)
 
         super(DigiCertIssuerPlugin, self).__init__(*args, **kwargs)
 
@@ -283,7 +312,7 @@ class DigiCertIssuerPlugin(IssuerPlugin):
         # retrieve ceqrtificate
         certificate_url = "{0}/services/v2/certificate/{1}/download/format/pem_all".format(base_url, certificate_id)
         end_entity, intermediate, root = pem.parse(self.session.get(certificate_url).content)
-        return str(end_entity), str(intermediate)
+        return "\n".join(str(end_entity).splitlines()), "\n".join(str(end_entity).splitlines())
 
     @staticmethod
     def create_authority(options):
@@ -330,6 +359,8 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
             }
         )
 
+        self.session.hooks = dict(response=log_status_code)
+
         super(DigiCertCISIssuerPlugin, self).__init__(*args, **kwargs)
 
     def create_certificate(self, csr, issuer_options):
@@ -341,17 +372,14 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
 
         data = map_cis_fields(issuer_options, csr)
         response = self.session.post(create_url, data=json.dumps(data))
-
-        current_app.logger.debug(data)
-        if response.status_code > 399:
-            raise Exception(response.json()['errors'][0]['message'])
-
-        order_id = response.json()['id']
+        data = handle_cis_response(response)
 
         # retrieve certificate
-        certificate_pem = get_cis_certificate(self.session, base_url, order_id)
+        certificate_pem = get_cis_certificate(self.session, base_url, data['id'])
+
+        self.session.headers.pop('Accept')
         end_entity = pem.parse(certificate_pem)[0]
-        return str(end_entity), current_app.config.get('DIGICERT_CIS_INTERMEDIATE')
+        return "\n".join(str(end_entity).splitlines()), current_app.config.get('DIGICERT_CIS_INTERMEDIATE')
 
     @staticmethod
     def create_authority(options):

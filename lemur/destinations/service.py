@@ -56,7 +56,7 @@ def delete(destination_id):
 
 def get(destination_id):
     """
-    Retrieves an destination by it's lemur assigned ID.
+    Retrieves an destination by its lemur assigned ID.
 
     :param destination_id: Lemur assigned ID
     :rtype : Destination
@@ -67,7 +67,7 @@ def get(destination_id):
 
 def get_by_label(label):
     """
-    Retrieves a destination by it's label
+    Retrieves a destination by its label
 
     :param label:
     :return:

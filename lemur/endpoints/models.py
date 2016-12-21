@@ -1,15 +1,18 @@
 """
 .. module: lemur.endpoints.models
     :platform: unix
-    :synopsis: This module contains all of the models need to create a authority within Lemur.
+    :synopsis: This module contains all of the models need to create an authority within Lemur.
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+import arrow
 from sqlalchemy.orm import relationship
-from sqlalchemy import Column, Integer, String, func, DateTime, PassiveDefault, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql.expression import case
+
+from sqlalchemy_utils import ArrowType
 
 from lemur.database import db
 
@@ -58,13 +61,14 @@ class Endpoint(db.Model):
     type = Column(String(128))
     active = Column(Boolean, default=True)
     port = Column(Integer)
-    date_created = Column(DateTime, PassiveDefault(func.now()), nullable=False)
     policy_id = Column(Integer, ForeignKey('policy.id'))
     policy = relationship('Policy', backref='endpoint')
     certificate_id = Column(Integer, ForeignKey('certificates.id'))
     source_id = Column(Integer, ForeignKey('sources.id'))
     sensitive = Column(Boolean, default=False)
     source = relationship('Source', back_populates='endpoints')
+    last_updated = Column(ArrowType, default=arrow.utcnow, nullable=False)
+    date_created = Column(ArrowType, default=arrow.utcnow, onupdate=arrow.utcnow, nullable=False)
 
     @property
     def issues(self):

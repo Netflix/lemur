@@ -1,5 +1,5 @@
 """
-.. module: lemur.plugins.lemur_kubernetes.aws
+.. module: lemur.plugins.lemur_kubernetes.plugin
     :platform: Unix
     :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
