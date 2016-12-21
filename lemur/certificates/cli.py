@@ -113,6 +113,8 @@ def rotate(new_certificate_name, old_certificate_name, message, commit):
     """
     new_cert = old_cert = None
 
+    print("[+] Staring certificate rotation.")
+
     if commit:
         print("[!] Running in COMMIT mode.")
 
@@ -155,6 +157,8 @@ def rotate(new_certificate_name, old_certificate_name, message, commit):
 
                 if commit:
                     metrics.send('certificate_rotation_failure', 'counter', 1)
+
+    print("[+] Done!")
 
 
 @manager.option('-o', '--old-certificate', dest='old_certificate_name', help='Name of the certificate you wish to reissue.')
