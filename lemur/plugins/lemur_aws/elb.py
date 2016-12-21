@@ -49,16 +49,6 @@ def is_valid(listener_tuple):
     return listener_tuple
 
 
-@sts_client('elb')
-@retry(retry_on_exception=retry_throttled, stop_max_attempt_number=7, wait_exponential_multiplier=1000)
-def get_elbs(**kwargs):
-    """
-    Fetches one page elb objects for a given account and region.
-    """
-    client = kwargs.pop('client')
-    return client.describe_load_balancers(**kwargs)
-
-
 def get_all_elbs(**kwargs):
     """
     Fetches all elbs for a given account/region
@@ -80,6 +70,80 @@ def get_all_elbs(**kwargs):
             kwargs.update(dict(marker=response['NextMarker']))
 
 
+def get_all_elbs_v2(**kwargs):
+    """
+    Fetches all elbs for a given account/region
+
+    :param kwargs:
+    :return:
+    """
+    elbs = []
+
+    while True:
+        response = get_elbs_v2(**kwargs)
+        elbs += response['LoadBalancers']
+
+        if not response.get('IsTruncated'):
+            return elbs
+
+        if response['NextMarker']:
+            kwargs.update(dict(marker=response['NextMarker']))
+
+
+@sts_client('elbv2')
+@retry(retry_on_exception=retry_throttled, stop_max_attempt_number=7, wait_exponential_multiplier=1000)
+def get_listener_arn_from_endpoint(endpoint_name, endpoint_port, **kwargs):
+    """
+    Get a listener ARN from a endpoint.
+    :param endpoint_name:
+    :param endpoint_port:
+    :return:
+    """
+    client = kwargs.pop('client')
+    elbs = client.describe_load_balancers(Names=[endpoint_name])
+    for elb in elbs['LoadBalancers']:
+        listeners = client.describe_listeners(LoadBalancerArn=elb['LoadBalancerArn'])
+        for listener in listeners['Listeners']:
+            if listener['Port'] == endpoint_port:
+                return listener['ListenerArn']
+
+
+@sts_client('elb')
+@retry(retry_on_exception=retry_throttled, stop_max_attempt_number=7, wait_exponential_multiplier=1000)
+def get_elbs(**kwargs):
+    """
+    Fetches one page elb objects for a given account and region.
+    """
+    client = kwargs.pop('client')
+    return client.describe_load_balancers(**kwargs)
+
+
+@sts_client('elbv2')
+@retry(retry_on_exception=retry_throttled, stop_max_attempt_number=7, wait_exponential_multiplier=1000)
+def get_elbs_v2(**kwargs):
+    """
+    Fetches one page of elb objects for a given account and region.
+
+    :param kwargs:
+    :return:
+    """
+    client = kwargs.pop('client')
+    return client.describe_load_balancers(**kwargs)
+
+
+@sts_client('elbv2')
+@retry(retry_on_exception=retry_throttled, stop_max_attempt_number=7, wait_exponential_multiplier=1000)
+def describe_listeners_v2(**kwargs):
+    """
+    Fetches one page of listener objects for a given elb arn.
+
+    :param kwargs:
+    :return:
+    """
+    client = kwargs.pop('client')
+    return client.describe_listeners(**kwargs)
+
+
 @sts_client('elb')
 def describe_load_balancer_policies(load_balancer_name, policy_names, **kwargs):
     """
@@ -89,6 +153,17 @@ def describe_load_balancer_policies(load_balancer_name, policy_names, **kwargs):
     :return:
     """
     return kwargs['client'].describe_load_balancer_policies(LoadBalancerName=load_balancer_name, PolicyNames=policy_names)
+
+
+@sts_client('elbv2')
+def describe_ssl_policies_v2(policy_names, **kwargs):
+    """
+    Fetching all policies currently associated with an ELB.
+
+    :param policy_names:
+    :return:
+    """
+    return kwargs['client'].describe_ssl_policies(Names=policy_names)
 
 
 @sts_client('elb')
@@ -115,6 +190,26 @@ def attach_certificate(name, port, certificate_id, **kwargs):
     """
     try:
         return kwargs['client'].set_load_balancer_listener_ssl_certificate(LoadBalancerName=name, LoadBalancerPort=port, SSLCertificateId=certificate_id)
+    except botocore.exceptions.ClientError as e:
+        if e.response['Error']['Code'] == 'LoadBalancerNotFound':
+            current_app.logger.warning("Loadbalancer does not exist.")
+        else:
+            raise e
+
+
+@sts_client('elbv2')
+@retry(retry_on_exception=retry_throttled, stop_max_attempt_number=7, wait_exponential_multiplier=1000)
+def attach_certificate_v2(listener_arn, port, certificates, **kwargs):
+    """
+    Attaches a certificate to a listener, throws exception
+    if certificate specified does not exist in a particular account.
+
+    :param listener_arn:
+    :param port:
+    :param certificates:
+    """
+    try:
+        return kwargs['client'].modify_listener(ListenerArn=listener_arn, Port=port, Certificates=certificates)
     except botocore.exceptions.ClientError as e:
         if e.response['Error']['Code'] == 'LoadBalancerNotFound':
             current_app.logger.warning("Loadbalancer does not exist.")

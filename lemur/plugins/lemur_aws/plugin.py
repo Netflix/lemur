@@ -44,6 +44,108 @@ def get_region_from_dns(dns):
     return dns.split('.')[-4]
 
 
+def format_elb_cipher_policy_v2(policy):
+    """
+    Attempts to format cipher policy information for elbv2 into a common format.
+    :param policy:
+    :return:
+    """
+    ciphers = []
+    name = None
+
+    for descr in policy['SslPolicies']:
+        name = descr['Name']
+        for cipher in descr['Ciphers']:
+            ciphers.append(cipher['Name'])
+
+    return dict(name=name, ciphers=ciphers)
+
+
+def format_elb_cipher_policy(policy):
+    """
+    Attempts to format cipher policy information into a common format.
+    :param policy:
+    :return:
+    """
+    ciphers = []
+    name = None
+    for descr in policy['PolicyDescriptions']:
+        for attr in descr['PolicyAttributeDescriptions']:
+            if attr['AttributeName'] == 'Reference-Security-Policy':
+                name = attr['AttributeValue']
+                continue
+
+            if attr['AttributeValue'] == 'true':
+                ciphers.append(attr['AttributeName'])
+
+    return dict(name=name, ciphers=ciphers)
+
+
+def get_elb_endpoints(account_number, region, elb_dict):
+    """
+    Retrieves endpoint information from elb response data.
+    :param account_number:
+    :param region:
+    :param elb_dict:
+    :return:
+    """
+    endpoints = []
+    for listener in elb_dict['ListenerDescriptions']:
+        if not listener['Listener'].get('SSLCertificateId'):
+            continue
+
+        if listener['Listener']['SSLCertificateId'] == 'Invalid-Certificate':
+            continue
+
+        endpoint = dict(
+            name=elb_dict['LoadBalancerName'],
+            dnsname=elb_dict['DNSName'],
+            type='elb',
+            port=listener['Listener']['LoadBalancerPort'],
+            certificate_name=iam.get_name_from_arn(listener['Listener']['SSLCertificateId'])
+        )
+
+        if listener['PolicyNames']:
+            policy = elb.describe_load_balancer_policies(elb_dict['LoadBalancerName'], listener['PolicyNames'], account_number=account_number, region=region)
+            endpoint['policy'] = format_elb_cipher_policy(policy)
+
+        endpoints.append(endpoint)
+
+    return endpoints
+
+
+def get_elb_endpoints_v2(account_number, region, elb_dict):
+    """
+    Retrieves endpoint information from elbv2 response data.
+    :param account_number:
+    :param region:
+    :param elb_dict:
+    :return:
+    """
+    endpoints = []
+    listeners = elb.describe_listeners_v2(account_number=account_number, region=region, LoadBalancerArn=elb_dict['LoadBalancerArn'])
+    for listener in listeners['Listeners']:
+        if not listener['Certificates']:
+            continue
+
+        for certificate in listener['Certificates']:
+            endpoint = dict(
+                name=elb_dict['LoadBalancerName'],
+                dnsname=elb_dict['DNSName'],
+                type='elbv2',
+                port=listener['Port'],
+                certificate_name=iam.get_name_from_arn(certificate['CertificateArn'])
+            )
+
+        if listener['SslPolicy']:
+            policy = elb.describe_ssl_policies_v2([listener['SslPolicy']], account_number=account_number, region=region)
+            endpoint['policy'] = format_elb_cipher_policy_v2(policy)
+
+        endpoints.append(endpoint)
+
+    return endpoints
+
+
 class AWSDestinationPlugin(DestinationPlugin):
     title = 'AWS'
     slug = 'aws-destination'
@@ -76,10 +178,6 @@ class AWSDestinationPlugin(DestinationPlugin):
         except BotoServerError as e:
             if e.error_code != 'EntityAlreadyExists':
                 raise Exception(e)
-
-        e = self.get_option('elb', options)
-        if e:
-            iam.attach_certificate(kwargs['accountNumber'], ['region'], e['name'], e['port'], e['certificateId'])
 
     def deploy(self, elb_name, account, region, certificate):
         pass
@@ -135,28 +233,17 @@ class AWSSourcePlugin(SourcePlugin):
 
         for region in regions:
             elbs = elb.get_all_elbs(account_number=account_number, region=region)
-            current_app.logger.info("Describing load balancers in {0}-{1}".format(account_number, region))
+            current_app.logger.info("Describing classic load balancers in {0}-{1}".format(account_number, region))
+
             for e in elbs:
-                for listener in e['ListenerDescriptions']:
-                    if not listener['Listener'].get('SSLCertificateId'):
-                        continue
+                endpoints.extend(get_elb_endpoints(account_number, region, e))
 
-                    if listener['Listener']['SSLCertificateId'] == 'Invalid-Certificate':
-                        continue
+            # fetch advanced ELBs
+            elbs_v2 = elb.get_all_elbs_v2(account_number=account_number, region=region)
+            current_app.logger.info("Describing advanced load balancers in {0}-{1}".format(account_number, region))
 
-                    endpoint = dict(
-                        name=e['LoadBalancerName'],
-                        dnsname=e['DNSName'],
-                        type='elb',
-                        port=listener['Listener']['LoadBalancerPort'],
-                        certificate_name=iam.get_name_from_arn(listener['Listener']['SSLCertificateId'])
-                    )
-
-                    if listener['PolicyNames']:
-                        policy = elb.describe_load_balancer_policies(e['LoadBalancerName'], listener['PolicyNames'], account_number=account_number, region=region)
-                        endpoint['policy'] = format_elb_cipher_policy(policy)
-
-                    endpoints.append(endpoint)
+            for e in elbs_v2:
+                endpoints.extend(get_elb_endpoints_v2(account_number, region, e))
 
         return endpoints
 
@@ -167,7 +254,12 @@ class AWSSourcePlugin(SourcePlugin):
         # relies on the fact that region is included in DNS name
         region = get_region_from_dns(endpoint.dnsname)
         arn = iam.create_arn_from_cert(account_number, region, certificate.name)
-        elb.attach_certificate(endpoint.name, endpoint.port, arn, account_number=account_number, region=region)
+
+        if endpoint.type == 'elbv2':
+            listener_arn = elb.get_listener_arn_from_endpoint(endpoint.name, endpoint.port, account_number=account_number, region=region)
+            elb.attach_certificate_v2(listener_arn, endpoint.port, [{'CertificateArn': arn}], account_number=account_number, region=region)
+        else:
+            elb.attach_certificate(endpoint.name, endpoint.port, arn, account_number=account_number, region=region)
 
     def clean(self, options, **kwargs):
         account_number = self.get_option('accountNumber', options)
@@ -184,26 +276,6 @@ class AWSSourcePlugin(SourcePlugin):
                 iam.delete_cert(account_number, certificate)
 
         return orphaned
-
-
-def format_elb_cipher_policy(policy):
-    """
-    Attempts to format cipher policy information into a common format.
-    :param policy:
-    :return:
-    """
-    ciphers = []
-    name = None
-    for descr in policy['PolicyDescriptions']:
-        for attr in descr['PolicyAttributeDescriptions']:
-            if attr['AttributeName'] == 'Reference-Security-Policy':
-                name = attr['AttributeValue']
-                continue
-
-            if attr['AttributeValue'] == 'true':
-                ciphers.append(attr['AttributeName'])
-
-    return dict(name=name, ciphers=ciphers)
 
 
 class S3DestinationPlugin(DestinationPlugin):
