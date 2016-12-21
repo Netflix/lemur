@@ -169,13 +169,13 @@ def sync_certificates(source, user):
 
 
 def sync(source, user):
-    new, updated = sync_certificates(source, user)
-    new, updated = sync_endpoints(source)
+    new_certs, updated_certs = sync_certificates(source, user)
+    new_endpoints, updated_endpoints = sync_endpoints(source)
 
     source.last_run = arrow.utcnow()
     database.update(source)
 
-    return {'endpoints': (new, updated), 'certificates': (new, updated)}
+    return {'endpoints': (new_endpoints, updated_endpoints), 'certificates': (new_certs, updated_certs)}
 
 
 def clean(source):
