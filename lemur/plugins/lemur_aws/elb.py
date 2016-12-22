@@ -63,11 +63,10 @@ def get_all_elbs(**kwargs):
 
         elbs += response['LoadBalancerDescriptions']
 
-        if not response.get('IsTruncated'):
+        if not response.get('NextMarker'):
             return elbs
-
-        if response['NextMarker']:
-            kwargs.update(dict(marker=response['NextMarker']))
+        else:
+            kwargs.update(dict(Marker=response['NextMarker']))
 
 
 def get_all_elbs_v2(**kwargs):
@@ -83,11 +82,10 @@ def get_all_elbs_v2(**kwargs):
         response = get_elbs_v2(**kwargs)
         elbs += response['LoadBalancers']
 
-        if not response.get('IsTruncated'):
+        if not response.get('NextMarker'):
             return elbs
-
-        if response['NextMarker']:
-            kwargs.update(dict(marker=response['NextMarker']))
+        else:
+            kwargs.update(dict(Marker=response['NextMarker']))
 
 
 @sts_client('elbv2')
