@@ -6,7 +6,6 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import sys
-import time
 
 from flask import current_app
 
@@ -14,60 +13,14 @@ from flask_script import Manager
 
 from lemur import database
 from lemur.extensions import metrics
-from lemur.deployment.service import rotate_certificate
+from lemur.deployment import service as deployment_service
+from lemur.endpoints import service as endpoint_service
 from lemur.notifications.messaging import send_rotation_notification
-from lemur.certificates.service import reissue_certificate, get_certificate_primitives, get_all_pending_rotation, get_by_name, get_all_certs
+from lemur.certificates.service import reissue_certificate, get_certificate_primitives, get_all_pending_reissue, get_by_name, get_all_certs
 
 from lemur.certificates.verify import verify_string
 
 manager = Manager(usage="Handles all certificate related tasks.")
-
-
-def reissue_and_rotate(old_certificate, new_certificate=None, commit=False, message=False):
-    if not new_certificate:
-        # we don't want to re-issue if it's already been replaced
-        if not old_certificate.replaced:
-            details = get_certificate_primitives(old_certificate)
-            print_certificate_details(details)
-
-            if commit:
-                new_certificate = reissue_certificate(old_certificate, replace=True)
-                print("[+] Issued new certificate named: {0}".format(new_certificate.name))
-                time.sleep(10)
-                print("[!] Sleeping to ensure that certificate propagates before rotating.")
-            else:
-                new_certificate = old_certificate
-
-            print("[+] Done!")
-
-        else:
-            if len(old_certificate.replaced) > 1:
-                raise Exception(
-                    "Unable to rotate certificate based on replacement, found more than one!"
-                )
-            else:
-                new_certificate = old_certificate.replaced[0]
-                print("[!] Certificate has been replaced by: {0}".format(old_certificate.replaced[0].name))
-
-    if len(old_certificate.endpoints) > 0:
-        for endpoint in old_certificate.endpoints:
-            print(
-                "[+] Certificate deployed on endpoint: name:{name} dnsname:{dnsname} port:{port} type:{type}".format(
-                    name=endpoint.name,
-                    dnsname=endpoint.dnsname,
-                    port=endpoint.port,
-                    type=endpoint.type
-                )
-            )
-            print("[+] Rotating certificate from: {0} to: {1}".format(old_certificate.name, new_certificate.name))
-
-            if commit:
-                rotate_certificate(endpoint, new_certificate)
-
-            print("[+] Done!")
-
-    if message:
-        send_rotation_notification(old_certificate)
 
 
 def print_certificate_details(details):
@@ -102,90 +55,155 @@ def print_certificate_details(details):
     )
 
 
+def validate_certificate(certificate_name):
+    """
+    Ensuring that the specified certificate exists.
+    :param certificate_name:
+    :return:
+    """
+    if certificate_name:
+        cert = get_by_name(certificate_name)
+
+        if not cert:
+            print("[-] No certificate found with name: {0}".format(certificate_name))
+            sys.exit(1)
+
+        return cert
+
+
+def validate_endpoint(endpoint_name):
+    """
+    Ensuring that the specified endpoint exists.
+    :param endpoint_name:
+    :return:
+    """
+    if endpoint_name:
+        endpoint = endpoint_service.get_by_name(endpoint_name)
+
+        if not endpoint:
+            print("[-] No endpoint found with name: {0}".format(endpoint_name))
+            sys.exit(1)
+
+        return endpoint
+
+
+def request_rotation(endpoint, certificate, message, commit):
+    """
+    Rotates a certificate and handles any exceptions during
+    execution.
+    :param endpoint:
+    :param certificate:
+    :param message:
+    :param commit:
+    :return:
+    """
+    if commit:
+        try:
+            deployment_service.rotate_certificate(endpoint, certificate)
+            metrics.send('endpoint_rotation_success', 'counter', 1)
+
+            if message:
+                send_rotation_notification(certificate)
+
+        except Exception as e:
+            metrics.send('endpoint_rotation_failure', 'counter', 1)
+            print(
+                "[!] Failed to rotate endpoint {0} to certificate {1} reason: {2}".format(
+                    endpoint.name,
+                    certificate.name,
+                    e
+                )
+            )
+
+
+def request_reissue(certificate, commit):
+    """
+    Reissuing certificate and handles any exceptions.
+    :param certificate:
+    :param commit:
+    :return:
+    """
+    details = get_certificate_primitives(certificate)
+    print_certificate_details(details)
+    if commit:
+        try:
+            new_cert = reissue_certificate(certificate, replace=True)
+            metrics.send('certificate_reissue_success', 'counter', 1)
+            print("[+] New certificate named: {0}".format(new_cert.name))
+        except Exception as e:
+            metrics.send('certificate_reissue_failure', 'counter', 1)
+            print(
+                "[!] Failed to reissue certificate {1} reason: {2}".format(
+                    certificate.name,
+                    e
+                )
+            )
+
+
+@manager.option('-e', '--endpoint', dest='endpoint_name', help='Name of the endpoint you wish to rotate.')
 @manager.option('-n', '--new-certificate', dest='new_certificate_name', help='Name of the certificate you wish to rotate to.')
 @manager.option('-o', '--old-certificate', dest='old_certificate_name', help='Name of the certificate you wish to rotate.')
-@manager.option('-a', '--notify', dest='message', help='Send a rotation notification to the certificates owner.')
+@manager.option('-a', '--notify', dest='message', action='store_true', help='Send a rotation notification to the certificates owner.')
 @manager.option('-c', '--commit', dest='commit', action='store_true', default=False, help='Persist changes.')
-def rotate(new_certificate_name, old_certificate_name, message, commit):
+def rotate(endpoint_name, new_certificate_name, old_certificate_name, message, commit):
     """
-    Rotates a certificate and reissues it if it has not already been replaced. If it has
+    Rotates an endpoint and reissues it if it has not already been replaced. If it has
     been replaced, will use the replacement certificate for the rotation.
     """
-    new_cert = old_cert = None
-
-    print("[+] Staring certificate rotation.")
-
     if commit:
         print("[!] Running in COMMIT mode.")
 
-    if old_certificate_name:
-        old_cert = get_by_name(old_certificate_name)
+    print("[+] Starting endpoint rotation.")
 
-        if not old_cert:
-            print("[-] No certificate found with name: {0}".format(old_certificate_name))
-            sys.exit(1)
+    old_cert = validate_certificate(old_certificate_name)
+    new_cert = validate_certificate(new_certificate_name)
+    endpoint = validate_endpoint(endpoint_name)
 
-    if new_certificate_name:
-        new_cert = get_by_name(new_certificate_name)
+    if endpoint and new_cert:
+        print("[+] Rotating endpoint: {0} to certificate {1}".format(endpoint.name, new_cert.name))
+        request_rotation(endpoint, new_cert, message, commit)
 
-        if not new_cert:
-            print("[-] No certificate found with name: {0}".format(old_certificate_name))
-            sys.exit(1)
+    elif old_cert and new_cert:
+        print("[+] Rotating all endpoints from {0} to {1}".format(old_cert.name, new_cert.name))
 
-    if old_cert and new_cert:
-        try:
-            reissue_and_rotate(old_cert, new_certificate=new_cert, commit=commit, message=message)
+        for endpoint in old_cert.endpoints:
+            print("[+] Rotating {0}".format(endpoint.name))
+            request_rotation(endpoint, new_cert, message, commit)
 
-            if commit:
-                metrics.send('certificate_rotation_success', 'counter', 1)
-
-        except Exception as e:
-            current_app.logger.exception(e)
-
-            if commit:
-                metrics.send('certificate_rotation_failure', 'counter', 1)
     else:
-        for certificate in get_all_pending_rotation():
-            try:
-                reissue_and_rotate(certificate, commit=commit, message=message)
-
-                if commit:
-                    metrics.send('certificate_rotation_success', 'counter', 1)
-
-            except Exception as e:
-                current_app.logger.exception(e)
-
-                if commit:
-                    metrics.send('certificate_rotation_failure', 'counter', 1)
+        print("[+] Rotating all endpoints that have new certificates available")
+        for endpoint in endpoint_service.get_all_pending_rotation():
+            if len(endpoint.certificate.replaced) == 1:
+                print("[+] Rotating {0} to {1}".format(endpoint.name, endpoint.certificate.replaced[0].name))
+                request_rotation(endpoint, endpoint.certificate.replaced[0], message, commit)
+            else:
+                metrics.send('endpoint_rotation_failure', 'counter', 1)
+                print("[!] Failed to rotate endpoint {0} reason: Multiple replacement certificates found.".format(
+                    endpoint.name
+                ))
 
     print("[+] Done!")
 
 
 @manager.option('-o', '--old-certificate', dest='old_certificate_name', help='Name of the certificate you wish to reissue.')
-@manager.option('-s', '--validity-start', dest='validity_start', help='Validity starting date. Format: YYYY-MM-DD.')
-@manager.option('-e', '--validity-end', dest='validity_end', help='Validity ending date. Format: YYYY-MM-DD.')
 @manager.option('-c', '--commit', dest='commit', action='store_true', default=False, help='Persist changes.')
-def reissue(old_certificate_name, validity_start, validity_end, commit):
+def reissue(old_certificate_name, commit):
     """
     Reissues certificate with the same parameters as it was originally issued with.
     If not time period is provided, reissues certificate as valid from today to
     today + length of original.
     """
-    old_cert = get_by_name(old_certificate_name)
-
-    if not old_cert:
-        print("[-] No certificate found with name: {0}".format(old_certificate_name))
-        sys.exit(1)
-
     if commit:
         print("[!] Running in COMMIT mode.")
 
-    details = get_certificate_primitives(old_cert)
-    print_certificate_details(details)
+    old_cert = validate_certificate(old_certificate_name)
 
-    if commit:
-        new_cert = reissue_certificate(old_cert, replace=True)
-        print("[+] Issued new certificate named: {0}".format(new_cert.name))
+    if not old_cert:
+        for certificate in get_all_pending_reissue():
+            print("[+] {0} is eligible for re-issuance".format(certificate.name))
+            request_reissue(certificate, commit)
+    else:
+        request_reissue(old_cert, commit)
 
     print("[+] Done!")
 

@@ -40,14 +40,24 @@ def get(endpoint_id):
     return database.get(Endpoint, endpoint_id)
 
 
-def get_by_dnsname(endpoint_dnsname):
+def get_by_name(name):
     """
     Retrieves an endpoint given it's name.
 
-    :param endpoint_dnsname:
+    :param name:
     :return:
     """
-    return database.get(Endpoint, endpoint_dnsname, field='dnsname')
+    return database.get(Endpoint, name, field='name')
+
+
+def get_by_dnsname(dnsname):
+    """
+    Retrieves an endpoint given it's name.
+
+    :param dnsname:
+    :return:
+    """
+    return database.get(Endpoint, dnsname, field='dnsname')
 
 
 def get_by_source(source_label):
@@ -57,6 +67,15 @@ def get_by_source(source_label):
     :return:
     """
     return Endpoint.query.filter(Endpoint.source.label == source_label).all()  # noqa
+
+
+def get_all_pending_rotation():
+    """
+    Retrieves all endpoints which have certificates deployed
+    that have been replaced.
+    :return:
+    """
+    return Endpoint.query.filter(Endpoint.replaced.any()).all()
 
 
 def create(**kwargs):
