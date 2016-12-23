@@ -116,6 +116,7 @@ class Certificate(db.Model):
         self.description = kwargs.get('description')
         self.roles = list(set(kwargs.get('roles', [])))
         self.replaces = kwargs.get('replacements', [])
+        self.rotation = kwargs.get('rotation')
         self.signing_algorithm = defaults.signing_algorithm(cert)
         self.bits = defaults.bitstrength(cert)
         self.serial = defaults.serial(cert)

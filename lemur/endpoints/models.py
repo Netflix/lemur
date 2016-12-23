@@ -8,6 +8,7 @@
 """
 import arrow
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql.expression import case
@@ -69,6 +70,8 @@ class Endpoint(db.Model):
     source = relationship('Source', back_populates='endpoints')
     last_updated = Column(ArrowType, default=arrow.utcnow, nullable=False)
     date_created = Column(ArrowType, default=arrow.utcnow, onupdate=arrow.utcnow, nullable=False)
+
+    replaced = association_proxy('certificate', 'replaced')
 
     @property
     def issues(self):

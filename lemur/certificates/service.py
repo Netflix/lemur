@@ -9,7 +9,7 @@ import arrow
 from datetime import timedelta
 
 from flask import current_app
-from sqlalchemy import func, or_, cast, Boolean
+from sqlalchemy import func, or_, not_, cast, Boolean
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
@@ -78,7 +78,7 @@ def get_by_source(source_label):
     return Certificate.query.filter(Certificate.sources.any(label=source_label))
 
 
-def get_all_pending_rotation():
+def get_all_pending_reissue():
     """
     Retrieves all certificates that need to be rotated.
 
@@ -94,6 +94,7 @@ def get_all_pending_rotation():
 
     return Certificate.query.filter(Certificate.rotation == True)\
         .filter(Certificate.endpoints.any())\
+        .filter(not_(Certificate.replaced.any()))\
         .filter(Certificate.not_after <= end.format('YYYY-MM-DD')).all()  # noqa
 
 
@@ -533,7 +534,8 @@ def get_certificate_primitives(certificate):
         state=certificate.state,
         location=certificate.location,
         key_type=certificate.key_type,
-        notifications=certificate.notifications
+        notifications=certificate.notifications,
+        rotation=certificate.rotation
     )
 
 
