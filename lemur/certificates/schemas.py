@@ -77,7 +77,7 @@ class CertificateInputSchema(CertificateCreationSchema):
         validators.dates(data)
 
     @pre_load
-    def ensure_dates(self, data):
+    def load_data(self, data):
         if data.get('replacements'):
             data['replaces'] = data['replacements']  # TODO remove when field is deprecated
         return missing.convert_validity_years(data)
@@ -94,7 +94,7 @@ class CertificateEditInputSchema(CertificateSchema):
     roles = fields.Nested(AssociatedRoleSchema, missing=[], many=True)
 
     @pre_load
-    def ensure_dates(self, data):
+    def load_data(self, data):
         if data.get('replacements'):
             data['replaces'] = data['replacements']  # TODO remove when field is deprecated
         return data
