@@ -4,7 +4,7 @@
                uib-typeahead="role.name for role in findRoleByName($viewValue)" typeahead-loading="loadingRoles"
                class="form-control input-md" typeahead-on-select="ngModel.attachRole($item)" typeahead-wait-ms="500"
                uib-tooltip="Roles control who can access this resource"
-               tooltip-trigger="focus" tooltip-placement="top">
+               tooltip-placement="top">
           <span class="input-group-btn">
             <button ng-model="roles.show" class="btn btn-md btn-default" uib-btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
                 <span class="badge">{{ ngModel.roles.length || 0 }}</span>

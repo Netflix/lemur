@@ -126,26 +126,16 @@ def export(cert, export_plugin):
     return plugin.export(cert.body, cert.chain, cert.private_key, export_plugin['pluginOptions'])
 
 
-def update(cert_id, owner, description, notify, destinations, notifications, replaces, roles):
+def update(cert_id, **kwargs):
     """
     Updates a certificate
     :param cert_id:
-    :param owner:
-    :param description:
-    :param notify:
-    :param destinations:
-    :param notifications:
-    :param replaces:
     :return:
     """
     cert = get(cert_id)
-    cert.notify = notify
-    cert.description = description
-    cert.destinations = destinations
-    cert.notifications = notifications
-    cert.roles = roles
-    cert.replaces = replaces
-    cert.owner = owner
+
+    for key, value in kwargs.items():
+        setattr(cert, key, value)
 
     return database.update(cert)
 
@@ -555,7 +545,7 @@ def reissue_certificate(certificate, replace=None, user=None):
         primitives['creator'] = user
 
     if replace:
-        primitives['replacements'] = [certificate]
+        primitives['replaces'] = [certificate]
 
     new_cert = create(**primitives)
 

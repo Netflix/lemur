@@ -62,6 +62,7 @@ class CertificateInputSchema(CertificateCreationSchema):
     key_type = fields.String(validate=validate.OneOf(['RSA2048', 'RSA4096']), missing='RSA2048')
 
     notify = fields.Boolean(default=True)
+    rotation = fields.Boolean()
 
     # certificate body fields
     organizational_unit = fields.String(missing=lambda: current_app.config.get('LEMUR_DEFAULT_ORGANIZATIONAL_UNIT'))
@@ -84,8 +85,10 @@ class CertificateInputSchema(CertificateCreationSchema):
 
 
 class CertificateEditInputSchema(CertificateSchema):
-    notify = fields.Boolean()
     owner = fields.String()
+
+    notify = fields.Boolean()
+    rotation = fields.Boolean()
 
     destinations = fields.Nested(AssociatedDestinationSchema, missing=[], many=True)
     notifications = fields.Nested(AssociatedNotificationSchema, missing=[], many=True)
@@ -116,12 +119,20 @@ class CertificateEditInputSchema(CertificateSchema):
 class CertificateNestedOutputSchema(LemurOutputSchema):
     __envelope__ = False
     id = fields.Integer()
-    active = fields.Boolean()
+    name = fields.String()
+    owner = fields.Email()
+    creator = fields.Nested(UserNestedOutputSchema)
+    description = fields.String()
+
+    status = fields.Boolean()
+
     bits = fields.Integer()
     body = fields.String()
     chain = fields.String()
-    description = fields.String()
-    name = fields.String()
+    active = fields.Boolean()
+
+    rotation = fields.Boolean()
+    notify = fields.Boolean()
 
     # Note aliasing  is the first step in deprecating these fields.
     cn = fields.String()  # deprecated
@@ -133,9 +144,6 @@ class CertificateNestedOutputSchema(LemurOutputSchema):
     not_before = fields.DateTime()  # deprecated
     validity_start = ArrowDateTime(attribute='not_before')
 
-    owner = fields.Email()
-    status = fields.Boolean()
-    creator = fields.Nested(UserNestedOutputSchema)
     issuer = fields.Nested(AuthorityNestedOutputSchema)
 
 
@@ -154,6 +162,8 @@ class CertificateOutputSchema(LemurOutputSchema):
     description = fields.String()
     issuer = fields.String()
     name = fields.String()
+
+    rotation = fields.Boolean()
 
     # Note aliasing  is the first step in deprecating these fields.
     notify = fields.Boolean()

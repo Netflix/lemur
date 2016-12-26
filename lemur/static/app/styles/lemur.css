@@ -68,14 +68,6 @@ body { padding-top: 70px; }
   left: 50%;
 }
 
-.wave-spinner {
-  margin: auto;
-  width: 100px;
-  height: 60px;
-  text-align: center;
-  font-size: 20px;
-}
-
 html {
   position: relative;
   min-height: 100%;
@@ -157,16 +149,6 @@ a {
 
 .message {
   margin-top: 10px;
-}
-
-.wave-spinner {
-    margin: 5px auto !important;
-    width: 40px !important;
-    height: 12px !important;
-}
-
-.wave-spinner>div {
-    background-color: #FFFFFF !important;
 }
 
 .clipboard-btn {

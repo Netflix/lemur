@@ -1,13 +1,25 @@
 <form name="dnForm" novalidate>
   <div class="form-horizontal">
     <div class="form-group"
+         ng-class="{'has-error': dnForm.name.$invalid, 'has-success': !dnForm.name.$invalid&&dnForm.name.$dirty}">
+      <label class="control-label col-sm-2">
+        Custom Certificate Name
+      </label>
+      <div class="col-sm-10">
+        <input name="name" ng-model="certificate.name"
+               placeholder="the.example.net-SymantecCorporation-20150828-20160830" class="form-control"
+               uib-tooltip="If no name is provided, Lemur will generate a name for you">
+      </div>
+    </div>
+    <div class="form-group"
          ng-class="{'has-error': dnForm.country.$invalid, 'has-success': !dnForm.country.$invalid&&dnForm.country.$dirty}">
       <label class="control-label col-sm-2">
         Country
       </label>
       <div class="col-sm-10">
         <input name="country" ng-model="certificate.country" placeholder="Country" class="form-control" required/>
-        <p ng-show="dnForm.country.$invalid && !dnForm.country.$pristine" class="help-block">You must enter a country</p>
+        <p ng-show="dnForm.country.$invalid && !dnForm.country.$pristine" class="help-block">You must enter a
+          country</p>
       </div>
     </div>
     <div class="form-group"
@@ -27,7 +39,8 @@
       </label>
       <div class="col-sm-10">
         <input name="location" ng-model="certificate.location" placeholder="Location" class="form-control" required/>
-        <p ng-show="dnForm.location.$invalid && !dnForm.location.$pristine" class="help-block">You must enter a location</p>
+        <p ng-show="dnForm.location.$invalid && !dnForm.location.$pristine" class="help-block">You must enter a
+          location</p>
       </div>
     </div>
     <div class="form-group"
@@ -36,8 +49,10 @@
         Organization
       </label>
       <div class="col-sm-10">
-        <input name="organization" ng-model="certificate.organization" placeholder="Organization" class="form-control" required/>
-        <p ng-show="dnForm.organization.$invalid && !dnForm.organization.$pristine" class="help-block">You must enter a organization</p>
+        <input name="organization" ng-model="certificate.organization" placeholder="Organization" class="form-control"
+               required/>
+        <p ng-show="dnForm.organization.$invalid && !dnForm.organization.$pristine" class="help-block">You must enter a
+          organization</p>
       </div>
     </div>
     <div class="form-group"
@@ -46,8 +61,10 @@
         Organizational Unit
       </label>
       <div class="col-sm-10">
-        <input name="organizationalUnit" ng-model="certificate.organizationalUnit" placeholder="Organizational Unit" class="form-control" required/>
-        <p ng-show="dnForm.organization.$invalid && !dnForm.organizationalUnit.$pristine" class="help-block">You must enter a organizational unit</p>
+        <input name="organizationalUnit" ng-model="certificate.organizationalUnit" placeholder="Organizational Unit"
+               class="form-control" required/>
+        <p ng-show="dnForm.organization.$invalid && !dnForm.organizationalUnit.$pristine" class="help-block">You must
+          enter a organizational unit</p>
       </div>
     </div>
   </div>
