@@ -10,7 +10,6 @@
       'restangular',
       'angular-loading-bar',
       'ui.bootstrap',
-      'angular-spinkit',
       'toaster',
       'uiSwitch',
       'mgo-angular-wizard',
