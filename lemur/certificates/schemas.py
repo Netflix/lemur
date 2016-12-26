@@ -54,7 +54,8 @@ class CertificateInputSchema(CertificateCreationSchema):
 
     destinations = fields.Nested(AssociatedDestinationSchema, missing=[], many=True)
     notifications = fields.Nested(AssociatedNotificationSchema, missing=[], many=True)
-    replacements = fields.Nested(AssociatedCertificateSchema, missing=[], many=True)
+    replaces = fields.Nested(AssociatedCertificateSchema, missing=[], many=True)
+    replacements = fields.Nested(AssociatedCertificateSchema, missing=[], many=True)  # deprecated
     roles = fields.Nested(AssociatedRoleSchema, missing=[], many=True)
 
     csr = fields.String(validate=validators.csr)
@@ -77,16 +78,26 @@ class CertificateInputSchema(CertificateCreationSchema):
 
     @pre_load
     def ensure_dates(self, data):
+        if data.get('replacements'):
+            data['replaces'] = data['replacements']  # TODO remove when field is deprecated
         return missing.convert_validity_years(data)
 
 
 class CertificateEditInputSchema(CertificateSchema):
     notify = fields.Boolean()
     owner = fields.String()
+
     destinations = fields.Nested(AssociatedDestinationSchema, missing=[], many=True)
     notifications = fields.Nested(AssociatedNotificationSchema, missing=[], many=True)
-    replacements = fields.Nested(AssociatedCertificateSchema, missing=[], many=True)
+    replaces = fields.Nested(AssociatedCertificateSchema, missing=[], many=True)
+    replacements = fields.Nested(AssociatedCertificateSchema, missing=[], many=True)  # deprecated
     roles = fields.Nested(AssociatedRoleSchema, missing=[], many=True)
+
+    @pre_load
+    def ensure_dates(self, data):
+        if data.get('replacements'):
+            data['replaces'] = data['replacements']  # TODO remove when field is deprecated
+        return data
 
     @post_load
     def enforce_notifications(self, data):
@@ -113,13 +124,13 @@ class CertificateNestedOutputSchema(LemurOutputSchema):
     name = fields.String()
 
     # Note aliasing  is the first step in deprecating these fields.
-    cn = fields.String()
+    cn = fields.String()  # deprecated
     common_name = fields.String(attribute='cn')
 
-    not_after = fields.DateTime()
+    not_after = fields.DateTime()  # deprecated
     validity_end = ArrowDateTime(attribute='not_after')
 
-    not_before = fields.DateTime()
+    not_before = fields.DateTime()  # deprecated
     validity_start = ArrowDateTime(attribute='not_before')
 
     owner = fields.Email()
@@ -175,7 +186,7 @@ class CertificateOutputSchema(LemurOutputSchema):
     authority = fields.Nested(AuthorityNestedOutputSchema)
     roles = fields.Nested(RoleNestedOutputSchema, many=True)
     endpoints = fields.Nested(EndpointNestedOutputSchema, many=True, missing=[])
-    replaced = fields.Nested(CertificateNestedOutputSchema, many=True)
+    replaced_by = fields.Nested(CertificateNestedOutputSchema, many=True, attribute='replaced')
 
 
 class CertificateUploadInputSchema(CertificateCreationSchema):
@@ -188,7 +199,7 @@ class CertificateUploadInputSchema(CertificateCreationSchema):
 
     destinations = fields.Nested(AssociatedDestinationSchema, missing=[], many=True)
     notifications = fields.Nested(AssociatedNotificationSchema, missing=[], many=True)
-    replacements = fields.Nested(AssociatedCertificateSchema, missing=[], many=True)
+    replaces = fields.Nested(AssociatedCertificateSchema, missing=[], many=True)
     roles = fields.Nested(AssociatedRoleSchema, missing=[], many=True)
 
     @validates_schema
@@ -209,7 +220,7 @@ class CertificateNotificationOutputSchema(LemurOutputSchema):
     owner = fields.Email()
     user = fields.Nested(UserNestedOutputSchema)
     validity_end = ArrowDateTime(attribute='not_after')
-    replaced = fields.Nested(CertificateNestedOutputSchema, many=True)
+    replaced_by = fields.Nested(CertificateNestedOutputSchema, many=True, attribute='replaced')
     endpoints = fields.Nested(EndpointNestedOutputSchema, many=True, missing=[])
 
 

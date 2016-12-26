@@ -4,23 +4,23 @@
   </label>
   <div class="col-sm-10">
     <div class="input-group">
-      <input type="text" ng-model="certificate.selectedReplacement" placeholder="Certificate123..."
+      <input type="text" ng-model="certificate.selectedReplaces" placeholder="Certificate123..."
              uib-typeahead="certificate.name for certificate in certificateService.findCertificatesByName($viewValue)" typeahead-loading="loadingCertificates"
-             class="form-control input-md" typeahead-on-select="certificate.attachReplacement($item)"
+             class="form-control input-md" typeahead-on-select="certificate.attachReplaces($item)"
              uib-tooltip="Lemur will mark any certificates being replaced as 'inactive'"
              uib-tooltip-trigger="focus" uib-tooltip-placement="top" typeahead-wait-ms="500">
           <span class="input-group-btn">
-            <button ng-model="replacements.show" class="btn btn-md btn-default" uib-btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
-              <span class="badge">{{ certificate.replacements.length || 0 }}</span>
+            <button ng-model="replaces.show" class="btn btn-md btn-default" uib-btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
+              <span class="badge">{{ certificate.replaces.length || 0 }}</span>
             </button>
           </span>
     </div>
     <table class="table">
-      <tr ng-repeat="replacement in certificate.replacements track by $index">
-        <td><a class="btn btn-sm btn-info">{{ replacement.name }}</a></td>
-        <td><span class="text-muted">{{ replacement.description }}</span></td>
+      <tr ng-repeat="replaces in certificate.replaces track by $index">
+        <td><a class="btn btn-sm btn-info">{{ replaces.name }}</a></td>
+        <td><span class="text-muted">{{ replaces.description }}</span></td>
         <td>
-          <button type="button" ng-click="certificate.removeReplacement($index)" class="btn btn-danger btn-sm pull-right">Remove</button>
+          <button type="button" ng-click="certificate.removeReplaces($index)" class="btn btn-danger btn-sm pull-right">Remove</button>
         </td>
       </tr>
     </table>

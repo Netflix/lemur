@@ -110,12 +110,12 @@
                                                             <td width="32px"></td>
                                                             <td width="16px"></td>
                                                             <td style="line-height:1.2">
-                                                                <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:20px;color:#202020">{{ certificate.replaced.name }}</span>
+                                                                <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:20px;color:#202020">{{ certificate.replacedBy[0].name }}</span>
                                                                 <br>
                                                                 <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#727272">
-                                                                        <br>{{ certificate.replaced[0].owner }}
-                                                                        <br>{{ certificate.replaced[0].validityEnd | time }}
-                                                                        <a href="https://{{ hostname }}/#/certificates/{{ certificate.replaced[0].name }}" target="_blank">Details</a>
+                                                                        <br>{{ certificate.replacedBy[0].owner }}
+                                                                        <br>{{ certificate.replacedBy[0].validityEnd | time }}
+                                                                        <a href="https://{{ hostname }}/#/certificates/{{ certificate.replacedBy[0].name }}" target="_blank">Details</a>
                                                                     </span>
                                                             </td>
                                                         </tr>
