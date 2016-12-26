@@ -66,7 +66,7 @@ class Certificate(db.Model):
     bits = Column(Integer())
     san = Column(String(1024))  # TODO this should be migrated to boolean
 
-    rotation = Column(Boolean)
+    rotation = Column(Boolean, default=False)
 
     user_id = Column(Integer, ForeignKey('users.id'))
     authority_id = Column(Integer, ForeignKey('authorities.id', ondelete="CASCADE"))

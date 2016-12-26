@@ -196,6 +196,8 @@ def reissue(old_certificate_name, commit):
     if commit:
         print("[!] Running in COMMIT mode.")
 
+    print("[+] Starting certificate re-issuance.")
+
     old_cert = validate_certificate(old_certificate_name)
 
     if not old_cert:

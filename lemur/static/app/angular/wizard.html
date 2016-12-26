@@ -4,9 +4,10 @@
     </div>
     <div class="modal-footer">
       <input ng-hide="currentStepNumber() == 1" class="btn btn-default pull-left" type="submit" wz-previous value="Previous" />
-      <input ng-show="currentStepNumber() != steps.length" class="btn btn-default pull-right" type="submit" wz-next value="Next" />
+      <input ng-show="currentStepNumber() != steps.length" class="btn btn-default pull-right" type="submit" wz-next value="More Options" />
       <input ng-show="!context.loading" ng-class="{disabled: trackingForm.invalid}" class="btn btn-success pull-right" type="submit" wz-finish value="Create" />
-      <button ng-show="context.loading" class="btn btn-success pull-right disabled"><wave-spinner></wave-spinner></button>
+      <button ng-show="context.loading" class="btn btn-success pull-right disabled">Working... <i class="fa fa-spin fa-circle-o-notch" aria-hidden="true"></i>
+</button>
       <div class="clearfix"></div>
     </div>
 </div>

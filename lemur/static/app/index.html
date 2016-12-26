@@ -72,11 +72,11 @@
                 <ul ng-show="currentUser.username" class="nav navbar-nav navbar-right">
                     <li class="dropdown" uib-dropdown on-toggle="toggled(open)">
                         <a href class="dropdown-toggle profile-nav" uib-dropdown-toggle>
-                            <span ng-if="currentUser.profileImage">
-                                {{ currentUser.username }}<img ng-src="{{ currentUser.profileImage }}" class="profile img-circle">
+                            <span ng-if="currentUser.profilePicture">
+                                {{ currentUser.username }} <img ng-src="{{ currentUser.profilePicture }}" class="profile img-circle">
                             </span>
-                            <span ng-if="!currentUser.profileImage">
-                                {{ currentUser.username }}<ng-letter-avatar height="35" width="35" data="currentUser.username" shape="round"></ng-letter-avatar>
+                            <span ng-if="!currentUser.profilePicture">
+                                {{ currentUser.username }} <ng-letter-avatar height="35" width="35" data="currentUser.username" shape="round"></ng-letter-avatar>
                             </span>
                         </a>
                         <ul class="dropdown-menu">

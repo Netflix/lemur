@@ -26,10 +26,7 @@ class UserOutputSchema(LemurOutputSchema):
     username = fields.String()
     email = fields.Email()
     active = fields.Boolean()
-    roles = fields.Nested(AssociatedRoleSchema, many=True)
-    certificates = fields.Nested(AssociatedCertificateSchema, many=True)
-    authorities = fields.Nested(AssociatedAuthoritySchema, many=True)
-    profileImage = fields.String()
+    profile_picture = fields.String()
 
 
 user_input_schema = UserInputSchema()

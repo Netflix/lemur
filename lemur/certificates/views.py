@@ -638,18 +638,13 @@ class Certificates(AuthenticatedResource):
         for destination in data['destinations']:
             if destination.plugin.requires_key:
                 if not cert.private_key:
-                    return dict(message='Unable to add destination: {0}. Certificate does not have required private key.'.format(destination.label)), 400
+                    return dict(
+                        message='Unable to add destination: {0}. Certificate does not have required private key.'.format(
+                            destination.label
+                        )
+                    ), 400
 
-        return service.update(
-            certificate_id,
-            data['owner'],
-            data['description'],
-            data['notify'],
-            data['destinations'],
-            data['notifications'],
-            data['replacements'],
-            data['roles']
-        )
+        return service.update(certificate_id)
 
 
 class NotificationCertificatesList(AuthenticatedResource):

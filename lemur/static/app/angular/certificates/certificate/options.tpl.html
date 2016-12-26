@@ -3,15 +3,43 @@
     <div>
       <div class="form-group">
         <label class="control-label col-sm-2">
+          Certificate Template
+        </label>
+        <div class="col-sm-10">
+          <select class="form-control" ng-change="certificate.useTemplate()" name="certificateTemplate"
+                  ng-model="certificate.template" ng-options="template.name for template in templates"></select>
+        </div>
+      </div>
+      <div class="form-group"
+           ng-class="{'has-error': trackingForm.csr.$invalid&&trackingForm.csr.$dirty, 'has-success': !trackingForm.csr.$invalid&&trackingForm.csr.$dirty}">
+        <label class="control-label col-sm-2">
+          Certificate Signing Request (CSR)
+        </label>
+        <div class="col-sm-10">
+                <textarea uib-tooltip="Values defined in the CSR will take precedence"
+                          name="certificate signing request"
+                          ng-model="certificate.csr"
+                          placeholder="PEM encoded string..." class="form-control"
+                          ng-pattern="/^-----BEGIN CERTIFICATE REQUEST-----/"></textarea>
+
+          <p ng-show="trackingForm.csr.$invalid && !trackingForm.csr.$pristine"
+             class="help-block">Enter a valid certificate signing request.</p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="control-label col-sm-2">
           Subject Alternate Names
         </label>
         <div class="col-sm-3">
-          <select class="form-control" ng-model="certificate.subAltType" ng-options="item for item in ['DNSName', 'IPAddress', 'uniformResourceIdentifier', 'directoryName','rfc822Name', 'registeredID', 'otherName', 'x400Address', 'EDIPartyName']"></select>
+          <select class="form-control" ng-model="certificate.subAltType"
+                  ng-options="item for item in ['DNSName', 'IPAddress', 'uniformResourceIdentifier', 'directoryName','rfc822Name', 'registeredID', 'otherName', 'x400Address', 'EDIPartyName']"></select>
         </div>
         <div class="col-sm-6">
           <div class="input-group">
-            <input tooltip-trigger="focus" tooltip-placement="top" uib-tooltip="String or Base64-encoded DER ASN.1 structure for the value" class="form-control" name="value" ng-model="certificate.subAltValue" placeholder="Value" class="form-control" required/>
-        <span class="input-group-btn">
+            <input tooltip-trigger="focus" tooltip-placement="top"
+                   uib-tooltip="String or Base64-encoded DER ASN.1 structure for the value" class="form-control"
+                   name="value" ng-model="certificate.subAltValue" placeholder="Value" class="form-control" required/>
+            <span class="input-group-btn">
           <button ng-click="certificate.attachSubAltName()" class="btn btn-info">Add</button>
         </span>
           </div>
@@ -24,7 +52,9 @@
               <td>{{ alt.nameType }}</td>
               <td>{{ alt.value }}</td>
               <td>
-                <button type="button" ng-click="certificate.removeSubAltName($index)" class="btn btn-danger btn-sm pull-right">Remove</button>
+                <button type="button" ng-click="certificate.removeSubAltName($index)"
+                        class="btn btn-danger btn-sm pull-right">Remove
+                </button>
               </td>
             </tr>
           </table>
@@ -32,10 +62,12 @@
       </div>
       <div class="form-group">
         <label class="control-label col-sm-2">
-            Key Type
+          Key Type
         </label>
         <div class="col-sm-10">
-            <select class="form-control" ng-model="certificate.keyType" ng-options="option for option in ['RSA2048', 'RSA4096']" ng-init="certificate.keyType = 'RSA2048'"></select>
+          <select class="form-control" ng-model="certificate.keyType"
+                  ng-options="option for option in ['RSA2048', 'RSA4096']"
+                  ng-init="certificate.keyType = 'RSA2048'"></select>
         </div>
       </div>
       <div class="form-group">
@@ -99,12 +131,14 @@
         <div class="col-sm-3">
           <div class="checkbox">
             <label>
-              <input type="checkbox" ng-model="certificate.extensions.extendedKeyUsage.useServerAuthentication">Server Authentication
+              <input type="checkbox" ng-model="certificate.extensions.extendedKeyUsage.useServerAuthentication">Server
+              Authentication
             </label>
           </div>
           <div class="checkbox">
             <label>
-              <input type="checkbox" ng-model="certificate.extensions.extendedKeyUsage.useClientAuthentication">Client Authentication
+              <input type="checkbox" ng-model="certificate.extensions.extendedKeyUsage.useClientAuthentication">Client
+              Authentication
             </label>
           </div>
           <div class="checkbox">
@@ -131,7 +165,8 @@
           </div>
           <div class="checkbox">
             <label>
-              <input type="checkbox" ng-model="certificate.extensions.extendedKeyUsage.useSmartCardLogon">Smartcard Logon
+              <input type="checkbox" ng-model="certificate.extensions.extendedKeyUsage.useSmartCardLogon">Smartcard
+              Logon
             </label>
           </div>
           <div class="checkbox">
@@ -147,13 +182,17 @@
         </label>
         <div class="col-sm-10">
           <div class="checkbox">
-            <label tooltip-trigger="mouseenter" tooltip-placement="top" uib-tooltip="Put Issuer's keyIdentifier in this extension" >
-              <input type="checkbox" ng-model="certificate.extensions.authorityKeyIdentifier.useKeyIdentifier">Key Identifier
+            <label tooltip-trigger="mouseenter" tooltip-placement="top"
+                   uib-tooltip="Put Issuer's keyIdentifier in this extension">
+              <input type="checkbox" ng-model="certificate.extensions.authorityKeyIdentifier.useKeyIdentifier">Key
+              Identifier
             </label>
           </div>
           <div class="checkbox">
-            <label tooltip-trigger="mouseenter" tooltip-placement="top" uib-tooltip="Put Issuer's Name and Serial number" >
-              <input type="checkbox" ng-model="certificate.extensions.authorityIdentifier.useAuthorityCert">Authority Certificate
+            <label tooltip-trigger="mouseenter" tooltip-placement="top"
+                   uib-tooltip="Put Issuer's Name and Serial number">
+              <input type="checkbox" ng-model="certificate.extensions.authorityIdentifier.useAuthorityCert">Authority
+              Certificate
             </label>
           </div>
         </div>
@@ -164,7 +203,8 @@
         </label>
         <div class="col-sm-10">
           <div class="checkbox">
-            <label tooltip-trigger="mouseenter" tooltip-placement="top" uib-tooltip="Ask CA to include/not include AIA extension" >
+            <label tooltip-trigger="mouseenter" tooltip-placement="top"
+                   uib-tooltip="Ask CA to include/not include AIA extension">
               <input type="checkbox" ng-model="certificate.extensions.certificateInfoAccess.includeAIA">Include AIA
             </label>
           </div>
@@ -176,7 +216,8 @@
         </label>
         <div class="col-sm-10">
           <div class="checkbox">
-            <label tooltip-trigger="mouseenter" tooltip-placement="top" uib-tooltip="Ask CA to include/not include Subject Key Identifier" >
+            <label tooltip-trigger="mouseenter" tooltip-placement="top"
+                   uib-tooltip="Ask CA to include/not include Subject Key Identifier">
               <input type="checkbox" ng-model="certificate.extensions.subjectKeyIdentifier.includeSKI">Include SKI
             </label>
           </div>
@@ -187,7 +228,8 @@
           cRL Distribution Points
         </label>
         <div class="col-sm-10">
-          <select class="form-control" ng-model="certificate.extensions.cRLDistributionPoints.includeCRLDP" ng-options="item for item in ['yes', 'no', 'default']"></select>
+          <select class="form-control" ng-model="certificate.extensions.cRLDistributionPoints.includeCRLDP"
+                  ng-options="item for item in ['yes', 'no', 'default']"></select>
         </div>
       </div>
       <div class="form-group">
@@ -195,15 +237,21 @@
           Custom
         </label>
         <div class="col-sm-2">
-          <input tooltip-trigger="focus" tooltip-placement="top" uib-tooltip="OID for the custom extension e.g. 1.12.123.12.10" class="form-control" name="oid" ng-model="certificate.customOid" placeholder="Oid" class="form-control" required/>
+          <input tooltip-trigger="focus" tooltip-placement="top"
+                 uib-tooltip="OID for the custom extension e.g. 1.12.123.12.10" class="form-control" name="oid"
+                 ng-model="certificate.customOid" placeholder="Oid" class="form-control" required/>
         </div>
         <div class="col-sm-2">
-          <select tooltip-trigger="focus" tooltip-placement="top" uib-tooltip="Encoding for value" class="form-control col-sm-2" ng-model="certificate.customEncoding" ng-options="item for item in ['b64asn1', 'string', 'ia5string']"></select>
+          <select tooltip-trigger="focus" tooltip-placement="top" uib-tooltip="Encoding for value"
+                  class="form-control col-sm-2" ng-model="certificate.customEncoding"
+                  ng-options="item for item in ['b64asn1', 'string', 'ia5string']"></select>
         </div>
         <div class="col-sm-4">
           <div class="input-group">
-            <input tooltip-trigger="focus" tooltip-placement="top" uib-tooltip="String or Base64-encoded DER ASN.1 structure for the value" class="form-control" name="value" ng-model="certificate.customValue" placeholder="Value" class="form-control" required/>
-        <span class="input-group-btn">
+            <input tooltip-trigger="focus" tooltip-placement="top"
+                   uib-tooltip="String or Base64-encoded DER ASN.1 structure for the value" class="form-control"
+                   name="value" ng-model="certificate.customValue" placeholder="Value" class="form-control" required/>
+            <span class="input-group-btn">
           <button ng-click="certificate.attachCustom()" class="btn btn-info">Add</button>
         </span>
           </div>
@@ -224,9 +272,11 @@
             <td>{{ custom.oid }}</td>
             <td>{{ custom.encoding }}</td>
             <td>{{ custom.value }}</td>
-            <td>{{ custom.isCritical}}</td>
+            <td>{{ custom.isCritical }}</td>
             <td>
-              <button type="button" ng-click="certificate.removeCustom($index)" class="btn btn-danger btn-sm pull-right">Remove</button>
+              <button type="button" ng-click="certificate.removeCustom($index)"
+                      class="btn btn-danger btn-sm pull-right">Remove
+              </button>
             </td>
           </tr>
         </table>
