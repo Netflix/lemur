@@ -81,15 +81,15 @@ angular.module('lemur')
         removeDestination: function (index) {
           this.destinations.splice(index, 1);
         },
-        attachReplacement: function (replacement) {
-          this.selectedReplacement = null;
-          if (this.replacements === undefined) {
-            this.replacements = [];
+        attachReplaces: function (replaces) {
+          this.selectedReplaces = null;
+          if (this.replaces === undefined) {
+            this.replaces = [];
           }
-          this.replacements.push(replacement);
+          this.replaces.push(replaces);
         },
-        removeReplacement: function (index) {
-          this.replacements.splice(index, 1);
+        removeReplaces: function (index) {
+          this.replaces.splice(index, 1);
         },
         attachNotification: function (notification) {
           this.selectedNotification = null;
@@ -169,9 +169,9 @@ angular.module('lemur')
       });
     };
 
-    CertificateService.getReplacements = function (certificate) {
-      return certificate.getList('replacements').then(function (replacements) {
-        certificate.replacements = replacements;
+    CertificateService.getReplaces = function (certificate) {
+      return certificate.getList('replaces').then(function (replaces) {
+        certificate.replaces = replaces;
       });
     };
 

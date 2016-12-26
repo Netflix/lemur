@@ -328,7 +328,6 @@ angular.module('lemur')
     }
   ];
 
-
   PluginService.getByType('destination').then(function (plugins) {
     $scope.plugins = plugins;
   });
