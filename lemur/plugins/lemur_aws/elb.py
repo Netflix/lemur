@@ -16,14 +16,14 @@ from lemur.plugins.lemur_aws.sts import sts_client
 
 def retry_throttled(exception):
     """
-    Determiens if this exception is due to throttling
+    Determines if this exception is due to throttling
     :param exception:
     :return:
     """
     if isinstance(exception, botocore.exceptions.ClientError):
         if exception.response['Error']['Code'] == 'LoadBalancerNotFound':
-            return True
-    return False
+            return False
+    return True
 
 
 def is_valid(listener_tuple):

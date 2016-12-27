@@ -28,7 +28,7 @@ class SourcePlugin(Plugin):
     def get_endpoints(self, options, **kwargs):
         raise NotImplementedError
 
-    def clean(self, options, **kwargs):
+    def clean(self, certificate, options, **kwargs):
         raise NotImplementedError
 
     @property

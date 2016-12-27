@@ -261,21 +261,9 @@ class AWSSourcePlugin(SourcePlugin):
         else:
             elb.attach_certificate(endpoint.name, endpoint.port, arn, account_number=account_number, region=region)
 
-    def clean(self, options, **kwargs):
+    def clean(self, certificate, options, **kwargs):
         account_number = self.get_option('accountNumber', options)
-        certificates = self.get_certificates(options)
-        endpoints = self.get_endpoints(options)
-
-        orphaned = []
-        for certificate in certificates:
-            for endpoint in endpoints:
-                if certificate['name'] == endpoint['certificate_name']:
-                    break
-            else:
-                orphaned.append(certificate['name'])
-                iam.delete_cert(account_number, certificate)
-
-        return orphaned
+        iam.delete_cert(certificate.name, account_number=account_number)
 
 
 class S3DestinationPlugin(DestinationPlugin):

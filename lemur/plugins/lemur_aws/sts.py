@@ -56,6 +56,7 @@ def sts_client(service, service_type='client'):
                 kwargs.pop('account_number'),
                 current_app.config.get('LEMUR_INSTANCE_PROFILE', 'Lemur')
             )
+
             # TODO add user specific information to RoleSessionName
             role = sts.assume_role(RoleArn=arn, RoleSessionName='lemur')
 

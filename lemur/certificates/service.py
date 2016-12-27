@@ -68,14 +68,15 @@ def get_all_certs():
     return Certificate.query.all()
 
 
-def get_by_source(source_label):
+def get_all_pending_cleaning(source):
     """
-    Retrieves all certificates from a given source.
+    Retrieves all certificates that are available for cleaning.
 
-    :param source_label:
+    :param source:
     :return:
     """
-    return Certificate.query.filter(Certificate.sources.any(label=source_label))
+    return Certificate.query.filter(Certificate.sources.any(id=source.id))\
+                            .filter(not_(Certificate.endpoints.any())).all()
 
 
 def get_all_pending_reissue():
