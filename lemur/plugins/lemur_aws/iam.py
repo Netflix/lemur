@@ -6,7 +6,24 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+import botocore
+
+from retrying import retry
+
 from lemur.plugins.lemur_aws.sts import assume_service
+from lemur.plugins.lemur_aws.sts import sts_client
+
+
+def retry_throttled(exception):
+    """
+    Determines if this exception is due to throttling
+    :param exception:
+    :return:
+    """
+    if isinstance(exception, botocore.exceptions.ClientError):
+        if exception.response['Error']['Code'] == 'NoSuchEntity':
+            return False
+    return True
 
 
 def get_name_from_arn(arn):
@@ -33,15 +50,17 @@ def upload_cert(account_number, name, body, private_key, cert_chain=None):
                                                                     cert_chain=str(cert_chain))
 
 
-def delete_cert(account_number, cert_name):
+@sts_client('iam')
+@retry(retry_on_exception=retry_throttled, stop_max_attempt_number=7, wait_exponential_multiplier=1000)
+def delete_cert(cert_name, **kwargs):
     """
     Delete a certificate from AWS
 
-    :param account_number:
     :param cert_name:
     :return:
     """
-    return assume_service(account_number, 'iam').delete_server_cert(cert_name)
+    client = kwargs.pop('client')
+    client.delete_server_certificate(ServerCertificateName=cert_name)
 
 
 def get_all_server_certs(account_number):
