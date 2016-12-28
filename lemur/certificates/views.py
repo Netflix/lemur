@@ -644,7 +644,7 @@ class Certificates(AuthenticatedResource):
                         )
                     ), 400
 
-        return service.update(certificate_id)
+        return service.update(certificate_id, **data)
 
 
 class NotificationCertificatesList(AuthenticatedResource):

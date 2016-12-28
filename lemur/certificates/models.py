@@ -16,17 +16,23 @@ from sqlalchemy.sql.expression import case
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import event, Integer, ForeignKey, String, PassiveDefault, func, Column, Text, Boolean
 
+from sqlalchemy_utils.types.arrow import ArrowType
+
 import lemur.common.utils
+
 from lemur.database import db
+
+from lemur.utils import Vault
+from lemur.common import defaults
+
+from lemur.plugins.base import plugins
+
+from lemur.extensions import metrics
+
 from lemur.models import certificate_associations, certificate_source_associations, \
     certificate_destination_associations, certificate_notification_associations, \
     certificate_replacement_associations, roles_certificates
-from lemur.plugins.base import plugins
-from lemur.utils import Vault
 
-from sqlalchemy_utils.types.arrow import ArrowType
-
-from lemur.common import defaults
 from lemur.domains.models import Domain
 
 
@@ -222,10 +228,10 @@ class Certificate(db.Model):
         return "Certificate(name={name})".format(name=self.name)
 
 
-@event.listens_for(Certificate.destinations, 'append')
+@event.listens_for(Certificate.destinations, 'append', retval=True)
 def update_destinations(target, value, initiator):
     """
-    Attempt to upload the new certificate to the new destination
+    Attempt to upload certificate to the new destination
 
     :param target:
     :param value:
@@ -236,8 +242,11 @@ def update_destinations(target, value, initiator):
 
     try:
         destination_plugin.upload(target.name, target.body, target.private_key, target.chain, value.options)
+        return value
     except Exception as e:
         current_app.logger.exception(e)
+        metrics.send('destination_upload_failure', 'counter', 1, metric_tags={'certificate': target.name, 'destination': value.label})
+        return None
 
 
 @event.listens_for(Certificate.replaces, 'append')
@@ -251,20 +260,3 @@ def update_replacement(target, value, initiator):
     :return:
     """
     value.notify = False
-
-
-# @event.listens_for(Certificate, 'before_update')
-# def protect_active(mapper, connection, target):
-#    """
-#     When a certificate has a replacement do not allow it to be marked as 'active'
-#
-#     :param connection:
-#     :param mapper:
-#     :param target:
-#     :return:
-#     """
-#     if target.active:
-#         if not target.notify:
-#             raise Exception(
-#                 "Cannot silence notification for a certificate Lemur has been found to be currently deployed onto endpoints"
-#             )
