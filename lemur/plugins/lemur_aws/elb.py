@@ -22,7 +22,11 @@ def retry_throttled(exception):
     """
     if isinstance(exception, botocore.exceptions.ClientError):
         if exception.response['Error']['Code'] == 'LoadBalancerNotFound':
-            return False
+            return
+
+        if exception.response['Error']['Code'] == 'CertificateNotFound':
+            return
+
     return True
 
 
