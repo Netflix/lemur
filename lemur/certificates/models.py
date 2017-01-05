@@ -38,7 +38,7 @@ from lemur.domains.models import Domain
 
 def get_or_increase_name(name):
     name = '-'.join(name.strip().split(' '))
-    count = Certificate.query.filter(Certificate.name.ilike('{0}%'.format(name))).count()
+    count = Certificate.query.filter(Certificate.name == name).count()
 
     if count >= 1:
         return name + '-' + str(count)
@@ -228,7 +228,7 @@ class Certificate(db.Model):
         return "Certificate(name={name})".format(name=self.name)
 
 
-@event.listens_for(Certificate.destinations, 'append', retval=True)
+@event.listens_for(Certificate.destinations, 'append')
 def update_destinations(target, value, initiator):
     """
     Attempt to upload certificate to the new destination
@@ -241,12 +241,11 @@ def update_destinations(target, value, initiator):
     destination_plugin = plugins.get(value.plugin_name)
 
     try:
-        destination_plugin.upload(target.name, target.body, target.private_key, target.chain, value.options)
-        return value
+        if target.private_key:
+            destination_plugin.upload(target.name, target.body, target.private_key, target.chain, value.options)
     except Exception as e:
         current_app.logger.exception(e)
         metrics.send('destination_upload_failure', 'counter', 1, metric_tags={'certificate': target.name, 'destination': value.label})
-        return None
 
 
 @event.listens_for(Certificate.replaces, 'append')
