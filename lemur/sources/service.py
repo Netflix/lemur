@@ -72,20 +72,11 @@ def sync_endpoints(source):
     for endpoint in endpoints:
         exists = endpoint_service.get_by_dnsname(endpoint['dnsname'])
 
-        certificate_name = endpoint.pop('certificate_name', None)
-        certificate = endpoint.pop('certificate', None)
-
-        if certificate_name:
-            cert = certificate_service.get_by_name(certificate_name)
-
-        elif certificate:
-            cert = certificate_service.find_duplicates(certificate)
-            if not cert:
-                cert = certificate_service.import_certificate(**certificate)
+        cert = certificate_service.get_by_name(endpoint['certificate_name'])
 
         if not cert:
             current_app.logger.error(
-                "Unable to find associated certificate, be sure that certificates are sync'ed before endpoints")
+                "Certificate Not Found. Name: {0} Endpoint: {1}".format(endpoint['certificate_name'], endpoint['name']))
             continue
 
         endpoint['certificate'] = cert
@@ -101,10 +92,12 @@ def sync_endpoints(source):
         endpoint['source'] = source
 
         if not exists:
+            current_app.logger.debug("Endpoint Created: Name: {name}".format(name=endpoint['name']))
             endpoint_service.create(**endpoint)
             new += 1
 
         else:
+            current_app.logger.debug("Endpoint Updated: Name: {name}".format(name=endpoint['name']))
             endpoint_service.update(exists.id, **endpoint)
             updated += 1
 
@@ -119,25 +112,22 @@ def sync_certificates(source, user):
     certificates = s.get_certificates(source.options)
 
     for certificate in certificates:
-        exists = certificate_service.find_duplicates(certificate)
+        exists = certificate_service.get_by_name(certificate['name'])
 
         certificate['owner'] = user.email
         certificate['creator'] = user
 
         if not exists:
+            current_app.logger.debug("Creating Certificate. Name: {name}".format(name=certificate['name']))
             certificate_create(certificate, source)
             new += 1
 
-        # check to make sure that existing certificates have the current source associated with it
-        elif len(exists) == 1:
-            certificate_update(exists[0], source)
-            updated += 1
         else:
-            current_app.logger.warning(
-                "Multiple certificates found, attempt to deduplicate the following certificates: {0}".format(
-                    ",".join([x.name for x in exists])
-                )
-            )
+            current_app.logger.debug("Updating Certificate. Name: {name}".format(name=certificate['name']))
+            certificate_update(exists, source)
+            updated += 1
+
+    assert len(certificates) == new + updated
 
     return new, updated
 

@@ -218,7 +218,7 @@ def test_certificate_valid_years(client, authority):
         'owner': 'jim@example.com',
         'authority': {'id': authority.id},
         'description': 'testtestest',
-        'validityYears': 3
+        'validityYears': 2
     }
 
     data, errors = CertificateInputSchema().load(input_data)
