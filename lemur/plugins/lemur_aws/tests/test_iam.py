@@ -14,16 +14,7 @@ def test_get_name_from_arn():
 @mock_sts()
 @mock_iam()
 def test_get_all_server_certs(app):
-    from lemur.plugins.lemur_aws.iam import upload_cert, get_all_server_certs
+    from lemur.plugins.lemur_aws.iam import upload_cert, get_all_certificates
     upload_cert('123456789012', 'testCert', EXTERNAL_VALID_STR, PRIVATE_KEY_STR)
-    certs = get_all_server_certs('123456789012')
+    certs = get_all_certificates('123456789012')
     assert len(certs) == 1
-
-
-@mock_sts()
-@mock_iam()
-def test_get_cert_from_arn(app):
-    from lemur.plugins.lemur_aws.iam import upload_cert, get_cert_from_arn
-    upload_cert('123456789012', 'testCert', EXTERNAL_VALID_STR, PRIVATE_KEY_STR)
-    body, chain = get_cert_from_arn('arn:aws:iam::123456789012:server-certificate/testCert')
-    assert body.replace('\n', '') == EXTERNAL_VALID_STR.replace('\n', '')

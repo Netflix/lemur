@@ -10,6 +10,7 @@ from flask import current_app
 
 from retrying import retry
 
+from lemur.extensions import metrics
 from lemur.exceptions import InvalidListener
 from lemur.plugins.lemur_aws.sts import sts_client
 
@@ -22,11 +23,12 @@ def retry_throttled(exception):
     """
     if isinstance(exception, botocore.exceptions.ClientError):
         if exception.response['Error']['Code'] == 'LoadBalancerNotFound':
-            return
+            return False
 
         if exception.response['Error']['Code'] == 'CertificateNotFound':
-            return
+            return False
 
+    metrics.send('ec2_retry', 'counter', 1)
     return True
 
 

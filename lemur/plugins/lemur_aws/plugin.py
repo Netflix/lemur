@@ -33,7 +33,6 @@
 .. moduleauthor:: Harm Weites <harm@weites.com>
 """
 from flask import current_app
-from boto.exception import BotoServerError
 
 from lemur.plugins.bases import DestinationPlugin, SourcePlugin
 from lemur.plugins.lemur_aws import iam, s3, elb, ec2
@@ -125,7 +124,7 @@ def get_elb_endpoints_v2(account_number, region, elb_dict):
     endpoints = []
     listeners = elb.describe_listeners_v2(account_number=account_number, region=region, LoadBalancerArn=elb_dict['LoadBalancerArn'])
     for listener in listeners['Listeners']:
-        if not listener['Certificates']:
+        if not listener.get('Certificates'):
             continue
 
         for certificate in listener['Certificates']:
@@ -172,12 +171,9 @@ class AWSDestinationPlugin(DestinationPlugin):
     # }
 
     def upload(self, name, body, private_key, cert_chain, options, **kwargs):
-        try:
-            iam.upload_cert(self.get_option('accountNumber', options), name, body, private_key,
-                            cert_chain=cert_chain)
-        except BotoServerError as e:
-            if e.error_code != 'EntityAlreadyExists':
-                raise Exception(e)
+        iam.upload_cert(name, body, private_key,
+                        cert_chain=cert_chain,
+                        account_number=self.get_option('accountNumber', options))
 
     def deploy(self, elb_name, account, region, certificate):
         pass
@@ -208,18 +204,8 @@ class AWSSourcePlugin(SourcePlugin):
     ]
 
     def get_certificates(self, options, **kwargs):
-        certs = []
-        arns = iam.get_all_server_certs(self.get_option('accountNumber', options))
-        for arn in arns:
-            cert_body, cert_chain = iam.get_cert_from_arn(arn)
-            cert_name = iam.get_name_from_arn(arn)
-            cert = dict(
-                body=cert_body,
-                chain=cert_chain,
-                name=cert_name
-            )
-            certs.append(cert)
-        return certs
+        cert_data = iam.get_all_certificates(account_number=self.get_option('accountNumber', options))
+        return [dict(body=c['CertificateBody'], chain=c.get('CertificateChain'), name=c['ServerCertificateMetadata']['ServerCertificateName']) for c in cert_data]
 
     def get_endpoints(self, options, **kwargs):
         endpoints = []
