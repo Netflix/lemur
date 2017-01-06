@@ -36,14 +36,40 @@ from lemur.models import certificate_associations, certificate_source_associatio
 from lemur.domains.models import Domain
 
 
+def get_sequence(name):
+    if '-' not in name:
+        return name, None
+
+    parts = name.split('-')
+    end = parts.pop(-1)
+    root = '-'.join(parts)
+
+    if len(end) == 8:
+        return root + '-' + end, None
+
+    try:
+        end = int(end)
+    except ValueError:
+        end = None
+
+    return root, end
+
+
 def get_or_increase_name(name):
     name = '-'.join(name.strip().split(' '))
-    count = Certificate.query.filter(Certificate.name.ilike('{0}%'.format(name))).count()
+    certificates = Certificate.query.filter(Certificate.name.ilike('{0}%'.format(name))).all()
 
-    if count >= 1:
-        return name + '-' + str(count)
+    if not certificates:
+        return name
 
-    return name
+    ends = [0]
+    root, end = get_sequence(name)
+    for cert in certificates:
+        root, end = get_sequence(cert.name)
+        if end:
+            ends.append(end)
+
+    return '{0}-{1}'.format(root, max(ends) + 1)
 
 
 class Certificate(db.Model):
@@ -228,7 +254,7 @@ class Certificate(db.Model):
         return "Certificate(name={name})".format(name=self.name)
 
 
-@event.listens_for(Certificate.destinations, 'append', retval=True)
+@event.listens_for(Certificate.destinations, 'append')
 def update_destinations(target, value, initiator):
     """
     Attempt to upload certificate to the new destination
@@ -241,12 +267,11 @@ def update_destinations(target, value, initiator):
     destination_plugin = plugins.get(value.plugin_name)
 
     try:
-        destination_plugin.upload(target.name, target.body, target.private_key, target.chain, value.options)
-        return value
+        if target.private_key:
+            destination_plugin.upload(target.name, target.body, target.private_key, target.chain, value.options)
     except Exception as e:
         current_app.logger.exception(e)
         metrics.send('destination_upload_failure', 'counter', 1, metric_tags={'certificate': target.name, 'destination': value.label})
-        return None
 
 
 @event.listens_for(Certificate.replaces, 'append')

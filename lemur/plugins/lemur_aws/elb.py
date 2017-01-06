@@ -28,7 +28,7 @@ def retry_throttled(exception):
         if exception.response['Error']['Code'] == 'CertificateNotFound':
             return False
 
-    metrics.send('ec2_retry', 'counter', 1)
+    metrics.send('elb_retry', 'counter', 1)
     return True
 
 
@@ -149,6 +149,7 @@ def describe_listeners_v2(**kwargs):
 
 
 @sts_client('elb')
+@retry(retry_on_exception=retry_throttled, stop_max_attempt_number=7, wait_exponential_multiplier=1000)
 def describe_load_balancer_policies(load_balancer_name, policy_names, **kwargs):
     """
     Fetching all policies currently associated with an ELB.
@@ -160,6 +161,7 @@ def describe_load_balancer_policies(load_balancer_name, policy_names, **kwargs):
 
 
 @sts_client('elbv2')
+@retry(retry_on_exception=retry_throttled, stop_max_attempt_number=7, wait_exponential_multiplier=1000)
 def describe_ssl_policies_v2(policy_names, **kwargs):
     """
     Fetching all policies currently associated with an ELB.
@@ -171,6 +173,7 @@ def describe_ssl_policies_v2(policy_names, **kwargs):
 
 
 @sts_client('elb')
+@retry(retry_on_exception=retry_throttled, stop_max_attempt_number=7, wait_exponential_multiplier=1000)
 def describe_load_balancer_types(policies, **kwargs):
     """
     Describe the policies with policy details.
