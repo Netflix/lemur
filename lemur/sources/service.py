@@ -72,14 +72,14 @@ def sync_endpoints(source):
     for endpoint in endpoints:
         exists = endpoint_service.get_by_dnsname(endpoint['dnsname'])
 
-        cert = certificate_service.get_by_name(endpoint['certificate_name'])
+        certificate_name = endpoint.pop('certificate_name')
 
-        if not cert:
+        endpoint['certificate'] = certificate_service.get_by_name(certificate_name)
+
+        if not endpoint['certificate']:
             current_app.logger.error(
-                "Certificate Not Found. Name: {0} Endpoint: {1}".format(endpoint['certificate_name'], endpoint['name']))
+                "Certificate Not Found. Name: {0} Endpoint: {1}".format(certificate_name, endpoint['name']))
             continue
-
-        endpoint['certificate'] = cert
 
         policy = endpoint.pop('policy')
 
