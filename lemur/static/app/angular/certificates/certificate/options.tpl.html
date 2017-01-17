@@ -259,7 +259,7 @@
         <div class="col-sm-2">
           <div class="checkbox">
             <label>
-              <input type="checkbox" ng-model="certificate.extensions.custom.isCritical">Critical
+              <input type="checkbox" ng-model="certificate.customIsCritical">Critical
             </label>
           </div>
         </div>
@@ -272,7 +272,7 @@
             <td>{{ custom.oid }}</td>
             <td>{{ custom.encoding }}</td>
             <td>{{ custom.value }}</td>
-            <td>{{ custom.isCritical }}</td>
+            <td>{{ custom.isCritical ? "critical" : "" }}</td>
             <td>
               <button type="button" ng-click="certificate.removeCustom($index)"
                       class="btn btn-danger btn-sm pull-right">Remove
