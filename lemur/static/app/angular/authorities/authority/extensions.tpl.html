@@ -55,16 +55,11 @@
       </div>
       <div class="checkbox">
         <label>
-          <input type="checkbox" ng-model="authority.extensions.keyUsage.useKeyAgreement">Key Agreement
+          <input type="checkbox" ng-model="authority.extensions.keyUsage.useKeyCertSign">Key Certificate Signature
         </label>
       </div>
     </div>
     <div class="col-sm-3">
-      <div class="checkbox">
-        <label>
-          <input type="checkbox" ng-model="authority.extensions.keyUsage.useKeyCertSign">Key Certificate Signature
-        </label>
-      </div>
       <div class="checkbox">
         <label>
           <input type="checkbox" ng-model="authority.extensions.keyUsage.useCRLSign">CRL Sign
@@ -72,14 +67,19 @@
       </div>
       <div class="checkbox">
         <label>
+          <input type="checkbox" ng-model="authority.extensions.keyUsage.useKeyAgreement">Key Agreement
+         </label>
+      </div>
+       <div class="checkbox">
+         <label>
           <input type="checkbox" ng-model="authority.extensions.keyUsage.useEncipherOnly">Encipher Only
-        </label>
-      </div>
-      <div class="checkbox">
-        <label>
+         </label>
+       </div>
+       <div class="checkbox">
+         <label>
           <input type="checkbox" ng-model="authority.extensions.keyUsage.useDecipherOnly">Decipher Only
-        </label>
-      </div>
+         </label>
+       </div>
     </div>
   </div>
   <div class="form-group">
@@ -94,21 +94,31 @@
       </div>
       <div class="checkbox">
         <label>
-          <input type="checkbox" ng-model="authority.extensions.extendedKeyUsage.useEmail">Email
+          <input type="checkbox" ng-model="authority.extensions.extendedKeyUsage.useClientAuthentication">Client Authentication
+        </label>
+      </div>
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" ng-model="authority.extensions.extendedKeyUsage.useEmailProtection">Email Protection
         </label>
       </div>
       <div class="checkbox">
         <label>
           <input type="checkbox" ng-model="authority.extensions.extendedKeyUsage.useTimestamping">Timestamping
         </label>
-        <div class="checkbox">
-          <label>
-            <input type="checkbox" ng-model="authority.extensions.extendedKeyUsage.useEapOverLAN">EAP Over LAN
-          </label>
-        </div>
+      </div>
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" ng-model="authority.extensions.extendedKeyUsage.useCodeSigning">Code Signing
+        </label>
       </div>
     </div>
     <div class="col-sm-3">
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" ng-model="authority.extensions.extendedKeyUsage.useEapOverLAN">EAP Over LAN
+        </label>
+      </div>
       <div class="checkbox">
         <label>
           <input type="checkbox" ng-model="authority.extensions.extendedKeyUsage.useEapOverPPP">EAP Over PPP
@@ -116,7 +126,7 @@
       </div>
       <div class="checkbox">
         <label>
-          <input type="checkbox" ng-model="authority.extensions.extendedKeyUsage.useSmartCardLogon">Smartcard Logon
+          <input type="checkbox" ng-model="authority.extensions.extendedKeyUsage.useSmartCardLogon">Smart Card Logon
         </label>
       </div>
       <div class="checkbox">
@@ -150,7 +160,7 @@
     <div class="col-sm-10">
       <div class="checkbox">
         <label tooltip-trigger="mouseenter" tooltip-placement="top" uib-tooltip="Ask CA to include/not include AIA extension" >
-          <input type="checkbox" ng-model="authority.extensions.authorityInfoAccess.includeAIA">Include AIA
+          <input type="checkbox" ng-model="authority.extensions.certificateInfoAccess.includeAIA">Include AIA 
         </label>
       </div>
     </div>
