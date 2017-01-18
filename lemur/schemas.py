@@ -197,6 +197,7 @@ class KeyUsageSchema(BaseExtensionSchema):
     use_key_agreement = fields.Boolean()
     use_key_cert_sign = fields.Boolean()
 
+
 class ExtendedKeyUsageSchema(BaseExtensionSchema):
     use_server_authentication = fields.Boolean()
     use_client_authentication = fields.Boolean()
@@ -207,6 +208,7 @@ class ExtendedKeyUsageSchema(BaseExtensionSchema):
     use_timestamping = fields.Boolean()
     use_code_signing = fields.Boolean()
     use_email_protection = fields.Boolean()
+
 
 class SubjectKeyIdentifierSchema(BaseExtensionSchema):
     include_ski = fields.Boolean()
