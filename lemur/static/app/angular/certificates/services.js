@@ -56,7 +56,7 @@ angular.module('lemur')
             this.extensions.custom.push(
               {
                 'oid': this.customOid,
-                'isCritical': this.customIsCritical,
+                'isCritical': this.customIsCritical || false,
                 'encoding': this.customEncoding,
                 'value': this.customValue
               }
