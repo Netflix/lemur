@@ -75,7 +75,7 @@ def test_authority_key_identifier_schema():
     data, errors = AuthorityKeyIdentifierSchema().load(input_data)
 
     assert data == {
-        'use_key_identifer': True,
+        'use_key_identifier': True,
         'use_authority_cert': True
     }
     assert not errors
