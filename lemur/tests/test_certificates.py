@@ -307,8 +307,10 @@ def test_extended_key_usage_schema():
         'useEapOverLAN': True,
         'useEapOverPPP': True,
         'useOCSPSigning': True,
-        'useSmartCardAuthentication': True,
-        'useTimestamping': True
+        'useSmartCardLogon': True,
+        'useTimestamping': True,
+        'useCodeSigning': True,
+        'useEmailProtection': True
     }
 
     data, errors = ExtendedKeyUsageSchema().load(input_data)
@@ -320,8 +322,10 @@ def test_extended_key_usage_schema():
         'use_eap_over_lan': True,
         'use_eap_over_ppp': True,
         'use_ocsp_signing': True,
-        'use_smart_card_authentication': True,
-        'use_timestamping': True
+        'use_smart_card_logon': True,
+        'use_timestamping': True,
+        'use_code_signing': True,
+        'use_email_protection': True
     }
 
 
