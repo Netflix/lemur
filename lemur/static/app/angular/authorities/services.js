@@ -14,12 +14,21 @@ angular.module('lemur')
           this.roles.splice(index, 1);
         },
         attachSubAltName: function () {
-          if (this.extensions === undefined || this.extensions.subAltNames === undefined) {
-            this.extensions = {'subAltNames': {'names': []}};
+          if (this.extensions === undefined) {
+            this.extensions = {};
           }
 
-          if (angular.isString(this.subAltType) && angular.isString(this.subAltValue)) {
+          if (this.extensions.subAltNames === undefined) {
+            this.extensions.subAltNames = {'names': []};
+          }
+
+          if (!angular.isString(this.subAltType)) {
+            this.subAltType = 'DNSName';
+          }
+
+          if (angular.isString(this.subAltValue) && angular.isString(this.subAltType)) {
             this.extensions.subAltNames.names.push({'nameType': this.subAltType, 'value': this.subAltValue});
+            //this.findDuplicates();
           }
 
           this.subAltType = null;
