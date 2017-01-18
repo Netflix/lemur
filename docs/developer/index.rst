@@ -113,6 +113,12 @@ HTML:
   2 Spaces
 
 
+Git hooks
+~~~~~~~~~
+
+To help developers maintain the above standards, Lemur includes a configuration file for Yelp's `pre-commit <http://pre-commit.com/>`_. This is an optional dependency and is not required in order to contribute to Lemur.
+
+
 Running the Test Suite
 ----------------------
 
