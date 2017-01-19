@@ -20,7 +20,7 @@ from lemur.plugins import lemur_cryptography as cryptography_issuer
 from lemur.common.utils import generate_private_key
 
 
-def build_root_certificate(options):
+def build_certificate_authority(options):
     private_key = generate_private_key(options.get('key_type'))
 
     subject = issuer = x509.Name([
@@ -121,7 +121,7 @@ class CryptographyIssuerPlugin(IssuerPlugin):
         :return:
         """
         current_app.logger.debug("Issuing new cryptography authority with options: {0}".format(options))
-        cert, private_key = build_root_certificate(options)
+        cert, private_key = build_certificate_authority(options)
         roles = [
             {'username': '', 'password': '', 'name': options['name'] + '_admin'},
             {'username': '', 'password': '', 'name': options['name'] + '_operator'}
