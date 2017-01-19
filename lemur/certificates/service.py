@@ -347,13 +347,13 @@ def create_csr(**csr_config):
 
     # Assume that we're not creating a CA certificate, but allow setting
     # certificate_authority in csr_config to True to switch this.
-    if csr_config.get('certificate_authority', False) == False:
+    if csr_config.get('certificate_authority', False):
         builder = builder.add_extension(
-            x509.BasicConstraints(ca=False, path_length=None), critical=True,
+            x509.BasicConstraints(ca=True, path_length=None), critical=True,
         )
     else:
         builder = builder.add_extension(
-            x509.BasicConstraints(ca=True, path_length=None), critical=True,
+            x509.BasicConstraints(ca=False, path_length=None), critical=True,
         )
 
     if csr_config.get('extensions'):
@@ -417,10 +417,10 @@ def create_csr(**csr_config):
                         keyusages['key_cert_sign'] = v2
                     if k2 == 'use_crl_sign':
                         keyusages['crl_sign'] = v2
-                    if k2 == 'use_encipher_only' and v2 == True:
+                    if k2 == 'use_encipher_only' and v2:
                         keyusages['encipher_only'] = True
                         keyusages['key_agreement'] = True
-                    if k2 == 'use_decipher_only' and v2 == True:
+                    if k2 == 'use_decipher_only' and v2:
                         keyusages['decipher_only'] = True
                         keyusages['key_agreement'] = True
                 builder = builder.add_extension(
@@ -438,7 +438,7 @@ def create_csr(**csr_config):
                 )
             if k == 'subject_key_identifier':
                 for k2, v2 in v.items():
-                    if k2 == 'include_ski' and v2 == True:
+                    if k2 == 'include_ski' and v2:
                         builder = builder.add_extension(
                             x509.SubjectKeyIdentifier.from_public_key(private_key.public_key()),
                             critical=False
