@@ -70,6 +70,47 @@ def issue_certificate(csr, options, private_key = None):
         serial_number=serial,
         extensions=csr.extensions._extensions)
 
+    for k, v in options.get('extensions', {}).items():
+        if k == 'authority_key_identifier':
+            # One or both of these options may be present inside the aki extension
+            (authority_key_identifier, authority_identifier) = (False, False)
+            for k2, v2 in v.items():
+                if k2 == 'use_key_identifier' and v2 == True:
+                    authority_key_identifier = True
+                if k2 == 'use_authority_cert' and v2 == True:
+                    authority_identifier = True
+            if authority_key_identifier:
+                if authority_key_identifier_subject:
+                    # FIXME in python-cryptography.
+                    # from_issuer_subject_key_identifier(cls, ski) is looking for ski.value.digest
+                    # but the digest of the ski is at just ski.digest. Until that library is fixed,
+                    # this function won't work. The second line has the same result.
+                    # aki = x509.AuthorityKeyIdentifier.from_issuer_subject_key_identifier(authority_key_identifier_subject)
+                    aki = x509.AuthorityKeyIdentifier(authority_key_identifier_subject.digest, None, None)
+                else:
+                    aki = x509.AuthorityKeyIdentifier.from_issuer_public_key(authority_key_identifier_public)    
+            if authority_key_identifier and authority_identifier:
+                aki = x509.AuthorityKeyIdentifier(aki.key_identifier, [x509.DirectoryName(authority_key_identifier_issuer)], authority_key_identifier_serial)
+            elif authority_identifier:
+                aki = x509.AuthorityKeyIdentifier(None, [x509.DirectoryName(authority_key_identifier_issuer)], authority_key_identifier_serial)
+            builder = builder.add_extension(aki, critical=False)
+        if k == 'certificate_info_access':
+            # FIXME: Implement the AuthorityInformationAccess extension
+            # descriptions = [
+            #     x509.AccessDescription(x509.oid.AuthorityInformationAccessOID.OCSP, x509.UniformResourceIdentifier(u"http://FIXME")),
+            #     x509.AccessDescription(x509.oid.AuthorityInformationAccessOID.CA_ISSUERS, x509.UniformResourceIdentifier(u"http://FIXME"))
+            # ]
+            # for k2, v2 in v.items():
+            #     if k2 == 'include_aia' and v2 == True:
+            #         builder = builder.add_extension(
+            #             x509.AuthorityInformationAccess(descriptions),
+            #             critical=False
+            #         )
+            pass
+        if k == 'crl_distribution_points':
+            # FIXME: Implement the CRLDistributionPoints extension
+            # FIXME: Not implemented in lemur/schemas.py yet https://github.com/Netflix/lemur/issues/662
+            pass
 
     private_key = serialization.load_pem_private_key(
         bytes(str(issuer_private_key).encode('utf-8')),
