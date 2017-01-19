@@ -67,17 +67,17 @@
       </div>
       <div class="checkbox">
         <label>
-          <input type="checkbox" ng-model="authority.extensions.keyUsage.useKeyAgreement">Key Agreement
+          <input type="checkbox" ng-model="authority.extensions.keyUsage.useKeyAgreement" ng-checked="authority.extensions.keyUsage.useEncipherOnly||authority.extensions.keyUsage.useDecipherOnly">Key Agreement
          </label>
       </div>
        <div class="checkbox">
          <label>
-          <input type="checkbox" ng-model="authority.extensions.keyUsage.useEncipherOnly">Encipher Only
+          <input type="checkbox" ng-model="authority.extensions.keyUsage.useEncipherOnly" ng-disabled="authority.extensions.keyUsage.useDecipherOnly">Encipher Only
          </label>
        </div>
        <div class="checkbox">
          <label>
-          <input type="checkbox" ng-model="authority.extensions.keyUsage.useDecipherOnly">Decipher Only
+          <input type="checkbox" ng-model="authority.extensions.keyUsage.useDecipherOnly" ng-disabled="authority.extensions.keyUsage.useEncipherOnly">Decipher Only
          </label>
        </div>
     </div>
