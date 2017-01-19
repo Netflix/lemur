@@ -17,10 +17,11 @@ def test_build_root_certificate():
         'first_serial': 1
 
     }
-    cert_pem, private_key_pem = build_root_certificate(options)
+    cert_pem, private_key_pem, chain_cert_pem = build_certificate_authority(options)
 
     assert cert_pem
     assert private_key_pem
+    assert chain_cert_pem
 
 
 def test_issue_certificate(authority):
@@ -32,5 +33,6 @@ def test_issue_certificate(authority):
         'validity_start': arrow.get('2016-12-01').datetime,
         'validity_end': arrow.get('2016-12-02').datetime
     }
-    cert = issue_certificate(CSR_STR, options)
+    cert, chain_cert_pem = issue_certificate(CSR_STR, options)
     assert cert
+    assert chain_cert_pem
