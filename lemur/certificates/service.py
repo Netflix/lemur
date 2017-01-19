@@ -364,10 +364,10 @@ def create_csr(**csr_config):
                 for name in v['names']:
                     if name['name_type'] == 'DNSName':
                         general_names.append(x509.DNSName(name['value']))
-
-                builder = builder.add_extension(
-                    x509.SubjectAlternativeName(general_names), critical=True
-                )
+                if general_names:
+                    builder = builder.add_extension(
+                        x509.SubjectAlternativeName(general_names), critical=True
+                    )
 
     # TODO support more CSR options, none of the authority plugins currently support these options
     #    builder.add_extension(
