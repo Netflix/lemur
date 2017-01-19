@@ -10,6 +10,7 @@ import arrow
 from flask import current_app
 
 from cryptography import x509
+from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
 
 from sqlalchemy.orm import relationship
@@ -199,6 +200,14 @@ class Certificate(db.Model):
     @property
     def validity_range(self):
         return self.not_after - self.not_before
+
+    @property
+    def subject(self):
+        return x509.load_pem_x509_certificate(str(self.body),default_backend()).subject
+
+    @property
+    def public_key(self):
+        return x509.load_pem_x509_certificate(str(self.body),default_backend()).public_key()
 
     @hybrid_property
     def expired(self):
