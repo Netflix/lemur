@@ -17,8 +17,8 @@ from cryptography.hazmat.primitives import hashes, serialization
 from lemur.plugins.bases import IssuerPlugin
 from lemur.plugins import lemur_cryptography as cryptography_issuer
 
-from lemur.common.utils import generate_private_key
-from lemur.certificates.service import create_csr 
+from lemur.certificates.service import create_csr
+
 
 def build_certificate_authority(options):
     options['certificate_authority'] = True
@@ -28,7 +28,7 @@ def build_certificate_authority(options):
     return cert_pem, private_key, chain_cert_pem
 
 
-def issue_certificate(csr, options, private_key = None):
+def issue_certificate(csr, options, private_key=None):
     csr = x509.load_pem_x509_csr(csr.encode('utf-8'), default_backend())
 
     if options.get("parent"):
@@ -75,9 +75,9 @@ def issue_certificate(csr, options, private_key = None):
             # One or both of these options may be present inside the aki extension
             (authority_key_identifier, authority_identifier) = (False, False)
             for k2, v2 in v.items():
-                if k2 == 'use_key_identifier' and v2 == True:
+                if k2 == 'use_key_identifier' and v2:
                     authority_key_identifier = True
-                if k2 == 'use_authority_cert' and v2 == True:
+                if k2 == 'use_authority_cert' and v2:
                     authority_identifier = True
             if authority_key_identifier:
                 if authority_key_identifier_subject:
@@ -88,7 +88,7 @@ def issue_certificate(csr, options, private_key = None):
                     # aki = x509.AuthorityKeyIdentifier.from_issuer_subject_key_identifier(authority_key_identifier_subject)
                     aki = x509.AuthorityKeyIdentifier(authority_key_identifier_subject.digest, None, None)
                 else:
-                    aki = x509.AuthorityKeyIdentifier.from_issuer_public_key(authority_key_identifier_public)    
+                    aki = x509.AuthorityKeyIdentifier.from_issuer_public_key(authority_key_identifier_public)
             if authority_key_identifier and authority_identifier:
                 aki = x509.AuthorityKeyIdentifier(aki.key_identifier, [x509.DirectoryName(authority_key_identifier_issuer)], authority_key_identifier_serial)
             elif authority_identifier:
@@ -145,7 +145,7 @@ class CryptographyIssuerPlugin(IssuerPlugin):
         """
         current_app.logger.debug("Issuing new cryptography certificate with options: {0}".format(options))
         cert_pem, chain_cert_pem = issue_certificate(csr, options)
-        return cert, chain_cert_pem
+        return cert_pem, chain_cert_pem
 
     @staticmethod
     def create_authority(options):
