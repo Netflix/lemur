@@ -368,49 +368,86 @@ def create_csr(**csr_config):
                     builder = builder.add_extension(
                         x509.SubjectAlternativeName(general_names), critical=True
                     )
-
-    # TODO support more CSR options, none of the authority plugins currently support these options
-    #    builder.add_extension(
-    #        x509.KeyUsage(
-    #            digital_signature=digital_signature,
-    #            content_commitment=content_commitment,
-    #            key_encipherment=key_enipherment,
-    #            data_encipherment=data_encipherment,
-    #            key_agreement=key_agreement,
-    #            key_cert_sign=key_cert_sign,
-    #            crl_sign=crl_sign,
-    #            encipher_only=enchipher_only,
-    #            decipher_only=decipher_only
-    #        ), critical=True
-    #    )
-    #
-    #    # we must maintain our own list of OIDs here
-    #    builder.add_extension(
-    #        x509.ExtendedKeyUsage(
-    #            server_authentication=server_authentication,
-    #            email=
-    #        )
-    #    )
-    #
-    #    builder.add_extension(
-    #        x509.AuthorityInformationAccess()
-    #    )
-    #
-    #    builder.add_extension(
-    #        x509.AuthorityKeyIdentifier()
-    #    )
-    #
-    #    builder.add_extension(
-    #        x509.SubjectKeyIdentifier()
-    #    )
-    #
-    #    builder.add_extension(
-    #        x509.CRLDistributionPoints()
-    #    )
-    #
-    #    builder.add_extension(
-    #        x509.ObjectIdentifier(oid)
-    #    )
+            if k == 'extended_key_usage':
+                usage_oids = []
+                for k2, v2 in v.items():
+                    if k2 == 'use_client_authentication':
+                        usage_oids.append(x509.oid.ExtendedKeyUsageOID.CLIENT_AUTH)
+                    if k2 == 'use_server_authentication':
+                        usage_oids.append(x509.oid.ExtendedKeyUsageOID.SERVER_AUTH)
+                    if k2 == 'use_code_signing':
+                        usage_oids.append(x509.oid.ExtendedKeyUsageOID.CODE_SIGNING)
+                    if k2 == 'use_email_protection':
+                        usage_oids.append(x509.oid.ExtendedKeyUsageOID.EMAIL_PROTECTION)
+                    if k2 == 'use_timestamping':
+                        usage_oids.append(x509.oid.ExtendedKeyUsageOID.TIME_STAMPING)
+                    if k2 == 'use_ocsp_signing':
+                        usage_oids.append(x509.oid.ExtendedKeyUsageOID.OCSP_SIGNING)
+                    if k2 == 'use_eap_over_lan':
+                        usage_oids.append(x509.oid.ObjectIdentifier("1.3.6.1.5.5.7.3.14"))
+                    if k2 == 'use_eap_over_ppp':
+                        usage_oids.append(x509.oid.ObjectIdentifier("1.3.6.1.5.5.7.3.13"))
+                    if k2 == 'use_smart_card_logon':
+                        usage_oids.append(x509.oid.ObjectIdentifier("1.3.6.1.4.1.311.20.2.2"))
+                builder = builder.add_extension(
+                    x509.ExtendedKeyUsage(usage_oids), critical=False
+                )
+            if k == 'key_usage':
+                keyusages = {
+                    'digital_signature': False,
+                    'content_commitment': False,
+                    'key_encipherment': False,
+                    'data_encipherment': False,
+                    'key_agreement': False,
+                    'key_cert_sign': False,
+                    'crl_sign': False,
+                    'encipher_only': False,
+                    'decipher_only': False
+                }
+                for k2, v2 in v.items():
+                    if k2 == 'use_digital_signature':
+                        keyusages['digital_signature'] = v2
+                    if k2 == 'use_non_repudiation':
+                        keyusages['content_commitment'] = v2
+                    if k2 == 'use_key_encipherment':
+                        keyusages['key_encipherment'] = v2
+                    if k2 == 'use_data_encipherment':
+                        keyusages['data_encipherment'] = v2
+                    if k2 == 'use_key_cert_sign':
+                        keyusages['key_cert_sign'] = v2
+                    if k2 == 'use_crl_sign':
+                        keyusages['crl_sign'] = v2
+                    if k2 == 'use_encipher_only' and v2 == True:
+                        keyusages['encipher_only'] = True
+                        keyusages['key_agreement'] = True
+                    if k2 == 'use_decipher_only' and v2 == True:
+                        keyusages['decipher_only'] = True
+                        keyusages['key_agreement'] = True
+                builder = builder.add_extension(
+                    x509.KeyUsage(
+                        digital_signature=keyusages['digital_signature'],
+                        content_commitment=keyusages['content_commitment'],
+                        key_encipherment=keyusages['key_encipherment'],
+                        data_encipherment=keyusages['data_encipherment'],
+                        key_agreement=keyusages['key_agreement'],
+                        key_cert_sign=keyusages['key_cert_sign'],
+                        crl_sign=keyusages['crl_sign'],
+                        encipher_only=keyusages['encipher_only'],
+                        decipher_only=keyusages['decipher_only']
+                    ), critical=True
+                )
+            if k == 'subject_key_identifier':
+                for k2, v2 in v.items():
+                    if k2 == 'include_ski' and v2 == True:
+                        builder = builder.add_extension(
+                            x509.SubjectKeyIdentifier.from_public_key(private_key.public_key()),
+                            critical=False
+                        )
+            if k == 'custom':
+                for custom_extension in v:
+                    pass
+                    # FIXME: Cannot use critical on custom OIDs.
+                    # https://github.com/Netflix/lemur/issues/665
 
     request = builder.sign(
         private_key, hashes.SHA256(), default_backend()
