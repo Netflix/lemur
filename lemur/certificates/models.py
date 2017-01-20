@@ -203,11 +203,11 @@ class Certificate(db.Model):
 
     @property
     def subject(self):
-        return x509.load_pem_x509_certificate(str(self.body), default_backend()).subject
+        return x509.load_pem_x509_certificate(bytes(self.body, 'utf-8'), default_backend()).subject
 
     @property
     def public_key(self):
-        return x509.load_pem_x509_certificate(str(self.body), default_backend()).public_key()
+        return x509.load_pem_x509_certificate(bytes(self.body, 'utf-8'), default_backend()).public_key()
 
     @hybrid_property
     def expired(self):
