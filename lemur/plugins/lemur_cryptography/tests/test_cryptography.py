@@ -14,8 +14,8 @@ def test_build_certificate_authority():
         'common_name': 'Example ROOT',
         'validity_start': arrow.get('2016-12-01').datetime,
         'validity_end': arrow.get('2016-12-02').datetime,
-        'first_serial': 1
-
+        'first_serial': 1,
+        'owner': 'owner@example.com'
     }
     cert_pem, private_key_pem, chain_cert_pem = build_certificate_authority(options)
 
@@ -31,8 +31,7 @@ def test_issue_certificate(authority):
     options = {
         'authority': authority,
         'validity_start': arrow.get('2016-12-01').datetime,
-        'validity_end': arrow.get('2016-12-02').datetime,
-        'owner': 'owner@example.com'
+        'validity_end': arrow.get('2016-12-02').datetime
     }
     cert_pem, chain_cert_pem = issue_certificate(CSR_STR, options)
     assert cert_pem
