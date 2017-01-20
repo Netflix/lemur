@@ -31,7 +31,8 @@ def test_issue_certificate(authority):
     options = {
         'authority': authority,
         'validity_start': arrow.get('2016-12-01').datetime,
-        'validity_end': arrow.get('2016-12-02').datetime
+        'validity_end': arrow.get('2016-12-02').datetime,
+        'owner': 'owner@example.com'
     }
     cert_pem, chain_cert_pem = issue_certificate(CSR_STR, options)
     assert cert_pem
