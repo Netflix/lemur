@@ -1,7 +1,7 @@
 import arrow
 
 
-def test_build_root_certificate():
+def test_build_certificate_authority():
     from lemur.plugins.lemur_cryptography.plugin import build_root_certificate
 
     options = {
@@ -33,6 +33,6 @@ def test_issue_certificate(authority):
         'validity_start': arrow.get('2016-12-01').datetime,
         'validity_end': arrow.get('2016-12-02').datetime
     }
-    cert, chain_cert_pem = issue_certificate(CSR_STR, options)
-    assert cert
+    cert_pem, chain_cert_pem = issue_certificate(CSR_STR, options)
+    assert cert_pem
     assert chain_cert_pem
