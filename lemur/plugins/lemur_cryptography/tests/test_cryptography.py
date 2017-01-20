@@ -36,4 +36,4 @@ def test_issue_certificate(authority):
     }
     cert_pem, chain_cert_pem = issue_certificate(CSR_STR, options)
     assert cert_pem
-    assert chain_cert_pem == ''
+    assert chain_cert_pem
