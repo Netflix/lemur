@@ -2,7 +2,7 @@ import arrow
 
 
 def test_build_certificate_authority():
-    from lemur.plugins.lemur_cryptography.plugin import build_root_certificate
+    from lemur.plugins.lemur_cryptography.plugin import build_certificate_authority
 
     options = {
         'key_type': 'RSA2048',
