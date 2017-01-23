@@ -53,9 +53,12 @@ def common_name(cert):
     :param cert:
     :return: Common name or None
     """
-    return cert.subject.get_attributes_for_oid(
+    cn = cert.subject.get_attributes_for_oid(
         x509.OID_COMMON_NAME
-    )[0].value.strip()
+    )
+    if len(cn) == 0:
+        return None
+    return cn[0].value.strip()
 
 
 def organization(cert):
