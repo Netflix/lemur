@@ -70,7 +70,7 @@ def organization(cert):
     try:
         return cert.subject.get_attributes_for_oid(
             x509.OID_ORGANIZATION_NAME
-            )[0].value.strip()
+        )[0].value.strip()
     except Exception as e:
         current_app.logger.error("Unable to get organization! {0}".format(e))
 
@@ -84,7 +84,7 @@ def organizational_unit(cert):
     try:
         return cert.subject.get_attributes_for_oid(
             x509.OID_ORGANIZATIONAL_UNIT_NAME
-            )[0].value.strip()
+        )[0].value.strip()
     except Exception as e:
         current_app.logger.error("Unable to get organizational unit! {0}".format(e))
 
@@ -98,7 +98,7 @@ def country(cert):
     try:
         return cert.subject.get_attributes_for_oid(
             x509.OID_COUNTRY_NAME
-            )[0].value.strip()
+        )[0].value.strip()
     except Exception as e:
         current_app.logger.error("Unable to get country! {0}".format(e))
 
@@ -112,7 +112,7 @@ def state(cert):
     try:
         return cert.subject.get_attributes_for_oid(
             x509.OID_STATE_OR_PROVINCE_NAME
-            )[0].value.strip()
+        )[0].value.strip()
     except Exception as e:
         current_app.logger.error("Unable to get state! {0}".format(e))
 
@@ -126,7 +126,7 @@ def location(cert):
     try:
         return cert.subject.get_attributes_for_oid(
             x509.OID_LOCALITY_NAME
-            )[0].value.strip()
+        )[0].value.strip()
     except Exception as e:
         current_app.logger.error("Unable to get location! {0}".format(e))
 
