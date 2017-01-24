@@ -66,7 +66,7 @@ install_requires = [
 
 tests_require = [
     'pyflakes',
-    'moto==0.4.30',
+    'moto==0.4.31',
     'nose==1.3.7',
     'pytest==3.0.6',
     'factory-boy==2.8.1',
