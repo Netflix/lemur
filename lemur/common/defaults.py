@@ -53,12 +53,12 @@ def common_name(cert):
     :param cert:
     :return: Common name or None
     """
-    cn = cert.subject.get_attributes_for_oid(
-        x509.OID_COMMON_NAME
-    )
-    if len(cn) == 0:
-        return None
-    return cn[0].value.strip()
+    try:
+        return cert.subject.get_attributes_for_oid(
+            x509.OID_COMMON_NAME
+        )[0].value.strip()
+    except Exception as e:
+        current_app.logger.error("Unable to get common name! {0}".format(e))
 
 
 def organization(cert):
@@ -67,9 +67,12 @@ def organization(cert):
     :param cert:
     :return:
     """
-    return cert.subject.get_attributes_for_oid(
-        x509.OID_ORGANIZATION_NAME
-    )[0].value.strip()
+    try:
+        return cert.subject.get_attributes_for_oid(
+            x509.OID_ORGANIZATION_NAME
+            )[0].value.strip()
+    except Exception as e:
+        current_app.logger.error("Unable to get organization! {0}".format(e))
 
 
 def organizational_unit(cert):
@@ -78,9 +81,12 @@ def organizational_unit(cert):
     :param cert:
     :return:
     """
-    return cert.subject.get_attributes_for_oid(
-        x509.OID_ORGANIZATIONAL_UNIT_NAME
-    )[0].value.strip()
+    try:
+        return cert.subject.get_attributes_for_oid(
+            x509.OID_ORGANIZATIONAL_UNIT_NAME
+            )[0].value.strip()
+    except Exception as e:
+        current_app.logger.error("Unable to get organizational unit! {0}".format(e))
 
 
 def country(cert):
@@ -89,9 +95,12 @@ def country(cert):
     :param cert:
     :return:
     """
-    return cert.subject.get_attributes_for_oid(
-        x509.OID_COUNTRY_NAME
-    )[0].value.strip()
+    try:
+        return cert.subject.get_attributes_for_oid(
+            x509.OID_COUNTRY_NAME
+            )[0].value.strip()
+    except Exception as e:
+        current_app.logger.error("Unable to get country! {0}".format(e))
 
 
 def state(cert):
@@ -100,9 +109,12 @@ def state(cert):
     :param cert:
     :return:
     """
-    return cert.subject.get_attributes_for_oid(
-        x509.OID_STATE_OR_PROVINCE_NAME
-    )[0].value.strip()
+    try:
+        return cert.subject.get_attributes_for_oid(
+            x509.OID_STATE_OR_PROVINCE_NAME
+            )[0].value.strip()
+    except Exception as e:
+        current_app.logger.error("Unable to get state! {0}".format(e))
 
 
 def location(cert):
@@ -111,9 +123,12 @@ def location(cert):
     :param cert:
     :return:
     """
-    return cert.subject.get_attributes_for_oid(
-        x509.OID_LOCALITY_NAME
-    )[0].value.strip()
+    try:
+        return cert.subject.get_attributes_for_oid(
+            x509.OID_LOCALITY_NAME
+            )[0].value.strip()
+    except Exception as e:
+        current_app.logger.error("Unable to get location! {0}".format(e))
 
 
 def domains(cert):
