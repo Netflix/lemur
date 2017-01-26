@@ -9,6 +9,7 @@ import arrow
 
 from flask import current_app
 
+from cryptography import x509
 from cryptography.hazmat.primitives.asymmetric import rsa
 
 from sqlalchemy.orm import relationship
@@ -229,16 +230,39 @@ class Certificate(db.Model):
 
     @property
     def extensions(self):
-        # TODO pull the OU, O, CN, etc + other extensions.
-        names = [{'name_type': 'DNSName', 'value': x.name} for x in self.domains]
+        return_extensions = {}
+        cert = lemur.common.utils.parse_certificate(self.body)
+        for extension in cert.extensions:
+            if isinstance(extension, x509.BasicConstraints):
+                return_extensions['basic_constraints'] = extension
+            elif isinstance(extension, x509.SubjectAlternativeName):
+                return_extensions['sub_alt_names'] = extension
+            elif isinstance(extension, x509.ExtendedKeyUsage):
+                return_extensions['extended_key_usage'] = extension
+            elif isinstance(extension, x509.KeyUsage):
+                return_extensions['key_usage'] = extension
+            elif isinstance(extension, x509.SubjectKeyIdentifier):
+                return_extensions['subject_key_identifier'] = {'include_ski': True}
+            elif isinstance(extension, x509.AuthorityInformationAccess):
+                return_extensions['certificate_info_access'] = {'include_aia': True}
+            elif isinstance(extension, x509.AuthorityKeyIdentifier):
+                aki = {
+                    'use_key_identifier': False,
+                    'use_authority_cert': False
+                }
+                if extension.key_identifier:
+                    aki['use_key_identifier'] = True
+                if extension.authority_cert_issuer:
+                    aki['use_authority_cert'] = True
+                return_extensions['authority_key_identifier'] = aki
+            elif isinstance(extension, x509.CRLDistributionPoints):
+                # FIXME: Don't support CRLDistributionPoints yet https://github.com/Netflix/lemur/issues/662
+                pass
+            else:
+                # FIXME: Not supporting custom OIDs yet. https://github.com/Netflix/lemur/issues/665
+                pass
 
-        extensions = {
-            'sub_alt_names': {
-                'names': names
-            }
-        }
-
-        return extensions
+        return return_extensions
 
     def get_arn(self, account_number):
         """

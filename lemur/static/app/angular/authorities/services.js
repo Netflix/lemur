@@ -94,6 +94,15 @@ angular.module('lemur')
     AuthorityService.create = function (authority) {
       authority.attachSubAltName();
       authority.attachCustom();
+
+      if (authority.extensions.basicConstraints === undefined) {
+        authority.extensions.basicConstraints = { 'path_length': null};
+      }
+      authority.extensions.basicConstraints.ca = true;
+      if (authority.extensions.basicConstraints.path_length === 'None') {
+        authority.extensions.basicConstraints.path_length = null;
+      }
+
       if (authority.validityYears === '') { // if a user de-selects validity years we ignore it
         delete authority.validityYears;
       }
