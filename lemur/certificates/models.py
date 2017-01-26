@@ -203,11 +203,13 @@ class Certificate(db.Model):
 
     @property
     def subject(self):
-        return x509.load_pem_x509_certificate(bytes(self.body, 'utf-8'), default_backend()).subject
+        cert = lemur.common.utils.parse_certificate(self.body)
+        return cert.subject
 
     @property
     def public_key(self):
-        return x509.load_pem_x509_certificate(bytes(self.body, 'utf-8'), default_backend()).public_key()
+        cert = lemur.common.utils.parse_certificate(self.body)
+        return cert.public_key()
 
     @hybrid_property
     def expired(self):
