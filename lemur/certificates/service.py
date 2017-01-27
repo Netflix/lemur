@@ -345,65 +345,23 @@ def create_csr(**csr_config):
         x509.NameAttribute(x509.OID_EMAIL_ADDRESS, csr_config['owner'])
     ]))
 
-    builder = builder.add_extension(
-        x509.BasicConstraints(ca=False, path_length=None), critical=True,
-    )
+    extensions = csr_config.get('extensions', {})
+    critical_extensions = ['basic_constraints', 'sub_alt_names', 'key_usage']
+    noncritical_extensions = ['extended_key_usage']
+    for k, v in extensions.items():
+        if k in critical_extensions and v:
+            current_app.logger.debug("Add CExt: {0} {1}".format(k, v))
+            builder = builder.add_extension(v, critical=True)
+        if k in noncritical_extensions and v:
+            current_app.logger.debug("Add Ext: {0} {1}".format(k, v))
+            builder = builder.add_extension(v, critical=False)
 
-    if csr_config.get('extensions'):
-        for k, v in csr_config.get('extensions', {}).items():
-            if k == 'sub_alt_names':
-                # map types to their x509 objects
-                general_names = []
-                for name in v['names']:
-                    if name['name_type'] == 'DNSName':
-                        general_names.append(x509.DNSName(name['value']))
-
-                builder = builder.add_extension(
-                    x509.SubjectAlternativeName(general_names), critical=True
-                )
-
-    # TODO support more CSR options, none of the authority plugins currently support these options
-    #    builder.add_extension(
-    #        x509.KeyUsage(
-    #            digital_signature=digital_signature,
-    #            content_commitment=content_commitment,
-    #            key_encipherment=key_enipherment,
-    #            data_encipherment=data_encipherment,
-    #            key_agreement=key_agreement,
-    #            key_cert_sign=key_cert_sign,
-    #            crl_sign=crl_sign,
-    #            encipher_only=enchipher_only,
-    #            decipher_only=decipher_only
-    #        ), critical=True
-    #    )
-    #
-    #    # we must maintain our own list of OIDs here
-    #    builder.add_extension(
-    #        x509.ExtendedKeyUsage(
-    #            server_authentication=server_authentication,
-    #            email=
-    #        )
-    #    )
-    #
-    #    builder.add_extension(
-    #        x509.AuthorityInformationAccess()
-    #    )
-    #
-    #    builder.add_extension(
-    #        x509.AuthorityKeyIdentifier()
-    #    )
-    #
-    #    builder.add_extension(
-    #        x509.SubjectKeyIdentifier()
-    #    )
-    #
-    #    builder.add_extension(
-    #        x509.CRLDistributionPoints()
-    #    )
-    #
-    #    builder.add_extension(
-    #        x509.ObjectIdentifier(oid)
-    #    )
+    ski = extensions.get('subject_key_identifier', {})
+    if ski.get('include_ski', False):
+        builder = builder.add_extension(
+            x509.SubjectKeyIdentifier.from_public_key(private_key.public_key()),
+            critical=False
+        )
 
     request = builder.sign(
         private_key, hashes.SHA256(), default_backend()
@@ -500,14 +458,6 @@ def get_certificate_primitives(certificate):
     certificate via `create`.
     """
     start, end = calculate_reissue_range(certificate.not_before, certificate.not_after)
-    names = [{'name_type': 'DNSName', 'value': x.name} for x in certificate.domains]
-
-    # TODO pull additional extensions
-    extensions = {
-        'sub_alt_names': {
-            'names': names
-        }
-    }
 
     return dict(
         authority=certificate.authority,
@@ -517,7 +467,7 @@ def get_certificate_primitives(certificate):
         validity_end=end,
         destinations=certificate.destinations,
         roles=certificate.roles,
-        extensions=extensions,
+        extensions=certificate.extensions,
         owner=certificate.owner,
         organization=certificate.organization,
         organizational_unit=certificate.organizational_unit,

@@ -4,7 +4,7 @@
       Subject Alternate Names
     </label>
     <div class="col-sm-3">
-      <select class="form-control" ng-model="authority.subAltType" ng-init="null" ng-options="item for item in ['DNSName', 'IPAddress', 'uniformResourceIdentifier', 'directoryName','rfc822Name', 'registeredID', 'otherName', 'x400Address', 'EDIPartyName']"></select>
+      <select class="form-control" ng-model="authority.subAltType" ng-init="null" ng-options="item for item in ['DNSName', 'IPAddress', 'IPNetwork', 'uniformResourceIdentifier', 'directoryName','rfc822Name', 'registeredID']"></select>
     </div>
     <div class="col-sm-5">
       <div class="input-group">
@@ -183,6 +183,16 @@
     </label>
     <div class="col-sm-8">
       <select class="form-control" ng-model="authority.extensions.cRLDistributionPoints.includeCRLDP" ng-options="item for item in ['yes', 'no', 'default']"></select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="control-label col-sm-2">
+      Basic Constraints
+    </label>
+    <div class="col-sm-8">
+      <label tooltip-trigger="mouseenter" tooltip-placement="top" uib-tooltip="Maximum number of non-self-issued intermediate certificates that may follow this certificate in a valid certification path." >
+        Path Length: <select class="form-control" ng-model="authority.extensions.basicConstraints.path_length" ng-options="item for item in ['None', 0, 1, 2, 3, 4, 5]"></select>
+      </label>
     </div>
   </div>
   <div class="form-group">
