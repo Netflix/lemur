@@ -114,7 +114,7 @@ class KeyUsageExtension(Field):
             'useDataEncipherment': value.data_encipherment,
             'useKeyAgreement': value.key_agreement,
             'useKeyCertSign': value.key_cert_sign,
-            'useCrlSign': value.crl_sign,
+            'useCRLSign': value.crl_sign,
             'useEncipherOnly': value._encipher_only,
             'useDecipherOnly': value._decipher_only
         }
@@ -135,19 +135,26 @@ class KeyUsageExtension(Field):
         for k, v in value.items():
             if k == 'useDigitalSignature':
                 keyusages['digital_signature'] = v
+
             elif k == 'useNonRepudiation':
                 keyusages['content_commitment'] = v
+
             elif k == 'useKeyEncipherment':
                 keyusages['key_encipherment'] = v
+
             elif k == 'useDataEncipherment':
                 keyusages['data_encipherment'] = v
+
             elif k == 'useKeyCertSign':
                 keyusages['key_cert_sign'] = v
-            elif k == 'useCrlSign':
+
+            elif k == 'useCRLSign':
                 keyusages['crl_sign'] = v
+
             elif k == 'useEncipherOnly' and v:
                 keyusages['encipher_only'] = True
                 keyusages['key_agreement'] = True
+
             elif k == 'useDecipherOnly' and v:
                 keyusages['decipher_only'] = True
                 keyusages['key_agreement'] = True
@@ -208,20 +215,28 @@ class ExtendedKeyUsageExtension(Field):
         for k, v in value.items():
             if k == 'useClientAuthentication' and v:
                 usage_oids.append(x509.oid.ExtendedKeyUsageOID.CLIENT_AUTH)
+
             if k == 'useServerAuthentication' and v:
                 usage_oids.append(x509.oid.ExtendedKeyUsageOID.SERVER_AUTH)
+
             if k == 'useCodeSigning' and v:
                 usage_oids.append(x509.oid.ExtendedKeyUsageOID.CODE_SIGNING)
+
             if k == 'useEmailProtection' and v:
                 usage_oids.append(x509.oid.ExtendedKeyUsageOID.EMAIL_PROTECTION)
+
             if k == 'useTimestamping' and v:
                 usage_oids.append(x509.oid.ExtendedKeyUsageOID.TIME_STAMPING)
+
             if k == 'useOCSPSigning' and v:
                 usage_oids.append(x509.oid.ExtendedKeyUsageOID.OCSP_SIGNING)
+
             if k == 'useEapOverLAN' and v:
                 usage_oids.append(x509.oid.ObjectIdentifier("1.3.6.1.5.5.7.3.14"))
+
             if k == 'useEapOverPPP' and v:
                 usage_oids.append(x509.oid.ObjectIdentifier("1.3.6.1.5.5.7.3.13"))
+
             if k == 'useSmartCardLogon' and v:
                 usage_oids.append(x509.oid.ObjectIdentifier("1.3.6.1.4.1.311.20.2.2"))
 
