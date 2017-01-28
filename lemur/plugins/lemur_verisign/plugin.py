@@ -13,6 +13,7 @@ import xmltodict
 
 from flask import current_app
 
+from cryptography import x509
 from lemur.extensions import metrics
 
 from lemur.plugins import lemur_verisign as verisign
@@ -76,6 +77,22 @@ def log_status_code(r, *args, **kwargs):
     metrics.send('symantec_status_code_{}'.format(r.status_code), 'counter', 1)
 
 
+def get_additional_names(options):
+    """
+    Return a list of strings to be added to a SAN certificates.
+
+    :param options:
+    :return:
+    """
+    names = []
+    # add SANs if present
+    if options.get('extensions'):
+        for san in options['extensions']['sub_alt_names']:
+            if isinstance(san, x509.DNSName):
+                names.append(san.value)
+    return names
+
+
 def process_options(options):
     """
     Processes and maps the incoming issuer options to fields/options that
@@ -94,9 +111,7 @@ def process_options(options):
         'email': current_app.config.get("VERISIGN_EMAIL")
     }
 
-    if options.get('extensions'):
-        if options['extensions'].get('sub_alt_names'):
-            data['subject_alt_names'] = ",".join(x['value'] for x in options['extensions']['sub_alt_names']['names'])
+    data['subject_alt_names'] = ",".join(get_additional_names(options))
 
     if options.get('validity_end'):
         period = get_default_issuance(options)

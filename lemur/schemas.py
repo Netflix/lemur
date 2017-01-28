@@ -195,12 +195,16 @@ class CustomOIDSchema(BaseExtensionSchema):
     is_critical = fields.Boolean()
 
 
+class NamesSchema(BaseExtensionSchema):
+    names = SubjectAlternativeNameExtension()
+
+
 class ExtensionSchema(BaseExtensionSchema):
     basic_constraints = BasicConstraintsExtension()
     key_usage = KeyUsageExtension()
     extended_key_usage = ExtendedKeyUsageExtension()
     subject_key_identifier = fields.Nested(SubjectKeyIdentifierSchema)
-    sub_alt_names = SubjectAlternativeNameExtension()
+    sub_alt_names = fields.Nested(NamesSchema)
     authority_key_identifier = fields.Nested(AuthorityKeyIdentifierSchema)
     certificate_info_access = fields.Nested(CertificateInfoAccessSchema)
     # FIXME: Convert custom OIDs to a custom field in fields.py like other Extensions

@@ -310,7 +310,7 @@ def test_create_csr():
     assert csr
     assert private_key
 
-    extensions = {'sub_alt_names': x509.SubjectAlternativeName([x509.DNSName('AnotherCommonName')])}
+    extensions = {'sub_alt_names': {'names': x509.SubjectAlternativeName([x509.DNSName('AnotherCommonName')])}}
     csr, private_key = create_csr(owner='joe@example.com', common_name='ACommonName', organization='test', organizational_unit='Meters', country='US',
                                   state='CA', location='Here', extensions=extensions, key_type='RSA2048')
     assert csr

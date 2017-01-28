@@ -131,23 +131,24 @@ class KeyUsageExtension(Field):
             'encipher_only': False,
             'decipher_only': False
         }
+
         for k, v in value.items():
             if k == 'useDigitalSignature':
                 keyusages['digital_signature'] = v
-            if k == 'useNonRepudiation':
+            elif k == 'useNonRepudiation':
                 keyusages['content_commitment'] = v
-            if k == 'useKeyEncipherment':
+            elif k == 'useKeyEncipherment':
                 keyusages['key_encipherment'] = v
-            if k == 'useDataEncipherment':
+            elif k == 'useDataEncipherment':
                 keyusages['data_encipherment'] = v
-            if k == 'useKeyCertSign':
+            elif k == 'useKeyCertSign':
                 keyusages['key_cert_sign'] = v
-            if k == 'useCrlSign':
+            elif k == 'useCrlSign':
                 keyusages['crl_sign'] = v
-            if k == 'useEncipherOnly' and v:
+            elif k == 'useEncipherOnly' and v:
                 keyusages['encipher_only'] = True
                 keyusages['key_agreement'] = True
-            if k == 'useDecipherOnly' and v:
+            elif k == 'useDecipherOnly' and v:
                 keyusages['decipher_only'] = True
                 keyusages['key_agreement'] = True
 
@@ -182,23 +183,23 @@ class ExtendedKeyUsageExtension(Field):
         usage_list = {}
         for usage in usages:
             if usage.dotted_string == x509.oid.ExtendedKeyUsageOID.CLIENT_AUTH:
-                usage_list["useClientAuthentication"] = True
+                usage_list['useClientAuthentication'] = True
             if usage.dotted_string == x509.oid.ExtendedKeyUsageOID.SERVER_AUTH:
-                usage_list["useServerAuthentication"] = True
+                usage_list['useServerAuthentication'] = True
             if usage.dotted_string == x509.oid.ExtendedKeyUsageOID.CODE_SIGNING:
-                usage_list["useCodeSigning"] = True
+                usage_list['useCodeSigning'] = True
             if usage.dotted_string == x509.oid.ExtendedKeyUsageOID.EMAIL_PROTECTION:
-                usage_list["useEmailProtection"] = True
+                usage_list['useEmailProtection'] = True
             if usage.dotted_string == x509.oid.ExtendedKeyUsageOID.TIME_STAMPING:
-                usage_list["useTimestamping"] = True
+                usage_list['useTimestamping'] = True
             if usage.dotted_string == x509.oid.ExtendedKeyUsageOID.OCSP_SIGNING:
-                usage_list["useOCSPSigning"] = True
-            if usage.dotted_string == "1.3.6.1.5.5.7.3.14":
-                usage_list["useEapOverLAN"] = True
-            if usage.dotted_string == "1.3.6.1.5.5.7.3.13":
-                usage_list["useEapOverPPP"] = True
-            if usage.dotted_string == "1.3.6.1.4.1.311.20.2.2":
-                usage_list["useSmartCardLogon"] = True
+                usage_list['useOCSPSigning'] = True
+            if usage.dotted_string == '1.3.6.1.5.5.7.3.14':
+                usage_list['useEapOverLAN'] = True
+            if usage.dotted_string == '1.3.6.1.5.5.7.3.13':
+                usage_list['useEapOverPPP'] = True
+            if usage.dotted_string == '1.3.6.1.4.1.311.20.2.2':
+                usage_list['useSmartCardLogon'] = True
 
         return usage_list
 
@@ -238,7 +239,7 @@ class BasicConstraintsExtension(Field):
     """
 
     def _serialize(self, value, attr, obj):
-        return {'ca': value.ca(), 'path_length': value.path_length()}
+        return {'ca': value.ca, 'path_length': value.path_length}
 
     def _deserialize(self, value, attr, data):
         ca = value.get('ca', False)
@@ -261,16 +262,15 @@ class SubjectAlternativeNameExtension(Field):
     :param kwargs: The same keyword arguments that :class:`Field` receives.
 
     """
-
     def _serialize(self, value, attr, obj):
         general_names = []
+        name_type = None
         for name in value._general_names:
-            value = name.value()
+            value = name.value
             if isinstance(name, x509.DNSName):
                 name_type = 'DNSName'
             if isinstance(name, x509.IPAddress):
                 name_type = 'IPAddress'
-                value = str(value)
             if isinstance(name, x509.UniformResourceIdentifier):
                 name_type = 'uniformResourceIdentifier'
             if isinstance(name, x509.DirectoryName):
@@ -286,7 +286,7 @@ class SubjectAlternativeNameExtension(Field):
 
     def _deserialize(self, value, attr, data):
         general_names = []
-        for name in value.get('names', []):
+        for name in value:
             if name['nameType'] == 'DNSName':
                 general_names.append(x509.DNSName(name['value']))
             if name['nameType'] == 'IPAddress':
@@ -296,7 +296,7 @@ class SubjectAlternativeNameExtension(Field):
             if name['nameType'] == 'uniformResourceIdentifier':
                 general_names.append(x509.UniformResourceIdentifier(name['value']))
             if name['nameType'] == 'directoryName':
-                # FIXME: Need to parse a string in name['value'] like:
+                # TODO: Need to parse a string in name['value'] like:
                 # 'CN=Common Name, O=Org Name, OU=OrgUnit Name, C=US, ST=ST, L=City/emailAddress=person@example.com'
                 # or
                 # 'CN=Common Name/O=Org Name/OU=OrgUnit Name/C=US/ST=NH/L=City/emailAddress=person@example.com'
@@ -327,7 +327,4 @@ class SubjectAlternativeNameExtension(Field):
                 # The Python Cryptography library doesn't support EDIPartyName types (yet?)
                 pass
 
-        if general_names:
-            return x509.SubjectAlternativeName(general_names)
-        else:
-            return None
+        return x509.SubjectAlternativeName(general_names)
