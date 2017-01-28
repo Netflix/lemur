@@ -330,10 +330,8 @@ def create_csr(**csr_config):
 
     :param csr_config:
     """
-
     private_key = generate_private_key(csr_config.get('key_type'))
 
-    # TODO When we figure out a better way to validate these options they should be parsed as str
     builder = x509.CertificateSigningRequestBuilder()
     builder = builder.subject_name(x509.Name([
         x509.NameAttribute(x509.OID_COMMON_NAME, csr_config['common_name']),
@@ -349,12 +347,17 @@ def create_csr(**csr_config):
     critical_extensions = ['basic_constraints', 'sub_alt_names', 'key_usage']
     noncritical_extensions = ['extended_key_usage']
     for k, v in extensions.items():
-        if k in critical_extensions and v:
-            current_app.logger.debug("Add CExt: {0} {1}".format(k, v))
-            builder = builder.add_extension(v, critical=True)
-        if k in noncritical_extensions and v:
-            current_app.logger.debug("Add Ext: {0} {1}".format(k, v))
-            builder = builder.add_extension(v, critical=False)
+        if v:
+            if k in critical_extensions:
+                current_app.logger.debug('Adding Critical Extension: {0} {1}'.format(k, v))
+                if k == 'sub_alt_names':
+                    builder = builder.add_extension(v['names'], critical=True)
+                else:
+                    builder = builder.add_extension(v, critical=True)
+
+            if k in noncritical_extensions:
+                current_app.logger.debug('Adding Extension: {0} {1}'.format(k, v))
+                builder = builder.add_extension(v, critical=False)
 
     ski = extensions.get('subject_key_identifier', {})
     if ski.get('include_ski', False):

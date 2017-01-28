@@ -22,12 +22,13 @@ from retrying import retry
 
 from flask import current_app
 
+from cryptography import x509
+
 from lemur.extensions import metrics
+from lemur.common.utils import validate_conf
 from lemur.plugins.bases import IssuerPlugin, SourcePlugin
 
 from lemur.plugins import lemur_digicert as digicert
-
-from lemur.common.utils import validate_conf
 
 
 def log_status_code(r, *args, **kwargs):
@@ -106,7 +107,8 @@ def get_additional_names(options):
     # add SANs if present
     if options.get('extensions'):
         for san in options['extensions']['sub_alt_names']['names']:
-            names.append(san['value'])
+            if isinstance(san, x509.DNSName):
+                names.append(san.value)
     return names
 
 
@@ -119,19 +121,14 @@ def map_fields(options, csr):
     """
     options = get_issuance(options)
 
-    data = {
-        "certificate":
-            {
-                "common_name": options['common_name'],
-                "csr": csr,
-                "signature_hash":
-                    signature_hash(options.get('signing_algorithm')),
-            },
-        "organization":
-            {
-                "id": current_app.config.get("DIGICERT_ORG_ID")
-            },
-    }
+    data = dict(certificate={
+        "common_name": options['common_name'],
+        "csr": csr,
+        "signature_hash":
+            signature_hash(options.get('signing_algorithm')),
+    }, organization={
+        "id": current_app.config.get("DIGICERT_ORG_ID")
+    })
 
     data['certificate']['dns_names'] = get_additional_names(options)
     data['custom_expiration_date'] = options['validity_end'].format('YYYY-MM-DD')

@@ -4,6 +4,8 @@ from freezegun import freeze_time
 
 from lemur.tests.vectors import CSR_STR
 
+from cryptography import x509
+
 
 def test_map_fields(app):
     from lemur.plugins.lemur_digicert.plugin import map_fields
@@ -16,7 +18,7 @@ def test_map_fields(app):
         'description': 'test certificate',
         'extensions': {
             'sub_alt_names': {
-                'names': [{'name_type': 'DNSName', 'value': x} for x in names]
+                'names': [x509.DNSName(x) for x in names]
             }
         },
         'validity_end': arrow.get(2017, 5, 7),
@@ -48,7 +50,7 @@ def test_map_cis_fields(app):
         'description': 'test certificate',
         'extensions': {
             'sub_alt_names': {
-                'names': [{'name_type': 'DNSName', 'value': x} for x in names]
+                'names': [x509.DNSName(x) for x in names]
             }
         },
         'organization': 'Example, Inc.',

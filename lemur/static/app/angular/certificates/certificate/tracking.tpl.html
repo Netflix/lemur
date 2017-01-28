@@ -40,6 +40,40 @@
           enter a common name and it must be less than 64 characters</p>
       </div>
     </div>
+    <div class="form-group">
+      <label class="control-label col-sm-2">
+        Subject Alternate Names
+      </label>
+      <div class="col-sm-4">
+        <select class="form-control" ng-model="certificate.subAltType"
+                ng-options="item for item in ['DNSName', 'IPAddress', 'IPNetwork', 'uniformResourceIdentifier', 'directoryName','rfc822Name', 'registeredID']"></select>
+      </div>
+      <div class="col-sm-6">
+        <div class="input-group">
+          <input tooltip-trigger="focus" tooltip-placement="top"
+                 uib-tooltip="String or Base64-encoded DER ASN.1 structure for the value" class="form-control"
+                 name="value" ng-model="certificate.subAltValue" placeholder="Value" class="form-control" required/>
+          <span class="input-group-btn">
+          <button ng-click="certificate.attachSubAltName()" class="btn btn-info">Add</button>
+        </span>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-sm-10 col-sm-offset-2">
+        <table class="table">
+          <tr ng-repeat="alt in certificate.extensions.subAltNames.names track by $index">
+            <td>{{ alt.nameType }}</td>
+            <td>{{ alt.value }}</td>
+            <td>
+              <button type="button" ng-click="certificate.removeSubAltName($index)"
+                      class="btn btn-danger btn-sm pull-right">Remove
+              </button>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
     <div class="form-group"
          ng-class="{'has-error': trackingForm.description.$invalid, 'has-success': !trackingForm.$invalid&&trackingForm.description.$dirty}">
       <label class="control-label col-sm-2">

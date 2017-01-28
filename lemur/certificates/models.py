@@ -233,34 +233,46 @@ class Certificate(db.Model):
         return_extensions = {}
         cert = lemur.common.utils.parse_certificate(self.body)
         for extension in cert.extensions:
-            if isinstance(extension, x509.BasicConstraints):
-                return_extensions['basic_constraints'] = extension
-            elif isinstance(extension, x509.SubjectAlternativeName):
-                return_extensions['sub_alt_names'] = extension
-            elif isinstance(extension, x509.ExtendedKeyUsage):
-                return_extensions['extended_key_usage'] = extension
-            elif isinstance(extension, x509.KeyUsage):
-                return_extensions['key_usage'] = extension
-            elif isinstance(extension, x509.SubjectKeyIdentifier):
+            value = extension.value
+            if isinstance(value, x509.BasicConstraints):
+                return_extensions['basic_constraints'] = extension.value
+
+            elif isinstance(value, x509.SubjectAlternativeName):
+                return_extensions['sub_alt_names'] = {'names': extension.value}
+
+            elif isinstance(value, x509.ExtendedKeyUsage):
+                return_extensions['extended_key_usage'] = extension.value
+
+            elif isinstance(value, x509.KeyUsage):
+                return_extensions['key_usage'] = extension.value
+
+            elif isinstance(value, x509.SubjectKeyIdentifier):
                 return_extensions['subject_key_identifier'] = {'include_ski': True}
-            elif isinstance(extension, x509.AuthorityInformationAccess):
+
+            elif isinstance(value, x509.AuthorityInformationAccess):
                 return_extensions['certificate_info_access'] = {'include_aia': True}
-            elif isinstance(extension, x509.AuthorityKeyIdentifier):
+
+            elif isinstance(value, x509.AuthorityKeyIdentifier):
                 aki = {
                     'use_key_identifier': False,
                     'use_authority_cert': False
                 }
-                if extension.key_identifier:
+
+                if value.key_identifier:
                     aki['use_key_identifier'] = True
-                if extension.authority_cert_issuer:
+
+                if value.authority_cert_issuer:
                     aki['use_authority_cert'] = True
+
                 return_extensions['authority_key_identifier'] = aki
-            elif isinstance(extension, x509.CRLDistributionPoints):
-                # FIXME: Don't support CRLDistributionPoints yet https://github.com/Netflix/lemur/issues/662
-                pass
+
+            # TODO: Don't support CRLDistributionPoints yet https://github.com/Netflix/lemur/issues/662
+            elif isinstance(value, x509.CRLDistributionPoints):
+                current_app.logger.warning('CRLDistributionPoints not yet supported for clone operation.')
+
+            # TODO: Not supporting custom OIDs yet. https://github.com/Netflix/lemur/issues/665
             else:
-                # FIXME: Not supporting custom OIDs yet. https://github.com/Netflix/lemur/issues/665
-                pass
+                current_app.logger.warning('Custom OIDs not yet supported for clone operation.')
 
         return return_extensions
 
