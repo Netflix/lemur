@@ -200,22 +200,22 @@ class ExtendedKeyUsageExtension(Field):
         usages = value._usages
         usage_list = {}
         for usage in usages:
-            if usage.dotted_string == x509.oid.ExtendedKeyUsageOID.CLIENT_AUTH:
+            if usage == x509.oid.ExtendedKeyUsageOID.CLIENT_AUTH:
                 usage_list['useClientAuthentication'] = True
 
-            elif usage.dotted_string == x509.oid.ExtendedKeyUsageOID.SERVER_AUTH:
+            elif usage == x509.oid.ExtendedKeyUsageOID.SERVER_AUTH:
                 usage_list['useServerAuthentication'] = True
 
-            elif usage.dotted_string == x509.oid.ExtendedKeyUsageOID.CODE_SIGNING:
+            elif usage == x509.oid.ExtendedKeyUsageOID.CODE_SIGNING:
                 usage_list['useCodeSigning'] = True
 
-            elif usage.dotted_string == x509.oid.ExtendedKeyUsageOID.EMAIL_PROTECTION:
+            elif usage == x509.oid.ExtendedKeyUsageOID.EMAIL_PROTECTION:
                 usage_list['useEmailProtection'] = True
 
-            elif usage.dotted_string == x509.oid.ExtendedKeyUsageOID.TIME_STAMPING:
+            elif usage == x509.oid.ExtendedKeyUsageOID.TIME_STAMPING:
                 usage_list['useTimestamping'] = True
 
-            elif usage.dotted_string == x509.oid.ExtendedKeyUsageOID.OCSP_SIGNING:
+            elif usage == x509.oid.ExtendedKeyUsageOID.OCSP_SIGNING:
                 usage_list['useOCSPSigning'] = True
 
             elif usage.dotted_string == '1.3.6.1.5.5.7.3.14':
