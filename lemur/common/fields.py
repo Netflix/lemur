@@ -1,11 +1,22 @@
+"""
+.. module: lemur.common.fields
+    :platform: Unix
+    :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
+    :license: Apache, see LICENSE for more details.
+.. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
+"""
 import arrow
 import warnings
-from datetime import datetime as dt
-from marshmallow.fields import Field
-from marshmallow import utils
-from cryptography import x509
-from marshmallow.exceptions import ValidationError
 import ipaddress
+
+from flask import current_app
+from datetime import datetime as dt
+
+from cryptography import x509
+
+from marshmallow import utils
+from marshmallow.fields import Field
+from marshmallow.exceptions import ValidationError
 
 
 class ArrowDateTime(Field):
@@ -191,22 +202,33 @@ class ExtendedKeyUsageExtension(Field):
         for usage in usages:
             if usage.dotted_string == x509.oid.ExtendedKeyUsageOID.CLIENT_AUTH:
                 usage_list['useClientAuthentication'] = True
-            if usage.dotted_string == x509.oid.ExtendedKeyUsageOID.SERVER_AUTH:
+
+            elif usage.dotted_string == x509.oid.ExtendedKeyUsageOID.SERVER_AUTH:
                 usage_list['useServerAuthentication'] = True
-            if usage.dotted_string == x509.oid.ExtendedKeyUsageOID.CODE_SIGNING:
+
+            elif usage.dotted_string == x509.oid.ExtendedKeyUsageOID.CODE_SIGNING:
                 usage_list['useCodeSigning'] = True
-            if usage.dotted_string == x509.oid.ExtendedKeyUsageOID.EMAIL_PROTECTION:
+
+            elif usage.dotted_string == x509.oid.ExtendedKeyUsageOID.EMAIL_PROTECTION:
                 usage_list['useEmailProtection'] = True
-            if usage.dotted_string == x509.oid.ExtendedKeyUsageOID.TIME_STAMPING:
+
+            elif usage.dotted_string == x509.oid.ExtendedKeyUsageOID.TIME_STAMPING:
                 usage_list['useTimestamping'] = True
-            if usage.dotted_string == x509.oid.ExtendedKeyUsageOID.OCSP_SIGNING:
+
+            elif usage.dotted_string == x509.oid.ExtendedKeyUsageOID.OCSP_SIGNING:
                 usage_list['useOCSPSigning'] = True
-            if usage.dotted_string == '1.3.6.1.5.5.7.3.14':
+
+            elif usage.dotted_string == '1.3.6.1.5.5.7.3.14':
                 usage_list['useEapOverLAN'] = True
-            if usage.dotted_string == '1.3.6.1.5.5.7.3.13':
+
+            elif usage.dotted_string == '1.3.6.1.5.5.7.3.13':
                 usage_list['useEapOverPPP'] = True
-            if usage.dotted_string == '1.3.6.1.4.1.311.20.2.2':
+
+            elif usage.dotted_string == '1.3.6.1.4.1.311.20.2.2':
                 usage_list['useSmartCardLogon'] = True
+
+            else:
+                current_app.logger.warning('Unable to serialize ExtendedKeyUsage with OID: {usage}'.format(usage=usage.dotted_string))
 
         return usage_list
 
@@ -216,29 +238,32 @@ class ExtendedKeyUsageExtension(Field):
             if k == 'useClientAuthentication' and v:
                 usage_oids.append(x509.oid.ExtendedKeyUsageOID.CLIENT_AUTH)
 
-            if k == 'useServerAuthentication' and v:
+            elif k == 'useServerAuthentication' and v:
                 usage_oids.append(x509.oid.ExtendedKeyUsageOID.SERVER_AUTH)
 
-            if k == 'useCodeSigning' and v:
+            elif k == 'useCodeSigning' and v:
                 usage_oids.append(x509.oid.ExtendedKeyUsageOID.CODE_SIGNING)
 
-            if k == 'useEmailProtection' and v:
+            elif k == 'useEmailProtection' and v:
                 usage_oids.append(x509.oid.ExtendedKeyUsageOID.EMAIL_PROTECTION)
 
-            if k == 'useTimestamping' and v:
+            elif k == 'useTimestamping' and v:
                 usage_oids.append(x509.oid.ExtendedKeyUsageOID.TIME_STAMPING)
 
-            if k == 'useOCSPSigning' and v:
+            elif k == 'useOCSPSigning' and v:
                 usage_oids.append(x509.oid.ExtendedKeyUsageOID.OCSP_SIGNING)
 
-            if k == 'useEapOverLAN' and v:
+            elif k == 'useEapOverLAN' and v:
                 usage_oids.append(x509.oid.ObjectIdentifier("1.3.6.1.5.5.7.3.14"))
 
-            if k == 'useEapOverPPP' and v:
+            elif k == 'useEapOverPPP' and v:
                 usage_oids.append(x509.oid.ObjectIdentifier("1.3.6.1.5.5.7.3.13"))
 
-            if k == 'useSmartCardLogon' and v:
+            elif k == 'useSmartCardLogon' and v:
                 usage_oids.append(x509.oid.ObjectIdentifier("1.3.6.1.4.1.311.20.2.2"))
+
+            else:
+                current_app.logger.warning('Unable to deserialize ExtendedKeyUsage with name: {key}'.format(key=k))
 
         return x509.ExtendedKeyUsage(usage_oids)
 
@@ -280,22 +305,33 @@ class SubjectAlternativeNameExtension(Field):
     def _serialize(self, value, attr, obj):
         general_names = []
         name_type = None
-        for name in value._general_names:
-            value = name.value
-            if isinstance(name, x509.DNSName):
-                name_type = 'DNSName'
-            if isinstance(name, x509.IPAddress):
-                name_type = 'IPAddress'
-            if isinstance(name, x509.UniformResourceIdentifier):
-                name_type = 'uniformResourceIdentifier'
-            if isinstance(name, x509.DirectoryName):
-                name_type = 'directoryName'
-            if isinstance(name, x509.RFC822Name):
-                name_type = 'rfc822Name'
-            if isinstance(name, x509.RegisteredID):
-                name_type = 'registeredID'
-                value = value.dotted_string
-            general_names.append({'nameType': name_type, 'value': value})
+
+        if value:
+            for name in value._general_names:
+                value = name.value
+
+                if isinstance(name, x509.DNSName):
+                    name_type = 'DNSName'
+
+                elif isinstance(name, x509.IPAddress):
+                    name_type = 'IPAddress'
+
+                elif isinstance(name, x509.UniformResourceIdentifier):
+                    name_type = 'uniformResourceIdentifier'
+
+                elif isinstance(name, x509.DirectoryName):
+                    name_type = 'directoryName'
+
+                elif isinstance(name, x509.RFC822Name):
+                    name_type = 'rfc822Name'
+
+                elif isinstance(name, x509.RegisteredID):
+                    name_type = 'registeredID'
+                    value = value.dotted_string
+                else:
+                    current_app.logger.warning('Unknown SubAltName type: {name}'.format(name=name))
+
+                general_names.append({'nameType': name_type, 'value': value})
 
         return general_names
 
@@ -304,13 +340,17 @@ class SubjectAlternativeNameExtension(Field):
         for name in value:
             if name['nameType'] == 'DNSName':
                 general_names.append(x509.DNSName(name['value']))
-            if name['nameType'] == 'IPAddress':
+
+            elif name['nameType'] == 'IPAddress':
                 general_names.append(x509.IPAddress(ipaddress.ip_address(name['value'])))
-            if name['nameType'] == 'IPNetwork':
+
+            elif name['nameType'] == 'IPNetwork':
                 general_names.append(x509.IPAddress(ipaddress.ip_network(name['value'])))
-            if name['nameType'] == 'uniformResourceIdentifier':
+
+            elif name['nameType'] == 'uniformResourceIdentifier':
                 general_names.append(x509.UniformResourceIdentifier(name['value']))
-            if name['nameType'] == 'directoryName':
+
+            elif name['nameType'] == 'directoryName':
                 # TODO: Need to parse a string in name['value'] like:
                 # 'CN=Common Name, O=Org Name, OU=OrgUnit Name, C=US, ST=ST, L=City/emailAddress=person@example.com'
                 # or
@@ -327,19 +367,27 @@ class SubjectAlternativeNameExtension(Field):
                 # ]
                 # general_names.append(x509.DirectoryName(x509.Name(BLAH))))
                 pass
-            if name['nameType'] == 'rfc822Name':
+
+            elif name['nameType'] == 'rfc822Name':
                 general_names.append(x509.RFC822Name(name['value']))
-            if name['nameType'] == 'registeredID':
+
+            elif name['nameType'] == 'registeredID':
                 general_names.append(x509.RegisteredID(x509.ObjectIdentifier(name['value'])))
-            if name['nameType'] == 'otherName':
+
+            elif name['nameType'] == 'otherName':
                 # This has two inputs (type and value), so it doesn't fit the mold of the rest of these GeneralName entities.
                 # general_names.append(x509.OtherName(name['type'], bytes(name['value']), 'utf-8'))
                 pass
-            if name['nameType'] == 'x400Address':
+
+            elif name['nameType'] == 'x400Address':
                 # The Python Cryptography library doesn't support x400Address types (yet?)
                 pass
-            if name['nameType'] == 'EDIPartyName':
+
+            elif name['nameType'] == 'EDIPartyName':
                 # The Python Cryptography library doesn't support EDIPartyName types (yet?)
                 pass
+
+            else:
+                current_app.logger.warning('Unable to deserialize SubAltName with type: {name_type}'.format(name_type=name['nameType']))
 
         return x509.SubjectAlternativeName(general_names)

@@ -230,21 +230,24 @@ class Certificate(db.Model):
 
     @property
     def extensions(self):
-        return_extensions = {}
+        # setup default values
+        return_extensions = {
+            'sub_alt_names': {'names': []}
+        }
         cert = lemur.common.utils.parse_certificate(self.body)
         for extension in cert.extensions:
             value = extension.value
             if isinstance(value, x509.BasicConstraints):
-                return_extensions['basic_constraints'] = extension.value
+                return_extensions['basic_constraints'] = value
 
             elif isinstance(value, x509.SubjectAlternativeName):
-                return_extensions['sub_alt_names'] = {'names': extension.value}
+                return_extensions['sub_alt_names']['names'] = value
 
             elif isinstance(value, x509.ExtendedKeyUsage):
-                return_extensions['extended_key_usage'] = extension.value
+                return_extensions['extended_key_usage'] = value
 
             elif isinstance(value, x509.KeyUsage):
-                return_extensions['key_usage'] = extension.value
+                return_extensions['key_usage'] = value
 
             elif isinstance(value, x509.SubjectKeyIdentifier):
                 return_extensions['subject_key_identifier'] = {'include_ski': True}

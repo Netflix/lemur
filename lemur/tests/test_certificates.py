@@ -123,15 +123,13 @@ def test_extension_schema(client):
         },
         'subjectKeyIdentifier': {
             'includeSKI': True
-        },
-        'subAltNames': {
-            'names': [
-                {'nameType': 'DNSName', 'value': 'test.example.com'}
-            ]
         }
     }
 
     data, errors = ExtensionSchema().load(input_data)
+    assert not errors
+
+    data, errors = ExtensionSchema().dump(data)
     assert not errors
 
 
