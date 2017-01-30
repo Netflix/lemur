@@ -10,7 +10,6 @@ import arrow
 from flask import current_app
 
 from cryptography import x509
-from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
 
 from sqlalchemy.orm import relationship
