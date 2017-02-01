@@ -200,6 +200,16 @@ class Certificate(db.Model):
     def validity_range(self):
         return self.not_after - self.not_before
 
+    @property
+    def subject(self):
+        cert = lemur.common.utils.parse_certificate(self.body)
+        return cert.subject
+
+    @property
+    def public_key(self):
+        cert = lemur.common.utils.parse_certificate(self.body)
+        return cert.public_key()
+
     @hybrid_property
     def expired(self):
         if self.not_after <= arrow.utcnow():
