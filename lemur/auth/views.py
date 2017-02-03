@@ -242,10 +242,10 @@ class Ping(Resource):
         metrics.send('successful_login', 'counter', 1)
         return dict(token=create_token(user))
 
-class Okta(Resource):
+class OAuth2(Resource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(Okta, self).__init__()
+        super(OAuth2, self).__init__()
 
     def post(self):
         self.reqparse.add_argument('clientId', type=str, required=True, location='json')
@@ -263,27 +263,27 @@ class Okta(Resource):
         }
 
         # you can either discover these dynamically or simply configure them
-        access_token_url = current_app.config.get('OKTA_ACCESS_TOKEN_URL')
-        user_api_url = current_app.config.get('OKTA_USER_API_URL')
+        access_token_url = current_app.config.get('OAUTH2_ACCESS_TOKEN_URL')
+        user_api_url = current_app.config.get('OAUTH2_USER_API_URL')
 
         # the secret and cliendId will be given to you when you signup for the provider
-        token = '{0}:{1}'.format(args['clientId'], current_app.config.get("OKTA_SECRET"))
+        token = '{0}:{1}'.format(args['clientId'], current_app.config.get("OAUTH2_SECRET"))
 
-        basic = base64.b64encode(token)
+        basic = base64.b64encode(bytes(token, 'utf-8'))
+
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
-            'authorization': 'basic {0}'.format(basic)
+            'authorization': 'basic {0}'.format(basic.decode('utf-8'))
         }
 
         # exchange authorization code for access token.
-
         r = requests.post(access_token_url, headers=headers, params=params)
         id_token = r.json()['id_token']
         access_token = r.json()['access_token']
 
         # fetch token public key
         header_data = fetch_token_header(id_token)
-        jwks_url = current_app.config.get('OKTA_JWKS_URL')
+        jwks_url = current_app.config.get('OAUTH2_JWKS_URL')
 
         # retrieve the key material as specified by the token header
         r = requests.get(jwks_url)
@@ -437,16 +437,16 @@ class Providers(Resource):
                     'type': '2.0'
                 })
 
-            elif provider == "okta":
+            elif provider == "oauth2":
                 active_providers.append({
-                    'name': current_app.config.get("OKTA_NAME"),
-                    'url': current_app.config.get('OKTA_REDIRECT_URI'),
-                    'redirectUri': current_app.config.get("OKTA_REDIRECT_URI"),
-                    'clientId': current_app.config.get("OKTA_CLIENT_ID"),
+                    'name': current_app.config.get("OAUTH2_NAME"),
+                    'url': current_app.config.get('OAUTH2_REDIRECT_URI'),
+                    'redirectUri': current_app.config.get("OAUTH2_REDIRECT_URI"),
+                    'clientId': current_app.config.get("OAUTH2_CLIENT_ID"),
                     'responseType': 'code',
                     'scope': ['openid', 'email', 'profile', 'groups'],
                     'scopeDelimiter': ' ',
-                    'authorizationEndpoint': current_app.config.get("OKTA_AUTH_ENDPOINT"),
+                    'authorizationEndpoint': current_app.config.get("OAUTH2_AUTH_ENDPOINT"),
                     'requiredUrlParams': ['scope', 'state', 'nonce'],
                     'state': 'STATE',
                     'nonce': get_psuedo_random_string(),
@@ -459,5 +459,5 @@ class Providers(Resource):
 api.add_resource(Login, '/auth/login', endpoint='login')
 api.add_resource(Ping, '/auth/ping', endpoint='ping')
 api.add_resource(Google, '/auth/google', endpoint='google')
-api.add_resource(Okta, '/auth/okta', endpoint='okta')
+api.add_resource(OAuth2, '/auth/oauth2', endpoint='oauth2')
 api.add_resource(Providers, '/auth/providers', endpoint='providers')
