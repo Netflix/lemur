@@ -200,7 +200,7 @@ class NamesSchema(BaseExtensionSchema):
 
 
 class ExtensionSchema(BaseExtensionSchema):
-    basic_constraints = BasicConstraintsExtension()
+    basic_constraints = BasicConstraintsExtension(missing={'ca': False})
     key_usage = KeyUsageExtension()
     extended_key_usage = ExtendedKeyUsageExtension()
     subject_key_identifier = fields.Nested(SubjectKeyIdentifierSchema)

@@ -27,6 +27,8 @@ from lemur.destinations.models import Destination
 from lemur.certificates.models import Certificate
 from lemur.notifications.models import Notification
 
+from lemur.certificates.schemas import CertificateOutputSchema, CertificateInputSchema
+
 from lemur.roles import service as role_service
 
 
@@ -461,26 +463,10 @@ def get_certificate_primitives(certificate):
     certificate via `create`.
     """
     start, end = calculate_reissue_range(certificate.not_before, certificate.not_after)
-
-    return dict(
-        authority=certificate.authority,
-        common_name=certificate.cn,
-        description=certificate.description,
-        validity_start=start,
-        validity_end=end,
-        destinations=certificate.destinations,
-        roles=certificate.roles,
-        extensions=certificate.extensions,
-        owner=certificate.owner,
-        organization=certificate.organization,
-        organizational_unit=certificate.organizational_unit,
-        country=certificate.country,
-        state=certificate.state,
-        location=certificate.location,
-        key_type=certificate.key_type,
-        notifications=certificate.notifications,
-        rotation=certificate.rotation
-    )
+    data = CertificateInputSchema().load(CertificateOutputSchema().dump(certificate).data).data
+    data['validity_start'] = start
+    data['validity_end'] = end
+    return data
 
 
 def reissue_certificate(certificate, replace=None, user=None):
@@ -492,9 +478,11 @@ def reissue_certificate(certificate, replace=None, user=None):
     :return:
     """
     primitives = get_certificate_primitives(certificate)
-
+    from pprint import pprint
+    pprint(primitives)
     if not user:
         primitives['creator'] = certificate.user
+
     else:
         primitives['creator'] = user
 
