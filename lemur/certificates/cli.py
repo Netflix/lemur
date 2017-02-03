@@ -124,6 +124,7 @@ def request_reissue(certificate, commit):
     :return:
     """
     details = get_certificate_primitives(certificate)
+
     print_certificate_details(details)
     if commit:
         try:
