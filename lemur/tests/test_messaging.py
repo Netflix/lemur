@@ -41,7 +41,7 @@ def test_get_certificates(app, certificate, notification):
     delta = certificate.not_after + timedelta(days=2)
     with freeze_time(delta.datetime):
         certificate.notifications.append(notification)
-        assert len(get_certificates()) == 0
+        assert len(get_certificates()) == 1
 
 
 def test_get_eligible_certificates(app, certificate, notification):

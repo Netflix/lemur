@@ -9,6 +9,8 @@ def rotate_certificate(endpoint, new_cert):
     :param new_cert:
     :return:
     """
+    # ensure that certificate is available for rotation
+
     endpoint.source.plugin.update_endpoint(endpoint, new_cert)
     endpoint.certificate = new_cert
     database.update(endpoint)
