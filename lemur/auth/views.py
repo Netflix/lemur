@@ -7,6 +7,7 @@
 """
 import jwt
 import base64
+import sys
 import requests
 
 from flask import Blueprint, current_app
@@ -242,6 +243,7 @@ class Ping(Resource):
         metrics.send('successful_login', 'counter', 1)
         return dict(token=create_token(user))
 
+
 class OAuth2(Resource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
@@ -362,6 +364,7 @@ class OAuth2(Resource):
         identity_changed.send(current_app._get_current_object(), identity=Identity(user.id))
 
         return dict(token=create_token(user))
+
 
 class Google(Resource):
     def __init__(self):
