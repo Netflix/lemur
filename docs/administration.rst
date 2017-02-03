@@ -244,7 +244,7 @@ For more information about how to use social logins, see: `Satellizer <https://g
 
         ::
 
-            ACTIVE_PROVIDERS = ["ping", "google"]
+            ACTIVE_PROVIDERS = ["ping", "google", "oauth2"]
 
 .. data:: PING_SECRET
     :noindex:
@@ -302,6 +302,63 @@ For more information about how to use social logins, see: `Satellizer <https://g
         ::
 
             PING_AUTH_ENDPOINT = "https://<yourpingserver>/oauth2/authorize"
+
+.. data:: OAUTH2_SECRET
+    :noindex:
+
+        ::
+
+            OAUTH2_SECRET = 'somethingsecret'
+
+.. data:: OAUTH2_ACCESS_TOKEN_URL
+    :noindex:
+
+        ::
+
+            OAUTH2_ACCESS_TOKEN_URL = "https://<youroauthserver> /oauth2/v1/authorize"
+
+
+.. data:: OAUTH2_USER_API_URL
+    :noindex:
+
+        ::
+
+            OAUTH2_USER_API_URL = "https://<youroauthserver>/oauth2/v1/userinfo"
+
+.. data:: OAUTH2_JWKS_URL
+    :noindex:
+
+        ::
+
+            OAUTH2_JWKS_URL = "https://<youroauthserver>/oauth2/v1/keys"
+
+.. data:: OAUTH2_NAME
+    :noindex:
+
+        ::
+
+            OAUTH2_NAME = "Example Oauth2 Provider"
+
+.. data:: OAUTH2_CLIENT_ID
+    :noindex:
+
+        ::
+
+            OAUTH2_CLIENT_ID = "client-id"
+
+.. data:: OAUTH2_REDIRECT_URI
+    :noindex:
+
+        ::
+
+            OAUTH2_REDIRECT_URI = "https://<yourlemurserver>/api/1/auth/oauth2"
+
+.. data:: OAUTH2_AUTH_ENDPOINT
+    :noindex:
+
+        ::
+
+            OAUTH2_AUTH_ENDPOINT = "https://<youroauthserver>/oauth2/v1/authorize"
 
 .. data:: GOOGLE_CLIENT_ID
     :noindex:
