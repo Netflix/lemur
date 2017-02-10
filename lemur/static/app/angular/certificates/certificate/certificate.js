@@ -166,11 +166,9 @@ angular.module('lemur')
         'extensions': {
           'basicConstraints': {},
           'keyUsage': {
-            'isCritical': true,
             'useDigitalSignature': true
           },
           'extendedKeyUsage': {
-            'isCritical': true,
             'useClientAuthentication': true
           },
           'subjectKeyIdentifier': {
@@ -184,12 +182,10 @@ angular.module('lemur')
         'extensions' : {
           'basicConstraints': {},
           'keyUsage': {
-            'isCritical': true,
             'useKeyEncipherment': true,
             'useDigitalSignature': true
           },
           'extendedKeyUsage': {
-            'isCritical': true,
             'useServerAuthentication': true
           },
           'subjectKeyIdentifier': {
@@ -295,11 +291,9 @@ angular.module('lemur')
       'extensions': {
         'basicConstraints': {},
         'keyUsage': {
-          'isCritical': true,
           'useDigitalSignature': true
         },
         'extendedKeyUsage': {
-          'isCritical': true,
           'useClientAuthentication': true
         },
         'subjectKeyIdentifier': {
@@ -313,12 +307,10 @@ angular.module('lemur')
       'extensions' : {
         'basicConstraints': {},
         'keyUsage': {
-          'isCritical': true,
           'useKeyEncipherment': true,
           'useDigitalSignature': true
         },
         'extendedKeyUsage': {
-          'isCritical': true,
           'useServerAuthentication': true
         },
         'subjectKeyIdentifier': {
