@@ -107,7 +107,12 @@ angular.module('lemur')
           });
         },
         useTemplate: function () {
+          var saveSubAltNames = {};
+          if (this.extensions && this.extensions.subAltNames) {
+            saveSubAltNames = this.extensions.subAltNames;
+          }
           this.extensions = this.template.extensions;
+          this.extensions.subAltNames = saveSubAltNames;
         }
       });
     });
