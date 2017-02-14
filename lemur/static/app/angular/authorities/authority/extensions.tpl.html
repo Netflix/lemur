@@ -67,19 +67,19 @@
       </div>
       <div class="checkbox">
         <label>
-          <input type="checkbox" ng-model="authority.extensions.keyUsage.useKeyAgreement" ng-checked="authority.extensions.keyUsage.useEncipherOnly||authority.extensions.keyUsage.useDecipherOnly">Key Agreement
+          <input type="checkbox" ng-model="authority.extensions.keyUsage.useKeyAgreement">Key Agreement
         </label>
       </div>
-       <div class="checkbox">
-         <label>
-          <input type="checkbox" ng-model="authority.extensions.keyUsage.useEncipherOnly" ng-disabled="authority.extensions.keyUsage.useDecipherOnly">Encipher Only
-         </label>
-       </div>
-       <div class="checkbox">
-         <label>
-          <input type="checkbox" ng-model="authority.extensions.keyUsage.useDecipherOnly" ng-disabled="authority.extensions.keyUsage.useEncipherOnly">Decipher Only
-         </label>
-       </div>
+      <div class="radio">
+        <label>
+          <input type="radio" name="encipherOrDecipher" ng-model="authority.encipherOrDecipher" value="useEncipherOnly" ng-click="authority.setEncipherOrDecipher('useEncipherOnly')">Encipher Only
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input type="radio" name="encipherOrDecipher" ng-model="authority.encipherOrDecipher" value="useDecipherOnly" ng-click="authority.setEncipherOrDecipher('useDecipherOnly')">Decipher Only
+        </label>
+      </div>
     </div>
   </div>
   <div class="form-group">
