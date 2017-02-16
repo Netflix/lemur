@@ -335,15 +335,19 @@ def create_csr(**csr_config):
     private_key = generate_private_key(csr_config.get('key_type'))
 
     builder = x509.CertificateSigningRequestBuilder()
-    builder = builder.subject_name(x509.Name([
-        x509.NameAttribute(x509.OID_COMMON_NAME, csr_config['common_name']),
-        x509.NameAttribute(x509.OID_ORGANIZATION_NAME, csr_config['organization']),
-        x509.NameAttribute(x509.OID_ORGANIZATIONAL_UNIT_NAME, csr_config['organizational_unit']),
-        x509.NameAttribute(x509.OID_COUNTRY_NAME, csr_config['country']),
-        x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, csr_config['state']),
-        x509.NameAttribute(x509.OID_LOCALITY_NAME, csr_config['location']),
-        x509.NameAttribute(x509.OID_EMAIL_ADDRESS, csr_config['owner'])
-    ]))
+    name_list = [x509.NameAttribute(x509.OID_COMMON_NAME, csr_config['common_name']),
+                 x509.NameAttribute(x509.OID_EMAIL_ADDRESS, csr_config['owner'])]
+    if 'organization' in csr_config and csr_config['organization'].strip():
+        name_list.append(x509.NameAttribute(x509.OID_ORGANIZATION_NAME, csr_config['organization']))
+    if 'organizational_unit' in csr_config and csr_config['organizational_unit'].strip():
+        name_list.append(x509.NameAttribute(x509.OID_ORGANIZATIONAL_UNIT_NAME, csr_config['organizational_unit']))
+    if 'country' in csr_config and csr_config['country'].strip():
+        name_list.append(x509.NameAttribute(x509.OID_COUNTRY_NAME, csr_config['country']))
+    if 'state' in csr_config and csr_config['state'].strip():
+        name_list.append(x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, csr_config['state']))
+    if 'location' in csr_config and csr_config['location'].strip():
+        name_list.append(x509.NameAttribute(x509.OID_LOCALITY_NAME, csr_config['location']))
+    builder = builder.subject_name(x509.Name(name_list))
 
     extensions = csr_config.get('extensions', {})
     critical_extensions = ['basic_constraints', 'sub_alt_names', 'key_usage']
