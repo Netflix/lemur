@@ -162,6 +162,9 @@ class KeyUsageExtension(Field):
             elif k == 'useCRLSign':
                 keyusages['crl_sign'] = v
 
+            elif k == 'useKeyAgreement':
+                keyusages['key_agreement'] = v
+
             elif k == 'useEncipherOnly' and v:
                 keyusages['encipher_only'] = True
                 keyusages['key_agreement'] = True
