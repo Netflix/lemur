@@ -15,10 +15,10 @@ from flask import current_app
 from acme.client import Client
 from acme import jose
 from acme import messages
+from acme import challenges
 
 from lemur.common.utils import generate_private_key
 
-from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 
 import OpenSSL.crypto
@@ -27,14 +27,14 @@ from lemur.common.utils import validate_conf
 from lemur.plugins.bases import IssuerPlugin
 from lemur.plugins import lemur_acme as acme
 
-from .route53 import delete_txt_record, create_txt_record, wait_for_change
+from .route53 import delete_txt_record, create_txt_record, wait_for_r53_change
 
 
 def find_dns_challenge(authz):
     for combo in authz.body.resolved_combinations:
         if (
             len(combo) == 1 and
-            isinstance(combo[0].chall, acme.challenges.DNS01)
+            isinstance(combo[0].chall, challenges.DNS01)
         ):
             yield combo[0]
 
@@ -47,17 +47,15 @@ class AuthorizationRecord(object):
         self.change_id = change_id
 
 
-def start_dns_challenge(acme_client, host):
-    authz = acme_client.request_domain_challenges(
-        host, acme_client.directory.new_authz
-    )
+def start_dns_challenge(acme_client, account_number, host):
+    authz = acme_client.request_domain_challenges(host)
 
     [dns_challenge] = find_dns_challenge(authz)
 
     change_id = create_txt_record(
         dns_challenge.validation_domain_name(host),
         dns_challenge.validation(acme_client.key),
-
+        account_number
     )
 
     return AuthorizationRecord(
@@ -68,8 +66,8 @@ def start_dns_challenge(acme_client, host):
     )
 
 
-def complete_dns_challenge(acme_client, authz_record):
-    wait_for_change(authz_record.change_id)
+def complete_dns_challenge(acme_client, account_number, authz_record):
+    wait_for_r53_change(authz_record.change_id, account_number=account_number)
 
     response = authz_record.dns_challenge.response(acme_client.key)
 
@@ -109,35 +107,21 @@ def request_certificate(acme_client, authorizations, csr):
 
 
 def setup_acme_client():
-    key = current_app.config.get('ACME_PRIVATE_KEY').strip()
-    acme_email = current_app.config.get('ACME_EMAIL')
-    acme_tel = current_app.config.get('ACME_TEL')
-    acme_directory_url = current_app.config.get('ACME_DIRECTORY_URL'),
-    contact = ('mailto:{}'.format(acme_email), 'tel:{}'.format(acme_tel))
+    email = current_app.config.get('ACME_EMAIL')
+    tel = current_app.config.get('ACME_TEL')
+    directory_url = current_app.config.get('ACME_DIRECTORY_URL')
+    contact = ('mailto:{}'.format(email), 'tel:{}'.format(tel))
 
-    key = serialization.load_pem_private_key(
-        key, password=None, backend=default_backend()
-    )
+    key = jose.JWKRSA(key=generate_private_key('RSA2048'))
 
-    return acme_client_for_private_key(acme_directory_url, key)
+    client = Client(directory_url, key)
 
-
-def acme_client_for_private_key(acme_directory_url, private_key):
-    return Client(
-        acme_directory_url, key=jose.JWKRSA(key=private_key)
-    )
-
-
-def register(email):
-    private_key = generate_private_key('RSA2048')
-    acme_client = acme_client_for_private_key(current_app.config('ACME_DIRECTORY_URL'), private_key)
-
-    registration = acme_client.register(
+    registration = client.register(
         messages.NewRegistration.from_data(email=email)
     )
 
-    acme_client.agree_to_tos(registration)
-    return private_key
+    client.agree_to_tos(registration)
+    return client, registration
 
 
 def get_domains(options):
@@ -147,27 +131,29 @@ def get_domains(options):
     :return:
     """
     domains = [options['common_name']]
-    for name in options['extensions']['sub_alt_name']['names']:
-        domains.append(name)
+    if options.get('extensions'):
+        for name in options['extensions']['sub_alt_names']['names']:
+            domains.append(name)
     return domains
 
 
-def get_authorizations(acme_client, domains):
+def get_authorizations(acme_client, account_number, domains):
     authorizations = []
     try:
         for domain in domains:
-            authz_record = start_dns_challenge(acme_client, domain)
+            authz_record = start_dns_challenge(acme_client, account_number, domain)
             authorizations.append(authz_record)
 
         for authz_record in authorizations:
-            complete_dns_challenge(acme_client, authz_record)
+            complete_dns_challenge(acme_client, account_number, authz_record)
     finally:
         for authz_record in authorizations:
             dns_challenge = authz_record.dns_challenge
             delete_txt_record(
                 authz_record.change_id,
+                account_number,
                 dns_challenge.validation_domain_name(authz_record.host),
-                dns_challenge.validation(acme_client.key),
+                dns_challenge.validation(acme_client.key)
             )
 
     return authorizations
@@ -187,7 +173,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
             'ACME_DIRECTORY_URL',
             'ACME_TEL',
             'ACME_EMAIL',
-            'ACME_PRIVATE_KEY',
+            'ACME_AWS_ACCOUNT_NUMBER',
             'ACME_ROOT'
         ]
 
@@ -203,9 +189,10 @@ class ACMEIssuerPlugin(IssuerPlugin):
         :return: :raise Exception:
         """
         current_app.logger.debug("Requesting a new acme certificate: {0}".format(issuer_options))
-        acme_client = setup_acme_client()
+        acme_client, registration = setup_acme_client()
+        account_number = current_app.config.get('ACME_AWS_ACCOUNT_NUMBER')
         domains = get_domains(issuer_options)
-        authorizations = get_authorizations(acme_client, domains)
+        authorizations = get_authorizations(acme_client, account_number, domains)
         pem_certificate, pem_certificate_chain = request_certificate(acme_client, authorizations, csr)
         return pem_certificate, pem_certificate_chain
 
