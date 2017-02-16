@@ -337,15 +337,15 @@ def create_csr(**csr_config):
     builder = x509.CertificateSigningRequestBuilder()
     name_list = [x509.NameAttribute(x509.OID_COMMON_NAME, csr_config['common_name']),
                  x509.NameAttribute(x509.OID_EMAIL_ADDRESS, csr_config['owner'])]
-    if 'organization' in csr_config and len(csr_config['organization'].strip()) > 0:
+    if 'organization' in csr_config and csr_config['organization'].strip():
         name_list.append(x509.NameAttribute(x509.OID_ORGANIZATION_NAME, csr_config['organization']))
-    if 'organizational_unit' in csr_config and len(csr_config['organizational_unit'].strip()) > 0:
+    if 'organizational_unit' in csr_config and csr_config['organizational_unit'].strip():
         name_list.append(x509.NameAttribute(x509.OID_ORGANIZATIONAL_UNIT_NAME, csr_config['organizational_unit']))
-    if 'country' in csr_config and len(csr_config['country'].strip()) > 0:
+    if 'country' in csr_config and csr_config['country'].strip():
         name_list.append(x509.NameAttribute(x509.OID_COUNTRY_NAME, csr_config['country']))
-    if 'state' in csr_config and len(csr_config['state'].strip()) > 0:
+    if 'state' in csr_config and csr_config['state'].strip():
         name_list.append(x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, csr_config['state']))
-    if 'location' in csr_config and len(csr_config['location'].strip()) > 0:
+    if 'location' in csr_config and csr_config['location'].strip():
         name_list.append(x509.NameAttribute(x509.OID_LOCALITY_NAME, csr_config['location']))
     builder = builder.subject_name(x509.Name(name_list))
 
