@@ -78,14 +78,14 @@
               <input type="checkbox" ng-model="certificate.extensions.keyUsage.useKeyAgreement">Key Agreement
             </label>
           </div>
-          <div class="checkbox">
+          <div class="radio">
             <label>
-              <input type="checkbox" ng-model="certificate.extensions.keyUsage.useEncipherOnly">Encipher Only
+              <input type="radio" name="encipherOrDecipher" ng-model="certificate.encipherOrDecipher" value="useEncipherOnly" ng-click="certificate.setEncipherOrDecipher('useEncipherOnly')">Encipher Only
             </label>
           </div>
-          <div class="checkbox">
+          <div class="radio">
             <label>
-              <input type="checkbox" ng-model="certificate.extensions.keyUsage.useDecipherOnly">Decipher Only
+              <input type="radio" name="encipherOrDecipher" ng-model="certificate.encipherOrDecipher" value="useDecipherOnly" ng-click="certificate.setEncipherOrDecipher('useDecipherOnly')">Decipher Only
             </label>
           </div>
         </div>
