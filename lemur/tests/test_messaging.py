@@ -2,7 +2,7 @@ import pytest
 from freezegun import freeze_time
 
 from datetime import timedelta
-
+import arrow
 from moto import mock_ses
 
 
@@ -25,7 +25,14 @@ def test_needs_notification(app, certificate, notification):
 
 def test_get_certificates(app, certificate, notification):
     from lemur.notifications.messaging import get_certificates
+
+    certificate.not_after = arrow.utcnow() + timedelta(days=30)
     delta = certificate.not_after - timedelta(days=2)
+
+    notification.options = [
+        {'name': 'interval', 'value': 2}, {'name': 'unit', 'value': 'days'}
+    ]
+
     with freeze_time(delta.datetime):
         # no notification
         certs = len(get_certificates())
@@ -41,7 +48,7 @@ def test_get_certificates(app, certificate, notification):
     delta = certificate.not_after + timedelta(days=2)
     with freeze_time(delta.datetime):
         certificate.notifications.append(notification)
-        assert len(get_certificates()) == 1
+        assert len(get_certificates()) == 0
 
 
 def test_get_eligible_certificates(app, certificate, notification):

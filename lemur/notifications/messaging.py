@@ -44,7 +44,7 @@ def get_certificates():
         if needs_notification(c):
             certs.append(c)
 
-    return c
+    return certs
 
 
 def get_eligible_certificates():
@@ -162,6 +162,9 @@ def needs_notification(certificate):
     days = (certificate.not_after - now).days
 
     for notification in certificate.notifications:
+        if not notification.options:
+            return
+
         interval = get_plugin_option('interval', notification.options)
         unit = get_plugin_option('unit', notification.options)
 
