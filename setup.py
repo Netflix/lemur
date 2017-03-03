@@ -44,6 +44,7 @@ install_requires = [
     'Flask-Mail==0.9.1',
     'SQLAlchemy-Utils==0.32.12',
     'requests==2.11.1',
+    'ndg-httpsclient==0.4.2',
     'psycopg2==2.6.2',
     'arrow==0.10.0',
     'six==1.10.0',
