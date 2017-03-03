@@ -17,12 +17,32 @@ from lemur.common.schema import LemurSchema, LemurInputSchema, LemurOutputSchema
 from lemur.common.fields import KeyUsageExtension, ExtendedKeyUsageExtension, BasicConstraintsExtension, SubjectAlternativeNameExtension
 
 from lemur.plugins import plugins
+from lemur.plugins.utils import get_plugin_option
 from lemur.roles.models import Role
 from lemur.users.models import User
 from lemur.authorities.models import Authority
 from lemur.certificates.models import Certificate
 from lemur.destinations.models import Destination
 from lemur.notifications.models import Notification
+
+
+def validate_options(options):
+    """
+    Ensures that the plugin options are valid.
+    :param options:
+    :return:
+    """
+    interval = get_plugin_option('interval', options)
+    unit = get_plugin_option('unit', options)
+
+    if interval == 'month':
+        unit *= 30
+
+    elif interval == 'week':
+        unit *= 7
+
+    if unit > 90:
+        raise ValidationError('Notification cannot be more than 90 days into the future.')
 
 
 def get_object_attribute(data, many=False):
@@ -127,7 +147,7 @@ class AssociatedUserSchema(LemurInputSchema):
 
 
 class PluginInputSchema(LemurInputSchema):
-    plugin_options = fields.List(fields.Dict())
+    plugin_options = fields.List(fields.Dict(), validate=validate_options)
     slug = fields.String(required=True)
     title = fields.String()
     description = fields.String()

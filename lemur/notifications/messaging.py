@@ -11,12 +11,13 @@
 from itertools import groupby
 from collections import defaultdict
 
-from sqlalchemy.orm import joinedload
-
 import arrow
+from datetime import timedelta
 from flask import current_app
 
 from lemur import database, metrics
+from lemur.common.utils import windowed_query
+
 from lemur.certificates.schemas import certificate_notification_output_schema
 from lemur.certificates.models import Certificate
 
@@ -29,11 +30,21 @@ def get_certificates():
     Finds all certificates that are eligible for notifications.
     :return:
     """
-    return database.session_query(Certificate)\
-        .options(joinedload('notifications'))\
-        .filter(Certificate.notify == True)\
-        .filter(Certificate.expired == False)\
-        .filter(Certificate.notifications.any()).all()  # noqa
+    now = arrow.utcnow()
+    max = now + timedelta(days=90)
+
+    q = database.db.session.query(Certificate) \
+        .filter(Certificate.not_after <= max) \
+        .filter(Certificate.notify == True) \
+        .filter(Certificate.expired == False)  # noqa
+
+    certs = []
+
+    for c in windowed_query(q, Certificate.id, 100):
+        if needs_notification(c):
+            certs.append(c)
+
+    return c
 
 
 def get_eligible_certificates():

@@ -21,6 +21,7 @@ def create_default_expiration_notifications(name, recipients):
     already exist these will be returned instead of new notifications.
 
     :param name:
+    :param recipients:
     :return:
     """
     if not recipients:
