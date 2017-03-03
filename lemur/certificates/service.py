@@ -9,7 +9,7 @@ import arrow
 from datetime import timedelta
 
 from flask import current_app
-from sqlalchemy import func, or_, not_, cast, Boolean
+from sqlalchemy import func, or_, not_, cast, Boolean, Integer
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
@@ -299,6 +299,8 @@ def render(args):
                     Certificate.domains.any(Domain.name.ilike('%{0}%'.format(terms[1])))
                 )
             )
+        elif 'id' in terms:
+            query = query.filter(Certificate.id == cast(terms[1], Integer))
         else:
             query = database.filter(query, Certificate, terms)
 
