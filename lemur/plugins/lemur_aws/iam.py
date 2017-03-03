@@ -24,6 +24,9 @@ def retry_throttled(exception):
         if exception.response['Error']['Code'] == 'NoSuchEntity':
             return False
 
+    if isinstance(exception, botocore.errorfactory.NoSuchEntityException):
+        return False
+
     metrics.send('iam_retry', 'counter', 1)
     return True
 
@@ -93,7 +96,11 @@ def delete_cert(cert_name, **kwargs):
     :return:
     """
     client = kwargs.pop('client')
-    client.delete_server_certificate(ServerCertificateName=cert_name)
+    try:
+        client.delete_server_certificate(ServerCertificateName=cert_name)
+    except botocore.exceptions.ClientError as e:
+        if e.response['Error']['Code'] != 'NoSuchEntity':
+            raise e
 
 
 @sts_client('iam')
