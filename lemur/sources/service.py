@@ -114,7 +114,9 @@ def sync_certificates(source, user):
     for certificate in certificates:
         exists = certificate_service.get_by_name(certificate['name'])
 
-        certificate['owner'] = user.email
+        if not certificate.get('owner'):
+            certificate['owner'] = user.email
+
         certificate['creator'] = user
 
         if not exists:
