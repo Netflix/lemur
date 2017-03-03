@@ -20,7 +20,8 @@ def public_certificate(body):
     """
     try:
         parse_certificate(body)
-    except Exception:
+    except Exception as e:
+        current_app.logger.exception(e)
         raise ValidationError('Public certificate presented is not valid.')
 
 

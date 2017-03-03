@@ -205,7 +205,7 @@ class CertificateUploadInputSchema(CertificateCreationSchema):
 
     private_key = fields.String(validate=validators.private_key)
     body = fields.String(required=True, validate=validators.public_certificate)
-    chain = fields.String(validate=validators.public_certificate, missing=None)  # TODO this could be multiple certificates
+    chain = fields.String(validate=validators.public_certificate, missing=None, allow_none=True)  # TODO this could be multiple certificates
 
     destinations = fields.Nested(AssociatedDestinationSchema, missing=[], many=True)
     notifications = fields.Nested(AssociatedNotificationSchema, missing=[], many=True)

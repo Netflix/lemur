@@ -147,7 +147,7 @@ def domains(cert):
         for entry in entries:
             domains.append(entry)
     except Exception as e:
-        current_app.logger.warning("Failed to get SubjectAltName: {0}".format(e))
+        pass
 
     return domains
 
