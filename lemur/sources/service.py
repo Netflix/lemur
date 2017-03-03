@@ -67,7 +67,7 @@ def sync_endpoints(source):
         endpoints = s.get_endpoints(source.options)
     except NotImplementedError:
         current_app.logger.warning("Unable to sync endpoints for source {0} plugin has not implemented 'get_endpoints'".format(source.label))
-        return
+        return new, updated
 
     for endpoint in endpoints:
         exists = endpoint_service.get_by_dnsname(endpoint['dnsname'])
