@@ -48,7 +48,7 @@ install_requires = [
     'psycopg2==2.6.2',
     'arrow==0.10.0',
     'six==1.10.0',
-    'gunicorn==19.6.0',
+    'gunicorn==19.7.0',
     'marshmallow-sqlalchemy==0.12.1',
     'marshmallow==2.13.1',
     'cryptography==1.7',
