@@ -61,6 +61,17 @@ def issue_certificate(csr, options, private_key=None):
         # TODO figure out a better way to increment serial
         serial = int(uuid.uuid4())
 
+    # Ensure SAN extension is not empty and ensure options["common_name"] is among the list
+    current_app.logger.debug("Existing options: {0}".format(options))
+    current_app.logger.debug("Existing extensions: {0}".format(csr.extensions))
+    san_extension = csr.extensions.get_extension_for_oid(ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
+    current_app.logger.debug("Existing SAN extension: {0}".format(csr.san_extension))
+    san_dnsnames = san_extension.value.get_values_for_type(x509.DNSName)
+    if not options["common_name"] in san_dnsnames:
+        san_extension._general_names.append(x509.DNSName(options["common_name"]))
+    current_app.logger.debug("New SAN extension: {0}".format(csr.san_extension))
+    current_app.logger.debug("After extensions: {0}".format(csr.extensions))
+
     builder = x509.CertificateBuilder(
         issuer_name=issuer_subject,
         subject_name=csr.subject,
