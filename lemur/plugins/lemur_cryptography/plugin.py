@@ -62,15 +62,23 @@ def issue_certificate(csr, options, private_key=None):
         serial = int(uuid.uuid4())
 
     # Ensure SAN extension is not empty and ensure options["common_name"] is among the list
-    current_app.logger.debug("Existing options: {0}".format(options))
     current_app.logger.debug("Existing extensions: {0}".format(csr.extensions))
-    san_extension = csr.extensions.get_extension_for_oid(ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
-    current_app.logger.debug("Existing SAN extension: {0}".format(csr.san_extension))
+
+    san_extension = csr.extensions.get_extension_for_oid(x509.oid.ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
     san_dnsnames = san_extension.value.get_values_for_type(x509.DNSName)
     if not options["common_name"] in san_dnsnames:
-        san_extension._general_names.append(x509.DNSName(options["common_name"]))
-    current_app.logger.debug("New SAN extension: {0}".format(csr.san_extension))
-    current_app.logger.debug("After extensions: {0}".format(csr.extensions))
+        general_names = []
+        general_names.append(x509.DNSName(options["common_name"]))
+        for san in san_extension.value:
+            general_names.append(san)
+        san_extension = x509.Extension(san_extension.oid, san_extension.critical, x509.SubjectAlternativeName(general_names))
+
+    # Create new list of extensions to add to the certificate, with modified SAN extension from above
+    certificate_extensions = []
+    for extension in csr.extensions._extensions:
+        if not isinstance(extension.value, x509.SubjectAlternativeName):
+            certificate_extensions.append(extension)
+    certificate_extensions.append(san_extension)
 
     builder = x509.CertificateBuilder(
         issuer_name=issuer_subject,
@@ -78,8 +86,13 @@ def issue_certificate(csr, options, private_key=None):
         public_key=csr.public_key(),
         not_valid_before=options['validity_start'],
         not_valid_after=options['validity_end'],
-        serial_number=serial,
-        extensions=csr.extensions._extensions)
+        serial_number=serial)
+
+    # Add modified list of CSR extensions to the certificate
+    for extension in certificate_extensions:
+        builder = builder.add_extension(extension.value, extension.critical)
+
+    current_app.logger.debug("After extensions: {0}".format(builder._extensions))
 
     for k, v in options.get('extensions', {}).items():
         if k == 'authority_key_identifier':
