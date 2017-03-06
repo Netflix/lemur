@@ -89,8 +89,6 @@ def issue_certificate(csr, options, private_key=None):
                     aki = x509.AuthorityKeyIdentifier(authority_key_identifier_subject.digest, None, None)
                 else:
                     aki = x509.AuthorityKeyIdentifier.from_issuer_public_key(authority_key_identifier_public)
-            if authority_key_identifier and authority_identifier:
-                aki = x509.AuthorityKeyIdentifier(aki.key_identifier, [x509.DirectoryName(authority_key_identifier_issuer)], authority_key_identifier_serial)
             elif authority_identifier:
                 aki = x509.AuthorityKeyIdentifier(None, [x509.DirectoryName(authority_key_identifier_issuer)], authority_key_identifier_serial)
             builder = builder.add_extension(aki, critical=False)
