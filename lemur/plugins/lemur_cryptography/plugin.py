@@ -61,27 +61,8 @@ def issue_certificate(csr, options, private_key=None):
         # TODO figure out a better way to increment serial
         serial = int(uuid.uuid4())
 
-    try:
-        san_extension = csr.extensions.get_extension_for_oid(x509.oid.ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
-        san_extension = san_extension.value
-        san_dnsnames = san_extension.get_values_for_type(x509.DNSName)
-    except x509.extensions.ExtensionNotFound:
-        san_extension = []
-        san_dnsnames = []
-
-    if not options["common_name"] in san_dnsnames:
-        general_names = []
-        general_names.append(x509.DNSName(options["common_name"]))
-        for san in san_extension:
-            general_names.append(san)
-        san_extension = x509.Extension(x509.oid.ExtensionOID.SUBJECT_ALTERNATIVE_NAME, True, x509.SubjectAlternativeName(general_names))
-
-    # Create new list of extensions to add to the certificate, with modified SAN extension from above
-    certificate_extensions = []
-    for extension in csr.extensions._extensions:
-        if not isinstance(extension.value, x509.SubjectAlternativeName):
-            certificate_extensions.append(extension)
-    certificate_extensions.append(san_extension)
+    normalize_extensions(csr)
+    current_app.logger.info("post-post-normalized extensions: {0}".format(csr.extensions))
 
     builder = x509.CertificateBuilder(
         issuer_name=issuer_subject,
@@ -89,11 +70,8 @@ def issue_certificate(csr, options, private_key=None):
         public_key=csr.public_key(),
         not_valid_before=options['validity_start'],
         not_valid_after=options['validity_end'],
-        serial_number=serial)
-
-    # Add modified list of CSR extensions to the certificate
-    for extension in certificate_extensions:
-        builder = builder.add_extension(extension.value, extension.critical)
+        serial_number=serial,
+        extensions=csr.extensions._extensions)
 
     for k, v in options.get('extensions', {}).items():
         if k == 'authority_key_identifier':
@@ -147,6 +125,55 @@ def issue_certificate(csr, options, private_key=None):
     ).decode('utf-8')
 
     return cert_pem, chain_cert_pem
+
+
+def normalize_extensions(csr):
+    current_app.logger.info("pre-normalized extensions: {0}".format(csr.extensions))
+
+    try:
+        san_extension = csr.extensions.get_extension_for_oid(x509.oid.ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
+        san_dnsnames = san_extension.value.get_values_for_type(x509.DNSName)
+    except x509.extensions.ExtensionNotFound:
+        san_dnsnames = []
+        san_extension = x509.Extension(x509.oid.ExtensionOID.SUBJECT_ALTERNATIVE_NAME, True, x509.SubjectAlternativeName(san_dnsnames))
+    try:
+        bc_extension = csr.extensions.get_extension_for_oid(x509.oid.ExtensionOID.BASIC_CONSTRAINTS)
+    except x509.extensions.ExtensionNotFound:
+        bc_extension = x509.Extension(x509.oid.ExtensionOID.BASIC_CONSTRAINTS, True, x509.BasicConstraints(ca=False, path_length=None))
+
+    common_name = csr.subject.get_attributes_for_oid(x509.oid.NameOID.COMMON_NAME)
+
+    if not (common_name in san_dnsnames and " " in common_name):
+        # CommonName isn't in SAN and CommonName has no spaces that will cause idna errors
+        # Create new list of GeneralNames for including in the SAN extension
+        general_names = []
+        try:
+            # Try adding Subject CN as first SAN general_name
+            general_names.append(x509.DNSName(common_name))
+        except TypeError:
+            # CommonName probably not a valid string for DNSName
+            pass
+
+        # Add all submitted SAN names to general_names
+        for san in san_extension.value:
+            general_names.append(san)
+
+        if len(general_names) == 0:
+            # If the list of general names is still 0, skip the extension
+            san_extension = None
+        else:
+            san_extension = x509.Extension(x509.oid.ExtensionOID.SUBJECT_ALTERNATIVE_NAME, True, x509.SubjectAlternativeName(general_names))
+
+    def filter_san_extensions(ext):
+        if not isinstance(ext.value, x509.SubjectAlternativeName):
+            return ext
+
+    # Remove original san extension from CSR
+    filter(filter_san_extensions, csr.extensions._extensions)
+    if san_extension and len(san_extension.value._general_names):
+        csr.extensions._extensions.append(san_extension)
+
+    current_app.logger.info("post-normalized extensions: {0}".format(csr.extensions))
 
 
 class CryptographyIssuerPlugin(IssuerPlugin):
