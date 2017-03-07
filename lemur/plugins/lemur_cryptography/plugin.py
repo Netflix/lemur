@@ -131,14 +131,13 @@ def normalize_extensions(csr):
         san_extension = csr.extensions.get_extension_for_oid(x509.oid.ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
         san_dnsnames = san_extension.value.get_values_for_type(x509.DNSName)
     except x509.extensions.ExtensionNotFound:
-        current_app.logger.info("extensionnotfound")
         san_dnsnames = []
         san_extension = x509.Extension(x509.oid.ExtensionOID.SUBJECT_ALTERNATIVE_NAME, True, x509.SubjectAlternativeName(san_dnsnames))
 
     common_name = csr.subject.get_attributes_for_oid(x509.oid.NameOID.COMMON_NAME)
     common_name = common_name[0].value
 
-    if not (common_name in san_dnsnames and " " in common_name):
+    if common_name not in san_dnsnames and " " not in common_name:
         # CommonName isn't in SAN and CommonName has no spaces that will cause idna errors
         # Create new list of GeneralNames for including in the SAN extension
         general_names = []
