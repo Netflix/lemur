@@ -61,17 +61,20 @@ def issue_certificate(csr, options, private_key=None):
         # TODO figure out a better way to increment serial
         serial = int(uuid.uuid4())
 
-    # Ensure SAN extension is not empty and ensure options["common_name"] is among the list
-    current_app.logger.debug("Existing extensions: {0}".format(csr.extensions))
+    try:
+        san_extension = csr.extensions.get_extension_for_oid(x509.oid.ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
+        san_extension = san_extension.value
+        san_dnsnames = san_extension.get_values_for_type(x509.DNSName)
+    except x509.extensions.ExtensionNotFound:
+        san_extension = []
+        san_dnsnames = []
 
-    san_extension = csr.extensions.get_extension_for_oid(x509.oid.ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
-    san_dnsnames = san_extension.value.get_values_for_type(x509.DNSName)
     if not options["common_name"] in san_dnsnames:
         general_names = []
         general_names.append(x509.DNSName(options["common_name"]))
-        for san in san_extension.value:
+        for san in san_extension:
             general_names.append(san)
-        san_extension = x509.Extension(san_extension.oid, san_extension.critical, x509.SubjectAlternativeName(general_names))
+        san_extension = x509.Extension(x509.oid.ExtensionOID.SUBJECT_ALTERNATIVE_NAME, True, x509.SubjectAlternativeName(general_names))
 
     # Create new list of extensions to add to the certificate, with modified SAN extension from above
     certificate_extensions = []
@@ -91,8 +94,6 @@ def issue_certificate(csr, options, private_key=None):
     # Add modified list of CSR extensions to the certificate
     for extension in certificate_extensions:
         builder = builder.add_extension(extension.value, extension.critical)
-
-    current_app.logger.debug("After extensions: {0}".format(builder._extensions))
 
     for k, v in options.get('extensions', {}).items():
         if k == 'authority_key_identifier':
