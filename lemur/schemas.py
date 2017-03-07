@@ -35,6 +35,9 @@ def validate_options(options):
     interval = get_plugin_option('interval', options)
     unit = get_plugin_option('unit', options)
 
+    if not interval and not unit:
+        return
+
     if interval == 'month':
         unit *= 30
 
