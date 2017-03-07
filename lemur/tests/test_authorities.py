@@ -13,7 +13,7 @@ def test_authority_input_schema(client, role):
         'owner': 'jim@example.com',
         'description': 'An example authority.',
         'commonName': 'AnExampleAuthority',
-        'pluginName': {'slug': 'verisign-issuer'},
+        'plugin': {'slug': 'verisign-issuer', 'plugin_options': [{'name': 'test', 'value': 'blah'}]},
         'type': 'root',
         'signingAlgorithm': 'sha256WithRSA',
         'keyType': 'RSA2048',
