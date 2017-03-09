@@ -470,6 +470,11 @@ def get_certificate_primitives(certificate):
     """
     start, end = calculate_reissue_range(certificate.not_before, certificate.not_after)
     data = CertificateInputSchema().load(CertificateOutputSchema().dump(certificate).data).data
+
+    # we can't quite tell if we are using a custom name, as this is an automated process (typically)
+    # we will rely on the Lemur generated name
+    data.pop('name', None)
+
     data['validity_start'] = start
     data['validity_end'] = end
     return data
@@ -484,8 +489,7 @@ def reissue_certificate(certificate, replace=None, user=None):
     :return:
     """
     primitives = get_certificate_primitives(certificate)
-    from pprint import pprint
-    pprint(primitives)
+
     if not user:
         primitives['creator'] = certificate.user
 
