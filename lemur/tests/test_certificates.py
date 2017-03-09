@@ -53,7 +53,7 @@ def test_get_certificate_primitives(certificate):
 
     with freeze_time(datetime.date(year=2016, month=10, day=30)):
         primitives = get_certificate_primitives(certificate)
-        assert len(primitives) == 21
+        assert len(primitives) == 20
 
 
 def test_certificate_edit_schema(session):
@@ -321,7 +321,7 @@ def test_import(user):
     assert str(cert.not_after) == '2040-01-01T20:30:52+00:00'
     assert str(cert.not_before) == '2015-06-26T20:30:52+00:00'
     assert cert.issuer == 'Example'
-    assert cert.name == 'long.lived.com-Example-20150626-20400101-1'
+    assert cert.name == 'long.lived.com-Example-20150626-20400101-2'
 
     cert = import_certificate(body=INTERNAL_VALID_LONG_STR, chain=INTERNAL_VALID_SAN_STR, private_key=PRIVATE_KEY_STR, owner='joe@example.com', name='ACustomName2', creator=user['user'])
     assert cert.name == 'ACustomName2'
@@ -333,7 +333,7 @@ def test_upload(user):
     assert str(cert.not_after) == '2040-01-01T20:30:52+00:00'
     assert str(cert.not_before) == '2015-06-26T20:30:52+00:00'
     assert cert.issuer == 'Example'
-    assert cert.name == 'long.lived.com-Example-20150626-20400101-2'
+    assert cert.name == 'long.lived.com-Example-20150626-20400101-3'
 
     cert = upload(body=INTERNAL_VALID_LONG_STR, chain=INTERNAL_VALID_SAN_STR, private_key=PRIVATE_KEY_STR, owner='joe@example.com', name='ACustomName', creator=user['user'])
     assert 'ACustomName' in cert.name
