@@ -107,10 +107,15 @@ angular.module('lemur')
           });
         },
         useTemplate: function () {
-          var saveSubAltNames = {};
-          if (this.extensions && this.extensions.subAltNames) {
-            saveSubAltNames = this.extensions.subAltNames;
+          if (this.extensions === undefined) {
+            this.extensions = {};
           }
+
+          if (this.extensions.subAltNames === undefined) {
+            this.extensions.subAltNames = {'names': []};
+          }
+
+          var saveSubAltNames = this.extensions.subAltNames;
           this.extensions = this.template.extensions;
           this.extensions.subAltNames = saveSubAltNames;
         },

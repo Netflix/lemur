@@ -61,6 +61,8 @@ def issue_certificate(csr, options, private_key=None):
         # TODO figure out a better way to increment serial
         serial = int(uuid.uuid4())
 
+    extensions = normalize_extensions(csr)
+
     builder = x509.CertificateBuilder(
         issuer_name=issuer_subject,
         subject_name=csr.subject,
@@ -68,7 +70,7 @@ def issue_certificate(csr, options, private_key=None):
         not_valid_before=options['validity_start'],
         not_valid_after=options['validity_end'],
         serial_number=serial,
-        extensions=csr.extensions._extensions)
+        extensions=extensions)
 
     for k, v in options.get('extensions', {}).items():
         if k == 'authority_key_identifier':
@@ -89,8 +91,6 @@ def issue_certificate(csr, options, private_key=None):
                     aki = x509.AuthorityKeyIdentifier(authority_key_identifier_subject.digest, None, None)
                 else:
                     aki = x509.AuthorityKeyIdentifier.from_issuer_public_key(authority_key_identifier_public)
-            if authority_key_identifier and authority_identifier:
-                aki = x509.AuthorityKeyIdentifier(aki.key_identifier, [x509.DirectoryName(authority_key_identifier_issuer)], authority_key_identifier_serial)
             elif authority_identifier:
                 aki = x509.AuthorityKeyIdentifier(None, [x509.DirectoryName(authority_key_identifier_issuer)], authority_key_identifier_serial)
             builder = builder.add_extension(aki, critical=False)
@@ -124,6 +124,48 @@ def issue_certificate(csr, options, private_key=None):
     ).decode('utf-8')
 
     return cert_pem, chain_cert_pem
+
+
+def normalize_extensions(csr):
+    try:
+        san_extension = csr.extensions.get_extension_for_oid(x509.oid.ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
+        san_dnsnames = san_extension.value.get_values_for_type(x509.DNSName)
+    except x509.extensions.ExtensionNotFound:
+        san_dnsnames = []
+        san_extension = x509.Extension(x509.oid.ExtensionOID.SUBJECT_ALTERNATIVE_NAME, True, x509.SubjectAlternativeName(san_dnsnames))
+
+    common_name = csr.subject.get_attributes_for_oid(x509.oid.NameOID.COMMON_NAME)
+    common_name = common_name[0].value
+
+    if common_name not in san_dnsnames and " " not in common_name:
+        # CommonName isn't in SAN and CommonName has no spaces that will cause idna errors
+        # Create new list of GeneralNames for including in the SAN extension
+        general_names = []
+        try:
+            # Try adding Subject CN as first SAN general_name
+            general_names.append(x509.DNSName(common_name))
+        except TypeError:
+            # CommonName probably not a valid string for DNSName
+            pass
+
+        # Add all submitted SAN names to general_names
+        for san in san_extension.value:
+            general_names.append(san)
+
+        san_extension = x509.Extension(x509.oid.ExtensionOID.SUBJECT_ALTERNATIVE_NAME, True, x509.SubjectAlternativeName(general_names))
+
+    # Remove original san extension from CSR and add new SAN extension
+    extensions = list(filter(filter_san_extensions, csr.extensions._extensions))
+    if san_extension is not None and len(san_extension.value._general_names) > 0:
+        extensions.append(san_extension)
+
+    return extensions
+
+
+def filter_san_extensions(ext):
+    if ext.oid == x509.oid.ExtensionOID.SUBJECT_ALTERNATIVE_NAME:
+        return False
+    return True
 
 
 class CryptographyIssuerPlugin(IssuerPlugin):

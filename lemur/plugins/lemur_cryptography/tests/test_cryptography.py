@@ -30,6 +30,7 @@ def test_issue_certificate(authority):
     from lemur.plugins.lemur_cryptography.plugin import issue_certificate
 
     options = {
+        'common_name': 'Example.com',
         'authority': authority,
         'validity_start': arrow.get('2016-12-01').datetime,
         'validity_end': arrow.get('2016-12-02').datetime
