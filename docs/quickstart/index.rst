@@ -79,7 +79,7 @@ And then run:
 
 .. code-block:: bash
 
-  $ make develop
+  $ make release
 
 .. note:: This command will install npm dependencies as well as compile static assets.
 
