@@ -59,7 +59,7 @@ Create the virtual environment, activate it and enter the Lemur's directory:
 
 .. code-block:: bash
 
-    $ virtualenv lemur
+    $ virtualenv -p python3 lemur
     $ source /www/lemur/bin/activate
     $ cd lemur
 
