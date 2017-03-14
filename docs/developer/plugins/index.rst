@@ -25,7 +25,7 @@ if you want to pull the version using pkg_resources (which is what we recommend)
     try:
         VERSION = __import__('pkg_resources') \
             .get_distribution(__name__).version
-    except Exception, e:
+    except Exception as e:
         VERSION = 'unknown'
 
 Inside of ``plugin.py``, you'll declare your Plugin class::
@@ -70,9 +70,17 @@ at multiple plugins within your package::
         },
     )
 
+Once your plugin files are in place and the ``/www/lemur/setup.py`` file has been modified, you can load your plugin into your instance by reinstalling lemur:
+::
+
+    (lemur)$cd /www/lemur
+    (lemur)$pip install -e .
+
 That's it! Users will be able to install your plugin via ``pip install <package name>``.
 
 .. SeeAlso:: For more information about python packages see `Python Packaging <https://packaging.python.org/en/latest/distributing.html>`_
+
+.. SeeAlso:: For an example of a plugin operation outside of Lemur's core, see `lemur-digicert <https://github.com/opendns/lemur-digicert>`_
 
 .. _PluginInterfaces:
 
