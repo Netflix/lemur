@@ -40,7 +40,7 @@ def send_via_smtp(subject, body, targets):
     :param targets:
     :return:
     """
-    msg = Message(subject, recipients=targets)
+    msg = Message(subject, recipients=targets, sender=current_app.config.get("LEMUR_EMAIL"))
     msg.body = ""  # kinda a weird api for sending html emails
     msg.html = body
     smtp_mail.send(msg)

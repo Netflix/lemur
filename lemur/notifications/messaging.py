@@ -15,6 +15,8 @@ import arrow
 from datetime import timedelta
 from flask import current_app
 
+from sqlalchemy import and_
+
 from lemur import database, metrics
 from lemur.common.utils import windowed_query
 
@@ -25,18 +27,24 @@ from lemur.plugins import plugins
 from lemur.plugins.utils import get_plugin_option
 
 
-def get_certificates():
+def get_certificates(exclude):
     """
     Finds all certificates that are eligible for notifications.
+    :param exclude:
     :return:
     """
     now = arrow.utcnow()
     max = now + timedelta(days=90)
 
+    exclude_conditions = []
+    for e in exclude:
+        exclude_conditions.append(~Certificate.name.ilike('%{}%'.format(e)))
+
     q = database.db.session.query(Certificate) \
         .filter(Certificate.not_after <= max) \
         .filter(Certificate.notify == True) \
-        .filter(Certificate.expired == False)  # noqa
+        .filter(Certificate.expired == False) \
+        .filter(and_(*exclude_conditions))  # noqa
 
     certs = []
 
@@ -47,13 +55,14 @@ def get_certificates():
     return certs
 
 
-def get_eligible_certificates():
+def get_eligible_certificates(exclude):
     """
     Finds all certificates that are eligible for certificate expiration.
+    :param exclude:
     :return:
     """
     certificates = defaultdict(dict)
-    certs = get_certificates()
+    certs = get_certificates(exclude)
 
     # group by owner
     for owner, items in groupby(certs, lambda x: x.owner):
@@ -91,7 +100,7 @@ def send_notification(event_type, data, targets, notification):
         current_app.logger.exception(e)
 
 
-def send_expiration_notifications():
+def send_expiration_notifications(exclude):
     """
     This function will check for upcoming certificate expiration,
     and send out notification emails at given intervals.
@@ -102,7 +111,7 @@ def send_expiration_notifications():
     security_email = current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL')
 
     security_data = []
-    for owner, notification_group in get_eligible_certificates().items():
+    for owner, notification_group in get_eligible_certificates(exclude).items():
 
         for notification_label, certificates in notification_group.items():
             notification_data = []
