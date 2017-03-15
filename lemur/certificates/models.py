@@ -12,6 +12,8 @@ from flask import current_app
 from cryptography import x509
 from cryptography.hazmat.primitives.asymmetric import rsa
 
+from idna.core import InvalidCodepoint
+
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import case
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -244,48 +246,52 @@ class Certificate(db.Model):
         return_extensions = {
             'sub_alt_names': {'names': []}
         }
-        cert = lemur.common.utils.parse_certificate(self.body)
-        for extension in cert.extensions:
-            value = extension.value
-            if isinstance(value, x509.BasicConstraints):
-                return_extensions['basic_constraints'] = value
 
-            elif isinstance(value, x509.SubjectAlternativeName):
-                return_extensions['sub_alt_names']['names'] = value
+        try:
+            cert = lemur.common.utils.parse_certificate(self.body)
+            for extension in cert.extensions:
+                value = extension.value
+                if isinstance(value, x509.BasicConstraints):
+                    return_extensions['basic_constraints'] = value
 
-            elif isinstance(value, x509.ExtendedKeyUsage):
-                return_extensions['extended_key_usage'] = value
+                elif isinstance(value, x509.SubjectAlternativeName):
+                    return_extensions['sub_alt_names']['names'] = value
 
-            elif isinstance(value, x509.KeyUsage):
-                return_extensions['key_usage'] = value
+                elif isinstance(value, x509.ExtendedKeyUsage):
+                    return_extensions['extended_key_usage'] = value
 
-            elif isinstance(value, x509.SubjectKeyIdentifier):
-                return_extensions['subject_key_identifier'] = {'include_ski': True}
+                elif isinstance(value, x509.KeyUsage):
+                    return_extensions['key_usage'] = value
 
-            elif isinstance(value, x509.AuthorityInformationAccess):
-                return_extensions['certificate_info_access'] = {'include_aia': True}
+                elif isinstance(value, x509.SubjectKeyIdentifier):
+                    return_extensions['subject_key_identifier'] = {'include_ski': True}
 
-            elif isinstance(value, x509.AuthorityKeyIdentifier):
-                aki = {
-                    'use_key_identifier': False,
-                    'use_authority_cert': False
-                }
+                elif isinstance(value, x509.AuthorityInformationAccess):
+                    return_extensions['certificate_info_access'] = {'include_aia': True}
 
-                if value.key_identifier:
-                    aki['use_key_identifier'] = True
+                elif isinstance(value, x509.AuthorityKeyIdentifier):
+                    aki = {
+                        'use_key_identifier': False,
+                        'use_authority_cert': False
+                    }
 
-                if value.authority_cert_issuer:
-                    aki['use_authority_cert'] = True
+                    if value.key_identifier:
+                        aki['use_key_identifier'] = True
 
-                return_extensions['authority_key_identifier'] = aki
+                    if value.authority_cert_issuer:
+                        aki['use_authority_cert'] = True
 
-            # TODO: Don't support CRLDistributionPoints yet https://github.com/Netflix/lemur/issues/662
-            elif isinstance(value, x509.CRLDistributionPoints):
-                current_app.logger.warning('CRLDistributionPoints not yet supported for clone operation.')
+                    return_extensions['authority_key_identifier'] = aki
 
-            # TODO: Not supporting custom OIDs yet. https://github.com/Netflix/lemur/issues/665
-            else:
-                current_app.logger.warning('Custom OIDs not yet supported for clone operation.')
+                # TODO: Don't support CRLDistributionPoints yet https://github.com/Netflix/lemur/issues/662
+                elif isinstance(value, x509.CRLDistributionPoints):
+                    current_app.logger.warning('CRLDistributionPoints not yet supported for clone operation.')
+
+                # TODO: Not supporting custom OIDs yet. https://github.com/Netflix/lemur/issues/665
+                else:
+                    current_app.logger.warning('Custom OIDs not yet supported for clone operation.')
+        except InvalidCodepoint as e:
+            current_app.logger.warning('Unable to parse extensions due to underscore in dns name')
 
         return return_extensions
 
