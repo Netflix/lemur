@@ -71,7 +71,7 @@ def test_send_expiration_notification(certificate, notification, notification_pl
 
     delta = certificate.not_after - timedelta(days=10)
     with freeze_time(delta.datetime):
-        assert send_expiration_notifications() == (2, 0)
+        assert send_expiration_notifications([]) == (2, 0)
 
 
 @mock_ses

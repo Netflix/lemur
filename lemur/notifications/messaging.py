@@ -27,7 +27,7 @@ from lemur.plugins import plugins
 from lemur.plugins.utils import get_plugin_option
 
 
-def get_certificates(exclude):
+def get_certificates(exclude=None):
     """
     Finds all certificates that are eligible for notifications.
     :param exclude:
@@ -36,15 +36,17 @@ def get_certificates(exclude):
     now = arrow.utcnow()
     max = now + timedelta(days=90)
 
-    exclude_conditions = []
-    for e in exclude:
-        exclude_conditions.append(~Certificate.name.ilike('%{}%'.format(e)))
-
     q = database.db.session.query(Certificate) \
         .filter(Certificate.not_after <= max) \
         .filter(Certificate.notify == True) \
-        .filter(Certificate.expired == False) \
-        .filter(and_(*exclude_conditions))  # noqa
+        .filter(Certificate.expired == False)  # noqa
+
+    exclude_conditions = []
+    if exclude:
+        for e in exclude:
+            exclude_conditions.append(~Certificate.name.ilike('%{}%'.format(e)))
+
+        q = q.filter(and_(*exclude_conditions))
 
     certs = []
 
@@ -55,14 +57,14 @@ def get_certificates(exclude):
     return certs
 
 
-def get_eligible_certificates(exclude):
+def get_eligible_certificates(exclude=None):
     """
     Finds all certificates that are eligible for certificate expiration.
     :param exclude:
     :return:
     """
     certificates = defaultdict(dict)
-    certs = get_certificates(exclude)
+    certs = get_certificates(exclude=exclude)
 
     # group by owner
     for owner, items in groupby(certs, lambda x: x.owner):
@@ -111,7 +113,7 @@ def send_expiration_notifications(exclude):
     security_email = current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL')
 
     security_data = []
-    for owner, notification_group in get_eligible_certificates(exclude).items():
+    for owner, notification_group in get_eligible_certificates(exclude=exclude).items():
 
         for notification_label, certificates in notification_group.items():
             notification_data = []
