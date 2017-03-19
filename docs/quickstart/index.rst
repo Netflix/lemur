@@ -52,6 +52,10 @@ Clone Lemur inside the just created directory and give yourself write permission
 
 .. code-block:: bash
 
+    $ sudo useradd lemur
+    $ sudo passwd lemur
+    $ sudo mkdir /home/lemur
+    $ sudo chown lemur:lemur /home/lemur
     $ sudo git clone https://github.com/Netflix/lemur
     $ sudo chown -R lemur lemur/
 
@@ -59,6 +63,7 @@ Create the virtual environment, activate it and enter the Lemur's directory:
 
 .. code-block:: bash
 
+    $ su lemur
     $ virtualenv -p python3 lemur
     $ source /www/lemur/bin/activate
     $ cd lemur
@@ -105,9 +110,24 @@ Update your configuration
 
 Once created, you will need to update the configuration file with information about your environment, such as which database to talk to, where keys are stored etc.
 
+.. code-block:: bash
+
+    $ vi ~/.lemur/lemur.conf.py
+
 .. note:: If you are unfamiliar with the SQLALCHEMY_DATABASE_URI string it can be broken up like so:
       ``postgresql://userame:password@<database-fqdn>:<database-port>/<database-name>``
 
+Before Lemur will run you need to fill in a few required variables in the configuration file:
+
+.. code-block:: bash
+
+    LEMUR_SECURITY_TEAM_EMAIL
+    #/the e-mail address needs to be enclosed in quotes
+    LEMUR_DEFAUL_COUNTRY
+    LEMUR_DEFAULT_STATE
+    LEMUR_DEFAULT_LOCATION
+    LEMUR_DEFAUTL_ORGANIZATION
+    LEMUR_DEFAULT_ORGANIZATIONAL_UNIT
 
 Setup Postgres
 --------------
