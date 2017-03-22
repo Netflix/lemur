@@ -123,7 +123,7 @@ Before Lemur will run you need to fill in a few required variables in the config
 
     LEMUR_SECURITY_TEAM_EMAIL
     #/the e-mail address needs to be enclosed in quotes
-    LEMUR_DEFAUL_COUNTRY
+    LEMUR_DEFAULT_COUNTRY
     LEMUR_DEFAULT_STATE
     LEMUR_DEFAULT_LOCATION
     LEMUR_DEFAUTL_ORGANIZATION
