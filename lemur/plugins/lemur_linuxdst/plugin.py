@@ -41,7 +41,7 @@ class LinuxDstPlugin(DestinationPlugin):
             "available": [
                 "NGINX",
                 "3File"
-            ]
+            ],
             "name": "exportType",
             "required": True,
             "value": "NGINX",
