@@ -1,8 +1,6 @@
 #!/usr/bin/python
-from lemur.plugins.bases import DestinationPlugin, SourcePlugin
-from lemur.plugins import lemur_linuxdst as linuxdst
+from lemur.plugins.bases import DestinationPlugin
 from lemur.plugins.lemur_linuxdst import remote_host
-import os
 # It is required that you setup certificate based authentication for the destiation host
 
 
