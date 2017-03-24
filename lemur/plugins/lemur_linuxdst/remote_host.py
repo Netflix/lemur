@@ -2,6 +2,7 @@
 from lemur.certificates import service
 import os
 
+
 def createCert(name, tempFolder, exportType):
 
     lemCert = service.get_by_name(name)
@@ -25,6 +26,7 @@ def createCert(name, tempFolder, exportType):
     keyOut.write(lemCert.private_key)
     keyOut.close()
     return {'certDir': '{0}/{1}'.format(tempFolder, lemCert.cn)}
+
 
 def copyCert(dstUser, dstHost, dstDir, certDir, options, **kwargs):
     os.system('scp -r {0} {1}@{2}:{3}'.format(certDir, dstUser, dstHost, dstDir))
