@@ -3,8 +3,11 @@ from lemur.plugins.bases import DestinationPlugin, SourcePlugin
 from lemur.plugins import lemur_linuxdst as linuxdst
 from lemur.plugins.lemur_linuxdst import remote_host
 import os
-#It is required that you setup certificate based authentication for the destiation host
+# It is required that you setup certificate based authentication for the destiation host
+
+
 class LinuxDstPlugin(DestinationPlugin):
+
     title = 'Linux Destination Plugin'
     slug = 'linux-destination'
     description = 'Allow the uploading of certificates to a Linux host'
@@ -35,7 +38,7 @@ class LinuxDstPlugin(DestinationPlugin):
             'default': '/etc/nginx/certs/'
         },
         {
-            "available":[
+            "available": [
                 "NGINX",
                 "3File"
             ]
@@ -49,8 +52,8 @@ class LinuxDstPlugin(DestinationPlugin):
     requires_key = False
 
     def upload(self, name, body, private_key, cert_chain, options, **kwargs):
-        #request.post('a third party')
-        tempFolder = '/www/lemur/lemur/plugins/lemur_linuxdst/temp'
+        # request.post('a third party')
+        tempFolder = '/www/lemur-dev/lemur/plugins/lemur_linuxdst/temp'
         exportType = self.get_option('exportType', options)
         certInfo = remote_host.createCert(name, tempFolder, exportType)
         dstUser = self.get_option('dstUser', options)
