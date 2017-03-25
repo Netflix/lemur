@@ -51,10 +51,10 @@ class LinuxDstPlugin(DestinationPlugin):
 
     def upload(self, name, body, private_key, cert_chain, options, **kwargs):
         # request.post('a third party')
-        tempFolder = '/www/lemur-dev/lemur/plugins/lemur_linuxdst/temp'
-        exportType = self.get_option('exportType', options)
-        certInfo = remote_host.createCert(name, tempFolder, exportType)
-        dstUser = self.get_option('dstUser', options)
-        dstHost = self.get_option('dstHost', options)
-        dstDir = self.get_option('dstDir', options)
-        remote_host.copyCert(dstUser, dstHost, dstDir, certInfo['certDir'], options)
+        temp_folder = '/www/lemur-dev/lemur/plugins/lemur_linuxdst/temp'
+        export_type = self.get_option('exportType', options)
+        cert_info = remote_host.create_cert(name, temp_folder, export_type)
+        dst_user = self.get_option('dstUser', options)
+        dst_host = self.get_option('dstHost', options)
+        dst_dir = self.get_option('dstDir', options)
+        remote_host.copy_cert(dst_user, dst_host, dst_dir, cert_info['cert_dir'], options)
