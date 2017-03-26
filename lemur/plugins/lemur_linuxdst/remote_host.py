@@ -30,7 +30,7 @@ def create_cert(name, dst_dir, export_type, dst_user, dst_priv, dst_priv_key, ds
     dst_file = 'cert.pem'
     if export_type == 'NGINX':
         dst_data = lem_cert.body + '\n' + lem_cert.chain
-        chin_req = False
+        chain_req = False
     elif export_type == '3File':
         dst_data = lem_cert.body
         chain_req = True
