@@ -1,6 +1,7 @@
 #!/usr/bin/python
 from lemur.certificates import service
 import paramiko
+import stat
 
 
 def copy_cert(cert_cn, dst_user, dst_priv, dst_priv_key, dst_host, dst_port, dst_dir, dst_file, dst_data):
@@ -25,6 +26,7 @@ def copy_cert(cert_cn, dst_user, dst_priv, dst_priv_key, dst_host, dst_port, dst
     cert_out = sftp.open(dst_dir_cn + '/' + dst_file, 'w')
     cert_out.write(dst_data)
     cert_out.close()
+    sftp.chmod(dst_dir_cn + '/' + dst_file, (stat.S_IRUSR))
     ssh.close()
 
 
