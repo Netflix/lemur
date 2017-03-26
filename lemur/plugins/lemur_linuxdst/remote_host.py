@@ -4,7 +4,7 @@ import paramiko
 
 
 def copy_cert(cert_cn, dst_user, dst_priv, dst_priv_key, dst_host, dst_port, dst_dir, dst_file, dst_data):
-    
+
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     if dst_priv_key is None:
