@@ -81,4 +81,4 @@ class LinuxDstPlugin(DestinationPlugin):
         if dst_priv_key.length is 0:
             dst_priv_key = None
         dst_dir = self.get_option('dstDir', options)
-        remote_host.create_cert(name, dst_dir, export_type, dstUser, dst_priv, dst_priv_key, dst_host, dst_host_port)
+        remote_host.create_cert(name, dst_dir, export_type, dst_user, dst_priv, dst_priv_key, dst_host, dst_host_port)

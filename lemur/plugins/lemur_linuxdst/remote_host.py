@@ -1,6 +1,5 @@
 #!/usr/bin/python
 from lemur.certificates import service
-import os
 import paramiko
 
 
@@ -18,13 +17,13 @@ def copy_cert(dst_user, dst_priv, dst_priv_key, dst_host, dst_port, dst_dir, dst
         sftp.mkdir(dst_dir)
     except IOError:
         pass
-    cert_out = sftp.open(dst_dir + '/' + filename, 'w')
-    cert_out.write(data)
+    cert_out = sftp.open(dst_dir + '/' + dst_file, 'w')
+    cert_out.write(dst_data)
     cert_out.close()
     ssh.close()
 
-def create_cert(name, dst_dir, export_type, dstUser, dst_priv, dst_priv_key, dst_host, dst_host_port):
 
+def create_cert(name, dst_dir, export_type, dst_user, dst_priv, dst_priv_key, dst_host, dst_host_port):
 
     lem_cert = service.get_by_name(name)
     dst_dir = dst_dir + '/' + lem_cert.cn
