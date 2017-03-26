@@ -3,8 +3,8 @@ from lemur.plugins.bases import DestinationPlugin
 from lemur.plugins.lemur_linuxdst import remote_host
 # It is required that you setup certificate based authentication for the destiation host
 
-class LinuxDstPlugin(DestinationPlugin):
 
+class LinuxDstPlugin(DestinationPlugin):
 
     title = 'Linux Destination Plugin'
     slug = 'linux-destination'
