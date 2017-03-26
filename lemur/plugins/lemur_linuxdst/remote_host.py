@@ -25,6 +25,7 @@ def copy_cert(dst_user, dst_priv, dst_priv_key, dst_host, dst_port, dst_dir, dst
 
 def create_cert(name, dst_dir, export_type, dstUser, dst_priv, dst_priv_key, dst_host, dst_host_port):
 
+
     lem_cert = service.get_by_name(name)
     dst_dir = dst_dir + '/' + lem_cert.cn
     dst_file = 'cert.pem'
@@ -37,7 +38,7 @@ def create_cert(name, dst_dir, export_type, dstUser, dst_priv, dst_priv_key, dst
     else:
         dst_data = lem_cert.body
     copy_cert(dst_user, dst_priv, dst_priv_key, dst_host, dst_host_port, dst_dir, dst_file, dst_data)
-    if chain_req = True:
+    if chain_req is True:
         dst_file = 'chain.pem'
         dst_data = lem_cert.chain_req
         copy_cert(dst_user, dst_priv, dst_priv_key, dst_host, dst_host_port, dst_dir, dst_file, dst_data)
