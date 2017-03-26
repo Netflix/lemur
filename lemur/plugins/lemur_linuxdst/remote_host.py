@@ -1,32 +1,46 @@
 #!/usr/bin/python
 from lemur.certificates import service
 import os
+import paramiko
 
 
-def create_cert(name, temp_folder, export_type):
+def copy_cert(dst_user, dst_priv, dst_priv_key, dst_host, dst_port, dst_dir, dst_file, dst_data):
+
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    if dst_priv_key is None:
+        priv_key = paramiko.RSAKey.from_private_key_file(dst_priv)
+    else:
+        priv_key = paramiko.RSAKey.from_private_key_file(dst_priv, dst_priv_key)
+    ssh.connect(dst_host, username=dst_user, port=dst_port, pkey=priv_key)
+    sftp = ssh.open_sftp()
+    try:
+        sftp.mkdir(dst_dir)
+    except IOError:
+        pass
+    cert_out = sftp.open(dst_dir + '/' + filename, 'w')
+    cert_out.write(data)
+    cert_out.close()
+    ssh.close()
+
+def create_cert(name, dst_dir, export_type, dstUser, dst_priv, dst_priv_key, dst_host, dst_host_port):
 
     lem_cert = service.get_by_name(name)
-    if not os.path.exists(temp_folder):
-        os.mkdir(temp_folder)
-    if not os.path.exists('{0}/{1}'.format(temp_folder, lem_cert.cn)):
-        os.mkdir('{0}/{1}'.format(temp_folder, lem_cert.cn))
-    cert_file = '{0}/{1}/cert.pem'.format(temp_folder, lem_cert.cn)
-    key_file = '{0}/{1}/priv.key'.format(temp_folder, lem_cert.cn)
-    # combine the cert body and chain to create a bundle
-    cert_out = open(cert_file, "w+")
+    dst_dir = dst_dir + '/' + lem_cert.cn
+    dst_file = 'cert.pem'
     if export_type == 'NGINX':
-        cert_out.write(lem_cert.body + '\n' + lem_cert.chain)
+        dst_data = lem_cert.body + '\n' + lem_cert.chain
+        chin_req = False
     elif export_type == '3File':
-        cert_out.write(lem_cert.body)
-        # chaintOut.write(lemCert.chain)
+        dst_data = lem_cert.body
+        chain_req = True
     else:
-        cert_out.write(lem_cert.body)
-    cert_out.close()
-    key_out = open(key_file, "w+")
-    key_out.write(lem_cert.private_key)
-    key_out.close()
-    return {'cert_dir': '{0}/{1}'.format(temp_folder, lem_cert.cn)}
-
-
-def copy_cert(dst_user, dst_host, dst_dir, cert_dir, options, **kwargs):
-    os.system('scp -r {0} {1}@{2}:{3}'.format(cert_dir, dst_user, dst_host, dst_dir))
+        dst_data = lem_cert.body
+    copy_cert(dst_user, dst_priv, dst_priv_key, dst_host, dst_host_port, dst_dir, dst_file, dst_data)
+    if chain_req = True:
+        dst_file = 'chain.pem'
+        dst_data = lem_cert.chain_req
+        copy_cert(dst_user, dst_priv, dst_priv_key, dst_host, dst_host_port, dst_dir, dst_file, dst_data)
+    dst_file = 'priv.key'
+    dst_data = lem_cert.private_key
+    copy_cert(dst_user, dst_priv, dst_priv_key, dst_host, dst_host_port, dst_dir, dst_file, dst_data)
