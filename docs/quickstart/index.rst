@@ -89,6 +89,18 @@ And then run:
 .. note:: This command will install npm dependencies as well as compile static assets.
 
 
+You may also run with the urlContextPath variable set. If this is set it will add the desired context path for subsequent calls back to lemur.
+::
+
+  Example:
+    urlContextPath=lemur
+    /api/1/auth/providers -> /lemur/api/1/auth/providers
+
+.. code-block:: bash
+
+  $ make release urlContextPath={desired context path}
+
+
 Creating a configuration
 ------------------------
 

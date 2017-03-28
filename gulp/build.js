@@ -20,12 +20,14 @@ var gulp = require('gulp'),
   csso = require('gulp-csso'),
   useref = require('gulp-useref'),
   filter = require('gulp-filter'),
+  rev = require('gulp-rev'),
   revReplace = require('gulp-rev-replace'),
   imagemin = require('gulp-imagemin'),
   minifyHtml = require('gulp-minify-html'),
   bowerFiles = require('main-bower-files'),
   karma = require('karma'),
-  replace = require('gulp-replace');
+  replace = require('gulp-replace'),
+  argv = require('yargs').argv;
 
 gulp.task('default', ['clean'], function () {
   gulp.start('fonts', 'styles');
@@ -199,7 +201,6 @@ gulp.task('build:html', ['dev:styles', 'dev:scripts', 'build:ngviews', 'build:in
     .pipe(csso())
     .pipe(cssFilter.restore)
     .pipe(useref())
-    .pipe(revReplace())
     .pipe(gulp.dest('lemur/static/dist'))
     .pipe(size());
 });
@@ -225,10 +226,34 @@ gulp.task('package:strip', function () {
     .pipe(replace('http:\/\/localhost:3000', ''))
     .pipe(replace('http:\/\/localhost:8000', ''))
     .pipe(useref())
-    .pipe(revReplace())
     .pipe(gulp.dest('lemur/static/dist/scripts'))
     .pipe(size());
 });
 
+gulp.task('addUrlContextPath',['addUrlContextPath:revreplace'], function(){
+  var urlContextPathExists = argv.urlContextPath ? true : false;
+  return gulp.src('lemur/static/dist/scripts/main*.js')
+    .pipe(gulpif(urlContextPathExists, replace('api/', argv.urlContextPath + '/api/')))
+    .pipe(gulpif(urlContextPathExists, replace('angular/', argv.urlContextPath + '/angular/')))
+    .pipe(gulp.dest('lemur/static/dist/scripts'))
+});
+
+gulp.task('addUrlContextPath:revision', function(){
+  return gulp.src(['lemur/static/dist/**/*.css','lemur/static/dist/**/*.js'])
+    .pipe(rev())
+    .pipe(gulp.dest('lemur/static/dist'))
+    .pipe(rev.manifest())
+    .pipe(gulp.dest('lemur/static/dist'))
+})
+
+gulp.task('addUrlContextPath:revreplace', ['addUrlContextPath:revision'], function(){
+  var manifest = gulp.src("lemur/static/dist/rev-manifest.json");
+  var urlContextPathExists = argv.urlContextPath ? true : false;
+  return gulp.src( "lemur/static/dist/index.html")
+    .pipe(gulpif(urlContextPathExists, revReplace({prefix: argv.urlContextPath + '/', manifest: manifest}, revReplace({manifest: manifest}))))
+    .pipe(gulp.dest('lemur/static/dist'));
+})
+
+
 gulp.task('build', ['build:ngviews', 'build:inject', 'build:images', 'build:fonts', 'build:html', 'build:extras']);
-gulp.task('package', ['package:strip']);
+gulp.task('package', ['addUrlContextPath', 'package:strip']);
