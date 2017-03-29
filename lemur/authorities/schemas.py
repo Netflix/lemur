@@ -70,7 +70,7 @@ class AuthorityInputSchema(LemurInputSchema):
 class AuthorityUpdateSchema(LemurInputSchema):
     owner = fields.Email(required=True)
     description = fields.String()
-    active = fields.Boolean()
+    active = fields.Boolean(missing=True)
     roles = fields.Nested(AssociatedRoleSchema(many=True))
 
 
