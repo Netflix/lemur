@@ -29,9 +29,7 @@ def update(authority_id, description=None, owner=None, active=None, roles=None):
     if roles:
         authority.roles = roles
 
-    if active:
-        authority.active = active
-
+    authority.active = active
     authority.description = description
     authority.owner = owner
     return database.update(authority)
