@@ -86,7 +86,7 @@ You'll likely want to make some changes to the default configuration (we recomme
 	lemur upgrade
 
 
-.. note:: The ``upgrade`` shortcut is simply a shorcut to Alembic's upgrade command.
+.. note:: The ``upgrade`` shortcut is simply a shortcut to Alembic's upgrade command.
 
 
 Coding Standards
@@ -285,4 +285,3 @@ Internals
     :maxdepth: 2
 
     internals/lemur
-

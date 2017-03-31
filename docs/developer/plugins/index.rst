@@ -180,7 +180,7 @@ The schema for defining plugin options are pretty straightforward:
   - **Type** there are currently four supported variable types
       - **Int** creates an html integer box for the user to enter integers into
       - **Str** creates a html text input box
-      - **Boolean** creates a checkbox for the user to signify truithyness
+      - **Boolean** creates a checkbox for the user to signify truthiness
       - **Select** creates a select box that gives the user a list of options
           - When used a `available` key must be provided with a list of selectable options
   - **Required** determines if this option is required, this **must be a boolean value**
@@ -196,7 +196,7 @@ Notification
 ------------
 
 Lemur includes the ability to create Email notifications by **default**. These notifications
-currently come in the form of expiration noticies. Lemur periodically checks certifications expiration dates and
+currently come in the form of expiration notices. Lemur periodically checks certifications expiration dates and
 determines if a given certificate is eligible for notification. There are currently only two parameters used to
 determine if a certificate is eligible; validity expiration (date the certificate is no longer valid) and the number
 of days the current date (UTC) is from that expiration date.
@@ -207,7 +207,7 @@ are trying to create a new notification type (audit, failed logins, etc.) this w
 You would also then need to build additional code to trigger the new notification type.
 
 The second is `ExpirationNotificationPlugin`, this object inherits from `NotificationPlugin` object.
-You will most likely want to base your plugin on, if you want to add new channels for expiration notices (Slack, Hipcat, Jira, etc.). It adds default options that are required by
+You will most likely want to base your plugin on, if you want to add new channels for expiration notices (Slack, HipChat, Jira, etc.). It adds default options that are required by
 all expiration notifications (interval, unit). This interface expects for the child to define the following function::
 
     def send(self, notification_type, message, targets, options, **kwargs):
