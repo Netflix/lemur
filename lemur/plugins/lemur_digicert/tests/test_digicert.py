@@ -10,7 +10,7 @@ from cryptography import x509
 def test_map_fields_with_validity_end_and_start(app):
     from lemur.plugins.lemur_digicert.plugin import map_fields
 
-    names = [u"one.example.com", u"two.example.com", u"three.example.com"]
+    names = [u'one.example.com', u'two.example.com', u'three.example.com']
 
     options = {
         'common_name': 'example.com',
