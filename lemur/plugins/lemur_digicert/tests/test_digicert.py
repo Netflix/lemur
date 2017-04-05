@@ -4,11 +4,13 @@ from freezegun import freeze_time
 
 from lemur.tests.vectors import CSR_STR
 
+from cryptography import x509
 
-def test_process_options(app):
-    from lemur.plugins.lemur_digicert.plugin import process_options
 
-    names = ['one.example.com', 'two.example.com', 'three.example.com']
+def test_map_fields_with_validity_end_and_start(app):
+    from lemur.plugins.lemur_digicert.plugin import map_fields
+
+    names = [u'one.example.com', u'two.example.com', u'three.example.com']
 
     options = {
         'common_name': 'example.com',
@@ -16,25 +18,92 @@ def test_process_options(app):
         'description': 'test certificate',
         'extensions': {
             'sub_alt_names': {
-                'names': [{'name_type': 'DNSName', 'value': x} for x in names]
+                'names': [x509.DNSName(x) for x in names]
             }
         },
         'validity_end': arrow.get(2017, 5, 7),
         'validity_start': arrow.get(2016, 10, 30)
     }
 
-    data = process_options(options, CSR_STR)
+    data = map_fields(options, CSR_STR)
 
     assert data == {
         'certificate': {
-            'csr': CSR_STR.decode('utf-8'),
+            'csr': CSR_STR,
             'common_name': 'example.com',
             'dns_names': names,
             'signature_hash': 'sha256'
         },
         'organization': {'id': 111111},
-        'validity_years': 1,
-        'custom_expiration_date': arrow.get(2017, 5, 7).format('YYYY-MM-DD')
+        'custom_expiration_date': arrow.get(2017, 5, 7).format('YYYY-MM-DD'),
+        'validity_years': 1
+    }
+
+
+def test_map_fields_with_validity_years(app):
+    from lemur.plugins.lemur_digicert.plugin import map_fields
+
+    names = [u'one.example.com', u'two.example.com', u'three.example.com']
+
+    options = {
+        'common_name': 'example.com',
+        'owner': 'bob@example.com',
+        'description': 'test certificate',
+        'extensions': {
+            'sub_alt_names': {
+                'names': [x509.DNSName(x) for x in names]
+            }
+        },
+        'validity_years': 2,
+        'validity_end': arrow.get(2017, 10, 30)
+    }
+
+    data = map_fields(options, CSR_STR)
+
+    assert data == {
+        'certificate': {
+            'csr': CSR_STR,
+            'common_name': 'example.com',
+            'dns_names': names,
+            'signature_hash': 'sha256'
+        },
+        'organization': {'id': 111111},
+        'validity_years': 2
+    }
+
+
+def test_map_cis_fields(app):
+    from lemur.plugins.lemur_digicert.plugin import map_cis_fields
+
+    names = [u'one.example.com', u'two.example.com', u'three.example.com']
+
+    options = {
+        'common_name': 'example.com',
+        'owner': 'bob@example.com',
+        'description': 'test certificate',
+        'extensions': {
+            'sub_alt_names': {
+                'names': [x509.DNSName(x) for x in names]
+            }
+        },
+        'organization': 'Example, Inc.',
+        'organizational_unit': 'Example Org',
+        'validity_end': arrow.get(2017, 5, 7),
+        'validity_start': arrow.get(2016, 10, 30)
+    }
+
+    data = map_cis_fields(options, CSR_STR)
+
+    assert data == {
+        'common_name': 'example.com',
+        'csr': CSR_STR,
+        'additional_dns_names': names,
+        'signature_hash': 'sha256',
+        'organization': {'name': 'Example, Inc.', 'units': ['Example Org']},
+        'validity': {
+            'valid_to': arrow.get(2017, 5, 7).format('YYYY-MM-DD')
+        },
+        'profile_name': None
     }
 
 
@@ -47,14 +116,16 @@ def test_issuance():
             'validity_start': arrow.get(2016, 10, 30)
         }
 
-        assert get_issuance(options) == 2
+        new_options = get_issuance(options)
+        assert new_options['validity_years'] == 2
 
         options = {
             'validity_end': arrow.get(2017, 5, 7),
             'validity_start': arrow.get(2016, 10, 30)
         }
 
-        assert get_issuance(options) == 1
+        new_options = get_issuance(options)
+        assert new_options['validity_years'] == 1
 
         options = {
             'validity_end': arrow.get(2020, 5, 7),
