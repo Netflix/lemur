@@ -240,10 +240,10 @@ most of the time), but here is a quick overview on how to use it.
 Create a configuration file named supervisor.ini::
 
     [unix_http_server]
-    file=/tmp/supervisor.sock;
+    file=/tmp/supervisor.sock
 
     [supervisorctl]
-    serverurl=unix:///tmp/supervisor.sock;
+    serverurl=unix:///tmp/supervisor.sock
 
     [rpcinterface:supervisor]
     supervisor.rpcinterface_factory=supervisor.rpcinterface:make_main_rpcinterface
