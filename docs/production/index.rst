@@ -50,7 +50,7 @@ The amount of effort you wish to expend ensuring that Lemur has good entropy to 
 If you wish to generate more entropy for your system we would suggest you take a look at the following resources:
 
 - `WES-entropy-client <https://github.com/WhitewoodCrypto/WES-entropy-client>`_
-- `haveaged <http://www.issihosts.com/haveged/>`_
+- `haveged <http://www.issihosts.com/haveged/>`_
 
 For additional information about OpenSSL entropy issues:
 
@@ -240,10 +240,10 @@ most of the time), but here is a quick overview on how to use it.
 Create a configuration file named supervisor.ini::
 
     [unix_http_server]
-    file=/tmp/supervisor.sock;
+    file=/tmp/supervisor.sock
 
     [supervisorctl]
-    serverurl=unix:///tmp/supervisor.sock;
+    serverurl=unix:///tmp/supervisor.sock
 
     [rpcinterface:supervisor]
     supervisor.rpcinterface_factory=supervisor.rpcinterface:make_main_rpcinterface

@@ -25,7 +25,7 @@ if you want to pull the version using pkg_resources (which is what we recommend)
     try:
         VERSION = __import__('pkg_resources') \
             .get_distribution(__name__).version
-    except Exception, e:
+    except Exception as e:
         VERSION = 'unknown'
 
 Inside of ``plugin.py``, you'll declare your Plugin class::
@@ -70,9 +70,17 @@ at multiple plugins within your package::
         },
     )
 
+Once your plugin files are in place and the ``/www/lemur/setup.py`` file has been modified, you can load your plugin into your instance by reinstalling lemur:
+::
+
+    (lemur)$cd /www/lemur
+    (lemur)$pip install -e .
+
 That's it! Users will be able to install your plugin via ``pip install <package name>``.
 
 .. SeeAlso:: For more information about python packages see `Python Packaging <https://packaging.python.org/en/latest/distributing.html>`_
+
+.. SeeAlso:: For an example of a plugin operation outside of Lemur's core, see `lemur-digicert <https://github.com/opendns/lemur-digicert>`_
 
 .. _PluginInterfaces:
 
@@ -172,7 +180,7 @@ The schema for defining plugin options are pretty straightforward:
   - **Type** there are currently four supported variable types
       - **Int** creates an html integer box for the user to enter integers into
       - **Str** creates a html text input box
-      - **Boolean** creates a checkbox for the user to signify truithyness
+      - **Boolean** creates a checkbox for the user to signify truthiness
       - **Select** creates a select box that gives the user a list of options
           - When used a `available` key must be provided with a list of selectable options
   - **Required** determines if this option is required, this **must be a boolean value**
@@ -188,7 +196,7 @@ Notification
 ------------
 
 Lemur includes the ability to create Email notifications by **default**. These notifications
-currently come in the form of expiration noticies. Lemur periodically checks certifications expiration dates and
+currently come in the form of expiration notices. Lemur periodically checks certifications expiration dates and
 determines if a given certificate is eligible for notification. There are currently only two parameters used to
 determine if a certificate is eligible; validity expiration (date the certificate is no longer valid) and the number
 of days the current date (UTC) is from that expiration date.
@@ -199,7 +207,7 @@ are trying to create a new notification type (audit, failed logins, etc.) this w
 You would also then need to build additional code to trigger the new notification type.
 
 The second is `ExpirationNotificationPlugin`, this object inherits from `NotificationPlugin` object.
-You will most likely want to base your plugin on, if you want to add new channels for expiration notices (Slack, Hipcat, Jira, etc.). It adds default options that are required by
+You will most likely want to base your plugin on, if you want to add new channels for expiration notices (Slack, HipChat, Jira, etc.). It adds default options that are required by
 all expiration notifications (interval, unit). This interface expects for the child to define the following function::
 
     def send(self, notification_type, message, targets, options, **kwargs):

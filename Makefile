@@ -17,7 +17,7 @@ endif
 	pip install "file://`pwd`#egg=lemur[dev]"
 	pip install "file://`pwd`#egg=lemur[tests]"
 	node_modules/.bin/gulp build
-	node_modules/.bin/gulp package
+	node_modules/.bin/gulp package --urlContextPath=$(urlContextPath)
 	@echo ""
 
 release:
@@ -32,7 +32,7 @@ endif
 	# order matters here, base package must install first
 	pip install -e .
 	node_modules/.bin/gulp build
-	node_modules/.bin/gulp package
+	node_modules/.bin/gulp package --urlContextPath=$(urlContextPath)
 	@echo ""
 
 dev-docs:

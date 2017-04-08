@@ -24,9 +24,6 @@ def retry_throttled(exception):
         if exception.response['Error']['Code'] == 'NoSuchEntity':
             return False
 
-    if isinstance(exception, botocore.errorfactory.NoSuchEntityException):
-        return False
-
     metrics.send('iam_retry', 'counter', 1)
     return True
 

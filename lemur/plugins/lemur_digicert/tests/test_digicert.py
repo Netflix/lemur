@@ -7,10 +7,10 @@ from lemur.tests.vectors import CSR_STR
 from cryptography import x509
 
 
-def test_map_fields(app):
+def test_map_fields_with_validity_end_and_start(app):
     from lemur.plugins.lemur_digicert.plugin import map_fields
 
-    names = ['one.example.com', 'two.example.com', 'three.example.com']
+    names = [u'one.example.com', u'two.example.com', u'three.example.com']
 
     options = {
         'common_name': 'example.com',
@@ -35,14 +35,47 @@ def test_map_fields(app):
             'signature_hash': 'sha256'
         },
         'organization': {'id': 111111},
-        'custom_expiration_date': arrow.get(2017, 5, 7).format('YYYY-MM-DD')
+        'custom_expiration_date': arrow.get(2017, 5, 7).format('YYYY-MM-DD'),
+        'validity_years': 1
+    }
+
+
+def test_map_fields_with_validity_years(app):
+    from lemur.plugins.lemur_digicert.plugin import map_fields
+
+    names = [u'one.example.com', u'two.example.com', u'three.example.com']
+
+    options = {
+        'common_name': 'example.com',
+        'owner': 'bob@example.com',
+        'description': 'test certificate',
+        'extensions': {
+            'sub_alt_names': {
+                'names': [x509.DNSName(x) for x in names]
+            }
+        },
+        'validity_years': 2,
+        'validity_end': arrow.get(2017, 10, 30)
+    }
+
+    data = map_fields(options, CSR_STR)
+
+    assert data == {
+        'certificate': {
+            'csr': CSR_STR,
+            'common_name': 'example.com',
+            'dns_names': names,
+            'signature_hash': 'sha256'
+        },
+        'organization': {'id': 111111},
+        'validity_years': 2
     }
 
 
 def test_map_cis_fields(app):
     from lemur.plugins.lemur_digicert.plugin import map_cis_fields
 
-    names = ['one.example.com', 'two.example.com', 'three.example.com']
+    names = [u'one.example.com', u'two.example.com', u'three.example.com']
 
     options = {
         'common_name': 'example.com',

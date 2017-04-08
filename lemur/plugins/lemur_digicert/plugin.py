@@ -89,11 +89,18 @@ def get_issuance(options):
     :param options:
     :return:
     """
-    if not options.get('validity_end'):
-        options['validity_end'] = arrow.utcnow().replace(years=current_app.config.get('DIGICERT_DEFAULT_VALIDITY', 1))
 
-    options['validity_years'] = determine_validity_years(options['validity_end'])
-    return options
+    validity_years = options.get('validity_years')
+
+    if validity_years:
+        options['validity_end'] = None
+        return options
+    else:
+        if not options.get('validity_end'):
+            options['validity_end'] = arrow.utcnow().replace(years=current_app.config.get('DIGICERT_DEFAULT_VALIDITY', 1))
+
+        options['validity_years'] = determine_validity_years(options['validity_end'])
+        return options
 
 
 def get_additional_names(options):
@@ -131,7 +138,11 @@ def map_fields(options, csr):
     })
 
     data['certificate']['dns_names'] = get_additional_names(options)
-    data['custom_expiration_date'] = options['validity_end'].format('YYYY-MM-DD')
+
+    if options.get('validity_end'):
+        data['custom_expiration_date'] = options['validity_end'].format('YYYY-MM-DD')
+
+    data['validity_years'] = options.get('validity_years')
 
     return data
 

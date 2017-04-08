@@ -27,7 +27,7 @@ If installing Lemur on a bare Ubuntu OS you will need to grab the following pack
 .. code-block:: bash
 
     $ sudo apt-get update
-    $ sudo apt-get install nodejs-legacy python-pip python-dev libpq-dev build-essential libssl-dev libffi-dev nginx git supervisor npm postgresql
+    $ sudo apt-get install nodejs-legacy python-pip python-dev python3-dev libpq-dev build-essential libssl-dev libffi-dev nginx git supervisor npm postgresql
 
 .. note:: PostgreSQL is only required if your database is going to be on the same host as the webserver.  npm is needed if you're installing Lemur from the source (e.g., from git).
 
@@ -52,6 +52,10 @@ Clone Lemur inside the just created directory and give yourself write permission
 
 .. code-block:: bash
 
+    $ sudo useradd lemur
+    $ sudo passwd lemur
+    $ sudo mkdir /home/lemur
+    $ sudo chown lemur:lemur /home/lemur
     $ sudo git clone https://github.com/Netflix/lemur
     $ sudo chown -R lemur lemur/
 
@@ -59,7 +63,8 @@ Create the virtual environment, activate it and enter the Lemur's directory:
 
 .. code-block:: bash
 
-    $ virtualenv lemur
+    $ su lemur
+    $ virtualenv -p python3 lemur
     $ source /www/lemur/bin/activate
     $ cd lemur
 
@@ -84,6 +89,18 @@ And then run:
 .. note:: This command will install npm dependencies as well as compile static assets.
 
 
+You may also run with the urlContextPath variable set. If this is set it will add the desired context path for subsequent calls back to lemur.
+::
+
+  Example:
+    urlContextPath=lemur
+    /api/1/auth/providers -> /lemur/api/1/auth/providers
+
+.. code-block:: bash
+
+  $ make release urlContextPath={desired context path}
+
+
 Creating a configuration
 ------------------------
 
@@ -105,9 +122,24 @@ Update your configuration
 
 Once created, you will need to update the configuration file with information about your environment, such as which database to talk to, where keys are stored etc.
 
+.. code-block:: bash
+
+    $ vi ~/.lemur/lemur.conf.py
+
 .. note:: If you are unfamiliar with the SQLALCHEMY_DATABASE_URI string it can be broken up like so:
       ``postgresql://userame:password@<database-fqdn>:<database-port>/<database-name>``
 
+Before Lemur will run you need to fill in a few required variables in the configuration file:
+
+.. code-block:: bash
+
+    LEMUR_SECURITY_TEAM_EMAIL
+    #/the e-mail address needs to be enclosed in quotes
+    LEMUR_DEFAULT_COUNTRY
+    LEMUR_DEFAULT_STATE
+    LEMUR_DEFAULT_LOCATION
+    LEMUR_DEFAUTL_ORGANIZATION
+    LEMUR_DEFAULT_ORGANIZATIONAL_UNIT
 
 Setup Postgres
 --------------
