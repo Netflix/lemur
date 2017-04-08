@@ -1,14 +1,46 @@
 Changelog
 =========
 
-0.5 - `master`
-~~~~~~~~~~~~~~
+0.5 - `2016-04-08`
+~~~~~~~~~~~~~~~~~~
 
-.. note:: This version is not yet released and is under active development
+This release is most notable for dropping support for python2.7. All Lemur versions >0.4 will now support python3.5 only.
+
+Big thanks to neilschelly for quite a lot of improvements to the `lemur-cryptography` plugin.
+
+Other Highlights:
+
+* Closed `#501 <https://github.com/Netflix/lemur/issues/501>`_ - Endpoint resource as now kept in sync via an
+expiration mechanism. Such that non-existant endpoints gracefully fall out of Lemur. Certificates are never
+removed from Lemur.
+
+* Closed `#551 <https://github.com/Netflix/lemur/pull/551>`_ - Added the ability to create a 4096 bit key during certificate
+creation. Closed `#528 <https://github.com/Netflix/lemur/pull/528>`_ to ensure that issuer plugins supported the new 4096 bit keys.
+
+* Closed `#566 <https://github.com/Netflix/lemur/issues/566>`_ - Fixed an issue changing the notification status for  certificates
+without private keys.
+
+* Closed `#594 <https://github.com/Netflix/lemur/issues/594>`_ - Added `replaced` field indicating if a certificate has been superseded.
+
+* Closed `#602 <https://github.com/Netflix/lemur/issues/602>`_ - AWS plugin added support for ALBs for endpoint tracking.
 
 
-0.4 - ``
-~~~~~~~~
+Special thanks to all who helped with with this release, notably:
+
+- RcRonco
+- harmw
+- jeremyguarini
+
+See the full list of issues closed in `0.5 <https://github.com/Netflix/lemur/milestone/4>`_.
+
+Upgrading
+---------
+
+.. note:: This release will need a slight migration change. Please follow the `documentation <https://lemur.readthedocs.io/en/latest/administration.html#upgrading-lemur>`_ to upgrade Lemur.
+
+
+0.4 - `2016-11-17`
+~~~~~~~~~~~~~~~~~~
 
 There have been quite a few issues closed in this release. Some notables:
 
@@ -24,10 +56,10 @@ Several fixes/tweaks to Lemurs python3 support (thanks chadhendrie!)
 This will most likely be the last release to support python2.7 moving Lemur to target python3 exclusively. Please comment
 on issue #340 if this negatively affects your usage of Lemur.
 
+See the full list of issues closed in `0.4 <https://github.com/Netflix/lemur/milestone/3>`_.
+
 Upgrading
 ---------
-
-See the full list of issues closed in `0.4 <https://github.com/Netflix/lemur/milestone/3>`_.
 
 .. note:: This release will need a slight migration change. Please follow the `documentation <https://lemur.readthedocs.io/en/latest/administration.html#upgrading-lemur>`_ to upgrade Lemur.
 
