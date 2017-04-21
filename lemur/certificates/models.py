@@ -104,6 +104,7 @@ class Certificate(db.Model):
     rotation = Column(Boolean, default=False)
 
     user_id = Column(Integer, ForeignKey('users.id'))
+    user = relationship('User')
     authority_id = Column(Integer, ForeignKey('authorities.id', ondelete="CASCADE"))
     root_authority_id = Column(Integer, ForeignKey('authorities.id', ondelete="CASCADE"))
 
