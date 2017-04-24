@@ -75,6 +75,15 @@ def test_send_expiration_notification(certificate, notification, notification_pl
 
 
 @mock_ses
+def test_send_expiration_notification_with_no_notifications(certificate, notification, notification_plugin):
+    from lemur.notifications.messaging import send_expiration_notifications
+
+    delta = certificate.not_after - timedelta(days=10)
+    with freeze_time(delta.datetime):
+        assert send_expiration_notifications([]) == (0, 0)
+
+
+@mock_ses
 def test_send_rotation_notification(notification_plugin, certificate):
     from lemur.notifications.messaging import send_rotation_notification
     send_rotation_notification(certificate, notification_plugin=notification_plugin)

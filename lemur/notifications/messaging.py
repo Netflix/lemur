@@ -131,10 +131,10 @@ def send_expiration_notifications(exclude):
             else:
                 failure += 1
 
-    if send_notification('expiration', security_data, security_email, notification):
-        success += 1
-    else:
-        failure += 1
+            if send_notification('expiration', security_data, security_email, notification):
+                success += 1
+            else:
+                failure += 1
 
     return success, failure
 
