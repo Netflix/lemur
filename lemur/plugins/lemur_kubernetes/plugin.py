@@ -140,8 +140,7 @@ class K8sSession(requests.Session):
             'Authorization': 'Bearer %s' % bearer
         })
 
-        k8_ca = os.path.join(os.path.abspath(os.path.dirname(__file__)), 
-                             'k8.cert')
+        k8_ca = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'k8.cert')
 
         with open(k8_ca, "w") as text_file:
             text_file.write(cert)
