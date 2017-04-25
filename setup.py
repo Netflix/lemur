@@ -30,7 +30,7 @@ sys.path.insert(0, ROOT)
 
 about = {}
 with open(os.path.join(ROOT, "lemur", "__about__.py")) as f:
-    exec(f.read(), about)
+    exec(f.read(), about)  # nosec: about file is benign
 
 
 install_requires = [
