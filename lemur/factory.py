@@ -73,7 +73,8 @@ def from_file(file_path, silent=False):
     d.__file__ = file_path
     try:
         with open(file_path) as config_file:
-            exec(compile(config_file.read(), file_path, 'exec'), d.__dict__)
+            exec(compile(config_file.read(),  # nosec: config file safe
+                 file_path, 'exec'), d.__dict__)
     except IOError as e:
         if silent and e.errno in (errno.ENOENT, errno.EISDIR):
             return False
