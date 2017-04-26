@@ -73,14 +73,15 @@ def test_authority_key_identifier_schema():
 
     data, errors = AuthorityKeyIdentifierSchema().load(input_data)
 
-    assert data == {
+    assert sorted(data) == sorted({
         'use_key_identifier': True,
         'use_authority_cert': True
-    }
+    })
+
     assert not errors
 
     data, errors = AuthorityKeyIdentifierSchema().dumps(data)
-    assert data == json.dumps(input_data)
+    assert sorted(data) == sorted(json.dumps(input_data))
     assert not errors
 
 
