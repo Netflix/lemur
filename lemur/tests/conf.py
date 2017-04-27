@@ -68,11 +68,10 @@ LEMUR_INSTANCE_PROFILE = 'Lemur'
 # CLOUDCA_DEFAULT_VALIDITY = 2
 
 
-DIGICERT_URL = 'https://www.digicert.com'
+DIGICERT_URL = 'mock://www.digicert.com'
 DIGICERT_API_KEY = 'api-key'
 DIGICERT_ORG_ID = 111111
 DIGICERT_ROOT = "ROOT"
-DIGICERT_INTERMEDIATE = "INTERMEDIATE"
 
 
 VERISIGN_URL = 'http://example.com'
