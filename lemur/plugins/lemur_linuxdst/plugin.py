@@ -4,7 +4,6 @@ from lemur.plugins.lemur_linuxdst import remote_host
 
 
 class LinuxDstPlugin(DestinationPlugin):
-
     title = 'Linux Destination Plugin'
     slug = 'linux-destination'
     description = 'Allow the distribution of certificates to a Linux host'
@@ -70,14 +69,15 @@ class LinuxDstPlugin(DestinationPlugin):
     requires_key = False
 
     def upload(self, name, body, private_key, cert_chain, options, **kwargs):
-
         export_type = self.get_option('exportType', options)
         dst_host = self.get_option('dstHost', options)
         dst_host_port = self.get_option('dstPort', options)
         dst_user = self.get_option('dstUser', options)
         dst_priv = self.get_option('dstPriv', options)
         dst_priv_key = self.get_option('dstPrivKey', options)
+
         if dst_priv_key:
             dst_priv_key = None
+
         dst_dir = self.get_option('dstDir', options)
         remote_host.create_cert(name, dst_dir, export_type, dst_user, dst_priv, dst_priv_key, dst_host, int(dst_host_port))
