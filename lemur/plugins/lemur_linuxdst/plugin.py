@@ -78,7 +78,7 @@ class LinuxDstPlugin(DestinationPlugin):
         dst_user = self.get_option('dstUser', options)
         dst_priv = self.get_option('dstPriv', options)
         dst_priv_key = self.get_option('dstPrivKey', options)
-        if len(dst_priv_key):
+        if dst_priv_key:
             dst_priv_key = None
         dst_dir = self.get_option('dstDir', options)
         remote_host.create_cert(name, dst_dir, export_type, dst_user, dst_priv, dst_priv_key, dst_host, int(dst_host_port))
