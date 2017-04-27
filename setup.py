@@ -62,7 +62,8 @@ install_requires = [
     'acme==0.13.0',
     'retrying==1.3.3',
     'tabulate==0.7.7',
-    'pem==16.1.0'
+    'pem==16.1.0',
+    'paramiko==2.1.2' #required for lemur_linuxdst plugin
 ]
 
 tests_require = [
