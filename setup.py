@@ -52,7 +52,7 @@ install_requires = [
     'gunicorn==19.7.1',
     'marshmallow==2.13.5',
     'cryptography==1.7',
-    'pyjwt==1.4.2',
+    'pyjwt==1.5.0',
     'xmltodict==0.10.2',
     'lockfile==0.12.2',
     'inflection==0.3.1',
