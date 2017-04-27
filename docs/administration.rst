@@ -450,12 +450,6 @@ The following configuration properties are required to use the Digicert issuer p
             This is the Digicert organization ID tied to your API key
 
 
-.. data:: DIGICERT_INTERMEDIATE
-    :noindex:
-
-            This is the intermediate to be used for your CA chain
-
-
 .. data:: DIGICERT_ROOT
     :noindex:
 

@@ -241,7 +241,6 @@ class DigiCertSourcePlugin(SourcePlugin):
             'DIGICERT_URL',
             'DIGICERT_ORG_ID',
             'DIGICERT_ROOT',
-            'DIGICERT_INTERMEDIATE'
         ]
         validate_conf(current_app, required_vars)
 
@@ -279,7 +278,6 @@ class DigiCertIssuerPlugin(IssuerPlugin):
             'DIGICERT_URL',
             'DIGICERT_ORG_ID',
             'DIGICERT_ROOT',
-            'DIGICERT_INTERMEDIATE'
         ]
 
         validate_conf(current_app, required_vars)
@@ -317,10 +315,10 @@ class DigiCertIssuerPlugin(IssuerPlugin):
 
         certificate_id = get_certificate_id(self.session, base_url, order_id)
 
-        # retrieve ceqrtificate
+        # retrieve certificate
         certificate_url = "{0}/services/v2/certificate/{1}/download/format/pem_all".format(base_url, certificate_id)
         end_entity, intermediate, root = pem.parse(self.session.get(certificate_url).content)
-        return "\n".join(str(end_entity).splitlines()), "\n".join(str(end_entity).splitlines())
+        return "\n".join(str(end_entity).splitlines()), "\n".join(str(intermediate).splitlines())
 
     @staticmethod
     def create_authority(options):
