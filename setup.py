@@ -53,7 +53,7 @@ install_requires = [
     'marshmallow==2.13.5',
     'cryptography==1.7',
     'pyjwt==1.4.2',
-    'xmltodict==0.10.2',
+    'xmltodict==0.11.0',
     'lockfile==0.12.2',
     'inflection==0.3.1',
     'future==0.16.0',
