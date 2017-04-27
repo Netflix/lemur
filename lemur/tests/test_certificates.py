@@ -364,6 +364,11 @@ def test_certificate_get(client, token, status):
     assert client.get(api.url_for(Certificates, certificate_id=1), headers=token).status_code == status
 
 
+def test_certificate_get_body(client):
+    response_body = client.get(api.url_for(Certificates, certificate_id=1), headers=VALID_USER_HEADER_TOKEN).json
+    assert response_body['serial'] == "3e9"
+
+
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 405),
     (VALID_ADMIN_HEADER_TOKEN, 405),
