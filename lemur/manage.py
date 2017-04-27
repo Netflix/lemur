@@ -222,7 +222,7 @@ class InitializeApp(Command):
                     sys.stderr.write("[!] Passwords do not match!\n")
                     sys.exit(1)
 
-            user_service.create("lemur", password, 'lemur@nobody', True, None, [admin_role])
+            user_service.create("lemur", password, 'lemur@nobody.com', True, None, [admin_role])
             sys.stdout.write("[+] Created the user 'lemur' and granted it the 'admin' role!\n")
 
         else:
