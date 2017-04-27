@@ -6,7 +6,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from flask import current_app
-from marshmallow import fields, validate, validates_schema, post_load, pre_load
+from marshmallow import fields, validate, validates_schema, post_load, pre_load, post_dump
 from marshmallow.exceptions import ValidationError
 
 from lemur.schemas import AssociatedAuthoritySchema, AssociatedDestinationSchema, AssociatedCertificateSchema, \
@@ -197,6 +197,12 @@ class CertificateOutputSchema(LemurOutputSchema):
     roles = fields.Nested(RoleNestedOutputSchema, many=True)
     endpoints = fields.Nested(EndpointNestedOutputSchema, many=True, missing=[])
     replaced_by = fields.Nested(CertificateNestedOutputSchema, many=True, attribute='replaced')
+
+    @post_dump
+    def convert_serial_to_hex(self, data):
+        if data:
+            data['serial'] = hex(int(data['serial']))[2:].upper()
+        return data
 
 
 class CertificateUploadInputSchema(CertificateCreationSchema):

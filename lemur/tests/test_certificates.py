@@ -73,14 +73,14 @@ def test_authority_key_identifier_schema():
 
     data, errors = AuthorityKeyIdentifierSchema().load(input_data)
 
-    assert data == {
+    assert sorted(data) == sorted({
         'use_key_identifier': True,
         'use_authority_cert': True
-    }
+    })
     assert not errors
 
     data, errors = AuthorityKeyIdentifierSchema().dumps(data)
-    assert data == json.dumps(input_data)
+    assert sorted(data) == sorted(json.dumps(input_data))
     assert not errors
 
 
@@ -362,6 +362,11 @@ def test_certificate_get_private_key(client, token, status):
 ])
 def test_certificate_get(client, token, status):
     assert client.get(api.url_for(Certificates, certificate_id=1), headers=token).status_code == status
+
+
+def test_certificate_get_body(client):
+    response_body = client.get(api.url_for(Certificates, certificate_id=1), headers=VALID_USER_HEADER_TOKEN).json
+    assert response_body['serial'] == "3E9"
 
 
 @pytest.mark.parametrize("token,status", [
