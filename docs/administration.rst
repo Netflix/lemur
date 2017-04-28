@@ -202,14 +202,14 @@ Lemur supports sending certification expiration notifications through SES and SM
         you can send any mail. See: `Verifying Email Address in Amazon SES <http://docs.aws.amazon.com/ses/latest/DeveloperGuide/verify-email-addresses.html>`_
 
 
-.. data:: LEMUR_MAIL
+.. data:: LEMUR_EMAIL
     :noindex:
 
         Lemur sender's email
 
         ::
 
-            LEMUR_MAIL = 'lemur.example.com'
+            LEMUR_EMAIL = 'lemur.example.com'
 
 
 .. data:: LEMUR_SECURITY_TEAM_EMAIL
