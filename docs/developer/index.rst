@@ -89,6 +89,12 @@ You'll likely want to make some changes to the default configuration (we recomme
 .. note:: The ``upgrade`` shortcut is simply a shortcut to Alembic's upgrade command.
 
 
+Running tests with Docker and docker-compose
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Alternatively you can use Docker and docker-compose for running the tests with ``docker-compose run test``.
+
+
 Coding Standards
 ----------------
 
