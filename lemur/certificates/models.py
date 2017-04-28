@@ -292,6 +292,9 @@ class Certificate(db.Model):
                     current_app.logger.warning('Custom OIDs not yet supported for clone operation.')
         except InvalidCodepoint as e:
             current_app.logger.warning('Unable to parse extensions due to underscore in dns name')
+        except ValueError as e:
+            current_app.logger.warning('Unable to parse')
+            current_app.logger.exception(e)
 
         return return_extensions
 
