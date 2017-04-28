@@ -151,10 +151,9 @@ First, set a password for the postgres user.  For this guide, we will use ``lemu
 .. code-block:: bash
 
     $ sudo -u postgres -i
-    # \password postgres
-    Enter new password: lemur
-    Enter it again: lemur
-
+    $ psql
+    postgres=# CREATE USER lemur WITH PASSWORD 'lemur';
+    
 Once successful, type CTRL-D to exit the Postgres shell.
 
 Next, we will create our new database:
