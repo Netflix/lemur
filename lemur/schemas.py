@@ -38,13 +38,13 @@ def validate_options(options):
     if not interval and not unit:
         return
 
-    if interval == 'month':
-        unit *= 30
+    if unit == 'month':
+        interval *= 30
 
-    elif interval == 'week':
-        unit *= 7
+    elif unit == 'week':
+        interval *= 7
 
-    if unit > 90:
+    if interval > 90:
         raise ValidationError('Notification cannot be more than 90 days into the future.')
 
 
