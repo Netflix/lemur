@@ -7,6 +7,10 @@ Configuration
     that allow you to encrypt files at rest and decrypt them when it's time for deployment. See :ref:`Credential Management <CredentialManagement>`
     for more information.
 
+.. note::
+    All configuration values are python strings unless otherwise noted.
+
+
 Basic Configuration
 -------------------
 
@@ -435,7 +439,7 @@ The following configuration properties are required to use the Digicert issuer p
 .. data:: DIGICERT_URL
     :noindex:
 
-            This is the url for the Digicert API
+            This is the url for the Digicert API (e.g. https://www.digicert.com)
 
 
 .. data:: DIGICERT_API_KEY
