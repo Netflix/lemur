@@ -227,7 +227,7 @@ def check_revoked():
             else:
                 status = verify_string(cert.body, "")
 
-            cert.status = 'valid' if status else 'invalid'
+            cert.status = 'valid' if status else 'revoked'
 
         except Exception as e:
             current_app.logger.exception(e)

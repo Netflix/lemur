@@ -124,7 +124,7 @@ class CertificateNestedOutputSchema(LemurOutputSchema):
     creator = fields.Nested(UserNestedOutputSchema)
     description = fields.String()
 
-    status = fields.Boolean()
+    status = fields.String()
 
     bits = fields.Integer()
     body = fields.String()
@@ -184,7 +184,7 @@ class CertificateOutputSchema(LemurOutputSchema):
     serial_hex = Hex(attribute='serial')
     signing_algorithm = fields.String()
 
-    status = fields.Boolean()
+    status = fields.String()
     user = fields.Nested(UserNestedOutputSchema)
 
     extensions = fields.Nested(ExtensionSchema)
