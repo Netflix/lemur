@@ -19,6 +19,16 @@ from marshmallow.fields import Field
 from marshmallow.exceptions import ValidationError
 
 
+class Hex(Field):
+    """
+    A hex formatted string.
+    """
+    def _serialize(self, value, attr, obj):
+        if value:
+            value = hex(int(value))[2:].upper()
+        return value
+
+
 class ArrowDateTime(Field):
     """A formatted datetime string in UTC.
 
