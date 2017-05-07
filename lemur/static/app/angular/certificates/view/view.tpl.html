@@ -117,7 +117,7 @@
                       class="list-group-item">
                       <strong>Validity</strong>
                       <span class="pull-right">
-                        <span ng-if="!certificate.status" class="label label-warning">Unknown</span>
+                        <span ng-if="certificate.status == 'unknown'" class="label label-warning">Unknown</span>
                         <span ng-if="certificate.status == 'revoked'" class="label label-danger">Revoked</span>
                         <span ng-if="certificate.status == 'valid'" class="label label-success">Valid</span>
                       </span>
