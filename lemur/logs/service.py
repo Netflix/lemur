@@ -7,6 +7,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+from flask import current_app
 from lemur import database
 from lemur.logs.models import Log
 
@@ -20,6 +21,7 @@ def create(user, type, certificate=None):
     :param certificate:
     :return:
     """
+    current_app.logger.info("[lemur-audit] action: {0}, user: {1}, certificate: {2}.".format(type, user.email, certificate.name))
     view = Log(user_id=user.id, log_type=type, certificate_id=certificate.id)
     database.add(view)
     database.commit()
