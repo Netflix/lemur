@@ -43,7 +43,7 @@ install_requires = [
     'Flask-Principal==0.4.0',
     'Flask-Mail==0.9.1',
     'SQLAlchemy-Utils==0.32.14',
-    'requests==2.11.1',
+    'requests==2.14.0',
     'ndg-httpsclient==0.4.2',
     'psycopg2==2.7.1',
     'arrow==0.10.0',
