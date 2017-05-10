@@ -83,26 +83,6 @@ def determine_validity_years(end_date):
                     " years in validity")
 
 
-def get_issuance(options):
-    """Get the time range for certificates.
-
-    :param options:
-    :return:
-    """
-
-    validity_years = options.get('validity_years')
-
-    if validity_years:
-        options['validity_end'] = None
-        return options
-    else:
-        if not options.get('validity_end'):
-            options['validity_end'] = arrow.utcnow().replace(years=current_app.config.get('DIGICERT_DEFAULT_VALIDITY', 1))
-
-        options['validity_years'] = determine_validity_years(options['validity_end'])
-        return options
-
-
 def get_additional_names(options):
     """
     Return a list of strings to be added to a SAN certificates.
@@ -126,7 +106,9 @@ def map_fields(options, csr):
     :param csr:
     :return: dict or valid DigiCert options
     """
-    options = get_issuance(options)
+    if not options.get('validity_years'):
+        if not options.get('validity_end'):
+            options['validity_years'] = current_app.config.get('DIGICERT_DEFAULT_VALIDITY', 1)
 
     data = dict(certificate={
         "common_name": options['common_name'],
@@ -139,10 +121,10 @@ def map_fields(options, csr):
 
     data['certificate']['dns_names'] = get_additional_names(options)
 
-    if options.get('validity_end'):
+    if options.get('validity_years'):
+        data['validity_years'] = options['validity_years']
+    else:
         data['custom_expiration_date'] = options['validity_end'].format('YYYY-MM-DD')
-
-    data['validity_years'] = options.get('validity_years')
 
     return data
 
@@ -155,7 +137,13 @@ def map_cis_fields(options, csr):
     :param csr:
     :return:
     """
-    options = get_issuance(options)
+    if not options.get('validity_years'):
+        if not options.get('validity_end'):
+            options['validity_end'] = arrow.utcnow().replace(years=current_app.config.get('DIGICERT_DEFAULT_VALIDITY', 1))
+        options['validity_years'] = determine_validity_years(options['validity_end'])
+    else:
+        options['validity_end'] = arrow.utcnow().replace(years=options['validity_years'])
+
     data = {
         "profile_name": current_app.config.get('DIGICERT_CIS_PROFILE_NAME'),
         "common_name": options['common_name'],
