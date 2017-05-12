@@ -138,7 +138,7 @@ Before Lemur will run you need to fill in a few required variables in the config
     LEMUR_DEFAULT_COUNTRY
     LEMUR_DEFAULT_STATE
     LEMUR_DEFAULT_LOCATION
-    LEMUR_DEFAUTL_ORGANIZATION
+    LEMUR_DEFAULT_ORGANIZATION
     LEMUR_DEFAULT_ORGANIZATIONAL_UNIT
 
 Setup Postgres
