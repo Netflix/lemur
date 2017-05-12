@@ -268,8 +268,8 @@ Configuring Supervisor couldn't be more simple. Just point it to the ``lemur`` e
   autostart=true
   autorestart=true
   redirect_stderr=true
-  stdout_logfile syslog
-  stderr_logfile syslog
+  stdout_logfile=syslog
+  stderr_logfile=syslog
 
 See :ref:`Using Supervisor <UsingSupervisor>` for more details on using Supervisor.
 
