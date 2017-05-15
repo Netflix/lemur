@@ -123,7 +123,7 @@ class DomainsList(AuthenticatedResource):
            :statuscode 200: no error
            :statuscode 403: unauthenticated
         """
-        return service.create(data['name'], data['sensitive'])
+        return service.create(data['name'], data.get('sensitive', False))
 
 
 class Domains(AuthenticatedResource):
@@ -205,7 +205,7 @@ class Domains(AuthenticatedResource):
            :statuscode 403: unauthenticated
         """
         if SensitiveDomainPermission().can():
-            return service.update(domain_id, data['name'], data['sensitive'])
+            return service.update(domain_id, data['name'], data.get('sensitive', False))
 
         return dict(message='You are not authorized to modify this domain'), 403
 
