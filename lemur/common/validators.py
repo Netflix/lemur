@@ -43,20 +43,20 @@ def private_key(key):
 
 def sensitive_domain(domain):
     """
-    Determines if domain has been marked as sensitive.
+    Determines if domain has been marked as sensitive or matches restricted patterns.
     :param domain:
     :return:
     """
+    if SensitiveDomainPermission().can():
+        # User has permission, no need to check anything
+        return
+
     restricted_domains = current_app.config.get('LEMUR_RESTRICTED_DOMAINS', [])
-    if restricted_domains:
-        domains = domain_service.get_by_name(domain)
-        for domain in domains:
-            # we only care about non-admins
-            if not SensitiveDomainPermission().can():
-                if domain.sensitive or any([re.match(pattern, domain.name) for pattern in restricted_domains]):
-                    raise ValidationError(
-                        'Domain {0} has been marked as sensitive, contact and administrator \
-                        to issue the certificate.'.format(domain))
+    if any(re.match(pattern, domain) for pattern in restricted_domains) or \
+            any(d.sensitive for d in domain_service.get_by_name(domain)):
+        raise ValidationError(
+            'Domain {0} has been marked as sensitive or restricted, contact and administrator '
+            'to issue the certificate.'.format(domain))
 
 
 def encoding(oid_encoding):
