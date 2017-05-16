@@ -10,7 +10,7 @@ angular.module('lemur')
         function () {
           toaster.pop({
             type: 'success',
-            title: domain,
+            title: domain.name,
             body: 'Successfully Created!'
           });
           $uibModalInstance.close();
