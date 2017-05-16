@@ -15,7 +15,7 @@ from lemur.schemas import AssociatedCertificateSchema
 class DomainInputSchema(LemurInputSchema):
     id = fields.Integer()
     name = fields.String(required=True)
-    sensitive = fields.Boolean()
+    sensitive = fields.Boolean(missing=False)
     certificates = fields.Nested(AssociatedCertificateSchema, many=True, missing=[])
 
 
