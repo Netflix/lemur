@@ -76,7 +76,7 @@ def render(args):
     :param args:
     :return:
     """
-    query = database.session_query(Domain).join(Certificate, Domain.certificate)
+    query = database.session_query(Domain)
     filt = args.pop('filter')
     certificate_id = args.pop('certificate_id', None)
 
@@ -85,6 +85,7 @@ def render(args):
         query = database.filter(query, Domain, terms)
 
     if certificate_id:
+        query = query.join(Certificate, Domain.certificates)
         query = query.filter(Certificate.id == certificate_id)
 
     return database.sort_and_page(query, Domain, args)
