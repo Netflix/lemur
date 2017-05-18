@@ -164,17 +164,17 @@ class Ping(Resource):
                 algo = header_data['alg']
                 break
         else:
-            return dict(message='Key not found'), 403
+            return dict(message='Key not found'), 401
 
         # validate your token based on the key it was signed with
         try:
             jwt.decode(id_token, secret.decode('utf-8'), algorithms=[algo], audience=args['clientId'])
         except jwt.DecodeError:
-            return dict(message='Token is invalid'), 403
+            return dict(message='Token is invalid'), 401
         except jwt.ExpiredSignatureError:
-            return dict(message='Token has expired'), 403
+            return dict(message='Token has expired'), 401
         except jwt.InvalidTokenError:
-            return dict(message='Token is invalid'), 403
+            return dict(message='Token is invalid'), 401
 
         user_params = dict(access_token=access_token, schema='profile')
 

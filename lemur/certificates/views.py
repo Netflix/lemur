@@ -271,7 +271,7 @@ class CertificatesList(AuthenticatedResource):
             data['creator'] = g.user
             return service.create(**data)
 
-        return dict(message="You are not authorized to use {0}".format(data['authority'].name)), 403
+        return dict(message="You are not authorized to use the authority: {0}".format(data['authority'].name)), 403
 
 
 class CertificatesUpload(AuthenticatedResource):
