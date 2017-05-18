@@ -53,7 +53,7 @@ def create_arn_from_cert(account_number, region, certificate_name):
 
 @sts_client('iam')
 @retry(retry_on_exception=retry_throttled, stop_max_attempt_number=7, wait_exponential_multiplier=100)
-def upload_cert(name, body, private_key, cert_chain=None, **kwargs):
+def upload_cert(name, body, private_key, path, cert_chain=None, **kwargs):
     """
     Upload a certificate to AWS
 
@@ -61,12 +61,14 @@ def upload_cert(name, body, private_key, cert_chain=None, **kwargs):
     :param body:
     :param private_key:
     :param cert_chain:
+    :param path:
     :return:
     """
     client = kwargs.pop('client')
     try:
         if cert_chain:
             return client.upload_server_certificate(
+                Path=path,
                 ServerCertificateName=name,
                 CertificateBody=str(body),
                 PrivateKey=str(private_key),
@@ -74,6 +76,7 @@ def upload_cert(name, body, private_key, cert_chain=None, **kwargs):
             )
         else:
             return client.upload_server_certificate(
+                Path=path,
                 ServerCertificateName=name,
                 CertificateBody=str(body),
                 PrivateKey=str(private_key)

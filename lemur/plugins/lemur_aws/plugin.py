@@ -161,6 +161,12 @@ class AWSDestinationPlugin(DestinationPlugin):
             'required': True,
             'validation': '/^[0-9]{12,12}$/',
             'helpMessage': 'Must be a valid AWS account number!',
+        },
+        {
+            'name': 'path',
+            'type': 'str',
+            'default': '/',
+            'helpMessage': 'Path to upload certificate.'
         }
     ]
 
@@ -172,6 +178,7 @@ class AWSDestinationPlugin(DestinationPlugin):
 
     def upload(self, name, body, private_key, cert_chain, options, **kwargs):
         iam.upload_cert(name, body, private_key,
+                        self.get_option('path', options),
                         cert_chain=cert_chain,
                         account_number=self.get_option('accountNumber', options))
 
