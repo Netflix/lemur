@@ -10,6 +10,7 @@ from flask import current_app
 
 from .sts import sts_client
 
+
 @sts_client('s3', 'resource')
 def put(resource, bucket_name, prefix, data, encrypt):
     """
