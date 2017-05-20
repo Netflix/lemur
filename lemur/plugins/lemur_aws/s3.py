@@ -6,21 +6,29 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from boto.s3.key import Key
-from lemur.plugins.lemur_aws.sts import assume_service
+from flask import current_app
+
+from .sts import sts_client
 
 
-def write_to_s3(account_number, bucket_name, key, data, encrypt=True):
+@sts_client('s3', 'resource')
+def write_to_s3(resource, bucket_name, prefix, data, encrypt=True):
     """
     Use STS to write to an S3 bucket
-
-    :param account_number:
-    :param bucket_name:
-    :param data:
     """
-    conn = assume_service(account_number, 's3')
-    b = conn.get_bucket(bucket_name, validate=False)  # validate=False removes need for ListObjects permission
+    bucket = resource.Bucket(bucket_name)
+    current_app.logger.debug('Persisting data to S3. Bucket: {0} Prefix: {1}'.format(bucket_name, prefix))
 
-    k = Key(bucket=b, name=key)
-    k.set_contents_from_string(data, encrypt_key=encrypt)
-    k.set_canned_acl("bucket-owner-read")
+    if encrypt:
+        bucket.put_object(
+            Key=prefix,
+            Body=data.encode('utf-8'),
+            ACL='bucket-owner-full-control',
+            ServerSideEncryption='AES256'
+        )
+    else:
+        bucket.put_object(
+            Key=prefix,
+            Body=data.encode('utf-8'),
+            ACL='bucket-owner-full-control'
+        )
