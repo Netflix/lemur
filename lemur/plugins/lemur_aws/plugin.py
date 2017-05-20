@@ -285,56 +285,54 @@ class S3DestinationPlugin(DestinationPlugin):
         {
             'name': 'region',
             'type': 'str',
-            'default': 'eu-west-1',
+            'default': 'us-east-1',
             'required': False,
-            'validation': '/^\w+-\w+-\d+$/',
-            'helpMessage': 'Availability zone to use',
+            'helpMessage': 'Region bucket exists',
+            'available': ['us-east-1', 'us-west-2', 'eu-west-1']
         },
         {
             'name': 'encrypt',
             'type': 'bool',
             'required': False,
-            'helpMessage': 'Availability zone to use',
+            'helpMessage': 'Enable server side encryption',
             'default': True
         },
         {
-            'name': 'key',
+            'name': 'prefix',
             'type': 'str',
             'required': False,
             'validation': '/^$|\s+/',
-            'helpMessage': 'Must be a valid S3 object key!',
+            'helpMessage': 'Must be a valid S3 object prefix!',
         },
         {
-            'name': 'caKey',
+            'name': 'export-plugin',
             'type': 'str',
-            'required': False,
-            'validation': '/^$|\s+/',
-            'helpMessage': 'Must be a valid S3 object key!',
-        },
-        {
-            'name': 'certKey',
-            'type': 'str',
-            'required': False,
-            'validation': '/^$|\s+/',
-            'helpMessage': 'Must be a valid S3 object key!',
+            'required': False
         }
     ]
 
     def __init__(self, *args, **kwargs):
         super(S3DestinationPlugin, self).__init__(*args, **kwargs)
 
-    def upload(self, name, body, private_key, cert_chain, options, **kwargs):
-        account_number = self.get_option('accountNumber', options)
-        encrypt = self.get_option('encrypt', options)
-        bucket = self.get_option('bucket', options)
-        key = self.get_option('key', options)
-        ca_key = self.get_option('caKey', options)
-        cert_key = self.get_option('certKey', options)
+    def upload(self, name, body, private_key, chain, options, **kwargs):
+        # ensure our data is in the right format
+        if self.get_option('export-plugin', options):
+            pass
 
-        if key and ca_key and cert_key:
-            s3.write_to_s3(account_number, bucket, key, private_key, encrypt=encrypt)
-            s3.write_to_s3(account_number, bucket, ca_key, cert_chain, encrypt=encrypt)
-            s3.write_to_s3(account_number, bucket, cert_key, body, encrypt=encrypt)
+        # assume we want standard pem file
         else:
-            pem_body = key + '\n' + body + '\n' + cert_chain + '\n'
-            s3.write_to_s3(account_number, bucket, name, pem_body, encrypt=encrypt)
+            # s3 doesn't require private key we write whatever we have
+            files = [(body, '.pem'), (private_key, '.key.pem'), (chain, '.chain.pem')]
+
+            for data, ext in files:
+                s3.put(
+                    self.get_option('accountNumber', options),
+                    self.get_option('region', options),
+                    self.get_option('bucket', options),
+                    '{prefix}/{name}{extension}'.format(
+                        prefix=self.get_option('prefix', options),
+                        name=name,
+                        extension=ext),
+                    self.get_option('encrypt', options),
+                    data
+                )

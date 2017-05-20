@@ -10,7 +10,7 @@ from boto.s3.key import Key
 from lemur.plugins.lemur_aws.sts import assume_service
 
 
-def write_to_s3(account_number, bucket_name, key, data, encrypt=True):
+def put(account_number, bucket_name, key, data, encrypt):
     """
     Use STS to write to an S3 bucket
 
