@@ -6,7 +6,7 @@ from moto import mock_sts, mock_elb
 @mock_elb()
 def test_get_all_elbs(app):
     from lemur.plugins.lemur_aws.elb import get_all_elbs
-    client = boto3.client('elb')
+    client = boto3.client('elb', region_name='us-east-1')
 
     elbs = get_all_elbs(account_number='123456789012', region='us-east-1')
     assert not elbs
