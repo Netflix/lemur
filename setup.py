@@ -63,12 +63,12 @@ install_requires = [
     'retrying==1.3.3',
     'tabulate==0.7.7',
     'pem==16.1.0',
-    'paramiko==2.1.2' #required for lemur_linuxdst plugin
+    'paramiko==2.1.2'  # required for lemur_linuxdst plugin
 ]
 
 tests_require = [
     'pyflakes',
-    'moto==0.4.31',
+    'moto==1.0.0',
     'nose==1.3.7',
     'pytest==3.0.7',
     'factory-boy==2.8.1',
