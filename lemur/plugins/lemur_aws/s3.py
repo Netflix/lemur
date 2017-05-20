@@ -12,7 +12,7 @@ from .sts import sts_client
 
 
 @sts_client('s3', 'resource')
-def write_to_s3(resource, bucket_name, prefix, data, encrypt=True):
+def put(resource, bucket_name, prefix, data, encrypt):
     """
     Use STS to write to an S3 bucket
     """
