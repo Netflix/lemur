@@ -89,7 +89,7 @@ And then run:
 .. note:: This command will install npm dependencies as well as compile static assets.
 
 
-You may also run with the urlContextPath variable set. If this is set it will add the desired context path for subsequent calls back to lemur.
+You may also run with the urlContextPath variable set. If this is set it will add the desired context path for subsequent calls back to lemur. This will only edit the front end code for calls back to the server, you will have to make sure the server knows about these routes.
 ::
 
   Example:
