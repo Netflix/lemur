@@ -103,7 +103,7 @@ class Login(Resource):
             return dict(token=create_token(user))
 
         metrics.send('invalid_login', 'counter', 1)
-        return dict(message='The supplied credentials are invalid'), 401
+        return dict(message='The supplied credentials are invalid'), 403
 
 
 class Ping(Resource):
