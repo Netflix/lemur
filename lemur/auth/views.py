@@ -295,7 +295,7 @@ class OAuth2(Resource):
                 algo = header_data['alg']
                 break
         else:
-            return dict(message='Key not found'), 403
+            return dict(message='Key not found'), 401
 
         # validate your token based on the key it was signed with
         try:
@@ -304,11 +304,11 @@ class OAuth2(Resource):
             else:
                 jwt.decode(id_token, secret, algorithms=[algo], audience=args['clientId'])
         except jwt.DecodeError:
-            return dict(message='Token is invalid'), 403
+            return dict(message='Token is invalid'), 401
         except jwt.ExpiredSignatureError:
-            return dict(message='Token has expired'), 403
+            return dict(message='Token has expired'), 401
         except jwt.InvalidTokenError:
-            return dict(message='Token is invalid'), 403
+            return dict(message='Token is invalid'), 401
 
         headers = {'authorization': 'Bearer {0}'.format(access_token)}
 
@@ -403,7 +403,7 @@ class Google(Resource):
 
         if not user.active:
             metrics.send('invalid_login', 'counter', 1)
-            return dict(message='The supplied credentials are invalid.'), 401
+            return dict(message='The supplied credentials are invalid.'), 403
 
         if user:
             metrics.send('successful_login', 'counter', 1)
