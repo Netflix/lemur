@@ -65,6 +65,12 @@ def upload_cert(name, body, private_key, path, cert_chain=None, **kwargs):
     :return:
     """
     client = kwargs.pop('client')
+
+    if not path:
+        path = '/'
+    else:
+        name = name + '-' + path.strip('/')
+
     try:
         if cert_chain:
             return client.upload_server_certificate(
