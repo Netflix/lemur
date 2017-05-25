@@ -279,7 +279,10 @@ class OAuth2(Resource):
         }
 
         # exchange authorization code for access token.
+        # Try Params first
         r = requests.post(access_token_url, headers=headers, params=params)
+        if r.status_code == 400:
+            r = requests.post(access_token_url, headers=headers, data=params)
         id_token = r.json()['id_token']
         access_token = r.json()['access_token']
 
