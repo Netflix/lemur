@@ -232,10 +232,16 @@ gulp.task('package:strip', function () {
 
 gulp.task('addUrlContextPath',['addUrlContextPath:revreplace'], function(){
   var urlContextPathExists = argv.urlContextPath ? true : false;
-  return gulp.src('lemur/static/dist/scripts/main*.js')
-    .pipe(gulpif(urlContextPathExists, replace('api/', argv.urlContextPath + '/api/')))
-    .pipe(gulpif(urlContextPathExists, replace('angular/', argv.urlContextPath + '/angular/')))
-    .pipe(gulp.dest('lemur/static/dist/scripts'))
+  ['lemur/static/dist/scripts/main*.js',
+  'lemur/static/dist/angular/**/*.html']
+  .forEach(function(file){
+    return gulp.src(file)
+      .pipe(gulpif(urlContextPathExists, replace('api/', argv.urlContextPath + '/api/')))
+      .pipe(gulpif(urlContextPathExists, replace('angular/', argv.urlContextPath + '/angular/')))
+      .pipe(gulp.dest(function(file){
+        return file.base;
+      }))
+  })
 });
 
 gulp.task('addUrlContextPath:revision', function(){
