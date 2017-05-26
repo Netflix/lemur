@@ -327,7 +327,12 @@ class SubjectAlternativeNameExtension(Field):
                     name_type = 'DNSName'
 
                 elif isinstance(name, x509.IPAddress):
-                    name_type = 'IPAddress'
+                    if isinstance(value, ipaddress.IPv4Network):
+                        name_type = 'IPNetwork'
+                    else:
+                        name_type = 'IPAddress'
+
+                    value = str(value)
 
                 elif isinstance(name, x509.UniformResourceIdentifier):
                     name_type = 'uniformResourceIdentifier'
