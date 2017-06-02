@@ -15,8 +15,8 @@
         <table ng-table="logsTable" class="table table-striped" show-filter="showFilter" template-pagination="angular/pager.html">
           <tbody>
           <tr ng-repeat="log in $data track by $index">
-            <td data-title="'Logged'" sortable="'logged_at'" filter="{ 'logged_at': 'text' }">
-              <span class="pull-right" uib-tooltip="{{ log.loggedAt }}">
+            <td data-title="'Logged'" sortable="'logged_at'">
+              <span uib-tooltip="{{ log.loggedAt }}">
                 {{ momentService.createMoment(log.loggedAt) }}
               </span>
             </td>
@@ -26,7 +26,7 @@
             <td data-title="'User'" sortable="'user'" filter="{ 'user.email': 'text' }">
               {{ log.user.email }}
             </td>
-            <td data-title="'Type'" sortable="'type'" filter="{ 'type': 'text' }">
+            <td data-title="'Type'">
               {{ log.logType }}
              </td>
           </tbody>
