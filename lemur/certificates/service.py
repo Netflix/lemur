@@ -475,8 +475,10 @@ def get_certificate_primitives(certificate):
     # we will rely on the Lemur generated name
     data.pop('name', None)
 
-    data['validity_start'] = start
-    data['validity_end'] = end
+    # TODO this can be removed once we migrate away from cn
+    data['cn'] = data['common_name']
+    data['not_before'] = start
+    data['not_after'] = end
     return data
 
 
