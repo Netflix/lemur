@@ -28,7 +28,7 @@ from lemur.common.fields import ArrowDateTime, Hex
 
 class CertificateSchema(LemurInputSchema):
     owner = fields.Email(required=True)
-    description = fields.String()
+    description = fields.String(missing='', allow_none=True)
 
 
 class CertificateCreationSchema(CertificateSchema):
