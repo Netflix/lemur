@@ -126,6 +126,12 @@ def map_fields(options, csr):
     else:
         data['custom_expiration_date'] = options['validity_end'].format('YYYY-MM-DD')
 
+    if current_app.config.get('DIGICERT_PRIVATE', False):
+        if 'product' in data:
+            data['product']['type_hint'] = 'private'
+        else:
+            data['product'] = dict(type_hint='private')
+
     return data
 
 
