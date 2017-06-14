@@ -169,7 +169,7 @@ def handle_response(response):
     :return:
     """
     if response.status_code > 399:
-        raise Exception(response.json()['message'])
+        raise Exception(response.json()['errors'][0]['message'])
 
     return response.json()
 
@@ -297,7 +297,7 @@ class DigiCertIssuerPlugin(IssuerPlugin):
         response = self.session.post(determinator_url, data=json.dumps(data))
 
         if response.status_code > 399:
-            raise Exception(response.json()['message'])
+            raise Exception(response.json()['errors'][0]['message'])
 
         order_id = response.json()['id']
 
