@@ -466,6 +466,11 @@ The following configuration properties are required to use the Digicert issuer p
             This is the default validity (in years), if no end date is specified. (Default: 1)
 
 
+.. data:: DIGICERT_PRIVATE
+    :noindex:
+
+            This is whether or not to issue a private certificate. (Default: False)
+
 
 CFSSL Issuer Plugin
 ^^^^^^^^^^^^^^^^^^^
