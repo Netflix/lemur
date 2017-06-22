@@ -34,9 +34,9 @@
 """
 from flask import current_app
 
-from lemur.plugins.bases import DestinationPlugin, SourcePlugin
-from lemur.plugins.lemur_aws import iam, s3, elb, ec2
 from lemur.plugins import lemur_aws as aws
+from lemur.plugins.lemur_aws import iam, s3, elb, ec2
+from lemur.plugins.bases import DestinationPlugin, ExportDestinationPlugin, SourcePlugin
 
 
 def get_region_from_dns(dns):
@@ -259,7 +259,7 @@ class AWSSourcePlugin(SourcePlugin):
         iam.delete_cert(certificate.name, account_number=account_number)
 
 
-class S3DestinationPlugin(DestinationPlugin):
+class S3DestinationPlugin(ExportDestinationPlugin):
     title = 'AWS-S3'
     slug = 'aws-s3'
     description = 'Allow the uploading of certificates to Amazon S3'
@@ -267,7 +267,7 @@ class S3DestinationPlugin(DestinationPlugin):
     author = 'Mikhail Khodorovskiy, Harm Weites <harm@weites.com>'
     author_url = 'https://github.com/Netflix/lemur'
 
-    options = [
+    additional_options = [
         {
             'name': 'bucket',
             'type': 'str',
@@ -303,11 +303,6 @@ class S3DestinationPlugin(DestinationPlugin):
             'required': False,
             'validation': '/^$|\s+/',
             'helpMessage': 'Must be a valid S3 object prefix!',
-        },
-        {
-            'name': 'export-plugin',
-            'type': 'str',
-            'required': False
         }
     ]
 
@@ -315,24 +310,17 @@ class S3DestinationPlugin(DestinationPlugin):
         super(S3DestinationPlugin, self).__init__(*args, **kwargs)
 
     def upload(self, name, body, private_key, chain, options, **kwargs):
-        # ensure our data is in the right format
-        if self.get_option('export-plugin', options):
-            pass
+        files = self.export(body, private_key, chain, options)
 
-        # assume we want standard pem file
-        else:
-            # s3 doesn't require private key we write whatever we have
-            files = [(body, '.pem'), (private_key, '.key.pem'), (chain, '.chain.pem')]
-
-            for data, ext in files:
-                s3.put(
-                    self.get_option('accountNumber', options),
-                    self.get_option('region', options),
-                    self.get_option('bucket', options),
-                    '{prefix}/{name}{extension}'.format(
-                        prefix=self.get_option('prefix', options),
-                        name=name,
-                        extension=ext),
-                    self.get_option('encrypt', options),
-                    data
-                )
+        for ext, passphrase, data in files:
+            s3.put(
+                self.get_option('region', options),
+                self.get_option('bucket', options),
+                '{prefix}/{name}{extension}'.format(
+                    prefix=self.get_option('prefix', options),
+                    name=name,
+                    extension=ext),
+                self.get_option('encrypt', options),
+                data,
+                account_number=self.get_option('accountNumber', options)
+            )

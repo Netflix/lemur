@@ -159,6 +159,13 @@ class PluginInputSchema(LemurInputSchema):
     def get_object(self, data, many=False):
         try:
             data['plugin_object'] = plugins.get(data['slug'])
+
+            # parse any sub-plugins
+            for option in data['plugin_options']:
+                if 'plugin' in option['type']:
+                    sub_data, errors = PluginInputSchema().load(option['value'])
+                    option['value'] = sub_data
+
             return data
         except Exception:
             raise ValidationError('Unable to find plugin: {0}'.format(data['slug']))
