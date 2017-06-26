@@ -105,7 +105,8 @@ def get_elb_endpoints(account_number, region, elb_dict):
         )
 
         if listener['PolicyNames']:
-            policy = elb.describe_load_balancer_policies(elb_dict['LoadBalancerName'], listener['PolicyNames'], account_number=account_number, region=region)
+            policy = elb.describe_load_balancer_policies(elb_dict['LoadBalancerName'], listener['PolicyNames'],
+                                                         account_number=account_number, region=region)
             endpoint['policy'] = format_elb_cipher_policy(policy)
 
         endpoints.append(endpoint)
@@ -122,7 +123,8 @@ def get_elb_endpoints_v2(account_number, region, elb_dict):
     :return:
     """
     endpoints = []
-    listeners = elb.describe_listeners_v2(account_number=account_number, region=region, LoadBalancerArn=elb_dict['LoadBalancerArn'])
+    listeners = elb.describe_listeners_v2(account_number=account_number, region=region,
+                                          LoadBalancerArn=elb_dict['LoadBalancerArn'])
     for listener in listeners['Listeners']:
         if not listener.get('Certificates'):
             continue
@@ -212,7 +214,8 @@ class AWSSourcePlugin(SourcePlugin):
 
     def get_certificates(self, options, **kwargs):
         cert_data = iam.get_all_certificates(account_number=self.get_option('accountNumber', options))
-        return [dict(body=c['CertificateBody'], chain=c.get('CertificateChain'), name=c['ServerCertificateMetadata']['ServerCertificateName']) for c in cert_data]
+        return [dict(body=c['CertificateBody'], chain=c.get('CertificateChain'),
+                     name=c['ServerCertificateMetadata']['ServerCertificateName']) for c in cert_data]
 
     def get_endpoints(self, options, **kwargs):
         endpoints = []
@@ -249,8 +252,10 @@ class AWSSourcePlugin(SourcePlugin):
         arn = iam.create_arn_from_cert(account_number, region, certificate.name)
 
         if endpoint.type == 'elbv2':
-            listener_arn = elb.get_listener_arn_from_endpoint(endpoint.name, endpoint.port, account_number=account_number, region=region)
-            elb.attach_certificate_v2(listener_arn, endpoint.port, [{'CertificateArn': arn}], account_number=account_number, region=region)
+            listener_arn = elb.get_listener_arn_from_endpoint(endpoint.name, endpoint.port,
+                                                              account_number=account_number, region=region)
+            elb.attach_certificate_v2(listener_arn, endpoint.port, [{'CertificateArn': arn}],
+                                      account_number=account_number, region=region)
         else:
             elb.attach_certificate(endpoint.name, endpoint.port, arn, account_number=account_number, region=region)
 
@@ -276,7 +281,7 @@ class S3DestinationPlugin(ExportDestinationPlugin):
             'helpMessage': 'Must be a valid S3 bucket name!',
         },
         {
-            'name': 'accountNumber',
+            'name': 'account_number',
             'type': 'str',
             'required': True,
             'validation': '/^[0-9]{12,12}$/',
