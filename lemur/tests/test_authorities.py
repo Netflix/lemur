@@ -5,7 +5,7 @@ from lemur.authorities.views import *  # noqa
 from lemur.tests.vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN
 
 
-def test_authority_input_schema(client, role):
+def test_authority_input_schema(client, role, issuer_plugin):
     from lemur.authorities.schemas import AuthorityInputSchema
 
     input_data = {
@@ -13,7 +13,7 @@ def test_authority_input_schema(client, role):
         'owner': 'jim@example.com',
         'description': 'An example authority.',
         'commonName': 'AnExampleAuthority',
-        'plugin': {'slug': 'verisign-issuer', 'plugin_options': [{'name': 'test', 'value': 'blah'}]},
+        'plugin': {'slug': 'test-issuer', 'plugin_options': [{'name': 'test', 'value': 'blah'}]},
         'type': 'root',
         'signingAlgorithm': 'sha256WithRSA',
         'keyType': 'RSA2048',
