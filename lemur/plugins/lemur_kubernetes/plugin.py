@@ -31,12 +31,16 @@ def ensure_resource(k8s_api, k8s_base_uri, namespace, kind, name, data):
 
     if 200 <= create_resp.status_code <= 299:
         return None
+
     elif create_resp.json()['reason'] != 'AlreadyExists':
         return create_resp.content
+
     update_resp = k8s_api.put(_resolve_uri(k8s_base_uri, namespace, kind, name), json=data)
+
     if not 200 <= update_resp.status_code <= 299:
         return update_resp.content
-    return None
+
+    return
 
 
 def _resolve_ns(k8s_base_uri, namespace, api_ver=DEFAULT_API_VERSION,):
@@ -49,6 +53,7 @@ def _resolve_ns(k8s_base_uri, namespace, api_ver=DEFAULT_API_VERSION,):
 def _resolve_uri(k8s_base_uri, namespace, kind, name=None, api_ver=DEFAULT_API_VERSION):
     if not namespace:
         namespace = 'default'
+
     return "/".join(itertools.chain.from_iterable([
         (_resolve_ns(k8s_base_uri, namespace, api_ver=api_ver),),
         ((kind + 's').lower(),),

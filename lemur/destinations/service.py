@@ -22,6 +22,11 @@ def create(label, plugin_name, options, description=None):
     :rtype : Destination
     :return: New destination
     """
+    # remove any sub-plugin objects before try to save the json options
+    for option in options:
+        if 'plugin' in option['type']:
+            del option['value']['plugin_object']
+
     destination = Destination(label=label, options=options, plugin_name=plugin_name, description=description)
     return database.create(destination)
 
