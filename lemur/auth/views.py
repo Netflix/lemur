@@ -21,6 +21,7 @@ from lemur.common.utils import get_psuedo_random_string
 from lemur.users import service as user_service
 from lemur.roles import service as role_service
 from lemur.auth.service import create_token, fetch_token_header, get_rsa_public_key
+import lemur.auth.ldap as ldap
 
 
 mod = Blueprint('auth', __name__)
@@ -94,6 +95,7 @@ class Login(Resource):
         else:
             user = user_service.get_by_username(args['username'])
 
+        # default to local authentication
         if user and user.check_password(args['password']) and user.active:
             # Tell Flask-Principal the identity changed
             identity_changed.send(current_app._get_current_object(),
@@ -102,6 +104,24 @@ class Login(Resource):
             metrics.send('successful_login', 'counter', 1)
             return dict(token=create_token(user))
 
+        # try ldap login
+        if current_app.config.get("LDAP_AUTH"):
+            try:
+                ldap_principal = ldap.LdapPrincipal(args)
+                user = ldap_principal.authenticate()
+                if user and user.active:
+                    # Tell Flask-Principal the identity changed
+                    identity_changed.send(current_app._get_current_object(),
+                                  identity=Identity(user.id))
+                    metrics.send('successful_login', 'counter', 1)
+                    return dict(token=create_token(user))
+            except Exception as e:
+                    current_app.logger.error("ldap error: {0}".format(e))
+                    ldap_message = 'ldap error: %s' % e
+                    metrics.send('invalid_login', 'counter', 1)
+                    return dict(message=ldap_message), 403
+
+        # if not valid user - no certificates for you
         metrics.send('invalid_login', 'counter', 1)
         return dict(message='The supplied credentials are invalid'), 403
 

@@ -177,3 +177,10 @@ ACME_URL = 'https://acme-v01.api.letsencrypt.org'
 ACME_EMAIL = 'jim@example.com'
 ACME_TEL = '4088675309'
 ACME_DIRECTORY_URL = 'https://acme-v01.api.letsencrypt.org'
+
+LDAP_AUTH = True
+LDAP_BIND_URI = 'ldap://localhost'
+LDAP_BASE_DN = 'dc=example,dc=com'
+LDAP_EMAIL_DOMAIN = 'example.com'
+LDAP_REQUIRED_GROUP = 'Lemur Access'
+LDAP_DEFAULT_ROLE = 'role1'

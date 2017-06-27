@@ -251,7 +251,108 @@ Lemur supports sending certification expiration notifications through SES and SM
 
 Authentication Options
 ----------------------
-Lemur currently supports Basic Authentication, Ping OAuth2, and Google out of the box. Additional flows can be added relatively easily.
+Lemur currently supports Basic Authentication, LDAP Authentication, Ping OAuth2, and Google out of the box. Additional flows can be added relatively easily.
+
+LDAP Specific Options
+~~~~~~~~~~~~~~~~~~~~~
+
+Lemur supports the use of an LDAP server in conjunction with Basic Authentication. Lemur local users can still be defined and take precedence over LDAP users. If a local user does not exist, LDAP will be queried for authentication. Only simple ldap binding with or without TLS is supported.
+
+LDAP support requires the pyldap python library, which also depends on the following openldap packages.
+
+.. code-block:: bash
+
+      $ sudo apt-get update
+      $ sudo apt-get install libldap2-dev libsasl2-dev libldap2-dev libssl-dev
+
+
+To configure the use of an LDAP server, the following settings must be defined.
+
+.. data:: LDAP_AUTH
+    :noindex:
+
+        This enables the use of LDAP
+
+        ::
+
+            LDAP_AUTH = True
+
+.. data:: LDAP_BIND_URI
+    :noindex:
+
+        Specifies the LDAP server connection string
+
+        ::
+
+            LDAP_BIND_URI = 'ldaps://hostname'
+
+.. data:: LDAP_BIND_URI
+    :noindex:
+
+        Specifies the LDAP server connection string
+
+        ::
+
+            LDAP_BIND_URI = 'ldaps://hostname'
+
+.. data:: LDAP_BASE_DN
+    :noindex:
+
+        Specifies the LDAP distinguished name location to search for users
+
+        ::
+
+            LDAP_BASE_DN = 'DC=Users,DC=Evilcorp,DC=com'
+
+.. data:: LDAP_EMAIL_DOMAIN
+    :noindex:
+
+        The email domain used by users in your directory. This is used to build the userPrincipalName to search with.
+
+        ::
+
+            LDAP_EMAIL_DOMAIN = 'evilcorp.com'
+
+The following LDAP options are not required, however TLS is always recommended.
+
+.. data:: LDAP_USE_TLS
+    :noindex:
+
+        Enables the use of TLS when connecting to the LDAP server. Ensure the LDAP_BIND_URI is using ldaps scheme.
+
+        ::
+
+            LDAP_USE_TLS = True
+
+.. data:: LDAP_CACERT_FILE
+    :noindex:
+
+        Specify a Certificate Authority file containing PEM encoded trusted issuer certificates. This can be used if your LDAP server is using certificates issued by a private CA. (ie Microsoft)
+
+        ::
+
+            LDAP_CACERT_FILE = '/path/to/cacert/file'
+
+.. data:: LDAP_REQUIRED_GROUP
+    :noindex:
+
+        Lemur has pretty open permissions. You can define an LDAP group to specify who can access Lemur. Only members of this group will be able to login.
+
+        ::
+
+            LDAP_REQUIRED_GROUP = 'Lemur LDAP Group Name'
+
+.. data:: LDAP_GROUPS_TO_ROLES
+    :noindex:
+
+        You can also define a dictionary of ldap groups mapped to lemur roles. This allows you to use ldap groups to manage access to owner/creator roles in Lemur
+
+        ::
+
+            LDAP_GROUPS_TO_ROLES = {'lemur_admins': 'admin', 'Lemur Team DL Group': 'team@example.com'}
+
+
+
 If you are not using an authentication provider you do not need to configure any of these options.
 
 For more information about how to use social logins, see: `Satellizer <https://github.com/sahat/satellizer>`_
