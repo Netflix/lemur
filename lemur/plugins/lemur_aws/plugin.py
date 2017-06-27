@@ -281,7 +281,7 @@ class S3DestinationPlugin(ExportDestinationPlugin):
             'helpMessage': 'Must be a valid S3 bucket name!',
         },
         {
-            'name': 'account_number',
+            'name': 'accountNumber',
             'type': 'str',
             'required': True,
             'validation': '/^[0-9]{12,12}$/',
@@ -319,13 +319,13 @@ class S3DestinationPlugin(ExportDestinationPlugin):
 
         for ext, passphrase, data in files:
             s3.put(
-                self.get_option('region', options),
                 self.get_option('bucket', options),
-                '{prefix}/{name}{extension}'.format(
+                self.get_option('region', options),
+                '{prefix}/{name}.{extension}'.format(
                     prefix=self.get_option('prefix', options),
                     name=name,
                     extension=ext),
-                self.get_option('encrypt', options),
                 data,
+                self.get_option('encrypt', options),
                 account_number=self.get_option('accountNumber', options)
             )

@@ -22,6 +22,8 @@ def sts_client(service, service_type='client'):
                 current_app.config.get('LEMUR_INSTANCE_PROFILE', 'Lemur')
             )
 
+            current_app.logger.debug('Assuming Role. Role: {0}'.format(arn))
+
             # TODO add user specific information to RoleSessionName
             role = sts.assume_role(RoleArn=arn, RoleSessionName='lemur')
 
