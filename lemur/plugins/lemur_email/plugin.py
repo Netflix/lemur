@@ -63,12 +63,12 @@ def send_via_ses(subject, body, targets):
         Message={
             'Subject': {
                 'Data': subject,
-                'Charset': 'string'
+                'Charset': 'UTF-8'
             },
             'Body': {
                 'Html': {
                     'Data': body,
-                    'Charset': 'string'
+                    'Charset': 'UTF-8'
                 }
             }
         }
