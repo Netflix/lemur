@@ -19,7 +19,7 @@ from logging.handlers import RotatingFileHandler
 
 from flask import Flask
 from lemur.common.health import mod as health
-from lemur.extensions import db, migrate, principal, smtp_mail, metrics
+from lemur.extensions import db, migrate, principal, smtp_mail, metrics, sentry
 
 
 DEFAULT_BLUEPRINTS = (
@@ -121,6 +121,7 @@ def configure_extensions(app):
     principal.init_app(app)
     smtp_mail.init_app(app)
     metrics.init_app(app)
+    sentry.init_app(app)
 
 
 def configure_blueprints(app, blueprints):

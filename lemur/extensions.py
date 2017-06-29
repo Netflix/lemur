@@ -20,3 +20,6 @@ smtp_mail = Mail()
 
 from lemur.metrics import Metrics
 metrics = Metrics()
+
+from raven.contrib.flask import Sentry
+sentry = Sentry()
