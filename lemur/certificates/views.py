@@ -269,7 +269,9 @@ class CertificatesList(AuthenticatedResource):
 
         if authority_permission.can():
             data['creator'] = g.user
-            return service.create(**data)
+            cert = service.create(**data)
+            log_service.create(g.user, 'create_cert', certificate=cert)
+            return cert
 
         return dict(message="You are not authorized to use the authority: {0}".format(data['authority'].name)), 403
 
@@ -644,7 +646,9 @@ class Certificates(AuthenticatedResource):
                         )
                     ), 400
 
-        return service.update(certificate_id, **data)
+        cert = service.update(certificate_id, **data)
+        log_service.create(g.current_user, 'update_cert', certificate=cert)
+        return cert
 
 
 class NotificationCertificatesList(AuthenticatedResource):
