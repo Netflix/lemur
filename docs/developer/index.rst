@@ -283,6 +283,31 @@ Domains
     :undoc-members:
     :show-inheritance:
 
+Endpoints
+---------
+
+.. automodule:: lemur.endpoints.views
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Logs
+----
+
+.. automodule:: lemur.logs.views
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Sources
+-------
+
+.. automodule:: lemur.sources.views
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Internals
 =========

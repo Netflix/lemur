@@ -97,3 +97,19 @@ Subpackages
     lemur.plugins
     lemur.roles
     lemur.users
+    lemur.sources
+    lemur.logs
+    lemur.reporting
+    lemur.tests
+    lemur.deployment
+    lemur.endpoints
+    lemur.defaults
+    lemur.plugins.lemur_acme
+    lemur.plugins.lemur_atlas
+    lemur.plugins.lemur_cryptography
+    lemur.plugins.lemur_digicert
+    lemur.plugins.lemur_java
+    lemur.plugins.lemur_kubernetes
+    lemur.plugins.lemur_linuxdst
+    lemur.plugins.lemur_openssl
+    lemur.plugins.lemur_slack

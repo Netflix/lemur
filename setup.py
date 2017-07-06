@@ -29,7 +29,7 @@ ROOT = os.path.realpath(os.path.join(os.path.dirname(__file__)))
 sys.path.insert(0, ROOT)
 
 about = {}
-with open(os.path.join(ROOT, "lemur", "__about__.py")) as f:
+with open(os.path.join(ROOT, 'lemur', '__about__.py')) as f:
     exec(f.read(), about)  # nosec: about file is benign
 
 
@@ -63,6 +63,7 @@ install_requires = [
     'tabulate==0.7.7',
     'pem==16.1.0',
     'raven[flask]==6.1.0',
+    'jinja2==2.9.6',
     'paramiko==2.2.1'  # required for lemur_linuxdst plugin
 ]
 
