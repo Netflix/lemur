@@ -6,7 +6,7 @@ Common Problems
 
 In my startup logs I see *'Aborting... Lemur cannot locate db encryption key, is LEMUR_ENCRYPTION_KEYS set?'*
   You likely have not correctly configured **LEMUR_ENCRYPTION_KEYS**. See
-  :doc:`administration/index` for more information.
+  :doc:`administration` for more information.
 
 
 I am seeing Lemur's javascript load in my browser but not the CSS.
