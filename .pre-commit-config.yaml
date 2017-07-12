@@ -1,10 +1,10 @@
 -   repo: git://github.com/pre-commit/pre-commit-hooks
-    sha: 18d7035de5388cc7775be57f529c154bf541aab9
+    sha: v0.9.1
     hooks:
     -   id: trailing-whitespace
     -   id: flake8
     -   id: check-merge-conflict
 -   repo: git://github.com/pre-commit/mirrors-jshint
-    sha: e72140112bdd29b18b0c8257956c896c4c3cebcb
+    sha: v2.9.5
     hooks:
     -   id: jshint

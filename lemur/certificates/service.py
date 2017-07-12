@@ -6,7 +6,6 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import arrow
-from datetime import timedelta
 
 from flask import current_app
 from sqlalchemy import func, or_, not_, cast, Boolean, Integer
@@ -85,20 +84,15 @@ def get_all_pending_reissue():
     """
     Retrieves all certificates that need to be rotated.
 
-    Must be X days from expiration, uses `LEMUR_DEFAULT_ROTATION_INTERVAL`
-    to determine how many days from expiration the certificate must be
+    Must be X days from expiration, uses the certificates rotation
+    policy to determine how many days from expiration the certificate must be
     for rotation to be pending.
 
     :return:
     """
-    now = arrow.utcnow()
-    interval = current_app.config.get('LEMUR_DEFAULT_ROTATION_INTERVAL', 30)
-    end = now + timedelta(days=interval)
-
     return Certificate.query.filter(Certificate.rotation == True)\
-        .filter(Certificate.endpoints.any())\
         .filter(not_(Certificate.replaced.any()))\
-        .filter(Certificate.not_after <= end.format('YYYY-MM-DD')).all()  # noqa
+        .filter(Certificate.in_rotation_window == True).all()  # noqa
 
 
 def find_duplicates(cert):

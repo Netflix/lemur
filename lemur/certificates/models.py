@@ -6,6 +6,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import arrow
+from datetime import timedelta
 
 from flask import current_app
 
@@ -15,7 +16,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from idna.core import InvalidCodepoint
 
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql.expression import case
+from sqlalchemy.sql.expression import case, extract
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import event, Integer, ForeignKey, String, PassiveDefault, func, Column, Text, Boolean
 
@@ -37,6 +38,7 @@ from lemur.models import certificate_associations, certificate_source_associatio
     certificate_replacement_associations, roles_certificates
 
 from lemur.domains.models import Domain
+from lemur.policies.models import RotationPolicy
 
 
 def get_sequence(name):
@@ -102,10 +104,10 @@ class Certificate(db.Model):
     san = Column(String(1024))  # TODO this should be migrated to boolean
 
     rotation = Column(Boolean, default=False)
-
     user_id = Column(Integer, ForeignKey('users.id'))
     authority_id = Column(Integer, ForeignKey('authorities.id', ondelete="CASCADE"))
     root_authority_id = Column(Integer, ForeignKey('authorities.id', ondelete="CASCADE"))
+    rotation_policy_id = Column(Integer, ForeignKey('rotation_policies.id'))
 
     notifications = relationship('Notification', secondary=certificate_notification_associations, backref='certificate')
     destinations = relationship('Destination', secondary=certificate_destination_associations, backref='certificate')
@@ -120,6 +122,7 @@ class Certificate(db.Model):
 
     logs = relationship('Log', backref='certificate')
     endpoints = relationship('Endpoint', backref='certificate')
+    rotation_policy = relationship("RotationPolicy")
 
     def __init__(self, **kwargs):
         cert = lemur.common.utils.parse_certificate(kwargs['body'])
@@ -134,7 +137,8 @@ class Certificate(db.Model):
         if kwargs.get('name'):
             self.name = get_or_increase_name(kwargs['name'])
         else:
-            self.name = get_or_increase_name(defaults.certificate_name(self.cn, self.issuer, self.not_before, self.not_after, self.san))
+            self.name = get_or_increase_name(
+                defaults.certificate_name(self.cn, self.issuer, self.not_before, self.not_after, self.san))
 
         self.owner = kwargs['owner']
         self.body = kwargs['body'].strip()
@@ -152,6 +156,7 @@ class Certificate(db.Model):
         self.roles = list(set(kwargs.get('roles', [])))
         self.replaces = kwargs.get('replaces', [])
         self.rotation = kwargs.get('rotation')
+        self.rotation_policy = kwargs.get('rotation_policy')
         self.signing_algorithm = defaults.signing_algorithm(cert)
         self.bits = defaults.bitstrength(cert)
         self.serial = defaults.serial(cert)
@@ -240,6 +245,33 @@ class Certificate(db.Model):
             else_=False
         )
 
+    @hybrid_property
+    def in_rotation_window(self):
+        """
+        Determines if a certificate is available for rotation based
+        on the rotation policy associated.
+        :return:
+        """
+        now = arrow.utcnow()
+        end = now + timedelta(days=self.rotation_policy.days)
+
+        if self.not_after <= end:
+            return True
+
+    @in_rotation_window.expression
+    def in_rotation_window(cls):
+        """
+        Determines if a certificate is available for rotation based
+        on the rotation policy associated.
+        :return:
+        """
+        return case(
+            [
+                (extract('day', cls.not_after - func.now()) <= RotationPolicy.days, True)
+            ],
+            else_=False
+        )
+
     @property
     def extensions(self):
         # setup default values
@@ -298,16 +330,6 @@ class Certificate(db.Model):
 
         return return_extensions
 
-    def get_arn(self, account_number):
-        """
-        Generate a valid AWS IAM arn
-
-        :rtype : str
-        :param account_number:
-        :return:
-        """
-        return "arn:aws:iam::{}:server-certificate/{}".format(account_number, self.name)
-
     def __repr__(self):
         return "Certificate(name={name})".format(name=self.name)
 
@@ -329,7 +351,8 @@ def update_destinations(target, value, initiator):
             destination_plugin.upload(target.name, target.body, target.private_key, target.chain, value.options)
     except Exception as e:
         current_app.logger.exception(e)
-        metrics.send('destination_upload_failure', 'counter', 1, metric_tags={'certificate': target.name, 'destination': value.label})
+        metrics.send('destination_upload_failure', 'counter', 1,
+                     metric_tags={'certificate': target.name, 'destination': value.label})
 
 
 @event.listens_for(Certificate.replaces, 'append')

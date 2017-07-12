@@ -9,8 +9,17 @@ from flask import current_app
 from marshmallow import fields, validate, validates_schema, post_load, pre_load
 from marshmallow.exceptions import ValidationError
 
-from lemur.schemas import AssociatedAuthoritySchema, AssociatedDestinationSchema, AssociatedCertificateSchema, \
-    AssociatedNotificationSchema, PluginInputSchema, ExtensionSchema, AssociatedRoleSchema, EndpointNestedOutputSchema
+from lemur.schemas import (
+    AssociatedAuthoritySchema,
+    AssociatedDestinationSchema,
+    AssociatedCertificateSchema,
+    AssociatedNotificationSchema,
+    PluginInputSchema,
+    ExtensionSchema,
+    AssociatedRoleSchema,
+    EndpointNestedOutputSchema,
+    AssociatedRotationPolicySchema
+)
 
 from lemur.authorities.schemas import AuthorityNestedOutputSchema
 from lemur.destinations.schemas import DestinationNestedOutputSchema
@@ -18,6 +27,7 @@ from lemur.notifications.schemas import NotificationNestedOutputSchema
 from lemur.roles.schemas import RoleNestedOutputSchema
 from lemur.domains.schemas import DomainNestedOutputSchema
 from lemur.users.schemas import UserNestedOutputSchema
+from lemur.policies.schemas import RotationPolicyNestedOutputSchema
 
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
 from lemur.common import validators, missing
@@ -63,6 +73,7 @@ class CertificateInputSchema(CertificateCreationSchema):
 
     notify = fields.Boolean(default=True)
     rotation = fields.Boolean()
+    rotation_policy = fields.Nested(AssociatedRotationPolicySchema, missing={'name': 'default'}, default={'name': 'default'})
 
     # certificate body fields
     organizational_unit = fields.String(missing=lambda: current_app.config.get('LEMUR_DEFAULT_ORGANIZATIONAL_UNIT'))
@@ -133,6 +144,7 @@ class CertificateNestedOutputSchema(LemurOutputSchema):
 
     rotation = fields.Boolean()
     notify = fields.Boolean()
+    rotation_policy = fields.Nested(RotationPolicyNestedOutputSchema)
 
     # Note aliasing  is the first step in deprecating these fields.
     cn = fields.String()  # deprecated
@@ -198,6 +210,7 @@ class CertificateOutputSchema(LemurOutputSchema):
     roles = fields.Nested(RoleNestedOutputSchema, many=True)
     endpoints = fields.Nested(EndpointNestedOutputSchema, many=True, missing=[])
     replaced_by = fields.Nested(CertificateNestedOutputSchema, many=True, attribute='replaced')
+    rotation_policy = fields.Nested(RotationPolicyNestedOutputSchema)
 
 
 class CertificateUploadInputSchema(CertificateCreationSchema):

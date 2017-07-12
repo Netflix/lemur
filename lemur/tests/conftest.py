@@ -6,7 +6,7 @@ from lemur.database import db as _db
 from lemur.auth.service import create_token
 
 from .factories import AuthorityFactory, NotificationFactory, DestinationFactory, \
-    CertificateFactory, UserFactory, RoleFactory, SourceFactory, EndpointFactory
+    CertificateFactory, UserFactory, RoleFactory, SourceFactory, EndpointFactory, RotationPolicyFactory
 
 
 def pytest_runtest_setup(item):
@@ -51,6 +51,7 @@ def db(app, request):
     UserFactory()
     r = RoleFactory(name='admin')
     UserFactory(roles=[r])
+    rp = RotationPolicyFactory(name='default')
 
     _db.session.commit()
     yield _db
