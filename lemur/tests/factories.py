@@ -15,6 +15,7 @@ from lemur.notifications.models import Notification
 from lemur.users.models import User
 from lemur.roles.models import Role
 from lemur.endpoints.models import Policy, Endpoint
+from lemur.policies.models import RotationPolicy
 
 from .vectors import INTERNAL_VALID_SAN_STR, PRIVATE_KEY_STR
 
@@ -135,6 +136,16 @@ class AuthorityFactory(BaseFactory):
         if extracted:
             for role in extracted:
                 self.roles.append(role)
+
+
+class RotationPolicyFactory(BaseFactory):
+    """Rotation Factory."""
+    name = Sequence(lambda n: 'policy{0}'.format(n))
+    days = 30
+
+    class Meta:
+        """Factory configuration."""
+        model = RotationPolicy
 
 
 class DestinationFactory(BaseFactory):

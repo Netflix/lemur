@@ -232,6 +232,8 @@ class CertificatesList(AuthenticatedResource):
                 "replaces": [{
                     "id": 1
                 }],
+                "rotation": True,
+                "rotationPolicy": {"name": "default"},
                 "name": "WILDCARD.test.example.net-SymantecCorporation-20160603-20180112",
                 "roles": [{
                     "id": 464,
@@ -241,18 +243,6 @@ class CertificatesList(AuthenticatedResource):
                 "san": null
               }
 
-
-           :arg extensions: extensions to be used in the certificate
-           :arg description: description for new certificate
-           :arg owner: owner email
-           :arg validityStart: when the certificate should start being valid
-           :arg validityEnd: when the certificate should expire
-           :arg authority: authority that should issue the certificate
-           :arg country: country for the CSR
-           :arg state: state for the CSR
-           :arg location: location for the CSR
-           :arg organization: organization for CSR
-           :arg commonName: certificate common name
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
            :statuscode 403: unauthenticated
@@ -356,6 +346,8 @@ class CertificatesUpload(AuthenticatedResource):
                     "name": "*.test.example.net"
                 }],
                 "replaces": [],
+                "rotation": True,
+                "rotationPolicy": {"name": "default"},
                 "name": "WILDCARD.test.example.net-SymantecCorporation-20160603-20180112",
                 "roles": [{
                     "id": 464,
@@ -365,11 +357,6 @@ class CertificatesUpload(AuthenticatedResource):
                 "san": null
               }
 
-           :arg owner: owner email for certificate
-           :arg publicCert: valid PEM public key for certificate
-           :arg intermediateCert valid PEM intermediate key for certificate
-           :arg privateKey: valid PEM private key for certificate
-           :arg destinations: list of aws destinations to upload the certificate to
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 403: unauthenticated
            :statuscode 200: no error
@@ -522,6 +509,8 @@ class Certificates(AuthenticatedResource):
                     "id": 1090,
                     "name": "*.test.example.net"
                 }],
+                "rotation": True,
+                "rotationPolicy": {"name": "default"},
                 "replaces": [],
                 "replaced": [],
                 "name": "WILDCARD.test.example.net-SymantecCorporation-20160603-20180112",
@@ -616,6 +605,8 @@ class Certificates(AuthenticatedResource):
                     "description": "This is a google group based role created by Lemur",
                     "name": "joe@example.com"
                 }],
+                "rotation": True,
+                "rotationPolicy": {"name": "default"},
                 "san": null
               }
 
@@ -722,6 +713,8 @@ class NotificationCertificatesList(AuthenticatedResource):
                     }],
                     "replaces": [],
                     "replaced": [],
+                    "rotation": True,
+                    "rotationPolicy": {"name": "default"},
                     "name": "WILDCARD.test.example.net-SymantecCorporation-20160603-20180112",
                     "roles": [{
                         "id": 464,
@@ -827,6 +820,8 @@ class CertificatesReplacementsList(AuthenticatedResource):
                     }],
                     "replaces": [],
                     "replaced": [],
+                    "rotation": True,
+                    "rotationPolicy": {"name": "default"},
                     "name": "WILDCARD.test.example.net-SymantecCorporation-20160603-20180112",
                     "roles": [{
                         "id": 464,
