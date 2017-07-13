@@ -8,6 +8,7 @@
 """
 from flask import current_app
 
+from lemur.extensions import sentry
 from lemur.exceptions import InvalidConfiguration
 
 
@@ -62,9 +63,11 @@ class InstanceManager(object):
                     results.append(cls)
 
             except InvalidConfiguration as e:
+                sentry.captureException()
                 current_app.logger.warning("Plugin '{0}' may not work correctly. {1}".format(class_name, e))
 
             except Exception as e:
+                sentry.captureException()
                 current_app.logger.exception("Unable to import {0}. Reason: {1}".format(cls_path, e))
                 continue
 

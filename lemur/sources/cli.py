@@ -14,7 +14,7 @@ from flask_script import Manager
 
 from flask import current_app
 
-from lemur.extensions import metrics
+from lemur.extensions import metrics, sentry
 from lemur.plugins.base import plugins
 
 from lemur.sources import service as source_service
@@ -87,6 +87,7 @@ def sync(source_strings):
             )
 
             metrics.send('sync_failed', 'counter', 1, metric_tags={'source': source.label})
+            sentry.captureException()
 
 
 @manager.option('-s', '--sources', dest='source_strings', action='append', help='Sources to operate on.')
@@ -117,6 +118,7 @@ def clean(source_strings, commit):
                     except Exception as e:
                         current_app.logger.exception(e)
                         metrics.send('clean_failed', 'counter', 1, metric_tags={'source': source.label})
+                        sentry.captureException()
 
                 current_app.logger.warning("Removed {0} from source {1} during cleaning".format(
                     certificate.name,
