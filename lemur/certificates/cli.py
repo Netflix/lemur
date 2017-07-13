@@ -12,6 +12,7 @@ from flask import current_app
 from flask_script import Manager
 
 from lemur import database
+from lemur.extensions import sentry
 from lemur.extensions import metrics
 from lemur.deployment import service as deployment_service
 from lemur.endpoints import service as endpoint_service
@@ -146,34 +147,36 @@ def rotate(endpoint_name, new_certificate_name, old_certificate_name, message, c
 
     print("[+] Starting endpoint rotation.")
 
-    old_cert = validate_certificate(old_certificate_name)
-    new_cert = validate_certificate(new_certificate_name)
-    endpoint = validate_endpoint(endpoint_name)
+    try:
+        old_cert = validate_certificate(old_certificate_name)
+        new_cert = validate_certificate(new_certificate_name)
+        endpoint = validate_endpoint(endpoint_name)
 
-    if endpoint and new_cert:
-        print("[+] Rotating endpoint: {0} to certificate {1}".format(endpoint.name, new_cert.name))
-        request_rotation(endpoint, new_cert, message, commit)
-
-    elif old_cert and new_cert:
-        print("[+] Rotating all endpoints from {0} to {1}".format(old_cert.name, new_cert.name))
-
-        for endpoint in old_cert.endpoints:
-            print("[+] Rotating {0}".format(endpoint.name))
+        if endpoint and new_cert:
+            print("[+] Rotating endpoint: {0} to certificate {1}".format(endpoint.name, new_cert.name))
             request_rotation(endpoint, new_cert, message, commit)
 
-    else:
-        print("[+] Rotating all endpoints that have new certificates available")
-        for endpoint in endpoint_service.get_all_pending_rotation():
-            if len(endpoint.certificate.replaced) == 1:
-                print("[+] Rotating {0} to {1}".format(endpoint.name, endpoint.certificate.replaced[0].name))
-                request_rotation(endpoint, endpoint.certificate.replaced[0], message, commit)
-            else:
-                metrics.send('endpoint_rotation_failure', 'counter', 1)
-                print("[!] Failed to rotate endpoint {0} reason: Multiple replacement certificates found.".format(
-                    endpoint.name
-                ))
+        elif old_cert and new_cert:
+            print("[+] Rotating all endpoints from {0} to {1}".format(old_cert.name, new_cert.name))
 
-    print("[+] Done!")
+            for endpoint in old_cert.endpoints:
+                print("[+] Rotating {0}".format(endpoint.name))
+                request_rotation(endpoint, new_cert, message, commit)
+
+        else:
+            print("[+] Rotating all endpoints that have new certificates available")
+            for endpoint in endpoint_service.get_all_pending_rotation():
+                if len(endpoint.certificate.replaced) == 1:
+                    print("[+] Rotating {0} to {1}".format(endpoint.name, endpoint.certificate.replaced[0].name))
+                    request_rotation(endpoint, endpoint.certificate.replaced[0], message, commit)
+                else:
+                    metrics.send('endpoint_rotation_failure', 'counter', 1)
+                    print("[!] Failed to rotate endpoint {0} reason: Multiple replacement certificates found.".format(
+                        endpoint.name
+                    ))
+        print("[+] Done!")
+    except Exception as e:
+        sentry.captureException()
 
 
 @manager.option('-o', '--old-certificate', dest='old_certificate_name', help='Name of the certificate you wish to reissue.')
@@ -201,6 +204,7 @@ def reissue(old_certificate_name, commit):
 
         print("[+] Done!")
     except Exception as e:
+        sentry.captureException()
         metrics.send('certificate_reissue_failure', 'counter', 1)
         print(
             "[!] Failed to reissue certificate {0} reason: {1}".format(
@@ -229,6 +233,7 @@ def check_revoked():
             cert.status = 'valid' if status else 'revoked'
 
         except Exception as e:
+            sentry.captureException()
             current_app.logger.exception(e)
             cert.status = 'unknown'
 

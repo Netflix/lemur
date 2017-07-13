@@ -25,6 +25,7 @@ from sqlalchemy_utils.types.arrow import ArrowType
 import lemur.common.utils
 
 from lemur.database import db
+from lemur.extensions import sentry
 
 from lemur.utils import Vault
 from lemur.common import defaults
@@ -323,8 +324,10 @@ class Certificate(db.Model):
                 else:
                     current_app.logger.warning('Custom OIDs not yet supported for clone operation.')
         except InvalidCodepoint as e:
+            sentry.captureException()
             current_app.logger.warning('Unable to parse extensions due to underscore in dns name')
         except ValueError as e:
+            sentry.captureException()
             current_app.logger.warning('Unable to parse')
             current_app.logger.exception(e)
 
