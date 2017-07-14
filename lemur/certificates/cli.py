@@ -123,7 +123,6 @@ def request_reissue(certificate, commit):
     :return:
     """
     details = get_certificate_primitives(certificate)
-
     print_certificate_details(details)
 
     if commit:
@@ -207,8 +206,7 @@ def reissue(old_certificate_name, commit):
         sentry.captureException()
         metrics.send('certificate_reissue_failure', 'counter', 1)
         print(
-            "[!] Failed to reissue certificate {0} reason: {1}".format(
-                old_cert.name,
+            "[!] Failed to reissue certificates. Reason: {}".format(
                 e
             )
         )

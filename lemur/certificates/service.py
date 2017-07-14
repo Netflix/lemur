@@ -471,8 +471,12 @@ def get_certificate_primitives(certificate):
 
     # TODO this can be removed once we migrate away from cn
     data['cn'] = data['common_name']
+
+    # needed until we move off not_*
     data['not_before'] = start
     data['not_after'] = end
+    data['validity_start'] = start
+    data['validity_end'] = end
     return data
 
 
