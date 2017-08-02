@@ -38,7 +38,7 @@ install_requires = [
     'Flask-RESTful==0.3.6',
     'Flask-SQLAlchemy==2.1',
     'Flask-Script==2.0.5',
-    'Flask-Migrate==2.0.4',
+    'Flask-Migrate==2.1.0',
     'Flask-Bcrypt==0.7.1',
     'Flask-Principal==0.4.0',
     'Flask-Mail==0.9.1',
