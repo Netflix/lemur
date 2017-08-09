@@ -118,7 +118,7 @@ these keys should be fairly trivial, additionally pull requests have been submit
     via the UI.
 * Closed `#289 <https://github.com/Netflix/lemur/issues/289>`_ - Fixed and issue where intermediates were not being properly exported.
 * Closed `#315 <https://github.com/Netflix/lemur/issues/315>`_ - Made how roles are associated with certificates and authorities much more
-    explict, including adding the ability to add roles directly to certificates and authorities on creation.
+    explicit, including adding the ability to add roles directly to certificates and authorities on creation.
 
 
 
