@@ -1,10 +1,9 @@
 import json
+
 import pytest
 
 from lemur.roles.views import *  # noqa
 from lemur.tests.factories import RoleFactory, AuthorityFactory, CertificateFactory, UserFactory
-
-
 from .vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN
 
 
@@ -165,3 +164,8 @@ def test_role_list_delete(client, token, status):
 ])
 def test_role_list_patch(client, token, status):
     assert client.patch(api.url_for(RolesList), data={}, headers=token).status_code == status
+
+
+def test_sensitive_filter(client):
+    resp = client.get(api.url_for(RolesList) + '?filter=password;a', headers=VALID_ADMIN_HEADER_TOKEN)
+    assert "'password' is not sortable or filterable" in resp.json['message']

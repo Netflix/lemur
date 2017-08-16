@@ -30,5 +30,7 @@ class Role(db.Model):
     users = relationship("User", secondary=roles_users, passive_deletes=True, backref="role")
     certificates = relationship("Certificate", secondary=roles_certificates, backref="role")
 
+    sensitive_fields = ('password',)
+
     def __repr__(self):
         return "Role(name={name})".format(name=self.name)

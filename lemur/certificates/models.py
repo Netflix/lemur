@@ -125,6 +125,8 @@ class Certificate(db.Model):
     endpoints = relationship('Endpoint', backref='certificate')
     rotation_policy = relationship("RotationPolicy")
 
+    sensitive_fields = ('private_key',)
+
     def __init__(self, **kwargs):
         cert = lemur.common.utils.parse_certificate(kwargs['body'])
 
