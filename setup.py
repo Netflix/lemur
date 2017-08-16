@@ -50,7 +50,7 @@ install_requires = [
     'six==1.10.0',
     'marshmallow-sqlalchemy==0.13.1',
     'gunicorn==19.7.1',
-    'marshmallow==2.13.5',
+    'marshmallow==2.13.6',
     'cryptography==1.9',
     'xmltodict==0.11.0',
     'pyjwt==1.5.2',
