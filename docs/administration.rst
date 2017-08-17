@@ -70,11 +70,18 @@ Basic Configuration
 
         Specifies whether to allow certificates created by Lemur to expire on weekends. Default is True.
 
-.. data:: LEMUR_RESTRICTED_DOMAINS
+.. data:: LEMUR_WHITELISTED_DOMAINS
     :noindex:
 
-        This allows the administrator to mark a subset of domains or domains matching a particular regex as
-        *restricted*. This means that only an administrator is allows to issue the domains in question.
+        List of regular expressions for domain restrictions; if the list is not empty, normal users can only issue
+        certificates for domain names matching at least one pattern on this list. Administrators are exempt from this
+        restriction.
+
+        Cerificate common name is matched against these rules *if* it does not contain a space. SubjectAltName DNS names
+        are always matched against these rules.
+
+        Take care to write patterns in such way to not allow the `*` wildcard character inadvertently. To match a `.`
+        character, it must be escaped (as `\.`).
 
 .. data:: LEMUR_TOKEN_SECRET
     :noindex:

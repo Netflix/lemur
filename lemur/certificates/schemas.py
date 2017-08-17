@@ -55,7 +55,7 @@ class CertificateCreationSchema(CertificateSchema):
 
 class CertificateInputSchema(CertificateCreationSchema):
     name = fields.String()
-    common_name = fields.String(required=True, validate=validators.sensitive_domain)
+    common_name = fields.String(required=True, validate=validators.common_name)
     authority = fields.Nested(AssociatedAuthoritySchema, required=True)
 
     validity_start = ArrowDateTime()

@@ -18,6 +18,8 @@ from marshmallow import utils
 from marshmallow.fields import Field
 from marshmallow.exceptions import ValidationError
 
+from lemur.common import validators
+
 
 class Hex(Field):
     """
@@ -357,6 +359,7 @@ class SubjectAlternativeNameExtension(Field):
         general_names = []
         for name in value:
             if name['nameType'] == 'DNSName':
+                validators.sensitive_domain(name['value'])
                 general_names.append(x509.DNSName(name['value']))
 
             elif name['nameType'] == 'IPAddress':

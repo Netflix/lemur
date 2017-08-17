@@ -6,9 +6,13 @@ import json
 import arrow
 import pytest
 from cryptography import x509
+from marshmallow import ValidationError
 from freezegun import freeze_time
 
 from lemur.certificates.views import *  # noqa
+from lemur.domains.models import Domain
+
+
 from lemur.tests.vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN, CSR_STR, \
     INTERNAL_VALID_LONG_STR, INTERNAL_VALID_SAN_STR, PRIVATE_KEY_STR
 
@@ -241,6 +245,89 @@ def test_certificate_valid_dates(client, authority):
     assert not errors
 
 
+def test_certificate_cn_admin(client, authority, logged_in_admin):
+    """Admin is exempt from CN/SAN domain restrictions."""
+    from lemur.certificates.schemas import CertificateInputSchema
+    input_data = {
+        'commonName': '*.admin-overrides-whitelist.com',
+        'owner': 'jim@example.com',
+        'authority': {'id': authority.id},
+        'description': 'testtestest',
+        'validityStart': '2020-01-01T00:00:00',
+        'validityEnd': '2020-01-01T00:00:01',
+    }
+
+    data, errors = CertificateInputSchema().load(input_data)
+    assert not errors
+
+
+def test_certificate_allowed_names(client, authority, session, logged_in_user):
+    """Test for allowed CN and SAN values."""
+    from lemur.certificates.schemas import CertificateInputSchema
+    input_data = {
+        'commonName': 'Names with spaces are not checked',
+        'owner': 'jim@example.com',
+        'authority': {'id': authority.id},
+        'description': 'testtestest',
+        'validityStart': '2020-01-01T00:00:00',
+        'validityEnd': '2020-01-01T00:00:01',
+        'extensions': {
+            'subAltNames': {
+                'names': [
+                    {'nameType': 'DNSName', 'value': 'allowed.example.com'},
+                    {'nameType': 'IPAddress', 'value': '127.0.0.1'},
+                ]
+            }
+        }
+    }
+
+    data, errors = CertificateInputSchema().load(input_data)
+    assert not errors
+
+
+def test_certificate_disallowed_names(client, authority, session, logged_in_user):
+    """The CN and SAN are disallowed by LEMUR_WHITELISTED_DOMAINS."""
+    from lemur.certificates.schemas import CertificateInputSchema
+    input_data = {
+        'commonName': '*.example.com',
+        'owner': 'jim@example.com',
+        'authority': {'id': authority.id},
+        'description': 'testtestest',
+        'validityStart': '2020-01-01T00:00:00',
+        'validityEnd': '2020-01-01T00:00:01',
+        'extensions': {
+            'subAltNames': {
+                'names': [
+                    {'nameType': 'DNSName', 'value': 'allowed.example.com'},
+                    {'nameType': 'DNSName', 'value': 'evilhacker.org'},
+                ]
+            }
+        }
+    }
+
+    data, errors = CertificateInputSchema().load(input_data)
+    assert errors['common_name'][0].startswith("Domain *.example.com does not match whitelisted domain patterns")
+    assert (errors['extensions']['sub_alt_names']['names'][0]
+            .startswith("Domain evilhacker.org does not match whitelisted domain patterns"))
+
+
+def test_certificate_sensitive_name(client, authority, session, logged_in_user):
+    """The CN is disallowed by 'sensitive' flag on Domain model."""
+    from lemur.certificates.schemas import CertificateInputSchema
+    input_data = {
+        'commonName': 'sensitive.example.com',
+        'owner': 'jim@example.com',
+        'authority': {'id': authority.id},
+        'description': 'testtestest',
+        'validityStart': '2020-01-01T00:00:00',
+        'validityEnd': '2020-01-01T00:00:01',
+    }
+    session.add(Domain(name='sensitive.example.com', sensitive=True))
+
+    data, errors = CertificateInputSchema().load(input_data)
+    assert errors['common_name'][0].startswith("Domain sensitive.example.com has been marked as sensitive")
+
+
 def test_create_basic_csr(client):
     from cryptography import x509
     from cryptography.hazmat.backends import default_backend
@@ -261,6 +348,37 @@ def test_create_basic_csr(client):
     csr = x509.load_pem_x509_csr(csr.encode('utf-8'), default_backend())
     for name in csr.subject:
         assert name.value in csr_config.values()
+
+
+def test_csr_disallowed_cn(client, logged_in_user):
+    """Domain name CN is disallowed via LEMUR_WHITELISTED_DOMAINS."""
+    from lemur.certificates.service import create_csr
+    from lemur.common import validators
+
+    request, pkey = create_csr(
+        common_name='evilhacker.org',
+        owner='joe@example.com',
+        key_type='RSA2048',
+    )
+    with pytest.raises(ValidationError) as err:
+        validators.csr(request)
+    assert str(err.value).startswith('Domain evilhacker.org does not match whitelisted domain patterns')
+
+
+def test_csr_disallowed_san(client, logged_in_user):
+    """SAN name is disallowed by LEMUR_WHITELISTED_DOMAINS."""
+    from lemur.certificates.service import create_csr
+    from lemur.common import validators
+
+    request, pkey = create_csr(
+        common_name="CN with spaces isn't a domain and is thus allowed",
+        owner='joe@example.com',
+        key_type='RSA2048',
+        extensions={'sub_alt_names': {'names': x509.SubjectAlternativeName([x509.DNSName('evilhacker.org')])}}
+    )
+    with pytest.raises(ValidationError) as err:
+        validators.csr(request)
+    assert str(err.value).startswith('Domain evilhacker.org does not match whitelisted domain patterns')
 
 
 def test_get_name_from_arn(client):

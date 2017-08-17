@@ -87,8 +87,8 @@ SECRET_KEY = '{flask_secret_key}'
 LEMUR_TOKEN_SECRET = '{secret_token}'
 LEMUR_ENCRYPTION_KEYS = '{encryption_key}'
 
-# this is a list of domains as regexes that only admins can issue
-LEMUR_RESTRICTED_DOMAINS = []
+# List of domain regular expressions that non-admin users can issue
+LEMUR_WHITELISTED_DOMAINS = []
 
 # Mail Server
 

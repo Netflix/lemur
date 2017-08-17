@@ -21,8 +21,10 @@ SECRET_KEY = 'I/dVhOZNSMZMqrFJa5tWli6VQccOGudKerq3eWPMSzQNmHHVhMAQfQ=='
 LEMUR_TOKEN_SECRET = 'test'
 LEMUR_ENCRYPTION_KEYS = 'o61sBLNBSGtAckngtNrfVNd8xy8Hp9LBGDstTbMbqCY='
 
-# this is a list of domains as regexes that only admins can issue
-LEMUR_RESTRICTED_DOMAINS = []
+# List of domain regular expressions that non-admin users can issue
+LEMUR_WHITELISTED_DOMAINS = [
+    '^[a-zA-Z0-9-]+\.example\.com$'
+]
 
 # Mail Server
 
