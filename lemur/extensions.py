@@ -13,7 +13,7 @@ from flask_bcrypt import Bcrypt
 bcrypt = Bcrypt()
 
 from flask_principal import Principal
-principal = Principal()
+principal = Principal(use_sessions=False)
 
 from flask_mail import Mail
 smtp_mail = Mail()
