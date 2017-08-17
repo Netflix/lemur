@@ -46,6 +46,8 @@ class User(db.Model):
     authorities = relationship('Authority', backref=db.backref('user'), lazy='dynamic')
     logs = relationship('Log', backref=db.backref('user'), lazy='dynamic')
 
+    sensitive_fields = ('password',)
+
     def check_password(self, password):
         """
         Hash a given password and check it against the stored value

@@ -75,6 +75,16 @@ def add(model):
     db.session.add(model)
 
 
+def get_model_column(model, field):
+    if field in getattr(model, 'sensitive_fields', ()):
+        raise AttrNotFound(field)
+    column = model.__table__.columns._data.get(field, None)
+    if column is None:
+        raise AttrNotFound(field)
+
+    return column
+
+
 def find_all(query, model, kwargs):
     """
     Returns a query object that ensures that all kwargs
@@ -91,7 +101,7 @@ def find_all(query, model, kwargs):
         if not isinstance(value, list):
             value = value.split(',')
 
-        conditions.append(getattr(model, attr).in_(value))
+        conditions.append(get_model_column(model, attr).in_(value))
 
     return query.filter(and_(*conditions))
 
@@ -108,7 +118,7 @@ def find_any(query, model, kwargs):
     """
     or_args = []
     for attr, value in kwargs.items():
-        or_args.append(or_(getattr(model, attr) == value))
+        or_args.append(or_(get_model_column(model, attr) == value))
     exprs = or_(*or_args)
     return query.filter(exprs)
 
@@ -123,7 +133,7 @@ def get(model, value, field="id"):
     :return:
     """
     query = session_query(model)
-    return query.filter(getattr(model, field) == value).scalar()
+    return query.filter(get_model_column(model, field) == value).scalar()
 
 
 def get_all(model, value, field="id"):
@@ -136,7 +146,7 @@ def get_all(model, value, field="id"):
     :return:
     """
     query = session_query(model)
-    return query.filter(getattr(model, field) == value)
+    return query.filter(get_model_column(model, field) == value)
 
 
 def create(model):
@@ -188,7 +198,8 @@ def filter(query, model, terms):
     :param terms:
     :return:
     """
-    return query.filter(getattr(model, terms[0]).ilike('%{}%'.format(terms[1])))
+    column = get_model_column(model, terms[0])
+    return query.filter(column.ilike('%{}%'.format(terms[1])))
 
 
 def sort(query, model, field, direction):
@@ -201,13 +212,8 @@ def sort(query, model, field, direction):
     :param field:
     :param direction:
     """
-    try:
-        field = getattr(model, field)
-        direction = getattr(field, direction)
-        query = query.order_by(direction())
-        return query
-    except AttributeError:
-        raise AttrNotFound(field)
+    column = get_model_column(model, field)
+    return query.order_by(column.desc() if direction == 'desc' else column.asc())
 
 
 def paginate(query, page, count):
