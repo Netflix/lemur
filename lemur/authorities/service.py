@@ -16,7 +16,7 @@ from lemur.roles import service as role_service
 from lemur.certificates.service import upload
 
 
-def update(authority_id, description=None, owner=None, active=None, roles=None):
+def update(authority_id, description, owner, active, roles):
     """
     Update an authority with new values.
 
@@ -26,12 +26,11 @@ def update(authority_id, description=None, owner=None, active=None, roles=None):
     """
     authority = get(authority_id)
 
-    if roles:
-        authority.roles = roles
-
+    authority.roles = roles
     authority.active = active
     authority.description = description
     authority.owner = owner
+
     return database.update(authority)
 
 

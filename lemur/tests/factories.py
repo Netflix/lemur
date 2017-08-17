@@ -122,6 +122,7 @@ class AuthorityFactory(BaseFactory):
     name = Sequence(lambda n: 'authority{0}'.format(n))
     owner = 'joe@example.com'
     plugin = {'slug': 'test-issuer'}
+    description = FuzzyText(length=128)
     authority_certificate = SubFactory(CertificateFactory)
 
     class Meta:
