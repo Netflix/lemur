@@ -187,6 +187,7 @@ class CertificateOutputSchema(LemurOutputSchema):
     issuer = fields.String()
     name = fields.String()
     dns_provider_id = fields.Integer(required=False, allow_none=True)
+    date_created = ArrowDateTime()
 
     rotation = fields.Boolean()
 
