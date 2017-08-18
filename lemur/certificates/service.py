@@ -353,7 +353,8 @@ def create_csr(**csr_config):
             if k in critical_extensions:
                 current_app.logger.debug('Adding Critical Extension: {0} {1}'.format(k, v))
                 if k == 'sub_alt_names':
-                    builder = builder.add_extension(v['names'], critical=True)
+                    if v['names']:
+                        builder = builder.add_extension(v['names'], critical=True)
                 else:
                     builder = builder.add_extension(v, critical=True)
 

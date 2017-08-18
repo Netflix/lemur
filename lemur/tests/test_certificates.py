@@ -6,9 +6,11 @@ import json
 import arrow
 import pytest
 from cryptography import x509
+from cryptography.hazmat.backends import default_backend
 from marshmallow import ValidationError
 from freezegun import freeze_time
 
+from lemur.certificates.service import create_csr
 from lemur.certificates.views import *  # noqa
 from lemur.domains.models import Domain
 
@@ -329,9 +331,6 @@ def test_certificate_sensitive_name(client, authority, session, logged_in_user):
 
 
 def test_create_basic_csr(client):
-    from cryptography import x509
-    from cryptography.hazmat.backends import default_backend
-    from lemur.certificates.service import create_csr
     csr_config = dict(
         common_name='example.com',
         organization='Example, Inc.',
@@ -350,9 +349,27 @@ def test_create_basic_csr(client):
         assert name.value in csr_config.values()
 
 
+def test_csr_empty_san(client):
+    """Test that an empty "names" list does not produce a CSR with empty SubjectAltNames extension.
+
+    The Lemur UI always submits this extension even when no alt names are defined.
+    """
+
+    csr_text, pkey = create_csr(
+        common_name='daniel-san.example.com',
+        owner='daniel-san@example.com',
+        key_type='RSA2048',
+        extensions={'sub_alt_names': {'names': x509.SubjectAlternativeName([])}}
+    )
+
+    csr = x509.load_pem_x509_csr(csr_text.encode('utf-8'), default_backend())
+
+    with pytest.raises(x509.ExtensionNotFound):
+        csr.extensions.get_extension_for_class(x509.SubjectAlternativeName)
+
+
 def test_csr_disallowed_cn(client, logged_in_user):
     """Domain name CN is disallowed via LEMUR_WHITELISTED_DOMAINS."""
-    from lemur.certificates.service import create_csr
     from lemur.common import validators
 
     request, pkey = create_csr(
@@ -367,7 +384,6 @@ def test_csr_disallowed_cn(client, logged_in_user):
 
 def test_csr_disallowed_san(client, logged_in_user):
     """SAN name is disallowed by LEMUR_WHITELISTED_DOMAINS."""
-    from lemur.certificates.service import create_csr
     from lemur.common import validators
 
     request, pkey = create_csr(
@@ -418,8 +434,6 @@ def test_reissue_certificate(issuer_plugin, authority, certificate):
 
 
 def test_create_csr():
-    from lemur.certificates.service import create_csr
-
     csr, private_key = create_csr(owner='joe@example.com', common_name='ACommonName', organization='test', organizational_unit='Meters', country='US',
                                   state='CA', location='Here', key_type='RSA2048')
     assert csr
