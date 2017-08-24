@@ -83,6 +83,12 @@ Basic Configuration
         Take care to write patterns in such way to not allow the `*` wildcard character inadvertently. To match a `.`
         character, it must be escaped (as `\.`).
 
+.. data:: LEMUR_OWNER_EMAIL_IN_SUBJECT
+    :noindex:
+
+        By default, Lemur will add the certificate owner's email address to certificate subject (for CAs that allow it).
+        Set this to `False` to disable this.
+
 .. data:: LEMUR_TOKEN_SECRET
     :noindex:
 
