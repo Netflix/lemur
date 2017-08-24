@@ -19,19 +19,15 @@ def test_render(certificate, endpoint):
 
     template = env.get_template('{}.html'.format('expiration'))
 
-    with open(os.path.join(dir_path, 'expiration-rendered.html'), 'w') as f:
-        body = template.render(dict(message=data, hostname='lemur.test.example.com'))
-        f.write(body)
+    body = template.render(dict(message=data, hostname='lemur.test.example.com'))
 
     template = env.get_template('{}.html'.format('rotation'))
 
     certificate.endpoints.append(endpoint)
 
-    with open(os.path.join(dir_path, 'rotation-rendered.html'), 'w') as f:
-        body = template.render(
-            dict(
-                certificate=certificate_notification_output_schema.dump(certificate).data,
-                hostname='lemur.test.example.com'
-            )
+    body = template.render(
+        dict(
+            certificate=certificate_notification_output_schema.dump(certificate).data,
+            hostname='lemur.test.example.com'
         )
-        f.write(body)
+    )
