@@ -26,7 +26,6 @@ class NotificationOutputSchema(LemurOutputSchema):
     active = fields.Boolean()
     options = fields.List(fields.Dict())
     plugin = fields.Nested(PluginOutputSchema)
-    certificates = fields.Nested(AssociatedCertificateSchema, many=True, missing=[])
 
     @post_dump
     def fill_object(self, data):
