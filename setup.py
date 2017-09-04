@@ -64,6 +64,7 @@ install_requires = [
     'pem==17.1.0',
     'raven[flask]==6.1.0',
     'jinja2==2.9.6',
+    'pyldap==2.4.36', # required by ldap auth provider
     'paramiko==2.2.1'  # required for lemur_linuxdst plugin
 ]
 
@@ -76,7 +77,8 @@ tests_require = [
     'fake-factory==0.7.2',
     'pytest-flask==0.10.0',
     'freezegun==0.3.9',
-    'requests-mock==1.3.0'
+    'requests-mock==1.3.0',
+    'pytest-mock'
 ]
 
 docs_require = [
