@@ -253,8 +253,8 @@ Authentication Options
 ----------------------
 Lemur currently supports Basic Authentication, LDAP Authentication, Ping OAuth2, and Google out of the box. Additional flows can be added relatively easily.
 
-LDAP Specific Options
-~~~~~~~~~~~~~~~~~~~~~
+LDAP Options
+~~~~~~~~~~~~
 
 Lemur supports the use of an LDAP server in conjunction with Basic Authentication. Lemur local users can still be defined and take precedence over LDAP users. If a local user does not exist, LDAP will be queried for authentication. Only simple ldap binding with or without TLS is supported.
 
@@ -276,15 +276,6 @@ To configure the use of an LDAP server, the following settings must be defined.
         ::
 
             LDAP_AUTH = True
-
-.. data:: LDAP_BIND_URI
-    :noindex:
-
-        Specifies the LDAP server connection string
-
-        ::
-
-            LDAP_BIND_URI = 'ldaps://hostname'
 
 .. data:: LDAP_BIND_URI
     :noindex:
@@ -327,7 +318,7 @@ The following LDAP options are not required, however TLS is always recommended.
 .. data:: LDAP_CACERT_FILE
     :noindex:
 
-        Specify a Certificate Authority file containing PEM encoded trusted issuer certificates. This can be used if your LDAP server is using certificates issued by a private CA. (ie Microsoft)
+        Specify a Certificate Authority file containing PEM encoded trusted issuer certificates. This can be used if your LDAP server is using certificates issued by a private CA.
 
         ::
 
@@ -352,6 +343,8 @@ The following LDAP options are not required, however TLS is always recommended.
             LDAP_GROUPS_TO_ROLES = {'lemur_admins': 'admin', 'Lemur Team DL Group': 'team@example.com'}
 
 
+Authentication Providers
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you are not using an authentication provider you do not need to configure any of these options.
 
