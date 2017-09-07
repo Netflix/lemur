@@ -22,7 +22,6 @@ from lemur.tests.vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKE
 def test_get_or_increase_name(session, certificate):
     from lemur.certificates.models import get_or_increase_name
 
-    assert get_or_increase_name('test name') == 'test-name'
     assert get_or_increase_name(certificate.name) == '{0}-1'.format(certificate.name)
 
     certificate.name = 'test-cert-11111111'

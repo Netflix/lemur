@@ -62,7 +62,6 @@ def get_sequence(name):
 
 
 def get_or_increase_name(name):
-    name = '-'.join(name.strip().split(' '))
     certificates = Certificate.query.filter(Certificate.name.ilike('{0}%'.format(name))).all()
 
     if not certificates:
@@ -138,7 +137,7 @@ class Certificate(db.Model):
 
         # when destinations are appended they require a valid name.
         if kwargs.get('name'):
-            self.name = get_or_increase_name(kwargs['name'])
+            self.name = get_or_increase_name(defaults.text_to_slug(kwargs['name']))
         else:
             self.name = get_or_increase_name(
                 defaults.certificate_name(self.cn, self.issuer, self.not_before, self.not_after, self.san))
