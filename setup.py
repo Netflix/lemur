@@ -62,7 +62,8 @@ install_requires = [
     'acme==0.13.0',
     'retrying==1.3.3',
     'tabulate==0.7.7',
-    'pem==16.1.0'
+    'pem==16.1.0',
+    'pyOpenSSL==17.0.0'
 ]
 
 tests_require = [
