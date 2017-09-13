@@ -61,6 +61,7 @@ install_requires = [
     'acme==0.18.1',
     'retrying==1.3.3',
     'tabulate==0.7.7',
+    'pyOpenSSL==17.0.0',
     'pem==17.1.0',
     'raven[flask]==6.1.0',
     'jinja2==2.9.6',
