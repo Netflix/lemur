@@ -34,9 +34,9 @@
 """
 from flask import current_app
 
-from lemur.plugins.bases import DestinationPlugin, SourcePlugin
-from lemur.plugins.lemur_aws import iam, s3, elb, ec2
 from lemur.plugins import lemur_aws as aws
+from lemur.plugins.lemur_aws import iam, s3, elb, ec2
+from lemur.plugins.bases import DestinationPlugin, ExportDestinationPlugin, SourcePlugin
 
 
 def get_region_from_dns(dns):
@@ -105,7 +105,8 @@ def get_elb_endpoints(account_number, region, elb_dict):
         )
 
         if listener['PolicyNames']:
-            policy = elb.describe_load_balancer_policies(elb_dict['LoadBalancerName'], listener['PolicyNames'], account_number=account_number, region=region)
+            policy = elb.describe_load_balancer_policies(elb_dict['LoadBalancerName'], listener['PolicyNames'],
+                                                         account_number=account_number, region=region)
             endpoint['policy'] = format_elb_cipher_policy(policy)
 
         endpoints.append(endpoint)
@@ -122,7 +123,8 @@ def get_elb_endpoints_v2(account_number, region, elb_dict):
     :return:
     """
     endpoints = []
-    listeners = elb.describe_listeners_v2(account_number=account_number, region=region, LoadBalancerArn=elb_dict['LoadBalancerArn'])
+    listeners = elb.describe_listeners_v2(account_number=account_number, region=region,
+                                          LoadBalancerArn=elb_dict['LoadBalancerArn'])
     for listener in listeners['Listeners']:
         if not listener.get('Certificates'):
             continue
@@ -161,6 +163,12 @@ class AWSDestinationPlugin(DestinationPlugin):
             'required': True,
             'validation': '/^[0-9]{12,12}$/',
             'helpMessage': 'Must be a valid AWS account number!',
+        },
+        {
+            'name': 'path',
+            'type': 'str',
+            'default': '/',
+            'helpMessage': 'Path to upload certificate.'
         }
     ]
 
@@ -172,6 +180,7 @@ class AWSDestinationPlugin(DestinationPlugin):
 
     def upload(self, name, body, private_key, cert_chain, options, **kwargs):
         iam.upload_cert(name, body, private_key,
+                        self.get_option('path', options),
                         cert_chain=cert_chain,
                         account_number=self.get_option('accountNumber', options))
 
@@ -205,7 +214,8 @@ class AWSSourcePlugin(SourcePlugin):
 
     def get_certificates(self, options, **kwargs):
         cert_data = iam.get_all_certificates(account_number=self.get_option('accountNumber', options))
-        return [dict(body=c['CertificateBody'], chain=c.get('CertificateChain'), name=c['ServerCertificateMetadata']['ServerCertificateName']) for c in cert_data]
+        return [dict(body=c['CertificateBody'], chain=c.get('CertificateChain'),
+                     name=c['ServerCertificateMetadata']['ServerCertificateName']) for c in cert_data]
 
     def get_endpoints(self, options, **kwargs):
         endpoints = []
@@ -242,8 +252,10 @@ class AWSSourcePlugin(SourcePlugin):
         arn = iam.create_arn_from_cert(account_number, region, certificate.name)
 
         if endpoint.type == 'elbv2':
-            listener_arn = elb.get_listener_arn_from_endpoint(endpoint.name, endpoint.port, account_number=account_number, region=region)
-            elb.attach_certificate_v2(listener_arn, endpoint.port, [{'CertificateArn': arn}], account_number=account_number, region=region)
+            listener_arn = elb.get_listener_arn_from_endpoint(endpoint.name, endpoint.port,
+                                                              account_number=account_number, region=region)
+            elb.attach_certificate_v2(listener_arn, endpoint.port, [{'CertificateArn': arn}],
+                                      account_number=account_number, region=region)
         else:
             elb.attach_certificate(endpoint.name, endpoint.port, arn, account_number=account_number, region=region)
 
@@ -252,7 +264,7 @@ class AWSSourcePlugin(SourcePlugin):
         iam.delete_cert(certificate.name, account_number=account_number)
 
 
-class S3DestinationPlugin(DestinationPlugin):
+class S3DestinationPlugin(ExportDestinationPlugin):
     title = 'AWS-S3'
     slug = 'aws-s3'
     description = 'Allow the uploading of certificates to Amazon S3'
@@ -260,7 +272,7 @@ class S3DestinationPlugin(DestinationPlugin):
     author = 'Mikhail Khodorovskiy, Harm Weites <harm@weites.com>'
     author_url = 'https://github.com/Netflix/lemur'
 
-    options = [
+    additional_options = [
         {
             'name': 'bucket',
             'type': 'str',
@@ -278,56 +290,42 @@ class S3DestinationPlugin(DestinationPlugin):
         {
             'name': 'region',
             'type': 'str',
-            'default': 'eu-west-1',
+            'default': 'us-east-1',
             'required': False,
-            'validation': '/^\w+-\w+-\d+$/',
-            'helpMessage': 'Availability zone to use',
+            'helpMessage': 'Region bucket exists',
+            'available': ['us-east-1', 'us-west-2', 'eu-west-1']
         },
         {
             'name': 'encrypt',
             'type': 'bool',
             'required': False,
-            'helpMessage': 'Availability zone to use',
+            'helpMessage': 'Enable server side encryption',
             'default': True
         },
         {
-            'name': 'key',
+            'name': 'prefix',
             'type': 'str',
             'required': False,
             'validation': '/^$|\s+/',
-            'helpMessage': 'Must be a valid S3 object key!',
-        },
-        {
-            'name': 'caKey',
-            'type': 'str',
-            'required': False,
-            'validation': '/^$|\s+/',
-            'helpMessage': 'Must be a valid S3 object key!',
-        },
-        {
-            'name': 'certKey',
-            'type': 'str',
-            'required': False,
-            'validation': '/^$|\s+/',
-            'helpMessage': 'Must be a valid S3 object key!',
+            'helpMessage': 'Must be a valid S3 object prefix!',
         }
     ]
 
     def __init__(self, *args, **kwargs):
         super(S3DestinationPlugin, self).__init__(*args, **kwargs)
 
-    def upload(self, name, body, private_key, cert_chain, options, **kwargs):
-        account_number = self.get_option('accountNumber', options)
-        encrypt = self.get_option('encrypt', options)
-        bucket = self.get_option('bucket', options)
-        key = self.get_option('key', options)
-        ca_key = self.get_option('caKey', options)
-        cert_key = self.get_option('certKey', options)
+    def upload(self, name, body, private_key, chain, options, **kwargs):
+        files = self.export(body, private_key, chain, options)
 
-        if key and ca_key and cert_key:
-            s3.write_to_s3(account_number, bucket, key, private_key, encrypt=encrypt)
-            s3.write_to_s3(account_number, bucket, ca_key, cert_chain, encrypt=encrypt)
-            s3.write_to_s3(account_number, bucket, cert_key, body, encrypt=encrypt)
-        else:
-            pem_body = key + '\n' + body + '\n' + cert_chain + '\n'
-            s3.write_to_s3(account_number, bucket, name, pem_body, encrypt=encrypt)
+        for ext, passphrase, data in files:
+            s3.put(
+                self.get_option('bucket', options),
+                self.get_option('region', options),
+                '{prefix}/{name}.{extension}'.format(
+                    prefix=self.get_option('prefix', options),
+                    name=name,
+                    extension=ext),
+                data,
+                self.get_option('encrypt', options),
+                account_number=self.get_option('accountNumber', options)
+            )

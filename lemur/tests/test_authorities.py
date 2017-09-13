@@ -1,19 +1,21 @@
+import json
 
 import pytest
-from lemur.authorities.views import *  # noqa
 
+from lemur.authorities.views import *  # noqa
+from lemur.tests.factories import AuthorityFactory, RoleFactory
 from lemur.tests.vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN
 
 
-def test_authority_input_schema(client, role):
+def test_authority_input_schema(client, role, issuer_plugin, logged_in_user):
     from lemur.authorities.schemas import AuthorityInputSchema
 
     input_data = {
         'name': 'Example Authority',
         'owner': 'jim@example.com',
         'description': 'An example authority.',
-        'commonName': 'AnExampleAuthority',
-        'plugin': {'slug': 'verisign-issuer', 'plugin_options': [{'name': 'test', 'value': 'blah'}]},
+        'commonName': 'An Example Authority',
+        'plugin': {'slug': 'test-issuer', 'plugin_options': [{'name': 'test', 'value': 'blah'}]},
         'type': 'root',
         'signingAlgorithm': 'sha256WithRSA',
         'keyType': 'RSA2048',
@@ -184,3 +186,31 @@ def test_certificate_authorities_delete(client, token, status):
 ])
 def test_certificate_authorities_patch(client, token, status):
     assert client.patch(api.url_for(AuthoritiesList), data={}, headers=token).status_code == status
+
+
+def test_authority_roles(client, session, issuer_plugin):
+    auth = AuthorityFactory()
+    role = RoleFactory()
+    session.flush()
+
+    data = {
+        'owner': auth.owner,
+        'name': auth.name,
+        'description': auth.description,
+        'active': True,
+        'roles': [
+            {'id': role.id},
+        ],
+    }
+
+    # Add role
+    resp = client.put(api.url_for(Authorities, authority_id=auth.id), data=json.dumps(data), headers=VALID_ADMIN_HEADER_TOKEN)
+    assert resp.status_code == 200
+    assert len(resp.json['roles']) == 1
+    assert set(auth.roles) == {role}
+
+    # Remove role
+    del data['roles'][0]
+    resp = client.put(api.url_for(Authorities, authority_id=auth.id), data=json.dumps(data), headers=VALID_ADMIN_HEADER_TOKEN)
+    assert resp.status_code == 200
+    assert len(resp.json['roles']) == 0

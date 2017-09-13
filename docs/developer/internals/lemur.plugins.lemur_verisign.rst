@@ -10,15 +10,6 @@ lemur_verisign Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`constants` Module
------------------------
-
-.. automodule:: lemur.plugins.lemur_verisign.constants
-    :noindex:
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`plugin` Module
 --------------------
 

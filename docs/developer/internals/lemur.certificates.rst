@@ -1,15 +1,6 @@
 certificates Package
 ====================
 
-:mod:`exceptions` Module
-------------------------
-
-.. automodule:: lemur.certificates.exceptions
-    :noindex:
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`models` Module
 --------------------
 

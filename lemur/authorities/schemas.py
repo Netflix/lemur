@@ -23,7 +23,7 @@ class AuthorityInputSchema(LemurInputSchema):
     name = fields.String(required=True)
     owner = fields.Email(required=True)
     description = fields.String()
-    common_name = fields.String(required=True, validate=validators.sensitive_domain)
+    common_name = fields.String(required=True, validate=validators.common_name)
 
     validity_start = ArrowDateTime()
     validity_end = ArrowDateTime()

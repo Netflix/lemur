@@ -89,6 +89,12 @@ You'll likely want to make some changes to the default configuration (we recomme
 .. note:: The ``upgrade`` shortcut is simply a shortcut to Alembic's upgrade command.
 
 
+Running tests with Docker and docker-compose
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Alternatively you can use Docker and docker-compose for running the tests with ``docker-compose run test``.
+
+
 Coding Standards
 ----------------
 
@@ -273,6 +279,31 @@ Domains
 -------
 
 .. automodule:: lemur.domains.views
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Endpoints
+---------
+
+.. automodule:: lemur.endpoints.views
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Logs
+----
+
+.. automodule:: lemur.logs.views
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Sources
+-------
+
+.. automodule:: lemur.sources.views
     :members:
     :undoc-members:
     :show-inheritance:

@@ -21,6 +21,7 @@ from lemur.plugins.utils import get_plugin_option
 from lemur.roles.models import Role
 from lemur.users.models import User
 from lemur.authorities.models import Authority
+from lemur.policies.models import RotationPolicy
 from lemur.certificates.models import Certificate
 from lemur.destinations.models import Destination
 from lemur.notifications.models import Notification
@@ -38,13 +39,13 @@ def validate_options(options):
     if not interval and not unit:
         return
 
-    if interval == 'month':
-        unit *= 30
+    if unit == 'month':
+        interval *= 30
 
-    elif interval == 'week':
-        unit *= 7
+    elif unit == 'week':
+        interval *= 7
 
-    if unit > 90:
+    if interval > 90:
         raise ValidationError('Notification cannot be more than 90 days into the future.')
 
 
@@ -149,6 +150,15 @@ class AssociatedUserSchema(LemurInputSchema):
         return fetch_objects(User, data, many=many)
 
 
+class AssociatedRotationPolicySchema(LemurInputSchema):
+    id = fields.Int()
+    name = fields.String()
+
+    @post_load
+    def get_object(self, data, many=False):
+        return fetch_objects(RotationPolicy, data, many=many)
+
+
 class PluginInputSchema(LemurInputSchema):
     plugin_options = fields.List(fields.Dict(), validate=validate_options)
     slug = fields.String(required=True)
@@ -159,9 +169,16 @@ class PluginInputSchema(LemurInputSchema):
     def get_object(self, data, many=False):
         try:
             data['plugin_object'] = plugins.get(data['slug'])
+
+            # parse any sub-plugins
+            for option in data.get('plugin_options', []):
+                if 'plugin' in option.get('type', []):
+                    sub_data, errors = PluginInputSchema().load(option['value'])
+                    option['value'] = sub_data
+
             return data
-        except Exception:
-            raise ValidationError('Unable to find plugin: {0}'.format(data['slug']))
+        except Exception as e:
+            raise ValidationError('Unable to find plugin. Slug: {0} Reason: {1}'.format(data['slug'], e))
 
 
 class PluginOutputSchema(LemurOutputSchema):

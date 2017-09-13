@@ -16,15 +16,17 @@ from flask_migrate import Migrate, MigrateCommand, stamp
 from flask_script.commands import ShowUrls, Clean, Server
 
 from lemur.sources.cli import manager as source_manager
+from lemur.policies.cli import manager as policy_manager
+from lemur.reporting.cli import manager as report_manager
+from lemur.endpoints.cli import manager as endpoint_manager
 from lemur.certificates.cli import manager as certificate_manager
 from lemur.notifications.cli import manager as notification_manager
-from lemur.endpoints.cli import manager as endpoint_manager
-from lemur.reporting.cli import manager as report_manager
+
 from lemur import database
 from lemur.users import service as user_service
 from lemur.roles import service as role_service
+from lemur.policies import service as policy_service
 from lemur.notifications import service as notification_service
-
 
 from lemur.common.utils import validate_conf
 
@@ -40,6 +42,8 @@ from lemur.domains.models import Domain  # noqa
 from lemur.notifications.models import Notification  # noqa
 from lemur.sources.models import Source  # noqa
 from lemur.logs.models import Log  # noqa
+from lemur.endpoints.models import Endpoint  # noqa
+from lemur.policies.models import RotationPolicy  # noqa
 
 
 manager = Manager(create_app)
@@ -83,8 +87,8 @@ SECRET_KEY = '{flask_secret_key}'
 LEMUR_TOKEN_SECRET = '{secret_token}'
 LEMUR_ENCRYPTION_KEYS = '{encryption_key}'
 
-# this is a list of domains as regexes that only admins can issue
-LEMUR_RESTRICTED_DOMAINS = []
+# List of domain regular expressions that non-admin users can issue
+LEMUR_WHITELISTED_DOMAINS = []
 
 # Mail Server
 
@@ -222,7 +226,7 @@ class InitializeApp(Command):
                     sys.stderr.write("[!] Passwords do not match!\n")
                     sys.exit(1)
 
-            user_service.create("lemur", password, 'lemur@nobody', True, None, [admin_role])
+            user_service.create("lemur", password, 'lemur@nobody.com', True, None, [admin_role])
             sys.stdout.write("[+] Created the user 'lemur' and granted it the 'admin' role!\n")
 
         else:
@@ -242,6 +246,12 @@ class InitializeApp(Command):
         recipients = current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL')
         notification_service.create_default_expiration_notifications("DEFAULT_SECURITY", recipients=recipients)
 
+        days = current_app.config.get("LEMUR_DEFAULT_ROTATION_INTERVAL", 30)
+        sys.stdout.write("[+] Creating default certificate rotation policy of {days} days before issuance.\n".format(
+            days=days
+        ))
+
+        policy_service.create(days=days)
         sys.stdout.write("[/] Done!\n")
 
 
@@ -531,6 +541,7 @@ def main():
     manager.add_command("notify", notification_manager)
     manager.add_command("endpoint", endpoint_manager)
     manager.add_command("report", report_manager)
+    manager.add_command("policy", policy_manager)
     manager.run()
 
 

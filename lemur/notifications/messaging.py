@@ -18,6 +18,7 @@ from flask import current_app
 from sqlalchemy import and_
 
 from lemur import database, metrics
+from lemur.extensions import sentry
 from lemur.common.utils import windowed_query
 
 from lemur.certificates.schemas import certificate_notification_output_schema
@@ -98,6 +99,7 @@ def send_notification(event_type, data, targets, notification):
         metrics.send('{0}_notification_sent'.format(event_type), 'counter', 1)
         return True
     except Exception as e:
+        sentry.captureException()
         metrics.send('{0}_notification_failure'.format(event_type), 'counter', 1)
         current_app.logger.exception(e)
 
@@ -131,10 +133,10 @@ def send_expiration_notifications(exclude):
             else:
                 failure += 1
 
-    if send_notification('expiration', security_data, security_email, notification):
-        success += 1
-    else:
-        failure += 1
+            if send_notification('expiration', security_data, security_email, notification):
+                success += 1
+            else:
+                failure += 1
 
     return success, failure
 
@@ -157,6 +159,7 @@ def send_rotation_notification(certificate, notification_plugin=None):
         metrics.send('rotation_notification_sent', 'counter', 1)
         return True
     except Exception as e:
+        sentry.captureException()
         metrics.send('rotation_notification_failure', 'counter', 1)
         current_app.logger.exception(e)
 

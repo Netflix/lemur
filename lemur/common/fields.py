@@ -18,6 +18,18 @@ from marshmallow import utils
 from marshmallow.fields import Field
 from marshmallow.exceptions import ValidationError
 
+from lemur.common import validators
+
+
+class Hex(Field):
+    """
+    A hex formatted string.
+    """
+    def _serialize(self, value, attr, obj):
+        if value:
+            value = hex(int(value))[2:].upper()
+        return value
+
 
 class ArrowDateTime(Field):
     """A formatted datetime string in UTC.
@@ -317,7 +329,12 @@ class SubjectAlternativeNameExtension(Field):
                     name_type = 'DNSName'
 
                 elif isinstance(name, x509.IPAddress):
-                    name_type = 'IPAddress'
+                    if isinstance(value, ipaddress.IPv4Network):
+                        name_type = 'IPNetwork'
+                    else:
+                        name_type = 'IPAddress'
+
+                    value = str(value)
 
                 elif isinstance(name, x509.UniformResourceIdentifier):
                     name_type = 'uniformResourceIdentifier'
@@ -342,6 +359,7 @@ class SubjectAlternativeNameExtension(Field):
         general_names = []
         for name in value:
             if name['nameType'] == 'DNSName':
+                validators.sensitive_domain(name['value'])
                 general_names.append(x509.DNSName(name['value']))
 
             elif name['nameType'] == 'IPAddress':

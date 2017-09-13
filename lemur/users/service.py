@@ -64,12 +64,12 @@ def update_roles(user, roles):
     :param user:
     :param roles:
     """
-    for ur in roles:
+    for ur in user.roles:
         for r in roles:
             if r.id == ur.id:
                 break
         else:
-            user.roles.remove(r)
+            user.roles.remove(ur)
 
     for r in roles:
         for ur in user.roles:

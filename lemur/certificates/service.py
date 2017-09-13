@@ -6,7 +6,6 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import arrow
-from datetime import timedelta
 
 from flask import current_app
 from sqlalchemy import func, or_, not_, cast, Boolean, Integer
@@ -16,7 +15,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 
 from lemur import database
-from lemur.extensions import metrics
+from lemur.extensions import metrics, signals
 from lemur.plugins.base import plugins
 from lemur.common.utils import generate_private_key
 
@@ -30,6 +29,12 @@ from lemur.notifications.models import Notification
 from lemur.certificates.schemas import CertificateOutputSchema, CertificateInputSchema
 
 from lemur.roles import service as role_service
+
+
+csr_created = signals.signal('csr_created', "CSR generated")
+csr_imported = signals.signal('csr_imported', "CSR imported from external source")
+certificate_issued = signals.signal('certificate_issued', "Authority issued a certificate")
+certificate_imported = signals.signal('certificate_imported', "Certificate imported from external source")
 
 
 def get(cert_id):
@@ -85,20 +90,15 @@ def get_all_pending_reissue():
     """
     Retrieves all certificates that need to be rotated.
 
-    Must be X days from expiration, uses `LEMUR_DEFAULT_ROTATION_INTERVAL`
-    to determine how many days from expiration the certificate must be
+    Must be X days from expiration, uses the certificates rotation
+    policy to determine how many days from expiration the certificate must be
     for rotation to be pending.
 
     :return:
     """
-    now = arrow.utcnow()
-    interval = current_app.config.get('LEMUR_DEFAULT_ROTATION_INTERVAL', 30)
-    end = now + timedelta(days=interval)
-
     return Certificate.query.filter(Certificate.rotation == True)\
-        .filter(Certificate.endpoints.any())\
         .filter(not_(Certificate.replaced.any()))\
-        .filter(Certificate.not_after <= end.format('YYYY-MM-DD')).all()  # noqa
+        .filter(Certificate.in_rotation_window == True).all()  # noqa
 
 
 def find_duplicates(cert):
@@ -174,9 +174,11 @@ def mint(**kwargs):
     # allow the CSR to be specified by the user
     if not kwargs.get('csr'):
         csr, private_key = create_csr(**kwargs)
+        csr_created.send(authority=authority, csr=csr)
     else:
         csr = str(kwargs.get('csr'))
         private_key = None
+        csr_imported.send(authority=authority, csr=csr)
 
     cert_body, cert_chain = issuer.create_certificate(csr, kwargs)
     return cert_body, private_key, cert_chain,
@@ -222,7 +224,10 @@ def upload(**kwargs):
     cert = database.create(cert)
 
     kwargs['creator'].certificates.append(cert)
-    return database.update(cert)
+
+    cert = database.update(cert)
+    certificate_imported.send(certificate=cert, authority=cert.authority)
+    return cert
 
 
 def create(**kwargs):
@@ -245,6 +250,8 @@ def create(**kwargs):
 
     kwargs['creator'].certificates.append(cert)
     cert.authority = kwargs['authority']
+    certificate_issued.send(certificate=cert, authority=cert.authority)
+
     database.commit()
 
     metrics.send('certificate_issued', 'counter', 1, metric_tags=dict(owner=cert.owner, issuer=cert.issuer))
@@ -359,7 +366,8 @@ def create_csr(**csr_config):
             if k in critical_extensions:
                 current_app.logger.debug('Adding Critical Extension: {0} {1}'.format(k, v))
                 if k == 'sub_alt_names':
-                    builder = builder.add_extension(v['names'], critical=True)
+                    if v['names']:
+                        builder = builder.add_extension(v['names'], critical=True)
                 else:
                     builder = builder.add_extension(v, critical=True)
 
@@ -475,6 +483,12 @@ def get_certificate_primitives(certificate):
     # we will rely on the Lemur generated name
     data.pop('name', None)
 
+    # TODO this can be removed once we migrate away from cn
+    data['cn'] = data['common_name']
+
+    # needed until we move off not_*
+    data['not_before'] = start
+    data['not_after'] = end
     data['validity_start'] = start
     data['validity_end'] = end
     return data

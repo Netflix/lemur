@@ -83,26 +83,6 @@ def determine_validity_years(end_date):
                     " years in validity")
 
 
-def get_issuance(options):
-    """Get the time range for certificates.
-
-    :param options:
-    :return:
-    """
-
-    validity_years = options.get('validity_years')
-
-    if validity_years:
-        options['validity_end'] = None
-        return options
-    else:
-        if not options.get('validity_end'):
-            options['validity_end'] = arrow.utcnow().replace(years=current_app.config.get('DIGICERT_DEFAULT_VALIDITY', 1))
-
-        options['validity_years'] = determine_validity_years(options['validity_end'])
-        return options
-
-
 def get_additional_names(options):
     """
     Return a list of strings to be added to a SAN certificates.
@@ -126,7 +106,9 @@ def map_fields(options, csr):
     :param csr:
     :return: dict or valid DigiCert options
     """
-    options = get_issuance(options)
+    if not options.get('validity_years'):
+        if not options.get('validity_end'):
+            options['validity_years'] = current_app.config.get('DIGICERT_DEFAULT_VALIDITY', 1)
 
     data = dict(certificate={
         "common_name": options['common_name'],
@@ -139,10 +121,16 @@ def map_fields(options, csr):
 
     data['certificate']['dns_names'] = get_additional_names(options)
 
-    if options.get('validity_end'):
+    if options.get('validity_years'):
+        data['validity_years'] = options['validity_years']
+    else:
         data['custom_expiration_date'] = options['validity_end'].format('YYYY-MM-DD')
 
-    data['validity_years'] = options.get('validity_years')
+    if current_app.config.get('DIGICERT_PRIVATE', False):
+        if 'product' in data:
+            data['product']['type_hint'] = 'private'
+        else:
+            data['product'] = dict(type_hint='private')
 
     return data
 
@@ -155,7 +143,13 @@ def map_cis_fields(options, csr):
     :param csr:
     :return:
     """
-    options = get_issuance(options)
+    if not options.get('validity_years'):
+        if not options.get('validity_end'):
+            options['validity_end'] = arrow.utcnow().replace(years=current_app.config.get('DIGICERT_DEFAULT_VALIDITY', 1))
+        options['validity_years'] = determine_validity_years(options['validity_end'])
+    else:
+        options['validity_end'] = arrow.utcnow().replace(years=options['validity_years'])
+
     data = {
         "profile_name": current_app.config.get('DIGICERT_CIS_PROFILE_NAME'),
         "common_name": options['common_name'],
@@ -181,7 +175,7 @@ def handle_response(response):
     :return:
     """
     if response.status_code > 399:
-        raise Exception(response.json()['message'])
+        raise Exception(response.json()['errors'][0]['message'])
 
     return response.json()
 
@@ -241,7 +235,6 @@ class DigiCertSourcePlugin(SourcePlugin):
             'DIGICERT_URL',
             'DIGICERT_ORG_ID',
             'DIGICERT_ROOT',
-            'DIGICERT_INTERMEDIATE'
         ]
         validate_conf(current_app, required_vars)
 
@@ -279,7 +272,6 @@ class DigiCertIssuerPlugin(IssuerPlugin):
             'DIGICERT_URL',
             'DIGICERT_ORG_ID',
             'DIGICERT_ROOT',
-            'DIGICERT_INTERMEDIATE'
         ]
 
         validate_conf(current_app, required_vars)
@@ -311,16 +303,16 @@ class DigiCertIssuerPlugin(IssuerPlugin):
         response = self.session.post(determinator_url, data=json.dumps(data))
 
         if response.status_code > 399:
-            raise Exception(response.json()['message'])
+            raise Exception(response.json()['errors'][0]['message'])
 
         order_id = response.json()['id']
 
         certificate_id = get_certificate_id(self.session, base_url, order_id)
 
-        # retrieve ceqrtificate
+        # retrieve certificate
         certificate_url = "{0}/services/v2/certificate/{1}/download/format/pem_all".format(base_url, certificate_id)
         end_entity, intermediate, root = pem.parse(self.session.get(certificate_url).content)
-        return "\n".join(str(end_entity).splitlines()), "\n".join(str(end_entity).splitlines())
+        return "\n".join(str(end_entity).splitlines()), "\n".join(str(intermediate).splitlines())
 
     @staticmethod
     def create_authority(options):

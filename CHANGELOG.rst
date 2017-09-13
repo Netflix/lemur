@@ -1,6 +1,16 @@
 Changelog
 =========
 
+0.6 - `master`
+~~~~~~~~~~~~~~
+
+
+Adds per-certificate rotation policies, requires a database migration. The default rotation policy for all certificates
+is 30 days. Every certificate will gain a policy regardless is auto-rotation is used.
+
+.. note:: This version is not yet released and is under active development
+
+
 0.5 - `2016-04-08`
 ~~~~~~~~~~~~~~~~~~
 
@@ -13,15 +23,11 @@ Other Highlights:
 * Closed `#501 <https://github.com/Netflix/lemur/issues/501>`_ - Endpoint resource as now kept in sync via an
 expiration mechanism. Such that non-existant endpoints gracefully fall out of Lemur. Certificates are never
 removed from Lemur.
-
 * Closed `#551 <https://github.com/Netflix/lemur/pull/551>`_ - Added the ability to create a 4096 bit key during certificate
 creation. Closed `#528 <https://github.com/Netflix/lemur/pull/528>`_ to ensure that issuer plugins supported the new 4096 bit keys.
-
 * Closed `#566 <https://github.com/Netflix/lemur/issues/566>`_ - Fixed an issue changing the notification status for  certificates
 without private keys.
-
 * Closed `#594 <https://github.com/Netflix/lemur/issues/594>`_ - Added `replaced` field indicating if a certificate has been superseded.
-
 * Closed `#602 <https://github.com/Netflix/lemur/issues/602>`_ - AWS plugin added support for ALBs for endpoint tracking.
 
 
@@ -112,7 +118,7 @@ these keys should be fairly trivial, additionally pull requests have been submit
     via the UI.
 * Closed `#289 <https://github.com/Netflix/lemur/issues/289>`_ - Fixed and issue where intermediates were not being properly exported.
 * Closed `#315 <https://github.com/Netflix/lemur/issues/315>`_ - Made how roles are associated with certificates and authorities much more
-    explict, including adding the ability to add roles directly to certificates and authorities on creation.
+    explicit, including adding the ability to add roles directly to certificates and authorities on creation.
 
 
 

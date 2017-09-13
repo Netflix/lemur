@@ -1,6 +1,23 @@
+import re
+import unicodedata
+
 from cryptography import x509
 from flask import current_app
 from lemur.constants import SAN_NAMING_TEMPLATE, DEFAULT_NAMING_TEMPLATE
+
+
+def text_to_slug(value):
+    """Normalize a string to a "slug" value, stripping character accents and removing non-alphanum characters."""
+
+    # Strip all character accents (ä => a): decompose Unicode characters and then drop combining chars.
+    value = ''.join(c for c in unicodedata.normalize('NFKD', value) if not unicodedata.combining(c))
+
+    # Replace all remaining non-alphanumeric characters with '-'. Multiple characters get collapsed into a single dash.
+    # Except, keep 'xn--' used in IDNA domain names as is.
+    value = re.sub(r'[^A-Za-z0-9.]+(?<!xn--)', '-', value)
+
+    # '-' in the beginning or end of string looks ugly.
+    return value.strip('-')
 
 
 def certificate_name(common_name, issuer, not_before, not_after, san):
@@ -25,21 +42,13 @@ def certificate_name(common_name, issuer, not_before, not_after, san):
 
     temp = t.format(
         subject=common_name,
-        issuer=issuer,
+        issuer=issuer.replace(' ', ''),
         not_before=not_before.strftime('%Y%m%d'),
         not_after=not_after.strftime('%Y%m%d')
     )
 
-    disallowed_chars = ''.join(c for c in map(chr, range(256)) if not c.isalnum())
-    disallowed_chars = disallowed_chars.replace("-", "")
-    disallowed_chars = disallowed_chars.replace(".", "")
     temp = temp.replace('*', "WILDCARD")
-
-    for c in disallowed_chars:
-        temp = temp.replace(c, "")
-
-    # white space is silly too
-    return temp.replace(" ", "-")
+    return text_to_slug(temp)
 
 
 def signing_algorithm(cert):

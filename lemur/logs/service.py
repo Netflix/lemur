@@ -7,8 +7,12 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+from flask import current_app
+
 from lemur import database
 from lemur.logs.models import Log
+from lemur.users.models import User
+from lemur.certificates.models import Certificate
 
 
 def create(user, type, certificate=None):
@@ -20,6 +24,7 @@ def create(user, type, certificate=None):
     :param certificate:
     :return:
     """
+    current_app.logger.info("[lemur-audit] action: {0}, user: {1}, certificate: {2}.".format(type, user.email, certificate.name))
     view = Log(user_id=user.id, log_type=type, certificate_id=certificate.id)
     database.add(view)
     database.commit()
@@ -49,6 +54,20 @@ def render(args):
 
     if filt:
         terms = filt.split(';')
-        query = database.filter(query, Log, terms)
+
+        if 'certificate.name' in terms:
+            sub_query = database.session_query(Certificate.id)\
+                .filter(Certificate.name.ilike('%{0}%'.format(terms[1])))
+
+            query = query.filter(Log.certificate_id.in_(sub_query))
+
+        elif 'user.email' in terms:
+            sub_query = database.session_query(User.id)\
+                .filter(User.email.ilike('%{0}%'.format(terms[1])))
+
+            query = query.filter(Log.user_id.in_(sub_query))
+
+        else:
+            query = database.filter(query, Log, terms)
 
     return database.sort_and_page(query, Log, args)

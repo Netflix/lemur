@@ -21,8 +21,10 @@ SECRET_KEY = 'I/dVhOZNSMZMqrFJa5tWli6VQccOGudKerq3eWPMSzQNmHHVhMAQfQ=='
 LEMUR_TOKEN_SECRET = 'test'
 LEMUR_ENCRYPTION_KEYS = 'o61sBLNBSGtAckngtNrfVNd8xy8Hp9LBGDstTbMbqCY='
 
-# this is a list of domains as regexes that only admins can issue
-LEMUR_RESTRICTED_DOMAINS = []
+# List of domain regular expressions that non-admin users can issue
+LEMUR_WHITELISTED_DOMAINS = [
+    '^[a-zA-Z0-9-]+\.example\.com$'
+]
 
 # Mail Server
 
@@ -49,7 +51,7 @@ LEMUR_ALLOW_WEEKEND_EXPIRATION = False
 # Database
 
 # modify this if you are not using a local database
-SQLALCHEMY_DATABASE_URI = 'postgresql://lemur:lemur@localhost:5432/lemur'
+SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI', 'postgresql://lemur:lemur@localhost:5432/lemur')
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 # AWS
@@ -68,11 +70,10 @@ LEMUR_INSTANCE_PROFILE = 'Lemur'
 # CLOUDCA_DEFAULT_VALIDITY = 2
 
 
-DIGICERT_URL = 'https://www.digicert.com'
+DIGICERT_URL = 'mock://www.digicert.com'
 DIGICERT_API_KEY = 'api-key'
 DIGICERT_ORG_ID = 111111
 DIGICERT_ROOT = "ROOT"
-DIGICERT_INTERMEDIATE = "INTERMEDIATE"
 
 
 VERISIGN_URL = 'http://example.com'
@@ -176,3 +177,10 @@ ACME_URL = 'https://acme-v01.api.letsencrypt.org'
 ACME_EMAIL = 'jim@example.com'
 ACME_TEL = '4088675309'
 ACME_DIRECTORY_URL = 'https://acme-v01.api.letsencrypt.org'
+
+LDAP_AUTH = True
+LDAP_BIND_URI = 'ldap://localhost'
+LDAP_BASE_DN = 'dc=example,dc=com'
+LDAP_EMAIL_DOMAIN = 'example.com'
+LDAP_REQUIRED_GROUP = 'Lemur Access'
+LDAP_DEFAULT_ROLE = 'role1'

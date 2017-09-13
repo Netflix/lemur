@@ -42,6 +42,19 @@ def test_cert_issuer(client):
     assert issuer(INTERNAL_VALID_LONG_CERT) == 'Example'
 
 
+def test_text_to_slug(client):
+    from lemur.common.defaults import text_to_slug
+    assert text_to_slug('test - string') == 'test-string'
+    # Accented characters are decomposed
+    assert text_to_slug('föö bär') == 'foo-bar'
+    # Melt away the Unicode Snowman
+    assert text_to_slug('\u2603') == ''
+    assert text_to_slug('\u2603test\u2603') == 'test'
+    assert text_to_slug('snow\u2603man') == 'snow-man'
+    # IDNA-encoded domain names should be kept as-is
+    assert text_to_slug('xn--i1b6eqas.xn--xmpl-loa9b3671b.com') == 'xn--i1b6eqas.xn--xmpl-loa9b3671b.com'
+
+
 def test_create_name(client):
     from lemur.common.defaults import certificate_name
     from datetime import datetime
@@ -59,3 +72,10 @@ def test_create_name(client):
         datetime(2015, 5, 12, 0, 0, 0),
         True
     ) == 'SAN-example.com-ExampleInc-20150507-20150512'
+    assert certificate_name(
+        'xn--mnchen-3ya.de',
+        'Vertrauenswürdig Autorität',
+        datetime(2015, 5, 7, 0, 0, 0),
+        datetime(2015, 5, 12, 0, 0, 0),
+        False
+    ) == 'xn--mnchen-3ya.de-VertrauenswurdigAutoritat-20150507-20150512'

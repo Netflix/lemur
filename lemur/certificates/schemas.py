@@ -9,8 +9,17 @@ from flask import current_app
 from marshmallow import fields, validate, validates_schema, post_load, pre_load
 from marshmallow.exceptions import ValidationError
 
-from lemur.schemas import AssociatedAuthoritySchema, AssociatedDestinationSchema, AssociatedCertificateSchema, \
-    AssociatedNotificationSchema, PluginInputSchema, ExtensionSchema, AssociatedRoleSchema, EndpointNestedOutputSchema
+from lemur.schemas import (
+    AssociatedAuthoritySchema,
+    AssociatedDestinationSchema,
+    AssociatedCertificateSchema,
+    AssociatedNotificationSchema,
+    PluginInputSchema,
+    ExtensionSchema,
+    AssociatedRoleSchema,
+    EndpointNestedOutputSchema,
+    AssociatedRotationPolicySchema
+)
 
 from lemur.authorities.schemas import AuthorityNestedOutputSchema
 from lemur.destinations.schemas import DestinationNestedOutputSchema
@@ -18,17 +27,18 @@ from lemur.notifications.schemas import NotificationNestedOutputSchema
 from lemur.roles.schemas import RoleNestedOutputSchema
 from lemur.domains.schemas import DomainNestedOutputSchema
 from lemur.users.schemas import UserNestedOutputSchema
+from lemur.policies.schemas import RotationPolicyNestedOutputSchema
 
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
 from lemur.common import validators, missing
 from lemur.notifications import service as notification_service
 
-from lemur.common.fields import ArrowDateTime
+from lemur.common.fields import ArrowDateTime, Hex
 
 
 class CertificateSchema(LemurInputSchema):
     owner = fields.Email(required=True)
-    description = fields.String()
+    description = fields.String(missing='', allow_none=True)
 
 
 class CertificateCreationSchema(CertificateSchema):
@@ -45,7 +55,7 @@ class CertificateCreationSchema(CertificateSchema):
 
 class CertificateInputSchema(CertificateCreationSchema):
     name = fields.String()
-    common_name = fields.String(required=True, validate=validators.sensitive_domain)
+    common_name = fields.String(required=True, validate=validators.common_name)
     authority = fields.Nested(AssociatedAuthoritySchema, required=True)
 
     validity_start = ArrowDateTime()
@@ -63,6 +73,7 @@ class CertificateInputSchema(CertificateCreationSchema):
 
     notify = fields.Boolean(default=True)
     rotation = fields.Boolean()
+    rotation_policy = fields.Nested(AssociatedRotationPolicySchema, missing={'name': 'default'}, default={'name': 'default'})
 
     # certificate body fields
     organizational_unit = fields.String(missing=lambda: current_app.config.get('LEMUR_DEFAULT_ORGANIZATIONAL_UNIT'))
@@ -124,7 +135,7 @@ class CertificateNestedOutputSchema(LemurOutputSchema):
     creator = fields.Nested(UserNestedOutputSchema)
     description = fields.String()
 
-    status = fields.Boolean()
+    status = fields.String()
 
     bits = fields.Integer()
     body = fields.String()
@@ -133,6 +144,7 @@ class CertificateNestedOutputSchema(LemurOutputSchema):
 
     rotation = fields.Boolean()
     notify = fields.Boolean()
+    rotation_policy = fields.Nested(RotationPolicyNestedOutputSchema)
 
     # Note aliasing  is the first step in deprecating these fields.
     cn = fields.String()  # deprecated
@@ -181,9 +193,10 @@ class CertificateOutputSchema(LemurOutputSchema):
     owner = fields.Email()
     san = fields.Boolean()
     serial = fields.String()
+    serial_hex = Hex(attribute='serial')
     signing_algorithm = fields.String()
 
-    status = fields.Boolean()
+    status = fields.String()
     user = fields.Nested(UserNestedOutputSchema)
 
     extensions = fields.Nested(ExtensionSchema)
@@ -197,6 +210,7 @@ class CertificateOutputSchema(LemurOutputSchema):
     roles = fields.Nested(RoleNestedOutputSchema, many=True)
     endpoints = fields.Nested(EndpointNestedOutputSchema, many=True, missing=[])
     replaced_by = fields.Nested(CertificateNestedOutputSchema, many=True, attribute='replaced')
+    rotation_policy = fields.Nested(RotationPolicyNestedOutputSchema)
 
 
 class CertificateUploadInputSchema(CertificateCreationSchema):

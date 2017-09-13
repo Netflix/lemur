@@ -29,52 +29,57 @@ ROOT = os.path.realpath(os.path.join(os.path.dirname(__file__)))
 sys.path.insert(0, ROOT)
 
 about = {}
-with open(os.path.join(ROOT, "lemur", "__about__.py")) as f:
-    exec(f.read(), about)
+with open(os.path.join(ROOT, 'lemur', '__about__.py')) as f:
+    exec(f.read(), about)  # nosec: about file is benign
 
 
 install_requires = [
     'Flask==0.12',
-    'Flask-RESTful==0.3.5',
+    'Flask-RESTful==0.3.6',
     'Flask-SQLAlchemy==2.1',
-    'Flask-Script==2.0.5',
-    'Flask-Migrate==2.0.3',
+    'Flask-Script==2.0.6',
+    'Flask-Migrate==2.1.1',
     'Flask-Bcrypt==0.7.1',
     'Flask-Principal==0.4.0',
     'Flask-Mail==0.9.1',
-    'SQLAlchemy-Utils==0.32.14',
+    'SQLAlchemy-Utils==0.32.16',
     'requests==2.11.1',
     'ndg-httpsclient==0.4.2',
-    'psycopg2==2.7.1',
+    'psycopg2==2.7.3',
     'arrow==0.10.0',
     'six==1.10.0',
     'marshmallow-sqlalchemy==0.13.1',
     'gunicorn==19.7.1',
-    'marshmallow==2.13.4',
-    'cryptography==1.7',
-    'pyjwt==1.4.2',
-    'xmltodict==0.10.2',
+    'marshmallow==2.13.6',
+    'cryptography==1.9',
+    'xmltodict==0.11.0',
+    'pyjwt==1.5.2',
     'lockfile==0.12.2',
     'inflection==0.3.1',
     'future==0.16.0',
-    'boto3==1.4.4',
-    'boto==2.45.0',  # we might make this optional
-    'acme==0.13.0',
+    'boto3==1.4.6',
+    'acme==0.18.1',
     'retrying==1.3.3',
     'tabulate==0.7.7',
-    'pem==16.1.0',
-    'pyOpenSSL==17.0.0'
+    'pyOpenSSL==17.0.0',
+    'pem==17.1.0',
+    'raven[flask]==6.1.0',
+    'jinja2==2.9.6',
+    'pyldap==2.4.37', # required by ldap auth provider
+    'paramiko==2.2.1'  # required for lemur_linuxdst plugin
 ]
 
 tests_require = [
     'pyflakes',
-    'moto==0.4.31',
+    'moto==1.1.5',
     'nose==1.3.7',
-    'pytest==3.0.7',
-    'factory-boy==2.8.1',
+    'pytest==3.2.2',
+    'factory-boy==2.9.2',
     'fake-factory==0.7.2',
     'pytest-flask==0.10.0',
-    'freezegun==0.3.8'
+    'freezegun==0.3.9',
+    'requests-mock==1.3.0',
+    'pytest-mock'
 ]
 
 docs_require = [

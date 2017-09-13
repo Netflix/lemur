@@ -34,9 +34,11 @@ before_script:
 
 install:
   - pip install coveralls
+  - pip install bandit
 
 script:
   - make test
+  - bandit -r . -ll -ii -x lemur/tests/,docs
 
 after_success:
   - coveralls

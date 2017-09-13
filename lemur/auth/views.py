@@ -21,6 +21,7 @@ from lemur.common.utils import get_psuedo_random_string
 from lemur.users import service as user_service
 from lemur.roles import service as role_service
 from lemur.auth.service import create_token, fetch_token_header, get_rsa_public_key
+import lemur.auth.ldap as ldap
 
 
 mod = Blueprint('auth', __name__)
@@ -94,6 +95,7 @@ class Login(Resource):
         else:
             user = user_service.get_by_username(args['username'])
 
+        # default to local authentication
         if user and user.check_password(args['password']) and user.active:
             # Tell Flask-Principal the identity changed
             identity_changed.send(current_app._get_current_object(),
@@ -102,8 +104,26 @@ class Login(Resource):
             metrics.send('successful_login', 'counter', 1)
             return dict(token=create_token(user))
 
+        # try ldap login
+        if current_app.config.get("LDAP_AUTH"):
+            try:
+                ldap_principal = ldap.LdapPrincipal(args)
+                user = ldap_principal.authenticate()
+                if user and user.active:
+                    # Tell Flask-Principal the identity changed
+                    identity_changed.send(current_app._get_current_object(),
+                                  identity=Identity(user.id))
+                    metrics.send('successful_login', 'counter', 1)
+                    return dict(token=create_token(user))
+            except Exception as e:
+                    current_app.logger.error("ldap error: {0}".format(e))
+                    ldap_message = 'ldap error: %s' % e
+                    metrics.send('invalid_login', 'counter', 1)
+                    return dict(message=ldap_message), 403
+
+        # if not valid user - no certificates for you
         metrics.send('invalid_login', 'counter', 1)
-        return dict(message='The supplied credentials are invalid'), 401
+        return dict(message='The supplied credentials are invalid'), 403
 
 
 class Ping(Resource):
@@ -164,17 +184,17 @@ class Ping(Resource):
                 algo = header_data['alg']
                 break
         else:
-            return dict(message='Key not found'), 403
+            return dict(message='Key not found'), 401
 
         # validate your token based on the key it was signed with
         try:
             jwt.decode(id_token, secret.decode('utf-8'), algorithms=[algo], audience=args['clientId'])
         except jwt.DecodeError:
-            return dict(message='Token is invalid'), 403
+            return dict(message='Token is invalid'), 401
         except jwt.ExpiredSignatureError:
-            return dict(message='Token has expired'), 403
+            return dict(message='Token has expired'), 401
         except jwt.InvalidTokenError:
-            return dict(message='Token is invalid'), 403
+            return dict(message='Token is invalid'), 401
 
         user_params = dict(access_token=access_token, schema='profile')
 
@@ -279,7 +299,10 @@ class OAuth2(Resource):
         }
 
         # exchange authorization code for access token.
+        # Try Params first
         r = requests.post(access_token_url, headers=headers, params=params)
+        if r.status_code == 400:
+            r = requests.post(access_token_url, headers=headers, data=params)
         id_token = r.json()['id_token']
         access_token = r.json()['access_token']
 
@@ -295,7 +318,7 @@ class OAuth2(Resource):
                 algo = header_data['alg']
                 break
         else:
-            return dict(message='Key not found'), 403
+            return dict(message='Key not found'), 401
 
         # validate your token based on the key it was signed with
         try:
@@ -304,11 +327,11 @@ class OAuth2(Resource):
             else:
                 jwt.decode(id_token, secret, algorithms=[algo], audience=args['clientId'])
         except jwt.DecodeError:
-            return dict(message='Token is invalid'), 403
+            return dict(message='Token is invalid'), 401
         except jwt.ExpiredSignatureError:
-            return dict(message='Token has expired'), 403
+            return dict(message='Token has expired'), 401
         except jwt.InvalidTokenError:
-            return dict(message='Token is invalid'), 403
+            return dict(message='Token is invalid'), 401
 
         headers = {'authorization': 'Bearer {0}'.format(access_token)}
 
@@ -403,7 +426,7 @@ class Google(Resource):
 
         if not user.active:
             metrics.send('invalid_login', 'counter', 1)
-            return dict(message='The supplied credentials are invalid.'), 401
+            return dict(message='The supplied credentials are invalid.'), 403
 
         if user:
             metrics.send('successful_login', 'counter', 1)

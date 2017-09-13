@@ -7,44 +7,9 @@
 """
 from functools import wraps
 
-import boto
-import boto.ec2.elb
 import boto3
 
 from flask import current_app
-
-
-def assume_service(account_number, service, region='us-east-1'):
-    conn = boto.connect_sts()
-
-    role = conn.assume_role('arn:aws:iam::{0}:role/{1}'.format(
-        account_number, current_app.config.get('LEMUR_INSTANCE_PROFILE', 'Lemur')), 'blah')
-
-    if service in 'iam':
-        return boto.connect_iam(
-            aws_access_key_id=role.credentials.access_key,
-            aws_secret_access_key=role.credentials.secret_key,
-            security_token=role.credentials.session_token)
-
-    elif service in 'elb':
-        return boto.ec2.elb.connect_to_region(
-            region,
-            aws_access_key_id=role.credentials.access_key,
-            aws_secret_access_key=role.credentials.secret_key,
-            security_token=role.credentials.session_token)
-
-    elif service in 'vpc':
-        return boto.connect_vpc(
-            aws_access_key_id=role.credentials.access_key,
-            aws_secret_access_key=role.credentials.secret_key,
-            security_token=role.credentials.session_token)
-
-    elif service in 's3':
-        return boto.s3.connect_to_region(
-            region,
-            aws_access_key_id=role.credentials.access_key,
-            aws_secret_access_key=role.credentials.secret_key,
-            security_token=role.credentials.session_token)
 
 
 def sts_client(service, service_type='client'):
@@ -56,6 +21,8 @@ def sts_client(service, service_type='client'):
                 kwargs.pop('account_number'),
                 current_app.config.get('LEMUR_INSTANCE_PROFILE', 'Lemur')
             )
+
+            current_app.logger.debug('Assuming Role. Role: {0}'.format(arn))
 
             # TODO add user specific information to RoleSessionName
             role = sts.assume_role(RoleArn=arn, RoleSessionName='lemur')

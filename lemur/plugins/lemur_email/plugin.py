@@ -6,7 +6,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import boto.ses
+import boto3
 from flask import current_app
 from flask_mail import Message
 
@@ -54,8 +54,25 @@ def send_via_ses(subject, body, targets):
     :param targets:
     :return:
     """
-    conn = boto.connect_ses()
-    conn.send_email(current_app.config.get("LEMUR_EMAIL"), subject, body, targets, format='html')
+    client = boto3.client('ses')
+    client.send_email(
+        Source=current_app.config.get('LEMUR_EMAIL'),
+        Destination={
+            'ToAddresses': targets
+        },
+        Message={
+            'Subject': {
+                'Data': subject,
+                'Charset': 'UTF-8'
+            },
+            'Body': {
+                'Html': {
+                    'Data': body,
+                    'Charset': 'UTF-8'
+                }
+            }
+        }
+    )
 
 
 class EmailNotificationPlugin(ExpirationNotificationPlugin):

@@ -27,7 +27,7 @@ If installing Lemur on a bare Ubuntu OS you will need to grab the following pack
 .. code-block:: bash
 
     $ sudo apt-get update
-    $ sudo apt-get install nodejs-legacy python-pip python-dev python3-dev libpq-dev build-essential libssl-dev libffi-dev nginx git supervisor npm postgresql
+    $ sudo apt-get install nodejs python-pip python-dev python3-dev libpq-dev build-essential libssl-dev libffi-dev nginx git supervisor npm postgresql
 
 .. note:: PostgreSQL is only required if your database is going to be on the same host as the webserver.  npm is needed if you're installing Lemur from the source (e.g., from git).
 
@@ -89,7 +89,7 @@ And then run:
 .. note:: This command will install npm dependencies as well as compile static assets.
 
 
-You may also run with the urlContextPath variable set. If this is set it will add the desired context path for subsequent calls back to lemur.
+You may also run with the urlContextPath variable set. If this is set it will add the desired context path for subsequent calls back to lemur. This will only edit the front end code for calls back to the server, you will have to make sure the server knows about these routes.
 ::
 
   Example:
@@ -138,7 +138,7 @@ Before Lemur will run you need to fill in a few required variables in the config
     LEMUR_DEFAULT_COUNTRY
     LEMUR_DEFAULT_STATE
     LEMUR_DEFAULT_LOCATION
-    LEMUR_DEFAUTL_ORGANIZATION
+    LEMUR_DEFAULT_ORGANIZATION
     LEMUR_DEFAULT_ORGANIZATIONAL_UNIT
 
 Setup Postgres
@@ -151,9 +151,8 @@ First, set a password for the postgres user.  For this guide, we will use ``lemu
 .. code-block:: bash
 
     $ sudo -u postgres -i
-    # \password postgres
-    Enter new password: lemur
-    Enter it again: lemur
+    $ psql
+    postgres=# CREATE USER lemur WITH PASSWORD 'lemur';
 
 Once successful, type CTRL-D to exit the Postgres shell.
 
@@ -269,8 +268,8 @@ Configuring Supervisor couldn't be more simple. Just point it to the ``lemur`` e
   autostart=true
   autorestart=true
   redirect_stderr=true
-  stdout_logfile syslog
-  stderr_logfile syslog
+  stdout_logfile=syslog
+  stderr_logfile=syslog
 
 See :ref:`Using Supervisor <UsingSupervisor>` for more details on using Supervisor.
 

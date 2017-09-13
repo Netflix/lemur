@@ -1,11 +1,12 @@
 import os
 import arrow
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from lemur.plugins.utils import get_plugin_option
 
 loader = FileSystemLoader(searchpath=os.path.dirname(os.path.realpath(__file__)))
-env = Environment(loader=loader)
+env = Environment(loader=loader,  # nosec: potentially dangerous types esc.
+                  autoescape=select_autoescape(['html', 'xml']))
 
 
 def human_time(time):

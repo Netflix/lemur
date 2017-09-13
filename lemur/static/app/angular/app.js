@@ -106,7 +106,7 @@
 
       // handle situation where our token has become invalid.
       RestangularConfigurer.setErrorInterceptor(function (response) {
-        if (response.status === 403) {
+        if (response.status === 401) {
           $auth.logout();
           $location.path('/login');
           return false;

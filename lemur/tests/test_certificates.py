@@ -1,14 +1,19 @@
-from __future__ import unicode_literals    # at top of module
+from __future__ import unicode_literals  # at top of module
 
-import json
-import pytest
 import datetime
+import json
+
 import arrow
-
-from freezegun import freeze_time
+import pytest
 from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+from marshmallow import ValidationError
+from freezegun import freeze_time
 
+from lemur.certificates.service import create_csr
 from lemur.certificates.views import *  # noqa
+from lemur.domains.models import Domain
+
 
 from lemur.tests.vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN, CSR_STR, \
     INTERNAL_VALID_LONG_STR, INTERNAL_VALID_SAN_STR, PRIVATE_KEY_STR
@@ -17,7 +22,6 @@ from lemur.tests.vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKE
 def test_get_or_increase_name(session, certificate):
     from lemur.certificates.models import get_or_increase_name
 
-    assert get_or_increase_name('test name') == 'test-name'
     assert get_or_increase_name(certificate.name) == '{0}-1'.format(certificate.name)
 
     certificate.name = 'test-cert-11111111'
@@ -53,7 +57,7 @@ def test_get_certificate_primitives(certificate):
 
     with freeze_time(datetime.date(year=2016, month=10, day=30)):
         primitives = get_certificate_primitives(certificate)
-        assert len(primitives) == 20
+        assert len(primitives) == 23
 
 
 def test_certificate_edit_schema(session):
@@ -73,14 +77,14 @@ def test_authority_key_identifier_schema():
 
     data, errors = AuthorityKeyIdentifierSchema().load(input_data)
 
-    assert data == {
+    assert sorted(data) == sorted({
         'use_key_identifier': True,
         'use_authority_cert': True
-    }
+    })
     assert not errors
 
     data, errors = AuthorityKeyIdentifierSchema().dumps(data)
-    assert data == json.dumps(input_data)
+    assert sorted(data) == sorted(json.dumps(input_data))
     assert not errors
 
 
@@ -155,7 +159,7 @@ def test_certificate_input_schema(client, authority):
     assert data['country'] == 'US'
     assert data['location'] == 'Los Gatos'
 
-    assert len(data.keys()) == 17
+    assert len(data.keys()) == 18
 
 
 def test_certificate_input_with_extensions(client, authority):
@@ -242,10 +246,90 @@ def test_certificate_valid_dates(client, authority):
     assert not errors
 
 
+def test_certificate_cn_admin(client, authority, logged_in_admin):
+    """Admin is exempt from CN/SAN domain restrictions."""
+    from lemur.certificates.schemas import CertificateInputSchema
+    input_data = {
+        'commonName': '*.admin-overrides-whitelist.com',
+        'owner': 'jim@example.com',
+        'authority': {'id': authority.id},
+        'description': 'testtestest',
+        'validityStart': '2020-01-01T00:00:00',
+        'validityEnd': '2020-01-01T00:00:01',
+    }
+
+    data, errors = CertificateInputSchema().load(input_data)
+    assert not errors
+
+
+def test_certificate_allowed_names(client, authority, session, logged_in_user):
+    """Test for allowed CN and SAN values."""
+    from lemur.certificates.schemas import CertificateInputSchema
+    input_data = {
+        'commonName': 'Names with spaces are not checked',
+        'owner': 'jim@example.com',
+        'authority': {'id': authority.id},
+        'description': 'testtestest',
+        'validityStart': '2020-01-01T00:00:00',
+        'validityEnd': '2020-01-01T00:00:01',
+        'extensions': {
+            'subAltNames': {
+                'names': [
+                    {'nameType': 'DNSName', 'value': 'allowed.example.com'},
+                    {'nameType': 'IPAddress', 'value': '127.0.0.1'},
+                ]
+            }
+        }
+    }
+
+    data, errors = CertificateInputSchema().load(input_data)
+    assert not errors
+
+
+def test_certificate_disallowed_names(client, authority, session, logged_in_user):
+    """The CN and SAN are disallowed by LEMUR_WHITELISTED_DOMAINS."""
+    from lemur.certificates.schemas import CertificateInputSchema
+    input_data = {
+        'commonName': '*.example.com',
+        'owner': 'jim@example.com',
+        'authority': {'id': authority.id},
+        'description': 'testtestest',
+        'validityStart': '2020-01-01T00:00:00',
+        'validityEnd': '2020-01-01T00:00:01',
+        'extensions': {
+            'subAltNames': {
+                'names': [
+                    {'nameType': 'DNSName', 'value': 'allowed.example.com'},
+                    {'nameType': 'DNSName', 'value': 'evilhacker.org'},
+                ]
+            }
+        }
+    }
+
+    data, errors = CertificateInputSchema().load(input_data)
+    assert errors['common_name'][0].startswith("Domain *.example.com does not match whitelisted domain patterns")
+    assert (errors['extensions']['sub_alt_names']['names'][0]
+            .startswith("Domain evilhacker.org does not match whitelisted domain patterns"))
+
+
+def test_certificate_sensitive_name(client, authority, session, logged_in_user):
+    """The CN is disallowed by 'sensitive' flag on Domain model."""
+    from lemur.certificates.schemas import CertificateInputSchema
+    input_data = {
+        'commonName': 'sensitive.example.com',
+        'owner': 'jim@example.com',
+        'authority': {'id': authority.id},
+        'description': 'testtestest',
+        'validityStart': '2020-01-01T00:00:00',
+        'validityEnd': '2020-01-01T00:00:01',
+    }
+    session.add(Domain(name='sensitive.example.com', sensitive=True))
+
+    data, errors = CertificateInputSchema().load(input_data)
+    assert errors['common_name'][0].startswith("Domain sensitive.example.com has been marked as sensitive")
+
+
 def test_create_basic_csr(client):
-    from cryptography import x509
-    from cryptography.hazmat.backends import default_backend
-    from lemur.certificates.service import create_csr
     csr_config = dict(
         common_name='example.com',
         organization='Example, Inc.',
@@ -262,6 +346,54 @@ def test_create_basic_csr(client):
     csr = x509.load_pem_x509_csr(csr.encode('utf-8'), default_backend())
     for name in csr.subject:
         assert name.value in csr_config.values()
+
+
+def test_csr_empty_san(client):
+    """Test that an empty "names" list does not produce a CSR with empty SubjectAltNames extension.
+
+    The Lemur UI always submits this extension even when no alt names are defined.
+    """
+
+    csr_text, pkey = create_csr(
+        common_name='daniel-san.example.com',
+        owner='daniel-san@example.com',
+        key_type='RSA2048',
+        extensions={'sub_alt_names': {'names': x509.SubjectAlternativeName([])}}
+    )
+
+    csr = x509.load_pem_x509_csr(csr_text.encode('utf-8'), default_backend())
+
+    with pytest.raises(x509.ExtensionNotFound):
+        csr.extensions.get_extension_for_class(x509.SubjectAlternativeName)
+
+
+def test_csr_disallowed_cn(client, logged_in_user):
+    """Domain name CN is disallowed via LEMUR_WHITELISTED_DOMAINS."""
+    from lemur.common import validators
+
+    request, pkey = create_csr(
+        common_name='evilhacker.org',
+        owner='joe@example.com',
+        key_type='RSA2048',
+    )
+    with pytest.raises(ValidationError) as err:
+        validators.csr(request)
+    assert str(err.value).startswith('Domain evilhacker.org does not match whitelisted domain patterns')
+
+
+def test_csr_disallowed_san(client, logged_in_user):
+    """SAN name is disallowed by LEMUR_WHITELISTED_DOMAINS."""
+    from lemur.common import validators
+
+    request, pkey = create_csr(
+        common_name="CN with spaces isn't a domain and is thus allowed",
+        owner='joe@example.com',
+        key_type='RSA2048',
+        extensions={'sub_alt_names': {'names': x509.SubjectAlternativeName([x509.DNSName('evilhacker.org')])}}
+    )
+    with pytest.raises(ValidationError) as err:
+        validators.csr(request)
+    assert str(err.value).startswith('Domain evilhacker.org does not match whitelisted domain patterns')
 
 
 def test_get_name_from_arn(client):
@@ -301,8 +433,6 @@ def test_reissue_certificate(issuer_plugin, authority, certificate):
 
 
 def test_create_csr():
-    from lemur.certificates.service import create_csr
-
     csr, private_key = create_csr(owner='joe@example.com', common_name='ACommonName', organization='test', organizational_unit='Meters', country='US',
                                   state='CA', location='Here', key_type='RSA2048')
     assert csr
@@ -362,6 +492,12 @@ def test_certificate_get_private_key(client, token, status):
 ])
 def test_certificate_get(client, token, status):
     assert client.get(api.url_for(Certificates, certificate_id=1), headers=token).status_code == status
+
+
+def test_certificate_get_body(client):
+    response_body = client.get(api.url_for(Certificates, certificate_id=1), headers=VALID_USER_HEADER_TOKEN).json
+    assert response_body['serial'] == '1001'
+    assert response_body['serialHex'] == '3E9'
 
 
 @pytest.mark.parametrize("token,status", [
@@ -529,3 +665,8 @@ def test_certificates_upload_delete(client, token, status):
 ])
 def test_certificates_upload_patch(client, token, status):
     assert client.patch(api.url_for(CertificatesUpload), data={}, headers=token).status_code == status
+
+
+def test_sensitive_sort(client):
+    resp = client.get(api.url_for(CertificatesList) + '?sortBy=private_key&sortDir=asc', headers=VALID_ADMIN_HEADER_TOKEN)
+    assert "'private_key' is not sortable or filterable" in resp.json['message']
