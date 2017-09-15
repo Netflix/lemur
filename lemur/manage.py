@@ -251,7 +251,7 @@ class InitializeApp(Command):
             days=days
         ))
 
-        policy_service.create(days=days)
+        policy_service.create(days=days, name='default')
         sys.stdout.write("[/] Done!\n")
 
 
