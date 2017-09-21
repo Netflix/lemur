@@ -76,6 +76,15 @@ def crl_verify(cert_path):
 
         for r in crl:
             if cert.serial == r.serial_number:
+                try:
+                    reason = r.extensions.get_extension_for_class(x509.CRLReason).value
+                    # Handle "removeFromCRL" revoke reason as unrevoked; continue with the next distribution point.
+                    # Per RFC 5280 section 6.3.3 (k): https://tools.ietf.org/html/rfc5280#section-6.3.3
+                    if reason == x509.ReasonFlags.remove_from_crl:
+                        break
+                except x509.ExtensionNotFound:
+                    pass
+
                 return
 
     return True
