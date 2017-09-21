@@ -266,7 +266,26 @@ LDAP support requires the pyldap python library, which also depends on the follo
       $ sudo apt-get install libldap2-dev libsasl2-dev libldap2-dev libssl-dev
 
 
-To configure the use of an LDAP server, the following settings must be defined.
+To configure the use of an LDAP server, a number of settings need to be configured in `lemur.conf.py`.
+
+Here is an example LDAP configuration stanza you can add to your config. Adjust to suit your environment of course.
+ 
+.. code-block:: python
+
+        LDAP_AUTH = True
+        LDAP_BIND_URI='ldaps://secure.evilcorp.net'
+        LDAP_BASE_DN='DC=users,DC=evilcorp,DC=net'
+        LDAP_EMAIL_DOMAIN='evilcorp.net'
+        LDAP_USE_TLS = True
+        LDAP_CACERT_FILE = '/opt/lemur/trusted.pem'
+        LDAP_REQUIRED_GROUP = 'certificate-management-access'
+        LDAP_GROUPS_TO_ROLES = {'certificate-management-admin': 'admin', 'certificate-management-read-only': 'read-only'}
+
+
+The lemur ldap module uses the `user principal name` (upn) of the authenticating user to bind. This is done once for each user at login time. The UPN is effectively the email address in AD/LDAP of the user. If the user doesn't provide the email address, it constructs one based on the username supplied (which should normally match the samAccountName) and the value provided by the config LDAP_EMAIL_DOMAIN.
+The config LDAP_BASE_DN tells lemur where to search within the AD/LDAP tree for the given UPN (user). If the bind with those credentials is successful - there is a valid user in AD with correct password.
+
+Each of the LDAP options are described below.
 
 .. data:: LDAP_AUTH
     :noindex:
