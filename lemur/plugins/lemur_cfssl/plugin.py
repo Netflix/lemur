@@ -13,6 +13,8 @@ import requests
 
 from flask import current_app
 
+from cryptography import x509
+
 from lemur.plugins.bases import IssuerPlugin
 from lemur.plugins import lemur_cfssl as cfssl
 
@@ -41,8 +43,15 @@ class CfsslIssuerPlugin(IssuerPlugin):
         current_app.logger.info("Requesting a new cfssl certificate with csr: {0}".format(csr))
 
         url = "{0}{1}".format(current_app.config.get('CFSSL_URL'), '/api/v1/cfssl/sign')
+        server_usage = x509.extensions.ExtendedKeyUsage([x509.oid.ExtendedKeyUsageOID.SERVER_AUTH])
 
         data = {'certificate_request': csr}
+
+        # Workaround since cfssl ignores csr Extended keys
+        #    Assumes your cfssl config file has 'server' in profiles list
+        if issuer_options['extensions']['extended_key_usage'] == server_usage:
+            data['profile'] = 'server'
+
         data = json.dumps(data)
 
         response = self.session.post(url, data=data.encode(encoding='utf_8', errors='strict'))
