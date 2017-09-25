@@ -45,7 +45,7 @@ angular.module('lemur')
             body: 'Unable to update! ' + response.data.message,
             timeout: 100000
           });
-          domain.sensitive = domain.sensitive ? false : true;
+          domain.sensitive = !domain.sensitive;
         });
     };
 

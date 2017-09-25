@@ -291,7 +291,6 @@ def render(args):
                     Certificate.authority_id.in_(sub_query)
                 )
             )
-            return database.sort_and_page(query, Certificate, args)
 
         elif 'destination' in terms:
             query = query.filter(Certificate.destinations.any(Destination.id == terms[1]))
