@@ -375,7 +375,7 @@ class LemurServer(Command):
 
         app = WSGIApplication()
 
-        # run startup tasks on a app like object
+        # run startup tasks on an app like object
         validate_conf(current_app, REQUIRED_VARIABLES)
 
         app.app_uri = 'lemur:create_app(config="{0}")'.format(current_app.config.get('CONFIG_PATH'))

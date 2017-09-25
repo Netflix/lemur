@@ -19,7 +19,7 @@ def copy_cert(cert_cn, dst_user, dst_priv, dst_priv_key, dst_host, dst_port, dst
     sftp = ssh.open_sftp()
 
     # make the directory on the destination server
-    # files will be in a a folder based on the cert_cn
+    # files will be in a folder based on the cert_cn
     # example:
     # destination folder: /etc/nginx/certs/
     # files will go in: /etc/nginx/certs/your.cn.com/cert.pem
