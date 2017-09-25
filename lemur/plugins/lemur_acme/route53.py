@@ -3,7 +3,7 @@ from lemur.plugins.lemur_aws.sts import sts_client
 
 
 @sts_client('route53')
-def wait_for_r53_change(change_id, client=None):
+def wait_for_dns_change(change_id, client=None):
     _, change_id = change_id
 
     while True:
