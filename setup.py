@@ -47,7 +47,7 @@ install_requires = [
     'ndg-httpsclient==0.4.2',
     'psycopg2==2.7.3',
     'arrow==0.10.0',
-    'six==1.10.0',
+    'six==1.11.0',
     'marshmallow-sqlalchemy==0.13.1',
     'gunicorn==19.7.1',
     'marshmallow==2.13.6',
