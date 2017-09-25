@@ -107,13 +107,7 @@ angular.module('lemur')
     AuthorityService.findActiveAuthorityByName = function (filterValue) {
       return AuthorityApi.getList({'filter[name]': filterValue})
         .then(function (authorities) {
-          var activeAuthorities = [];
-          _.each(authorities, function (authority) {
-              if (authority.active) {
-                activeAuthorities.push(authority);
-              }
-          });
-          return activeAuthorities;
+          return authorities.filter(function(authority) { return authority.active; });
         });
     };
 
