@@ -95,7 +95,7 @@ angular.module('lemur')
     };
 
     $scope.getAuthoritiesByName = function (value) {
-      return AuthorityService.findAuthorityByName(value).then(function (authorities) {
+      return AuthorityService.findActiveAuthorityByName(value).then(function (authorities) {
         $scope.authorities = authorities;
       });
     };

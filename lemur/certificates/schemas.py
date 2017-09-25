@@ -85,6 +85,11 @@ class CertificateInputSchema(CertificateCreationSchema):
     extensions = fields.Nested(ExtensionSchema)
 
     @validates_schema
+    def validate_authority(self, data):
+        if not data['authority'].active:
+            raise ValidationError("The authority is inactive.", ['authority'])
+
+    @validates_schema
     def validate_dates(self, data):
         validators.dates(data)
 
