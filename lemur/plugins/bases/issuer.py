@@ -21,3 +21,6 @@ class IssuerPlugin(Plugin):
 
     def create_authority(self, options):
         raise NotImplementedError
+
+    def revoke_certificate(self, certificate, comments):
+        raise NotImplementedError

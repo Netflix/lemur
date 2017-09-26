@@ -381,6 +381,16 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
         end_entity = pem.parse(certificate_pem)[0]
         return "\n".join(str(end_entity).splitlines()), current_app.config.get('DIGICERT_CIS_INTERMEDIATE')
 
+    def revoke_certificate(self, certificate, comments):
+        """Revoke a Digicert certificate."""
+        base_url = current_app.config.get('DIGICERT_CIS_URL')
+
+        # make certificate request
+        create_url = '{0}/certificate/{1}/revoke'.format(base_url, certificate.external_id)
+        metrics.send('digicert_revoke_certificate', 'counter', 1)
+        response = self.session.put(create_url, data=json.dumps({'comments': comments}))
+        return handle_cis_response(response)
+
     @staticmethod
     def create_authority(options):
         """Create an authority.

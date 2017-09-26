@@ -80,6 +80,7 @@ def get_or_increase_name(name):
 class Certificate(db.Model):
     __tablename__ = 'certificates'
     id = Column(Integer, primary_key=True)
+    external_id = Column(Integer)
     owner = Column(String(128), nullable=False)
     name = Column(String(128), unique=True)
     description = Column(String(1024))

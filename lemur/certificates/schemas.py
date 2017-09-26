@@ -248,6 +248,10 @@ class CertificateNotificationOutputSchema(LemurOutputSchema):
     endpoints = fields.Nested(EndpointNestedOutputSchema, many=True, missing=[])
 
 
+class CertificateRevokeSchema(LemurInputSchema):
+    comments = fields.String()
+
+
 certificate_input_schema = CertificateInputSchema()
 certificate_output_schema = CertificateOutputSchema()
 certificates_output_schema = CertificateOutputSchema(many=True)
@@ -255,3 +259,4 @@ certificate_upload_input_schema = CertificateUploadInputSchema()
 certificate_export_input_schema = CertificateExportInputSchema()
 certificate_edit_input_schema = CertificateEditInputSchema()
 certificate_notification_output_schema = CertificateNotificationOutputSchema()
+certificate_revoke_schema = CertificateRevokeSchema()
