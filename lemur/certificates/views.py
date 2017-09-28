@@ -984,7 +984,9 @@ class CertificateRevoke(AuthenticatedResource):
               Vary: Accept
               Content-Type: text/javascript
 
-              # TODO
+              {
+                'id': 1
+              }
 
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
@@ -1004,10 +1006,16 @@ class CertificateRevoke(AuthenticatedResource):
             if not permission.can():
                 return dict(message='You are not authorized to revoke this certificate.'), 403
 
+        if not cert.external_id:
+            return dict(message='Cannot revoke certificate. No external id found.'), 400
+
+        if cert.endpoints:
+            return dict(message='Cannot revoke certificate. Endpoints are deployed with the given certificate.'), 403
+
         plugin = plugins.get(cert.authority.plugin_name)
-        data = plugin.revoke_certificate(cert, data)
+        plugin.revoke_certificate(cert, data)
         log_service.create(g.current_user, 'revoke_cert', certificate=cert)
-        return data
+        return dict(id=cert.id)
 
 
 api.add_resource(CertificateRevoke, '/certificates/<int:certificate_id>/revoke', endpoint='revokeCertificate')

@@ -167,6 +167,7 @@ class CertificateCloneSchema(LemurOutputSchema):
 
 class CertificateOutputSchema(LemurOutputSchema):
     id = fields.Integer()
+    external_id = fields.String()
     bits = fields.Integer()
     body = fields.String()
     chain = fields.String()

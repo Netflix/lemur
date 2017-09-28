@@ -60,6 +60,7 @@
                       <li><a href ng-click="edit(certificate.id)">Edit</a></li>
                       <li><a href ng-click="clone(certificate.id)">Clone</a></li>
                       <li><a href ng-click="export(certificate.id)">Export</a></li>
+                      <li><a href ng-click="revoke(certificate.id)">Revoke</a></li>
                     </ul>
                   </div>
                 </div>
@@ -188,27 +189,21 @@
                 <uib-tab>
                   <uib-tab-heading>
                     Chain
-                    <button class="btn btn-xs btn-default clipboard-btn glyphicon glyphicon-copy"
-                            uib-tooltip="Copy chain to clipboard" tooltip-trigger="mouseenter" clipboard
-                            text="certificate.chain"></button>
+                    <i class="glyphicon glyphicon-copy" style="cursor: pointer" clipboard text="certificate.chain"></i>
                   </uib-tab-heading>
                   <pre style="width: 100%">{{ certificate.chain }}</pre>
                 </uib-tab>
                 <uib-tab>
                   <uib-tab-heading>
                     Public Certificate
-                    <button class="btn btn-xs btn-default clipboard-btn glyphicon glyphicon-copy"
-                            uib-tooltip="Copy certificate to clipboard" tooltip-trigger="mouseenter" clipboard
-                            text="certificate.body"></button>
+                    <i class="glyphicon glyphicon-copy" style="cursor: pointer" clipboard text="certificate.body"></i>
                   </uib-tab-heading>
                   <pre style="width: 100%">{{ certificate.body }}</pre>
                 </uib-tab>
                 <uib-tab ng-click="loadPrivateKey(certificate)">
                   <uib-tab-heading>
                     Private Key
-                    <button class="btn btn-xs btn-default clipboard-btn glyphicon glyphicon-copy"
-                            uib-tooltip="Copy key to clipboard" tooltip-trigger="mouseenter" clipboard
-                            text="certificate.privateKey"></button>
+                     <i class="glyphicon glyphicon-copy" style="cursor: pointer" clipboard text="certificate.privateKey"></i>
                   </uib-tab-heading>
                   <pre style="width: 100%">{{ certificate.privateKey }}</pre>
                 </uib-tab>

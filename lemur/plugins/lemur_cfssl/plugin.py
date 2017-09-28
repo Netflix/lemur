@@ -49,7 +49,8 @@ class CfsslIssuerPlugin(IssuerPlugin):
         response_json = json.loads(response.content.decode('utf_8'))
         cert = response_json['result']['certificate']
 
-        return cert, current_app.config.get('CFSSL_INTERMEDIATE'),
+        # TODO add external ID
+        return cert, current_app.config.get('CFSSL_INTERMEDIATE'), None
 
     @staticmethod
     def create_authority(options):
