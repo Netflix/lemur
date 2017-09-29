@@ -13,6 +13,7 @@
 MANIFEST
 test.conf
 pip-log.txt
+package-lock.json
 /htmlcov
 /cover
 /build
@@ -27,5 +28,4 @@ pip-log.txt
 docs/_build
 .editorconfig
 .idea
-test.conf
 lemur/tests/tmp

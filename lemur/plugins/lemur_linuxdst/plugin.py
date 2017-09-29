@@ -62,7 +62,7 @@ class LinuxDstPlugin(DestinationPlugin):
             "name": "exportType",
             "required": True,
             "value": "NGINX",
-            "helpMessage": "Reference the docs for an explaination of each export type",
+            "helpMessage": "Reference the docs for an explanation of each export type",
             "type": "select"
         }
     ]

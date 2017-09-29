@@ -92,7 +92,7 @@ class CertificatesList(AuthenticatedResource):
                     "deleted": null,
                     "notifications": [{
                         "id": 1
-                    }]
+                    }],
                     "signingAlgorithm": "sha256",
                     "user": {
                         "username": "jane",
@@ -177,7 +177,7 @@ class CertificatesList(AuthenticatedResource):
                   },
                   "replacements": [{
                     "id": 1
-                  },
+                  }],
                   "notify": true,
                   "validityEnd": "2026-01-01T08:00:00.000Z",
                   "authority": {
@@ -223,7 +223,7 @@ class CertificatesList(AuthenticatedResource):
                 "deleted": null,
                 "notifications": [{
                     "id": 1
-                }]
+                }],
                 "signingAlgorithm": "sha256",
                 "user": {
                     "username": "jane",
@@ -240,7 +240,7 @@ class CertificatesList(AuthenticatedResource):
                 "replaces": [{
                     "id": 1
                 }],
-                "rotation": True,
+                "rotation": true,
                 "rotationPolicy": {"name": "default"},
                 "name": "WILDCARD.test.example.net-SymantecCorporation-20160603-20180112",
                 "roles": [{
@@ -339,7 +339,7 @@ class CertificatesUpload(AuthenticatedResource):
                 "deleted": null,
                 "notifications": [{
                     "id": 1
-                }]
+                }],
                 "signingAlgorithm": "sha256",
                 "user": {
                     "username": "jane",
@@ -354,7 +354,7 @@ class CertificatesUpload(AuthenticatedResource):
                     "name": "*.test.example.net"
                 }],
                 "replaces": [],
-                "rotation": True,
+                "rotation": true,
                 "rotationPolicy": {"name": "default"},
                 "name": "WILDCARD.test.example.net-SymantecCorporation-20160603-20180112",
                 "roles": [{
@@ -425,7 +425,7 @@ class CertificatePrivateKey(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                 "key": "-----BEGIN ...",
+                 "key": "-----BEGIN ..."
               }
 
            :reqheader Authorization: OAuth token to authenticate
@@ -503,7 +503,7 @@ class Certificates(AuthenticatedResource):
                 "deleted": null,
                 "notifications": [{
                     "id": 1
-                }]
+                }],
                 "signingAlgorithm": "sha256",
                 "user": {
                     "username": "jane",
@@ -517,7 +517,7 @@ class Certificates(AuthenticatedResource):
                     "id": 1090,
                     "name": "*.test.example.net"
                 }],
-                "rotation": True,
+                "rotation": true,
                 "rotationPolicy": {"name": "default"},
                 "replaces": [],
                 "replaced": [],
@@ -613,7 +613,7 @@ class Certificates(AuthenticatedResource):
                     "description": "This is a google group based role created by Lemur",
                     "name": "joe@example.com"
                 }],
-                "rotation": True,
+                "rotation": true,
                 "rotationPolicy": {"name": "default"},
                 "san": null
               }
@@ -705,7 +705,7 @@ class NotificationCertificatesList(AuthenticatedResource):
                     "deleted": null,
                     "notifications": [{
                         "id": 1
-                    }]
+                    }],
                     "signingAlgorithm": "sha256",
                     "user": {
                         "username": "jane",
@@ -721,7 +721,7 @@ class NotificationCertificatesList(AuthenticatedResource):
                     }],
                     "replaces": [],
                     "replaced": [],
-                    "rotation": True,
+                    "rotation": true,
                     "rotationPolicy": {"name": "default"},
                     "name": "WILDCARD.test.example.net-SymantecCorporation-20160603-20180112",
                     "roles": [{
@@ -828,7 +828,7 @@ class CertificatesReplacementsList(AuthenticatedResource):
                     }],
                     "replaces": [],
                     "replaced": [],
-                    "rotation": True,
+                    "rotation": true,
                     "rotationPolicy": {"name": "default"},
                     "name": "WILDCARD.test.example.net-SymantecCorporation-20160603-20180112",
                     "roles": [{

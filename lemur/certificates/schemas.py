@@ -85,6 +85,11 @@ class CertificateInputSchema(CertificateCreationSchema):
     extensions = fields.Nested(ExtensionSchema)
 
     @validates_schema
+    def validate_authority(self, data):
+        if not data['authority'].active:
+            raise ValidationError("The authority is inactive.", ['authority'])
+
+    @validates_schema
     def validate_dates(self, data):
         validators.dates(data)
 
@@ -146,7 +151,7 @@ class CertificateNestedOutputSchema(LemurOutputSchema):
     notify = fields.Boolean()
     rotation_policy = fields.Nested(RotationPolicyNestedOutputSchema)
 
-    # Note aliasing  is the first step in deprecating these fields.
+    # Note aliasing is the first step in deprecating these fields.
     cn = fields.String()  # deprecated
     common_name = fields.String(attribute='cn')
 
@@ -178,7 +183,7 @@ class CertificateOutputSchema(LemurOutputSchema):
 
     rotation = fields.Boolean()
 
-    # Note aliasing  is the first step in deprecating these fields.
+    # Note aliasing is the first step in deprecating these fields.
     notify = fields.Boolean()
     active = fields.Boolean(attribute='notify')
 

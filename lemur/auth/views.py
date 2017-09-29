@@ -132,8 +132,8 @@ class Ping(Resource):
     this example we use an OpenIDConnect authentication flow, that is essentially OAuth2 underneath. If you have an
     OAuth2 provider you want to use Lemur there would be two steps:
 
-    1. Define your own class that inherits from :class:`flask.ext.restful.Resource` and create the HTTP methods the \
-    provider uses for it's callbacks.
+    1. Define your own class that inherits from :class:`flask_restful.Resource` and create the HTTP methods the \
+    provider uses for its callbacks.
     2. Add or change the Lemur AngularJS Configuration to point to your new provider
     """
     def __init__(self):
