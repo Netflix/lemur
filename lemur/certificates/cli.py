@@ -10,6 +10,7 @@ import sys
 from flask import current_app
 
 from flask_script import Manager
+from flask_principal import Identity, identity_changed
 
 from lemur import database
 from lemur.extensions import sentry
@@ -122,6 +123,9 @@ def request_reissue(certificate, commit):
     :param commit:
     :return:
     """
+    # set the lemur identity for all cli commands
+    identity_changed.send(current_app._get_current_object(), identity=Identity(1))
+
     details = get_certificate_primitives(certificate)
     print_certificate_details(details)
 
