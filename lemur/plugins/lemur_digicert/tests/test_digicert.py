@@ -171,7 +171,7 @@ ghi
     adapter.register_uri('GET', 'mock://www.digicert.com/services/v2/certificate/cert123/download/format/pem_all', text=pem_fixture)
     subject.session.mount('mock', adapter)
 
-    cert, intermediate = subject.create_certificate("", {'common_name': 'test.com'})
+    cert, intermediate, external_id = subject.create_certificate("", {'common_name': 'test.com'})
 
     assert cert == "-----BEGIN CERTIFICATE-----\nabc\n-----END CERTIFICATE-----"
     assert intermediate == "-----BEGIN CERTIFICATE-----\ndef\n-----END CERTIFICATE-----"
