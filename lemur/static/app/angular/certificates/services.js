@@ -259,7 +259,7 @@ angular.module('lemur')
     };
 
     CertificateService.revoke = function (certificate) {
-      return certificate.customPUT(certificate.externalId, 'revoke');
+      return certificate.customPUT('revoke');
     };
 
     return CertificateService;

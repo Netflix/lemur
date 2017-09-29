@@ -25,8 +25,7 @@ from lemur.certificates.schemas import (
     certificate_upload_input_schema,
     certificates_output_schema,
     certificate_export_input_schema,
-    certificate_edit_input_schema,
-    certificate_revoke_schema
+    certificate_edit_input_schema
 )
 
 from lemur.roles import service as role_service
@@ -957,7 +956,7 @@ class CertificateRevoke(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(CertificateRevoke, self).__init__()
 
-    @validate_schema(certificate_revoke_schema, None)
+    @validate_schema(None, None)
     def put(self, certificate_id, data=None):
         """
         .. http:put:: /certificates/1/revoke
@@ -971,10 +970,6 @@ class CertificateRevoke(AuthenticatedResource):
               POST /certificates/1/revoke HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
-
-              {
-                "comments": "Certificate no longer needed"
-              }
 
            **Example response**:
 
