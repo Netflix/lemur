@@ -14,28 +14,8 @@ from alembic import op
 
 
 def upgrade():
-    connection = None
-
-    if not op.get_context().as_sql:
-        connection = op.get_bind()
-        connection.execution_options(isolation_level='AUTOCOMMIT')
-
-    op.execute("ALTER TYPE log_type ADD VALUE 'create_cert'")
-    op.execute("ALTER TYPE log_type ADD VALUE 'update_cert'")
-
-    if connection is not None:
-        connection.execution_options(isolation_level='READ_COMMITTED')
+    op.sync_enum_values('public', 'log_type', ['key_view'], ['create_cert', 'key_view', 'update_cert'])
 
 
 def downgrade():
-    connection = None
-
-    if not op.get_context().as_sql:
-        connection = op.get_bind()
-        connection.execution_options(isolation_level='AUTOCOMMIT')
-
-    op.execute("ALTER TYPE log_type DROP VALUE 'create_cert'")
-    op.execute("ALTER TYPE log_type DROP VALUE 'update_cert'")
-
-    if connection is not None:
-        connection.execution_options(isolation_level='READ_COMMITTED')
+    op.sync_enum_values('public', 'log_type', ['create_cert', 'key_view', 'update_cert'], ['key_view'])

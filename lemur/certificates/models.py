@@ -80,6 +80,7 @@ def get_or_increase_name(name):
 class Certificate(db.Model):
     __tablename__ = 'certificates'
     id = Column(Integer, primary_key=True)
+    external_id = Column(String(128))
     owner = Column(String(128), nullable=False)
     name = Column(String(128), unique=True)
     description = Column(String(1024))
@@ -162,6 +163,7 @@ class Certificate(db.Model):
         self.signing_algorithm = defaults.signing_algorithm(cert)
         self.bits = defaults.bitstrength(cert)
         self.serial = defaults.serial(cert)
+        self.external_id = kwargs.get('external_id')
 
         for domain in defaults.domains(cert):
             self.domains.append(Domain(name=domain))

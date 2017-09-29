@@ -180,8 +180,8 @@ def mint(**kwargs):
         private_key = None
         csr_imported.send(authority=authority, csr=csr)
 
-    cert_body, cert_chain = issuer.create_certificate(csr, kwargs)
-    return cert_body, private_key, cert_chain,
+    cert_body, cert_chain, external_id = issuer.create_certificate(csr, kwargs)
+    return cert_body, private_key, cert_chain, external_id
 
 
 def import_certificate(**kwargs):
@@ -234,10 +234,11 @@ def create(**kwargs):
     """
     Creates a new certificate.
     """
-    cert_body, private_key, cert_chain = mint(**kwargs)
+    cert_body, private_key, cert_chain, external_id = mint(**kwargs)
     kwargs['body'] = cert_body
     kwargs['private_key'] = private_key
     kwargs['chain'] = cert_chain
+    kwargs['external_id'] = external_id
 
     roles = create_certificate_roles(**kwargs)
 

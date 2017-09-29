@@ -190,4 +190,19 @@ angular.module('lemur')
         }
       });
     };
+
+     $scope.revoke = function (certificateId) {
+      $uibModal.open({
+        animation: true,
+        controller: 'CertificateRevokeController',
+        templateUrl: '/angular/certificates/certificate/revoke.tpl.html',
+        size: 'lg',
+        backdrop: 'static',
+        resolve: {
+          revokeId: function () {
+            return certificateId;
+          }
+        }
+      });
+    };
   });
