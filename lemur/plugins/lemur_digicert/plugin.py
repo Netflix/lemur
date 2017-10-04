@@ -395,11 +395,10 @@ class DigiCertCISSourcePlugin(SourcePlugin):
                 cert = {'body': certificate.content, 'serial': serial, 'external_id': c['id']}
                 certs.append(cert)
 
-            if data['page_number'] == ['total_pages']:
+            if page == data['total_pages']:
                 break
 
             page += 1
-
         return certs
 
 
