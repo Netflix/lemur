@@ -339,6 +339,70 @@ class DigiCertIssuerPlugin(IssuerPlugin):
         return current_app.config.get('DIGICERT_ROOT'), "", [role]
 
 
+class DigiCertCISSourcePlugin(SourcePlugin):
+    """Wrap the Digicert CIS Certifcate API."""
+    title = 'DigiCert'
+    slug = 'digicert-cis-source'
+    description = "Enables the use of Digicert as a source of existing certificates."
+    version = digicert.VERSION
+
+    author = 'Kevin Glisson'
+    author_url = 'https://github.com/netflix/lemur.git'
+
+    def __init__(self, *args, **kwargs):
+        """Initialize source with appropriate details."""
+        required_vars = [
+            'DIGICERT_CIS_API_KEY',
+            'DIGICERT_CIS_URL',
+            'DIGICERT_CIS_ROOT',
+            'DIGICERT_CIS_INTERMEDIATE',
+            'DIGICERT_CIS_PROFILE_NAME'
+        ]
+        validate_conf(current_app, required_vars)
+
+        self.session = requests.Session()
+        self.session.headers.update(
+            {
+                'X-DC-DEVKEY': current_app.config['DIGICERT_CIS_API_KEY'],
+                'Content-Type': 'application/json'
+            }
+        )
+
+        self.session.hooks = dict(response=log_status_code)
+
+        super(DigiCertCISSourcePlugin, self).__init__(*args, **kwargs)
+
+    def get_certificates(self, options, **kwargs):
+        """Fetch all Digicert certificates."""
+        base_url = current_app.config.get('DIGICERT_CIS_URL')
+
+        # make request
+        search_url = '{0}/platform/cis/certificate/search'.format(base_url)
+
+        certs = []
+        page = 1
+
+        while True:
+            response = self.session.get(search_url, params={'status': ['issued'], 'page': page})
+            data = handle_cis_response(response)
+
+            for c in data['certificates']:
+                download_url = '{0}/platform/cis/certificate/{1}'.format(base_url, c['id'])
+                certificate = self.session.get(download_url)
+
+                # normalize serial
+                serial = str(int(c['serial_number'], 16))
+                cert = {'body': certificate.content, 'serial': serial, 'external_id': c['id']}
+                certs.append(cert)
+
+            if data['page_number'] == ['total_pages']:
+                break
+
+            page += 1
+
+        return certs
+
+
 class DigiCertCISIssuerPlugin(IssuerPlugin):
     """Wrap the Digicert Certificate Issuing API."""
     title = 'DigiCert CIS'
