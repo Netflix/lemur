@@ -196,6 +196,7 @@ setup(
             'cfssl_issuer = lemur.plugins.lemur_cfssl.plugin:CfsslIssuerPlugin',
             'digicert_issuer = lemur.plugins.lemur_digicert.plugin:DigiCertIssuerPlugin',
             'digicert_cis_issuer = lemur.plugins.lemur_digicert.plugin:DigiCertCISIssuerPlugin',
+            'digicert_cis_source = lemur.plugins.lemur_digicert.plugin:DigiCertCISSourcePlugin'
         ],
     },
     classifiers=[
