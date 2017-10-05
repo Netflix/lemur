@@ -29,7 +29,7 @@ class ExportDestinationPlugin(DestinationPlugin):
 
     @property
     def options(self):
-        return list(self.default_options) + self.additional_options
+        return self.default_options + self.additional_options
 
     def export(self, body, private_key, cert_chain, options):
         export_plugin = self.get_option('exportPlugin', options)
