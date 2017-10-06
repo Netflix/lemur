@@ -63,7 +63,7 @@ def get_by_serial(serial):
     :param serial:
     :return:
     """
-    return database.get(Certificate, serial, field='serial')
+    return Certificate.filter(Certificate.serial == serial).all()
 
 
 def delete(cert_id):
