@@ -115,7 +115,7 @@ def sync_certificates(source, user):
 
     for certificate in certificates:
         if certificate.get('name'):
-            exists = certificate_service.get_by_name(certificate['name'])
+            exists = [certificate_service.get_by_name(certificate['name'])]
 
         elif certificate.get('serial'):
             exists = certificate_service.get_by_serial(certificate['serial'])
@@ -134,10 +134,11 @@ def sync_certificates(source, user):
             new += 1
 
         else:
-            if certificate.get('external_id'):
-                exists.external_id = certificate['external_id']
-            certificate_update(exists, source)
-            updated += 1
+            for e in exists:
+                if certificate.get('external_id'):
+                    exists.external_id = certificate['external_id']
+                certificate_update(e, source)
+                updated += 1
 
     assert len(certificates) == new + updated
 
