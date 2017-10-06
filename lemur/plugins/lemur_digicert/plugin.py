@@ -349,6 +349,8 @@ class DigiCertCISSourcePlugin(SourcePlugin):
     author = 'Kevin Glisson'
     author_url = 'https://github.com/netflix/lemur.git'
 
+    additional_options = []
+
     def __init__(self, *args, **kwargs):
         """Initialize source with appropriate details."""
         required_vars = [
