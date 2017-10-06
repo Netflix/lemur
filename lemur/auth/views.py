@@ -218,16 +218,18 @@ class Ping(Resource):
 
         if not role:
             role = role_service.create(profile['email'], description='This is a user specific role')
+
         roles.append(role)
+
+        # every user is an operator (tied to a default role)
+        if current_app.config.get('LEMUR_DEFAULT_ROLE'):
+            default = role_service.get_by_name(current_app.config['LEMUR_DEFAULT_ROLE'])
+            if not default:
+                default = role_service.create(current_app.config['LEMUR_DEFAULT_ROLE'], description='This is the default Lemur role.')
+            roles.append(default)
 
         # if we get an sso user create them an account
         if not user:
-            # every user is an operator (tied to a default role)
-            if current_app.config.get('LEMUR_DEFAULT_ROLE'):
-                v = role_service.get_by_name(current_app.config.get('LEMUR_DEFAULT_ROLE'))
-                if v:
-                    roles.append(v)
-
             user = user_service.create(
                 profile['email'],
                 get_psuedo_random_string(),
@@ -249,7 +251,7 @@ class Ping(Resource):
                 profile['email'],
                 profile['email'],
                 True,
-                profile.get('thumbnailPhotoUrl'),  # incase profile isn't google+ enabled
+                profile.get('thumbnailPhotoUrl'),  # profile isn't google+ enabled
                 roles
             )
 
