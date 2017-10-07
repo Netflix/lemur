@@ -106,6 +106,7 @@ def sync_endpoints(source):
     return new, updated
 
 
+# TODO this is very slow as we don't batch update certificates
 def sync_certificates(source, user):
     new, updated = 0, 0
 
@@ -136,11 +137,9 @@ def sync_certificates(source, user):
         else:
             for e in exists:
                 if certificate.get('external_id'):
-                    exists.external_id = certificate['external_id']
+                    e.external_id = certificate['external_id']
                 certificate_update(e, source)
                 updated += 1
-
-    assert len(certificates) == new + updated
 
     return new, updated
 
