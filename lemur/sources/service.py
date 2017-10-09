@@ -130,6 +130,8 @@ def sync_certificates(source, user):
 
         certificate['creator'] = user
 
+        exists = [x for x in exists if x]
+
         if not exists:
             certificate_create(certificate, source)
             new += 1
