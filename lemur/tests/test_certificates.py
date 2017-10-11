@@ -22,13 +22,13 @@ from lemur.tests.vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKE
 def test_get_or_increase_name(session, certificate):
     from lemur.certificates.models import get_or_increase_name
 
-    assert get_or_increase_name(certificate.name) == '{0}-1'.format(certificate.name, certificate.serial)
+    assert get_or_increase_name(certificate.name, certificate.serial) == '{0}-3E9'.format(certificate.name)
 
     certificate.name = 'test-cert-11111111'
-    assert get_or_increase_name(certificate.name) == 'test-cert-11111111-1'
+    assert get_or_increase_name(certificate.name, certificate.serial) == 'test-cert-11111111-3E9'
 
     certificate.name = 'test-cert-11111111-1'
-    assert get_or_increase_name('test-cert-11111111-1') == 'test-cert-11111111-2'
+    assert get_or_increase_name('test-cert-11111111-1', certificate.serial) == 'test-cert-11111111-1-3E9'
 
 
 def test_get_certificate_primitives(certificate):
