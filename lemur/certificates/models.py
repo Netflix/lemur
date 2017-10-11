@@ -47,18 +47,19 @@ def get_sequence(name):
         return name, None
 
     parts = name.split('-')
-    end = parts.pop(-1)
-    root = '-'.join(parts)
 
-    if len(end) == 8:
-        return root + '-' + end, None
-
+    # see if we have an int at the end of our name
     try:
-        end = int(end)
+        seq = int(parts[-1])
     except ValueError:
-        end = None
+        return name, None
 
-    return root, end
+    # we might have a date at the end of our name
+    if len(parts[-1]) == 8:
+        return name, None
+
+    root = '-'.join(parts[:-1])
+    return root, seq
 
 
 def get_or_increase_name(name, serial):

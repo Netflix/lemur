@@ -31,10 +31,10 @@ def test_get_or_increase_name(session, certificate):
     certificate.name = 'test-cert-11111111-1'
     assert get_or_increase_name('test-cert-11111111-1', certificate.serial) == 'test-cert-11111111-1-3E9'
 
-    CertificateFactory(name='certificate1-3E9')
+    cert2 = CertificateFactory(name='certificate1-3E9')
     session.commit()
 
-    assert get_or_increase_name(certificate.name, certificate.serial) == '{0}-3E9-1'.format(certificate.name)
+    assert get_or_increase_name('certificate1', 1001) == 'certificate1-3E9-1'
 
 
 def test_get_certificate_primitives(certificate):
