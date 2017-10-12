@@ -496,6 +496,13 @@ For more information about how to use social logins, see: `Satellizer <https://g
 
             OAUTH2_AUTH_ENDPOINT = "https://<youroauthserver>/oauth2/v1/authorize"
 
+.. data:: OAUTH2_VERIFY_CERT
+    :noindex:
+
+        ::
+
+            OAUTH2_VERIFY_CERT = True
+
 .. data:: GOOGLE_CLIENT_ID
     :noindex:
 
