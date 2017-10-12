@@ -61,7 +61,8 @@ VERISIGN_ERRORS = {
     "0x3105": "Organization Name Not Matched",
     "0x300a": "Domain/SubjectAltName Mismatched -- make sure that the SANs have the proper domain suffix",
     "0x950e": "Invalid Common Name -- make sure the CN has a proper domain suffix",
-    "0xa00e": "Pending. (Insufficient number of tokens.)"
+    "0xa00e": "Pending. (Insufficient number of tokens.)",
+    "0x8134": "Pending. (domain failed CAA validation. Brand/Domains: Symantec/caa.nflx.io"
 }
 
 
