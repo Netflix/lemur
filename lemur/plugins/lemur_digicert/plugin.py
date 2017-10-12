@@ -372,6 +372,9 @@ class DigiCertCISSourcePlugin(SourcePlugin):
 
         self.session.hooks = dict(response=log_status_code)
 
+        a = requests.adapters.HTTPAdapter(max_retries=3)
+        self.session.mount('https://', a)
+
         super(DigiCertCISSourcePlugin, self).__init__(*args, **kwargs)
 
     def get_certificates(self, options, **kwargs):
