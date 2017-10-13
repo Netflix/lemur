@@ -289,10 +289,10 @@ class OAuth2(Resource):
         # you can either discover these dynamically or simply configure them
         access_token_url = current_app.config.get('OAUTH2_ACCESS_TOKEN_URL')
         user_api_url = current_app.config.get('OAUTH2_USER_API_URL')
-        verify_cert = current_app.config.get('OAUTH2_VERIFY_CERT')
+        verify_cert = current_app.config.get('OAUTH2_VERIFY_CERT', True)
 
         # the secret and cliendId will be given to you when you signup for the provider
-        token = '{0}:{1}'.format(args['clientId'], current_app.config.get("OAUTH2_SECRET", False))
+        token = '{0}:{1}'.format(args['clientId'], current_app.config.get("OAUTH2_SECRET"))
 
         basic = base64.b64encode(bytes(token, 'utf-8'))
 
