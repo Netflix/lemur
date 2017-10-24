@@ -15,7 +15,7 @@ class TestIssuerPlugin(IssuerPlugin):
         super(TestIssuerPlugin, self).__init__(*args, **kwargs)
 
     def create_certificate(self, csr, issuer_options):
-        return INTERNAL_VALID_LONG_STR, INTERNAL_VALID_SAN_STR
+        return INTERNAL_VALID_LONG_STR, INTERNAL_VALID_SAN_STR, None
 
     @staticmethod
     def create_authority(options):

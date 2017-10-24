@@ -46,7 +46,7 @@ class ExpirationNotificationPlugin(NotificationPlugin):
 
     @property
     def options(self):
-        return list(self.default_options) + self.additional_options
+        return self.default_options + self.additional_options
 
     def send(self, notification_type, message, targets, options, **kwargs):
         raise NotImplementedError

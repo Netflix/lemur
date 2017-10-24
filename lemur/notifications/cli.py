@@ -12,7 +12,7 @@ from lemur.notifications.messaging import send_expiration_notifications
 manager = Manager(usage="Handles notification related tasks.")
 
 
-@manager.option('-e', '--exclude', dest='exclude', nargs="*", help='Common name matching of certificates that should be excluded from notification')
+@manager.option('-e', '--exclude', dest='exclude', action='append', default=[], help='Common name matching of certificates that should be excluded from notification')
 def expirations(exclude):
     """
     Runs Lemur's notification engine, that looks for expired certificates and sends

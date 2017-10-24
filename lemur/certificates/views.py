@@ -18,8 +18,15 @@ from lemur.auth.service import AuthenticatedResource
 from lemur.auth.permissions import AuthorityPermission, CertificatePermission
 
 from lemur.certificates import service
-from lemur.certificates.schemas import certificate_input_schema, certificate_output_schema, \
-    certificate_upload_input_schema, certificates_output_schema, certificate_export_input_schema, certificate_edit_input_schema
+from lemur.plugins.base import plugins
+from lemur.certificates.schemas import (
+    certificate_input_schema,
+    certificate_output_schema,
+    certificate_upload_input_schema,
+    certificates_output_schema,
+    certificate_export_input_schema,
+    certificate_edit_input_schema
+)
 
 from lemur.roles import service as role_service
 from lemur.logs import service as log_service
@@ -944,6 +951,69 @@ class CertificateExport(AuthenticatedResource):
         return dict(extension=extension, passphrase=passphrase, data=base64.b64encode(data).decode('utf-8'))
 
 
+class CertificateRevoke(AuthenticatedResource):
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        super(CertificateRevoke, self).__init__()
+
+    @validate_schema(None, None)
+    def put(self, certificate_id, data=None):
+        """
+        .. http:put:: /certificates/1/revoke
+
+           Revoke a certificate
+
+           **Example request**:
+
+           .. sourcecode:: http
+
+              POST /certificates/1/revoke HTTP/1.1
+              Host: example.com
+              Accept: application/json, text/javascript
+
+           **Example response**:
+
+           .. sourcecode:: http
+
+              HTTP/1.1 200 OK
+              Vary: Accept
+              Content-Type: text/javascript
+
+              {
+                'id': 1
+              }
+
+           :reqheader Authorization: OAuth token to authenticate
+           :statuscode 200: no error
+           :statuscode 403: unauthenticated
+
+        """
+        cert = service.get(certificate_id)
+
+        if not cert:
+            return dict(message="Cannot find specified certificate"), 404
+
+        # allow creators
+        if g.current_user != cert.user:
+            owner_role = role_service.get_by_name(cert.owner)
+            permission = CertificatePermission(owner_role, [x.name for x in cert.roles])
+
+            if not permission.can():
+                return dict(message='You are not authorized to revoke this certificate.'), 403
+
+        if not cert.external_id:
+            return dict(message='Cannot revoke certificate. No external id found.'), 400
+
+        if cert.endpoints:
+            return dict(message='Cannot revoke certificate. Endpoints are deployed with the given certificate.'), 403
+
+        plugin = plugins.get(cert.authority.plugin_name)
+        plugin.revoke_certificate(cert, data)
+        log_service.create(g.current_user, 'revoke_cert', certificate=cert)
+        return dict(id=cert.id)
+
+
+api.add_resource(CertificateRevoke, '/certificates/<int:certificate_id>/revoke', endpoint='revokeCertificate')
 api.add_resource(CertificatesList, '/certificates', endpoint='certificates')
 api.add_resource(Certificates, '/certificates/<int:certificate_id>', endpoint='certificate')
 api.add_resource(CertificatesStats, '/certificates/stats', endpoint='certificateStats')

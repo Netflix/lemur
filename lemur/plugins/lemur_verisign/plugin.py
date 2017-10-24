@@ -195,7 +195,8 @@ class VerisignIssuerPlugin(IssuerPlugin):
 
         response = self.session.post(url, data=data)
         cert = handle_response(response.content)['Response']['Certificate']
-        return cert, current_app.config.get('VERISIGN_INTERMEDIATE'),
+        # TODO add external id
+        return cert, current_app.config.get('VERISIGN_INTERMEDIATE'), None
 
     @staticmethod
     def create_authority(options):

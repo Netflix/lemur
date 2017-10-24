@@ -1,0 +1,48 @@
+<div class="modal-header">
+  <button type="button" class="close" ng-click="cancel()" aria-label="Close"><span aria-hidden="true">&times;</span>
+  </button>
+  <h3 class="modal-title">Revoke <span class="text-muted"><small>{{ certificate.name }}</small></span></h3>
+</div>
+<div class="modal-body">
+  <form name="revokeForm" ng-if="!certificate.endpoints.length" novalidate>
+    <p><strong>Certificate revocation is final. Once revoked the certificate is no longer valid.</strong></p>
+    <div class="form-horizontal">
+      <div class="form-group"
+           ng-class="{'has-error': revokeForm.confirm.$invalid, 'has-success': !revokeForm.$invalid&&revokeForm.confirm.$dirty}">
+        <label class="control-label col-sm-2">
+          Confirm Revocation
+        </label>
+        <div class="col-sm-10">
+          <input name="confirm" ng-model="confirm" placeholder='{{ certificate.name }}'
+                 uib-tooltip="Confirm revocation by entering '{{ certificate.name }}'"
+                 class="form-control"
+                 compare-to="certificate.name"
+                 required/>
+
+          <p ng-show="revokeForm.confirm.$invalid && !revokeForm.confirm.$pristine" class="help-block">
+            You must confirm certificate revocation.</p>
+        </div>
+      </div>
+    </div>
+  </form>
+  <div ng-if="certificate.endpoints.length">
+    <p><strong>Certificate cannot be revoked, it is associated with the following endpoints. Disassociate this
+      certificate
+      before revoking.</strong></p>
+    <ul class="list-group">
+      <li class="list-group-item" ng-repeat="endpoint in certificate.endpoints">
+        <span class="pull-right"><label class="label label-default">{{ endpoint.type }}</label></span>
+        <ul class="list-unstyled">
+          <li>{{ endpoint.name }}</li>
+          <li><span class="text-muted">{{ endpoint.dnsname }}</span></li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+</div>
+<div class="modal-footer">
+  <button type="submit" ng-click="revoke(certificate)" ng-disabled="revokeForm.confirm.$invalid"
+          class="btn btn-danger">Revoke
+  </button>
+  <button ng-click="cancel()" class="btn">Cancel</button>
+</div>
