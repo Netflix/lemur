@@ -218,16 +218,18 @@ class Ping(Resource):
 
         if not role:
             role = role_service.create(profile['email'], description='This is a user specific role')
+
         roles.append(role)
+
+        # every user is an operator (tied to a default role)
+        if current_app.config.get('LEMUR_DEFAULT_ROLE'):
+            default = role_service.get_by_name(current_app.config['LEMUR_DEFAULT_ROLE'])
+            if not default:
+                default = role_service.create(current_app.config['LEMUR_DEFAULT_ROLE'], description='This is the default Lemur role.')
+            roles.append(default)
 
         # if we get an sso user create them an account
         if not user:
-            # every user is an operator (tied to a default role)
-            if current_app.config.get('LEMUR_DEFAULT_ROLE'):
-                v = role_service.get_by_name(current_app.config.get('LEMUR_DEFAULT_ROLE'))
-                if v:
-                    roles.append(v)
-
             user = user_service.create(
                 profile['email'],
                 get_psuedo_random_string(),
@@ -249,7 +251,7 @@ class Ping(Resource):
                 profile['email'],
                 profile['email'],
                 True,
-                profile.get('thumbnailPhotoUrl'),  # incase profile isn't google+ enabled
+                profile.get('thumbnailPhotoUrl'),  # profile isn't google+ enabled
                 roles
             )
 
@@ -287,6 +289,7 @@ class OAuth2(Resource):
         # you can either discover these dynamically or simply configure them
         access_token_url = current_app.config.get('OAUTH2_ACCESS_TOKEN_URL')
         user_api_url = current_app.config.get('OAUTH2_USER_API_URL')
+        verify_cert = current_app.config.get('OAUTH2_VERIFY_CERT', True)
 
         # the secret and cliendId will be given to you when you signup for the provider
         token = '{0}:{1}'.format(args['clientId'], current_app.config.get("OAUTH2_SECRET"))
@@ -300,9 +303,9 @@ class OAuth2(Resource):
 
         # exchange authorization code for access token.
         # Try Params first
-        r = requests.post(access_token_url, headers=headers, params=params)
+        r = requests.post(access_token_url, headers=headers, params=params, verify=verify_cert)
         if r.status_code == 400:
-            r = requests.post(access_token_url, headers=headers, data=params)
+            r = requests.post(access_token_url, headers=headers, data=params, verify=verify_cert)
         id_token = r.json()['id_token']
         access_token = r.json()['access_token']
 
@@ -311,7 +314,7 @@ class OAuth2(Resource):
         jwks_url = current_app.config.get('OAUTH2_JWKS_URL')
 
         # retrieve the key material as specified by the token header
-        r = requests.get(jwks_url)
+        r = requests.get(jwks_url, verify=verify_cert)
         for key in r.json()['keys']:
             if key['kid'] == header_data['kid']:
                 secret = get_rsa_public_key(key['n'], key['e'])
@@ -336,7 +339,7 @@ class OAuth2(Resource):
         headers = {'authorization': 'Bearer {0}'.format(access_token)}
 
         # retrieve information about the current user.
-        r = requests.get(user_api_url, headers=headers)
+        r = requests.get(user_api_url, headers=headers, verify=verify_cert)
         profile = r.json()
 
         user = user_service.get_by_email(profile['email'])

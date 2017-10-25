@@ -54,7 +54,7 @@ def send_via_ses(subject, body, targets):
     :param targets:
     :return:
     """
-    client = boto3.client('ses')
+    client = boto3.client('ses', region_name='us-east-1')
     client.send_email(
         Source=current_app.config.get('LEMUR_EMAIL'),
         Destination={

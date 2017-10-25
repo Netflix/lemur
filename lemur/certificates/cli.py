@@ -7,6 +7,9 @@
 """
 import sys
 
+from tabulate import tabulate
+from sqlalchemy import or_
+
 from flask import current_app
 
 from flask_script import Manager
@@ -15,16 +18,21 @@ from flask_principal import Identity, identity_changed
 from lemur import database
 from lemur.extensions import sentry
 from lemur.extensions import metrics
+from lemur.plugins.base import plugins
 from lemur.deployment import service as deployment_service
 from lemur.endpoints import service as endpoint_service
 from lemur.notifications.messaging import send_rotation_notification
+from lemur.domains.models import Domain
+from lemur.authorities.models import Authority
 from lemur.certificates.schemas import CertificateOutputSchema
+from lemur.certificates.models import Certificate
 from lemur.certificates.service import (
     reissue_certificate,
     get_certificate_primitives,
     get_all_pending_reissue,
     get_by_name,
-    get_all_certs
+    get_all_certs,
+    get
 )
 
 from lemur.certificates.verify import verify_string
@@ -214,6 +222,79 @@ def reissue(old_certificate_name, commit):
                 e
             )
         )
+
+
+@manager.option('-f', '--fqdns', dest='fqdns', help='FQDNs to query. Multiple fqdns specified via comma.')
+@manager.option('-i', '--issuer', dest='issuer', help='Issuer to query for.')
+@manager.option('-o', '--owner', dest='owner', help='Owner to query for.')
+@manager.option('-e', '--expired', dest='expired', type=bool, default=False, help='Include expired certificates.')
+def query(fqdns, issuer, owner, expired):
+    """Prints certificates that match the query params."""
+    table = []
+
+    q = database.session_query(Certificate)
+
+    sub_query = database.session_query(Authority.id) \
+        .filter(Authority.name.ilike('%{0}%'.format(issuer))) \
+        .subquery()
+
+    q = q.filter(
+        or_(
+            Certificate.issuer.ilike('%{0}%'.format(issuer)),
+            Certificate.authority_id.in_(sub_query)
+        )
+    )
+
+    q = q.filter(Certificate.owner.ilike('%{0}%'.format(owner)))
+
+    if not expired:
+        q = q.filter(Certificate.expired == False)  # noqa
+
+    for f in fqdns.split(','):
+        q = q.filter(
+            or_(
+                Certificate.cn.ilike('%{0}%'.format(f)),
+                Certificate.domains.any(Domain.name.ilike('%{0}%'.format(f)))
+            )
+        )
+
+    for c in q.all():
+        table.append([c.id, c.name, c.owner, c.issuer])
+
+    print(tabulate(table, headers=['Id', 'Name', 'Owner', 'Issuer'], tablefmt='csv'))
+
+
+@manager.option('-p', '--path', dest='path', help='Absolute file path to a Lemur query csv.')
+@manager.option('-r', '--reason', dest='reason', help='Reason to revoke certificate.')
+@manager.option('-c', '--commit', dest='commit', action='store_true', default=False, help='Persist changes.')
+def revoke(path, reason, commit):
+    """
+    Revokes given certificate.
+    """
+    if commit:
+        print("[!] Running in COMMIT mode.")
+
+    print("[+] Starting certificate revocation.")
+
+    with open(path, 'r') as f:
+        for c in f.readlines()[2:]:
+            parts = c.split(' ')
+            try:
+                cert = get(int(parts[0].strip()))
+                plugin = plugins.get(cert.authority.plugin_name)
+
+                print('[+] Revoking certificate. Id: {0} Name: {1}'.format(cert.id, cert.name))
+                if commit:
+                    plugin.revoke_certificate(cert, reason)
+
+            except Exception as e:
+                sentry.captureException()
+                metrics.send('certificate_revoke_failure', 'counter', 1)
+                print(
+                    "[!] Failed to revoke certificates. Reason: {}".format(
+                        e
+                    )
+                )
 
 
 @manager.command

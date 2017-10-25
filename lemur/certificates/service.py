@@ -57,6 +57,15 @@ def get_by_name(name):
     return database.get(Certificate, name, field='name')
 
 
+def get_by_serial(serial):
+    """
+    Retrieves certificate by it's Serial.
+    :param serial:
+    :return:
+    """
+    return Certificate.query.filter(Certificate.serial == serial).all()
+
+
 def delete(cert_id):
     """
     Delete's a certificate.
