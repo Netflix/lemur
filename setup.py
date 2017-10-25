@@ -60,7 +60,7 @@ install_requires = [
     'boto3==1.4.6',
     'acme==0.18.2',
     'retrying==1.3.3',
-    'tabulate==0.7.7',
+    'tabulate==0.8.1',
     'pyOpenSSL==17.2.0',
     'pem==17.1.0',
     'raven[flask]==6.2.1',
