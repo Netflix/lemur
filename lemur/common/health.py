@@ -8,6 +8,7 @@
 """
 from flask import Blueprint
 from lemur.database import db
+from lemur.extensions import sentry
 
 mod = Blueprint('healthCheck', __name__)
 
@@ -17,7 +18,8 @@ def health():
     try:
         if healthcheck(db):
             return 'ok'
-    except:
+    except Exception:
+        sentry.captureException()
         return 'db check failed'
 
 

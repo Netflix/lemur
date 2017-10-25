@@ -3,6 +3,7 @@ import unicodedata
 
 from cryptography import x509
 from flask import current_app
+from lemur.extensions import sentry
 from lemur.constants import SAN_NAMING_TEMPLATE, DEFAULT_NAMING_TEMPLATE
 
 
@@ -67,6 +68,7 @@ def common_name(cert):
             x509.OID_COMMON_NAME
         )[0].value.strip()
     except Exception as e:
+        sentry.captureException()
         current_app.logger.error("Unable to get common name! {0}".format(e))
 
 
@@ -81,6 +83,7 @@ def organization(cert):
             x509.OID_ORGANIZATION_NAME
         )[0].value.strip()
     except Exception as e:
+        sentry.captureException()
         current_app.logger.error("Unable to get organization! {0}".format(e))
 
 
@@ -95,6 +98,7 @@ def organizational_unit(cert):
             x509.OID_ORGANIZATIONAL_UNIT_NAME
         )[0].value.strip()
     except Exception as e:
+        sentry.captureException()
         current_app.logger.error("Unable to get organizational unit! {0}".format(e))
 
 
@@ -109,6 +113,7 @@ def country(cert):
             x509.OID_COUNTRY_NAME
         )[0].value.strip()
     except Exception as e:
+        sentry.captureException()
         current_app.logger.error("Unable to get country! {0}".format(e))
 
 
@@ -123,6 +128,7 @@ def state(cert):
             x509.OID_STATE_OR_PROVINCE_NAME
         )[0].value.strip()
     except Exception as e:
+        sentry.captureException()
         current_app.logger.error("Unable to get state! {0}".format(e))
 
 
@@ -137,6 +143,7 @@ def location(cert):
             x509.OID_LOCALITY_NAME
         )[0].value.strip()
     except Exception as e:
+        sentry.captureException()
         current_app.logger.error("Unable to get location! {0}".format(e))
 
 
@@ -156,7 +163,7 @@ def domains(cert):
         for entry in entries:
             domains.append(entry)
     except Exception as e:
-        pass
+        sentry.captureException()
 
     return domains
 
@@ -208,6 +215,7 @@ def bitstrength(cert):
     try:
         return cert.public_key().key_size
     except AttributeError:
+        sentry.captureException()
         current_app.logger.debug('Unable to get bitstrength.')
 
 
@@ -228,6 +236,7 @@ def issuer(cert):
             issuer = issuer.replace(c, "")
         return issuer
     except Exception as e:
+        sentry.captureException()
         current_app.logger.error("Unable to get issuer! {0}".format(e))
         return "Unknown"
 
