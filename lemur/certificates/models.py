@@ -47,28 +47,35 @@ def get_sequence(name):
         return name, None
 
     parts = name.split('-')
-    end = parts.pop(-1)
-    root = '-'.join(parts)
 
-    if len(end) == 8:
-        return root + '-' + end, None
-
+    # see if we have an int at the end of our name
     try:
-        end = int(end)
+        seq = int(parts[-1])
     except ValueError:
-        end = None
+        return name, None
 
-    return root, end
+    # we might have a date at the end of our name
+    if len(parts[-1]) == 8:
+        return name, None
+
+    root = '-'.join(parts[:-1])
+    return root, seq
 
 
-def get_or_increase_name(name):
+def get_or_increase_name(name, serial):
     certificates = Certificate.query.filter(Certificate.name.ilike('{0}%'.format(name))).all()
 
     if not certificates:
         return name
 
+    serial_name = '{0}-{1}'.format(name, hex(int(serial))[2:].upper())
+    certificates = Certificate.query.filter(Certificate.name.ilike('{0}%'.format(serial_name))).all()
+
+    if not certificates:
+        return serial_name
+
     ends = [0]
-    root, end = get_sequence(name)
+    root, end = get_sequence(serial_name)
     for cert in certificates:
         root, end = get_sequence(cert.name)
         if end:
@@ -82,7 +89,7 @@ class Certificate(db.Model):
     id = Column(Integer, primary_key=True)
     external_id = Column(String(128))
     owner = Column(String(128), nullable=False)
-    name = Column(String(128), unique=True)
+    name = Column(String(256), unique=True)
     description = Column(String(1024))
     notify = Column(Boolean, default=True)
 
@@ -135,13 +142,14 @@ class Certificate(db.Model):
         self.san = defaults.san(cert)
         self.not_before = defaults.not_before(cert)
         self.not_after = defaults.not_after(cert)
+        self.serial = defaults.serial(cert)
 
         # when destinations are appended they require a valid name.
         if kwargs.get('name'):
-            self.name = get_or_increase_name(defaults.text_to_slug(kwargs['name']))
+            self.name = get_or_increase_name(defaults.text_to_slug(kwargs['name']), self.serial)
         else:
             self.name = get_or_increase_name(
-                defaults.certificate_name(self.cn, self.issuer, self.not_before, self.not_after, self.san))
+                defaults.certificate_name(self.cn, self.issuer, self.not_before, self.not_after, self.san), self.serial)
 
         self.owner = kwargs['owner']
         self.body = kwargs['body'].strip()
@@ -162,7 +170,6 @@ class Certificate(db.Model):
         self.rotation_policy = kwargs.get('rotation_policy')
         self.signing_algorithm = defaults.signing_algorithm(cert)
         self.bits = defaults.bitstrength(cert)
-        self.serial = defaults.serial(cert)
         self.external_id = kwargs.get('external_id')
 
         for domain in defaults.domains(cert):

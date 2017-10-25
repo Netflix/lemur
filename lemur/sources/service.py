@@ -17,6 +17,8 @@ from lemur.endpoints import service as endpoint_service
 from lemur.destinations import service as destination_service
 
 from lemur.certificates.schemas import CertificateUploadInputSchema
+from lemur.common.utils import parse_certificate
+from lemur.common.defaults import serial
 
 from lemur.plugins.base import plugins
 
@@ -104,6 +106,7 @@ def sync_endpoints(source):
     return new, updated
 
 
+# TODO this is very slow as we don't batch update certificates
 def sync_certificates(source, user):
     new, updated = 0, 0
 
@@ -112,24 +115,33 @@ def sync_certificates(source, user):
     certificates = s.get_certificates(source.options)
 
     for certificate in certificates:
-        exists = certificate_service.get_by_name(certificate['name'])
+        if certificate.get('name'):
+            exists = [certificate_service.get_by_name(certificate['name'])]
+
+        elif certificate.get('serial'):
+            exists = certificate_service.get_by_serial(certificate['serial'])
+
+        else:
+            cert = parse_certificate(certificate['body'])
+            exists = certificate_service.get_by_serial(serial(cert))
 
         if not certificate.get('owner'):
             certificate['owner'] = user.email
 
         certificate['creator'] = user
 
+        exists = [x for x in exists if x]
+
         if not exists:
-            current_app.logger.debug("Creating Certificate. Name: {name}".format(name=certificate['name']))
             certificate_create(certificate, source)
             new += 1
 
         else:
-            current_app.logger.debug("Updating Certificate. Name: {name}".format(name=certificate['name']))
-            certificate_update(exists, source)
-            updated += 1
-
-    assert len(certificates) == new + updated
+            for e in exists:
+                if certificate.get('external_id'):
+                    e.external_id = certificate['external_id']
+                certificate_update(e, source)
+                updated += 1
 
     return new, updated
 

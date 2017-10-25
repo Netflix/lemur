@@ -227,7 +227,8 @@ def reissue(old_certificate_name, commit):
 @manager.option('-f', '--fqdns', dest='fqdns', help='FQDNs to query. Multiple fqdns specified via comma.')
 @manager.option('-i', '--issuer', dest='issuer', help='Issuer to query for.')
 @manager.option('-o', '--owner', dest='owner', help='Owner to query for.')
-def query(fqdns, issuer, owner):
+@manager.option('-e', '--expired', dest='expired', type=bool, default=False, help='Include expired certificates.')
+def query(fqdns, issuer, owner, expired):
     """Prints certificates that match the query params."""
     table = []
 
@@ -245,6 +246,9 @@ def query(fqdns, issuer, owner):
     )
 
     q = q.filter(Certificate.owner.ilike('%{0}%'.format(owner)))
+
+    if not expired:
+        q = q.filter(Certificate.expired == False)  # noqa
 
     for f in fqdns.split(','):
         q = q.filter(
