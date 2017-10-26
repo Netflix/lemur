@@ -363,6 +363,7 @@ def update_destinations(target, value, initiator):
         if target.private_key:
             destination_plugin.upload(target.name, target.body, target.private_key, target.chain, value.options)
     except Exception as e:
+        sentry.captureException()
         current_app.logger.exception(e)
         metrics.send('destination_upload_failure', 'counter', 1,
                      metric_tags={'certificate': target.name, 'destination': value.label})
