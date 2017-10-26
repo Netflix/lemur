@@ -58,9 +58,9 @@ install_requires = [
     'inflection==0.3.1',
     'future==0.16.0',
     'boto3==1.4.6',
-    'acme==0.18.2',
+    'acme==0.19.0',
     'retrying==1.3.3',
-    'tabulate==0.7.7',
+    'tabulate==0.8.1',
     'pyOpenSSL==17.2.0',
     'pem==17.1.0',
     'raven[flask]==6.2.1',
@@ -72,7 +72,7 @@ install_requires = [
 
 tests_require = [
     'pyflakes',
-    'moto==1.1.14',
+    'moto==1.1.19',
     'nose==1.3.7',
     'pytest==3.2.2',
     'factory-boy==2.9.2',
