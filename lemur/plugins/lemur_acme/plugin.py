@@ -195,7 +195,8 @@ class ACMEIssuerPlugin(IssuerPlugin):
         domains = get_domains(issuer_options)
         authorizations = get_authorizations(acme_client, account_number, domains)
         pem_certificate, pem_certificate_chain = request_certificate(acme_client, authorizations, csr)
-        return pem_certificate, pem_certificate_chain
+        # TODO add external ID (if possible)
+        return pem_certificate, pem_certificate_chain, None
 
     @staticmethod
     def create_authority(options):
