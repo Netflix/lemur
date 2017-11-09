@@ -87,8 +87,8 @@ def request_certificate(acme_client, authorizations, csr):
     cert_response, _ = acme_client.poll_and_request_issuance(
         jose.util.ComparableX509(
             OpenSSL.crypto.load_certificate_request(
-                OpenSSL.crypto.FILETYPE_ASN1,
-                csr.public_bytes(serialization.Encoding.DER),
+                OpenSSL.crypto.FILETYPE_PEM,
+                csr
             )
         ),
         authzrs=[authz_record.authz for authz_record in authorizations],
@@ -96,12 +96,13 @@ def request_certificate(acme_client, authorizations, csr):
 
     pem_certificate = OpenSSL.crypto.dump_certificate(
         OpenSSL.crypto.FILETYPE_PEM, cert_response.body
-    )
+    ).decode('utf-8')
 
-    pem_certificate_chain = "\n".join(
+    # https://github.com/alex/letsencrypt-aws/commit/853ea7f93f141fe18d9ef12aee6b3388f98b4830
+    pem_certificate_chain = b"\n".join(
         OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, cert)
         for cert in acme_client.fetch_chain(cert_response)
-    )
+    ).decode('utf-8')
 
     return pem_certificate, pem_certificate_chain
 
@@ -133,7 +134,7 @@ def get_domains(options):
     domains = [options['common_name']]
     if options.get('extensions'):
         for name in options['extensions']['sub_alt_names']['names']:
-            domains.append(name)
+            domains.append(name.value)
     return domains
 
 
