@@ -345,8 +345,15 @@ class OAuth2(Resource):
         user = user_service.get_by_email(profile['email'])
         metrics.send('successful_login', 'counter', 1)
 
-        # update their google 'roles'
+        # update with roles sent by identity provider
         roles = []
+
+        if 'roles' in profile:
+            for group in profile['roles']:
+                role = role_service.get_by_name(group)
+                if not role:
+                    role = role_service.create(group, description='This is a group configured by identity provider')
+                roles.append(role)
 
         role = role_service.get_by_name(profile['email'])
         if not role:
