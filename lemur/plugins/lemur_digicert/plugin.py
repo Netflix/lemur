@@ -271,6 +271,7 @@ class DigiCertIssuerPlugin(IssuerPlugin):
             'DIGICERT_API_KEY',
             'DIGICERT_URL',
             'DIGICERT_ORG_ID',
+            'DIGICERT_ORDER_TYPE',
             'DIGICERT_ROOT',
         ]
 
@@ -296,9 +297,10 @@ class DigiCertIssuerPlugin(IssuerPlugin):
         :return: :raise Exception:
         """
         base_url = current_app.config.get('DIGICERT_URL')
+        cert_type = current_app.config.get('DIGICERT_ORDER_TYPE')
 
         # make certificate request
-        determinator_url = "{0}/services/v2/order/certificate/ssl".format(base_url)
+        determinator_url = "{0}/services/v2/order/certificate/{1}".format(base_url, cert_type)
         data = map_fields(issuer_options, csr)
         response = self.session.post(determinator_url, data=json.dumps(data))
 
