@@ -15,7 +15,7 @@ from lemur.certificates.views import *  # noqa
 from lemur.domains.models import Domain
 
 
-from lemur.tests.vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN, CSR_STR, \
+from lemur.tests.vectors import VALID_ADMIN_API_TOKEN, VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN, CSR_STR, \
     INTERNAL_VALID_LONG_STR, INTERNAL_VALID_SAN_STR, PRIVATE_KEY_STR
 
 
@@ -506,6 +506,7 @@ def test_upload_private_key_str(user):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 200),
     (VALID_ADMIN_HEADER_TOKEN, 200),
+    (VALID_ADMIN_API_TOKEN, 200),
     ('', 401)
 ])
 def test_certificate_get_private_key(client, token, status):
@@ -515,6 +516,7 @@ def test_certificate_get_private_key(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 200),
     (VALID_ADMIN_HEADER_TOKEN, 200),
+    (VALID_ADMIN_API_TOKEN, 200),
     ('', 401)
 ])
 def test_certificate_get(client, token, status):
@@ -530,6 +532,7 @@ def test_certificate_get_body(client):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 405),
     (VALID_ADMIN_HEADER_TOKEN, 405),
+    (VALID_ADMIN_API_TOKEN, 405),
     ('', 405)
 ])
 def test_certificate_post(client, token, status):
@@ -539,6 +542,7 @@ def test_certificate_post(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 400),
     (VALID_ADMIN_HEADER_TOKEN, 400),
+    (VALID_ADMIN_API_TOKEN, 400),
     ('', 401)
 ])
 def test_certificate_put(client, token, status):
@@ -553,6 +557,7 @@ def test_certificate_put_with_data(client, certificate, issuer_plugin):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 405),
     (VALID_ADMIN_HEADER_TOKEN, 405),
+    (VALID_ADMIN_API_TOKEN, 405),
     ('', 405)
 ])
 def test_certificate_delete(client, token, status):
@@ -562,6 +567,7 @@ def test_certificate_delete(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 405),
     (VALID_ADMIN_HEADER_TOKEN, 405),
+    (VALID_ADMIN_API_TOKEN, 405),
     ('', 405)
 ])
 def test_certificate_patch(client, token, status):
@@ -571,6 +577,7 @@ def test_certificate_patch(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 200),
     (VALID_ADMIN_HEADER_TOKEN, 200),
+    (VALID_ADMIN_API_TOKEN, 200),
     ('', 401)
 ])
 def test_certificates_get(client, token, status):
@@ -580,6 +587,7 @@ def test_certificates_get(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 400),
     (VALID_ADMIN_HEADER_TOKEN, 400),
+    (VALID_ADMIN_API_TOKEN, 400),
     ('', 401)
 ])
 def test_certificates_post(client, token, status):
@@ -589,6 +597,7 @@ def test_certificates_post(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 405),
     (VALID_ADMIN_HEADER_TOKEN, 405),
+    (VALID_ADMIN_API_TOKEN, 405),
     ('', 405)
 ])
 def test_certificates_put(client, token, status):
@@ -598,6 +607,7 @@ def test_certificates_put(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 405),
     (VALID_ADMIN_HEADER_TOKEN, 405),
+    (VALID_ADMIN_API_TOKEN, 405),
     ('', 405)
 ])
 def test_certificates_delete(client, token, status):
@@ -607,6 +617,7 @@ def test_certificates_delete(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 405),
     (VALID_ADMIN_HEADER_TOKEN, 405),
+    (VALID_ADMIN_API_TOKEN, 405),
     ('', 405)
 ])
 def test_certificates_patch(client, token, status):
@@ -616,6 +627,7 @@ def test_certificates_patch(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 405),
     (VALID_ADMIN_HEADER_TOKEN, 405),
+    (VALID_ADMIN_API_TOKEN, 405),
     ('', 405)
 ])
 def test_certificate_credentials_post(client, token, status):
@@ -625,6 +637,7 @@ def test_certificate_credentials_post(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 405),
     (VALID_ADMIN_HEADER_TOKEN, 405),
+    (VALID_ADMIN_API_TOKEN, 405),
     ('', 405)
 ])
 def test_certificate_credentials_put(client, token, status):
@@ -634,6 +647,7 @@ def test_certificate_credentials_put(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 405),
     (VALID_ADMIN_HEADER_TOKEN, 405),
+    (VALID_ADMIN_API_TOKEN, 405),
     ('', 405)
 ])
 def test_certificate_credentials_delete(client, token, status):
@@ -643,6 +657,7 @@ def test_certificate_credentials_delete(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 405),
     (VALID_ADMIN_HEADER_TOKEN, 405),
+    (VALID_ADMIN_API_TOKEN, 405),
     ('', 405)
 ])
 def test_certificate_credentials_patch(client, token, status):
@@ -652,6 +667,7 @@ def test_certificate_credentials_patch(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 405),
     (VALID_ADMIN_HEADER_TOKEN, 405),
+    (VALID_ADMIN_API_TOKEN, 405),
     ('', 405)
 ])
 def test_certificates_upload_get(client, token, status):
@@ -661,6 +677,7 @@ def test_certificates_upload_get(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 400),
     (VALID_ADMIN_HEADER_TOKEN, 400),
+    (VALID_ADMIN_API_TOKEN, 400),
     ('', 401)
 ])
 def test_certificates_upload_post(client, token, status):
@@ -670,6 +687,7 @@ def test_certificates_upload_post(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 405),
     (VALID_ADMIN_HEADER_TOKEN, 405),
+    (VALID_ADMIN_API_TOKEN, 405),
     ('', 405)
 ])
 def test_certificates_upload_put(client, token, status):
@@ -679,6 +697,7 @@ def test_certificates_upload_put(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 405),
     (VALID_ADMIN_HEADER_TOKEN, 405),
+    (VALID_ADMIN_API_TOKEN, 405),
     ('', 405)
 ])
 def test_certificates_upload_delete(client, token, status):
@@ -688,6 +707,7 @@ def test_certificates_upload_delete(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 405),
     (VALID_ADMIN_HEADER_TOKEN, 405),
+    (VALID_ADMIN_API_TOKEN, 405),
     ('', 405)
 ])
 def test_certificates_upload_patch(client, token, status):

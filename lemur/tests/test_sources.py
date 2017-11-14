@@ -2,7 +2,7 @@ import pytest
 
 from lemur.sources.views import *  # noqa
 
-from .vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN, INTERNAL_PRIVATE_KEY_A_STR, INTERNAL_VALID_WILDCARD_STR
+from .vectors import VALID_ADMIN_API_TOKEN, VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN, INTERNAL_PRIVATE_KEY_A_STR, INTERNAL_VALID_WILDCARD_STR
 
 
 def validate_source_schema(client):
@@ -38,6 +38,7 @@ def test_create_certificate(user, source):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 404),
     (VALID_ADMIN_HEADER_TOKEN, 404),
+    (VALID_ADMIN_API_TOKEN, 404),
     ('', 401)
 ])
 def test_source_get(client, source_plugin, token, status):
@@ -47,6 +48,7 @@ def test_source_get(client, source_plugin, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 405),
     (VALID_ADMIN_HEADER_TOKEN, 405),
+    (VALID_ADMIN_API_TOKEN, 405),
     ('', 405)
 ])
 def test_source_post_(client, token, status):
@@ -56,6 +58,7 @@ def test_source_post_(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 403),
     (VALID_ADMIN_HEADER_TOKEN, 400),
+    (VALID_ADMIN_API_TOKEN, 400),
     ('', 401)
 ])
 def test_source_put(client, token, status):
@@ -65,6 +68,7 @@ def test_source_put(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 403),
     (VALID_ADMIN_HEADER_TOKEN, 200),
+    (VALID_ADMIN_API_TOKEN, 200),
     ('', 401)
 ])
 def test_source_delete(client, token, status):
@@ -74,6 +78,7 @@ def test_source_delete(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 405),
     (VALID_ADMIN_HEADER_TOKEN, 405),
+    (VALID_ADMIN_API_TOKEN, 405),
     ('', 405)
 ])
 def test_source_patch(client, token, status):
@@ -83,6 +88,7 @@ def test_source_patch(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 200),
     (VALID_ADMIN_HEADER_TOKEN, 200),
+    (VALID_ADMIN_API_TOKEN, 200),
     ('', 401)
 ])
 def test_sources_list_get(client, source_plugin, token, status):
@@ -92,6 +98,7 @@ def test_sources_list_get(client, source_plugin, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 403),
     (VALID_ADMIN_HEADER_TOKEN, 400),
+    (VALID_ADMIN_API_TOKEN, 400),
     ('', 401)
 ])
 def test_sources_list_post(client, token, status):
@@ -101,6 +108,7 @@ def test_sources_list_post(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 405),
     (VALID_ADMIN_HEADER_TOKEN, 405),
+    (VALID_ADMIN_API_TOKEN, 405),
     ('', 405)
 ])
 def test_sources_list_put(client, token, status):
@@ -110,6 +118,7 @@ def test_sources_list_put(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 405),
     (VALID_ADMIN_HEADER_TOKEN, 405),
+    (VALID_ADMIN_API_TOKEN, 405),
     ('', 405)
 ])
 def test_sources_list_delete(client, token, status):
@@ -119,6 +128,7 @@ def test_sources_list_delete(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 405),
     (VALID_ADMIN_HEADER_TOKEN, 405),
+    (VALID_ADMIN_API_TOKEN, 405),
     ('', 405)
 ])
 def test_sources_list_patch(client, token, status):

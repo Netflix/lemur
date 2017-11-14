@@ -26,6 +26,7 @@ from lemur.notifications.views import mod as notifications_bp
 from lemur.sources.views import mod as sources_bp
 from lemur.endpoints.views import mod as endpoints_bp
 from lemur.logs.views import mod as logs_bp
+from lemur.api_keys.views import mod as api_key_bp
 
 from lemur.__about__ import (
     __author__, __copyright__, __email__, __license__, __summary__, __title__,
@@ -51,7 +52,8 @@ LEMUR_BLUEPRINTS = (
     notifications_bp,
     sources_bp,
     endpoints_bp,
-    logs_bp
+    logs_bp,
+    api_key_bp
 )
 
 

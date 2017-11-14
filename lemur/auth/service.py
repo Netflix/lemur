@@ -27,6 +27,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
 
 from lemur.users import service as user_service
+from lemur.api_keys import service as api_key_service
 from lemur.auth.permissions import AuthorityCreatorNeed, RoleMemberNeed
 
 
@@ -48,9 +49,9 @@ def get_rsa_public_key(n, e):
     )
 
 
-def create_token(user):
+def create_token(user, aid=None, ttl=None):
     """
-    Create a valid JWT for a given user, this token is then used to authenticate
+    Create a valid JWT for a given user/api key, this token is then used to authenticate
     sessions until the token expires.
 
     :param user:
@@ -58,10 +59,24 @@ def create_token(user):
     """
     expiration_delta = timedelta(days=int(current_app.config.get('LEMUR_TOKEN_EXPIRATION', 1)))
     payload = {
-        'sub': user.id,
         'iat': datetime.utcnow(),
         'exp': datetime.utcnow() + expiration_delta
     }
+
+    # Handle Just a User ID & User Object.
+    if isinstance(user, int):
+        payload['sub'] = user
+    else:
+        payload['sub'] = user.id
+    if aid is not None:
+        payload['aid'] = aid
+    # Custom TTLs are only supported on Access Keys.
+    if ttl is not None and aid is not None:
+        # Tokens that are forever until revoked.
+        if ttl == -1:
+            del payload['exp']
+        else:
+            payload['exp'] = ttl
     token = jwt.encode(payload, current_app.config['LEMUR_TOKEN_SECRET'])
     return token.decode('unicode_escape')
 
@@ -93,6 +108,16 @@ def login_required(f):
             return dict(message='Token has expired'), 403
         except jwt.InvalidTokenError:
             return dict(message='Token is invalid'), 403
+
+        if 'aid' in payload:
+            access_key = api_key_service.get(payload['aid'])
+            if access_key.revoked:
+                return dict(message='Token has been revoked'), 403
+            if access_key.ttl != -1:
+                current_time = datetime.utcnow()
+                expired_time = datetime.fromtimestamp(access_key.issued_at + access_key.ttl)
+                if current_time >= expired_time:
+                    return dict(message='Token has expired'), 403
 
         user = user_service.get(payload['sub'])
 

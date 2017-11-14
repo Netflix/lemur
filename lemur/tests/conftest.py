@@ -7,7 +7,7 @@ from lemur import create_app
 from lemur.database import db as _db
 from lemur.auth.service import create_token
 
-from .factories import AuthorityFactory, NotificationFactory, DestinationFactory, \
+from .factories import ApiKeyFactory, AuthorityFactory, NotificationFactory, DestinationFactory, \
     CertificateFactory, UserFactory, RoleFactory, SourceFactory, EndpointFactory, RotationPolicyFactory
 
 
@@ -52,8 +52,9 @@ def db(app, request):
 
     UserFactory()
     r = RoleFactory(name='admin')
-    UserFactory(roles=[r])
+    u = UserFactory(roles=[r])
     rp = RotationPolicyFactory(name='default')
+    ApiKeyFactory(user=u)
 
     _db.session.commit()
     yield _db
