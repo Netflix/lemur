@@ -19,8 +19,6 @@ from acme import challenges
 
 from lemur.common.utils import generate_private_key
 
-from cryptography.hazmat.primitives import serialization
-
 import OpenSSL.crypto
 
 from lemur.common.utils import validate_conf
