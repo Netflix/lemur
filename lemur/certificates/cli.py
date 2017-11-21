@@ -6,7 +6,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import sys
-
+import multiprocessing
 from tabulate import tabulate
 from sqlalchemy import or_
 
@@ -14,6 +14,7 @@ from flask import current_app
 
 from flask_script import Manager
 from flask_principal import Identity, identity_changed
+
 
 from lemur import database
 from lemur.extensions import sentry
@@ -264,6 +265,26 @@ def query(fqdns, issuer, owner, expired):
     print(tabulate(table, headers=['Id', 'Name', 'Owner', 'Issuer'], tablefmt='csv'))
 
 
+def worker(data, commit, reason):
+    parts = [x for x in data.split(' ') if x]
+    try:
+        cert = get(int(parts[0].strip()))
+        plugin = plugins.get(cert.authority.plugin_name)
+
+        print('[+] Revoking certificate. Id: {0} Name: {1}'.format(cert.id, cert.name))
+        if commit:
+            plugin.revoke_certificate(cert, reason)
+
+    except Exception as e:
+        sentry.captureException()
+        metrics.send('certificate_revoke_failure', 'counter', 1)
+        print(
+            "[!] Failed to revoke certificates. Reason: {}".format(
+                e
+            )
+        )
+
+
 @manager.option('-p', '--path', dest='path', help='Absolute file path to a Lemur query csv.')
 @manager.option('-r', '--reason', dest='reason', help='Reason to revoke certificate.')
 @manager.option('-c', '--commit', dest='commit', action='store_true', default=False, help='Persist changes.')
@@ -277,24 +298,10 @@ def revoke(path, reason, commit):
     print("[+] Starting certificate revocation.")
 
     with open(path, 'r') as f:
-        for c in f.readlines()[2:]:
-            parts = c.split(' ')
-            try:
-                cert = get(int(parts[0].strip()))
-                plugin = plugins.get(cert.authority.plugin_name)
+        args = [[x, commit, reason] for x in f.readlines()[2:]]
 
-                print('[+] Revoking certificate. Id: {0} Name: {1}'.format(cert.id, cert.name))
-                if commit:
-                    plugin.revoke_certificate(cert, reason)
-
-            except Exception as e:
-                sentry.captureException()
-                metrics.send('certificate_revoke_failure', 'counter', 1)
-                print(
-                    "[!] Failed to revoke certificates. Reason: {}".format(
-                        e
-                    )
-                )
+    with multiprocessing.Pool(processes=3) as pool:
+        pool.starmap(worker, args)
 
 
 @manager.command
