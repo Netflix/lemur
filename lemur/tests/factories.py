@@ -280,4 +280,4 @@ class ApiKeyFactory(BaseFactory):
             return
 
         if extracted:
-            self.user_id = extracted.id
+            self.userId = extracted.id

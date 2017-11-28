@@ -16,9 +16,17 @@ class ApiKeyInputSchema(LemurInputSchema):
     ttl = fields.Integer()
 
 
-class ApiKeyRevokeInputSchema(LemurInputSchema):
+class ApiKeyRevokeSchema(LemurInputSchema):
+    id = fields.Integer(required=False)
     name = fields.String()
+    user_id = fields.Integer(required=False)
     revoked = fields.Boolean()
+    ttl = fields.Integer()
+    issued_at = fields.Integer(required=False)
+
+
+class UserApiKeyInputSchema(LemurInputSchema):
+    name = fields.String(required=False)
     ttl = fields.Integer()
 
 
@@ -36,7 +44,8 @@ class ApiKeyDescribedOutputSchema(LemurOutputSchema):
 
 
 api_key_input_schema = ApiKeyInputSchema()
-api_key_revoke_input_schema = ApiKeyRevokeInputSchema()
+api_key_revoke_schema = ApiKeyRevokeSchema()
 api_key_output_schema = ApiKeyOutputSchema()
-api_keys_output_schema = ApiKeyInputSchema(many=True)
+api_keys_output_schema = ApiKeyDescribedOutputSchema(many=True)
 api_key_described_output_schema = ApiKeyDescribedOutputSchema()
+user_api_key_input_schema = UserApiKeyInputSchema()
