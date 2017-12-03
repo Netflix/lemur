@@ -42,6 +42,10 @@ def split_chain(chain):
     :return:
     """
     certs = []
+
+    if not chain:
+        return certs
+
     lines = chain.split('\n')
 
     cert = []
