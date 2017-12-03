@@ -273,7 +273,7 @@ class ApiKeys(AuthenticatedResource):
         """
         access_key = service.get(aid)
         if access_key is None:
-            return dict(message="You are not authorized to view this token!"), 403
+            return dict(message="This token does not exist!"), 404
         if access_key.user_id != g.current_user.id:
             if not ApiKeyCreatorPermission().can():
                 return dict(message="You are not authorized to view this token!"), 403
@@ -318,7 +318,7 @@ class ApiKeys(AuthenticatedResource):
         """
         access_key = service.get(aid)
         if access_key is None:
-            return dict(message="You are not authorized to update this token!"), 403
+            return dict(message="This token does not exist!"), 404
         if access_key.user_id != g.current_user.id:
             if not ApiKeyCreatorPermission().can():
                 return dict(message="You are not authorized to update this token!"), 403
@@ -357,7 +357,7 @@ class ApiKeys(AuthenticatedResource):
         """
         access_key = service.get(aid)
         if access_key is None:
-            return dict(message="You are not authorized to delete this token!"), 403
+            return dict(message="This token does not exist!"), 404
         if access_key.user_id != g.current_user.id:
             if not ApiKeyCreatorPermission().can():
                 return dict(message="You are not authorized to delete this token!"), 403
@@ -406,7 +406,7 @@ class UserApiKeys(AuthenticatedResource):
                 return dict(message="You are not authorized to view this token!"), 403
         access_key = service.get(aid)
         if access_key is None:
-            return dict(message="You are not authorized to view this token!"), 403
+            return dict(message="This token does not exist!"), 404
         if access_key.user_id != uid:
             return dict(message="You are not authorized to view this token!"), 403
         return dict(jwt=create_token(access_key.user_id, access_key.id, access_key.ttl))
@@ -453,7 +453,7 @@ class UserApiKeys(AuthenticatedResource):
                 return dict(message="You are not authorized to view this token!"), 403
         access_key = service.get(aid)
         if access_key is None:
-            return dict(message="You are not authorized to update this token!"), 403
+            return dict(message="This token does not exist!"), 404
         if access_key.user_id != uid:
             return dict(message="You are not authorized to update this token!"), 403
         service.update(access_key, name=data['name'], revoked=data['revoked'], ttl=data['ttl'])
@@ -494,7 +494,7 @@ class UserApiKeys(AuthenticatedResource):
                 return dict(message="You are not authorized to view this token!"), 403
         access_key = service.get(aid)
         if access_key is None:
-            return dict(message="You are not authorized to delete this token!"), 403
+            return dict(message="This token does not exist!"), 404
         if access_key.user_id != uid:
             return dict(message="You are not authorized to delete this token!"), 403
         service.delete(access_key)
@@ -544,7 +544,7 @@ class ApiKeysDescribed(AuthenticatedResource):
         """
         access_key = service.get(aid)
         if access_key is None:
-            return dict(message="You are not authorized to view this token!"), 403
+            return dict(message="This token does not exist!"), 404
         if access_key.user_id != g.current_user.id:
             if not ApiKeyCreatorPermission().can():
                 return dict(message="You are not authorized to view this token!"), 403
