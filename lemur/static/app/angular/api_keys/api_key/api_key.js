@@ -2,7 +2,7 @@
 
 angular.module('lemur')
   .controller('ApiKeysCreateController', function ($scope, $uibModalInstance, PluginService, ApiKeyService, LemurRestangular, toaster) {
-    $scope.apiKey = LemurRestangular.restangularizeElement(null, {}, 'api_keys');
+    $scope.apiKey = LemurRestangular.restangularizeElement(null, {}, 'keys');
 
     $scope.save = function (apiKey) {
       ApiKeyService.create(apiKey).then(
@@ -30,11 +30,11 @@ angular.module('lemur')
     };
 
     $scope.close = function() {
-      $uibModalInstance.dismiss();
+      $uibModalInstance.close();
     };
   })
   .controller('ApiKeysEditController', function ($scope, $uibModalInstance, ApiKeyService, LemurRestangular, toaster, editId) {
-    LemurRestangular.one('api_keys', editId).customGET('described').then(function(apiKey) {
+    LemurRestangular.one('keys', editId).customGET('described').then(function(apiKey) {
       $scope.apiKey = apiKey;
     });
 
@@ -64,6 +64,6 @@ angular.module('lemur')
     };
 
     $scope.close = function() {
-      $uibModalInstance.dismiss();
+      $uibModalInstance.close();
     };
   });

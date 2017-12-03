@@ -47,7 +47,7 @@ angular.module('lemur')
     };
 
     UserService.getApiKeys = function (user) {
-      user.getList('api_keys').then(function (apiKeys) {
+      user.getList('keys').then(function (apiKeys) {
         user.apiKeys = apiKeys;
       });
     };
@@ -61,7 +61,7 @@ angular.module('lemur')
     };
 
     UserService.loadMoreApiKeys = function (user, page) {
-      user.getList('api_keys', {page: page}).then(function (apiKeys) {
+      user.getList('keys', {page: page}).then(function (apiKeys) {
         _.each(apiKeys, function (apiKey) {
           user.apiKeys.push(apiKey);
         });

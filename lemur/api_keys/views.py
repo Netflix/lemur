@@ -34,7 +34,7 @@ class ApiKeyList(AuthenticatedResource):
     @validate_schema(None, api_keys_output_schema)
     def get(self):
         """
-        .. http:get:: /api_keys
+        .. http:get:: /keys
 
            The current list of api keys, that you can see.
 
@@ -42,7 +42,7 @@ class ApiKeyList(AuthenticatedResource):
 
            .. sourcecode:: http
 
-              GET /api_keys HTTP/1.1
+              GET /keys HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
 
@@ -87,7 +87,7 @@ class ApiKeyList(AuthenticatedResource):
     @validate_schema(api_key_input_schema, api_key_output_schema)
     def post(self, data=None):
         """
-        .. http:post:: /api_keys
+        .. http:post:: /keys
 
            Creates an API Key.
 
@@ -95,7 +95,7 @@ class ApiKeyList(AuthenticatedResource):
 
            .. sourcecode:: http
 
-              POST /api_keys HTTP/1.1
+              POST /keys HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
 
@@ -132,14 +132,14 @@ class ApiKeyList(AuthenticatedResource):
 
 
 class ApiKeyUserList(AuthenticatedResource):
-    """ Defines the 'api_keys' endpoint on the 'users' endpoint. """
+    """ Defines the 'keys' endpoint on the 'users' endpoint. """
     def __init__(self):
         super(ApiKeyUserList, self).__init__()
 
     @validate_schema(None, api_keys_output_schema)
     def get(self, user_id):
         """
-        .. http:get:: /users/:user_id/api_keys
+        .. http:get:: /users/:user_id/keys
 
            The current list of api keys for a user, that you can see.
 
@@ -147,7 +147,7 @@ class ApiKeyUserList(AuthenticatedResource):
 
            .. sourcecode:: http
 
-              GET /users/1/api_keys HTTP/1.1
+              GET /users/1/keys HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
 
@@ -192,7 +192,7 @@ class ApiKeyUserList(AuthenticatedResource):
     @validate_schema(user_api_key_input_schema, api_key_output_schema)
     def post(self, user_id, data=None):
         """
-        .. http:post:: /users/:user_id/api_keys
+        .. http:post:: /users/:user_id/keys
 
            Creates an API Key for a user.
 
@@ -200,7 +200,7 @@ class ApiKeyUserList(AuthenticatedResource):
 
            .. sourcecode:: http
 
-              POST /users/1/api_keys HTTP/1.1
+              POST /users/1/keys HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
 
@@ -243,7 +243,7 @@ class ApiKeys(AuthenticatedResource):
     @validate_schema(None, api_key_output_schema)
     def get(self, aid):
         """
-        .. http:get:: /api_keys/1
+        .. http:get:: /keys/1
 
            Fetch one api key
 
@@ -251,7 +251,7 @@ class ApiKeys(AuthenticatedResource):
 
            .. sourcecode:: http
 
-              GET /api_keys/1 HTTP/1.1
+              GET /keys/1 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
 
@@ -282,7 +282,7 @@ class ApiKeys(AuthenticatedResource):
     @validate_schema(api_key_revoke_schema, api_key_output_schema)
     def put(self, aid, data=None):
         """
-        .. http:put:: /api_keys/1
+        .. http:put:: /keys/1
 
            update one api key
 
@@ -290,7 +290,7 @@ class ApiKeys(AuthenticatedResource):
 
            .. sourcecode:: http
 
-              PUT /api_keys/1 HTTP/1.1
+              PUT /keys/1 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
 
@@ -327,7 +327,7 @@ class ApiKeys(AuthenticatedResource):
 
     def delete(self, aid):
         """
-        .. http:delete:: /api_keys/1
+        .. http:delete:: /keys/1
 
            deletes one api key
 
@@ -335,7 +335,7 @@ class ApiKeys(AuthenticatedResource):
 
            .. sourcecode:: http
 
-              DELETE /api_keys/1 HTTP/1.1
+              DELETE /keys/1 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
 
@@ -373,7 +373,7 @@ class UserApiKeys(AuthenticatedResource):
     @validate_schema(None, api_key_output_schema)
     def get(self, uid, aid):
         """
-        .. http:get:: /users/1/api_keys/1
+        .. http:get:: /users/1/keys/1
 
            Fetch one api key
 
@@ -414,7 +414,7 @@ class UserApiKeys(AuthenticatedResource):
     @validate_schema(api_key_revoke_schema, api_key_output_schema)
     def put(self, uid, aid, data=None):
         """
-        .. http:put:: /users/1/api_keys/1
+        .. http:put:: /users/1/keys/1
 
            update one api key
 
@@ -422,7 +422,7 @@ class UserApiKeys(AuthenticatedResource):
 
            .. sourcecode:: http
 
-              PUT /users/1/api_keys/1 HTTP/1.1
+              PUT /users/1/keys/1 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
 
@@ -461,7 +461,7 @@ class UserApiKeys(AuthenticatedResource):
 
     def delete(self, uid, aid):
         """
-        .. http:delete:: /users/1/api_keys/1
+        .. http:delete:: /users/1/keys/1
 
            deletes one api key
 
@@ -469,7 +469,7 @@ class UserApiKeys(AuthenticatedResource):
 
            .. sourcecode:: http
 
-              DELETE /users/1/api_keys/1 HTTP/1.1
+              DELETE /users/1/keys/1 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
 
@@ -509,7 +509,7 @@ class ApiKeysDescribed(AuthenticatedResource):
     @validate_schema(None, api_key_described_output_schema)
     def get(self, aid):
         """
-        .. http:get:: /api_keys/1/described
+        .. http:get:: /keys/1/described
 
            Fetch one api key
 
@@ -517,7 +517,7 @@ class ApiKeysDescribed(AuthenticatedResource):
 
            .. sourcecode:: http
 
-              GET /api_keys/1 HTTP/1.1
+              GET /keys/1 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
 
@@ -551,8 +551,8 @@ class ApiKeysDescribed(AuthenticatedResource):
         return access_key
 
 
-api.add_resource(ApiKeyList, '/api_keys', endpoint='api_keys')
-api.add_resource(ApiKeys, '/api_keys/<int:aid>', endpoint='api_key')
-api.add_resource(ApiKeysDescribed, '/api_keys/<int:aid>/described', endpoint='api_key_described')
-api.add_resource(ApiKeyUserList, '/users/<int:user_id>/api_keys', endpoint='user_api_keys')
-api.add_resource(UserApiKeys, '/users/<int:uid>/api_keys/<int:aid>', endpoint='user_api_key')
+api.add_resource(ApiKeyList, '/keys', endpoint='api_keys')
+api.add_resource(ApiKeys, '/keys/<int:aid>', endpoint='api_key')
+api.add_resource(ApiKeysDescribed, '/keys/<int:aid>/described', endpoint='api_key_described')
+api.add_resource(ApiKeyUserList, '/users/<int:user_id>/keys', endpoint='user_api_keys')
+api.add_resource(UserApiKeys, '/users/<int:uid>/keys/<int:aid>', endpoint='user_api_key')

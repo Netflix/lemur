@@ -2,8 +2,8 @@
 
 angular.module('lemur')
   .config(function config($stateProvider) {
-    $stateProvider.state('api_keys', {
-      url: '/api_keys',
+    $stateProvider.state('keys', {
+      url: '/keys',
       templateUrl: '/angular/api_keys/view/view.tpl.html',
       controller: 'ApiKeysViewController'
     });
@@ -28,7 +28,7 @@ angular.module('lemur')
     });
 
     $scope.updateRevoked = function (apiKey) {
-      ApiKeyService.updateRevoked(apiKey).then(
+      ApiKeyService.update(apiKey).then(
         function () {
           toaster.pop({
             type: 'success',

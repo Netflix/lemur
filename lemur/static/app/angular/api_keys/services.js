@@ -2,15 +2,11 @@
 
 angular.module('lemur')
   .service('ApiKeyApi', function (LemurRestangular) {
-    return LemurRestangular.all('api_keys');
+    return LemurRestangular.all('keys');
   })
   .service('ApiKeyService', function ($location, ApiKeyApi) {
     var ApiKeyService = this;
     ApiKeyService.update = function(apiKey) {
-      return apiKey.put();
-    };
-
-    ApiKeyService.updateRevoked = function(apiKey) {
       return apiKey.put();
     };
 

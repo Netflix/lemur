@@ -43,7 +43,7 @@ angular.module('lemur')
       UserApi.removeApiKey(idx).then(function () {
         toaster.pop({
           type: 'success',
-          title: 'Removed API Key!!',
+          title: 'Removed API Key!',
           body: 'Successfully removed the api key!'
         });
       }, function(err) {
