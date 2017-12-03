@@ -13,8 +13,11 @@ import requests
 
 from flask import current_app
 
+from lemur.common.utils import parse_certificate
+from lemur.common.utils import get_authority_key
 from lemur.plugins.bases import IssuerPlugin
 from lemur.plugins import lemur_cfssl as cfssl
+from lemur.extensions import metrics
 
 
 class CfsslIssuerPlugin(IssuerPlugin):
@@ -46,11 +49,15 @@ class CfsslIssuerPlugin(IssuerPlugin):
         data = json.dumps(data)
 
         response = self.session.post(url, data=data.encode(encoding='utf_8', errors='strict'))
+        if response.status_code > 399:
+            metrics.send('cfssl_create_certificate_failure', 'counter', 1)
+            raise Exception(
+                "Error revoking cert. Please check your CFSSL API server")
         response_json = json.loads(response.content.decode('utf_8'))
         cert = response_json['result']['certificate']
-
-        # TODO add external ID
-        return cert, current_app.config.get('CFSSL_INTERMEDIATE'), None
+        parsed_cert = parse_certificate(cert)
+        metrics.send('cfssl_create_certificate_success', 'counter', 1)
+        return cert, current_app.config.get('CFSSL_INTERMEDIATE'), parsed_cert.serial_number
 
     @staticmethod
     def create_authority(options):
@@ -63,3 +70,20 @@ class CfsslIssuerPlugin(IssuerPlugin):
         """
         role = {'username': '', 'password': '', 'name': 'cfssl'}
         return current_app.config.get('CFSSL_ROOT'), "", [role]
+
+    def revoke_certificate(self, certificate, comments):
+        """Revoke a CFSSL certificate."""
+        base_url = current_app.config.get('CFSSL_URL')
+        create_url = '{0}/api/v1/cfssl/revoke'.format(base_url)
+        data = '{"serial": "' + certificate.external_id + '","authority_key_id": "' + \
+            get_authority_key(certificate.body) + \
+            '", "reason": "superseded"}'
+        current_app.logger.debug("Revoking cert: {0}".format(data))
+        response = self.session.post(
+            create_url, data=data.encode(encoding='utf_8', errors='strict'))
+        if response.status_code > 399:
+            metrics.send('cfssl_revoke_certificate_failure', 'counter', 1)
+            raise Exception(
+                "Error revoking cert. Please check your CFSSL API server")
+        metrics.send('cfssl_revoke_certificate_success', 'counter', 1)
+        return response.json()
