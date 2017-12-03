@@ -53,6 +53,14 @@ def parse_certificate(body):
     return x509.load_pem_x509_certificate(body, default_backend())
 
 
+def get_authority_key(body):
+    """Returns the authority key for a given certificate in hex format"""
+    parsed_cert = parse_certificate(body)
+    authority_key = parsed_cert.extensions.get_extension_for_class(
+        x509.AuthorityKeyIdentifier).value.key_identifier
+    return authority_key.hex()
+
+
 def generate_private_key(key_type):
     """
     Generates a new private key based on key_type.
