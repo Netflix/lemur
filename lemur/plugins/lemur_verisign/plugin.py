@@ -21,7 +21,6 @@ from lemur.plugins.bases import IssuerPlugin, SourcePlugin
 
 from lemur.common.utils import get_psuedo_random_string
 
-
 # https://support.venafi.com/entries/66445046-Info-VeriSign-Error-Codes
 VERISIGN_ERRORS = {
     "0x30c5": "Domain Mismatch when enrolling for an SSL certificate, a domain in your request has not been added to verisign",
@@ -240,6 +239,33 @@ class VerisignIssuerPlugin(IssuerPlugin):
         }
         response = self.session.post(url, data=data)
         return response.json()['certificateSummary'][0]['Pending']
+
+    def clear_pending_certificates(self):
+        """
+        Uses Verisign to clear the pending certificates awaiting approval.
+
+        :return:
+        """
+        url = current_app.config.get('VERISIGN_URL') + '/reportingws'
+
+        end = arrow.now()
+        start = end.replace(days=-7)
+
+        data = {
+            'reportType': 'detail',
+            'certProductType': 'Server',
+            'certStatus': 'Pending',
+            'startDate': start.format("MM/DD/YYYY"),
+            'endDate': end.format("MM/DD/YYYY")
+        }
+        response = self.session.post(url, data=data)
+
+        url = current_app.config.get('VERISIGN_URL') + '/rest/services/reject'
+        for order_id in response.json()['orderNumber']:
+            response = self.session.get(url, params={'transaction_id': order_id})
+
+            if response.status_code == 200:
+                print("Rejecting certificate. TransactionId: {}".format(order_id))
 
 
 class VerisignSourcePlugin(SourcePlugin):

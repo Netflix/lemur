@@ -285,6 +285,16 @@ def worker(data, commit, reason):
         )
 
 
+@manager.command
+def clear_pending():
+    """
+    Function clears all pending certificates.
+    :return:
+    """
+    v = plugins.get('verisign-issuer')
+    v.clear_pending_certificates()
+
+
 @manager.option('-p', '--path', dest='path', help='Absolute file path to a Lemur query csv.')
 @manager.option('-r', '--reason', dest='reason', help='Reason to revoke certificate.')
 @manager.option('-c', '--commit', dest='commit', action='store_true', default=False, help='Persist changes.')
