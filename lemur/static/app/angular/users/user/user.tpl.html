@@ -85,6 +85,27 @@
         </table>
       </div>
     </div>
+    <div class="form-group">
+      <label class="control-label col-sm-2">
+        API Keys
+      </label>
+      <div class="col-sm-10">
+        <table ng-show="user.apiKeys" class="table">
+          <tr ng-repeat="apiKey in user.apiKeys track by $index">
+            <td><a class="btn btn-sm btn-info" href="#/keys/{{ apiKey.id }}/edit">{{ apiKey.name || "Unnamed Api Key" }}</a></td>
+            <td>
+              <button type="button" ng-click="user.removeApiKey($index)" class="btn btn-danger btn-sm pull-right">Remove
+              </button>
+            </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td></td>
+            <td><a class="pull-right" ng-click="loadMoreApiKeys()"><strong>More</strong></a></td>
+          </tr>
+        </table>
+      </div>
+    </div>
   </form>
   <div class="modal-footer">
     <button ng-click="save(user)" type="submit" ng-disabled="createForm.$invalid" class="btn btn-primary">Save</button>

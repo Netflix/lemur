@@ -29,3 +29,6 @@ docs/_build
 .editorconfig
 .idea
 lemur/tests/tmp
+
+/lemur/plugins/lemur_email/tests/expiration-rendered.html
+/lemur/plugins/lemur_email/tests/rotation-rendered.html

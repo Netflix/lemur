@@ -16,6 +16,7 @@ from lemur.users.models import User
 from lemur.roles.models import Role
 from lemur.endpoints.models import Policy, Endpoint
 from lemur.policies.models import RotationPolicy
+from lemur.api_keys.models import ApiKey
 
 from .vectors import INTERNAL_VALID_SAN_STR, PRIVATE_KEY_STR
 
@@ -260,3 +261,23 @@ class EndpointFactory(BaseFactory):
     class Meta:
         """Factory Configuration."""
         model = Endpoint
+
+
+class ApiKeyFactory(BaseFactory):
+    """Api Key Factory."""
+    name = Sequence(lambda n: 'api_key_{0}'.format(n))
+    revoked = False
+    ttl = -1
+    issued_at = 1
+
+    class Meta:
+        """Factory Configuration."""
+        model = ApiKey
+
+    @post_generation
+    def user(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.userId = extracted.id

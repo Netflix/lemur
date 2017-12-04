@@ -4,7 +4,7 @@ import pytest
 
 from lemur.tests.factories import UserFactory, RoleFactory
 from lemur.users.views import *  # noqa
-from .vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN
+from .vectors import VALID_ADMIN_API_TOKEN, VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN
 
 
 def test_user_input_schema(client):
@@ -24,6 +24,7 @@ def test_user_input_schema(client):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 200),
     (VALID_ADMIN_HEADER_TOKEN, 200),
+    (VALID_ADMIN_API_TOKEN, 200),
     ('', 401)
 ])
 def test_user_get(client, token, status):
@@ -33,6 +34,7 @@ def test_user_get(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 405),
     (VALID_ADMIN_HEADER_TOKEN, 405),
+    (VALID_ADMIN_API_TOKEN, 405),
     ('', 405)
 ])
 def test_user_post_(client, token, status):
@@ -42,6 +44,7 @@ def test_user_post_(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 403),
     (VALID_ADMIN_HEADER_TOKEN, 400),
+    (VALID_ADMIN_API_TOKEN, 400),
     ('', 401)
 ])
 def test_user_put(client, token, status):
@@ -51,6 +54,7 @@ def test_user_put(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 405),
     (VALID_ADMIN_HEADER_TOKEN, 405),
+    (VALID_ADMIN_API_TOKEN, 405),
     ('', 405)
 ])
 def test_user_delete(client, token, status):
@@ -60,6 +64,7 @@ def test_user_delete(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 405),
     (VALID_ADMIN_HEADER_TOKEN, 405),
+    (VALID_ADMIN_API_TOKEN, 405),
     ('', 405)
 ])
 def test_user_patch(client, token, status):
@@ -69,6 +74,7 @@ def test_user_patch(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 403),
     (VALID_ADMIN_HEADER_TOKEN, 400),
+    (VALID_ADMIN_API_TOKEN, 400),
     ('', 401)
 ])
 def test_user_list_post_(client, token, status):
@@ -78,6 +84,7 @@ def test_user_list_post_(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 200),
     (VALID_ADMIN_HEADER_TOKEN, 200),
+    (VALID_ADMIN_API_TOKEN, 200),
     ('', 401)
 ])
 def test_user_list_get(client, token, status):
@@ -87,6 +94,7 @@ def test_user_list_get(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 405),
     (VALID_ADMIN_HEADER_TOKEN, 405),
+    (VALID_ADMIN_API_TOKEN, 405),
     ('', 405)
 ])
 def test_user_list_delete(client, token, status):
@@ -96,6 +104,7 @@ def test_user_list_delete(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 405),
     (VALID_ADMIN_HEADER_TOKEN, 405),
+    (VALID_ADMIN_API_TOKEN, 405),
     ('', 405)
 ])
 def test_user_list_patch(client, token, status):

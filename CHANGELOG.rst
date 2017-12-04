@@ -8,6 +8,8 @@ Changelog
 Adds per-certificate rotation policies, requires a database migration. The default rotation policy for all certificates
 is 30 days. Every certificate will gain a policy regardless is auto-rotation is used.
 
+Adds per-user API Keys, requires a database migration.
+
 .. note:: This version is not yet released and is under active development
 
 
