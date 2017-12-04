@@ -60,6 +60,16 @@ def get_by_dnsname(dnsname):
     return database.get(Endpoint, dnsname, field='dnsname')
 
 
+def get_by_dnsname_and_port(dnsname, port):
+    """
+    Retrieves and endpoint by it's dnsname and port.
+    :param dnsname:
+    :param port:
+    :return:
+    """
+    return Endpoint.query.filter(Endpoint.dnsname == dnsname).filter(Endpoint.port == port).scalar()
+
+
 def get_by_source(source_label):
     """
     Retrieves all endpoints for a given source.

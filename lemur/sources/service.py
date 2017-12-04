@@ -72,7 +72,7 @@ def sync_endpoints(source):
         return new, updated
 
     for endpoint in endpoints:
-        exists = endpoint_service.get_by_dnsname(endpoint['dnsname'])
+        exists = endpoint_service.get_by_dnsname_and_port(endpoint['dnsname'], endpoint['port'])
 
         certificate_name = endpoint.pop('certificate_name')
 
@@ -99,7 +99,7 @@ def sync_endpoints(source):
             new += 1
 
         else:
-            current_app.logger.debug("Endpoint Updated: Name: {name}".format(name=endpoint['name']))
+            current_app.logger.debug("Endpoint Updated: {}".format(endpoint))
             endpoint_service.update(exists.id, **endpoint)
             updated += 1
 
