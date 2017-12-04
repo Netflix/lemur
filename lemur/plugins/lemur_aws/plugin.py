@@ -109,6 +109,8 @@ def get_elb_endpoints(account_number, region, elb_dict):
                                                          account_number=account_number, region=region)
             endpoint['policy'] = format_elb_cipher_policy(policy)
 
+        current_app.logger.debug("Found new endpoint. Endpoint: {}".format(endpoint))
+
         endpoints.append(endpoint)
 
     return endpoints
