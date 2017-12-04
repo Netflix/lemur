@@ -3,7 +3,7 @@
  */
 'use strict';
 angular.module('lemur')
-  .service('UserApi', function (LemurRestangular) {
+  .service('UserApi', function (LemurRestangular, ApiKeyService) {
     LemurRestangular.extendModel('users', function (obj) {
       return angular.extend(obj, {
         attachRole: function (role) {
@@ -15,6 +15,11 @@ angular.module('lemur')
         },
         removeRole: function (index) {
           this.roles.splice(index, 1);
+        },
+        removeApiKey: function (index) {
+          var removedApiKeys = this.apiKeys.splice(index, 1);
+          var removedApiKey = removedApiKeys[0];
+          return ApiKeyService.delete(removedApiKey);
         }
       });
     });
@@ -41,10 +46,24 @@ angular.module('lemur')
       });
     };
 
+    UserService.getApiKeys = function (user) {
+      user.getList('keys').then(function (apiKeys) {
+        user.apiKeys = apiKeys;
+      });
+    };
+
     UserService.loadMoreRoles = function (user, page) {
       user.getList('roles', {page: page}).then(function (roles) {
         _.each(roles, function (role) {
           user.roles.push(role);
+        });
+      });
+    };
+
+    UserService.loadMoreApiKeys = function (user, page) {
+      user.getList('keys', {page: page}).then(function (apiKeys) {
+        _.each(apiKeys, function (apiKey) {
+          user.apiKeys.push(apiKey);
         });
       });
     };

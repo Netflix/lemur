@@ -12,6 +12,12 @@ VALID_ADMIN_HEADER_TOKEN = {
 }
 
 
+VALID_ADMIN_API_TOKEN = {
+    'Authorization': 'Basic ' + 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImFpZCI6MSwiaWF0IjoxNDM1MjMzMzY5fQ.umW0I_oh4MVZ2qrClzj9SfYnQl6cd0HGzh9EwkDW60I',
+    'Content-Type': 'application/json'
+}
+
+
 INTERNAL_VALID_LONG_STR = """
 -----BEGIN CERTIFICATE-----
 MIID1zCCAr+gAwIBAgIBATANBgkqhkiG9w0BAQsFADCBjDELMAkGA1UEBhMCVVMx

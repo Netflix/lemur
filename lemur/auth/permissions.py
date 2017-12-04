@@ -33,6 +33,11 @@ class CertificatePermission(Permission):
         super(CertificatePermission, self).__init__(*needs)
 
 
+class ApiKeyCreatorPermission(Permission):
+    def __init__(self):
+        super(ApiKeyCreatorPermission, self).__init__(RoleNeed('admin'))
+
+
 RoleMember = namedtuple('role', ['method', 'value'])
 RoleMemberNeed = partial(RoleMember, 'member')
 
