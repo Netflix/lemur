@@ -31,7 +31,7 @@
     "font-awesome": "~4.5.0",
     "lodash": "~4.0.1",
     "underscore": "~1.8.3",
-    "angular-smart-table": "~2.1.6",
+    "angular-smart-table": "2.1.8",
     "angular-strap": ">= 2.2.2",
     "angular-underscore": "^0.5.0",
     "angular-translate": "^2.9.0",
