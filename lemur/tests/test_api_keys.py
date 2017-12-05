@@ -34,7 +34,7 @@ def test_api_key_list_post_invalid(client, token, status):
     ('', 0, 401)
 ])
 def test_api_key_list_post_valid_self(client, user_id, token, status):
-    assert client.post(api.url_for(ApiKeyList), data=json.dumps({'name': 'a test token', 'userId': user_id, 'ttl': -1}), headers=token).status_code == status
+    assert client.post(api.url_for(ApiKeyList), data=json.dumps({'name': 'a test token', 'user': {'id': user_id, 'username': 'example', 'email': 'example@test.net'}, 'ttl': -1}), headers=token).status_code == status
 
 
 @pytest.mark.parametrize("token,status", [
@@ -44,7 +44,7 @@ def test_api_key_list_post_valid_self(client, user_id, token, status):
     ('', 401)
 ])
 def test_api_key_list_post_valid_no_permission(client, token, status):
-    assert client.post(api.url_for(ApiKeyList), data=json.dumps({'name': 'a test token', 'userId': 2, 'ttl': -1}), headers=token).status_code == status
+    assert client.post(api.url_for(ApiKeyList), data=json.dumps({'name': 'a test token', 'user': {'id': 2, 'username': 'example', 'email': 'example@test.net'}, 'ttl': -1}), headers=token).status_code == status
 
 
 @pytest.mark.parametrize("token,status", [
@@ -94,7 +94,7 @@ def test_user_api_key_list_post_invalid(client, token, status):
     ('', 0, 401)
 ])
 def test_user_api_key_list_post_valid_self(client, user_id, token, status):
-    assert client.post(api.url_for(ApiKeyUserList, user_id=1), data=json.dumps({'name': 'a test token', 'userId': user_id, 'ttl': -1}), headers=token).status_code == status
+    assert client.post(api.url_for(ApiKeyUserList, user_id=1), data=json.dumps({'name': 'a test token', 'user': {'id': user_id}, 'ttl': -1}), headers=token).status_code == status
 
 
 @pytest.mark.parametrize("token,status", [
@@ -104,7 +104,7 @@ def test_user_api_key_list_post_valid_self(client, user_id, token, status):
     ('', 401)
 ])
 def test_user_api_key_list_post_valid_no_permission(client, token, status):
-    assert client.post(api.url_for(ApiKeyUserList, user_id=2), data=json.dumps({'name': 'a test token', 'userId': 2, 'ttl': -1}), headers=token).status_code == status
+    assert client.post(api.url_for(ApiKeyUserList, user_id=2), data=json.dumps({'name': 'a test token', 'user': {'id': 2}, 'ttl': -1}), headers=token).status_code == status
 
 
 @pytest.mark.parametrize("token,status", [
