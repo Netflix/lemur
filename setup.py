@@ -79,7 +79,7 @@ tests_require = [
     'fake-factory==0.7.2',
     'pytest-flask==0.10.0',
     'freezegun==0.3.9',
-    'requests-mock==1.3.0',
+    'requests-mock==1.4.0',
     'pytest-mock'
 ]
 
