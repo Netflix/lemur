@@ -19,8 +19,8 @@
               <td data-title="'Name'" sortable="'name'" align="center">
                 {{ apiKey.name || 'Unnamed Api Key' }}
               </td>
-              <td data-title="'User ID'" sortable="'user_id'" align="center">
-                {{ apiKey.userId }}
+              <td data-title="'User'" align="center">
+                {{ apiKey.user.email }}
               </td>
               <td data-title="'TTL'" align="center">
                 {{ apiKey.ttl == -1 ? 'Forever' : apiKey.ttl }}
