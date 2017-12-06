@@ -44,6 +44,7 @@ from lemur.sources.models import Source  # noqa
 from lemur.logs.models import Log  # noqa
 from lemur.endpoints.models import Endpoint  # noqa
 from lemur.policies.models import RotationPolicy  # noqa
+from lemur.pending_certificates.models import PendingCertificate  # noqa
 
 
 manager = Manager(create_app)

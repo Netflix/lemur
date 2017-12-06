@@ -32,6 +32,9 @@ class Authority(db.Model):
     authority_certificate = relationship("Certificate", backref='root_authority', uselist=False, foreign_keys='Certificate.root_authority_id')
     certificates = relationship("Certificate", backref='authority', foreign_keys='Certificate.authority_id')
 
+    authority_pending_certificate = relationship("PendingCertificate", backref='root_authority', uselist=False, foreign_keys='PendingCertificate.root_authority_id')
+    pending_certificates = relationship('PendingCertificate', backref='authority', foreign_keys='PendingCertificate.authority_id')
+
     def __init__(self, **kwargs):
         self.owner = kwargs['owner']
         self.roles = kwargs.get('roles', [])
