@@ -32,7 +32,7 @@ class PendingCertificate(db.Model):
 
     csr = Column(Text(), nullable=False)
     chain = Column(Text())
-    private_key = Column(Vault, nullable=False)
+    private_key = Column(Vault, nullable=True)
 
     date_created = Column(ArrowType, PassiveDefault(func.now()), nullable=False)
 
@@ -52,7 +52,8 @@ class PendingCertificate(db.Model):
                             secondary=pending_cert_replacement_associations,
                             primaryjoin=id == pending_cert_replacement_associations.c.pending_cert_id,  # noqa
                             secondaryjoin=id == pending_cert_replacement_associations.c.replaced_certificate_id,  # noqa
-                            backref='pending_cert')
+                            backref='pending_cert',
+                            viewonly=True)
 
     rotation_policy = relationship("RotationPolicy")
 
@@ -60,7 +61,7 @@ class PendingCertificate(db.Model):
 
     def __init__(self, **kwargs):
         self.csr = kwargs.get('csr')
-        self.private_key = kwargs.get('private_key').strip()
+        self.private_key = kwargs.get('private_key', "").strip()
         self.external_id = kwargs.get('external_id')
 
         # when destinations are appended they require a valid name.

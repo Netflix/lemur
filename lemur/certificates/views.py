@@ -18,6 +18,7 @@ from lemur.auth.service import AuthenticatedResource
 from lemur.auth.permissions import AuthorityPermission, CertificatePermission
 
 from lemur.certificates import service
+from lemur.certificates.models import Certificate
 from lemur.plugins.base import plugins
 from lemur.certificates.schemas import (
     certificate_input_schema,
@@ -267,7 +268,9 @@ class CertificatesList(AuthenticatedResource):
         if authority_permission.can():
             data['creator'] = g.user
             cert = service.create(**data)
-            log_service.create(g.user, 'create_cert', certificate=cert)
+            if isinstance(cert, Certificate):
+                # only log if created, not pending
+                log_service.create(g.user, 'create_cert', 'OK', certificate=cert)
             return cert
 
         return dict(message="You are not authorized to use the authority: {0}".format(data['authority'].name)), 403

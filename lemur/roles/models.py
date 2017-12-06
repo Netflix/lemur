@@ -31,7 +31,7 @@ class Role(db.Model):
     third_party = Column(Boolean)
     users = relationship("User", secondary=roles_users, passive_deletes=True, backref="role")
     certificates = relationship("Certificate", secondary=roles_certificates, backref="role")
-    certificates = relationship("PendingCertificate", secondary=pending_cert_role_associations, backref="role")
+    pending_certificates = relationship("PendingCertificate", secondary=pending_cert_role_associations, backref="role")
 
     sensitive_fields = ('password',)
 

@@ -25,6 +25,7 @@ from lemur.authorities.models import Authority
 from lemur.destinations.models import Destination
 from lemur.certificates.models import Certificate
 from lemur.notifications.models import Notification
+from lemur.pending_certificates.models import PendingCertificate
 
 from lemur.certificates.schemas import CertificateOutputSchema, CertificateInputSchema
 
@@ -190,7 +191,7 @@ def mint(**kwargs):
         csr_imported.send(authority=authority, csr=csr)
 
     cert_body, cert_chain, external_id = issuer.create_certificate(csr, kwargs)
-    return cert_body, private_key, cert_chain, external_id
+    return cert_body, private_key, cert_chain, external_id, csr
 
 
 def import_certificate(**kwargs):
@@ -243,11 +244,12 @@ def create(**kwargs):
     """
     Creates a new certificate.
     """
-    cert_body, private_key, cert_chain, external_id = mint(**kwargs)
+    cert_body, private_key, cert_chain, external_id, csr = mint(**kwargs)
     kwargs['body'] = cert_body
     kwargs['private_key'] = private_key
     kwargs['chain'] = cert_chain
     kwargs['external_id'] = external_id
+    kwargs['csr'] = csr
 
     roles = create_certificate_roles(**kwargs)
 
@@ -256,15 +258,20 @@ def create(**kwargs):
     else:
         kwargs['roles'] = roles
 
-    cert = Certificate(**kwargs)
+    if cert_body:
+        cert = Certificate(**kwargs)
+        kwargs['creator'].certificates.append(cert)
+    else:
+        cert = PendingCertificate(**kwargs)
+        kwargs['creator'].pending_certificates.append(cert)
 
-    kwargs['creator'].certificates.append(cert)
     cert.authority = kwargs['authority']
-    certificate_issued.send(certificate=cert, authority=cert.authority)
 
     database.commit()
 
-    metrics.send('certificate_issued', 'counter', 1, metric_tags=dict(owner=cert.owner, issuer=cert.issuer))
+    if isinstance(cert, Certificate):
+        certificate_issued.send(certificate=cert, authority=cert.authority)
+        metrics.send('certificate_issued', 'counter', 1, metric_tags=dict(owner=cert.owner, issuer=cert.issuer))
     return cert
 
 
