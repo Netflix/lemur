@@ -176,7 +176,7 @@ def needs_notification(certificate):
     days = (certificate.not_after - now).days
 
     for notification in certificate.notifications:
-        if not notification.options:
+        if not notification.active or not notification.options:
             return
 
         interval = get_plugin_option('interval', notification.options)
