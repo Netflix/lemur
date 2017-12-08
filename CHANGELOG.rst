@@ -10,6 +10,8 @@ is 30 days. Every certificate will gain a policy regardless is auto-rotation is 
 
 Adds per-user API Keys, requires a database migration.
 
+Adds third_party to roles for external authentication roles, requires a database migration.
+
 .. note:: This version is not yet released and is under active development
 
 
