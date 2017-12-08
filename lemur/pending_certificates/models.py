@@ -61,7 +61,10 @@ class PendingCertificate(db.Model):
 
     def __init__(self, **kwargs):
         self.csr = kwargs.get('csr')
-        self.private_key = kwargs.get('private_key', "").strip()
+        self.private_key = kwargs.get('private_key', "")
+        if self.private_key:
+            # If the request does not send private key, the key exists but the value is None
+            self.private_key = self.private_key.strip()
         self.external_id = kwargs.get('external_id')
 
         # when destinations are appended they require a valid name.
