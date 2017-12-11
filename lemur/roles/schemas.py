@@ -26,6 +26,7 @@ class RoleOutputSchema(LemurOutputSchema):
     id = fields.Integer()
     name = fields.String()
     description = fields.String()
+    third_party = fields.Boolean()
     authorities = fields.Nested(AuthorityNestedOutputSchema, many=True)
     users = fields.Nested(UserNestedOutputSchema, many=True)
 

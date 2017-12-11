@@ -211,13 +211,17 @@ class Ping(Resource):
         for group in profile['googleGroups']:
             role = role_service.get_by_name(group)
             if not role:
-                role = role_service.create(group, description='This is a google group based role created by Lemur')
+                role = role_service.create(group, description='This is a google group based role created by Lemur', third_party=True)
+            if not role.third_party:
+                role = role_service.set_third_party(role.id, third_party_status=True)
             roles.append(role)
 
         role = role_service.get_by_name(profile['email'])
 
         if not role:
-            role = role_service.create(profile['email'], description='This is a user specific role')
+            role = role_service.create(profile['email'], description='This is a user specific role', third_party=True)
+        if not role.third_party:
+            role = role_service.set_third_party(role.id, third_party_status=True)
 
         roles.append(role)
 
@@ -226,6 +230,8 @@ class Ping(Resource):
             default = role_service.get_by_name(current_app.config['LEMUR_DEFAULT_ROLE'])
             if not default:
                 default = role_service.create(current_app.config['LEMUR_DEFAULT_ROLE'], description='This is the default Lemur role.')
+            if not default.third_party:
+                role_service.set_third_party(default.id, third_party_status=True)
             roles.append(default)
 
         # if we get an sso user create them an account
@@ -242,7 +248,7 @@ class Ping(Resource):
         else:
             # we add 'lemur' specific roles, so they do not get marked as removed
             for ur in user.roles:
-                if ur.authority_id:
+                if not ur.third_party:
                     roles.append(ur)
 
             # update any changes to the user
@@ -352,12 +358,16 @@ class OAuth2(Resource):
             for group in profile['roles']:
                 role = role_service.get_by_name(group)
                 if not role:
-                    role = role_service.create(group, description='This is a group configured by identity provider')
+                    role = role_service.create(group, description='This is a group configured by identity provider', third_party=True)
+                if not role.third_party:
+                    role = role_service.set_third_party(role.id, third_party_status=True)
                 roles.append(role)
 
         role = role_service.get_by_name(profile['email'])
         if not role:
-            role = role_service.create(profile['email'], description='This is a user specific role')
+            role = role_service.create(profile['email'], description='This is a user specific role', third_party=True)
+        if not role.third_party:
+            role = role_service.set_third_party(role.id, third_party_status=True)
         roles.append(role)
 
         # if we get an sso user create them an account
@@ -365,6 +375,8 @@ class OAuth2(Resource):
             # every user is an operator (tied to a default role)
             if current_app.config.get('LEMUR_DEFAULT_ROLE'):
                 v = role_service.get_by_name(current_app.config.get('LEMUR_DEFAULT_ROLE'))
+                if not v.third_party:
+                    v = role_service.set_third_party(v.id, third_party_status=True)
                 if v:
                     roles.append(v)
 
@@ -380,7 +392,7 @@ class OAuth2(Resource):
         else:
             # we add 'lemur' specific roles, so they do not get marked as removed
             for ur in user.roles:
-                if ur.authority_id:
+                if not ur.third_party:
                     roles.append(ur)
 
             # update any changes to the user

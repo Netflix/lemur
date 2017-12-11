@@ -10,7 +10,7 @@
 
 """
 from sqlalchemy.orm import relationship
-from sqlalchemy import Column, Integer, String, Text, ForeignKey
+from sqlalchemy import Boolean, Column, Integer, String, Text, ForeignKey
 
 from lemur.database import db
 from lemur.utils import Vault
@@ -27,6 +27,7 @@ class Role(db.Model):
     authority_id = Column(Integer, ForeignKey('authorities.id'))
     authorities = relationship("Authority", secondary=roles_authorities, passive_deletes=True, backref="role", cascade='all,delete')
     user_id = Column(Integer, ForeignKey('users.id'))
+    third_party = Column(Boolean)
     users = relationship("User", secondary=roles_users, passive_deletes=True, backref="role")
     certificates = relationship("Certificate", secondary=roles_certificates, backref="role")
 
