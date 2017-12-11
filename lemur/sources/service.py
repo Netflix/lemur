@@ -15,6 +15,7 @@ from lemur.certificates.models import Certificate
 from lemur.certificates import service as certificate_service
 from lemur.endpoints import service as endpoint_service
 from lemur.destinations import service as destination_service
+from lemur.pending_certificates import service as pending_cert_service
 
 from lemur.certificates.schemas import CertificateUploadInputSchema
 from lemur.common.utils import parse_certificate
@@ -23,16 +24,20 @@ from lemur.common.defaults import serial
 from lemur.plugins.base import plugins
 
 
-def certificate_create(certificate, source):
+def certificate_create(certificate, source, pending_cert=None):
     data, errors = CertificateUploadInputSchema().load(certificate)
 
     if errors:
         raise Exception("Unable to import certificate: {reasons}".format(reasons=errors))
 
     data['creator'] = certificate['creator']
+    if pending_cert:
+        # Grab pending certificate info to populate with new cert
+        data.update(vars(pending_cert))
 
     cert = certificate_service.import_certificate(**data)
-    cert.description = "This certificate was automatically discovered by Lemur"
+    if not cert.description:
+        cert.description = "This certificate was automatically discovered by Lemur"
     cert.sources.append(source)
     sync_update_destination(cert, source)
     database.update(cert)
@@ -133,7 +138,12 @@ def sync_certificates(source, user):
         exists = [x for x in exists if x]
 
         if not exists:
-            certificate_create(certificate, source)
+            # Does not exist, but is it pending
+            pending_cert = pending_cert_service.get_by_external_id(source, certificate['order_id'])
+
+            certificate_create(certificate, source, pending_cert)
+            if pending_cert:
+                database.delete(pending_cert)
             new += 1
 
         else:

@@ -44,10 +44,10 @@ class PendingCertificate(db.Model):
     root_authority_id = Column(Integer, ForeignKey('authorities.id', ondelete="CASCADE"))
     rotation_policy_id = Column(Integer, ForeignKey('rotation_policies.id'))
 
-    notifications = relationship('Notification', secondary=pending_cert_notification_associations, backref='pending_cert')
-    destinations = relationship('Destination', secondary=pending_cert_destination_associations, backref='pending_cert')
-    sources = relationship('Source', secondary=pending_cert_source_associations, backref='pending_cert')
-    roles = relationship('Role', secondary=pending_cert_role_associations, backref='pending_cert')
+    notifications = relationship('Notification', secondary=pending_cert_notification_associations, backref='pending_cert', passive_deletes=True)
+    destinations = relationship('Destination', secondary=pending_cert_destination_associations, backref='pending_cert', passive_deletes=True)
+    sources = relationship('Source', secondary=pending_cert_source_associations, backref='pending_cert', passive_deletes=True)
+    roles = relationship('Role', secondary=pending_cert_role_associations, backref='pending_cert', passive_deletes=True)
     replaces = relationship('Certificate',
                             secondary=pending_cert_replacement_associations,
                             primaryjoin=id == pending_cert_replacement_associations.c.pending_cert_id,  # noqa
@@ -92,3 +92,4 @@ class PendingCertificate(db.Model):
         self.replaces = kwargs.get('replaces', [])
         self.rotation = kwargs.get('rotation')
         self.rotation_policy = kwargs.get('rotation_policy')
+        self.authority_id = kwargs.get('authority_id')

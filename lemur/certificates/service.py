@@ -64,6 +64,9 @@ def get_by_serial(serial):
     :param serial:
     :return:
     """
+    if isinstance(serial, int):
+        # although serial is a number, the DB column is String(128)
+        serial = str(serial)
     return Certificate.query.filter(Certificate.serial == serial).all()
 
 
