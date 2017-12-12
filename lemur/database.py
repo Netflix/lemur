@@ -9,6 +9,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+from inflection import underscore
 from sqlalchemy import exc
 from sqlalchemy.sql import and_, or_
 from sqlalchemy.orm import make_transient
@@ -198,7 +199,7 @@ def filter(query, model, terms):
     :param terms:
     :return:
     """
-    column = get_model_column(model, terms[0])
+    column = get_model_column(model, underscore(terms[0]))
     return query.filter(column.ilike('%{}%'.format(terms[1])))
 
 
@@ -212,7 +213,7 @@ def sort(query, model, field, direction):
     :param field:
     :param direction:
     """
-    column = get_model_column(model, field)
+    column = get_model_column(model, underscore(field))
     return query.order_by(column.desc() if direction == 'desc' else column.asc())
 
 
