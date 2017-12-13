@@ -12,6 +12,10 @@ from lemur.certificates.schemas import CertificateUploadInputSchema
 from lemur.pending_certificates.models import PendingCertificate
 
 
+def get_by_name(name):
+    return database.get(PendingCertificate, name, field='name')
+
+
 def get(pending_cert_id):
     """
     Retrieve pending certificate by ID
@@ -90,3 +94,8 @@ def increment_attempt(pending_certificate):
     pending_certificate.number_attempts += 1
     database.update(pending_certificate)
     return pending_certificate.number_attempts
+
+
+def render(args):
+    query = database.session_query(PendingCertificate)
+    return database.sort_and_page(query, PendingCertificate, args)

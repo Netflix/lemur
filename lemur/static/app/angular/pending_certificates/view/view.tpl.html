@@ -1,0 +1,209 @@
+<div class="row">
+  <div class="col-md-12">
+    <h2 class="featurette-heading">Pending Certificates
+      <span class="text-muted"><small>Certificates that almost made it</small></span></h2>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <div class="btn-group">
+          <button ng-model="showFilter" class="btn btn-default" uib-btn-checkbox
+                  btn-checkbox-true="1"
+                  btn-checkbox-false="0">Filter</button>
+        </div>
+        <!--<select class="form-control" ng-model="show" ng-options="item.value as item.title for item in fields"></select>-->
+        <div class="clearfix"></div>
+      </div>
+      <div class="table-responsive">
+        <table ng-table="pendingCertificateTable" class="table" show-filter="showFilter" template-pagination="angular/pager.html">
+          <tbody>
+          <tr ng-class="{'even-row': $even }" ng-repeat-start="pendingCertificate in $data track by $index">
+            <td data-title="'Id'" filter="{'id': 'text'}">
+              {{ pendingCertificate.id }}
+            </td>
+            <td data-title="'Name'" sortable="'name'" filter="{ 'name': 'text' }">
+              <ul class="list-unstyled">
+                <li>{{ pendingCertificate.name }}</li>
+                <li><span class="text-muted">{{ pendingCertificate.owner }}</span></li>
+              </ul>
+            </td>
+            <td data-title="'Notify'" filter="{ 'notify': 'select' }" filter-data="getPendingCertificateStatus()">
+              <form>
+                <switch ng-change="updateNotify(pendingCertificate)" id="status" name="status"
+                        ng-model="pendingCertificate.notify" class="green small"></switch>
+              </form>
+            </td>
+            <td data-title="'Issuer'" sortable="'issuer'" filter="{ 'issuer': 'text' }">
+              {{ pendingCertificate.authority.name || pendingCertificate.issuer }}
+            </td>
+            <td data-title="'Common Name'" filter="{ 'cn': 'text'}">
+              {{ pendingCertificate.cn }}
+            </td>
+            <td data-title="''" style="text-align: center; vertical-align: middle;">
+                <div class="btn-group pull-right" role="group" aria-label="...">
+                  <a class="btn btn-sm btn-primary" ui-sref="pendingCertificate({name: pendingCert.name})">Permalink</a>
+                  <button ng-model="pendingCertificate.toggle" class="btn btn-sm btn-info" uib-btn-checkbox btn-checkbox-true="1"
+                            btn-checkbox-false="0">More
+                  </button>
+                  <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      Action
+                      <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li><a href ng-click="edit(pendingCertificate.id)">Edit</a></li>
+                      <li><a href ng-click="export(pendingCertificate.id)">Export</a></li>
+                      <li><a href ng-click="cancel(pendingCertificate.id)">Cancel</a></li>
+                    </ul>
+                  </div>
+                </div>
+            </td>
+          </tr>
+          <tr class="warning" ng-if="pendingCertificate.toggle" ng-repeat-end>
+            <td colspan="12">
+              <uib-tabset justified="true" class="col-md-8">
+                <uib-tab>
+                  <uib-tab-heading>Basic Info</uib-tab-heading>
+                  <ul class="list-group">
+                    <li class="list-group-item">
+                      <strong>Creator</strong>
+                        <span class="pull-right">
+                          {{ pendingCertificate.user.email }}
+                        </span>
+                    </li>
+                    <li class="list-group-item">
+                      <strong>Not Before</strong>
+                        <span class="pull-right" uib-tooltip="{{ pendingCertificate.notBefore }}">
+                          {{ momentService.createMoment(pendingCertificate.notBefore) }}
+                        </span>
+                    </li>
+                    <li class="list-group-item">
+                      <strong>Not After</strong>
+                        <span class="pull-right" uib-tooltip="{{ pendingCertificate.notAfter }}">
+                          {{ momentService.createMoment(pendingCertificate.notAfter) }}
+                          </span>
+                    </li>
+                    <li class="list-group-item">
+                      <strong>San</strong>
+                      <span class="pull-right">
+                        <i class="glyphicon glyphicon-ok" ng-if="pendingCertificate.san"></i>
+                        <i class="glyphicon glyphicon-remove" ng-if="!pendingCertificate.san"></i>
+                      </span>
+                    </li>
+                    <li class="list-group-item">
+                      <strong>Bits</strong>
+                      <span class="pull-right">{{ pendingCertificate.bits }}</span>
+                    </li>
+                    <li class="list-group-item">
+                      <strong>Signing Algorithm</strong>
+                      <span class="pull-right">{{ pendingCertificate.signingAlgorithm }}</span>
+                    </li>
+                    <li class="list-group-item">
+                      <strong>Serial</strong>
+                      <span class="pull-right">{{ pendingCertificate.serial }}</span>
+                    </li>
+                    <li class="list-group-item">
+                      <strong>Serial (Hex)</strong>
+                      <span class="pull-right">{{ pendingCertificate.serialHex }}</span>
+                    </li>
+                    <li
+                      uib-tooltip="Lemur will attempt to check a pendingCertificates validity, this is used to track whether a pendingCert has been revoked"
+                      class="list-group-item">
+                      <strong>Validity</strong>
+                      <span class="pull-right">
+                        <span ng-if="pendingCertificate.status == 'unknown'" class="label label-warning">Unknown</span>
+                        <span ng-if="pendingCertificate.status == 'revoked'" class="label label-danger">Revoked</span>
+                        <span ng-if="pendingCertificate.status == 'valid'" class="label label-success">Valid</span>
+                      </span>
+                    </li>
+                    <li class="list-group-item">
+                      <strong>Description</strong>
+                      <p>{{ pendingCertificate.description }}</p>
+                    </li>
+                  </ul>
+                </uib-tab>
+                <uib-tab>
+                  <uib-tab-heading>Endpoints</uib-tab-heading>
+                  <ul class="list-group">
+                    <li class="list-group-item" ng-repeat="endpoint in pendingCertificate.endpoints">
+                      <span class="pull-right"><label class="label label-default">{{ endpoint.type }}</label></span>
+                      <ul class="list-unstyled">
+                        <li>{{ endpoint.name }}</li>
+                        <li><span class="text-muted">{{ endpoint.dnsname }}</span></li>
+                      </ul>
+                    </li>
+                  </ul>
+                </uib-tab>
+                <uib-tab>
+                  <uib-tab-heading>Notifications</uib-tab-heading>
+                  <ul class="list-group">
+                    <li class="list-group-item" ng-repeat="notification in pendingCertificate.notifications">
+                      <strong>{{ notification.label }}</strong>
+                      <span class="pull-right">{{ notification.description}}</span>
+                    </li>
+                  </ul>
+                </uib-tab>
+                <uib-tab>
+                  <uib-tab-heading>Roles</uib-tab-heading>
+                  <ul class="list-group">
+                    <li class="list-group-item" ng-repeat="role in pendingCertificate.roles">
+                      <strong>{{ role.name }}</strong>
+                      <span class="pull-right">{{ role.description}}</span>
+                    </li>
+                  </ul>
+                </uib-tab>
+                <uib-tab>
+                  <uib-tab-heading>Destinations</uib-tab-heading>
+                  <ul class="list-group">
+                    <li class="list-group-item" ng-repeat="destination in pendingCertificate.destinations">
+                      <strong>{{ destination.label }}</strong>
+                      <span class="pull-right">{{ destination.description }}</span>
+                    </li>
+                  </ul>
+                </uib-tab>
+                <uib-tab>
+                  <uib-tab-heading>Domains</uib-tab-heading>
+                  <div class="list-group">
+                    <a href="#/domains/{{ domain.id }}" class="list-group-item"
+                       ng-repeat="domain in pendingCertificate.domains">{{ domain.name }}</a>
+                  </div>
+                </uib-tab>
+                <uib-tab>
+                  <uib-tab-heading>Replaces</uib-tab-heading>
+                  <ul class="list-group">
+                    <li class="list-group-item" ng-repeat="replaces in pendingCertificate.replaces">
+                      <strong>{{ replaces.name }}</strong>
+                      <p>{{ replaces.description }}</p>
+                    </li>
+                  </ul>
+                </uib-tab>
+              </uib-tabset>
+              <uib-tabset justified="true" class="col-md-4">
+                <uib-tab>
+                  <uib-tab-heading>
+                    Chain
+                    <i class="glyphicon glyphicon-copy" style="cursor: pointer" clipboard text="pendingCertificate.chain"></i>
+                  </uib-tab-heading>
+                  <pre style="width: 100%">{{ pendingCertificate.chain }}</pre>
+                </uib-tab>
+                <uib-tab>
+                  <uib-tab-heading>
+                    Certificate Signing Request
+                    <i class="glyphicon glyphicon-copy" style="cursor: pointer" clipboard text="pendingCertificate.csr"></i>
+                  </uib-tab-heading>
+                  <pre style="width: 100%">{{ pendingCertificate.csr }}</pre>
+                </uib-tab>
+                <uib-tab ng-click="loadPrivateKey(pendingCertificate)">
+                  <uib-tab-heading>
+                    Private Key
+                     <i class="glyphicon glyphicon-copy" style="cursor: pointer" clipboard text="pendingCertificate.privateKey"></i>
+                  </uib-tab-heading>
+                  <pre style="width: 100%">{{ pendingCertificate.privateKey }}</pre>
+                </uib-tab>
+              </uib-tabset>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
