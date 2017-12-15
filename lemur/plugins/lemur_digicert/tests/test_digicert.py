@@ -166,7 +166,7 @@ ghi
 
     subject = DigiCertIssuerPlugin()
     adapter = requests_mock.Adapter()
-    adapter.register_uri('POST', 'mock://www.digicert.com/services/v2/order/certificate/ssl', text=json.dumps({'id': 'id123'}))
+    adapter.register_uri('POST', 'mock://www.digicert.com/services/v2/order/certificate/ssl_plus', text=json.dumps({'id': 'id123'}))
     adapter.register_uri('GET', 'mock://www.digicert.com/services/v2/order/certificate/id123', text=json.dumps({'status': 'issued', 'certificate': {'id': 'cert123'}}))
     adapter.register_uri('GET', 'mock://www.digicert.com/services/v2/certificate/cert123/download/format/pem_all', text=pem_fixture)
     subject.session.mount('mock', adapter)
