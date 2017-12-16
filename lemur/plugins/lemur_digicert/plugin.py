@@ -326,6 +326,20 @@ class DigiCertIssuerPlugin(IssuerPlugin):
         response = self.session.put(create_url, data=json.dumps({'comments': comments}))
         return handle_response(response)
 
+    def get_ordered_certificate(self, order_id):
+        """ Retrieve a certificate via order id """
+        base_url = current_app.config.get('DIGICERT_URL')
+        try:
+            certificate_id = get_certificate_id(self.session, base_url, order_id)
+        except Exception as ex:
+            return None
+        certificate_url = "{0}/services/v2/certificate/{1}/download/format/pem_all".format(base_url, certificate_id)
+        end_entity, intermediate, root = pem.parse(self.session.get(certificate_url).content)
+        cert = {'body': "\n".join(str(end_entity).splitlines()),
+                'chain': "\n".join(str(intermediate).splitlines()),
+                'external_id': str(certificate_id)}
+        return cert
+
     @staticmethod
     def create_authority(options):
         """Create an authority.
