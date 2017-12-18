@@ -92,4 +92,4 @@ class PendingCertificate(db.Model):
         self.replaces = kwargs.get('replaces', [])
         self.rotation = kwargs.get('rotation')
         self.rotation_policy = kwargs.get('rotation_policy')
-        self.authority_id = kwargs.get('authority_id')
+        self.authority_id = kwargs.get('authority').id
