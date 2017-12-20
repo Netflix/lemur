@@ -8,6 +8,7 @@ from flask_script import Manager
 
 from lemur.pending_certificates import service as pending_certificate_service
 from lemur.plugins.base import plugins
+from lemur.users import service as user_service
 
 manager = Manager(usage="Handles pending certificate related tasks.")
 
@@ -24,13 +25,15 @@ def fetch(ids):
     new = 0
     failed = 0
     pending_certs = pending_certificate_service.get_pending_certs(ids)
+    user = user_service.get_by_username('lemur')
+
     for cert in pending_certs:
         authority = plugins.get(cert.authority.plugin_name)
         real_cert = authority.get_ordered_certificate(cert.external_id)
         if real_cert:
             # If a real certificate was returned from issuer, then create it in Lemur and delete
             # the pending certificate
-            pending_certificate_service.create_certificate(cert, real_cert)
+            pending_certificate_service.create_certificate(cert, real_cert, user)
             pending_certificate_service.delete(cert)
             # add metrics to metrics extension
             new += 1

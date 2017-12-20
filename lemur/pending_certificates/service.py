@@ -57,9 +57,14 @@ def get_pending_certs(pending_ids):
     return pending_certs
 
 
-def create_certificate(pending_certificate, certificate):
+def create_certificate(pending_certificate, certificate, user):
     """
     Create and store a certificate with pending certificate's info
+    Args:
+        pending_certificate: PendingCertificate which will populate the certificate
+        certificate: dict from Authority, which contains the body, chain and external id
+        user: User that called this function, used as 'creator' of the certificate if it does
+              not have an owner
     """
     certificate['owner'] = pending_certificate.owner
     data, errors = CertificateUploadInputSchema().load(certificate)
@@ -67,12 +72,14 @@ def create_certificate(pending_certificate, certificate):
         raise Exception("Unable to create certificate: {reasons}".format(reasons=errors))
 
     data.update(vars(pending_certificate))
-    # Replace external id with the one fetched from source
+    # Replace external id and chain with the one fetched from source
     data['external_id'] = certificate['external_id']
+    data['chain'] = certificate['chain']
     creator = user_service.get_by_email(pending_certificate.owner)
     if not creator:
-        # Owner of the pending certificate is not the 'owner', and does not exist as a user
-        creator = user_service.get_by_username("lemur")
+        # Owner of the pending certificate is not the creator, so use the current user who called
+        # this as the creator (usually lemur)
+        creator = user
     data['creator'] = creator
     cert = certificate_service.import_certificate(**data)
     database.update(cert)
