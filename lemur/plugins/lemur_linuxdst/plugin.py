@@ -38,7 +38,7 @@ class LinuxDstPlugin(DestinationPlugin):
             'type': 'str',
             'required': True,
             'helpMessage': 'The private key to use for auth',
-            'default': '/root/.shh/id_rsa',
+            'default': '/root/.ssh/id_rsa',
         },
         {
             'name': 'dstPrivKey',
