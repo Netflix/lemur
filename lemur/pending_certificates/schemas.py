@@ -25,6 +25,8 @@ class PendingCertificateOutputSchema(LemurOutputSchema):
     description = fields.String()
     issuer = fields.String()
     name = fields.String()
+    number_attempts = fields.Integer()
+    date_created = fields.Date()
 
     rotation = fields.Boolean()
 

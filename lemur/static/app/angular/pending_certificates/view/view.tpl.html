@@ -70,50 +70,24 @@
                         </span>
                     </li>
                     <li class="list-group-item">
-                      <strong>Not Before</strong>
-                        <span class="pull-right" uib-tooltip="{{ pendingCertificate.notBefore }}">
-                          {{ momentService.createMoment(pendingCertificate.notBefore) }}
+                      <strong>Owner</strong>
+                        <span class="pull-right">
+                          {{ pendingCertificate.owner }}
                         </span>
                     </li>
                     <li class="list-group-item">
-                      <strong>Not After</strong>
-                        <span class="pull-right" uib-tooltip="{{ pendingCertificate.notAfter }}">
-                          {{ momentService.createMoment(pendingCertificate.notAfter) }}
-                          </span>
+                      <strong>Number of Attempts to Fetch</strong>
+                        <span class="pull-right">
+                          {{ pendingCertificate.numberAttempts }}
+                        </span>
                     </li>
                     <li class="list-group-item">
-                      <strong>San</strong>
-                      <span class="pull-right">
-                        <i class="glyphicon glyphicon-ok" ng-if="pendingCertificate.san"></i>
-                        <i class="glyphicon glyphicon-remove" ng-if="!pendingCertificate.san"></i>
-                      </span>
+                      <strong>Date Created</strong>
+                        <span class="pull-right">
+                          {{ pendingCertificate.dateCreated | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                        </span>
                     </li>
-                    <li class="list-group-item">
-                      <strong>Bits</strong>
-                      <span class="pull-right">{{ pendingCertificate.bits }}</span>
-                    </li>
-                    <li class="list-group-item">
-                      <strong>Signing Algorithm</strong>
-                      <span class="pull-right">{{ pendingCertificate.signingAlgorithm }}</span>
-                    </li>
-                    <li class="list-group-item">
-                      <strong>Serial</strong>
-                      <span class="pull-right">{{ pendingCertificate.serial }}</span>
-                    </li>
-                    <li class="list-group-item">
-                      <strong>Serial (Hex)</strong>
-                      <span class="pull-right">{{ pendingCertificate.serialHex }}</span>
-                    </li>
-                    <li
-                      uib-tooltip="Lemur will attempt to check a pendingCertificates validity, this is used to track whether a pendingCert has been revoked"
-                      class="list-group-item">
-                      <strong>Validity</strong>
-                      <span class="pull-right">
-                        <span ng-if="pendingCertificate.status == 'unknown'" class="label label-warning">Unknown</span>
-                        <span ng-if="pendingCertificate.status == 'revoked'" class="label label-danger">Revoked</span>
-                        <span ng-if="pendingCertificate.status == 'valid'" class="label label-success">Valid</span>
-                      </span>
-                    </li>
+
                     <li class="list-group-item">
                       <strong>Description</strong>
                       <p>{{ pendingCertificate.description }}</p>
