@@ -30,6 +30,7 @@ class PendingCertificate(db.Model):
     number_attempts = Column(Integer)
     rename = Column(Boolean, default=True)
 
+    cn = Column(String(128))
     csr = Column(Text(), nullable=False)
     chain = Column(Text())
     private_key = Column(Vault, nullable=True)
@@ -78,6 +79,7 @@ class PendingCertificate(db.Model):
                     dt.now(), dt.now(), False), self.external_id)
             self.rename = True
 
+        self.cn = kwargs['common_name']
         self.owner = kwargs['owner']
         self.number_attempts = 0
 
