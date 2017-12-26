@@ -28,7 +28,7 @@ class PendingCertificatesList(AuthenticatedResource):
         """
         .. http:get:: /pending_certificates
 
-           List of certificates
+           List of pending certificates
 
            **Example request**:
 
@@ -123,13 +123,13 @@ class PendingCertificates(AuthenticatedResource):
         """
         .. http:get:: /pending_certificates/1
 
-           One certificate
+           One pending certificate
 
            **Example request**:
 
            .. sourcecode:: http
 
-              GET /certificates/1 HTTP/1.1
+              GET /pending_certificates/1 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
 

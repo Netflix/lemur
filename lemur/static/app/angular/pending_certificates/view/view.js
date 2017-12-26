@@ -8,6 +8,11 @@ angular.module('lemur')
         url: '/pending_certificates',
         templateUrl: '/angular/pending_certificates/view/view.tpl.html',
         controller: 'PendingCertificatesViewController'
+      })
+      .state('pending_certificate', {
+        url: '/pending_certificates/:name',
+        templateUrl: '/angular/pending_certificates/view/view.tpl.html',
+        controller: 'PendingCertificatesViewController'
       });
   })
 
