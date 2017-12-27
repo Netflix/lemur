@@ -16,7 +16,7 @@ angular.module('lemur')
       });
   })
 
-  .controller('PendingCertificatesViewController', function ($q, $scope, $uibModal, $stateParams, PendingCertificateApi, PendingCertificateService, ngTableParams) {
+  .controller('PendingCertificatesViewController', function ($q, $scope, $uibModal, $stateParams, PendingCertificateApi, PendingCertificateService, ngTableParams, toaster) {
     $scope.filter = $stateParams;
     $scope.pendingCertificateTable = new ngTableParams({
       page: 1,            // show first page
@@ -35,4 +35,31 @@ angular.module('lemur')
           });
       }
     });
+
+    $scope.loadPrivateKey = function (pendingCertificate) {
+      if (pendingCertificate.privateKey !== undefined) {
+        return;
+      }
+
+      PendingCertificateService.loadPrivateKey(pendingCertificate).then(
+        function (response) {
+          if (response.key === null) {
+            toaster.pop({
+              type: 'warning',
+              title: pendingCertificate.name,
+              body: 'No private key found!'
+            });
+          } else {
+            pendingCertificate.privateKey = response.key;
+          }
+        },
+        function () {
+          toaster.pop({
+            type: 'error',
+            title: pendingCertificate.name,
+            body: 'You do not have permission to view this key!',
+            timeout: 100000
+          });
+        });
+    };
   });
