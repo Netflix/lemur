@@ -3,17 +3,23 @@
     Copyright (c) 2017 and onwards Instart Logic, Inc.  All rights reserved.
 .. moduleauthor:: James Chuong <jchuong@instartlogic.com>
 """
+import arrow
+
+from sqlalchemy import or_, cast, Boolean, Integer
+
 from lemur import database
+
+from lemur.roles.models import Role
+from lemur.domains.models import Domain
+from lemur.authorities.models import Authority
+from lemur.destinations.models import Destination
+from lemur.notifications.models import Notification
+from lemur.pending_certificates.models import PendingCertificate
 
 from lemur.certificates import service as certificate_service
 from lemur.users import service as user_service
 
 from lemur.certificates.schemas import CertificateUploadInputSchema
-from lemur.pending_certificates.models import PendingCertificate
-
-
-def get_by_name(name):
-    return database.get(PendingCertificate, name, field='name')
 
 
 def get(pending_cert_id):
@@ -167,6 +173,5 @@ def render(args):
         to = arrow.now().replace(weeks=+time_range).format('YYYY-MM-DD')
         now = arrow.now().format('YYYY-MM-DD')
         query = query.filter(PendingCertificate.not_after <= to).filter(PendingCertificate.not_after >= now)
-
 
     return database.sort_and_page(query, PendingCertificate, args)
