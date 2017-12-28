@@ -151,15 +151,15 @@ angular.module('lemur')
   })
   .service('PendingCertificateService', function ($location, PendingCertificateApi, AuthorityService, AuthorityApi, LemurRestangular, DefaultService) {
     var PendingCertificateService = this;
-    PendingCertificateService.findCertificatesByName = function (filterValue) {
+    PendingCertificateService.findPendingCertificatesByName = function (filterValue) {
       return PendingCertificateApi.getList({'filter[name]': filterValue})
-        .then(function (certificates) {
-          return certificates;
+        .then(function (pendingCertificates) {
+          return pendingCertificates;
         });
     };
 
-    PendingCertificateService.update = function (certificate) {
-      return LemurRestangular.copy(certificate).put();
+    PendingCertificateService.update = function (pendingCertificate) {
+      return LemurRestangular.copy(pendingCertificate).put();
     };
 
     PendingCertificateService.getAuthority = function (certificate) {

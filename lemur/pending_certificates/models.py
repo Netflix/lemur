@@ -51,10 +51,8 @@ class PendingCertificate(db.Model):
     roles = relationship('Role', secondary=pending_cert_role_associations, backref='pending_cert', passive_deletes=True)
     replaces = relationship('Certificate',
                             secondary=pending_cert_replacement_associations,
-                            primaryjoin=id == pending_cert_replacement_associations.c.pending_cert_id,  # noqa
-                            secondaryjoin=id == pending_cert_replacement_associations.c.replaced_certificate_id,  # noqa
                             backref='pending_cert',
-                            viewonly=True)
+                            passive_deletes=True)
 
     rotation_policy = relationship("RotationPolicy")
 

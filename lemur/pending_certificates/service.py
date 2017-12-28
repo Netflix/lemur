@@ -104,9 +104,23 @@ def create_certificate(pending_certificate, certificate, user):
 
 
 def increment_attempt(pending_certificate):
+    """
+    Increments pending certificate attempt counter and updates it in the database.
+    """
     pending_certificate.number_attempts += 1
     database.update(pending_certificate)
     return pending_certificate.number_attempts
+
+
+def update(pending_cert_id, **kwargs):
+    """
+    Updates a pending certificate.  The allowed fields are validated by
+    PendingCertificateEditInputSchema.
+    """
+    pending_cert = get(pending_cert_id)
+    for key, value in kwargs.items():
+        setattr(pending_cert, key, value)
+    return database.update(pending_cert)
 
 
 def render(args):

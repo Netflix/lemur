@@ -36,6 +36,25 @@ angular.module('lemur')
       }
     });
 
+    $scope.edit = function (pendingCertificateId) {
+      var uibModalInstance = $uibModal.open({
+        animation: true,
+        controller: 'PendingCertificateEditController',
+        templateUrl: '/angular/pending_certificates/pending_certificate/edit.tpl.html',
+        size: 'lg',
+        backdrop: 'static',
+        resolve: {
+          editId: function () {
+            return pendingCertificateId;
+          }
+        }
+      });
+
+      uibModalInstance.result.then(function () {
+        $scope.pendingCertificateTable.reload();
+      });
+    };
+
     $scope.loadPrivateKey = function (pendingCertificate) {
       if (pendingCertificate.privateKey !== undefined) {
         return;
