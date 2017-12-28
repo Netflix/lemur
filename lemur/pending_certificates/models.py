@@ -9,6 +9,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import Integer, ForeignKey, String, PassiveDefault, func, Column, Text, Boolean
 from sqlalchemy_utils.types.arrow import ArrowType
 
+import lemur.common.utils
 from lemur.certificates.models import get_or_increase_name
 from lemur.common import defaults
 from lemur.database import db
@@ -77,7 +78,7 @@ class PendingCertificate(db.Model):
                     dt.now(), dt.now(), False), self.external_id)
             self.rename = True
 
-        self.cn = kwargs['common_name']
+        self.cn = defaults.common_name(lemur.common.utils.parse_csr(self.csr))
         self.owner = kwargs['owner']
         self.number_attempts = 0
 
