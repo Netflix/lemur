@@ -14,6 +14,7 @@ from flask import Blueprint, current_app
 from flask_restful import reqparse, Resource, Api
 from flask_principal import Identity, identity_changed
 
+from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
 from lemur.extensions import metrics
 from lemur.common.utils import get_psuedo_random_string
 
@@ -116,7 +117,6 @@ def retrieve_user(user_api_url, access_token):
     profile = r.json()
 
     user = user_service.get_by_email(profile['email'])
-    metrics.send('successful_login', 'counter', 1)
     return user, profile
 
 
@@ -267,7 +267,7 @@ class Login(Resource):
             identity_changed.send(current_app._get_current_object(),
                                   identity=Identity(user.id))
 
-            metrics.send('successful_login', 'counter', 1)
+            metrics.send('login', 'counter', 1, metric_tags={'status': SUCCESS_METRIC_STATUS})
             return dict(token=create_token(user))
 
         # try ldap login
@@ -279,16 +279,16 @@ class Login(Resource):
                     # Tell Flask-Principal the identity changed
                     identity_changed.send(current_app._get_current_object(),
                                   identity=Identity(user.id))
-                    metrics.send('successful_login', 'counter', 1)
+                    metrics.send('login', 'counter', 1, metric_tags={'status': SUCCESS_METRIC_STATUS})
                     return dict(token=create_token(user))
             except Exception as e:
                     current_app.logger.error("ldap error: {0}".format(e))
                     ldap_message = 'ldap error: %s' % e
-                    metrics.send('invalid_login', 'counter', 1)
+                    metrics.send('login', 'counter', 1, metric_tags={'status': FAILURE_METRIC_STATUS})
                     return dict(message=ldap_message), 403
 
         # if not valid user - no certificates for you
-        metrics.send('invalid_login', 'counter', 1)
+        metrics.send('login', 'counter', 1, metric_tags={'status': FAILURE_METRIC_STATUS})
         return dict(message='The supplied credentials are invalid'), 403
 
 
@@ -338,13 +338,13 @@ class Ping(Resource):
         update_user(user, profile, roles)
 
         if not user.active:
-            metrics.send('invalid_login', 'counter', 1)
+            metrics.send('login', 'counter', 1, metric_tags={'status': FAILURE_METRIC_STATUS})
             return dict(message='The supplied credentials are invalid'), 403
 
         # Tell Flask-Principal the identity changed
         identity_changed.send(current_app._get_current_object(), identity=Identity(user.id))
 
-        metrics.send('successful_login', 'counter', 1)
+        metrics.send('login', 'counter', 1, metric_tags={'status': SUCCESS_METRIC_STATUS})
         return dict(token=create_token(user))
 
 
@@ -387,11 +387,13 @@ class OAuth2(Resource):
         update_user(user, profile, roles)
 
         if not user.active:
-            metrics.send('invalid_login', 'counter', 1)
+            metrics.send('login', 'counter', 1, metric_tags={'status': FAILURE_METRIC_STATUS})
             return dict(message='The supplied credentials are invalid'), 403
 
         # Tell Flask-Principal the identity changed
         identity_changed.send(current_app._get_current_object(), identity=Identity(user.id))
+
+        metrics.send('login', 'counter', 1, metric_tags={'status': SUCCESS_METRIC_STATUS})
 
         return dict(token=create_token(user))
 
@@ -432,14 +434,14 @@ class Google(Resource):
         user = user_service.get_by_email(profile['email'])
 
         if not user.active:
-            metrics.send('invalid_login', 'counter', 1)
+            metrics.send('login', 'counter', 1, metric_tags={'status': FAILURE_METRIC_STATUS})
             return dict(message='The supplied credentials are invalid.'), 403
 
         if user:
-            metrics.send('successful_login', 'counter', 1)
+            metrics.send('login', 'counter', 1, metric_tags={'status': SUCCESS_METRIC_STATUS})
             return dict(token=create_token(user))
 
-        metrics.send('invalid_login', 'counter', 1)
+        metrics.send('login', 'counter', 1, metric_tags={'status': FAILURE_METRIC_STATUS})
 
 
 class Providers(Resource):
