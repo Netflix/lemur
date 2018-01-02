@@ -7,7 +7,7 @@
 """
 import requests
 import subprocess
-from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectionError, InvalidSchema
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 
@@ -69,6 +69,9 @@ def crl_verify(cert_path):
 
             if response.status_code != 200:
                 raise Exception("Unable to retrieve CRL: {0}".format(point))
+        except InvalidSchema:
+            # Unhandled URI scheme (like ldap://); skip this distribution point.
+            continue
         except ConnectionError:
             raise Exception("Unable to retrieve CRL: {0}".format(point))
 
