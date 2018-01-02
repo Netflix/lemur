@@ -307,41 +307,7 @@ class Ping(Resource):
         super(Ping, self).__init__()
 
     def get(self):
-        self.reqparse.add_argument('code', type=str, required=True, location='args')
-        args = self.reqparse.parse_args()
-
-        # you can either discover these dynamically or simply configure them
-        access_token_url = current_app.config.get('PING_ACCESS_TOKEN_URL')
-        user_api_url = current_app.config.get('PING_USER_API_URL')
-        client_id = current_app.config.get('PING_CLIENT_ID')
-        redirect_url = current_app.config.get('PING_REDIRECT_URI')
-
-        secret = current_app.config.get('PING_SECRET')
-
-        id_token, access_token = exchange_for_access_token(
-            args['code'],
-            redirect_url,
-            client_id,
-            secret,
-            access_token_url=access_token_url
-        )
-
-        jwks_url = current_app.config.get('PING_JWKS_URL')
-        validate_id_token(id_token, args['clientId'], jwks_url)
-
-        user, profile = retrieve_user(user_api_url, access_token)
-        roles = create_user_roles(profile)
-        update_user(user, profile, roles)
-
-        if not user.active:
-            metrics.send('invalid_login', 'counter', 1)
-            return dict(message='The supplied credentials are invalid'), 403
-
-        # Tell Flask-Principal the identity changed
-        identity_changed.send(current_app._get_current_object(), identity=Identity(user.id))
-
-        metrics.send('successful_login', 'counter', 1)
-        return dict(token=create_token(user))
+        return 'Redirecting...'
 
     def post(self):
         self.reqparse.add_argument('clientId', type=str, required=True, location='json')
@@ -388,41 +354,7 @@ class OAuth2(Resource):
         super(OAuth2, self).__init__()
 
     def get(self):
-        self.reqparse.add_argument('code', type=str, required=True, location='args')
-        args = self.reqparse.parse_args()
-
-        # you can either discover these dynamically or simply configure them
-        access_token_url = current_app.config.get('OAUTH2_ACCESS_TOKEN_URL')
-        user_api_url = current_app.config.get('OAUTH2_USER_API_URL')
-        verify_cert = current_app.config.get('OAUTH2_VERIFY_CERT')
-
-        secret = current_app.config.get('OAUTH2_SECRET')
-
-        id_token, access_token = exchange_for_access_token(
-            args['code'],
-            args['redirectUri'],
-            args['clientId'],
-            secret,
-            access_token_url=access_token_url,
-            verify_cert=verify_cert
-        )
-
-        jwks_url = current_app.config.get('PING_JWKS_URL')
-        validate_id_token(id_token, args['clientId'], jwks_url)
-
-        user, profile = retrieve_user(user_api_url, access_token)
-        roles = create_user_roles(profile)
-        update_user(user, profile, roles)
-
-        if not user.active:
-            metrics.send('invalid_login', 'counter', 1)
-            return dict(message='The supplied credentials are invalid'), 403
-
-        # Tell Flask-Principal the identity changed
-        identity_changed.send(current_app._get_current_object(), identity=Identity(user.id))
-
-        metrics.send('successful_login', 'counter', 1)
-        return dict(token=create_token(user))
+        return 'Redirecting...'
 
     def post(self):
         self.reqparse.add_argument('clientId', type=str, required=True, location='json')
