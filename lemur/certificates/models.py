@@ -33,6 +33,7 @@ from lemur.common import defaults
 from lemur.plugins.base import plugins
 
 from lemur.extensions import metrics
+from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
 
 from lemur.models import certificate_associations, certificate_source_associations, \
     certificate_destination_associations, certificate_notification_associations, \
@@ -358,15 +359,16 @@ def update_destinations(target, value, initiator):
     :return:
     """
     destination_plugin = plugins.get(value.plugin_name)
-
+    status = FAILURE_METRIC_STATUS
     try:
         if target.private_key:
             destination_plugin.upload(target.name, target.body, target.private_key, target.chain, value.options)
+            status = SUCCESS_METRIC_STATUS
     except Exception as e:
         sentry.captureException()
-        current_app.logger.exception(e)
-        metrics.send('destination_upload_failure', 'counter', 1,
-                     metric_tags={'certificate': target.name, 'destination': value.label})
+
+    metrics.send('destination_upload', 'counter', 1,
+                 metric_tags={'status': status, 'certificate': target.name, 'destination': value.label})
 
 
 @event.listens_for(Certificate.replaces, 'append')

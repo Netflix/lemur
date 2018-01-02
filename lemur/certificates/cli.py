@@ -20,6 +20,7 @@ from lemur import database
 from lemur.extensions import sentry
 from lemur.extensions import metrics
 from lemur.plugins.base import plugins
+from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
 from lemur.deployment import service as deployment_service
 from lemur.endpoints import service as endpoint_service
 from lemur.notifications.messaging import send_rotation_notification
@@ -106,16 +107,17 @@ def request_rotation(endpoint, certificate, message, commit):
     :param commit:
     :return:
     """
+    status = FAILURE_METRIC_STATUS
     if commit:
         try:
             deployment_service.rotate_certificate(endpoint, certificate)
-            metrics.send('endpoint_rotation_success', 'counter', 1)
 
             if message:
                 send_rotation_notification(certificate)
 
+            status = SUCCESS_METRIC_STATUS
+
         except Exception as e:
-            metrics.send('endpoint_rotation_failure', 'counter', 1)
             print(
                 "[!] Failed to rotate endpoint {0} to certificate {1} reason: {2}".format(
                     endpoint.name,
@@ -123,6 +125,8 @@ def request_rotation(endpoint, certificate, message, commit):
                     e
                 )
             )
+
+    metrics.send('endpoint_rotation', 'counter', 1, metric_tags={'status': status})
 
 
 def request_reissue(certificate, commit):
@@ -132,16 +136,31 @@ def request_reissue(certificate, commit):
     :param commit:
     :return:
     """
-    # set the lemur identity for all cli commands
-    identity_changed.send(current_app._get_current_object(), identity=Identity(1))
+    status = FAILURE_METRIC_STATUS
+    try:
+        print("[+] {0} is eligible for re-issuance".format(certificate.name))
 
-    details = get_certificate_primitives(certificate)
-    print_certificate_details(details)
+        # set the lemur identity for all cli commands
+        identity_changed.send(current_app._get_current_object(), identity=Identity(1))
 
-    if commit:
-        new_cert = reissue_certificate(certificate, replace=True)
-        metrics.send('certificate_reissue_success', 'counter', 1)
-        print("[+] New certificate named: {0}".format(new_cert.name))
+        details = get_certificate_primitives(certificate)
+        print_certificate_details(details)
+
+        if commit:
+            new_cert = reissue_certificate(certificate, replace=True)
+            print("[+] New certificate named: {0}".format(new_cert.name))
+
+        status = SUCCESS_METRIC_STATUS
+
+    except Exception as e:
+        sentry.captureException()
+        print(
+            "[!] Failed to reissue certificates. Reason: {}".format(
+                e
+            )
+        )
+
+    metrics.send('certificate_reissue', 'counter', 1, metric_tags={'status': status})
 
 
 @manager.option('-e', '--endpoint', dest='endpoint_name', help='Name of the endpoint you wish to rotate.')
@@ -158,6 +177,8 @@ def rotate(endpoint_name, new_certificate_name, old_certificate_name, message, c
         print("[!] Running in COMMIT mode.")
 
     print("[+] Starting endpoint rotation.")
+
+    status = FAILURE_METRIC_STATUS
 
     try:
         old_cert = validate_certificate(old_certificate_name)
@@ -182,13 +203,18 @@ def rotate(endpoint_name, new_certificate_name, old_certificate_name, message, c
                     print("[+] Rotating {0} to {1}".format(endpoint.name, endpoint.certificate.replaced[0].name))
                     request_rotation(endpoint, endpoint.certificate.replaced[0], message, commit)
                 else:
-                    metrics.send('endpoint_rotation_failure', 'counter', 1)
+                    metrics.send('endpoint_rotation', 'counter', 1, metric_tags={'status': FAILURE_METRIC_STATUS})
                     print("[!] Failed to rotate endpoint {0} reason: Multiple replacement certificates found.".format(
                         endpoint.name
                     ))
+
+        status = SUCCESS_METRIC_STATUS
         print("[+] Done!")
+
     except Exception as e:
         sentry.captureException()
+
+    metrics.send('endpoint_rotation_job', 'counter', 1, metric_tags={'status': status})
 
 
 @manager.option('-o', '--old-certificate', dest='old_certificate_name', help='Name of the certificate you wish to reissue.')
@@ -204,25 +230,28 @@ def reissue(old_certificate_name, commit):
 
     print("[+] Starting certificate re-issuance.")
 
+    status = FAILURE_METRIC_STATUS
+
     try:
         old_cert = validate_certificate(old_certificate_name)
 
         if not old_cert:
             for certificate in get_all_pending_reissue():
-                print("[+] {0} is eligible for re-issuance".format(certificate.name))
                 request_reissue(certificate, commit)
         else:
             request_reissue(old_cert, commit)
 
+        status = SUCCESS_METRIC_STATUS
         print("[+] Done!")
     except Exception as e:
         sentry.captureException()
-        metrics.send('certificate_reissue_failure', 'counter', 1)
         print(
             "[!] Failed to reissue certificates. Reason: {}".format(
                 e
             )
         )
+
+    metrics.send('certificate_reissue_job', 'counter', 1, metric_tags={'status': status})
 
 
 @manager.option('-f', '--fqdns', dest='fqdns', help='FQDNs to query. Multiple fqdns specified via comma.')
@@ -275,9 +304,11 @@ def worker(data, commit, reason):
         if commit:
             plugin.revoke_certificate(cert, reason)
 
+        metrics.send('certificate_revoke', 'counter', 1, metric_tags={'status': SUCCESS_METRIC_STATUS})
+
     except Exception as e:
         sentry.captureException()
-        metrics.send('certificate_revoke_failure', 'counter', 1)
+        metrics.send('certificate_revoke', 'counter', 1, metric_tags={'status': FAILURE_METRIC_STATUS})
         print(
             "[!] Failed to revoke certificates. Reason: {}".format(
                 e
