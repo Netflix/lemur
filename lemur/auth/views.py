@@ -7,7 +7,6 @@
 """
 import jwt
 import base64
-import sys
 import requests
 
 from flask import Blueprint, current_app
@@ -26,6 +25,173 @@ import lemur.auth.ldap as ldap
 
 mod = Blueprint('auth', __name__)
 api = Api(mod)
+
+
+def exchange_for_access_token(code, redirect_uri, client_id, secret, access_token_url=None, verify_cert=True):
+    """
+    Exchanges authorization code for access token.
+
+    :param code:
+    :param redirect_uri:
+    :param client_id:
+    :param secret:
+    :param access_token_url:
+    :param verify_cert:
+    :return:
+    :return:
+    """
+    # take the information we have received from the provider to create a new request
+    params = {
+        'grant_type': 'authorization_code',
+        'scope': 'openid email profile address',
+        'code': code,
+        'redirect_uri': redirect_uri,
+        'client_id': client_id
+    }
+
+    # the secret and cliendId will be given to you when you signup for the provider
+    token = '{0}:{1}'.format(client_id, secret)
+
+    basic = base64.b64encode(bytes(token, 'utf-8'))
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'authorization': 'basic {0}'.format(basic.decode('utf-8'))
+    }
+
+    # exchange authorization code for access token.
+    r = requests.post(access_token_url, headers=headers, params=params, verify=verify_cert)
+    if r.status_code == 400:
+        r = requests.post(access_token_url, headers=headers, data=params, verify=verify_cert)
+    id_token = r.json()['id_token']
+    access_token = r.json()['access_token']
+
+    return id_token, access_token
+
+
+def validate_id_token(id_token, client_id, jwks_url):
+    """
+    Ensures that the token we receive is valid.
+
+    :param id_token:
+    :param client_id:
+    :param jwks_url:
+    :return:
+    """
+    # fetch token public key
+    header_data = fetch_token_header(id_token)
+
+    # retrieve the key material as specified by the token header
+    r = requests.get(jwks_url)
+    for key in r.json()['keys']:
+        if key['kid'] == header_data['kid']:
+            secret = get_rsa_public_key(key['n'], key['e'])
+            algo = header_data['alg']
+            break
+    else:
+        return dict(message='Key not found'), 401
+
+    # validate your token based on the key it was signed with
+    try:
+        jwt.decode(id_token, secret.decode('utf-8'), algorithms=[algo], audience=client_id)
+    except jwt.DecodeError:
+        return dict(message='Token is invalid'), 401
+    except jwt.ExpiredSignatureError:
+        return dict(message='Token has expired'), 401
+    except jwt.InvalidTokenError:
+        return dict(message='Token is invalid'), 401
+
+
+def retrieve_user(user_api_url, access_token):
+    """
+    Fetch user information from provided user api_url.
+
+    :param user_api_url:
+    :param access_token:
+    :return:
+    """
+    user_params = dict(access_token=access_token, schema='profile')
+
+    # retrieve information about the current user.
+    r = requests.get(user_api_url, params=user_params)
+    profile = r.json()
+
+    user = user_service.get_by_email(profile['email'])
+    metrics.send('successful_login', 'counter', 1)
+    return user, profile
+
+
+def create_user_roles(profile):
+    """Creates new roles based on profile information.
+
+    :param profile:
+    :return:
+    """
+    roles = []
+
+    # update their google 'roles'
+    for group in profile['googleGroups']:
+        role = role_service.get_by_name(group)
+        if not role:
+            role = role_service.create(group, description='This is a google group based role created by Lemur', third_party=True)
+        if not role.third_party:
+            role = role_service.set_third_party(role.id, third_party_status=True)
+        roles.append(role)
+
+    role = role_service.get_by_name(profile['email'])
+
+    if not role:
+        role = role_service.create(profile['email'], description='This is a user specific role', third_party=True)
+    if not role.third_party:
+        role = role_service.set_third_party(role.id, third_party_status=True)
+
+    roles.append(role)
+
+    # every user is an operator (tied to a default role)
+    if current_app.config.get('LEMUR_DEFAULT_ROLE'):
+        default = role_service.get_by_name(current_app.config['LEMUR_DEFAULT_ROLE'])
+        if not default:
+            default = role_service.create(current_app.config['LEMUR_DEFAULT_ROLE'], description='This is the default Lemur role.')
+        if not default.third_party:
+            role_service.set_third_party(default.id, third_party_status=True)
+        roles.append(default)
+
+    return roles
+
+
+def update_user(user, profile, roles):
+    """Updates user with current profile information and associated roles.
+
+    :param user:
+    :param profile:
+    :param roles:
+    """
+
+    # if we get an sso user create them an account
+    if not user:
+        user = user_service.create(
+            profile['email'],
+            get_psuedo_random_string(),
+            profile['email'],
+            True,
+            profile.get('thumbnailPhotoUrl'),
+            roles
+        )
+
+    else:
+        # we add 'lemur' specific roles, so they do not get marked as removed
+        for ur in user.roles:
+            if not ur.third_party:
+                roles.append(ur)
+
+        # update any changes to the user
+        user_service.update(
+            user.id,
+            profile['email'],
+            profile['email'],
+            True,
+            profile.get('thumbnailPhotoUrl'),  # profile isn't google+ enabled
+            roles
+        )
 
 
 class Login(Resource):
@@ -140,6 +306,43 @@ class Ping(Resource):
         self.reqparse = reqparse.RequestParser()
         super(Ping, self).__init__()
 
+    def get(self):
+        self.reqparse.add_argument('code', type=str, required=True, location='args')
+        args = self.reqparse.parse_args()
+
+        # you can either discover these dynamically or simply configure them
+        access_token_url = current_app.config.get('PING_ACCESS_TOKEN_URL')
+        user_api_url = current_app.config.get('PING_USER_API_URL')
+        client_id = current_app.config.get('PING_CLIENT_ID')
+        redirect_url = current_app.config.get('PING_REDIRECT_URI')
+
+        secret = current_app.config.get('PING_SECRET')
+
+        id_token, access_token = exchange_for_access_token(
+            args['code'],
+            redirect_url,
+            client_id,
+            secret,
+            access_token_url=access_token_url
+        )
+
+        jwks_url = current_app.config.get('PING_JWKS_URL')
+        validate_id_token(id_token, args['clientId'], jwks_url)
+
+        user, profile = retrieve_user(user_api_url, access_token)
+        roles = create_user_roles(profile)
+        update_user(user, profile, roles)
+
+        if not user.active:
+            metrics.send('invalid_login', 'counter', 1)
+            return dict(message='The supplied credentials are invalid'), 403
+
+        # Tell Flask-Principal the identity changed
+        identity_changed.send(current_app._get_current_object(), identity=Identity(user.id))
+
+        metrics.send('successful_login', 'counter', 1)
+        return dict(token=create_token(user))
+
     def post(self):
         self.reqparse.add_argument('clientId', type=str, required=True, location='json')
         self.reqparse.add_argument('redirectUri', type=str, required=True, location='json')
@@ -147,119 +350,26 @@ class Ping(Resource):
 
         args = self.reqparse.parse_args()
 
-        # take the information we have received from the provider to create a new request
-        params = {
-            'client_id': args['clientId'],
-            'grant_type': 'authorization_code',
-            'scope': 'openid email profile address',
-            'redirect_uri': args['redirectUri'],
-            'code': args['code']
-        }
-
         # you can either discover these dynamically or simply configure them
         access_token_url = current_app.config.get('PING_ACCESS_TOKEN_URL')
         user_api_url = current_app.config.get('PING_USER_API_URL')
 
-        # the secret and cliendId will be given to you when you signup for the provider
-        token = '{0}:{1}'.format(args['clientId'], current_app.config.get("PING_SECRET"))
+        secret = current_app.config.get('PING_SECRET')
 
-        basic = base64.b64encode(bytes(token, 'utf-8'))
-        headers = {'authorization': 'basic {0}'.format(basic.decode('utf-8'))}
+        id_token, access_token = exchange_for_access_token(
+            args['code'],
+            args['redirectUri'],
+            args['clientId'],
+            secret,
+            access_token_url=access_token_url
+        )
 
-        # exchange authorization code for access token.
-
-        r = requests.post(access_token_url, headers=headers, params=params)
-        id_token = r.json()['id_token']
-        access_token = r.json()['access_token']
-
-        # fetch token public key
-        header_data = fetch_token_header(id_token)
         jwks_url = current_app.config.get('PING_JWKS_URL')
+        validate_id_token(id_token, args['clientId'], jwks_url)
 
-        # retrieve the key material as specified by the token header
-        r = requests.get(jwks_url)
-        for key in r.json()['keys']:
-            if key['kid'] == header_data['kid']:
-                secret = get_rsa_public_key(key['n'], key['e'])
-                algo = header_data['alg']
-                break
-        else:
-            return dict(message='Key not found'), 401
-
-        # validate your token based on the key it was signed with
-        try:
-            jwt.decode(id_token, secret.decode('utf-8'), algorithms=[algo], audience=args['clientId'])
-        except jwt.DecodeError:
-            return dict(message='Token is invalid'), 401
-        except jwt.ExpiredSignatureError:
-            return dict(message='Token has expired'), 401
-        except jwt.InvalidTokenError:
-            return dict(message='Token is invalid'), 401
-
-        user_params = dict(access_token=access_token, schema='profile')
-
-        # retrieve information about the current user.
-        r = requests.get(user_api_url, params=user_params)
-        profile = r.json()
-
-        user = user_service.get_by_email(profile['email'])
-        metrics.send('successful_login', 'counter', 1)
-
-        # update their google 'roles'
-        roles = []
-
-        for group in profile['googleGroups']:
-            role = role_service.get_by_name(group)
-            if not role:
-                role = role_service.create(group, description='This is a google group based role created by Lemur', third_party=True)
-            if not role.third_party:
-                role = role_service.set_third_party(role.id, third_party_status=True)
-            roles.append(role)
-
-        role = role_service.get_by_name(profile['email'])
-
-        if not role:
-            role = role_service.create(profile['email'], description='This is a user specific role', third_party=True)
-        if not role.third_party:
-            role = role_service.set_third_party(role.id, third_party_status=True)
-
-        roles.append(role)
-
-        # every user is an operator (tied to a default role)
-        if current_app.config.get('LEMUR_DEFAULT_ROLE'):
-            default = role_service.get_by_name(current_app.config['LEMUR_DEFAULT_ROLE'])
-            if not default:
-                default = role_service.create(current_app.config['LEMUR_DEFAULT_ROLE'], description='This is the default Lemur role.')
-            if not default.third_party:
-                role_service.set_third_party(default.id, third_party_status=True)
-            roles.append(default)
-
-        # if we get an sso user create them an account
-        if not user:
-            user = user_service.create(
-                profile['email'],
-                get_psuedo_random_string(),
-                profile['email'],
-                True,
-                profile.get('thumbnailPhotoUrl'),
-                roles
-            )
-
-        else:
-            # we add 'lemur' specific roles, so they do not get marked as removed
-            for ur in user.roles:
-                if not ur.third_party:
-                    roles.append(ur)
-
-            # update any changes to the user
-            user_service.update(
-                user.id,
-                profile['email'],
-                profile['email'],
-                True,
-                profile.get('thumbnailPhotoUrl'),  # profile isn't google+ enabled
-                roles
-            )
+        user, profile = retrieve_user(user_api_url, access_token)
+        roles = create_user_roles(profile)
+        update_user(user, profile, roles)
 
         if not user.active:
             metrics.send('invalid_login', 'counter', 1)
@@ -277,6 +387,43 @@ class OAuth2(Resource):
         self.reqparse = reqparse.RequestParser()
         super(OAuth2, self).__init__()
 
+    def get(self):
+        self.reqparse.add_argument('code', type=str, required=True, location='args')
+        args = self.reqparse.parse_args()
+
+        # you can either discover these dynamically or simply configure them
+        access_token_url = current_app.config.get('OAUTH2_ACCESS_TOKEN_URL')
+        user_api_url = current_app.config.get('OAUTH2_USER_API_URL')
+        verify_cert = current_app.config.get('OAUTH2_VERIFY_CERT')
+
+        secret = current_app.config.get('OAUTH2_SECRET')
+
+        id_token, access_token = exchange_for_access_token(
+            args['code'],
+            args['redirectUri'],
+            args['clientId'],
+            secret,
+            access_token_url=access_token_url,
+            verify_cert=verify_cert
+        )
+
+        jwks_url = current_app.config.get('PING_JWKS_URL')
+        validate_id_token(id_token, args['clientId'], jwks_url)
+
+        user, profile = retrieve_user(user_api_url, access_token)
+        roles = create_user_roles(profile)
+        update_user(user, profile, roles)
+
+        if not user.active:
+            metrics.send('invalid_login', 'counter', 1)
+            return dict(message='The supplied credentials are invalid'), 403
+
+        # Tell Flask-Principal the identity changed
+        identity_changed.send(current_app._get_current_object(), identity=Identity(user.id))
+
+        metrics.send('successful_login', 'counter', 1)
+        return dict(token=create_token(user))
+
     def post(self):
         self.reqparse.add_argument('clientId', type=str, required=True, location='json')
         self.reqparse.add_argument('redirectUri', type=str, required=True, location='json')
@@ -284,126 +431,32 @@ class OAuth2(Resource):
 
         args = self.reqparse.parse_args()
 
-        # take the information we have received from the provider to create a new request
-        params = {
-            'grant_type': 'authorization_code',
-            'scope': 'openid email profile groups',
-            'redirect_uri': args['redirectUri'],
-            'code': args['code'],
-        }
-
         # you can either discover these dynamically or simply configure them
         access_token_url = current_app.config.get('OAUTH2_ACCESS_TOKEN_URL')
         user_api_url = current_app.config.get('OAUTH2_USER_API_URL')
-        verify_cert = current_app.config.get('OAUTH2_VERIFY_CERT', True)
+        verify_cert = current_app.config.get('OAUTH2_VERIFY_CERT')
 
-        # the secret and cliendId will be given to you when you signup for the provider
-        token = '{0}:{1}'.format(args['clientId'], current_app.config.get("OAUTH2_SECRET"))
+        secret = current_app.config.get('OAUTH2_SECRET')
 
-        basic = base64.b64encode(bytes(token, 'utf-8'))
+        id_token, access_token = exchange_for_access_token(
+            args['code'],
+            args['redirectUri'],
+            args['clientId'],
+            secret,
+            access_token_url=access_token_url,
+            verify_cert=verify_cert
+        )
 
-        headers = {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'authorization': 'basic {0}'.format(basic.decode('utf-8'))
-        }
+        jwks_url = current_app.config.get('PING_JWKS_URL')
+        validate_id_token(id_token, args['clientId'], jwks_url)
 
-        # exchange authorization code for access token.
-        # Try Params first
-        r = requests.post(access_token_url, headers=headers, params=params, verify=verify_cert)
-        if r.status_code == 400:
-            r = requests.post(access_token_url, headers=headers, data=params, verify=verify_cert)
-        id_token = r.json()['id_token']
-        access_token = r.json()['access_token']
+        user, profile = retrieve_user(user_api_url, access_token)
+        roles = create_user_roles(profile)
+        update_user(user, profile, roles)
 
-        # fetch token public key
-        header_data = fetch_token_header(id_token)
-        jwks_url = current_app.config.get('OAUTH2_JWKS_URL')
-
-        # retrieve the key material as specified by the token header
-        r = requests.get(jwks_url, verify=verify_cert)
-        for key in r.json()['keys']:
-            if key['kid'] == header_data['kid']:
-                secret = get_rsa_public_key(key['n'], key['e'])
-                algo = header_data['alg']
-                break
-        else:
-            return dict(message='Key not found'), 401
-
-        # validate your token based on the key it was signed with
-        try:
-            if sys.version_info >= (3, 0):
-                jwt.decode(id_token, secret.decode('utf-8'), algorithms=[algo], audience=args['clientId'])
-            else:
-                jwt.decode(id_token, secret, algorithms=[algo], audience=args['clientId'])
-        except jwt.DecodeError:
-            return dict(message='Token is invalid'), 401
-        except jwt.ExpiredSignatureError:
-            return dict(message='Token has expired'), 401
-        except jwt.InvalidTokenError:
-            return dict(message='Token is invalid'), 401
-
-        headers = {'authorization': 'Bearer {0}'.format(access_token)}
-
-        # retrieve information about the current user.
-        r = requests.get(user_api_url, headers=headers, verify=verify_cert)
-        profile = r.json()
-
-        user = user_service.get_by_email(profile['email'])
-        metrics.send('successful_login', 'counter', 1)
-
-        # update with roles sent by identity provider
-        roles = []
-
-        if 'roles' in profile:
-            for group in profile['roles']:
-                role = role_service.get_by_name(group)
-                if not role:
-                    role = role_service.create(group, description='This is a group configured by identity provider', third_party=True)
-                if not role.third_party:
-                    role = role_service.set_third_party(role.id, third_party_status=True)
-                roles.append(role)
-
-        role = role_service.get_by_name(profile['email'])
-        if not role:
-            role = role_service.create(profile['email'], description='This is a user specific role', third_party=True)
-        if not role.third_party:
-            role = role_service.set_third_party(role.id, third_party_status=True)
-        roles.append(role)
-
-        # if we get an sso user create them an account
-        if not user:
-            # every user is an operator (tied to a default role)
-            if current_app.config.get('LEMUR_DEFAULT_ROLE'):
-                v = role_service.get_by_name(current_app.config.get('LEMUR_DEFAULT_ROLE'))
-                if not v.third_party:
-                    v = role_service.set_third_party(v.id, third_party_status=True)
-                if v:
-                    roles.append(v)
-
-            user = user_service.create(
-                profile['name'],
-                get_psuedo_random_string(),
-                profile['email'],
-                True,
-                profile.get('thumbnailPhotoUrl'),
-                roles
-            )
-
-        else:
-            # we add 'lemur' specific roles, so they do not get marked as removed
-            for ur in user.roles:
-                if not ur.third_party:
-                    roles.append(ur)
-
-            # update any changes to the user
-            user_service.update(
-                user.id,
-                profile['name'],
-                profile['email'],
-                True,
-                profile.get('thumbnailPhotoUrl'),  # incase profile isn't google+ enabled
-                roles
-            )
+        if not user.active:
+            metrics.send('invalid_login', 'counter', 1)
+            return dict(message='The supplied credentials are invalid'), 403
 
         # Tell Flask-Principal the identity changed
         identity_changed.send(current_app._get_current_object(), identity=Identity(user.id))
