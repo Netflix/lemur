@@ -8,6 +8,7 @@ import arrow
 from sqlalchemy import or_, cast, Boolean, Integer
 
 from lemur import database
+from lemur.plugins.base import plugins
 
 from lemur.roles.models import Role
 from lemur.domains.models import Domain
@@ -121,6 +122,19 @@ def update(pending_cert_id, **kwargs):
     for key, value in kwargs.items():
         setattr(pending_cert, key, value)
     return database.update(pending_cert)
+
+
+def cancel(pending_certificate, **kwargs):
+    """
+    Cancel a pending certificate.  A check should be done prior to this function to decide to
+    revoke the certificate or just abort cancelling.
+    Args:
+        pending_certificate: PendingCertificate to be cancelled
+    Returns: True if successful, raises Exception if there was an issue
+    """
+    plugin = plugins.get(pending_certificate.authority.plugin_name)
+    plugin.cancel_ordered_certificate(pending_certificate, **kwargs)
+    return True
 
 
 def render(args):
