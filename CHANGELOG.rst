@@ -1,6 +1,14 @@
 Changelog
 =========
 
+
+0.7 - `master`
+~~~~~~~~~~~~~~
+
+.. note:: This version is not yet released and is under active development
+
+
+
 0.6 - `2018-01-02`
 ~~~~~~~~~~~~~~~~~~
 
