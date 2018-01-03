@@ -93,7 +93,6 @@ class PendingCertificateEditInputSchema(PendingCertificateSchema):
 
 
 class PendingCertificateCancelSchema(LemurInputSchema):
-    send_email = fields.Boolean()
     note = fields.String()
 
 

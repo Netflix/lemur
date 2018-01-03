@@ -344,14 +344,19 @@ class DigiCertIssuerPlugin(IssuerPlugin):
         """ Set the certificate order to canceled """
         base_url = current_app.config.get('DIGICERT_URL')
         api_url = "{0}/services/v2/order/certificate/{1}/status".format(base_url, pending_cert.external_id)
-        note = kwargs.get('note')
         payload = {
             'status': 'CANCELED',
-            'send_email': kwargs.get('send_email', False),
             'note': kwargs.get('note')
         }
-        response = self.session.put(api_url, data=payload)
-        if response.status_code != 204:
+        response = self.session.put(api_url, data=json.dumps(payload))
+        if response.status_code == 404:
+            # not well documented by Digicert, but either the certificate does not exist or we
+            # don't own that order (someone else's order id!).  Either way, we can just ignore it
+            # and have it removed from Lemur
+            current_app.logger.warning(
+                "Digicert Plugin tried to cancel pending certificate {0} but it does not exist!".format(pending_cert.name))
+        elif response.status_code != 204:
+            current_app.logger.debug("{0} code {1}".format(response.status_code, response.content))
             raise Exception("Failed to cancel pending certificate {0}".format(pending_cert.name))
 
     @staticmethod

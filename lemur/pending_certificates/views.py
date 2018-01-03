@@ -329,7 +329,6 @@ class PendingCertificates(AuthenticatedResource):
               Accept: application/json, text/javascript
 
               {
-                 "send_email": false,
                  "note": "Why I am cancelling this order"
               }
 

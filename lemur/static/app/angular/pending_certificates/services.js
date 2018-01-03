@@ -241,8 +241,8 @@ angular.module('lemur')
       return certificate.put();
     };
 
-    PendingCertificateService.cancel = function (certificate) {
-      return certificate.customPUT({}, 'cancel');
+    PendingCertificateService.cancel = function (pending_certificate, options) {
+      return pending_certificate.customOperation('remove', null, {}, {'Content-Type': 'application/json'}, options);
     };
 
     return PendingCertificateService;

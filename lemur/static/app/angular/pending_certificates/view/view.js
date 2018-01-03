@@ -81,4 +81,22 @@ angular.module('lemur')
           });
         });
     };
+
+    $scope.cancel = function (pendingCertificateId) {
+      var uibModalInstance = $uibModal.open({
+        animation: true,
+        controller: 'PendingCertificateCancelController',
+        templateUrl: '/angular/pending_certificates/pending_certificate/cancel.tpl.html',
+        size: 'lg',
+        backdrop: 'static',
+        resolve: {
+          cancelId: function () {
+            return pendingCertificateId;
+          }
+        }
+      });
+      uibModalInstance.result.then(function () {
+        $scope.pendingCertificateTable.reload();
+      });
+    };
   });
