@@ -130,11 +130,13 @@ def cancel(pending_certificate, **kwargs):
     revoke the certificate or just abort cancelling.
     Args:
         pending_certificate: PendingCertificate to be cancelled
-    Returns: True if successful, raises Exception if there was an issue
+    Returns: the pending certificate if successful, raises Exception if there was an issue
     """
     plugin = plugins.get(pending_certificate.authority.plugin_name)
     plugin.cancel_ordered_certificate(pending_certificate, **kwargs)
-    return True
+    pending_certificate.status = 'Cancelled'
+    database.update(pending_certificate)
+    return pending_certificate
 
 
 def render(args):

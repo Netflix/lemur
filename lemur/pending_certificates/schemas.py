@@ -92,5 +92,11 @@ class PendingCertificateEditInputSchema(PendingCertificateSchema):
         return data
 
 
+class PendingCertificateCancelSchema(LemurInputSchema):
+    send_email = fields.Boolean()
+    note = fields.String()
+
+
 pending_certificate_output_schema = PendingCertificateOutputSchema()
 pending_certificate_edit_input_schema = PendingCertificateEditInputSchema()
+pending_certificate_cancel_schema = PendingCertificateCancelSchema()

@@ -44,3 +44,6 @@ class TestAsyncIssuerPlugin(IssuerPlugin):
     def create_authority(options):
         role = {'username': '', 'password': '', 'name': 'test'}
         return INTERNAL_VALID_SAN_STR, "", [role]
+
+    def cancel_ordered_certificate(self, pending_certificate, **kwargs):
+        return True

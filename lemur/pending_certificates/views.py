@@ -18,7 +18,8 @@ from lemur.roles import service as role_service
 
 from lemur.pending_certificates.schemas import (
     pending_certificate_output_schema,
-    pending_certificate_edit_input_schema
+    pending_certificate_edit_input_schema,
+    pending_certificate_cancel_schema,
 )
 
 mod = Blueprint('pending_certificates', __name__)
@@ -311,6 +312,60 @@ class PendingCertificates(AuthenticatedResource):
 
         pending_cert = service.update(pending_certificate_id, **data)
         return pending_cert
+
+    @validate_schema(pending_certificate_cancel_schema, None)
+    def delete(self, pending_certificate_id, data=None):
+        """
+        .. http:delete:: /pending_certificates/1
+
+           Cancel and delete a pending certificate
+
+           **Example request**:
+
+           .. sourcecode:: http
+
+              DELETE /pending certificates/1 HTTP/1.1
+              Host: example.com
+              Accept: application/json, text/javascript
+
+              {
+                 "send_email": false,
+                 "note": "Why I am cancelling this order"
+              }
+
+           **Example response**:
+
+           .. sourcecode:: http
+
+              HTTP/1.1 204 No Content
+
+           :reqheader Authorization: OAuth token to authenticate
+           :statuscode 204: no error
+           :statuscode 401: unauthenticated
+           :statuscode 403: unauthorized
+           :statuscode 404: pending certificate id not found
+           :statuscode 500: internal error
+        """
+        pending_cert = service.get(pending_certificate_id)
+
+        if not pending_cert:
+            return dict(message="Cannot find specified pending certificate"), 404
+
+        # allow creators
+        if g.current_user != pending_cert.user:
+            owner_role = role_service.get_by_name(pending_cert.owner)
+            permission = CertificatePermission(owner_role, [x.name for x in pending_cert.roles])
+
+            if not permission.can():
+                return dict(message='You are not authorized to update this certificate'), 403
+
+        if service.cancel(pending_cert, **data):
+            service.delete(pending_cert)
+            return('', 204)
+        else:
+            # service.cancel raises exception if there was an issue, but this will ensure something
+            # is relayed to user in case of something unexpected (unsuccessful update somehow).
+            return dict(message="Unexpected error occurred while trying to cancel this certificate"), 500
 
 
 class PendingCertificatePrivateKey(AuthenticatedResource):

@@ -1,4 +1,10 @@
-from .vectors import CSR_STR, INTERNAL_VALID_LONG_STR
+import json
+
+import pytest
+
+from .vectors import CSR_STR, INTERNAL_VALID_LONG_STR, VALID_ADMIN_API_TOKEN, VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN
+
+from lemur.pending_certificates.views import *  # noqa
 
 
 def test_increment_attempt(pending_certificate):
@@ -30,3 +36,15 @@ def test_create_pending(pending_certificate, user, session):
     assert real_cert.notify == pending_certificate.notify
     assert real_cert.private_key == pending_certificate.private_key
     assert real_cert.external_id == '54321'
+
+
+@pytest.mark.parametrize("token,status", [
+    (VALID_USER_HEADER_TOKEN, 403),
+    (VALID_ADMIN_HEADER_TOKEN, 204),
+    (VALID_ADMIN_API_TOKEN, 204),
+    ('', 401)
+])
+def test_pending_cancel(client, async_issuer_plugin, token, status):
+    assert client.delete(api.url_for(PendingCertificates, pending_certificate_id=1),
+                         data=json.dumps({'note': "unit test", 'send_email': False}),
+                         headers=token).status_code == status
