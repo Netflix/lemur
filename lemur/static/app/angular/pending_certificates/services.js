@@ -241,10 +241,6 @@ angular.module('lemur')
       return certificate.put();
     };
 
-    PendingCertificateService.export = function (certificate) {
-      return certificate.customPOST(certificate.exportOptions, 'export');
-    };
-
     PendingCertificateService.cancel = function (certificate) {
       return certificate.customPUT({}, 'cancel');
     };
