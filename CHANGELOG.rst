@@ -1,18 +1,56 @@
 Changelog
 =========
 
-0.6 - `master`
+
+0.7 - `master`
 ~~~~~~~~~~~~~~
 
-
-Adds per-certificate rotation policies, requires a database migration. The default rotation policy for all certificates
-is 30 days. Every certificate will gain a policy regardless is auto-rotation is used.
-
-Adds per-user API Keys, requires a database migration.
-
-Adds third_party to roles for external authentication roles, requires a database migration.
-
 .. note:: This version is not yet released and is under active development
+
+
+
+0.6 - `2018-01-02`
+~~~~~~~~~~~~~~~~~~
+
+Happy Holidays! This is a big release with lots of bug fixes and features. Below are the highlights and are not exhaustive.
+
+
+Features:
+
+* Per-certificate rotation policies, requires a database migration. The default rotation policy for all certificates.
+is 30 days. Every certificate will gain a policy regardless of if auto-rotation is used.
+* Adds per-user API Keys, allows users to issue multiple long-lived API tokens with the same permission as the user creating them.
+* Adds the ability to revoke certificates from the Lemur UI/API, this is currently only supported for the digicert CIS and cfssl plugins.
+* Allow destinations to support an export function. Useful for file system destinations e.g. S3 to specify the export plugin you wish to run before being sent to the destination.
+* Adds support for uploading certificates to Cloudfront.
+* Re-worked certificate metadata pane for improved readability.
+* Adds support for LDAP user authentication
+
+Bugs:
+
+* Closed `#767 <https://github.com/Netflix/lemur/issues/767>`_ - Fixed issue with login redirect loop.
+* Closed `#792 <https://github.com/Netflix/lemur/issues/792>`_ - Fixed an issue with a unique constraint was violated when replacing certificates.
+* Closed `#752 <https://github.com/Netflix/lemur/issues/752>`_ - Fixed an internal server error when validating notification units.
+* Closed `#684 <https://github.com/Netflix/lemur/issues/684>`_ - Fixed migration failure when null values encountered.
+* Closes `#661 <https://github.com/Netflix/lemur/issues/661>`_ - Fixed an issue where default values were missing during clone operations.
+
+
+Special thanks to all who helped with this release, notably:
+
+- intgr
+- SecurityInsanity
+- johanneslange
+- RickB17
+- pr8kerl
+- bunjiboys
+
+See the full list of issues closed in `0.6 <https://github.com/Netflix/lemur/milestone/5>`_.
+
+Upgrading
+---------
+
+.. note:: This release will need a migration change. Please follow the `documentation <https://lemur.readthedocs.io/en/latest/administration.html#upgrading-lemur>`_ to upgrade Lemur.
+
 
 
 0.5 - `2016-04-08`
@@ -35,7 +73,7 @@ without private keys.
 * Closed `#602 <https://github.com/Netflix/lemur/issues/602>`_ - AWS plugin added support for ALBs for endpoint tracking.
 
 
-Special thanks to all who helped with with this release, notably:
+Special thanks to all who helped with this release, notably:
 
 - RcRonco
 - harmw

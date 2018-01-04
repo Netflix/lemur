@@ -7,6 +7,8 @@
 """
 from flask_script import Manager
 
+from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
+from lemur.extensions import sentry, metrics
 from lemur.notifications.messaging import send_expiration_notifications
 
 manager = Manager(usage="Handles notification related tasks.")
@@ -25,11 +27,18 @@ def expirations(exclude):
 
     :return:
     """
-    print("Starting to notify subscribers about expiring certificates!")
-    success, failed = send_expiration_notifications(exclude)
-    print(
-        "Finished notifying subscribers about expiring certificates! Sent: {success} Failed: {failed}".format(
-            success=success,
-            failed=failed
+    status = FAILURE_METRIC_STATUS
+    try:
+        print("Starting to notify subscribers about expiring certificates!")
+        success, failed = send_expiration_notifications(exclude)
+        print(
+            "Finished notifying subscribers about expiring certificates! Sent: {success} Failed: {failed}".format(
+                success=success,
+                failed=failed
+            )
         )
-    )
+        status = SUCCESS_METRIC_STATUS
+    except Exception as e:
+        sentry.captureException()
+
+    metrics.send('expiration_notification_job', 'counter', 1, metric_tags={'status': status})
