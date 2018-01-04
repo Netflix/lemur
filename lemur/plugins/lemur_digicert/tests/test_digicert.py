@@ -193,7 +193,6 @@ def test_cancel_ordered_certificate(mock_pending_cert):
     data = {'note': 'Test'}
     subject.cancel_ordered_certificate(mock_pending_cert, **data)
 
-    with pytest.raises(Exception):
-        # A non-existing order id
-        mock_pending_cert.external_id = 111
-        subject.cancel_ordered_certificate(mock_pending_cert, **data)
+    # A non-existing order id, does not raise exception because if it doesn't exist, then it doesn't matter
+    mock_pending_cert.external_id = 111
+    subject.cancel_ordered_certificate(mock_pending_cert, **data)
