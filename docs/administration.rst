@@ -581,6 +581,12 @@ The following configuration properties are required to use the Digicert issuer p
             This is the url for the Digicert API (e.g. https://www.digicert.com)
 
 
+.. data:: DIGICERT_ORDER_TYPE
+    :noindex:
+
+            This is the type of certificate to order. (e.g. ssl_plus, ssl_ev_plus see: https://www.digicert.com/services/v2/documentation/order/overview-submit)
+
+
 .. data:: DIGICERT_API_KEY
     :noindex:
 

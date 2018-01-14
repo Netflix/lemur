@@ -71,6 +71,7 @@ LEMUR_INSTANCE_PROFILE = 'Lemur'
 
 
 DIGICERT_URL = 'mock://www.digicert.com'
+DIGICERT_ORDER_TYPE = 'ssl_plus'
 DIGICERT_API_KEY = 'api-key'
 DIGICERT_ORG_ID = 111111
 DIGICERT_ROOT = "ROOT"
