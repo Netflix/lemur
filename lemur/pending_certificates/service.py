@@ -90,6 +90,14 @@ def create_certificate(pending_certificate, certificate, user):
         raise Exception("Unable to create certificate: {reasons}".format(reasons=errors))
 
     data.update(vars(pending_certificate))
+    # Copy relationships, vars doesn't copy this without explicit fields
+    data['notifications'] = list(pending_certificate.notifications)
+    data['destinations'] = list(pending_certificate.destinations)
+    data['sources'] = list(pending_certificate.sources)
+    data['roles'] = list(pending_certificate.roles)
+    data['replaces'] = list(pending_certificate.replaces)
+    data['rotation_policy'] = pending_certificate.rotation_policy
+
     # Replace external id and chain with the one fetched from source
     data['external_id'] = certificate['external_id']
     data['chain'] = certificate['chain']
