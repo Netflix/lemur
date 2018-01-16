@@ -21,16 +21,17 @@ def test_create_pending_certificate(async_issuer_plugin, async_authority, user):
 
 
 def test_create_pending(pending_certificate, user, session):
+    import copy
     from lemur.pending_certificates.service import create_certificate, get
     cert = {'body': INTERNAL_VALID_LONG_STR,
             'chain': None,
             'external_id': 54321}
 
-    # weird hack, pending_certificate is part of some session from fixtures, so get it again then
-    # detach pending_cert from session, because passing it inside test scope breaks its __dict__,
-    # which means the resulting Certificate will not update its values
-    pending_certificate = get(pending_certificate.id)
-    session.expunge(pending_certificate)
+    # Weird copy because the session behavior.  pending_certificate is a valid object but the
+    # return of vars(pending_certificate) is a sessionobject, and so nothing from the pending_cert
+    # is used to create the certificate.  Maybe a bug due to using vars(), and should copy every
+    # field explicitly.
+    pending_certificate = copy.copy(get(pending_certificate.id))
     real_cert = create_certificate(pending_certificate, cert, user['user'])
     assert real_cert.owner == pending_certificate.owner
     assert real_cert.notify == pending_certificate.notify

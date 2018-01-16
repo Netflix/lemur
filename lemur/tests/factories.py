@@ -307,6 +307,7 @@ class PendingCertificateFactory(BaseFactory):
     description = FuzzyText(length=128)
     date_created = FuzzyDate(date(2016, 1, 1), date(2020, 1, 1))
     number_attempts = 0
+    rename = False
 
     class Meta:
         """Factory Configuration."""

@@ -106,6 +106,10 @@ def create_certificate(pending_certificate, certificate, user):
         # Owner of the pending certificate is not the creator, so use the current user who called
         # this as the creator (usually lemur)
         creator = user
+
+    if pending_certificate.rename:
+        # If generating name from certificate, remove the one from pending certificate
+        del data['name']
     data['creator'] = creator
     cert = certificate_service.import_certificate(**data)
     database.update(cert)
