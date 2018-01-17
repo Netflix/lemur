@@ -162,6 +162,9 @@ def domains(cert):
         entries = ext.value.get_values_for_type(x509.DNSName)
         for entry in entries:
             domains.append(entry)
+    except x509.ExtensionNotFound:
+        if current_app.config.get("LOG_SSL_SUBJ_ALT_NAME_ERRORS", True):
+            sentry.captureException()
     except Exception as e:
         sentry.captureException()
 
