@@ -58,7 +58,7 @@ install_requires = [
     'inflection==0.3.1',
     'future==0.16.0',
     'boto3==1.5.7',
-    'acme==0.20.0',
+    'acme==0.21.0',
     'retrying==1.3.3',
     'tabulate==0.8.2',
     'pyOpenSSL==17.2.0',
