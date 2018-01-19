@@ -140,6 +140,8 @@ def sync_certificates(source, user):
             for e in exists:
                 if certificate.get('external_id'):
                     e.external_id = certificate['external_id']
+                if certificate.get('authority_id'):
+                    e.authority_id = certificate['authority_id']
                 certificate_update(e, source)
                 updated += 1
 
