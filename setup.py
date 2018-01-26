@@ -45,7 +45,7 @@ install_requires = [
     'SQLAlchemy-Utils==0.32.21',
     'requests==2.11.1',
     'ndg-httpsclient==0.4.2',
-    'psycopg2==2.7.3',
+    'psycopg2==2.7.3.2',
     'arrow==0.12.0',
     'six==1.11.0',
     'marshmallow-sqlalchemy==0.13.1',
