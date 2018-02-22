@@ -100,10 +100,16 @@ If you have a third party or internal service that creates authorities (EJBCA, e
 it can treat any issuer plugin as both a source of creating new certificates as well as new authorities.
 
 
-The `IssuerPlugin` exposes two functions::
+The `IssuerPlugin` exposes four functions functions::
 
     def create_certificate(self, csr, issuer_options):
         # requests.get('a third party')
+    def revoke_certificate(self, certificate, comments):
+        # requests.put('a third party')
+    def get_ordered_certificate(self, order_id):
+        # requests.get('already existing certificate')
+    def canceled_ordered_certificate(self, pending_cert, **kwargs):
+        # requests.put('cancel an order that has yet to be issued')
 
 Lemur will pass a dictionary of all possible options for certificate creation. Including a valid CSR, and the raw options associated with the request.
 
@@ -138,6 +144,19 @@ If instead you do not need need to generate authorities but instead use a static
 The `IssuerPlugin` doesn't have any options like Destination, Source, and Notification plugins. Essentially Lemur **should** already have
 any fields you might need to submit a request to a third party. If there are additional options you need
 in your plugin feel free to open an issue, or look into adding additional options to issuers yourself.
+
+Asynchronous Certificates
+^^^^^^^^^^^^^^^^^^^^^^^^^
+An issuer may take some time to actually issue a certificate for an order.  In this case, a `PendingCertificate` is returned, which holds information to recreate a `Certificate` object at a later time.  Then, `get_ordered_certificate()` should be run periodically via `python manage.py pending_certs fetch -i all` to attempt to retrieve an ordered certificate::
+
+    def get_ordered_ceriticate(self, order_id):
+        # order_id is the external id of the order, not the external_id of the certificate
+        # retrieve an order, and check if there is an issued certificate attached to it
+
+`cancel_ordered_certificate()` should be implemented to allow an ordered certificate to be canceled before it is issued::
+    def cancel_ordered_certificate(self, pending_cert, **kwargs):
+        # pending_cert should contain the necessary information to match an order
+        # kwargs can be given to provide information to the issuer for canceling
 
 Destination
 -----------

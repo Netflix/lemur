@@ -12,13 +12,14 @@ from lemur.certificates.models import Certificate
 from lemur.destinations.models import Destination
 from lemur.sources.models import Source
 from lemur.notifications.models import Notification
+from lemur.pending_certificates.models import PendingCertificate
 from lemur.users.models import User
 from lemur.roles.models import Role
 from lemur.endpoints.models import Policy, Endpoint
 from lemur.policies.models import RotationPolicy
 from lemur.api_keys.models import ApiKey
 
-from .vectors import INTERNAL_VALID_SAN_STR, PRIVATE_KEY_STR
+from .vectors import INTERNAL_VALID_SAN_STR, PRIVATE_KEY_STR, CSR_STR
 
 
 class BaseFactory(SQLAlchemyModelFactory):
@@ -140,6 +141,15 @@ class AuthorityFactory(BaseFactory):
                 self.roles.append(role)
 
 
+class AsyncAuthorityFactory(AuthorityFactory):
+    """Async Authority factory."""
+    name = Sequence(lambda n: 'authority{0}'.format(n))
+    owner = 'joe@example.com'
+    plugin = {'slug': 'test-issuer-async'}
+    description = FuzzyText(length=128)
+    authority_certificate = SubFactory(CertificateFactory)
+
+
 class RotationPolicyFactory(BaseFactory):
     """Rotation Factory."""
     name = Sequence(lambda n: 'policy{0}'.format(n))
@@ -204,6 +214,7 @@ class UserFactory(BaseFactory):
     email = Sequence(lambda n: 'user{0}@example.com'.format(n))
     active = True
     password = FuzzyText(length=24)
+    certificates = []
 
     class Meta:
         """Factory Configuration."""
@@ -281,3 +292,93 @@ class ApiKeyFactory(BaseFactory):
 
         if extracted:
             self.userId = extracted.id
+
+
+class PendingCertificateFactory(BaseFactory):
+    """PendingCertificate factory."""
+    name = Sequence(lambda n: 'pending_certificate{0}'.format(n))
+    external_id = 12345
+    csr = CSR_STR
+    chain = INTERNAL_VALID_SAN_STR
+    private_key = PRIVATE_KEY_STR
+    owner = 'joe@example.com'
+    status = FuzzyChoice(['valid', 'revoked', 'unknown'])
+    deleted = False
+    description = FuzzyText(length=128)
+    date_created = FuzzyDate(date(2016, 1, 1), date(2020, 1, 1))
+    number_attempts = 0
+    rename = False
+
+    class Meta:
+        """Factory Configuration."""
+        model = PendingCertificate
+
+    @post_generation
+    def user(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.user_id = extracted.id
+
+    @post_generation
+    def authority(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.authority_id = extracted.id
+
+    @post_generation
+    def notifications(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for notification in extracted:
+                self.notifications.append(notification)
+
+    @post_generation
+    def destinations(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for destination in extracted:
+                self.destintations.append(destination)
+
+    @post_generation
+    def replaces(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for replace in extracted:
+                self.replaces.append(replace)
+
+    @post_generation
+    def sources(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for source in extracted:
+                self.sources.append(source)
+
+    @post_generation
+    def domains(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for domain in extracted:
+                self.domains.append(domain)
+
+    @post_generation
+    def roles(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for domain in extracted:
+                self.roles.append(domain)

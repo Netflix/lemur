@@ -11,7 +11,8 @@ from sqlalchemy_utils import JSONType
 
 from lemur.database import db
 from lemur.plugins.base import plugins
-from lemur.models import certificate_notification_associations
+from lemur.models import certificate_notification_associations, \
+    pending_cert_notification_associations
 
 
 class Notification(db.Model):
@@ -25,6 +26,13 @@ class Notification(db.Model):
     certificates = relationship(
         "Certificate",
         secondary=certificate_notification_associations,
+        passive_deletes=True,
+        backref="notification",
+        cascade='all,delete'
+    )
+    pending_certificates = relationship(
+        "PendingCertificate",
+        secondary=pending_cert_notification_associations,
         passive_deletes=True,
         backref="notification",
         cascade='all,delete'

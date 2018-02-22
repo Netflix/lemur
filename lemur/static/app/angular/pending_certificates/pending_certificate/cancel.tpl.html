@@ -1,0 +1,25 @@
+<div class="modal-header">
+  <button type="button" class="close" ng-click="exit()" aria-label="Exit"><span artia-hidden="true">&times;</span>
+  </button>
+  <h3 class="modal-title">Cancel <span class="text-muted"><small>{{ pendingCertificate.name }}</small></span></h3>
+</div>
+<div class="modal-body">
+  <form name="cancelForm" class="form-horizontal" role="form" novalidate>
+    <div class="form-group"
+         ng-class="{'has-error': cancelForm.note.$invalid, 'has-success': !cancelForm.note.$invalid&&cancelForm.note.$dirty}">
+      <label class="control-label col-sm-2">
+        Note for Cancelling
+      </label>
+      <div class="col-sm-10">
+        <textarea name="note" ng-model="cancelOptions.note" placeholder="Reason for cancelling"
+                  class="form-control" required></textarea>
+        <p ng-show="cancelForm.note.$invalid && !cancelForm.note.$pristine" class="help-block">You must give a
+          reason for cancelling a pending certificate order.</p>
+      </div>
+    </div>
+  </form>
+<div class="modal-footer">
+  <button type="submit" ng-click="cancel(pendingCertificate, cancelOptions)" ng-disabled="cancelForm.$invalid" class="btn btn-success">Cancel Certificate
+  </button>
+<button ng-click="exit()" class="btn btn-danger">Exit</button>
+</div>

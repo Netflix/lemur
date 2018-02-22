@@ -436,7 +436,7 @@ def test_get_account_number(client):
 
 def test_mint_certificate(issuer_plugin, authority):
     from lemur.certificates.service import mint
-    cert_body, private_key, chain, external_id = mint(authority=authority, csr=CSR_STR)
+    cert_body, private_key, chain, external_id, csr = mint(authority=authority, csr=CSR_STR)
     assert cert_body == INTERNAL_VALID_LONG_STR, INTERNAL_VALID_SAN_STR
 
 
