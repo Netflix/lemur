@@ -14,6 +14,8 @@ from flask_script import Manager
 
 from flask import current_app
 
+from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
+
 from lemur.extensions import metrics, sentry
 from lemur.plugins.base import plugins
 
@@ -54,6 +56,8 @@ def validate_sources(source_strings):
 def sync(source_strings):
     sources = validate_sources(source_strings)
     for source in sources:
+        status = FAILURE_METRIC_STATUS
+
         start_time = time.time()
         print("[+] Staring to sync source: {label}!\n".format(label=source.label))
 
@@ -79,6 +83,8 @@ def sync(source_strings):
                     time=(time.time() - start_time)
                 )
             )
+            status = SUCCESS_METRIC_STATUS
+
         except Exception as e:
             current_app.logger.exception(e)
 
@@ -86,8 +92,9 @@ def sync(source_strings):
                 "[X] Failed syncing source {label}!\n".format(label=source.label)
             )
 
-            metrics.send('sync_failed', 'counter', 1, metric_tags={'source': source.label})
             sentry.captureException()
+
+        metrics.send('source_sync', 'counter', 1, metric_tags={'source': source.label, 'status': status})
 
 
 @manager.option('-s', '--sources', dest='source_strings', action='append', help='Sources to operate on.')
@@ -109,23 +116,25 @@ def clean(source_strings, commit):
 
         cleaned = 0
         for certificate in certificate_service.get_all_pending_cleaning(source):
-                if commit:
-                    try:
-                        s.clean(certificate, source.options)
-                        certificate.sources.remove(source)
-                        certificate_service.database.update(certificate)
-                        metrics.send('clean_success', 'counter', 1, metric_tags={'source': source.label})
-                    except Exception as e:
-                        current_app.logger.exception(e)
-                        metrics.send('clean_failed', 'counter', 1, metric_tags={'source': source.label})
-                        sentry.captureException()
+            status = FAILURE_METRIC_STATUS
+            if commit:
+                try:
+                    s.clean(certificate, source.options)
+                    certificate.sources.remove(source)
+                    certificate_service.database.update(certificate)
+                    status = SUCCESS_METRIC_STATUS
+                except Exception as e:
+                    current_app.logger.exception(e)
+                    sentry.captureException()
 
-                current_app.logger.warning("Removed {0} from source {1} during cleaning".format(
-                    certificate.name,
-                    source.label
-                ))
+            metrics.send('clean', 'counter', 1, metric_tags={'source': source.label, 'status': status})
 
-                cleaned += 1
+            current_app.logger.warning("Removed {0} from source {1} during cleaning".format(
+                certificate.name,
+                source.label
+            ))
+
+            cleaned += 1
 
         print(
             "[+] Finished cleaning source: {label}. Removed {cleaned} certificates from source. Run Time: {time}\n".format(

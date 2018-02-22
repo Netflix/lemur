@@ -18,6 +18,7 @@ from flask import current_app
 from sqlalchemy import and_
 
 from lemur import database, metrics
+from lemur.constants import FAILURE_METRIC_STATUS, SUCCESS_METRIC_STATUS
 from lemur.extensions import sentry
 from lemur.common.utils import windowed_query
 
@@ -94,14 +95,17 @@ def send_notification(event_type, data, targets, notification):
     :param notification:
     :return:
     """
+    status = FAILURE_METRIC_STATUS
     try:
         notification.plugin.send(event_type, data, targets, notification.options)
-        metrics.send('{0}_notification_sent'.format(event_type), 'counter', 1)
-        return True
+        status = SUCCESS_METRIC_STATUS
     except Exception as e:
         sentry.captureException()
-        metrics.send('{0}_notification_failure'.format(event_type), 'counter', 1)
-        current_app.logger.exception(e)
+
+    metrics.send('notification', 'counter', 1, metric_tags={'status': status, 'event_type': event_type})
+
+    if status == SUCCESS_METRIC_STATUS:
+        return True
 
 
 def send_expiration_notifications(exclude):
@@ -143,12 +147,14 @@ def send_expiration_notifications(exclude):
 
 def send_rotation_notification(certificate, notification_plugin=None):
     """
-    Sends a report to certificate owners when their certificate as been
+    Sends a report to certificate owners when their certificate has been
     rotated.
 
     :param certificate:
+    :param notification_plugin:
     :return:
     """
+    status = FAILURE_METRIC_STATUS
     if not notification_plugin:
         notification_plugin = plugins.get(current_app.config.get('LEMUR_DEFAULT_NOTIFICATION_PLUGIN'))
 
@@ -156,12 +162,14 @@ def send_rotation_notification(certificate, notification_plugin=None):
 
     try:
         notification_plugin.send('rotation', data, [data['owner']])
-        metrics.send('rotation_notification_sent', 'counter', 1)
-        return True
+        status = SUCCESS_METRIC_STATUS
     except Exception as e:
         sentry.captureException()
-        metrics.send('rotation_notification_failure', 'counter', 1)
-        current_app.logger.exception(e)
+
+    metrics.send('notification', 'counter', 1, metric_tags={'status': status, 'event_type': 'rotation'})
+
+    if status == SUCCESS_METRIC_STATUS:
+        return True
 
 
 def needs_notification(certificate):
@@ -176,7 +184,7 @@ def needs_notification(certificate):
     days = (certificate.not_after - now).days
 
     for notification in certificate.notifications:
-        if not notification.options:
+        if not notification.active or not notification.options:
             return
 
         interval = get_plugin_option('interval', notification.options)

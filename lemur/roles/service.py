@@ -32,7 +32,22 @@ def update(role_id, name, description, users):
     return role
 
 
-def create(name, password=None, description=None, username=None, users=None):
+def set_third_party(role_id, third_party_status=False):
+    """
+    Sets a role to be a third party role. A user should pretty much never
+    call this directly.
+
+    :param role_id:
+    :param third_party_status:
+    :return:
+    """
+    role = get(role_id)
+    role.third_party = third_party_status
+    database.update(role)
+    return role
+
+
+def create(name, password=None, description=None, username=None, users=None, third_party=False):
     """
     Create a new role
 
@@ -43,7 +58,7 @@ def create(name, password=None, description=None, username=None, users=None):
     :param password:
     :return:
     """
-    role = Role(name=name, description=description, username=username, password=password)
+    role = Role(name=name, description=description, username=username, password=password, third_party=third_party)
 
     if users:
         role.users = users

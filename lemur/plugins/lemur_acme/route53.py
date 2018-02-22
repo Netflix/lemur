@@ -27,6 +27,7 @@ def find_zone_id(domain, client=None):
         raise ValueError(
             "Unable to find a Route53 hosted zone for {}".format(domain)
         )
+    return zones[0][1]
 
 
 @sts_client('route53')
@@ -54,7 +55,7 @@ def change_txt_record(action, zone_id, domain, value, client=None):
     return response["ChangeInfo"]["Id"]
 
 
-def create_txt_record(account_number, host, value):
+def create_txt_record(host, value, account_number):
     zone_id = find_zone_id(host, account_number=account_number)
     change_id = change_txt_record(
         "CREATE",

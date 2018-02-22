@@ -60,6 +60,7 @@
                       <li><a href ng-click="edit(certificate.id)">Edit</a></li>
                       <li><a href ng-click="clone(certificate.id)">Clone</a></li>
                       <li><a href ng-click="export(certificate.id)">Export</a></li>
+                      <li><a href ng-click="revoke(certificate.id)">Revoke</a></li>
                     </ul>
                   </div>
                 </div>
@@ -70,63 +71,52 @@
               <uib-tabset justified="true" class="col-md-8">
                 <uib-tab>
                   <uib-tab-heading>Basic Info</uib-tab-heading>
-                  <ul class="list-group">
-                    <li class="list-group-item">
-                      <strong>Creator</strong>
-                        <span class="pull-right">
-                          {{ certificate.user.email }}
-                        </span>
-                    </li>
-                    <li class="list-group-item">
-                      <strong>Not Before</strong>
-                        <span class="pull-right" uib-tooltip="{{ certificate.notBefore }}">
-                          {{ momentService.createMoment(certificate.notBefore) }}
-                        </span>
-                    </li>
-                    <li class="list-group-item">
-                      <strong>Not After</strong>
-                        <span class="pull-right" uib-tooltip="{{ certificate.notAfter }}">
-                          {{ momentService.createMoment(certificate.notAfter) }}
-                          </span>
-                    </li>
-                    <li class="list-group-item">
-                      <strong>San</strong>
-                      <span class="pull-right">
+                  <dl class="dl-horizontal list-group">
+                    <!-- Lemur metadata -->
+                    <div class="list-group-item">
+                      <dt>Creator</dt>
+                      <dd>{{ certificate.user.email }}</dd>
+                      <dt>Owner</dt>
+                      <dd>{{ certificate.owner }}</dd>
+                      <dt>Description</dt>
+                      <dd class="multiline">{{ certificate.description }}</dd>
+                    </div>
+                    <!-- Certificate fields -->
+                    <div class="list-group-item">
+                      <dt>Certificate Authority</dt>
+                      <dd>{{ certificate.authority ? certificate.authority.name : "Imported" }} <span class="text-muted">({{ certificate.issuer }})</span></dd>
+                      <dt>Serial</dt>
+                      <dd>
+                        <div>Hex: {{ certificate.serialHex }}</div>
+                        <div class="text-muted text-nowrap">Decimal: {{ certificate.serial }}</div>
+                      </dd>
+                      <dt>Valid From</dt>
+                      <dd><span class="text-muted">{{ certificate.notBefore }}</span> ({{ momentService.createMoment(certificate.notBefore) }})</dd>
+                      <dt>Valid To</dt>
+                      <dd><span class="text-muted">{{ certificate.notAfter }}</span> ({{ momentService.createMoment(certificate.notAfter) }})</dd>
+                      <dt>SAN</dt>
+                      <dd>
                         <i class="glyphicon glyphicon-ok" ng-if="certificate.san"></i>
                         <i class="glyphicon glyphicon-remove" ng-if="!certificate.san"></i>
-                      </span>
-                    </li>
-                    <li class="list-group-item">
-                      <strong>Bits</strong>
-                      <span class="pull-right">{{ certificate.bits }}</span>
-                    </li>
-                    <li class="list-group-item">
-                      <strong>Signing Algorithm</strong>
-                      <span class="pull-right">{{ certificate.signingAlgorithm }}</span>
-                    </li>
-                    <li class="list-group-item">
-                      <strong>Serial</strong>
-                      <span class="pull-right">{{ certificate.serial }}</span>
-                    </li>
-                    <li class="list-group-item">
-                      <strong>Serial (Hex)</strong>
-                      <span class="pull-right">{{ certificate.serialHex }}</span>
-                    </li>
-                    <li
-                      uib-tooltip="Lemur will attempt to check a certificates validity, this is used to track whether a certificate as been revoked"
-                      class="list-group-item">
-                      <strong>Validity</strong>
-                      <span class="pull-right">
+                      </dd>
+                    </div>
+                    <!-- Cryptography -->
+                    <div class="list-group-item">
+                      <dt>Key Length</dt>
+                      <dd>{{ certificate.bits }}</dd>
+                      <dt>Signing Algorithm</dt>
+                      <dd>{{ certificate.signingAlgorithm }}</dd>
+                    </div>
+                    <div uib-tooltip="Lemur will attempt to check a certificates validity, this is used to track whether a certificate has been revoked"
+                         class="list-group-item">
+                      <dt>Validity</dt>
+                      <dd>
                         <span ng-if="certificate.status == 'unknown'" class="label label-warning">Unknown</span>
                         <span ng-if="certificate.status == 'revoked'" class="label label-danger">Revoked</span>
                         <span ng-if="certificate.status == 'valid'" class="label label-success">Valid</span>
-                      </span>
-                    </li>
-                    <li class="list-group-item">
-                      <strong>Description</strong>
-                      <p>{{ certificate.description }}</p>
-                    </li>
-                  </ul>
+                      </dd>
+                    </div>
+                  </dl>
                 </uib-tab>
                 <uib-tab>
                   <uib-tab-heading>Endpoints</uib-tab-heading>
@@ -179,7 +169,7 @@
                   <ul class="list-group">
                     <li class="list-group-item" ng-repeat="replaces in certificate.replaces">
                       <strong>{{ replaces.name }}</strong>
-                      <p>{{ replaces.description}}</p>
+                      <p>{{ replaces.description }}</p>
                     </li>
                   </ul>
                 </uib-tab>
@@ -188,27 +178,21 @@
                 <uib-tab>
                   <uib-tab-heading>
                     Chain
-                    <button class="btn btn-xs btn-default clipboard-btn glyphicon glyphicon-copy"
-                            uib-tooltip="Copy chain to clipboard" tooltip-trigger="mouseenter" clipboard
-                            text="certificate.chain"></button>
+                    <i class="glyphicon glyphicon-copy" style="cursor: pointer" clipboard text="certificate.chain"></i>
                   </uib-tab-heading>
                   <pre style="width: 100%">{{ certificate.chain }}</pre>
                 </uib-tab>
                 <uib-tab>
                   <uib-tab-heading>
                     Public Certificate
-                    <button class="btn btn-xs btn-default clipboard-btn glyphicon glyphicon-copy"
-                            uib-tooltip="Copy certificate to clipboard" tooltip-trigger="mouseenter" clipboard
-                            text="certificate.body"></button>
+                    <i class="glyphicon glyphicon-copy" style="cursor: pointer" clipboard text="certificate.body"></i>
                   </uib-tab-heading>
                   <pre style="width: 100%">{{ certificate.body }}</pre>
                 </uib-tab>
                 <uib-tab ng-click="loadPrivateKey(certificate)">
                   <uib-tab-heading>
                     Private Key
-                    <button class="btn btn-xs btn-default clipboard-btn glyphicon glyphicon-copy"
-                            uib-tooltip="Copy key to clipboard" tooltip-trigger="mouseenter" clipboard
-                            text="certificate.privateKey"></button>
+                     <i class="glyphicon glyphicon-copy" style="cursor: pointer" clipboard text="certificate.privateKey"></i>
                   </uib-tab-heading>
                   <pre style="width: 100%">{{ certificate.privateKey }}</pre>
                 </uib-tab>
@@ -220,5 +204,4 @@
       </div>
     </div>
   </div>
-</div>
 </div>

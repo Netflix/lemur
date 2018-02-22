@@ -43,43 +43,44 @@ install_requires = [
     'Flask-Bcrypt==0.7.1',
     'Flask-Principal==0.4.0',
     'Flask-Mail==0.9.1',
-    'SQLAlchemy-Utils==0.32.16',
+    'SQLAlchemy-Utils==0.32.21',
     'requests==2.11.1',
     'ndg-httpsclient==0.4.2',
-    'psycopg2==2.7.3',
-    'arrow==0.10.0',
-    'six==1.10.0',
+    'psycopg2==2.7.3.2',
+    'arrow==0.12.0',
+    'six==1.11.0',
     'marshmallow-sqlalchemy==0.13.1',
     'gunicorn==19.7.1',
-    'marshmallow==2.13.6',
+    'marshmallow==2.15.0',
     'cryptography==1.9',
     'xmltodict==0.11.0',
-    'pyjwt==1.5.2',
+    'pyjwt==1.5.3',
     'lockfile==0.12.2',
     'inflection==0.3.1',
     'future==0.16.0',
-    'boto3==1.4.6',
-    'acme==0.18.1',
+    'boto3==1.5.7',
+    'acme==0.20.0',
     'retrying==1.3.3',
-    'tabulate==0.7.7',
+    'tabulate==0.8.2',
     'pyOpenSSL==17.2.0',
     'pem==17.1.0',
-    'raven[flask]==6.1.0',
-    'jinja2==2.9.6',
-    'pyldap==2.4.37', # required by ldap auth provider
-    'paramiko==2.2.1'  # required for lemur_linuxdst plugin
+    'raven[flask]==6.2.1',
+    'jinja2==2.10',
+    'paramiko==2.4.0',  # required for lemur_linuxdst plugin
+    'pyldap==2.4.45',   # required by ldap auth provider
+    'alembic-autogenerate-enums==0.0.2'
 ]
 
 tests_require = [
     'pyflakes',
-    'moto==1.1.11',
+    'moto==1.1.25',
     'nose==1.3.7',
-    'pytest==3.2.2',
+    'pytest==3.3.2',
     'factory-boy==2.9.2',
     'fake-factory==0.7.2',
     'pytest-flask==0.10.0',
     'freezegun==0.3.9',
-    'requests-mock==1.3.0',
+    'requests-mock==1.4.0',
     'pytest-mock'
 ]
 
@@ -196,6 +197,8 @@ setup(
             'cfssl_issuer = lemur.plugins.lemur_cfssl.plugin:CfsslIssuerPlugin',
             'digicert_issuer = lemur.plugins.lemur_digicert.plugin:DigiCertIssuerPlugin',
             'digicert_cis_issuer = lemur.plugins.lemur_digicert.plugin:DigiCertCISIssuerPlugin',
+            'digicert_cis_source = lemur.plugins.lemur_digicert.plugin:DigiCertCISSourcePlugin'
+            'csr_export = lemur.plugins.lemur_csr.plugin:CSRExportPlugin',
         ],
     },
     classifiers=[

@@ -7,7 +7,7 @@
 """
 import requests
 import subprocess
-from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectionError, InvalidSchema
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 
@@ -19,7 +19,7 @@ def ocsp_verify(cert_path, issuer_chain_path):
     """
     Attempts to verify a certificate via OCSP. OCSP is a more modern version
     of CRL in that it will query the OCSP URI in order to determine if the
-    certificate as been revoked
+    certificate has been revoked
 
     :param cert_path:
     :param issuer_chain_path:
@@ -69,6 +69,9 @@ def crl_verify(cert_path):
 
             if response.status_code != 200:
                 raise Exception("Unable to retrieve CRL: {0}".format(point))
+        except InvalidSchema:
+            # Unhandled URI scheme (like ldap://); skip this distribution point.
+            continue
         except ConnectionError:
             raise Exception("Unable to retrieve CRL: {0}".format(point))
 
@@ -76,6 +79,15 @@ def crl_verify(cert_path):
 
         for r in crl:
             if cert.serial == r.serial_number:
+                try:
+                    reason = r.extensions.get_extension_for_class(x509.CRLReason).value
+                    # Handle "removeFromCRL" revoke reason as unrevoked; continue with the next distribution point.
+                    # Per RFC 5280 section 6.3.3 (k): https://tools.ietf.org/html/rfc5280#section-6.3.3
+                    if reason == x509.ReasonFlags.remove_from_crl:
+                        break
+                except x509.ExtensionNotFound:
+                    pass
+
                 return
 
     return True

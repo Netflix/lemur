@@ -38,7 +38,7 @@ class LinuxDstPlugin(DestinationPlugin):
             'type': 'str',
             'required': True,
             'helpMessage': 'The private key to use for auth',
-            'default': '/root/.shh/id_rsa',
+            'default': '/root/.ssh/id_rsa',
         },
         {
             'name': 'dstPrivKey',
@@ -62,7 +62,7 @@ class LinuxDstPlugin(DestinationPlugin):
             "name": "exportType",
             "required": True,
             "value": "NGINX",
-            "helpMessage": "Reference the docs for an explaination of each export type",
+            "helpMessage": "Reference the docs for an explanation of each export type",
             "type": "select"
         }
     ]

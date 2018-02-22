@@ -1,0 +1,50 @@
+<div class="row">
+  <div class="col-md-12">
+    <h2 class="featurette-heading">API Keys
+      <span class="text-muted"><small>For accidentally uploading to github</small></span></h2>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <div class="btn-group pull-right">
+          <button ng-click="create()" class="btn btn-primary">Create</button>
+        </div>
+        <div class="clearfix"></div>
+      </div>
+      <div class="table-responsive">
+        <table ng-table="apiKeysTable" class="table table-striped" template-pagination="angular/pager.html">
+          <tbody>
+            <tr ng-repeat="apiKey in $data track by $index">
+              <td data-title="'ID'" align="center">
+                {{ apiKey.id }}
+              </td>
+              <td data-title="'Name'" sortable="'name'" align="center">
+                {{ apiKey.name || 'Unnamed Api Key' }}
+              </td>
+              <td data-title="'User'" align="center">
+                {{ apiKey.user.email }}
+              </td>
+              <td data-title="'TTL'" align="center">
+                {{ apiKey.ttl == -1 ? 'Forever' : apiKey.ttl }}
+              </td>
+              <td data-title="'Revoked'" align="center">
+                <form>
+                  <switch ng-change="updateRevoked(apiKey)" id="status" name="status"
+                          ng-model="apiKey.revoked" class="green small"></switch>
+                </form>
+              </td>
+              <td data-title="''">
+                <div class="btn-group-vertical pull-right">
+                  <button uib-tooltip="Edit Key" ng-click="edit(apiKey.id)" class="btn btn-sm btn-info">
+                    Edit
+                  </button>
+                  <button uib-tooltip="Delete Key" ng-click="remove(apiKey)" type="button" class="btn btn-sm btn-danger pull-left">
+                    Remove
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

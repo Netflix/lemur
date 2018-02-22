@@ -28,14 +28,14 @@ Basic Configuration
 
         LOG_FILE = "/logs/lemur/lemur-test.log"
 
-.. data:: debug
+.. data:: DEBUG
     :noindex:
 
     Sets the flask debug flag to true (if supported by the webserver)
 
     ::
 
-        debug = False
+        DEBUG = False
 
     .. warning::
         This should never be used in a production environment as it exposes Lemur to
@@ -82,6 +82,12 @@ Basic Configuration
 
         Take care to write patterns in such way to not allow the `*` wildcard character inadvertently. To match a `.`
         character, it must be escaped (as `\.`).
+
+.. data:: LEMUR_OWNER_EMAIL_IN_SUBJECT
+    :noindex:
+
+        By default, Lemur will add the certificate owner's email address to certificate subject (for CAs that allow it).
+        Set this to `False` to disable this.
 
 .. data:: LEMUR_TOKEN_SECRET
     :noindex:
@@ -490,6 +496,13 @@ For more information about how to use social logins, see: `Satellizer <https://g
 
             OAUTH2_AUTH_ENDPOINT = "https://<youroauthserver>/oauth2/v1/authorize"
 
+.. data:: OAUTH2_VERIFY_CERT
+    :noindex:
+
+        ::
+
+            OAUTH2_VERIFY_CERT = True
+
 .. data:: GOOGLE_CLIENT_ID
     :noindex:
 
@@ -566,6 +579,12 @@ The following configuration properties are required to use the Digicert issuer p
     :noindex:
 
             This is the url for the Digicert API (e.g. https://www.digicert.com)
+
+
+.. data:: DIGICERT_ORDER_TYPE
+    :noindex:
+
+            This is the type of certificate to order. (e.g. ssl_plus, ssl_ev_plus see: https://www.digicert.com/services/v2/documentation/order/overview-submit)
 
 
 .. data:: DIGICERT_API_KEY
@@ -953,7 +972,7 @@ After you have the latest version of the Lemur code base you must run any needed
 This will ensure that any needed tables or columns are created or destroyed.
 
 .. note::
-    Internally, this uses `Alembic <https://alembic.readthedocs.org/en/latest/>`_ to manage database migrations.
+    Internally, this uses `Alembic <http://alembic.zzzcomputing.com/en/latest/>`_ to manage database migrations.
 
 .. note::
     By default Alembic looks for the `migrations` folder in the current working directory.The migrations folder is

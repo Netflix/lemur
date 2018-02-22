@@ -6,24 +6,35 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import sys
+import multiprocessing
+from tabulate import tabulate
+from sqlalchemy import or_
 
 from flask import current_app
 
 from flask_script import Manager
+from flask_principal import Identity, identity_changed
+
 
 from lemur import database
 from lemur.extensions import sentry
 from lemur.extensions import metrics
+from lemur.plugins.base import plugins
+from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
 from lemur.deployment import service as deployment_service
 from lemur.endpoints import service as endpoint_service
 from lemur.notifications.messaging import send_rotation_notification
+from lemur.domains.models import Domain
+from lemur.authorities.models import Authority
 from lemur.certificates.schemas import CertificateOutputSchema
+from lemur.certificates.models import Certificate
 from lemur.certificates.service import (
     reissue_certificate,
     get_certificate_primitives,
     get_all_pending_reissue,
     get_by_name,
-    get_all_certs
+    get_all_certs,
+    get
 )
 
 from lemur.certificates.verify import verify_string
@@ -96,16 +107,17 @@ def request_rotation(endpoint, certificate, message, commit):
     :param commit:
     :return:
     """
+    status = FAILURE_METRIC_STATUS
     if commit:
         try:
             deployment_service.rotate_certificate(endpoint, certificate)
-            metrics.send('endpoint_rotation_success', 'counter', 1)
 
             if message:
                 send_rotation_notification(certificate)
 
+            status = SUCCESS_METRIC_STATUS
+
         except Exception as e:
-            metrics.send('endpoint_rotation_failure', 'counter', 1)
             print(
                 "[!] Failed to rotate endpoint {0} to certificate {1} reason: {2}".format(
                     endpoint.name,
@@ -113,6 +125,8 @@ def request_rotation(endpoint, certificate, message, commit):
                     e
                 )
             )
+
+    metrics.send('endpoint_rotation', 'counter', 1, metric_tags={'status': status})
 
 
 def request_reissue(certificate, commit):
@@ -122,13 +136,31 @@ def request_reissue(certificate, commit):
     :param commit:
     :return:
     """
-    details = get_certificate_primitives(certificate)
-    print_certificate_details(details)
+    status = FAILURE_METRIC_STATUS
+    try:
+        print("[+] {0} is eligible for re-issuance".format(certificate.name))
 
-    if commit:
-        new_cert = reissue_certificate(certificate, replace=True)
-        metrics.send('certificate_reissue_success', 'counter', 1)
-        print("[+] New certificate named: {0}".format(new_cert.name))
+        # set the lemur identity for all cli commands
+        identity_changed.send(current_app._get_current_object(), identity=Identity(1))
+
+        details = get_certificate_primitives(certificate)
+        print_certificate_details(details)
+
+        if commit:
+            new_cert = reissue_certificate(certificate, replace=True)
+            print("[+] New certificate named: {0}".format(new_cert.name))
+
+        status = SUCCESS_METRIC_STATUS
+
+    except Exception as e:
+        sentry.captureException()
+        print(
+            "[!] Failed to reissue certificates. Reason: {}".format(
+                e
+            )
+        )
+
+    metrics.send('certificate_reissue', 'counter', 1, metric_tags={'status': status})
 
 
 @manager.option('-e', '--endpoint', dest='endpoint_name', help='Name of the endpoint you wish to rotate.')
@@ -145,6 +177,8 @@ def rotate(endpoint_name, new_certificate_name, old_certificate_name, message, c
         print("[!] Running in COMMIT mode.")
 
     print("[+] Starting endpoint rotation.")
+
+    status = FAILURE_METRIC_STATUS
 
     try:
         old_cert = validate_certificate(old_certificate_name)
@@ -169,13 +203,18 @@ def rotate(endpoint_name, new_certificate_name, old_certificate_name, message, c
                     print("[+] Rotating {0} to {1}".format(endpoint.name, endpoint.certificate.replaced[0].name))
                     request_rotation(endpoint, endpoint.certificate.replaced[0], message, commit)
                 else:
-                    metrics.send('endpoint_rotation_failure', 'counter', 1)
+                    metrics.send('endpoint_rotation', 'counter', 1, metric_tags={'status': FAILURE_METRIC_STATUS})
                     print("[!] Failed to rotate endpoint {0} reason: Multiple replacement certificates found.".format(
                         endpoint.name
                     ))
+
+        status = SUCCESS_METRIC_STATUS
         print("[+] Done!")
+
     except Exception as e:
         sentry.captureException()
+
+    metrics.send('endpoint_rotation_job', 'counter', 1, metric_tags={'status': status})
 
 
 @manager.option('-o', '--old-certificate', dest='old_certificate_name', help='Name of the certificate you wish to reissue.')
@@ -191,25 +230,119 @@ def reissue(old_certificate_name, commit):
 
     print("[+] Starting certificate re-issuance.")
 
+    status = FAILURE_METRIC_STATUS
+
     try:
         old_cert = validate_certificate(old_certificate_name)
 
         if not old_cert:
             for certificate in get_all_pending_reissue():
-                print("[+] {0} is eligible for re-issuance".format(certificate.name))
                 request_reissue(certificate, commit)
         else:
             request_reissue(old_cert, commit)
 
+        status = SUCCESS_METRIC_STATUS
         print("[+] Done!")
     except Exception as e:
         sentry.captureException()
-        metrics.send('certificate_reissue_failure', 'counter', 1)
         print(
             "[!] Failed to reissue certificates. Reason: {}".format(
                 e
             )
         )
+
+    metrics.send('certificate_reissue_job', 'counter', 1, metric_tags={'status': status})
+
+
+@manager.option('-f', '--fqdns', dest='fqdns', help='FQDNs to query. Multiple fqdns specified via comma.')
+@manager.option('-i', '--issuer', dest='issuer', help='Issuer to query for.')
+@manager.option('-o', '--owner', dest='owner', help='Owner to query for.')
+@manager.option('-e', '--expired', dest='expired', type=bool, default=False, help='Include expired certificates.')
+def query(fqdns, issuer, owner, expired):
+    """Prints certificates that match the query params."""
+    table = []
+
+    q = database.session_query(Certificate)
+
+    sub_query = database.session_query(Authority.id) \
+        .filter(Authority.name.ilike('%{0}%'.format(issuer))) \
+        .subquery()
+
+    q = q.filter(
+        or_(
+            Certificate.issuer.ilike('%{0}%'.format(issuer)),
+            Certificate.authority_id.in_(sub_query)
+        )
+    )
+
+    q = q.filter(Certificate.owner.ilike('%{0}%'.format(owner)))
+
+    if not expired:
+        q = q.filter(Certificate.expired == False)  # noqa
+
+    for f in fqdns.split(','):
+        q = q.filter(
+            or_(
+                Certificate.cn.ilike('%{0}%'.format(f)),
+                Certificate.domains.any(Domain.name.ilike('%{0}%'.format(f)))
+            )
+        )
+
+    for c in q.all():
+        table.append([c.id, c.name, c.owner, c.issuer])
+
+    print(tabulate(table, headers=['Id', 'Name', 'Owner', 'Issuer'], tablefmt='csv'))
+
+
+def worker(data, commit, reason):
+    parts = [x for x in data.split(' ') if x]
+    try:
+        cert = get(int(parts[0].strip()))
+        plugin = plugins.get(cert.authority.plugin_name)
+
+        print('[+] Revoking certificate. Id: {0} Name: {1}'.format(cert.id, cert.name))
+        if commit:
+            plugin.revoke_certificate(cert, reason)
+
+        metrics.send('certificate_revoke', 'counter', 1, metric_tags={'status': SUCCESS_METRIC_STATUS})
+
+    except Exception as e:
+        sentry.captureException()
+        metrics.send('certificate_revoke', 'counter', 1, metric_tags={'status': FAILURE_METRIC_STATUS})
+        print(
+            "[!] Failed to revoke certificates. Reason: {}".format(
+                e
+            )
+        )
+
+
+@manager.command
+def clear_pending():
+    """
+    Function clears all pending certificates.
+    :return:
+    """
+    v = plugins.get('verisign-issuer')
+    v.clear_pending_certificates()
+
+
+@manager.option('-p', '--path', dest='path', help='Absolute file path to a Lemur query csv.')
+@manager.option('-r', '--reason', dest='reason', help='Reason to revoke certificate.')
+@manager.option('-c', '--commit', dest='commit', action='store_true', default=False, help='Persist changes.')
+def revoke(path, reason, commit):
+    """
+    Revokes given certificate.
+    """
+    if commit:
+        print("[!] Running in COMMIT mode.")
+
+    print("[+] Starting certificate revocation.")
+
+    with open(path, 'r') as f:
+        args = [[x, commit, reason] for x in f.readlines()[2:]]
+
+    with multiprocessing.Pool(processes=3) as pool:
+        pool.starmap(worker, args)
 
 
 @manager.command

@@ -33,4 +33,4 @@ class SourcePlugin(Plugin):
 
     @property
     def options(self):
-        return list(self.default_options) + self.additional_options
+        return self.default_options + self.additional_options

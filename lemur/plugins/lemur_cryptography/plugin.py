@@ -187,7 +187,7 @@ class CryptographyIssuerPlugin(IssuerPlugin):
         """
         current_app.logger.debug("Issuing new cryptography certificate with options: {0}".format(options))
         cert_pem, chain_cert_pem = issue_certificate(csr, options)
-        return cert_pem, chain_cert_pem
+        return cert_pem, chain_cert_pem, None
 
     @staticmethod
     def create_authority(options):

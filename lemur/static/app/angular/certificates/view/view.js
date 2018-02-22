@@ -55,6 +55,10 @@ angular.module('lemur')
     };
 
     $scope.loadPrivateKey = function (certificate) {
+      if (certificate.privateKey !== undefined) {
+        return;
+      }
+
       CertificateService.loadPrivateKey(certificate).then(
         function (response) {
           if (response.key === null) {
@@ -181,6 +185,21 @@ angular.module('lemur')
         backdrop: 'static',
         resolve: {
           editId: function () {
+            return certificateId;
+          }
+        }
+      });
+    };
+
+     $scope.revoke = function (certificateId) {
+      $uibModal.open({
+        animation: true,
+        controller: 'CertificateRevokeController',
+        templateUrl: '/angular/certificates/certificate/revoke.tpl.html',
+        size: 'lg',
+        backdrop: 'static',
+        resolve: {
+          revokeId: function () {
             return certificateId;
           }
         }

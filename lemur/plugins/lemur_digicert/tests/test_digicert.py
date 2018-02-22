@@ -1,6 +1,8 @@
 import pytest
 import arrow
 import json
+from unittest.mock import patch
+
 from freezegun import freeze_time
 
 from lemur.tests.vectors import CSR_STR
@@ -166,12 +168,31 @@ ghi
 
     subject = DigiCertIssuerPlugin()
     adapter = requests_mock.Adapter()
-    adapter.register_uri('POST', 'mock://www.digicert.com/services/v2/order/certificate/ssl', text=json.dumps({'id': 'id123'}))
+    adapter.register_uri('POST', 'mock://www.digicert.com/services/v2/order/certificate/ssl_plus', text=json.dumps({'id': 'id123'}))
     adapter.register_uri('GET', 'mock://www.digicert.com/services/v2/order/certificate/id123', text=json.dumps({'status': 'issued', 'certificate': {'id': 'cert123'}}))
     adapter.register_uri('GET', 'mock://www.digicert.com/services/v2/certificate/cert123/download/format/pem_all', text=pem_fixture)
     subject.session.mount('mock', adapter)
 
-    cert, intermediate = subject.create_certificate("", {'common_name': 'test.com'})
+    cert, intermediate, external_id = subject.create_certificate("", {'common_name': 'test.com'})
 
     assert cert == "-----BEGIN CERTIFICATE-----\nabc\n-----END CERTIFICATE-----"
     assert intermediate == "-----BEGIN CERTIFICATE-----\ndef\n-----END CERTIFICATE-----"
+
+
+@patch("lemur.pending_certificates.models.PendingCertificate")
+def test_cancel_ordered_certificate(mock_pending_cert):
+    import requests_mock
+    from lemur.plugins.lemur_digicert.plugin import DigiCertIssuerPlugin
+
+    mock_pending_cert.external_id = 1234
+    subject = DigiCertIssuerPlugin()
+    adapter = requests_mock.Adapter()
+    adapter.register_uri('PUT', 'mock://www.digicert.com/services/v2/order/certificate/1234/status', status_code=204)
+    adapter.register_uri('PUT', 'mock://www.digicert.com/services/v2/order/certificate/111/status', status_code=404)
+    subject.session.mount('mock', adapter)
+    data = {'note': 'Test'}
+    subject.cancel_ordered_certificate(mock_pending_cert, **data)
+
+    # A non-existing order id, does not raise exception because if it doesn't exist, then it doesn't matter
+    mock_pending_cert.external_id = 111
+    subject.cancel_ordered_certificate(mock_pending_cert, **data)

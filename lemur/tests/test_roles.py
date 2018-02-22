@@ -4,7 +4,7 @@ import pytest
 
 from lemur.roles.views import *  # noqa
 from lemur.tests.factories import RoleFactory, AuthorityFactory, CertificateFactory, UserFactory
-from .vectors import VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN
+from .vectors import VALID_ADMIN_API_TOKEN, VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN
 
 
 def test_role_input_schema(client):
@@ -41,6 +41,7 @@ def test_multiple_authority_certificate_association(session, client):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 403),
     (VALID_ADMIN_HEADER_TOKEN, 200),
+    (VALID_ADMIN_API_TOKEN, 200),
     ('', 401)
 ])
 def test_role_get(client, token, status):
@@ -50,6 +51,7 @@ def test_role_get(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 405),
     (VALID_ADMIN_HEADER_TOKEN, 405),
+    (VALID_ADMIN_API_TOKEN, 405),
     ('', 405)
 ])
 def test_role_post_(client, token, status):
@@ -59,6 +61,7 @@ def test_role_post_(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 400),
     (VALID_ADMIN_HEADER_TOKEN, 400),
+    (VALID_ADMIN_API_TOKEN, 400),
     ('', 401)
 ])
 def test_role_put(client, token, status):
@@ -68,6 +71,7 @@ def test_role_put(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 403),
     (VALID_ADMIN_HEADER_TOKEN, 200),
+    (VALID_ADMIN_API_TOKEN, 200),
     ('', 401)
 ])
 def test_role_put_with_data(client, session, token, status):
@@ -115,6 +119,7 @@ def test_role_put_with_data_and_user(client, session):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 403),
     (VALID_ADMIN_HEADER_TOKEN, 200),
+    (VALID_ADMIN_API_TOKEN, 200),
     ('', 401)
 ])
 def test_role_delete(client, token, status, role):
@@ -124,6 +129,7 @@ def test_role_delete(client, token, status, role):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 405),
     (VALID_ADMIN_HEADER_TOKEN, 405),
+    (VALID_ADMIN_API_TOKEN, 405),
     ('', 405)
 ])
 def test_role_patch(client, token, status):
@@ -133,6 +139,7 @@ def test_role_patch(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 403),
     (VALID_ADMIN_HEADER_TOKEN, 400),
+    (VALID_ADMIN_API_TOKEN, 400),
     ('', 401)
 ])
 def test_role_list_post_(client, token, status):
@@ -142,6 +149,7 @@ def test_role_list_post_(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 200),
     (VALID_ADMIN_HEADER_TOKEN, 200),
+    (VALID_ADMIN_API_TOKEN, 200),
     ('', 401)
 ])
 def test_role_list_get(client, token, status):
@@ -151,6 +159,7 @@ def test_role_list_get(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 405),
     (VALID_ADMIN_HEADER_TOKEN, 405),
+    (VALID_ADMIN_API_TOKEN, 405),
     ('', 405)
 ])
 def test_role_list_delete(client, token, status):
@@ -160,6 +169,7 @@ def test_role_list_delete(client, token, status):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 405),
     (VALID_ADMIN_HEADER_TOKEN, 405),
+    (VALID_ADMIN_API_TOKEN, 405),
     ('', 405)
 ])
 def test_role_list_patch(client, token, status):

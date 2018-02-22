@@ -1,14 +1,56 @@
 Changelog
 =========
 
-0.6 - `master`
+
+0.7 - `master`
 ~~~~~~~~~~~~~~
 
-
-Adds per-certificate rotation policies, requires a database migration. The default rotation policy for all certificates
-is 30 days. Every certificate will gain a policy regardless is auto-rotation is used.
-
 .. note:: This version is not yet released and is under active development
+
+
+
+0.6 - `2018-01-02`
+~~~~~~~~~~~~~~~~~~
+
+Happy Holidays! This is a big release with lots of bug fixes and features. Below are the highlights and are not exhaustive.
+
+
+Features:
+
+* Per-certificate rotation policies, requires a database migration. The default rotation policy for all certificates.
+is 30 days. Every certificate will gain a policy regardless of if auto-rotation is used.
+* Adds per-user API Keys, allows users to issue multiple long-lived API tokens with the same permission as the user creating them.
+* Adds the ability to revoke certificates from the Lemur UI/API, this is currently only supported for the digicert CIS and cfssl plugins.
+* Allow destinations to support an export function. Useful for file system destinations e.g. S3 to specify the export plugin you wish to run before being sent to the destination.
+* Adds support for uploading certificates to Cloudfront.
+* Re-worked certificate metadata pane for improved readability.
+* Adds support for LDAP user authentication
+
+Bugs:
+
+* Closed `#767 <https://github.com/Netflix/lemur/issues/767>`_ - Fixed issue with login redirect loop.
+* Closed `#792 <https://github.com/Netflix/lemur/issues/792>`_ - Fixed an issue with a unique constraint was violated when replacing certificates.
+* Closed `#752 <https://github.com/Netflix/lemur/issues/752>`_ - Fixed an internal server error when validating notification units.
+* Closed `#684 <https://github.com/Netflix/lemur/issues/684>`_ - Fixed migration failure when null values encountered.
+* Closes `#661 <https://github.com/Netflix/lemur/issues/661>`_ - Fixed an issue where default values were missing during clone operations.
+
+
+Special thanks to all who helped with this release, notably:
+
+- intgr
+- SecurityInsanity
+- johanneslange
+- RickB17
+- pr8kerl
+- bunjiboys
+
+See the full list of issues closed in `0.6 <https://github.com/Netflix/lemur/milestone/5>`_.
+
+Upgrading
+---------
+
+.. note:: This release will need a migration change. Please follow the `documentation <https://lemur.readthedocs.io/en/latest/administration.html#upgrading-lemur>`_ to upgrade Lemur.
+
 
 
 0.5 - `2016-04-08`
@@ -31,7 +73,7 @@ without private keys.
 * Closed `#602 <https://github.com/Netflix/lemur/issues/602>`_ - AWS plugin added support for ALBs for endpoint tracking.
 
 
-Special thanks to all who helped with with this release, notably:
+Special thanks to all who helped with this release, notably:
 
 - RcRonco
 - harmw
@@ -93,7 +135,7 @@ Issuer Plugin Owners
 --------------------
 
 This release may break your plugins, the keys in `issuer_options` have been changed from `camelCase` to `under_score`.
-This change was made to break a undue reliance on downstream options maintains a more pythonic naming convention. Renaming
+This change was made to break an undue reliance on downstream options maintains a more pythonic naming convention. Renaming
 these keys should be fairly trivial, additionally pull requests have been submitted to affected plugins to help ease the transition.
 
 .. note:: This change only affects issuer plugins and does not affect any other types of plugins.
@@ -103,10 +145,10 @@ these keys should be fairly trivial, additionally pull requests have been submit
     stricter input validation and better error messages when validation fails.
 * Closed `#146 <https://github.com/Netflix/lemur/issues/146>`_ - Moved authority type to first pane of authority creation wizard.
 * Closed `#147 <https://github.com/Netflix/lemur/issues/147>`_ - Added and refactored the relationship between authorities and their
-    root certificates. Displays the certificates (and chains) next the the authority in question.
+    root certificates. Displays the certificates (and chains) next to the authority in question.
 * Closed `#199 <https://github.com/Netflix/lemur/issues/199>`_ - Ensures that the dates submitted to Lemur during authority and
     certificate creation are actually dates.
-* Closed `#230 <https://github.com/Netflix/lemur/issues/230>`_ - Migrated authority dropdown to a ui-select based dropdown, this
+* Closed `#230 <https://github.com/Netflix/lemur/issues/230>`_ - Migrated authority dropdown to an ui-select based dropdown, this
     should be easier to determine what authorities are available and when an authority has actually been selected.
 * Closed `#254 <https://github.com/Netflix/lemur/issues/254>`_ - Forces certificate names to be generally unique. If a certificate name
     (generated or otherwise) is found to be a duplicate we increment by appending a counter.
@@ -168,6 +210,6 @@ these keys should be fairly trivial, additionally pull requests have been submit
 0.1.5 - 2015-10-26
 ~~~~~~~~~~~~~~~~~~
 
-* **SECURITY ISSUE**: Switched from use a AES static key to Fernet encryption.
+* **SECURITY ISSUE**: Switched from use an AES static key to Fernet encryption.
   Affects all versions prior to 0.1.5. If upgrading this will require a data migration.
-  see: `Upgrading Lemur <https://lemur.readthedocs.com/adminstration#UpgradingLemur>`_
+  see: `Upgrading Lemur <https://lemur.readthedocs.io/administration#UpgradingLemur>`_

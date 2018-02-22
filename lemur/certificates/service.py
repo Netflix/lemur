@@ -25,6 +25,7 @@ from lemur.authorities.models import Authority
 from lemur.destinations.models import Destination
 from lemur.certificates.models import Certificate
 from lemur.notifications.models import Notification
+from lemur.pending_certificates.models import PendingCertificate
 
 from lemur.certificates.schemas import CertificateOutputSchema, CertificateInputSchema
 
@@ -55,6 +56,18 @@ def get_by_name(name):
     :return:
     """
     return database.get(Certificate, name, field='name')
+
+
+def get_by_serial(serial):
+    """
+    Retrieves certificate by it's Serial.
+    :param serial:
+    :return:
+    """
+    if isinstance(serial, int):
+        # although serial is a number, the DB column is String(128)
+        serial = str(serial)
+    return Certificate.query.filter(Certificate.serial == serial).all()
 
 
 def delete(cert_id):
@@ -180,8 +193,8 @@ def mint(**kwargs):
         private_key = None
         csr_imported.send(authority=authority, csr=csr)
 
-    cert_body, cert_chain = issuer.create_certificate(csr, kwargs)
-    return cert_body, private_key, cert_chain,
+    cert_body, cert_chain, external_id = issuer.create_certificate(csr, kwargs)
+    return cert_body, private_key, cert_chain, external_id, csr
 
 
 def import_certificate(**kwargs):
@@ -234,10 +247,12 @@ def create(**kwargs):
     """
     Creates a new certificate.
     """
-    cert_body, private_key, cert_chain = mint(**kwargs)
+    cert_body, private_key, cert_chain, external_id, csr = mint(**kwargs)
     kwargs['body'] = cert_body
     kwargs['private_key'] = private_key
     kwargs['chain'] = cert_chain
+    kwargs['external_id'] = external_id
+    kwargs['csr'] = csr
 
     roles = create_certificate_roles(**kwargs)
 
@@ -246,15 +261,20 @@ def create(**kwargs):
     else:
         kwargs['roles'] = roles
 
-    cert = Certificate(**kwargs)
+    if cert_body:
+        cert = Certificate(**kwargs)
+        kwargs['creator'].certificates.append(cert)
+    else:
+        cert = PendingCertificate(**kwargs)
+        kwargs['creator'].pending_certificates.append(cert)
 
-    kwargs['creator'].certificates.append(cert)
     cert.authority = kwargs['authority']
-    certificate_issued.send(certificate=cert, authority=cert.authority)
 
     database.commit()
 
-    metrics.send('certificate_issued', 'counter', 1, metric_tags=dict(owner=cert.owner, issuer=cert.issuer))
+    if isinstance(cert, Certificate):
+        certificate_issued.send(certificate=cert, authority=cert.authority)
+        metrics.send('certificate_issued', 'counter', 1, metric_tags=dict(owner=cert.owner, issuer=cert.issuer))
     return cert
 
 
@@ -291,7 +311,6 @@ def render(args):
                     Certificate.authority_id.in_(sub_query)
                 )
             )
-            return database.sort_and_page(query, Certificate, args)
 
         elif 'destination' in terms:
             query = query.filter(Certificate.destinations.any(Destination.id == terms[1]))
@@ -344,8 +363,9 @@ def create_csr(**csr_config):
     private_key = generate_private_key(csr_config.get('key_type'))
 
     builder = x509.CertificateSigningRequestBuilder()
-    name_list = [x509.NameAttribute(x509.OID_COMMON_NAME, csr_config['common_name']),
-                 x509.NameAttribute(x509.OID_EMAIL_ADDRESS, csr_config['owner'])]
+    name_list = [x509.NameAttribute(x509.OID_COMMON_NAME, csr_config['common_name'])]
+    if current_app.config.get('LEMUR_OWNER_EMAIL_IN_SUBJECT', True):
+        name_list.append(x509.NameAttribute(x509.OID_EMAIL_ADDRESS, csr_config['owner']))
     if 'organization' in csr_config and csr_config['organization'].strip():
         name_list.append(x509.NameAttribute(x509.OID_ORGANIZATION_NAME, csr_config['organization']))
     if 'organizational_unit' in csr_config and csr_config['organizational_unit'].strip():

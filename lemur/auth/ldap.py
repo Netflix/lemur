@@ -65,7 +65,7 @@ class LdapPrincipal():
         else:
             # we add 'lemur' specific roles, so they do not get marked as removed
             for ur in user.roles:
-                if ur.authority_id:
+                if not ur.third_party:
                     roles.add(ur)
 
             # update any changes to the user
@@ -97,13 +97,18 @@ class LdapPrincipal():
         if self.ldap_default_role:
             role = role_service.get_by_name(self.ldap_default_role)
             if role:
+                if not role.third_party:
+                    role = role.set_third_party(role.id, third_party_status=True)
                 roles.add(role)
 
         # update their 'roles'
         role = role_service.get_by_name(self.ldap_principal)
         if not role:
             description = "auto generated role based on owner: {0}".format(self.ldap_principal)
-            role = role_service.create(self.ldap_principal, description=description)
+            role = role_service.create(self.ldap_principal, description=description,
+                third_party=True)
+        if not role.third_party:
+            role = role_service.set_third_party(role.id, third_party_status=True)
         roles.add(role)
         if not self.ldap_groups_to_roles:
             return roles
@@ -113,6 +118,8 @@ class LdapPrincipal():
             if role:
                 if ldap_group_name in self.ldap_groups:
                     current_app.logger.debug("assigning role {0} to ldap user {1}".format(self.ldap_principal, role))
+                    if not role.third_party:
+                        role = role_service.set_third_party(role.id, third_party_status=True)
                     roles.add(role)
         return roles
 

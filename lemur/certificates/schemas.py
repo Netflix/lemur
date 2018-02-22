@@ -85,6 +85,11 @@ class CertificateInputSchema(CertificateCreationSchema):
     extensions = fields.Nested(ExtensionSchema)
 
     @validates_schema
+    def validate_authority(self, data):
+        if not data['authority'].active:
+            raise ValidationError("The authority is inactive.", ['authority'])
+
+    @validates_schema
     def validate_dates(self, data):
         validators.dates(data)
 
@@ -146,7 +151,7 @@ class CertificateNestedOutputSchema(LemurOutputSchema):
     notify = fields.Boolean()
     rotation_policy = fields.Nested(RotationPolicyNestedOutputSchema)
 
-    # Note aliasing  is the first step in deprecating these fields.
+    # Note aliasing is the first step in deprecating these fields.
     cn = fields.String()  # deprecated
     common_name = fields.String(attribute='cn')
 
@@ -167,6 +172,7 @@ class CertificateCloneSchema(LemurOutputSchema):
 
 class CertificateOutputSchema(LemurOutputSchema):
     id = fields.Integer()
+    external_id = fields.String()
     bits = fields.Integer()
     body = fields.String()
     chain = fields.String()
@@ -177,7 +183,7 @@ class CertificateOutputSchema(LemurOutputSchema):
 
     rotation = fields.Boolean()
 
-    # Note aliasing  is the first step in deprecating these fields.
+    # Note aliasing is the first step in deprecating these fields.
     notify = fields.Boolean()
     active = fields.Boolean(attribute='notify')
 
@@ -248,6 +254,10 @@ class CertificateNotificationOutputSchema(LemurOutputSchema):
     endpoints = fields.Nested(EndpointNestedOutputSchema, many=True, missing=[])
 
 
+class CertificateRevokeSchema(LemurInputSchema):
+    comments = fields.String()
+
+
 certificate_input_schema = CertificateInputSchema()
 certificate_output_schema = CertificateOutputSchema()
 certificates_output_schema = CertificateOutputSchema(many=True)
@@ -255,3 +265,4 @@ certificate_upload_input_schema = CertificateUploadInputSchema()
 certificate_export_input_schema = CertificateExportInputSchema()
 certificate_edit_input_schema = CertificateEditInputSchema()
 certificate_notification_output_schema = CertificateNotificationOutputSchema()
+certificate_revoke_schema = CertificateRevokeSchema()

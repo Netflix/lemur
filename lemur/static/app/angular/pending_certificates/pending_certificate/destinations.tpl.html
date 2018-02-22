@@ -1,0 +1,29 @@
+<div class="form-group">
+    <label class="control-label col-sm-2">
+        Destinations
+    </label>
+    <div class="col-sm-10">
+        <div class="input-group">
+            <input type="text" ng-model="pendingCertificate.selectedDestination" placeholder="AWS..."
+                   uib-typeahead="destination.label for destination in destinationService.findDestinationsByName($viewValue)" typeahead-loading="loadingDestinations"
+                   class="form-control input-md" typeahead-on-select="pendingCertificate.attachDestination($item)"
+                   uib-tooltip="Lemur can upload certificates to any pre-defined destination"
+                   uib-tooltip-trigger="focus" uib-tooltip-placement="top"
+                   typeahead-wait-ms="500">
+          <span class="input-group-btn">
+            <button ng-model="destinations.show" class="btn btn-md btn-default" uib-btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0">
+                <span class="badge">{{ pendingCertificate.destinations.length || 0 }}</span>
+            </button>
+          </span>
+        </div>
+        <table class="table">
+            <tr ng-repeat="destination in pendingCertificate.destinations track by $index">
+                <td><a class="btn btn-sm btn-info" href="#/destinations/{{ destination.id }}/pendingCertificates">{{ destination.label }}</a></td>
+                <td><span class="text-muted">{{ destination.description }}</span></td>
+                <td>
+                    <button type="button" ng-click="pendingCertificate.removeDestination($index)" class="btn btn-danger btn-sm pull-right">Remove</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>

@@ -21,6 +21,7 @@ from lemur.reporting.cli import manager as report_manager
 from lemur.endpoints.cli import manager as endpoint_manager
 from lemur.certificates.cli import manager as certificate_manager
 from lemur.notifications.cli import manager as notification_manager
+from lemur.pending_certificates.cli import manager as pending_certificate_manager
 
 from lemur import database
 from lemur.users import service as user_service
@@ -44,6 +45,7 @@ from lemur.sources.models import Source  # noqa
 from lemur.logs.models import Log  # noqa
 from lemur.endpoints.models import Endpoint  # noqa
 from lemur.policies.models import RotationPolicy  # noqa
+from lemur.pending_certificates.models import PendingCertificate  # noqa
 
 
 manager = Manager(create_app)
@@ -375,7 +377,7 @@ class LemurServer(Command):
 
         app = WSGIApplication()
 
-        # run startup tasks on a app like object
+        # run startup tasks on an app like object
         validate_conf(current_app, REQUIRED_VARIABLES)
 
         app.app_uri = 'lemur:create_app(config="{0}")'.format(current_app.config.get('CONFIG_PATH'))
@@ -542,6 +544,7 @@ def main():
     manager.add_command("endpoint", endpoint_manager)
     manager.add_command("report", report_manager)
     manager.add_command("policy", policy_manager)
+    manager.add_command("pending_certs", pending_certificate_manager)
     manager.run()
 
 

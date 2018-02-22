@@ -185,3 +185,6 @@ a {
   text-align:center;
 }
 
+.multiline {
+  white-space: pre-line;
+}

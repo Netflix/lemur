@@ -95,7 +95,7 @@ angular.module('lemur')
     };
 
     $scope.getAuthoritiesByName = function (value) {
-      return AuthorityService.findAuthorityByName(value).then(function (authorities) {
+      return AuthorityService.findActiveAuthorityByName(value).then(function (authorities) {
         $scope.authorities = authorities;
       });
     };
@@ -328,4 +328,36 @@ angular.module('lemur')
   $scope.authorityService = AuthorityService;
   $scope.destinationService = DestinationService;
   $scope.notificationService = NotificationService;
+})
+
+.controller('CertificateRevokeController', function ($scope, $uibModalInstance, CertificateApi, CertificateService, LemurRestangular, NotificationService, toaster, revokeId) {
+  CertificateApi.get(revokeId).then(function (certificate) {
+    $scope.certificate = certificate;
+  });
+
+  $scope.cancel = function () {
+    $uibModalInstance.dismiss('cancel');
+  };
+
+  $scope.revoke = function (certificate) {
+   CertificateService.revoke(certificate).then(
+      function () {
+        toaster.pop({
+          type: 'success',
+          title: certificate.name,
+          body: 'Successfully revoked!'
+        });
+        $uibModalInstance.close();
+      },
+      function (response) {
+        toaster.pop({
+          type: 'error',
+          title: certificate.name,
+          body: 'lemur-bad-request',
+          bodyOutputType: 'directive',
+          directiveData: response.data,
+          timeout: 100000
+        });
+      });
+  };
 });

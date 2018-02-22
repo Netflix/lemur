@@ -258,5 +258,9 @@ angular.module('lemur')
       return certificate.customPOST(certificate.exportOptions, 'export');
     };
 
+    CertificateService.revoke = function (certificate) {
+      return certificate.customPUT({}, 'revoke');
+    };
+
     return CertificateService;
   });

@@ -19,8 +19,6 @@ from acme import challenges
 
 from lemur.common.utils import generate_private_key
 
-from cryptography.hazmat.primitives import serialization
-
 import OpenSSL.crypto
 
 from lemur.common.utils import validate_conf
@@ -86,8 +84,8 @@ def request_certificate(acme_client, authorizations, csr):
     cert_response, _ = acme_client.poll_and_request_issuance(
         jose.util.ComparableX509(
             OpenSSL.crypto.load_certificate_request(
-                OpenSSL.crypto.FILETYPE_ASN1,
-                csr.public_bytes(serialization.Encoding.DER),
+                OpenSSL.crypto.FILETYPE_PEM,
+                csr
             )
         ),
         authzrs=[authz_record.authz for authz_record in authorizations],
@@ -95,12 +93,12 @@ def request_certificate(acme_client, authorizations, csr):
 
     pem_certificate = OpenSSL.crypto.dump_certificate(
         OpenSSL.crypto.FILETYPE_PEM, cert_response.body
-    )
+    ).decode('utf-8')
 
     pem_certificate_chain = "\n".join(
         OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, cert.decode("utf-8"))
         for cert in acme_client.fetch_chain(cert_response)
-    )
+    ).decode('utf-8')
 
     current_app.logger.debug("{0} {1}".format(type(pem_certificate). type(pem_certificate_chain)))
     return pem_certificate, pem_certificate_chain
@@ -204,7 +202,8 @@ class ACMEIssuerPlugin(IssuerPlugin):
         domains = get_domains(issuer_options)
         authorizations = get_authorizations(acme_client, account_number, domains, self.dns_provider)
         pem_certificate, pem_certificate_chain = request_certificate(acme_client, authorizations, csr)
-        return pem_certificate, pem_certificate_chain
+        # TODO add external ID (if possible)
+        return pem_certificate, pem_certificate_chain, None
 
     @staticmethod
     def create_authority(options):
