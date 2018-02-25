@@ -34,7 +34,7 @@ with open(os.path.join(ROOT, 'lemur', '__about__.py')) as f:
 
 
 install_requires = [
-    'CloudFlare==1.7.5',
+    'CloudFlare==2.1.0',
     'Flask==0.12',
     'Flask-RESTful==0.3.6',
     'Flask-SQLAlchemy==2.1',
