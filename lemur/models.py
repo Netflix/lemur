@@ -8,7 +8,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from sqlalchemy import Column, Integer, ForeignKey, Index
+from sqlalchemy import Column, Integer, ForeignKey, Index, UniqueConstraint
 
 from lemur.database import db
 
@@ -41,7 +41,9 @@ certificate_notification_associations = db.Table('certificate_notification_assoc
                                                  Column('notification_id', Integer,
                                                         ForeignKey('notifications.id', ondelete='cascade')),
                                                  Column('certificate_id', Integer,
-                                                        ForeignKey('certificates.id', ondelete='cascade'))
+                                                        ForeignKey('certificates.id', ondelete='cascade')),
+                                                 Column('id', Integer, primary_key=True, autoincrement=True),
+                                                 UniqueConstraint('notification_id', 'certificate_id', name='uq_dest_not_ids')
                                                  )
 
 Index('certificate_notification_associations_ix', certificate_notification_associations.c.notification_id, certificate_notification_associations.c.certificate_id)
