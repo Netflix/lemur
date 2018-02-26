@@ -14,7 +14,8 @@ from lemur.auth.service import create_token
 from lemur.tests.vectors import PRIVATE_KEY_STR
 
 from .factories import ApiKeyFactory, AuthorityFactory, NotificationFactory, DestinationFactory, \
-    CertificateFactory, UserFactory, RoleFactory, SourceFactory, EndpointFactory, RotationPolicyFactory
+    CertificateFactory, UserFactory, RoleFactory, SourceFactory, EndpointFactory, \
+    RotationPolicyFactory, PendingCertificateFactory, AsyncAuthorityFactory
 
 
 def pytest_runtest_setup(item):
@@ -91,6 +92,13 @@ def authority(session):
 
 
 @pytest.fixture
+def async_authority(session):
+    a = AsyncAuthorityFactory()
+    session.commit()
+    return a
+
+
+@pytest.fixture
 def destination(session):
     d = DestinationFactory()
     session.commit()
@@ -145,6 +153,15 @@ def user(session):
 
 
 @pytest.fixture
+def pending_certificate(session):
+    u = UserFactory()
+    a = AsyncAuthorityFactory()
+    p = PendingCertificateFactory(user=u, authority=a)
+    session.commit()
+    return p
+
+
+@pytest.fixture
 def admin_user(session):
     u = UserFactory()
     admin_role = RoleFactory(name='admin')
@@ -153,6 +170,14 @@ def admin_user(session):
     user_token = create_token(u)
     token = {'Authorization': 'Basic ' + user_token}
     return {'user': u, 'token': token}
+
+
+@pytest.fixture
+def async_issuer_plugin():
+    from lemur.plugins.base import register
+    from .plugins.issuer_plugin import TestAsyncIssuerPlugin
+    register(TestAsyncIssuerPlugin)
+    return TestAsyncIssuerPlugin
 
 
 @pytest.fixture

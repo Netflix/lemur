@@ -25,8 +25,6 @@ from lemur.common.utils import validate_conf
 from lemur.plugins.bases import IssuerPlugin
 from lemur.plugins import lemur_acme as acme
 
-from .route53 import delete_txt_record, create_txt_record, wait_for_r53_change
-
 
 def find_dns_challenge(authz):
     for combo in authz.body.resolved_combinations:
@@ -45,12 +43,13 @@ class AuthorizationRecord(object):
         self.change_id = change_id
 
 
-def start_dns_challenge(acme_client, account_number, host):
+def start_dns_challenge(acme_client, account_number, host, dns_provider):
+    current_app.logger.debug("Starting DNS challenge for {0}".format(host))
     authz = acme_client.request_domain_challenges(host)
 
     [dns_challenge] = find_dns_challenge(authz)
 
-    change_id = create_txt_record(
+    change_id = dns_provider.create_txt_record(
         dns_challenge.validation_domain_name(host),
         dns_challenge.validation(acme_client.key),
         account_number
@@ -64,8 +63,8 @@ def start_dns_challenge(acme_client, account_number, host):
     )
 
 
-def complete_dns_challenge(acme_client, account_number, authz_record):
-    wait_for_r53_change(authz_record.change_id, account_number=account_number)
+def complete_dns_challenge(acme_client, account_number, authz_record, dns_provider):
+    dns_provider.wait_for_dns_change(authz_record.change_id, account_number=account_number)
 
     response = authz_record.dns_challenge.response(acme_client.key)
 
@@ -96,12 +95,12 @@ def request_certificate(acme_client, authorizations, csr):
         OpenSSL.crypto.FILETYPE_PEM, cert_response.body
     ).decode('utf-8')
 
-    # https://github.com/alex/letsencrypt-aws/commit/853ea7f93f141fe18d9ef12aee6b3388f98b4830
-    pem_certificate_chain = b"\n".join(
-        OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, cert)
+    pem_certificate_chain = "\n".join(
+        OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, cert.decode("utf-8"))
         for cert in acme_client.fetch_chain(cert_response)
     ).decode('utf-8')
 
+    current_app.logger.debug("{0} {1}".format(type(pem_certificate). type(pem_certificate_chain)))
     return pem_certificate, pem_certificate_chain
 
 
@@ -113,11 +112,14 @@ def setup_acme_client():
 
     key = jose.JWKRSA(key=generate_private_key('RSA2048'))
 
+    current_app.logger.debug("Connecting with directory at {0}".format(directory_url))
     client = Client(directory_url, key)
 
     registration = client.register(
         messages.NewRegistration.from_data(email=email)
     )
+
+    current_app.logger.debug("Connected: {0}".format(registration.uri))
 
     client.agree_to_tos(registration)
     return client, registration
@@ -129,26 +131,30 @@ def get_domains(options):
     :param options:
     :return:
     """
+    current_app.logger.debug("Fetching domains")
+
     domains = [options['common_name']]
     if options.get('extensions'):
         for name in options['extensions']['sub_alt_names']['names']:
-            domains.append(name.value)
+            domains.append(name)
+
+    current_app.logger.debug("Got these domains: {0}".format(domains))
     return domains
 
 
-def get_authorizations(acme_client, account_number, domains):
+def get_authorizations(acme_client, account_number, domains, dns_provider):
     authorizations = []
     try:
         for domain in domains:
-            authz_record = start_dns_challenge(acme_client, account_number, domain)
+            authz_record = start_dns_challenge(acme_client, account_number, domain, dns_provider)
             authorizations.append(authz_record)
 
         for authz_record in authorizations:
-            complete_dns_challenge(acme_client, account_number, authz_record)
+            complete_dns_challenge(acme_client, account_number, authz_record, dns_provider)
     finally:
         for authz_record in authorizations:
             dns_challenge = authz_record.dns_challenge
-            delete_txt_record(
+            dns_provider.delete_txt_record(
                 authz_record.change_id,
                 account_number,
                 dns_challenge.validation_domain_name(authz_record.host),
@@ -177,6 +183,9 @@ class ACMEIssuerPlugin(IssuerPlugin):
         ]
 
         validate_conf(current_app, required_vars)
+        self.dns_provider_name = current_app.config.get('ACME_DNS_PROVIDER', 'route53')
+        current_app.logger.debug("Using DNS provider: {0}".format(self.dns_provider_name))
+        self.dns_provider = __import__(self.dns_provider_name, globals(), locals(), [], 1)
         super(ACMEIssuerPlugin, self).__init__(*args, **kwargs)
 
     def create_certificate(self, csr, issuer_options):
@@ -191,7 +200,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
         acme_client, registration = setup_acme_client()
         account_number = current_app.config.get('ACME_AWS_ACCOUNT_NUMBER')
         domains = get_domains(issuer_options)
-        authorizations = get_authorizations(acme_client, account_number, domains)
+        authorizations = get_authorizations(acme_client, account_number, domains, self.dns_provider)
         pem_certificate, pem_certificate_chain = request_certificate(acme_client, authorizations, csr)
         # TODO add external ID (if possible)
         return pem_certificate, pem_certificate_chain, None
