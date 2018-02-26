@@ -258,8 +258,10 @@ class DigiCertIssuerPlugin(IssuerPlugin):
     """Wrap the Digicert Issuer API."""
     title = 'DigiCert'
     slug = 'digicert-issuer'
-    description = "Enables the creation of certificates by"
-    "the DigiCert REST API."
+    description = (
+        "Enables the creation of certificates by"
+        "the DigiCert REST API."
+    )
     version = digicert.VERSION
 
     author = 'Kevin Glisson'
