@@ -270,7 +270,7 @@ class CertificatesList(AuthenticatedResource):
             cert = service.create(**data)
             if isinstance(cert, Certificate):
                 # only log if created, not pending
-                log_service.create(g.user, 'create_cert', 'OK', certificate=cert)
+                log_service.create(g.user, 'create_cert', certificate=cert)
             return cert
 
         return dict(message="You are not authorized to use the authority: {0}".format(data['authority'].name)), 403

@@ -27,8 +27,10 @@ def upgrade():
         TABLE,
         sa.Column('id', sa.Integer, primary_key=True, autoincrement=True)
     )
-
+    db.session.commit()
+    db.session.flush()
 
 def downgrade():
     op.drop_column(TABLE, "id")
-
+    db.session.commit()
+    db.session.flush()

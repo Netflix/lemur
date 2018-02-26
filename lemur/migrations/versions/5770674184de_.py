@@ -18,6 +18,7 @@ session = db.session()
 
 
 def upgrade():
+    print("Querying for all entries in certificate_notification_associations.")
     # Query for all entries in table
     results = session.query(certificate_notification_associations).with_entities(
         certificate_notification_associations.c.certificate_id,
@@ -30,6 +31,7 @@ def upgrade():
     for x in results:
         # If we've seen a pair already, delete the duplicates
         if seen.get("{}-{}".format(x.certificate_id, x.notification_id)):
+            print("Deleting duplicate: {}".format(x))
             d = session.query(certificate_notification_associations).filter(certificate_notification_associations.c.id==x.id)
             d.delete(synchronize_session=False)
         seen["{}-{}".format(x.certificate_id, x.notification_id)] = True
