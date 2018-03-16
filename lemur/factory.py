@@ -9,13 +9,11 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
-import datetime
 import os
 import imp
 import errno
 import pkg_resources
 
-from cmreslogging.handlers import CMRESHandler
 from logging import Formatter, StreamHandler
 from logging.handlers import RotatingFileHandler
 
