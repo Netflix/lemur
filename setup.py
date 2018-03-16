@@ -100,6 +100,7 @@ class BuildStatic(Command):
         except Exception as e:
             log.warn("Unable to build static content")
 
+
 setup(
     name=about["__title__"],
     version=about["__version__"],
