@@ -9,13 +9,11 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
-import datetime
 import os
 import imp
 import errno
 import pkg_resources
 
-from cmreslogging.handlers import CMRESHandler
 from logging import Formatter, StreamHandler
 from logging.handlers import RotatingFileHandler
 
@@ -160,29 +158,6 @@ def configure_logging(app):
     stream_handler = StreamHandler()
     stream_handler.setLevel(app.config.get('LOG_LEVEL', 'DEBUG'))
     app.logger.addHandler(stream_handler)
-
-    if app.config.get('ELASTICSEARCH_LOGGING', False):
-        try:
-            now = datetime.datetime.now()
-            es_handler = CMRESHandler(
-                hosts=[
-                    {'host': app.config.get("ELASTICSEARCH_LOGGING_HOST", "localhost"),
-                     'port': app.config.get("ELASTICSEARCH_LOGGING_PORT", 7104)}],
-                use_ssl=app.config.get("ELASTICSEARCH_LOGGING_USE_SSL", False),
-                verify_ssl=app.config.get("ELASTICSEARCH_LOGGING_VERIFY_SSL", False),
-                auth_type=CMRESHandler.AuthType.NO_AUTH,
-                es_index_name="{}-{}.{}.{}".format(
-                    app.config.get("ELASTICSEARCH_LOGGING_INDEX", "lemur"),
-                    now.year,
-                    now.month,
-                    now.day
-                )
-            )
-            es_handler.setLevel(app.config.get('ELASTICSEARCH_LOG_LEVEL', 'INFO'))
-            app.logger.addHandler(es_handler)
-        except Exception:
-            # Let's not let a dns failure to ES cause the service to fail.
-            app.logger.error("Unable to configure Elasticsearch logging.", exc_info=True)
 
     if app.config.get('DEBUG_DUMP', False):
         activate_debug_dump()
