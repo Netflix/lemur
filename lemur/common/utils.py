@@ -53,6 +53,19 @@ def parse_certificate(body):
     return x509.load_pem_x509_certificate(body, default_backend())
 
 
+def parse_csr(csr):
+    """
+    Helper function that parses a CSR.
+
+    :param csr:
+    :return:
+    """
+    if isinstance(csr, str):
+        csr = csr.encode('utf-8')
+
+    return x509.load_pem_x509_csr(csr, default_backend())
+
+
 def get_authority_key(body):
     """Returns the authority key for a given certificate in hex format"""
     parsed_cert = parse_certificate(body)

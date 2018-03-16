@@ -258,8 +258,7 @@ class DigiCertIssuerPlugin(IssuerPlugin):
     """Wrap the Digicert Issuer API."""
     title = 'DigiCert'
     slug = 'digicert-issuer'
-    description = "Enables the creation of certificates by"
-    "the DigiCert REST API."
+    description = "Enables the creation of certificates by the DigiCert REST API."
     version = digicert.VERSION
 
     author = 'Kevin Glisson'
@@ -325,6 +324,39 @@ class DigiCertIssuerPlugin(IssuerPlugin):
         metrics.send('digicert_revoke_certificate', 'counter', 1)
         response = self.session.put(create_url, data=json.dumps({'comments': comments}))
         return handle_response(response)
+
+    def get_ordered_certificate(self, order_id):
+        """ Retrieve a certificate via order id """
+        base_url = current_app.config.get('DIGICERT_URL')
+        try:
+            certificate_id = get_certificate_id(self.session, base_url, order_id)
+        except Exception as ex:
+            return None
+        certificate_url = "{0}/services/v2/certificate/{1}/download/format/pem_all".format(base_url, certificate_id)
+        end_entity, intermediate, root = pem.parse(self.session.get(certificate_url).content)
+        cert = {'body': "\n".join(str(end_entity).splitlines()),
+                'chain': "\n".join(str(intermediate).splitlines()),
+                'external_id': str(certificate_id)}
+        return cert
+
+    def cancel_ordered_certificate(self, pending_cert, **kwargs):
+        """ Set the certificate order to canceled """
+        base_url = current_app.config.get('DIGICERT_URL')
+        api_url = "{0}/services/v2/order/certificate/{1}/status".format(base_url, pending_cert.external_id)
+        payload = {
+            'status': 'CANCELED',
+            'note': kwargs.get('note')
+        }
+        response = self.session.put(api_url, data=json.dumps(payload))
+        if response.status_code == 404:
+            # not well documented by Digicert, but either the certificate does not exist or we
+            # don't own that order (someone else's order id!).  Either way, we can just ignore it
+            # and have it removed from Lemur
+            current_app.logger.warning(
+                "Digicert Plugin tried to cancel pending certificate {0} but it does not exist!".format(pending_cert.name))
+        elif response.status_code != 204:
+            current_app.logger.debug("{0} code {1}".format(response.status_code, response.content))
+            raise Exception("Failed to cancel pending certificate {0}".format(pending_cert.name))
 
     @staticmethod
     def create_authority(options):

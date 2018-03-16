@@ -1,0 +1,50 @@
+<div class="modal-header">
+  <button type="button" class="close" ng-click="cancel()" aria-label="Close"><span aria-hidden="true">&times;</span>
+  </button>
+  <h3 class="modal-title">Edit <span class="text-muted"><small>{{ pendingCertificate.name }}</small></span></h3>
+</div>
+<div class="modal-body">
+  <form name="editForm" class="form-horizontal" role="form" novalidate>
+    <div class="form-group"
+         ng-class="{'has-error': editForm.owner.$invalid, 'has-success': !editForm.owner.$invalid&&editForm.owner.$dirty}">
+      <label class="control-label col-sm-2">
+        Owner
+      </label>
+      <div class="col-sm-10">
+        <input type="email" name="owner" ng-model="pendingCertificate.owner" placeholder="owner@example.com"
+               class="form-control" required/>
+
+        <p ng-show="editForm.owner.$invalid && !editForm.owner.$pristine" class="help-block">Enter a valid
+          email.</p>
+      </div>
+    </div>
+    <div class="form-group"
+         ng-class="{'has-error': editForm.description.$invalid, 'has-success': !editForm.$invalid&&editForm.description.$dirty}">
+      <label class="control-label col-sm-2">
+        Description
+      </label>
+      <div class="col-sm-10">
+        <textarea name="description" ng-model="pendingCertificate.description" placeholder="Something elegant"
+                  class="form-control" required></textarea>
+        <p ng-show="editForm.description.$invalid && !editForm.description.$pristine" class="help-block">You must give a
+          short description about this authority will be used for, this description should only include alphanumeric
+          characters</p>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="control-label col-sm-2">
+        Roles
+      </label>
+      <div class="col-sm-10" ng-model="pendingCertificate" role-select></div>
+    </div>
+    <div ng-include="'angular/pending_certificates/pending_certificate/replaces.tpl.html'"></div>
+    <div ng-include="'angular/pending_certificates/pending_certificate/notifications.tpl.html'"></div>
+
+    <div ng-include="'angular/pending_certificates/pending_certificate/destinations.tpl.html'"></div>
+  </form>
+</div>
+<div class="modal-footer">
+  <button type="submit" ng-click="save(pendingCertificate)" ng-disabled="editForm.$invalid" class="btn btn-success">Save
+  </button>
+  <button ng-click="cancel()" class="btn btn-danger">Cancel</button>
+</div>

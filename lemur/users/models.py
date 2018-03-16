@@ -43,6 +43,7 @@ class User(db.Model):
     profile_picture = Column(String(255))
     roles = relationship('Role', secondary=roles_users, passive_deletes=True, backref=db.backref('user'), lazy='dynamic')
     certificates = relationship('Certificate', backref=db.backref('user'), lazy='dynamic')
+    pending_certificates = relationship('PendingCertificate', backref=db.backref('user'), lazy='dynamic')
     authorities = relationship('Authority', backref=db.backref('user'), lazy='dynamic')
     keys = relationship('ApiKey', backref=db.backref('user'), lazy='dynamic')
     logs = relationship('Log', backref=db.backref('user'), lazy='dynamic')

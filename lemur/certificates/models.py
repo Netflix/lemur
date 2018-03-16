@@ -37,7 +37,7 @@ from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
 
 from lemur.models import certificate_associations, certificate_source_associations, \
     certificate_destination_associations, certificate_notification_associations, \
-    certificate_replacement_associations, roles_certificates
+    certificate_replacement_associations, roles_certificates, pending_cert_replacement_associations
 
 from lemur.domains.models import Domain
 from lemur.policies.models import RotationPolicy
@@ -128,6 +128,11 @@ class Certificate(db.Model):
                             primaryjoin=id == certificate_replacement_associations.c.certificate_id,  # noqa
                             secondaryjoin=id == certificate_replacement_associations.c.replaced_certificate_id,  # noqa
                             backref='replaced')
+
+    replaced_by_pending = relationship('PendingCertificate',
+                                       secondary=pending_cert_replacement_associations,
+                                       backref='pending_replace',
+                                       viewonly=True)
 
     logs = relationship('Log', backref='certificate')
     endpoints = relationship('Endpoint', backref='certificate')

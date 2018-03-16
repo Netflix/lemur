@@ -45,11 +45,14 @@ class CertificateCreationSchema(CertificateSchema):
     @post_load
     def default_notification(self, data):
         if not data['notifications']:
-            notification_name = "DEFAULT_{0}".format(data['owner'].split('@')[0].upper())
-            data['notifications'] += notification_service.create_default_expiration_notifications(notification_name, [data['owner']])
-
-        notification_name = 'DEFAULT_SECURITY'
-        data['notifications'] += notification_service.create_default_expiration_notifications(notification_name, current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL'))
+            data['notifications'] += notification_service.create_default_expiration_notifications(
+                "DEFAULT_{0}".format(data['owner'].split('@')[0].upper()),
+                [data['owner']],
+            )
+            data['notifications'] += notification_service.create_default_expiration_notifications(
+                'DEFAULT_SECURITY',
+                current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL')
+            )
         return data
 
 
