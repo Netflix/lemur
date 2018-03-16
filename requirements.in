@@ -1,0 +1,35 @@
+acme==0.20.0
+alembic-autogenerate-enums==0.0.2
+arrow==0.12.0
+boto3==1.5.7
+CMRESHandler
+cryptography==1.9
+Flask-Bcrypt==0.7.1
+Flask-Mail==0.9.1
+Flask-Migrate==2.1.1
+Flask-Principal==0.4.0
+Flask-RESTful==0.3.6
+Flask-Script==2.0.6
+Flask-SQLAlchemy==2.1
+Flask==0.12
+future==0.16.0
+gunicorn==19.7.1
+inflection==0.3.1
+jinja2==2.10
+lockfile==0.12.2
+marshmallow-sqlalchemy==0.13.1
+marshmallow==2.15.0
+ndg-httpsclient==0.4.2
+paramiko  # required for lemur_linuxdst plugin
+pem==17.1.0
+psycopg2==2.7.3
+pyjwt==1.5.3
+pyldap  # required by ldap auth provider
+pyOpenSSL==17.2.0
+raven[flask]==6.2.1
+requests==2.11.1
+retrying==1.3.3
+six==1.11.0
+SQLAlchemy-Utils==0.32.21
+tabulate==0.8.2
+xmltodict==0.11.0
