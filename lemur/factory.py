@@ -14,7 +14,6 @@ import os
 import imp
 import errno
 import pkg_resources
-import socket
 
 from cmreslogging.handlers import CMRESHandler
 from logging import Formatter, StreamHandler
@@ -165,7 +164,7 @@ def configure_logging(app):
     if app.config.get('ELASTICSEARCH_LOGGING', False):
         try:
             now = datetime.datetime.now()
-            handler = CMRESHandler(
+            es_handler = CMRESHandler(
                 hosts=[
                     {'host': app.config.get("ELASTICSEARCH_LOGGING_HOST", "localhost"),
                      'port': app.config.get("ELASTICSEARCH_LOGGING_PORT", 7104)}],
@@ -179,7 +178,8 @@ def configure_logging(app):
                     now.day
                 )
             )
-            app.logger.addHandler(handler)
+            es_handler.setLevel(app.config.get('LOG_LEVEL', 'DEBUG'))
+            app.logger.addHandler(es_handler)
         except Exception:
             # Let's not let a dns failure to ES cause the service to fail.
             app.logger.error("Unable to configure Elasticsearch logging.", exc_info=True)
