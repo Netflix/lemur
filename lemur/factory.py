@@ -178,7 +178,7 @@ def configure_logging(app):
                     now.day
                 )
             )
-            es_handler.setLevel(app.config.get('LOG_LEVEL', 'DEBUG'))
+            es_handler.setLevel(app.config.get('ELASTICSEARCH_LOG_LEVEL', 'INFO'))
             app.logger.addHandler(es_handler)
         except Exception:
             # Let's not let a dns failure to ES cause the service to fail.
