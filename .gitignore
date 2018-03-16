@@ -32,3 +32,6 @@ lemur/tests/tmp
 
 /lemur/plugins/lemur_email/tests/expiration-rendered.html
 /lemur/plugins/lemur_email/tests/rotation-rendered.html
+
+# Metatron decrypted secrets
+**/metatron/decrypted
