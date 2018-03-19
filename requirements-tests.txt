@@ -108,7 +108,7 @@ docutils==0.14 \
 factory-boy==2.9.2 \
     --hash=sha256:340c602f6fed2d8dd160397f28f2c0219e937f0488460450e8e5bf2add020ed6 \
     --hash=sha256:b8334bcc3c5b10af9a83ab5b8786f98cb322638dc1e6d320cad01c7f2b420e87
-fake-factory==0.7.2 \
+fake-factory==9999.9.9 \
     --hash=sha256:2f1c3b9b5a76f414d9d98dd2a54cb9f50d10c11c5160c391eb8a36f0ea6c406f \
     --hash=sha256:62a9b211c1eea951f63c992de305c31977768f042210df443885444683528173
 faker==0.8.12 \
