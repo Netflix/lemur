@@ -87,7 +87,7 @@ tqdm==4.19.8 \
     --hash=sha256:05e991ecb0f874046ddcb374396a626afd046fb4d31f73633ea752b844458a7a \
     --hash=sha256:2aea9f81fdf127048667e0ba22f5fc10ebc879fb838dc52dcf055242037ec1f7 \
     # via twine
-twine==1.10.0 \
+twine==1.11.0 \
     --hash=sha256:c3540f2b98667698412b0dc9f5e40c8c1a08a9e79e255c9c21339105eb4ca57a \
     --hash=sha256:eff86e20fdffef8abb0b638784c62d0348dac4c80380907e39b732c56e9192fb
 urllib3==1.22 \
