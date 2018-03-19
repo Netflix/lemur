@@ -37,31 +37,14 @@ with open(os.path.join(ROOT, 'lemur', '__about__.py')) as f:
 install_requires_g = parse_requirements("requirements.txt", session=PipSession())
 install_requires = [str(ir.req) for ir in install_requires_g]
 
-tests_require = [
-    'pyflakes',
-    'moto==1.1.25',
-    'nose==1.3.7',
-    'pytest==3.3.2',
-    'factory-boy==2.9.2',
-    'fake-factory==0.7.2',
-    'pytest-flask==0.10.0',
-    'freezegun==0.3.9',
-    'requests-mock==1.4.0',
-    'pytest-mock'
-]
+tests_require_g = parse_requirements("requirements-test.txt", session=PipSession())
+tests_require = [str(ir.req) for ir in tests_require_g]
 
-docs_require = [
-    'sphinx',
-    'sphinxcontrib-httpdomain',
-    'sphinx-rtd-theme'
-]
+docs_require_g = parse_requirements("requirements-docs.txt", session=PipSession())
+docs_require = [str(ir.req) for ir in docs_require_g]
 
-dev_requires = [
-    'flake8>=3.2,<4.0',
-    'pre-commit',
-    'invoke',
-    'twine'
-]
+dev_requires_g = parse_requirements("requirements-dev.txt", session=PipSession())
+dev_requires = [str(ir.req) for ir in dev_requires_g]
 
 
 class SmartInstall(install):
