@@ -66,7 +66,7 @@ install_requires = [
     'raven[flask]==6.2.1',
     'jinja2==2.10',
     'paramiko==2.4.1',  # required for lemur_linuxdst plugin
-    'pyldap==2.4.45',   # required by ldap auth provider
+    'pyldap==3.0.0',   # required by ldap auth provider
     'alembic-autogenerate-enums==0.0.2'
 ]
 
