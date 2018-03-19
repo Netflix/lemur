@@ -34,7 +34,6 @@ with open(os.path.join(ROOT, 'lemur', '__about__.py')) as f:
 
 
 install_requires = [
-    'CloudFlare==1.7.5',
     'Flask==0.12',
     'Flask-RESTful==0.3.6',
     'Flask-SQLAlchemy==2.1',
@@ -46,7 +45,7 @@ install_requires = [
     'SQLAlchemy-Utils==0.32.21',
     'requests==2.11.1',
     'ndg-httpsclient==0.4.2',
-    'psycopg2==2.7.3.2',
+    'psycopg2==2.7.3',
     'arrow==0.12.0',
     'six==1.11.0',
     'marshmallow-sqlalchemy==0.13.1',
