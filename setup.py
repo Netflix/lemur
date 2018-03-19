@@ -16,6 +16,8 @@ import datetime
 
 from distutils import log
 from distutils.core import Command
+from pip.download import PipSession
+from pip.req import parse_requirements
 from setuptools.command.develop import develop
 from setuptools.command.install import install
 from setuptools.command.sdist import sdist
@@ -32,43 +34,8 @@ about = {}
 with open(os.path.join(ROOT, 'lemur', '__about__.py')) as f:
     exec(f.read(), about)  # nosec: about file is benign
 
-
-install_requires = [
-    'Flask==0.12',
-    'Flask-RESTful==0.3.6',
-    'Flask-SQLAlchemy==2.1',
-    'Flask-Script==2.0.6',
-    'Flask-Migrate==2.1.1',
-    'Flask-Bcrypt==0.7.1',
-    'Flask-Principal==0.4.0',
-    'Flask-Mail==0.9.1',
-    'SQLAlchemy-Utils==0.32.21',
-    'requests==2.11.1',
-    'ndg-httpsclient==0.4.2',
-    'psycopg2==2.7.3',
-    'arrow==0.12.0',
-    'six==1.11.0',
-    'marshmallow-sqlalchemy==0.13.1',
-    'gunicorn==19.7.1',
-    'marshmallow==2.15.0',
-    'cryptography==1.9',
-    'xmltodict==0.11.0',
-    'pyjwt==1.5.3',
-    'lockfile==0.12.2',
-    'inflection==0.3.1',
-    'future==0.16.0',
-    'boto3==1.5.7',
-    'acme==0.20.0',
-    'retrying==1.3.3',
-    'tabulate==0.8.2',
-    'pyOpenSSL==17.2.0',
-    'pem==17.1.0',
-    'raven[flask]==6.2.1',
-    'jinja2==2.10',
-    'paramiko==2.4.1',  # required for lemur_linuxdst plugin
-    'pyldap==3.0.0',   # required by ldap auth provider
-    'alembic-autogenerate-enums==0.0.2'
-]
+install_requires_g = parse_requirements("requirements.txt", session=PipSession())
+install_requires = [str(ir.req) for ir in install_requires_g]
 
 tests_require = [
     'pyflakes',
