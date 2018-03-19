@@ -37,7 +37,7 @@ with open(os.path.join(ROOT, 'lemur', '__about__.py')) as f:
 install_requires_g = parse_requirements("requirements.txt", session=PipSession())
 install_requires = [str(ir.req) for ir in install_requires_g]
 
-tests_require_g = parse_requirements("requirements-test.txt", session=PipSession())
+tests_require_g = parse_requirements("requirements-tests.txt", session=PipSession())
 tests_require = [str(ir.req) for ir in tests_require_g]
 
 docs_require_g = parse_requirements("requirements-docs.txt", session=PipSession())
