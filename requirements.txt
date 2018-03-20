@@ -4,7 +4,7 @@
 #
 #    pip-compile --generate-hashes --output-file requirements.txt requirements.in
 #
-acme==0.20.0 \
+acme==0.22.2 \
     --hash=sha256:45121aed6c8cc2f31896ac1083068dfdeb613f3edeff9576dc0d10632ea5a3d5 \
     --hash=sha256:8b0cee192c0d76d6f4045bdb14b3cfd29d9720e0dad2046794a2a555f1eaccb7
 alembic-autogenerate-enums==0.0.2 \
