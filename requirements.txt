@@ -56,7 +56,7 @@ bcrypt==3.1.4 \
 blinker==1.4 \
     --hash=sha256:471aee25f3992bd325afa3772f1063dbdbbca947a041b8b89466dc00d606f8b6 \
     # via flask-mail, flask-principal, raven
-boto3==1.5.7 \
+boto3==1.6.12 \
     --hash=sha256:00a384f703d7abdc9eb932e64404060b6287543afbd03cae0f811dc29aa2c129 \
     --hash=sha256:c41540a1d74a4ef7c642d91cb47dae884eafe6665d76a1b9ce1032e3aabde56c
 botocore==1.8.50 \
