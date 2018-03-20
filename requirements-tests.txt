@@ -24,7 +24,7 @@ boto==2.48.0 \
     --hash=sha256:13be844158d1bd80a94c972c806ec8381b9ea72035aa06123c5db6bc6a6f3ead \
     --hash=sha256:deb8925b734b109679e3de65856018996338758f4b916ff4fe7bb62b6d7000d1 \
     # via moto
-botocore==1.9.11 \
+botocore==1.9.12 \
     --hash=sha256:38471b40c32eb20cbac8ac13b85d82d2a313f06a6a89e26fbe72160d81cb3d66 \
     --hash=sha256:5a79b44c6fa1f3befae37519add0b02307cd3425308ff8fd6793fe7a349f0c54 \
     # via boto3, moto, s3transfer
