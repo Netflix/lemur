@@ -59,7 +59,7 @@ blinker==1.4 \
 boto3==1.5.7 \
     --hash=sha256:00a384f703d7abdc9eb932e64404060b6287543afbd03cae0f811dc29aa2c129 \
     --hash=sha256:c41540a1d74a4ef7c642d91cb47dae884eafe6665d76a1b9ce1032e3aabde56c
-botocore==1.8.50 \
+botocore==1.9.12 \
     --hash=sha256:898f10e68a7a1c2be621caf046d29a8f782c0ea866d644d5be46472c00a3dee9 \
     --hash=sha256:a80a23e080f4a93d11a1c067a69304dd407d18c358cba1e0df8c96f56c9e98b4 \
     # via boto3, s3transfer
