@@ -10,7 +10,7 @@ from lemur.constants import SAN_NAMING_TEMPLATE, DEFAULT_NAMING_TEMPLATE
 def text_to_slug(value):
     """Normalize a string to a "slug" value, stripping character accents and removing non-alphanum characters."""
 
-    # Strip all character accents (ä => a): decompose Unicode characters and then drop combining chars.
+    # Strip all character accents: decompose Unicode characters and then drop combining chars.
     value = ''.join(c for c in unicodedata.normalize('NFKD', value) if not unicodedata.combining(c))
 
     # Replace all remaining non-alphanumeric characters with '-'. Multiple characters get collapsed into a single dash.
