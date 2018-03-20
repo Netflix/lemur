@@ -134,7 +134,7 @@ flask-restful==0.3.6 \
     --hash=sha256:e2f1b8063de3944b94c7f8be5cee4d2161db0267c54c5b757d875295061776fa
 flask-script==2.0.6 \
     --hash=sha256:6425963d91054cfcc185807141c7314a9c5ad46325911bd24dcb489bd0161c65
-flask-sqlalchemy==2.1 \
+flask-sqlalchemy==2.3 \
     --hash=sha256:c5244de44cc85d2267115624d83faef3f9e8f088756788694f305a5d5ad137c5
 flask==0.12 \
     --hash=sha256:7f03bb2c255452444f7265eddb51601806e5447b6f8a2d50bbc77a654a14c118 \
