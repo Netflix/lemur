@@ -265,7 +265,7 @@ pynacl==1.2.1 \
     --hash=sha256:f5ce9e26d25eb0b2d96f3ef0ad70e1d3ae89b5d60255c462252a3e456a48c053 \
     --hash=sha256:fabf73d5d0286f9e078774f3435601d2735c94ce9e514ac4fb945701edead7e4 \
     # via paramiko
-pyopenssl==17.2.0 \
+pyopenssl==17.5.0 \
     --hash=sha256:5d617ce36b07c51f330aa63b83bf7f25c40a0e95958876d54d1982f8c91b4834 \
     --hash=sha256:c8959e441c2d85d646f3d6e9024ec02b2fc8dda92596e44ce3460b3a476bc694
 pyrfc3339==1.0 \
