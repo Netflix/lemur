@@ -10,10 +10,11 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 .. moduleauthor:: Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
 """
+import josepy as jose
+
 from flask import current_app
 
 from acme.client import Client
-from acme import jose
 from acme import messages
 from acme import challenges
 
