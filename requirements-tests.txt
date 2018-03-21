@@ -6,7 +6,7 @@
 #
 asn1crypto==0.24.0        # via cryptography
 attrs==17.4.0             # via pytest
-aws-xray-sdk==0.95        # via moto
+aws-xray-sdk==0.96        # via moto
 boto3==1.6.12             # via moto
 boto==2.48.0              # via moto
 botocore==1.9.12          # via boto3, moto, s3transfer
