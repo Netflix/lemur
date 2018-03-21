@@ -301,7 +301,7 @@ s3transfer==0.1.13 \
 six==1.11.0 \
     --hash=sha256:70e8a77beed4562e7f14fe23a786b54f6296e34344c23bc42f07b15018ff98e9 \
     --hash=sha256:832dc0e10feb1aa2c68dcc57dbb658f1c7e65b9b61af69048abc87a2db00a0eb
-sqlalchemy-utils==0.32.21 \
+sqlalchemy-utils==0.33.1 \
     --hash=sha256:e35431b0e57c4f7030ff598c23813c8b7b04b508ce10e8e9ebe448645b38d6d7
 sqlalchemy==1.2.5 \
     --hash=sha256:249000654107a420a40200f1e0b555a79dfd4eff235b2ff60bc77714bd045f2d \
