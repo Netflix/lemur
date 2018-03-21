@@ -433,7 +433,7 @@ class Google(Resource):
 
         user = user_service.get_by_email(profile['email'])
 
-        if not user.active:
+        if not (user and user.active):
             metrics.send('login', 'counter', 1, metric_tags={'status': FAILURE_METRIC_STATUS})
             return dict(message='The supplied credentials are invalid.'), 403
 
