@@ -34,6 +34,10 @@ class PluginManager(InstanceManager):
         for plugin in self.all(version=2):
             if plugin.slug == slug:
                 return plugin
+        current_app.logger.error(
+            "Unable to find slug: {} in self.all version 1: {} or version 2: {}".format(
+                slug, self.all(version=1), self.all(version=2))
+        )
         raise KeyError(slug)
 
     def first(self, func_name, *args, **kwargs):

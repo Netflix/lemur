@@ -16,8 +16,8 @@ gunicorn==19.7.1
 inflection==0.3.1
 jinja2==2.10
 lockfile==0.12.2
-marshmallow-sqlalchemy==0.13.1
-marshmallow==2.15.0
+marshmallow-sqlalchemy
+marshmallow
 ndg-httpsclient==0.4.2
 paramiko==2.4.1  # required for lemur_linuxdst plugin
 pem==17.1.0
