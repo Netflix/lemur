@@ -1,6 +1,6 @@
 acme
-alembic-autogenerate-enums==0.0.2
-arrow==0.12.0
+alembic-autogenerate-enums
+arrow
 boto3
 cryptography
 Flask-Bcrypt==0.7.1
@@ -11,24 +11,25 @@ Flask-RESTful==0.3.6
 Flask-Script==2.0.6
 Flask-SQLAlchemy
 Flask==0.12
-future==0.16.0
-gunicorn==19.7.1
-inflection==0.3.1
-jinja2==2.10
-lockfile==0.12.2
+Flask-Cors
+future
+gunicorn
+inflection
+jinja2
+lockfile
 marshmallow-sqlalchemy
 marshmallow
-ndg-httpsclient==0.4.2
-paramiko==2.4.1  # required for lemur_linuxdst plugin
-pem==17.1.0
+ndg-httpsclient
+paramiko  # required for the SFTP destination plugin
+pem
 psycopg2
 pyjwt
-pyOpenSSL
+pyOpenSSL==17.2.0 # PINNED for a specific reason. This needs to be merged in before upgrade: https://github.com/shazow/urllib3/pull/1246
 python_ldap
-raven[flask]==6.2.1
-requests
-retrying==1.3.3
-six==1.11.0
+raven[flask]
+requests==2.11.1 # PINNED for a specific reason. This needs to be merged in before upgrade: https://github.com/shazow/urllib3/pull/1246
+retrying
+six
 SQLAlchemy-Utils
-tabulate==0.8.2
-xmltodict==0.11.0
+tabulate
+xmltodict
