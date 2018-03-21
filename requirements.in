@@ -1,6 +1,6 @@
 Flask==0.12
 Flask-RESTful==0.3.6
-Flask-SQLAlchemy==2.1
+Flask-SQLAlchemy>2,<3
 Flask-Script==2.0.6
 Flask-Migrate==2.1.1
 Flask-Bcrypt==0.7.1
@@ -30,5 +30,5 @@ pem==17.1.0
 raven[flask]==6.2.1
 jinja2==2.10
 paramiko==2.4.1  # required for lemur_linuxdst plugin
-pyldap==3.0.0   # required by ldap auth provider
+python_ldap<=3.0.0b4
 alembic-autogenerate-enums==0.0.2
