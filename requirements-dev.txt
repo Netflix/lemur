@@ -44,8 +44,7 @@ mccabe==0.6.1 \
     --hash=sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f \
     # via flake8
 nodeenv==1.3.0 \
-    --hash=sha256:dd0a34001090ff042cfdb4b0c8d6a6f7ec9baa49733f00b695bb8a8b4700ba6c \
-    # via pre-commit
+    --hash=sha256:dd0a34001090ff042cfdb4b0c8d6a6f7ec9baa49733f00b695bb8a8b4700ba6c
 pkginfo==1.4.2 \
     --hash=sha256:5878d542a4b3f237e359926384f1dde4e099c9f5525d236b1840cf704fa8d474 \
     --hash=sha256:a39076cb3eb34c333a0dd390b568e9e1e881c7bf2cc0aee12120636816f55aee \
