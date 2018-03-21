@@ -11,7 +11,6 @@
 .. moduleauthor:: Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
 """
 import josepy as jose
-import json
 
 from flask import current_app
 
