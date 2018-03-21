@@ -235,7 +235,7 @@ pyasn1==0.4.2 \
 pycparser==2.18 \
     --hash=sha256:99a8ca03e29851d96616ad0404b4aad7d9ee16f25c9f9708a11faf2810f7b226 \
     # via cffi
-pyjwt==1.5.3 \
+pyjwt==1.6.1 \
     --hash=sha256:500be75b17a63f70072416843dc80c8821109030be824f4d14758f114978bae7 \
     --hash=sha256:a4e5f1441e3ca7b382fd0c0b416777ced1f97c64ef0c33bfa39daf38505cfd2f
 pyldap==3.0.0 \
