@@ -23,10 +23,10 @@ paramiko==2.4.1  # required for lemur_linuxdst plugin
 pem==17.1.0
 psycopg2
 pyjwt
-pyOpenSSL
+pyOpenSSL==17.2.0
 python_ldap
 raven[flask]==6.2.1
-requests
+requests==2.11.1
 retrying==1.3.3
 six==1.11.0
 SQLAlchemy-Utils
