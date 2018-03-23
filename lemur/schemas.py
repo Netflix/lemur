@@ -248,7 +248,7 @@ class NamesSchema(BaseExtensionSchema):
 
 
 class ExtensionSchema(BaseExtensionSchema):
-    basic_constraints = BasicConstraintsExtension(missing={'ca': False})
+    basic_constraints = BasicConstraintsExtension()  # some devices balk on default basic constraints
     key_usage = KeyUsageExtension()
     extended_key_usage = ExtendedKeyUsageExtension()
     subject_key_identifier = fields.Nested(SubjectKeyIdentifierSchema)
