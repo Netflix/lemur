@@ -220,6 +220,14 @@ class CertificateInfoAccessSchema(BaseExtensionSchema):
         return {'includeAIA': data['include_aia']}
 
 
+class CRLDistributionPointsSchema(BaseExtensionSchema):
+    include_crl_dp = fields.String()
+
+    @post_dump
+    def handle_keys(self, data):
+        return {'includeCRLDP': data['include_crl_dp']}
+
+
 class SubjectKeyIdentifierSchema(BaseExtensionSchema):
     include_ski = fields.Boolean()
 
@@ -247,6 +255,7 @@ class ExtensionSchema(BaseExtensionSchema):
     sub_alt_names = fields.Nested(NamesSchema)
     authority_key_identifier = fields.Nested(AuthorityKeyIdentifierSchema)
     certificate_info_access = fields.Nested(CertificateInfoAccessSchema)
+    crl_distribution_points = fields.Nested(CRLDistributionPointsSchema, dump_to='cRL_distribution_points')
     # FIXME: Convert custom OIDs to a custom field in fields.py like other Extensions
     # FIXME: Remove support in UI for Critical custom extensions https://github.com/Netflix/lemur/issues/665
     custom = fields.List(fields.Nested(CustomOIDSchema))
