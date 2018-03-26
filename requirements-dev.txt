@@ -26,4 +26,4 @@ six==1.11.0               # via cfgv, pre-commit
 tqdm==4.19.8              # via twine
 twine==1.11.0
 urllib3==1.22             # via requests
-virtualenv==15.1.0        # via pre-commit
+virtualenv==15.2.0        # via pre-commit
