@@ -6,14 +6,14 @@
 #
 acme==0.22.2
 alembic-autogenerate-enums==0.0.2
-alembic==0.9.8            # via flask-migrate
+alembic==0.9.9            # via flask-migrate
 aniso8601==3.0.0          # via flask-restful
-arrow==0.12.0
+arrow==0.12.1
 asn1crypto==0.24.0        # via cryptography
 bcrypt==3.1.4             # via flask-bcrypt, paramiko
 blinker==1.4              # via flask-mail, flask-principal, raven
-boto3==1.6.12
-botocore==1.9.12          # via boto3, s3transfer
+boto3==1.6.16
+botocore==1.9.16          # via boto3, s3transfer
 cffi==1.11.5              # via bcrypt, cryptography, pynacl
 click==6.7                # via flask
 cryptography==2.2.1
@@ -40,13 +40,13 @@ markupsafe==1.0           # via jinja2, mako
 marshmallow-sqlalchemy==0.13.2
 marshmallow==2.15.0
 mock==2.0.0               # via acme
-ndg-httpsclient==0.4.2
+ndg-httpsclient==0.4.4
 paramiko==2.4.1
 pbr==3.1.1                # via mock
 pem==17.1.0
 psycopg2==2.7.4
 pyasn1-modules==0.2.1     # via python-ldap
-pyasn1==0.4.2             # via paramiko, pyasn1-modules, python-ldap, requests
+pyasn1==0.4.2             # via ndg-httpsclient, paramiko, pyasn1-modules, python-ldap, requests
 pycparser==2.18           # via cffi
 pyjwt==1.6.1
 pynacl==1.2.1             # via paramiko
@@ -56,7 +56,7 @@ python-dateutil==2.6.1    # via alembic, arrow, botocore
 python-editor==1.0.3      # via alembic
 python-ldap==3.0.0
 pytz==2018.3              # via acme, flask-restful, pyrfc3339
-raven[flask]==6.2.1
+raven[flask]==6.6.0
 requests[security]==2.11.1
 retrying==1.3.3
 s3transfer==0.1.13        # via boto3
