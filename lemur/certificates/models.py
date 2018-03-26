@@ -332,9 +332,8 @@ class Certificate(db.Model):
 
                     return_extensions['authority_key_identifier'] = aki
 
-                # TODO: Don't support CRLDistributionPoints yet https://github.com/Netflix/lemur/issues/662
                 elif isinstance(value, x509.CRLDistributionPoints):
-                    current_app.logger.warning('CRLDistributionPoints not yet supported for clone operation.')
+                    return_extensions['crl_distribution_points'] = {'include_crl_dp': value}
 
                 # TODO: Not supporting custom OIDs yet. https://github.com/Netflix/lemur/issues/665
                 else:
