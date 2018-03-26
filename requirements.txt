@@ -52,7 +52,7 @@ pyjwt==1.6.1
 pynacl==1.2.1             # via paramiko
 pyopenssl==17.2.0
 pyrfc3339==1.0            # via acme
-python-dateutil==2.6.1    # via alembic, arrow, botocore
+python-dateutil==2.7.2    # via alembic, arrow, botocore
 python-editor==1.0.3      # via alembic
 python-ldap==3.0.0
 pytz==2018.3              # via acme, flask-restful, pyrfc3339
