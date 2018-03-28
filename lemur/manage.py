@@ -108,6 +108,9 @@ LEMUR_DEFAULT_ORGANIZATIONAL_UNIT = ''
 # Authentication Providers
 ACTIVE_PROVIDERS = []
 
+# Metrics Providers
+METRIC_PROVIDERS = []
+
 # Logging
 
 LOG_LEVEL = "DEBUG"

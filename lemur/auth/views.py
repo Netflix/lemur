@@ -337,7 +337,7 @@ class Ping(Resource):
         roles = create_user_roles(profile)
         update_user(user, profile, roles)
 
-        if not user.active:
+        if not user or not user.active:
             metrics.send('login', 'counter', 1, metric_tags={'status': FAILURE_METRIC_STATUS})
             return dict(message='The supplied credentials are invalid'), 403
 

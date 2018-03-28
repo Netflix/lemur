@@ -518,6 +518,21 @@ For more information about how to use social logins, see: `Satellizer <https://g
             GOOGLE_SECRET = "somethingsecret"
 
 
+Metric Providers
+~~~~~~~~~~~~~~~~
+
+If you are not using a metric provider you do not need to configure any of these options.
+
+.. data:: ACTIVE_PROVIDERS
+    :noindex:
+
+        A list of metric plugins slugs to be ativated.
+
+        ::
+
+            METRIC_PROVIDERS = ['atlas-metric']
+
+
 Plugin Specific Options
 -----------------------
 
