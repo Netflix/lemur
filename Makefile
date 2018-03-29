@@ -1,6 +1,6 @@
 NPM_ROOT = ./node_modules
 STATIC_DIR = src/lemur/static/app
-
+SHELL=/bin/bash
 USER := $(shell whoami)
 
 develop: update-submodules setup-git
@@ -103,5 +103,22 @@ coverage: develop
 
 publish:
 	python setup.py sdist bdist_wheel upload
+
+up-reqs:
+ifndef VIRTUAL_ENV
+    $(error Please activate virtualenv first)
+endif
+	@echo "--> Updating Python requirements"
+	pip install --upgrade pip-tools
+	pip-compile --output-file requirements-docs.txt requirements-docs.in -U
+	pip-compile --output-file requirements-dev.txt requirements-dev.in -U
+	pip-compile --output-file requirements-tests.txt requirements-tests.in -U
+	pip-compile --output-file requirements.txt requirements.in -U
+	@echo "--> Done updating Python requirements"
+	@echo "--> Installing new dependencies"
+	pip install -e .
+	@echo "--> Done installing new dependencies"
+	@echo ""
+
 
 .PHONY: develop dev-postgres dev-docs setup-git build clean update-submodules test testloop test-cli test-js test-python lint lint-python lint-js coverage publish release

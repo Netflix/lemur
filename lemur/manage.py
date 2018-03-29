@@ -518,19 +518,6 @@ def publish_verisign_units():
         requests.post('http://localhost:8078/metrics', data=json.dumps(metric))
 
 
-@manager.command
-def publish_unapproved_verisign_certificates():
-    """
-    Query the Verisign for any certificates that need to be approved.
-    :return:
-    """
-    from lemur.plugins import plugins
-    from lemur.extensions import metrics
-    v = plugins.get('verisign-issuer')
-    certs = v.get_pending_certificates()
-    metrics.send('pending_certificates', 'gauge', certs)
-
-
 def main():
     manager.add_command("start", LemurServer())
     manager.add_command("runserver", Server(host='127.0.0.1', threaded=True))
