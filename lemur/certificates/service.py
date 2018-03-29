@@ -298,16 +298,20 @@ def render(args):
 
     if filt:
         terms = filt.split(';')
+        term = '%{0}%'.format(terms[1])
+        # Exact matches for quotes. Only applies to name, issuer, and cn
+        if terms[1].startswith('"') and terms[1].endswith('"'):
+            term = terms[1][1:-1]
 
         if 'issuer' in terms:
             # we can't rely on issuer being correct in the cert directly so we combine queries
             sub_query = database.session_query(Authority.id)\
-                .filter(Authority.name.ilike('%{0}%'.format(terms[1])))\
+                .filter(Authority.name.ilike(term))\
                 .subquery()
 
             query = query.filter(
                 or_(
-                    Certificate.issuer.ilike('%{0}%'.format(terms[1])),
+                    Certificate.issuer.ilike(term),
                     Certificate.authority_id.in_(sub_query)
                 )
             )
@@ -321,12 +325,20 @@ def render(args):
         elif 'cn' in terms:
             query = query.filter(
                 or_(
-                    Certificate.cn.ilike('%{0}%'.format(terms[1])),
-                    Certificate.domains.any(Domain.name.ilike('%{0}%'.format(terms[1])))
+                    Certificate.cn.ilike(term),
+                    Certificate.domains.any(Domain.name.ilike(term))
                 )
             )
         elif 'id' in terms:
             query = query.filter(Certificate.id == cast(terms[1], Integer))
+        elif 'name' in terms:
+            query = query.filter(
+                or_(
+                    Certificate.name.ilike(term),
+                    Certificate.domains.any(Domain.name.ilike(term)),
+                    Certificate.cn.ilike(term),
+                )
+            )
         else:
             query = database.filter(query, Certificate, terms)
 
