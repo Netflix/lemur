@@ -2,7 +2,7 @@ coverage
 factory-boy
 Faker
 freezegun
-moto>1,<2
+moto
 nose
 pyflakes
 pytest
