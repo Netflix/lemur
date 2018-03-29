@@ -18,7 +18,7 @@ cookies==2.2.1            # via moto
 coverage==4.5.1
 cryptography==2.2.2       # via moto
 docker-pycreds==0.2.2     # via docker
-docker==3.1.4             # via moto
+docker==3.2.0             # via moto
 docutils==0.14            # via botocore
 factory-boy==2.10.0
 faker==0.8.12
