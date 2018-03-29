@@ -221,25 +221,6 @@ class VerisignIssuerPlugin(IssuerPlugin):
         response = self.session.post(url, headers={'content-type': 'application/x-www-form-urlencoded'})
         return handle_response(response.content)['Response']['Order']
 
-    def get_pending_certificates(self):
-        """
-        Uses Verisign to fetch the number of certificate awaiting approval.
-
-        :return:
-        """
-        url = current_app.config.get("VERISIGN_URL") + '/reportingws'
-
-        end = arrow.now()
-        start = end.replace(days=-7)
-        data = {
-            'reportType': 'summary',
-            'certProductType': 'Server',
-            'startDate': start.format("MM/DD/YYYY"),
-            'endDate': end.format("MM/DD/YYYY"),
-        }
-        response = self.session.post(url, data=data)
-        return response.json()['certificateSummary'][0]['Pending']
-
     def clear_pending_certificates(self):
         """
         Uses Verisign to clear the pending certificates awaiting approval.
