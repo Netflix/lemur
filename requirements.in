@@ -19,7 +19,7 @@ lockfile
 marshmallow-sqlalchemy
 marshmallow
 ndg-httpsclient
-paramiko  # required for lemur_linuxdst plugin
+paramiko  # required for the SFTP destination plugin
 pem
 psycopg2
 pyjwt
