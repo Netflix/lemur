@@ -108,6 +108,9 @@ LEMUR_DEFAULT_ORGANIZATIONAL_UNIT = ''
 # Authentication Providers
 ACTIVE_PROVIDERS = []
 
+# Metrics Providers
+METRIC_PROVIDERS = []
+
 # Logging
 
 LOG_LEVEL = "DEBUG"
@@ -513,19 +516,6 @@ def publish_verisign_units():
         ]
 
         requests.post('http://localhost:8078/metrics', data=json.dumps(metric))
-
-
-@manager.command
-def publish_unapproved_verisign_certificates():
-    """
-    Query the Verisign for any certificates that need to be approved.
-    :return:
-    """
-    from lemur.plugins import plugins
-    from lemur.extensions import metrics
-    v = plugins.get('verisign-issuer')
-    certs = v.get_pending_certificates()
-    metrics.send('pending_certificates', 'gauge', certs)
 
 
 def main():
