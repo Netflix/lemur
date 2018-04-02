@@ -13,6 +13,7 @@ import arrow
 from sqlalchemy import func
 
 from lemur import database
+from lemur.common.utils import truthiness
 from lemur.endpoints.models import Endpoint, Policy, Cipher
 from lemur.extensions import metrics
 
@@ -142,7 +143,7 @@ def render(args):
     if filt:
         terms = filt.split(';')
         if 'active' in filt:  # this is really weird but strcmp seems to not work here??
-            query = query.filter(Endpoint.active == terms[1])
+            query = query.filter(Endpoint.active == truthiness(terms[1]))
         elif 'port' in filt:
             if terms[1] != 'null':  # ng-table adds 'null' if a number is removed
                 query = query.filter(Endpoint.port == terms[1])
