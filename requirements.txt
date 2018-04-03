@@ -13,7 +13,7 @@ asn1crypto==0.24.0        # via cryptography
 bcrypt==3.1.4             # via flask-bcrypt, paramiko
 blinker==1.4              # via flask-mail, flask-principal, raven
 boto3==1.6.19
-botocore==1.9.22          # via boto3, s3transfer
+botocore==1.9.23          # via boto3, s3transfer
 cffi==1.11.5              # via bcrypt, cryptography, pynacl
 click==6.7                # via flask
 cryptography==2.2.2
