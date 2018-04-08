@@ -5,7 +5,7 @@
 #    pip-compile --output-file requirements-dev.txt requirements-dev.in
 #
 aspy.yaml==1.0.0          # via pre-commit
-cached-property==1.4.1    # via pre-commit
+cached-property==1.4.2    # via pre-commit
 certifi==2018.1.18        # via requests
 cfgv==1.0.0               # via pre-commit
 chardet==3.0.4            # via requests
