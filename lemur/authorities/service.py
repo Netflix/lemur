@@ -9,6 +9,7 @@
 
 """
 from lemur import database
+from lemur.common.utils import truthiness
 from lemur.extensions import metrics
 from lemur.authorities.models import Authority
 from lemur.roles import service as role_service
@@ -170,8 +171,8 @@ def render(args):
 
     if filt:
         terms = filt.split(';')
-        if 'active' in filt:  # this is really weird but strcmp seems to not work here??
-            query = query.filter(Authority.active == terms[1])
+        if 'active' in filt:
+            query = query.filter(Authority.active == truthiness(terms[1]))
         else:
             query = database.filter(query, Authority, terms)
 

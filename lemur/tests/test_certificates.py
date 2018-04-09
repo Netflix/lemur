@@ -717,3 +717,11 @@ def test_certificates_upload_patch(client, token, status):
 def test_sensitive_sort(client):
     resp = client.get(api.url_for(CertificatesList) + '?sortBy=private_key&sortDir=asc', headers=VALID_ADMIN_HEADER_TOKEN)
     assert "'private_key' is not sortable or filterable" in resp.json['message']
+
+
+def test_boolean_filter(client):
+    resp = client.get(api.url_for(CertificatesList) + '?filter=notify;true', headers=VALID_ADMIN_HEADER_TOKEN)
+    assert resp.status_code == 200
+    # Also don't crash with invalid input (we currently treat that as false)
+    resp = client.get(api.url_for(CertificatesList) + '?filter=notify;whatisthis', headers=VALID_ADMIN_HEADER_TOKEN)
+    assert resp.status_code == 200

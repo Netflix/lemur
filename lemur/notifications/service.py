@@ -12,6 +12,7 @@ from flask import current_app
 
 from lemur import database
 from lemur.certificates.models import Certificate
+from lemur.common.utils import truthiness
 from lemur.notifications.models import Notification
 
 
@@ -169,10 +170,8 @@ def render(args):
 
     if filt:
         terms = filt.split(';')
-        if terms[0] == 'active' and terms[1] == 'false':
-            query = query.filter(Notification.active == False)  # noqa
-        elif terms[0] == 'active' and terms[1] == 'true':
-            query = query.filter(Notification.active == True)  # noqa
+        if terms[0] == 'active':
+            query = query.filter(Notification.active == truthiness(terms[1]))
         else:
             query = database.filter(query, Notification, terms)
 

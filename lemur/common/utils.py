@@ -175,3 +175,9 @@ def windowed_query(q, column, windowsize):
             column, windowsize):
         for row in q.filter(whereclause).order_by(column):
             yield row
+
+
+def truthiness(s):
+    """If input string resembles something truthy then return True, else False."""
+
+    return s.lower() in ('true', 'yes', 'on', 't', '1')
