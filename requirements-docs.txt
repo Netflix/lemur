@@ -20,7 +20,7 @@ pytz==2018.3              # via babel
 requests==2.18.4          # via sphinx
 six==1.11.0               # via packaging, sphinx, sphinxcontrib-httpdomain
 snowballstemmer==1.2.1    # via sphinx
-sphinx-rtd-theme==0.2.4
+sphinx-rtd-theme==0.3.0
 sphinx==1.7.2
 sphinxcontrib-httpdomain==1.6.1
 sphinxcontrib-websupport==1.0.1  # via sphinx
