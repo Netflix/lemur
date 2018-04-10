@@ -42,7 +42,7 @@ pyaml==17.12.1            # via moto
 pycparser==2.18           # via cffi
 pyflakes==1.6.0
 pytest-flask==0.10.0
-pytest-mock==1.8.0
+pytest-mock==1.9.0
 pytest==3.5.0
 python-dateutil==2.6.1    # via botocore, faker, freezegun, moto
 pytz==2018.3              # via moto
