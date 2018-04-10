@@ -6,13 +6,15 @@ from lemur.database import db
 
 
 class DnsProviders(db.Model):
-    __tablename__ = 'dns_providers'
-    id = Column(Integer(), primary_key=True)
-    name = Column(String(length=256), unique=True, nullable=True)
-    description = Column(String(length=1024), nullable=True)
-    provider_type = Column(String(length=256), nullable=True)
-    credentials = Column(String(length=256), nullable=True)
-    api_endpoint = Column(String(length=256), nullable=True)
-    date_created = Column(ArrowType(), server_default=text('now()'), nullable=False)
-    status = Column(String(length=128), nullable=True)
-    options = Column(JSON)
+    db.Table('dns_providers',
+             Column('id', Integer(), nullable=False),
+             Column('name', String(length=256), nullable=True),
+             Column('description', String(length=1024), nullable=True),
+             Column('provider_type', String(length=256), nullable=True),
+             Column('credentials', String(length=256), nullable=True),
+             Column('api_endpoint', String(length=256), nullable=True),
+             Column('date_created', ArrowType(), server_default=text('now()'), nullable=False),
+             Column('status', String(length=128), nullable=True),
+             Column('options', JSON),
+             PrimaryKeyConstraint('id'),
+             UniqueConstraint('name'))
