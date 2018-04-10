@@ -102,6 +102,7 @@ class Certificate(db.Model):
     serial = Column(String(128))
     cn = Column(String(128))
     deleted = Column(Boolean, index=True)
+    dns_provider = Column(Integer(), nullable=True)
 
     not_before = Column(ArrowType)
     not_after = Column(ArrowType)

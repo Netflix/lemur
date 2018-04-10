@@ -11,6 +11,7 @@
 .. moduleauthor:: Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
 """
 import josepy as jose
+import json
 
 from flask import current_app
 
@@ -105,8 +106,9 @@ def request_certificate(acme_client, authorizations, csr):
     return pem_certificate, pem_certificate_chain
 
 
-def setup_acme_client():
-    email = current_app.config.get('ACME_EMAIL')
+def setup_acme_client(authority):
+    options = json.loads(authority.get('options', '[]'))
+    email = options.getcurrent_app.config.get('ACME_EMAIL')
     tel = current_app.config.get('ACME_TEL')
     directory_url = current_app.config.get('ACME_DIRECTORY_URL')
     contact = ('mailto:{}'.format(email), 'tel:{}'.format(tel))
@@ -174,6 +176,36 @@ class ACMEIssuerPlugin(IssuerPlugin):
     author = 'Kevin Glisson'
     author_url = 'https://github.com/netflix/lemur.git'
 
+    options = [
+        {
+            'name': 'acme_url',
+            'type': 'str',
+            'required': True,
+            'validation': '/^http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+$/',
+            'helpMessage': 'Must be a valid web url starting with http[s]://',
+        },
+        {
+            'name': 'telephone',
+            'type': 'str',
+            'default': '',
+            'helpMessage': 'Telephone to use'
+        },
+        {
+            'name': 'email',
+            'type': 'str',
+            'default': '',
+            'validation': '/^?([-a-zA-Z0-9.`?{}]+@\w+\.\w+)$/',
+            'helpMessage': 'Email to use'
+        },
+        {
+            'name': 'certificate',
+            'type': 'textarea',
+            'default': '',
+            'validation': '/^-----BEGIN CERTIFICATE-----/',
+            'helpMessage': 'Certificate to use'
+        },
+    ]
+
     def __init__(self, *args, **kwargs):
         required_vars = [
             'ACME_DIRECTORY_URL',
@@ -198,7 +230,8 @@ class ACMEIssuerPlugin(IssuerPlugin):
         :return: :raise Exception:
         """
         current_app.logger.debug("Requesting a new acme certificate: {0}".format(issuer_options))
-        acme_client, registration = setup_acme_client()
+        acme_client, registration = setup_acme_client(issuer_options.get(issuer_options.get('authority')))
+        # Deal with account number per certificate
         account_number = current_app.config.get('ACME_AWS_ACCOUNT_NUMBER')
         domains = get_domains(issuer_options)
         authorizations = get_authorizations(acme_client, account_number, domains, self.dns_provider)
@@ -216,4 +249,11 @@ class ACMEIssuerPlugin(IssuerPlugin):
         :return:
         """
         role = {'username': '', 'password': '', 'name': 'acme'}
-        return current_app.config.get('ACME_ROOT'), "", [role]
+        plugin_options = options.get('plugin').get('plugin_options')
+        # Define static acme_root based off configuration variable by default. However, if user has passed a
+        # certificate, use this certificate as the root.
+        acme_root = current_app.config.get('ACME_ROOT')
+        for option in plugin_options:
+            if option.get('name') == 'certificate':
+                acme_root = option.get('value')
+        return acme_root, "", [role]

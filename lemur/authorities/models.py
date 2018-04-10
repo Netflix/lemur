@@ -42,6 +42,7 @@ class Authority(db.Model):
         self.description = kwargs.get('description')
         self.authority_certificate = kwargs['authority_certificate']
         self.plugin_name = kwargs['plugin']['slug']
+        self.options = kwargs.get('options')
 
     @property
     def plugin(self):

@@ -8,6 +8,9 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
+
+import json
+
 from lemur import database
 from lemur.common.utils import truthiness
 from lemur.extensions import metrics
@@ -107,6 +110,8 @@ def create(**kwargs):
 
     cert = upload(**kwargs)
     kwargs['authority_certificate'] = cert
+    if kwargs.get('plugin', {}).get('plugin_options', []):
+        kwargs['options'] = json.dumps(kwargs.get('plugin', {}).get('plugin_options', []))
 
     authority = Authority(**kwargs)
     authority = database.create(authority)
