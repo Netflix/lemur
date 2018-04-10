@@ -498,7 +498,6 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
         # By default return RSA
         return "\n".join(str(end_entity).splitlines()), current_app.config.get('DIGICERT_CIS_INTERMEDIATE'), data['id']
 
-
     def revoke_certificate(self, certificate, comments):
         """Revoke a Digicert certificate."""
         base_url = current_app.config.get('DIGICERT_CIS_URL')
