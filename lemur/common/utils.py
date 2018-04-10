@@ -112,7 +112,6 @@ def generate_private_key(key_type):
         "ECCSECT571R2": ec.SECT571R1(),
     }
 
-
     if key_type not in CERTIFICATE_KEY_TYPES:
         raise Exception("Invalid key type: {key_type}. Supported key types: {choices}".format(
             key_type=key_type,
