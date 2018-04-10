@@ -26,3 +26,6 @@ sentry = Sentry()
 
 from blinker import Namespace
 signals = Namespace()
+
+from flask_cors import CORS
+cors = CORS()
