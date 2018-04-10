@@ -51,6 +51,7 @@ angular.module('lemur')
           }
       });
     });
+    console.log("HERE2")
 
     $scope.getAuthoritiesByName = function (value) {
       return AuthorityService.findAuthorityByName(value).then(function (authorities) {

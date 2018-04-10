@@ -44,20 +44,22 @@ angular.module('lemur')
 
     DestinationApi.get(editId).then(function (destination) {
       $scope.destination = destination;
-
+      console.log("HERE1");
       PluginService.getByType('destination').then(function (plugins) {
         $scope.plugins = plugins;
-
         _.each($scope.plugins, function (plugin) {
+          console.log("HERE2");
           if (plugin.slug === $scope.destination.plugin.slug) {
             plugin.pluginOptions = $scope.destination.plugin.pluginOptions;
             $scope.destination.plugin = plugin;
             _.each($scope.destination.plugin.pluginOptions, function (option) {
+              console.log("HERE3");
               if (option.type === 'export-plugin') {
                 PluginService.getByType('export').then(function (plugins) {
                   $scope.exportPlugins = plugins;
 
                   _.each($scope.exportPlugins, function (plugin) {
+                    console.log("HERE4");
                     if (plugin.slug === option.value.slug) {
                       plugin.pluginOptions = option.value.pluginOptions;
                       option.value = plugin;
