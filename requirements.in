@@ -11,6 +11,7 @@ Flask-RESTful==0.3.6
 Flask-Script==2.0.6
 Flask-SQLAlchemy
 Flask==0.12
+Flask-Cors
 future
 gunicorn
 inflection
