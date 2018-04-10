@@ -21,7 +21,7 @@ from flask import Flask
 
 from lemur.certificates.hooks import activate_debug_dump
 from lemur.common.health import mod as health
-from lemur.extensions import db, migrate, principal, smtp_mail, metrics, sentry
+from lemur.extensions import db, migrate, principal, smtp_mail, metrics, sentry, cors
 
 
 DEFAULT_BLUEPRINTS = (
@@ -124,6 +124,8 @@ def configure_extensions(app):
     smtp_mail.init_app(app)
     metrics.init_app(app)
     sentry.init_app(app)
+    app.config['CORS_HEADERS'] = 'Content-Type'
+    cors.init_app(app, resources=r'/api/*', headers='Content-Type', origin='*', supports_credentials=True)
 
 
 def configure_blueprints(app, blueprints):

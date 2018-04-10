@@ -8,7 +8,8 @@
 
 
 """
-from __future__ import absolute_import, division, print_function
+import time
+from flask import g, request
 
 from lemur import factory
 from lemur.extensions import metrics
@@ -73,17 +74,6 @@ def configure_hook(app):
     """
     from flask import jsonify
     from werkzeug.exceptions import HTTPException
-    from lemur.decorators import crossdomain
-    if app.config.get('CORS'):
-        @app.after_request
-        @crossdomain(origin=u"http://localhost:3000", methods=['PUT', 'HEAD', 'GET', 'POST', 'OPTIONS', 'DELETE'])
-        def after(response):
-            return response
-
-    @app.after_request
-    def log_status(response):
-        metrics.send('status_code_{}'.format(response.status_code), 'counter', 1)
-        return response
 
     @app.errorhandler(Exception)
     def handle_error(e):
@@ -93,3 +83,29 @@ def configure_hook(app):
 
         app.logger.exception(e)
         return jsonify(error=str(e)), code
+
+    @app.before_request
+    def before_request():
+        g.request_start_time = time.time()
+
+    @app.after_request
+    def after_request(response):
+        # Return early if we don't have the start time
+        if not hasattr(g, 'request_start_time'):
+            return response
+
+        # Get elapsed time in milliseconds
+        elapsed = time.time() - g.request_start_time
+        elapsed = int(round(1000 * elapsed))
+
+        # Collect request/response tags
+        tags = {
+            'endpoint': request.endpoint,
+            'request_method': request.method.lower(),
+            'status_code': response.status_code
+        }
+
+        # Record our response time metric
+        metrics.send('response_time', 'TIMER', elapsed, metric_tags=tags)
+        metrics.send('status_code_{}'.format(response.status_code), 'counter', 1)
+        return response
