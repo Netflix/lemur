@@ -48,7 +48,7 @@ of Lemur. You'll want to make sure you have a few things on your local system fi
 * pip
 * virtualenv (ideally virtualenvwrapper)
 * node.js (for npm and building css/javascript)
-* (Optional) PostgreSQL
++* `PostgreSQL <https://lemur.readthedocs.io/en/latest/quickstart/index.html#setup-postgres>`_
 
 Once you've got all that, the rest is simple:
 
@@ -77,6 +77,7 @@ Create a default Lemur configuration just as if this were a production instance:
 
 ::
 
+    lemur create_config
     lemur init
 
 You'll likely want to make some changes to the default configuration (we recommend developing against Postgres, for example). Once done, migrate your database using the following command:
