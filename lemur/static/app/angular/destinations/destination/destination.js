@@ -47,8 +47,8 @@ angular.module('lemur')
 
       PluginService.getByType('destination').then(function (plugins) {
         $scope.plugins = plugins;
-        _.each($scope.plugins, function (plugin) {
 
+        _.each($scope.plugins, function (plugin) {
           if (plugin.slug === $scope.destination.plugin.slug) {
             plugin.pluginOptions = $scope.destination.plugin.pluginOptions;
             $scope.destination.plugin = plugin;
