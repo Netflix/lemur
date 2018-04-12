@@ -9,8 +9,6 @@ cached-property==1.4.2    # via pre-commit
 certifi==2018.1.18        # via requests
 cfgv==1.0.0               # via pre-commit
 chardet==3.0.4            # via requests
-configparser==3.5.0       # via flake8
-enum34==1.1.6             # via flake8
 flake8==3.5.0
 identify==1.0.11          # via pre-commit
 idna==2.6                 # via requests
