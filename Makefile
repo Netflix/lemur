@@ -110,10 +110,10 @@ ifndef VIRTUAL_ENV
 endif
 	@echo "--> Updating Python requirements"
 	pip install --upgrade pip-tools
-	pip-compile --output-file requirements-docs.txt requirements-docs.in -U
-	pip-compile --output-file requirements-dev.txt requirements-dev.in -U
-	pip-compile --output-file requirements-tests.txt requirements-tests.in -U
-	pip-compile --output-file requirements.txt requirements.in -U
+	pip-compile --output-file requirements-docs.txt requirements-docs.in -U --no-index
+	pip-compile --output-file requirements-dev.txt requirements-dev.in -U --no-index
+	pip-compile --output-file requirements-tests.txt requirements-tests.in -U --no-index
+	pip-compile --output-file requirements.txt requirements.in -U --no-index
 	@echo "--> Done updating Python requirements"
 	@echo "--> Installing new dependencies"
 	pip install -e .
