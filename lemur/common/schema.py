@@ -148,7 +148,7 @@ def validate_schema(input_schema, output_schema):
                     request_data = request.get_json()
                 else:
                     request_data = request.args
-                print(data)
+                
                 data, errors = input_schema.load(request_data)
 
                 if errors:
