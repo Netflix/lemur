@@ -65,6 +65,36 @@ Basic Configuration
         SQLALCHEMY_DATABASE_URI = 'postgresql://<user>:<password>@<hostname>:5432/lemur'
 
 
+.. data:: SQLALCHEMY_POOL_SIZE
+:noindex:
+
+            The default connection pool size is 5 for sqlalchemy managed connections.   Depending on the number of Lemur instances,
+            please specify per instance connection pool size.  Below is an example to set connection pool size to 10.
+
+        ::
+
+        SQLALCHEMY_POOL_SIZE = 10
+
+
+    .. warning::
+This is an optional setting but important to review and set for optimal database connection usage and for overall database performance.
+
+.. data:: SQLALCHEMY_MAX_OVERFLOW
+:noindex:
+
+        This setting allows to create connections in addition to specified number of connections in pool size.   By default, sqlalchemy
+        allows 10 connections to create in addition to the pool size.  This is also an optional setting.  If `SQLALCHEMY_POOL_SIZE` and
+        `SQLALCHEMY_MAX_OVERFLOW` are not speficied then each Lemur instance may create maximum of 15 connections.
+
+    ::
+
+        SQLALCHECK_MAX_OVERFLOW = 0
+
+
+    .. note::
+Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create connections above specified pool size.
+
+
 .. data:: LEMUR_ALLOW_WEEKEND_EXPIRATION
     :noindex:
 

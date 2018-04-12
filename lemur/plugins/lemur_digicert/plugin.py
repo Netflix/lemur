@@ -157,7 +157,7 @@ def map_cis_fields(options, csr):
         "csr": csr,
         "signature_hash": signature_hash(options.get('signing_algorithm')),
         "validity": {
-            "valid_to": options['validity_end'].format('YYYY-MM-DD')
+            "valid_to": options['validity_end'].format('YYYY-MM-DDTHH:MM:SSZ')
         },
         "organization": {
             "name": options['organization'],
@@ -491,6 +491,11 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
 
         self.session.headers.pop('Accept')
         end_entity = pem.parse(certificate_pem)[0]
+
+        if 'ECC' in issuer_options['key_type']:
+            return "\n".join(str(end_entity).splitlines()), current_app.config.get('DIGICERT_ECC_CIS_INTERMEDIATE'), data['id']
+
+        # By default return RSA
         return "\n".join(str(end_entity).splitlines()), current_app.config.get('DIGICERT_CIS_INTERMEDIATE'), data['id']
 
     def revoke_certificate(self, certificate, comments):
