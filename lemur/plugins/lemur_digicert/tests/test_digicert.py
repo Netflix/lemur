@@ -103,7 +103,7 @@ def test_map_cis_fields(app):
         'signature_hash': 'sha256',
         'organization': {'name': 'Example, Inc.', 'units': ['Example Org']},
         'validity': {
-            'valid_to': arrow.get(2017, 5, 7).format('YYYY-MM-DD')
+            'valid_to': arrow.get(2017, 5, 7).format('YYYY-MM-DDTHH:MM:SS' + Z)
         },
         'profile_name': None
     }
@@ -132,7 +132,7 @@ def test_map_cis_fields(app):
             'signature_hash': 'sha256',
             'organization': {'name': 'Example, Inc.', 'units': ['Example Org']},
             'validity': {
-                'valid_to': arrow.get(2018, 11, 3).format('YYYY-MM-DD')
+                'valid_to': arrow.get(2018, 11, 3).format('YYYY-MM-DDTHH:MM:SS' + Z)
             },
             'profile_name': None
         }
