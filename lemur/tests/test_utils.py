@@ -6,9 +6,27 @@ def test_generate_private_key():
 
     assert generate_private_key('RSA2048')
     assert generate_private_key('RSA4096')
+    assert generate_private_key('ECCPRIME192V1')
+    assert generate_private_key('ECCPRIME256V1')
+    assert generate_private_key('ECCSECP192R1')
+    assert generate_private_key('ECCSECP224R1')
+    assert generate_private_key('ECCSECP256R1')
+    assert generate_private_key('ECCSECP384R1')
+    assert generate_private_key('ECCSECP521R1')
+    assert generate_private_key('ECCSECP256K1')
+    assert generate_private_key('ECCSECT163K1')
+    assert generate_private_key('ECCSECT233K1')
+    assert generate_private_key('ECCSECT283K1')
+    assert generate_private_key('ECCSECT409K1')
+    assert generate_private_key('ECCSECT571K1')
+    assert generate_private_key('ECCSECT163R2')
+    assert generate_private_key('ECCSECT233R1')
+    assert generate_private_key('ECCSECT283R1')
+    assert generate_private_key('ECCSECT409R1')
+    assert generate_private_key('ECCSECT571R2')
 
     with pytest.raises(Exception):
-        generate_private_key('ECC')
+        generate_private_key('LEMUR')
 
 
 def test_get_authority_key():
