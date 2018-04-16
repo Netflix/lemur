@@ -1186,6 +1186,19 @@ Digicert
     https://github.com/opendns/lemur-digicert
 
 
+InfluxDB
+--------
+
+:Authors:
+    Titouan Christophe
+:Type:
+    Metric
+:Description:
+    Sends key metrics to InfluxDB
+:Links:
+    https://github.com/titouanc/lemur-influxdb
+
+
 Have an extension that should be listed here? Submit a `pull request <https://github.com/netflix/lemur>`_ and we'll
 get it added.
 
