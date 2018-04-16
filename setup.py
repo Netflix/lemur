@@ -16,13 +16,19 @@ import datetime
 
 from distutils import log
 from distutils.core import Command
-from pip.download import PipSession
-from pip.req import parse_requirements
 from setuptools.command.develop import develop
 from setuptools.command.install import install
 from setuptools.command.sdist import sdist
 from setuptools import setup, find_packages
 from subprocess import check_output
+
+import pip
+if tuple(map(int, pip.__version__.split('.'))) >= (10, 0, 0):
+    from pip._internal.download import PipSession
+    from pip._internal.req import parse_requirements
+else:
+    from pip.download import PipSession
+    from pip.req import parse_requirements
 
 ROOT = os.path.realpath(os.path.join(os.path.dirname(__file__)))
 
