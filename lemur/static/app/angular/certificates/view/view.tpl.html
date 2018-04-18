@@ -65,7 +65,7 @@
                       <li><a href ng-click="edit(certificate.id)">Edit</a></li>
                       <li><a href ng-click="clone(certificate.id)">Clone</a></li>
                       <li><a href ng-click="export(certificate.id)">Export</a></li>
-                      <li><a href ng-click="revoke(certificate.id)">Revoke</a></li>
+                      <li ng-if="certificate.status != 'revoked'"><a href ng-click="revoke(certificate.id)">Revoke</a></li>
                     </ul>
                   </div>
                 </div>
