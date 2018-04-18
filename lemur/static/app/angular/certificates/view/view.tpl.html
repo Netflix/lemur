@@ -39,6 +39,11 @@
                         ng-model="certificate.notify" class="green small"></switch>
               </form>
             </td>
+            <td data-title="'Validity status'" filter="{'status': 'text'}" style="text-align: center">
+              <span ng-if="certificate.status == 'unknown'" class="label label-warning">Unknown</span>
+              <span ng-if="certificate.status == 'revoked'" class="label label-danger">Revoked</span>
+              <span ng-if="certificate.status == 'valid'" class="label label-success">Valid</span>
+            </td>
             <td data-title="'Issuer'" sortable="'issuer'" filter="{ 'issuer': 'text' }">
               {{ certificate.authority.name || certificate.issuer }}
             </td>
