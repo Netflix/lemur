@@ -61,7 +61,7 @@ pyparsing==2.2.0          # via packaging
 pyrfc3339==1.0
 python-dateutil==2.6.1
 python-editor==1.0.3
-python-ldap==3.0.0
+# python-ldap==3.0.0 can install due to readthedocs.io not having the correct header files
 pytz==2018.4
 raven[flask]==6.6.0
 requests[security]==2.11.1
