@@ -1,3 +1,4 @@
+-r requirements.txt
 sphinx
 sphinxcontrib-httpdomain
 sphinx-rtd-theme
