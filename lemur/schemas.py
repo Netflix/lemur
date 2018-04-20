@@ -21,6 +21,7 @@ from lemur.plugins.utils import get_plugin_option
 from lemur.roles.models import Role
 from lemur.users.models import User
 from lemur.authorities.models import Authority
+from lemur.dns_providers.models import DnsProviders
 from lemur.policies.models import RotationPolicy
 from lemur.certificates.models import Certificate
 from lemur.destinations.models import Destination
@@ -157,6 +158,15 @@ class AssociatedRotationPolicySchema(LemurInputSchema):
     @post_load
     def get_object(self, data, many=False):
         return fetch_objects(RotationPolicy, data, many=many)
+
+
+class DnsProviderSchema(LemurInputSchema):
+    id = fields.Integer()
+    name = fields.String()
+
+    @post_load
+    def get_object(self, data, many=False):
+        return fetch_objects(DnsProviders, data, many=many)
 
 
 class PluginInputSchema(LemurInputSchema):

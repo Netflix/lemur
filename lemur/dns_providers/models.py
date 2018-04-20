@@ -15,4 +15,5 @@ class DnsProviders(db.Model):
     api_endpoint = Column(String(length=256), nullable=True)
     date_created = Column(ArrowType(), server_default=text('now()'), nullable=False)
     status = Column(String(length=128), nullable=True)
-    options = Column(JSON)
+    options = Column(JSON, nullable=True)
+    domains = Column(JSON, nullable=True)

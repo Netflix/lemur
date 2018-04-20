@@ -8,13 +8,11 @@ class DnsProvidersNestedOutputSchema(LemurOutputSchema):
     __envelope__ = False
     id = fields.Integer()
     name = fields.String()
-    description = fields.String()
     provider_type = fields.String()
+    description = fields.String()
     credentials = fields.String()
     api_endpoint = fields.String()
     date_created = ArrowDateTime()
-    status = fields.String()
-    options = fields.String()
 
 
-default_output_schema = DnsProvidersNestedOutputSchema()
+dns_provider_schema = DnsProvidersNestedOutputSchema()

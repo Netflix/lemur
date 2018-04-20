@@ -134,6 +134,11 @@ angular.module('lemur')
       $scope.certificate.validityYears = null;
     };
 
+    CertificateService.getDnsProviders().then(function (providers) {
+            $scope.dnsProviders = providers;
+        }
+    );
+
     $scope.create = function (certificate) {
       WizardHandler.wizard().context.loading = true;
       CertificateService.create(certificate).then(

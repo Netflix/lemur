@@ -149,7 +149,7 @@ angular.module('lemur')
     });
     return LemurRestangular.all('certificates');
   })
-  .service('CertificateService', function ($location, CertificateApi, AuthorityService, AuthorityApi, LemurRestangular, DefaultService) {
+  .service('CertificateService', function ($location, CertificateApi, AuthorityService, AuthorityApi, LemurRestangular, DefaultService, DnsProviders) {
     var CertificateService = this;
     CertificateService.findCertificatesByName = function (filterValue) {
       return CertificateApi.getList({'filter[name]': filterValue})
@@ -243,9 +243,12 @@ angular.module('lemur')
             certificate.authority = defaults.authority;
           }
         }
-        certificate.dns_providers = defaults.dnsProviders;
       });
     };
+
+    CertificateService.getDnsProviders = function () {
+      return DnsProviders.get();
+    }
 
     CertificateService.loadPrivateKey = function (certificate) {
       return certificate.customGET('key');

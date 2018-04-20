@@ -1,16 +1,33 @@
+from lemur import database
 from lemur.dns_providers.models import DnsProviders
 
 
-def get_all_dns_providers(status="active"):
+def render(args):
     """
-    Retrieves all certificates within Lemur.
-
+    Helper that helps us render the REST Api responses.
+    :param args:
     :return:
     """
-    all_dns_providers = DnsProviders.query.all()
-    dns_provider_result = []
-    for provider in all_dns_providers:
-        print(provider)
-        if provider.status == status:
-            dns_provider_result.append(provider.__dict__)
-    return dns_provider_result
+    query = database.session_query(DnsProviders)
+
+    return database.sort_and_page(query, DnsProviders, args)
+
+
+def get(dns_provider_id):
+    """
+    Retrieves a dns provider by its lemur assigned ID.
+
+    :param dns_provider_id: Lemur assigned ID
+    :rtype : DnsProvider
+    :return:
+    """
+    return database.get(DnsProviders, dns_provider_id)
+
+
+def delete(dns_provider_id):
+    """
+    Deletes a DNS provider.
+
+    :param dns_provider_id: Lemur assigned ID
+    """
+    database.delete(get(dns_provider_id))

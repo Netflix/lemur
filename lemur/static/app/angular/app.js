@@ -109,11 +109,11 @@
     };
   });
 
-  lemur.service('DnsService', function (LemurRestangular) {
-    var DnsService = this;
-    DnsService.get = function () {
-      return LemurRestangular.all('dns_service').customGET().then(function (dns_service) {
-        return dns_service;
+  lemur.service('DnsProviders', function (LemurRestangular) {
+    var DnsProviders = this;
+    DnsProviders.get = function () {
+      return LemurRestangular.all('dns_providers').customGET().then(function (dnsProviders) {
+        return dnsProviders;
       });
     };
   });

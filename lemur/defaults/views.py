@@ -9,7 +9,6 @@ from flask_restful import Api
 from lemur.common.schema import validate_schema
 from lemur.authorities.service import get_by_name
 from lemur.auth.service import AuthenticatedResource
-from lemur.dns_providers.service import get_all_dns_providers
 
 from lemur.defaults.schemas import default_output_schema
 
@@ -61,7 +60,6 @@ class LemurDefaults(AuthenticatedResource):
         """
 
         default_authority = get_by_name(current_app.config.get('LEMUR_DEFAULT_AUTHORITY'))
-        dns_providers = get_all_dns_providers()
 
         return dict(
             country=current_app.config.get('LEMUR_DEFAULT_COUNTRY'),
@@ -71,7 +69,6 @@ class LemurDefaults(AuthenticatedResource):
             organizational_unit=current_app.config.get('LEMUR_DEFAULT_ORGANIZATIONAL_UNIT'),
             issuer_plugin=current_app.config.get('LEMUR_DEFAULT_ISSUER_PLUGIN'),
             authority=default_authority,
-            dns_providers=dns_providers,
         )
 
 

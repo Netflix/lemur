@@ -5,13 +5,15 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Curtis Castrapel <ccastrapel@netflix.com>
 """
-from flask import Blueprint
+from flask import Blueprint, g
 from flask_restful import reqparse, Api
 
-
+from lemur.auth.permissions import admin_permission
 from lemur.auth.service import AuthenticatedResource
-
+from lemur.common.schema import validate_schema
+from lemur.common.utils import paginated_parser
 from lemur.dns_providers import service
+from lemur.dns_providers.schemas import dns_provider_schema
 
 mod = Blueprint('dns_providers', __name__)
 api = Api(mod)
@@ -23,6 +25,7 @@ class DnsProvidersList(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(DnsProvidersList, self).__init__()
 
+    @validate_schema(None, dns_provider_schema)
     def get(self):
         """
         .. http:get:: /dns_providers
@@ -66,7 +69,19 @@ class DnsProvidersList(AuthenticatedResource):
            :statuscode 403: unauthenticated
 
         """
-        return service.get_all_dns_providers()
+        parser = paginated_parser.copy()
+        parser.add_argument('id', type=int, location='args')
+        parser.add_argument('name', type=str, location='args')
+        parser.add_argument('type', type=str, location='args')
+
+        args = parser.parse_args()
+        args['user'] = g.user
+        return service.render(args)
+
+    @admin_permission.require(http_exception=403)
+    def delete(self, dns_provider_id):
+        service.delete(dns_provider_id)
+        return {'result': True}
 
 
 api.add_resource(DnsProvidersList, '/dns_providers', endpoint='dns_providers')

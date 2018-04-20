@@ -8,7 +8,6 @@
 from marshmallow import fields
 from lemur.common.schema import LemurOutputSchema
 from lemur.authorities.schemas import AuthorityNestedOutputSchema
-from lemur.dns_providers.schemas import DnsProvidersNestedOutputSchema
 
 
 class DefaultOutputSchema(LemurOutputSchema):
@@ -19,7 +18,6 @@ class DefaultOutputSchema(LemurOutputSchema):
     organization = fields.String()
     organizational_unit = fields.String()
     issuer_plugin = fields.String()
-    dns_providers = fields.List(fields.Nested(DnsProvidersNestedOutputSchema))
 
 
 default_output_schema = DefaultOutputSchema()

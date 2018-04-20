@@ -18,7 +18,8 @@ from lemur.schemas import (
     ExtensionSchema,
     AssociatedRoleSchema,
     EndpointNestedOutputSchema,
-    AssociatedRotationPolicySchema
+    AssociatedRotationPolicySchema,
+    DnsProviderSchema
 )
 
 from lemur.authorities.schemas import AuthorityNestedOutputSchema
@@ -70,6 +71,7 @@ class CertificateInputSchema(CertificateCreationSchema):
     replaces = fields.Nested(AssociatedCertificateSchema, missing=[], many=True)
     replacements = fields.Nested(AssociatedCertificateSchema, missing=[], many=True)  # deprecated
     roles = fields.Nested(AssociatedRoleSchema, missing=[], many=True)
+    dns_provider = fields.Nested(DnsProviderSchema, missing={}, required=False)
 
     csr = fields.String(validate=validators.csr)
     key_type = fields.String(validate=validate.OneOf(['RSA2048', 'RSA4096']), missing='RSA2048')
