@@ -1,3 +1,6 @@
+# Note: python-ldap from requirements breaks docs because it requires compiled binary.
+# The `make up-reqs` will update all requirement text files, and forcibly remove python-ldap
+# from requirements-docs.txt
 -r requirements.txt
 sphinx
 sphinxcontrib-httpdomain

@@ -1,3 +1,5 @@
+# Run `make up-reqs` to update pinned dependencies in requirement text files
+
 coverage
 factory-boy
 Faker
