@@ -157,7 +157,7 @@ def map_cis_fields(options, csr):
         "csr": csr,
         "signature_hash": signature_hash(options.get('signing_algorithm')),
         "validity": {
-            "valid_to": options['validity_end'].format('YYYY-MM-DD')
+            "valid_to": options['validity_end'].format('YYYY-MM-DDTHH:MM') + 'Z'
         },
         "organization": {
             "name": options['organization'],
