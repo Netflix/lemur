@@ -18,6 +18,15 @@ def get(policy_id):
     return database.get(RotationPolicy, policy_id)
 
 
+def get_by_name(policy_name):
+    """
+    Retrieves policy by its name.
+    :param policy_name:
+    :return:
+    """
+    return database.get_all(RotationPolicy, policy_name, field='name').all()
+
+
 def delete(policy_id):
     """
     Delete a rotation policy.

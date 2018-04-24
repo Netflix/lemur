@@ -251,12 +251,17 @@ class InitializeApp(Command):
         recipients = current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL')
         notification_service.create_default_expiration_notifications("DEFAULT_SECURITY", recipients=recipients)
 
-        days = current_app.config.get("LEMUR_DEFAULT_ROTATION_INTERVAL", 30)
-        sys.stdout.write("[+] Creating default certificate rotation policy of {days} days before issuance.\n".format(
-            days=days
-        ))
+        _DEFAULT_ROTATION_INTERVAL = 'default'
+        default_rotation_interval = policy_service.get_by_name(_DEFAULT_ROTATION_INTERVAL)
 
-        policy_service.create(days=days, name='default')
+        if default_rotation_interval:
+            sys.stdout.write("[-] Default rotation interval policy already created, skipping...!\n")
+        else:
+            days = current_app.config.get("LEMUR_DEFAULT_ROTATION_INTERVAL", 30)
+            sys.stdout.write("[+] Creating default certificate rotation policy of {days} days before issuance.\n".format(
+                days=days))
+            policy_service.create(days=days, name=_DEFAULT_ROTATION_INTERVAL)
+
         sys.stdout.write("[/] Done!\n")
 
 
