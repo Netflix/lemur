@@ -1198,6 +1198,18 @@ InfluxDB
 :Links:
     https://github.com/titouanc/lemur-influxdb
 
+Hashicorp Vault
+---------------
+
+:Authors:
+    Ron Cohen
+:Type:
+    Issuer
+:Description:
+    Adds support for basic Vault PKI secret backend.
+:Links:
+    https://github.com/RcRonco/lemur_vault
+
 
 Have an extension that should be listed here? Submit a `pull request <https://github.com/netflix/lemur>`_ and we'll
 get it added.
