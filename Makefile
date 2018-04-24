@@ -123,5 +123,4 @@ endif
 	@echo "--> Done installing new dependencies"
 	@echo ""
 
-
 .PHONY: develop dev-postgres dev-docs setup-git build clean update-submodules test testloop test-cli test-js test-python lint lint-python lint-js coverage publish release

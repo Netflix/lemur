@@ -9,8 +9,10 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 .. moduleauthor:: Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
+.. moduleauthor:: Curtis Castrapel <ccastrapel@netflix.com>
 """
 import josepy as jose
+import json
 
 from flask import current_app
 
@@ -22,7 +24,6 @@ from lemur.common.utils import generate_private_key
 
 import OpenSSL.crypto
 
-from lemur.common.utils import validate_conf
 from lemur.plugins.bases import IssuerPlugin
 from lemur.plugins import lemur_acme as acme
 
@@ -96,19 +97,26 @@ def request_certificate(acme_client, authorizations, csr):
         OpenSSL.crypto.FILETYPE_PEM, cert_response.body
     ).decode('utf-8')
 
-    pem_certificate_chain = "\n".join(
-        OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, cert.decode("utf-8"))
-        for cert in acme_client.fetch_chain(cert_response)
-    ).decode('utf-8')
+    full_chain = []
+    for cert in acme_client.fetch_chain(cert_response):
+        chain = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, cert)
+        full_chain.append(chain.decode("utf-8"))
+    pem_certificate_chain = "\n".join(full_chain)
 
-    current_app.logger.debug("{0} {1}".format(type(pem_certificate). type(pem_certificate_chain)))
+    current_app.logger.debug("{0} {1}".format(type(pem_certificate), type(pem_certificate_chain)))
     return pem_certificate, pem_certificate_chain
 
 
-def setup_acme_client():
-    email = current_app.config.get('ACME_EMAIL')
-    tel = current_app.config.get('ACME_TEL')
-    directory_url = current_app.config.get('ACME_DIRECTORY_URL')
+def setup_acme_client(authority):
+    if not authority.options:
+        raise Exception("Invalid authority. Options not set")
+    options = {}
+    for o in json.loads(authority.options):
+        print(o)
+        options[o.get("name")] = o.get("value")
+    email = options.get('email', current_app.config.get('ACME_EMAIL'))
+    tel = options.get('telephone', current_app.config.get('ACME_TEL'))
+    directory_url = options.get('acme_url', current_app.config.get('ACME_DIRECTORY_URL'))
     contact = ('mailto:{}'.format(email), 'tel:{}'.format(tel))
 
     key = jose.JWKRSA(key=generate_private_key('RSA2048'))
@@ -171,22 +179,40 @@ class ACMEIssuerPlugin(IssuerPlugin):
     description = 'Enables the creation of certificates via ACME CAs (including Let\'s Encrypt)'
     version = acme.VERSION
 
-    author = 'Kevin Glisson'
+    author = 'Netflix'
     author_url = 'https://github.com/netflix/lemur.git'
 
-    def __init__(self, *args, **kwargs):
-        required_vars = [
-            'ACME_DIRECTORY_URL',
-            'ACME_TEL',
-            'ACME_EMAIL',
-            'ACME_AWS_ACCOUNT_NUMBER',
-            'ACME_ROOT'
-        ]
+    options = [
+        {
+            'name': 'acme_url',
+            'type': 'str',
+            'required': True,
+            'validation': '/^http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+$/',
+            'helpMessage': 'Must be a valid web url starting with http[s]://',
+        },
+        {
+            'name': 'telephone',
+            'type': 'str',
+            'default': '',
+            'helpMessage': 'Telephone to use'
+        },
+        {
+            'name': 'email',
+            'type': 'str',
+            'default': '',
+            'validation': '/^?([-a-zA-Z0-9.`?{}]+@\w+\.\w+)$/',
+            'helpMessage': 'Email to use'
+        },
+        {
+            'name': 'certificate',
+            'type': 'textarea',
+            'default': '',
+            'validation': '/^-----BEGIN CERTIFICATE-----/',
+            'helpMessage': 'Certificate to use'
+        },
+    ]
 
-        validate_conf(current_app, required_vars)
-        self.dns_provider_name = current_app.config.get('ACME_DNS_PROVIDER', 'route53')
-        current_app.logger.debug("Using DNS provider: {0}".format(self.dns_provider_name))
-        self.dns_provider = __import__(self.dns_provider_name, globals(), locals(), [], 1)
+    def __init__(self, *args, **kwargs):
         super(ACMEIssuerPlugin, self).__init__(*args, **kwargs)
 
     def create_certificate(self, csr, issuer_options):
@@ -197,11 +223,22 @@ class ACMEIssuerPlugin(IssuerPlugin):
         :param issuer_options:
         :return: :raise Exception:
         """
-        current_app.logger.debug("Requesting a new acme certificate: {0}".format(issuer_options))
-        acme_client, registration = setup_acme_client()
-        account_number = current_app.config.get('ACME_AWS_ACCOUNT_NUMBER')
+        authority = issuer_options.get('authority')
+        acme_client, registration = setup_acme_client(authority)
+        dns_provider = issuer_options.get('dns_provider')
+        if not dns_provider:
+            raise Exception("DNS Provider setting is required for ACME certificates.")
+        credentials = json.loads(dns_provider.credentials)
+
+        current_app.logger.debug("Using DNS provider: {0}".format(dns_provider.provider_type))
+        dns_provider_type = __import__(dns_provider.provider_type, globals(), locals(), [], 1)
+        account_number = credentials.get("account_number")
+        if dns_provider.provider_type == 'route53' and not account_number:
+            error = "DNS Provider {} does not have an account number configured.".format(dns_provider.name)
+            current_app.logger.error(error)
+            raise Exception(error)
         domains = get_domains(issuer_options)
-        authorizations = get_authorizations(acme_client, account_number, domains, self.dns_provider)
+        authorizations = get_authorizations(acme_client, account_number, domains, dns_provider_type)
         pem_certificate, pem_certificate_chain = request_certificate(acme_client, authorizations, csr)
         # TODO add external ID (if possible)
         return pem_certificate, pem_certificate_chain, None
@@ -216,4 +253,11 @@ class ACMEIssuerPlugin(IssuerPlugin):
         :return:
         """
         role = {'username': '', 'password': '', 'name': 'acme'}
-        return current_app.config.get('ACME_ROOT'), "", [role]
+        plugin_options = options.get('plugin').get('plugin_options')
+        # Define static acme_root based off configuration variable by default. However, if user has passed a
+        # certificate, use this certificate as the root.
+        acme_root = current_app.config.get('ACME_ROOT')
+        for option in plugin_options:
+            if option.get('name') == 'certificate':
+                acme_root = option.get('value')
+        return acme_root, "", [role]
