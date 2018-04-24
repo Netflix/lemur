@@ -208,16 +208,16 @@ class InitializeApp(Command):
         if operator_role:
             sys.stdout.write("[-] Operator role already created, skipping...!\n")
         else:
-            # we create an admin role
+            # we create an operator role
             operator_role = role_service.create('operator', description='This is the Lemur operator role.')
             sys.stdout.write("[+] Created 'operator' role\n")
 
         read_only_role = role_service.get_by_name('read-only')
 
         if read_only_role:
-            sys.stdout.write("[-] Operator role already created, skipping...!\n")
+            sys.stdout.write("[-] Read only role already created, skipping...!\n")
         else:
-            # we create an admin role
+            # we create an read only role
             read_only_role = role_service.create('read-only', description='This is the Lemur read only role.')
             sys.stdout.write("[+] Created 'read-only' role\n")
 
