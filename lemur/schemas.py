@@ -21,7 +21,6 @@ from lemur.plugins.utils import get_plugin_option
 from lemur.roles.models import Role
 from lemur.users.models import User
 from lemur.authorities.models import Authority
-from lemur.dns_providers.models import DnsProviders
 from lemur.policies.models import RotationPolicy
 from lemur.certificates.models import Certificate
 from lemur.destinations.models import Destination
