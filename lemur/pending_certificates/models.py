@@ -8,6 +8,7 @@ from datetime import datetime as dt
 from sqlalchemy.orm import relationship
 from sqlalchemy import Integer, ForeignKey, String, PassiveDefault, func, Column, Text, Boolean
 from sqlalchemy_utils.types.arrow import ArrowType
+from sqlalchemy_utils import JSONType
 
 import lemur.common.utils
 from lemur.certificates.models import get_or_increase_name
@@ -37,6 +38,7 @@ class PendingCertificate(db.Model):
     private_key = Column(Vault, nullable=True)
 
     date_created = Column(ArrowType, PassiveDefault(func.now()), nullable=False)
+    dns_provider_id = Column(Integer(), nullable=True)
 
     status = Column(String(128))
 
@@ -54,6 +56,7 @@ class PendingCertificate(db.Model):
                             secondary=pending_cert_replacement_associations,
                             backref='pending_cert',
                             passive_deletes=True)
+    options = Column(JSONType)
 
     rotation_policy = relationship("RotationPolicy")
 
@@ -93,3 +96,7 @@ class PendingCertificate(db.Model):
         self.replaces = kwargs.get('replaces', [])
         self.rotation = kwargs.get('rotation')
         self.rotation_policy = kwargs.get('rotation_policy')
+        try:
+            self.dns_provider_id = kwargs.get('dns_provider', {}).get("id")
+        except AttributeError:
+            self.dns_provider_id = None

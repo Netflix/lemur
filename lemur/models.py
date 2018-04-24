@@ -8,9 +8,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from sqlalchemy import Column, Integer, ForeignKey, Index, PrimaryKeyConstraint, String, text, UniqueConstraint
-from sqlalchemy.dialects.postgresql import JSON
-from sqlalchemy_utils import ArrowType
+from sqlalchemy import Column, Integer, ForeignKey, Index, UniqueConstraint
 
 from lemur.database import db
 

@@ -14,7 +14,7 @@ angular.module('lemur')
     });
 
     $scope.save = function (dns_provider) {
-      DnsProvider.create(dns_provider.then(
+      DnsProviderService.create(dns_provider.then(
         function () {
           toaster.pop({
             type: 'success',
@@ -31,7 +31,7 @@ angular.module('lemur')
             directiveData: response.data,
             timeout: 100000
           });
-        });
+        }));
     };
 
     $scope.cancel = function () {

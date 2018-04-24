@@ -37,7 +37,8 @@ class TestAsyncIssuerPlugin(IssuerPlugin):
     def create_certificate(self, csr, issuer_options):
         return "", "", 12345
 
-    def get_ordered_certificate(self, order_id):
+    def get_ordered_certificate(self, pending_cert):
+        order_id = pending_cert.external_id
         return INTERNAL_VALID_LONG_STR, INTERNAL_VALID_SAN_STR, 54321
 
     @staticmethod

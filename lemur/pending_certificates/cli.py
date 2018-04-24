@@ -29,7 +29,7 @@ def fetch(ids):
 
     for cert in pending_certs:
         authority = plugins.get(cert.authority.plugin_name)
-        real_cert = authority.get_ordered_certificate(cert.external_id)
+        real_cert = authority.get_ordered_certificate(cert)
         if real_cert:
             # If a real certificate was returned from issuer, then create it in Lemur and delete
             # the pending certificate

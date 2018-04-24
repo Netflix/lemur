@@ -58,7 +58,7 @@ def change_txt_record(action, zone_id, domain, value, client=None):
 def create_txt_record(host, value, account_number):
     zone_id = find_zone_id(host, account_number=account_number)
     change_id = change_txt_record(
-        "CREATE",
+        "UPSERT",
         zone_id,
         host,
         value,

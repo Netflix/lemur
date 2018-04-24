@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, PrimaryKeyConstraint, String, text, UniqueConstraint
+from sqlalchemy import Column, Integer, String, text
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy_utils import ArrowType
 

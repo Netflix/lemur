@@ -164,10 +164,6 @@ class DnsProviderSchema(LemurInputSchema):
     id = fields.Integer()
     name = fields.String()
 
-    @post_load
-    def get_object(self, data, many=False):
-        return fetch_objects(DnsProviders, data, many=many)
-
 
 class PluginInputSchema(LemurInputSchema):
     plugin_options = fields.List(fields.Dict(), validate=validate_options)

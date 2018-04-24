@@ -71,7 +71,7 @@ class CertificateInputSchema(CertificateCreationSchema):
     replaces = fields.Nested(AssociatedCertificateSchema, missing=[], many=True)
     replacements = fields.Nested(AssociatedCertificateSchema, missing=[], many=True)  # deprecated
     roles = fields.Nested(AssociatedRoleSchema, missing=[], many=True)
-    dns_provider = fields.Nested(DnsProviderSchema, missing={}, required=False)
+    dns_provider = fields.Nested(DnsProviderSchema, missing={}, required=False, allow_none=True)
 
     csr = fields.String(validate=validators.csr)
     key_type = fields.String(validate=validate.OneOf(['RSA2048', 'RSA4096']), missing='RSA2048')

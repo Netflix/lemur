@@ -63,7 +63,7 @@ def test_get_certificate_primitives(certificate):
 
     with freeze_time(datetime.date(year=2016, month=10, day=30)):
         primitives = get_certificate_primitives(certificate)
-        assert len(primitives) == 23
+        assert len(primitives) == 24
 
 
 def test_certificate_edit_schema(session):
@@ -152,7 +152,8 @@ def test_certificate_input_schema(client, authority):
         'authority': {'id': authority.id},
         'description': 'testtestest',
         'validityEnd': arrow.get(2016, 11, 9).isoformat(),
-        'validityStart': arrow.get(2015, 11, 9).isoformat()
+        'validityStart': arrow.get(2015, 11, 9).isoformat(),
+        'dns_provider': None,
     }
 
     data, errors = CertificateInputSchema().load(input_data)
@@ -165,7 +166,7 @@ def test_certificate_input_schema(client, authority):
     assert data['country'] == 'US'
     assert data['location'] == 'Los Gatos'
 
-    assert len(data.keys()) == 18
+    assert len(data.keys()) == 19
 
 
 def test_certificate_input_with_extensions(client, authority):
@@ -192,7 +193,8 @@ def test_certificate_input_with_extensions(client, authority):
                     {'nameType': 'DNSName', 'value': 'test.example.com'}
                 ]
             }
-        }
+        },
+        'dns_provider': None,
     }
 
     data, errors = CertificateInputSchema().load(input_data)
@@ -206,7 +208,8 @@ def test_certificate_out_of_range_date(client, authority):
         'owner': 'jim@example.com',
         'authority': {'id': authority.id},
         'description': 'testtestest',
-        'validityYears': 100
+        'validityYears': 100,
+        'dns_provider': None,
     }
 
     data, errors = CertificateInputSchema().load(input_data)
@@ -230,7 +233,8 @@ def test_certificate_valid_years(client, authority):
         'owner': 'jim@example.com',
         'authority': {'id': authority.id},
         'description': 'testtestest',
-        'validityYears': 1
+        'validityYears': 1,
+        'dns_provider': None,
     }
 
     data, errors = CertificateInputSchema().load(input_data)
@@ -245,7 +249,8 @@ def test_certificate_valid_dates(client, authority):
         'authority': {'id': authority.id},
         'description': 'testtestest',
         'validityStart': '2020-01-01T00:00:00',
-        'validityEnd': '2020-01-01T00:00:01'
+        'validityEnd': '2020-01-01T00:00:01',
+        'dns_provider': None,
     }
 
     data, errors = CertificateInputSchema().load(input_data)
@@ -262,6 +267,7 @@ def test_certificate_cn_admin(client, authority, logged_in_admin):
         'description': 'testtestest',
         'validityStart': '2020-01-01T00:00:00',
         'validityEnd': '2020-01-01T00:00:01',
+        'dns_provider': None,
     }
 
     data, errors = CertificateInputSchema().load(input_data)
@@ -285,7 +291,8 @@ def test_certificate_allowed_names(client, authority, session, logged_in_user):
                     {'nameType': 'IPAddress', 'value': '127.0.0.1'},
                 ]
             }
-        }
+        },
+        'dns_provider': None,
     }
 
     data, errors = CertificateInputSchema().load(input_data)
@@ -306,6 +313,7 @@ def test_certificate_incative_authority(client, authority, session, logged_in_us
         'description': 'testtestest',
         'validityStart': '2020-01-01T00:00:00',
         'validityEnd': '2020-01-01T00:00:01',
+        'dns_provider': None,
     }
 
     data, errors = CertificateInputSchema().load(input_data)
@@ -329,7 +337,8 @@ def test_certificate_disallowed_names(client, authority, session, logged_in_user
                     {'nameType': 'DNSName', 'value': 'evilhacker.org'},
                 ]
             }
-        }
+        },
+        'dns_provider': None,
     }
 
     data, errors = CertificateInputSchema().load(input_data)
@@ -348,6 +357,7 @@ def test_certificate_sensitive_name(client, authority, session, logged_in_user):
         'description': 'testtestest',
         'validityStart': '2020-01-01T00:00:00',
         'validityEnd': '2020-01-01T00:00:01',
+        'dns_provider': None,
     }
     session.add(Domain(name='sensitive.example.com', sensitive=True))
 

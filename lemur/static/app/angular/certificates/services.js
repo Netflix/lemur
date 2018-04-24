@@ -248,7 +248,7 @@ angular.module('lemur')
 
     CertificateService.getDnsProviders = function () {
       return DnsProviders.get();
-    }
+    };
 
     CertificateService.loadPrivateKey = function (certificate) {
       return certificate.customGET('key');

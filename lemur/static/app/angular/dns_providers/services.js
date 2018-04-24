@@ -14,7 +14,7 @@ angular.module('lemur')
 
     DnsProviderService.getDnsProviders = function () {
       return DnsProviders.get();
-    }
+    };
 
     DnsProviderService.create = function (dns_provider) {
       return DnsProviderApi.post(dns_provider);

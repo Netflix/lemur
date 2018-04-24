@@ -24,6 +24,8 @@ from lemur.common.utils import generate_private_key
 
 import OpenSSL.crypto
 
+from lemur.authorizations import service as authorization_service
+from lemur.dns_providers import service as dns_provider_service
 from lemur.plugins.bases import IssuerPlugin
 from lemur.plugins import lemur_acme as acme
 
@@ -153,11 +155,14 @@ def get_domains(options):
 
 def get_authorizations(acme_client, account_number, domains, dns_provider):
     authorizations = []
-    try:
-        for domain in domains:
-            authz_record = start_dns_challenge(acme_client, account_number, domain, dns_provider)
-            authorizations.append(authz_record)
+    for domain in domains:
+        authz_record = start_dns_challenge(acme_client, account_number, domain, dns_provider)
+        authorizations.append(authz_record)
+    return authorizations
 
+
+def finalize_authorizations(acme_client, account_number, dns_provider, authorizations):
+    try:
         for authz_record in authorizations:
             complete_dns_challenge(acme_client, account_number, authz_record, dns_provider)
     finally:
@@ -215,6 +220,23 @@ class ACMEIssuerPlugin(IssuerPlugin):
     def __init__(self, *args, **kwargs):
         super(ACMEIssuerPlugin, self).__init__(*args, **kwargs)
 
+    def get_ordered_certificate(self, pending_cert):
+        acme_client, registration = setup_acme_client(pending_cert.authority)
+        order_info = authorization_service.get(pending_cert.external_id)
+        dns_provider = dns_provider_service.get(pending_cert.dns_provider_id)
+        dns_provider_type = __import__(dns_provider.provider_type, globals(), locals(), [], 1)
+        authorizations = get_authorizations(
+            acme_client, order_info.account_number, order_info.domains, dns_provider_type)
+
+        finalize_authorizations(acme_client, order_info.account_number, dns_provider_type, authorizations)
+        pem_certificate, pem_certificate_chain = request_certificate(acme_client, authorizations, pending_cert.csr)
+        cert = {
+            'body': "\n".join(str(pem_certificate).splitlines()),
+            'chain': "\n".join(str(pem_certificate_chain).splitlines()),
+            'external_id': str(pending_cert.external_id)
+        }
+        return cert
+
     def create_certificate(self, csr, issuer_options):
         """
         Creates an ACME certificate.
@@ -224,10 +246,12 @@ class ACMEIssuerPlugin(IssuerPlugin):
         :return: :raise Exception:
         """
         authority = issuer_options.get('authority')
+        create_immediately = issuer_options.get('create_immediately', False)
         acme_client, registration = setup_acme_client(authority)
-        dns_provider = issuer_options.get('dns_provider')
-        if not dns_provider:
+        dns_provider_d = issuer_options.get('dns_provider')
+        if not dns_provider_d:
             raise Exception("DNS Provider setting is required for ACME certificates.")
+        dns_provider = dns_provider_service.get(dns_provider_d.get("id"))
         credentials = json.loads(dns_provider.credentials)
 
         current_app.logger.debug("Using DNS provider: {0}".format(dns_provider.provider_type))
@@ -238,7 +262,21 @@ class ACMEIssuerPlugin(IssuerPlugin):
             current_app.logger.error(error)
             raise Exception(error)
         domains = get_domains(issuer_options)
+        if not create_immediately:
+            # Create pending authorizations that we'll need to do the creation
+            authz_domains = []
+            for d in domains:
+                if type(d) == str:
+                    authz_domains.append(d)
+                else:
+                    authz_domains.append(d.value)
+
+            dns_authorization = authorization_service.create(account_number, authz_domains, dns_provider.provider_type)
+            # Return id of the DNS Authorization
+            return None, None, dns_authorization.id
+
         authorizations = get_authorizations(acme_client, account_number, domains, dns_provider_type)
+        finalize_authorizations(acme_client, account_number, dns_provider_type, authorizations)
         pem_certificate, pem_certificate_chain = request_certificate(acme_client, authorizations, csr)
         # TODO add external ID (if possible)
         return pem_certificate, pem_certificate_chain, None
