@@ -124,8 +124,10 @@ def configure_extensions(app):
     smtp_mail.init_app(app)
     metrics.init_app(app)
     sentry.init_app(app)
-    app.config['CORS_HEADERS'] = 'Content-Type'
-    cors.init_app(app, resources=r'/api/*', headers='Content-Type', origin='*', supports_credentials=True)
+
+    if app.config['CORS']:
+        app.config['CORS_HEADERS'] = 'Content-Type'
+        cors.init_app(app, resources=r'/api/*', headers='Content-Type', origin='*', supports_credentials=True)
 
 
 def configure_blueprints(app, blueprints):
