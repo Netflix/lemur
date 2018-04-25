@@ -12,10 +12,11 @@ arrow==0.12.1
 asn1crypto==0.24.0        # via cryptography
 bcrypt==3.1.4             # via flask-bcrypt, paramiko
 blinker==1.4              # via flask-mail, flask-principal, raven
-boto3==1.7.6
-botocore==1.10.6          # via boto3, s3transfer
+boto3==1.7.8
+botocore==1.10.8          # via boto3, s3transfer
 cffi==1.11.5              # via bcrypt, cryptography, pynacl
 click==6.7                # via flask
+cloudflare==2.1.0
 cryptography==2.2.2
 docutils==0.14            # via botocore
 flask-bcrypt==0.7.1
@@ -35,13 +36,14 @@ itsdangerous==0.24        # via flask
 jinja2==2.10
 jmespath==0.9.3           # via boto3, botocore
 josepy==1.1.0             # via acme
+jsonlines==1.2.0          # via cloudflare
 lockfile==0.12.2
 mako==1.0.7               # via alembic
 markupsafe==1.0           # via jinja2, mako
 marshmallow-sqlalchemy==0.13.2
 marshmallow==2.15.0
 mock==2.0.0               # via acme
-ndg-httpsclient==0.4.4
+ndg-httpsclient==0.5.0
 paramiko==2.4.1
 pbr==4.0.2                # via mock
 pem==17.1.0
@@ -57,6 +59,7 @@ python-dateutil==2.7.2    # via alembic, arrow, botocore
 python-editor==1.0.3      # via alembic
 python-ldap==3.0.0
 pytz==2018.4              # via acme, flask-restful, pyrfc3339
+pyyaml==3.12              # via cloudflare
 raven[flask]==6.7.0
 requests[security]==2.11.1
 retrying==1.3.3

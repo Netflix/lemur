@@ -113,13 +113,11 @@ def setup_acme_client(authority):
     if not authority.options:
         raise Exception("Invalid authority. Options not set")
     options = {}
-    for o in json.loads(authority.options):
-        print(o)
-        options[o.get("name")] = o.get("value")
-    email = options.get('email', current_app.config.get('ACME_EMAIL'))
-    tel = options.get('telephone', current_app.config.get('ACME_TEL'))
-    directory_url = options.get('acme_url', current_app.config.get('ACME_DIRECTORY_URL'))
-    contact = ('mailto:{}'.format(email), 'tel:{}'.format(tel))
+    authority_options = json.loads(authority.options)
+    options[authority_options.get("name")] = authority_options.get("value")
+    email = authority_options.get('email', current_app.config.get('ACME_EMAIL'))
+    tel = authority_options.get('telephone', current_app.config.get('ACME_TEL'))
+    directory_url = authority_options.get('acme_url', current_app.config.get('ACME_DIRECTORY_URL'))
 
     key = jose.JWKRSA(key=generate_private_key('RSA2048'))
 

@@ -1,3 +1,6 @@
+import json
+
+from flask import current_app
 from lemur import database
 from lemur.dns_providers.models import DnsProviders
 
@@ -31,3 +34,10 @@ def delete(dns_provider_id):
     :param dns_provider_id: Lemur assigned ID
     """
     database.delete(get(dns_provider_id))
+
+
+def get_types():
+    provider_config = current_app.config.get('ACME_DNS_PROVIDER_TYPES')
+    if not provider_config:
+        raise Exception("No DNS Provider configuration specified.")
+    return provider_config

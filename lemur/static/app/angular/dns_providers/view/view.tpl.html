@@ -29,12 +29,6 @@
                       <li>{{ dns_provider.providerType }}</li>
                   </ul>
               </td>
-            <td data-title="'Domains'" sortable="'domains'" filter="{ 'domains': 'text' }">
-              <ul class="list-unstyled">
-                <li>{{ dns_provider.domains }}</li>
-                <li><span class="text-muted">{{ dns_provider.description }}</span></li>
-              </ul>
-            </td>
             <td data-title="''">
               <div class="btn-group-vertical pull-right">
                 <button uib-tooltip="Edit DNS Provider" ng-click="edit(dns_provider.id)" class="btn btn-sm btn-info">

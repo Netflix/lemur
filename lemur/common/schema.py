@@ -135,7 +135,6 @@ def unwrap_pagination(data, output_schema):
         marshaled_data = {'total': len(data)}
         marshaled_data['items'] = output_schema.dump(data, many=True).data
         return marshaled_data
-
     return output_schema.dump(data).data
 
 

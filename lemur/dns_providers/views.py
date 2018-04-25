@@ -78,10 +78,24 @@ class DnsProvidersList(AuthenticatedResource):
         args['user'] = g.user
         return service.render(args)
 
+
     @admin_permission.require(http_exception=403)
     def delete(self, dns_provider_id):
         service.delete(dns_provider_id)
         return {'result': True}
 
 
+class DnsProviderTypes(AuthenticatedResource):
+    """ Defines the 'dns_provider_types' endpoint """
+
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        super(DnsProviderTypes, self).__init__()
+
+    def get(self):
+        return service.get_types()
+
+
 api.add_resource(DnsProvidersList, '/dns_providers', endpoint='dns_providers')
+api.add_resource(DnsProvidersList, '/dns_providers/<int:dns_provider_id>', endpoint='dns_provider')
+api.add_resource(DnsProviderTypes, '/dns_provider_types', endpoint='dns_provider_types')

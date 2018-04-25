@@ -5,6 +5,10 @@ angular.module('lemur')
   .controller('DnsProviderCreateController', function ($scope, $uibModalInstance, PluginService, DnsProviderService, LemurRestangular, toaster) {
     $scope.dns_provider = LemurRestangular.restangularizeElement(null, {}, 'dns_providers');
 
+    PluginService.getByName('acme-issuer').then(function (acme) {
+        $scope.acme = acme;
+    });
+
     PluginService.getByType('dns_provider').then(function (plugins) {
       $scope.plugins = plugins;
     });
@@ -45,30 +49,13 @@ angular.module('lemur')
     DnsProviderApi.get(editId).then(function (dns_provider) {
       $scope.dns_provider = dns_provider;
 
-      PluginService.getByType('dns_provider').then(function (plugins) {
-        $scope.plugins = plugins;
+      PluginService.getByName('acme-issuer').then(function (acme) {
+        $scope.acme = acme;
 
-        _.each($scope.plugins, function (plugin) {
-          if (plugin.slug === $scope.dns_provider.plugin.slug) {
-            plugin.pluginOptions = $scope.dns_provider.plugin.pluginOptions;
-            $scope.dns_provider.plugin = plugin;
-            _.each($scope.dns_provider.plugin.pluginOptions, function (option) {
-              if (option.type === 'export-plugin') {
-                PluginService.getByType('export').then(function (plugins) {
-                  $scope.exportPlugins = plugins;
-
-                  _.each($scope.exportPlugins, function (plugin) {
-                    if (plugin.slug === option.value.slug) {
-                      plugin.pluginOptions = option.value.pluginOptions;
-                      option.value = plugin;
-                    }
-                  });
-                });
-              }
-            });
-          }
+        _.each($scope.acme, function (opts) {
+          console.log(opts);
+          });
         });
-      });
     });
 
     $scope.save = function (dns_provider) {

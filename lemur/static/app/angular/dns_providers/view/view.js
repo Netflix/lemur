@@ -50,7 +50,7 @@ angular.module('lemur')
       var uibModalInstance = $uibModal.open({
         animation: true,
         templateUrl: '/angular/dns_providers/dns_provider/dns_provider.tpl.html',
-        controller: 'DnsProvidersEditController',
+        controller: 'DnsProviderEditController',
         size: 'lg',
         backdrop: 'static',
         resolve: {
@@ -69,7 +69,7 @@ angular.module('lemur')
     $scope.create = function () {
       var uibModalInstance = $uibModal.open({
         animation: true,
-        controller: 'DnsProvidersCreateController',
+        controller: 'DnsProviderCreateController',
         templateUrl: '/angular/dns_providers/dns_provider/dns_provider.tpl.html',
         size: 'lg',
         backdrop: 'static'

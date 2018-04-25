@@ -4,6 +4,7 @@ acme
 alembic-autogenerate-enums
 arrow
 boto3
+CloudFlare
 cryptography
 Flask-Bcrypt==0.7.1
 Flask-Mail==0.9.1
