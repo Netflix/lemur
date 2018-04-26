@@ -208,16 +208,16 @@ class InitializeApp(Command):
         if operator_role:
             sys.stdout.write("[-] Operator role already created, skipping...!\n")
         else:
-            # we create an admin role
+            # we create an operator role
             operator_role = role_service.create('operator', description='This is the Lemur operator role.')
             sys.stdout.write("[+] Created 'operator' role\n")
 
         read_only_role = role_service.get_by_name('read-only')
 
         if read_only_role:
-            sys.stdout.write("[-] Operator role already created, skipping...!\n")
+            sys.stdout.write("[-] Read only role already created, skipping...!\n")
         else:
-            # we create an admin role
+            # we create an read only role
             read_only_role = role_service.create('read-only', description='This is the Lemur read only role.')
             sys.stdout.write("[+] Created 'read-only' role\n")
 
@@ -251,12 +251,17 @@ class InitializeApp(Command):
         recipients = current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL')
         notification_service.create_default_expiration_notifications("DEFAULT_SECURITY", recipients=recipients)
 
-        days = current_app.config.get("LEMUR_DEFAULT_ROTATION_INTERVAL", 30)
-        sys.stdout.write("[+] Creating default certificate rotation policy of {days} days before issuance.\n".format(
-            days=days
-        ))
+        _DEFAULT_ROTATION_INTERVAL = 'default'
+        default_rotation_interval = policy_service.get_by_name(_DEFAULT_ROTATION_INTERVAL)
 
-        policy_service.create(days=days, name='default')
+        if default_rotation_interval:
+            sys.stdout.write("[-] Default rotation interval policy already created, skipping...!\n")
+        else:
+            days = current_app.config.get("LEMUR_DEFAULT_ROTATION_INTERVAL", 30)
+            sys.stdout.write("[+] Creating default certificate rotation policy of {days} days before issuance.\n".format(
+                days=days))
+            policy_service.create(days=days, name=_DEFAULT_ROTATION_INTERVAL)
+
         sys.stdout.write("[/] Done!\n")
 
 
