@@ -1,5 +1,3 @@
-import json
-
 from flask import current_app
 from lemur import database
 from lemur.dns_providers.models import DnsProviders

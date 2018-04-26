@@ -1,9 +1,6 @@
 import unittest
 
-from acme import challenges
-
-from lemur.plugins.lemur_acme import plugin, route53, cloudflare
-from lemur.plugins.base import plugins
+from lemur.plugins.lemur_acme import plugin
 from mock import MagicMock, Mock, patch
 
 
@@ -116,4 +113,3 @@ class TestAcme(unittest.TestCase):
         result_client, result_registration = plugin.setup_acme_client(mock_authority)
         assert result_client
         assert result_registration
-

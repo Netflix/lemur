@@ -78,7 +78,6 @@ class DnsProvidersList(AuthenticatedResource):
         args['user'] = g.user
         return service.render(args)
 
-
     @admin_permission.require(http_exception=403)
     def delete(self, dns_provider_id):
         service.delete(dns_provider_id)

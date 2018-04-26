@@ -153,7 +153,7 @@ def test_certificate_input_schema(client, authority):
         'description': 'testtestest',
         'validityEnd': arrow.get(2016, 11, 9).isoformat(),
         'validityStart': arrow.get(2015, 11, 9).isoformat(),
-        'dns_provider': None,
+        'dnsProvider': None,
     }
 
     data, errors = CertificateInputSchema().load(input_data)
@@ -194,7 +194,7 @@ def test_certificate_input_with_extensions(client, authority):
                 ]
             }
         },
-        'dns_provider': None,
+        'dnsProvider': None,
     }
 
     data, errors = CertificateInputSchema().load(input_data)
@@ -209,7 +209,7 @@ def test_certificate_out_of_range_date(client, authority):
         'authority': {'id': authority.id},
         'description': 'testtestest',
         'validityYears': 100,
-        'dns_provider': None,
+        'dnsProvider': None,
     }
 
     data, errors = CertificateInputSchema().load(input_data)
@@ -234,7 +234,7 @@ def test_certificate_valid_years(client, authority):
         'authority': {'id': authority.id},
         'description': 'testtestest',
         'validityYears': 1,
-        'dns_provider': None,
+        'dnsProvider': None,
     }
 
     data, errors = CertificateInputSchema().load(input_data)
@@ -250,7 +250,7 @@ def test_certificate_valid_dates(client, authority):
         'description': 'testtestest',
         'validityStart': '2020-01-01T00:00:00',
         'validityEnd': '2020-01-01T00:00:01',
-        'dns_provider': None,
+        'dnsProvider': None,
     }
 
     data, errors = CertificateInputSchema().load(input_data)
@@ -267,7 +267,7 @@ def test_certificate_cn_admin(client, authority, logged_in_admin):
         'description': 'testtestest',
         'validityStart': '2020-01-01T00:00:00',
         'validityEnd': '2020-01-01T00:00:01',
-        'dns_provider': None,
+        'dnsProvider': None,
     }
 
     data, errors = CertificateInputSchema().load(input_data)
@@ -292,7 +292,7 @@ def test_certificate_allowed_names(client, authority, session, logged_in_user):
                 ]
             }
         },
-        'dns_provider': None,
+        'dnsProvider': None,
     }
 
     data, errors = CertificateInputSchema().load(input_data)
@@ -313,7 +313,7 @@ def test_certificate_incative_authority(client, authority, session, logged_in_us
         'description': 'testtestest',
         'validityStart': '2020-01-01T00:00:00',
         'validityEnd': '2020-01-01T00:00:01',
-        'dns_provider': None,
+        'dnsProvider': None,
     }
 
     data, errors = CertificateInputSchema().load(input_data)
@@ -338,7 +338,7 @@ def test_certificate_disallowed_names(client, authority, session, logged_in_user
                 ]
             }
         },
-        'dns_provider': None,
+        'dnsProvider': None,
     }
 
     data, errors = CertificateInputSchema().load(input_data)
@@ -357,7 +357,7 @@ def test_certificate_sensitive_name(client, authority, session, logged_in_user):
         'description': 'testtestest',
         'validityStart': '2020-01-01T00:00:00',
         'validityEnd': '2020-01-01T00:00:01',
-        'dns_provider': None,
+        'dnsProvider': None,
     }
     session.add(Domain(name='sensitive.example.com', sensitive=True))
 
