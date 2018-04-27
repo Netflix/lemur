@@ -1,5 +1,5 @@
 from lemur.common.fields import ArrowDateTime
-from lemur.common.schema import LemurOutputSchema
+from lemur.common.schema import LemurInputSchema, LemurOutputSchema
 
 from marshmallow import fields
 
@@ -15,4 +15,13 @@ class DnsProvidersNestedOutputSchema(LemurOutputSchema):
     date_created = ArrowDateTime()
 
 
-dns_provider_schema = DnsProvidersNestedOutputSchema()
+class DnsProvidersNestedInputSchema(LemurInputSchema):
+    __envelope__ = False
+    name = fields.String()
+    description = fields.String()
+    provider_type = fields.Dict()
+
+
+dns_provider_output_schema = DnsProvidersNestedOutputSchema()
+
+dns_provider_input_schema = DnsProvidersNestedInputSchema()

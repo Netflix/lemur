@@ -1,3 +1,5 @@
+import json
+
 from flask import current_app
 from lemur import database
 from lemur.dns_providers.models import DnsProviders
@@ -15,6 +17,10 @@ def render(args):
 
 
 def get(dns_provider_id):
+    return database.get(DnsProviders, dns_provider_id)
+
+
+def get_friendly(dns_provider_id):
     """
     Retrieves a dns provider by its lemur assigned ID.
 
@@ -22,7 +28,17 @@ def get(dns_provider_id):
     :rtype : DnsProvider
     :return:
     """
-    return database.get(DnsProviders, dns_provider_id)
+    dns_provider = get(dns_provider_id)
+    dns_provider_friendly = {
+        "name": dns_provider.name,
+        "description": dns_provider.description,
+        "provider_type": dns_provider.provider_type,
+        "options": dns_provider.options,
+    }
+
+    if dns_provider.provider_type == "route53":
+        dns_provider_friendly["account_id"] = json.loads(dns_provider.credentials).get("account_id")
+    return dns_provider_friendly
 
 
 def delete(dns_provider_id):
@@ -38,4 +54,21 @@ def get_types():
     provider_config = current_app.config.get('ACME_DNS_PROVIDER_TYPES')
     if not provider_config:
         raise Exception("No DNS Provider configuration specified.")
+    provider_config["total"] = len(provider_config.get("items"))
     return provider_config
+
+
+def create(data):
+    provider_name = data.get("name")
+
+    credentials = {}
+    for item in data.get("provider_type", {}).get("requirements", []):
+        credentials[item["name"]] = item["value"]
+    dns_provider = DnsProviders(
+        name=provider_name,
+        description=data.get("description"),
+        provider_type=data.get("provider_type").get("name"),
+        credentials=json.dumps(credentials),
+    )
+    created = database.create(dns_provider)
+    return created.id

@@ -3,7 +3,12 @@ angular.module('lemur')
   .service('DnsProviderApi', function (LemurRestangular) {
     return LemurRestangular.all('dns_providers');
   })
-  .service('DnsProviderService', function ($location,  DnsProviderApi, PluginService, DnsProviders) {
+
+  .service('DnsProviderOptions', function (LemurRestangular) {
+    return LemurRestangular.all('dns_provider_options');
+  })
+
+  .service('DnsProviderService', function ($location,  DnsProviderApi, PluginService, DnsProviders, DnsProviderOptions) {
     var DnsProviderService = this;
     DnsProviderService.findDnsProvidersByName = function (filterValue) {
       return DnsProviderApi.getList({'filter[label]': filterValue})
@@ -14,6 +19,10 @@ angular.module('lemur')
 
     DnsProviderService.getDnsProviders = function () {
       return DnsProviders.get();
+    };
+
+    DnsProviderService.getDnsProviderOptions = function () {
+      return DnsProviderOptions.getList();
     };
 
     DnsProviderService.create = function (dns_provider) {

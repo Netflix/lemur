@@ -5,20 +5,12 @@ angular.module('lemur')
   .controller('DnsProviderCreateController', function ($scope, $uibModalInstance, PluginService, DnsProviderService, LemurRestangular, toaster) {
     $scope.dns_provider = LemurRestangular.restangularizeElement(null, {}, 'dns_providers');
 
-    PluginService.getByName('acme-issuer').then(function (acme) {
-        $scope.acme = acme;
-    });
-
-    PluginService.getByType('dns_provider').then(function (plugins) {
-      $scope.plugins = plugins;
-    });
-
-    PluginService.getByType('export').then(function (plugins) {
-      $scope.exportPlugins = plugins;
+    DnsProviderService.getDnsProviderOptions().then(function(res) {
+        $scope.options = res;
     });
 
     $scope.save = function (dns_provider) {
-      DnsProviderService.create(dns_provider.then(
+      DnsProviderService.create(dns_provider).then(
         function () {
           toaster.pop({
             type: 'success',
@@ -35,7 +27,7 @@ angular.module('lemur')
             directiveData: response.data,
             timeout: 100000
           });
-        }));
+        });
     };
 
     $scope.cancel = function () {
@@ -48,14 +40,6 @@ angular.module('lemur')
 
     DnsProviderApi.get(editId).then(function (dns_provider) {
       $scope.dns_provider = dns_provider;
-
-      PluginService.getByName('acme-issuer').then(function (acme) {
-        $scope.acme = acme;
-
-        _.each($scope.acme, function (opts) {
-          console.log(opts);
-          });
-        });
     });
 
     $scope.save = function (dns_provider) {

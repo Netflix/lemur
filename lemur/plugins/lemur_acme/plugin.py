@@ -113,11 +113,12 @@ def setup_acme_client(authority):
     if not authority.options:
         raise Exception("Invalid authority. Options not set")
     options = {}
-    authority_options = json.loads(authority.options)
-    options[authority_options.get("name")] = authority_options.get("value")
-    email = authority_options.get('email', current_app.config.get('ACME_EMAIL'))
-    tel = authority_options.get('telephone', current_app.config.get('ACME_TEL'))
-    directory_url = authority_options.get('acme_url', current_app.config.get('ACME_DIRECTORY_URL'))
+
+    for option in json.loads(authority.options):
+        options[option.get("name")] = option.get("value")
+    email = options.get('email', current_app.config.get('ACME_EMAIL'))
+    tel = options.get('telephone', current_app.config.get('ACME_TEL'))
+    directory_url = options.get('acme_url', current_app.config.get('ACME_DIRECTORY_URL'))
 
     key = jose.JWKRSA(key=generate_private_key('RSA2048'))
 
@@ -254,7 +255,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
 
         current_app.logger.debug("Using DNS provider: {0}".format(dns_provider.provider_type))
         dns_provider_type = __import__(dns_provider.provider_type, globals(), locals(), [], 1)
-        account_number = credentials.get("account_number")
+        account_number = credentials.get("account_id")
         if dns_provider.provider_type == 'route53' and not account_number:
             error = "DNS Provider {} does not have an account number configured.".format(dns_provider.name)
             current_app.logger.error(error)

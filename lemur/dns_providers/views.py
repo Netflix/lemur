@@ -13,7 +13,7 @@ from lemur.auth.service import AuthenticatedResource
 from lemur.common.schema import validate_schema
 from lemur.common.utils import paginated_parser
 from lemur.dns_providers import service
-from lemur.dns_providers.schemas import dns_provider_schema
+from lemur.dns_providers.schemas import dns_provider_output_schema, dns_provider_input_schema
 
 mod = Blueprint('dns_providers', __name__)
 api = Api(mod)
@@ -25,7 +25,7 @@ class DnsProvidersList(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(DnsProvidersList, self).__init__()
 
-    @validate_schema(None, dns_provider_schema)
+    @validate_schema(None, dns_provider_output_schema)
     def get(self):
         """
         .. http:get:: /dns_providers
@@ -70,7 +70,7 @@ class DnsProvidersList(AuthenticatedResource):
 
         """
         parser = paginated_parser.copy()
-        parser.add_argument('id', type=int, location='args')
+        parser.add_argument('dns_provider_id', type=int, location='args')
         parser.add_argument('name', type=str, location='args')
         parser.add_argument('type', type=str, location='args')
 
@@ -78,23 +78,92 @@ class DnsProvidersList(AuthenticatedResource):
         args['user'] = g.user
         return service.render(args)
 
+    @validate_schema(dns_provider_input_schema, None)
+    @admin_permission.require(http_exception=403)
+    def post(self, data=None):
+        """
+        Creates a DNS Provider
+
+        **Example request**:
+        {
+          "provider_type": {
+            "name": "route53",
+            "requirements": [
+              {
+                "name": "account_id",
+                "type": "int",
+                "required": true,
+                "helpMessage": "AWS Account number",
+                "value": 12345
+              }
+            ],
+            "route": "dns_provider_options",
+            "reqParams": null,
+            "restangularized": true,
+            "fromServer": true,
+            "parentResource": null,
+            "restangularCollection": false
+          },
+          "name": "provider_name",
+          "description": "provider_description"
+        }
+
+        **Example request 2**
+        {
+          "provider_type": {
+            "name": "cloudflare",
+            "requirements": [
+              {
+                "name": "email",
+                "type": "str",
+                "required": true,
+                "helpMessage": "Cloudflare Email",
+                "value": "test@netflix.com"
+              },
+              {
+                "name": "key",
+                "type": "str",
+                "required": true,
+                "helpMessage": "Cloudflare Key",
+                "value": "secretkey"
+              }
+            ],
+            "route": "dns_provider_options",
+            "reqParams": null,
+            "restangularized": true,
+            "fromServer": true,
+            "parentResource": null,
+            "restangularCollection": false
+          },
+          "name": "provider_name",
+          "description": "provider_description"
+        }
+        :return:
+        """
+        return service.create(data)
+
+
+class DnsProviders(AuthenticatedResource):
+    def get(self, dns_provider_id):
+        return service.get_friendly(dns_provider_id)
+
     @admin_permission.require(http_exception=403)
     def delete(self, dns_provider_id):
         service.delete(dns_provider_id)
         return {'result': True}
 
 
-class DnsProviderTypes(AuthenticatedResource):
+class DnsProviderOptions(AuthenticatedResource):
     """ Defines the 'dns_provider_types' endpoint """
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(DnsProviderTypes, self).__init__()
+        super(DnsProviderOptions, self).__init__()
 
     def get(self):
         return service.get_types()
 
 
 api.add_resource(DnsProvidersList, '/dns_providers', endpoint='dns_providers')
-api.add_resource(DnsProvidersList, '/dns_providers/<int:dns_provider_id>', endpoint='dns_provider')
-api.add_resource(DnsProviderTypes, '/dns_provider_types', endpoint='dns_provider_types')
+api.add_resource(DnsProviders, '/dns_providers/<int:dns_provider_id>', endpoint='dns_provider')
+api.add_resource(DnsProviderOptions, '/dns_provider_options', endpoint='dns_provider_options')

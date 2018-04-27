@@ -6,6 +6,9 @@ from mock import MagicMock, Mock, patch
 
 class TestAcme(unittest.TestCase):
 
+    def setUp(self):
+        self.ACMEIssuerPlugin = plugin.ACMEIssuerPlugin()
+
     @patch('lemur.plugins.lemur_acme.plugin.len', return_value=1)
     def test_find_dns_challenge(self, mock_len):
         assert mock_len
@@ -103,7 +106,7 @@ class TestAcme(unittest.TestCase):
     @patch('lemur.plugins.lemur_acme.plugin.current_app')
     def test_setup_acme_client_success(self, mock_current_app, mock_acme):
         mock_authority = Mock()
-        mock_authority.options = '{"o": "mock_name", "v": "mock_value"}'
+        mock_authority.options = '[{"name": "mock_name", "value": "mock_value"}]'
         mock_client = Mock()
         mock_registration = Mock()
         mock_registration.uri = "http://test.com"
@@ -113,3 +116,64 @@ class TestAcme(unittest.TestCase):
         result_client, result_registration = plugin.setup_acme_client(mock_authority)
         assert result_client
         assert result_registration
+
+    @patch('lemur.plugins.lemur_acme.plugin.current_app')
+    def test_get_domains_single(self, mock_current_app):
+        options = {
+            "common_name": "test.netflix.net"
+        }
+        result = plugin.get_domains(options)
+        self.assertEqual(result, [options["common_name"]])
+
+    @patch('lemur.plugins.lemur_acme.plugin.current_app')
+    def test_get_domains_multiple(self, mock_current_app):
+        options = {
+            "common_name": "test.netflix.net",
+            "extensions": {
+                "sub_alt_names": {
+                    "names": [
+                        "test2.netflix.net",
+                        "test3.netflix.net"
+                    ]
+                }
+            }
+        }
+        result = plugin.get_domains(options)
+        self.assertEqual(result, [options["common_name"], "test2.netflix.net", "test3.netflix.net"])
+
+    @patch('lemur.plugins.lemur_acme.plugin.start_dns_challenge', return_value="test")
+    def test_get_authorizations(self, mock_start_dns_challenge):
+        result = plugin.get_authorizations("acme_client", "account_number", ["domains"], "dns_provider")
+        self.assertEqual(result, ["test"])
+
+    @patch('lemur.plugins.lemur_acme.plugin.complete_dns_challenge', return_value="test")
+    def test_finalize_authorizations(self, mock_complete_dns_challenge):
+        mock_authz = []
+        mock_authz_record = MagicMock()
+        mock_authz_record.authz = Mock()
+        mock_authz_record.change_id = 1
+        mock_authz_record.dns_challenge.validation_domain_name = Mock()
+        mock_authz_record.dns_challenge.validation = Mock()
+        mock_authz.append(mock_authz_record)
+        mock_dns_provider = Mock()
+        mock_dns_provider.delete_txt_record = Mock()
+
+        mock_acme_client = Mock()
+        result = plugin.finalize_authorizations(mock_acme_client, "account_number", mock_dns_provider, mock_authz)
+        self.assertEqual(result, mock_authz)
+
+    @patch('lemur.plugins.lemur_acme.plugin.current_app')
+    def test_create_authority(self, mock_current_app):
+        mock_current_app.config = Mock()
+        options = {
+            "plugin": {
+                "plugin_options": [{
+                    "name": "certificate",
+                    "value": "123"
+                }]
+            }
+        }
+        acme_root, b, role = self.ACMEIssuerPlugin.create_authority(options)
+        self.assertEqual(acme_root, "123")
+        self.assertEqual(b, "")
+        self.assertEqual(role, [{'username': '', 'password': '', 'name': 'acme'}])
