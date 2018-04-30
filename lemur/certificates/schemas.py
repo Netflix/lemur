@@ -74,7 +74,14 @@ class CertificateInputSchema(CertificateCreationSchema):
     dns_provider = fields.Nested(DnsProviderSchema, missing={}, required=False, allow_none=True)
 
     csr = fields.String(validate=validators.csr)
-    key_type = fields.String(validate=validate.OneOf(['RSA2048', 'RSA4096']), missing='RSA2048')
+
+    key_type = fields.String(
+        validate=validate.OneOf(
+            ['RSA2048', 'RSA4096', 'ECCPRIME192V1', 'ECCPRIME256V1', 'ECCSECP192R1', 'ECCSECP224R1',
+             'ECCSECP256R1', 'ECCSECP384R1', 'ECCSECP521R1', 'ECCSECP256K1','ECCSECT163K1', 'ECCSECT233K1',
+             'ECCSECT283K1', 'ECCSECT409K1', 'ECCSECT571K1', 'ECCSECT163R2', 'ECCSECT233R1', 'ECCSECT283R1',
+             'ECCSECT409R1', 'ECCSECT571R2']),
+        missing='RSA2048')
 
     notify = fields.Boolean(default=True)
     rotation = fields.Boolean()

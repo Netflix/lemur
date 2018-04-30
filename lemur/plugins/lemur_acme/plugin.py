@@ -236,6 +236,49 @@ class ACMEIssuerPlugin(IssuerPlugin):
         }
         return cert
 
+    def get_ordered_certificates(self, pending_certs):
+        pending = []
+        for pending_cert in pending_certs:
+            acme_client, registration = setup_acme_client(pending_cert.authority)
+            order_info = authorization_service.get(pending_cert.external_id)
+            dns_provider = dns_provider_service.get(pending_cert.dns_provider_id)
+            dns_provider_type = __import__(dns_provider.provider_type, globals(), locals(), [], 1)
+            authorizations = get_authorizations(
+                acme_client, order_info.account_number, order_info.domains, dns_provider_type)
+            pending.append({
+                "acme_client": acme_client,
+                "account_number": order_info.account_number,
+                "dns_provider_type": dns_provider_type,
+                "authorizations": authorizations,
+                "pending_cert": pending_cert,
+            })
+
+        certs = []
+
+        for entry in pending:
+            finalize_authorizations(
+                pending["acme_client"],
+                pending["account_number"],
+                pending["dns_provider_type"],
+                pending["authorizations"]
+            )
+            pem_certificate, pem_certificate_chain = request_certificate(
+                pending["acme_client"],
+                pending["authorizations"],
+                pending["pending_cert"].csr
+            )
+
+            cert = {
+                'body': "\n".join(str(pem_certificate).splitlines()),
+                'chain': "\n".join(str(pem_certificate_chain).splitlines()),
+                'external_id': str(pending_cert.external_id)
+            }
+            certs.append({
+                "cert": cert,
+                "pending_cert": pending_cert,
+            })
+        return certs
+
     def create_certificate(self, csr, issuer_options):
         """
         Creates an ACME certificate.
