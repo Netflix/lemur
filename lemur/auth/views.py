@@ -56,7 +56,7 @@ def exchange_for_access_token(code, redirect_uri, client_id, secret, access_toke
     basic = base64.b64encode(bytes(token, 'utf-8'))
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'authorization': 'basic {0}'.format(basic.decode('utf-8'))
+        'authorization': 'Basic {0}'.format(basic.decode('utf-8'))
     }
 
     # exchange authorization code for access token.
@@ -379,12 +379,10 @@ class OAuth2(Resource):
             verify_cert=verify_cert
         )
 
-        jwks_url = current_app.config.get('PING_JWKS_URL')
+        jwks_url = current_app.config.get('OAUTH2_JWKS_URL')
         validate_id_token(id_token, args['clientId'], jwks_url)
 
         user, profile = retrieve_user(user_api_url, access_token)
-        roles = create_user_roles(profile)
-        update_user(user, profile, roles)
 
         if not user.active:
             metrics.send('login', 'counter', 1, metric_tags={'status': FAILURE_METRIC_STATUS})
