@@ -7,9 +7,9 @@
 asn1crypto==0.24.0        # via cryptography
 attrs==17.4.0             # via pytest
 aws-xray-sdk==0.95        # via moto
-boto3==1.7.10             # via moto
+boto3==1.7.11             # via moto
 boto==2.48.0              # via moto
-botocore==1.10.10         # via boto3, moto, s3transfer
+botocore==1.10.11         # via boto3, moto, s3transfer
 certifi==2018.4.16        # via requests
 cffi==1.11.5              # via cryptography
 chardet==3.0.4            # via requests
@@ -22,7 +22,7 @@ docker==3.3.0             # via moto
 docutils==0.14            # via botocore
 factory-boy==2.10.0
 faker==0.8.13
-flask==1.0                # via pytest-flask
+flask==1.0.2              # via pytest-flask
 freezegun==0.3.10
 idna==2.6                 # via cryptography, requests
 itsdangerous==0.24        # via flask
@@ -42,7 +42,7 @@ pyaml==17.12.1            # via moto
 pycparser==2.18           # via cffi
 pyflakes==1.6.0
 pytest-flask==0.10.0
-pytest-mock==1.9.0
+pytest-mock==1.10.0
 pytest==3.5.1
 python-dateutil==2.6.1    # via botocore, faker, freezegun, moto
 pytz==2018.4              # via moto

@@ -54,7 +54,8 @@ class TestAcme(unittest.TestCase):
         self.assertEqual(type(result), plugin.AuthorizationRecord)
 
     @patch('acme.client.Client')
-    def test_complete_dns_challenge_success(self, mock_acme):
+    @patch('lemur.plugins.lemur_acme.plugin.current_app')
+    def test_complete_dns_challenge_success(self, mock_current_app, mock_acme):
         mock_dns_provider = Mock()
         mock_dns_provider.wait_for_dns_change = Mock(return_value=True)
 
@@ -65,7 +66,8 @@ class TestAcme(unittest.TestCase):
         plugin.complete_dns_challenge(mock_acme, "accountid", mock_authz, mock_dns_provider)
 
     @patch('acme.client.Client')
-    def test_complete_dns_challenge_fail(self, mock_acme):
+    @patch('lemur.plugins.lemur_acme.plugin.current_app')
+    def test_complete_dns_challenge_fail(self, mock_current_app, mock_acme):
         mock_dns_provider = Mock()
         mock_dns_provider.wait_for_dns_change = Mock(return_value=True)
 

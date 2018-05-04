@@ -5,8 +5,11 @@ alembic-autogenerate-enums
 arrow
 asyncpool
 boto3
+certifi
 CloudFlare
 cryptography
+dnspython3
+dyn
 Flask-Bcrypt==0.7.1
 Flask-Mail==0.9.1
 Flask-Migrate==2.1.1
@@ -38,4 +41,5 @@ retrying
 six
 SQLAlchemy-Utils
 tabulate
+tld
 xmltodict

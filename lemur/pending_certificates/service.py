@@ -59,6 +59,10 @@ def delete(pending_certificate):
     database.delete(pending_certificate)
 
 
+def delete_by_id(id):
+    database.delete(get(id))
+
+
 def get_pending_certs(pending_ids):
     """
     Retrieve a list of pending certs given a list of ids

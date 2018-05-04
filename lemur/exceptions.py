@@ -34,3 +34,7 @@ class AttrNotFound(LemurException):
 
 class InvalidConfiguration(Exception):
     pass
+
+
+class InvalidAuthority(Exception):
+    pass

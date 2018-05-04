@@ -17,8 +17,9 @@ import json
 from flask import current_app
 
 from acme.client import Client
-from acme import messages
-from acme import challenges
+from acme import challenges, messages
+from acme.errors import PollError
+from botocore.exceptions import ClientError
 
 from lemur.common.utils import generate_private_key
 
@@ -26,6 +27,7 @@ import OpenSSL.crypto
 
 from lemur.authorizations import service as authorization_service
 from lemur.dns_providers import service as dns_provider_service
+from lemur.exceptions import InvalidAuthority, InvalidConfiguration
 from lemur.plugins.bases import IssuerPlugin
 from lemur.plugins import lemur_acme as acme
 
@@ -68,6 +70,7 @@ def start_dns_challenge(acme_client, account_number, host, dns_provider):
 
 
 def complete_dns_challenge(acme_client, account_number, authz_record, dns_provider):
+    current_app.logger.debug("Finalizing DNS challenge for {0}".format(authz_record.host))
     dns_provider.wait_for_dns_change(authz_record.change_id, account_number=account_number)
 
     response = authz_record.dns_challenge.response(acme_client.key)
@@ -93,6 +96,8 @@ def request_certificate(acme_client, authorizations, csr):
             )
         ),
         authzrs=[authz_record.authz for authz_record in authorizations],
+        mintime=60,
+        max_attempts=10,
     )
 
     pem_certificate = OpenSSL.crypto.dump_certificate(
@@ -111,11 +116,11 @@ def request_certificate(acme_client, authorizations, csr):
 
 def setup_acme_client(authority):
     if not authority.options:
-        raise Exception("Invalid authority. Options not set")
+        raise InvalidAuthority("Invalid authority. Options not set")
     options = {}
 
     for option in json.loads(authority.options):
-        options[option.get("name")] = option.get("value")
+        options[option["name"]] = option.get("value")
     email = options.get('email', current_app.config.get('ACME_EMAIL'))
     tel = options.get('telephone', current_app.config.get('ACME_TEL'))
     directory_url = options.get('acme_url', current_app.config.get('ACME_DIRECTORY_URL'))
@@ -219,15 +224,29 @@ class ACMEIssuerPlugin(IssuerPlugin):
     def __init__(self, *args, **kwargs):
         super(ACMEIssuerPlugin, self).__init__(*args, **kwargs)
 
+    def get_dns_provider(self, type):
+        from lemur.plugins.lemur_acme import cloudflare, dyn, route53
+        provider_types = {
+            'cloudflare': cloudflare,
+            'dyn': dyn,
+            'route53': route53,
+        }
+        return provider_types[type]
+
     def get_ordered_certificate(self, pending_cert):
         acme_client, registration = setup_acme_client(pending_cert.authority)
         order_info = authorization_service.get(pending_cert.external_id)
         dns_provider = dns_provider_service.get(pending_cert.dns_provider_id)
-        dns_provider_type = __import__(dns_provider.provider_type, globals(), locals(), [], 1)
-        authorizations = get_authorizations(
-            acme_client, order_info.account_number, order_info.domains, dns_provider_type)
+        dns_provider_type = self.get_dns_provider(dns_provider.provider_type)
+        try:
+            authorizations = get_authorizations(
+                acme_client, order_info.account_number, order_info.domains, dns_provider_type)
+        except ClientError:
+            current_app.logger.error("Unable to resolve pending cert: {}".format(pending_cert.name), exc_info=True)
+            return False
 
-        finalize_authorizations(acme_client, order_info.account_number, dns_provider_type, authorizations)
+        authorizations = finalize_authorizations(
+            acme_client, order_info.account_number, dns_provider_type, authorizations)
         pem_certificate, pem_certificate_chain = request_certificate(acme_client, authorizations, pending_cert.csr)
         cert = {
             'body': "\n".join(str(pem_certificate).splitlines()),
@@ -238,45 +257,59 @@ class ACMEIssuerPlugin(IssuerPlugin):
 
     def get_ordered_certificates(self, pending_certs):
         pending = []
+        certs = []
         for pending_cert in pending_certs:
             acme_client, registration = setup_acme_client(pending_cert.authority)
             order_info = authorization_service.get(pending_cert.external_id)
             dns_provider = dns_provider_service.get(pending_cert.dns_provider_id)
-            dns_provider_type = __import__(dns_provider.provider_type, globals(), locals(), [], 1)
-            authorizations = get_authorizations(
-                acme_client, order_info.account_number, order_info.domains, dns_provider_type)
-            pending.append({
-                "acme_client": acme_client,
-                "account_number": order_info.account_number,
-                "dns_provider_type": dns_provider_type,
-                "authorizations": authorizations,
-                "pending_cert": pending_cert,
-            })
-
-        certs = []
+            dns_provider_type = self.get_dns_provider(dns_provider.provider_type)
+            try:
+                authorizations = get_authorizations(
+                    acme_client, order_info.account_number, order_info.domains, dns_provider_type)
+                pending.append({
+                    "acme_client": acme_client,
+                    "account_number": order_info.account_number,
+                    "dns_provider_type": dns_provider_type,
+                    "authorizations": authorizations,
+                    "pending_cert": pending_cert,
+                })
+            except (ClientError, ValueError):
+                current_app.logger.error("Unable to resolve pending cert: {}".format(pending_cert), exc_info=True)
+                certs.append({
+                    "cert": False,
+                    "pending_cert": pending_cert,
+                })
 
         for entry in pending:
-            finalize_authorizations(
-                pending["acme_client"],
-                pending["account_number"],
-                pending["dns_provider_type"],
-                pending["authorizations"]
-            )
-            pem_certificate, pem_certificate_chain = request_certificate(
-                pending["acme_client"],
-                pending["authorizations"],
-                pending["pending_cert"].csr
+            entry["authorizations"] = finalize_authorizations(
+                entry["acme_client"],
+                entry["account_number"],
+                entry["dns_provider_type"],
+                entry["authorizations"]
             )
 
-            cert = {
-                'body': "\n".join(str(pem_certificate).splitlines()),
-                'chain': "\n".join(str(pem_certificate_chain).splitlines()),
-                'external_id': str(pending_cert.external_id)
-            }
-            certs.append({
-                "cert": cert,
-                "pending_cert": pending_cert,
-            })
+            try:
+                pem_certificate, pem_certificate_chain = request_certificate(
+                    entry["acme_client"],
+                    entry["authorizations"],
+                    entry["pending_cert"].csr
+                )
+
+                cert = {
+                    'body': "\n".join(str(pem_certificate).splitlines()),
+                    'chain': "\n".join(str(pem_certificate_chain).splitlines()),
+                    'external_id': str(entry["pending_cert"].external_id)
+                }
+                certs.append({
+                    "cert": cert,
+                    "pending_cert": entry["pending_cert"],
+                })
+            except PollError:
+                current_app.logger.error("Unable to resolve pending cert: {}".format(pending_cert), exc_info=True)
+                certs.append({
+                    "cert": False,
+                    "pending_cert": entry["pending_cert"],
+                })
         return certs
 
     def create_certificate(self, csr, issuer_options):
@@ -292,7 +325,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
         acme_client, registration = setup_acme_client(authority)
         dns_provider_d = issuer_options.get('dns_provider')
         if not dns_provider_d:
-            raise Exception("DNS Provider setting is required for ACME certificates.")
+            raise InvalidConfiguration("DNS Provider setting is required for ACME certificates.")
         dns_provider = dns_provider_service.get(dns_provider_d.get("id"))
         credentials = json.loads(dns_provider.credentials)
 
@@ -300,9 +333,9 @@ class ACMEIssuerPlugin(IssuerPlugin):
         dns_provider_type = __import__(dns_provider.provider_type, globals(), locals(), [], 1)
         account_number = credentials.get("account_id")
         if dns_provider.provider_type == 'route53' and not account_number:
-            error = "DNS Provider {} does not have an account number configured.".format(dns_provider.name)
+            error = "Route53 DNS Provider {} does not have an account number configured.".format(dns_provider.name)
             current_app.logger.error(error)
-            raise Exception(error)
+            raise InvalidConfiguration(error)
         domains = get_domains(issuer_options)
         if not create_immediately:
             # Create pending authorizations that we'll need to do the creation
@@ -333,7 +366,11 @@ class ACMEIssuerPlugin(IssuerPlugin):
         :return:
         """
         role = {'username': '', 'password': '', 'name': 'acme'}
-        plugin_options = options.get('plugin').get('plugin_options')
+        plugin_options = options.get('plugin', {}).get('plugin_options')
+        if not plugin_options:
+            error = "Invalid options for lemur_acme plugin: {}".format(options)
+            current_app.logger.error(error)
+            raise InvalidConfiguration(error)
         # Define static acme_root based off configuration variable by default. However, if user has passed a
         # certificate, use this certificate as the root.
         acme_root = current_app.config.get('ACME_ROOT')

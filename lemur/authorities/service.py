@@ -111,7 +111,7 @@ def create(**kwargs):
     cert = upload(**kwargs)
     kwargs['authority_certificate'] = cert
     if kwargs.get('plugin', {}).get('plugin_options', []):
-        kwargs['options'] = json.dumps(kwargs.get('plugin', {}).get('plugin_options', []))
+        kwargs['options'] = json.dumps(kwargs['plugin']['plugin_options'])
 
     authority = Authority(**kwargs)
     authority = database.create(authority)
