@@ -20,10 +20,8 @@ Flask-SQLAlchemy
 Flask==0.12
 Flask-Cors
 future
-gevent
 gunicorn
 inflection
-janus
 jinja2
 lockfile
 marshmallow-sqlalchemy

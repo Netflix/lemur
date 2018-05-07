@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-index --output-file requirements-docs.txt requirements-docs.in
 #
-acme==0.23.0
+acme==0.24.0
 alabaster==0.7.10         # via sphinx
 alembic-autogenerate-enums==0.0.2
 alembic==0.9.9
@@ -15,13 +15,15 @@ asyncpool==1.0
 babel==2.5.3              # via sphinx
 bcrypt==3.1.4
 blinker==1.4
-boto3==1.7.11
-botocore==1.10.11
+boto3==1.7.14
+botocore==1.10.14
 certifi==2018.4.16
 cffi==1.11.5
 click==6.7
 cloudflare==2.1.0
 cryptography==2.2.2
+dnspython3==1.15.0
+dnspython==1.15.0
 docutils==0.14
 dyn==1.8.1
 flask-bcrypt==0.7.1
@@ -34,14 +36,11 @@ flask-script==2.0.6
 flask-sqlalchemy==2.3.2
 flask==0.12
 future==0.16.0
-gevent==1.2.2
-greenlet==0.4.13
 gunicorn==19.8.1
 idna==2.6
 imagesize==1.0.0          # via sphinx
 inflection==0.3.1
 itsdangerous==0.24
-janus==0.3.1
 jinja2==2.10
 jmespath==0.9.3
 josepy==1.1.0
@@ -84,5 +83,6 @@ sphinxcontrib-websupport==1.0.1  # via sphinx
 sqlalchemy-utils==0.33.3
 sqlalchemy==1.2.7
 tabulate==0.8.2
+tld==0.7.10
 werkzeug==0.14.1
 xmltodict==0.11.0

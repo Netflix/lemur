@@ -4,6 +4,7 @@ from sqlalchemy_utils import ArrowType
 
 from lemur.database import db
 from lemur.plugins.base import plugins
+from lemur.utils import Vault
 
 
 class DnsProviders(db.Model):
@@ -15,7 +16,7 @@ class DnsProviders(db.Model):
     name = Column(String(length=256), unique=True, nullable=True)
     description = Column(String(length=1024), nullable=True)
     provider_type = Column(String(length=256), nullable=True)
-    credentials = Column(String(length=256), nullable=True)
+    credentials = Column(Vault, nullable=True)
     api_endpoint = Column(String(length=256), nullable=True)
     date_created = Column(ArrowType(), server_default=text('now()'), nullable=False)
     status = Column(String(length=128), nullable=True)

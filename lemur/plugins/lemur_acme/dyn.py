@@ -1,7 +1,7 @@
-import dns.exception
-import dns.resolver
 import time
 
+import dns.exception
+import dns.resolver
 from dyn.tm.session import DynectSession
 from dyn.tm.zones import Node, Zone
 from flask import current_app

@@ -13,8 +13,8 @@ asn1crypto==0.24.0        # via cryptography
 asyncpool==1.0
 bcrypt==3.1.4             # via flask-bcrypt, paramiko
 blinker==1.4              # via flask-mail, flask-principal, raven
-boto3==1.7.11
-botocore==1.10.11         # via boto3, s3transfer
+boto3==1.7.14
+botocore==1.10.14         # via boto3, s3transfer
 certifi==2018.4.16
 cffi==1.11.5              # via bcrypt, cryptography, pynacl
 click==6.7                # via flask
@@ -34,13 +34,10 @@ flask-script==2.0.6
 flask-sqlalchemy==2.3.2
 flask==0.12
 future==0.16.0
-gevent==1.2.2
-greenlet==0.4.13          # via gevent
 gunicorn==19.8.1
 idna==2.6                 # via cryptography
 inflection==0.3.1
 itsdangerous==0.24        # via flask
-janus==0.3.1
 jinja2==2.10
 jmespath==0.9.3           # via boto3, botocore
 josepy==1.1.0             # via acme

@@ -9,6 +9,17 @@ from flask import current_app
 from marshmallow import fields, validate, validates_schema, post_load, pre_load
 from marshmallow.exceptions import ValidationError
 
+from lemur.authorities.schemas import AuthorityNestedOutputSchema
+from lemur.common import validators, missing
+from lemur.common.fields import ArrowDateTime, Hex
+from lemur.common.schema import LemurInputSchema, LemurOutputSchema
+from lemur.constants import CERTIFICATE_KEY_TYPES
+from lemur.destinations.schemas import DestinationNestedOutputSchema
+from lemur.domains.schemas import DomainNestedOutputSchema
+from lemur.notifications import service as notification_service
+from lemur.notifications.schemas import NotificationNestedOutputSchema
+from lemur.policies.schemas import RotationPolicyNestedOutputSchema
+from lemur.roles.schemas import RoleNestedOutputSchema
 from lemur.schemas import (
     AssociatedAuthoritySchema,
     AssociatedDestinationSchema,
@@ -21,20 +32,7 @@ from lemur.schemas import (
     AssociatedRotationPolicySchema,
     DnsProviderSchema
 )
-
-from lemur.authorities.schemas import AuthorityNestedOutputSchema
-from lemur.destinations.schemas import DestinationNestedOutputSchema
-from lemur.notifications.schemas import NotificationNestedOutputSchema
-from lemur.roles.schemas import RoleNestedOutputSchema
-from lemur.domains.schemas import DomainNestedOutputSchema
 from lemur.users.schemas import UserNestedOutputSchema
-from lemur.policies.schemas import RotationPolicyNestedOutputSchema
-
-from lemur.common.schema import LemurInputSchema, LemurOutputSchema
-from lemur.common import validators, missing
-from lemur.notifications import service as notification_service
-
-from lemur.common.fields import ArrowDateTime, Hex
 
 
 class CertificateSchema(LemurInputSchema):
@@ -76,11 +74,7 @@ class CertificateInputSchema(CertificateCreationSchema):
     csr = fields.String(validate=validators.csr)
 
     key_type = fields.String(
-        validate=validate.OneOf(
-            ['RSA2048', 'RSA4096', 'ECCPRIME192V1', 'ECCPRIME256V1', 'ECCSECP192R1', 'ECCSECP224R1',
-             'ECCSECP256R1', 'ECCSECP384R1', 'ECCSECP521R1', 'ECCSECP256K1', 'ECCSECT163K1', 'ECCSECT233K1',
-             'ECCSECT283K1', 'ECCSECT409K1', 'ECCSECT571K1', 'ECCSECT163R2', 'ECCSECT233R1', 'ECCSECT283R1',
-             'ECCSECT409R1', 'ECCSECT571R2']),
+        validate=validate.OneOf(CERTIFICATE_KEY_TYPES),
         missing='RSA2048')
 
     notify = fields.Boolean(default=True)

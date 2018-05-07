@@ -2,12 +2,34 @@ Changelog
 =========
 
 
-0.7 - `master`
+0.7 - `2018-05-07`
 ~~~~~~~~~~~~~~
 
-.. note:: This version is not yet released and is under active development
+This release adds LetsEncrypt support with DNS providers Dyn, Route53, and Cloudflare, and expands on the pending certificate functionality.
+
+The pending_dns_authorizations and dns_providers tables were created. New columns
+were added to the certificates and pending_certificates tables, (For the DNS provider ID), and authorities (For options).
+Please run a database migration when upgrading.
+
+The Let's Encrypt flow will run asynchronously. When a certificate is requested through the acme-issuer, a pending certificate
+will be created. A cron needs to be defined to run `lemur pending_certs fetch_all_acme`. This command will iterate through all of the pending
+certificates, request a DNS challenge token from Let's Encrypt, and set the appropriate _acme-challenge TXT entry. It will
+then iterate through and resolve the challenges before requesting a certificate for each pending certificate. If a certificate
+is successfully obtained, the pending_certificate will be moved to the certificates table with the appropriate properties.
+
+Special thanks to all who helped with this release, notably:
+
+- The folks at Cloudflare
+- dmitryzykov
+- jchuong
+- seils
+- titouanc
 
 
+Upgrading
+---------
+
+.. note:: This release will need a migration change. Please follow the `documentation <https://lemur.readthedocs.io/en/latest/administration.html#upgrading-lemur>`_ to upgrade Lemur.
 
 0.6 - `2018-01-02`
 ~~~~~~~~~~~~~~~~~~

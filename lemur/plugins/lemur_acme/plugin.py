@@ -11,25 +11,22 @@
 .. moduleauthor:: Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
 .. moduleauthor:: Curtis Castrapel <ccastrapel@netflix.com>
 """
-import josepy as jose
 import json
 
-from flask import current_app
-
-from acme.client import Client
+import OpenSSL.crypto
+import josepy as jose
 from acme import challenges, messages
+from acme.client import Client
 from acme.errors import PollError
 from botocore.exceptions import ClientError
-
-from lemur.common.utils import generate_private_key
-
-import OpenSSL.crypto
+from flask import current_app
 
 from lemur.authorizations import service as authorization_service
+from lemur.common.utils import generate_private_key
 from lemur.dns_providers import service as dns_provider_service
 from lemur.exceptions import InvalidAuthority, InvalidConfiguration
-from lemur.plugins.bases import IssuerPlugin
 from lemur.plugins import lemur_acme as acme
+from lemur.plugins.bases import IssuerPlugin
 
 
 def find_dns_challenge(authz):

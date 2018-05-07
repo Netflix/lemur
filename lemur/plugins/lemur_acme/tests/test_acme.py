@@ -1,7 +1,8 @@
 import unittest
 
-from lemur.plugins.lemur_acme import plugin
 from mock import MagicMock, Mock, patch
+
+from lemur.plugins.lemur_acme import plugin
 
 
 class TestAcme(unittest.TestCase):

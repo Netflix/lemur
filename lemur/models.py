@@ -55,7 +55,7 @@ certificate_replacement_associations = db.Table('certificate_replacement_associa
                                                        ForeignKey('certificates.id', ondelete='cascade'))
                                                 )
 
-Index('certificate_replacement_associations_ix', certificate_replacement_associations.c.replaced_certificate_id, certificate_replacement_associations.c.certificate_id)
+Index('certificate_replacement_associations_ix', certificate_replacement_associations.c.replaced_certificate_id, certificate_replacement_associations.c.certificate_id, unique=True)
 
 roles_authorities = db.Table('roles_authorities',
                              Column('authority_id', Integer, ForeignKey('authorities.id')),
