@@ -86,7 +86,7 @@ class DnsProvidersList(AuthenticatedResource):
 
         **Example request**:
         {
-          "provider_type": {
+          "providerType": {
             "name": "route53",
             "requirements": [
               {
@@ -110,7 +110,7 @@ class DnsProvidersList(AuthenticatedResource):
 
         **Example request 2**
         {
-          "provider_type": {
+          "providerType": {
             "name": "cloudflare",
             "requirements": [
               {
@@ -144,6 +144,7 @@ class DnsProvidersList(AuthenticatedResource):
 
 
 class DnsProviders(AuthenticatedResource):
+    @validate_schema(None, dns_provider_output_schema)
     def get(self, dns_provider_id):
         return service.get_friendly(dns_provider_id)
 

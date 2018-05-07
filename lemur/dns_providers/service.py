@@ -17,7 +17,8 @@ def render(args):
 
 
 def get(dns_provider_id):
-    return database.get(DnsProviders, dns_provider_id)
+    provider = database.get(DnsProviders, dns_provider_id)
+    return provider
 
 
 def get_friendly(dns_provider_id):
@@ -32,8 +33,9 @@ def get_friendly(dns_provider_id):
     dns_provider_friendly = {
         "name": dns_provider.name,
         "description": dns_provider.description,
-        "provider_type": dns_provider.provider_type,
+        "providerType": dns_provider.provider_type,
         "options": dns_provider.options,
+        "credentials": dns_provider.credentials,
     }
 
     if dns_provider.provider_type == "route53":

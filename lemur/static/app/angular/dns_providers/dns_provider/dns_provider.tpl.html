@@ -31,11 +31,11 @@
         Provider Type
       </label>
       <div class="col-sm-10">
-        <select class="form-control" ng-model="dns_provider.provider_type" ng-options="item.name for item in options"
+        <select class="form-control" ng-model="dns_provider.providerType" ng-options="item.name for item in options"
                 required></select>
       </div>
     </div>
-    <div class="form-group" ng-repeat="item in dns_provider.provider_type.requirements">
+    <div class="form-group" ng-repeat="item in dns_provider.providerType.requirements">
       <ng-form name="subForm" class="form-horizontal" role="form" novalidate>
         <div ng-class="{'has-error': subForm.sub.$invalid, 'has-success': !subForm.sub.$invalid&&subForm.sub.$dirty}">
           <label class="control-label col-sm-2">

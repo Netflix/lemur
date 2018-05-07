@@ -36,7 +36,9 @@ angular.module('lemur')
   })
 
   .controller('DnsProviderEditController', function ($scope, $uibModalInstance, DnsProviderService, DnsProviderApi, PluginService, toaster, editId) {
-
+    DnsProviderService.getDnsProviderOptions().then(function(res) {
+      $scope.options = res;
+    });
 
     DnsProviderApi.get(editId).then(function (dns_provider) {
       $scope.dns_provider = dns_provider;
