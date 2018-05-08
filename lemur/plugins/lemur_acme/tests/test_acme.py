@@ -38,7 +38,7 @@ class TestAcme(unittest.TestCase):
         mock_app.logger.debug = Mock()
         mock_authz = Mock()
         mock_authz.body.resolved_combinations = []
-        mock_entry = MagicMock()t
+        mock_entry = MagicMock()
         from acme import challenges
         c = challenges.DNS01()
         mock_entry.chall = c
