@@ -7,13 +7,14 @@ from dyn.tm.zones import Node, Zone
 from flask import current_app
 from tld import get_tld
 
-current_app.logger.debug("Logging in to Dyn API")
 
-dynect_session = DynectSession(
-    current_app.config.get('ACME_DYN_CUSTOMER_NAME', ''),
-    current_app.config.get('ACME_DYN_USERNAME', ''),
-    current_app.config.get('ACME_DYN_PASSWORD', ''),
-)
+def get_dynect_session():
+    dynect_session = DynectSession(
+        current_app.config.get('ACME_DYN_CUSTOMER_NAME', ''),
+        current_app.config.get('ACME_DYN_USERNAME', ''),
+        current_app.config.get('ACME_DYN_PASSWORD', ''),
+    )
+    return dynect_session
 
 
 def _has_dns_propagated(name, token):
@@ -47,6 +48,7 @@ def wait_for_dns_change(change_id, account_number=None):
 
 
 def create_txt_record(domain, token, account_number):
+    get_dynect_session()
     zone_name = get_tld('http://' + domain)
     zone_parts = len(zone_name.split('.'))
     node_name = '.'.join(domain.split('.')[:-zone_parts])
@@ -61,6 +63,7 @@ def create_txt_record(domain, token, account_number):
 
 
 def delete_txt_record(change_id, account_number, domain, token):
+    get_dynect_session()
     if not domain:
         current_app.logger.debug("delete_txt_record: No domain passed")
         return

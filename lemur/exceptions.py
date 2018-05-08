@@ -38,3 +38,7 @@ class InvalidConfiguration(Exception):
 
 class InvalidAuthority(Exception):
     pass
+
+
+class UnknownProvider(Exception):
+    pass

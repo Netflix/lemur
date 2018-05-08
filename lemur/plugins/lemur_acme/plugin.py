@@ -24,9 +24,10 @@ from flask import current_app
 from lemur.authorizations import service as authorization_service
 from lemur.common.utils import generate_private_key
 from lemur.dns_providers import service as dns_provider_service
-from lemur.exceptions import InvalidAuthority, InvalidConfiguration
+from lemur.exceptions import InvalidAuthority, InvalidConfiguration, UnknownProvider
 from lemur.plugins import lemur_acme as acme
 from lemur.plugins.bases import IssuerPlugin
+from lemur.plugins.lemur_acme import cloudflare, dyn, route53
 
 
 def find_dns_challenge(authz):
@@ -222,13 +223,15 @@ class ACMEIssuerPlugin(IssuerPlugin):
         super(ACMEIssuerPlugin, self).__init__(*args, **kwargs)
 
     def get_dns_provider(self, type):
-        from lemur.plugins.lemur_acme import cloudflare, dyn, route53
         provider_types = {
             'cloudflare': cloudflare,
             'dyn': dyn,
             'route53': route53,
         }
-        return provider_types[type]
+        provider = provider_types.get(type)
+        if not provider:
+            raise UnknownProvider("No such DNS provider: {}".format(type))
+        return provider
 
     def get_ordered_certificate(self, pending_cert):
         acme_client, registration = setup_acme_client(pending_cert.authority)

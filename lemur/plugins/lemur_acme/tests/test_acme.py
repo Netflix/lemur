@@ -38,7 +38,7 @@ class TestAcme(unittest.TestCase):
         mock_app.logger.debug = Mock()
         mock_authz = Mock()
         mock_authz.body.resolved_combinations = []
-        mock_entry = MagicMock()
+        mock_entry = MagicMock()t
         from acme import challenges
         c = challenges.DNS01()
         mock_entry.chall = c
@@ -180,3 +180,101 @@ class TestAcme(unittest.TestCase):
         self.assertEqual(acme_root, "123")
         self.assertEqual(b, "")
         self.assertEqual(role, [{'username': '', 'password': '', 'name': 'acme'}])
+
+    @patch('lemur.plugins.lemur_acme.plugin.current_app')
+    @patch('lemur.plugins.lemur_acme.dyn.current_app')
+    @patch('lemur.plugins.lemur_acme.cloudflare.current_app')
+    def test_get_dns_provider(self, mock_current_app_cloudflare, mock_current_app_dyn, mock_current_app):
+        provider = plugin.ACMEIssuerPlugin()
+        route53 = provider.get_dns_provider("route53")
+        assert route53
+        cloudflare = provider.get_dns_provider("cloudflare")
+        assert cloudflare
+        dyn = provider.get_dns_provider("dyn")
+        assert dyn
+
+    @patch('lemur.plugins.lemur_acme.plugin.setup_acme_client')
+    @patch('lemur.plugins.lemur_acme.plugin.current_app')
+    @patch('lemur.plugins.lemur_acme.plugin.authorization_service')
+    @patch('lemur.plugins.lemur_acme.plugin.dns_provider_service')
+    @patch('lemur.plugins.lemur_acme.plugin.get_authorizations')
+    @patch('lemur.plugins.lemur_acme.plugin.finalize_authorizations')
+    @patch('lemur.plugins.lemur_acme.plugin.request_certificate')
+    def test_get_ordered_certificate(
+            self, mock_request_certificate, mock_finalize_authorizations, mock_get_authorizations,
+            mock_dns_provider_service, mock_authorization_service, mock_current_app, mock_acme):
+        mock_client = Mock()
+        mock_acme.return_value = (mock_client, "")
+        mock_request_certificate.return_value = ("pem_certificate", "chain")
+
+        mock_cert = Mock()
+        mock_cert.external_id = 1
+
+        provider = plugin.ACMEIssuerPlugin()
+        provider.get_dns_provider = Mock()
+        result = provider.get_ordered_certificate(mock_cert)
+        self.assertEqual(
+            result,
+            {
+                'body': "pem_certificate",
+                'chain': "chain",
+                'external_id': "1"
+            }
+        )
+
+    @patch('lemur.plugins.lemur_acme.plugin.setup_acme_client')
+    @patch('lemur.plugins.lemur_acme.plugin.current_app')
+    @patch('lemur.plugins.lemur_acme.plugin.authorization_service')
+    @patch('lemur.plugins.lemur_acme.plugin.dns_provider_service')
+    @patch('lemur.plugins.lemur_acme.plugin.get_authorizations')
+    @patch('lemur.plugins.lemur_acme.plugin.finalize_authorizations')
+    @patch('lemur.plugins.lemur_acme.plugin.request_certificate')
+    def test_get_ordered_certificates(
+            self, mock_request_certificate, mock_finalize_authorizations, mock_get_authorizations,
+            mock_dns_provider_service, mock_authorization_service, mock_current_app, mock_acme):
+        mock_client = Mock()
+        mock_acme.return_value = (mock_client, "")
+        mock_request_certificate.return_value = ("pem_certificate", "chain")
+
+        mock_cert = Mock()
+        mock_cert.external_id = 1
+
+        mock_cert2 = Mock()
+        mock_cert2.external_id = 2
+
+        provider = plugin.ACMEIssuerPlugin()
+        provider.get_dns_provider = Mock()
+        result = provider.get_ordered_certificates([mock_cert, mock_cert2])
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0]['cert'], {'body': 'pem_certificate', 'chain': 'chain', 'external_id': '1'})
+        self.assertEqual(result[1]['cert'], {'body': 'pem_certificate', 'chain': 'chain', 'external_id': '2'})
+
+    @patch('lemur.plugins.lemur_acme.plugin.setup_acme_client')
+    @patch('lemur.plugins.lemur_acme.plugin.dns_provider_service')
+    @patch('lemur.plugins.lemur_acme.plugin.current_app')
+    @patch('lemur.plugins.lemur_acme.plugin.get_authorizations')
+    @patch('lemur.plugins.lemur_acme.plugin.finalize_authorizations')
+    @patch('lemur.plugins.lemur_acme.plugin.request_certificate')
+    @patch('lemur.plugins.lemur_acme.plugin.authorization_service')
+    def test_create_certificate(self, mock_authorization_service, mock_request_certificate, mock_finalize_authorizations, mock_get_authorizations,
+                                mock_current_app, mock_dns_provider_service, mock_acme):
+        provider = plugin.ACMEIssuerPlugin()
+        mock_authority = Mock()
+        issuer_options = {
+            'authority': mock_authority,
+            'dns_provider': {"id": 1},
+            "common_name": "test.netflix.net"
+        }
+
+        mock_client = Mock()
+        mock_acme.return_value = (mock_client, "")
+
+        mock_dns_provider = Mock()
+        mock_dns_provider.credentials = '{"account_id": 1}'
+        mock_dns_provider.provider_type = "route53"
+        mock_dns_provider_service.get.return_value = mock_dns_provider
+
+        csr = "123"
+        mock_request_certificate.return_value = ("pem_certificate", "chain")
+        result = provider.create_certificate(csr, issuer_options)
+        assert result
