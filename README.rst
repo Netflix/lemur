@@ -5,7 +5,7 @@ Lemur
    :alt: Join the chat at https://gitter.im/Netflix/lemur
    :target: https://gitter.im/Netflix/lemur?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
-.. image:: https://readthedocs.io/projects/lemur/badge/?version=latest
+.. image:: https://readthedocs.org/projects/lemur/badge/?version=latest
     :target: https://lemur.readthedocs.io
     :alt: Latest Docs
 
@@ -13,6 +13,10 @@ Lemur
 
 .. image:: https://travis-ci.org/Netflix/lemur.svg
     :target: https://travis-ci.org/Netflix/lemur
+
+.. image:: https://coveralls.io/repos/github/Netflix/lemur/badge.svg?branch=master
+    :target: https://coveralls.io/github/Netflix/lemur?branch=master
+
 
 
 Lemur manages TLS certificate creation. While not able to issue certificates itself, Lemur acts as a broker between CAs

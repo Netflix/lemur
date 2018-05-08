@@ -14,10 +14,11 @@ from sqlalchemy import and_, func
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric import rsa, ec
 
 from flask_restful.reqparse import RequestParser
 
+from lemur.constants import CERTIFICATE_KEY_TYPES
 from lemur.exceptions import InvalidConfiguration
 
 paginated_parser = RequestParser()
@@ -78,17 +79,43 @@ def generate_private_key(key_type):
     """
     Generates a new private key based on key_type.
 
-    Valid key types: RSA2048, RSA4096
+    Valid key types: RSA2048, RSA4096', 'ECCPRIME192V1', 'ECCPRIME256V1', 'ECCSECP192R1',
+        'ECCSECP224R1', 'ECCSECP256R1', 'ECCSECP384R1', 'ECCSECP521R1', 'ECCSECP256K1',
+        'ECCSECT163K1', 'ECCSECT233K1', 'ECCSECT283K1', 'ECCSECT409K1', 'ECCSECT571K1',
+        'ECCSECT163R2', 'ECCSECT233R1', 'ECCSECT283R1', 'ECCSECT409R1', 'ECCSECT571R2'
 
     :param key_type:
     :return:
     """
-    valid_key_types = ['RSA2048', 'RSA4096']
 
-    if key_type not in valid_key_types:
+    _CURVE_TYPES = {
+        "ECCPRIME192V1": ec.SECP192R1(),
+        "ECCPRIME256V1": ec.SECP256R1(),
+
+        "ECCSECP192R1": ec.SECP192R1(),
+        "ECCSECP224R1": ec.SECP224R1(),
+        "ECCSECP256R1": ec.SECP256R1(),
+        "ECCSECP384R1": ec.SECP384R1(),
+        "ECCSECP521R1": ec.SECP521R1(),
+        "ECCSECP256K1": ec.SECP256K1(),
+
+        "ECCSECT163K1": ec.SECT163K1(),
+        "ECCSECT233K1": ec.SECT233K1(),
+        "ECCSECT283K1": ec.SECT283K1(),
+        "ECCSECT409K1": ec.SECT409K1(),
+        "ECCSECT571K1": ec.SECT571K1(),
+
+        "ECCSECT163R2": ec.SECT163R2(),
+        "ECCSECT233R1": ec.SECT233R1(),
+        "ECCSECT283R1": ec.SECT283R1(),
+        "ECCSECT409R1": ec.SECT409R1(),
+        "ECCSECT571R2": ec.SECT571R1(),
+    }
+
+    if key_type not in CERTIFICATE_KEY_TYPES:
         raise Exception("Invalid key type: {key_type}. Supported key types: {choices}".format(
             key_type=key_type,
-            choices=",".join(valid_key_types)
+            choices=",".join(CERTIFICATE_KEY_TYPES)
         ))
 
     if 'RSA' in key_type:
@@ -96,6 +123,11 @@ def generate_private_key(key_type):
         return rsa.generate_private_key(
             public_exponent=65537,
             key_size=key_size,
+            backend=default_backend()
+        )
+    elif 'ECC' in key_type:
+        return ec.generate_private_key(
+            curve=_CURVE_TYPES[key_type],
             backend=default_backend()
         )
 
@@ -175,3 +207,9 @@ def windowed_query(q, column, windowsize):
             column, windowsize):
         for row in q.filter(whereclause).order_by(column):
             yield row
+
+
+def truthiness(s):
+    """If input string resembles something truthy then return True, else False."""
+
+    return s.lower() in ('true', 'yes', 'on', 't', '1')

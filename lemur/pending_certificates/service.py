@@ -5,9 +5,10 @@
 """
 import arrow
 
-from sqlalchemy import or_, cast, Boolean, Integer
+from sqlalchemy import or_, cast, Integer
 
 from lemur import database
+from lemur.common.utils import truthiness
 from lemur.plugins.base import plugins
 
 from lemur.roles.models import Role
@@ -181,9 +182,9 @@ def render(args):
         elif 'destination' in terms:
             query = query.filter(PendingCertificate.destinations.any(Destination.id == terms[1]))
         elif 'notify' in filt:
-            query = query.filter(PendingCertificate.notify == cast(terms[1], Boolean))
+            query = query.filter(PendingCertificate.notify == truthiness(terms[1]))
         elif 'active' in filt:
-            query = query.filter(PendingCertificate.active == terms[1])
+            query = query.filter(PendingCertificate.active == truthiness(terms[1]))
         elif 'cn' in terms:
             query = query.filter(
                 or_(

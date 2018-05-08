@@ -8,7 +8,7 @@
 import arrow
 
 from flask import current_app
-from sqlalchemy import func, or_, not_, cast, Boolean, Integer
+from sqlalchemy import func, or_, not_, cast, Integer
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
@@ -17,7 +17,7 @@ from cryptography.hazmat.primitives import hashes, serialization
 from lemur import database
 from lemur.extensions import metrics, signals
 from lemur.plugins.base import plugins
-from lemur.common.utils import generate_private_key
+from lemur.common.utils import generate_private_key, truthiness
 
 from lemur.roles.models import Role
 from lemur.domains.models import Domain
@@ -319,9 +319,9 @@ def render(args):
         elif 'destination' in terms:
             query = query.filter(Certificate.destinations.any(Destination.id == terms[1]))
         elif 'notify' in filt:
-            query = query.filter(Certificate.notify == cast(terms[1], Boolean))
+            query = query.filter(Certificate.notify == truthiness(terms[1]))
         elif 'active' in filt:
-            query = query.filter(Certificate.active == terms[1])
+            query = query.filter(Certificate.active == truthiness(terms[1]))
         elif 'cn' in terms:
             query = query.filter(
                 or_(
