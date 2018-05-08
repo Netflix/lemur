@@ -300,12 +300,14 @@ class CertificatesUpload(AuthenticatedResource):
 
               {
                  "owner": "joe@example.com",
-                 "publicCert": "-----BEGIN CERTIFICATE-----...",
-                 "intermediateCert": "-----BEGIN CERTIFICATE-----...",
+                 "body": "-----BEGIN CERTIFICATE-----...",
+                 "chain": "-----BEGIN CERTIFICATE-----...",
                  "privateKey": "-----BEGIN RSA PRIVATE KEY-----..."
                  "destinations": [],
                  "notifications": [],
                  "replacements": [],
+                 "roles": [],
+                 "notify": true,
                  "name": "cert1"
               }
 
