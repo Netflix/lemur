@@ -304,7 +304,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
                     "cert": cert,
                     "pending_cert": entry["pending_cert"],
                 })
-            except (PollError, AcmeError):
+            except (PollError, AcmeError, Exception):
                 current_app.logger.error("Unable to resolve pending cert: {}".format(pending_cert), exc_info=True)
                 certs.append({
                     "cert": False,

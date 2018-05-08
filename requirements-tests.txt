@@ -7,9 +7,9 @@
 asn1crypto==0.24.0        # via cryptography
 attrs==18.1.0             # via pytest
 aws-xray-sdk==0.95        # via moto
-boto3==1.7.14             # via moto
+boto3==1.7.16             # via moto
 boto==2.48.0              # via moto
-botocore==1.10.14         # via boto3, moto, s3transfer
+botocore==1.10.16         # via boto3, moto, s3transfer
 certifi==2018.4.16        # via requests
 cffi==1.11.5              # via cryptography
 chardet==3.0.4            # via requests

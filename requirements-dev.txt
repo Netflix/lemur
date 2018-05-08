@@ -10,7 +10,7 @@ certifi==2018.4.16        # via requests
 cfgv==1.0.0               # via pre-commit
 chardet==3.0.4            # via requests
 flake8==3.5.0
-identify==1.0.15          # via pre-commit
+identify==1.0.16          # via pre-commit
 idna==2.6                 # via requests
 invoke==0.23.0
 mccabe==0.6.1             # via flake8
@@ -23,7 +23,7 @@ pyyaml==3.12              # via aspy.yaml, pre-commit
 requests-toolbelt==0.8.0  # via twine
 requests==2.18.4          # via requests-toolbelt, twine
 six==1.11.0               # via cfgv, pre-commit
-tqdm==4.23.2              # via twine
+tqdm==4.23.3              # via twine
 twine==1.11.0
 urllib3==1.22             # via requests
 virtualenv==15.2.0        # via pre-commit
