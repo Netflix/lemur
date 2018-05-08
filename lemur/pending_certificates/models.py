@@ -97,6 +97,6 @@ class PendingCertificate(db.Model):
         self.rotation = kwargs.get('rotation')
         self.rotation_policy = kwargs.get('rotation_policy')
         try:
-            self.dns_provider_id = kwargs.get('dns_provider', {}).get("id")
-        except AttributeError:
-            self.dns_provider_id = None
+            self.dns_provider_id = kwargs.get('dns_provider')["id"]
+        except (AttributeError, KeyError, TypeError):
+            self.dns_provider_id = kwargs.get('dns_provider_id')

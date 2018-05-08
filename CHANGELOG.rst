@@ -6,6 +6,7 @@ Changelog
 ~~~~~~~~~~~~~~
 
 This release adds LetsEncrypt support with DNS providers Dyn, Route53, and Cloudflare, and expands on the pending certificate functionality.
+The linux_dst plugin will also be deprecated and removed.
 
 The pending_dns_authorizations and dns_providers tables were created. New columns
 were added to the certificates and pending_certificates tables, (For the DNS provider ID), and authorities (For options).

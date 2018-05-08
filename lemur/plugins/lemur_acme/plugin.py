@@ -17,6 +17,7 @@ import OpenSSL.crypto
 import josepy as jose
 from acme import challenges, messages
 from acme.client import Client
+from acme.messages import Error as AcmeError
 from acme.errors import PollError
 from botocore.exceptions import ClientError
 from flask import current_app
@@ -273,7 +274,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
                     "authorizations": authorizations,
                     "pending_cert": pending_cert,
                 })
-            except (ClientError, ValueError):
+            except (ClientError, ValueError, Exception):
                 current_app.logger.error("Unable to resolve pending cert: {}".format(pending_cert), exc_info=True)
                 certs.append({
                     "cert": False,
@@ -281,14 +282,13 @@ class ACMEIssuerPlugin(IssuerPlugin):
                 })
 
         for entry in pending:
-            entry["authorizations"] = finalize_authorizations(
-                entry["acme_client"],
-                entry["account_number"],
-                entry["dns_provider_type"],
-                entry["authorizations"]
-            )
-
             try:
+                entry["authorizations"] = finalize_authorizations(
+                    entry["acme_client"],
+                    entry["account_number"],
+                    entry["dns_provider_type"],
+                    entry["authorizations"]
+                )
                 pem_certificate, pem_certificate_chain = request_certificate(
                     entry["acme_client"],
                     entry["authorizations"],
@@ -304,7 +304,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
                     "cert": cert,
                     "pending_cert": entry["pending_cert"],
                 })
-            except PollError:
+            except (PollError, AcmeError):
                 current_app.logger.error("Unable to resolve pending cert: {}".format(pending_cert), exc_info=True)
                 certs.append({
                     "cert": False,
@@ -325,8 +325,12 @@ class ACMEIssuerPlugin(IssuerPlugin):
         acme_client, registration = setup_acme_client(authority)
         dns_provider_d = issuer_options.get('dns_provider')
         if not dns_provider_d:
-            raise InvalidConfiguration("DNS Provider setting is required for ACME certificates.")
-        dns_provider = dns_provider_service.get(dns_provider_d.get("id"))
+            try:
+                dns_provider = dns_provider_service.get(issuer_options['dns_provider_id'])
+            except KeyError:
+                raise InvalidConfiguration("DNS Provider setting is required for ACME certificates.")
+        else:
+            dns_provider = dns_provider_service.get(dns_provider_d.get("id"))
         credentials = json.loads(dns_provider.credentials)
 
         current_app.logger.debug("Using DNS provider: {0}".format(dns_provider.provider_type))

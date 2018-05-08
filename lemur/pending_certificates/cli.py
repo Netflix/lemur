@@ -6,6 +6,7 @@
 """
 from flask_script import Manager
 
+from lemur.authorities.service import get as get_authority
 from lemur.pending_certificates import service as pending_certificate_service
 from lemur.plugins.base import plugins
 from lemur.users import service as user_service
@@ -56,14 +57,27 @@ def fetch(ids):
 @manager.command
 def fetch_all_acme():
     """
-    Attempt to get full certificates for each pending certificate listed for ACME.
+    Attempt to get full certificates for each pending certificate listed with the acme-issuer. This is more efficient
+    for acme-issued certificates because it will configure all of the DNS challenges prior to resolving any
+    certificates.
     """
     pending_certs = pending_certificate_service.get_pending_certs('all')
     user = user_service.get_by_username('lemur')
     new = 0
     failed = 0
+    wrong_issuer = 0
+    acme_certs = []
+
+    # We only care about certs using the acme-issuer plugin
+    for cert in pending_certs:
+        cert_authority = get_authority(cert.authority_id)
+        if cert_authority.plugin_name == 'acme-issuer':
+            acme_certs.append(cert)
+        else:
+            wrong_issuer += 1
+
     authority = plugins.get("acme-issuer")
-    resolved_certs = authority.get_ordered_certificates(pending_certs)
+    resolved_certs = authority.get_ordered_certificates(acme_certs)
 
     for cert in resolved_certs:
         real_cert = cert.get("cert")
@@ -81,8 +95,9 @@ def fetch_all_acme():
             pending_certificate_service.increment_attempt(pending_cert)
             failed += 1
     print(
-        "[+] Certificates: New: {new} Failed: {failed}".format(
+        "[+] Certificates: New: {new} Failed: {failed} Not using ACME: {wrong_issuer}".format(
             new=new,
             failed=failed,
+            wrong_issuer=wrong_issuer
         )
     )

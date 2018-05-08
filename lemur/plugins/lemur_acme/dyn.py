@@ -2,6 +2,7 @@ import time
 
 import dns.exception
 import dns.resolver
+from dyn.tm.errors import DynectCreateError
 from dyn.tm.session import DynectSession
 from dyn.tm.zones import Node, Zone
 from flask import current_app
@@ -54,7 +55,11 @@ def create_txt_record(domain, token, account_number):
     node_name = '.'.join(domain.split('.')[:-zone_parts])
     fqdn = "{0}.{1}".format(node_name, zone_name)
     zone = Zone(zone_name)
-    zone.add_record(node_name, record_type='TXT', txtdata="\"{}\"".format(token), ttl=5)
+    try:
+        zone.add_record(node_name, record_type='TXT', txtdata="\"{}\"".format(token), ttl=5)
+    except DynectCreateError:
+        delete_txt_record(None, None, domain, token)
+        zone.add_record(node_name, record_type='TXT', txtdata="\"{}\"".format(token), ttl=5)
     node = zone.get_node(node_name)
     zone.publish()
     current_app.logger.debug("TXT record created: {0}".format(fqdn))

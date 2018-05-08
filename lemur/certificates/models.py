@@ -178,6 +178,8 @@ class Certificate(db.Model):
         self.signing_algorithm = defaults.signing_algorithm(cert)
         self.bits = defaults.bitstrength(cert)
         self.external_id = kwargs.get('external_id')
+        self.authority_id = kwargs.get('authority_id')
+        self.dns_provider_id = kwargs.get('dns_provider_id')
 
         for domain in defaults.domains(cert):
             self.domains.append(Domain(name=domain))

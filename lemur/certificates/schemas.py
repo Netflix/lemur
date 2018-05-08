@@ -70,6 +70,7 @@ class CertificateInputSchema(CertificateCreationSchema):
     replacements = fields.Nested(AssociatedCertificateSchema, missing=[], many=True)  # deprecated
     roles = fields.Nested(AssociatedRoleSchema, missing=[], many=True)
     dns_provider = fields.Nested(DnsProviderSchema, missing={}, required=False, allow_none=True)
+    dns_provider_id = fields.Integer(required=False, allow_none=True)
 
     csr = fields.String(validate=validators.csr)
 
@@ -186,6 +187,7 @@ class CertificateOutputSchema(LemurOutputSchema):
     description = fields.String()
     issuer = fields.String()
     name = fields.String()
+    dns_provider_id = fields.Integer(required=False, allow_none=True)
 
     rotation = fields.Boolean()
 

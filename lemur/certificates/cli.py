@@ -154,6 +154,7 @@ def request_reissue(certificate, commit):
 
     except Exception as e:
         sentry.captureException()
+        current_app.logger.exception("Error reissuing certificate.", exc_info=True)
         print(
             "[!] Failed to reissue certificates. Reason: {}".format(
                 e
@@ -245,6 +246,7 @@ def reissue(old_certificate_name, commit):
         print("[+] Done!")
     except Exception as e:
         sentry.captureException()
+        current_app.logger.exception("Error reissuing certificate.", exc_info=True)
         print(
             "[!] Failed to reissue certificates. Reason: {}".format(
                 e
