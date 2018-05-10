@@ -260,11 +260,12 @@ class ACMEIssuerPlugin(IssuerPlugin):
         pending = []
         certs = []
         for pending_cert in pending_certs:
-            acme_client, registration = setup_acme_client(pending_cert.authority)
-            order_info = authorization_service.get(pending_cert.external_id)
-            dns_provider = dns_provider_service.get(pending_cert.dns_provider_id)
-            dns_provider_type = self.get_dns_provider(dns_provider.provider_type)
             try:
+                acme_client, registration = setup_acme_client(pending_cert.authority)
+                order_info = authorization_service.get(pending_cert.external_id)
+                dns_provider = dns_provider_service.get(pending_cert.dns_provider_id)
+                dns_provider_type = self.get_dns_provider(dns_provider.provider_type)
+
                 authorizations = get_authorizations(
                     acme_client, order_info.account_number, order_info.domains, dns_provider_type)
                 pending.append({
@@ -323,14 +324,9 @@ class ACMEIssuerPlugin(IssuerPlugin):
         authority = issuer_options.get('authority')
         create_immediately = issuer_options.get('create_immediately', False)
         acme_client, registration = setup_acme_client(authority)
-        dns_provider_d = issuer_options.get('dns_provider')
-        if not dns_provider_d:
-            try:
-                dns_provider = dns_provider_service.get(issuer_options['dns_provider_id'])
-            except KeyError:
-                raise InvalidConfiguration("DNS Provider setting is required for ACME certificates.")
-        else:
-            dns_provider = dns_provider_service.get(dns_provider_d.get("id"))
+        dns_provider = issuer_options.get('dns_provider')
+        if not dns_provider:
+            raise InvalidConfiguration("DNS Provider setting is required for ACME certificates.")
         credentials = json.loads(dns_provider.credentials)
 
         current_app.logger.debug("Using DNS provider: {0}".format(dns_provider.provider_type))

@@ -71,8 +71,12 @@ def upgrade():
                     existing_type=sa.INTEGER(),
                     nullable=True)
 
+    print("Creating dns_providers_id foreign key on pending_certs table")
+    op.create_foreign_key(None, 'pending_certs', 'dns_providers', ['dns_provider_id'], ['id'], ondelete='CASCADE')
 
 def downgrade():
+    print("Removing dns_providers_id foreign key on pending_certs table")
+    op.drop_constraint(None, 'pending_certs', type_='foreignkey')
     print("Reverting column types in the api_keys table")
     op.alter_column('api_keys', 'user_id',
                     existing_type=sa.INTEGER(),

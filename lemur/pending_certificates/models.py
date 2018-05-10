@@ -38,7 +38,7 @@ class PendingCertificate(db.Model):
     private_key = Column(Vault, nullable=True)
 
     date_created = Column(ArrowType, PassiveDefault(func.now()), nullable=False)
-    dns_provider_id = Column(Integer(), nullable=True)
+    dns_provider_id = Column(Integer, ForeignKey('dns_providers.id', ondelete="CASCADE"))
 
     status = Column(String(128))
 
@@ -97,6 +97,6 @@ class PendingCertificate(db.Model):
         self.rotation = kwargs.get('rotation')
         self.rotation_policy = kwargs.get('rotation_policy')
         try:
-            self.dns_provider_id = kwargs.get('dns_provider')["id"]
-        except (AttributeError, KeyError, TypeError):
-            self.dns_provider_id = kwargs.get('dns_provider_id')
+            self.dns_provider_id = kwargs.get('dns_provider').id
+        except (AttributeError, KeyError, TypeError, Exception):
+            pass
