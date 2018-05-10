@@ -260,11 +260,6 @@ class TestAcme(unittest.TestCase):
                                 mock_current_app, mock_dns_provider_service, mock_acme):
         provider = plugin.ACMEIssuerPlugin()
         mock_authority = Mock()
-        issuer_options = {
-            'authority': mock_authority,
-            'dns_provider': {"id": 1},
-            "common_name": "test.netflix.net"
-        }
 
         mock_client = Mock()
         mock_acme.return_value = (mock_client, "")
@@ -274,6 +269,11 @@ class TestAcme(unittest.TestCase):
         mock_dns_provider.provider_type = "route53"
         mock_dns_provider_service.get.return_value = mock_dns_provider
 
+        issuer_options = {
+            'authority': mock_authority,
+            'dns_provider': mock_dns_provider,
+            "common_name": "test.netflix.net"
+        }
         csr = "123"
         mock_request_certificate.return_value = ("pem_certificate", "chain")
         result = provider.create_certificate(csr, issuer_options)
