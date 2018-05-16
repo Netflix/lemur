@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-index --output-file requirements-docs.txt requirements-docs.in
 #
-acme==0.23.0
+acme==0.24.0
 alabaster==0.7.10         # via sphinx
 alembic-autogenerate-enums==0.0.2
 alembic==0.9.9
