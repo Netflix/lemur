@@ -62,7 +62,7 @@ pyrfc3339==1.0
 python-dateutil==2.7.2
 python-editor==1.0.3
 pytz==2018.4
-raven[flask]==6.7.0
+raven[flask]==6.8.0
 requests[security]==2.11.1
 retrying==1.3.3
 s3transfer==0.1.13
