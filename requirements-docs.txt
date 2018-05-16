@@ -56,7 +56,7 @@ pycparser==2.18
 pygments==2.2.0           # via sphinx
 pyjwt==1.6.1
 pynacl==1.2.1
-pyopenssl==17.2.0
+pyopenssl==18.0.0
 pyparsing==2.2.0          # via packaging
 pyrfc3339==1.0
 python-dateutil==2.7.2
