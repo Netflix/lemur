@@ -15,8 +15,8 @@ asyncpool==1.0
 babel==2.5.3              # via sphinx
 bcrypt==3.1.4
 blinker==1.4
-boto3==1.7.14
-botocore==1.10.14
+boto3==1.7.19
+botocore==1.10.19
 certifi==2018.4.16
 cffi==1.11.5
 click==6.7
@@ -49,7 +49,7 @@ lockfile==0.12.2
 mako==1.0.7
 markupsafe==1.0
 marshmallow-sqlalchemy==0.13.2
-marshmallow==2.15.1
+marshmallow==2.15.2
 mock==2.0.0
 ndg-httpsclient==0.5.0
 packaging==17.1           # via sphinx
@@ -66,11 +66,11 @@ pynacl==1.2.1
 pyopenssl==17.2.0
 pyparsing==2.2.0          # via packaging
 pyrfc3339==1.0
-python-dateutil==2.7.2
+python-dateutil==2.7.3
 python-editor==1.0.3
 pytz==2018.4
 pyyaml==3.12
-raven[flask]==6.7.0
+raven[flask]==6.8.0
 requests[security]==2.11.1
 retrying==1.3.3
 s3transfer==0.1.13

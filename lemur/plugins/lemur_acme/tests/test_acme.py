@@ -35,6 +35,7 @@ class TestAcme(unittest.TestCase):
     @patch('lemur.plugins.lemur_acme.plugin.find_dns_challenge')
     def test_start_dns_challenge(self, mock_find_dns_challenge, mock_len, mock_app, mock_acme):
         assert mock_len
+        mock_order = Mock()
         mock_app.logger.debug = Mock()
         mock_authz = Mock()
         mock_authz.body.resolved_combinations = []
@@ -51,7 +52,7 @@ class TestAcme(unittest.TestCase):
         iterable = mock_find_dns_challenge.return_value
         iterator = iter(values)
         iterable.__iter__.return_value = iterator
-        result = plugin.start_dns_challenge(mock_acme, "accountid", "host", mock_dns_provider)
+        result = plugin.start_dns_challenge(mock_acme, "accountid", "host", mock_dns_provider, mock_order)
         self.assertEqual(type(result), plugin.AuthorizationRecord)
 
     @patch('acme.client.Client')
@@ -63,7 +64,15 @@ class TestAcme(unittest.TestCase):
         mock_authz = Mock()
         mock_authz.dns_challenge.response = Mock()
         mock_authz.dns_challenge.response.simple_verify = Mock(return_value=True)
-
+        mock_authz.authz = []
+        mock_authz_record = Mock()
+        mock_authz_record.body.identifier.value = "test"
+        mock_authz.authz.append(mock_authz_record)
+        mock_authz.change_id = []
+        mock_authz.change_id.append("123")
+        mock_authz.dns_challenge = []
+        dns_challenge = Mock()
+        mock_authz.dns_challenge.append(dns_challenge)
         plugin.complete_dns_challenge(mock_acme, "accountid", mock_authz, mock_dns_provider)
 
     @patch('acme.client.Client')
@@ -75,6 +84,15 @@ class TestAcme(unittest.TestCase):
         mock_authz = Mock()
         mock_authz.dns_challenge.response = Mock()
         mock_authz.dns_challenge.response.simple_verify = Mock(return_value=False)
+        mock_authz.authz = []
+        mock_authz_record = Mock()
+        mock_authz_record.body.identifier.value = "test"
+        mock_authz.authz.append(mock_authz_record)
+        mock_authz.change_id = []
+        mock_authz.change_id.append("123")
+        mock_authz.dns_challenge = []
+        dns_challenge = Mock()
+        mock_authz.dns_challenge.append(dns_challenge)
         self.assertRaises(
             ValueError,
             plugin.complete_dns_challenge(mock_acme, "accountid", mock_authz, mock_dns_provider)
@@ -96,8 +114,8 @@ class TestAcme(unittest.TestCase):
         mock_authz.append(mock_authz_record)
         mock_acme.fetch_chain = Mock(return_value="mock_chain")
         mock_crypto.dump_certificate = Mock(return_value=b'chain')
-
-        plugin.request_certificate(mock_acme, [], "mock_csr")
+        mock_order = Mock()
+        plugin.request_certificate(mock_acme, [], "mock_csr", mock_order)
 
     def test_setup_acme_client_fail(self):
         mock_authority = Mock()
@@ -105,7 +123,7 @@ class TestAcme(unittest.TestCase):
         with self.assertRaises(Exception):
             plugin.setup_acme_client(mock_authority)
 
-    @patch('lemur.plugins.lemur_acme.plugin.Client')
+    @patch('lemur.plugins.lemur_acme.plugin.BackwardsCompatibleClientV2')
     @patch('lemur.plugins.lemur_acme.plugin.current_app')
     def test_setup_acme_client_success(self, mock_current_app, mock_acme):
         mock_authority = Mock()
@@ -146,7 +164,13 @@ class TestAcme(unittest.TestCase):
 
     @patch('lemur.plugins.lemur_acme.plugin.start_dns_challenge', return_value="test")
     def test_get_authorizations(self, mock_start_dns_challenge):
-        result = plugin.get_authorizations("acme_client", "account_number", ["domains"], "dns_provider")
+        mock_order = Mock()
+        mock_order.body.identifiers = []
+        mock_domain = Mock()
+        mock_order.body.identifiers.append(mock_domain)
+        mock_order_info = Mock()
+        mock_order_info.account_number = 1
+        result = plugin.get_authorizations("acme_client", mock_order, mock_order_info, "dns_provider")
         self.assertEqual(result, ["test"])
 
     @patch('lemur.plugins.lemur_acme.plugin.complete_dns_challenge', return_value="test")

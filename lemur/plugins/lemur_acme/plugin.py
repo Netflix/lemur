@@ -11,14 +11,16 @@
 .. moduleauthor:: Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
 .. moduleauthor:: Curtis Castrapel <ccastrapel@netflix.com>
 """
+import datetime
 import json
+import time
 
 import OpenSSL.crypto
 import josepy as jose
 from acme import challenges, messages
-from acme.client import Client
+from acme.client import BackwardsCompatibleClientV2, ClientNetwork
 from acme.messages import Error as AcmeError
-from acme.errors import PollError
+from acme.errors import PollError, WildcardUnsupportedError
 from botocore.exceptions import ClientError
 from flask import current_app
 
@@ -31,13 +33,13 @@ from lemur.plugins.bases import IssuerPlugin
 from lemur.plugins.lemur_acme import cloudflare, dyn, route53
 
 
-def find_dns_challenge(authz):
-    for combo in authz.body.resolved_combinations:
-        if (
-            len(combo) == 1 and
-            isinstance(combo[0].chall, challenges.DNS01)
-        ):
-            yield combo[0]
+def find_dns_challenge(authorizations):
+    dns_challenges = []
+    for authz in authorizations:
+        for combo in authz.body.challenges:
+            if isinstance(combo.chall, challenges.DNS01):
+                dns_challenges.append(combo)
+    return dns_challenges
 
 
 class AuthorizationRecord(object):
@@ -48,66 +50,65 @@ class AuthorizationRecord(object):
         self.change_id = change_id
 
 
-def start_dns_challenge(acme_client, account_number, host, dns_provider):
+def maybe_remove_wildcard(host):
+    return host.replace("*.", "")
+
+
+def start_dns_challenge(acme_client, account_number, host, dns_provider, order):
     current_app.logger.debug("Starting DNS challenge for {0}".format(host))
-    authz = acme_client.request_domain_challenges(host)
 
-    [dns_challenge] = find_dns_challenge(authz)
+    dns_challenges = find_dns_challenge(order.authorizations)
+    change_ids = []
 
-    change_id = dns_provider.create_txt_record(
-        dns_challenge.validation_domain_name(host),
-        dns_challenge.validation(acme_client.key),
-        account_number
-    )
+    for dns_challenge in find_dns_challenge(order.authorizations):
+        change_id = dns_provider.create_txt_record(
+            dns_challenge.validation_domain_name(maybe_remove_wildcard(host)),
+            dns_challenge.validation(acme_client.client.net.key),
+            account_number
+        )
+        change_ids.append(change_id)
 
     return AuthorizationRecord(
         host,
-        authz,
-        dns_challenge,
-        change_id,
+        order.authorizations,
+        dns_challenges,
+        change_ids
     )
 
 
 def complete_dns_challenge(acme_client, account_number, authz_record, dns_provider):
-    current_app.logger.debug("Finalizing DNS challenge for {0}".format(authz_record.host))
-    dns_provider.wait_for_dns_change(authz_record.change_id, account_number=account_number)
+    current_app.logger.debug("Finalizing DNS challenge for {0}".format(authz_record.authz[0].body.identifier.value))
+    for change_id in authz_record.change_id:
+        dns_provider.wait_for_dns_change(change_id, account_number=account_number)
 
-    response = authz_record.dns_challenge.response(acme_client.key)
+    for dns_challenge in authz_record.dns_challenge:
 
-    verified = response.simple_verify(
-        authz_record.dns_challenge.chall,
-        authz_record.host,
-        acme_client.key.public_key()
-    )
+        response = dns_challenge.response(acme_client.client.net.key)
 
-    if not verified:
-        raise ValueError("Failed verification")
+        verified = response.simple_verify(
+            dns_challenge.chall,
+            authz_record.host,
+            acme_client.client.net.key.public_key()
+        )
 
-    acme_client.answer_challenge(authz_record.dns_challenge, response)
+        if not verified:
+            raise ValueError("Failed verification")
+
+        time.sleep(5)
+        acme_client.answer_challenge(dns_challenge, response)
 
 
-def request_certificate(acme_client, authorizations, csr):
-    cert_response, _ = acme_client.poll_and_request_issuance(
-        jose.util.ComparableX509(
-            OpenSSL.crypto.load_certificate_request(
-                OpenSSL.crypto.FILETYPE_PEM,
-                csr
-            )
-        ),
-        authzrs=[authz_record.authz for authz_record in authorizations],
-        mintime=60,
-        max_attempts=10,
-    )
+def request_certificate(acme_client, authorizations, csr, order):
+    for authorization in authorizations:
+        for authz in authorization.authz:
+            authorization_resource, _ = acme_client.poll(authz)
 
-    pem_certificate = OpenSSL.crypto.dump_certificate(
-        OpenSSL.crypto.FILETYPE_PEM, cert_response.body
-    ).decode('utf-8')
-
-    full_chain = []
-    for cert in acme_client.fetch_chain(cert_response):
-        chain = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, cert)
-        full_chain.append(chain.decode("utf-8"))
-    pem_certificate_chain = "\n".join(full_chain)
+    deadline = datetime.datetime.now() + datetime.timedelta(seconds=90)
+    orderr = acme_client.finalize_order(order, deadline)
+    pem_certificate = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM,
+                                           OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM,
+                                                                           orderr.fullchain_pem)).decode()
+    pem_certificate_chain = orderr.fullchain_pem[len(pem_certificate):].lstrip()
 
     current_app.logger.debug("{0} {1}".format(type(pem_certificate), type(pem_certificate_chain)))
     return pem_certificate, pem_certificate_chain
@@ -127,15 +128,12 @@ def setup_acme_client(authority):
     key = jose.JWKRSA(key=generate_private_key('RSA2048'))
 
     current_app.logger.debug("Connecting with directory at {0}".format(directory_url))
-    client = Client(directory_url, key)
 
-    registration = client.register(
-        messages.NewRegistration.from_data(email=email)
-    )
-
+    net = ClientNetwork(key, account=None)
+    client = BackwardsCompatibleClientV2(net, key, directory_url)
+    registration = client.new_account_and_tos(messages.NewRegistration.from_data(email=email))
     current_app.logger.debug("Connected: {0}".format(registration.uri))
 
-    client.agree_to_tos(registration)
     return client, registration
 
 
@@ -156,26 +154,25 @@ def get_domains(options):
     return domains
 
 
-def get_authorizations(acme_client, account_number, domains, dns_provider):
+def get_authorizations(acme_client, order, order_info, dns_provider):
     authorizations = []
-    for domain in domains:
-        authz_record = start_dns_challenge(acme_client, account_number, domain, dns_provider)
+    for domain in order.body.identifiers:
+        authz_record = start_dns_challenge(acme_client, order_info.account_number, domain.value, dns_provider, order)
         authorizations.append(authz_record)
     return authorizations
 
 
 def finalize_authorizations(acme_client, account_number, dns_provider, authorizations):
-    try:
-        for authz_record in authorizations:
-            complete_dns_challenge(acme_client, account_number, authz_record, dns_provider)
-    finally:
-        for authz_record in authorizations:
-            dns_challenge = authz_record.dns_challenge
+    for authz_record in authorizations:
+        complete_dns_challenge(acme_client, account_number, authz_record, dns_provider)
+    for authz_record in authorizations:
+        dns_challenges = authz_record.dns_challenge
+        for dns_challenge in dns_challenges:
             dns_provider.delete_txt_record(
                 authz_record.change_id,
                 account_number,
-                dns_challenge.validation_domain_name(authz_record.host),
-                dns_challenge.validation(acme_client.key)
+                dns_challenge.validation_domain_name(maybe_remove_wildcard(authz_record.host)),
+                dns_challenge.validation(acme_client.client.net.key)
             )
 
     return authorizations
@@ -265,15 +262,21 @@ class ACMEIssuerPlugin(IssuerPlugin):
                 order_info = authorization_service.get(pending_cert.external_id)
                 dns_provider = dns_provider_service.get(pending_cert.dns_provider_id)
                 dns_provider_type = self.get_dns_provider(dns_provider.provider_type)
+                try:
+                    order = acme_client.new_order(pending_cert.csr)
+                except WildcardUnsupportedError:
+                    raise Exception("The currently selected ACME CA endpoint does"
+                                    " not support issuing wildcard certificates.")
 
-                authorizations = get_authorizations(
-                    acme_client, order_info.account_number, order_info.domains, dns_provider_type)
+                authorizations = get_authorizations(acme_client, order, order_info, dns_provider_type)
+
                 pending.append({
                     "acme_client": acme_client,
                     "account_number": order_info.account_number,
                     "dns_provider_type": dns_provider_type,
                     "authorizations": authorizations,
                     "pending_cert": pending_cert,
+                    "order": order,
                 })
             except (ClientError, ValueError, Exception):
                 current_app.logger.error("Unable to resolve pending cert: {}".format(pending_cert), exc_info=True)
@@ -288,12 +291,13 @@ class ACMEIssuerPlugin(IssuerPlugin):
                     entry["acme_client"],
                     entry["account_number"],
                     entry["dns_provider_type"],
-                    entry["authorizations"]
+                    entry["authorizations"],
                 )
                 pem_certificate, pem_certificate_chain = request_certificate(
                     entry["acme_client"],
                     entry["authorizations"],
-                    entry["pending_cert"].csr
+                    entry["pending_cert"].csr,
+                    entry["order"]
                 )
 
                 cert = {
