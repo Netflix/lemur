@@ -23,7 +23,7 @@ pyyaml==3.12              # via aspy.yaml, pre-commit
 requests-toolbelt==0.8.0  # via twine
 requests==2.18.4          # via requests-toolbelt, twine
 six==1.11.0               # via cfgv, pre-commit
-tqdm==4.23.0              # via twine
+tqdm==4.23.3              # via twine
 twine==1.11.0
 urllib3==1.22             # via requests
 virtualenv==15.2.0        # via pre-commit
