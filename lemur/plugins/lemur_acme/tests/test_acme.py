@@ -170,6 +170,7 @@ class TestAcme(unittest.TestCase):
         mock_order.body.identifiers.append(mock_domain)
         mock_order_info = Mock()
         mock_order_info.account_number = 1
+        mock_order_info.domains = ["test.fakedomain.net"]
         result = plugin.get_authorizations("acme_client", mock_order, mock_order_info, "dns_provider")
         self.assertEqual(result, ["test"])
 

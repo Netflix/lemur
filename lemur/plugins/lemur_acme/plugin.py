@@ -156,8 +156,8 @@ def get_domains(options):
 
 def get_authorizations(acme_client, order, order_info, dns_provider):
     authorizations = []
-    for domain in order.body.identifiers:
-        authz_record = start_dns_challenge(acme_client, order_info.account_number, domain.value, dns_provider, order)
+    for domain in order_info.domains:
+        authz_record = start_dns_challenge(acme_client, order_info.account_number, domain, dns_provider, order)
         authorizations.append(authz_record)
     return authorizations
 
