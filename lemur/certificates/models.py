@@ -369,10 +369,13 @@ def update_destinations(target, value, initiator):
             destination_plugin.upload(target.name, target.body, target.private_key, target.chain, value.options)
             status = SUCCESS_METRIC_STATUS
     except Exception as e:
+        current_app.logger.exception(e)
         sentry.captureException()
-
-    metrics.send('destination_upload', 'counter', 1,
-                 metric_tags={'status': status, 'certificate': target.name, 'destination': value.label})
+        # Re-raise exception, this bubbles up to the user
+        raise
+    finally:
+        metrics.send('destination_upload', 'counter', 1,
+                     metric_tags={'status': status, 'certificate': target.name, 'destination': value.label})
 
 
 @event.listens_for(Certificate.replaces, 'append')
