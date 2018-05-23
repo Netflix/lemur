@@ -178,7 +178,7 @@ def serial(cert):
     :param cert:
     :return: serial number
     """
-    return cert.serial
+    return cert.serial_number
 
 
 def san(cert):
