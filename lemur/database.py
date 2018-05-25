@@ -268,6 +268,11 @@ def clone(model):
 
 
 def get_count(q):
+    """
+    Count the number of rows in a table. More efficient than count(*)
+    :param q:
+    :return:
+    """
     count_q = q.statement.with_only_columns([func.count()]).order_by(None)
     count = q.session.execute(count_q).scalar()
     return count

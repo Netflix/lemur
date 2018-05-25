@@ -10,6 +10,7 @@ services:
     command: make test
     environment:
       SQLALCHEMY_DATABASE_URI: postgresql://lemur:lemur@postgres:5432/lemur
+      VIRTUAL_ENV: 'true'
 
   postgres:
     image: postgres:9.4
