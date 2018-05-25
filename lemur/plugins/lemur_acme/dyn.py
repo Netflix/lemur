@@ -80,6 +80,7 @@ def delete_txt_record(change_id, account_number, domain, token):
 
     zone = Zone(zone_name)
     node = Node(zone_name, fqdn)
+
     all_txt_records = node.get_all_records_by_type('TXT')
     for txt_record in all_txt_records:
         if txt_record.txtdata == ("{}".format(token)):

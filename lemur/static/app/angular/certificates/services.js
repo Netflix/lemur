@@ -243,6 +243,10 @@ angular.module('lemur')
             certificate.authority = defaults.authority;
           }
         }
+
+        if (certificate.dnsProviderId) {
+          certificate.dnsProvider = {id: certificate.dnsProviderId};
+        }
       });
     };
 

@@ -258,6 +258,11 @@ angular.module('lemur')
     opened: false
   };
 
+  CertificateService.getDnsProviders().then(function (providers) {
+            $scope.dnsProviders = providers;
+        }
+    );
+
   $scope.clearDates = function () {
     $scope.certificate.validityStart = null;
     $scope.certificate.validityEnd = null;
