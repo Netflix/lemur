@@ -5,7 +5,6 @@ import dns.exception
 import dns.name
 import dns.query
 import dns.resolver
-import dns.resolver
 from dyn.tm.errors import DynectCreateError
 from dyn.tm.session import DynectSession
 from dyn.tm.zones import Node, Zone
