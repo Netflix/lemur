@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, text
+from sqlalchemy import Column, Integer, String, text, Text
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy_utils import ArrowType
 
@@ -14,7 +14,7 @@ class DnsProvider(db.Model):
         primary_key=True,
     )
     name = Column(String(length=256), unique=True, nullable=True)
-    description = Column(String(length=1024), nullable=True)
+    description = Column(Text(), nullable=True)
     provider_type = Column(String(length=256), nullable=True)
     credentials = Column(Vault, nullable=True)
     api_endpoint = Column(String(length=256), nullable=True)
