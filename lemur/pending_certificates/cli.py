@@ -14,11 +14,6 @@ from lemur.users import service as user_service
 manager = Manager(usage="Handles pending certificate related tasks.")
 
 
-# Need to call this multiple times and store status of the cert in DB. If it is being worked on by a worker, and which
-# worker.
-# Then open up an arbitrary number of copies of this? every minute??
-# Or instead how about you send in a list of all pending certificates, make all the dns changes at once, then loop
-# through and wait for each one to complete?
 @manager.option('-i', dest='ids', action='append', help='IDs of pending certificates to fetch')
 def fetch(ids):
     """

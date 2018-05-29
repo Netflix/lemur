@@ -7,7 +7,7 @@ from lemur.plugins.base import plugins
 from lemur.utils import Vault
 
 
-class DnsProviders(db.Model):
+class DnsProvider(db.Model):
     __tablename__ = 'dns_providers'
     id = Column(
         Integer(),
@@ -34,4 +34,4 @@ class DnsProviders(db.Model):
         return plugins.get(self.plugin_name)
 
     def __repr__(self):
-        return "DnsProviders(name={name})".format(name=self.name)
+        return "DnsProvider(name={name})".format(name=self.name)

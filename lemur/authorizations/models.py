@@ -1,7 +1,7 @@
 """
 .. module: lemur.authorizations.models
     :platform: unix
-    :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
+    :copyright: (c) 2018 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Netflix Secops <secops@netflix.com>
 """
@@ -12,7 +12,7 @@ from lemur.database import db
 from lemur.plugins.base import plugins
 
 
-class Authorizations(db.Model):
+class Authorization(db.Model):
     __tablename__ = 'pending_dns_authorizations'
     id = Column(Integer, primary_key=True, autoincrement=True)
     account_number = Column(String(128))
@@ -25,7 +25,7 @@ class Authorizations(db.Model):
         return plugins.get(self.plugin_name)
 
     def __repr__(self):
-        return "Authorizations(id={id})".format(label=self.id)
+        return "Authorization(id={id})".format(label=self.id)
 
     def __init__(self, account_number, domains, dns_provider_type, options=None):
         self.account_number = account_number

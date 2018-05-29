@@ -1,6 +1,10 @@
 import time
 
+import dns
 import dns.exception
+import dns.name
+import dns.query
+import dns.resolver
 import dns.resolver
 from dyn.tm.errors import DynectCreateError
 from dyn.tm.session import DynectSession
@@ -22,7 +26,7 @@ def _has_dns_propagated(name, token):
     txt_records = []
     try:
         dns_resolver = dns.resolver.Resolver()
-        dns_resolver.nameservers = ['8.8.8.8']
+        dns_resolver.nameservers = [get_authoritative_nameserver(name)]
         dns_response = dns_resolver.query(name, 'TXT')
         for rdata in dns_response:
             for txt_record in rdata.strings:
@@ -87,3 +91,42 @@ def delete_txt_record(change_id, account_number, domain, token):
             current_app.logger.debug("Deleting TXT record name: {0}".format(fqdn))
             txt_record.delete()
     zone.publish()
+
+
+def get_authoritative_nameserver(domain):
+    n = dns.name.from_text(domain)
+
+    depth = 2
+    default = dns.resolver.get_default_resolver()
+    nameserver = default.nameservers[0]
+
+    last = False
+    while not last:
+        s = n.split(depth)
+
+        last = s[0].to_unicode() == u'@'
+        sub = s[1]
+
+        query = dns.message.make_query(sub, dns.rdatatype.NS)
+        response = dns.query.udp(query, nameserver)
+
+        rcode = response.rcode()
+        if rcode != dns.rcode.NOERROR:
+            if rcode == dns.rcode.NXDOMAIN:
+                raise Exception('%s does not exist.' % sub)
+            else:
+                raise Exception('Error %s' % dns.rcode.to_text(rcode))
+
+        if len(response.authority) > 0:
+            rrset = response.authority[0]
+        else:
+            rrset = response.answer[0]
+
+        rr = rrset[0]
+        if rr.rdtype != dns.rdatatype.SOA:
+            authority = rr.target
+            nameserver = default.query(authority).rrset[0].to_text()
+
+        depth += 1
+
+    return nameserver

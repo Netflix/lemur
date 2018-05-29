@@ -2,7 +2,7 @@ import json
 
 from flask import current_app
 from lemur import database
-from lemur.dns_providers.models import DnsProviders
+from lemur.dns_providers.models import DnsProvider
 
 
 def render(args):
@@ -11,13 +11,13 @@ def render(args):
     :param args:
     :return:
     """
-    query = database.session_query(DnsProviders)
+    query = database.session_query(DnsProvider)
 
-    return database.sort_and_page(query, DnsProviders, args)
+    return database.sort_and_page(query, DnsProvider, args)
 
 
 def get(dns_provider_id):
-    provider = database.get(DnsProviders, dns_provider_id)
+    provider = database.get(DnsProvider, dns_provider_id)
     return provider
 
 
@@ -66,7 +66,7 @@ def create(data):
     credentials = {}
     for item in data.get("provider_type", {}).get("requirements", []):
         credentials[item["name"]] = item["value"]
-    dns_provider = DnsProviders(
+    dns_provider = DnsProvider(
         name=provider_name,
         description=data.get("description"),
         provider_type=data.get("provider_type").get("name"),

@@ -1,7 +1,7 @@
 """
 .. module: lemur.dns)providers.views
     :platform: Unix
-    :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
+    :copyright: (c) 2018 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Curtis Castrapel <ccastrapel@netflix.com>
 """
@@ -118,7 +118,7 @@ class DnsProvidersList(AuthenticatedResource):
                 "type": "str",
                 "required": true,
                 "helpMessage": "Cloudflare Email",
-                "value": "test@netflix.com"
+                "value": "test@example.com"
               },
               {
                 "name": "key",

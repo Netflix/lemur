@@ -15,4 +15,4 @@ __author__ = "The Lemur developers"
 __email__ = "security@netflix.com"
 
 __license__ = "Apache License, Version 2.0"
-__copyright__ = "Copyright 2017 {0}".format(__author__)
+__copyright__ = "Copyright 2018 {0}".format(__author__)

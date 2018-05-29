@@ -2,7 +2,7 @@
 .. module: lemur.plugins.lemur_acme.plugin
     :platform: Unix
     :synopsis: This module is responsible for communicating with an ACME CA.
-    :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
+    :copyright: (c) 2018 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 
     Snippets from https://raw.githubusercontent.com/alex/letsencrypt-aws/master/letsencrypt-aws.py

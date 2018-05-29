@@ -3,7 +3,7 @@
     :platform: Unix
     :synopsis: This module contains all of the services level functions used to
     administer logs in Lemur
-    :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
+    :copyright: (c) 2018 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """

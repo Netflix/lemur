@@ -1,6 +1,6 @@
 """
 .. module: lemur.pending_certificates.models
-    Copyright (c) 2017 and onwards Instart Logic, Inc.  All rights reserved.
+    Copyright (c) 2018 and onwards Netflix, Inc.  All rights reserved.
 .. moduleauthor:: James Chuong <jchuong@instartlogic.com>
 """
 from datetime import datetime as dt
