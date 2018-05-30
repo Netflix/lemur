@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-index --output-file requirements.txt requirements.in
 #
-acme==0.23.0
+acme==0.24.0
 alembic-autogenerate-enums==0.0.2
 alembic==0.9.9            # via flask-migrate
 aniso8601==3.0.0          # via flask-restful
@@ -12,14 +12,14 @@ arrow==0.12.1
 asn1crypto==0.24.0        # via cryptography
 bcrypt==3.1.4             # via flask-bcrypt, paramiko
 blinker==1.4              # via flask-mail, flask-principal, raven
-boto3==1.7.6
-botocore==1.10.6          # via boto3, s3transfer
+boto3==1.7.26
+botocore==1.10.26         # via boto3, s3transfer
 cffi==1.11.5              # via bcrypt, cryptography, pynacl
 click==6.7                # via flask
 cryptography==2.2.2
 docutils==0.14            # via botocore
 flask-bcrypt==0.7.1
-flask-cors==3.0.3
+flask-cors==3.0.4
 flask-mail==0.9.1
 flask-migrate==2.1.1
 flask-principal==0.4.0
@@ -28,7 +28,7 @@ flask-script==2.0.6
 flask-sqlalchemy==2.3.2
 flask==0.12
 future==0.16.0
-gunicorn==19.7.1
+gunicorn==19.8.1
 idna==2.6                 # via cryptography
 inflection==0.3.1
 itsdangerous==0.24        # via flask
@@ -39,30 +39,30 @@ lockfile==0.12.2
 mako==1.0.7               # via alembic
 markupsafe==1.0           # via jinja2, mako
 marshmallow-sqlalchemy==0.13.2
-marshmallow==2.15.0
+marshmallow==2.15.3
 mock==2.0.0               # via acme
-ndg-httpsclient==0.4.4
+ndg-httpsclient==0.5.0
 paramiko==2.4.1
-pbr==4.0.2                # via mock
+pbr==4.0.3                # via mock
 pem==17.1.0
 psycopg2==2.7.4
 pyasn1-modules==0.2.1     # via python-ldap
-pyasn1==0.4.2             # via ndg-httpsclient, paramiko, pyasn1-modules, python-ldap, requests
+pyasn1==0.4.3             # via ndg-httpsclient, paramiko, pyasn1-modules, python-ldap, requests
 pycparser==2.18           # via cffi
-pyjwt==1.6.1
+pyjwt==1.6.4
 pynacl==1.2.1             # via paramiko
 pyopenssl==17.2.0
 pyrfc3339==1.0            # via acme
-python-dateutil==2.7.2    # via alembic, arrow, botocore
+python-dateutil==2.7.3    # via alembic, arrow, botocore
 python-editor==1.0.3      # via alembic
 python-ldap==3.0.0
 pytz==2018.4              # via acme, flask-restful, pyrfc3339
-raven[flask]==6.7.0
+raven[flask]==6.8.0
 requests[security]==2.11.1
 retrying==1.3.3
 s3transfer==0.1.13        # via boto3
 six==1.11.0
-sqlalchemy-utils==0.33.2
+sqlalchemy-utils==0.33.3
 sqlalchemy==1.2.7         # via alembic, flask-sqlalchemy, marshmallow-sqlalchemy, sqlalchemy-utils
 tabulate==0.8.2
 werkzeug==0.14.1          # via flask

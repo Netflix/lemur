@@ -10,7 +10,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from inflection import underscore
-from sqlalchemy import exc
+from sqlalchemy import exc, func
 from sqlalchemy.sql import and_, or_
 from sqlalchemy.orm import make_transient
 
@@ -267,6 +267,17 @@ def clone(model):
     return model
 
 
+def get_count(q):
+    """
+    Count the number of rows in a table. More efficient than count(*)
+    :param q:
+    :return:
+    """
+    count_q = q.statement.with_only_columns([func.count()]).order_by(None)
+    count = q.session.execute(count_q).scalar()
+    return count
+
+
 def sort_and_page(query, model, args):
     """
     Helper that allows us to combine sorting and paging
@@ -289,7 +300,7 @@ def sort_and_page(query, model, args):
     if sort_by and sort_dir:
         query = sort(query, model, sort_by, sort_dir)
 
-    total = query.count()
+    total = get_count(query)
 
     # offset calculated at zero
     page -= 1
