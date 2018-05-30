@@ -17,9 +17,9 @@ from flask import current_app
 
 from sqlalchemy import and_
 
-from lemur import database, metrics
+from lemur import database
 from lemur.constants import FAILURE_METRIC_STATUS, SUCCESS_METRIC_STATUS
-from lemur.extensions import sentry
+from lemur.extensions import metrics, sentry
 from lemur.common.utils import windowed_query
 
 from lemur.certificates.schemas import certificate_notification_output_schema
