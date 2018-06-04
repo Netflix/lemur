@@ -7,7 +7,7 @@
 aspy.yaml==1.1.1          # via pre-commit
 cached-property==1.4.2    # via pre-commit
 certifi==2018.4.16        # via requests
-cfgv==1.0.0               # via pre-commit
+cfgv==1.1.0               # via pre-commit
 chardet==3.0.4            # via requests
 flake8==3.5.0
 identify==1.0.17          # via pre-commit
