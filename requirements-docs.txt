@@ -51,7 +51,7 @@ pbr==4.0.2
 pem==17.1.0
 psycopg2==2.7.4
 pyasn1-modules==0.2.1
-pyasn1==0.4.2
+pyasn1==0.4.3
 pycparser==2.18
 pygments==2.2.0           # via sphinx
 pyjwt==1.6.1
