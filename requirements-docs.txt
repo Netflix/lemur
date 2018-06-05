@@ -15,7 +15,7 @@ babel==2.6.0              # via sphinx
 bcrypt==3.1.4
 blinker==1.4
 boto3==1.7.26
-botocore==1.10.26
+botocore==1.10.32
 cffi==1.11.5
 click==6.7
 cryptography==2.2.2
