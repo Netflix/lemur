@@ -71,7 +71,7 @@ snowballstemmer==1.2.1    # via sphinx
 sphinx-rtd-theme==0.3.1
 sphinx==1.7.5
 sphinxcontrib-httpdomain==1.6.1
-sphinxcontrib-websupport==1.0.1  # via sphinx
+sphinxcontrib-websupport==1.1.0  # via sphinx
 sqlalchemy-utils==0.33.3
 sqlalchemy==1.2.7
 tabulate==0.8.2
