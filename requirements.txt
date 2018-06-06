@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-index --output-file requirements.txt requirements.in
 #
-acme==0.24.0
+acme==0.25.0
 alembic-autogenerate-enums==0.0.2
 alembic==0.9.9            # via flask-migrate
 aniso8601==3.0.0          # via flask-restful
