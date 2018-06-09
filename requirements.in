@@ -5,6 +5,7 @@ alembic-autogenerate-enums
 arrow
 boto3
 cryptography
+elasticsearch
 Flask-Bcrypt==0.7.1
 Flask-Mail==0.9.1
 Flask-Migrate==2.1.1
@@ -19,6 +20,7 @@ gunicorn
 inflection
 jinja2
 lockfile
+logmatic-python
 marshmallow-sqlalchemy
 marshmallow
 ndg-httpsclient
