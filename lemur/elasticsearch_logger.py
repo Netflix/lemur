@@ -4,6 +4,7 @@ from elasticsearch import Elasticsearch
 from logging import getLogger, Handler, ERROR
 from pytz import timezone
 
+
 class ESHandler(Handler):
     def __init__(self, es, index):
         super().__init__()
