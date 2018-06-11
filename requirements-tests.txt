@@ -25,7 +25,7 @@ factory-boy==2.11.1
 faker==0.8.15
 flask==1.0.2              # via pytest-flask
 freezegun==0.3.10
-idna==2.6                 # via cryptography, requests
+idna==2.7                 # via cryptography, requests
 itsdangerous==0.24        # via flask
 jinja2==2.10              # via flask, moto
 jmespath==0.9.3           # via boto3, botocore
