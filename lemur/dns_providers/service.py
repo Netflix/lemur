@@ -53,7 +53,42 @@ def delete(dns_provider_id):
 
 
 def get_types():
-    provider_config = current_app.config.get('ACME_DNS_PROVIDER_TYPES')
+    provider_config = current_app.config.get(
+        'ACME_DNS_PROVIDER_TYPES',
+        {"items": [
+            {
+                'name': 'route53',
+                'requirements': [
+                    {
+                        'name': 'account_id',
+                        'type': 'int',
+                        'required': True,
+                        'helpMessage': 'AWS Account number'
+                    },
+                ]
+            },
+            {
+                'name': 'cloudflare',
+                'requirements': [
+                    {
+                        'name': 'email',
+                        'type': 'str',
+                        'required': True,
+                        'helpMessage': 'Cloudflare Email'
+                    },
+                    {
+                        'name': 'key',
+                        'type': 'str',
+                        'required': True,
+                        'helpMessage': 'Cloudflare Key'
+                    },
+                ]
+            },
+            {
+                'name': 'dyn',
+            },
+        ]}
+    )
     if not provider_config:
         raise Exception("No DNS Provider configuration specified.")
     provider_config["total"] = len(provider_config.get("items"))
