@@ -1,18 +1,31 @@
 import datetime
+import logging
+from logging import getLogger, Handler
 
 from elasticsearch import Elasticsearch
-from logging import getLogger, Handler, ERROR
 from pytz import timezone
 
 
 class ESHandler(Handler):
-    def __init__(self, es, index):
+    def __init__(self, es, index, elasticsearch_logging_level="error"):
         super().__init__()
         self.es = Elasticsearch(es)
         self.index = index
-        getLogger("elasticsearch").setLevel(ERROR)
-        getLogger("elasticsearch.trace").setLevel(ERROR)
-        getLogger("urllib3").setLevel(ERROR)
+
+        if elasticsearch_logging_level == "info":
+            level = logging.INFO
+        elif elasticsearch_logging_level == "critical":
+            level = logging.CRITICAL
+        elif elasticsearch_logging_level == "error":
+            level = logging.ERROR
+        elif elasticsearch_logging_level == "warning":
+            level = logging.WARNING
+        elif elasticsearch_logging_level == "debug":
+            level = logging.DEBUG
+
+        getLogger("elasticsearch").setLevel(level)
+        getLogger("elasticsearch.trace").setLevel(level)
+        getLogger("urllib3").setLevel(level)
 
     def emit(self, record):
         record.eventTime = datetime.datetime.now(timezone('US/Pacific')).isoformat()
