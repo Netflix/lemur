@@ -65,15 +65,17 @@ def create_txt_record(host, value, account_number):
         value,
         account_number=account_number
     )
+
     return zone_id, change_id
 
 
-def delete_txt_record(change_id, account_number, host, value):
-    zone_id, _ = change_id
-    change_txt_record(
-        "DELETE",
-        zone_id,
-        host,
-        value,
-        account_number=account_number
-    )
+def delete_txt_record(change_ids, account_number, host, value):
+    for change_id in change_ids:
+        zone_id, _ = change_id
+        change_txt_record(
+            "DELETE",
+            zone_id,
+            host,
+            value,
+            account_number=account_number
+        )
