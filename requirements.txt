@@ -29,7 +29,7 @@ flask-sqlalchemy==2.3.2
 flask==0.12
 future==0.16.0
 gunicorn==19.8.1
-idna==2.6                 # via cryptography
+idna==2.7                 # via cryptography
 inflection==0.3.1
 itsdangerous==0.24        # via flask
 jinja2==2.10
