@@ -4,7 +4,7 @@
     :synopsis: This module contains all of the associative tables
     that help define the many to many relationships established in Lemur
 
-    :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
+    :copyright: (c) 2018 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
@@ -55,7 +55,7 @@ certificate_replacement_associations = db.Table('certificate_replacement_associa
                                                        ForeignKey('certificates.id', ondelete='cascade'))
                                                 )
 
-Index('certificate_replacement_associations_ix', certificate_replacement_associations.c.replaced_certificate_id, certificate_replacement_associations.c.certificate_id)
+Index('certificate_replacement_associations_ix', certificate_replacement_associations.c.replaced_certificate_id, certificate_replacement_associations.c.certificate_id, unique=True)
 
 roles_authorities = db.Table('roles_authorities',
                              Column('authority_id', Integer, ForeignKey('authorities.id')),

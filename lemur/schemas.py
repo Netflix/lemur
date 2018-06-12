@@ -1,7 +1,7 @@
 """
 .. module: lemur.schemas
     :platform: unix
-    :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
+    :copyright: (c) 2018 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
@@ -21,6 +21,7 @@ from lemur.plugins.utils import get_plugin_option
 from lemur.roles.models import Role
 from lemur.users.models import User
 from lemur.authorities.models import Authority
+from lemur.dns_providers.models import DnsProvider
 from lemur.policies.models import RotationPolicy
 from lemur.certificates.models import Certificate
 from lemur.destinations.models import Destination
@@ -103,6 +104,15 @@ class AssociatedAuthoritySchema(LemurInputSchema):
     @post_load
     def get_object(self, data, many=False):
         return fetch_objects(Authority, data, many=many)
+
+
+class AssociatedDnsProviderSchema(LemurInputSchema):
+    id = fields.Int()
+    name = fields.String()
+
+    @post_load
+    def get_object(self, data, many=False):
+        return fetch_objects(DnsProvider, data, many=many)
 
 
 class AssociatedRoleSchema(LemurInputSchema):

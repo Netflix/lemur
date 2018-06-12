@@ -1,7 +1,7 @@
 """
 .. module: lemur.certificates.models
     :platform: Unix
-    :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
+    :copyright: (c) 2018 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
@@ -102,6 +102,7 @@ class Certificate(db.Model):
     serial = Column(String(128))
     cn = Column(String(128))
     deleted = Column(Boolean, index=True)
+    dns_provider_id = Column(Integer(), ForeignKey('dns_providers.id', ondelete='cascade'), nullable=True)
 
     not_before = Column(ArrowType)
     not_after = Column(ArrowType)
@@ -177,6 +178,8 @@ class Certificate(db.Model):
         self.signing_algorithm = defaults.signing_algorithm(cert)
         self.bits = defaults.bitstrength(cert)
         self.external_id = kwargs.get('external_id')
+        self.authority_id = kwargs.get('authority_id')
+        self.dns_provider_id = kwargs.get('dns_provider_id')
 
         for domain in defaults.domains(cert):
             self.domains.append(Domain(name=domain))

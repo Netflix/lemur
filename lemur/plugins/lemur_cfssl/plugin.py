@@ -2,7 +2,7 @@
 .. module: lemur.plugins.lemur_cfssl.plugin
     :platform: Unix
     :synopsis: This module is responsible for communicating with the CFSSL private CA.
-    :copyright: (c) 2016 by Thomson Reuters
+    :copyright: (c) 2018 by Thomson Reuters
     :license: Apache, see LICENSE for more details.
 
 .. moduleauthor:: Charles Hendrie <chad.hendrie@tr.com>

@@ -1,0 +1,93 @@
+<div class="modal-header">
+  <button type="button" class="close" ng-click="cancel()" aria-label="Close"><span aria-hidden="true">&times;</span>
+  </button>
+  <h3><span ng-show="!dns_provider.fromServer">Create</span><span ng-show="dns_provider.fromServer">Edit</span>
+    Dns Provider <span class="text-muted"><small>route all the things</small></span></h3>
+</div>
+<div class="modal-body">
+  <form name="createForm" class="form-horizontal" role="form" novalidate>
+    <div class="form-group"
+         ng-class="{'has-error': createForm.label.$invalid, 'has-success': !createForm.label.$invalid&&createForm.label.$dirty}">
+      <label class="control-label col-sm-2">
+        Name
+      </label>
+      <div class="col-sm-10">
+        <input name="name" ng-model="dns_provider.name" placeholder="Name" class="form-control" required/>
+        <p ng-show="createForm.label.$invalid && !createForm.label.$pristine" class="help-block">You must enter an
+          dns_provider name</p>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="control-label col-sm-2">
+        Description
+      </label>
+      <div class="col-sm-10">
+        <textarea name="description" ng-model="dns_provider.description" placeholder="Something elegant"
+                  class="form-control"></textarea>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="control-label col-sm-2">
+        Provider Type
+      </label>
+      <div class="col-sm-10">
+        <select class="form-control" ng-model="dns_provider.providerType" ng-options="item.name for item in options"
+                required></select>
+      </div>
+    </div>
+    <div class="form-group" ng-repeat="item in dns_provider.providerType.requirements">
+      <ng-form name="subForm" class="form-horizontal" role="form" novalidate>
+        <div ng-class="{'has-error': subForm.sub.$invalid, 'has-success': !subForm.sub.$invalid&&subForm.sub.$dirty}">
+          <label class="control-label col-sm-2">
+            {{ item.name | titleCase }}
+          </label>
+          <div class="col-sm-10">
+            <input name="sub" ng-if="item.type == 'int'" type="number" ng-pattern="item.validation?item.validation:'^[0-9]+$'" 
+                   class="form-control" ng-model="item.value"/>
+            <select name="sub" ng-if="item.type == 'select'" class="form-control" ng-options="i for i in item.available"
+                    ng-model="item.value"></select>
+            <input name="sub" ng-if="item.type == 'bool'" class="form-control" type="checkbox" ng-model="item.value">
+            <input name="sub" ng-if="item.type == 'str'" type="text" class="form-control" ng-model="item.value"/>
+            <div ng-if="item.type == 'export-plugin'">
+              <form name="exportForm" class="form-horizontal" role="form" novalidate>
+                <select class="form-control" ng-model="item.value"
+                        ng-options="plugin.title for plugin in exportPlugins" required></select>
+                <div class="col-sm-10">
+                  <div class="form-group" ng-repeat="item in item.value.pluginOptions">
+                    <ng-form name="subForm" class="form-horizontal" role="form" novalidate>
+                      <div
+                        ng-class="{'has-error': subForm.sub.$invalid, 'has-success': !subForm.sub.$invalid&&subForm.sub.$dirty}">
+                        <label class="control-label col-sm-2">
+                          {{ item.name | titleCase }}
+                        </label>
+                        <div class="col-sm-10">
+                          <input name="sub" ng-if="item.type == 'int'" type="number" ng-pattern="item.validation?item.validation:'^[0-9]+$'"
+                                 class="form-control" ng-model="item.value"/>
+                          <select name="sub" ng-if="item.type == 'select'" class="form-control"
+                                  ng-options="i for i in item.available" ng-model="item.value"></select>
+                          <input name="sub" ng-if="item.type == 'bool'" class="form-control" type="checkbox"
+                                 ng-model="item.value">
+                          <input name="sub" ng-if="item.type == 'str'" type="text" class="form-control"
+                                 ng-model="item.value" ng-pattern="item.validation"/>
+                          <p ng-show="subForm.sub.$invalid && !subForm.sub.$pristine"
+                             class="help-block">{{ item.helpMessage }}</p>
+                        </div>
+                      </div>
+                    </ng-form>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <p ng-show="subForm.sub.$invalid && !subForm.sub.$pristine" class="help-block">{{ item.helpMessage }}</p>
+          </div>
+        </div>
+      </ng-form>
+    </div>
+  </form>
+</div>
+<div class="modal-footer">
+  <button ng-click="save(dns_provider)" type="submit" ng-disabled="createForm.$invalid" class="btn btn-primary">Save
+  </button>
+  <button ng-click="cancel()" class="btn btn-danger">Cancel</button>
+</div>
+

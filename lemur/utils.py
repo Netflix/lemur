@@ -1,17 +1,17 @@
 """
 .. module: lemur.utils
     :platform: Unix
-    :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
+    :copyright: (c) 2018 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import os
-from flask import current_app
-from cryptography.fernet import Fernet, MultiFernet
-import sqlalchemy.types as types
-
-from contextlib import contextmanager
 import tempfile
+from contextlib import contextmanager
+
+import sqlalchemy.types as types
+from cryptography.fernet import Fernet, MultiFernet
+from flask import current_app
 
 
 @contextmanager
