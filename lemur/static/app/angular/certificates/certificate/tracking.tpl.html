@@ -107,6 +107,17 @@
         </ui-select>
       </div>
     </div>
+       <div class="form-group" ng-show="certificate.authority.plugin.slug == 'acme-issuer'">
+        <label class="control-label col-sm-2">
+          DNS Provider:
+        </label>
+
+        <div class="col-sm-10">
+          <select class="form-control" ng-model="certificate.dnsProvider" ng-options="item as item.name for item in dnsProviders.items track by item.id">
+              <option value="">- choose an entry. Neded for ACME Providers -</option>
+          </select>
+        </div>
+      </div>
     <div class="form-group">
       <label class="control-label col-sm-2"
              uib-tooltip="If no date is selected Lemur attempts to issue a 2 year certificate">

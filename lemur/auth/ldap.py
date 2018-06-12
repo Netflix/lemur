@@ -1,7 +1,7 @@
 """
 .. module: lemur.auth.ldap
     :platform: Unix
-    :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
+    :copyright: (c) 2018 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Ian Stahnke <ian.stahnke@myob.com>
 """

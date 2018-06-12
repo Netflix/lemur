@@ -1,0 +1,48 @@
+<div class="row">
+  <div class="col-md-12">
+    <h2 class="featurette-heading">DNS Providers
+      <span class="text-muted"><small>the root of all problems</small></span></h2>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <div class="btn-group pull-right">
+          <button ng-click="create()" class="btn btn-primary">Create</button>
+        </div>
+        <div class="btn-group">
+            <button ng-model="showFilter" class="btn btn-default" uib-btn-checkbox
+                    btn-checkbox-true="1"
+                    btn-checkbox-false="0">Filter</button>
+        </div>
+        <div class="clearfix"></div>
+      </div>
+      <div class="table-responsive">
+        <table ng-table="dnsProvidersTable" class="table table-striped" show-filter="showFilter" template-pagination="angular/pager.html" >
+          <tbody>
+          <tr ng-repeat="dns_provider in $data track by $index">
+            <td data-title="'Name'" sortable="'name'" filter="{ 'name': 'text' }">
+              <ul class="list-unstyled">
+                <li>{{ dns_provider.name }}</li>
+                <li><span class="text-muted">{{ dns_provider.description }}</span></li>
+              </ul>
+            </td>
+              <td data-title="'Type'" sortable="'type'" filter="{ 'type': 'text' }">
+                  <ul class="list-unstyled">
+                      <li>{{ dns_provider.providerType }}</li>
+                  </ul>
+              </td>
+            <td data-title="''">
+              <div class="btn-group-vertical pull-right">
+                <button uib-tooltip="Edit DNS Provider" ng-click="edit(dns_provider.id)" class="btn btn-sm btn-info">
+                  Edit
+                </button>
+                <button uib-tooltip="Delete DNS Provider" ng-click="remove(dns_provider)" type="button" class="btn btn-sm btn-danger pull-left">
+                  Remove
+                </button>
+              </div>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

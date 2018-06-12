@@ -4,7 +4,7 @@ Lemur
 
 Is a TLS management and orchestration tool.
 
-:copyright: (c) 2015 by Netflix, see AUTHORS for more
+:copyright: (c) 2018 by Netflix, see AUTHORS for more
 :license: Apache, see LICENSE for more details.
 """
 from __future__ import absolute_import

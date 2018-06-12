@@ -1,6 +1,6 @@
 """
 .. module: lemur.pending_certificates.service
-    Copyright (c) 2017 and onwards Instart Logic, Inc.  All rights reserved.
+    Copyright (c) 2018 and onwards Netflix, Inc.  All rights reserved.
 .. moduleauthor:: James Chuong <jchuong@instartlogic.com>
 """
 import arrow
@@ -57,6 +57,10 @@ def get_by_name(pending_cert_name):
 
 def delete(pending_certificate):
     database.delete(pending_certificate)
+
+
+def delete_by_id(id):
+    database.delete(get(id))
 
 
 def get_pending_certs(pending_ids):

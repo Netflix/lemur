@@ -1,7 +1,7 @@
 """
 .. module: lemur.certificates.schemas
     :platform: unix
-    :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
+    :copyright: (c) 2018 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
@@ -9,31 +9,30 @@ from flask import current_app
 from marshmallow import fields, validate, validates_schema, post_load, pre_load
 from marshmallow.exceptions import ValidationError
 
+from lemur.authorities.schemas import AuthorityNestedOutputSchema
+from lemur.common import validators, missing
+from lemur.common.fields import ArrowDateTime, Hex
+from lemur.common.schema import LemurInputSchema, LemurOutputSchema
+from lemur.constants import CERTIFICATE_KEY_TYPES
+from lemur.destinations.schemas import DestinationNestedOutputSchema
+from lemur.domains.schemas import DomainNestedOutputSchema
+from lemur.notifications import service as notification_service
+from lemur.notifications.schemas import NotificationNestedOutputSchema
+from lemur.policies.schemas import RotationPolicyNestedOutputSchema
+from lemur.roles.schemas import RoleNestedOutputSchema
 from lemur.schemas import (
     AssociatedAuthoritySchema,
     AssociatedDestinationSchema,
     AssociatedCertificateSchema,
     AssociatedNotificationSchema,
+    AssociatedDnsProviderSchema,
     PluginInputSchema,
     ExtensionSchema,
     AssociatedRoleSchema,
     EndpointNestedOutputSchema,
-    AssociatedRotationPolicySchema
+    AssociatedRotationPolicySchema,
 )
-
-from lemur.authorities.schemas import AuthorityNestedOutputSchema
-from lemur.destinations.schemas import DestinationNestedOutputSchema
-from lemur.notifications.schemas import NotificationNestedOutputSchema
-from lemur.roles.schemas import RoleNestedOutputSchema
-from lemur.domains.schemas import DomainNestedOutputSchema
 from lemur.users.schemas import UserNestedOutputSchema
-from lemur.policies.schemas import RotationPolicyNestedOutputSchema
-
-from lemur.common.schema import LemurInputSchema, LemurOutputSchema
-from lemur.common import validators, missing
-from lemur.notifications import service as notification_service
-
-from lemur.common.fields import ArrowDateTime, Hex
 
 
 class CertificateSchema(LemurInputSchema):
@@ -70,9 +69,13 @@ class CertificateInputSchema(CertificateCreationSchema):
     replaces = fields.Nested(AssociatedCertificateSchema, missing=[], many=True)
     replacements = fields.Nested(AssociatedCertificateSchema, missing=[], many=True)  # deprecated
     roles = fields.Nested(AssociatedRoleSchema, missing=[], many=True)
+    dns_provider = fields.Nested(AssociatedDnsProviderSchema, missing=None, allow_none=True, required=False)
 
     csr = fields.String(validate=validators.csr)
-    key_type = fields.String(validate=validate.OneOf(['RSA2048', 'RSA4096']), missing='RSA2048')
+
+    key_type = fields.String(
+        validate=validate.OneOf(CERTIFICATE_KEY_TYPES),
+        missing='RSA2048')
 
     notify = fields.Boolean(default=True)
     rotation = fields.Boolean()
@@ -183,6 +186,7 @@ class CertificateOutputSchema(LemurOutputSchema):
     description = fields.String()
     issuer = fields.String()
     name = fields.String()
+    dns_provider_id = fields.Integer(required=False, allow_none=True)
 
     rotation = fields.Boolean()
 

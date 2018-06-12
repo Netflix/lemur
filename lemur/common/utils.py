@@ -1,22 +1,20 @@
 """
 .. module: lemur.common.utils
     :platform: Unix
-    :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
+    :copyright: (c) 2018 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import string
 import random
+import string
 
 import sqlalchemy
-from sqlalchemy import and_, func
-
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa, ec
-
 from flask_restful.reqparse import RequestParser
+from sqlalchemy import and_, func
 
 from lemur.constants import CERTIFICATE_KEY_TYPES
 from lemur.exceptions import InvalidConfiguration

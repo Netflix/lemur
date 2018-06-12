@@ -1,7 +1,7 @@
 """
 .. module: lemur.plugins.bases.issuer
     :platform: Unix
-    :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
+    :copyright: (c) 2018 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
@@ -25,7 +25,7 @@ class IssuerPlugin(Plugin):
     def revoke_certificate(self, certificate, comments):
         raise NotImplementedError
 
-    def get_ordered_certificate(self, order_id):
+    def get_ordered_certificate(self, certificate):
         raise NotImplementedError
 
     def cancel_ordered_certificate(self, pending_cert, **kwargs):

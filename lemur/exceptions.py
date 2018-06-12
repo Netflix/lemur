@@ -1,6 +1,6 @@
 """
 .. module: lemur.exceptions
-    :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
+    :copyright: (c) 2018 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 """
 from flask import current_app
@@ -33,4 +33,12 @@ class AttrNotFound(LemurException):
 
 
 class InvalidConfiguration(Exception):
+    pass
+
+
+class InvalidAuthority(Exception):
+    pass
+
+
+class UnknownProvider(Exception):
     pass

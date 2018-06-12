@@ -1,7 +1,7 @@
 """
 .. module: lemur.api_keys.schemas
     :platform: Unix
-    :copyright: (c) 2017 by Netflix Inc., see AUTHORS for more
+    :copyright: (c) 2018 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Eric Coan <kungfury@instructure.com>
 """

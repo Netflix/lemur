@@ -3,7 +3,7 @@ Debugging hooks for dumping imported or generated CSR and certificate details to
 
 .. module: lemur.certificates.hooks
     :platform: Unix
-    :copyright: (c) 2016-2017 by Marti Raudsepp, see AUTHORS for more
+    :copyright: (c) 2018 by Marti Raudsepp, see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 
 .. moduleauthor:: Marti Raudsepp <marti@juffo.org>

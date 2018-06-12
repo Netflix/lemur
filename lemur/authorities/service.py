@@ -3,11 +3,14 @@
     :platform: Unix
     :synopsis: This module contains all of the services level functions used to
     administer authorities in Lemur
-    :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
+    :copyright: (c) 2018 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
+
+import json
+
 from lemur import database
 from lemur.common.utils import truthiness
 from lemur.extensions import metrics
@@ -107,6 +110,8 @@ def create(**kwargs):
 
     cert = upload(**kwargs)
     kwargs['authority_certificate'] = cert
+    if kwargs.get('plugin', {}).get('plugin_options', []):
+        kwargs['options'] = json.dumps(kwargs['plugin']['plugin_options'])
 
     authority = Authority(**kwargs)
     authority = database.create(authority)

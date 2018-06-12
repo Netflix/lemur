@@ -325,8 +325,9 @@ class DigiCertIssuerPlugin(IssuerPlugin):
         response = self.session.put(create_url, data=json.dumps({'comments': comments}))
         return handle_response(response)
 
-    def get_ordered_certificate(self, order_id):
+    def get_ordered_certificate(self, pending_cert):
         """ Retrieve a certificate via order id """
+        order_id = pending_cert.external_id
         base_url = current_app.config.get('DIGICERT_URL')
         try:
             certificate_id = get_certificate_id(self.session, base_url, order_id)

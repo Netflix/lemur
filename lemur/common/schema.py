@@ -1,7 +1,7 @@
 """
 .. module: lemur.common.schema
     :platform: unix
-    :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
+    :copyright: (c) 2018 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
@@ -135,7 +135,6 @@ def unwrap_pagination(data, output_schema):
         marshaled_data = {'total': len(data)}
         marshaled_data['items'] = output_schema.dump(data, many=True).data
         return marshaled_data
-
     return output_schema.dump(data).data
 
 
