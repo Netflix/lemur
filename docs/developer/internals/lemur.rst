@@ -110,6 +110,5 @@ Subpackages
     lemur.plugins.lemur_digicert
     lemur.plugins.lemur_java
     lemur.plugins.lemur_kubernetes
-    lemur.plugins.lemur_linuxdst
     lemur.plugins.lemur_openssl
     lemur.plugins.lemur_slack
