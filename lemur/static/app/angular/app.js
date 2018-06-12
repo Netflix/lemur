@@ -109,6 +109,15 @@
     };
   });
 
+  lemur.service('DnsProviders', function (LemurRestangular) {
+    var DnsProviders = this;
+    DnsProviders.get = function () {
+      return LemurRestangular.all('dns_providers').customGET().then(function (dnsProviders) {
+        return dnsProviders;
+      });
+    };
+  });
+
   lemur.directive('lemurBadRequest', [function () {
 			return {
 				template: '<h4>{{ directiveData.message }}</h4>' +

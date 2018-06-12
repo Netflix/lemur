@@ -150,11 +150,7 @@ def test_signature_hash(app):
         signature_hash('sdfdsf')
 
 
-def test_issuer_plugin_create_certificate():
-    import requests_mock
-    from lemur.plugins.lemur_digicert.plugin import DigiCertIssuerPlugin
-
-    pem_fixture = """\
+def test_issuer_plugin_create_certificate(certificate_="""\
 -----BEGIN CERTIFICATE-----
 abc
 -----END CERTIFICATE-----
@@ -164,7 +160,11 @@ def
 -----BEGIN CERTIFICATE-----
 ghi
 -----END CERTIFICATE-----
-"""
+"""):
+    import requests_mock
+    from lemur.plugins.lemur_digicert.plugin import DigiCertIssuerPlugin
+
+    pem_fixture = certificate_
 
     subject = DigiCertIssuerPlugin()
     adapter = requests_mock.Adapter()

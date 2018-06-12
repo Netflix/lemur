@@ -3,7 +3,7 @@
     :platform: unix
     :synopsis: This module contains all of the models need to create a user within
     lemur
-    :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
+    :copyright: (c) 2018 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>

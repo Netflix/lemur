@@ -2,7 +2,7 @@
 .. module: lemur.plugins.lemur_aws.iam
     :platform: Unix
     :synopsis: Contains helper functions for interactive with AWS IAM Apis.
-    :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
+    :copyright: (c) 2018 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """

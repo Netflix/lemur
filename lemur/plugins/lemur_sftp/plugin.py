@@ -2,7 +2,7 @@
 .. module: lemur.plugins.lemur_sftp.plugin
     :platform: Unix
     :synopsis: Allow the uploading of certificates to SFTP.
-    :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
+    :copyright: (c) 2018 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 
     Allow the uploading of certificates to SFTP.

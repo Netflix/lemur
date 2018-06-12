@@ -1,7 +1,7 @@
 """
 .. module: lemur
     :platform: Unix
-    :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
+    :copyright: (c) 2018 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
@@ -29,6 +29,7 @@ from lemur.endpoints.views import mod as endpoints_bp
 from lemur.logs.views import mod as logs_bp
 from lemur.api_keys.views import mod as api_key_bp
 from lemur.pending_certificates.views import mod as pending_certificates_bp
+from lemur.dns_providers.views import mod as dns_providers_bp
 
 from lemur.__about__ import (
     __author__, __copyright__, __email__, __license__, __summary__, __title__,
@@ -57,6 +58,7 @@ LEMUR_BLUEPRINTS = (
     logs_bp,
     api_key_bp,
     pending_certificates_bp,
+    dns_providers_bp,
 )
 
 

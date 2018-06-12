@@ -1,4 +1,5 @@
 import time
+
 from lemur.plugins.lemur_aws.sts import sts_client
 
 
@@ -58,21 +59,23 @@ def change_txt_record(action, zone_id, domain, value, client=None):
 def create_txt_record(host, value, account_number):
     zone_id = find_zone_id(host, account_number=account_number)
     change_id = change_txt_record(
-        "CREATE",
+        "UPSERT",
         zone_id,
         host,
         value,
         account_number=account_number
     )
+
     return zone_id, change_id
 
 
-def delete_txt_record(change_id, account_number, host, value):
-    zone_id, _ = change_id
-    change_txt_record(
-        "DELETE",
-        zone_id,
-        host,
-        value,
-        account_number=account_number
-    )
+def delete_txt_record(change_ids, account_number, host, value):
+    for change_id in change_ids:
+        zone_id, _ = change_id
+        change_txt_record(
+            "DELETE",
+            zone_id,
+            host,
+            value,
+            account_number=account_number
+        )

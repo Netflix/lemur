@@ -1,6 +1,6 @@
 """
 .. module: lemur.defaults.views
-    :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
+    :copyright: (c) 2018 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 """
 from flask import current_app, Blueprint
@@ -50,7 +50,8 @@ class LemurDefaults(AuthenticatedResource):
                  "state": "CA",
                  "location": "Los Gatos",
                  "organization": "Netflix",
-                 "organizationalUnit": "Operations"
+                 "organizationalUnit": "Operations",
+                 "dnsProviders": [{"name": "test", ...}, {...}],
               }
 
            :reqheader Authorization: OAuth token to authenticate
@@ -67,7 +68,7 @@ class LemurDefaults(AuthenticatedResource):
             organization=current_app.config.get('LEMUR_DEFAULT_ORGANIZATION'),
             organizational_unit=current_app.config.get('LEMUR_DEFAULT_ORGANIZATIONAL_UNIT'),
             issuer_plugin=current_app.config.get('LEMUR_DEFAULT_ISSUER_PLUGIN'),
-            authority=default_authority
+            authority=default_authority,
         )
 
 

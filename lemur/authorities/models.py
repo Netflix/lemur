@@ -2,7 +2,7 @@
 .. module: lemur.authorities.models
     :platform: unix
     :synopsis: This module contains all of the models need to create an authority within Lemur.
-    :copyright: (c) 2015 by Netflix Inc., see AUTHORS for more
+    :copyright: (c) 2018 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
@@ -42,6 +42,7 @@ class Authority(db.Model):
         self.description = kwargs.get('description')
         self.authority_certificate = kwargs['authority_certificate']
         self.plugin_name = kwargs['plugin']['slug']
+        self.options = kwargs.get('options')
 
     @property
     def plugin(self):

@@ -2,7 +2,7 @@
 .. module: lemur.api_keys.models
     :platform: Unix
     :synopsis: This module contains all of the models need to create an api key within Lemur.
-    :copyright: (c) 2017 by Netflix Inc., see AUTHORS for more
+    :copyright: (c) 2018 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Eric Coan <kungfury@instructure.com>
 """
