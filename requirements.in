@@ -39,5 +39,4 @@ retrying
 six
 SQLAlchemy-Utils
 tabulate
-tld
 xmltodict
