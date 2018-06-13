@@ -5,7 +5,7 @@ import dns.exception
 import dns.name
 import dns.query
 import dns.resolver
-from dyn.tm.errors import DynectCreateError, DynectGetError
+from dyn.tm.errors import DynectGetError
 from dyn.tm.session import DynectSession
 from dyn.tm.zones import Node, Zone, get_all_zones
 from flask import current_app
