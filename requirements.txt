@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-index --output-file requirements.txt requirements.in
 #
-acme==0.25.0
+acme==0.25.1
 alembic-autogenerate-enums==0.0.2
 alembic==0.9.9            # via flask-migrate
 aniso8601==3.0.0          # via flask-restful
@@ -13,8 +13,8 @@ asn1crypto==0.24.0        # via cryptography
 asyncpool==1.0
 bcrypt==3.1.4             # via flask-bcrypt, paramiko
 blinker==1.4              # via flask-mail, flask-principal, raven
-boto3==1.7.36
-botocore==1.10.36         # via boto3, s3transfer
+boto3==1.7.37
+botocore==1.10.37         # via boto3, s3transfer
 certifi==2018.4.16
 cffi==1.11.5              # via bcrypt, cryptography, pynacl
 click==6.7                # via flask
@@ -74,6 +74,5 @@ six==1.11.0
 sqlalchemy-utils==0.33.3
 sqlalchemy==1.2.8         # via alembic, flask-sqlalchemy, marshmallow-sqlalchemy, sqlalchemy-utils
 tabulate==0.8.2
-tld==0.7.10
 werkzeug==0.14.1          # via flask
 xmltodict==0.11.0
