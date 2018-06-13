@@ -41,12 +41,15 @@ def _has_dns_propagated(name, token):
 
 def wait_for_dns_change(change_id, account_number=None):
     fqdn, token = change_id
-    while True:
+    number_of_attempts = 10
+    for attempts in range(0, number_of_attempts):
         status = _has_dns_propagated(fqdn, token)
         current_app.logger.debug("Record status for fqdn: {}: {}".format(fqdn, status))
         if status:
             break
         time.sleep(20)
+    if not status:
+        raise Exception("Unable to query DNS token for fqdn {}.".format(fqdn))
     return
 
 
