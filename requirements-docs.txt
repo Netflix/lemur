@@ -83,6 +83,6 @@ sphinxcontrib-websupport==1.1.0  # via sphinx
 sqlalchemy-utils==0.33.3
 sqlalchemy==1.2.8
 tabulate==0.8.2
-tld==0.7.10
+tld==0.8
 werkzeug==0.14.1
 xmltodict==0.11.0
