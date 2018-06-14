@@ -74,6 +74,5 @@ six==1.11.0
 sqlalchemy-utils==0.33.3
 sqlalchemy==1.2.8         # via alembic, flask-sqlalchemy, marshmallow-sqlalchemy, sqlalchemy-utils
 tabulate==0.8.2
-tld==0.9
 werkzeug==0.14.1          # via flask
 xmltodict==0.11.0
