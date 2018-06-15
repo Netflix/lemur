@@ -7,7 +7,7 @@
 acme==0.25.1
 alembic-autogenerate-enums==0.0.2
 alembic==0.9.9            # via flask-migrate
-aniso8601==3.0.1          # via flask-restful
+aniso8601==3.0.2          # via flask-restful
 arrow==0.12.1
 asn1crypto==0.24.0        # via cryptography
 asyncpool==1.0
