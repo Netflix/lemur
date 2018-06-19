@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-index --output-file requirements-docs.txt requirements-docs.in
 #
-acme==0.24.0
+acme==0.25.1
 alabaster==0.7.11         # via sphinx
 alembic-autogenerate-enums==0.0.2
 alembic==0.9.9
@@ -15,8 +15,8 @@ asyncpool==1.0
 babel==2.6.0              # via sphinx
 bcrypt==3.1.4
 blinker==1.4
-boto3==1.7.32
-botocore==1.10.32
+boto3==1.7.39
+botocore==1.10.37
 certifi==2018.4.16
 cffi==1.11.5
 click==6.7
@@ -27,7 +27,7 @@ dnspython==1.15.0
 docutils==0.14
 dyn==1.8.1
 flask-bcrypt==0.7.1
-flask-cors==3.0.4
+flask-cors==3.0.6
 flask-mail==0.9.1
 flask-migrate==2.1.1
 flask-principal==0.4.0
@@ -37,7 +37,7 @@ flask-sqlalchemy==2.3.2
 flask==0.12
 future==0.16.0
 gunicorn==19.8.1
-idna==2.6
+idna==2.7
 imagesize==1.0.0          # via sphinx
 inflection==0.3.1
 itsdangerous==0.24
@@ -54,7 +54,7 @@ mock==2.0.0
 ndg-httpsclient==0.5.0
 packaging==17.1           # via sphinx
 paramiko==2.4.1
-pbr==4.0.3
+pbr==4.0.4
 pem==17.1.0
 psycopg2==2.7.4
 pyasn1-modules==0.2.1
@@ -65,12 +65,13 @@ pyjwt==1.6.4
 pynacl==1.2.1
 pyopenssl==17.2.0
 pyparsing==2.2.0          # via packaging
-pyrfc3339==1.0
+pyrfc3339==1.1
 python-dateutil==2.7.3
 python-editor==1.0.3
 pytz==2018.4
 pyyaml==3.12
 raven[flask]==6.9.0
+requests-toolbelt==0.8.0
 requests[security]==2.11.1
 retrying==1.3.3
 s3transfer==0.1.13
@@ -83,6 +84,5 @@ sphinxcontrib-websupport==1.1.0  # via sphinx
 sqlalchemy-utils==0.33.3
 sqlalchemy==1.2.8
 tabulate==0.8.2
-tld==0.7.10
 werkzeug==0.14.1
 xmltodict==0.11.0
