@@ -9,9 +9,11 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from marshmallow import ValidationError
 from freezegun import freeze_time
+from mock import patch
 
 from lemur.certificates.service import create_csr
 from lemur.certificates.views import *  # noqa
+from lemur.common import utils
 from lemur.domains.models import Domain
 
 
@@ -64,6 +66,21 @@ def test_get_certificate_primitives(certificate):
     with freeze_time(datetime.date(year=2016, month=10, day=30)):
         primitives = get_certificate_primitives(certificate)
         assert len(primitives) == 24
+
+
+def test_certificate_output_schema(session, certificate, issuer_plugin):
+    from lemur.certificates.schemas import CertificateOutputSchema
+
+    # Clear the cached attribute first
+    if 'parsed_cert' in certificate.__dict__:
+        del certificate.__dict__['parsed_cert']
+
+    # Make sure serialization parses the cert only once (uses cached 'parsed_cert' attribute)
+    with patch('lemur.common.utils.parse_certificate', side_effect=utils.parse_certificate) as wrapper:
+        data, errors = CertificateOutputSchema().dump(certificate)
+        assert data['issuer'] == 'Example'
+
+    assert wrapper.call_count == 1
 
 
 def test_certificate_edit_schema(session):
