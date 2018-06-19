@@ -23,6 +23,8 @@ from sqlalchemy import event, Integer, ForeignKey, String, PassiveDefault, func,
 from sqlalchemy_utils.types.arrow import ArrowType
 from werkzeug.utils import cached_property
 
+import lemur.common.utils
+
 from lemur.database import db
 from lemur.extensions import sentry
 
@@ -186,7 +188,7 @@ class Certificate(db.Model):
     @cached_property
     def parsed_cert(self):
         assert self.body, "Certificate body not set"
-        return utils.parse_certificate(self.body)
+        return lemur.common.utils.parse_certificate(self.body)
 
     @property
     def active(self):
