@@ -33,6 +33,29 @@ def find_zone_id(domain, client=None):
 
 @sts_client('route53')
 def change_txt_record(action, zone_id, domain, value, client=None):
+    current_txt_records = []
+    try:
+        current_txt_records = client.list_resource_record_sets(
+            HostedZoneId=zone_id,
+            StartRecordName=domain,
+            StartRecordType='TXT',
+            MaxItems="1")["ResourceRecordSets"][0]["ResourceRecords"]
+    except Exception as e:
+        # Current Resource Record does not exist
+        if "NoSuchHostedZone" not in str(type(e)):
+            raise
+    # For some reason TXT records need to be
+    # manually quoted.
+    current_txt_records.append({"Value": '"{}"'.format(value)})
+
+    if action == "DELETE" and len(current_txt_records) > 1:
+        # If we want to delete one record out of many, we'll update the record to not include the deleted value instead.
+        # This allows us to support concurrent issuance.
+        current_txt_records = [
+            record for record in current_txt_records if not (record.get('Value') == '"{}"'.format(value))
+        ]
+        action = "UPSERT"
+
     response = client.change_resource_record_sets(
         HostedZoneId=zone_id,
         ChangeBatch={
@@ -43,11 +66,7 @@ def change_txt_record(action, zone_id, domain, value, client=None):
                         "Name": domain,
                         "Type": "TXT",
                         "TTL": 300,
-                        "ResourceRecords": [
-                            # For some reason TXT records need to be
-                            # manually quoted.
-                            {"Value": '"{}"'.format(value)}
-                        ],
+                        "ResourceRecords": current_txt_records,
                     }
                 }
             ]

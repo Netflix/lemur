@@ -54,15 +54,24 @@ def maybe_remove_wildcard(host):
     return host.replace("*.", "")
 
 
-def start_dns_challenge(acme_client, account_number, host, dns_provider, order):
+def maybe_add_extension(host, dns_provider_options):
+    if dns_provider_options and dns_provider_options.get("acme_challenge_extension"):
+        host = host + dns_provider_options.get("acme_challenge_extension")
+    return host
+
+
+def start_dns_challenge(acme_client, account_number, host, dns_provider, order, dns_provider_options):
     current_app.logger.debug("Starting DNS challenge for {0}".format(host))
 
     dns_challenges = find_dns_challenge(order.authorizations)
     change_ids = []
 
+    host_to_validate = maybe_remove_wildcard(host)
+    host_to_validate = maybe_add_extension(host_to_validate, dns_provider_options)
+
     for dns_challenge in find_dns_challenge(order.authorizations):
         change_id = dns_provider.create_txt_record(
-            dns_challenge.validation_domain_name(maybe_remove_wildcard(host)),
+            dns_challenge.validation_domain_name(host_to_validate),
             dns_challenge.validation(acme_client.client.net.key),
             account_number
         )
@@ -104,11 +113,13 @@ def request_certificate(acme_client, authorizations, csr, order):
             authorization_resource, _ = acme_client.poll(authz)
 
     deadline = datetime.datetime.now() + datetime.timedelta(seconds=90)
+
     try:
         orderr = acme_client.finalize_order(order, deadline)
-    except AcmeError:
-        current_app.logger.error("Unable to resolve Acme order: {}".format(order), exc_info=True)
+    except:
+        current_app.logger.error("Unable to finalize ACME order: {}".format(order), exc_info=True)
         raise
+
     pem_certificate = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM,
                                            OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM,
                                                                            orderr.fullchain_pem)).decode()
@@ -158,24 +169,27 @@ def get_domains(options):
     return domains
 
 
-def get_authorizations(acme_client, order, order_info, dns_provider):
+def get_authorizations(acme_client, order, order_info, dns_provider, dns_provider_options):
     authorizations = []
     for domain in order_info.domains:
-        authz_record = start_dns_challenge(acme_client, order_info.account_number, domain, dns_provider, order)
+        authz_record = start_dns_challenge(acme_client, order_info.account_number, domain, dns_provider, order,
+                                           dns_provider_options)
         authorizations.append(authz_record)
     return authorizations
 
 
-def finalize_authorizations(acme_client, account_number, dns_provider, authorizations):
+def finalize_authorizations(acme_client, account_number, dns_provider, authorizations, dns_provider_options):
     for authz_record in authorizations:
         complete_dns_challenge(acme_client, account_number, authz_record, dns_provider)
     for authz_record in authorizations:
         dns_challenges = authz_record.dns_challenge
+        host_to_validate = maybe_remove_wildcard(authz_record.host)
+        host_to_validate = maybe_add_extension(host_to_validate, dns_provider_options)
         for dns_challenge in dns_challenges:
             dns_provider.delete_txt_record(
                 authz_record.change_id,
                 account_number,
-                dns_challenge.validation_domain_name(maybe_remove_wildcard(authz_record.host)),
+                dns_challenge.validation_domain_name(host_to_validate),
                 dns_challenge.validation(acme_client.client.net.key)
             )
 
@@ -239,16 +253,17 @@ class ACMEIssuerPlugin(IssuerPlugin):
         acme_client, registration = setup_acme_client(pending_cert.authority)
         order_info = authorization_service.get(pending_cert.external_id)
         dns_provider = dns_provider_service.get(pending_cert.dns_provider_id)
+        dns_provider_options = dns_provider.options
         dns_provider_type = self.get_dns_provider(dns_provider.provider_type)
         try:
             authorizations = get_authorizations(
-                acme_client, order_info.account_number, order_info.domains, dns_provider_type)
+                acme_client, order_info.account_number, order_info.domains, dns_provider_type, dns_provider_options)
         except ClientError:
             current_app.logger.error("Unable to resolve pending cert: {}".format(pending_cert.name), exc_info=True)
             return False
 
         authorizations = finalize_authorizations(
-            acme_client, order_info.account_number, dns_provider_type, authorizations)
+            acme_client, order_info.account_number, dns_provider_type, authorizations, dns_provider_options)
         pem_certificate, pem_certificate_chain = request_certificate(acme_client, authorizations, pending_cert.csr)
         cert = {
             'body': "\n".join(str(pem_certificate).splitlines()),
@@ -265,6 +280,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
                 acme_client, registration = setup_acme_client(pending_cert.authority)
                 order_info = authorization_service.get(pending_cert.external_id)
                 dns_provider = dns_provider_service.get(pending_cert.dns_provider_id)
+                dns_provider_options = dns_provider.options
                 dns_provider_type = self.get_dns_provider(dns_provider.provider_type)
                 try:
                     order = acme_client.new_order(pending_cert.csr)
@@ -272,7 +288,8 @@ class ACMEIssuerPlugin(IssuerPlugin):
                     raise Exception("The currently selected ACME CA endpoint does"
                                     " not support issuing wildcard certificates.")
 
-                authorizations = get_authorizations(acme_client, order, order_info, dns_provider_type)
+                authorizations = get_authorizations(acme_client, order, order_info, dns_provider_type,
+                                                    dns_provider_options)
 
                 pending.append({
                     "acme_client": acme_client,
@@ -281,6 +298,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
                     "authorizations": authorizations,
                     "pending_cert": pending_cert,
                     "order": order,
+                    "dns_provider_options": dns_provider_options,
                 })
             except (ClientError, ValueError, Exception):
                 current_app.logger.error("Unable to resolve pending cert: {}".format(pending_cert), exc_info=True)
@@ -296,6 +314,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
                     entry["account_number"],
                     entry["dns_provider_type"],
                     entry["authorizations"],
+                    entry["dns_provider_options"],
                 )
                 pem_certificate, pem_certificate_chain = request_certificate(
                     entry["acme_client"],
@@ -333,6 +352,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
         create_immediately = issuer_options.get('create_immediately', False)
         acme_client, registration = setup_acme_client(authority)
         dns_provider = issuer_options.get('dns_provider')
+        dns_provider_options = dns_provider.options
         if not dns_provider:
             raise InvalidConfiguration("DNS Provider setting is required for ACME certificates.")
         credentials = json.loads(dns_provider.credentials)
@@ -358,8 +378,9 @@ class ACMEIssuerPlugin(IssuerPlugin):
             # Return id of the DNS Authorization
             return None, None, dns_authorization.id
 
-        authorizations = get_authorizations(acme_client, account_number, domains, dns_provider_type)
-        finalize_authorizations(acme_client, account_number, dns_provider_type, authorizations)
+        authorizations = get_authorizations(acme_client, account_number, domains, dns_provider_type,
+                                            dns_provider_options)
+        finalize_authorizations(acme_client, account_number, dns_provider_type, authorizations, dns_provider_options)
         pem_certificate, pem_certificate_chain = request_certificate(acme_client, authorizations, csr)
         # TODO add external ID (if possible)
         return pem_certificate, pem_certificate_chain, None
