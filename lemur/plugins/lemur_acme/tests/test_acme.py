@@ -52,7 +52,7 @@ class TestAcme(unittest.TestCase):
         iterable = mock_find_dns_challenge.return_value
         iterator = iter(values)
         iterable.__iter__.return_value = iterator
-        result = plugin.start_dns_challenge(mock_acme, "accountid", "host", mock_dns_provider, mock_order)
+        result = plugin.start_dns_challenge(mock_acme, "accountid", "host", mock_dns_provider, mock_order, {})
         self.assertEqual(type(result), plugin.AuthorizationRecord)
 
     @patch('acme.client.Client')
@@ -171,7 +171,7 @@ class TestAcme(unittest.TestCase):
         mock_order_info = Mock()
         mock_order_info.account_number = 1
         mock_order_info.domains = ["test.fakedomain.net"]
-        result = plugin.get_authorizations("acme_client", mock_order, mock_order_info, "dns_provider")
+        result = plugin.get_authorizations("acme_client", mock_order, mock_order_info, "dns_provider", {})
         self.assertEqual(result, ["test"])
 
     @patch('lemur.plugins.lemur_acme.plugin.complete_dns_challenge', return_value="test")
@@ -187,7 +187,7 @@ class TestAcme(unittest.TestCase):
         mock_dns_provider.delete_txt_record = Mock()
 
         mock_acme_client = Mock()
-        result = plugin.finalize_authorizations(mock_acme_client, "account_number", mock_dns_provider, mock_authz)
+        result = plugin.finalize_authorizations(mock_acme_client, "account_number", mock_dns_provider, mock_authz, {})
         self.assertEqual(result, mock_authz)
 
     @patch('lemur.plugins.lemur_acme.plugin.current_app')
