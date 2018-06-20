@@ -130,7 +130,7 @@ def request_certificate(acme_client, authorizations, csr, order):
 
 
 def setup_acme_client(authority):
-    if not authority.options:   
+    if not authority.options:
         raise InvalidAuthority("Invalid authority. Options not set")
     options = {}
 
