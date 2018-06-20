@@ -7,9 +7,12 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import random
+import re
 import string
 
 import sqlalchemy
+from cryptography.hazmat.primitives.serialization import load_pem_private_key
+
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa, ec
@@ -50,6 +53,39 @@ def parse_certificate(body):
         body = body.encode('utf-8')
 
     return x509.load_pem_x509_certificate(body, default_backend())
+
+
+def parse_private_key(private_key):
+    """
+    Parses a PEM-format private key (RSA, DSA, ECDSA or any other supported algorithm).
+
+    :param private_key: String containing PEM private key
+    """
+    if isinstance(private_key, str):
+        private_key = private_key.encode('utf8')
+
+    return load_pem_private_key(private_key, password=None, backend=default_backend())
+
+
+def split_pem(data):
+    """
+    Split a string of several PEM payloads to a list of strings.
+
+    :param data: String
+    :return: List of strings
+    """
+    return re.split("\n(?=-----BEGIN )", data)
+
+
+def parse_cert_chain(pem_chain):
+    """
+    Helper function to split and parse a series of PEM certificates.
+
+    :param pem_chain: string
+    :return: List of parsed certificates
+    """
+
+    return [parse_certificate(cert) for cert in split_pem(pem_chain) if pem_chain]
 
 
 def parse_csr(csr):

@@ -10,7 +10,7 @@ from marshmallow import fields, validate, validates_schema, post_load, pre_load
 from marshmallow.exceptions import ValidationError
 
 from lemur.authorities.schemas import AuthorityNestedOutputSchema
-from lemur.common import validators, missing
+from lemur.common import missing, utils, validators
 from lemur.common.fields import ArrowDateTime, Hex
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
 from lemur.constants import CERTIFICATE_KEY_TYPES
@@ -242,9 +242,9 @@ class CertificateUploadInputSchema(CertificateCreationSchema):
     authority = fields.Nested(AssociatedAuthoritySchema, required=False)
     notify = fields.Boolean(missing=True)
     external_id = fields.String(missing=None, allow_none=True)
-    private_key = fields.String(validate=validators.private_key)
-    body = fields.String(required=True, validate=validators.public_certificate)
-    chain = fields.String(validate=validators.public_certificate, missing=None,
+    private_key = fields.String()
+    body = fields.String(required=True)
+    chain = fields.String(missing=None,
                           allow_none=True)  # TODO this could be multiple certificates
 
     destinations = fields.Nested(AssociatedDestinationSchema, missing=[], many=True)
@@ -257,6 +257,38 @@ class CertificateUploadInputSchema(CertificateCreationSchema):
         if data.get('destinations'):
             if not data.get('private_key'):
                 raise ValidationError('Destinations require private key.')
+
+    @validates_schema
+    def validate_private_key(self, data):
+        if data.get('body') and data.get('private_key'):
+            try:
+                cert = utils.parse_certificate(data['body'])
+            except ValueError:
+                raise ValidationError("Public certificate presented is not valid.", field_names=['body'])
+
+            try:
+                key = utils.parse_private_key(data['private_key'])
+            except ValueError:
+                raise ValidationError("Private key presented is not valid.", field_names=['private_key'])
+
+            # Throws ValidationError
+            validators.verify_private_key(key, cert)
+
+    @validates_schema
+    def validate_cert_chain(self, data):
+        try:
+            cert = utils.parse_certificate(data['body'])
+        except ValueError:
+            raise ValidationError("Public certificate presented is not valid.", field_names=['body'])
+
+        if data.get('chain'):
+            try:
+                chain = utils.parse_cert_chain(data['chain'])
+            except ValueError:
+                raise ValidationError("Invalid certificate in certificate chain.", field_names=['chain'])
+
+            # Throws ValidationError
+            validators.verify_cert_chain([cert] + chain)
 
 
 class CertificateExportInputSchema(LemurInputSchema):

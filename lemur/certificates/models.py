@@ -19,7 +19,7 @@ from sqlalchemy.sql.expression import case, extract
 from sqlalchemy_utils.types.arrow import ArrowType
 from werkzeug.utils import cached_property
 
-from lemur.common import defaults, utils
+from lemur.common import defaults, utils, validators
 from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
 from lemur.database import db
 from lemur.domains.models import Domain
@@ -162,6 +162,8 @@ class Certificate(db.Model):
 
         if kwargs.get('private_key'):
             self.private_key = kwargs['private_key'].strip()
+            if isinstance(self.private_key, str):
+                self.private_key = self.private_key.encode('utf8')
 
         if kwargs.get('chain'):
             self.chain = kwargs['chain'].strip()
@@ -185,6 +187,22 @@ class Certificate(db.Model):
 
         for domain in defaults.domains(cert):
             self.domains.append(Domain(name=domain))
+
+        # Check integrity before saving anything into the database.
+        # For user-facing API calls, validation should also be done in schema validators.
+        self.check_integrity()
+
+    def check_integrity(self):
+        """
+        Integrity checks: Does the cert have a valid chain and matching private key?
+        """
+
+        if self.private_key:
+            validators.verify_private_key(utils.parse_private_key(self.private_key), self.parsed_cert)
+
+        if self.chain:
+            chain = [self.parsed_cert] + utils.parse_cert_chain(self.chain)
+            validators.verify_cert_chain(chain)
 
     @cached_property
     def parsed_cert(self):

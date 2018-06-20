@@ -1,45 +1,18 @@
 import re
 
 from cryptography import x509
+from cryptography.exceptions import UnsupportedAlgorithm, InvalidSignature
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
-from cryptography.x509 import NameOID
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
+from cryptography.hazmat.primitives.serialization import load_pem_private_key
+from cryptography.x509 import NameOID, ObjectIdentifier
 from flask import current_app
 from marshmallow.exceptions import ValidationError
 
 from lemur.auth.permissions import SensitiveDomainPermission
 from lemur.common.utils import parse_certificate, is_weekend
-from lemur.domains import service as domain_service
-
-
-def public_certificate(body):
-    """
-    Determines if specified string is valid public certificate.
-
-    :param body:
-    :return:
-    """
-    try:
-        parse_certificate(body)
-    except Exception as e:
-        current_app.logger.exception(e)
-        raise ValidationError('Public certificate presented is not valid.')
-
-
-def private_key(key):
-    """
-    User to validate that a given string is a RSA private key
-
-    :param key:
-    :return: :raise ValueError:
-    """
-    try:
-        if isinstance(key, bytes):
-            serialization.load_pem_private_key(key, None, backend=default_backend())
-        else:
-            serialization.load_pem_private_key(key.encode('utf-8'), None, backend=default_backend())
-    except Exception:
-        raise ValidationError('Private key presented is not valid.')
 
 
 def common_name(value):
@@ -65,6 +38,9 @@ def sensitive_domain(domain):
     if whitelist and not any(re.match(pattern, domain) for pattern in whitelist):
         raise ValidationError('Domain {0} does not match whitelisted domain patterns. '
                               'Contact an administrator to issue the certificate.'.format(domain))
+
+    # Avoid circular import.
+    from lemur.domains import service as domain_service
 
     if any(d.sensitive for d in domain_service.get_by_name(domain)):
         raise ValidationError('Domain {0} has been marked as sensitive. '
@@ -141,3 +117,62 @@ def dates(data):
                 raise ValidationError('Validity end must not be after {0}'.format(data['authority'].authority_certificate.not_after))
 
     return data
+
+
+def verify_cert_chain(certs):
+    """
+    Verifies that the certificates in the chain are correct.
+
+    We don't bother with full cert validation but just check that certs in the chain are signed by the next, to avoid
+    basic human errors -- such as pasting the wrong certificate.
+
+    :param certs: List of parsed certificates, use parse_cert_chain()
+    :raises ValidationError: Invalid chain
+    """
+    cert = certs[0]
+    for issuer in certs[1:]:
+        # Use the current cert's public key to verify the previous signature.
+        # "certificate validation is a complex problem that involves much more than just signature checks"
+        key = issuer.public_key()
+
+        try:
+            if isinstance(key, RSAPublicKey):
+                # RSA requires padding, just to make life difficult for us poor developers :(
+                if cert.signature_algorithm_oid == ObjectIdentifier("1.2.840.113549.1.1.10"):
+                    # In 2005, IETF devised a more secure padding scheme to replace PKCS #1 v1.5. To make sure that
+                    # nobody can easily support or use it, they mandated lots of complicated parameters, unlike any
+                    # other X.509 signature scheme.
+                    # https://tools.ietf.org/html/rfc4056
+                    raise UnsupportedAlgorithm("RSASSA-PSS not supported")
+                else:
+                    padder = padding.PKCS1v15()
+                key.verify(cert.signature, cert.tbs_certificate_bytes, padder, cert.signature_hash_algorithm)
+            else:
+                # EllipticCurvePublicKey or DSAPublicKey
+                key.verify(cert.signature, cert.tbs_certificate_bytes, cert.signature_hash_algorithm)
+
+        except InvalidSignature:
+            # Avoid circular import.
+            from lemur.common import defaults
+
+            raise ValidationError("Incorrect chain certificate(s) provided: '%s' is not signed by '%s'"
+                                  % (defaults.common_name(cert) or 'Unknown', defaults.common_name(issuer)),
+                                  field_names=['chain'])
+
+        except UnsupportedAlgorithm as err:
+            current_app.logger.warning("Skipping chain validation: %s", err)
+
+        # Next loop will validate that *this issuer* cert is signed by the next chain cert.
+        cert = issuer
+
+
+def verify_private_key(key, cert):
+    """
+    Checks that the supplied private key matches the certificate.
+
+    :param cert: Parsed certificate
+    :param key: Parsed private key
+    :raises ValidationError: Mismatched private key
+    """
+    if key.public_key().public_numbers() != cert.public_key().public_numbers():
+        raise ValidationError("Private key does not match certificate.")
