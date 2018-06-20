@@ -44,7 +44,7 @@ pycparser==2.18           # via cffi
 pyflakes==2.0.0
 pytest-flask==0.10.0
 pytest-mock==1.10.0
-pytest==3.6.1
+pytest==3.6.2
 python-dateutil==2.6.1    # via botocore, faker, freezegun, moto
 pytz==2018.4              # via moto
 pyyaml==3.12              # via pyaml
