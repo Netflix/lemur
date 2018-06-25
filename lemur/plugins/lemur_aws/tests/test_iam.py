@@ -1,7 +1,7 @@
 import pytest
 from moto import mock_iam, mock_sts
 
-from lemur.tests.vectors import EXTERNAL_VALID_STR, PRIVATE_KEY_STR
+from lemur.tests.vectors import EXTERNAL_VALID_STR, SAN_CERT_KEY
 
 
 def test_get_name_from_arn():
@@ -15,6 +15,6 @@ def test_get_name_from_arn():
 @mock_iam()
 def test_get_all_server_certs(app):
     from lemur.plugins.lemur_aws.iam import upload_cert, get_all_certificates
-    upload_cert('123456789012', 'testCert', EXTERNAL_VALID_STR, PRIVATE_KEY_STR)
+    upload_cert('123456789012', 'testCert', EXTERNAL_VALID_STR, SAN_CERT_KEY)
     certs = get_all_certificates('123456789012')
     assert len(certs) == 1

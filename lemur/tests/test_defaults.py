@@ -1,45 +1,41 @@
+from .vectors import SAN_CERT, WILDCARD_CERT, INTERMEDIATE_CERT
 
 
 def test_cert_get_cn(client):
-    from .vectors import INTERNAL_VALID_LONG_CERT
     from lemur.common.defaults import common_name
 
-    assert common_name(INTERNAL_VALID_LONG_CERT) == 'long.lived.com'
+    assert common_name(SAN_CERT) == 'san.example.org'
 
 
 def test_cert_sub_alt_domains(client):
-    from .vectors import INTERNAL_VALID_SAN_CERT, INTERNAL_VALID_LONG_CERT
     from lemur.common.defaults import domains
 
-    assert domains(INTERNAL_VALID_LONG_CERT) == []
-    assert domains(INTERNAL_VALID_SAN_CERT) == ['example2.long.com', 'example3.long.com']
+    assert domains(INTERMEDIATE_CERT) == []
+    assert domains(SAN_CERT) == ['san.example.org', 'san2.example.org', 'daniel-san.example.org']
 
 
 def test_cert_is_san(client):
-    from .vectors import INTERNAL_VALID_SAN_CERT, INTERNAL_VALID_LONG_CERT
     from lemur.common.defaults import san
 
-    assert not san(INTERNAL_VALID_LONG_CERT)
-    assert san(INTERNAL_VALID_SAN_CERT)
+    assert san(SAN_CERT)
+    # Wildcard cert has just one SAN record that matches the common name
+    assert not san(WILDCARD_CERT)
 
 
 def test_cert_is_wildcard(client):
-    from .vectors import INTERNAL_VALID_WILDCARD_CERT, INTERNAL_VALID_LONG_CERT
     from lemur.common.defaults import is_wildcard
-    assert is_wildcard(INTERNAL_VALID_WILDCARD_CERT)
-    assert not is_wildcard(INTERNAL_VALID_LONG_CERT)
+    assert is_wildcard(WILDCARD_CERT)
+    assert not is_wildcard(INTERMEDIATE_CERT)
 
 
 def test_cert_bitstrength(client):
-    from .vectors import INTERNAL_VALID_LONG_CERT
     from lemur.common.defaults import bitstrength
-    assert bitstrength(INTERNAL_VALID_LONG_CERT) == 2048
+    assert bitstrength(INTERMEDIATE_CERT) == 2048
 
 
 def test_cert_issuer(client):
-    from .vectors import INTERNAL_VALID_LONG_CERT
     from lemur.common.defaults import issuer
-    assert issuer(INTERNAL_VALID_LONG_CERT) == 'Example'
+    assert issuer(INTERMEDIATE_CERT) == 'LemurTrustEnterprisesLtd'
 
 
 def test_text_to_slug(client):

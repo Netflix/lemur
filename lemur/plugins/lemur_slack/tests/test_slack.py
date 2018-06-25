@@ -16,7 +16,7 @@ def test_formatting(certificate):
             },
             {
                 'short': True,
-                'value': u'Wednesday, January 1, 2020',
+                'value': u'Tuesday, December 31, 2047',
                 'title': 'Expires'
             }, {
                 'short': True,

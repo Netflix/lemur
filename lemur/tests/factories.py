@@ -19,7 +19,8 @@ from lemur.endpoints.models import Policy, Endpoint
 from lemur.policies.models import RotationPolicy
 from lemur.api_keys.models import ApiKey
 
-from .vectors import INTERNAL_VALID_SAN_STR, PRIVATE_KEY_STR, CSR_STR
+from .vectors import SAN_CERT_STR, SAN_CERT_KEY, CSR_STR, INTERMEDIATE_CERT_STR, ROOTCA_CERT_STR, INTERMEDIATE_KEY, \
+    WILDCARD_CERT_KEY
 
 
 class BaseFactory(SQLAlchemyModelFactory):
@@ -34,9 +35,9 @@ class BaseFactory(SQLAlchemyModelFactory):
 class CertificateFactory(BaseFactory):
     """Certificate factory."""
     name = Sequence(lambda n: 'certificate{0}'.format(n))
-    chain = INTERNAL_VALID_SAN_STR
-    body = INTERNAL_VALID_SAN_STR
-    private_key = PRIVATE_KEY_STR
+    chain = INTERMEDIATE_CERT_STR
+    body = SAN_CERT_STR
+    private_key = SAN_CERT_KEY
     owner = 'joe@example.com'
     status = FuzzyChoice(['valid', 'revoked', 'unknown'])
     deleted = False
@@ -119,13 +120,19 @@ class CertificateFactory(BaseFactory):
                 self.roles.append(domain)
 
 
+class CACertificateFactory(CertificateFactory):
+    chain = ROOTCA_CERT_STR
+    body = INTERMEDIATE_CERT_STR
+    private_key = INTERMEDIATE_KEY
+
+
 class AuthorityFactory(BaseFactory):
     """Authority factory."""
     name = Sequence(lambda n: 'authority{0}'.format(n))
     owner = 'joe@example.com'
     plugin = {'slug': 'test-issuer'}
     description = FuzzyText(length=128)
-    authority_certificate = SubFactory(CertificateFactory)
+    authority_certificate = SubFactory(CACertificateFactory)
 
     class Meta:
         """Factory configuration."""
@@ -299,8 +306,8 @@ class PendingCertificateFactory(BaseFactory):
     name = Sequence(lambda n: 'pending_certificate{0}'.format(n))
     external_id = 12345
     csr = CSR_STR
-    chain = INTERNAL_VALID_SAN_STR
-    private_key = PRIVATE_KEY_STR
+    chain = INTERMEDIATE_CERT_STR
+    private_key = WILDCARD_CERT_KEY
     owner = 'joe@example.com'
     status = FuzzyChoice(['valid', 'revoked', 'unknown'])
     deleted = False
