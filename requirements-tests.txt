@@ -47,7 +47,7 @@ pytest-mock==1.10.0
 pytest==3.6.1
 python-dateutil==2.6.1    # via botocore, faker, freezegun, moto
 pytz==2018.4              # via moto
-pyyaml==3.12              # via pyaml
+pyyaml==4.1              # via pyaml
 requests-mock==1.5.0
 requests==2.19.1          # via aws-xray-sdk, docker, moto, requests-mock, responses
 responses==0.9.0          # via moto
