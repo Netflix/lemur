@@ -69,7 +69,7 @@ pyrfc3339==1.1
 python-dateutil==2.7.3
 python-editor==1.0.3
 pytz==2018.4
-pyyaml==3.12
+pyyaml==4.1
 raven[flask]==6.9.0
 requests-toolbelt==0.8.0
 requests[security]==2.11.1
