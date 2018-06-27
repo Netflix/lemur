@@ -19,7 +19,7 @@ pkginfo==1.4.2            # via twine
 pre-commit==1.10.2
 pycodestyle==2.3.1        # via flake8
 pyflakes==1.6.0           # via flake8
-pyyaml==3.12              # via aspy.yaml, pre-commit
+pyyaml==4.1              # via aspy.yaml, pre-commit
 requests-toolbelt==0.8.0  # via twine
 requests==2.19.1          # via requests-toolbelt, twine
 six==1.11.0               # via cfgv, pre-commit
