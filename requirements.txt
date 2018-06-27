@@ -64,7 +64,7 @@ python-dateutil==2.7.3    # via alembic, arrow, botocore
 python-editor==1.0.3      # via alembic
 python-ldap==3.1.0
 pytz==2018.4              # via acme, flask-restful, pyrfc3339
-pyyaml==3.12              # via cloudflare
+pyyaml==4.1              # via cloudflare
 raven[flask]==6.9.0
 requests-toolbelt==0.8.0  # via acme
 requests[security]==2.11.1
