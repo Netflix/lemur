@@ -33,7 +33,7 @@ before_script:
   - pip install --upgrade setuptools
 
 install:
-  - pip install coveralls
+  - pip install codecov
   - pip install bandit
 
 script:
