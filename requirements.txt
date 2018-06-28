@@ -53,7 +53,7 @@ paramiko==2.4.1
 pbr==4.0.4                # via mock
 pem==17.1.0
 psycopg2==2.7.5
-pyasn1-modules==0.2.1     # via python-ldap
+pyasn1-modules==0.2.2     # via python-ldap
 pyasn1==0.4.3             # via ndg-httpsclient, paramiko, pyasn1-modules, python-ldap, requests
 pycparser==2.18           # via cffi
 pyjwt==1.6.4
