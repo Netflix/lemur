@@ -35,11 +35,15 @@ def find_zone_id(domain, client=None):
 def change_txt_record(action, zone_id, domain, value, client=None):
     current_txt_records = []
     try:
-        current_txt_records = client.list_resource_record_sets(
+        current_records = client.list_resource_record_sets(
             HostedZoneId=zone_id,
             StartRecordName=domain,
             StartRecordType='TXT',
-            MaxItems="1")["ResourceRecordSets"][0]["ResourceRecords"]
+            MaxItems="1")["ResourceRecordSets"]
+
+        for record in current_records:
+            if record.get('Type') == 'TXT':
+                current_txt_records.extend(record.get("ResourceRecords", []))
     except Exception as e:
         # Current Resource Record does not exist
         if "NoSuchHostedZone" not in str(type(e)):

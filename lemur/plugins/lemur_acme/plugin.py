@@ -116,8 +116,8 @@ def request_certificate(acme_client, authorizations, csr, order):
 
     try:
         orderr = acme_client.finalize_order(order, deadline)
-    except:
-        current_app.logger.error("Unable to finalize ACME order: {}".format(order), exc_info=True)
+    except AcmeError:
+        current_app.logger.error("Unable to resolve Acme order: {}".format(order), exc_info=True)
         raise
 
     pem_certificate = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM,
