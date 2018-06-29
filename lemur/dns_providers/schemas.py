@@ -1,7 +1,7 @@
+from marshmallow import fields
+
 from lemur.common.fields import ArrowDateTime
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
-
-from marshmallow import fields
 
 
 class DnsProvidersNestedOutputSchema(LemurOutputSchema):
