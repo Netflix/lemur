@@ -7,16 +7,16 @@
 acme==0.25.1
 alabaster==0.7.11         # via sphinx
 alembic-autogenerate-enums==0.0.2
-alembic==0.9.9
-aniso8601==3.0.0
+alembic==0.9.10
+aniso8601==3.0.2
 arrow==0.12.1
 asn1crypto==0.24.0
 asyncpool==1.0
 babel==2.6.0              # via sphinx
 bcrypt==3.1.4
 blinker==1.4
-boto3==1.7.39
-botocore==1.10.37
+boto3==1.7.48
+botocore==1.10.48
 certifi==2018.4.16
 cffi==1.11.5
 click==6.7
@@ -55,9 +55,9 @@ ndg-httpsclient==0.5.0
 packaging==17.1           # via sphinx
 paramiko==2.4.1
 pbr==4.0.4
-pem==17.1.0
-psycopg2==2.7.4
-pyasn1-modules==0.2.1
+pem==18.1.0
+psycopg2==2.7.5
+pyasn1-modules==0.2.2
 pyasn1==0.4.3
 pycparser==2.18
 pygments==2.2.0           # via sphinx
@@ -68,7 +68,7 @@ pyparsing==2.2.0          # via packaging
 pyrfc3339==1.1
 python-dateutil==2.7.3
 python-editor==1.0.3
-pytz==2018.4
+pytz==2018.5
 pyyaml==3.12
 raven[flask]==6.9.0
 requests-toolbelt==0.8.0
@@ -82,7 +82,7 @@ sphinx==1.7.5
 sphinxcontrib-httpdomain==1.6.1
 sphinxcontrib-websupport==1.1.0  # via sphinx
 sqlalchemy-utils==0.33.3
-sqlalchemy==1.2.8
+sqlalchemy==1.2.9
 tabulate==0.8.2
 werkzeug==0.14.1
 xmltodict==0.11.0
