@@ -19,8 +19,8 @@ import OpenSSL.crypto
 import josepy as jose
 from acme import challenges, messages
 from acme.client import BackwardsCompatibleClientV2, ClientNetwork
-from acme.messages import Error as AcmeError
 from acme.errors import PollError, WildcardUnsupportedError
+from acme.messages import Error as AcmeError
 from botocore.exceptions import ClientError
 from flask import current_app
 
@@ -121,8 +121,8 @@ def request_certificate(acme_client, authorizations, csr, order):
         raise
 
     pem_certificate = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM,
-                                           OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM,
-                                                                           orderr.fullchain_pem)).decode()
+                                                      OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM,
+                                                                                      orderr.fullchain_pem)).decode()
     pem_certificate_chain = orderr.fullchain_pem[len(pem_certificate):].lstrip()
 
     current_app.logger.debug("{0} {1}".format(type(pem_certificate), type(pem_certificate_chain)))

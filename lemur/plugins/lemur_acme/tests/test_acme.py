@@ -281,7 +281,8 @@ class TestAcme(unittest.TestCase):
     @patch('lemur.plugins.lemur_acme.plugin.finalize_authorizations')
     @patch('lemur.plugins.lemur_acme.plugin.request_certificate')
     @patch('lemur.plugins.lemur_acme.plugin.authorization_service')
-    def test_create_certificate(self, mock_authorization_service, mock_request_certificate, mock_finalize_authorizations, mock_get_authorizations,
+    def test_create_certificate(self, mock_authorization_service, mock_request_certificate,
+                                mock_finalize_authorizations, mock_get_authorizations,
                                 mock_current_app, mock_dns_provider_service, mock_acme):
         provider = plugin.ACMEIssuerPlugin()
         mock_authority = Mock()
