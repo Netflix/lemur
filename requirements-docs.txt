@@ -68,7 +68,7 @@ pyparsing==2.2.0          # via packaging
 pyrfc3339==1.1
 python-dateutil==2.7.3
 python-editor==1.0.3
-pytz==2018.4
+pytz==2018.5
 pyyaml==3.12
 raven[flask]==6.9.0
 requests-toolbelt==0.8.0
