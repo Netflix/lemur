@@ -21,6 +21,7 @@ api = Api(mod)
 
 class DnsProvidersList(AuthenticatedResource):
     """ Defines the 'dns_providers' endpoint """
+
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(DnsProvidersList, self).__init__()
