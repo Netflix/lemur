@@ -21,6 +21,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import event, Integer, ForeignKey, String, PassiveDefault, func, Column, Text, Boolean
 
 from sqlalchemy_utils.types.arrow import ArrowType
+from werkzeug.utils import cached_property
 
 import lemur.common.utils
 
@@ -142,7 +143,8 @@ class Certificate(db.Model):
     sensitive_fields = ('private_key',)
 
     def __init__(self, **kwargs):
-        cert = lemur.common.utils.parse_certificate(kwargs['body'])
+        self.body = kwargs['body'].strip()
+        cert = self.parsed_cert
 
         self.issuer = defaults.issuer(cert)
         self.cn = defaults.common_name(cert)
@@ -159,7 +161,6 @@ class Certificate(db.Model):
                 defaults.certificate_name(self.cn, self.issuer, self.not_before, self.not_after, self.san), self.serial)
 
         self.owner = kwargs['owner']
-        self.body = kwargs['body'].strip()
 
         if kwargs.get('private_key'):
             self.private_key = kwargs['private_key'].strip()
@@ -184,40 +185,39 @@ class Certificate(db.Model):
         for domain in defaults.domains(cert):
             self.domains.append(Domain(name=domain))
 
+    @cached_property
+    def parsed_cert(self):
+        assert self.body, "Certificate body not set"
+        return lemur.common.utils.parse_certificate(self.body)
+
     @property
     def active(self):
         return self.notify
 
     @property
     def organization(self):
-        cert = lemur.common.utils.parse_certificate(self.body)
-        return defaults.organization(cert)
+        return defaults.organization(self.parsed_cert)
 
     @property
     def organizational_unit(self):
-        cert = lemur.common.utils.parse_certificate(self.body)
-        return defaults.organizational_unit(cert)
+        return defaults.organizational_unit(self.parsed_cert)
 
     @property
     def country(self):
-        cert = lemur.common.utils.parse_certificate(self.body)
-        return defaults.country(cert)
+        return defaults.country(self.parsed_cert)
 
     @property
     def state(self):
-        cert = lemur.common.utils.parse_certificate(self.body)
-        return defaults.state(cert)
+        return defaults.state(self.parsed_cert)
 
     @property
     def location(self):
-        cert = lemur.common.utils.parse_certificate(self.body)
-        return defaults.location(cert)
+        return defaults.location(self.parsed_cert)
 
     @property
     def key_type(self):
-        cert = lemur.common.utils.parse_certificate(self.body)
-        if isinstance(cert.public_key(), rsa.RSAPublicKey):
-            return 'RSA{key_size}'.format(key_size=cert.public_key().key_size)
+        if isinstance(self.parsed_cert.public_key(), rsa.RSAPublicKey):
+            return 'RSA{key_size}'.format(key_size=self.parsed_cert.public_key().key_size)
 
     @property
     def validity_remaining(self):
@@ -229,13 +229,11 @@ class Certificate(db.Model):
 
     @property
     def subject(self):
-        cert = lemur.common.utils.parse_certificate(self.body)
-        return cert.subject
+        return self.parsed_cert.subject
 
     @property
     def public_key(self):
-        cert = lemur.common.utils.parse_certificate(self.body)
-        return cert.public_key()
+        return self.parsed_cert.public_key()
 
     @hybrid_property
     def expired(self):
@@ -300,8 +298,7 @@ class Certificate(db.Model):
         }
 
         try:
-            cert = lemur.common.utils.parse_certificate(self.body)
-            for extension in cert.extensions:
+            for extension in self.parsed_cert.extensions:
                 value = extension.value
                 if isinstance(value, x509.BasicConstraints):
                     return_extensions['basic_constraints'] = value
