@@ -253,6 +253,9 @@ class CertificateUploadInputSchema(CertificateCreationSchema):
     replaces = fields.Nested(AssociatedCertificateSchema, missing=[], many=True)
     roles = fields.Nested(AssociatedRoleSchema, missing=[], many=True)
 
+    # Upload behavior
+    allow_duplicate = fields.Boolean(default=False)     # TODO: Need a user interface flag for this
+
     @validates_schema
     def keys(self, data):
         if data.get('destinations'):
@@ -268,6 +271,9 @@ class CertificateUploadInputSchema(CertificateCreationSchema):
                 cert = utils.parse_certificate(data['body'])
             except ValueError:
                 raise ValidationError("Public certificate presented is not valid.", field_names=['body'])
+
+            if not data.get('allow_duplicate'):
+                validators.validate_duplicate_cert(cert)
 
         if data.get('private_key'):
             try:

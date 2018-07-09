@@ -29,7 +29,8 @@ def test_create_certificate(user, source):
         'body': WILDCARD_CERT_STR,
         'private_key': WILDCARD_CERT_KEY,
         'owner': 'bob@example.com',
-        'creator': user['user']
+        'creator': user['user'],
+        'allow_duplicate': True,
     }
 
     cert = certificate_create(data, source)

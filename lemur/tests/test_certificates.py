@@ -374,6 +374,7 @@ def test_certificate_upload_schema_ok(client):
         'privateKey': SAN_CERT_KEY,
         'chain': INTERMEDIATE_CERT_STR,
         'external_id': '1234',
+        'allow_duplicate': True,
     }
     data, errors = CertificateUploadInputSchema().load(data)
     assert not errors
@@ -384,9 +385,25 @@ def test_certificate_upload_schema_minimal(client):
     data = {
         'owner': 'pwner@example.com',
         'body': SAN_CERT_STR,
+        'allow_duplicate': True,
     }
     data, errors = CertificateUploadInputSchema().load(data)
     assert not errors
+
+
+def test_certificate_upload_schema_duplicate(client, certificate):
+    from lemur.certificates.schemas import CertificateUploadInputSchema
+
+    # 'certificate' should be duplicate of this
+    assert certificate.body.strip() == SAN_CERT_STR.strip()
+    data = {
+        'owner': 'pwner@example.com',
+        'body': SAN_CERT_STR,
+        'allow_duplicate': False,
+    }
+    data, errors = CertificateUploadInputSchema().load(data)
+    assert errors
+    assert errors['_schema'][0].endswith(' already exists')
 
 
 def test_certificate_upload_schema_long_chain(client):
@@ -394,7 +411,8 @@ def test_certificate_upload_schema_long_chain(client):
     data = {
         'owner': 'pwner@example.com',
         'body': SAN_CERT_STR,
-        'chain': INTERMEDIATE_CERT_STR + '\n' + ROOTCA_CERT_STR
+        'chain': INTERMEDIATE_CERT_STR + '\n' + ROOTCA_CERT_STR,
+        'allow_duplicate': True,
     }
     data, errors = CertificateUploadInputSchema().load(data)
     assert not errors
@@ -416,6 +434,7 @@ def test_certificate_upload_schema_invalid_pkey(client):
         'owner': 'pwner@example.com',
         'body': SAN_CERT_STR,
         'privateKey': 'Look at me Im a private key!!111',
+        'allow_duplicate': True,
     }
     data, errors = CertificateUploadInputSchema().load(data)
     assert errors == {'private_key': ['Private key presented is not valid.']}
@@ -427,6 +446,7 @@ def test_certificate_upload_schema_invalid_chain(client):
         'body': SAN_CERT_STR,
         'chain': 'CHAINSAW',
         'owner': 'pwner@example.com',
+        'allow_duplicate': True,
     }
     data, errors = CertificateUploadInputSchema().load(data)
     assert errors == {'chain': ['Public certificate presented is not valid.']}
@@ -439,6 +459,7 @@ def test_certificate_upload_schema_wrong_pkey(client):
         'privateKey': ROOTCA_KEY,
         'chain': INTERMEDIATE_CERT_STR,
         'owner': 'pwner@example.com',
+        'allow_duplicate': True,
     }
     data, errors = CertificateUploadInputSchema().load(data)
     assert errors == {'_schema': ['Private key does not match certificate.']}

@@ -2,10 +2,12 @@ import re
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
 from cryptography.x509 import NameOID
 from flask import current_app
 from marshmallow.exceptions import ValidationError
 
+from lemur import database
 from lemur.auth.permissions import SensitiveDomainPermission
 from lemur.common.utils import parse_certificate, is_weekend
 
@@ -138,3 +140,22 @@ def verify_private_key_match(key, cert, error_class=ValidationError):
     """
     if key.public_key().public_numbers() != cert.public_key().public_numbers():
         raise error_class("Private key does not match certificate.")
+
+
+def validate_duplicate_cert(cert):
+    """Throw ValidationError when this certificate already exists in Lemur database."""
+
+    # Avoid circular import
+    from lemur.certificates.models import Certificate
+
+    # Find potential duplicates based on serial and compare their fingerprint (serials aren't globally unique).
+    potential_dupes = (database.session_query(Certificate)
+                       .filter(Certificate.serial == str(cert.serial_number)))
+    if not potential_dupes:
+        return
+
+    fingerprint = cert.fingerprint(hashes.SHA256())
+    for dupe in potential_dupes:
+        if dupe.parsed_cert.fingerprint(hashes.SHA256()) == fingerprint:
+            # Database changes will be rolled back.
+            raise ValidationError("Certificate %s already exists" % dupe.name)
