@@ -9,7 +9,7 @@ import os
 import tempfile
 from contextlib import contextmanager
 
-import sqlalchemy.types as types
+from sqlalchemy import types
 from cryptography.fernet import Fernet, MultiFernet
 from flask import current_app
 
