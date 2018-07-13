@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-index --output-file requirements.txt requirements.in
 #
-acme==0.25.1
+acme==0.26.0
 alembic-autogenerate-enums==0.0.2
 alembic==0.9.10           # via flask-migrate
 aniso8601==3.0.2          # via flask-restful
@@ -13,8 +13,8 @@ asn1crypto==0.24.0        # via cryptography
 asyncpool==1.0
 bcrypt==3.1.4             # via flask-bcrypt, paramiko
 blinker==1.4              # via flask-mail, flask-principal, raven
-boto3==1.7.48
-botocore==1.10.48         # via boto3, s3transfer
+boto3==1.7.56
+botocore==1.10.56         # via boto3, s3transfer
 certifi==2018.4.16
 cffi==1.11.5              # via bcrypt, cryptography, pynacl
 click==6.7                # via flask
@@ -34,7 +34,7 @@ flask-script==2.0.6
 flask-sqlalchemy==2.3.2
 flask==0.12
 future==0.16.0
-gunicorn==19.8.1
+gunicorn==19.9.0
 idna==2.7                 # via cryptography
 inflection==0.3.1
 itsdangerous==0.24        # via flask
@@ -50,7 +50,7 @@ marshmallow==2.15.3
 mock==2.0.0               # via acme
 ndg-httpsclient==0.5.0
 paramiko==2.4.1
-pbr==4.0.4                # via mock
+pbr==4.1.0                # via mock
 pem==18.1.0
 psycopg2==2.7.5
 pyasn1-modules==0.2.2     # via python-ldap
@@ -64,7 +64,7 @@ python-dateutil==2.7.3    # via alembic, arrow, botocore
 python-editor==1.0.3      # via alembic
 python-ldap==3.1.0
 pytz==2018.5              # via acme, flask-restful, pyrfc3339
-pyyaml==3.12              # via cloudflare
+pyyaml==3.13              # via cloudflare
 raven[flask]==6.9.0
 requests-toolbelt==0.8.0  # via acme
 requests[security]==2.11.1
