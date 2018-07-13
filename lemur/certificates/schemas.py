@@ -48,9 +48,11 @@ class CertificateCreationSchema(CertificateSchema):
                 "DEFAULT_{0}".format(data['owner'].split('@')[0].upper()),
                 [data['owner']],
             )
+
             data['notifications'] += notification_service.create_default_expiration_notifications(
                 'DEFAULT_SECURITY',
-                current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL')
+                current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL'),
+                current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL_INTERVALS', None)
             )
         return data
 
