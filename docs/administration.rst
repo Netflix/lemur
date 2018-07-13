@@ -274,7 +274,6 @@ Lemur supports sending certification expiration notifications through SES and SM
 
             LEMUR_SECURITY_TEAM_EMAIL = ['security@example.com']
 
-
 .. data:: LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS
     :noindex:
 
@@ -283,6 +282,15 @@ Lemur supports sending certification expiration notifications through SES and SM
         ::
 
             LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS = [30, 15, 2]
+
+.. data:: LEMUR_SECURITY_TEAM_EMAIL_INTERVALS
+    :noindex:
+
+       Alternate notification interval set for security team notifications. Use this if you would like the default security team notification interval for new certificates to differ from the global default as specified in LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS. If unspecified, the value of LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS is used. Security team default notifications for new certificates can effectively be disabled by setting this value to an empty array.
+
+       ::
+
+          LEMUR_SECURITY_TEAM_EMAIL_INTERVALS = [15, 2]
 
 
 Authentication Options
