@@ -26,19 +26,19 @@ If installing Lemur on a bare Ubuntu OS you will need to grab the following pack
 
 .. code-block:: bash
 
-    $ sudo apt-get update
-    $ sudo apt-get install nodejs nodejs-legacy python-pip python-dev python3-dev libpq-dev build-essential libssl-dev libffi-dev libsasl2-dev libldap2-dev nginx git supervisor npm postgresql
+    sudo apt-get update
+    sudo apt-get install nodejs nodejs-legacy python-pip python-dev python3-dev libpq-dev build-essential libssl-dev libffi-dev libsasl2-dev libldap2-dev nginx git supervisor npm postgresql
 
 .. note:: PostgreSQL is only required if your database is going to be on the same host as the webserver.  npm is needed if you're installing Lemur from the source (e.g., from git).
 
 .. note:: Installing node from a package manager may creat the nodejs bin at  /usr/bin/nodejs instead of /usr/bin/node If that is the case run the following
-    $ sudo ln -s /user/bin/nodejs /usr/bin/node
+    sudo ln -s /user/bin/nodejs /usr/bin/node
 
 Now, install Python ``virtualenv`` package:
 
 .. code-block:: bash
 
-    $ sudo pip install -U virtualenv
+    sudo pip install -U virtualenv
 
 
 Setting up an Environment
@@ -48,28 +48,28 @@ In this guide, Lemur will be installed in ``/www``, so you need to create that s
 
 .. code-block:: bash
 
-    $ sudo mkdir /www
-    $ cd /www
+    sudo mkdir /www
+    cd /www
 
 Clone Lemur inside the just created directory and give yourself write permission (we assume ``lemur`` is the user):
 
 .. code-block:: bash
 
-    $ sudo useradd lemur
-    $ sudo passwd lemur
-    $ sudo mkdir /home/lemur
-    $ sudo chown lemur:lemur /home/lemur
-    $ sudo git clone https://github.com/Netflix/lemur
-    $ sudo chown -R lemur lemur/
+    sudo useradd lemur
+    sudo passwd lemur
+    sudo mkdir /home/lemur
+    sudo chown lemur:lemur /home/lemur
+    sudo git clone https://github.com/Netflix/lemur
+    sudo chown -R lemur lemur/
 
 Create the virtual environment, activate it and enter the Lemur's directory:
 
 .. code-block:: bash
 
-    $ su lemur
-    $ virtualenv -p python3 lemur
-    $ source /www/lemur/bin/activate
-    $ cd lemur
+    su lemur
+    virtualenv -p python3 lemur
+    source /www/lemur/bin/activate
+    cd lemur
 
 .. note:: Activating the environment adjusts your PATH, so that things like pip now install into the virtualenv by default.
 
@@ -81,13 +81,13 @@ Once your system is prepared, ensure that you are in the virtualenv:
 
 .. code-block:: bash
 
-  $ which python
+  which python
 
 And then run:
 
 .. code-block:: bash
 
-  $ make release
+  make release
 
 .. note:: This command will install npm dependencies as well as compile static assets.
 
@@ -101,7 +101,7 @@ You may also run with the urlContextPath variable set. If this is set it will ad
 
 .. code-block:: bash
 
-  $ make release urlContextPath={desired context path}
+  make release urlContextPath={desired context path}
 
 
 Creating a configuration
@@ -113,7 +113,7 @@ Simply run:
 
 .. code-block:: bash
 
-  $ lemur create_config
+  lemur create_config
 
 .. note:: This command will create a default configuration under ``~/.lemur/lemur.conf.py`` you can specify this location by passing the ``config_path`` parameter to the ``create_config`` command.
 
@@ -127,7 +127,7 @@ Once created, you will need to update the configuration file with information ab
 
 .. code-block:: bash
 
-    $ vi ~/.lemur/lemur.conf.py
+    vi ~/.lemur/lemur.conf.py
 
 .. note:: If you are unfamiliar with the SQLALCHEMY_DATABASE_URI string it can be broken up like so:
       ``postgresql://userame:password@<database-fqdn>:<database-port>/<database-name>``
@@ -153,8 +153,8 @@ First, set a password for the postgres user.  For this guide, we will use ``lemu
 
 .. code-block:: bash
 
-    $ sudo -u postgres -i
-    $ psql
+    sudo -u postgres -i
+    psql
     postgres=# CREATE USER lemur WITH PASSWORD 'lemur';
 
 Once successful, type CTRL-D to exit the Postgres shell.
@@ -163,7 +163,7 @@ Next, we will create our new database:
 
 .. code-block:: bash
 
-    $ sudo -u postgres createdb lemur
+    sudo -u postgres createdb lemur
 
 .. _InitializingLemur:
 
@@ -186,8 +186,8 @@ Additional notifications can be created through the UI or API.  See :ref:`Creati
 
 .. code-block:: bash
 
-    $ cd /www/lemur/lemur
-    $ lemur init
+    cd /www/lemur/lemur
+    lemur init
 
 
 .. note:: It is recommended that once the ``lemur`` user is created that you create individual users for every day access.  There is currently no way for a user to self enroll for Lemur access, they must have an administrator create an account for them or be enrolled automatically through SSO.  This can be done through the CLI or UI.  See :ref:`Creating Users <CreatingUsers>` and :ref:`Command Line Interface <CommandLineInterface>` for details.
@@ -228,7 +228,7 @@ After making these changes, restart Nginx service to apply them:
 
 .. code-block:: bash
 
-    $ sudo service nginx restart
+    sudo service nginx restart
 
 
 Starting the Web Service
@@ -284,7 +284,7 @@ Lemur uses periodic sync tasks to make sure it is up-to-date with its environmen
 
 .. code-block:: bash
 
-  $ crontab -e
+  crontab -e
   */15 * * * * lemur sync -s all
   0 22 * * * lemur check_revoked
   0 22 * * * lemur notify
