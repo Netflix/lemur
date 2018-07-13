@@ -16,10 +16,11 @@ from lemur.common.utils import truthiness
 from lemur.notifications.models import Notification
 
 
-def create_default_expiration_notifications(name, recipients):
+def create_default_expiration_notifications(name, recipients, intervals=None):
     """
-    Will create standard 30, 10 and 2 day notifications for a given owner. If standard notifications
-    already exist these will be returned instead of new notifications.
+    Will create standard 30, 10 and 2 day notifications for a given owner unless an alternate set of
+    intervals is supplied. If standard notifications already exist these will be returned instead of
+    new notifications.
 
     :param name:
     :param recipients:
@@ -48,7 +49,8 @@ def create_default_expiration_notifications(name, recipients):
         },
     ]
 
-    intervals = current_app.config.get("LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS", [30, 15, 2])
+    if intervals is None:
+        intervals = current_app.config.get("LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS", [30, 15, 2])
 
     notifications = []
     for i in intervals:
