@@ -31,10 +31,10 @@ paramiko  # required for the SFTP destination plugin
 pem
 psycopg2
 pyjwt
-pyOpenSSL==17.2.0 # PINNED for a specific reason. This needs to be merged in before upgrade: https://github.com/shazow/urllib3/pull/1246
+pyOpenSSL
 python_ldap
 raven[flask]
-requests==2.11.1 # PINNED for a specific reason. This needs to be merged in before upgrade: https://github.com/shazow/urllib3/pull/1246
+requests
 retrying
 six
 SQLAlchemy-Utils
