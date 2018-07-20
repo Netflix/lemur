@@ -15,7 +15,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 
 from lemur import database
-from lemur.extensions import metrics, signals
+from lemur.extensions import metrics, sentry, signals
 from lemur.plugins.base import plugins
 from lemur.common.utils import generate_private_key, truthiness
 
@@ -247,7 +247,12 @@ def create(**kwargs):
     """
     Creates a new certificate.
     """
-    cert_body, private_key, cert_chain, external_id, csr = mint(**kwargs)
+    try:
+        cert_body, private_key, cert_chain, external_id, csr = mint(**kwargs)
+    except Exception:
+        current_app.logger.error("Exception minting certificate", exc_info=True)
+        sentry.captureException()
+        raise
     kwargs['body'] = cert_body
     kwargs['private_key'] = private_key
     kwargs['chain'] = cert_chain
