@@ -13,8 +13,8 @@ asn1crypto==0.24.0        # via cryptography
 asyncpool==1.0
 bcrypt==3.1.4             # via flask-bcrypt, paramiko
 blinker==1.4              # via flask-mail, flask-principal, raven
-boto3==1.7.62
-botocore==1.10.62         # via boto3, s3transfer
+boto3==1.7.65
+botocore==1.10.65         # via boto3, s3transfer
 certifi==2018.4.16
 cffi==1.11.5              # via bcrypt, cryptography, pynacl
 chardet==3.0.4            # via requests
@@ -51,11 +51,11 @@ marshmallow==2.15.3
 mock==2.0.0               # via acme
 ndg-httpsclient==0.5.1
 paramiko==2.4.1
-pbr==4.1.1                # via mock
+pbr==4.2.0                # via mock
 pem==18.1.0
 psycopg2==2.7.5
 pyasn1-modules==0.2.2     # via python-ldap
-pyasn1==0.4.3             # via ndg-httpsclient, paramiko, pyasn1-modules, python-ldap
+pyasn1==0.4.4             # via ndg-httpsclient, paramiko, pyasn1-modules, python-ldap
 pycparser==2.18           # via cffi
 pyjwt==1.6.4
 pynacl==1.2.1             # via paramiko
