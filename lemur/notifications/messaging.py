@@ -24,6 +24,7 @@ from lemur.common.utils import windowed_query
 
 from lemur.certificates.schemas import certificate_notification_output_schema
 from lemur.certificates.models import Certificate
+from lemur.pending_certificates.schemas import pending_certificate_output_schema
 
 from lemur.plugins import plugins
 from lemur.plugins.utils import get_plugin_option
@@ -165,6 +166,44 @@ def send_rotation_notification(certificate, notification_plugin=None):
         status = SUCCESS_METRIC_STATUS
     except Exception as e:
         sentry.captureException()
+
+    metrics.send('notification', 'counter', 1, metric_tags={'status': status, 'event_type': 'rotation'})
+
+    if status == SUCCESS_METRIC_STATUS:
+        return True
+
+
+def send_pending_failure_notification(pending_cert, notify_owner=True, notify_security=True, notification_plugin=None):
+    """
+    Sends a report to certificate owners when their pending certificate failed to be created.
+
+    :param pending_cert:
+    :param notification_plugin:
+    :return:
+    """
+    status = FAILURE_METRIC_STATUS
+
+    if not notification_plugin:
+        notification_plugin = plugins.get(
+            current_app.config.get('LEMUR_DEFAULT_NOTIFICATION_PLUGIN', 'email-notification')
+        )
+
+    data = pending_certificate_output_schema.dump(pending_cert).data
+    data["security_email"] = current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL')
+
+    if notify_owner:
+        try:
+            notification_plugin.send('failed', data, [data['owner']], pending_cert)
+            status = SUCCESS_METRIC_STATUS
+        except Exception as e:
+            sentry.captureException()
+
+    if notify_security:
+        try:
+            notification_plugin.send('failed', data, data["security_email"], pending_cert)
+            status = SUCCESS_METRIC_STATUS
+        except Exception as e:
+            sentry.captureException()
 
     metrics.send('notification', 'counter', 1, metric_tags={'status': status, 'event_type': 'rotation'})
 
