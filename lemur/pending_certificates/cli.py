@@ -97,11 +97,6 @@ def fetch_all_acme():
             # add metrics to metrics extension
             new += 1
         else:
-            pending_certificate_service.increment_attempt(pending_cert)
-            pending_certificate_service.update(
-                cert.get("pending_cert").id,
-                status=str(cert.get("last_error"))[0:128]
-            )
             failed += 1
             error_log = copy.deepcopy(log_data)
             error_log["message"] = "Pending certificate creation failure"
@@ -114,6 +109,11 @@ def fetch_all_acme():
                 send_pending_failure_notification(pending_cert, notify_owner=pending_cert.notify)
                 pending_certificate_service.delete_by_id(pending_cert.id)
             current_app.logger.error(error_log)
+            pending_certificate_service.increment_attempt(pending_cert)
+            pending_certificate_service.update(
+                cert.get("pending_cert").id,
+                status=str(cert.get("last_error"))[0:128]
+            )
     log_data["message"] = "Complete"
     log_data["new"] = new
     log_data["failed"] = failed
