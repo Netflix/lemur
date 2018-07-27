@@ -103,16 +103,17 @@ def fetch_all_acme():
                 status=str(cert.get("last_error"))[0:128]
             )
             failed += 1
-            if pending_cert.number_attempts > 0:
-                error_log = copy.deepcopy(log_data)
+            error_log = copy.deepcopy(log_data)
+            error_log["message"] = "Pending certificate creation failure"
+            error_log["pending_cert_id"] = pending_cert.id
+            error_log["last_error"] = cert.get("last_error")
+            error_log["cn"] = pending_cert.cn
+
+            if pending_cert.number_attempts > 4:
                 error_log["message"] = "Deleting pending certificate"
-                error_log["pending_cert_id"] = pending_cert.id
-                error_log["last_error"] = cert.get("last_error")
-                error_log["cn"] = pending_cert.cn
-                current_app.logger.error(error_log)
-                if 1 == 0:
-                    send_pending_failure_notification(pending_cert, notify_owner=pending_cert.notify)
-                    pending_certificate_service.delete_by_id(pending_cert.id)
+                send_pending_failure_notification(pending_cert, notify_owner=pending_cert.notify)
+                pending_certificate_service.delete_by_id(pending_cert.id)
+            current_app.logger.error(error_log)
     log_data["message"] = "Complete"
     log_data["new"] = new
     log_data["failed"] = failed
