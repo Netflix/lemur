@@ -300,11 +300,12 @@ class ACMEIssuerPlugin(IssuerPlugin):
                     "order": order,
                     "dns_provider_options": dns_provider_options,
                 })
-            except (ClientError, ValueError, Exception):
+            except (ClientError, ValueError, Exception) as e:
                 current_app.logger.error("Unable to resolve pending cert: {}".format(pending_cert), exc_info=True)
                 certs.append({
                     "cert": False,
                     "pending_cert": pending_cert,
+                    "last_error": e,
                 })
 
         for entry in pending:
