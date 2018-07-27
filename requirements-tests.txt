@@ -8,9 +8,9 @@ asn1crypto==0.24.0        # via cryptography
 atomicwrites==1.1.5       # via pytest
 attrs==18.1.0             # via pytest
 aws-xray-sdk==0.95        # via moto
-boto3==1.7.62             # via moto
+boto3==1.7.65             # via moto
 boto==2.49.0              # via moto
-botocore==1.10.62         # via boto3, moto, s3transfer
+botocore==1.10.65         # via boto3, moto, s3transfer
 certifi==2018.4.16        # via requests
 cffi==1.11.5              # via cryptography
 chardet==3.0.4            # via requests
@@ -36,7 +36,7 @@ mock==2.0.0               # via moto
 more-itertools==4.2.0     # via pytest
 moto==1.3.3
 nose==1.3.7
-pbr==4.1.1                # via mock
+pbr==4.2.0                # via mock
 pluggy==0.6.0             # via pytest
 py==1.5.4                 # via pytest
 pyaml==17.12.1            # via moto

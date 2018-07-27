@@ -4,9 +4,15 @@
 .. moduleauthor:: James Chuong <jchuong@instartlogic.com>
 .. moduleauthor:: Curtis Castrapel <ccastrapel@netflix.com>
 """
+
+import copy
+import sys
+
+from flask import current_app
 from flask_script import Manager
 
 from lemur.authorities.service import get as get_authority
+from lemur.notifications.messaging import send_pending_failure_notification
 from lemur.pending_certificates import service as pending_certificate_service
 from lemur.plugins.base import plugins
 from lemur.users import service as user_service
@@ -56,6 +62,10 @@ def fetch_all_acme():
     for acme-issued certificates because it will configure all of the DNS challenges prior to resolving any
     certificates.
     """
+
+    log_data = {
+        "function": "{}.{}".format(__name__, sys._getframe().f_code.co_name)
+    }
     pending_certs = pending_certificate_service.get_pending_certs('all')
     user = user_service.get_by_username('lemur')
     new = 0
@@ -88,7 +98,27 @@ def fetch_all_acme():
             new += 1
         else:
             pending_certificate_service.increment_attempt(pending_cert)
+            pending_certificate_service.update(
+                cert.get("pending_cert").id,
+                status=str(cert.get("last_error"))[0:128]
+            )
             failed += 1
+            error_log = copy.deepcopy(log_data)
+            error_log["message"] = "Pending certificate creation failure"
+            error_log["pending_cert_id"] = pending_cert.id
+            error_log["last_error"] = cert.get("last_error")
+            error_log["cn"] = pending_cert.cn
+
+            if pending_cert.number_attempts > 4:
+                error_log["message"] = "Deleting pending certificate"
+                send_pending_failure_notification(pending_cert, notify_owner=pending_cert.notify)
+                pending_certificate_service.delete_by_id(pending_cert.id)
+            current_app.logger.error(error_log)
+    log_data["message"] = "Complete"
+    log_data["new"] = new
+    log_data["failed"] = failed
+    log_data["wrong_issuer"] = wrong_issuer
+    current_app.logger.debug(log_data)
     print(
         "[+] Certificates: New: {new} Failed: {failed} Not using ACME: {wrong_issuer}".format(
             new=new,
