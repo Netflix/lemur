@@ -140,14 +140,27 @@ def setup_acme_client(authority):
     tel = options.get('telephone', current_app.config.get('ACME_TEL'))
     directory_url = options.get('acme_url', current_app.config.get('ACME_DIRECTORY_URL'))
 
-    key = jose.JWKRSA(key=generate_private_key('RSA2048'))
+    existing_key = options.get('acme_private_key', current_app.config.get('ACME_PRIVATE_KEY'))
+    existing_regr = options.get('acme_regr', current_app.config.get('ACME_REGR'))
+    print(existing_key)
+    if existing_key and existing_regr:
+        # Reuse the same account for each certificate issuance
+        key = jose.JWK.json_loads(existing_key)
+        regr = messages.RegistrationResource.json_loads(existing_regr)
+        current_app.logger.debug("Connecting with directory at {0}".format(directory_url))
+        net = ClientNetwork(key, account=regr)
+        client = BackwardsCompatibleClientV2(net, key, directory_url)
+        return client, {}
+    else:
+        # Create an account for each certificate issuance
+        key = jose.JWKRSA(key=generate_private_key('RSA2048'))
 
-    current_app.logger.debug("Connecting with directory at {0}".format(directory_url))
+        current_app.logger.debug("Connecting with directory at {0}".format(directory_url))
 
-    net = ClientNetwork(key, account=None)
-    client = BackwardsCompatibleClientV2(net, key, directory_url)
-    registration = client.new_account_and_tos(messages.NewRegistration.from_data(email=email))
-    current_app.logger.debug("Connected: {0}".format(registration.uri))
+        net = ClientNetwork(key, account=None)
+        client = BackwardsCompatibleClientV2(net, key, directory_url)
+        registration = client.new_account_and_tos(messages.NewRegistration.from_data(email=email))
+        current_app.logger.debug("Connected: {0}".format(registration.uri))
 
     return client, registration
 
@@ -194,6 +207,35 @@ def finalize_authorizations(acme_client, account_number, dns_provider, authoriza
             )
 
     return authorizations
+
+
+def cleanup_dns_challenges(acme_client, account_number, dns_provider, authorizations, dns_provider_options):
+    """
+    Best effort attempt to delete DNS challenges that may not have been deleted previously. This is usually called
+    on an exception
+
+    :param acme_client:
+    :param account_number:
+    :param dns_provider:
+    :param authorizations:
+    :param dns_provider_options:
+    :return:
+    """
+    for authz_record in authorizations:
+        dns_challenges = authz_record.dns_challenge
+        host_to_validate = maybe_remove_wildcard(authz_record.host)
+        host_to_validate = maybe_add_extension(host_to_validate, dns_provider_options)
+        for dns_challenge in dns_challenges:
+            try:
+                dns_provider.delete_txt_record(
+                    authz_record.change_id,
+                    account_number,
+                    dns_challenge.validation_domain_name(host_to_validate),
+                    dns_challenge.validation(acme_client.client.net.key)
+                )
+            except Exception:
+                # If this fails, it's most likely because the record doesn't exist or we're not authorized to modify it.
+                pass
 
 
 class ACMEIssuerPlugin(IssuerPlugin):
@@ -333,12 +375,21 @@ class ACMEIssuerPlugin(IssuerPlugin):
                     "cert": cert,
                     "pending_cert": entry["pending_cert"],
                 })
-            except (PollError, AcmeError, Exception):
+            except (PollError, AcmeError, Exception) as e:
                 current_app.logger.error("Unable to resolve pending cert: {}".format(pending_cert), exc_info=True)
                 certs.append({
                     "cert": False,
                     "pending_cert": entry["pending_cert"],
+                    "last_error": e,
                 })
+                # Ensure DNS records get deleted
+                cleanup_dns_challenges(
+                    entry["acme_client"],
+                    entry["account_number"],
+                    entry["dns_provider_type"],
+                    entry["authorizations"],
+                    entry["dns_provider_options"],
+                )
         return certs
 
     def create_certificate(self, csr, issuer_options):

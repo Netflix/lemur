@@ -15,8 +15,8 @@ asyncpool==1.0
 babel==2.6.0              # via sphinx
 bcrypt==3.1.4
 blinker==1.4
-boto3==1.7.62
-botocore==1.10.62
+boto3==1.7.65
+botocore==1.10.65
 certifi==2018.4.16
 cffi==1.11.5
 chardet==3.0.4
@@ -55,11 +55,11 @@ mock==2.0.0
 ndg-httpsclient==0.5.1
 packaging==17.1           # via sphinx
 paramiko==2.4.1
-pbr==4.1.1
+pbr==4.2.0
 pem==18.1.0
 psycopg2==2.7.5
 pyasn1-modules==0.2.2
-pyasn1==0.4.3
+pyasn1==0.4.4
 pycparser==2.18
 pygments==2.2.0           # via sphinx
 pyjwt==1.6.4
