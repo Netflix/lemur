@@ -134,6 +134,7 @@ class TestAcme(unittest.TestCase):
         mock_client.register = mock_registration
         mock_client.agree_to_tos = Mock(return_value=True)
         mock_acme.return_value = mock_client
+        mock_current_app.config = {}
         result_client, result_registration = plugin.setup_acme_client(mock_authority)
         assert result_client
         assert result_registration
