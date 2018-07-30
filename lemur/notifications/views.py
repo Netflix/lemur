@@ -7,7 +7,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from flask import Blueprint
-from flask_restful import Api, reqparse
+from flask_restful import Api, reqparse, inputs
 from lemur.notifications import service
 from lemur.notifications.schemas import notification_input_schema, notification_output_schema, notifications_output_schema
 
@@ -103,7 +103,7 @@ class NotificationsList(AuthenticatedResource):
            :statuscode 200: no error
         """
         parser = paginated_parser.copy()
-        parser.add_argument('active', type=bool, location='args')
+        parser.add_argument('active', type=inputs.boolean, location='args')
         args = parser.parse_args()
         return service.render(args)
 
