@@ -9,7 +9,7 @@ import base64
 from builtins import str
 
 from flask import Blueprint, make_response, jsonify, g
-from flask_restful import reqparse, Api
+from flask_restful import reqparse, Api, inputs
 
 from lemur.common.schema import validate_schema
 from lemur.common.utils import paginated_parser
@@ -132,9 +132,9 @@ class CertificatesList(AuthenticatedResource):
         """
         parser = paginated_parser.copy()
         parser.add_argument('timeRange', type=int, dest='time_range', location='args')
-        parser.add_argument('owner', type=bool, location='args')
+        parser.add_argument('owner', type=inputs.boolean, location='args')
         parser.add_argument('id', type=str, location='args')
-        parser.add_argument('active', type=bool, location='args')
+        parser.add_argument('active', type=inputs.boolean, location='args')
         parser.add_argument('destinationId', type=int, dest="destination_id", location='args')
         parser.add_argument('creator', type=str, location='args')
         parser.add_argument('show', type=str, location='args')
@@ -756,9 +756,9 @@ class NotificationCertificatesList(AuthenticatedResource):
         """
         parser = paginated_parser.copy()
         parser.add_argument('timeRange', type=int, dest='time_range', location='args')
-        parser.add_argument('owner', type=bool, location='args')
+        parser.add_argument('owner', type=inputs.boolean, location='args')
         parser.add_argument('id', type=str, location='args')
-        parser.add_argument('active', type=bool, location='args')
+        parser.add_argument('active', type=inputs.boolean, location='args')
         parser.add_argument('destinationId', type=int, dest="destination_id", location='args')
         parser.add_argument('creator', type=str, location='args')
         parser.add_argument('show', type=str, location='args')
