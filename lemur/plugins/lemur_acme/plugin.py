@@ -142,7 +142,7 @@ def setup_acme_client(authority):
 
     existing_key = options.get('acme_private_key', current_app.config.get('ACME_PRIVATE_KEY'))
     existing_regr = options.get('acme_regr', current_app.config.get('ACME_REGR'))
-    print(existing_key)
+
     if existing_key and existing_regr:
         # Reuse the same account for each certificate issuance
         key = jose.JWK.json_loads(existing_key)
