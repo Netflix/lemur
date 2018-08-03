@@ -31,6 +31,16 @@ class BaseFactory(SQLAlchemyModelFactory):
         sqlalchemy_session = db.session
 
 
+class RotationPolicyFactory(BaseFactory):
+    """Rotation Factory."""
+    name = Sequence(lambda n: 'policy{0}'.format(n))
+    days = 30
+
+    class Meta:
+        """Factory configuration."""
+        model = RotationPolicy
+
+
 class CertificateFactory(BaseFactory):
     """Certificate factory."""
     name = Sequence(lambda n: 'certificate{0}'.format(n))
@@ -43,6 +53,7 @@ class CertificateFactory(BaseFactory):
     description = FuzzyText(length=128)
     active = True
     date_created = FuzzyDate(date(2016, 1, 1), date(2020, 1, 1))
+    rotation_policy = SubFactory(RotationPolicyFactory)
 
     class Meta:
         """Factory Configuration."""
@@ -148,16 +159,6 @@ class AsyncAuthorityFactory(AuthorityFactory):
     plugin = {'slug': 'test-issuer-async'}
     description = FuzzyText(length=128)
     authority_certificate = SubFactory(CertificateFactory)
-
-
-class RotationPolicyFactory(BaseFactory):
-    """Rotation Factory."""
-    name = Sequence(lambda n: 'policy{0}'.format(n))
-    days = 30
-
-    class Meta:
-        """Factory configuration."""
-        model = RotationPolicy
 
 
 class DestinationFactory(BaseFactory):
