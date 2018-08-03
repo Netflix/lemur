@@ -44,25 +44,6 @@ def test_get_certificate_primitives(certificate):
 
     names = [x509.DNSName(x.name) for x in certificate.domains]
 
-    data = {
-        'common_name': certificate.cn,
-        'owner': certificate.owner,
-        'authority': certificate.authority,
-        'description': certificate.description,
-        'extensions': {
-            'sub_alt_names': x509.SubjectAlternativeName(names)
-        },
-        'destinations': [],
-        'roles': [],
-        'validity_end': arrow.get(2021, 5, 7),
-        'validity_start': arrow.get(2016, 10, 30),
-        'country': 'US',
-        'location': 'A place',
-        'organization': 'Example',
-        'organizational_unit': 'Operations',
-        'state': 'CA'
-    }
-
     with freeze_time(datetime.date(year=2016, month=10, day=30)):
         primitives = get_certificate_primitives(certificate)
         assert len(primitives) == 24
