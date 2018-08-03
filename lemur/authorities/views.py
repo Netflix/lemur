@@ -90,7 +90,7 @@ class AuthoritiesList(AuthenticatedResource):
                     "owner": "secure@example.com",
                     "id": 43,
                     "description": "This is the ROOT certificate for the TestAuthority certificate authority."
-                }
+                }],
                 "total": 1
               }
 
@@ -136,7 +136,7 @@ class AuthoritiesList(AuthenticatedResource):
                 "sensitivity": "medium",
                 "keyType": "RSA2048",
                 "plugin": {
-                    "slug": "cloudca-issuer",
+                    "slug": "cloudca-issuer"
                 },
                 "name": "TimeTestAuthority5",
                 "owner": "secure@example.com",
@@ -148,6 +148,7 @@ class AuthoritiesList(AuthenticatedResource):
                         "names": []
                     },
                     "custom": []
+                }
              }
 
            **Example response**:
@@ -499,6 +500,7 @@ class AuthorityVisualizations(AuthenticatedResource):
                             {"name": "MergeEdge", "size": 743}
                         ]
                     }
+                ]
             }
         ]}
         """
