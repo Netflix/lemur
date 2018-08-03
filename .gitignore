@@ -28,6 +28,7 @@ package-lock.json
 docs/_build
 .editorconfig
 .idea
+.pytest_cache
 lemur/tests/tmp
 
 /lemur/plugins/lemur_email/tests/expiration-rendered.html
