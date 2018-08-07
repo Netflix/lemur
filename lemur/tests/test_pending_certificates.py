@@ -2,7 +2,8 @@ import json
 
 import pytest
 
-from .vectors import CSR_STR, INTERNAL_VALID_LONG_STR, VALID_ADMIN_API_TOKEN, VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN
+from .vectors import CSR_STR, INTERMEDIATE_CERT_STR, VALID_ADMIN_API_TOKEN, VALID_ADMIN_HEADER_TOKEN, \
+    VALID_USER_HEADER_TOKEN, WILDCARD_CERT_STR
 
 from lemur.pending_certificates.views import *  # noqa
 
@@ -23,8 +24,8 @@ def test_create_pending_certificate(async_issuer_plugin, async_authority, user):
 def test_create_pending(pending_certificate, user, session):
     import copy
     from lemur.pending_certificates.service import create_certificate, get
-    cert = {'body': INTERNAL_VALID_LONG_STR,
-            'chain': None,
+    cert = {'body': WILDCARD_CERT_STR,
+            'chain': INTERMEDIATE_CERT_STR,
             'external_id': 54321}
 
     # Weird copy because the session behavior.  pending_certificate is a valid object but the

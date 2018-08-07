@@ -11,7 +11,7 @@ from flask_principal import identity_changed, Identity
 from lemur import create_app
 from lemur.database import db as _db
 from lemur.auth.service import create_token
-from lemur.tests.vectors import PRIVATE_KEY_STR
+from lemur.tests.vectors import SAN_CERT_KEY
 
 from .factories import ApiKeyFactory, AuthorityFactory, NotificationFactory, DestinationFactory, \
     CertificateFactory, UserFactory, RoleFactory, SourceFactory, EndpointFactory, \
@@ -228,7 +228,7 @@ def logged_in_admin(session, app):
 
 @pytest.fixture
 def private_key():
-    return load_pem_private_key(PRIVATE_KEY_STR.encode(), password=None, backend=default_backend())
+    return load_pem_private_key(SAN_CERT_KEY.encode(), password=None, backend=default_backend())
 
 
 @pytest.fixture

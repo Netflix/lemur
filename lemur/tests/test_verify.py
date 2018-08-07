@@ -5,15 +5,16 @@ from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.x509 import UniformResourceIdentifier
 
 from lemur.certificates.verify import verify_string, crl_verify
-from lemur.tests.vectors import INTERNAL_VALID_LONG_STR
 from lemur.utils import mktempfile
+
+from .vectors import INTERMEDIATE_CERT_STR
 
 
 def test_verify_simple_cert():
     """Simple certificate without CRL or OCSP."""
     # Verification raises an exception for "unknown" if there are no means to verify it
     with pytest.raises(Exception, match="Failed to verify"):
-        verify_string(INTERNAL_VALID_LONG_STR, '')
+        verify_string(INTERMEDIATE_CERT_STR, '')
 
 
 def test_verify_crl_unknown_scheme(cert_builder, private_key):

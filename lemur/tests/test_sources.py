@@ -2,7 +2,8 @@ import pytest
 
 from lemur.sources.views import *  # noqa
 
-from .vectors import VALID_ADMIN_API_TOKEN, VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN, INTERNAL_PRIVATE_KEY_A_STR, INTERNAL_VALID_WILDCARD_STR
+from .vectors import VALID_ADMIN_API_TOKEN, VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN, WILDCARD_CERT_STR, \
+    WILDCARD_CERT_KEY
 
 
 def validate_source_schema(client):
@@ -25,8 +26,8 @@ def test_create_certificate(user, source):
         certificate_create({}, source)
 
     data = {
-        'body': INTERNAL_VALID_WILDCARD_STR,
-        'private_key': INTERNAL_PRIVATE_KEY_A_STR,
+        'body': WILDCARD_CERT_STR,
+        'private_key': WILDCARD_CERT_KEY,
         'owner': 'bob@example.com',
         'creator': user['user']
     }

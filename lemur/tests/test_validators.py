@@ -1,13 +1,13 @@
 import pytest
 from datetime import datetime
-from .vectors import PRIVATE_KEY_STR
+from .vectors import SAN_CERT_KEY
 from marshmallow.exceptions import ValidationError
 
 
 def test_private_key(session):
     from lemur.common.validators import private_key
 
-    private_key(PRIVATE_KEY_STR)
+    private_key(SAN_CERT_KEY)
 
     with pytest.raises(ValidationError):
         private_key('invalid_private_key')

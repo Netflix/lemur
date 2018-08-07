@@ -18,25 +18,27 @@ from lemur.domains.models import Domain
 
 
 from lemur.tests.vectors import VALID_ADMIN_API_TOKEN, VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN, CSR_STR, \
-    INTERNAL_VALID_LONG_STR, INTERNAL_VALID_SAN_STR, PRIVATE_KEY_STR
+    INTERMEDIATE_CERT_STR, SAN_CERT_STR, SAN_CERT_KEY
 
 
 def test_get_or_increase_name(session, certificate):
     from lemur.certificates.models import get_or_increase_name
     from lemur.tests.factories import CertificateFactory
 
-    assert get_or_increase_name(certificate.name, certificate.serial) == '{0}-3E9'.format(certificate.name)
+    serial = 'AFF2DB4F8D2D4D8E80FA382AE27C2333'
+
+    assert get_or_increase_name(certificate.name, certificate.serial) == '{0}-{1}'.format(certificate.name, serial)
 
     certificate.name = 'test-cert-11111111'
-    assert get_or_increase_name(certificate.name, certificate.serial) == 'test-cert-11111111-3E9'
+    assert get_or_increase_name(certificate.name, certificate.serial) == 'test-cert-11111111-' + serial
 
     certificate.name = 'test-cert-11111111-1'
-    assert get_or_increase_name('test-cert-11111111-1', certificate.serial) == 'test-cert-11111111-1-3E9'
+    assert get_or_increase_name('test-cert-11111111-1', certificate.serial) == 'test-cert-11111111-1-' + serial
 
-    cert2 = CertificateFactory(name='certificate1-3E9')
+    cert2 = CertificateFactory(name='certificate1-' + serial)
     session.commit()
 
-    assert get_or_increase_name('certificate1', 1001) == 'certificate1-3E9-1'
+    assert get_or_increase_name('certificate1', int(serial, 16)) == 'certificate1-{}-1'.format(serial)
 
 
 def test_get_certificate_primitives(certificate):
@@ -59,7 +61,7 @@ def test_certificate_output_schema(session, certificate, issuer_plugin):
     # Make sure serialization parses the cert only once (uses cached 'parsed_cert' attribute)
     with patch('lemur.common.utils.parse_certificate', side_effect=utils.parse_certificate) as wrapper:
         data, errors = CertificateOutputSchema().dump(certificate)
-        assert data['issuer'] == 'Example'
+        assert data['issuer'] == 'LemurTrustEnterprisesLtd'
 
     assert wrapper.call_count == 1
 
@@ -149,8 +151,8 @@ def test_certificate_input_schema(client, authority):
         'owner': 'jim@example.com',
         'authority': {'id': authority.id},
         'description': 'testtestest',
-        'validityEnd': arrow.get(2016, 11, 9).isoformat(),
-        'validityStart': arrow.get(2015, 11, 9).isoformat(),
+        'validityStart': arrow.get(2018, 11, 9).isoformat(),
+        'validityEnd': arrow.get(2019, 11, 9).isoformat(),
         'dnsProvider': None,
     }
 
@@ -445,16 +447,16 @@ def test_get_account_number(client):
 def test_mint_certificate(issuer_plugin, authority):
     from lemur.certificates.service import mint
     cert_body, private_key, chain, external_id, csr = mint(authority=authority, csr=CSR_STR)
-    assert cert_body == INTERNAL_VALID_LONG_STR, INTERNAL_VALID_SAN_STR
+    assert cert_body == SAN_CERT_STR
 
 
 def test_create_certificate(issuer_plugin, authority, user):
     from lemur.certificates.service import create
     cert = create(authority=authority, csr=CSR_STR, owner='joe@example.com', creator=user['user'])
-    assert str(cert.not_after) == '2040-01-01T20:30:52+00:00'
-    assert str(cert.not_before) == '2015-06-26T20:30:52+00:00'
-    assert cert.issuer == 'Example'
-    assert cert.name == 'long.lived.com-Example-20150626-20400101'
+    assert str(cert.not_after) == '2047-12-31T22:00:00+00:00'
+    assert str(cert.not_before) == '2017-12-31T22:00:00+00:00'
+    assert cert.issuer == 'LemurTrustEnterprisesLtd'
+    assert cert.name == 'SAN-san.example.org-LemurTrustEnterprisesLtd-20171231-20471231-AFF2DB4F8D2D4D8E80FA382AE27C2333'
 
     cert = create(authority=authority, csr=CSR_STR, owner='joe@example.com', name='ACustomName1', creator=user['user'])
     assert cert.name == 'ACustomName1'
@@ -481,33 +483,33 @@ def test_create_csr():
 
 def test_import(user):
     from lemur.certificates.service import import_certificate
-    cert = import_certificate(body=INTERNAL_VALID_LONG_STR, chain=INTERNAL_VALID_SAN_STR, private_key=PRIVATE_KEY_STR, creator=user['user'])
-    assert str(cert.not_after) == '2040-01-01T20:30:52+00:00'
-    assert str(cert.not_before) == '2015-06-26T20:30:52+00:00'
-    assert cert.issuer == 'Example'
-    assert cert.name == 'long.lived.com-Example-20150626-20400101-2'
+    cert = import_certificate(body=SAN_CERT_STR, chain=INTERMEDIATE_CERT_STR, private_key=SAN_CERT_KEY, creator=user['user'])
+    assert str(cert.not_after) == '2047-12-31T22:00:00+00:00'
+    assert str(cert.not_before) == '2017-12-31T22:00:00+00:00'
+    assert cert.issuer == 'LemurTrustEnterprisesLtd'
+    assert cert.name == 'SAN-san.example.org-LemurTrustEnterprisesLtd-20171231-20471231-AFF2DB4F8D2D4D8E80FA382AE27C2333-2'
 
-    cert = import_certificate(body=INTERNAL_VALID_LONG_STR, chain=INTERNAL_VALID_SAN_STR, private_key=PRIVATE_KEY_STR, owner='joe@example.com', name='ACustomName2', creator=user['user'])
+    cert = import_certificate(body=SAN_CERT_STR, chain=INTERMEDIATE_CERT_STR, private_key=SAN_CERT_KEY, owner='joe@example.com', name='ACustomName2', creator=user['user'])
     assert cert.name == 'ACustomName2'
 
 
 @pytest.mark.skip
 def test_upload(user):
     from lemur.certificates.service import upload
-    cert = upload(body=INTERNAL_VALID_LONG_STR, chain=INTERNAL_VALID_SAN_STR, private_key=PRIVATE_KEY_STR, owner='joe@example.com', creator=user['user'])
+    cert = upload(body=SAN_CERT_STR, chain=INTERMEDIATE_CERT_STR, private_key=SAN_CERT_KEY, owner='joe@example.com', creator=user['user'])
     assert str(cert.not_after) == '2040-01-01T20:30:52+00:00'
     assert str(cert.not_before) == '2015-06-26T20:30:52+00:00'
     assert cert.issuer == 'Example'
     assert cert.name == 'long.lived.com-Example-20150626-20400101-3'
 
-    cert = upload(body=INTERNAL_VALID_LONG_STR, chain=INTERNAL_VALID_SAN_STR, private_key=PRIVATE_KEY_STR, owner='joe@example.com', name='ACustomName', creator=user['user'])
+    cert = upload(body=SAN_CERT_STR, chain=INTERMEDIATE_CERT_STR, private_key=SAN_CERT_KEY, owner='joe@example.com', name='ACustomName', creator=user['user'])
     assert 'ACustomName' in cert.name
 
 
 # verify upload with a private key as a str
 def test_upload_private_key_str(user):
     from lemur.certificates.service import upload
-    cert = upload(body=INTERNAL_VALID_LONG_STR, chain=INTERNAL_VALID_SAN_STR, private_key=PRIVATE_KEY_STR, owner='joe@example.com', name='ACustomName', creator=user['user'])
+    cert = upload(body=SAN_CERT_STR, chain=INTERMEDIATE_CERT_STR, private_key=SAN_CERT_KEY, owner='joe@example.com', name='ACustomName', creator=user['user'])
     assert cert
 
 
@@ -533,8 +535,8 @@ def test_certificate_get(client, token, status):
 
 def test_certificate_get_body(client):
     response_body = client.get(api.url_for(Certificates, certificate_id=1), headers=VALID_USER_HEADER_TOKEN).json
-    assert response_body['serial'] == '1001'
-    assert response_body['serialHex'] == '3E9'
+    assert response_body['serial'] == '211983098819107449768450703123665283596'
+    assert response_body['serialHex'] == '9F7A75B39DAE4C3F9524C68B06DA6A0C'
 
 
 @pytest.mark.parametrize("token,status", [
