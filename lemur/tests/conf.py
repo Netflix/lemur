@@ -25,6 +25,7 @@ LEMUR_ENCRYPTION_KEYS = 'o61sBLNBSGtAckngtNrfVNd8xy8Hp9LBGDstTbMbqCY='
 LEMUR_WHITELISTED_DOMAINS = [
     '^[a-zA-Z0-9-]+\.example\.com$',
     '^[a-zA-Z0-9-]+\.example\.org$',
+    '^example\d+\.long\.com$',
 ]
 
 # Mail Server

@@ -514,7 +514,9 @@ def get_certificate_primitives(certificate):
     certificate via `create`.
     """
     start, end = calculate_reissue_range(certificate.not_before, certificate.not_after)
-    data = CertificateInputSchema().load(CertificateOutputSchema().dump(certificate).data).data
+    ser = CertificateInputSchema().load(CertificateOutputSchema().dump(certificate).data)
+    assert not ser.errors, "Error re-serializing certificate: %s" % ser.errors
+    data = ser.data
 
     # we can't quite tell if we are using a custom name, as this is an automated process (typically)
     # we will rely on the Lemur generated name
