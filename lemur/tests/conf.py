@@ -23,7 +23,8 @@ LEMUR_ENCRYPTION_KEYS = 'o61sBLNBSGtAckngtNrfVNd8xy8Hp9LBGDstTbMbqCY='
 
 # List of domain regular expressions that non-admin users can issue
 LEMUR_WHITELISTED_DOMAINS = [
-    '^[a-zA-Z0-9-]+\.example\.com$'
+    '^[a-zA-Z0-9-]+\.example\.com$',
+    '^example\d+\.long\.com$',
 ]
 
 # Mail Server
