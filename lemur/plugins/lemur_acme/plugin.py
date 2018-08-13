@@ -500,8 +500,9 @@ class ACMEIssuerPlugin(IssuerPlugin):
             return None, None, dns_authorization.id
 
         authorizations = self.acme.get_authorizations(acme_client, account_number, domains, dns_provider_plugin,
-                                            dns_provider_options)
-        self.acme.finalize_authorizations(acme_client, account_number, dns_provider_plugin, authorizations, dns_provider_options)
+                                                      dns_provider_options)
+        self.acme.finalize_authorizations(acme_client, account_number, dns_provider_plugin, authorizations,
+                                          dns_provider_options)
         pem_certificate, pem_certificate_chain = self.acme.request_certificate(acme_client, authorizations, csr)
         # TODO add external ID (if possible)
         return pem_certificate, pem_certificate_chain, None

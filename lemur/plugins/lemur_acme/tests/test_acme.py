@@ -15,7 +15,8 @@ class TestAcme(unittest.TestCase):
         mock_dns_provider.name = "cloudflare"
         mock_dns_provider.credentials = "{}"
         mock_dns_provider.provider_type = "cloudflare"
-        self.acme.dns_providers_for_domain = {"www.test.com": [mock_dns_provider], "test.fakedomain.net": [mock_dns_provider]}
+        self.acme.dns_providers_for_domain = {"www.test.com": [mock_dns_provider],
+                                              "test.fakedomain.net": [mock_dns_provider]}
 
     @patch('lemur.plugins.lemur_acme.plugin.len', return_value=1)
     def test_find_dns_challenge(self, mock_len):
@@ -221,7 +222,8 @@ class TestAcme(unittest.TestCase):
     @patch('lemur.plugins.lemur_acme.dyn.current_app')
     @patch('lemur.plugins.lemur_acme.cloudflare.current_app')
     @patch('lemur.plugins.lemur_acme.plugin.dns_provider_service')
-    def test_get_dns_provider(self, mock_dns_provider_service, mock_current_app_cloudflare, mock_current_app_dyn, mock_current_app):
+    def test_get_dns_provider(self, mock_dns_provider_service, mock_current_app_cloudflare, mock_current_app_dyn,
+                              mock_current_app):
         provider = plugin.ACMEIssuerPlugin()
         route53 = provider.get_dns_provider("route53")
         assert route53
