@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, text, Text
 from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy.orm import relationship
 from sqlalchemy_utils import ArrowType
 
 from lemur.database import db
@@ -22,6 +23,7 @@ class DnsProvider(db.Model):
     status = Column(String(length=128), nullable=True)
     options = Column(JSON, nullable=True)
     domains = Column(JSON, nullable=True)
+    certificates = relationship("Certificate", backref='dns_provider', foreign_keys='Certificate.dns_provider_id')
 
     def __init__(self, name, description, provider_type, credentials):
         self.name = name

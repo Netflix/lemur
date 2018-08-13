@@ -15,9 +15,9 @@ asyncpool==1.0
 babel==2.6.0              # via sphinx
 bcrypt==3.1.4
 blinker==1.4
-boto3==1.7.66
-botocore==1.10.66
-certifi==2018.4.16
+boto3==1.7.75
+botocore==1.10.75
+certifi==2018.8.13
 cffi==1.11.5
 chardet==3.0.4
 click==6.7
@@ -50,7 +50,7 @@ lockfile==0.12.2
 mako==1.0.7
 markupsafe==1.0
 marshmallow-sqlalchemy==0.14.0
-marshmallow==2.15.3
+marshmallow==2.15.4
 mock==2.0.0
 ndg-httpsclient==0.5.1
 packaging==17.1           # via sphinx

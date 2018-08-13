@@ -5,7 +5,7 @@ import dns.exception
 import dns.name
 import dns.query
 import dns.resolver
-from dyn.tm.errors import DynectGetError
+from dyn.tm.errors import DynectCreateError
 from dyn.tm.session import DynectSession
 from dyn.tm.zones import Node, Zone, get_all_zones
 from flask import current_app
@@ -49,6 +49,7 @@ def wait_for_dns_change(change_id, account_number=None):
             break
         time.sleep(20)
     if not status:
+        # TODO: Delete associated DNS text record here
         raise Exception("Unable to query DNS token for fqdn {}.".format(fqdn))
     return
 
@@ -70,6 +71,15 @@ def get_zone_name(domain):
     return zone_name
 
 
+def get_zones(account_number):
+    get_dynect_session()
+    zones = get_all_zones()
+    zone_list = []
+    for zone in zones:
+        zone_list.append(zone.name)
+    return zone_list
+
+
 def create_txt_record(domain, token, account_number):
     get_dynect_session()
     zone_name = get_zone_name(domain)
@@ -77,21 +87,20 @@ def create_txt_record(domain, token, account_number):
     node_name = '.'.join(domain.split('.')[:-zone_parts])
     fqdn = "{0}.{1}".format(node_name, zone_name)
     zone = Zone(zone_name)
+
     try:
-        # Delete all stale ACME TXT records
-        delete_acme_txt_records(domain)
-    except DynectGetError as e:
-        if (
-                "No such zone." in e.message or
-                "Host is not in this zone" in e.message or
-                "Host not found in this zone" in e.message
-        ):
-            current_app.logger.debug("Unable to delete ACME TXT records. They probably don't exist yet: {}".format(e))
+        zone.add_record(node_name, record_type='TXT', txtdata="\"{}\"".format(token), ttl=5)
+        zone.publish()
+        current_app.logger.debug("TXT record created: {0}, token: {1}".format(fqdn, token))
+    except DynectCreateError as e:
+        if "Cannot duplicate existing record data" in e.message:
+            current_app.logger.debug(
+                "Unable to add record. Domain: {}. Token: {}. "
+                "Record already exists: {}".format(domain, token, e), exc_info=True
+            )
         else:
             raise
-    zone.add_record(node_name, record_type='TXT', txtdata="\"{}\"".format(token), ttl=5)
-    zone.publish()
-    current_app.logger.debug("TXT record created: {0}".format(fqdn))
+
     change_id = (fqdn, token)
     return change_id
 
