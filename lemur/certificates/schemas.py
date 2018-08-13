@@ -10,6 +10,7 @@ from marshmallow import fields, validate, validates_schema, post_load, pre_load
 from marshmallow.exceptions import ValidationError
 
 from lemur.authorities.schemas import AuthorityNestedOutputSchema
+from lemur.dns_providers.schemas import DnsProvidersNestedOutputSchema
 from lemur.common import validators, missing
 from lemur.common.fields import ArrowDateTime, Hex
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
@@ -223,6 +224,7 @@ class CertificateOutputSchema(LemurOutputSchema):
     notifications = fields.Nested(NotificationNestedOutputSchema, many=True)
     replaces = fields.Nested(CertificateNestedOutputSchema, many=True)
     authority = fields.Nested(AuthorityNestedOutputSchema)
+    dns_provider = fields.Nested(DnsProvidersNestedOutputSchema)
     roles = fields.Nested(RoleNestedOutputSchema, many=True)
     endpoints = fields.Nested(EndpointNestedOutputSchema, many=True, missing=[])
     replaced_by = fields.Nested(CertificateNestedOutputSchema, many=True, attribute='replaced')

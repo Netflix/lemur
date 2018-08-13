@@ -10,6 +10,7 @@
 *.db
 *.pid
 *.enc
+*.env
 MANIFEST
 test.conf
 pip-log.txt

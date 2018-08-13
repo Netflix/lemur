@@ -22,6 +22,15 @@ def get(dns_provider_id):
     return provider
 
 
+def get_all_dns_providers():
+    """
+    Retrieves all dns providers within Lemur.
+
+    :return:
+    """
+    return DnsProvider.query.all()
+
+
 def get_friendly(dns_provider_id):
     """
     Retrieves a dns provider by its lemur assigned ID.
@@ -94,6 +103,15 @@ def get_types():
         raise Exception("No DNS Provider configuration specified.")
     provider_config["total"] = len(provider_config.get("items"))
     return provider_config
+
+
+def set_domains(dns_provider, domains):
+    """
+    Increments pending certificate attempt counter and updates it in the database.
+    """
+    dns_provider.domains = domains
+    database.update(dns_provider)
+    return dns_provider
 
 
 def create(data):

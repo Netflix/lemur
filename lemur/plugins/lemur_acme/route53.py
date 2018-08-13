@@ -32,6 +32,16 @@ def find_zone_id(domain, client=None):
 
 
 @sts_client('route53')
+def get_zones(client=None):
+    paginator = client.get_paginator("list_hosted_zones")
+    zones = []
+    for page in paginator.paginate():
+        for zone in page["HostedZones"]:
+            zones.append(zone["Name"][:-1])  # We need [:-1] to strip out the trailing dot.
+    return zones
+
+
+@sts_client('route53')
 def change_txt_record(action, zone_id, domain, value, client=None):
     current_txt_records = []
     try:
@@ -50,7 +60,13 @@ def change_txt_record(action, zone_id, domain, value, client=None):
             raise
     # For some reason TXT records need to be
     # manually quoted.
-    current_txt_records.append({"Value": '"{}"'.format(value)})
+    seen = False
+    for record in current_txt_records:
+        for k, v in record.items():
+            if '"{}"'.format(value) == v:
+                seen = True
+    if not seen:
+        current_txt_records.append({"Value": '"{}"'.format(value)})
 
     if action == "DELETE" and len(current_txt_records) > 1:
         # If we want to delete one record out of many, we'll update the record to not include the deleted value instead.
@@ -95,10 +111,17 @@ def create_txt_record(host, value, account_number):
 def delete_txt_record(change_ids, account_number, host, value):
     for change_id in change_ids:
         zone_id, _ = change_id
-        change_txt_record(
-            "DELETE",
-            zone_id,
-            host,
-            value,
-            account_number=account_number
-        )
+        try:
+            change_txt_record(
+                "DELETE",
+                zone_id,
+                host,
+                value,
+                account_number=account_number
+            )
+        except Exception as e:
+            if "but it was not found" in e.response.get("Error", {}).get("Message"):
+                # We tried to delete a record that doesn't exist. We'll ignore this error.
+                pass
+            else:
+                raise

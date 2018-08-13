@@ -15,6 +15,7 @@ from flask_script import Manager, Command, Option, prompt_pass
 from flask_migrate import Migrate, MigrateCommand, stamp
 from flask_script.commands import ShowUrls, Clean, Server
 
+from lemur.dns_providers.cli import manager as dns_provider_manager
 from lemur.sources.cli import manager as source_manager
 from lemur.policies.cli import manager as policy_manager
 from lemur.reporting.cli import manager as report_manager
@@ -539,6 +540,7 @@ def main():
     manager.add_command("report", report_manager)
     manager.add_command("policy", policy_manager)
     manager.add_command("pending_certs", pending_certificate_manager)
+    manager.add_command("dns_providers", dns_provider_manager)
     manager.run()
 
 
