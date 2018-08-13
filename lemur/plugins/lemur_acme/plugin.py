@@ -468,7 +468,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
         create_immediately = issuer_options.get('create_immediately', False)
         acme_client, registration = self.acme.setup_acme_client(authority)
         dns_provider = issuer_options.get('dns_provider', {})
-        # TODO: IF NOT DNS PROVIDER, AUTODISCOVER
+
         if dns_provider:
             dns_provider_options = dns_provider.options
             credentials = json.loads(dns_provider.credentials)

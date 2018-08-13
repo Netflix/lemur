@@ -78,7 +78,7 @@ def fetch_objects(model, data, many=False):
         items = model.query.filter(getattr(model, attr).in_(values)).all()
         found = [getattr(i, attr) for i in items]
         diff = set(values).symmetric_difference(set(found))
-        AssociatedDnsProviderSchema
+
         if diff:
             raise ValidationError('Unable to locate {model} with {attr} {diff}'.format(
                 model=model,
