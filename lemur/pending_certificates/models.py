@@ -39,7 +39,7 @@ class PendingCertificate(db.Model):
     date_created = Column(ArrowType, PassiveDefault(func.now()), nullable=False)
     dns_provider_id = Column(Integer, ForeignKey('dns_providers.id', ondelete="CASCADE"))
 
-    status = Column(String(128))
+    status = Column(Text(), nullable=True)
 
     rotation = Column(Boolean, default=False)
     user_id = Column(Integer, ForeignKey('users.id'))
