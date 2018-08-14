@@ -213,7 +213,7 @@ class AcmeHandler(object):
         self.dns_providers_for_domain[domain] = []
         for dns_provider in self.all_dns_providers:
             for name in dns_provider.domains:
-                if domain.endswith(name):
+                if domain.endswith("." + name):
                     self.dns_providers_for_domain[domain].append(dns_provider)
         return self.dns_providers_for_domain
 
@@ -475,7 +475,8 @@ class ACMEIssuerPlugin(IssuerPlugin):
             current_app.logger.debug("Using DNS provider: {0}".format(dns_provider.provider_type))
             dns_provider_plugin = __import__(dns_provider.provider_type, globals(), locals(), [], 1)
             account_number = credentials.get("account_id")
-            if dns_provider.provider_type == 'route53' and not account_number:
+            provider_type = dns_provider.provider_type
+            if provider_type == "route53" and not account_number:
                 error = "Route53 DNS Provider {} does not have an account number configured.".format(dns_provider.name)
                 current_app.logger.error(error)
                 raise InvalidConfiguration(error)
@@ -483,6 +484,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
             dns_provider = {}
             dns_provider_options = None
             account_number = None
+            provider_type = None
 
         domains = self.acme.get_domains(issuer_options)
         if not create_immediately:
@@ -495,7 +497,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
                     authz_domains.append(d.value)
 
             dns_authorization = authorization_service.create(account_number, authz_domains,
-                                                             dns_provider.get("provider_type"))
+                                                             provider_type)
             # Return id of the DNS Authorization
             return None, None, dns_authorization.id
 
