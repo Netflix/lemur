@@ -115,13 +115,16 @@ def sync_certificates(source, user):
     certificates = s.get_certificates(source.options)
 
     for certificate in certificates:
+        exists = False
         if certificate.get('name'):
-            exists = [certificate_service.get_by_name(certificate['name'])]
+            result = certificate_service.get_by_name(certificate['name'])
+            if result:
+                exists = [result]
 
-        elif certificate.get('serial'):
+        if not exists and certificate.get('serial'):
             exists = certificate_service.get_by_serial(certificate['serial'])
 
-        else:
+        if not exists:
             cert = parse_certificate(certificate['body'])
             exists = certificate_service.get_by_serial(serial(cert))
 
@@ -129,7 +132,6 @@ def sync_certificates(source, user):
             certificate['owner'] = user.email
 
         certificate['creator'] = user
-
         exists = [x for x in exists if x]
 
         if not exists:

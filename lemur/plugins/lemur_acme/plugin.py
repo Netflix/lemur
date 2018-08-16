@@ -212,6 +212,8 @@ class AcmeHandler(object):
         """
         self.dns_providers_for_domain[domain] = []
         for dns_provider in self.all_dns_providers:
+            if not dns_provider.domains:
+                continue
             for name in dns_provider.domains:
                 if domain.endswith(name):
                     self.dns_providers_for_domain[domain].append(dns_provider)
