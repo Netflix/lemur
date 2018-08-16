@@ -13,8 +13,8 @@ asn1crypto==0.24.0        # via cryptography
 asyncpool==1.0
 bcrypt==3.1.4             # via flask-bcrypt, paramiko
 blinker==1.4              # via flask-mail, flask-principal, raven
-boto3==1.7.76
-botocore==1.10.76         # via boto3, s3transfer
+boto3==1.7.78
+botocore==1.10.78         # via boto3, s3transfer
 certifi==2018.8.13
 cffi==1.11.5              # via bcrypt, cryptography, pynacl
 chardet==3.0.4            # via requests
@@ -46,7 +46,7 @@ jsonlines==1.2.0          # via cloudflare
 lockfile==0.12.2
 mako==1.0.7               # via alembic
 markupsafe==1.0           # via jinja2, mako
-marshmallow-sqlalchemy==0.14.0
+marshmallow-sqlalchemy==0.14.1
 marshmallow==2.15.4
 mock==2.0.0               # via acme
 ndg-httpsclient==0.5.1

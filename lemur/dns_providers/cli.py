@@ -18,8 +18,12 @@ def get_all_zones():
     acme_plugin = plugins.get("acme-issuer")
 
     for dns_provider in dns_providers:
-        zones = acme_plugin.get_all_zones(dns_provider)
-        set_domains(dns_provider, zones)
+        try:
+            zones = acme_plugin.get_all_zones(dns_provider)
+            set_domains(dns_provider, zones)
+        except Exception as e:
+            print("[+] Error with DNS Provider {}: {}".format(dns_provider.name, e))
+            set_domains(dns_provider, [])
 
     status = SUCCESS_METRIC_STATUS
 
