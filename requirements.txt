@@ -13,7 +13,7 @@ asn1crypto==0.24.0        # via cryptography
 asyncpool==1.0
 bcrypt==3.1.4             # via flask-bcrypt, paramiko
 blinker==1.4              # via flask-mail, flask-principal, raven
-boto3==1.7.78
+boto3==1.7.79
 botocore==1.10.76         # via boto3, s3transfer
 certifi==2018.8.13
 cffi==1.11.5              # via bcrypt, cryptography, pynacl
