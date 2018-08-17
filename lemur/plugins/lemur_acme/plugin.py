@@ -424,13 +424,15 @@ class ACMEIssuerPlugin(IssuerPlugin):
                 })
 
         for entry in pending:
+            # Recreate acme client for each cert
+            acme_client, _ = self.acme.setup_acme_client(pending_cert.authority)
             try:
                 entry["authorizations"] = self.acme.finalize_authorizations(
-                    entry["acme_client"],
+                    acme_client,
                     entry["authorizations"],
                 )
                 pem_certificate, pem_certificate_chain = self.acme.request_certificate(
-                    entry["acme_client"],
+                    acme_client,
                     entry["authorizations"],
                     entry["order"]
                 )
@@ -453,7 +455,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
                 })
                 # Ensure DNS records get deleted
                 self.acme.cleanup_dns_challenges(
-                    entry["acme_client"],
+                    acme_client,
                     entry["authorizations"],
                 )
         return certs
