@@ -164,7 +164,7 @@ class AcmeHandler(object):
 
             current_app.logger.debug("Connecting with directory at {0}".format(directory_url))
 
-            net = ClientNetwork(key, account=None)
+            net = ClientNetwork(key, account=None, timeout=3600)
             client = BackwardsCompatibleClientV2(net, key, directory_url)
             registration = client.new_account_and_tos(messages.NewRegistration.from_data(email=email))
             current_app.logger.debug("Connected: {0}".format(registration.uri))
@@ -424,15 +424,13 @@ class ACMEIssuerPlugin(IssuerPlugin):
                 })
 
         for entry in pending:
-            # Recreate acme client for each cert
-            acme_client, _ = self.acme.setup_acme_client(pending_cert.authority)
             try:
                 entry["authorizations"] = self.acme.finalize_authorizations(
-                    acme_client,
+                    entry["acme_client"],
                     entry["authorizations"],
                 )
                 pem_certificate, pem_certificate_chain = self.acme.request_certificate(
-                    acme_client,
+                    entry["acme_client"],
                     entry["authorizations"],
                     entry["order"]
                 )
@@ -455,7 +453,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
                 })
                 # Ensure DNS records get deleted
                 self.acme.cleanup_dns_challenges(
-                    acme_client,
+                    entry["acme_client"],
                     entry["authorizations"],
                 )
         return certs
