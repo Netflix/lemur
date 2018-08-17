@@ -10,12 +10,12 @@ from marshmallow import fields, validate, validates_schema, post_load, pre_load
 from marshmallow.exceptions import ValidationError
 
 from lemur.authorities.schemas import AuthorityNestedOutputSchema
-from lemur.dns_providers.schemas import DnsProvidersNestedOutputSchema
 from lemur.common import validators, missing
 from lemur.common.fields import ArrowDateTime, Hex
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
 from lemur.constants import CERTIFICATE_KEY_TYPES
 from lemur.destinations.schemas import DestinationNestedOutputSchema
+from lemur.dns_providers.schemas import DnsProvidersNestedOutputSchema
 from lemur.domains.schemas import DomainNestedOutputSchema
 from lemur.notifications import service as notification_service
 from lemur.notifications.schemas import NotificationNestedOutputSchema
@@ -63,9 +63,9 @@ class CertificateInputSchema(CertificateCreationSchema):
     common_name = fields.String(required=True, validate=validators.common_name)
     authority = fields.Nested(AssociatedAuthoritySchema, required=True)
 
-    validity_start = ArrowDateTime()
-    validity_end = ArrowDateTime()
-    validity_years = fields.Integer()
+    validity_start = ArrowDateTime(allow_none=True)
+    validity_end = ArrowDateTime(allow_none=True)
+    validity_years = fields.Integer(allow_none=True)
 
     destinations = fields.Nested(AssociatedDestinationSchema, missing=[], many=True)
     notifications = fields.Nested(AssociatedNotificationSchema, missing=[], many=True)
@@ -82,7 +82,8 @@ class CertificateInputSchema(CertificateCreationSchema):
 
     notify = fields.Boolean(default=True)
     rotation = fields.Boolean()
-    rotation_policy = fields.Nested(AssociatedRotationPolicySchema, missing={'name': 'default'}, default={'name': 'default'})
+    rotation_policy = fields.Nested(AssociatedRotationPolicySchema, missing={'name': 'default'}, allow_none=True,
+                                    default={'name': 'default'})
 
     # certificate body fields
     organizational_unit = fields.String(missing=lambda: current_app.config.get('LEMUR_DEFAULT_ORGANIZATIONAL_UNIT'))
@@ -137,7 +138,8 @@ class CertificateEditInputSchema(CertificateSchema):
         """
         if data['owner']:
             notification_name = "DEFAULT_{0}".format(data['owner'].split('@')[0].upper())
-            data['notifications'] += notification_service.create_default_expiration_notifications(notification_name, [data['owner']])
+            data['notifications'] += notification_service.create_default_expiration_notifications(notification_name,
+                                                                                                  [data['owner']])
         return data
 
 
@@ -237,7 +239,8 @@ class CertificateUploadInputSchema(CertificateCreationSchema):
 
     private_key = fields.String(validate=validators.private_key)
     body = fields.String(required=True, validate=validators.public_certificate)
-    chain = fields.String(validate=validators.public_certificate, missing=None, allow_none=True)  # TODO this could be multiple certificates
+    chain = fields.String(validate=validators.public_certificate, missing=None,
+                          allow_none=True)  # TODO this could be multiple certificates
 
     destinations = fields.Nested(AssociatedDestinationSchema, missing=[], many=True)
     notifications = fields.Nested(AssociatedNotificationSchema, missing=[], many=True)
