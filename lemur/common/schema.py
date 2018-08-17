@@ -60,6 +60,8 @@ class LemurSchema(Schema):
 class LemurInputSchema(LemurSchema):
     @pre_load(pass_many=True)
     def preprocess(self, data, many):
+        if isinstance(data, dict) and data.get('owner'):
+            data['owner'] = data['owner'].lower()
         return self.under(data, many=many)
 
 
