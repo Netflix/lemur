@@ -164,7 +164,7 @@ class AcmeHandler(object):
 
             current_app.logger.debug("Connecting with directory at {0}".format(directory_url))
 
-            net = ClientNetwork(key, account=None)
+            net = ClientNetwork(key, account=None, timeout=3600)
             client = BackwardsCompatibleClientV2(net, key, directory_url)
             registration = client.new_account_and_tos(messages.NewRegistration.from_data(email=email))
             current_app.logger.debug("Connected: {0}".format(registration.uri))
