@@ -59,7 +59,7 @@ s3transfer==0.1.13        # via boto3
 six==1.11.0               # via cryptography, docker, docker-pycreds, faker, freezegun, mock, more-itertools, moto, pytest, python-dateutil, python-jose, requests-mock, responses, websocket-client
 text-unidecode==1.2       # via faker
 urllib3==1.23             # via requests
-websocket-client==0.49.0  # via docker
+websocket-client==0.50.0  # via docker
 werkzeug==0.14.1          # via flask, moto, pytest-flask
 wrapt==1.10.11            # via aws-xray-sdk
 xmltodict==0.11.0         # via moto
