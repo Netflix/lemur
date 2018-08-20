@@ -83,7 +83,7 @@ sphinx==1.7.6
 sphinxcontrib-httpdomain==1.7.0
 sphinxcontrib-websupport==1.1.0  # via sphinx
 sqlalchemy-utils==0.33.3
-sqlalchemy==1.2.10
+sqlalchemy==1.2.11
 tabulate==0.8.2
 urllib3==1.23
 werkzeug==0.14.1
