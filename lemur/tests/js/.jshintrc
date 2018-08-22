@@ -1,10 +1,23 @@
 {
-  "bitwise": true,
+  "node": true,
   "browser": true,
+  "esnext": true,
+  "bitwise": true,
   "camelcase": true,
   "curly": true,
   "eqeqeq": true,
-  "esnext": true,
+  "immed": true,
+  "indent": 2,
+  "latedef": true,
+  "newcap": true,
+  "noarg": true,
+  "quotmark": "single",
+  "regexp": true,
+  "undef": true,
+  "unused": true,
+  "strict": true,
+  "trailing": true,
+  "smarttabs": true,
   "globals": {
     "after": false,
     "afterEach": false,
@@ -18,18 +31,6 @@
     "it": false,
     "jasmine": false,
     "spyOn": false
-  },
-  "immed": true,
-  "indent": 2,
-  "latedef": true,
-  "newcap": true,
-  "noarg": true,
-  "node": true,
-  "quotmark": "single",
-  "regexp": true,
-  "smarttabs": true,
-  "strict": true,
-  "trailing": true,
-  "undef": true,
-  "unused": true
+  }
 }
+

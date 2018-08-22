@@ -32,7 +32,7 @@ def upgrade():
         # If we've seen a pair already, delete the duplicates
         if seen.get("{}-{}".format(x.certificate_id, x.notification_id)):
             print("Deleting duplicate: {}".format(x))
-            d = session.query(certificate_notification_associations).filter(certificate_notification_associations.c.id == x.id)
+            d = session.query(certificate_notification_associations).filter(certificate_notification_associations.c.id==x.id)
             d.delete(synchronize_session=False)
         seen["{}-{}".format(x.certificate_id, x.notification_id)] = True
     db.session.commit()
