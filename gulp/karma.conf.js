@@ -1,10 +1,12 @@
+'use strict';
 // Contents of: config/karma.conf.js
+
 module.exports = function (config) {
   config.set({
     basePath : '../',
 
     // Fix for "JASMINE is not supported anymore" warning
-    frameworks : ["jasmine"],
+    frameworks : ['jasmine'],
 
     files : [
       'app/lib/angular/angular.js',

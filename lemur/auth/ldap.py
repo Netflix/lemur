@@ -18,6 +18,7 @@ class LdapPrincipal():
     """
     Provides methods for authenticating against an LDAP server.
     """
+
     def __init__(self, args):
         self._ldap_validate_conf()
         # setup ldap config
