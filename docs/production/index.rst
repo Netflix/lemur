@@ -217,23 +217,23 @@ An example apache config::
         # HSTS (mod_headers is required) (15768000 seconds = 6 months)
         Header always set Strict-Transport-Security "max-age=15768000"
         ...
-        
+
      # Set the lemur DocumentRoot to static/dist
      DocumentRoot /www/lemur/lemur/static/dist
-     
+
      # Uncomment to force http 1.0 connections to proxy
      # SetEnv force-proxy-request-1.0 1
-     
+
      #Don't keep proxy connections alive
      SetEnv proxy-nokeepalive 1
-     
+
      # Only need to do reverse proxy
      ProxyRequests Off
-     
+
      # Proxy requests to the api to the lemur service (and sanitize redirects from it)
      ProxyPass "/api" "http://127.0.0.1:8000/api"
      ProxyPassReverse "/api" "http://127.0.0.1:8000/api"
-     
+
     </VirtualHost>
 
 Also included in the configurations above are several best practices when it comes to deploying TLS. Things like enabling

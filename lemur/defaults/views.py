@@ -19,6 +19,7 @@ api = Api(mod)
 
 class LemurDefaults(AuthenticatedResource):
     """ Defines the 'defaults' endpoint """
+
     def __init__(self):
         super(LemurDefaults)
 

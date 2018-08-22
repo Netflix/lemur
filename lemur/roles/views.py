@@ -26,6 +26,7 @@ api = Api(mod)
 
 class RolesList(AuthenticatedResource):
     """ Defines the 'roles' endpoint """
+
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(RolesList, self).__init__()
@@ -309,6 +310,7 @@ class Roles(AuthenticatedResource):
 
 class UserRolesList(AuthenticatedResource):
     """ Defines the 'roles' endpoint """
+
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(UserRolesList, self).__init__()
@@ -368,6 +370,7 @@ class UserRolesList(AuthenticatedResource):
 
 class AuthorityRolesList(AuthenticatedResource):
     """ Defines the 'roles' endpoint """
+
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(AuthorityRolesList, self).__init__()

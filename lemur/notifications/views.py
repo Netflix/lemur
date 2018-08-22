@@ -23,6 +23,7 @@ api = Api(mod)
 
 class NotificationsList(AuthenticatedResource):
     """ Defines the 'notifications' endpoint """
+
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(NotificationsList, self).__init__()
@@ -348,6 +349,7 @@ class Notifications(AuthenticatedResource):
 
 class CertificateNotifications(AuthenticatedResource):
     """ Defines the 'certificate/<int:certificate_id/notifications'' endpoint """
+
     def __init__(self):
         super(CertificateNotifications, self).__init__()
 

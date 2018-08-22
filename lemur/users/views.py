@@ -27,6 +27,7 @@ api = Api(mod)
 
 class UsersList(AuthenticatedResource):
     """ Defines the 'users' endpoint """
+
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(UsersList, self).__init__()
