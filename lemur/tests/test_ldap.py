@@ -1,5 +1,5 @@
 import pytest
-from lemur.auth.ldap import *  # noqa
+from lemur.auth.ldap import * # noqa
 from mock import patch, MagicMock
 
 

@@ -14,17 +14,16 @@ from alembic import op
 import sqlalchemy as sa
 import sqlalchemy_utils
 
-
 def upgrade():
     op.create_table('api_keys',
     sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('name', sa.String(length=128), nullable=True),
-        sa.Column('user_id', sa.Integer(), nullable=False),
-        sa.Column('ttl', sa.BigInteger(), nullable=False),
-        sa.Column('issued_at', sa.BigInteger(), nullable=False),
-        sa.Column('revoked', sa.Boolean(), nullable=False),
-        sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
-        sa.PrimaryKeyConstraint('id')
+    sa.Column('name', sa.String(length=128), nullable=True),
+    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('ttl', sa.BigInteger(), nullable=False),
+    sa.Column('issued_at', sa.BigInteger(), nullable=False),
+    sa.Column('revoked', sa.Boolean(), nullable=False),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+    sa.PrimaryKeyConstraint('id')
     )
 
 

@@ -21,7 +21,6 @@ api = Api(mod)
 
 class PluginsList(AuthenticatedResource):
     """ Defines the 'plugins' endpoint """
-
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(PluginsList, self).__init__()
@@ -81,7 +80,6 @@ class PluginsList(AuthenticatedResource):
 
 class Plugins(AuthenticatedResource):
     """ Defines the 'plugins' endpoint """
-
     def __init__(self):
         super(Plugins, self).__init__()
 

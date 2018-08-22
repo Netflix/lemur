@@ -74,7 +74,6 @@ def upgrade():
     print("Creating dns_providers_id foreign key on pending_certs table")
     op.create_foreign_key(None, 'pending_certs', 'dns_providers', ['dns_provider_id'], ['id'], ondelete='CASCADE')
 
-
 def downgrade():
     print("Removing dns_providers_id foreign key on pending_certs table")
     op.drop_constraint(None, 'pending_certs', type_='foreignkey')

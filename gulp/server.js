@@ -3,7 +3,7 @@
 var gulp = require('gulp');
 
 var browserSync = require('browser-sync');
-require('http-proxy');
+var httpProxy = require('http-proxy');
 
 /* This configuration allow you to configure browser sync to proxy your backend */
 /*

@@ -30,7 +30,6 @@ def upgrade():
     db.session.commit()
     db.session.flush()
 
-
 def downgrade():
     op.drop_column(TABLE, "id")
     db.session.commit()
