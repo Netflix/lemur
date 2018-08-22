@@ -42,7 +42,7 @@
             {{ item.name | titleCase }}
           </label>
           <div class="col-sm-10">
-            <input name="sub" ng-if="item.type == 'int'" type="number" ng-pattern="item.validation?item.validation:'^[0-9]+$'" 
+            <input name="sub" ng-if="item.type == 'int'" type="number" ng-pattern="item.validation?item.validation:'^[0-9]+$'"
                    class="form-control" ng-model="item.value"/>
             <select name="sub" ng-if="item.type == 'select'" class="form-control" ng-options="i for i in item.available"
                     ng-model="item.value"></select>

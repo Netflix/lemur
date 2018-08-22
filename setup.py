@@ -59,6 +59,7 @@ class SmartInstall(install):
     If the package indicator is missing, this will also force a run of
     `build_static` which is required for JavaScript assets and other things.
     """
+
     def _needs_static(self):
         return not os.path.exists(os.path.join(ROOT, 'lemur/static/dist'))
 

@@ -313,7 +313,7 @@ LDAP support requires the pyldap python library, which also depends on the follo
 To configure the use of an LDAP server, a number of settings need to be configured in `lemur.conf.py`.
 
 Here is an example LDAP configuration stanza you can add to your config. Adjust to suit your environment of course.
- 
+
 .. code-block:: python
 
         LDAP_AUTH = True

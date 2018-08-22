@@ -211,6 +211,7 @@ class Login(Resource):
     on your uses cases but. It is important to not that there is currently no build in method to revoke a users token \
     and force re-authentication.
     """
+
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(Login, self).__init__()
@@ -282,10 +283,10 @@ class Login(Resource):
                     metrics.send('login', 'counter', 1, metric_tags={'status': SUCCESS_METRIC_STATUS})
                     return dict(token=create_token(user))
             except Exception as e:
-                    current_app.logger.error("ldap error: {0}".format(e))
-                    ldap_message = 'ldap error: %s' % e
-                    metrics.send('login', 'counter', 1, metric_tags={'status': FAILURE_METRIC_STATUS})
-                    return dict(message=ldap_message), 403
+                current_app.logger.error("ldap error: {0}".format(e))
+                ldap_message = 'ldap error: %s' % e
+                metrics.send('login', 'counter', 1, metric_tags={'status': FAILURE_METRIC_STATUS})
+                return dict(message=ldap_message), 403
 
         # if not valid user - no certificates for you
         metrics.send('login', 'counter', 1, metric_tags={'status': FAILURE_METRIC_STATUS})
@@ -302,6 +303,7 @@ class Ping(Resource):
     provider uses for its callbacks.
     2. Add or change the Lemur AngularJS Configuration to point to your new provider
     """
+
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(Ping, self).__init__()
