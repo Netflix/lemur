@@ -10,7 +10,7 @@ attrs==18.1.0             # via pytest
 aws-xray-sdk==0.95        # via moto
 boto3==1.7.79             # via moto
 boto==2.49.0              # via moto
-botocore==1.10.79         # via boto3, moto, s3transfer
+botocore==1.10.83         # via boto3, moto, s3transfer
 certifi==2018.8.13        # via requests
 cffi==1.11.5              # via cryptography
 chardet==3.0.4            # via requests
