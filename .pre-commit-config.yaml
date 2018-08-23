@@ -4,12 +4,6 @@
     -   id: trailing-whitespace
     -   id: flake8
     -   id: check-merge-conflict
-    -   id: pretty-format-json
-    -   id: check-ast
-    -   id: check-case-conflict
-    -   id: check-yaml
-    -   id: autopep8-wrapper
-
 -   repo: git://github.com/pre-commit/mirrors-jshint
     sha: v2.9.5
     hooks:

@@ -25,7 +25,6 @@ class Hex(Field):
     """
     A hex formatted string.
     """
-
     def _serialize(self, value, attr, obj):
         if value:
             value = hex(int(value))[2:].upper()
@@ -318,7 +317,6 @@ class SubjectAlternativeNameExtension(Field):
     :param kwargs: The same keyword arguments that :class:`Field` receives.
 
     """
-
     def _serialize(self, value, attr, obj):
         general_names = []
         name_type = None

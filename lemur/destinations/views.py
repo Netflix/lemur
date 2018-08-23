@@ -24,7 +24,6 @@ api = Api(mod)
 
 class DestinationsList(AuthenticatedResource):
     """ Defines the 'destinations' endpoint """
-
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(DestinationsList, self).__init__()
@@ -336,7 +335,6 @@ class Destinations(AuthenticatedResource):
 
 class CertificateDestinations(AuthenticatedResource):
     """ Defines the 'certificate/<int:certificate_id/destinations'' endpoint """
-
     def __init__(self):
         super(CertificateDestinations, self).__init__()
 
@@ -409,7 +407,6 @@ class CertificateDestinations(AuthenticatedResource):
 
 class DestinationsStats(AuthenticatedResource):
     """ Defines the 'certificates' stats endpoint """
-
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(DestinationsStats, self).__init__()

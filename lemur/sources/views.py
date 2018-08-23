@@ -24,7 +24,6 @@ api = Api(mod)
 
 class SourcesList(AuthenticatedResource):
     """ Defines the 'sources' endpoint """
-
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(SourcesList, self).__init__()
@@ -282,7 +281,6 @@ class Sources(AuthenticatedResource):
 
 class CertificateSources(AuthenticatedResource):
     """ Defines the 'certificate/<int:certificate_id/sources'' endpoint """
-
     def __init__(self):
         super(CertificateSources, self).__init__()
 

@@ -25,7 +25,6 @@ api = Api(mod)
 
 class AuthoritiesList(AuthenticatedResource):
     """ Defines the 'authorities' endpoint """
-
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(AuthoritiesList, self).__init__()

@@ -23,7 +23,6 @@ api = Api(mod)
 
 class LogsList(AuthenticatedResource):
     """ Defines the 'logs' endpoint """
-
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(LogsList, self).__init__()
