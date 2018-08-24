@@ -87,7 +87,7 @@
                       <dd>{{ certificate.authority ? certificate.authority.name : "Imported" }} <span class="text-muted">({{ certificate.issuer }})</span></dd>
                       <dt>Serial</dt>
                       <dd>
-                        <div>Hex: {{ certificate.serialHex }}</div>
+                        <div>Hex: <a href="https://crt.sh/?serial={{ certificate.serialHex }}" rel="noreferrer" target="_blank" title="View on crt.sh">{{ certificate.serialHex }}</a></div>
                         <div class="text-muted text-nowrap">Decimal: {{ certificate.serial }}</div>
                       </dd>
                       <dt>Valid From</dt>
