@@ -47,7 +47,7 @@ pycryptodome==3.6.6       # via python-jose
 pyflakes==2.0.0
 pytest-flask==0.10.0
 pytest-mock==1.10.0
-pytest==3.7.1
+pytest==3.7.3
 python-dateutil==2.7.3    # via botocore, faker, freezegun, moto
 python-jose==2.0.2        # via moto
 pytz==2018.5              # via moto
