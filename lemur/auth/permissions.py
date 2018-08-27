@@ -29,6 +29,9 @@ class CertificatePermission(Permission):
         needs = [RoleNeed('admin'), RoleNeed(owner), RoleNeed('creator')]
         for r in roles:
             needs.append(CertificateOwnerNeed(str(r)))
+            # Backwards compatibility with mixed-case role names
+            if str(r) != str(r).lower():
+                needs.append(CertificateOwnerNeed(str(r).lower()))
 
         super(CertificatePermission, self).__init__(*needs)
 
