@@ -6,7 +6,7 @@
 #
 aspy.yaml==1.1.1          # via pre-commit
 cached-property==1.4.3    # via pre-commit
-certifi==2018.8.13        # via requests
+certifi==2018.8.24        # via requests
 cfgv==1.1.0               # via pre-commit
 chardet==3.0.4            # via requests
 flake8==3.5.0
@@ -24,7 +24,7 @@ requests-toolbelt==0.8.0  # via twine
 requests==2.19.1          # via requests-toolbelt, twine
 six==1.11.0               # via cfgv, pre-commit
 toml==0.9.4               # via pre-commit
-tqdm==4.24.0              # via twine
+tqdm==4.25.0              # via twine
 twine==1.11.0
 urllib3==1.23             # via requests
 virtualenv==16.0.0        # via pre-commit
