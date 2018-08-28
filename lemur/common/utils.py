@@ -149,7 +149,7 @@ def validate_conf(app, required_vars):
     :param required_vars: list
     """
     for var in required_vars:
-        if not app.config.get(var):
+        if var not in app.config:
             raise InvalidConfiguration("Required variable '{var}' is not set in Lemur's conf.".format(var=var))
 
 
