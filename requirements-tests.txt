@@ -49,7 +49,7 @@ pytest-flask==0.10.0
 pytest-mock==1.10.0
 pytest==3.7.3
 python-dateutil==2.7.3    # via botocore, faker, freezegun, moto
-python-jose==2.0.2        # via moto
+python-jose==3.0.1        # via moto
 pytz==2018.5              # via moto
 pyyaml==3.13              # via pyaml
 requests-mock==1.5.2
