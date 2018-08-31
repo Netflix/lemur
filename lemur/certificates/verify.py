@@ -36,7 +36,9 @@ def ocsp_verify(cert_path, issuer_chain_path):
         return None
 
     p2 = subprocess.Popen(['openssl', 'ocsp', '-issuer', issuer_chain_path,
-                           '-cert', cert_path, "-url", url.strip()], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                           '-cert', cert_path, "-url", url.strip()],
+                          stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE)
 
     message, err = p2.communicate()
 
@@ -65,7 +67,7 @@ def crl_verify(cert_path):
     with open(cert_path, 'rt') as c:
         try:
             cert = parse_certificate(c.read())
-        except Exception as e:
+        except ValueError as e:
             current_app.logger.error(e)
             return None
 
@@ -92,14 +94,17 @@ def crl_verify(cert_path):
             except ConnectionError:
                 raise Exception("Unable to retrieve CRL: {0}".format(point))
 
-            crl_cache[point] = x509.load_der_x509_crl(response.content, backend=default_backend())
+            crl_cache[point] = x509.load_der_x509_crl(response.content,
+                                                      backend=default_backend())
 
         for r in crl_cache[point]:
             if cert.serial_number == r.serial_number:
                 try:
                     reason = r.extensions.get_extension_for_class(x509.CRLReason).value
-                    # Handle "removeFromCRL" revoke reason as unrevoked; continue with the next distribution point.
-                    # Per RFC 5280 section 6.3.3 (k): https://tools.ietf.org/html/rfc5280#section-6.3.3
+                    # Handle "removeFromCRL" revoke reason as unrevoked;
+                    # continue with the next distribution point.
+                    # Per RFC 5280 section 6.3.3 (k):
+                    #  https://tools.ietf.org/html/rfc5280#section-6.3.3
                     if reason == x509.ReasonFlags.remove_from_crl:
                         break
                 except x509.ExtensionNotFound:
