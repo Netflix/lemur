@@ -17,7 +17,7 @@ from lemur.common.utils import parse_certificate
 
 crl_cache = {}
 
-def ocsp_verify(cert_path, issuer_chain_path):
+def ocsp_verify(cert, cert_path, issuer_chain_path):
     """
     Attempts to verify a certificate via OCSP. OCSP is a more modern version
     of CRL in that it will query the OCSP URI in order to determine if the
@@ -32,7 +32,7 @@ def ocsp_verify(cert_path, issuer_chain_path):
     url, err = p1.communicate()
 
     if not url:
-        current_app.logger.debug("No OCSP URL in certificate")
+        current_app.logger.debug("No OCSP URL in certificate {}".format(cert.serial_number))
         return None
 
     p2 = subprocess.Popen(['openssl', 'ocsp', '-issuer', issuer_chain_path,
@@ -48,7 +48,8 @@ def ocsp_verify(cert_path, issuer_chain_path):
         raise Exception("Got error when parsing OCSP url")
 
     elif 'revoked' in p_message:
-        return
+        current_app.logger.debug("OCSP reports certificate revoked: {}".format(cert.serial_number))
+        return False
 
     elif 'good' not in p_message:
         raise Exception("Did not receive a valid response")
@@ -56,7 +57,7 @@ def ocsp_verify(cert_path, issuer_chain_path):
     return True
 
 
-def crl_verify(cert_path):
+def crl_verify(cert, cert_path):
     """
     Attempts to verify a certificate using CRL.
 
@@ -64,25 +65,19 @@ def crl_verify(cert_path):
     :return: True if certificate is valid, False otherwise
     :raise Exception: If certificate does not have CRL
     """
-    with open(cert_path, 'rt') as c:
-        try:
-            cert = parse_certificate(c.read())
-        except ValueError as e:
-            current_app.logger.error(e)
-            return None
-
     try:
         distribution_points = cert.extensions.get_extension_for_oid(
                                                     x509.OID_CRL_DISTRIBUTION_POINTS
                                                 ).value
     except x509.ExtensionNotFound:
-        current_app.logger.warn("No CRLDP extension in certificate")
+        current_app.logger.debug("No CRLDP extension in certificate {}".format(cert.serial_number))
         return None
 
     for p in distribution_points:
         point = p.full_name[0].value
 
         if point not in crl_cache:
+            current_app.logger.debug("Retrieving CRL: {}".format(point))
             try:
                 response = requests.get(point)
 
@@ -96,6 +91,8 @@ def crl_verify(cert_path):
 
             crl_cache[point] = x509.load_der_x509_crl(response.content,
                                                       backend=default_backend())
+        else:
+            current_app.logger.debug("CRL point is cached {}".format(point))
 
         for r in crl_cache[point]:
             if cert.serial_number == r.serial_number:
@@ -108,10 +105,11 @@ def crl_verify(cert_path):
                     if reason == x509.ReasonFlags.remove_from_crl:
                         break
                 except x509.ExtensionNotFound:
-                    current_app.logger.warn("extension not found in CRL?")
                     pass
 
-                return
+                current_app.logger.debug("CRL reports certificate "
+                                         "revoked: {}".format(cert.serial_number))
+                return False
 
     return True
 
@@ -124,15 +122,22 @@ def verify(cert_path, issuer_chain_path):
     :param issuer_chain_path:
     :return: True if valid, False otherwise
     """
+    with open(cert_path, 'rt') as c:
+        try:
+            cert = parse_certificate(c.read())
+        except ValueError as e:
+            current_app.logger.error(e)
+            return None
+
     # OCSP is our main source of truth, in a lot of cases CRLs
     # have been deprecated and are no longer updated
-    verify_result = ocsp_verify(cert_path, issuer_chain_path)
+    verify_result = ocsp_verify(cert, cert_path, issuer_chain_path)
 
     if verify_result is None:
-        verify_result = crl_verify(cert_path)
+        verify_result = crl_verify(cert, cert_path)
 
     if verify_result is None:
-        current_app.logger.warn("Failed to verify")
+        current_app.logger.debug("Failed to verify {}".format(cert.serial_number))
 
     return verify_result
 
