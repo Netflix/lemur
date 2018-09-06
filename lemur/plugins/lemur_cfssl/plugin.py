@@ -52,7 +52,7 @@ class CfsslIssuerPlugin(IssuerPlugin):
         if response.status_code > 399:
             metrics.send('cfssl_create_certificate_failure', 'counter', 1)
             raise Exception(
-                "Error revoking cert. Please check your CFSSL API server")
+                "Error creating cert. Please check your CFSSL API server")
         response_json = json.loads(response.content.decode('utf_8'))
         cert = response_json['result']['certificate']
         parsed_cert = parse_certificate(cert)
