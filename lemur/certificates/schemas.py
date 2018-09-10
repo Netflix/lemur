@@ -235,8 +235,9 @@ class CertificateOutputSchema(LemurOutputSchema):
 
 class CertificateUploadInputSchema(CertificateCreationSchema):
     name = fields.String()
+    authority = fields.Nested(AssociatedAuthoritySchema, required=False)
     notify = fields.Boolean(missing=True)
-
+    external_id = fields.String(missing=None, allow_none=True)
     private_key = fields.String(validate=validators.private_key)
     body = fields.String(required=True, validate=validators.public_certificate)
     chain = fields.String(validate=validators.public_certificate, missing=None,

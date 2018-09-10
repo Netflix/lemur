@@ -233,7 +233,7 @@ def upload(**kwargs):
             kwargs['private_key'] = private_key.encode('utf-8')
 
     cert = Certificate(**kwargs)
-
+    cert.authority = kwargs.get('authority')
     cert = database.create(cert)
 
     kwargs['creator'].certificates.append(cert)

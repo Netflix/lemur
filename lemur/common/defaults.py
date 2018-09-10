@@ -232,8 +232,8 @@ def issuer(cert):
     delchars = ''.join(c for c in map(chr, range(256)) if not c.isalnum())
     try:
         # Try organization name or fall back to CN
-        issuer = (cert.issuer.get_attributes_for_oid(x509.OID_ORGANIZATION_NAME)
-                  or cert.issuer.get_attributes_for_oid(x509.OID_COMMON_NAME))
+        issuer = (cert.issuer.get_attributes_for_oid(x509.OID_COMMON_NAME) or
+                  cert.issuer.get_attributes_for_oid(x509.OID_ORGANIZATION_NAME))
         issuer = str(issuer[0].value)
         for c in delchars:
             issuer = issuer.replace(c, "")

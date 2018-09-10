@@ -26,7 +26,7 @@ def test_create_pending(pending_certificate, user, session):
     from lemur.pending_certificates.service import create_certificate, get
     cert = {'body': WILDCARD_CERT_STR,
             'chain': INTERMEDIATE_CERT_STR,
-            'external_id': 54321}
+            'external_id': '54321'}
 
     # Weird copy because the session behavior.  pending_certificate is a valid object but the
     # return of vars(pending_certificate) is a sessionobject, and so nothing from the pending_cert
