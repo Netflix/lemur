@@ -35,7 +35,7 @@ def test_cert_bitstrength(client):
 
 def test_cert_issuer(client):
     from lemur.common.defaults import issuer
-    assert issuer(INTERMEDIATE_CERT) == 'LemurTrustEnterprisesLtd'
+    assert issuer(INTERMEDIATE_CERT) == 'LemurTrustUnittestsRootCA2018'
 
 
 def test_text_to_slug(client):
