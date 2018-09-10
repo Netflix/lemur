@@ -165,6 +165,7 @@ def send_rotation_notification(certificate, notification_plugin=None):
         notification_plugin.send('rotation', data, [data['owner']])
         status = SUCCESS_METRIC_STATUS
     except Exception as e:
+        current_app.logger.error('Unable to send notification to {}.'.format(data['owner']), exc_info=True)
         sentry.captureException()
 
     metrics.send('notification', 'counter', 1, metric_tags={'status': status, 'event_type': 'rotation'})
@@ -196,6 +197,8 @@ def send_pending_failure_notification(pending_cert, notify_owner=True, notify_se
             notification_plugin.send('failed', data, [data['owner']], pending_cert)
             status = SUCCESS_METRIC_STATUS
         except Exception as e:
+            current_app.logger.error('Unable to send pending failure notification to {}.'.format(data['owner']),
+                                     exc_info=True)
             sentry.captureException()
 
     if notify_security:
@@ -203,6 +206,9 @@ def send_pending_failure_notification(pending_cert, notify_owner=True, notify_se
             notification_plugin.send('failed', data, data["security_email"], pending_cert)
             status = SUCCESS_METRIC_STATUS
         except Exception as e:
+            current_app.logger.error('Unable to send pending failure notification to '
+                                     '{}.'.format(data['security_email']),
+                                     exc_info=True)
             sentry.captureException()
 
     metrics.send('notification', 'counter', 1, metric_tags={'status': status, 'event_type': 'rotation'})
