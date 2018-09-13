@@ -4,19 +4,22 @@
 #
 #    pip-compile --no-index --output-file requirements-docs.txt requirements-docs.in
 #
-acme==0.26.1
+acme==0.27.1
 alabaster==0.7.11         # via sphinx
 alembic-autogenerate-enums==0.0.2
 alembic==1.0.0
+amqp==2.3.2
 aniso8601==3.0.2
 arrow==0.12.1
 asn1crypto==0.24.0
 asyncpool==1.0
 babel==2.6.0              # via sphinx
 bcrypt==3.1.4
+billiard==3.5.0.4
 blinker==1.4
-boto3==1.8.1
-botocore==1.11.1
+boto3==1.7.79
+botocore==1.10.84
+celery[redis]==4.2.1
 certifi==2018.8.24
 cffi==1.11.5
 chardet==3.0.4
@@ -39,13 +42,14 @@ flask==0.12
 future==0.16.0
 gunicorn==19.9.0
 idna==2.7
-imagesize==1.0.0          # via sphinx
+imagesize==1.1.0          # via sphinx
 inflection==0.3.1
 itsdangerous==0.24
 jinja2==2.10
 jmespath==0.9.3
 josepy==1.1.0
 jsonlines==1.2.0
+kombu==4.2.1
 lockfile==0.12.2
 mako==1.0.7
 markupsafe==1.0
@@ -72,6 +76,7 @@ python-editor==1.0.3
 pytz==2018.5
 pyyaml==3.13
 raven[flask]==6.9.0
+redis==2.10.6
 requests-toolbelt==0.8.0
 requests[security]==2.19.1
 retrying==1.3.3
@@ -79,12 +84,13 @@ s3transfer==0.1.13
 six==1.11.0
 snowballstemmer==1.2.1    # via sphinx
 sphinx-rtd-theme==0.4.1
-sphinx==1.7.7
+sphinx==1.8.0
 sphinxcontrib-httpdomain==1.7.0
 sphinxcontrib-websupport==1.1.0  # via sphinx
 sqlalchemy-utils==0.33.3
-sqlalchemy==1.2.10
+sqlalchemy==1.2.11
 tabulate==0.8.2
 urllib3==1.23
+vine==1.1.4
 werkzeug==0.14.1
 xmltodict==0.11.0
