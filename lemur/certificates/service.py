@@ -5,13 +5,12 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from cryptography import x509
-from sqlalchemy import func, or_, not_, cast, Integer
-
 import arrow
+from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from flask import current_app
+from sqlalchemy import func, or_, not_, cast, Integer
 
 from lemur import database
 from lemur.authorities.models import Authority
@@ -276,10 +275,6 @@ def create(**kwargs):
         certificate_issued.send(certificate=cert, authority=cert.authority)
         metrics.send('certificate_issued', 'counter', 1, metric_tags=dict(owner=cert.owner, issuer=cert.issuer))
 
-    if isinstance(cert, PendingCertificate) and cert.authority.plugin_name == 'acme-issuer':
-        # Call Celery to create acme-issuer (LetsEncrypt) certificates
-        from lemur.common.celery import fetch_acme_cert
-        fetch_acme_cert.delay(cert.id)
     return cert
 
 

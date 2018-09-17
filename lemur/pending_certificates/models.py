@@ -5,19 +5,18 @@
 """
 from datetime import datetime as dt
 
-from sqlalchemy.orm import relationship
 from sqlalchemy import Integer, ForeignKey, String, PassiveDefault, func, Column, Text, Boolean
-from sqlalchemy_utils.types.arrow import ArrowType
+from sqlalchemy.orm import relationship
 from sqlalchemy_utils import JSONType
+from sqlalchemy_utils.types.arrow import ArrowType
 
 from lemur.certificates.models import get_or_increase_name
 from lemur.common import defaults, utils
 from lemur.database import db
-from lemur.utils import Vault
-
 from lemur.models import pending_cert_source_associations, \
     pending_cert_destination_associations, pending_cert_notification_associations, \
     pending_cert_replacement_associations, pending_cert_role_associations
+from lemur.utils import Vault
 
 
 class PendingCertificate(db.Model):
@@ -40,6 +39,7 @@ class PendingCertificate(db.Model):
     dns_provider_id = Column(Integer, ForeignKey('dns_providers.id', ondelete="CASCADE"))
 
     status = Column(Text(), nullable=True)
+    last_updated = Column(ArrowType, PassiveDefault(func.now()), onupdate=func.now(), nullable=False)
 
     rotation = Column(Boolean, default=False)
     user_id = Column(Integer, ForeignKey('users.id'))
@@ -47,9 +47,12 @@ class PendingCertificate(db.Model):
     root_authority_id = Column(Integer, ForeignKey('authorities.id', ondelete="CASCADE"))
     rotation_policy_id = Column(Integer, ForeignKey('rotation_policies.id'))
 
-    notifications = relationship('Notification', secondary=pending_cert_notification_associations, backref='pending_cert', passive_deletes=True)
-    destinations = relationship('Destination', secondary=pending_cert_destination_associations, backref='pending_cert', passive_deletes=True)
-    sources = relationship('Source', secondary=pending_cert_source_associations, backref='pending_cert', passive_deletes=True)
+    notifications = relationship('Notification', secondary=pending_cert_notification_associations,
+                                 backref='pending_cert', passive_deletes=True)
+    destinations = relationship('Destination', secondary=pending_cert_destination_associations, backref='pending_cert',
+                                passive_deletes=True)
+    sources = relationship('Source', secondary=pending_cert_source_associations, backref='pending_cert',
+                           passive_deletes=True)
     roles = relationship('Role', secondary=pending_cert_role_associations, backref='pending_cert', passive_deletes=True)
     replaces = relationship('Certificate',
                             secondary=pending_cert_replacement_associations,
@@ -77,7 +80,7 @@ class PendingCertificate(db.Model):
             # TODO: Fix auto-generated name, it should be renamed on creation
             self.name = get_or_increase_name(
                 defaults.certificate_name(kwargs['common_name'], kwargs['authority'].name,
-                    dt.now(), dt.now(), False), self.external_id)
+                                          dt.now(), dt.now(), False), self.external_id)
             self.rename = True
 
         self.cn = defaults.common_name(utils.parse_csr(self.csr))

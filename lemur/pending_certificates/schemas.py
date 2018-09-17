@@ -1,5 +1,14 @@
 from marshmallow import fields, post_load
 
+from lemur.authorities.schemas import AuthorityNestedOutputSchema
+from lemur.certificates.schemas import CertificateNestedOutputSchema
+from lemur.common.schema import LemurInputSchema, LemurOutputSchema
+from lemur.destinations.schemas import DestinationNestedOutputSchema
+from lemur.domains.schemas import DomainNestedOutputSchema
+from lemur.notifications import service as notification_service
+from lemur.notifications.schemas import NotificationNestedOutputSchema
+from lemur.policies.schemas import RotationPolicyNestedOutputSchema
+from lemur.roles.schemas import RoleNestedOutputSchema
 from lemur.schemas import (
     AssociatedCertificateSchema,
     AssociatedDestinationSchema,
@@ -8,18 +17,7 @@ from lemur.schemas import (
     EndpointNestedOutputSchema,
     ExtensionSchema
 )
-
-from lemur.common.schema import LemurInputSchema, LemurOutputSchema
 from lemur.users.schemas import UserNestedOutputSchema
-from lemur.authorities.schemas import AuthorityNestedOutputSchema
-from lemur.certificates.schemas import CertificateNestedOutputSchema
-from lemur.destinations.schemas import DestinationNestedOutputSchema
-from lemur.domains.schemas import DomainNestedOutputSchema
-from lemur.notifications.schemas import NotificationNestedOutputSchema
-from lemur.roles.schemas import RoleNestedOutputSchema
-from lemur.policies.schemas import RotationPolicyNestedOutputSchema
-
-from lemur.notifications import service as notification_service
 
 
 class PendingCertificateSchema(LemurInputSchema):
@@ -38,6 +36,7 @@ class PendingCertificateOutputSchema(LemurOutputSchema):
     name = fields.String()
     number_attempts = fields.Integer()
     date_created = fields.Date()
+    last_updated = fields.Date()
 
     rotation = fields.Boolean()
 
@@ -88,7 +87,8 @@ class PendingCertificateEditInputSchema(PendingCertificateSchema):
         """
         if data['owner']:
             notification_name = "DEFAULT_{0}".format(data['owner'].split('@')[0].upper())
-            data['notifications'] += notification_service.create_default_expiration_notifications(notification_name, [data['owner']])
+            data['notifications'] += notification_service.create_default_expiration_notifications(notification_name,
+                                                                                                  [data['owner']])
         return data
 
 

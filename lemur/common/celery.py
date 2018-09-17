@@ -8,7 +8,9 @@ command: celery -A lemur.common.celery worker --loglevel=info -l DEBUG -B
 
 """
 import copy
+import datetime
 import sys
+from datetime import timezone
 
 from celery import Celery
 from flask import current_app
@@ -117,3 +119,17 @@ def fetch_acme_cert(id):
             wrong_issuer=wrong_issuer
         )
     )
+
+
+@celery.task()
+def fetch_all_pending_acme_certs():
+    """Instantiate celery workers to resolve all pending Acme certificates"""
+    pending_certs = pending_certificate_service.get_pending_certs('all')
+
+    # We only care about certs using the acme-issuer plugin
+    for cert in pending_certs:
+        cert_authority = get_authority(cert.authority_id)
+        if cert_authority.plugin_name == 'acme-issuer':
+            if cert.last_updated == cert.date_created or datetime.datetime.now(
+                    timezone.utc) - cert.last_updated > datetime.timedelta(minutes=3):
+                fetch_acme_cert.delay(cert.id)
