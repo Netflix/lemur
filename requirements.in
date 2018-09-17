@@ -4,7 +4,9 @@ acme
 alembic-autogenerate-enums
 arrow
 asyncpool
-boto3==1.7.79
+boto3==1.7.79 # Issue with moto: https://github.com/spulec/moto/issues/1813
+botocore== 1.10.84 # Issue with moto: https://github.com/spulec/moto/issues/1813
+celery[redis]
 certifi
 CloudFlare
 cryptography

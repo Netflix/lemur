@@ -6,31 +6,25 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import arrow
-
-from flask import current_app
-from sqlalchemy import func, or_, not_, cast, Integer
-
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
+from flask import current_app
+from sqlalchemy import func, or_, not_, cast, Integer
 
 from lemur import database
-from lemur.extensions import metrics, sentry, signals
-from lemur.plugins.base import plugins
-from lemur.common.utils import generate_private_key, truthiness
-
-from lemur.roles.models import Role
-from lemur.domains.models import Domain
 from lemur.authorities.models import Authority
-from lemur.destinations.models import Destination
 from lemur.certificates.models import Certificate
+from lemur.certificates.schemas import CertificateOutputSchema, CertificateInputSchema
+from lemur.common.utils import generate_private_key, truthiness
+from lemur.destinations.models import Destination
+from lemur.domains.models import Domain
+from lemur.extensions import metrics, sentry, signals
 from lemur.notifications.models import Notification
 from lemur.pending_certificates.models import PendingCertificate
-
-from lemur.certificates.schemas import CertificateOutputSchema, CertificateInputSchema
-
+from lemur.plugins.base import plugins
 from lemur.roles import service as role_service
-
+from lemur.roles.models import Role
 
 csr_created = signals.signal('csr_created', "CSR generated")
 csr_imported = signals.signal('csr_imported', "CSR imported from external source")
@@ -95,8 +89,8 @@ def get_all_pending_cleaning(source):
     :param source:
     :return:
     """
-    return Certificate.query.filter(Certificate.sources.any(id=source.id))\
-                            .filter(not_(Certificate.endpoints.any())).all()
+    return Certificate.query.filter(Certificate.sources.any(id=source.id)) \
+        .filter(not_(Certificate.endpoints.any())).all()
 
 
 def get_all_pending_reissue():
@@ -109,8 +103,8 @@ def get_all_pending_reissue():
 
     :return:
     """
-    return Certificate.query.filter(Certificate.rotation == True)\
-        .filter(not_(Certificate.replaced.any()))\
+    return Certificate.query.filter(Certificate.rotation == True) \
+        .filter(not_(Certificate.replaced.any())) \
         .filter(Certificate.in_rotation_window == True).all()  # noqa
 
 
@@ -280,6 +274,7 @@ def create(**kwargs):
     if isinstance(cert, Certificate):
         certificate_issued.send(certificate=cert, authority=cert.authority)
         metrics.send('certificate_issued', 'counter', 1, metric_tags=dict(owner=cert.owner, issuer=cert.issuer))
+
     return cert
 
 
@@ -310,8 +305,8 @@ def render(args):
 
         if 'issuer' in terms:
             # we can't rely on issuer being correct in the cert directly so we combine queries
-            sub_query = database.session_query(Authority.id)\
-                .filter(Authority.name.ilike(term))\
+            sub_query = database.session_query(Authority.id) \
+                .filter(Authority.name.ilike(term)) \
                 .subquery()
 
             query = query.filter(
@@ -450,8 +445,8 @@ def stats(**kwargs):
     if kwargs.get('metric') == 'not_after':
         start = arrow.utcnow()
         end = start.replace(weeks=+32)
-        items = database.db.session.query(Certificate.issuer, func.count(Certificate.id))\
-            .group_by(Certificate.issuer)\
+        items = database.db.session.query(Certificate.issuer, func.count(Certificate.id)) \
+            .group_by(Certificate.issuer) \
             .filter(Certificate.not_after <= end.format('YYYY-MM-DD')) \
             .filter(Certificate.not_after >= start.format('YYYY-MM-DD')).all()
 
