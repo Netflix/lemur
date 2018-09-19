@@ -60,7 +60,7 @@ pem==18.1.0
 psycopg2==2.7.5
 pyasn1-modules==0.2.2     # via python-ldap
 pyasn1==0.4.4             # via ndg-httpsclient, paramiko, pyasn1-modules, python-ldap
-pycparser==2.18           # via cffi
+pycparser==2.19           # via cffi
 pyjwt==1.6.4
 pynacl==1.2.1             # via paramiko
 pyopenssl==18.0.0
