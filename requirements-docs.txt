@@ -64,7 +64,7 @@ pem==18.1.0
 psycopg2==2.7.5
 pyasn1-modules==0.2.2
 pyasn1==0.4.4
-pycparser==2.18
+pycparser==2.19
 pygments==2.2.0           # via sphinx
 pyjwt==1.6.4
 pynacl==1.2.1
