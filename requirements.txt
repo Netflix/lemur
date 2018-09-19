@@ -54,7 +54,7 @@ marshmallow-sqlalchemy==0.14.1
 marshmallow==2.15.5
 mock==2.0.0               # via acme
 ndg-httpsclient==0.5.1
-paramiko==2.4.1
+paramiko==2.4.2
 pbr==4.2.0                # via mock
 pem==18.1.0
 psycopg2==2.7.5
