@@ -25,6 +25,6 @@ requests==2.19.1          # via requests-toolbelt, twine
 six==1.11.0               # via cfgv, pre-commit
 toml==0.9.6               # via pre-commit
 tqdm==4.26.0              # via twine
-twine==1.11.0
+twine==1.12.0
 urllib3==1.23             # via requests
 virtualenv==16.0.0        # via pre-commit
