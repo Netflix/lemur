@@ -21,7 +21,7 @@ celery[redis]==4.2.1
 certifi==2018.8.24
 cffi==1.11.5              # via bcrypt, cryptography, pynacl
 chardet==3.0.4            # via requests
-click==6.7                # via flask
+click==7.0                # via flask
 cloudflare==2.1.0
 cryptography==2.3.1
 dnspython3==1.15.0
