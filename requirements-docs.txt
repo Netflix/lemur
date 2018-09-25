@@ -23,7 +23,7 @@ celery[redis]==4.2.1
 certifi==2018.8.24
 cffi==1.11.5
 chardet==3.0.4
-click==6.7
+click==7.0
 cloudflare==2.1.0
 cryptography==2.3.1
 dnspython3==1.15.0
