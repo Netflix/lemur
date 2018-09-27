@@ -17,6 +17,7 @@ from lemur.common.utils import parse_certificate
 
 crl_cache = {}
 
+
 def ocsp_verify(cert, cert_path, issuer_chain_path):
     """
     Attempts to verify a certificate via OCSP. OCSP is a more modern version
@@ -67,8 +68,8 @@ def crl_verify(cert, cert_path):
     """
     try:
         distribution_points = cert.extensions.get_extension_for_oid(
-                                                    x509.OID_CRL_DISTRIBUTION_POINTS
-                                                ).value
+            x509.OID_CRL_DISTRIBUTION_POINTS
+        ).value
     except x509.ExtensionNotFound:
         current_app.logger.debug("No CRLDP extension in certificate {}".format(cert.serial_number))
         return None
