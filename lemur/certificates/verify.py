@@ -24,6 +24,7 @@ def ocsp_verify(cert, cert_path, issuer_chain_path):
     of CRL in that it will query the OCSP URI in order to determine if the
     certificate has been revoked
 
+    :param cert:
     :param cert_path:
     :param issuer_chain_path:
     :return bool: True if certificate is valid, False otherwise
@@ -62,6 +63,7 @@ def crl_verify(cert, cert_path):
     """
     Attempts to verify a certificate using CRL.
 
+    :param cert:
     :param cert_path:
     :return: True if certificate is valid, False otherwise
     :raise Exception: If certificate does not have CRL
