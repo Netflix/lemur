@@ -4,7 +4,7 @@ coverage
 factory-boy
 Faker
 freezegun
-moto
+moto==1.3.4 # Issue with moto: https://github.com/spulec/moto/issues/1813
 nose
 pyflakes
 pytest

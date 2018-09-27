@@ -61,7 +61,7 @@ def test_certificate_output_schema(session, certificate, issuer_plugin):
     # Make sure serialization parses the cert only once (uses cached 'parsed_cert' attribute)
     with patch('lemur.common.utils.parse_certificate', side_effect=utils.parse_certificate) as wrapper:
         data, errors = CertificateOutputSchema().dump(certificate)
-        assert data['issuer'] == 'LemurTrustEnterprisesLtd'
+        assert data['issuer'] == 'LemurTrustUnittestsClass1CA2018'
 
     assert wrapper.call_count == 1
 
@@ -455,8 +455,8 @@ def test_create_certificate(issuer_plugin, authority, user):
     cert = create(authority=authority, csr=CSR_STR, owner='joe@example.com', creator=user['user'])
     assert str(cert.not_after) == '2047-12-31T22:00:00+00:00'
     assert str(cert.not_before) == '2017-12-31T22:00:00+00:00'
-    assert cert.issuer == 'LemurTrustEnterprisesLtd'
-    assert cert.name == 'SAN-san.example.org-LemurTrustEnterprisesLtd-20171231-20471231-AFF2DB4F8D2D4D8E80FA382AE27C2333'
+    assert cert.issuer == 'LemurTrustUnittestsClass1CA2018'
+    assert cert.name == 'SAN-san.example.org-LemurTrustUnittestsClass1CA2018-20171231-20471231-AFF2DB4F8D2D4D8E80FA382AE27C2333'
 
     cert = create(authority=authority, csr=CSR_STR, owner='joe@example.com', name='ACustomName1', creator=user['user'])
     assert cert.name == 'ACustomName1'
@@ -486,8 +486,8 @@ def test_import(user):
     cert = import_certificate(body=SAN_CERT_STR, chain=INTERMEDIATE_CERT_STR, private_key=SAN_CERT_KEY, creator=user['user'])
     assert str(cert.not_after) == '2047-12-31T22:00:00+00:00'
     assert str(cert.not_before) == '2017-12-31T22:00:00+00:00'
-    assert cert.issuer == 'LemurTrustEnterprisesLtd'
-    assert cert.name == 'SAN-san.example.org-LemurTrustEnterprisesLtd-20171231-20471231-AFF2DB4F8D2D4D8E80FA382AE27C2333-2'
+    assert cert.issuer == 'LemurTrustUnittestsClass1CA2018'
+    assert cert.name == 'SAN-san.example.org-LemurTrustUnittestsClass1CA2018-20171231-20471231-AFF2DB4F8D2D4D8E80FA382AE27C2333-2'
 
     cert = import_certificate(body=SAN_CERT_STR, chain=INTERMEDIATE_CERT_STR, private_key=SAN_CERT_KEY, owner='joe@example.com', name='ACustomName2', creator=user['user'])
     assert cert.name == 'ACustomName2'
