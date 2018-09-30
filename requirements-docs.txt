@@ -69,7 +69,7 @@ pygments==2.2.0           # via sphinx
 pyjwt==1.6.4
 pynacl==1.2.1
 pyopenssl==18.0.0
-pyparsing==2.2.0          # via packaging
+pyparsing==2.2.2          # via packaging
 pyrfc3339==1.1
 python-dateutil==2.7.3
 python-editor==1.0.3
