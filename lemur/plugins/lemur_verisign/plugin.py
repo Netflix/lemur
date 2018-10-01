@@ -10,16 +10,13 @@
 import arrow
 import requests
 import xmltodict
-
+from cryptography import x509
 from flask import current_app
 
-from cryptography import x509
+from lemur.common.utils import get_psuedo_random_string
 from lemur.extensions import metrics
-
 from lemur.plugins import lemur_verisign as verisign
 from lemur.plugins.bases import IssuerPlugin, SourcePlugin
-
-from lemur.common.utils import get_psuedo_random_string
 
 # https://support.venafi.com/entries/66445046-Info-VeriSign-Error-Codes
 VERISIGN_ERRORS = {
@@ -108,7 +105,8 @@ def process_options(options):
         'firstName': current_app.config.get("VERISIGN_FIRST_NAME"),
         'lastName': current_app.config.get("VERISIGN_LAST_NAME"),
         'signatureAlgorithm': 'sha256WithRSAEncryption',
-        'email': current_app.config.get("VERISIGN_EMAIL")
+        'email': current_app.config.get("VERISIGN_EMAIL"),
+        'ctLogOption': current_app.config.get("VERISIGN_CS_LOG_OPTION", "public"),
     }
 
     data['subject_alt_names'] = ",".join(get_additional_names(options))
