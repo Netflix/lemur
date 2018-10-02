@@ -12,8 +12,8 @@ from .vectors import INTERMEDIATE_CERT_STR
 
 def test_verify_simple_cert():
     """Simple certificate without CRL or OCSP."""
-    # Verification raises an exception for "unknown" if there are no means to verify it
-    assert verify_string(INTERMEDIATE_CERT_STR, '') == None
+    # Verification returns None if there are no means to verify a cert
+    assert verify_string(INTERMEDIATE_CERT_STR, '') is None
 
 
 def test_verify_crl_unknown_scheme(cert_builder, private_key):
