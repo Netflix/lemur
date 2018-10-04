@@ -363,7 +363,10 @@ def check_revoked():
             else:
                 status = verify_string(cert.body, "")
 
-            cert.status = 'valid' if status else 'revoked'
+            if status is None:
+                cert.status = 'unknown'
+            else:
+                cert.status = 'valid' if status else 'revoked'
 
         except Exception as e:
             sentry.captureException()
