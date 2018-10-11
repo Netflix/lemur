@@ -215,6 +215,7 @@ angular.module('lemur')
   CertificateApi.get(editId).then(function (certificate) {
     $scope.certificate = certificate;
     $scope.certificate.name = ''; // we should prefer the generated name
+    $scope.certificate.csr = null;  // should not clone CSR in case other settings are changed in clone
     $scope.certificate.validityStart = null;
     $scope.certificate.validityEnd = null;
     CertificateService.getDefaults($scope.certificate);
