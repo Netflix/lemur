@@ -15,7 +15,7 @@ from lemur.database import db
 class Domain(db.Model):
     __tablename__ = 'domains'
     id = Column(Integer, primary_key=True)
-    name = Column(String(256))
+    name = Column(String(256), index=True)
     sensitive = Column(Boolean, default=False)
 
     def __repr__(self):
