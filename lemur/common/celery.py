@@ -105,7 +105,7 @@ def fetch_acme_cert(id):
             if pending_cert.number_attempts > 4:
                 error_log["message"] = "Deleting pending certificate"
                 send_pending_failure_notification(pending_cert, notify_owner=pending_cert.notify)
-                # Mark the pending cert as True
+                # Mark the pending cert as resolved
                 pending_certificate_service.update(
                     cert.get("pending_cert").id,
                     resolved=True
