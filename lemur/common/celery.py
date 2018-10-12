@@ -8,10 +8,10 @@ command: celery -A lemur.common.celery worker --loglevel=info -l DEBUG -B
 
 """
 import copy
-import datetime
 import sys
-from datetime import timezone
+from datetime import datetime, timezone, timedelta
 
+import arrow
 from celery import Celery
 from flask import current_app
 
@@ -145,3 +145,21 @@ def fetch_all_pending_acme_certs():
             if cert.last_updated == cert.date_created or datetime.datetime.now(
                     timezone.utc) - cert.last_updated > datetime.timedelta(minutes=3):
                 fetch_acme_cert.delay(cert.id)
+
+
+@celery.task()
+def remove_old_acme_certs():
+    """Prune old pending acme certificates from the database"""
+    log_data = {
+        "function": "{}.{}".format(__name__, sys._getframe().f_code.co_name)
+    }
+    pending_certs = pending_certificate_service.get_pending_certs('all')
+
+    # Delete pending certs more than a week old
+    for cert in pending_certs:
+        if arrow.utcnow() - cert.last_updated > timedelta(days=7):
+            log_data['pending_cert_id'] = cert.id
+            log_data['pending_cert_name'] = cert.name
+            log_data['message'] = "Deleting pending certificate"
+            current_app.logger.debug(log_data)
+            pending_certificate_service.delete(cert.id)
