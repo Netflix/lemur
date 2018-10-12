@@ -22,7 +22,7 @@ manager = Manager(usage="Handles pending certificate related tasks.")
 @manager.option('-i', dest='ids', action='append', help='IDs of pending certificates to fetch')
 def fetch(ids):
     """
-    Attempt to get full certificates for each pending certificate listed.
+    Attempt to get full certificate for each pending certificate listed.
 
     Args:
         ids: a list of ids of PendingCertificates (passed in by manager options when run as CLI)
