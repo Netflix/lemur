@@ -37,6 +37,8 @@ class PendingCertificateOutputSchema(LemurOutputSchema):
     number_attempts = fields.Integer()
     date_created = fields.Date()
     last_updated = fields.Date()
+    resolved = fields.Boolean(required=False)
+    resolved_cert_id = fields.Integer(required=False)
 
     rotation = fields.Boolean()
 

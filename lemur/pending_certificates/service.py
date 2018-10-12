@@ -4,24 +4,20 @@
 .. moduleauthor:: James Chuong <jchuong@instartlogic.com>
 """
 import arrow
-
 from sqlalchemy import or_, cast, Integer
 
 from lemur import database
-from lemur.common.utils import truthiness
-from lemur.plugins.base import plugins
-
-from lemur.roles.models import Role
-from lemur.domains.models import Domain
 from lemur.authorities.models import Authority
+from lemur.certificates import service as certificate_service
+from lemur.certificates.schemas import CertificateUploadInputSchema
+from lemur.common.utils import truthiness
 from lemur.destinations.models import Destination
+from lemur.domains.models import Domain
 from lemur.notifications.models import Notification
 from lemur.pending_certificates.models import PendingCertificate
-
-from lemur.certificates import service as certificate_service
+from lemur.plugins.base import plugins
+from lemur.roles.models import Role
 from lemur.users import service as user_service
-
-from lemur.certificates.schemas import CertificateUploadInputSchema
 
 
 def get(pending_cert_id):
@@ -61,6 +57,15 @@ def delete(pending_certificate):
 
 def delete_by_id(id):
     database.delete(get(id))
+
+
+def get_unresolved_pending_certs():
+    """
+    Retrieve a list of unresolved pending certs given a list of ids
+    Filters out non-existing pending certs
+    """
+    query = database.session_query(PendingCertificate).filter(PendingCertificate.resolved.is_(False))
+    return database.find_all(query, PendingCertificate, {}).all()
 
 
 def get_pending_certs(pending_ids):
@@ -116,6 +121,7 @@ def create_certificate(pending_certificate, certificate, user):
         # If generating name from certificate, remove the one from pending certificate
         del data['name']
     data['creator'] = creator
+
     cert = certificate_service.import_certificate(**data)
     database.update(cert)
     return cert
@@ -172,8 +178,8 @@ def render(args):
 
         if 'issuer' in terms:
             # we can't rely on issuer being correct in the cert directly so we combine queries
-            sub_query = database.session_query(Authority.id)\
-                .filter(Authority.name.ilike('%{0}%'.format(terms[1])))\
+            sub_query = database.session_query(Authority.id) \
+                .filter(Authority.name.ilike('%{0}%'.format(terms[1]))) \
                 .subquery()
 
             query = query.filter(
@@ -221,4 +227,6 @@ def render(args):
         now = arrow.now().format('YYYY-MM-DD')
         query = query.filter(PendingCertificate.not_after <= to).filter(PendingCertificate.not_after >= now)
 
+    # Only show unresolved certificates in the UI
+    query = query.filter(PendingCertificate.resolved.is_(False))
     return database.sort_and_page(query, PendingCertificate, args)

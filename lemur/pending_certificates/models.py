@@ -29,6 +29,8 @@ class PendingCertificate(db.Model):
     notify = Column(Boolean, default=True)
     number_attempts = Column(Integer)
     rename = Column(Boolean, default=True)
+    resolved = Column(Boolean, default=False)
+    resolved_cert_id = Column(Integer, nullable=True)
 
     cn = Column(String(128))
     csr = Column(Text(), nullable=False)
