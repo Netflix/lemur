@@ -142,8 +142,8 @@ def fetch_all_pending_acme_certs():
     for cert in pending_certs:
         cert_authority = get_authority(cert.authority_id)
         if cert_authority.plugin_name == 'acme-issuer':
-            if cert.last_updated == cert.date_created or datetime.datetime.now(
-                    timezone.utc) - cert.last_updated > datetime.timedelta(minutes=3):
+            if cert.last_updated == cert.date_created or datetime.now(
+                    timezone.utc) - cert.last_updated > timedelta(minutes=3):
                 fetch_acme_cert.delay(cert.id)
 
 
