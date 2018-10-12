@@ -11,7 +11,6 @@ import copy
 import sys
 from datetime import datetime, timezone, timedelta
 
-import arrow
 from celery import Celery
 from flask import current_app
 
@@ -157,7 +156,7 @@ def remove_old_acme_certs():
 
     # Delete pending certs more than a week old
     for cert in pending_certs:
-        if arrow.utcnow() - cert.last_updated > timedelta(days=7):
+        if datetime.now(timezone.utc) - cert.last_updated > timedelta(days=7):
             log_data['pending_cert_id'] = cert.id
             log_data['pending_cert_name'] = cert.name
             log_data['message'] = "Deleting pending certificate"
