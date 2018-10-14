@@ -144,10 +144,12 @@ class RotationPolicyFactory(BaseFactory):
 
 class CertificateFactory(BaseFactory):
     """Certificate factory."""
-    name = Sequence(lambda n: 'certificate{0}'.format(n))
+    name = Sequence(lambda n: 'certificate{0}.example.org'.format(n))
     chain = INTERMEDIATE_CERT_STR
-    body = Sequence(lambda n: SignedCertificateFactory.get('certificate{0}'.format(n)).cert_pem())
-    private_key = Sequence(lambda n: SignedCertificateFactory.get('certificate{0}'.format(n)).key_pem())
+    body = Sequence(lambda n: SignedCertificateFactory.get(
+                    'certificate{0}.example.org'.format(n)).cert_pem())
+    private_key = Sequence(lambda n: SignedCertificateFactory.get(
+                           'certificate{0}.example.org'.format(n)).key_pem())
     owner = 'joe@example.com'
     status = FuzzyChoice(['valid', 'revoked', 'unknown'])
     deleted = False
