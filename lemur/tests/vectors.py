@@ -17,6 +17,7 @@ VALID_ADMIN_API_TOKEN = {
     'Content-Type': 'application/json'
 }
 
+DEFAULT_SANS = ['san.example.org', 'san2.example.org', 'daniel-san.example.org']
 
 #: CN=LemurTrust Unittests Root CA 2018
 ROOTCA_CERT_STR = """\

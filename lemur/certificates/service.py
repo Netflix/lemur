@@ -52,16 +52,24 @@ def get_by_name(name):
     return database.get(Certificate, name, field='name')
 
 
-def get_by_serial(serial):
+def get_by_serial(serial, issuer=None):
     """
-    Retrieves certificate by it's Serial.
+    Retrieves certificate by its Serial. Optionally constrain by issuer.
     :param serial:
+    :param issuer: Issuer name
     :return:
     """
     if isinstance(serial, int):
         # although serial is a number, the DB column is String(128)
         serial = str(serial)
-    return Certificate.query.filter(Certificate.serial == serial).all()
+
+    conditions = {'serial': serial}
+
+    if issuer:
+        conditions['issuer'] = issuer
+
+    query = database.session_query(Certificate)
+    return database.find_all(query, Certificate, conditions).all()
 
 
 def delete(cert_id):

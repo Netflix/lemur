@@ -16,29 +16,36 @@ from lemur.certificates.views import *  # noqa
 from lemur.common import utils
 from lemur.domains.models import Domain
 
+from lemur.tests.vectors import VALID_ADMIN_API_TOKEN, VALID_ADMIN_HEADER_TOKEN, \
+    VALID_USER_HEADER_TOKEN, CSR_STR, INTERMEDIATE_CERT_STR, SAN_CERT_STR, SAN_CERT_KEY
 
-from lemur.tests.vectors import VALID_ADMIN_API_TOKEN, VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN, CSR_STR, \
-    INTERMEDIATE_CERT_STR, SAN_CERT_STR, SAN_CERT_KEY
+from lemur.tests.factories import SignedCertificateFactory
 
 
 def test_get_or_increase_name(session, certificate):
+
     from lemur.certificates.models import get_or_increase_name
     from lemur.tests.factories import CertificateFactory
 
-    serial = 'AFF2DB4F8D2D4D8E80FA382AE27C2333'
+    signed_cert = SignedCertificateFactory.get_by_serial(certificate.serial)
 
-    assert get_or_increase_name(certificate.name, certificate.serial) == '{0}-{1}'.format(certificate.name, serial)
+    assert get_or_increase_name(certificate.name,
+                                certificate.serial) == '{0}-{1}'.format(signed_cert.name,
+                                                                        signed_cert.serial_name)
 
     certificate.name = 'test-cert-11111111'
-    assert get_or_increase_name(certificate.name, certificate.serial) == 'test-cert-11111111-' + serial
+    assert get_or_increase_name(certificate.name, certificate.serial) == \
+        'test-cert-11111111-' + signed_cert.serial_name
 
     certificate.name = 'test-cert-11111111-1'
-    assert get_or_increase_name('test-cert-11111111-1', certificate.serial) == 'test-cert-11111111-1-' + serial
+    assert get_or_increase_name('test-cert-11111111-1', certificate.serial) == \
+        'test-cert-11111111-1-' + signed_cert.serial_name
 
-    cert2 = CertificateFactory(name='certificate1-' + serial)
+    cert2 = CertificateFactory(name='certificate1-' + signed_cert.serial_name)
     session.commit()
 
-    assert get_or_increase_name('certificate1', int(serial, 16)) == 'certificate1-{}-1'.format(serial)
+    assert get_or_increase_name('certificate1', int(signed_cert.serial_name, 16)) == \
+        'certificate1-{}-1'.format(signed_cert.serial_name)
 
 
 def test_get_certificate_primitives(certificate):
@@ -342,7 +349,8 @@ def test_certificate_disallowed_names(client, authority, session, logged_in_user
     }
 
     data, errors = CertificateInputSchema().load(input_data)
-    assert errors['common_name'][0].startswith("Domain *.example.com does not match whitelisted domain patterns")
+    assert errors['common_name'][0].startswith("Domain *.example.com does not match"
+                                               " whitelisted domain patterns")
     assert (errors['extensions']['sub_alt_names']['names'][0]
             .startswith("Domain evilhacker.org does not match whitelisted domain patterns"))
 
@@ -362,7 +370,8 @@ def test_certificate_sensitive_name(client, authority, session, logged_in_user):
     session.add(Domain(name='sensitive.example.com', sensitive=True))
 
     data, errors = CertificateInputSchema().load(input_data)
-    assert errors['common_name'][0].startswith("Domain sensitive.example.com has been marked as sensitive")
+    assert errors['common_name'][0].startswith("Domain sensitive.example.com "
+                                               "has been marked as sensitive")
 
 
 def test_create_basic_csr(client):
@@ -375,7 +384,13 @@ def test_create_basic_csr(client):
         location='A place',
         owner='joe@example.com',
         key_type='RSA2048',
-        extensions=dict(names=dict(sub_alt_names=x509.SubjectAlternativeName([x509.DNSName('test.example.com'), x509.DNSName('test2.example.com')])))
+        extensions=dict(
+            names=dict(
+                sub_alt_names=x509.SubjectAlternativeName(
+                    [x509.DNSName('test.example.com'), x509.DNSName('test2.example.com')]
+                )
+            )
+        )
     )
     csr, pem = create_csr(**csr_config)
 
@@ -425,11 +440,16 @@ def test_csr_disallowed_san(client, logged_in_user):
         common_name="CN with spaces isn't a domain and is thus allowed",
         owner='joe@example.com',
         key_type='RSA2048',
-        extensions={'sub_alt_names': {'names': x509.SubjectAlternativeName([x509.DNSName('evilhacker.org')])}}
+        extensions={
+            'sub_alt_names': {
+                'names': x509.SubjectAlternativeName([x509.DNSName('evilhacker.org')])
+            }
+        }
     )
     with pytest.raises(ValidationError) as err:
         validators.csr(request)
-    assert str(err.value).startswith('Domain evilhacker.org does not match whitelisted domain patterns')
+    assert str(err.value).startswith('Domain evilhacker.org does not match '
+                                     'whitelisted domain patterns')
 
 
 def test_get_name_from_arn(client):
@@ -458,7 +478,8 @@ def test_create_certificate(issuer_plugin, authority, user):
     assert cert.issuer == 'LemurTrustUnittestsClass1CA2018'
     assert cert.name == 'SAN-san.example.org-LemurTrustUnittestsClass1CA2018-20171231-20471231-AFF2DB4F8D2D4D8E80FA382AE27C2333'
 
-    cert = create(authority=authority, csr=CSR_STR, owner='joe@example.com', name='ACustomName1', creator=user['user'])
+    cert = create(authority=authority, csr=CSR_STR, owner='joe@example.com',
+                  name='ACustomName1', creator=user['user'])
     assert cert.name == 'ACustomName1'
 
 
@@ -469,47 +490,64 @@ def test_reissue_certificate(issuer_plugin, authority, certificate):
 
 
 def test_create_csr():
-    csr, private_key = create_csr(owner='joe@example.com', common_name='ACommonName', organization='test', organizational_unit='Meters', country='US',
+    csr, private_key = create_csr(owner='joe@example.com', common_name='ACommonName',
+                                  organization='test', organizational_unit='Meters', country='US',
                                   state='CA', location='Here', key_type='RSA2048')
     assert csr
     assert private_key
 
-    extensions = {'sub_alt_names': {'names': x509.SubjectAlternativeName([x509.DNSName('AnotherCommonName')])}}
-    csr, private_key = create_csr(owner='joe@example.com', common_name='ACommonName', organization='test', organizational_unit='Meters', country='US',
-                                  state='CA', location='Here', extensions=extensions, key_type='RSA2048')
+    extensions = {
+        'sub_alt_names': {
+            'names': x509.SubjectAlternativeName([x509.DNSName('AnotherCommonName')])
+        }
+    }
+
+    csr, private_key = create_csr(owner='joe@example.com', common_name='ACommonName',
+                                  organization='test', organizational_unit='Meters', country='US',
+                                  state='CA', location='Here', extensions=extensions,
+                                  key_type='RSA2048')
     assert csr
     assert private_key
 
 
 def test_import(user):
     from lemur.certificates.service import import_certificate
-    cert = import_certificate(body=SAN_CERT_STR, chain=INTERMEDIATE_CERT_STR, private_key=SAN_CERT_KEY, creator=user['user'])
+    signed_cert = SignedCertificateFactory.get('test-import-with-sans')
+
+    cert = import_certificate(body=signed_cert.cert_pem(), chain=INTERMEDIATE_CERT_STR,
+                              private_key=signed_cert.key_pem(), creator=user['user'])
+
     assert str(cert.not_after) == '2047-12-31T22:00:00+00:00'
     assert str(cert.not_before) == '2017-12-31T22:00:00+00:00'
     assert cert.issuer == 'LemurTrustUnittestsClass1CA2018'
-    assert cert.name == 'SAN-san.example.org-LemurTrustUnittestsClass1CA2018-20171231-20471231-AFF2DB4F8D2D4D8E80FA382AE27C2333-2'
+    assert cert.name == 'SAN-test-import-with-sans-LemurTrustUnittestsClass1CA2018-20171231-20471231'
 
-    cert = import_certificate(body=SAN_CERT_STR, chain=INTERMEDIATE_CERT_STR, private_key=SAN_CERT_KEY, owner='joe@example.com', name='ACustomName2', creator=user['user'])
+    cert = import_certificate(body=signed_cert.cert_pem(), chain=INTERMEDIATE_CERT_STR,
+                              private_key=signed_cert.key_pem(), owner='joe@example.com',
+                              name='ACustomName2', creator=user['user'])
     assert cert.name == 'ACustomName2'
 
 
 @pytest.mark.skip
 def test_upload(user):
     from lemur.certificates.service import upload
-    cert = upload(body=SAN_CERT_STR, chain=INTERMEDIATE_CERT_STR, private_key=SAN_CERT_KEY, owner='joe@example.com', creator=user['user'])
+    cert = upload(body=SAN_CERT_STR, chain=INTERMEDIATE_CERT_STR, private_key=SAN_CERT_KEY,
+                  owner='joe@example.com', creator=user['user'])
     assert str(cert.not_after) == '2040-01-01T20:30:52+00:00'
     assert str(cert.not_before) == '2015-06-26T20:30:52+00:00'
     assert cert.issuer == 'Example'
     assert cert.name == 'long.lived.com-Example-20150626-20400101-3'
 
-    cert = upload(body=SAN_CERT_STR, chain=INTERMEDIATE_CERT_STR, private_key=SAN_CERT_KEY, owner='joe@example.com', name='ACustomName', creator=user['user'])
+    cert = upload(body=SAN_CERT_STR, chain=INTERMEDIATE_CERT_STR, private_key=SAN_CERT_KEY,
+                  owner='joe@example.com', name='ACustomName', creator=user['user'])
     assert 'ACustomName' in cert.name
 
 
 # verify upload with a private key as a str
 def test_upload_private_key_str(user):
     from lemur.certificates.service import upload
-    cert = upload(body=SAN_CERT_STR, chain=INTERMEDIATE_CERT_STR, private_key=SAN_CERT_KEY, owner='joe@example.com', name='ACustomName', creator=user['user'])
+    cert = upload(body=SAN_CERT_STR, chain=INTERMEDIATE_CERT_STR, private_key=SAN_CERT_KEY,
+                  owner='joe@example.com', name='ACustomName', creator=user['user'])
     assert cert
 
 
@@ -641,7 +679,8 @@ def test_certificates_patch(client, token, status):
     ('', 405)
 ])
 def test_certificate_credentials_post(client, token, status):
-    assert client.post(api.url_for(CertificatePrivateKey, certificate_id=1), data={}, headers=token).status_code == status
+    assert client.post(api.url_for(CertificatePrivateKey, certificate_id=1),
+                       data={}, headers=token).status_code == status
 
 
 @pytest.mark.parametrize("token,status", [
@@ -651,7 +690,8 @@ def test_certificate_credentials_post(client, token, status):
     ('', 405)
 ])
 def test_certificate_credentials_put(client, token, status):
-    assert client.put(api.url_for(CertificatePrivateKey, certificate_id=1), data={}, headers=token).status_code == status
+    assert client.put(api.url_for(CertificatePrivateKey, certificate_id=1),
+                      data={}, headers=token).status_code == status
 
 
 @pytest.mark.parametrize("token,status", [
@@ -661,7 +701,8 @@ def test_certificate_credentials_put(client, token, status):
     ('', 405)
 ])
 def test_certificate_credentials_delete(client, token, status):
-    assert client.delete(api.url_for(CertificatePrivateKey, certificate_id=1), headers=token).status_code == status
+    assert client.delete(api.url_for(CertificatePrivateKey, certificate_id=1),
+                         headers=token).status_code == status
 
 
 @pytest.mark.parametrize("token,status", [
@@ -671,7 +712,8 @@ def test_certificate_credentials_delete(client, token, status):
     ('', 405)
 ])
 def test_certificate_credentials_patch(client, token, status):
-    assert client.patch(api.url_for(CertificatePrivateKey, certificate_id=1), data={}, headers=token).status_code == status
+    assert client.patch(api.url_for(CertificatePrivateKey, certificate_id=1),
+                        data={}, headers=token).status_code == status
 
 
 @pytest.mark.parametrize("token,status", [
@@ -721,17 +763,23 @@ def test_certificates_upload_delete(client, token, status):
     ('', 405)
 ])
 def test_certificates_upload_patch(client, token, status):
-    assert client.patch(api.url_for(CertificatesUpload), data={}, headers=token).status_code == status
+    assert client.patch(api.url_for(CertificatesUpload), data={},
+                        headers=token).status_code == status
 
 
 def test_sensitive_sort(client):
-    resp = client.get(api.url_for(CertificatesList) + '?sortBy=private_key&sortDir=asc', headers=VALID_ADMIN_HEADER_TOKEN)
+    resp = client.get(api.url_for(CertificatesList) + '?sortBy=private_key&sortDir=asc',
+                      headers=VALID_ADMIN_HEADER_TOKEN)
     assert "'private_key' is not sortable or filterable" in resp.json['message']
 
 
 def test_boolean_filter(client):
-    resp = client.get(api.url_for(CertificatesList) + '?filter=notify;true', headers=VALID_ADMIN_HEADER_TOKEN)
+    resp = client.get(api.url_for(CertificatesList) + '?filter=notify;true',
+                      headers=VALID_ADMIN_HEADER_TOKEN)
     assert resp.status_code == 200
     # Also don't crash with invalid input (we currently treat that as false)
-    resp = client.get(api.url_for(CertificatesList) + '?filter=notify;whatisthis', headers=VALID_ADMIN_HEADER_TOKEN)
+    resp = client.get(api.url_for(CertificatesList) + '?filter=notify;whatisthis',
+                      headers=VALID_ADMIN_HEADER_TOKEN)
     assert resp.status_code == 200
+
+

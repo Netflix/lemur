@@ -42,12 +42,42 @@ def private_key(key):
         raise ValidationError('Private key presented is not valid.')
 
 
+def valid_certificate_hostname(hostname):
+    """
+    Assess a string for validity as a hostname/FQDN CN in a cert. Includes allowing
+    '*' as the first portion of an FQDN, to support wildcards
+    :param hostname: Possible hostname string
+    :return: Boolean
+    """
+    # Total name length can't be over 253 chars
+    if len(hostname) > 253:
+        return False
+
+    # Remove leading/trailing spaces, and any trailing dot
+    hostname = hostname.strip()
+    hostname = hostname.rstrip('.')
+
+    # If there hostname starts with '*.'
+    # quietly remove it. This allows for '*.domain.com' wildcards while
+    # still further checking 'domain' and 'com'
+    if hostname.startswith('*.'):
+        hostname = hostname[2:]
+
+    # split into labels
+    labels = hostname.split(".")
+
+    # the TLD must not be solely numeric
+    if re.match(r"[0-9]+$", labels[-1]):
+        return False
+
+    # Each label must be only alphanumeric (plus dashes) and < 64 chars
+    allowed = re.compile(r"(?!-)[a-z0-9-]{1,63}(?<!-)$", re.IGNORECASE)
+    return all(allowed.match(label) for label in labels)
+
+
 def common_name(value):
     """If the common name could be a domain name, apply domain validation rules."""
-    # Common name could be a domain name, or a human-readable name of the subject (often used in CA names or client
-    # certificates). As a simple heuristic, we assume that human-readable names always include a space.
-    # However, to avoid confusion for humans, we also don't count spaces at the beginning or end of the string.
-    if ' ' not in value.strip():
+    if valid_certificate_hostname(value):
         return sensitive_domain(value)
 
 

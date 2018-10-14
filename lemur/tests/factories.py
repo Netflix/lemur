@@ -1,5 +1,13 @@
 
-from datetime import date
+from datetime import date, datetime, timedelta
+
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.serialization import Encoding, PrivateFormat, NoEncryption
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.x509.oid import NameOID
+
 
 from factory import Sequence, post_generation, SubFactory
 from factory.alchemy import SQLAlchemyModelFactory
@@ -19,8 +27,100 @@ from lemur.endpoints.models import Policy, Endpoint
 from lemur.policies.models import RotationPolicy
 from lemur.api_keys.models import ApiKey
 
-from .vectors import SAN_CERT_STR, SAN_CERT_KEY, CSR_STR, INTERMEDIATE_CERT_STR, ROOTCA_CERT_STR, INTERMEDIATE_KEY, \
-    WILDCARD_CERT_KEY
+from .vectors import CSR_STR, INTERMEDIATE_CERT_STR, DEFAULT_SANS, \
+    ROOTCA_CERT_STR, INTERMEDIATE_KEY, WILDCARD_CERT_KEY
+
+
+class SignedCertificateFactory(object):
+
+    by_serial = {}
+    by_name = {}
+
+    def __init__(self):
+        pass
+
+    @classmethod
+    def allcerts(cls):
+        return cls.by_serial
+
+    @classmethod
+    def get_by_serial(cls, serial):
+        return cls.by_serial[serial] if cls.by_serial.get(serial) else None
+
+    @classmethod
+    def get(cls, name, **kwargs):
+
+        if name in cls.by_name:
+            return cls.by_name[name]
+
+        c = SignedCertificate(name, **kwargs)
+        cls.by_serial[c.serial] = c
+        cls.by_name[name] = c
+        return c
+
+
+class SignedCertificate(object):
+    """ Autocreate Signed certs """
+
+    def __init__(self, name, **kwargs):
+
+        serial = kwargs['serial'] if kwargs.get('serial') else x509.random_serial_number()
+        cacert = kwargs['cacert'] if kwargs.get('cacert') else INTERMEDIATE_CERT_STR
+        cakey = kwargs['cakey'] if kwargs.get('cakey') else INTERMEDIATE_KEY
+        sans = kwargs['sans'] if kwargs.get('sans') else DEFAULT_SANS
+
+        self.name = name
+        self.sans = [san for san in sans] if sans else []  # per rfc6125, add the CN
+        self.serial = serial
+        self.serial_name = hex(int(self.serial))[2:].upper()
+        self.cacert = x509.load_pem_x509_certificate(bytes(cacert, 'utf8'), default_backend())
+        self.cakey = serialization.load_pem_private_key(bytes(cakey, 'utf8'),
+                                                        password=None,
+                                                        backend=default_backend())
+
+        not_before = kwargs['not_before'] if kwargs.get('not_before') else self.cacert.not_valid_before
+        not_after = kwargs['not_after'] if kwargs.get('not_after') else self.cacert.not_valid_after
+
+        self.private_key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=2048,
+            backend=default_backend()
+        )
+
+        self.csr = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name(
+                [
+                    x509.NameAttribute(NameOID.COMMON_NAME, name),
+                    self.cacert.subject.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)[0],
+                    self.cacert.subject.get_attributes_for_oid(NameOID.ORGANIZATIONAL_UNIT_NAME)[0],
+                    self.cacert.subject.get_attributes_for_oid(NameOID.LOCALITY_NAME)[0],
+                    self.cacert.subject.get_attributes_for_oid(NameOID.STATE_OR_PROVINCE_NAME)[0],
+                    self.cacert.subject.get_attributes_for_oid(NameOID.COUNTRY_NAME)[0],
+                ]
+            )).add_extension(
+                x509.SubjectAlternativeName([x509.DNSName(san) for san in self.sans]),
+                critical=False,
+        ).sign(self.private_key, hashes.SHA256(), default_backend())
+
+        self.certificate = x509.CertificateBuilder(
+            issuer_name=self.cacert.subject,
+            subject_name=self.csr.subject,
+            public_key=self.csr.public_key(),
+            serial_number=self.serial,
+            not_valid_before=not_before,
+            not_valid_after=not_after
+        ).add_extension(
+            x509.SubjectAlternativeName([x509.DNSName(san) for san in self.sans]),
+            critical=False,
+        ).sign(self.cakey, hashes.SHA256(), default_backend())
+
+    def cert_pem(self):
+        return self.certificate.public_bytes(Encoding.PEM).decode('utf-8')
+
+    def key_pem(self):
+        return self.private_key.private_bytes(Encoding.PEM,
+                                              PrivateFormat.TraditionalOpenSSL,
+                                              NoEncryption()).decode('utf-8')
 
 
 class BaseFactory(SQLAlchemyModelFactory):
@@ -46,8 +146,8 @@ class CertificateFactory(BaseFactory):
     """Certificate factory."""
     name = Sequence(lambda n: 'certificate{0}'.format(n))
     chain = INTERMEDIATE_CERT_STR
-    body = SAN_CERT_STR
-    private_key = SAN_CERT_KEY
+    body = Sequence(lambda n: SignedCertificateFactory.get('certificate{0}'.format(n)).cert_pem())
+    private_key = Sequence(lambda n: SignedCertificateFactory.get('certificate{0}'.format(n)).key_pem())
     owner = 'joe@example.com'
     status = FuzzyChoice(['valid', 'revoked', 'unknown'])
     deleted = False

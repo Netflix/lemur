@@ -2,8 +2,8 @@ import pytest
 
 from lemur.sources.views import *  # noqa
 
-from .vectors import VALID_ADMIN_API_TOKEN, VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN, WILDCARD_CERT_STR, \
-    WILDCARD_CERT_KEY
+from .vectors import VALID_ADMIN_API_TOKEN, VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN, \
+    WILDCARD_CERT_STR, WILDCARD_CERT_KEY
 
 
 def validate_source_schema(client):
@@ -34,6 +34,13 @@ def test_create_certificate(user, source):
 
     cert = certificate_create(data, source)
     assert cert.notifications
+
+
+def test_sync_certificate(user, source):
+    from lemur.sources.service import sync_certificates
+    new, updated = sync_certificates(source, user)
+    assert new == 0
+    assert updated
 
 
 @pytest.mark.parametrize("token,status", [
@@ -134,3 +141,5 @@ def test_sources_list_delete(client, token, status):
 ])
 def test_sources_list_patch(client, token, status):
     assert client.patch(api.url_for(SourcesList), data={}, headers=token).status_code == status
+
+

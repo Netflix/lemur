@@ -18,7 +18,7 @@ from lemur.destinations import service as destination_service
 
 from lemur.certificates.schemas import CertificateUploadInputSchema
 from lemur.common.utils import parse_certificate
-from lemur.common.defaults import serial
+from lemur.common.defaults import serial, issuer
 
 from lemur.plugins.base import plugins
 
@@ -68,7 +68,8 @@ def sync_endpoints(source):
     try:
         endpoints = s.get_endpoints(source.options)
     except NotImplementedError:
-        current_app.logger.warning("Unable to sync endpoints for source {0} plugin has not implemented 'get_endpoints'".format(source.label))
+        current_app.logger.warning("Unable to sync endpoints for source {0} plugin has "
+                                   "not implemented 'get_endpoints'".format(source.label))
         return new, updated
 
     for endpoint in endpoints:
@@ -80,7 +81,8 @@ def sync_endpoints(source):
 
         if not endpoint['certificate']:
             current_app.logger.error(
-                "Certificate Not Found. Name: {0} Endpoint: {1}".format(certificate_name, endpoint['name']))
+                "Certificate Not Found. Name: {0} Endpoint: {1}".format(certificate_name,
+                                                                        endpoint['name']))
             continue
 
         policy = endpoint.pop('policy')
@@ -116,17 +118,20 @@ def sync_certificates(source, user):
 
     for certificate in certificates:
         exists = False
-        if certificate.get('name'):
-            result = certificate_service.get_by_name(certificate['name'])
-            if result:
-                exists = [result]
 
-        if not exists and certificate.get('serial'):
-            exists = certificate_service.get_by_serial(certificate['serial'])
+        cert = parse_certificate(certificate['body'])
+        source_serial = certificate.get('serial')
 
-        if not exists:
-            cert = parse_certificate(certificate['body'])
-            exists = certificate_service.get_by_serial(serial(cert))
+        # Just in case the source is mangling serials intentionally (meaning different from the
+        # serial in the cert body), then if a serial is explicitly passed in the cert dict from
+        # the source, search for that + issuer, first.
+        if source_serial:
+            exists = certificate_service.get_by_serial(certificate['serial'], issuer(cert))
+
+        # If no serial was given in the cert dict, or no hits were found, extract the serial from
+        # the cert body and try that + issuer
+        if not exists and source_serial != serial(cert):
+            exists = certificate_service.get_by_serial(serial(cert), issuer(cert))
 
         if not certificate.get('owner'):
             certificate['owner'] = user.email
@@ -139,6 +144,8 @@ def sync_certificates(source, user):
             new += 1
 
         else:
+            # TODO: how would there be more than one existing cert?
+            # TODO: there should probably be an update schema rather than cherrypicking two attrs
             for e in exists:
                 if certificate.get('external_id'):
                     e.external_id = certificate['external_id']
