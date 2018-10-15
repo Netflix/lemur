@@ -32,7 +32,7 @@ requests-toolbelt==0.8.0  # via twine
 requests==2.19.1          # via requests-toolbelt, twine
 six==1.11.0               # via bleach, cfgv, pre-commit, readme-renderer
 toml==0.10.0              # via pre-commit
-tqdm==4.26.0              # via twine
+tqdm==4.27.0              # via twine
 twine==1.12.1
 urllib3==1.23             # via requests
 virtualenv==16.0.0        # via pre-commit
