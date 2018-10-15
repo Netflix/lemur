@@ -25,7 +25,7 @@ ecdsa==0.13               # via python-jose
 factory-boy==2.11.1
 faker==0.9.1
 flask==1.0.2              # via pytest-flask
-freezegun==0.3.10
+freezegun==0.3.11
 future==0.16.0            # via python-jose
 idna==2.7                 # via cryptography, requests
 itsdangerous==0.24        # via flask
