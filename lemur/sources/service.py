@@ -142,7 +142,6 @@ def sync_certificates(source, user):
         if not exists:
             certificate_create(certificate, source)
             new += 1
-
         else:
             # TODO: how would there be more than one existing cert?
             # TODO: there should probably be an update schema rather than cherrypicking two attrs

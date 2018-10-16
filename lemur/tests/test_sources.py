@@ -38,9 +38,12 @@ def test_create_certificate(user, source):
 
 def test_sync_certificate(user, source):
     from lemur.sources.service import sync_certificates
-    new, updated = sync_certificates(source, user)
-    assert new == 0
-    assert updated
+    new, updated = sync_certificates(source, user['user'])
+    assert new == 3
+
+    # source is passing in 2 canned certs, that will exist at least once each in the
+    # test data. So there should be at least 2 updates.
+    assert updated > 2
 
 
 @pytest.mark.parametrize("token,status", [
