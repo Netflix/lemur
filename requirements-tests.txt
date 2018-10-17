@@ -19,7 +19,7 @@ cookies==2.2.1            # via moto, responses
 coverage==4.5.1
 cryptography==2.3.1       # via moto
 docker-pycreds==0.3.0     # via docker
-docker==3.5.0             # via moto
+docker==3.5.1             # via moto
 docutils==0.14            # via botocore
 ecdsa==0.13               # via python-jose
 factory-boy==2.11.1
