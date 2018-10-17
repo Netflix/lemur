@@ -116,7 +116,12 @@ def sync_certificates(source, user):
 
     for certificate in certificates:
         exists = False
-        if certificate.get('name'):
+
+        if certificate.get('search', None):
+            conditions = certificate.pop('search')
+            exists = certificate_service.get_by_attributes(conditions)
+
+        if not exists and certificate.get('name'):
             result = certificate_service.get_by_name(certificate['name'])
             if result:
                 exists = [result]
