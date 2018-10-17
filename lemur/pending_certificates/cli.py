@@ -15,7 +15,6 @@ from lemur.authorities.service import get as get_authority
 from lemur.notifications.messaging import send_pending_failure_notification
 from lemur.pending_certificates import service as pending_certificate_service
 from lemur.plugins.base import plugins
-from lemur.users import service as user_service
 
 manager = Manager(usage="Handles pending certificate related tasks.")
 
@@ -23,14 +22,14 @@ manager = Manager(usage="Handles pending certificate related tasks.")
 @manager.option('-i', dest='ids', action='append', help='IDs of pending certificates to fetch')
 def fetch(ids):
     """
-    Attempt to get full certificates for each pending certificate listed.
+    Attempt to get full certificate for each pending certificate listed.
 
     Args:
         ids: a list of ids of PendingCertificates (passed in by manager options when run as CLI)
              `python manager.py pending_certs fetch -i 123 321 all`
     """
     pending_certs = pending_certificate_service.get_pending_certs(ids)
-    user = user_service.get_by_username('lemur')
+
     new = 0
     failed = 0
 
@@ -38,10 +37,17 @@ def fetch(ids):
         authority = plugins.get(cert.authority.plugin_name)
         real_cert = authority.get_ordered_certificate(cert)
         if real_cert:
-            # If a real certificate was returned from issuer, then create it in Lemur and delete
-            # the pending certificate
-            pending_certificate_service.create_certificate(cert, real_cert, user)
-            pending_certificate_service.delete(cert)
+            # If a real certificate was returned from issuer, then create it in Lemur and mark
+            # the pending certificate as resolved
+            final_cert = pending_certificate_service.create_certificate(cert, real_cert, cert.user)
+            pending_certificate_service.update(
+                cert.id,
+                resolved=True
+            )
+            pending_certificate_service.update(
+                cert.id,
+                resolved_cert_id=final_cert.id
+            )
             # add metrics to metrics extension
             new += 1
         else:
@@ -66,8 +72,7 @@ def fetch_all_acme():
     log_data = {
         "function": "{}.{}".format(__name__, sys._getframe().f_code.co_name)
     }
-    pending_certs = pending_certificate_service.get_pending_certs('all')
-    user = user_service.get_by_username('lemur')
+    pending_certs = pending_certificate_service.get_unresolved_pending_certs()
     new = 0
     failed = 0
     wrong_issuer = 0
@@ -90,10 +95,17 @@ def fetch_all_acme():
         pending_cert = pending_certificate_service.get(cert.get("pending_cert").id)
 
         if real_cert:
-            # If a real certificate was returned from issuer, then create it in Lemur and delete
-            # the pending certificate
-            pending_certificate_service.create_certificate(pending_cert, real_cert, user)
-            pending_certificate_service.delete_by_id(pending_cert.id)
+            # If a real certificate was returned from issuer, then create it in Lemur and mark
+            # the pending certificate as resolved
+            final_cert = pending_certificate_service.create_certificate(pending_cert, real_cert, pending_cert.user)
+            pending_certificate_service.update(
+                pending_cert.id,
+                resolved=True
+            )
+            pending_certificate_service.update(
+                pending_cert.id,
+                resolved_cert_id=final_cert.id
+            )
             # add metrics to metrics extension
             new += 1
         else:
@@ -105,9 +117,13 @@ def fetch_all_acme():
             error_log["cn"] = pending_cert.cn
 
             if pending_cert.number_attempts > 4:
-                error_log["message"] = "Deleting pending certificate"
+                error_log["message"] = "Marking pending certificate as resolved"
                 send_pending_failure_notification(pending_cert, notify_owner=pending_cert.notify)
-                pending_certificate_service.delete(pending_certificate_service.cancel(pending_cert))
+                # Mark "resolved" as True
+                pending_certificate_service.update(
+                    cert.id,
+                    resolved=True
+                )
             else:
                 pending_certificate_service.increment_attempt(pending_cert)
                 pending_certificate_service.update(

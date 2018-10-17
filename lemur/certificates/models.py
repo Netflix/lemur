@@ -5,41 +5,32 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import arrow
 from datetime import timedelta
 
-from flask import current_app
-
+import arrow
 from cryptography import x509
 from cryptography.hazmat.primitives.asymmetric import rsa
-
+from flask import current_app
 from idna.core import InvalidCodepoint
-
+from sqlalchemy import event, Integer, ForeignKey, String, PassiveDefault, func, Column, Text, Boolean, Index
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import case, extract
-from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy import event, Integer, ForeignKey, String, PassiveDefault, func, Column, Text, Boolean
-
 from sqlalchemy_utils.types.arrow import ArrowType
 from werkzeug.utils import cached_property
 
-from lemur.database import db
-from lemur.extensions import sentry
-
-from lemur.utils import Vault
 from lemur.common import defaults, utils
-
-from lemur.plugins.base import plugins
-
-from lemur.extensions import metrics
 from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
-
+from lemur.database import db
+from lemur.domains.models import Domain
+from lemur.extensions import metrics
+from lemur.extensions import sentry
 from lemur.models import certificate_associations, certificate_source_associations, \
     certificate_destination_associations, certificate_notification_associations, \
     certificate_replacement_associations, roles_certificates, pending_cert_replacement_associations
-
-from lemur.domains.models import Domain
+from lemur.plugins.base import plugins
 from lemur.policies.models import RotationPolicy
+from lemur.utils import Vault
 
 
 def get_sequence(name):
@@ -87,6 +78,7 @@ def get_or_increase_name(name, serial):
 class Certificate(db.Model):
     __tablename__ = 'certificates'
     id = Column(Integer, primary_key=True)
+    ix = Index('ix_certificates_id_desc', id.desc(), postgresql_using='btree', unique=True)
     external_id = Column(String(128))
     owner = Column(String(128), nullable=False)
     name = Column(String(256), unique=True)

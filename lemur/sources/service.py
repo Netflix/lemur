@@ -119,6 +119,15 @@ def sync_certificates(source, user):
     for certificate in certificates:
         exists = False
 
+        if certificate.get('search', None):
+            conditions = certificate.pop('search')
+            exists = certificate_service.get_by_attributes(conditions)
+
+        if not exists and certificate.get('name'):
+            result = certificate_service.get_by_name(certificate['name'])
+            if result:
+                exists = [result]
+
         cert = parse_certificate(certificate['body'])
         source_serial = certificate.get('serial')
 
@@ -129,7 +138,7 @@ def sync_certificates(source, user):
             exists = certificate_service.get_by_serial(certificate['serial'], issuer(cert))
 
         # If no serial was given in the cert dict, or no hits were found, extract the serial from
-        # the cert body and try that + issuer
+        # the cert body and try that + issuer but only if it doesn't already match source_serial
         if not exists and source_serial != serial(cert):
             exists = certificate_service.get_by_serial(serial(cert), issuer(cert))
 
@@ -143,7 +152,6 @@ def sync_certificates(source, user):
             certificate_create(certificate, source)
             new += 1
         else:
-            # TODO: how would there be more than one existing cert?
             # TODO: there should probably be an update schema rather than cherrypicking two attrs
             for e in exists:
                 if certificate.get('external_id'):

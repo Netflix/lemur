@@ -54,7 +54,7 @@ def get_by_name(name):
 
 def get_by_serial(serial, issuer=None):
     """
-    Retrieves certificate by its Serial. Optionally constrain by issuer.
+    Retrieves certificate(s) by serial number. Optionally constrain by issuer.
     :param serial:
     :param issuer: Issuer name
     :return:
@@ -67,6 +67,22 @@ def get_by_serial(serial, issuer=None):
 
     if issuer:
         conditions['issuer'] = issuer
+
+    query = database.session_query(Certificate)
+    return database.find_all(query, Certificate, conditions).all()
+
+
+def get_by_attributes(conditions):
+    """
+    Retrieves certificate(s) by conditions given in a hash of given key=>value pairs.
+    :param serial:
+    :return:
+    """
+    # Ensure that each of the given conditions corresponds to actual columns
+    # if not, silently remove it
+    for attr in conditions.keys():
+        if attr not in Certificate.__table__.columns:
+            conditions.pop(attr)
 
     query = database.session_query(Certificate)
     return database.find_all(query, Certificate, conditions).all()

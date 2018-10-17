@@ -8,9 +8,8 @@ command: celery -A lemur.common.celery worker --loglevel=info -l DEBUG -B
 
 """
 import copy
-import datetime
 import sys
-from datetime import timezone
+from datetime import datetime, timezone, timedelta
 
 from celery import Celery
 from flask import current_app
@@ -20,7 +19,6 @@ from lemur.factory import create_app
 from lemur.notifications.messaging import send_pending_failure_notification
 from lemur.pending_certificates import service as pending_certificate_service
 from lemur.plugins.base import plugins
-from lemur.users import service as user_service
 
 flask_app = create_app()
 
@@ -57,7 +55,6 @@ def fetch_acme_cert(id):
         "function": "{}.{}".format(__name__, sys._getframe().f_code.co_name)
     }
     pending_certs = pending_certificate_service.get_pending_certs([id])
-    user = user_service.get_by_username('lemur')
     new = 0
     failed = 0
     wrong_issuer = 0
@@ -78,12 +75,22 @@ def fetch_acme_cert(id):
         real_cert = cert.get("cert")
         # It's necessary to reload the pending cert due to detached instance: http://sqlalche.me/e/bhk3
         pending_cert = pending_certificate_service.get(cert.get("pending_cert").id)
-
+        if not pending_cert:
+            log_data["message"] = "Pending certificate doesn't exist anymore. Was it resolved by another process?"
+            current_app.logger.error(log_data)
+            continue
         if real_cert:
-            # If a real certificate was returned from issuer, then create it in Lemur and delete
-            # the pending certificate
-            pending_certificate_service.create_certificate(pending_cert, real_cert, user)
-            pending_certificate_service.delete_by_id(pending_cert.id)
+            # If a real certificate was returned from issuer, then create it in Lemur and mark
+            # the pending certificate as resolved
+            final_cert = pending_certificate_service.create_certificate(pending_cert, real_cert, pending_cert.user)
+            pending_certificate_service.update(
+                cert.get("pending_cert").id,
+                resolved=True
+            )
+            pending_certificate_service.update(
+                cert.get("pending_cert").id,
+                resolved_cert_id=final_cert.id
+            )
             # add metrics to metrics extension
             new += 1
         else:
@@ -97,7 +104,11 @@ def fetch_acme_cert(id):
             if pending_cert.number_attempts > 4:
                 error_log["message"] = "Deleting pending certificate"
                 send_pending_failure_notification(pending_cert, notify_owner=pending_cert.notify)
-                pending_certificate_service.delete(pending_certificate_service.cancel(pending_cert))
+                # Mark the pending cert as resolved
+                pending_certificate_service.update(
+                    cert.get("pending_cert").id,
+                    resolved=True
+                )
             else:
                 pending_certificate_service.increment_attempt(pending_cert)
                 pending_certificate_service.update(
@@ -124,12 +135,30 @@ def fetch_acme_cert(id):
 @celery.task()
 def fetch_all_pending_acme_certs():
     """Instantiate celery workers to resolve all pending Acme certificates"""
-    pending_certs = pending_certificate_service.get_pending_certs('all')
+    pending_certs = pending_certificate_service.get_unresolved_pending_certs()
 
     # We only care about certs using the acme-issuer plugin
     for cert in pending_certs:
         cert_authority = get_authority(cert.authority_id)
         if cert_authority.plugin_name == 'acme-issuer':
-            if cert.last_updated == cert.date_created or datetime.datetime.now(
-                    timezone.utc) - cert.last_updated > datetime.timedelta(minutes=3):
+            if cert.last_updated == cert.date_created or datetime.now(
+                    timezone.utc) - cert.last_updated > timedelta(minutes=3):
                 fetch_acme_cert.delay(cert.id)
+
+
+@celery.task()
+def remove_old_acme_certs():
+    """Prune old pending acme certificates from the database"""
+    log_data = {
+        "function": "{}.{}".format(__name__, sys._getframe().f_code.co_name)
+    }
+    pending_certs = pending_certificate_service.get_pending_certs('all')
+
+    # Delete pending certs more than a week old
+    for cert in pending_certs:
+        if datetime.now(timezone.utc) - cert.last_updated > timedelta(days=7):
+            log_data['pending_cert_id'] = cert.id
+            log_data['pending_cert_name'] = cert.name
+            log_data['message'] = "Deleting pending certificate"
+            current_app.logger.debug(log_data)
+            pending_certificate_service.delete(cert.id)
