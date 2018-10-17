@@ -8,13 +8,13 @@ asn1crypto==0.24.0        # via cryptography
 atomicwrites==1.2.1       # via pytest
 attrs==18.2.0             # via pytest
 aws-xray-sdk==0.95        # via moto
-boto3==1.9.4              # via moto
+boto3==1.9.21             # via moto
 boto==2.49.0              # via moto
-botocore==1.12.4          # via boto3, moto, s3transfer
+botocore==1.12.21         # via boto3, moto, s3transfer
 certifi==2018.8.24        # via requests
 cffi==1.11.5              # via cryptography
 chardet==3.0.4            # via requests
-click==6.7                # via flask
+click==7.0                # via flask
 cookies==2.2.1            # via moto, responses
 coverage==4.5.1
 cryptography==2.3.1       # via moto
@@ -32,22 +32,22 @@ itsdangerous==0.24        # via flask
 jinja2==2.10              # via flask, moto
 jmespath==0.9.3           # via boto3, botocore
 jsondiff==1.1.1           # via moto
-jsonpickle==0.9.6         # via aws-xray-sdk
+jsonpickle==1.0           # via aws-xray-sdk
 markupsafe==1.0           # via jinja2
 mock==2.0.0               # via moto
 more-itertools==4.3.0     # via pytest
 moto==1.3.4
 nose==1.3.7
-pbr==4.2.0                # via mock
+pbr==4.3.0                # via mock
 pluggy==0.7.1             # via pytest
 py==1.6.0                 # via pytest
 pyaml==17.12.1            # via moto
-pycparser==2.18           # via cffi
+pycparser==2.19           # via cffi
 pycryptodome==3.6.6       # via python-jose
 pyflakes==2.0.0
-pytest-flask==0.12.0
+pytest-flask==0.13.0
 pytest-mock==1.10.0
-pytest==3.8.0
+pytest==3.8.2
 python-dateutil==2.7.3    # via botocore, faker, freezegun, moto
 python-jose==2.0.2        # via moto
 pytz==2018.5              # via moto
