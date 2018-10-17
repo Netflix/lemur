@@ -1,5 +1,5 @@
 
-from datetime import date, datetime, timedelta
+from datetime import date
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend

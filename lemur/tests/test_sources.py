@@ -144,5 +144,3 @@ def test_sources_list_delete(client, token, status):
 ])
 def test_sources_list_patch(client, token, status):
     assert client.patch(api.url_for(SourcesList), data={}, headers=token).status_code == status
-
-

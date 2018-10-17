@@ -873,5 +873,3 @@ def test_boolean_filter(client):
     resp = client.get(api.url_for(CertificatesList) + '?filter=notify;whatisthis',
                       headers=VALID_ADMIN_HEADER_TOKEN)
     assert resp.status_code == 200
-
-

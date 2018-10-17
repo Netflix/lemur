@@ -58,8 +58,4 @@ class TestSourcePlugin(SourcePlugin):
         return certs
 
     def update_endpoint(self, endpoint, certificate):
-        endpoints = [
-            {
-                
-            }
-        ]
+        return
