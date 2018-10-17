@@ -141,6 +141,7 @@ def find_duplicates(cert):
     :param cert:
     :return:
     """
+    # TODO: should not assume that 'chain' exists
     if cert['chain']:
         return Certificate.query.filter_by(body=cert['body'].strip(), chain=cert['chain'].strip()).all()
     else:

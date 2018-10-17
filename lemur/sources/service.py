@@ -128,6 +128,7 @@ def sync_certificates(source, user):
             if result:
                 exists = [result]
 
+        # Go ahead and parse the cert so we can extract issuer
         cert = parse_certificate(certificate['body'])
         source_serial = certificate.get('serial')
 

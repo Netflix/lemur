@@ -99,7 +99,7 @@ def test_get_by_attributes(session, certificate):
     # Should get one cert using multiple attrs
     certificate2 = get_by_attributes({
         'name': 'test-cert-11111111-1',
-        'cn': 'san.example.org'
+        'issuer': 'LemurTrustUnittestsClass1CA2018'
     })
 
     # Should get multiple certs
@@ -113,22 +113,31 @@ def test_get_by_attributes(session, certificate):
     assert len(multiple) > 1
 
 
-def test_find_duplicates(session):
-    from lemur.certificates.service import find_duplicates
+def test_find_duplicates(session, user):
+    from lemur.certificates.service import find_duplicates, import_certificate
+
+    duplicate = SignedCertificateFactory.get("duplicate1.example.com")
+    # create two pairs of guaranteed duplicates, one with chain, one without
+    for d in range(1, 3):
+        import_certificate(body=duplicate.cert_pem(), chain=INTERMEDIATE_CERT_STR,
+                           private_key=duplicate.key_pem(), creator=user['user'])
+        import_certificate(body=duplicate.cert_pem(), chain=None,
+                           private_key=duplicate.key_pem(), creator=user['user'])
 
     cert = {
-        'body': SAN_CERT_STR,
+        'body': duplicate.cert_pem(),
         'chain': INTERMEDIATE_CERT_STR
     }
 
-    dups1 = find_duplicates(cert)
+    dups_w_chain = find_duplicates(cert)
 
     cert['chain'] = ''
 
-    dups2 = find_duplicates(cert)
+    dups_wo_chain = find_duplicates(cert)
 
-    assert len(dups1) > 0
-    assert len(dups2) > 0
+    # There will be at least two of each kind
+    assert len(dups_w_chain) >= 2
+    assert len(dups_wo_chain) >= 2
 
 
 def test_get_certificate_primitives(certificate):
