@@ -7,7 +7,7 @@
 aspy.yaml==1.1.1          # via pre-commit
 bleach==3.0.2             # via readme-renderer
 cached-property==1.5.1    # via pre-commit
-certifi==2018.8.24        # via requests
+certifi==2018.10.15       # via requests
 cffi==1.11.5              # via cmarkgfm
 cfgv==1.1.0               # via pre-commit
 chardet==3.0.4            # via requests
@@ -29,11 +29,11 @@ pygments==2.2.0           # via readme-renderer
 pyyaml==3.13              # via aspy.yaml, pre-commit
 readme-renderer==22.0     # via twine
 requests-toolbelt==0.8.0  # via twine
-requests==2.19.1          # via requests-toolbelt, twine
+requests==2.20.0          # via requests-toolbelt, twine
 six==1.11.0               # via bleach, cfgv, pre-commit, readme-renderer
 toml==0.10.0              # via pre-commit
-tqdm==4.26.0              # via twine
+tqdm==4.27.0              # via twine
 twine==1.12.1
-urllib3==1.23             # via requests
+urllib3==1.24             # via requests
 virtualenv==16.0.0        # via pre-commit
 webencodings==0.5.1       # via bleach
