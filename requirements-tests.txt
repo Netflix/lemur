@@ -46,7 +46,7 @@ pyaml==17.12.1            # via moto
 pycparser==2.19           # via cffi
 pycryptodome==3.6.6       # via python-jose
 pyflakes==2.0.0
-pytest-flask==0.13.0
+pytest-flask==0.14.0
 pytest-mock==1.10.0
 pytest==3.9.1
 python-dateutil==2.7.3    # via botocore, faker, freezegun, moto

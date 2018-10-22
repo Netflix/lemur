@@ -17,3 +17,8 @@ services:
     environment:
       POSTGRES_USER: lemur
       POSTGRES_PASSWORD: lemur
+
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
