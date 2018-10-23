@@ -66,7 +66,7 @@ def upload_cert(name, body, private_key, path, cert_chain=None, **kwargs):
     """
     client = kwargs.pop('client')
 
-    if not path:
+    if not path or path == '/':
         path = '/'
     else:
         name = name + '-' + path.strip('/')
