@@ -19,6 +19,7 @@ from lemur.factory import create_app
 from lemur.notifications.messaging import send_pending_failure_notification
 from lemur.pending_certificates import service as pending_certificate_service
 from lemur.plugins.base import plugins
+from lemur.sources.cli import clean, validate_sources
 
 flask_app = create_app()
 
@@ -142,7 +143,7 @@ def fetch_all_pending_acme_certs():
         cert_authority = get_authority(cert.authority_id)
         if cert_authority.plugin_name == 'acme-issuer':
             if cert.last_updated == cert.date_created or datetime.now(
-                    timezone.utc) - cert.last_updated > timedelta(minutes=3):
+                    timezone.utc) - cert.last_updated > timedelta(minutes=5):
                 fetch_acme_cert.delay(cert.id)
 
 
@@ -162,3 +163,28 @@ def remove_old_acme_certs():
             log_data['message'] = "Deleting pending certificate"
             current_app.logger.debug(log_data)
             pending_certificate_service.delete(cert.id)
+
+
+@celery.task()
+def clean_all_sources():
+    """
+    This function will clean unused certificates from sources. This is a destructive operation and should only
+    be ran periodically. This function triggers one celery task per source.
+    """
+    sources = validate_sources("all")
+    for source in sources:
+        current_app.logger.debug("Creating celery task to clean source {}".format(source.label))
+        clean_source.delay(source.label)
+
+
+@celery.task()
+def clean_source(source):
+    """
+    This celery task will clean the specified source. This is a destructive operation that will delete unused
+    certificates from each source.
+
+    :param source:
+    :return:
+    """
+    current_app.logger.debug("Cleaning source {}".format(source))
+    clean([source], True)

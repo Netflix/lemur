@@ -106,7 +106,7 @@ def get_all_pending_cleaning(source):
     :return:
     """
     return Certificate.query.filter(Certificate.sources.any(id=source.id)) \
-        .filter(not_(Certificate.endpoints.any())).all()
+        .filter(not_(Certificate.endpoints.any())).filter(Certificate.expired).all()
 
 
 def get_all_pending_reissue():
