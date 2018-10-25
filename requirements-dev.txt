@@ -14,7 +14,7 @@ chardet==3.0.4            # via requests
 cmarkgfm==0.4.2           # via readme-renderer
 docutils==0.14            # via readme-renderer
 flake8==3.5.0
-future==0.16.0            # via readme-renderer
+future==0.17.0            # via readme-renderer
 identify==1.1.7           # via pre-commit
 idna==2.7                 # via requests
 invoke==1.2.0
