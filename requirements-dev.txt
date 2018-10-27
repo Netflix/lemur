@@ -27,7 +27,7 @@ pycparser==2.19           # via cffi
 pyflakes==1.6.0           # via flake8
 pygments==2.2.0           # via readme-renderer
 pyyaml==3.13              # via aspy.yaml, pre-commit
-readme-renderer==22.0     # via twine
+readme-renderer==24.0     # via twine
 requests-toolbelt==0.8.0  # via twine
 requests==2.20.0          # via requests-toolbelt, twine
 six==1.11.0               # via bleach, cfgv, pre-commit, readme-renderer
