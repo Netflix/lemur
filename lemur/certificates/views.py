@@ -72,6 +72,7 @@ class CertificatesList(AuthenticatedResource):
                     "status": null,
                     "cn": "*.test.example.net",
                     "chain": "",
+                    "csr": "-----BEGIN CERTIFICATE REQUEST-----"
                     "authority": {
                         "active": true,
                         "owner": "secure@example.com",
@@ -490,6 +491,7 @@ class Certificates(AuthenticatedResource):
                 "status": null,
                 "cn": "*.test.example.net",
                 "chain": "",
+                "csr": "-----BEGIN CERTIFICATE REQUEST-----"
                 "authority": {
                     "active": true,
                     "owner": "secure@example.com",
@@ -694,6 +696,7 @@ class NotificationCertificatesList(AuthenticatedResource):
                     "status": null,
                     "cn": "*.test.example.net",
                     "chain": "",
+                    "csr": "-----BEGIN CERTIFICATE REQUEST-----"
                     "authority": {
                         "active": true,
                         "owner": "secure@example.com",
@@ -802,6 +805,7 @@ class CertificatesReplacementsList(AuthenticatedResource):
                     "status": null,
                     "cn": "*.test.example.net",
                     "chain": "",
+                    "csr": "-----BEGIN CERTIFICATE REQUEST-----",
                     "authority": {
                         "active": true,
                         "owner": "secure@example.com",
