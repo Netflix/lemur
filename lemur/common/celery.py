@@ -210,4 +210,4 @@ def sync_source(source):
     :return:
     """
     current_app.logger.debug("Syncing source {}".format(source))
-    sync([source], True)
+    sync([source])
