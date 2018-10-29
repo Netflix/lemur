@@ -93,6 +93,7 @@ def sync(source_strings):
             )
 
             sentry.captureException()
+            metrics.send('source_sync_fail', 'counter', 1, metric_tags={'source': source.label, 'status': status})
 
         metrics.send('source_sync', 'counter', 1, metric_tags={'source': source.label, 'status': status})
 
