@@ -19,7 +19,7 @@ from lemur.factory import create_app
 from lemur.notifications.messaging import send_pending_failure_notification
 from lemur.pending_certificates import service as pending_certificate_service
 from lemur.plugins.base import plugins
-from lemur.sources.cli import clean, validate_sources
+from lemur.sources.cli import clean, sync, validate_sources
 
 flask_app = create_app()
 
@@ -188,3 +188,26 @@ def clean_source(source):
     """
     current_app.logger.debug("Cleaning source {}".format(source))
     clean([source], True)
+
+
+@celery.task()
+def sync_all_sources():
+    """
+        This function will sync certificates from all sources. This function triggers one celery task per source.
+        """
+    sources = validate_sources("all")
+    for source in sources:
+        current_app.logger.debug("Creating celery task to sync source {}".format(source.label))
+        sync_source.delay(source.label)
+
+
+@celery.task()
+def sync_source(source):
+    """
+    This celery task will sync the specified source.
+
+    :param source:
+    :return:
+    """
+    current_app.logger.debug("Syncing source {}".format(source))
+    sync([source], True)
