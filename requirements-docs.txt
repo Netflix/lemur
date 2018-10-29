@@ -73,7 +73,7 @@ pyparsing==2.2.2          # via packaging
 pyrfc3339==1.1
 python-dateutil==2.7.3
 python-editor==1.0.3
-pytz==2018.5
+pytz==2018.7
 pyyaml==3.13
 raven[flask]==6.9.0
 redis==2.10.6
