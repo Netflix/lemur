@@ -238,7 +238,17 @@ def reissue(old_certificate_name, commit):
 
         if not old_cert:
             for certificate in get_all_pending_reissue():
-                request_reissue(certificate, commit)
+                try:
+                    request_reissue(certificate, commit)
+                except Exception as e:
+                    sentry.captureException()
+                    current_app.logger.exception(
+                        "Error reissuing certificate: {}".format(certificate.name), exc_info=True)
+                    print(
+                        "[!] Failed to reissue certificates. Reason: {}".format(
+                            e
+                        )
+                    )
         else:
             request_reissue(old_cert, commit)
 
