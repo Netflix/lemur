@@ -87,6 +87,7 @@ class Certificate(db.Model):
 
     body = Column(Text(), nullable=False)
     chain = Column(Text())
+    csr = Column(Text())
     private_key = Column(Vault)
 
     issuer = Column(String(128))
@@ -157,6 +158,9 @@ class Certificate(db.Model):
 
         if kwargs.get('chain'):
             self.chain = kwargs['chain'].strip()
+
+        if kwargs.get('csr'):
+            self.csr = kwargs['csr'].strip()
 
         self.notify = kwargs.get('notify', True)
         self.destinations = kwargs.get('destinations', [])
