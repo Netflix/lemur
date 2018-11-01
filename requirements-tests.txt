@@ -9,7 +9,7 @@ atomicwrites==1.2.1       # via pytest
 attrs==18.2.0             # via pytest
 aws-xray-sdk==0.95        # via moto
 biscuits==0.1.1           # via responses
-boto3==1.9.28             # via moto
+boto3==1.9.36             # via moto
 boto==2.49.0              # via moto
 botocore==1.12.28         # via boto3, moto, s3transfer
 certifi==2018.10.15       # via requests
