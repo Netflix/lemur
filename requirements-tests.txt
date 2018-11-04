@@ -37,7 +37,7 @@ jsonpickle==1.0           # via aws-xray-sdk
 markupsafe==1.0           # via jinja2
 mock==2.0.0               # via moto
 more-itertools==4.3.0     # via pytest
-moto==1.3.4
+moto==1.3.7
 nose==1.3.7
 pbr==5.0.0                # via mock
 pluggy==0.8.0             # via pytest
