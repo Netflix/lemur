@@ -19,7 +19,7 @@ Flask-Principal
 Flask-RESTful
 Flask-Script
 Flask-SQLAlchemy
-Flask==0.12.4
+Flask
 Flask-Cors
 future
 gunicorn
