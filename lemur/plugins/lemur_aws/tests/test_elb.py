@@ -4,7 +4,7 @@ from moto import mock_sts, mock_elb
 
 @mock_sts()
 @mock_elb()
-def test_get_all_elbs(app):
+def test_get_all_elbs(app, aws_credentials):
     from lemur.plugins.lemur_aws.elb import get_all_elbs
     client = boto3.client('elb', region_name='us-east-1')
 

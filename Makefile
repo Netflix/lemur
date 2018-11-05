@@ -43,6 +43,8 @@ reset-db:
 	dropdb lemur || true
 	@echo "--> Creating 'lemur' database"
 	createdb -E utf-8 lemur
+	@echo "--> Enabling pg_trgm extension"
+	psql lemur -c "create extension IF NOT EXISTS pg_trgm;"
 	@echo "--> Applying migrations"
 	lemur db upgrade
 
