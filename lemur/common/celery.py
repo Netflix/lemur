@@ -193,8 +193,8 @@ def clean_source(source):
 @celery.task()
 def sync_all_sources():
     """
-        This function will sync certificates from all sources. This function triggers one celery task per source.
-        """
+    This function will sync certificates from all sources. This function triggers one celery task per source.
+    """
     sources = validate_sources("all")
     for source in sources:
         current_app.logger.debug("Creating celery task to sync source {}".format(source.label))
