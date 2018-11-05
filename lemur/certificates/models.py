@@ -77,6 +77,14 @@ def get_or_increase_name(name, serial):
 
 class Certificate(db.Model):
     __tablename__ = 'certificates'
+    __table_args__ = (
+        Index('ix_certificates_cn', "cn",
+              postgresql_ops={"cn": "gin_trgm_ops"},
+              postgresql_using='gin'),
+        Index('ix_certificates_name', "name",
+              postgresql_ops={"name": "gin_trgm_ops"},
+              postgresql_using='gin'),
+    )
     id = Column(Integer, primary_key=True)
     ix = Index('ix_certificates_id_desc', id.desc(), postgresql_using='btree', unique=True)
     external_id = Column(String(128))

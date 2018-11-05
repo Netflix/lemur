@@ -28,6 +28,7 @@ env:
 before_script:
   - psql -c "create database lemur;" -U postgres
   - psql -c "create user lemur with password 'lemur;'" -U postgres
+  - psql lemur -c "create extension IF NOT EXISTS pg_trgm;" -U postgres
   - npm config set registry https://registry.npmjs.org
   - npm install -g bower
   - pip install --upgrade setuptools
@@ -45,4 +46,4 @@ after_success:
 
 notifications:
   email:
-    kglisson@netflix.com
+    ccastrapel@netflix.com
