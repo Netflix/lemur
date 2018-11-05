@@ -28,7 +28,7 @@ env:
 before_script:
   - psql -c "create database lemur;" -U postgres
   - psql -c "create user lemur with password 'lemur;'" -U postgres
-  - psql -c "CREATE EXTENSION pg_trgm;" -U postgres
+  - psql -c "create extension pg_trgm with schema pg_catalog;" -U postgres
   - npm config set registry https://registry.npmjs.org
   - npm install -g bower
   - pip install --upgrade setuptools
