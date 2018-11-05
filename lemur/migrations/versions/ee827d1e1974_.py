@@ -14,12 +14,8 @@ from alembic import op
 from sqlalchemy.exc import ProgrammingError
 
 def upgrade():
-    try:
-        connection = op.get_bind()
-        connection.execute("CREATE EXTENSION pg_trgm")
-    except ProgrammingError as e:
-        # Extension is most likely already enabled
-        connection.execute("ROLLBACK")
+    connection = op.get_bind()
+    connection.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm")
 
     op.create_index('ix_certificates_cn', 'certificates', ['cn'], unique=False, postgresql_ops={'cn': 'gin_trgm_ops'},
                     postgresql_using='gin')
