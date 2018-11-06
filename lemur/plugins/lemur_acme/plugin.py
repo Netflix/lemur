@@ -44,7 +44,11 @@ class AuthorizationRecord(object):
 class AcmeHandler(object):
     def __init__(self):
         self.dns_providers_for_domain = {}
-        self.all_dns_providers = dns_provider_service.get_all_dns_providers()
+        try:
+            self.all_dns_providers = dns_provider_service.get_all_dns_providers()
+        except Exception as e:
+            current_app.logger.error("Unable to fetch DNS Providers: {}".format(e))
+            self.all_dns_providers = []
 
     def find_dns_challenge(self, authorizations):
         dns_challenges = []

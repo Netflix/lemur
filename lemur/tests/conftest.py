@@ -240,3 +240,11 @@ def cert_builder(private_key):
             .public_key(private_key.public_key())
             .not_valid_before(datetime.datetime(2017, 12, 22))
             .not_valid_after(datetime.datetime(2040, 1, 1)))
+
+
+@pytest.fixture(scope='function')
+def aws_credentials():
+    os.environ['AWS_ACCESS_KEY_ID'] = 'testing'
+    os.environ['AWS_SECRET_ACCESS_KEY'] = 'testing'
+    os.environ['AWS_SECURITY_TOKEN'] = 'testing'
+    os.environ['AWS_SESSION_TOKEN'] = 'testing'

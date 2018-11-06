@@ -387,7 +387,8 @@ def render(args):
         now = arrow.now().format('YYYY-MM-DD')
         query = query.filter(Certificate.not_after <= to).filter(Certificate.not_after >= now)
 
-    return database.sort_and_page(query, Certificate, args)
+    result = database.sort_and_page(query, Certificate, args)
+    return result
 
 
 def create_csr(**csr_config):
