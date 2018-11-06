@@ -38,7 +38,7 @@ flask-principal==0.4.0
 flask-restful==0.3.6
 flask-script==2.0.6
 flask-sqlalchemy==2.3.2
-flask==0.12.4
+flask==1.0.2
 future==0.17.1
 gunicorn==19.9.0
 idna==2.7
