@@ -11,11 +11,11 @@
 """
 from inflection import underscore
 from sqlalchemy import exc, func
-from sqlalchemy.sql import and_, or_
 from sqlalchemy.orm import make_transient
+from sqlalchemy.sql import and_, or_
 
-from lemur.extensions import db
 from lemur.exceptions import AttrNotFound, DuplicateError
+from lemur.extensions import db
 
 
 def filter_none(kwargs):
@@ -273,7 +273,7 @@ def get_count(q):
     :param q:
     :return:
     """
-    count_q = q.statement.with_only_columns([func.count()]).order_by(None)
+    count_q = q.statement.with_only_columns([func.count()]).group_by(None).order_by(None)
     count = q.session.execute(count_q).scalar()
     return count
 
