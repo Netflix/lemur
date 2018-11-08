@@ -336,7 +336,7 @@ def render(args):
             query = query.join(certificate_associations).join(Domain).filter(
                 or_(
                     Certificate.name.ilike(term),
-                    Certificate.domains.any(Domain.name.ilike(term)),
+                    Domain.name.ilike(term),
                     Certificate.cn.ilike(term),
                 )
             ).group_by(Certificate.id)
