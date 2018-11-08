@@ -27,7 +27,7 @@ pygments==2.2.0           # via readme-renderer
 pyyaml==3.13              # via aspy.yaml, pre-commit
 readme-renderer==24.0     # via twine
 requests-toolbelt==0.8.0  # via twine
-requests==2.20.0          # via requests-toolbelt, twine
+requests==2.20.1          # via requests-toolbelt, twine
 six==1.11.0               # via bleach, cfgv, pre-commit, readme-renderer
 toml==0.10.0              # via pre-commit
 tqdm==4.28.1              # via twine
