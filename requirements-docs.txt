@@ -18,7 +18,7 @@ bcrypt==3.1.4
 billiard==3.5.0.4
 blinker==1.4
 boto3==1.9.37
-botocore==1.12.37
+botocore==1.12.41
 celery[redis]==4.2.1
 certifi==2018.10.15
 cffi==1.11.5
