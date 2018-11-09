@@ -57,7 +57,7 @@ ndg-httpsclient==0.5.1
 paramiko==2.4.2
 pbr==5.1.1                # via mock
 pem==18.2.0
-psycopg2==2.7.5
+psycopg2==2.7.6
 pyasn1-modules==0.2.2     # via python-ldap
 pyasn1==0.4.4             # via ndg-httpsclient, paramiko, pyasn1-modules, python-ldap
 pycparser==2.19           # via cffi
