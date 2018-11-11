@@ -84,7 +84,7 @@ s3transfer==0.1.13
 six==1.11.0
 snowballstemmer==1.2.1    # via sphinx
 sphinx-rtd-theme==0.4.2
-sphinx==1.8.1
+sphinx==1.8.2
 sphinxcontrib-httpdomain==1.7.0
 sphinxcontrib-websupport==1.1.0  # via sphinx
 sqlalchemy-utils==0.33.6
