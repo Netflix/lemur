@@ -367,7 +367,7 @@ def update_destinations(target, value, initiator):
     destination_plugin = plugins.get(value.plugin_name)
     status = FAILURE_METRIC_STATUS
     try:
-        if target.private_key:
+        if target.private_key or not destination_plugin.requires_key:
             destination_plugin.upload(target.name, target.body, target.private_key, target.chain, value.options)
             status = SUCCESS_METRIC_STATUS
     except Exception as e:

@@ -35,8 +35,8 @@
 from flask import current_app
 
 from lemur.plugins import lemur_aws as aws
-from lemur.plugins.lemur_aws import iam, s3, elb, ec2
 from lemur.plugins.bases import DestinationPlugin, ExportDestinationPlugin, SourcePlugin
+from lemur.plugins.lemur_aws import iam, s3, elb, ec2
 
 
 def get_region_from_dns(dns):

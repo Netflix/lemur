@@ -540,6 +540,9 @@ def reissue_certificate(certificate, replace=None, user=None):
     """
     primitives = get_certificate_primitives(certificate)
 
+    if primitives.get("csr"):
+        #  We do not want to re-use the CSR when creating a certificate because this defeats the purpose of rotation.
+        del primitives["csr"]
     if not user:
         primitives['creator'] = certificate.user
 
