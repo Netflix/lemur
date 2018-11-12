@@ -53,8 +53,10 @@ def fetch_acme_cert(id):
         id: an id of a PendingCertificate
     """
     log_data = {
-        "function": "{}.{}".format(__name__, sys._getframe().f_code.co_name)
+        "function": "{}.{}".format(__name__, sys._getframe().f_code.co_name),
+        "message": "Resolving pending certificate {}".format(id)
     }
+    current_app.logger.debug(log_data)
     pending_certs = pending_certificate_service.get_pending_certs([id])
     new = 0
     failed = 0
@@ -138,11 +140,22 @@ def fetch_all_pending_acme_certs():
     """Instantiate celery workers to resolve all pending Acme certificates"""
     pending_certs = pending_certificate_service.get_unresolved_pending_certs()
 
+    log_data = {
+        "function": "{}.{}".format(__name__, sys._getframe().f_code.co_name),
+        "message": "Starting job."
+    }
+
+    current_app.logger.debug(log_data)
+
     # We only care about certs using the acme-issuer plugin
     for cert in pending_certs:
         cert_authority = get_authority(cert.authority_id)
         if cert_authority.plugin_name == 'acme-issuer':
             if datetime.now(timezone.utc) - cert.last_updated > timedelta(minutes=5):
+                log_data["message"] = "Triggering job for cert {}".format(cert.name)
+                log_data["cert_name"] = cert.name
+                log_data["cert_id"] = cert.id
+                current_app.logger.debug(log_data)
                 fetch_acme_cert.delay(cert.id)
 
 
