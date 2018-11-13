@@ -333,7 +333,7 @@ def render(args):
         elif 'id' in terms:
             query = query.filter(Certificate.id == cast(terms[1], Integer))
         elif 'name' in terms:
-            query = query.join(certificate_associations).join(Domain).filter(
+            query = query.outerjoin(certificate_associations).outerjoin(Domain).filter(
                 or_(
                     Certificate.name.ilike(term),
                     Domain.name.ilike(term),

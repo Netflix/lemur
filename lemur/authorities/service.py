@@ -178,6 +178,8 @@ def render(args):
         terms = filt.split(';')
         if 'active' in filt:
             query = query.filter(Authority.active == truthiness(terms[1]))
+        elif 'cn' in filt:
+            query = query.join(Authority.active == truthiness(terms[1]))
         else:
             query = database.filter(query, Authority, terms)
 
