@@ -76,7 +76,7 @@ python-editor==1.0.3
 pytz==2018.7
 pyyaml==3.13
 raven[flask]==6.9.0
-redis==3.0.0
+redis==3.0.1
 requests-toolbelt==0.8.0
 requests[security]==2.20.0
 retrying==1.3.3
