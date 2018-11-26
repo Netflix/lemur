@@ -324,6 +324,7 @@ Here is an example LDAP configuration stanza you can add to your config. Adjust 
         LDAP_CACERT_FILE = '/opt/lemur/trusted.pem'
         LDAP_REQUIRED_GROUP = 'certificate-management-access'
         LDAP_GROUPS_TO_ROLES = {'certificate-management-admin': 'admin', 'certificate-management-read-only': 'read-only'}
+        LDAP_IS_ACTIVE_DIRECTORY = True
 
 
 The lemur ldap module uses the `user principal name` (upn) of the authenticating user to bind. This is done once for each user at login time. The UPN is effectively the email address in AD/LDAP of the user. If the user doesn't provide the email address, it constructs one based on the username supplied (which should normally match the samAccountName) and the value provided by the config LDAP_EMAIL_DOMAIN.
@@ -404,6 +405,17 @@ The following LDAP options are not required, however TLS is always recommended.
         ::
 
             LDAP_GROUPS_TO_ROLES = {'lemur_admins': 'admin', 'Lemur Team DL Group': 'team@example.com'}
+
+
+.. data:: LDAP_IS_ACTIVE_DIRECTORY
+    :noindex:
+
+        When set to True, nested group memberships are supported, by searching for groups with the member:1.2.840.113556.1.4.1941 attribute set to the user DN.
+        When set to False, the list of groups will be determined by the 'memberof' attribute of the LDAP user logging in.
+
+        ::
+
+            LDAP_IS_ACTIVE_DIRECTORY = False
 
 
 Authentication Providers

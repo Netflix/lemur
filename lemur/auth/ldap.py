@@ -41,6 +41,7 @@ class LdapPrincipal():
         self.ldap_default_role = current_app.config.get("LEMUR_DEFAULT_ROLE", None)
         self.ldap_required_group = current_app.config.get("LDAP_REQUIRED_GROUP", None)
         self.ldap_groups_to_roles = current_app.config.get("LDAP_GROUPS_TO_ROLES", None)
+        self.ldap_is_active_directory = current_app.config.get("LDAP_IS_ACTIVE_DIRECTORY", False)
         self.ldap_attrs = ['memberOf']
         self.ldap_client = None
         self.ldap_groups = None
@@ -168,11 +169,28 @@ class LdapPrincipal():
         except ldap.LDAPError as e:
             raise Exception("ldap error: {0}".format(e))
 
-        lgroups = self.ldap_client.search_s(self.ldap_base_dn,
-                        ldap.SCOPE_SUBTREE, ldap_filter, self.ldap_attrs)[0][1]['memberOf']
-        # lgroups is a list of utf-8 encoded strings
-        # convert to a single string of groups to allow matching
-        self.ldap_groups = b''.join(lgroups).decode('ascii')
+        if self.ldap_is_active_directory:
+            # Lookup user DN, needed to search for group membership
+            userdn = self.ldap_client.search_s(self.ldap_base_dn,
+                                               ldap.SCOPE_SUBTREE, ldap_filter,
+                                               ['distinguishedName'])[0][1]['distinguishedName'][0]
+            userdn = userdn.decode('utf-8')
+            # Search all groups that have the userDN as a member
+            groupfilter = '(&(objectclass=group)(member:1.2.840.113556.1.4.1941:={0}))'.format(userdn)
+            lgroups = self.ldap_client.search_s(self.ldap_base_dn, ldap.SCOPE_SUBTREE, groupfilter, ['cn'])
+
+            # Create a list of group CN's from the result
+            self.ldap_groups = []
+            for group in lgroups:
+                (dn, values) = group
+                self.ldap_groups.append(values['cn'][0].decode('ascii'))
+        else:
+            lgroups = self.ldap_client.search_s(self.ldap_base_dn,
+                                                ldap.SCOPE_SUBTREE, ldap_filter, self.ldap_attrs)[0][1]['memberOf']
+            # lgroups is a list of utf-8 encoded strings
+            # convert to a single string of groups to allow matching
+            self.ldap_groups = b''.join(lgroups).decode('ascii')
+
         self.ldap_client.unbind()
 
     def _ldap_validate_conf(self):
