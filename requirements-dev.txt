@@ -14,7 +14,7 @@ docutils==0.14            # via readme-renderer
 flake8==3.5.0
 identify==1.1.7           # via pre-commit
 idna==2.7                 # via requests
-importlib-metadata==0.6   # via pre-commit
+importlib-metadata==0.7   # via pre-commit
 importlib-resources==1.0.2  # via pre-commit
 invoke==1.2.0
 mccabe==0.6.1             # via flake8
