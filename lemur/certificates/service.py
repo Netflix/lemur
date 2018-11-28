@@ -281,7 +281,8 @@ def create(**kwargs):
         # "attribute refresh operation cannot proceed"
         pending_cert = database.session_query(PendingCertificate).get(cert.id)
         from lemur.common.celery import fetch_acme_cert
-        fetch_acme_cert.delay(pending_cert.id)
+        if not current_app.config.get("ACME_DISABLE_AUTORESOLVE", False):
+            fetch_acme_cert.delay(pending_cert.id)
 
     return cert
 
