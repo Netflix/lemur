@@ -276,6 +276,14 @@ def create(**kwargs):
         certificate_issued.send(certificate=cert, authority=cert.authority)
         metrics.send('certificate_issued', 'counter', 1, metric_tags=dict(owner=cert.owner, issuer=cert.issuer))
 
+    if isinstance(cert, PendingCertificate):
+        # We need to refresh the pending certificate to avoid "Instance is not bound to a Session; "
+        # "attribute refresh operation cannot proceed"
+        pending_cert = database.session_query(PendingCertificate).get(cert.id)
+        from lemur.common.celery import fetch_acme_cert
+        if not current_app.config.get("ACME_DISABLE_AUTORESOLVE", False):
+            fetch_acme_cert.apply_async((pending_cert.id,), countdown=5)
+
     return cert
 
 

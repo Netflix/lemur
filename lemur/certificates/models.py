@@ -138,7 +138,6 @@ class Certificate(db.Model):
     logs = relationship('Log', backref='certificate')
     endpoints = relationship('Endpoint', backref='certificate')
     rotation_policy = relationship("RotationPolicy")
-
     sensitive_fields = ('private_key',)
 
     def __init__(self, **kwargs):
