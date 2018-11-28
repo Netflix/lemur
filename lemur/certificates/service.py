@@ -276,6 +276,13 @@ def create(**kwargs):
         certificate_issued.send(certificate=cert, authority=cert.authority)
         metrics.send('certificate_issued', 'counter', 1, metric_tags=dict(owner=cert.owner, issuer=cert.issuer))
 
+    if isinstance(cert, PendingCertificate):
+        # We need to refresh the pending certificate to avoid "Instance is not bound to a Session; "
+        # "attribute refresh operation cannot proceed"
+        pending_cert = database.session_query(PendingCertificate).get(cert.id)
+        from lemur.common.celery import fetch_acme_cert
+        fetch_acme_cert.delay(pending_cert.id)
+
     return cert
 
 

@@ -36,6 +36,7 @@ pyjwt
 pyOpenSSL
 python_ldap
 raven[flask]
+redis<3 # redis>=3 is not compatible with celery
 requests
 retrying
 six
