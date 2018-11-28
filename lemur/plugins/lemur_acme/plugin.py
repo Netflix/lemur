@@ -333,12 +333,9 @@ class ACMEIssuerPlugin(IssuerPlugin):
 
     def __init__(self, *args, **kwargs):
         super(ACMEIssuerPlugin, self).__init__(*args, **kwargs)
-        self.acme = None
+        self.acme = AcmeHandler()
 
     def get_dns_provider(self, type):
-        if not self.acme:
-            self.acme = AcmeHandler()
-
         provider_types = {
             'cloudflare': cloudflare,
             'dyn': dyn,
@@ -350,16 +347,12 @@ class ACMEIssuerPlugin(IssuerPlugin):
         return provider
 
     def get_all_zones(self, dns_provider):
-        if not self.acme:
-            self.acme = AcmeHandler()
         dns_provider_options = json.loads(dns_provider.credentials)
         account_number = dns_provider_options.get("account_id")
         dns_provider_plugin = self.get_dns_provider(dns_provider.provider_type)
         return dns_provider_plugin.get_zones(account_number=account_number)
 
     def get_ordered_certificate(self, pending_cert):
-        if not self.acme:
-            self.acme = AcmeHandler()
         acme_client, registration = self.acme.setup_acme_client(pending_cert.authority)
         order_info = authorization_service.get(pending_cert.external_id)
         if pending_cert.dns_provider_id:
@@ -395,8 +388,6 @@ class ACMEIssuerPlugin(IssuerPlugin):
         return cert
 
     def get_ordered_certificates(self, pending_certs):
-        if not self.acme:
-            self.acme = AcmeHandler()
         pending = []
         certs = []
         for pending_cert in pending_certs:
@@ -479,8 +470,6 @@ class ACMEIssuerPlugin(IssuerPlugin):
         :param issuer_options:
         :return: :raise Exception:
         """
-        if not self.acme:
-            self.acme = AcmeHandler()
         authority = issuer_options.get('authority')
         create_immediately = issuer_options.get('create_immediately', False)
         acme_client, registration = self.acme.setup_acme_client(authority)
