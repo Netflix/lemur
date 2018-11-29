@@ -18,7 +18,7 @@ blinker==1.4              # via flask-mail, flask-principal, raven
 boto3==1.9.53
 botocore==1.12.53
 celery[redis]==4.2.1
-certifi==2018.10.15
+certifi==2018.11.29
 cffi==1.11.5              # via bcrypt, cryptography, pynacl
 chardet==3.0.4            # via requests
 click==7.0                # via flask
