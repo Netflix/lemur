@@ -21,7 +21,10 @@ from lemur.pending_certificates import service as pending_certificate_service
 from lemur.plugins.base import plugins
 from lemur.sources.cli import clean, sync, validate_sources
 
-flask_app = create_app()
+if current_app:
+    flask_app = current_app
+else:
+    flask_app = create_app()
 
 
 def make_celery(app):
