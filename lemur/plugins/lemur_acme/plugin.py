@@ -215,12 +215,18 @@ class AcmeHandler(object):
         :return: dns_providers: List of DNS providers that have the correct zone.
         """
         self.dns_providers_for_domain[domain] = []
+        match_length = 0
         for dns_provider in self.all_dns_providers:
             if not dns_provider.domains:
                 continue
             for name in dns_provider.domains:
                 if domain.endswith("." + name):
-                    self.dns_providers_for_domain[domain].append(dns_provider)
+                    if len(name) > match_length:
+                        self.dns_providers_for_domain[domain] = [dns_provider]
+                        match_length = len(name)
+                    elif len(name) == match_length:
+                        self.dns_providers_for_domain[domain].append(dns_provider)
+
         return self.dns_providers_for_domain
 
     def finalize_authorizations(self, acme_client, authorizations):
