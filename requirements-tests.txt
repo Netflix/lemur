@@ -26,7 +26,7 @@ faker==1.0.0
 flask==1.0.2              # via pytest-flask
 freezegun==0.3.11
 future==0.17.1            # via python-jose
-idna==2.7                 # via cryptography, requests
+idna==2.8                 # via cryptography, requests
 itsdangerous==1.1.0       # via flask
 jinja2==2.10              # via flask, moto
 jmespath==0.9.3           # via boto3, botocore
