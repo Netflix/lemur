@@ -350,6 +350,7 @@ class SubjectAlternativeNameExtension(Field):
                     value = value.dotted_string
                 else:
                     current_app.logger.warning('Unknown SubAltName type: {name}'.format(name=name))
+                    continue
 
                 general_names.append({'nameType': name_type, 'value': value})
 
