@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-index --output-file requirements.txt requirements.in
 #
-acme==0.29.0
+acme==0.29.1
 alembic-autogenerate-enums==0.0.2
 alembic==1.0.5            # via flask-migrate
 amqp==2.3.2               # via kombu
