@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-index --output-file requirements.txt requirements.in
 #
-acme==0.28.0
+acme==0.29.1
 alembic-autogenerate-enums==0.0.2
 alembic==1.0.5            # via flask-migrate
 amqp==2.3.2               # via kombu
@@ -13,12 +13,12 @@ arrow==0.12.1
 asn1crypto==0.24.0        # via cryptography
 asyncpool==1.0
 bcrypt==3.1.4             # via flask-bcrypt, paramiko
-billiard==3.5.0.4         # via celery
+billiard==3.5.0.5         # via celery
 blinker==1.4              # via flask-mail, flask-principal, raven
-boto3==1.9.53
-botocore==1.12.53
+boto3==1.9.60
+botocore==1.12.60
 celery[redis]==4.2.1
-certifi==2018.10.15
+certifi==2018.11.29
 cffi==1.11.5              # via bcrypt, cryptography, pynacl
 chardet==3.0.4            # via requests
 click==7.0                # via flask
@@ -46,7 +46,7 @@ jinja2==2.10
 jmespath==0.9.3           # via boto3, botocore
 josepy==1.1.0             # via acme
 jsonlines==1.2.0          # via cloudflare
-kombu==4.2.1              # via celery
+kombu==4.2.2              # via celery
 lockfile==0.12.2
 mako==1.0.7               # via alembic
 markupsafe==1.1.0         # via jinja2, mako
@@ -61,7 +61,7 @@ psycopg2==2.7.6.1
 pyasn1-modules==0.2.2     # via python-ldap
 pyasn1==0.4.4             # via ndg-httpsclient, paramiko, pyasn1-modules, python-ldap
 pycparser==2.19           # via cffi
-pyjwt==1.6.4
+pyjwt==1.7.0
 pynacl==1.3.0             # via paramiko
 pyopenssl==18.0.0
 pyrfc3339==1.1            # via acme
@@ -77,7 +77,7 @@ requests[security]==2.20.1
 retrying==1.3.3
 s3transfer==0.1.13        # via boto3
 six==1.11.0
-sqlalchemy-utils==0.33.8
+sqlalchemy-utils==0.33.9
 sqlalchemy==1.2.14        # via alembic, flask-sqlalchemy, marshmallow-sqlalchemy, sqlalchemy-utils
 tabulate==0.8.2
 urllib3==1.24.1           # via botocore, requests
