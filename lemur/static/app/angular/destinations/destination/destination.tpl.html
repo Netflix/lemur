@@ -47,7 +47,9 @@
             <select name="sub" ng-if="item.type == 'select'" class="form-control" ng-options="i for i in item.available"
                     ng-model="item.value"></select>
             <input name="sub" ng-if="item.type == 'bool'" class="form-control" type="checkbox" ng-model="item.value">
-            <input name="sub" ng-if="item.type == 'str'" type="text" class="form-control" ng-model="item.value"/>
+            <input name="sub" ng-if="item.type == 'str'" type="text" class="form-control" ng-model="item.value" ng-pattern="item.validation"/>
+            <textarea name="sub" ng-if="item.type == 'textarea'" class="form-control"
+                      ng-model="item.value" ng-pattern="item.validation"></textarea>
             <div ng-if="item.type == 'export-plugin'">
               <form name="exportForm" class="form-horizontal" role="form" novalidate>
                 <select class="form-control" ng-model="item.value"
@@ -69,6 +71,8 @@
                                  ng-model="item.value">
                           <input name="sub" ng-if="item.type == 'str'" type="text" class="form-control"
                                  ng-model="item.value" ng-pattern="item.validation"/>
+                          <textarea name="sub" ng-if="item.type == 'textarea'" class="form-control"
+                                    ng-model="item.value" ng-pattern="item.validation"></textarea>
                           <p ng-show="subForm.sub.$invalid && !subForm.sub.$pristine"
                              class="help-block">{{ item.helpMessage }}</p>
                         </div>
