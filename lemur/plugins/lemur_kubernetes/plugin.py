@@ -34,14 +34,8 @@ def ensure_resource(k8s_api, k8s_base_uri, namespace, kind, name, data):
 
     if 200 <= create_resp.status_code <= 299:
         return None
-
-    else:
-        json = create_resp.json()
-        if 'reason' in json:
-            if json['reason'] != 'AlreadyExists':
-                return create_resp.content
-        else:
-            return create_resp.content
+    elif create_resp.json().get('reason', '') != 'AlreadyExists':
+        return create_resp.content
 
     url = _resolve_uri(k8s_base_uri, namespace, kind, name)
     current_app.logger.debug("K8S PUT request URL: %s", url)
@@ -52,7 +46,7 @@ def ensure_resource(k8s_api, k8s_base_uri, namespace, kind, name, data):
     if not 200 <= update_resp.status_code <= 299:
         return update_resp.content
 
-    return None
+    return
 
 
 def _resolve_ns(k8s_base_uri, namespace, api_ver=DEFAULT_API_VERSION):
@@ -227,8 +221,8 @@ class KubernetesDestinationPlugin(DestinationPlugin):
             )
 
         except Exception as e:
-            current_app.logger.exception("Exception in upload")
-            raise e
+            current_app.logger.exception("Exception in upload: {}".format(e), exc_info=True)
+            raise
 
         if err is not None:
             current_app.logger.debug("Error deploying resource: %s", err)
