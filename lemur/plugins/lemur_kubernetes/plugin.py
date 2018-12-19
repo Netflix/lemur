@@ -197,20 +197,14 @@ class KubernetesDestinationPlugin(DestinationPlugin):
         try:
             k8_base_uri = self.get_option('kubernetesURL', options)
             secret_format = self.get_option('secretFormat', options)
-
             k8s_api = K8sSession(
                 self.k8s_bearer(options),
                 self.k8s_cert(options)
             )
-
             cn = common_name(parse_certificate(body))
-
             secret_name_format = self.get_option('secretNameFormat', options)
-
             secret_name = secret_name_format.format(common_name=cn)
-
             secret = build_secret(secret_format, secret_name, body, private_key, cert_chain)
-
             err = ensure_resource(
                 k8s_api,
                 k8s_base_uri=k8_base_uri,
@@ -225,7 +219,7 @@ class KubernetesDestinationPlugin(DestinationPlugin):
             raise
 
         if err is not None:
-            current_app.logger.debug("Error deploying resource: %s", err)
+            current_app.logger.error("Error deploying resource: %s", err)
             raise Exception("Error uploading secret: " + err)
 
     def k8s_bearer(self, options):
