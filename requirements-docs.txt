@@ -75,7 +75,7 @@ python-dateutil==2.7.5
 python-editor==1.0.3
 pytz==2018.7
 pyyaml==3.13
-raven[flask]==6.9.0
+raven[flask]==6.10.0
 redis==2.10.6
 requests-toolbelt==0.8.0
 requests[security]==2.20.1
