@@ -70,7 +70,7 @@ python-editor==1.0.3      # via alembic
 python-ldap==3.1.0
 pytz==2018.7              # via acme, celery, flask-restful, pyrfc3339
 pyyaml==3.13              # via cloudflare
-raven[flask]==6.9.0
+raven[flask]==6.10.0
 redis==2.10.6
 requests-toolbelt==0.8.0  # via acme
 requests[security]==2.21.0
