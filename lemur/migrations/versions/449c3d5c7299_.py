@@ -21,6 +21,14 @@ COLUMNS = ["notification_id", "certificate_id"]
 
 
 def upgrade():
+    connection = op.get_bind()
+    # Delete duplicate entries
+    connection.execute("""\
+        DELETE FROM certificate_notification_associations WHERE ctid NOT IN (
+            -- Select the first tuple ID for each (notification_id, certificate_id) combination and keep that
+            SELECT min(ctid) FROM certificate_notification_associations GROUP BY notification_id, certificate_id
+        )
+    """)
     op.create_unique_constraint(CONSTRAINT_NAME, TABLE, COLUMNS)
 
 
