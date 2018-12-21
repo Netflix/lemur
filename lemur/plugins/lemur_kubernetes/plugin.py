@@ -73,7 +73,6 @@ def _resolve_uri(k8s_base_uri, namespace, kind, name=None, api_ver=DEFAULT_API_V
 def base64encode(string):
     return base64.b64encode(string.encode()).decode()
 
-
 def build_secret(secret_format, secret_name, body, private_key, cert_chain):
     secret = {
         'apiVersion': 'v1',
@@ -101,7 +100,6 @@ def build_secret(secret_format, secret_name, body, private_key, cert_chain):
             'tls.crt': base64encode(cert_chain),
         }
     return secret
-
 
 class KubernetesDestinationPlugin(DestinationPlugin):
     title = 'Kubernetes'
