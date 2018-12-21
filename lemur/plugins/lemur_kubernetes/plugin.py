@@ -11,12 +11,14 @@
 .. moduleauthor:: Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
 """
 import base64
-import os
-import urllib
-import requests
 import itertools
+import os
 
-from lemur.certificates.models import Certificate
+import requests
+from flask import current_app
+
+from lemur.common.defaults import common_name
+from lemur.common.utils import parse_certificate
 from lemur.plugins.bases import DestinationPlugin
 
 DEFAULT_API_VERSION = 'v1'
@@ -26,16 +28,21 @@ def ensure_resource(k8s_api, k8s_base_uri, namespace, kind, name, data):
 
     # _resolve_uri(k8s_base_uri, namespace, kind, name, api_ver=DEFAULT_API_VERSION)
     url = _resolve_uri(k8s_base_uri, namespace, kind)
+    current_app.logger.debug("K8S POST request URL: %s", url)
 
     create_resp = k8s_api.post(url, json=data)
+    current_app.logger.debug("K8S POST response: %s", create_resp)
 
     if 200 <= create_resp.status_code <= 299:
         return None
-
-    elif create_resp.json()['reason'] != 'AlreadyExists':
+    elif create_resp.json().get('reason', '') != 'AlreadyExists':
         return create_resp.content
 
-    update_resp = k8s_api.put(_resolve_uri(k8s_base_uri, namespace, kind, name), json=data)
+    url = _resolve_uri(k8s_base_uri, namespace, kind, name)
+    current_app.logger.debug("K8S PUT request URL: %s", url)
+
+    update_resp = k8s_api.put(url, json=data)
+    current_app.logger.debug("K8S PUT response: %s", update_resp)
 
     if not 200 <= update_resp.status_code <= 299:
         return update_resp.content
@@ -61,6 +68,12 @@ def _resolve_uri(k8s_base_uri, namespace, kind, name=None, api_ver=DEFAULT_API_V
     ]))
 
 
+# Performs Base64 encoding of string to string using the base64.b64encode() function
+# which encodes bytes to bytes.
+def base64encode(string):
+    return base64.b64encode(string.encode()).decode()
+
+
 class KubernetesDestinationPlugin(DestinationPlugin):
     title = 'Kubernetes'
     slug = 'kubernetes-destination'
@@ -74,28 +87,28 @@ class KubernetesDestinationPlugin(DestinationPlugin):
             'name': 'kubernetesURL',
             'type': 'str',
             'required': True,
-            'validation': '@(https?|http)://(-\.)?([^\s/?\.#-]+\.?)+(/[^\s]*)?$@iS',
+            'validation': 'https?://[a-zA-Z0-9.-]+(?::[0-9]+)?',
             'helpMessage': 'Must be a valid Kubernetes server URL!',
         },
         {
             'name': 'kubernetesAuthToken',
             'type': 'str',
             'required': True,
-            'validation': '/^$|\s+/',
+            'validation': '[0-9a-zA-Z-_.]+',
             'helpMessage': 'Must be a valid Kubernetes server Token!',
         },
         {
             'name': 'kubernetesServerCertificate',
-            'type': 'str',
+            'type': 'textarea',
             'required': True,
-            'validation': '/^$|\s+/',
+            'validation': '-----BEGIN CERTIFICATE-----[a-zA-Z0-9/+\\s\\r\\n]+-----END CERTIFICATE-----',
             'helpMessage': 'Must be a valid Kubernetes server Certificate!',
         },
         {
             'name': 'kubernetesNamespace',
             'type': 'str',
             'required': True,
-            'validation': '/^$|\s+/',
+            'validation': '[a-z0-9]([-a-z0-9]*[a-z0-9])?',
             'helpMessage': 'Must be a valid Kubernetes Namespace!',
         },
 
@@ -106,33 +119,38 @@ class KubernetesDestinationPlugin(DestinationPlugin):
 
     def upload(self, name, body, private_key, cert_chain, options, **kwargs):
 
-        k8_bearer = self.get_option('kubernetesAuthToken', options)
-        k8_cert = self.get_option('kubernetesServerCertificate', options)
-        k8_namespace = self.get_option('kubernetesNamespace', options)
-        k8_base_uri = self.get_option('kubernetesURL', options)
+        try:
+            k8_bearer = self.get_option('kubernetesAuthToken', options)
+            k8_cert = self.get_option('kubernetesServerCertificate', options)
+            k8_namespace = self.get_option('kubernetesNamespace', options)
+            k8_base_uri = self.get_option('kubernetesURL', options)
 
-        k8s_api = K8sSession(k8_bearer, k8_cert)
+            k8s_api = K8sSession(k8_bearer, k8_cert)
 
-        cert = Certificate(body=body)
+            cn = common_name(parse_certificate(body))
 
-        # in the future once runtime properties can be passed-in - use passed-in secret name
-        secret_name = 'certs-' + urllib.quote_plus(cert.name)
+            # in the future once runtime properties can be passed-in - use passed-in secret name
+            secret_name = 'certs-' + cn
 
-        err = ensure_resource(k8s_api, k8s_base_uri=k8_base_uri, namespace=k8_namespace, kind="secret", name=secret_name, data={
-            'apiVersion': 'v1',
-            'kind': 'Secret',
-            'metadata': {
-                'name': secret_name,
-            },
-            'data': {
-                'combined.pem': base64.b64encode(body + private_key),
-                'ca.crt': base64.b64encode(cert_chain),
-                'service.key': base64.b64encode(private_key),
-                'service.crt': base64.b64encode(body),
-            }
-        })
+            err = ensure_resource(k8s_api, k8s_base_uri=k8_base_uri, namespace=k8_namespace, kind="secret", name=secret_name, data={
+                'apiVersion': 'v1',
+                'kind': 'Secret',
+                'metadata': {
+                    'name': secret_name,
+                },
+                'data': {
+                    'combined.pem': base64encode('%s\n%s' % (body, private_key)),
+                    'ca.crt': base64encode(cert_chain),
+                    'service.key': base64encode(private_key),
+                    'service.crt': base64encode(body),
+                }
+            })
+        except Exception as e:
+            current_app.logger.exception("Exception in upload: {}".format(e), exc_info=True)
+            raise
 
         if err is not None:
+            current_app.logger.debug("Error deploying resource: %s", err)
             raise Exception("Error uploading secret: " + err)
 
 
