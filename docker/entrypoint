@@ -8,13 +8,21 @@ echo "Create Postgres trgm extension"
 PGPASSWORD=$POSTGRES_PASSWORD psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -d $POSTGRES_DB --command 'CREATE EXTENSION pg_trgm;'
 echo "Done"
 
+# if [ ! -f /home/lemur/.lemur/lemur.conf.py ]; then
+# echo "Creating config"
+# https://github.com/Netflix/lemur/issues/2257
+# python3 /opt/lemur/lemur/manage.py create_config
+# echo "Done"
+# fi
+
 echo "Running init"
 python3 /opt/lemur/lemur/manage.py -c /conf/lemur.conf.py init
 echo "Done"
 
-echo "Creating user"
-echo "something that will create user" | python3 /opt/lemur/lemur/manage.py shell
-echo "Done"
+# echo "Creating user"
+# https://github.com/Netflix/lemur/issues/
+# echo "something that will create user" | python3 /opt/lemur/lemur/manage.py shell
+# echo "Done"
 
 cron_notify="${CRON_NOTIFY:-"0 22 * * *"}"
 cron_sync="${CRON_SYNC:-"*/15 * * * *"}"
