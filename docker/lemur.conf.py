@@ -26,6 +26,6 @@ ACTIVE_PROVIDERS = []
 METRIC_PROVIDERS = []
 
 LOG_LEVEL = str(os.environ.get('LOG_LEVEL','DEBUG'))
-LOG_FILE = str(os.environ.get('LOG_FILE','lemur.log'))
+LOG_FILE = str(os.environ.get('LOG_FILE','/home/lemur/.lemur/lemur.log'))
 
 SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI','postgresql://lemur:lemur@localhost:5432/lemur')
