@@ -8,6 +8,7 @@ ENV gid 1337
 ENV user lemur
 ENV group lemur
 
+
 COPY entrypoint /
 COPY lemur.conf.py /conf/lemur.conf.py
 COPY supervisor.conf /
@@ -39,7 +40,8 @@ RUN addgroup -S ${group} -g ${gid} && \
     pip3 install --upgrade pip && \
     pip3 install --upgrade setuptools && \
     chmod +x /entrypoint && \
-    mkdir -p /run/nginx/
+    mkdir -p /run/nginx/ && \
+    chown -R $user:$group /opt/lemur/
     
 WORKDIR /opt/lemur
 
