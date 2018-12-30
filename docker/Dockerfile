@@ -10,7 +10,7 @@ ENV group lemur
 
 
 COPY entrypoint /
-COPY lemur.conf.py /conf/lemur.conf.py
+COPY lemur.conf.py /home/lemur/.lemur/lemur.conf.py
 COPY supervisor.conf /
 COPY default.conf /etc/nginx/conf.d/
 
