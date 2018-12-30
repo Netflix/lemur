@@ -1,0 +1,32 @@
+#!/bin/sh
+
+#echo $POSTGRES_USER
+#echo $POSTGRES_PASSWORD
+#echo $POSTGRES_HOST
+#echo $POSTGRES_PORT
+#echo $POSTGRES_DB
+
+export SQLALCHEMY_DATABASE_URI="postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB"
+
+#echo $SQLALCHEMY_DATABASE_URI
+
+PGPASSWORD=$POSTGRES_PASSWORD psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -d $POSTGRES_DB --command 'select 1;;'
+PGPASSWORD=$POSTGRES_PASSWORD psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -d $POSTGRES_DB --command 'CREATE EXTENSION pg_trgm;'
+
+# echo "from django.contrib.auth.models import User; User.objects.create_superuser('ronald', 'koko', 'koko')" | python /opt/lemur/lemur/manage.py shell
+
+
+echo "running init"
+python3 /opt/lemur/lemur/manage.py -c /conf/lemur.conf.py init -p password
+echo "done"
+
+
+cron="${custom_cron:-"*/5 * * * *"}"
+
+echo "${cron}  /opt/check/exec.sh" >> /etc/crontabs/root 
+
+#0 22 * * * lemur export LEMUR_CONF=/Users/me/.lemur/lemur.conf.py; python3 /opt/lemur/lemur/manage.py notify expirations
+#*/15 * * * * lemur export LEMUR_CONF=/Users/me/.lemur/lemur.conf.py; python3 /opt/lemur/lemur/manage.py source sync -s all
+#0 22 * * * lemur export LEMUR_CONF=/Users/me/.lemur/lemur.conf.py; python3 /opt/lemur/lemur/manage.py certificate check_revoked
+
+exec "$@"
