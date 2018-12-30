@@ -44,7 +44,7 @@ RUN addgroup -S ${group} -g ${gid} && \
     mkdir -p /run/nginx/ && \
     touch /home/lemur/.lemur/lemur.log && \
     chown -R $user:$group /opt/lemur/ /home/lemur/.lemur/ && \
-    ln -s /home/lemur/.lemur/lemur.log /dev/stdout
+    ln -s /dev/stdout /home/lemur/.lemur/lemur.log
     
 WORKDIR /opt/lemur
 
