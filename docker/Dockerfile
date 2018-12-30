@@ -36,12 +36,15 @@ RUN addgroup -S ${group} -g ${gid} && \
                 libffi-dev \
                 cyrus-sasl-dev \
                 openldap-dev && \
-    mkdir -p /opt/lemur && curl -sSL https://github.com/Netflix/lemur/archive/$VERSION.tar.gz | tar xz -C /opt/lemur --strip-components=1 && \
+    mkdir -p /opt/lemur /home/lemur/.lemur/ && \
+    curl -sSL https://github.com/Netflix/lemur/archive/$VERSION.tar.gz | tar xz -C /opt/lemur --strip-components=1 && \
     pip3 install --upgrade pip && \
     pip3 install --upgrade setuptools && \
     chmod +x /entrypoint && \
     mkdir -p /run/nginx/ && \
-    chown -R $user:$group /opt/lemur/
+    touch /home/lemur/.lemur/lemur.log && \
+    chown -R $user:$group /opt/lemur/ /home/lemur/.lemur/ && \
+    ln -s /home/lemur/.lemur/lemur.log /dev/stdout
     
 WORKDIR /opt/lemur
 
