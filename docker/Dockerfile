@@ -16,7 +16,7 @@ COPY default.conf /etc/nginx/conf.d/
 
 RUN addgroup -S ${group} -g ${gid} && \
     adduser -D -S ${user} -G ${group} -u ${uid} && \
-    apk --update add python3 libldap postgresql-client bash nginx supervisor curl && \
+    apk --update add python3 libldap postgresql-client nginx supervisor curl tzdata bash && \
     apk --update add --virtual build-dependencies \
                 git \
                 tar \
