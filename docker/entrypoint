@@ -17,6 +17,7 @@ echo "Done"
 
 echo "Running init"
 su lemur -c "python3 /opt/lemur/lemur/manage.py init"
+#export LEMUR_CONF=/home/lemur/.lemur/lemur.conf.py ; python3 /opt/lemur/lemur/manage.py init
 echo "Done"
 
 # echo "Creating user"
