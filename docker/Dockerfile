@@ -56,7 +56,7 @@ WORKDIR /
 HEALTHCHECK --interval=12s --timeout=12s --start-period=30s \  
  CMD curl --fail http://localhost:80/api/1/healthcheck | grep -q ok || exit 1
 
-USER lemur
+USER root
 
 ENTRYPOINT ["/entrypoint"]
 
