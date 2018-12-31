@@ -43,8 +43,7 @@ RUN addgroup -S ${group} -g ${gid} && \
     pip3 install --upgrade setuptools && \
     chmod +x /entrypoint && \
     mkdir -p /run/nginx/ /etc/nginx/ssl/ && \
-    chown -R $user:$group /opt/lemur/ /home/lemur/.lemur/ && \
-    ln -s /dev/stdout /home/lemur/.lemur/lemur.log
+    chown -R $user:$group /opt/lemur/ /home/lemur/.lemur/
     
 WORKDIR /opt/lemur
 
