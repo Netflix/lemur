@@ -13,6 +13,7 @@ COPY entrypoint /
 COPY lemur.conf.py /home/lemur/.lemur/lemur.conf.py
 COPY supervisor.conf /
 COPY default.conf /etc/nginx/conf.d/
+COPY default-ssl.conf /etc/nginx/conf.d/
 
 RUN addgroup -S ${group} -g ${gid} && \
     adduser -D -S ${user} -G ${group} -u ${uid} && \
@@ -41,7 +42,7 @@ RUN addgroup -S ${group} -g ${gid} && \
     pip3 install --upgrade pip && \
     pip3 install --upgrade setuptools && \
     chmod +x /entrypoint && \
-    mkdir -p /run/nginx/ && \
+    mkdir -p /run/nginx/ /etc/nginx/ssl/ && \
     chown -R $user:$group /opt/lemur/ /home/lemur/.lemur/ && \
     ln -s /dev/stdout /home/lemur/.lemur/lemur.log
     
