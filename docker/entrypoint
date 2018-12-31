@@ -9,9 +9,9 @@ PGPASSWORD=$POSTGRES_PASSWORD psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTG
 echo "Done"
 
 
-# if [ ! -f /home/lemur/.lemur/lemur.conf.py ]; then
-# openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -subj "/C=US/ST=Oregon/L=Portland/O=Company Name/OU=Org/CN=FAKE
-# fi
+if [ ! -f /etc/nginx/ssl/server.crt ] && [ ! -f /etc/nginx/ssl/server.key ]; then
+  openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -subj "/C=US/ST=Oregon/L=Portland/O=Company Name/OU=Org/CN=FAKE"
+fi
 
 # if [ ! -f /home/lemur/.lemur/lemur.conf.py ]; then
 # echo "Creating config"
