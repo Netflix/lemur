@@ -8,10 +8,12 @@ echo "Create Postgres trgm extension"
 PGPASSWORD=$POSTGRES_PASSWORD psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -d $POSTGRES_DB --command 'CREATE EXTENSION pg_trgm;'
 echo "Done"
 
-
-if [ ! -f /etc/nginx/ssl/server.crt ] && [ ! -f /etc/nginx/ssl/server.key ]; then
-  openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -subj "/C=US/ST=Oregon/L=Portland/O=Company Name/OU=Org/CN=FAKE"
-fi
+if [ -z ${SKIP_SSL} ]; then
+  if [ ! -f /etc/nginx/ssl/server.crt ] && [ ! -f /etc/nginx/ssl/server.key ]; then
+    openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -subj "/C=US/ST=Oregon/L=Portland/O=Company Name/OU=Org/CN=FAKE"
+  fi
+  cp default.conf default_ssl.conf
+then
 
 # if [ ! -f /home/lemur/.lemur/lemur.conf.py ]; then
 # echo "Creating config"
