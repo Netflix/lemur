@@ -17,7 +17,7 @@ echo " # Create Postgres trgm extension"
 PGPASSWORD=$POSTGRES_PASSWORD psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -d $POSTGRES_DB --command 'CREATE EXTENSION pg_trgm;'
 echo " # Done"
 
-if [ -z ${SKIP_SSL} ]; then
+if [ -z "${SKIP_SSL}" ]; then
   if [ ! -f /etc/nginx/ssl/server.crt ] && [ ! -f /etc/nginx/ssl/server.key ]; then
     openssl req -x509 -newkey rsa:4096 -keyout /etc/nginx/ssl/server.key -out /etc/nginx/ssl/server.crt -days 365 -subj "/C=US/ST=FAKE/L=FAKE/O=FAKE/OU=FAKE/CN=FAKE"
   fi
