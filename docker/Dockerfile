@@ -12,8 +12,8 @@ ENV group lemur
 COPY entrypoint /
 COPY lemur.conf.py /home/lemur/.lemur/lemur.conf.py
 COPY supervisor.conf /
-COPY default.conf /etc/nginx/conf.d/
-COPY default-ssl.conf /etc/nginx/conf.d/
+COPY nginx/default.conf /etc/nginx/conf.d/
+COPY nginx/default-ssl.conf /etc/nginx/conf.d/
 
 RUN addgroup -S ${group} -g ${gid} && \
     adduser -D -S ${user} -G ${group} -u ${uid} && \
