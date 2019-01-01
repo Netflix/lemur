@@ -8,9 +8,8 @@ ENV gid 1337
 ENV user lemur
 ENV group lemur
 
-
 COPY entrypoint /
-COPY lemur.conf.py /home/lemur/.lemur/lemur.conf.py
+COPY src/lemur.conf.py /home/lemur/.lemur/lemur.conf.py
 COPY supervisor.conf /
 COPY nginx/default.conf /etc/nginx/conf.d/
 COPY nginx/default-ssl.conf /etc/nginx/conf.d/
