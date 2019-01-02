@@ -12,7 +12,7 @@ cfgv==1.1.0               # via pre-commit
 chardet==3.0.4            # via requests
 docutils==0.14            # via readme-renderer
 flake8==3.5.0
-identify==1.1.7           # via pre-commit
+identify==1.1.8           # via pre-commit
 idna==2.8                 # via requests
 importlib-metadata==0.7   # via pre-commit
 invoke==1.2.0
