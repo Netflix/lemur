@@ -6,6 +6,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import base64
+import arrow
 from builtins import str
 
 from flask import Blueprint, make_response, jsonify, g
@@ -697,6 +698,9 @@ class Certificates(AuthenticatedResource):
 
             if not permission.can():
                 return dict(message='You are not authorized to delete this certificate'), 403
+
+        if arrow.get(cert.not_after) > arrow.utcnow():
+            return dict(message='Certificate is still valid, only expired certificates can be deleted'), 412
 
         service.update(certificate_id, deleted=True)
         log_service.create(g.current_user, 'delete_cert', certificate=cert)
