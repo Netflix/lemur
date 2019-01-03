@@ -1,4 +1,4 @@
-"""empty message
+""" Add delete_cert to log_type enum
 
 Revision ID: 9f79024fe67b
 Revises: ee827d1e1974
@@ -15,12 +15,8 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.sync_enum_values('public', 'log_type',
-                        ['key_view', 'create_cert', 'update_cert', 'revoke_cert'],
-                        ['key_view', 'create_cert', 'update_cert', 'revoke_cert', 'delete_cert'])
+    op.sync_enum_values('public', 'log_type', ['create_cert', 'key_view', 'revoke_cert', 'update_cert'], ['create_cert', 'delete_cert', 'key_view', 'revoke_cert', 'update_cert'])
 
 
 def downgrade():
-    op.sync_enum_values('public', 'log_type',
-                        ['key_view', 'create_cert', 'update_cert', 'revoke_cert', 'delete_cert'],
-                        ['key_view', 'create_cert', 'update_cert', 'revoke_cert'])
+    op.sync_enum_values('public', 'log_type', ['create_cert', 'delete_cert', 'key_view', 'revoke_cert', 'update_cert'], ['create_cert', 'key_view', 'revoke_cert', 'update_cert'])
