@@ -18,6 +18,6 @@ class Log(db.Model):
     __tablename__ = 'logs'
     id = Column(Integer, primary_key=True)
     certificate_id = Column(Integer, ForeignKey('certificates.id'))
-    log_type = Column(Enum('key_view', 'create_cert', 'update_cert', 'revoke_cert', name='log_type'), nullable=False)
+    log_type = Column(Enum('key_view', 'create_cert', 'update_cert', 'revoke_cert', 'delete_cert', name='log_type'), nullable=False)
     logged_at = Column(ArrowType(), PassiveDefault(func.now()), nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
