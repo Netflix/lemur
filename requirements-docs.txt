@@ -91,6 +91,6 @@ sqlalchemy-utils==0.33.9
 sqlalchemy==1.2.14
 tabulate==0.8.2
 urllib3==1.24.1
-vine==1.1.4
+vine==1.2.0
 werkzeug==0.14.1
 xmltodict==0.11.0
