@@ -1,6 +1,6 @@
 from lemur.plugins.bases import IssuerPlugin, SourcePlugin
 import requests
-import lemur_adcs as ADCS
+from lemur.plugins import lemur_adcs as ADCS
 from certsrv import Certsrv
 from OpenSSL import crypto
 from flask import current_app
@@ -9,7 +9,7 @@ from flask import current_app
 class ADCSIssuerPlugin(IssuerPlugin):
     title = 'ADCS'
     slug = 'adcs-issuer'
-    description = 'Enables the creation of certificates by ADCS (Active Direcory Certificate Services)'
+    description = 'Enables the creation of certificates by ADCS (Active Directory Certificate Services)'
     version = ADCS.VERSION
 
     author = 'sirferl'
