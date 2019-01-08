@@ -8,9 +8,9 @@ asn1crypto==0.24.0        # via cryptography
 atomicwrites==1.2.1       # via pytest
 attrs==18.2.0             # via pytest
 aws-xray-sdk==0.95        # via moto
-boto3==1.9.67             # via moto
+boto3==1.9.75             # via moto
 boto==2.49.0              # via moto
-botocore==1.12.67         # via boto3, moto, s3transfer
+botocore==1.12.75         # via boto3, moto, s3transfer
 certifi==2018.11.29       # via requests
 cffi==1.11.5              # via cryptography
 chardet==3.0.4            # via requests
@@ -34,7 +34,7 @@ jsondiff==1.1.1           # via moto
 jsonpickle==1.0           # via aws-xray-sdk
 markupsafe==1.1.0         # via jinja2
 mock==2.0.0               # via moto
-more-itertools==4.3.0     # via pytest
+more-itertools==5.0.0     # via pytest
 moto==1.3.7
 nose==1.3.7
 pbr==5.1.1                # via mock
@@ -46,10 +46,10 @@ pycryptodome==3.7.2       # via python-jose
 pyflakes==2.0.0
 pytest-flask==0.14.0
 pytest-mock==1.10.0
-pytest==4.0.2
+pytest==4.1.0
 python-dateutil==2.7.5    # via botocore, faker, freezegun, moto
 python-jose==2.0.2        # via moto
-pytz==2018.7              # via moto
+pytz==2018.9              # via moto
 pyyaml==3.13              # via pyaml
 requests-mock==1.5.2
 requests==2.21.0          # via aws-xray-sdk, docker, moto, requests-mock, responses
