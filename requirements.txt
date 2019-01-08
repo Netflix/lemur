@@ -9,7 +9,7 @@ alembic-autogenerate-enums==0.0.2
 alembic==1.0.5            # via flask-migrate
 amqp==2.3.2               # via kombu
 aniso8601==4.0.1          # via flask-restful
-arrow==0.12.1
+arrow==0.13.0
 asn1crypto==0.24.0        # via cryptography
 asyncpool==1.0
 bcrypt==3.1.5             # via flask-bcrypt, paramiko
