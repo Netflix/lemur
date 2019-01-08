@@ -13,6 +13,7 @@ import sqlalchemy
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa, ec
+from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from flask_restful.reqparse import RequestParser
 from sqlalchemy import and_, func
 
@@ -50,6 +51,20 @@ def parse_certificate(body):
         body = body.encode('utf-8')
 
     return x509.load_pem_x509_certificate(body, default_backend())
+
+
+def parse_private_key(private_key):
+    """
+    Parses a PEM-format private key (RSA, DSA, ECDSA or any other supported algorithm).
+
+    Raises ValueError for an invalid string.
+
+    :param private_key: String containing PEM private key
+    """
+    if isinstance(private_key, str):
+        private_key = private_key.encode('utf8')
+
+    return load_pem_private_key(private_key, password=None, backend=default_backend())
 
 
 def parse_csr(csr):

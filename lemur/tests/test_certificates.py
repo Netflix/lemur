@@ -18,7 +18,7 @@ from lemur.domains.models import Domain
 
 
 from lemur.tests.vectors import VALID_ADMIN_API_TOKEN, VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN, CSR_STR, \
-    INTERMEDIATE_CERT_STR, SAN_CERT_STR, SAN_CERT_KEY
+    INTERMEDIATE_CERT_STR, SAN_CERT_STR, SAN_CERT_KEY, ROOTCA_KEY, ROOTCA_CERT_STR
 
 
 def test_get_or_increase_name(session, certificate):
@@ -365,6 +365,85 @@ def test_certificate_sensitive_name(client, authority, session, logged_in_user):
     assert errors['common_name'][0].startswith("Domain sensitive.example.com has been marked as sensitive")
 
 
+def test_certificate_upload_schema_ok(client):
+    from lemur.certificates.schemas import CertificateUploadInputSchema
+    data = {
+        'name': 'Jane',
+        'owner': 'pwner@example.com',
+        'body': SAN_CERT_STR,
+        'privateKey': SAN_CERT_KEY,
+        'chain': INTERMEDIATE_CERT_STR,
+        'external_id': '1234',
+    }
+    data, errors = CertificateUploadInputSchema().load(data)
+    assert not errors
+
+
+def test_certificate_upload_schema_minimal(client):
+    from lemur.certificates.schemas import CertificateUploadInputSchema
+    data = {
+        'owner': 'pwner@example.com',
+        'body': SAN_CERT_STR,
+    }
+    data, errors = CertificateUploadInputSchema().load(data)
+    assert not errors
+
+
+def test_certificate_upload_schema_long_chain(client):
+    from lemur.certificates.schemas import CertificateUploadInputSchema
+    data = {
+        'owner': 'pwner@example.com',
+        'body': SAN_CERT_STR,
+        'chain': INTERMEDIATE_CERT_STR + '\n' + ROOTCA_CERT_STR
+    }
+    data, errors = CertificateUploadInputSchema().load(data)
+    assert not errors
+
+
+def test_certificate_upload_schema_invalid_body(client):
+    from lemur.certificates.schemas import CertificateUploadInputSchema
+    data = {
+        'owner': 'pwner@example.com',
+        'body': 'Hereby I certify that this is a valid body',
+    }
+    data, errors = CertificateUploadInputSchema().load(data)
+    assert errors == {'body': ['Public certificate presented is not valid.']}
+
+
+def test_certificate_upload_schema_invalid_pkey(client):
+    from lemur.certificates.schemas import CertificateUploadInputSchema
+    data = {
+        'owner': 'pwner@example.com',
+        'body': SAN_CERT_STR,
+        'privateKey': 'Look at me Im a private key!!111',
+    }
+    data, errors = CertificateUploadInputSchema().load(data)
+    assert errors == {'private_key': ['Private key presented is not valid.']}
+
+
+def test_certificate_upload_schema_invalid_chain(client):
+    from lemur.certificates.schemas import CertificateUploadInputSchema
+    data = {
+        'body': SAN_CERT_STR,
+        'chain': 'CHAINSAW',
+        'owner': 'pwner@example.com',
+    }
+    data, errors = CertificateUploadInputSchema().load(data)
+    assert errors == {'chain': ['Public certificate presented is not valid.']}
+
+
+def test_certificate_upload_schema_wrong_pkey(client):
+    from lemur.certificates.schemas import CertificateUploadInputSchema
+    data = {
+        'body': SAN_CERT_STR,
+        'privateKey': ROOTCA_KEY,
+        'chain': INTERMEDIATE_CERT_STR,
+        'owner': 'pwner@example.com',
+    }
+    data, errors = CertificateUploadInputSchema().load(data)
+    assert errors == {'_schema': ['Private key does not match certificate.']}
+
+
 def test_create_basic_csr(client):
     csr_config = dict(
         common_name='example.com',
@@ -462,8 +541,11 @@ def test_create_certificate(issuer_plugin, authority, user):
     assert cert.name == 'ACustomName1'
 
 
-def test_reissue_certificate(issuer_plugin, authority, certificate):
+def test_reissue_certificate(issuer_plugin, crypto_authority, certificate, logged_in_user):
     from lemur.certificates.service import reissue_certificate
+
+    # test-authority would return a mismatching private key, so use 'cryptography-issuer' plugin instead.
+    certificate.authority = crypto_authority
     new_cert = reissue_certificate(certificate)
     assert new_cert
 
@@ -487,7 +569,7 @@ def test_import(user):
     assert str(cert.not_after) == '2047-12-31T22:00:00+00:00'
     assert str(cert.not_before) == '2017-12-31T22:00:00+00:00'
     assert cert.issuer == 'LemurTrustUnittestsClass1CA2018'
-    assert cert.name == 'SAN-san.example.org-LemurTrustUnittestsClass1CA2018-20171231-20471231-AFF2DB4F8D2D4D8E80FA382AE27C2333-2'
+    assert cert.name.startswith('SAN-san.example.org-LemurTrustUnittestsClass1CA2018-20171231-20471231')
 
     cert = import_certificate(body=SAN_CERT_STR, chain=INTERMEDIATE_CERT_STR, private_key=SAN_CERT_KEY, owner='joe@example.com', name='ACustomName2', creator=user['user'])
     assert cert.name == 'ACustomName2'
