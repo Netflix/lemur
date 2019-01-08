@@ -25,6 +25,7 @@ future
 gunicorn
 inflection
 jinja2
+kombu<=4.2.2 # Kombu 4.2.2 breaks requirements
 lockfile
 marshmallow-sqlalchemy
 marshmallow
