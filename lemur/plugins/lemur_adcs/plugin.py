@@ -93,7 +93,7 @@ class ADCSSourcePlugin(SourcePlugin):
                     # this error indicates end of certificate list(?), so we stop
                     break
                 else:
-                    # We do nothing in case there is no certificate returned with the current id for other reasons
+                    # We do nothing in case there is no certificate returned for other reasons
                     current_app.logger.info("Error with id {0}: {1}".format(id, err))
             else:
                 # we have a certificate
