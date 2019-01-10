@@ -18,7 +18,7 @@ click==7.0                # via flask
 coverage==4.5.2
 cryptography==2.4.2       # via moto
 docker-pycreds==0.4.0     # via docker
-docker==3.6.0             # via moto
+docker==3.7.0             # via moto
 docutils==0.14            # via botocore
 ecdsa==0.13               # via python-jose
 factory-boy==2.11.1
