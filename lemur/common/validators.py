@@ -2,14 +2,12 @@ import re
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import serialization
 from cryptography.x509 import NameOID
 from flask import current_app
 from marshmallow.exceptions import ValidationError
 
 from lemur.auth.permissions import SensitiveDomainPermission
 from lemur.common.utils import parse_certificate, is_weekend
-from lemur.domains import service as domain_service
 
 
 def public_certificate(body):
@@ -24,22 +22,6 @@ def public_certificate(body):
     except Exception as e:
         current_app.logger.exception(e)
         raise ValidationError('Public certificate presented is not valid.')
-
-
-def private_key(key):
-    """
-    User to validate that a given string is a RSA private key
-
-    :param key:
-    :return: :raise ValueError:
-    """
-    try:
-        if isinstance(key, bytes):
-            serialization.load_pem_private_key(key, None, backend=default_backend())
-        else:
-            serialization.load_pem_private_key(key.encode('utf-8'), None, backend=default_backend())
-    except Exception:
-        raise ValidationError('Private key presented is not valid.')
 
 
 def common_name(value):
@@ -65,6 +47,9 @@ def sensitive_domain(domain):
     if whitelist and not any(re.match(pattern, domain) for pattern in whitelist):
         raise ValidationError('Domain {0} does not match whitelisted domain patterns. '
                               'Contact an administrator to issue the certificate.'.format(domain))
+
+    # Avoid circular import.
+    from lemur.domains import service as domain_service
 
     if any(d.sensitive for d in domain_service.get_by_name(domain)):
         raise ValidationError('Domain {0} has been marked as sensitive. '
@@ -141,3 +126,15 @@ def dates(data):
                 raise ValidationError('Validity end must not be after {0}'.format(data['authority'].authority_certificate.not_after))
 
     return data
+
+
+def verify_private_key_match(key, cert, error_class=ValidationError):
+    """
+    Checks that the supplied private key matches the certificate.
+
+    :param cert: Parsed certificate
+    :param key: Parsed private key
+    :param error_class: Exception class to raise on error
+    """
+    if key.public_key().public_numbers() != cert.public_key().public_numbers():
+        raise error_class("Private key does not match certificate.")
