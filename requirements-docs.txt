@@ -87,7 +87,7 @@ sphinx-rtd-theme==0.4.2
 sphinx==1.8.3
 sphinxcontrib-httpdomain==1.7.0
 sphinxcontrib-websupport==1.1.0  # via sphinx
-sqlalchemy-utils==0.33.10
+sqlalchemy-utils==0.33.11
 sqlalchemy==1.2.15
 tabulate==0.8.2
 urllib3==1.24.1
