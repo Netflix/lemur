@@ -7,7 +7,7 @@
 acme==0.30.0
 alembic-autogenerate-enums==0.0.2
 alembic==1.0.5            # via flask-migrate
-amqp==2.3.2               # via kombu
+amqp==2.4.0               # via kombu
 aniso8601==4.1.0          # via flask-restful
 arrow==0.13.0
 asn1crypto==0.24.0        # via cryptography
