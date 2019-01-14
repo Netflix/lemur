@@ -20,7 +20,6 @@ from lemur.common.utils import generate_private_key, truthiness
 from lemur.destinations.models import Destination
 from lemur.domains.models import Domain
 from lemur.extensions import metrics, sentry, signals
-from lemur.models import certificate_associations
 from lemur.notifications.models import Notification
 from lemur.pending_certificates.models import PendingCertificate
 from lemur.plugins.base import plugins
@@ -341,13 +340,13 @@ def render(args):
         elif 'id' in terms:
             query = query.filter(Certificate.id == cast(terms[1], Integer))
         elif 'name' in terms:
-            query = query.outerjoin(certificate_associations).outerjoin(Domain).filter(
+            query = query.filter(
                 or_(
                     Certificate.name.ilike(term),
-                    Domain.name.ilike(term),
+                    Certificate.domains.any(Domain.name.ilike(term)),
                     Certificate.cn.ilike(term),
                 )
-            ).group_by(Certificate.id)
+            )
         else:
             query = database.filter(query, Certificate, terms)
 
