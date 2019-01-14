@@ -17,7 +17,7 @@ from lemur.endpoints import service as endpoint_service
 from lemur.destinations import service as destination_service
 
 from lemur.certificates.schemas import CertificateUploadInputSchema
-from lemur.common.utils import parse_certificate
+from lemur.common.utils import find_matching_certificates_by_hash, parse_certificate
 from lemur.common.defaults import serial
 
 from lemur.plugins.base import plugins
@@ -126,7 +126,8 @@ def sync_certificates(source, user):
 
         if not exists:
             cert = parse_certificate(certificate['body'])
-            exists = certificate_service.get_by_serial(serial(cert))
+            matching_serials = certificate_service.get_by_serial(serial(cert))
+            exists = find_matching_certificates_by_hash(cert, matching_serials)
 
         if not certificate.get('owner'):
             certificate['owner'] = user.email
