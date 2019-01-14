@@ -307,7 +307,7 @@ def render(args):
 
     if filt:
         terms = filt.split(';')
-        term = '%{0}%'.format(terms[1])
+        term = '{0}%'.format(terms[1])
         # Exact matches for quotes. Only applies to name, issuer, and cn
         if terms[1].startswith('"') and terms[1].endswith('"'):
             term = terms[1][1:-1]
