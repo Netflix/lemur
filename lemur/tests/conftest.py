@@ -18,6 +18,7 @@ from .factories import ApiKeyFactory, AuthorityFactory, NotificationFactory, Des
     RotationPolicyFactory, PendingCertificateFactory, AsyncAuthorityFactory, InvalidCertificateFactory, \
     CryptoAuthorityFactory
 
+
 def pytest_runtest_setup(item):
     if 'slow' in item.keywords and not item.config.getoption("--runslow"):
         pytest.skip("need --runslow option to run")
