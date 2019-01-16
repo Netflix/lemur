@@ -12,7 +12,7 @@ aniso8601==4.1.0          # via flask-restful
 arrow==0.13.0
 asn1crypto==0.24.0        # via cryptography
 asyncpool==1.0
-bcrypt==3.1.5             # via flask-bcrypt, paramiko
+bcrypt==3.1.6             # via flask-bcrypt, paramiko
 billiard==3.5.0.5         # via celery
 blinker==1.4              # via flask-mail, flask-principal, raven
 boto3==1.9.76
