@@ -14,7 +14,7 @@ arrow==0.13.0
 asn1crypto==0.24.0
 asyncpool==1.0
 babel==2.6.0              # via sphinx
-bcrypt==3.1.5
+bcrypt==3.1.6
 billiard==3.5.0.5
 blinker==1.4
 boto3==1.9.76
