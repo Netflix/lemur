@@ -5,7 +5,7 @@ import dns.exception
 import dns.name
 import dns.query
 import dns.resolver
-from dyn.tm.errors import DynectCreateError
+from dyn.tm.errors import DynectCreateError, DynectGetError
 from dyn.tm.session import DynectSession
 from dyn.tm.zones import Node, Zone, get_all_zones
 from flask import current_app
@@ -119,7 +119,11 @@ def delete_txt_record(change_id, account_number, domain, token):
     zone = Zone(zone_name)
     node = Node(zone_name, fqdn)
 
-    all_txt_records = node.get_all_records_by_type('TXT')
+    try:
+        all_txt_records = node.get_all_records_by_type('TXT')
+    except DynectGetError:
+        # No Text Records remain or host is not in the zone anymore because all records have been deleted.
+        return
     for txt_record in all_txt_records:
         if txt_record.txtdata == ("{}".format(token)):
             current_app.logger.debug("Deleting TXT record name: {0}".format(fqdn))
