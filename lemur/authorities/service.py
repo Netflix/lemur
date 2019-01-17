@@ -15,6 +15,7 @@ from lemur import database
 from lemur.common.utils import truthiness
 from lemur.extensions import metrics
 from lemur.authorities.models import Authority
+from lemur.certificates.models import Certificate
 from lemur.roles import service as role_service
 
 from lemur.certificates.service import upload
@@ -179,7 +180,12 @@ def render(args):
         if 'active' in filt:
             query = query.filter(Authority.active == truthiness(terms[1]))
         elif 'cn' in filt:
-            query = query.join(Authority.active == truthiness(terms[1]))
+            term = '%{0}%'.format(terms[1])
+            sub_query = database.session_query(Certificate.root_authority_id) \
+                .filter(Certificate.cn.ilike(term)) \
+                .subquery()
+
+            query = query.filter(Authority.id.in_(sub_query))
         else:
             query = database.filter(query, Authority, terms)
 

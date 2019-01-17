@@ -234,6 +234,6 @@ def find_matching_certificates_by_hash(cert, matching_certs):
     determine if any of the certificate hashes match and return the matches."""
     matching = []
     for c in matching_certs:
-        if parse_certificate(c).fingerprint(hashes.SHA256()) == cert.body.fingerprint(hashes.SHA256()):
+        if parse_certificate(c.body).fingerprint(hashes.SHA256()) == cert.fingerprint(hashes.SHA256()):
             matching.append(c)
     return matching
