@@ -60,5 +60,5 @@ text-unidecode==1.2       # via faker
 urllib3==1.24.1           # via botocore, requests
 websocket-client==0.54.0  # via docker
 werkzeug==0.14.1          # via flask, moto, pytest-flask
-wrapt==1.11.0             # via aws-xray-sdk
+wrapt==1.11.1             # via aws-xray-sdk
 xmltodict==0.11.0         # via moto
