@@ -16,7 +16,7 @@ cffi==1.11.5              # via cryptography
 chardet==3.0.4            # via requests
 click==7.0                # via flask
 coverage==4.5.2
-cryptography==2.4.2       # via moto
+cryptography==2.5       # via moto
 docker-pycreds==0.4.0     # via docker
 docker==3.7.0             # via moto
 docutils==0.14            # via botocore
