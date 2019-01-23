@@ -22,7 +22,7 @@ docker==3.7.0             # via moto
 docutils==0.14            # via botocore
 ecdsa==0.13               # via python-jose
 factory-boy==2.11.1
-faker==1.0.1
+faker==1.0.2
 flask==1.0.2              # via pytest-flask
 freezegun==0.3.11
 future==0.17.1            # via python-jose
