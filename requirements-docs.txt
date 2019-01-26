@@ -62,7 +62,7 @@ paramiko==2.4.2
 pbr==5.1.1
 pem==18.2.0
 psycopg2==2.7.6.1
-pyasn1-modules==0.2.3
+pyasn1-modules==0.2.4
 pyasn1==0.4.5
 pycparser==2.19
 pygments==2.3.1           # via sphinx
