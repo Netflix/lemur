@@ -53,14 +53,14 @@ class CfsslIssuerPlugin(IssuerPlugin):
 
         try:
             hex_key = current_app.config.get('CFSSL_KEY')
-            key=bytes.fromhex(hex_key)
+            key = bytes.fromhex(hex_key)
         except:
             #unable to find CFSSL_KEY in config, continue using normal sign method
             pass
         else:
-            data=data.encode()
+            data = data.encode()
 
-            token = base64.b64encode(hmac.new(key,data,digestmod=hashlib.sha256).digest())
+            token = base64.b64encode(hmac.new(key, data, digestmod=hashlib.sha256).digest())
             data = base64.b64encode(data)
 
             data = json.dumps({'token': token.decode('utf-8'), 'request': data.decode('utf-8')})
