@@ -23,7 +23,7 @@ cffi==1.11.5              # via bcrypt, cryptography, pynacl
 chardet==3.0.4            # via requests
 click==7.0                # via flask
 cloudflare==2.1.0
-cryptography==2.4.2
+cryptography==2.5
 dnspython3==1.15.0
 dnspython==1.15.0         # via dnspython3
 docutils==0.14            # via botocore
