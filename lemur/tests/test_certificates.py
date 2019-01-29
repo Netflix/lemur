@@ -619,6 +619,12 @@ def test_certificate_get_body(client):
     response_body = client.get(api.url_for(Certificates, certificate_id=1), headers=VALID_USER_HEADER_TOKEN).json
     assert response_body['serial'] == '211983098819107449768450703123665283596'
     assert response_body['serialHex'] == '9F7A75B39DAE4C3F9524C68B06DA6A0C'
+    assert response_body['distinguishedName'] == ('CN=LemurTrust Unittests Class 1 CA 2018,'
+                                                  'O=LemurTrust Enterprises Ltd,'
+                                                  'OU=Unittesting Operations Center,'
+                                                  'C=EE,'
+                                                  'ST=N/A,'
+                                                  'L=Earth')
 
 
 @pytest.mark.parametrize("token,status", [
