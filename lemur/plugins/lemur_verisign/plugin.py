@@ -111,10 +111,19 @@ def process_options(options):
 
     data['subject_alt_names'] = ",".join(get_additional_names(options))
 
+    if options.get('validity_end') > arrow.utcnow().replace(years=2):
+        raise Exception("Verisign issued certificates cannot exceed two years in validity")
+
     if options.get('validity_end'):
-        period = get_default_issuance(options)
-        data['specificEndDate'] = options['validity_end'].format("MM/DD/YYYY")
-        data['validityPeriod'] = period
+        # VeriSign (Symantec) only accepts strictly smaller than 2 year end date
+        if options.get('validity_end') < arrow.utcnow().replace(years=2).replace(days=-1):
+            period = get_default_issuance(options)
+            data['specificEndDate'] = options['validity_end'].format("MM/DD/YYYY")
+            data['validityPeriod'] = period
+        else:
+            # allowing Symantec website setting the end date, given the validity period
+            data['validityPeriod'] = str(get_default_issuance(options))
+            options.pop('validity_end', None)
 
     elif options.get('validity_years'):
         if options['validity_years'] in [1, 2]:
