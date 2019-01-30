@@ -83,6 +83,8 @@
                     </div>
                     <!-- Certificate fields -->
                     <div class="list-group-item">
+                      <dt>Distinguished Name</dt>
+                      <dd>{{ certificate.distinguishedName }}</dd>
                       <dt>Certificate Authority</dt>
                       <dd>{{ certificate.authority ? certificate.authority.name : "Imported" }} <span class="text-muted">({{ certificate.issuer }})</span></dd>
                       <dt>Serial</dt>

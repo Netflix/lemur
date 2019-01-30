@@ -228,6 +228,10 @@ class Certificate(db.Model):
         return defaults.location(self.parsed_cert)
 
     @property
+    def distinguished_name(self):
+        return self.parsed_cert.subject.rfc4514_string()
+
+    @property
     def key_type(self):
         if isinstance(self.parsed_cert.public_key(), rsa.RSAPublicKey):
             return 'RSA{key_size}'.format(key_size=self.parsed_cert.public_key().key_size)

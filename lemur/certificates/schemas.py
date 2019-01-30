@@ -206,6 +206,7 @@ class CertificateOutputSchema(LemurOutputSchema):
 
     cn = fields.String()
     common_name = fields.String(attribute='cn')
+    distinguished_name = fields.String()
 
     not_after = fields.DateTime()
     validity_end = ArrowDateTime(attribute='not_after')
