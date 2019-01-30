@@ -55,7 +55,7 @@ marshmallow==2.18.0
 mock==2.0.0               # via acme
 ndg-httpsclient==0.5.1
 paramiko==2.4.2
-pbr==5.1.1                # via mock
+pbr==5.1.2                # via mock
 pem==18.2.0
 psycopg2==2.7.7
 pyasn1-modules==0.2.4     # via python-ldap
