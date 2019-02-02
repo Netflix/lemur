@@ -64,6 +64,7 @@ def upload_cert(name, body, private_key, path, cert_chain=None, **kwargs):
     :param path:
     :return:
     """
+    assert isinstance(private_key, str)
     client = kwargs.pop('client')
 
     if not path or path == '/':
@@ -72,8 +73,6 @@ def upload_cert(name, body, private_key, path, cert_chain=None, **kwargs):
         name = name + '-' + path.strip('/')
 
     try:
-        if isinstance(private_key, bytes):
-            private_key = private_key.decode("utf-8")
         if cert_chain:
             return client.upload_server_certificate(
                 Path=path,
