@@ -3,12 +3,11 @@ import os
 import datetime
 import pytest
 from cryptography import x509
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from flask import current_app
 from flask_principal import identity_changed, Identity
 
 from lemur import create_app
+from lemur.common.utils import parse_private_key
 from lemur.database import db as _db
 from lemur.auth.service import create_token
 from lemur.tests.vectors import SAN_CERT_KEY, INTERMEDIATE_KEY
@@ -235,12 +234,12 @@ def logged_in_admin(session, app):
 
 @pytest.fixture
 def private_key():
-    return load_pem_private_key(SAN_CERT_KEY.encode(), password=None, backend=default_backend())
+    return parse_private_key(SAN_CERT_KEY)
 
 
 @pytest.fixture
 def issuer_private_key():
-    return load_pem_private_key(INTERMEDIATE_KEY.encode(), password=None, backend=default_backend())
+    return parse_private_key(INTERMEDIATE_KEY)
 
 
 @pytest.fixture

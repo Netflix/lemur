@@ -38,14 +38,9 @@ def create_csr(cert, chain, csr_tmp, key):
     :param csr_tmp:
     :param key:
     """
-    if isinstance(cert, bytes):
-        cert = cert.decode('utf-8')
-
-    if isinstance(chain, bytes):
-        chain = chain.decode('utf-8')
-
-    if isinstance(key, bytes):
-        key = key.decode('utf-8')
+    assert isinstance(cert, str)
+    assert isinstance(chain, str)
+    assert isinstance(key, str)
 
     with mktempfile() as key_tmp:
         with open(key_tmp, 'w') as f:
