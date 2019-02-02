@@ -14,7 +14,8 @@ from lemur.tests.vectors import SAN_CERT_KEY, INTERMEDIATE_KEY
 
 from .factories import ApiKeyFactory, AuthorityFactory, NotificationFactory, DestinationFactory, \
     CertificateFactory, UserFactory, RoleFactory, SourceFactory, EndpointFactory, \
-    RotationPolicyFactory, PendingCertificateFactory, AsyncAuthorityFactory, CryptoAuthorityFactory
+    RotationPolicyFactory, PendingCertificateFactory, AsyncAuthorityFactory, InvalidCertificateFactory, \
+    CryptoAuthorityFactory
 
 
 def pytest_runtest_setup(item):
@@ -165,6 +166,15 @@ def pending_certificate(session):
     p = PendingCertificateFactory(user=u, authority=a)
     session.commit()
     return p
+
+
+@pytest.fixture
+def invalid_certificate(session):
+    u = UserFactory()
+    a = AsyncAuthorityFactory()
+    i = InvalidCertificateFactory(user=u, authority=a)
+    session.commit()
+    return i
 
 
 @pytest.fixture
