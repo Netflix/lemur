@@ -43,6 +43,8 @@ reset-db:
 	dropdb lemur || true
 	@echo "--> Creating 'lemur' database"
 	createdb -E utf-8 lemur
+	@echo "--> Enabling pg_trgm extension"
+	psql lemur -c "create extension IF NOT EXISTS pg_trgm;"
 	@echo "--> Applying migrations"
 	lemur db upgrade
 
@@ -111,10 +113,10 @@ endif
 	@echo "--> Updating Python requirements"
 	pip install --upgrade pip
 	pip install --upgrade pip-tools
+	pip-compile --output-file requirements.txt requirements.in -U --no-index
 	pip-compile --output-file requirements-docs.txt requirements-docs.in -U --no-index
 	pip-compile --output-file requirements-dev.txt requirements-dev.in -U --no-index
 	pip-compile --output-file requirements-tests.txt requirements-tests.in -U --no-index
-	pip-compile --output-file requirements.txt requirements.in -U --no-index
 	@echo "--> Done updating Python requirements"
 	@echo "--> Removing python-ldap from requirements-docs.txt"
 	grep -v "python-ldap" requirements-docs.txt > tempreqs && mv tempreqs requirements-docs.txt

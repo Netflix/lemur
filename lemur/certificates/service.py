@@ -237,11 +237,6 @@ def upload(**kwargs):
     else:
         kwargs['roles'] = roles
 
-    if kwargs.get('private_key'):
-        private_key = kwargs['private_key']
-        if not isinstance(private_key, bytes):
-            kwargs['private_key'] = private_key.encode('utf-8')
-
     cert = Certificate(**kwargs)
     cert.authority = kwargs.get('authority')
     cert = database.create(cert)
@@ -291,6 +286,14 @@ def create(**kwargs):
         certificate_issued.send(certificate=cert, authority=cert.authority)
         metrics.send('certificate_issued', 'counter', 1, metric_tags=dict(owner=cert.owner, issuer=cert.issuer))
 
+    if isinstance(cert, PendingCertificate):
+        # We need to refresh the pending certificate to avoid "Instance is not bound to a Session; "
+        # "attribute refresh operation cannot proceed"
+        pending_cert = database.session_query(PendingCertificate).get(cert.id)
+        from lemur.common.celery import fetch_acme_cert
+        if not current_app.config.get("ACME_DISABLE_AUTORESOLVE", False):
+            fetch_acme_cert.apply_async((pending_cert.id,), countdown=5)
+
     return cert
 
 
@@ -314,7 +317,7 @@ def render(args):
 
     if filt:
         terms = filt.split(';')
-        term = '%{0}%'.format(terms[1])
+        term = '{0}%'.format(terms[1])
         # Exact matches for quotes. Only applies to name, issuer, and cn
         if terms[1].startswith('"') and terms[1].endswith('"'):
             term = terms[1][1:-1]
@@ -378,7 +381,8 @@ def render(args):
         now = arrow.now().format('YYYY-MM-DD')
         query = query.filter(Certificate.not_after <= to).filter(Certificate.not_after >= now)
 
-    return database.sort_and_page(query, Certificate, args)
+    result = database.sort_and_page(query, Certificate, args)
+    return result
 
 
 def create_csr(**csr_config):
@@ -439,10 +443,7 @@ def create_csr(**csr_config):
         encoding=serialization.Encoding.PEM,
         format=serialization.PrivateFormat.TraditionalOpenSSL,  # would like to use PKCS8 but AWS ELBs don't like it
         encryption_algorithm=serialization.NoEncryption()
-    )
-
-    if isinstance(private_key, bytes):
-        private_key = private_key.decode('utf-8')
+    ).decode('utf-8')
 
     csr = request.public_bytes(
         encoding=serialization.Encoding.PEM
@@ -554,6 +555,9 @@ def reissue_certificate(certificate, replace=None, user=None):
     """
     primitives = get_certificate_primitives(certificate)
 
+    if primitives.get("csr"):
+        #  We do not want to re-use the CSR when creating a certificate because this defeats the purpose of rotation.
+        del primitives["csr"]
     if not user:
         primitives['creator'] = certificate.user
 

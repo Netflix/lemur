@@ -265,30 +265,31 @@ def query(fqdns, issuer, owner, expired):
     table = []
 
     q = database.session_query(Certificate)
+    if issuer:
+        sub_query = database.session_query(Authority.id) \
+            .filter(Authority.name.ilike('%{0}%'.format(issuer))) \
+            .subquery()
 
-    sub_query = database.session_query(Authority.id) \
-        .filter(Authority.name.ilike('%{0}%'.format(issuer))) \
-        .subquery()
-
-    q = q.filter(
-        or_(
-            Certificate.issuer.ilike('%{0}%'.format(issuer)),
-            Certificate.authority_id.in_(sub_query)
+        q = q.filter(
+            or_(
+                Certificate.issuer.ilike('%{0}%'.format(issuer)),
+                Certificate.authority_id.in_(sub_query)
+            )
         )
-    )
-
-    q = q.filter(Certificate.owner.ilike('%{0}%'.format(owner)))
+    if owner:
+        q = q.filter(Certificate.owner.ilike('%{0}%'.format(owner)))
 
     if not expired:
         q = q.filter(Certificate.expired == False)  # noqa
 
-    for f in fqdns.split(','):
-        q = q.filter(
-            or_(
-                Certificate.cn.ilike('%{0}%'.format(f)),
-                Certificate.domains.any(Domain.name.ilike('%{0}%'.format(f)))
+    if fqdns:
+        for f in fqdns.split(','):
+            q = q.filter(
+                or_(
+                    Certificate.cn.ilike('%{0}%'.format(f)),
+                    Certificate.domains.any(Domain.name.ilike('%{0}%'.format(f)))
+                )
             )
-        )
 
     for c in q.all():
         table.append([c.id, c.name, c.owner, c.issuer])
@@ -363,10 +364,7 @@ def check_revoked():
             else:
                 status = verify_string(cert.body, "")
 
-            if status is None:
-                cert.status = 'unknown'
-            else:
-                cert.status = 'valid' if status else 'revoked'
+            cert.status = 'valid' if status else 'revoked'
 
         except Exception as e:
             sentry.captureException()

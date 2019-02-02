@@ -4,22 +4,22 @@ acme
 alembic-autogenerate-enums
 arrow
 asyncpool
-boto3==1.7.79 # Issue with moto: https://github.com/spulec/moto/issues/1813
-botocore== 1.10.84 # Issue with moto: https://github.com/spulec/moto/issues/1813
+boto3
+botocore
 celery[redis]
 certifi
 CloudFlare
 cryptography
 dnspython3
 dyn
-Flask-Bcrypt==0.7.1
-Flask-Mail==0.9.1
-Flask-Migrate==2.1.1
-Flask-Principal==0.4.0
-Flask-RESTful==0.3.6
-Flask-Script==2.0.6
+Flask-Bcrypt
+Flask-Mail
+Flask-Migrate
+Flask-Principal
+Flask-RESTful
+Flask-Script
 Flask-SQLAlchemy
-Flask==0.12
+Flask
 Flask-Cors
 future
 gunicorn
@@ -36,6 +36,7 @@ pyjwt
 pyOpenSSL
 python_ldap
 raven[flask]
+redis<3 # redis>=3 is not compatible with celery
 requests
 retrying
 six

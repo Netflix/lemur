@@ -2,10 +2,9 @@ import json
 
 import pytest
 
+from lemur.pending_certificates.views import *  # noqa
 from .vectors import CSR_STR, INTERMEDIATE_CERT_STR, VALID_ADMIN_API_TOKEN, VALID_ADMIN_HEADER_TOKEN, \
     VALID_USER_HEADER_TOKEN, WILDCARD_CERT_STR
-
-from lemur.pending_certificates.views import *  # noqa
 
 
 def test_increment_attempt(pending_certificate):
@@ -17,7 +16,8 @@ def test_increment_attempt(pending_certificate):
 
 def test_create_pending_certificate(async_issuer_plugin, async_authority, user):
     from lemur.certificates.service import create
-    pending_cert = create(authority=async_authority, csr=CSR_STR, owner='joe@example.com', creator=user['user'], common_name='ACommonName')
+    pending_cert = create(authority=async_authority, csr=CSR_STR, owner='joe@example.com', creator=user['user'],
+                          common_name='ACommonName')
     assert pending_cert.external_id == '12345'
 
 

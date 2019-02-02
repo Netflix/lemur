@@ -3,19 +3,18 @@ import os
 import datetime
 import pytest
 from cryptography import x509
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from flask import current_app
 from flask_principal import identity_changed, Identity
 
 from lemur import create_app
+from lemur.common.utils import parse_private_key
 from lemur.database import db as _db
 from lemur.auth.service import create_token
-from lemur.tests.vectors import SAN_CERT_KEY
+from lemur.tests.vectors import SAN_CERT_KEY, INTERMEDIATE_KEY
 
 from .factories import ApiKeyFactory, AuthorityFactory, NotificationFactory, DestinationFactory, \
     CertificateFactory, UserFactory, RoleFactory, SourceFactory, EndpointFactory, \
-    RotationPolicyFactory, PendingCertificateFactory, AsyncAuthorityFactory
+    RotationPolicyFactory, PendingCertificateFactory, AsyncAuthorityFactory, CryptoAuthorityFactory
 
 
 def pytest_runtest_setup(item):
@@ -87,6 +86,13 @@ def client(app, session, client):
 @pytest.fixture
 def authority(session):
     a = AuthorityFactory()
+    session.commit()
+    return a
+
+
+@pytest.fixture
+def crypto_authority(session):
+    a = CryptoAuthorityFactory()
     session.commit()
     return a
 
@@ -228,7 +234,12 @@ def logged_in_admin(session, app):
 
 @pytest.fixture
 def private_key():
-    return load_pem_private_key(SAN_CERT_KEY.encode(), password=None, backend=default_backend())
+    return parse_private_key(SAN_CERT_KEY)
+
+
+@pytest.fixture
+def issuer_private_key():
+    return parse_private_key(INTERMEDIATE_KEY)
 
 
 @pytest.fixture
@@ -240,3 +251,11 @@ def cert_builder(private_key):
             .public_key(private_key.public_key())
             .not_valid_before(datetime.datetime(2017, 12, 22))
             .not_valid_after(datetime.datetime(2040, 1, 1)))
+
+
+@pytest.fixture(scope='function')
+def aws_credentials():
+    os.environ['AWS_ACCESS_KEY_ID'] = 'testing'
+    os.environ['AWS_SECRET_ACCESS_KEY'] = 'testing'
+    os.environ['AWS_SECURITY_TOKEN'] = 'testing'
+    os.environ['AWS_SESSION_TOKEN'] = 'testing'

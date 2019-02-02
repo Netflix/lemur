@@ -12,7 +12,9 @@ import string
 import sqlalchemy
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, ec
+from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from flask_restful.reqparse import RequestParser
 from sqlalchemy import and_, func
 
@@ -46,10 +48,22 @@ def parse_certificate(body):
     :param body:
     :return:
     """
-    if isinstance(body, str):
-        body = body.encode('utf-8')
+    assert isinstance(body, str)
 
-    return x509.load_pem_x509_certificate(body, default_backend())
+    return x509.load_pem_x509_certificate(body.encode('utf-8'), default_backend())
+
+
+def parse_private_key(private_key):
+    """
+    Parses a PEM-format private key (RSA, DSA, ECDSA or any other supported algorithm).
+
+    Raises ValueError for an invalid string. Raises AssertionError when passed value is not str-type.
+
+    :param private_key: String containing PEM private key
+    """
+    assert isinstance(private_key, str)
+
+    return load_pem_private_key(private_key.encode('utf8'), password=None, backend=default_backend())
 
 
 def parse_csr(csr):
@@ -59,10 +73,9 @@ def parse_csr(csr):
     :param csr:
     :return:
     """
-    if isinstance(csr, str):
-        csr = csr.encode('utf-8')
+    assert isinstance(csr, str)
 
-    return x509.load_pem_x509_csr(csr, default_backend())
+    return x509.load_pem_x509_csr(csr.encode('utf-8'), default_backend())
 
 
 def get_authority_key(body):
@@ -211,3 +224,13 @@ def truthiness(s):
     """If input string resembles something truthy then return True, else False."""
 
     return s.lower() in ('true', 'yes', 'on', 't', '1')
+
+
+def find_matching_certificates_by_hash(cert, matching_certs):
+    """Given a Cryptography-formatted certificate cert, and Lemur-formatted certificates (matching_certs),
+    determine if any of the certificate hashes match and return the matches."""
+    matching = []
+    for c in matching_certs:
+        if parse_certificate(c.body).fingerprint(hashes.SHA256()) == cert.fingerprint(hashes.SHA256()):
+            matching.append(c)
+    return matching

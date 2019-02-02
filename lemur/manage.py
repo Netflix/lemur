@@ -47,7 +47,7 @@ from lemur.logs.models import Log  # noqa
 from lemur.endpoints.models import Endpoint  # noqa
 from lemur.policies.models import RotationPolicy  # noqa
 from lemur.pending_certificates.models import PendingCertificate  # noqa
-
+from lemur.dns_providers.models import DnsProvider  # noqa
 
 manager = Manager(create_app)
 manager.add_option('-c', '--config', dest='config')
@@ -273,10 +273,11 @@ class CreateUser(Command):
         Option('-u', '--username', dest='username', required=True),
         Option('-e', '--email', dest='email', required=True),
         Option('-a', '--active', dest='active', default=True),
-        Option('-r', '--roles', dest='roles', action='append', default=[])
+        Option('-r', '--roles', dest='roles', action='append', default=[]),
+        Option('-p', '--password', dest='password', default=None)
     )
 
-    def run(self, username, email, active, roles):
+    def run(self, username, email, active, roles, password):
         role_objs = []
         for r in roles:
             role_obj = role_service.get_by_name(r)
@@ -286,14 +287,16 @@ class CreateUser(Command):
                 sys.stderr.write("[!] Cannot find role {0}\n".format(r))
                 sys.exit(1)
 
-        password1 = prompt_pass("Password")
-        password2 = prompt_pass("Confirm Password")
+        if not password:
+            password1 = prompt_pass("Password")
+            password2 = prompt_pass("Confirm Password")
+            password = password1
 
-        if password1 != password2:
-            sys.stderr.write("[!] Passwords do not match!\n")
-            sys.exit(1)
+            if password1 != password2:
+                sys.stderr.write("[!] Passwords do not match!\n")
+                sys.exit(1)
 
-        user_service.create(username, password1, email, active, None, role_objs)
+        user_service.create(username, password, email, active, None, role_objs)
         sys.stdout.write("[+] Created new user: {0}\n".format(username))
 
 

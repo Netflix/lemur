@@ -7,18 +7,21 @@ from lemur.extensions import sentry
 from lemur.constants import SAN_NAMING_TEMPLATE, DEFAULT_NAMING_TEMPLATE
 
 
-def text_to_slug(value):
-    """Normalize a string to a "slug" value, stripping character accents and removing non-alphanum characters."""
+def text_to_slug(value, joiner='-'):
+    """
+    Normalize a string to a "slug" value, stripping character accents and removing non-alphanum characters.
+    A series of non-alphanumeric characters is replaced with the joiner character.
+    """
 
     # Strip all character accents: decompose Unicode characters and then drop combining chars.
     value = ''.join(c for c in unicodedata.normalize('NFKD', value) if not unicodedata.combining(c))
 
-    # Replace all remaining non-alphanumeric characters with '-'. Multiple characters get collapsed into a single dash.
-    # Except, keep 'xn--' used in IDNA domain names as is.
-    value = re.sub(r'[^A-Za-z0-9.]+(?<!xn--)', '-', value)
+    # Replace all remaining non-alphanumeric characters with joiner string. Multiple characters get collapsed into a
+    # single joiner. Except, keep 'xn--' used in IDNA domain names as is.
+    value = re.sub(r'[^A-Za-z0-9.]+(?<!xn--)', joiner, value)
 
     # '-' in the beginning or end of string looks ugly.
-    return value.strip('-')
+    return value.strip(joiner)
 
 
 def certificate_name(common_name, issuer, not_before, not_after, san):
@@ -224,24 +227,19 @@ def bitstrength(cert):
 
 def issuer(cert):
     """
-    Gets a sane issuer name from a given certificate.
+    Gets a sane issuer slug from a given certificate, stripping non-alphanumeric characters.
 
     :param cert:
-    :return: Issuer
+    :return: Issuer slug
     """
-    delchars = ''.join(c for c in map(chr, range(256)) if not c.isalnum())
-    try:
-        # Try organization name or fall back to CN
-        issuer = (cert.issuer.get_attributes_for_oid(x509.OID_COMMON_NAME) or
-                  cert.issuer.get_attributes_for_oid(x509.OID_ORGANIZATION_NAME))
-        issuer = str(issuer[0].value)
-        for c in delchars:
-            issuer = issuer.replace(c, "")
-        return issuer
-    except Exception as e:
-        sentry.captureException()
-        current_app.logger.error("Unable to get issuer! {0}".format(e))
+    # Try Common Name or fall back to Organization name
+    attrs = (cert.issuer.get_attributes_for_oid(x509.OID_COMMON_NAME) or
+             cert.issuer.get_attributes_for_oid(x509.OID_ORGANIZATION_NAME))
+    if not attrs:
+        current_app.logger.error("Unable to get issuer! Cert serial {:x}".format(cert.serial_number))
         return "Unknown"
+
+    return text_to_slug(attrs[0].value, '')
 
 
 def not_before(cert):

@@ -1,3 +1,7 @@
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+
 from .vectors import SAN_CERT, WILDCARD_CERT, INTERMEDIATE_CERT
 
 
@@ -41,12 +45,14 @@ def test_cert_issuer(client):
 def test_text_to_slug(client):
     from lemur.common.defaults import text_to_slug
     assert text_to_slug('test - string') == 'test-string'
+    assert text_to_slug('test - string', '') == 'teststring'
     # Accented characters are decomposed
     assert text_to_slug('föö bär') == 'foo-bar'
     # Melt away the Unicode Snowman
     assert text_to_slug('\u2603') == ''
     assert text_to_slug('\u2603test\u2603') == 'test'
     assert text_to_slug('snow\u2603man') == 'snow-man'
+    assert text_to_slug('snow\u2603man', '') == 'snowman'
     # IDNA-encoded domain names should be kept as-is
     assert text_to_slug('xn--i1b6eqas.xn--xmpl-loa9b3671b.com') == 'xn--i1b6eqas.xn--xmpl-loa9b3671b.com'
 
@@ -75,3 +81,29 @@ def test_create_name(client):
         datetime(2015, 5, 12, 0, 0, 0),
         False
     ) == 'xn--mnchen-3ya.de-VertrauenswurdigAutoritat-20150507-20150512'
+
+
+def test_issuer(client, cert_builder, issuer_private_key):
+    from lemur.common.defaults import issuer
+
+    assert issuer(INTERMEDIATE_CERT) == 'LemurTrustUnittestsRootCA2018'
+
+    # We need to override builder's issuer name
+    cert_builder._issuer_name = None
+    # Unicode issuer name
+    cert = (cert_builder
+            .issuer_name(x509.Name([x509.NameAttribute(x509.NameOID.COMMON_NAME, 'Vertrauenswürdig Autorität')]))
+            .sign(issuer_private_key, hashes.SHA256(), default_backend()))
+    assert issuer(cert) == 'VertrauenswurdigAutoritat'
+
+    # Fallback to 'Organization' field when issuer CN is missing
+    cert = (cert_builder
+            .issuer_name(x509.Name([x509.NameAttribute(x509.NameOID.ORGANIZATION_NAME, 'No Such Organization')]))
+            .sign(issuer_private_key, hashes.SHA256(), default_backend()))
+    assert issuer(cert) == 'NoSuchOrganization'
+
+    # Missing issuer name
+    cert = (cert_builder
+            .issuer_name(x509.Name([]))
+            .sign(issuer_private_key, hashes.SHA256(), default_backend()))
+    assert issuer(cert) == 'Unknown'

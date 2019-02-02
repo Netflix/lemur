@@ -19,7 +19,7 @@ from sqlalchemy.sql.expression import case, extract
 from sqlalchemy_utils.types.arrow import ArrowType
 from werkzeug.utils import cached_property
 
-from lemur.common import defaults, utils
+from lemur.common import defaults, utils, validators
 from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
 from lemur.database import db
 from lemur.domains.models import Domain
@@ -77,6 +77,14 @@ def get_or_increase_name(name, serial):
 
 class Certificate(db.Model):
     __tablename__ = 'certificates'
+    __table_args__ = (
+        Index('ix_certificates_cn', "cn",
+              postgresql_ops={"cn": "gin_trgm_ops"},
+              postgresql_using='gin'),
+        Index('ix_certificates_name', "name",
+              postgresql_ops={"name": "gin_trgm_ops"},
+              postgresql_using='gin'),
+    )
     id = Column(Integer, primary_key=True)
     ix = Index('ix_certificates_id_desc', id.desc(), postgresql_using='btree', unique=True)
     external_id = Column(String(128))
@@ -130,7 +138,6 @@ class Certificate(db.Model):
     logs = relationship('Log', backref='certificate')
     endpoints = relationship('Endpoint', backref='certificate')
     rotation_policy = relationship("RotationPolicy")
-
     sensitive_fields = ('private_key',)
 
     def __init__(self, **kwargs):
@@ -179,6 +186,18 @@ class Certificate(db.Model):
         for domain in defaults.domains(cert):
             self.domains.append(Domain(name=domain))
 
+        # Check integrity before saving anything into the database.
+        # For user-facing API calls, validation should also be done in schema validators.
+        self.check_integrity()
+
+    def check_integrity(self):
+        """
+        Integrity checks: Does the cert have a matching private key?
+        """
+        if self.private_key:
+            validators.verify_private_key_match(utils.parse_private_key(self.private_key), self.parsed_cert,
+                                                error_class=AssertionError)
+
     @cached_property
     def parsed_cert(self):
         assert self.body, "Certificate body not set"
@@ -207,6 +226,10 @@ class Certificate(db.Model):
     @property
     def location(self):
         return defaults.location(self.parsed_cert)
+
+    @property
+    def distinguished_name(self):
+        return self.parsed_cert.subject.rfc4514_string()
 
     @property
     def key_type(self):
@@ -359,7 +382,7 @@ def update_destinations(target, value, initiator):
     destination_plugin = plugins.get(value.plugin_name)
     status = FAILURE_METRIC_STATUS
     try:
-        if target.private_key:
+        if target.private_key or not destination_plugin.requires_key:
             destination_plugin.upload(target.name, target.body, target.private_key, target.chain, value.options)
             status = SUCCESS_METRIC_STATUS
     except Exception as e:

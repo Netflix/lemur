@@ -168,6 +168,11 @@ class AsyncAuthorityFactory(AuthorityFactory):
     authority_certificate = SubFactory(CertificateFactory)
 
 
+class CryptoAuthorityFactory(AuthorityFactory):
+    """Authority factory based on 'cryptography' plugin."""
+    plugin = {'slug': 'cryptography-issuer'}
+
+
 class DestinationFactory(BaseFactory):
     """Destination factory."""
     plugin_name = 'test-destination'

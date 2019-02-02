@@ -22,7 +22,7 @@ Some basic prerequisites which you'll need in order to run Lemur:
 Installing Build Dependencies
 -----------------------------
 
-If installing Lemur on a bare Ubuntu OS you will need to grab the following packages so that Lemur can correctly build it's dependencies:
+If installing Lemur on a bare Ubuntu OS you will need to grab the following packages so that Lemur can correctly build its dependencies:
 
 .. code-block:: bash
 
@@ -117,7 +117,7 @@ Simply run:
 
 .. note:: This command will create a default configuration under ``~/.lemur/lemur.conf.py`` you can specify this location by passing the ``config_path`` parameter to the ``create_config`` command.
 
-You can specify ``-c`` or ``--config`` to any Lemur command to specify the current environment you are working in. Lemur will also look under the environmental variable ``LEMUR_CONF`` should that be easier to setup in your environment.
+You can specify ``-c`` or ``--config`` to any Lemur command to specify the current environment you are working in. Lemur will also look under the environmental variable ``LEMUR_CONF`` should that be easier to set up in your environment.
 
 
 Update your configuration
@@ -144,7 +144,7 @@ Before Lemur will run you need to fill in a few required variables in the config
     LEMUR_DEFAULT_ORGANIZATION
     LEMUR_DEFAULT_ORGANIZATIONAL_UNIT
 
-Setup Postgres
+Set Up Postgres
 --------------
 
 For production, a dedicated database is recommended, for this guide we will assume postgres has been installed and is on the same machine that Lemur is installed on.
@@ -193,10 +193,10 @@ Additional notifications can be created through the UI or API.  See :ref:`Creati
 .. note:: It is recommended that once the ``lemur`` user is created that you create individual users for every day access.  There is currently no way for a user to self enroll for Lemur access, they must have an administrator create an account for them or be enrolled automatically through SSO.  This can be done through the CLI or UI.  See :ref:`Creating Users <CreatingUsers>` and :ref:`Command Line Interface <CommandLineInterface>` for details.
 
 
-Setup a Reverse Proxy
+Set Up a Reverse Proxy
 ---------------------
 
-By default, Lemur runs on port 8000.  Even if you change this, under normal conditions you won't be able to bind to port 80. To get around this (and to avoid running Lemur as a privileged user, which you shouldn't), we need setup a simple web proxy. There are many different web servers you can use for this, we like and recommend Nginx.
+By default, Lemur runs on port 8000.  Even if you change this, under normal conditions you won't be able to bind to port 80. To get around this (and to avoid running Lemur as a privileged user, which you shouldn't), we need to set up a simple web proxy. There are many different web servers you can use for this, we like and recommend Nginx.
 
 
 Proxying with Nginx

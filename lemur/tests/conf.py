@@ -1,7 +1,7 @@
-
 # This is just Python which means you can inherit and tweak settings
 
 import os
+
 _basedir = os.path.abspath(os.path.dirname(__file__))
 
 THREADS_PER_PAGE = 8
@@ -78,13 +78,11 @@ DIGICERT_API_KEY = 'api-key'
 DIGICERT_ORG_ID = 111111
 DIGICERT_ROOT = "ROOT"
 
-
 VERISIGN_URL = 'http://example.com'
 VERISIGN_PEM_PATH = '~/'
 VERISIGN_FIRST_NAME = 'Jim'
 VERISIGN_LAST_NAME = 'Bob'
 VERSIGN_EMAIL = 'jim@example.com'
-
 
 ACME_AWS_ACCOUNT_NUMBER = '11111111111'
 
@@ -180,6 +178,7 @@ ACME_URL = 'https://acme-v01.api.letsencrypt.org'
 ACME_EMAIL = 'jim@example.com'
 ACME_TEL = '4088675309'
 ACME_DIRECTORY_URL = 'https://acme-v01.api.letsencrypt.org'
+ACME_DISABLE_AUTORESOLVE = True
 
 LDAP_AUTH = True
 LDAP_BIND_URI = 'ldap://localhost'

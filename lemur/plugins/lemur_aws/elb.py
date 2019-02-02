@@ -95,7 +95,7 @@ def get_all_elbs_v2(**kwargs):
 
 
 @sts_client('elbv2')
-@retry(retry_on_exception=retry_throttled, stop_max_attempt_number=7, wait_exponential_multiplier=1000)
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000)
 def get_listener_arn_from_endpoint(endpoint_name, endpoint_port, **kwargs):
     """
     Get a listener ARN from an endpoint.
@@ -113,7 +113,7 @@ def get_listener_arn_from_endpoint(endpoint_name, endpoint_port, **kwargs):
 
 
 @sts_client('elb')
-@retry(retry_on_exception=retry_throttled, stop_max_attempt_number=7, wait_exponential_multiplier=1000)
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000)
 def get_elbs(**kwargs):
     """
     Fetches one page elb objects for a given account and region.
@@ -123,7 +123,7 @@ def get_elbs(**kwargs):
 
 
 @sts_client('elbv2')
-@retry(retry_on_exception=retry_throttled, stop_max_attempt_number=7, wait_exponential_multiplier=1000)
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000)
 def get_elbs_v2(**kwargs):
     """
     Fetches one page of elb objects for a given account and region.
@@ -136,7 +136,7 @@ def get_elbs_v2(**kwargs):
 
 
 @sts_client('elbv2')
-@retry(retry_on_exception=retry_throttled, stop_max_attempt_number=7, wait_exponential_multiplier=1000)
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000)
 def describe_listeners_v2(**kwargs):
     """
     Fetches one page of listener objects for a given elb arn.
@@ -149,7 +149,7 @@ def describe_listeners_v2(**kwargs):
 
 
 @sts_client('elb')
-@retry(retry_on_exception=retry_throttled, stop_max_attempt_number=7, wait_exponential_multiplier=1000)
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000)
 def describe_load_balancer_policies(load_balancer_name, policy_names, **kwargs):
     """
     Fetching all policies currently associated with an ELB.
@@ -161,7 +161,7 @@ def describe_load_balancer_policies(load_balancer_name, policy_names, **kwargs):
 
 
 @sts_client('elbv2')
-@retry(retry_on_exception=retry_throttled, stop_max_attempt_number=7, wait_exponential_multiplier=1000)
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000)
 def describe_ssl_policies_v2(policy_names, **kwargs):
     """
     Fetching all policies currently associated with an ELB.
@@ -173,7 +173,7 @@ def describe_ssl_policies_v2(policy_names, **kwargs):
 
 
 @sts_client('elb')
-@retry(retry_on_exception=retry_throttled, stop_max_attempt_number=7, wait_exponential_multiplier=1000)
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000)
 def describe_load_balancer_types(policies, **kwargs):
     """
     Describe the policies with policy details.
@@ -185,7 +185,7 @@ def describe_load_balancer_types(policies, **kwargs):
 
 
 @sts_client('elb')
-@retry(retry_on_exception=retry_throttled, stop_max_attempt_number=7, wait_exponential_multiplier=1000)
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000)
 def attach_certificate(name, port, certificate_id, **kwargs):
     """
     Attaches a certificate to a listener, throws exception
@@ -205,7 +205,7 @@ def attach_certificate(name, port, certificate_id, **kwargs):
 
 
 @sts_client('elbv2')
-@retry(retry_on_exception=retry_throttled, stop_max_attempt_number=7, wait_exponential_multiplier=1000)
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000)
 def attach_certificate_v2(listener_arn, port, certificates, **kwargs):
     """
     Attaches a certificate to a listener, throws exception

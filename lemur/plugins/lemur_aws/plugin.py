@@ -35,8 +35,8 @@
 from flask import current_app
 
 from lemur.plugins import lemur_aws as aws
-from lemur.plugins.lemur_aws import iam, s3, elb, ec2
 from lemur.plugins.bases import DestinationPlugin, ExportDestinationPlugin, SourcePlugin
+from lemur.plugins.lemur_aws import iam, s3, elb, ec2
 
 
 def get_region_from_dns(dns):
@@ -163,7 +163,7 @@ class AWSDestinationPlugin(DestinationPlugin):
             'name': 'accountNumber',
             'type': 'str',
             'required': True,
-            'validation': '/^[0-9]{12,12}$/',
+            'validation': '[0-9]{12}',
             'helpMessage': 'Must be a valid AWS account number!',
         },
         {
@@ -279,14 +279,14 @@ class S3DestinationPlugin(ExportDestinationPlugin):
             'name': 'bucket',
             'type': 'str',
             'required': True,
-            'validation': '/^$|\s+/',
+            'validation': '[0-9a-z.-]{3,63}',
             'helpMessage': 'Must be a valid S3 bucket name!',
         },
         {
             'name': 'accountNumber',
             'type': 'str',
             'required': True,
-            'validation': '/^[0-9]{12,12}$/',
+            'validation': '[0-9]{12}',
             'helpMessage': 'A valid AWS account number with permission to access S3',
         },
         {
@@ -308,7 +308,6 @@ class S3DestinationPlugin(ExportDestinationPlugin):
             'name': 'prefix',
             'type': 'str',
             'required': False,
-            'validation': '/^$|\s+/',
             'helpMessage': 'Must be a valid S3 object prefix!',
         }
     ]

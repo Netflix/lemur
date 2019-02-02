@@ -10,13 +10,35 @@ from sqlalchemy.orm import relationship
 from sqlalchemy_utils import JSONType
 from sqlalchemy_utils.types.arrow import ArrowType
 
-from lemur.certificates.models import get_or_increase_name
+from lemur.certificates.models import get_sequence
 from lemur.common import defaults, utils
 from lemur.database import db
 from lemur.models import pending_cert_source_associations, \
     pending_cert_destination_associations, pending_cert_notification_associations, \
     pending_cert_replacement_associations, pending_cert_role_associations
 from lemur.utils import Vault
+
+
+def get_or_increase_name(name, serial):
+    certificates = PendingCertificate.query.filter(PendingCertificate.name.ilike('{0}%'.format(name))).all()
+
+    if not certificates:
+        return name
+
+    serial_name = '{0}-{1}'.format(name, hex(int(serial))[2:].upper())
+    certificates = PendingCertificate.query.filter(PendingCertificate.name.ilike('{0}%'.format(serial_name))).all()
+
+    if not certificates:
+        return serial_name
+
+    ends = [0]
+    root, end = get_sequence(serial_name)
+    for cert in certificates:
+        root, end = get_sequence(cert.name)
+        if end:
+            ends.append(end)
+
+    return '{0}-{1}'.format(root, max(ends) + 1)
 
 
 class PendingCertificate(db.Model):

@@ -8,24 +8,21 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
-from itertools import groupby
 from collections import defaultdict
+from datetime import timedelta
+from itertools import groupby
 
 import arrow
-from datetime import timedelta
 from flask import current_app
-
 from sqlalchemy import and_
 
 from lemur import database
+from lemur.certificates.models import Certificate
+from lemur.certificates.schemas import certificate_notification_output_schema
+from lemur.common.utils import windowed_query
 from lemur.constants import FAILURE_METRIC_STATUS, SUCCESS_METRIC_STATUS
 from lemur.extensions import metrics, sentry
-from lemur.common.utils import windowed_query
-
-from lemur.certificates.schemas import certificate_notification_output_schema
-from lemur.certificates.models import Certificate
 from lemur.pending_certificates.schemas import pending_certificate_output_schema
-
 from lemur.plugins import plugins
 from lemur.plugins.utils import get_plugin_option
 
@@ -74,10 +71,11 @@ def get_eligible_certificates(exclude=None):
         notification_groups = []
 
         for certificate in items:
-            notification = needs_notification(certificate)
+            notifications = needs_notification(certificate)
 
-            if notification:
-                notification_groups.append((notification, certificate))
+            if notifications:
+                for notification in notifications:
+                    notification_groups.append((notification, certificate))
 
         # group by notification
         for notification, items in groupby(notification_groups, lambda x: x[0].label):
@@ -133,10 +131,20 @@ def send_expiration_notifications(exclude):
                 notification_data.append(cert_data)
                 security_data.append(cert_data)
 
+            notification_recipient = get_plugin_option('recipients', notification.options)
+            if notification_recipient:
+                notification_recipient = notification_recipient.split(",")
+
             if send_notification('expiration', notification_data, [owner], notification):
                 success += 1
             else:
                 failure += 1
+
+            if notification_recipient and owner != notification_recipient and security_email != notification_recipient:
+                if send_notification('expiration', notification_data, notification_recipient, notification):
+                    success += 1
+                else:
+                    failure += 1
 
             if send_notification('expiration', security_data, security_email, notification):
                 success += 1
@@ -228,6 +236,8 @@ def needs_notification(certificate):
     now = arrow.utcnow()
     days = (certificate.not_after - now).days
 
+    notifications = []
+
     for notification in certificate.notifications:
         if not notification.active or not notification.options:
             return
@@ -248,4 +258,5 @@ def needs_notification(certificate):
             raise Exception("Invalid base unit for expiration interval: {0}".format(unit))
 
         if days == interval:
-            return notification
+            notifications.append(notification)
+    return notifications
