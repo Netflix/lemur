@@ -6,11 +6,13 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from sqlalchemy import func
+from flask import current_app
 
 from lemur import database
 from lemur.models import certificate_destination_associations
 from lemur.destinations.models import Destination
 from lemur.certificates.models import Certificate
+from lemur.sources import service as sources_service
 
 
 def create(label, plugin_name, options, description=None):
@@ -28,6 +30,13 @@ def create(label, plugin_name, options, description=None):
             del option['value']['plugin_object']
 
     destination = Destination(label=label, options=options, plugin_name=plugin_name, description=description)
+    current_app.logger.info("Destination: %s created", label)
+
+    # add the destination as source, to avoid new destinations that are not in source, as long as an AWS destination
+    if plugin_name == 'aws-destination':
+        sources_service.create(label=label, plugin_name=plugin_name, options=options, description=description)
+        current_app.logger.info("Source: %s created", label)
+
     return database.create(destination)
 
 
