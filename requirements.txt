@@ -50,7 +50,7 @@ kombu==4.2.2.post1        # via celery
 lockfile==0.12.2
 mako==1.0.7               # via alembic
 markupsafe==1.1.0         # via jinja2, mako
-marshmallow-sqlalchemy==0.15.0
+marshmallow-sqlalchemy==0.16.0
 marshmallow==2.18.0
 mock==2.0.0               # via acme
 ndg-httpsclient==0.5.1
