@@ -325,6 +325,8 @@ def render(args):
             query = query.filter(Certificate.notify == truthiness(terms[1]))
         elif 'active' in filt:
             query = query.filter(Certificate.active == truthiness(terms[1]))
+        elif 'deleted' in filt:
+            query = query.filter(Certificate.deleted == truthiness(terms[1]))
         elif 'cn' in terms:
             query = query.filter(
                 or_(
