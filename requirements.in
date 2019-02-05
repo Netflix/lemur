@@ -8,6 +8,7 @@ boto3
 botocore
 celery[redis]
 certifi
+certsrv
 CloudFlare
 cryptography
 dnspython3

@@ -221,11 +221,6 @@ def upload(**kwargs):
     else:
         kwargs['roles'] = roles
 
-    if kwargs.get('private_key'):
-        private_key = kwargs['private_key']
-        if not isinstance(private_key, bytes):
-            kwargs['private_key'] = private_key.encode('utf-8')
-
     cert = Certificate(**kwargs)
     cert.authority = kwargs.get('authority')
     cert = database.create(cert)
@@ -432,10 +427,7 @@ def create_csr(**csr_config):
         encoding=serialization.Encoding.PEM,
         format=serialization.PrivateFormat.TraditionalOpenSSL,  # would like to use PKCS8 but AWS ELBs don't like it
         encryption_algorithm=serialization.NoEncryption()
-    )
-
-    if isinstance(private_key, bytes):
-        private_key = private_key.decode('utf-8')
+    ).decode('utf-8')
 
     csr = request.public_bytes(
         encoding=serialization.Encoding.PEM
