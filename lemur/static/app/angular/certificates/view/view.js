@@ -25,6 +25,7 @@ angular.module('lemur')
       sorting: {
         id: 'desc'     // initial sorting
       },
+      includeDeleted: false,
       filter: $scope.filter
     }, {
       total: 0,           // length of data
@@ -100,6 +101,12 @@ angular.module('lemur')
           certificate.notify = false;
         });
     };
+
+    $scope.updateIncludeDeleted = function() {
+      $scope.certificateTable.parameters({'includeDeleted': this.includeDeleted}, true);
+      $scope.certificateTable.reload();
+    };
+
     $scope.getCertificateStatus = function () {
       var def = $q.defer();
       def.resolve([{'title': 'True', 'id': true}, {'title': 'False', 'id': false}]);

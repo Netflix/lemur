@@ -298,6 +298,7 @@ def render(args):
     # creator = args.pop('creator')  # TODO we should enabling filtering by owner
 
     filt = args.pop('filter')
+    include_deleted = args.pop('includeDeleted', None)
 
     if filt:
         terms = filt.split(';')
@@ -355,6 +356,9 @@ def render(args):
                 Certificate.owner.in_(sub_query)
             )
         )
+
+    if include_deleted is not None and not include_deleted:
+        query = query.filter(Certificate.deleted == False)  # noqa
 
     if destination_id:
         query = query.filter(Certificate.destinations.any(Destination.id == destination_id))
