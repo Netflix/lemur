@@ -8,7 +8,7 @@ acme==0.30.2
 alabaster==0.7.12         # via sphinx
 alembic-autogenerate-enums==0.0.2
 alembic==1.0.7
-amqp==2.4.0
+amqp==2.4.1
 aniso8601==4.1.0
 arrow==0.13.0
 asn1crypto==0.24.0
@@ -17,8 +17,8 @@ babel==2.6.0              # via sphinx
 bcrypt==3.1.6
 billiard==3.5.0.5
 blinker==1.4
-boto3==1.9.86
-botocore==1.12.86
+boto3==1.9.87
+botocore==1.12.87
 celery[redis]==4.2.1
 certifi==2018.11.29
 cffi==1.11.5
@@ -53,13 +53,13 @@ kombu==4.2.2.post1
 lockfile==0.12.2
 mako==1.0.7
 markupsafe==1.1.0
-marshmallow-sqlalchemy==0.15.0
+marshmallow-sqlalchemy==0.16.0
 marshmallow==2.18.0
 mock==2.0.0
 ndg-httpsclient==0.5.1
 packaging==19.0           # via sphinx
 paramiko==2.4.2
-pbr==5.1.1
+pbr==5.1.2
 pem==18.2.0
 psycopg2==2.7.7
 pyasn1-modules==0.2.4
@@ -71,20 +71,20 @@ pynacl==1.3.0
 pyopenssl==19.0.0
 pyparsing==2.3.1          # via packaging
 pyrfc3339==1.1
-python-dateutil==2.7.5
-python-editor==1.0.3
+python-dateutil==2.8.0
+python-editor==1.0.4
 pytz==2018.9
 pyyaml==3.13
 raven[flask]==6.10.0
 redis==2.10.6
-requests-toolbelt==0.9.0
+requests-toolbelt==0.9.1
 requests[security]==2.21.0
 retrying==1.3.3
 s3transfer==0.1.13
 six==1.12.0
 snowballstemmer==1.2.1    # via sphinx
 sphinx-rtd-theme==0.4.2
-sphinx==1.8.3
+sphinx==1.8.4
 sphinxcontrib-httpdomain==1.7.0
 sphinxcontrib-websupport==1.1.0  # via sphinx
 sqlalchemy-utils==0.33.11
