@@ -34,7 +34,7 @@ def create(label, plugin_name, options, description=None):
 
     # add the destination as source, to avoid new destinations that are not in source, as long as an AWS destination
     if plugin_name == 'aws-destination':
-        sources_service.create(label=label, plugin_name=plugin_name, options=options, description=description)
+        sources_service.create(label=label, plugin_name='aws-source', options=options, description=description)
         current_app.logger.info("Source: %s created", label)
 
     return database.create(destination)
