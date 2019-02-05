@@ -47,7 +47,7 @@ pyflakes==2.1.0
 pytest-flask==0.14.0
 pytest-mock==1.10.0
 pytest==4.1.1
-python-dateutil==2.7.5    # via botocore, faker, freezegun, moto
+python-dateutil==2.8.0    # via botocore, faker, freezegun, moto
 python-jose==2.0.2        # via moto
 pytz==2018.9              # via moto
 pyyaml==3.13              # via pyaml
