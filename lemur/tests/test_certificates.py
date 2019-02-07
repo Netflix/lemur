@@ -653,13 +653,24 @@ def test_certificate_put_with_data(client, certificate, issuer_plugin):
 
 
 @pytest.mark.parametrize("token,status", [
-    (VALID_USER_HEADER_TOKEN, 405),
-    (VALID_ADMIN_HEADER_TOKEN, 405),
-    (VALID_ADMIN_API_TOKEN, 405),
-    ('', 405)
+    (VALID_USER_HEADER_TOKEN, 403),
+    (VALID_ADMIN_HEADER_TOKEN, 412),
+    (VALID_ADMIN_API_TOKEN, 412),
+    ('', 401)
 ])
 def test_certificate_delete(client, token, status):
     assert client.delete(api.url_for(Certificates, certificate_id=1), headers=token).status_code == status
+
+
+@pytest.mark.parametrize("token,status", [
+    (VALID_USER_HEADER_TOKEN, 403),
+    (VALID_ADMIN_HEADER_TOKEN, 204),
+    (VALID_ADMIN_API_TOKEN, 204),
+    ('', 401)
+])
+def test_invalid_certificate_delete(client, invalid_certificate, token, status):
+    assert client.delete(
+        api.url_for(Certificates, certificate_id=invalid_certificate.id), headers=token).status_code == status
 
 
 @pytest.mark.parametrize("token,status", [

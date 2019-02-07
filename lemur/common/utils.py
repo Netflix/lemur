@@ -48,24 +48,22 @@ def parse_certificate(body):
     :param body:
     :return:
     """
-    if isinstance(body, str):
-        body = body.encode('utf-8')
+    assert isinstance(body, str)
 
-    return x509.load_pem_x509_certificate(body, default_backend())
+    return x509.load_pem_x509_certificate(body.encode('utf-8'), default_backend())
 
 
 def parse_private_key(private_key):
     """
     Parses a PEM-format private key (RSA, DSA, ECDSA or any other supported algorithm).
 
-    Raises ValueError for an invalid string.
+    Raises ValueError for an invalid string. Raises AssertionError when passed value is not str-type.
 
     :param private_key: String containing PEM private key
     """
-    if isinstance(private_key, str):
-        private_key = private_key.encode('utf8')
+    assert isinstance(private_key, str)
 
-    return load_pem_private_key(private_key, password=None, backend=default_backend())
+    return load_pem_private_key(private_key.encode('utf8'), password=None, backend=default_backend())
 
 
 def parse_csr(csr):
@@ -75,10 +73,9 @@ def parse_csr(csr):
     :param csr:
     :return:
     """
-    if isinstance(csr, str):
-        csr = csr.encode('utf-8')
+    assert isinstance(csr, str)
 
-    return x509.load_pem_x509_csr(csr, default_backend())
+    return x509.load_pem_x509_csr(csr.encode('utf-8'), default_backend())
 
 
 def get_authority_key(body):
