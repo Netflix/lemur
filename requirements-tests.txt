@@ -54,7 +54,7 @@ pyyaml==3.13              # via pyaml
 requests-mock==1.5.2
 requests==2.21.0          # via aws-xray-sdk, docker, moto, requests-mock, responses
 responses==0.10.5         # via moto
-s3transfer==0.1.13        # via boto3
+s3transfer==0.2.0        # via boto3
 six==1.12.0               # via cryptography, docker, docker-pycreds, faker, freezegun, mock, more-itertools, moto, pytest, python-dateutil, python-jose, requests-mock, responses, websocket-client
 text-unidecode==1.2       # via faker
 urllib3==1.24.1           # via botocore, requests
