@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-index --output-file requirements.txt requirements.in
 #
-acme==0.30.2
+acme==0.31.0
 alembic-autogenerate-enums==0.0.2
 alembic==1.0.7            # via flask-migrate
 amqp==2.4.1               # via kombu
@@ -70,7 +70,7 @@ python-dateutil==2.8.0    # via alembic, arrow, botocore
 python-editor==1.0.4      # via alembic
 python-ldap==3.1.0
 pytz==2018.9              # via acme, celery, flask-restful, pyrfc3339
-pyyaml==3.13              # via cloudflare
+pyyaml==4.2b4
 raven[flask]==6.10.0
 redis==2.10.6
 requests-toolbelt==0.9.1  # via acme
