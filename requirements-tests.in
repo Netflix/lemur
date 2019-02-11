@@ -11,3 +11,4 @@ pytest
 pytest-flask
 pytest-mock
 requests-mock
+pyyaml>=4.2b1
