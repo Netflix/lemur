@@ -54,7 +54,7 @@ def get_by_name(name):
 
 def get_by_serial(serial):
     """
-    Retrieves certificate by it's Serial.
+    Retrieves certificate(s) by serial number.
     :param serial:
     :return:
     """
@@ -62,6 +62,22 @@ def get_by_serial(serial):
         # although serial is a number, the DB column is String(128)
         serial = str(serial)
     return Certificate.query.filter(Certificate.serial == serial).all()
+
+
+def get_by_attributes(conditions):
+    """
+    Retrieves certificate(s) by conditions given in a hash of given key=>value pairs.
+    :param serial:
+    :return:
+    """
+    # Ensure that each of the given conditions corresponds to actual columns
+    # if not, silently remove it
+    for attr in conditions.keys():
+        if attr not in Certificate.__table__.columns:
+            conditions.pop(attr)
+
+    query = database.session_query(Certificate)
+    return database.find_all(query, Certificate, conditions).all()
 
 
 def delete(cert_id):
