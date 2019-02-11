@@ -15,8 +15,8 @@ asyncpool==1.0
 bcrypt==3.1.6             # via flask-bcrypt, paramiko
 billiard==3.5.0.5         # via celery
 blinker==1.4              # via flask-mail, flask-principal, raven
-boto3==1.9.90
-botocore==1.12.90
+boto3==1.9.91
+botocore==1.12.91
 celery[redis]==4.2.1
 certifi==2018.11.29
 certsrv==2.1.1
@@ -84,4 +84,4 @@ tabulate==0.8.3
 urllib3==1.24.1           # via botocore, requests
 vine==1.2.0               # via amqp
 werkzeug==0.14.1          # via flask
-xmltodict==0.11.0
+xmltodict==0.12.0

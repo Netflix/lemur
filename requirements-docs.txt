@@ -17,8 +17,8 @@ babel==2.6.0              # via sphinx
 bcrypt==3.1.6
 billiard==3.5.0.5
 blinker==1.4
-boto3==1.9.90
-botocore==1.12.90
+boto3==1.9.91
+botocore==1.12.91
 celery[redis]==4.2.1
 certifi==2018.11.29
 certsrv==2.1.1
@@ -94,4 +94,4 @@ tabulate==0.8.3
 urllib3==1.24.1
 vine==1.2.0
 werkzeug==0.14.1
-xmltodict==0.11.0
+xmltodict==0.12.0
