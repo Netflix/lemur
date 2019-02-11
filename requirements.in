@@ -44,3 +44,5 @@ six
 SQLAlchemy-Utils
 tabulate
 xmltodict
+pyyaml>=4.2b1 #high severity alert
+
