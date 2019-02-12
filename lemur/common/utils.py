@@ -11,9 +11,10 @@ import string
 
 import sqlalchemy
 from cryptography import x509
+from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import rsa, ec
+from cryptography.hazmat.primitives.asymmetric import rsa, ec, padding
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from flask_restful.reqparse import RequestParser
 from sqlalchemy import and_, func
@@ -141,6 +142,40 @@ def generate_private_key(key_type):
             curve=_CURVE_TYPES[key_type],
             backend=default_backend()
         )
+
+
+def check_cert_signature(cert, issuer_public_key):
+    """
+    Check a certificate's signature against an issuer public key.
+    On success, returns None; on failure, raises UnsupportedAlgorithm or InvalidSignature.
+    """
+    if isinstance(issuer_public_key, rsa.RSAPublicKey):
+        # RSA requires padding, just to make life difficult for us poor developers :(
+        if cert.signature_algorithm_oid == x509.SignatureAlgorithmOID.RSASSA_PSS:
+            # In 2005, IETF devised a more secure padding scheme to replace PKCS #1 v1.5. To make sure that
+            # nobody can easily support or use it, they mandated lots of complicated parameters, unlike any
+            # other X.509 signature scheme.
+            # https://tools.ietf.org/html/rfc4056
+            raise UnsupportedAlgorithm("RSASSA-PSS not supported")
+        else:
+            padder = padding.PKCS1v15()
+        issuer_public_key.verify(cert.signature, cert.tbs_certificate_bytes, padder, cert.signature_hash_algorithm)
+    else:
+        # EllipticCurvePublicKey or DSAPublicKey
+        issuer_public_key.verify(cert.signature, cert.tbs_certificate_bytes, cert.signature_hash_algorithm)
+
+
+def is_selfsigned(cert):
+    """
+    Returns True if the certificate is self-signed.
+    Returns False for failed verification or unsupported signing algorithm.
+    """
+    try:
+        check_cert_signature(cert, cert.public_key())
+        # If verification was successful, it's self-signed.
+        return True
+    except InvalidSignature:
+        return False
 
 
 def is_weekend(date):
