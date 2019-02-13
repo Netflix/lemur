@@ -10,7 +10,7 @@ alembic-autogenerate-enums==0.0.2
 alembic==1.0.7
 amqp==2.4.1
 aniso8601==4.1.0
-arrow==0.13.0
+arrow==0.13.1
 asn1crypto==0.24.0
 asyncpool==1.0
 babel==2.6.0              # via sphinx
