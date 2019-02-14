@@ -6,10 +6,9 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import base64
-import arrow
 from builtins import str
 
-from flask import Blueprint, make_response, jsonify, g
+from flask import Blueprint, make_response, jsonify, g, current_app
 from flask_restful import reqparse, Api, inputs
 
 from lemur.common.schema import validate_schema
@@ -678,17 +677,21 @@ class Certificates(AuthenticatedResource):
 
            .. sourcecode:: http
 
-              HTTP/1.1 200 OK
+              HTTP/1.1 204 OK
 
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 204: no error
            :statuscode 403: unauthenticated
            :statusoode 404: certificate not found
+           :statusoode 405: certificate deletion is disabled
 
         """
+        if not current_app.config.get('ALLOW_CERT_DELETION', False):
+            return dict(message="Certificate deletion is disabled"), 405
+
         cert = service.get(certificate_id)
 
-        if not cert:
+        if not cert or cert.deleted:
             return dict(message="Cannot find specified certificate"), 404
 
         # allow creators
@@ -699,12 +702,9 @@ class Certificates(AuthenticatedResource):
             if not permission.can():
                 return dict(message='You are not authorized to delete this certificate'), 403
 
-        if arrow.get(cert.not_after) > arrow.utcnow():
-            return dict(message='Certificate is still valid, only expired certificates can be deleted'), 412
-
         service.update(certificate_id, deleted=True)
         log_service.create(g.current_user, 'delete_cert', certificate=cert)
-        return '', 204
+        return 'Certificate deleted', 204
 
 
 class NotificationCertificatesList(AuthenticatedResource):

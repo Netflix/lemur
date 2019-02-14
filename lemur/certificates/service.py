@@ -381,6 +381,9 @@ def render(args):
         now = arrow.now().format('YYYY-MM-DD')
         query = query.filter(Certificate.not_after <= to).filter(Certificate.not_after >= now)
 
+    if current_app.config.get('ALLOW_CERT_DELETION', False):
+        query = query.filter(Certificate.deleted == False)  # noqa
+
     result = database.sort_and_page(query, Certificate, args)
     return result
 
