@@ -682,8 +682,8 @@ class Certificates(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 204: no error
            :statuscode 403: unauthenticated
-           :statusoode 404: certificate not found
-           :statusoode 405: certificate deletion is disabled
+           :statuscode 404: certificate not found
+           :statuscode 405: certificate deletion is disabled
 
         """
         if not current_app.config.get('ALLOW_CERT_DELETION', False):
