@@ -481,6 +481,7 @@ def test_certificate_upload_schema_ok(client):
         'body': SAN_CERT_STR,
         'privateKey': SAN_CERT_KEY,
         'chain': INTERMEDIATE_CERT_STR,
+        'csr': CSR_STR,
         'external_id': '1234',
     }
     data, errors = CertificateUploadInputSchema().load(data)
