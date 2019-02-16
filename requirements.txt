@@ -20,7 +20,7 @@ botocore==1.12.91
 celery[redis]==4.2.1
 certifi==2018.11.29
 certsrv==2.1.1
-cffi==1.12.0              # via bcrypt, cryptography, pynacl
+cffi==1.12.1              # via bcrypt, cryptography, pynacl
 chardet==3.0.4            # via requests
 click==7.0                # via flask
 cloudflare==2.1.0
