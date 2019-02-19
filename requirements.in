@@ -23,6 +23,7 @@ Flask
 Flask-Cors
 future
 gunicorn
+hvac # required for the vault destination plugin
 inflection
 jinja2
 lockfile
