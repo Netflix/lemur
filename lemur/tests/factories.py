@@ -20,7 +20,7 @@ from lemur.policies.models import RotationPolicy
 from lemur.api_keys.models import ApiKey
 
 from .vectors import SAN_CERT_STR, SAN_CERT_KEY, CSR_STR, INTERMEDIATE_CERT_STR, ROOTCA_CERT_STR, INTERMEDIATE_KEY, \
-    WILDCARD_CERT_KEY
+    WILDCARD_CERT_KEY, INVALID_CERT_STR
 
 
 class BaseFactory(SQLAlchemyModelFactory):
@@ -135,6 +135,11 @@ class CACertificateFactory(CertificateFactory):
     chain = ROOTCA_CERT_STR
     body = INTERMEDIATE_CERT_STR
     private_key = INTERMEDIATE_KEY
+
+
+class InvalidCertificateFactory(CertificateFactory):
+    body = INVALID_CERT_STR
+    private_key = ''
 
 
 class AuthorityFactory(BaseFactory):

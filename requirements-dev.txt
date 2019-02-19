@@ -22,7 +22,7 @@ pre-commit==1.14.4
 pycodestyle==2.3.1        # via flake8
 pyflakes==1.6.0           # via flake8
 pygments==2.3.1           # via readme-renderer
-pyyaml==3.13              # via aspy.yaml, pre-commit
+pyyaml==4.2b4
 readme-renderer==24.0     # via twine
 requests-toolbelt==0.9.1  # via twine
 requests==2.21.0          # via requests-toolbelt, twine

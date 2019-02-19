@@ -54,7 +54,7 @@ def get_by_name(name):
 
 def get_by_serial(serial):
     """
-    Retrieves certificate by it's Serial.
+    Retrieves certificate(s) by serial number.
     :param serial:
     :return:
     """
@@ -62,6 +62,22 @@ def get_by_serial(serial):
         # although serial is a number, the DB column is String(128)
         serial = str(serial)
     return Certificate.query.filter(Certificate.serial == serial).all()
+
+
+def get_by_attributes(conditions):
+    """
+    Retrieves certificate(s) by conditions given in a hash of given key=>value pairs.
+    :param serial:
+    :return:
+    """
+    # Ensure that each of the given conditions corresponds to actual columns
+    # if not, silently remove it
+    for attr in conditions.keys():
+        if attr not in Certificate.__table__.columns:
+            conditions.pop(attr)
+
+    query = database.session_query(Certificate)
+    return database.find_all(query, Certificate, conditions).all()
 
 
 def delete(cert_id):
@@ -220,11 +236,6 @@ def upload(**kwargs):
         kwargs['roles'] += roles
     else:
         kwargs['roles'] = roles
-
-    if kwargs.get('private_key'):
-        private_key = kwargs['private_key']
-        if not isinstance(private_key, bytes):
-            kwargs['private_key'] = private_key.encode('utf-8')
 
     cert = Certificate(**kwargs)
     cert.authority = kwargs.get('authority')
@@ -432,10 +443,7 @@ def create_csr(**csr_config):
         encoding=serialization.Encoding.PEM,
         format=serialization.PrivateFormat.TraditionalOpenSSL,  # would like to use PKCS8 but AWS ELBs don't like it
         encryption_algorithm=serialization.NoEncryption()
-    )
-
-    if isinstance(private_key, bytes):
-        private_key = private_key.decode('utf-8')
+    ).decode('utf-8')
 
     csr = request.public_bytes(
         encoding=serialization.Encoding.PEM
