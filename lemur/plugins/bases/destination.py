@@ -12,6 +12,7 @@ from lemur.plugins.base import Plugin, plugins
 class DestinationPlugin(Plugin):
     type = 'destination'
     requires_key = True
+    sync_as_source = False
 
     def upload(self, name, body, private_key, cert_chain, options, **kwargs):
         raise NotImplementedError

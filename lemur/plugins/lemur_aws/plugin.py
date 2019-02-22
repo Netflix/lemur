@@ -195,6 +195,7 @@ class AWSSourcePlugin(SourcePlugin):
     slug = 'aws-source'
     description = 'Discovers all SSL certificates and ELB endpoints in an AWS account'
     version = aws.VERSION
+    sync_as_source = True
 
     author = 'Kevin Glisson'
     author_url = 'https://github.com/netflix/lemur'
