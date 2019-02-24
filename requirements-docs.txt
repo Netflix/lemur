@@ -47,7 +47,7 @@ imagesize==1.1.0          # via sphinx
 inflection==0.3.1
 itsdangerous==1.1.0
 jinja2==2.10
-jmespath==0.9.3
+jmespath==0.9.4
 josepy==1.1.0
 jsonlines==1.2.0
 kombu==4.3.0
