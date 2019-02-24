@@ -44,7 +44,7 @@ idna==2.8                 # via requests
 inflection==0.3.1
 itsdangerous==1.1.0       # via flask
 jinja2==2.10
-jmespath==0.9.3           # via boto3, botocore
+jmespath==0.9.4           # via boto3, botocore
 josepy==1.1.0             # via acme
 jsonlines==1.2.0          # via cloudflare
 kombu==4.3.0              # via celery
