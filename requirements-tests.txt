@@ -38,7 +38,7 @@ more-itertools==5.0.0     # via pytest
 moto==1.3.7
 nose==1.3.7
 pbr==5.1.2                # via mock
-pluggy==0.8.1             # via pytest
+pluggy==0.9.0             # via pytest
 py==1.7.0                 # via pytest
 pyaml==18.11.0            # via moto
 pycparser==2.19           # via cffi
