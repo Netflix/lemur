@@ -15,8 +15,8 @@ asyncpool==1.0
 bcrypt==3.1.6             # via flask-bcrypt, paramiko
 billiard==3.5.0.5         # via celery
 blinker==1.4              # via flask-mail, flask-principal, raven
-boto3==1.9.100
-botocore==1.12.100
+boto3==1.9.102
+botocore==1.12.102
 celery[redis]==4.2.1
 certifi==2018.11.29
 certsrv==2.1.1
@@ -44,13 +44,13 @@ idna==2.8                 # via requests
 inflection==0.3.1
 itsdangerous==1.1.0       # via flask
 jinja2==2.10
-jmespath==0.9.3           # via boto3, botocore
+jmespath==0.9.4           # via boto3, botocore
 josepy==1.1.0             # via acme
 jsonlines==1.2.0          # via cloudflare
 kombu==4.3.0              # via celery
 lockfile==0.12.2
 mako==1.0.7               # via alembic
-markupsafe==1.1.0         # via jinja2, mako
+markupsafe==1.1.1         # via jinja2, mako
 marshmallow-sqlalchemy==0.16.0
 marshmallow==2.18.1
 mock==2.0.0               # via acme
@@ -70,7 +70,7 @@ python-dateutil==2.8.0    # via alembic, arrow, botocore
 python-editor==1.0.4      # via alembic
 python-ldap==3.1.0
 pytz==2018.9              # via acme, celery, flask-restful, pyrfc3339
-pyyaml==4.2b4
+pyyaml==5.1b1
 raven[flask]==6.10.0
 redis==2.10.6
 requests-toolbelt==0.9.1  # via acme

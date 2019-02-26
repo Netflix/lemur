@@ -17,8 +17,8 @@ babel==2.6.0              # via sphinx
 bcrypt==3.1.6
 billiard==3.5.0.5
 blinker==1.4
-boto3==1.9.100
-botocore==1.12.100
+boto3==1.9.102
+botocore==1.12.102
 celery[redis]==4.2.1
 certifi==2018.11.29
 certsrv==2.1.1
@@ -47,13 +47,13 @@ imagesize==1.1.0          # via sphinx
 inflection==0.3.1
 itsdangerous==1.1.0
 jinja2==2.10
-jmespath==0.9.3
+jmespath==0.9.4
 josepy==1.1.0
 jsonlines==1.2.0
 kombu==4.3.0
 lockfile==0.12.2
 mako==1.0.7
-markupsafe==1.1.0
+markupsafe==1.1.1
 marshmallow-sqlalchemy==0.16.0
 marshmallow==2.18.1
 mock==2.0.0
@@ -75,7 +75,7 @@ pyrfc3339==1.1
 python-dateutil==2.8.0
 python-editor==1.0.4
 pytz==2018.9
-pyyaml==4.2b4
+pyyaml==5.1b1
 raven[flask]==6.10.0
 redis==2.10.6
 requests-toolbelt==0.9.1
