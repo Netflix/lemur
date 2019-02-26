@@ -47,11 +47,11 @@ class VaultDestinationPlugin(DestinationPlugin):
             'helpMessage': 'Must be a valid Vault secrets path'
         },
         {
-            'name': 'vaultUrl',
+            'name': 'objectName',
             'type': 'str',
-            'required': True,
-            'validation': '^https?://[a-zA-Z0-9.-]+(?::[0-9]+)?$',
-            'helpMessage': 'Must be a valid Vault server url'
+            'required': False,
+            'validation': '[0-9a-zA-Z:_-]+',
+            'helpMessage': 'Name to bundle certs under, if blank use cn'
         },
         {
             'name': 'bundleChain',
@@ -64,13 +64,6 @@ class VaultDestinationPlugin(DestinationPlugin):
             ],
             'required': True,
             'helpMessage': 'Bundle the chain into the certificate'
-        },
-        {
-            'name': 'objectName',
-            'type': 'str',
-            'required': False,
-            'validation': '[0-9a-zA-Z:_-]+',
-            'helpMessage': 'Name to bundle certs under, if blank use cn'
         }
     ]
 
@@ -93,10 +86,10 @@ class VaultDestinationPlugin(DestinationPlugin):
         sans_name = '{0}.san'.format(cname)
 
         token = current_app.config.get('VAULT_TOKEN')
+        url = current_app.config.get('VAULT_URL')
 
         mount = self.get_option('vaultMount', options)
         path = self.get_option('vaultPath', options)
-        url = self.get_option('vaultUrl', options)
         bundle = self.get_option('bundleChain', options)
         obj_name = self.get_option('objectName', options)
 
