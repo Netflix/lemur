@@ -147,6 +147,8 @@ def generate_private_key(key_type):
 def check_cert_signature(cert, issuer_public_key):
     """
     Check a certificate's signature against an issuer public key.
+    Before EC validation, make sure public key and signature are of the same type,
+    otherwise verification not possible (raise InvalidSignature)
     On success, returns None; on failure, raises UnsupportedAlgorithm or InvalidSignature.
     """
     if isinstance(issuer_public_key, rsa.RSAPublicKey):
@@ -160,9 +162,10 @@ def check_cert_signature(cert, issuer_public_key):
         else:
             padder = padding.PKCS1v15()
         issuer_public_key.verify(cert.signature, cert.tbs_certificate_bytes, padder, cert.signature_hash_algorithm)
+    elif isinstance(issuer_public_key, ec.EllipticCurvePublicKey) and isinstance(cert.signature_hash_algorithm, ec.ECDSA):
+            issuer_public_key.verify(cert.signature, cert.tbs_certificate_bytes, cert.signature_hash_algorithm)
     else:
-        # EllipticCurvePublicKey or DSAPublicKey
-        issuer_public_key.verify(cert.signature, cert.tbs_certificate_bytes, cert.signature_hash_algorithm)
+        raise InvalidSignature
 
 
 def is_selfsigned(cert):
@@ -176,6 +179,8 @@ def is_selfsigned(cert):
         return True
     except InvalidSignature:
         return False
+    except UnsupportedAlgorithm as e:
+        raise Exception(e)
 
 
 def is_weekend(date):
