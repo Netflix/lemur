@@ -12,7 +12,7 @@ boto3==1.9.102            # via moto
 boto==2.49.0              # via moto
 botocore==1.12.102        # via boto3, moto, s3transfer
 certifi==2018.11.29       # via requests
-cffi==1.12.1              # via cryptography
+cffi==1.12.2              # via cryptography
 chardet==3.0.4            # via requests
 click==7.0                # via flask
 coverage==4.5.2
