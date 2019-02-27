@@ -1,6 +1,6 @@
 import pytest
 
-from lemur.tests.vectors import SAN_CERT, INTERMEDIATE_CERT, ROOTCA_CERT, EC_CERT_EXAMPLE
+from lemur.tests.vectors import SAN_CERT, INTERMEDIATE_CERT, ROOTCA_CERT, EC_CERT_EXAMPLE, ECDSA_PRIME256V1_CERT, ECDSA_SECP384r1_CERT, DSA_CERT
 
 
 def test_generate_private_key():
@@ -84,3 +84,10 @@ def test_is_selfsigned(selfsigned_cert):
     # Root CA certificates are also technically self-signed
     assert is_selfsigned(ROOTCA_CERT) is True
     assert is_selfsigned(EC_CERT_EXAMPLE) is False
+
+    # selfsigned certs
+    assert is_selfsigned(ECDSA_PRIME256V1_CERT) is True
+    assert is_selfsigned(ECDSA_SECP384r1_CERT) is True
+    # unsupported algorithm (DSA)
+    with pytest.raises(Exception):
+        is_selfsigned(DSA_CERT)
