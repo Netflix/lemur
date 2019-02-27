@@ -15,6 +15,8 @@ from cryptography.fernet import Fernet
 from lemur.utils import mktempfile, mktemppath
 from lemur.plugins.bases import ExportPlugin
 from lemur.plugins import lemur_java as java
+from lemur.common.utils import parse_certificate
+from lemur.common.defaults import common_name
 
 
 def run_process(command):
@@ -233,7 +235,7 @@ class JavaKeystoreExportPlugin(ExportPlugin):
         if self.get_option('alias', options):
             alias = self.get_option('alias', options)
         else:
-            alias = "blah"
+            alias = common_name(parse_certificate(body))
 
         with mktemppath() as jks_tmp:
             create_keystore(body, chain, jks_tmp, key, alias, passphrase)
