@@ -691,8 +691,11 @@ class Certificates(AuthenticatedResource):
 
         cert = service.get(certificate_id)
 
-        if not cert or cert.deleted:
+        if not cert:
             return dict(message="Cannot find specified certificate"), 404
+
+        if cert.deleted:
+            return dict(message="Certificate is already deleted"), 412
 
         # allow creators
         if g.current_user != cert.user:

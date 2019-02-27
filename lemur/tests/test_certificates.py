@@ -738,7 +738,7 @@ def test_certificate_put_with_data(client, certificate, issuer_plugin):
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 403),
     (VALID_ADMIN_HEADER_TOKEN, 204),
-    (VALID_ADMIN_API_TOKEN, 404),
+    (VALID_ADMIN_API_TOKEN, 412),
     ('', 401)
 ])
 def test_certificate_delete(client, token, status):
