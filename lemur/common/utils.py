@@ -201,8 +201,6 @@ def is_selfsigned(cert):
         return True
     except InvalidSignature:
         return False
-    except UnsupportedAlgorithm as e:
-        raise Exception(e)
 
 
 def is_weekend(date):
