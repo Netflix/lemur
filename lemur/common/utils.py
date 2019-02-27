@@ -147,8 +147,7 @@ def generate_private_key(key_type):
 def check_cert_signature(cert, issuer_public_key):
     """
     Check a certificate's signature against an issuer public key.
-    Before EC validation, make sure public key and signature are of the same type,
-    otherwise verification not possible (raise InvalidSignature)
+    Before EC validation, make sure we support the algorithm, otherwise raise UnsupportedAlgorithm
     On success, returns None; on failure, raises UnsupportedAlgorithm or InvalidSignature.
     """
     if isinstance(issuer_public_key, rsa.RSAPublicKey):
