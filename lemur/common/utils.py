@@ -162,10 +162,10 @@ def check_cert_signature(cert, issuer_public_key):
         else:
             padder = padding.PKCS1v15()
         issuer_public_key.verify(cert.signature, cert.tbs_certificate_bytes, padder, cert.signature_hash_algorithm)
-    elif isinstance(issuer_public_key, ec.EllipticCurvePublicKey) and isinstance(cert.signature_hash_algorithm, ec.ECDSA):
-            issuer_public_key.verify(cert.signature, cert.tbs_certificate_bytes, cert.signature_hash_algorithm)
+    elif isinstance(issuer_public_key, ec.EllipticCurvePublicKey) and isinstance(ec.ECDSA(cert.signature_hash_algorithm), ec.ECDSA):
+            issuer_public_key.verify(cert.signature, cert.tbs_certificate_bytes, ec.ECDSA(cert.signature_hash_algorithm))
     else:
-        raise InvalidSignature
+        raise UnsupportedAlgorithm("Unsupported Algorithm '{var}'.".format(var=cert.signature_algorithm_oid._name))
 
 
 def is_selfsigned(cert):
@@ -179,8 +179,6 @@ def is_selfsigned(cert):
         return True
     except InvalidSignature:
         return False
-    except UnsupportedAlgorithm as e:
-        raise Exception(e)
 
 
 def is_weekend(date):
