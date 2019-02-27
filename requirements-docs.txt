@@ -26,7 +26,7 @@ cffi==1.12.1
 chardet==3.0.4
 click==7.0
 cloudflare==2.1.0
-cryptography==2.5
+cryptography==2.6
 dnspython3==1.15.0
 dnspython==1.15.0
 docutils==0.14
