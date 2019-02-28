@@ -4,7 +4,7 @@
 #
 #    pip-compile --output-file requirements-dev.txt requirements-dev.in -U --no-index
 #
-aspy.yaml==1.1.2          # via pre-commit
+aspy.yaml==1.2.0          # via pre-commit
 bleach==3.1.0             # via readme-renderer
 certifi==2018.11.29       # via requests
 cfgv==1.4.0               # via pre-commit
