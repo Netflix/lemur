@@ -6,6 +6,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import base64
+import arrow
 from builtins import str
 
 from flask import Blueprint, make_response, jsonify, g
@@ -659,6 +660,51 @@ class Certificates(AuthenticatedResource):
         cert = service.update(certificate_id, **data)
         log_service.create(g.current_user, 'update_cert', certificate=cert)
         return cert
+
+    def delete(self, certificate_id, data=None):
+        """
+        .. http:delete:: /certificates/1
+
+           Delete a certificate
+
+           **Example request**:
+
+           .. sourcecode:: http
+
+              DELETE /certificates/1 HTTP/1.1
+              Host: example.com
+
+           **Example response**:
+
+           .. sourcecode:: http
+
+              HTTP/1.1 200 OK
+
+           :reqheader Authorization: OAuth token to authenticate
+           :statuscode 204: no error
+           :statuscode 403: unauthenticated
+           :statusoode 404: certificate not found
+
+        """
+        cert = service.get(certificate_id)
+
+        if not cert:
+            return dict(message="Cannot find specified certificate"), 404
+
+        # allow creators
+        if g.current_user != cert.user:
+            owner_role = role_service.get_by_name(cert.owner)
+            permission = CertificatePermission(owner_role, [x.name for x in cert.roles])
+
+            if not permission.can():
+                return dict(message='You are not authorized to delete this certificate'), 403
+
+        if arrow.get(cert.not_after) > arrow.utcnow():
+            return dict(message='Certificate is still valid, only expired certificates can be deleted'), 412
+
+        service.update(certificate_id, deleted=True)
+        log_service.create(g.current_user, 'delete_cert', certificate=cert)
+        return '', 204
 
 
 class NotificationCertificatesList(AuthenticatedResource):

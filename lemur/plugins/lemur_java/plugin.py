@@ -15,6 +15,8 @@ from cryptography.fernet import Fernet
 from lemur.utils import mktempfile, mktemppath
 from lemur.plugins.bases import ExportPlugin
 from lemur.plugins import lemur_java as java
+from lemur.common.utils import parse_certificate
+from lemur.common.defaults import common_name
 
 
 def run_process(command):
@@ -59,11 +61,8 @@ def split_chain(chain):
 
 
 def create_truststore(cert, chain, jks_tmp, alias, passphrase):
-    if isinstance(cert, bytes):
-        cert = cert.decode('utf-8')
-
-    if isinstance(chain, bytes):
-        chain = chain.decode('utf-8')
+    assert isinstance(cert, str)
+    assert isinstance(chain, str)
 
     with mktempfile() as cert_tmp:
         with open(cert_tmp, 'w') as f:
@@ -98,14 +97,9 @@ def create_truststore(cert, chain, jks_tmp, alias, passphrase):
 
 
 def create_keystore(cert, chain, jks_tmp, key, alias, passphrase):
-    if isinstance(cert, bytes):
-        cert = cert.decode('utf-8')
-
-    if isinstance(chain, bytes):
-        chain = chain.decode('utf-8')
-
-    if isinstance(key, bytes):
-        key = key.decode('utf-8')
+    assert isinstance(cert, str)
+    assert isinstance(chain, str)
+    assert isinstance(key, str)
 
     # Create PKCS12 keystore from private key and public certificate
     with mktempfile() as cert_tmp:
@@ -241,7 +235,7 @@ class JavaKeystoreExportPlugin(ExportPlugin):
         if self.get_option('alias', options):
             alias = self.get_option('alias', options)
         else:
-            alias = "blah"
+            alias = common_name(parse_certificate(body))
 
         with mktemppath() as jks_tmp:
             create_keystore(body, chain, jks_tmp, key, alias, passphrase)

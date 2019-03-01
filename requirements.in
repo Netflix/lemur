@@ -8,6 +8,7 @@ boto3
 botocore
 celery[redis]
 certifi
+certsrv
 CloudFlare
 cryptography
 dnspython3
@@ -44,3 +45,4 @@ six
 SQLAlchemy-Utils
 tabulate
 xmltodict
+pyyaml>=4.2b1 #high severity alert
