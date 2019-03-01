@@ -155,7 +155,7 @@ setup(
             'digicert_cis_source = lemur.plugins.lemur_digicert.plugin:DigiCertCISSourcePlugin',
             'csr_export = lemur.plugins.lemur_csr.plugin:CSRExportPlugin',
             'sftp_destination = lemur.plugins.lemur_sftp.plugin:SFTPDestinationPlugin',
-            'vault_desination = lemur.plugins.lemur_vault.plugin:VaultDestinationPlugin'
+            'vault_desination = lemur.plugins.lemur_vault_dest.plugin:VaultDestinationPlugin'
         ],
     },
     classifiers=[
