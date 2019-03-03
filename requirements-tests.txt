@@ -6,7 +6,7 @@
 #
 asn1crypto==0.24.0        # via cryptography
 atomicwrites==1.3.0       # via pytest
-attrs==18.2.0             # via pytest
+attrs==19.1.0             # via pytest
 aws-xray-sdk==0.95        # via moto
 boto3==1.9.102            # via moto
 boto==2.49.0              # via moto
