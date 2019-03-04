@@ -7,7 +7,7 @@
 acme==0.31.0
 alabaster==0.7.12         # via sphinx
 alembic-autogenerate-enums==0.0.2
-alembic==1.0.7
+alembic==1.0.8
 amqp==2.4.1
 aniso8601==4.1.0
 arrow==0.13.1
