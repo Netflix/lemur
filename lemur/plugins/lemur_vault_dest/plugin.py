@@ -19,6 +19,7 @@ from lemur.plugins.bases import DestinationPlugin
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 
+
 class VaultDestinationPlugin(DestinationPlugin):
     """Hashicorp Vault Destination plugin for Lemur"""
     title = 'Vault'
