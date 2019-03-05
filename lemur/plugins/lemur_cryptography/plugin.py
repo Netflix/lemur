@@ -14,6 +14,7 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 
+from lemur.common.utils import parse_private_key
 from lemur.plugins.bases import IssuerPlugin
 from lemur.plugins import lemur_cryptography as cryptography_issuer
 
@@ -40,7 +41,8 @@ def issue_certificate(csr, options, private_key=None):
     if options.get("authority"):
         # Issue certificate signed by an existing lemur_certificates authority
         issuer_subject = options['authority'].authority_certificate.subject
-        issuer_private_key = options['authority'].authority_certificate.private_key
+        assert private_key is None, "Private would be ignored, authority key used instead"
+        private_key = options['authority'].authority_certificate.private_key
         chain_cert_pem = options['authority'].authority_certificate.body
         authority_key_identifier_public = options['authority'].authority_certificate.public_key
         authority_key_identifier_subject = x509.SubjectKeyIdentifier.from_public_key(authority_key_identifier_public)
@@ -52,7 +54,6 @@ def issue_certificate(csr, options, private_key=None):
     else:
         # Issue certificate that is self-signed (new lemur_certificates root authority)
         issuer_subject = csr.subject
-        issuer_private_key = private_key
         chain_cert_pem = ""
         authority_key_identifier_public = csr.public_key()
         authority_key_identifier_subject = None
@@ -112,11 +113,7 @@ def issue_certificate(csr, options, private_key=None):
             # FIXME: Not implemented in lemur/schemas.py yet https://github.com/Netflix/lemur/issues/662
             pass
 
-    private_key = serialization.load_pem_private_key(
-        bytes(str(issuer_private_key).encode('utf-8')),
-        password=None,
-        backend=default_backend()
-    )
+    private_key = parse_private_key(private_key)
 
     cert = builder.sign(private_key, hashes.SHA256(), default_backend())
     cert_pem = cert.public_bytes(

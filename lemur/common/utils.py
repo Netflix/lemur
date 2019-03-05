@@ -11,9 +11,10 @@ import string
 
 import sqlalchemy
 from cryptography import x509
+from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import rsa, ec
+from cryptography.hazmat.primitives.asymmetric import rsa, ec, padding
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from flask_restful.reqparse import RequestParser
 from sqlalchemy import and_, func
@@ -48,24 +49,22 @@ def parse_certificate(body):
     :param body:
     :return:
     """
-    if isinstance(body, str):
-        body = body.encode('utf-8')
+    assert isinstance(body, str)
 
-    return x509.load_pem_x509_certificate(body, default_backend())
+    return x509.load_pem_x509_certificate(body.encode('utf-8'), default_backend())
 
 
 def parse_private_key(private_key):
     """
     Parses a PEM-format private key (RSA, DSA, ECDSA or any other supported algorithm).
 
-    Raises ValueError for an invalid string.
+    Raises ValueError for an invalid string. Raises AssertionError when passed value is not str-type.
 
     :param private_key: String containing PEM private key
     """
-    if isinstance(private_key, str):
-        private_key = private_key.encode('utf8')
+    assert isinstance(private_key, str)
 
-    return load_pem_private_key(private_key, password=None, backend=default_backend())
+    return load_pem_private_key(private_key.encode('utf8'), password=None, backend=default_backend())
 
 
 def parse_csr(csr):
@@ -75,10 +74,9 @@ def parse_csr(csr):
     :param csr:
     :return:
     """
-    if isinstance(csr, str):
-        csr = csr.encode('utf-8')
+    assert isinstance(csr, str)
 
-    return x509.load_pem_x509_csr(csr, default_backend())
+    return x509.load_pem_x509_csr(csr.encode('utf-8'), default_backend())
 
 
 def get_authority_key(body):
@@ -144,6 +142,42 @@ def generate_private_key(key_type):
             curve=_CURVE_TYPES[key_type],
             backend=default_backend()
         )
+
+
+def check_cert_signature(cert, issuer_public_key):
+    """
+    Check a certificate's signature against an issuer public key.
+    Before EC validation, make sure we support the algorithm, otherwise raise UnsupportedAlgorithm
+    On success, returns None; on failure, raises UnsupportedAlgorithm or InvalidSignature.
+    """
+    if isinstance(issuer_public_key, rsa.RSAPublicKey):
+        # RSA requires padding, just to make life difficult for us poor developers :(
+        if cert.signature_algorithm_oid == x509.SignatureAlgorithmOID.RSASSA_PSS:
+            # In 2005, IETF devised a more secure padding scheme to replace PKCS #1 v1.5. To make sure that
+            # nobody can easily support or use it, they mandated lots of complicated parameters, unlike any
+            # other X.509 signature scheme.
+            # https://tools.ietf.org/html/rfc4056
+            raise UnsupportedAlgorithm("RSASSA-PSS not supported")
+        else:
+            padder = padding.PKCS1v15()
+        issuer_public_key.verify(cert.signature, cert.tbs_certificate_bytes, padder, cert.signature_hash_algorithm)
+    elif isinstance(issuer_public_key, ec.EllipticCurvePublicKey) and isinstance(ec.ECDSA(cert.signature_hash_algorithm), ec.ECDSA):
+            issuer_public_key.verify(cert.signature, cert.tbs_certificate_bytes, ec.ECDSA(cert.signature_hash_algorithm))
+    else:
+        raise UnsupportedAlgorithm("Unsupported Algorithm '{var}'.".format(var=cert.signature_algorithm_oid._name))
+
+
+def is_selfsigned(cert):
+    """
+    Returns True if the certificate is self-signed.
+    Returns False for failed verification or unsupported signing algorithm.
+    """
+    try:
+        check_cert_signature(cert, cert.public_key())
+        # If verification was successful, it's self-signed.
+        return True
+    except InvalidSignature:
+        return False
 
 
 def is_weekend(date):

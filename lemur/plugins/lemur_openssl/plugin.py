@@ -14,7 +14,8 @@ from flask import current_app
 from lemur.utils import mktempfile, mktemppath
 from lemur.plugins.bases import ExportPlugin
 from lemur.plugins import lemur_openssl as openssl
-from lemur.common.utils import get_psuedo_random_string
+from lemur.common.utils import get_psuedo_random_string, parse_certificate
+from lemur.common.defaults import common_name
 
 
 def run_process(command):
@@ -44,14 +45,9 @@ def create_pkcs12(cert, chain, p12_tmp, key, alias, passphrase):
     :param alias:
     :param passphrase:
     """
-    if isinstance(cert, bytes):
-        cert = cert.decode('utf-8')
-
-    if isinstance(chain, bytes):
-        chain = chain.decode('utf-8')
-
-    if isinstance(key, bytes):
-        key = key.decode('utf-8')
+    assert isinstance(cert, str)
+    assert isinstance(chain, str)
+    assert isinstance(key, str)
 
     with mktempfile() as key_tmp:
         with open(key_tmp, 'w') as f:
@@ -127,7 +123,7 @@ class OpenSSLExportPlugin(ExportPlugin):
         if self.get_option('alias', options):
             alias = self.get_option('alias', options)
         else:
-            alias = "blah"
+            alias = common_name(parse_certificate(body))
 
         type = self.get_option('type', options)
 
