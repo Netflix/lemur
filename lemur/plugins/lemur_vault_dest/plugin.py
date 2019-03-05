@@ -10,8 +10,6 @@
 .. moduleauthor:: Christopher Jolley <chris@alwaysjolley.com>
 """
 import hvac
-
-#import lemur_vault
 from flask import current_app
 
 from lemur.common.defaults import common_name
@@ -20,7 +18,6 @@ from lemur.plugins.bases import DestinationPlugin
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
-
 
 class VaultDestinationPlugin(DestinationPlugin):
     """Hashicorp Vault Destination plugin for Lemur"""
@@ -79,7 +76,7 @@ class VaultDestinationPlugin(DestinationPlugin):
         :return:
         """
         cname = common_name(parse_certificate(body))
-        secret = {'data':{}}
+        secret = {'data': {}}
         key_name = '{0}.key'.format(cname)
         cert_name = '{0}.crt'.format(cname)
         chain_name = '{0}.chain'.format(cname)
@@ -100,7 +97,6 @@ class VaultDestinationPlugin(DestinationPlugin):
             path = '{0}/{1}'.format(path, cname)
 
         secret = get_secret(url, token, mount, path)
-        
 
         if bundle == 'Nginx' and cert_chain:
             secret['data'][cert_name] = '{0}\n{1}'.format(body, cert_chain)
@@ -120,6 +116,7 @@ class VaultDestinationPlugin(DestinationPlugin):
             current_app.logger.exception(
                 "Exception uploading secret to vault: {0}".format(err), exc_info=True)
 
+
 def get_san_list(body):
     """ parse certificate for SAN names and return list, return empty list on error """
     try:
@@ -127,15 +124,16 @@ def get_san_list(body):
         cert = x509.load_pem_x509_certificate(byte_body, default_backend())
         ext = cert.extensions.get_extension_for_oid(x509.oid.ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
         return ext.value.get_values_for_type(x509.DNSName)
-    except:
+    except ValueError:
         pass
     return []
+
 
 def get_secret(url, token, mount, path):
     result = {'data': {}}
     try:
         client = hvac.Client(url=url, token=token)
         result = client.secrets.kv.v1.read_secret(path=path, mount_point=mount)
-    except:
+    except ConnectionError:
         pass
     return result
