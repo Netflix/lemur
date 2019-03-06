@@ -50,7 +50,7 @@ from lemur.pending_certificates.models import PendingCertificate  # noqa
 from lemur.dns_providers.models import DnsProvider  # noqa
 
 manager = Manager(create_app)
-manager.add_option('-c', '--config', dest='config')
+manager.add_option('-c', '--config', dest='config_path', required=False)
 
 migrate = Migrate(create_app)
 
@@ -391,7 +391,7 @@ class LemurServer(Command):
         # run startup tasks on an app like object
         validate_conf(current_app, REQUIRED_VARIABLES)
 
-        app.app_uri = 'lemur:create_app(config="{0}")'.format(current_app.config.get('CONFIG_PATH'))
+        app.app_uri = 'lemur:create_app(config_path="{0}")'.format(current_app.config.get('CONFIG_PATH'))
 
         return app.run()
 
