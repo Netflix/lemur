@@ -27,6 +27,7 @@ gunicorn
 hvac # required for the vault destination plugin
 inflection
 jinja2
+kombu==4.3.0 # kombu 4.4.0 requires redis 3
 lockfile
 marshmallow-sqlalchemy
 marshmallow
