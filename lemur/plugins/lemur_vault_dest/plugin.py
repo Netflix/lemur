@@ -34,7 +34,7 @@ class VaultDestinationPlugin(DestinationPlugin):
             'name': 'vaultMount',
             'type': 'str',
             'required': True,
-            'validation': '^[a-zA-Z0-9]+$',
+            'validation': '^\S+$',
             'helpMessage': 'Must be a valid Vault secrets mount name!'
         },
         {
@@ -77,11 +77,6 @@ class VaultDestinationPlugin(DestinationPlugin):
         :return:
         """
         cname = common_name(parse_certificate(body))
-        secret = {'data': {}}
-        key_name = '{0}.key'.format(cname)
-        cert_name = '{0}.crt'.format(cname)
-        chain_name = '{0}.chain'.format(cname)
-        sans_name = '{0}.san'.format(cname)
 
         token = current_app.config.get('VAULT_TOKEN')
         url = current_app.config.get('VAULT_URL')
@@ -98,18 +93,19 @@ class VaultDestinationPlugin(DestinationPlugin):
             path = '{0}/{1}'.format(path, cname)
 
         secret = get_secret(url, token, mount, path)
+        secret['data'][cname] = {}
 
         if bundle == 'Nginx' and cert_chain:
-            secret['data'][cert_name] = '{0}\n{1}'.format(body, cert_chain)
+            secret['data'][cname]['crt'] = '{0}\n{1}'.format(body, cert_chain)
         elif bundle == 'Apache' and cert_chain:
-            secret['data'][cert_name] = body
-            secret['data'][chain_name] = cert_chain
+            secret['data'][cname]['crt'] = body
+            secret['data'][cname]['chain'] = cert_chain
         else:
-            secret['data'][cert_name] = body
-        secret['data'][key_name] = private_key
+            secret['data'][cname]['crt'] = body
+        secret['data'][cname]['key'] = private_key
         san_list = get_san_list(body)
         if isinstance(san_list, list):
-            secret['data'][sans_name] = san_list
+            secret['data'][cname]['san'] = san_list
         try:
             client.secrets.kv.v1.create_or_update_secret(
                 path=path, mount_point=mount, secret=secret['data'])
@@ -120,21 +116,25 @@ class VaultDestinationPlugin(DestinationPlugin):
 
 def get_san_list(body):
     """ parse certificate for SAN names and return list, return empty list on error """
+    san_list = []
     try:
         byte_body = body.encode('utf-8')
         cert = x509.load_pem_x509_certificate(byte_body, default_backend())
         ext = cert.extensions.get_extension_for_oid(x509.oid.ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
-        return ext.value.get_values_for_type(x509.DNSName)
-    except ValueError:
+        san_list = ext.value.get_values_for_type(x509.DNSName)
+    except x509.extensions.ExtensionNotFound:
         pass
-    return []
+    finally:
+        return san_list
 
 
 def get_secret(url, token, mount, path):
+    """ retreiive existing data from mount path and return dictionary """
     result = {'data': {}}
     try:
         client = hvac.Client(url=url, token=token)
         result = client.secrets.kv.v1.read_secret(path=path, mount_point=mount)
-    except ConnectionError:
-        pass
-    return result
+        #except ConnectionError:
+        #    pass
+    finally:
+        return result
