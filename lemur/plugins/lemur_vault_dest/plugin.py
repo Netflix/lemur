@@ -134,7 +134,7 @@ def get_secret(url, token, mount, path):
     try:
         client = hvac.Client(url=url, token=token)
         result = client.secrets.kv.v1.read_secret(path=path, mount_point=mount)
-        #except ConnectionError:
-        #    pass
+    except ConnectionError:
+        pass
     finally:
         return result
