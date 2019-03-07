@@ -161,6 +161,13 @@ Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create c
 
         Dump all imported or generated CSR and certificate details to stdout using OpenSSL. (default: `False`)
 
+.. data:: ALLOW_CERT_DELETION
+    :noindex:
+
+        When set to True, certificates can be marked as deleted via the API and deleted certificates will not be displayed
+        in the UI. When set to False (the default), the certificate delete API will always return "405 method not allowed"
+        and deleted certificates will always be visible in the UI. (default: `False`)
+
 
 Certificate Default Options
 ---------------------------

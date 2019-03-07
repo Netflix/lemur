@@ -101,7 +101,7 @@ class Certificate(db.Model):
     issuer = Column(String(128))
     serial = Column(String(128))
     cn = Column(String(128))
-    deleted = Column(Boolean, index=True)
+    deleted = Column(Boolean, index=True, default=False)
     dns_provider_id = Column(Integer(), ForeignKey('dns_providers.id', ondelete='CASCADE'), nullable=True)
 
     not_before = Column(ArrowType)
