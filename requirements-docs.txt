@@ -55,7 +55,7 @@ lockfile==0.12.2
 mako==1.0.7
 markupsafe==1.1.1
 marshmallow-sqlalchemy==0.16.0
-marshmallow==2.18.1
+marshmallow==2.19.0
 mock==2.0.0
 ndg-httpsclient==0.5.1
 packaging==19.0           # via sphinx
