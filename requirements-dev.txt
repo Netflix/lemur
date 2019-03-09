@@ -6,7 +6,7 @@
 #
 aspy.yaml==1.2.0          # via pre-commit
 bleach==3.1.0             # via readme-renderer
-certifi==2018.11.29       # via requests
+certifi==2019.3.9       # via requests
 cfgv==1.5.0               # via pre-commit
 chardet==3.0.4            # via requests
 docutils==0.14            # via readme-renderer
