@@ -15,7 +15,7 @@ certifi==2018.11.29       # via requests
 cffi==1.12.2              # via cryptography
 chardet==3.0.4            # via requests
 click==7.0                # via flask
-coverage==4.5.2
+coverage==4.5.3
 cryptography==2.6.1       # via moto
 docker-pycreds==0.4.0     # via docker
 docker==3.7.0             # via moto
