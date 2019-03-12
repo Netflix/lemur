@@ -47,7 +47,7 @@ def make_celery(app):
 celery = make_celery(flask_app)
 
 
-def is_task_active(fun: str, task_id: str, args: str) -> bool:
+def is_task_active(fun, task_id, args):
     from celery.task.control import inspect
     i = inspect()
     active_tasks = i.active()
