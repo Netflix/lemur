@@ -512,7 +512,7 @@ def test_certificate_upload_schema_invalid_chain(client):
         'owner': 'pwner@example.com',
     }
     data, errors = CertificateUploadInputSchema().load(data)
-    assert errors == {'chain': ['Public certificate presented is not valid.']}
+    assert errors == {'chain': ['Invalid certificate in certificate chain.']}
 
 
 def test_certificate_upload_schema_wrong_pkey(client):
@@ -525,6 +525,30 @@ def test_certificate_upload_schema_wrong_pkey(client):
     }
     data, errors = CertificateUploadInputSchema().load(data)
     assert errors == {'_schema': ['Private key does not match certificate.']}
+
+
+def test_certificate_upload_schema_wrong_chain(client):
+    from lemur.certificates.schemas import CertificateUploadInputSchema
+    data = {
+        'owner': 'pwner@example.com',
+        'body': SAN_CERT_STR,
+        'chain': ROOTCA_CERT_STR,
+    }
+    data, errors = CertificateUploadInputSchema().load(data)
+    assert errors == {'_schema': ["Incorrect chain certificate(s) provided: 'san.example.org' is not signed by "
+                                  "'LemurTrust Unittests Root CA 2018'"]}
+
+
+def test_certificate_upload_schema_wrong_chain_2nd(client):
+    from lemur.certificates.schemas import CertificateUploadInputSchema
+    data = {
+        'owner': 'pwner@example.com',
+        'body': SAN_CERT_STR,
+        'chain': INTERMEDIATE_CERT_STR + '\n' + SAN_CERT_STR,
+    }
+    data, errors = CertificateUploadInputSchema().load(data)
+    assert errors == {'_schema': ["Incorrect chain certificate(s) provided: 'LemurTrust Unittests Class 1 CA 2018' is "
+                                  "not signed by 'san.example.org'"]}
 
 
 def test_create_basic_csr(client):
