@@ -238,7 +238,7 @@ def sync_source(source):
     :return:
     """
 
-    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    function = "{}.{}".format(__name__, sys._getframe().f_code.co_name)
     task_id = celery.current_task.request.id
     log_data = {
         "function": function,
