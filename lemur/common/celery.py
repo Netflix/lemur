@@ -50,7 +50,7 @@ celery = make_celery(flask_app)
 def is_task_active(fun: str, task_id: str, args: str) -> bool:
     from celery.task.control import inspect
     i = inspect()
-    active_tasks: dict = i.active()
+    active_tasks = i.active()
     for _, tasks in active_tasks.items():
         for task in tasks:
             if task.get("id") == task_id:
