@@ -140,6 +140,7 @@ class CACertificateFactory(CertificateFactory):
 class InvalidCertificateFactory(CertificateFactory):
     body = INVALID_CERT_STR
     private_key = ''
+    chain = ''
 
 
 class AuthorityFactory(BaseFactory):
