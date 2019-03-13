@@ -68,7 +68,7 @@ pyopenssl==19.0.0
 pyrfc3339==1.1            # via acme
 python-dateutil==2.8.0    # via alembic, arrow, botocore
 python-editor==1.0.4      # via alembic
-python-ldap==3.1.0
+python-ldap==3.2.0
 pytz==2018.9              # via acme, celery, flask-restful, pyrfc3339
 pyyaml==5.1b3
 raven[flask]==6.10.0
