@@ -7,6 +7,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import random
+import re
 import string
 
 import sqlalchemy
@@ -65,6 +66,26 @@ def parse_private_key(private_key):
     assert isinstance(private_key, str)
 
     return load_pem_private_key(private_key.encode('utf8'), password=None, backend=default_backend())
+
+
+def split_pem(data):
+    """
+    Split a string of several PEM payloads to a list of strings.
+
+    :param data: String
+    :return: List of strings
+    """
+    return re.split("\n(?=-----BEGIN )", data)
+
+
+def parse_cert_chain(pem_chain):
+    """
+    Helper function to split and parse a series of PEM certificates.
+
+    :param pem_chain: string
+    :return: List of parsed certificates
+    """
+    return [parse_certificate(cert) for cert in split_pem(pem_chain) if pem_chain]
 
 
 def parse_csr(csr):
