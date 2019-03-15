@@ -108,7 +108,7 @@ class CertificateInputSchema(CertificateCreationSchema):
     def load_data(self, data):
         if data.get('replacements'):
             data['replaces'] = data['replacements']  # TODO remove when field is deprecated
-        if data['csr']:
+        if data.get('csr'):
             dns_names = cert_utils.get_dns_names_from_csr(data['csr'])
             if not data['extensions']['subAltNames']['names']:
                 data['extensions']['subAltNames']['names'] = []
