@@ -53,7 +53,7 @@ pytz==2018.9              # via moto
 pyyaml==5.1b3
 requests-mock==1.5.2
 requests==2.21.0          # via aws-xray-sdk, docker, moto, requests-mock, responses
-responses==0.10.5         # via moto
+responses==0.10.6         # via moto
 s3transfer==0.2.0         # via boto3
 six==1.12.0               # via cryptography, docker, docker-pycreds, faker, freezegun, mock, moto, pytest, python-dateutil, python-jose, requests-mock, responses, websocket-client
 text-unidecode==1.2       # via faker
