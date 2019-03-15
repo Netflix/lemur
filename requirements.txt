@@ -72,7 +72,7 @@ python-ldap==3.1.0
 pytz==2018.9              # via acme, celery, flask-restful, pyrfc3339
 pyyaml==5.1b3
 raven[flask]==6.10.0
-redis==2.10.6
+redis==3.2.1
 relativetimebuilder==0.2.0  # via aniso8601
 requests-toolbelt==0.9.1  # via acme
 requests[security]==2.21.0
