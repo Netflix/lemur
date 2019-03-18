@@ -8,21 +8,21 @@ asn1crypto==0.24.0        # via cryptography
 atomicwrites==1.3.0       # via pytest
 attrs==19.1.0             # via pytest
 aws-xray-sdk==0.95        # via moto
-boto3==1.9.107            # via moto
+boto3==1.9.116            # via moto
 boto==2.49.0              # via moto
-botocore==1.12.107        # via boto3, moto, s3transfer
-certifi==2018.11.29       # via requests
+botocore==1.12.116        # via boto3, moto, s3transfer
+certifi==2019.3.9         # via requests
 cffi==1.12.2              # via cryptography
 chardet==3.0.4            # via requests
 click==7.0                # via flask
-coverage==4.5.2
+coverage==4.5.3
 cryptography==2.6.1       # via moto
 docker-pycreds==0.4.0     # via docker
 docker==3.7.0             # via moto
 docutils==0.14            # via botocore
 ecdsa==0.13               # via python-jose
 factory-boy==2.11.1
-faker==1.0.2
+faker==1.0.4
 flask==1.0.2              # via pytest-flask
 freezegun==0.3.11
 future==0.17.1            # via python-jose
@@ -46,14 +46,14 @@ pycryptodome==3.7.3       # via python-jose
 pyflakes==2.1.1
 pytest-flask==0.14.0
 pytest-mock==1.10.1
-pytest==4.3.0
+pytest==4.3.1
 python-dateutil==2.8.0    # via botocore, faker, freezegun, moto
 python-jose==2.0.2        # via moto
 pytz==2018.9              # via moto
-pyyaml==5.1b3
+pyyaml==5.1
 requests-mock==1.5.2
 requests==2.21.0          # via aws-xray-sdk, docker, moto, requests-mock, responses
-responses==0.10.5         # via moto
+responses==0.10.6         # via moto
 s3transfer==0.2.0         # via boto3
 six==1.12.0               # via cryptography, docker, docker-pycreds, faker, freezegun, mock, moto, pytest, python-dateutil, python-jose, requests-mock, responses, websocket-client
 text-unidecode==1.2       # via faker
