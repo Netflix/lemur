@@ -16,7 +16,7 @@ bcrypt==3.1.6             # via flask-bcrypt, paramiko
 billiard==3.5.0.5         # via celery
 blinker==1.4              # via flask-mail, flask-principal, raven
 boto3==1.9.116
-botocore==1.12.116
+botocore==1.12.117
 celery[redis]==4.2.1
 certifi==2019.3.9
 certsrv==2.1.1
