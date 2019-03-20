@@ -36,15 +36,13 @@ class VaultDestinationPlugin(DestinationPlugin):
             'required': True,
             'validation': '^https?://[a-zA-Z0-9.:-]+$',
             'helpMessage': 'Valid URL to Hashi Vault instance'
-            'default': 'http://127.0.0.1:8200'
         },
         {
             'name': 'vaultAuthTokenFile',
             'type': 'str',
             'required': True,
             'validation': '(/[^/]+)+',
-            'helpMessage': 'Must be a valid file path!',
-            'default': '/etc/pki/secrets/vault/token'
+            'helpMessage': 'Must be a valid file path!'
         },
         {
             'name': 'vaultMount',
@@ -94,17 +92,15 @@ class VaultDestinationPlugin(DestinationPlugin):
         """
         cname = common_name(parse_certificate(body))
 
-        token = current_app.config.get('VAULT_TOKEN')
-        #url = current_app.config.get('VAULT_URL')
         url = self.get_option('vaultUrl', options)
-        token_file = self.get_option('vaultFile', options)
+        token_file = self.get_option('vaultAuthTokenFile', options)
         mount = self.get_option('vaultMount', options)
         path = self.get_option('vaultPath', options)
         bundle = self.get_option('bundleChain', options)
         obj_name = self.get_option('objectName', options)
 
         with open(token_file, 'r') as file:
-          token = file.readline()
+            token = file.readline().rstrip('\n')
 
         client = hvac.Client(url=url, token=token)
         if obj_name:
