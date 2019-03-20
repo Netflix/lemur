@@ -49,7 +49,7 @@ josepy==1.1.0             # via acme
 jsonlines==1.2.0          # via cloudflare
 kombu==4.3.0
 lockfile==0.12.2
-mako==1.0.7               # via alembic
+mako==1.0.8               # via alembic
 markupsafe==1.1.1         # via jinja2, mako
 marshmallow-sqlalchemy==0.16.1
 marshmallow==2.19.1
