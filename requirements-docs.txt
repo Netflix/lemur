@@ -52,7 +52,7 @@ josepy==1.1.0
 jsonlines==1.2.0
 kombu==4.3.0
 lockfile==0.12.2
-mako==1.0.7
+mako==1.0.8
 markupsafe==1.1.1
 marshmallow-sqlalchemy==0.16.1
 marshmallow==2.19.1
