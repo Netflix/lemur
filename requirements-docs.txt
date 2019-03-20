@@ -19,7 +19,7 @@ billiard==3.5.0.5
 blinker==1.4
 boto3==1.9.116
 botocore==1.12.116
-celery[redis]==4.2.1
+celery[redis]==4.2.2
 certifi==2019.3.9
 certsrv==2.1.1
 cffi==1.12.2
