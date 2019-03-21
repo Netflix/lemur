@@ -42,6 +42,7 @@ flask-sqlalchemy==2.3.2
 flask==1.0.2
 future==0.17.1
 gunicorn==19.9.0
+hvac==0.7.2
 idna==2.8
 imagesize==1.1.0          # via sphinx
 inflection==0.3.1
