@@ -24,6 +24,7 @@ Flask
 Flask-Cors
 future
 gunicorn
+hvac # required for the vault destination plugin
 inflection
 jinja2
 kombu==4.3.0 # kombu 4.4.0 requires redis 3
@@ -46,4 +47,3 @@ SQLAlchemy-Utils
 tabulate
 xmltodict
 pyyaml>=4.2b1 #high severity alert
-
