@@ -42,7 +42,7 @@ pluggy==0.9.0             # via pytest
 py==1.8.0                 # via pytest
 pyaml==18.11.0            # via moto
 pycparser==2.19           # via cffi
-pycryptodome==3.7.3       # via python-jose
+pycryptodome==3.8.0       # via python-jose
 pyflakes==2.1.1
 pytest-flask==0.14.0
 pytest-mock==1.10.1
