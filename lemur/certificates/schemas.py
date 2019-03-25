@@ -96,6 +96,9 @@ class CertificateInputSchema(CertificateCreationSchema):
 
     @validates_schema
     def validate_authority(self, data):
+        if isinstance(data['authority'], str):
+            raise ValidationError("Authority not found.")
+
         if not data['authority'].active:
             raise ValidationError("The authority is inactive.", ['authority'])
 
