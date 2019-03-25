@@ -26,6 +26,11 @@ package-lock.json
 /lemur/static/dist/
 /lemur/static/app/vendor/
 /wheelhouse
+/lemur/lib
+/lemur/bin
+/lemur/lib64
+/lemur/include
+
 docs/_build
 .editorconfig
 .idea
