@@ -121,11 +121,9 @@ class CertificateInputSchema(CertificateCreationSchema):
                 }
             elif not data['extensions'].get('subAltNames'):
                 data['extensions']['subAltNames'] = {
-                    'subAltNames': {
-                        'names': []
-                    }
+                    'names': []
                 }
-            elif not data['extensions']['subAltNames'].get('names'):
+            elif not data['extensions']['subAltNames']['names']:
                 data['extensions']['subAltNames']['names'] = []
             data['extensions']['subAltNames']['names'] += csr_sans
         return missing.convert_validity_years(data)
