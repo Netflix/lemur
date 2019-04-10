@@ -234,14 +234,15 @@ def sync_source(source):
 @celery.task()
 def sync_source_destination():
     """
-    This celery task will sync destination and source, to make sure all new destinations are also present in source.
+    This celery task will sync destination and source, to make sure all new destinations are also present as source.
     Some destinations do not qualify as sources, and hence should be excluded from being added as sources
     """
     current_app.logger.debug("Syncing source and destination")
     for dst in destinations_service.get_all():
-        if dst.plugin_name == 'aws-destination' and not sources_service.get_by_label(dst.label):
+        destination_plugin = plugins.get(dst.plugin_name)
+        if destination_plugin.sync_as_source and not sources_service.get_by_label(dst.label):
             sources_service.create(label=dst.label,
-                                   plugin_name='aws-source',
+                                   plugin_name=destination_plugin.sync_as_source_name,
                                    options=dst.options,
                                    description=dst.description)
             current_app.logger.info("Source: %s added", dst.label)
