@@ -28,7 +28,7 @@ gunicorn
 hvac # required for the vault destination plugin
 inflection
 jinja2
-kombu==4.3.0 # kombu 4.4.0 requires redis 3
+kombu
 lockfile
 marshmallow-sqlalchemy
 marshmallow
@@ -40,7 +40,7 @@ pyjwt
 pyOpenSSL
 python_ldap
 raven[flask]
-redis<3 # redis>=3 is not compatible with celery
+redis
 requests
 retrying
 six
