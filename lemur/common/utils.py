@@ -7,13 +7,15 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import random
+import re
 import string
 
 import sqlalchemy
 from cryptography import x509
+from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import rsa, ec
+from cryptography.hazmat.primitives.asymmetric import rsa, ec, padding
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from flask_restful.reqparse import RequestParser
 from sqlalchemy import and_, func
@@ -64,6 +66,26 @@ def parse_private_key(private_key):
     assert isinstance(private_key, str)
 
     return load_pem_private_key(private_key.encode('utf8'), password=None, backend=default_backend())
+
+
+def split_pem(data):
+    """
+    Split a string of several PEM payloads to a list of strings.
+
+    :param data: String
+    :return: List of strings
+    """
+    return re.split("\n(?=-----BEGIN )", data)
+
+
+def parse_cert_chain(pem_chain):
+    """
+    Helper function to split and parse a series of PEM certificates.
+
+    :param pem_chain: string
+    :return: List of parsed certificates
+    """
+    return [parse_certificate(cert) for cert in split_pem(pem_chain) if pem_chain]
 
 
 def parse_csr(csr):
@@ -141,6 +163,42 @@ def generate_private_key(key_type):
             curve=_CURVE_TYPES[key_type],
             backend=default_backend()
         )
+
+
+def check_cert_signature(cert, issuer_public_key):
+    """
+    Check a certificate's signature against an issuer public key.
+    Before EC validation, make sure we support the algorithm, otherwise raise UnsupportedAlgorithm
+    On success, returns None; on failure, raises UnsupportedAlgorithm or InvalidSignature.
+    """
+    if isinstance(issuer_public_key, rsa.RSAPublicKey):
+        # RSA requires padding, just to make life difficult for us poor developers :(
+        if cert.signature_algorithm_oid == x509.SignatureAlgorithmOID.RSASSA_PSS:
+            # In 2005, IETF devised a more secure padding scheme to replace PKCS #1 v1.5. To make sure that
+            # nobody can easily support or use it, they mandated lots of complicated parameters, unlike any
+            # other X.509 signature scheme.
+            # https://tools.ietf.org/html/rfc4056
+            raise UnsupportedAlgorithm("RSASSA-PSS not supported")
+        else:
+            padder = padding.PKCS1v15()
+        issuer_public_key.verify(cert.signature, cert.tbs_certificate_bytes, padder, cert.signature_hash_algorithm)
+    elif isinstance(issuer_public_key, ec.EllipticCurvePublicKey) and isinstance(ec.ECDSA(cert.signature_hash_algorithm), ec.ECDSA):
+            issuer_public_key.verify(cert.signature, cert.tbs_certificate_bytes, ec.ECDSA(cert.signature_hash_algorithm))
+    else:
+        raise UnsupportedAlgorithm("Unsupported Algorithm '{var}'.".format(var=cert.signature_algorithm_oid._name))
+
+
+def is_selfsigned(cert):
+    """
+    Returns True if the certificate is self-signed.
+    Returns False for failed verification or unsupported signing algorithm.
+    """
+    try:
+        check_cert_signature(cert, cert.public_key())
+        # If verification was successful, it's self-signed.
+        return True
+    except InvalidSignature:
+        return False
 
 
 def is_weekend(date):

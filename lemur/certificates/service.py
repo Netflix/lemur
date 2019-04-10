@@ -54,7 +54,7 @@ def get_by_name(name):
 
 def get_by_serial(serial):
     """
-    Retrieves certificate by it's Serial.
+    Retrieves certificate(s) by serial number.
     :param serial:
     :return:
     """
@@ -62,6 +62,22 @@ def get_by_serial(serial):
         # although serial is a number, the DB column is String(128)
         serial = str(serial)
     return Certificate.query.filter(Certificate.serial == serial).all()
+
+
+def get_by_attributes(conditions):
+    """
+    Retrieves certificate(s) by conditions given in a hash of given key=>value pairs.
+    :param serial:
+    :return:
+    """
+    # Ensure that each of the given conditions corresponds to actual columns
+    # if not, silently remove it
+    for attr in conditions.keys():
+        if attr not in Certificate.__table__.columns:
+            conditions.pop(attr)
+
+    query = database.session_query(Certificate)
+    return database.find_all(query, Certificate, conditions).all()
 
 
 def delete(cert_id):
@@ -301,7 +317,7 @@ def render(args):
 
     if filt:
         terms = filt.split(';')
-        term = '{0}%'.format(terms[1])
+        term = '%{0}%'.format(terms[1])
         # Exact matches for quotes. Only applies to name, issuer, and cn
         if terms[1].startswith('"') and terms[1].endswith('"'):
             term = terms[1][1:-1]
@@ -364,6 +380,9 @@ def render(args):
         to = arrow.now().replace(weeks=+time_range).format('YYYY-MM-DD')
         now = arrow.now().format('YYYY-MM-DD')
         query = query.filter(Certificate.not_after <= to).filter(Certificate.not_after >= now)
+
+    if current_app.config.get('ALLOW_CERT_DELETION', False):
+        query = query.filter(Certificate.deleted == False)  # noqa
 
     result = database.sort_and_page(query, Certificate, args)
     return result

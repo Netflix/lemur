@@ -101,7 +101,7 @@ class Certificate(db.Model):
     issuer = Column(String(128))
     serial = Column(String(128))
     cn = Column(String(128))
-    deleted = Column(Boolean, index=True)
+    deleted = Column(Boolean, index=True, default=False)
     dns_provider_id = Column(Integer(), ForeignKey('dns_providers.id', ondelete='CASCADE'), nullable=True)
 
     not_before = Column(ArrowType)
@@ -192,11 +192,15 @@ class Certificate(db.Model):
 
     def check_integrity(self):
         """
-        Integrity checks: Does the cert have a matching private key?
+        Integrity checks: Does the cert have a valid chain and matching private key?
         """
         if self.private_key:
             validators.verify_private_key_match(utils.parse_private_key(self.private_key), self.parsed_cert,
                                                 error_class=AssertionError)
+
+        if self.chain:
+            chain = [self.parsed_cert] + utils.parse_cert_chain(self.chain)
+            validators.verify_cert_chain(chain, error_class=AssertionError)
 
     @cached_property
     def parsed_cert(self):

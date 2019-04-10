@@ -3,6 +3,8 @@ import unicodedata
 
 from cryptography import x509
 from flask import current_app
+
+from lemur.common.utils import is_selfsigned
 from lemur.extensions import sentry
 from lemur.constants import SAN_NAMING_TEMPLATE, DEFAULT_NAMING_TEMPLATE
 
@@ -229,15 +231,22 @@ def issuer(cert):
     """
     Gets a sane issuer slug from a given certificate, stripping non-alphanumeric characters.
 
-    :param cert:
+    For self-signed certificates, the special value '<selfsigned>' is returned.
+    If issuer cannot be determined, '<unknown>' is returned.
+
+    :param cert: Parsed certificate object
     :return: Issuer slug
     """
+    # If certificate is self-signed, we return a special value -- there really is no distinct "issuer" for it
+    if is_selfsigned(cert):
+        return '<selfsigned>'
+
     # Try Common Name or fall back to Organization name
     attrs = (cert.issuer.get_attributes_for_oid(x509.OID_COMMON_NAME) or
              cert.issuer.get_attributes_for_oid(x509.OID_ORGANIZATION_NAME))
     if not attrs:
         current_app.logger.error("Unable to get issuer! Cert serial {:x}".format(cert.serial_number))
-        return "Unknown"
+        return '<unknown>'
 
     return text_to_slug(attrs[0].value, '')
 

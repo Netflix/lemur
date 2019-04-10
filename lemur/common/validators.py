@@ -1,27 +1,14 @@
 import re
 
 from cryptography import x509
+from cryptography.exceptions import UnsupportedAlgorithm, InvalidSignature
 from cryptography.hazmat.backends import default_backend
 from cryptography.x509 import NameOID
 from flask import current_app
 from marshmallow.exceptions import ValidationError
 
 from lemur.auth.permissions import SensitiveDomainPermission
-from lemur.common.utils import parse_certificate, is_weekend
-
-
-def public_certificate(body):
-    """
-    Determines if specified string is valid public certificate.
-
-    :param body:
-    :return:
-    """
-    try:
-        parse_certificate(body)
-    except Exception as e:
-        current_app.logger.exception(e)
-        raise ValidationError('Public certificate presented is not valid.')
+from lemur.common.utils import check_cert_signature, is_weekend
 
 
 def common_name(value):
@@ -138,3 +125,34 @@ def verify_private_key_match(key, cert, error_class=ValidationError):
     """
     if key.public_key().public_numbers() != cert.public_key().public_numbers():
         raise error_class("Private key does not match certificate.")
+
+
+def verify_cert_chain(certs, error_class=ValidationError):
+    """
+    Verifies that the certificates in the chain are correct.
+
+    We don't bother with full cert validation but just check that certs in the chain are signed by the next, to avoid
+    basic human errors -- such as pasting the wrong certificate.
+
+    :param certs: List of parsed certificates, use parse_cert_chain()
+    :param error_class: Exception class to raise on error
+    """
+    cert = certs[0]
+    for issuer in certs[1:]:
+        # Use the current cert's public key to verify the previous signature.
+        # "certificate validation is a complex problem that involves much more than just signature checks"
+        try:
+            check_cert_signature(cert, issuer.public_key())
+
+        except InvalidSignature:
+            # Avoid circular import.
+            from lemur.common import defaults
+
+            raise error_class("Incorrect chain certificate(s) provided: '%s' is not signed by '%s'"
+                              % (defaults.common_name(cert) or 'Unknown', defaults.common_name(issuer)))
+
+        except UnsupportedAlgorithm as err:
+            current_app.logger.warning("Skipping chain validation: %s", err)
+
+        # Next loop will validate that *this issuer* cert is signed by the next chain cert.
+        cert = issuer

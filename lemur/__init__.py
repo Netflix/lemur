@@ -62,8 +62,8 @@ LEMUR_BLUEPRINTS = (
 )
 
 
-def create_app(config=None):
-    app = factory.create_app(app_name=__name__, blueprints=LEMUR_BLUEPRINTS, config=config)
+def create_app(config_path=None):
+    app = factory.create_app(app_name=__name__, blueprints=LEMUR_BLUEPRINTS, config=config_path)
     configure_hook(app)
     return app
 
