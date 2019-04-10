@@ -10,6 +10,7 @@ from marshmallow import fields, validate, validates_schema, post_load, pre_load
 from marshmallow.exceptions import ValidationError
 
 from lemur.authorities.schemas import AuthorityNestedOutputSchema
+from lemur.certificates import utils as cert_utils
 from lemur.common import missing, utils, validators
 from lemur.common.fields import ArrowDateTime, Hex
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
@@ -96,6 +97,9 @@ class CertificateInputSchema(CertificateCreationSchema):
 
     @validates_schema
     def validate_authority(self, data):
+        if isinstance(data['authority'], str):
+            raise ValidationError("Authority not found.")
+
         if not data['authority'].active:
             raise ValidationError("The authority is inactive.", ['authority'])
 
@@ -107,6 +111,11 @@ class CertificateInputSchema(CertificateCreationSchema):
     def load_data(self, data):
         if data.get('replacements'):
             data['replaces'] = data['replacements']  # TODO remove when field is deprecated
+        if data.get('csr'):
+            dns_names = cert_utils.get_dns_names_from_csr(data['csr'])
+            if not data['extensions']['subAltNames']['names']:
+                data['extensions']['subAltNames']['names'] = []
+            data['extensions']['subAltNames']['names'] += dns_names
         return missing.convert_validity_years(data)
 
 
@@ -245,8 +254,7 @@ class CertificateUploadInputSchema(CertificateCreationSchema):
     external_id = fields.String(missing=None, allow_none=True)
     private_key = fields.String()
     body = fields.String(required=True)
-    chain = fields.String(validate=validators.public_certificate, missing=None,
-                          allow_none=True)  # TODO this could be multiple certificates
+    chain = fields.String(missing=None, allow_none=True)
 
     destinations = fields.Nested(AssociatedDestinationSchema, missing=[], many=True)
     notifications = fields.Nested(AssociatedNotificationSchema, missing=[], many=True)
@@ -260,7 +268,7 @@ class CertificateUploadInputSchema(CertificateCreationSchema):
                 raise ValidationError('Destinations require private key.')
 
     @validates_schema
-    def validate_cert_private_key(self, data):
+    def validate_cert_private_key_chain(self, data):
         cert = None
         key = None
         if data.get('body'):
@@ -278,6 +286,15 @@ class CertificateUploadInputSchema(CertificateCreationSchema):
         if cert and key:
             # Throws ValidationError
             validators.verify_private_key_match(key, cert)
+
+        if data.get('chain'):
+            try:
+                chain = utils.parse_cert_chain(data['chain'])
+            except ValueError:
+                raise ValidationError("Invalid certificate in certificate chain.", field_names=['chain'])
+
+            # Throws ValidationError
+            validators.verify_cert_chain([cert] + chain)
 
 
 class CertificateExportInputSchema(LemurInputSchema):

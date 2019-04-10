@@ -81,6 +81,13 @@ def test_create_name(client):
         datetime(2015, 5, 12, 0, 0, 0),
         False
     ) == 'xn--mnchen-3ya.de-VertrauenswurdigAutoritat-20150507-20150512'
+    assert certificate_name(
+        'selfie.example.org',
+        '<selfsigned>',
+        datetime(2015, 5, 7, 0, 0, 0),
+        datetime(2025, 5, 12, 13, 37, 0),
+        False
+    ) == 'selfie.example.org-selfsigned-20150507-20250512'
 
 
 def test_issuer(client, cert_builder, issuer_private_key):
@@ -106,4 +113,9 @@ def test_issuer(client, cert_builder, issuer_private_key):
     cert = (cert_builder
             .issuer_name(x509.Name([]))
             .sign(issuer_private_key, hashes.SHA256(), default_backend()))
-    assert issuer(cert) == 'Unknown'
+    assert issuer(cert) == '<unknown>'
+
+
+def test_issuer_selfsigned(selfsigned_cert):
+    from lemur.common.defaults import issuer
+    assert issuer(selfsigned_cert) == '<selfsigned>'

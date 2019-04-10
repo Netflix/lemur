@@ -186,3 +186,5 @@ LDAP_BASE_DN = 'dc=example,dc=com'
 LDAP_EMAIL_DOMAIN = 'example.com'
 LDAP_REQUIRED_GROUP = 'Lemur Access'
 LDAP_DEFAULT_ROLE = 'role1'
+
+ALLOW_CERT_DELETION = True

@@ -41,6 +41,89 @@ def test_get_or_increase_name(session, certificate):
     assert get_or_increase_name('certificate1', int(serial, 16)) == 'certificate1-{}-1'.format(serial)
 
 
+def test_get_all_certs(session, certificate):
+    from lemur.certificates.service import get_all_certs
+    assert len(get_all_certs()) > 1
+
+
+def test_get_by_name(session, certificate):
+    from lemur.certificates.service import get_by_name
+
+    found = get_by_name(certificate.name)
+
+    assert found
+
+
+def test_get_by_serial(session, certificate):
+    from lemur.certificates.service import get_by_serial
+
+    found = get_by_serial(certificate.serial)
+
+    assert found
+
+
+def test_delete_cert(session):
+    from lemur.certificates.service import delete, get
+    from lemur.tests.factories import CertificateFactory
+
+    delete_this = CertificateFactory(name='DELETEME')
+    session.commit()
+
+    cert_exists = get(delete_this.id)
+
+    # it needs to exist first
+    assert cert_exists
+
+    delete(delete_this.id)
+    cert_exists = get(delete_this.id)
+
+    # then not exist after delete
+    assert not cert_exists
+
+
+def test_get_by_attributes(session, certificate):
+    from lemur.certificates.service import get_by_attributes
+
+    # Should get one cert
+    certificate1 = get_by_attributes({
+        'name': 'SAN-san.example.org-LemurTrustUnittestsClass1CA2018-20171231-20471231'
+    })
+
+    # Should get one cert using multiple attrs
+    certificate2 = get_by_attributes({
+        'name': 'test-cert-11111111-1',
+        'cn': 'san.example.org'
+    })
+
+    # Should get multiple certs
+    multiple = get_by_attributes({
+        'cn': 'LemurTrust Unittests Class 1 CA 2018',
+        'issuer': 'LemurTrustUnittestsRootCA2018'
+    })
+
+    assert len(certificate1) == 1
+    assert len(certificate2) == 1
+    assert len(multiple) > 1
+
+
+def test_find_duplicates(session):
+    from lemur.certificates.service import find_duplicates
+
+    cert = {
+        'body': SAN_CERT_STR,
+        'chain': INTERMEDIATE_CERT_STR
+    }
+
+    dups1 = find_duplicates(cert)
+
+    cert['chain'] = ''
+
+    dups2 = find_duplicates(cert)
+
+    assert len(dups1) > 0
+    assert len(dups2) > 0
+
+
 def test_get_certificate_primitives(certificate):
     from lemur.certificates.service import get_certificate_primitives
 
@@ -429,7 +512,7 @@ def test_certificate_upload_schema_invalid_chain(client):
         'owner': 'pwner@example.com',
     }
     data, errors = CertificateUploadInputSchema().load(data)
-    assert errors == {'chain': ['Public certificate presented is not valid.']}
+    assert errors == {'chain': ['Invalid certificate in certificate chain.']}
 
 
 def test_certificate_upload_schema_wrong_pkey(client):
@@ -442,6 +525,30 @@ def test_certificate_upload_schema_wrong_pkey(client):
     }
     data, errors = CertificateUploadInputSchema().load(data)
     assert errors == {'_schema': ['Private key does not match certificate.']}
+
+
+def test_certificate_upload_schema_wrong_chain(client):
+    from lemur.certificates.schemas import CertificateUploadInputSchema
+    data = {
+        'owner': 'pwner@example.com',
+        'body': SAN_CERT_STR,
+        'chain': ROOTCA_CERT_STR,
+    }
+    data, errors = CertificateUploadInputSchema().load(data)
+    assert errors == {'_schema': ["Incorrect chain certificate(s) provided: 'san.example.org' is not signed by "
+                                  "'LemurTrust Unittests Root CA 2018'"]}
+
+
+def test_certificate_upload_schema_wrong_chain_2nd(client):
+    from lemur.certificates.schemas import CertificateUploadInputSchema
+    data = {
+        'owner': 'pwner@example.com',
+        'body': SAN_CERT_STR,
+        'chain': INTERMEDIATE_CERT_STR + '\n' + SAN_CERT_STR,
+    }
+    data, errors = CertificateUploadInputSchema().load(data)
+    assert errors == {'_schema': ["Incorrect chain certificate(s) provided: 'LemurTrust Unittests Class 1 CA 2018' is "
+                                  "not signed by 'san.example.org'"]}
 
 
 def test_create_basic_csr(client):
@@ -654,7 +761,7 @@ def test_certificate_put_with_data(client, certificate, issuer_plugin):
 
 @pytest.mark.parametrize("token,status", [
     (VALID_USER_HEADER_TOKEN, 403),
-    (VALID_ADMIN_HEADER_TOKEN, 412),
+    (VALID_ADMIN_HEADER_TOKEN, 204),
     (VALID_ADMIN_API_TOKEN, 412),
     ('', 401)
 ])

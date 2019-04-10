@@ -3,6 +3,8 @@ import os
 import datetime
 import pytest
 from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
 from flask import current_app
 from flask_principal import identity_changed, Identity
 
@@ -41,7 +43,7 @@ def app(request):
     Creates a new Flask application for a test duration.
     Uses application factory `create_app`.
     """
-    _app = create_app(os.path.dirname(os.path.realpath(__file__)) + '/conf.py')
+    _app = create_app(config_path=os.path.dirname(os.path.realpath(__file__)) + '/conf.py')
     ctx = _app.app_context()
     ctx.push()
 
@@ -261,6 +263,12 @@ def cert_builder(private_key):
             .public_key(private_key.public_key())
             .not_valid_before(datetime.datetime(2017, 12, 22))
             .not_valid_after(datetime.datetime(2040, 1, 1)))
+
+
+@pytest.fixture
+def selfsigned_cert(cert_builder, private_key):
+    # cert_builder uses the same cert public key as 'private_key'
+    return cert_builder.sign(private_key, hashes.SHA256(), default_backend())
 
 
 @pytest.fixture(scope='function')
