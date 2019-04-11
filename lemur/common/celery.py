@@ -290,5 +290,3 @@ def sync_source_destination():
                                    options=src_options,
                                    description=dst.description)
             current_app.logger.info("Source: %s added", dst.label)
-
-
