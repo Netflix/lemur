@@ -275,17 +275,16 @@ def sync_source_destination():
     src_accounts = set()
     sources = validate_sources("all")
     for src in sources:
-        src_accounts.add(IPlugin.get_option('accountNumber' ,src.options))
+        src_accounts.add(IPlugin.get_option('accountNumber', src.options))
 
     for dst in destinations_service.get_all():
         destination_plugin = plugins.get(dst.plugin_name)
-        account_number = IPlugin.get_option('accountNumber', src.options)
+        account_number = IPlugin.get_option('accountNumber', dst.options)
         if destination_plugin.sync_as_source and (account_number not in src_accounts):
             src_options = copy.deepcopy(plugins.get(destination_plugin.sync_as_source_name).options)
             for o in src_options:
                 if o.get('name') == 'accountNumber':
                     o.update({'value': account_number})
-
             sources_service.create(label=dst.label,
                                    plugin_name=destination_plugin.sync_as_source_name,
                                    options=src_options,
