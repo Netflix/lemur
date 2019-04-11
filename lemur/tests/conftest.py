@@ -7,6 +7,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from flask import current_app
 from flask_principal import identity_changed, Identity
+from sqlalchemy.sql import text
 
 from lemur import create_app
 from lemur.common.utils import parse_private_key
@@ -55,6 +56,7 @@ def app(request):
 @pytest.yield_fixture(scope="session")
 def db(app, request):
     _db.drop_all()
+    _db.engine.execute(text('CREATE EXTENSION IF NOT EXISTS pg_trgm'))
     _db.create_all()
 
     _db.app = app
