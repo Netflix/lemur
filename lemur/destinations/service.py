@@ -12,7 +12,7 @@ from lemur import database
 from lemur.models import certificate_destination_associations
 from lemur.destinations.models import Destination
 from lemur.certificates.models import Certificate
-from lemur.sources import service as sources_service
+from lemur.sources.service import add_aws_destination_to_sources
 
 
 def create(label, plugin_name, options, description=None):
@@ -33,8 +33,7 @@ def create(label, plugin_name, options, description=None):
     current_app.logger.info("Destination: %s created", label)
 
     # add the destination as source, to avoid new destinations that are not in source, as long as an AWS destination
-    if plugin_name == 'aws-destination':
-        sources_service.create(label=label, plugin_name='aws-source', options=options, description=description)
+    if add_aws_destination_to_sources(destination):
         current_app.logger.info("Source: %s created", label)
 
     return database.create(destination)
