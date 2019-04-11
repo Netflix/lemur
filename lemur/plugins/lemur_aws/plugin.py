@@ -252,12 +252,6 @@ class AWSDestinationPlugin(DestinationPlugin):
         }
     ]
 
-    # 'elb': {
-    #    'name': {'type': 'name'},
-    #    'region': {'type': 'str'},
-    #    'port': {'type': 'int'}
-    # }
-
     def upload(self, name, body, private_key, cert_chain, options, **kwargs):
         iam.upload_cert(name, body, private_key,
                         self.get_option('path', options),
