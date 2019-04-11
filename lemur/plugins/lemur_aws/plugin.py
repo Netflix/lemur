@@ -149,49 +149,6 @@ def get_elb_endpoints_v2(account_number, region, elb_dict):
     return endpoints
 
 
-class AWSDestinationPlugin(DestinationPlugin):
-    title = 'AWS'
-    slug = 'aws-destination'
-    description = 'Allow the uploading of certificates to AWS IAM'
-    version = aws.VERSION
-    sync_as_source = True
-    sync_as_source_name = 'aws-source'
-
-    author = 'Kevin Glisson'
-    author_url = 'https://github.com/netflix/lemur'
-
-    options = [
-        {
-            'name': 'accountNumber',
-            'type': 'str',
-            'required': True,
-            'validation': '[0-9]{12}',
-            'helpMessage': 'Must be a valid AWS account number!',
-        },
-        {
-            'name': 'path',
-            'type': 'str',
-            'default': '/',
-            'helpMessage': 'Path to upload certificate.'
-        }
-    ]
-
-    # 'elb': {
-    #    'name': {'type': 'name'},
-    #    'region': {'type': 'str'},
-    #    'port': {'type': 'int'}
-    # }
-
-    def upload(self, name, body, private_key, cert_chain, options, **kwargs):
-        iam.upload_cert(name, body, private_key,
-                        self.get_option('path', options),
-                        cert_chain=cert_chain,
-                        account_number=self.get_option('accountNumber', options))
-
-    def deploy(self, elb_name, account, region, certificate):
-        pass
-
-
 class AWSSourcePlugin(SourcePlugin):
     title = 'AWS'
     slug = 'aws-source'
@@ -266,6 +223,49 @@ class AWSSourcePlugin(SourcePlugin):
     def clean(self, certificate, options, **kwargs):
         account_number = self.get_option('accountNumber', options)
         iam.delete_cert(certificate.name, account_number=account_number)
+
+
+class AWSDestinationPlugin(DestinationPlugin):
+    title = 'AWS'
+    slug = 'aws-destination'
+    description = 'Allow the uploading of certificates to AWS IAM'
+    version = aws.VERSION
+    sync_as_source = True
+    sync_as_source_name = AWSSourcePlugin.slug
+
+    author = 'Kevin Glisson'
+    author_url = 'https://github.com/netflix/lemur'
+
+    options = [
+        {
+            'name': 'accountNumber',
+            'type': 'str',
+            'required': True,
+            'validation': '[0-9]{12}',
+            'helpMessage': 'Must be a valid AWS account number!',
+        },
+        {
+            'name': 'path',
+            'type': 'str',
+            'default': '/',
+            'helpMessage': 'Path to upload certificate.'
+        }
+    ]
+
+    # 'elb': {
+    #    'name': {'type': 'name'},
+    #    'region': {'type': 'str'},
+    #    'port': {'type': 'int'}
+    # }
+
+    def upload(self, name, body, private_key, cert_chain, options, **kwargs):
+        iam.upload_cert(name, body, private_key,
+                        self.get_option('path', options),
+                        cert_chain=cert_chain,
+                        account_number=self.get_option('accountNumber', options))
+
+    def deploy(self, elb_name, account, region, certificate):
+        pass
 
 
 class S3DestinationPlugin(ExportDestinationPlugin):
