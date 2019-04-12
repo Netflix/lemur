@@ -277,7 +277,10 @@ def add_aws_destination_to_sources(dst):
     # check
     destination_plugin = plugins.get(dst.plugin_name)
     account_number = get_plugin_option('accountNumber', dst.options)
-    if destination_plugin.sync_as_source and (account_number not in src_accounts):
+    if account_number is not None and \
+            destination_plugin.sync_as_source is not None and \
+            destination_plugin.sync_as_source and \
+            (account_number not in src_accounts):
         src_options = copy.deepcopy(plugins.get(destination_plugin.sync_as_source_name).options)
         set_plugin_option('accountNumber', account_number, src_options)
         create(label=dst.label,
