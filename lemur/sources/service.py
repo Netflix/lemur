@@ -6,6 +6,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import arrow
+import copy
 
 from flask import current_app
 
@@ -21,6 +22,7 @@ from lemur.common.utils import find_matching_certificates_by_hash, parse_certifi
 from lemur.common.defaults import serial
 
 from lemur.plugins.base import plugins
+from lemur.plugins.utils import get_plugin_option, set_plugin_option
 
 
 def certificate_create(certificate, source):
@@ -256,3 +258,35 @@ def render(args):
         query = database.filter(query, Source, terms)
 
     return database.sort_and_page(query, Source, args)
+
+
+def add_aws_destination_to_sources(dst):
+    """
+    Given a destination check, if it can be added as sources, and included it if not already a source
+    We identify qualified destinations based on the sync_as_source attributed of the plugin.
+    The destination sync_as_source_name reveals the name of the suitable source-plugin.
+    We rely on account numbers to avoid duplicates.
+    :return: true for success and false for not adding the destination as source
+    """
+    # a set of all accounts numbers available as sources
+    src_accounts = set()
+    sources = get_all()
+    for src in sources:
+        src_accounts.add(get_plugin_option('accountNumber', src.options))
+
+    # check
+    destination_plugin = plugins.get(dst.plugin_name)
+    account_number = get_plugin_option('accountNumber', dst.options)
+    if account_number is not None and \
+            destination_plugin.sync_as_source is not None and \
+            destination_plugin.sync_as_source and \
+            (account_number not in src_accounts):
+        src_options = copy.deepcopy(plugins.get(destination_plugin.sync_as_source_name).options)
+        set_plugin_option('accountNumber', account_number, src_options)
+        create(label=dst.label,
+               plugin_name=destination_plugin.sync_as_source_name,
+               options=src_options,
+               description=dst.description)
+        return True
+
+    return False

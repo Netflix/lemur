@@ -18,4 +18,14 @@ def get_plugin_option(name, options):
     """
     for o in options:
         if o.get('name') == name:
-            return o['value']
+            return o.get('value', o.get('default'))
+
+
+def set_plugin_option(name, value, options):
+    """
+    Set value for option name for options dict.
+    :param options:
+    """
+    for o in options:
+        if o.get('name') == name:
+            o.update({'value': value})

@@ -49,6 +49,8 @@ from lemur.policies.models import RotationPolicy  # noqa
 from lemur.pending_certificates.models import PendingCertificate  # noqa
 from lemur.dns_providers.models import DnsProvider  # noqa
 
+from sqlalchemy.sql import text
+
 manager = Manager(create_app)
 manager.add_option('-c', '--config', dest='config_path', required=False)
 
@@ -142,6 +144,7 @@ SQLALCHEMY_DATABASE_URI = 'postgresql://lemur:lemur@localhost:5432/lemur'
 
 @MigrateCommand.command
 def create():
+    database.db.engine.execute(text('CREATE EXTENSION IF NOT EXISTS pg_trgm'))
     database.db.create_all()
     stamp(revision='head')
 
