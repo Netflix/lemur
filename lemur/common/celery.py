@@ -20,6 +20,8 @@ from lemur.notifications.messaging import send_pending_failure_notification
 from lemur.pending_certificates import service as pending_certificate_service
 from lemur.plugins.base import plugins
 from lemur.sources.cli import clean, sync, validate_sources
+from lemur.destinations import service as destinations_service
+from lemur.sources.service import add_aws_destination_to_sources
 
 if current_app:
     flask_app = current_app
@@ -255,3 +257,21 @@ def sync_source(source):
     sync([source])
     log_data["message"] = "Done syncing source"
     current_app.logger.debug(log_data)
+
+
+@celery.task()
+def sync_source_destination():
+    """
+    This celery task will sync destination and source, to make sure all new destinations are also present as source.
+    Some destinations do not qualify as sources, and hence should be excluded from being added as sources
+    We identify qualified destinations based on the sync_as_source attributed of the plugin.
+    The destination sync_as_source_name reveals the name of the suitable source-plugin.
+    We rely on account numbers to avoid duplicates.
+    """
+    current_app.logger.debug("Syncing AWS destinations and sources")
+
+    for dst in destinations_service.get_all():
+        if add_aws_destination_to_sources(dst):
+            current_app.logger.debug("Source: %s added", dst.label)
+
+    current_app.logger.debug("Completed Syncing AWS destinations and sources")
