@@ -312,10 +312,10 @@ def sync_source_destination():
     This celery task will sync destination and source, to make sure all new destinations are also present as source.
     Some destinations do not qualify as sources, and hence should be excluded from being added as sources
     We identify qualified destinations based on the sync_as_source attributed of the plugin.
-    The destination sync_as_source_name reviels the name of the suitable source-plugin.
+    The destination sync_as_source_name reveals the name of the suitable source-plugin.
     We rely on account numbers to avoid duplicates.
     """
-    current_app.logger.debug("Syncing AWWS destinations and sources")
+    current_app.logger.debug("Syncing AWS destinations and sources")
 
     for dst in destinations_service.get_all():
         if add_aws_destination_to_sources(dst):
