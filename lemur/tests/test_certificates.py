@@ -18,7 +18,7 @@ from lemur.domains.models import Domain
 
 
 from lemur.tests.vectors import VALID_ADMIN_API_TOKEN, VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN, CSR_STR, \
-    INTERMEDIATE_CERT_STR, SAN_CERT_STR, SAN_CERT_KEY, ROOTCA_KEY, ROOTCA_CERT_STR
+    INTERMEDIATE_CERT_STR, SAN_CERT_STR, SAN_CERT_CSR, SAN_CERT_KEY, ROOTCA_KEY, ROOTCA_CERT_STR
 
 
 def test_get_or_increase_name(session, certificate):
@@ -456,7 +456,7 @@ def test_certificate_upload_schema_ok(client):
         'body': SAN_CERT_STR,
         'privateKey': SAN_CERT_KEY,
         'chain': INTERMEDIATE_CERT_STR,
-        'csr': CSR_STR,
+        'csr': SAN_CERT_CSR,
         'external_id': '1234',
     }
     data, errors = CertificateUploadInputSchema().load(data)
