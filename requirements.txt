@@ -52,7 +52,7 @@ kombu==4.5.0
 lockfile==0.12.2
 mako==1.0.8               # via alembic
 markupsafe==1.1.1         # via jinja2, mako
-marshmallow-sqlalchemy==0.16.1
+marshmallow-sqlalchemy==0.16.2
 marshmallow==2.19.2
 mock==2.0.0               # via acme
 ndg-httpsclient==0.5.1
