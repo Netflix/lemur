@@ -245,5 +245,9 @@ angular.module('lemur')
       return pending_certificate.customOperation('remove', null, {}, {'Content-Type': 'application/json'}, options);
     };
 
+    PendingCertificateService.upload = function (pending_certificate) {
+        return pending_certificate.customPOST({'body': pending_certificate.body, 'chain': pending_certificate.chain}, 'upload');
+    };
+
     return PendingCertificateService;
   });

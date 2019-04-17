@@ -8,9 +8,11 @@ from sqlalchemy import or_, cast, Integer
 
 from lemur import database
 from lemur.authorities.models import Authority
+from lemur.authorities import service as authorities_service
 from lemur.certificates import service as certificate_service
 from lemur.certificates.schemas import CertificateUploadInputSchema
-from lemur.common.utils import truthiness
+from lemur.common.utils import truthiness, parse_cert_chain, parse_certificate
+from lemur.common import validators
 from lemur.destinations.models import Destination
 from lemur.domains.models import Domain
 from lemur.notifications.models import Notification
@@ -230,3 +232,40 @@ def render(args):
     # Only show unresolved certificates in the UI
     query = query.filter(PendingCertificate.resolved.is_(False))
     return database.sort_and_page(query, PendingCertificate, args)
+
+
+def upload(pending_certificate_id, **kwargs):
+    """
+    Uploads a (signed) pending certificate.  The allowed fields are validated by
+    PendingCertificateUploadInputSchema. The certificate is also validated to be
+    signed by the correct authoritity.
+    """
+    pending_cert = get(pending_certificate_id)
+    partial_cert = kwargs
+    uploaded_chain = partial_cert['chain']
+
+    authority = authorities_service.get(pending_cert.authority.id)
+
+    # Construct the chain for cert validation
+    if uploaded_chain:
+        chain = uploaded_chain + '\n' + authority.authority_certificate.body
+    else:
+        chain = authority.authority_certificate.body
+
+    parsed_chain = parse_cert_chain(chain)
+
+    # Check that the certificate is actually signed by the CA to avoid incorrect cert pasting
+    validators.verify_cert_chain([parse_certificate(partial_cert['body'])] + parsed_chain)
+
+    final_cert = create_certificate(pending_cert, partial_cert, pending_cert.user)
+
+    update(
+        pending_cert.id,
+        resolved=True
+    )
+    pending_cert_final_result = update(
+        pending_cert.id,
+        resolved_cert_id=final_cert.id
+    )
+
+    return pending_cert_final_result
