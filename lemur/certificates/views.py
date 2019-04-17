@@ -306,6 +306,7 @@ class CertificatesUpload(AuthenticatedResource):
                  "body": "-----BEGIN CERTIFICATE-----...",
                  "chain": "-----BEGIN CERTIFICATE-----...",
                  "privateKey": "-----BEGIN RSA PRIVATE KEY-----..."
+                 "csr": "-----BEGIN CERTIFICATE REQUEST-----..."
                  "destinations": [],
                  "notifications": [],
                  "replacements": [],
