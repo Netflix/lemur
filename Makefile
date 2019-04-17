@@ -125,5 +125,9 @@ endif
 	@echo "--> Done installing new dependencies"
 	@echo ""
 
+# Execute with make checkout-pr pr=<pr number>
+checkout-pr:
+	git fetch upstream pull/$(pr)/head:pr-$(pr)
+
 
 .PHONY: develop dev-postgres dev-docs setup-git build clean update-submodules test testloop test-cli test-js test-python lint lint-python lint-js coverage publish release
