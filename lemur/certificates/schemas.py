@@ -112,10 +112,20 @@ class CertificateInputSchema(CertificateCreationSchema):
         if data.get('replacements'):
             data['replaces'] = data['replacements']  # TODO remove when field is deprecated
         if data.get('csr'):
-            dns_names = cert_utils.get_dns_names_from_csr(data['csr'])
-            if not data['extensions']['subAltNames']['names']:
+            csr_sans = cert_utils.get_sans_from_csr(data['csr'])
+            if not data.get('extensions'):
+                data['extensions'] = {
+                    'subAltNames': {
+                        'names': []
+                    }
+                }
+            elif not data['extensions'].get('subAltNames'):
+                data['extensions']['subAltNames'] = {
+                    'names': []
+                }
+            elif not data['extensions']['subAltNames'].get('names'):
                 data['extensions']['subAltNames']['names'] = []
-            data['extensions']['subAltNames']['names'] += dns_names
+            data['extensions']['subAltNames']['names'] += csr_sans
         return missing.convert_validity_years(data)
 
 
