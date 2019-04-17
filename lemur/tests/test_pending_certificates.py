@@ -2,6 +2,7 @@ import json
 
 import pytest
 
+from marshmallow import ValidationError
 from lemur.pending_certificates.views import *  # noqa
 from .vectors import CSR_STR, INTERMEDIATE_CERT_STR, VALID_ADMIN_API_TOKEN, VALID_ADMIN_HEADER_TOKEN, \
     VALID_USER_HEADER_TOKEN, WILDCARD_CERT_STR
@@ -50,3 +51,44 @@ def test_pending_cancel(client, pending_certificate, token, status):
     assert client.delete(api.url_for(PendingCertificates, pending_certificate_id=pending_certificate.id),
                          data=json.dumps({'note': "unit test", 'send_email': False}),
                          headers=token).status_code == status
+
+
+def test_pending_upload(pending_certificate_from_full_chain_ca):
+    from lemur.pending_certificates.service import upload
+    from lemur.certificates.service import get
+
+    cert = {'body': WILDCARD_CERT_STR,
+            'chain': None,
+            'external_id': None
+    }
+
+    pending_cert = upload(pending_certificate_from_full_chain_ca.id, **cert)
+    assert pending_cert.resolved
+    assert get(pending_cert.resolved_cert_id)
+
+
+def test_pending_upload_with_chain(pending_certificate_from_partial_chain_ca):
+    from lemur.pending_certificates.service import upload
+    from lemur.certificates.service import get
+
+    cert = {'body': WILDCARD_CERT_STR,
+            'chain': INTERMEDIATE_CERT_STR,
+            'external_id': None
+    }
+
+    pending_cert = upload(pending_certificate_from_partial_chain_ca.id, **cert)
+    assert pending_cert.resolved
+    assert get(pending_cert.resolved_cert_id)
+
+
+def test_invalid_pending_upload_with_chain(pending_certificate_from_partial_chain_ca):
+    from lemur.pending_certificates.service import upload
+
+    cert = {'body': WILDCARD_CERT_STR,
+            'chain': None,
+            'external_id': None
+    }
+    with pytest.raises(ValidationError) as err:
+        upload(pending_certificate_from_partial_chain_ca.id, **cert)
+    assert str(err.value).startswith(
+        'Incorrect chain certificate(s) provided: \'*.wild.example.org\' is not signed by \'LemurTrust Unittests Root CA 2018')
