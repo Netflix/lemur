@@ -10,6 +10,7 @@ from marshmallow import fields, validate, validates_schema, post_load, pre_load
 from marshmallow.exceptions import ValidationError
 
 from lemur.authorities.schemas import AuthorityNestedOutputSchema
+from lemur.certificates import utils as cert_utils
 from lemur.common import missing, utils, validators
 from lemur.common.fields import ArrowDateTime, Hex
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
@@ -96,6 +97,9 @@ class CertificateInputSchema(CertificateCreationSchema):
 
     @validates_schema
     def validate_authority(self, data):
+        if isinstance(data['authority'], str):
+            raise ValidationError("Authority not found.")
+
         if not data['authority'].active:
             raise ValidationError("The authority is inactive.", ['authority'])
 
@@ -107,6 +111,11 @@ class CertificateInputSchema(CertificateCreationSchema):
     def load_data(self, data):
         if data.get('replacements'):
             data['replaces'] = data['replacements']  # TODO remove when field is deprecated
+        if data.get('csr'):
+            dns_names = cert_utils.get_dns_names_from_csr(data['csr'])
+            if not data['extensions']['subAltNames']['names']:
+                data['extensions']['subAltNames']['names'] = []
+            data['extensions']['subAltNames']['names'] += dns_names
         return missing.convert_validity_years(data)
 
 

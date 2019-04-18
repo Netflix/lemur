@@ -9,6 +9,7 @@
 
 .. moduleauthor:: Christopher Jolley <chris@alwaysjolley.com>
 """
+import os
 import re
 import hvac
 from flask import current_app
@@ -19,6 +20,14 @@ from lemur.plugins.bases import DestinationPlugin
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
+
+class Error(Exception):
+    """Base exception class"""
+    pass
+
+class InvalidSanError(Error):
+    """Invlied SAN in SAN list as defined by regex in destination"""
+    pass
 
 class VaultDestinationPlugin(DestinationPlugin):
     """Hashicorp Vault Destination plugin for Lemur"""
@@ -36,6 +45,17 @@ class VaultDestinationPlugin(DestinationPlugin):
             'required': True,
             'validation': '^https?://[a-zA-Z0-9.:-]+$',
             'helpMessage': 'Valid URL to Hashi Vault instance'
+        },
+        {
+            'name': 'vaultKvApiVersion',
+            'type': 'select',
+            'value': '2',
+            'available': [
+                '1',
+                '2'
+            ],
+            'required': True,
+            'helpMessage': 'Version of the Vault KV API to use'
         },
         {
             'name': 'vaultAuthTokenFile',
@@ -80,8 +100,9 @@ class VaultDestinationPlugin(DestinationPlugin):
         {
             'name': 'sanFilter',
             'type': 'str',
+            'value': '.*',
             'required': False,
-            'validation': '^[0-9a-zA-Z\\\?\[\](){}^$+._-]+$',
+            'validation': '^[0-9a-zA-Z\\\?\[\](){}|^$+*,._-]+$',
             'helpMessage': 'Valid regex filter'
         }
     ]
@@ -105,25 +126,30 @@ class VaultDestinationPlugin(DestinationPlugin):
         path = self.get_option('vaultPath', options)
         bundle = self.get_option('bundleChain', options)
         obj_name = self.get_option('objectName', options)
+        api_version = self.get_option('vaultKvApiVersion', options)
         san_filter = self.get_option('sanFilter', options)
 
         san_list = get_san_list(body)
-        for san in san_list:
-            if not re.match(san_filter, san):
-                current_app.logger.exception(
-                    "Exception uploading secret to vault: invalid SAN in certificate",
-                    exc_info=True)
+        if san_filter:
+            for san in san_list:
+                if not re.match(san_filter, san, flags=re.IGNORECASE):
+                    current_app.logger.exception(
+                        "Exception uploading secret to vault: invalid SAN: {}".format(san),
+                        exc_info=True)
+                    os._exit(1)
 
         with open(token_file, 'r') as file:
             token = file.readline().rstrip('\n')
 
         client = hvac.Client(url=url, token=token)
+        client.secrets.kv.default_kv_version = api_version
+
         if obj_name:
             path = '{0}/{1}'.format(path, obj_name)
         else:
             path = '{0}/{1}'.format(path, cname)
 
-        secret = get_secret(url, token, mount, path)
+        secret = get_secret(client, mount, path)
         secret['data'][cname] = {}
 
         if bundle == 'Nginx' and cert_chain:
@@ -137,8 +163,9 @@ class VaultDestinationPlugin(DestinationPlugin):
         if isinstance(san_list, list):
             secret['data'][cname]['san'] = san_list
         try:
-            client.secrets.kv.v1.create_or_update_secret(
-                path=path, mount_point=mount, secret=secret['data'])
+            client.secrets.kv.create_or_update_secret(
+                path=path, mount_point=mount, secret=secret['data']
+            )
         except ConnectionError as err:
             current_app.logger.exception(
                 "Exception uploading secret to vault: {0}".format(err), exc_info=True)
@@ -158,12 +185,14 @@ def get_san_list(body):
         return san_list
 
 
-def get_secret(url, token, mount, path):
+def get_secret(client, mount, path):
     """ retreiive existing data from mount path and return dictionary """
     result = {'data': {}}
     try:
-        client = hvac.Client(url=url, token=token)
-        result = client.secrets.kv.v1.read_secret(path=path, mount_point=mount)
+        if client.secrets.kv.default_kv_version == '1':
+            result = client.secrets.kv.v1.read_secret(path=path, mount_point=mount)
+        else:
+            result = client.secrets.kv.v2.read_secret_version(path=path, mount_point=mount)
     except ConnectionError:
         pass
     finally:
