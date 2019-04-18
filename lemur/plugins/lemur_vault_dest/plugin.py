@@ -21,14 +21,6 @@ from lemur.plugins.bases import DestinationPlugin
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 
-class Error(Exception):
-    """Base exception class"""
-    pass
-
-class InvalidSanError(Error):
-    """Invlied SAN in SAN list as defined by regex in destination"""
-    pass
-
 class VaultDestinationPlugin(DestinationPlugin):
     """Hashicorp Vault Destination plugin for Lemur"""
     title = 'Vault'
