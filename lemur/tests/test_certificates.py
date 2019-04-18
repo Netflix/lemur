@@ -18,7 +18,7 @@ from lemur.domains.models import Domain
 
 
 from lemur.tests.vectors import VALID_ADMIN_API_TOKEN, VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN, CSR_STR, \
-    INTERMEDIATE_CERT_STR, SAN_CERT_STR, SAN_CERT_KEY, ROOTCA_KEY, ROOTCA_CERT_STR
+    INTERMEDIATE_CERT_STR, SAN_CERT_STR, SAN_CERT_CSR, SAN_CERT_KEY, ROOTCA_KEY, ROOTCA_CERT_STR
 
 
 def test_get_or_increase_name(session, certificate):
@@ -284,6 +284,31 @@ def test_certificate_input_with_extensions(client, authority):
     assert not errors
 
 
+def test_certificate_input_schema_parse_csr(authority):
+    from lemur.certificates.schemas import CertificateInputSchema
+
+    test_san_dns = 'foobar.com'
+    extensions = {'sub_alt_names': {'names': x509.SubjectAlternativeName([x509.DNSName(test_san_dns)])}}
+    csr, private_key = create_csr(owner='joe@example.com', common_name='ACommonName', organization='test',
+                                  organizational_unit='Meters', country='NL', state='Noord-Holland', location='Amsterdam',
+                                  key_type='RSA2048', extensions=extensions)
+
+    input_data = {
+        'commonName': 'test.example.com',
+        'owner': 'jim@example.com',
+        'authority': {'id': authority.id},
+        'description': 'testtestest',
+        'csr': csr,
+        'dnsProvider': None,
+    }
+
+    data, errors = CertificateInputSchema().load(input_data)
+
+    for san in data['extensions']['sub_alt_names']['names']:
+        assert san.value == test_san_dns
+    assert not errors
+
+
 def test_certificate_out_of_range_date(client, authority):
     from lemur.certificates.schemas import CertificateInputSchema
     input_data = {
@@ -456,6 +481,7 @@ def test_certificate_upload_schema_ok(client):
         'body': SAN_CERT_STR,
         'privateKey': SAN_CERT_KEY,
         'chain': INTERMEDIATE_CERT_STR,
+        'csr': SAN_CERT_CSR,
         'external_id': '1234',
     }
     data, errors = CertificateUploadInputSchema().load(data)

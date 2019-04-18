@@ -18,11 +18,10 @@ from lemur.authorities.service import get as get_authority
 from lemur.factory import create_app
 from lemur.notifications.messaging import send_pending_failure_notification
 from lemur.pending_certificates import service as pending_certificate_service
-from lemur.plugins.base import plugins, IPlugin
+from lemur.plugins.base import plugins
 from lemur.sources.cli import clean, sync, validate_sources
 from lemur.destinations import service as destinations_service
-from lemur.sources import service as sources_service
-
+from lemur.sources.service import add_aws_destination_to_sources
 
 if current_app:
     flask_app = current_app
@@ -266,27 +265,13 @@ def sync_source_destination():
     This celery task will sync destination and source, to make sure all new destinations are also present as source.
     Some destinations do not qualify as sources, and hence should be excluded from being added as sources
     We identify qualified destinations based on the sync_as_source attributed of the plugin.
-    The destination sync_as_source_name reviels the name of the suitable source-plugin.
+    The destination sync_as_source_name reveals the name of the suitable source-plugin.
     We rely on account numbers to avoid duplicates.
     """
-    current_app.logger.debug("Syncing source and destination")
-
-    # a set of all accounts numbers available as sources
-    src_accounts = set()
-    sources = validate_sources("all")
-    for src in sources:
-        src_accounts.add(IPlugin.get_option('accountNumber', src.options))
+    current_app.logger.debug("Syncing AWS destinations and sources")
 
     for dst in destinations_service.get_all():
-        destination_plugin = plugins.get(dst.plugin_name)
-        account_number = IPlugin.get_option('accountNumber', dst.options)
-        if destination_plugin.sync_as_source and (account_number not in src_accounts):
-            src_options = copy.deepcopy(plugins.get(destination_plugin.sync_as_source_name).options)
-            for o in src_options:
-                if o.get('name') == 'accountNumber':
-                    o.update({'value': account_number})
-            sources_service.create(label=dst.label,
-                                   plugin_name=destination_plugin.sync_as_source_name,
-                                   options=src_options,
-                                   description=dst.description)
-            current_app.logger.info("Source: %s added", dst.label)
+        if add_aws_destination_to_sources(dst):
+            current_app.logger.debug("Source: %s added", dst.label)
+
+    current_app.logger.debug("Completed Syncing AWS destinations and sources")
