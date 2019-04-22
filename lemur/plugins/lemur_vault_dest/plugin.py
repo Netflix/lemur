@@ -92,7 +92,7 @@ class VaultDestinationPlugin(DestinationPlugin):
             'name': 'sanFilter',
             'type': 'str',
             'required': False,
-            'validation': '^[0-9a-zA-Z\\\?\[\](){}^$+._-]+$',
+            'validation': '.*',
             'helpMessage': 'Valid regex filter'
         }
     ]
