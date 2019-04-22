@@ -94,7 +94,7 @@ class VaultDestinationPlugin(DestinationPlugin):
             'type': 'str',
             'value': '.*',
             'required': False,
-            'validation': '^[0-9a-zA-Z\\\?\[\](){}|^$+*,._-]+$',
+            'validation': '.*',
             'helpMessage': 'Valid regex filter'
         }
     ]
