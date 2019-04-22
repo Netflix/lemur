@@ -119,11 +119,18 @@ class VaultDestinationPlugin(DestinationPlugin):
         san_filter = self.get_option('sanFilter', options)
 
         san_list = get_san_list(body)
-        for san in san_list:
-            if not re.match(san_filter, san):
-                current_app.logger.exception(
-                    "Exception uploading secret to vault: invalid SAN in certificate",
-                    exc_info=True)
+        if san_filter:
+            for san in san_list:
+                try:
+                    if not re.match(san_filter, san, flags=re.IGNORECASE):
+                        current_app.logger.exception(
+                            "Exception uploading secret to vault: invalid SAN: {}".format(san),
+                            exc_info=True)
+                        os._exit(1)
+                except re.error:
+                    current_app.logger.exception(
+                        "Exception compiling regex filter: invalid filter",
+                        exc_info=True)
 
         with open(token_file, 'r') as file:
             token = file.readline().rstrip('\n')
