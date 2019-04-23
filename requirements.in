@@ -36,8 +36,10 @@ ndg-httpsclient
 paramiko  # required for the SFTP destination plugin
 pem
 psycopg2
+pyjks >= 19 # pyjks < 19 depends on pycryptodome, which conflicts with dyn's usage of pycrypto
 pyjwt
 pyOpenSSL
+pyyaml>=4.2b1 #high severity alert
 python_ldap
 raven[flask]
 redis
@@ -47,5 +49,3 @@ six
 SQLAlchemy-Utils
 tabulate
 xmltodict
-pyyaml>=4.2b1 #high severity alert
--e git://github.com/kurtbrose/pyjks.git@e742f80b0bbd06c5a6cf0535985af6416ba014a4#egg=pyjks # Needed until pyjks publishes a release with the contents of this PR
