@@ -47,3 +47,4 @@ SQLAlchemy-Utils
 tabulate
 xmltodict
 pyyaml>=4.2b1 #high severity alert
+-e git://github.com/kurtbrose/pyjks.git@e742f80b0bbd06c5a6cf0535985af6416ba014a4#egg=pyjks # Needed until pyjks publishes a release with the contents of this PR
