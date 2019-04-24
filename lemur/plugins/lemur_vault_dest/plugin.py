@@ -9,6 +9,8 @@
 
 .. moduleauthor:: Christopher Jolley <chris@alwaysjolley.com>
 """
+import os
+import re
 import hvac
 from flask import current_app
 
@@ -87,6 +89,14 @@ class VaultDestinationPlugin(DestinationPlugin):
             ],
             'required': True,
             'helpMessage': 'Bundle the chain into the certificate'
+        },
+        {
+            'name': 'sanFilter',
+            'type': 'str',
+            'value': '.*',
+            'required': False,
+            'validation': '.*',
+            'helpMessage': 'Valid regex filter'
         }
     ]
 
@@ -110,6 +120,21 @@ class VaultDestinationPlugin(DestinationPlugin):
         bundle = self.get_option('bundleChain', options)
         obj_name = self.get_option('objectName', options)
         api_version = self.get_option('vaultKvApiVersion', options)
+        san_filter = self.get_option('sanFilter', options)
+
+        san_list = get_san_list(body)
+        if san_filter:
+            for san in san_list:
+                try:
+                    if not re.match(san_filter, san, flags=re.IGNORECASE):
+                        current_app.logger.exception(
+                            "Exception uploading secret to vault: invalid SAN: {}".format(san),
+                            exc_info=True)
+                        os._exit(1)
+                except re.error:
+                    current_app.logger.exception(
+                        "Exception compiling regex filter: invalid filter",
+                        exc_info=True)
 
         with open(token_file, 'r') as file:
             token = file.readline().rstrip('\n')
@@ -133,7 +158,6 @@ class VaultDestinationPlugin(DestinationPlugin):
         else:
             secret['data'][cname]['crt'] = body
         secret['data'][cname]['key'] = private_key
-        san_list = get_san_list(body)
         if isinstance(san_list, list):
             secret['data'][cname]['san'] = san_list
         try:
