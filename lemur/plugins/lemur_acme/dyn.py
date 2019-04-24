@@ -10,13 +10,21 @@ from dyn.tm.session import DynectSession
 from dyn.tm.zones import Node, Zone, get_all_zones
 from flask import current_app
 
+from lemur.extensions import metrics, sentry
+
 
 def get_dynect_session():
-    dynect_session = DynectSession(
-        current_app.config.get('ACME_DYN_CUSTOMER_NAME', ''),
-        current_app.config.get('ACME_DYN_USERNAME', ''),
-        current_app.config.get('ACME_DYN_PASSWORD', ''),
-    )
+    try:
+        dynect_session = DynectSession(
+            current_app.config.get('ACME_DYN_CUSTOMER_NAME', ''),
+            current_app.config.get('ACME_DYN_USERNAME', ''),
+            current_app.config.get('ACME_DYN_PASSWORD', ''),
+        )
+    except Exception as e:
+        sentry.captureException()
+        metrics.send('get_dynect_session_fail', 'counter', 1)
+        current_app.logger.debug("Unable to establish connection to Dyn", exc_info=True)
+        raise
     return dynect_session
 
 
@@ -30,10 +38,12 @@ def _has_dns_propagated(name, token):
             for txt_record in rdata.strings:
                 txt_records.append(txt_record.decode("utf-8"))
     except dns.exception.DNSException:
+        metrics.send('has_dns_propagated_fail', 'counter', 1)
         return False
 
     for txt_record in txt_records:
         if txt_record == token:
+            metrics.send('has_dns_propagated_success', 'counter', 1)
             return True
 
     return False
@@ -46,10 +56,12 @@ def wait_for_dns_change(change_id, account_number=None):
         status = _has_dns_propagated(fqdn, token)
         current_app.logger.debug("Record status for fqdn: {}: {}".format(fqdn, status))
         if status:
+            metrics.send('wait_for_dns_change_success', 'counter', 1)
             break
         time.sleep(20)
     if not status:
         # TODO: Delete associated DNS text record here
+        metrics.send('wait_for_dns_change_fail', 'counter', 1)
         raise Exception("Unable to query DNS token for fqdn {}.".format(fqdn))
     return
 
@@ -67,6 +79,7 @@ def get_zone_name(domain):
             if z.name.count(".") > zone_name.count("."):
                 zone_name = z.name
     if not zone_name:
+        metrics.send('dyn_no_zone_name', 'counter', 1)
         raise Exception("No Dyn zone found for domain: {}".format(domain))
     return zone_name
 
@@ -99,6 +112,8 @@ def create_txt_record(domain, token, account_number):
                 "Record already exists: {}".format(domain, token, e), exc_info=True
             )
         else:
+            metrics.send('create_txt_record_error', 'counter', 1)
+            sentry.captureException()
             raise
 
     change_id = (fqdn, token)
@@ -122,6 +137,8 @@ def delete_txt_record(change_id, account_number, domain, token):
     try:
         all_txt_records = node.get_all_records_by_type('TXT')
     except DynectGetError:
+        sentry.captureException()
+        metrics.send('delete_txt_record_error', 'counter', 1)
         # No Text Records remain or host is not in the zone anymore because all records have been deleted.
         return
     for txt_record in all_txt_records:
@@ -178,6 +195,7 @@ def get_authoritative_nameserver(domain):
 
             rcode = response.rcode()
             if rcode != dns.rcode.NOERROR:
+                metrics.send('get_authoritative_nameserver_error', 'counter', 1)
                 if rcode == dns.rcode.NXDOMAIN:
                     raise Exception('%s does not exist.' % sub)
                 else:
