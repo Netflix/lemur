@@ -28,6 +28,7 @@ from lemur.authorizations import service as authorization_service
 from lemur.common.utils import generate_private_key
 from lemur.dns_providers import service as dns_provider_service
 from lemur.exceptions import InvalidAuthority, InvalidConfiguration, UnknownProvider
+from lemur.extensions import metrics, sentry
 from lemur.plugins import lemur_acme as acme
 from lemur.plugins.bases import IssuerPlugin
 from lemur.plugins.lemur_acme import cloudflare, dyn, route53
@@ -47,7 +48,9 @@ class AcmeHandler(object):
         try:
             self.all_dns_providers = dns_provider_service.get_all_dns_providers()
         except Exception as e:
-            current_app.logger.error("Unable to fetch DNS Providers: {}".format(e))
+            metrics.send('AcmeHandler_init_error', 'counter', 1)
+            sentry.captureException()
+            current_app.logger.error(f"Unable to fetch DNS Providers: {e}")
             self.all_dns_providers = []
 
     def find_dns_challenge(self, authorizations):
@@ -94,6 +97,7 @@ class AcmeHandler(object):
         current_app.logger.debug("Finalizing DNS challenge for {0}".format(authz_record.authz[0].body.identifier.value))
         dns_providers = self.dns_providers_for_domain.get(authz_record.host)
         if not dns_providers:
+            metrics.send('complete_dns_challenge_error_no_dnsproviders', 'counter', 1)
             raise Exception("No DNS providers found for domain: {}".format(authz_record.host))
 
         for dns_provider in dns_providers:
@@ -102,7 +106,15 @@ class AcmeHandler(object):
             account_number = dns_provider_options.get("account_id")
             dns_provider_plugin = self.get_dns_provider(dns_provider.provider_type)
             for change_id in authz_record.change_id:
-                dns_provider_plugin.wait_for_dns_change(change_id, account_number=account_number)
+                try:
+                    dns_provider_plugin.wait_for_dns_change(change_id, account_number=account_number)
+                except Exception:
+                    metrics.send('complete_dns_challenge_error', 'counter', 1)
+                    sentry.captureException()
+                    current_app.logger.debug(
+                        f"Unable to resolve DNS challenge for change_id: {change_id}, account_id: "
+                        f"{account_number}", exc_info=True)
+                    raise
 
             for dns_challenge in authz_record.dns_challenge:
                 response = dns_challenge.response(acme_client.client.net.key)
@@ -114,6 +126,7 @@ class AcmeHandler(object):
                 )
 
                 if not verified:
+                    metrics.send('complete_dns_challenge_verification_error', 'counter', 1)
                     raise ValueError("Failed verification")
 
                 time.sleep(5)
@@ -129,7 +142,9 @@ class AcmeHandler(object):
         try:
             orderr = acme_client.finalize_order(order, deadline)
         except AcmeError:
-            current_app.logger.error("Unable to resolve Acme order: {}".format(order), exc_info=True)
+            sentry.captureException()
+            metrics.send('request_certificate_error', 'counter', 1)
+            current_app.logger.error(f"Unable to resolve Acme order: {order}", exc_info=True)
             raise
 
         pem_certificate = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM,
@@ -196,6 +211,7 @@ class AcmeHandler(object):
 
         for domain in order_info.domains:
             if not self.dns_providers_for_domain.get(domain):
+                metrics.send('get_authorizations_no_dns_provider_for_domain', 'counter', 1)
                 raise Exception("No DNS providers found for domain: {}".format(domain))
             for dns_provider in self.dns_providers_for_domain[domain]:
                 dns_provider_plugin = self.get_dns_provider(dns_provider.provider_type)
@@ -284,6 +300,8 @@ class AcmeHandler(object):
                     except Exception as e:
                         # If this fails, it's most likely because the record doesn't exist (It was already cleaned up)
                         # or we're not authorized to modify it.
+                        metrics.send('cleanup_dns_challenges_error', 'counter', 1)
+                        sentry.captureException()
                         pass
 
     def get_dns_provider(self, type):
@@ -378,12 +396,15 @@ class ACMEIssuerPlugin(IssuerPlugin):
         try:
             order = acme_client.new_order(pending_cert.csr)
         except WildcardUnsupportedError:
+            metrics.send('get_ordered_certificate_wildcard_unsupported', 'counter', 1)
             raise Exception("The currently selected ACME CA endpoint does"
                             " not support issuing wildcard certificates.")
         try:
             authorizations = self.acme.get_authorizations(acme_client, order, order_info)
         except ClientError:
-            current_app.logger.error("Unable to resolve pending cert: {}".format(pending_cert.name), exc_info=True)
+            sentry.captureException()
+            metrics.send('get_ordered_certificate_error', 'counter', 1)
+            current_app.logger.error(f"Unable to resolve pending cert: {pending_cert.name}", exc_info=True)
             return False
 
         authorizations = self.acme.finalize_authorizations(acme_client, authorizations)
@@ -418,6 +439,8 @@ class ACMEIssuerPlugin(IssuerPlugin):
                 try:
                     order = acme_client.new_order(pending_cert.csr)
                 except WildcardUnsupportedError:
+                    sentry.captureException()
+                    metrics.send('get_ordered_certificates_wildcard_unsupported_error', 'counter', 1)
                     raise Exception("The currently selected ACME CA endpoint does"
                                     " not support issuing wildcard certificates.")
 
@@ -430,7 +453,13 @@ class ACMEIssuerPlugin(IssuerPlugin):
                     "order": order,
                 })
             except (ClientError, ValueError, Exception) as e:
-                current_app.logger.error("Unable to resolve pending cert: {}".format(pending_cert), exc_info=True)
+                sentry.captureException()
+                metrics.send('get_ordered_certificates_pending_creation_error', 'counter', 1)
+                current_app.logger.error(f"Unable to resolve pending cert: {pending_cert}", exc_info=True)
+
+                error = e
+                if globals().get("order") and order:
+                    error += f" Order uri: {order.uri}"
                 certs.append({
                     "cert": False,
                     "pending_cert": pending_cert,
@@ -459,14 +488,17 @@ class ACMEIssuerPlugin(IssuerPlugin):
                     "pending_cert": entry["pending_cert"],
                 })
             except (PollError, AcmeError, Exception) as e:
+                sentry.captureException()
+                metrics.send('get_ordered_certificates_resolution_error', 'counter', 1)
                 order_url = order.uri
+                error = f"{e}. Order URI: {order_url}"
                 current_app.logger.error(
-                    "Unable to resolve pending cert: {}. "
-                    "Check out {} for more information.".format(pending_cert, order_url), exc_info=True)
+                    f"Unable to resolve pending cert: {pending_cert}. "
+                    f"Check out {order_url} for more information.", exc_info=True)
                 certs.append({
                     "cert": False,
                     "pending_cert": entry["pending_cert"],
-                    "last_error": e,
+                    "last_error": error,
                 })
                 # Ensure DNS records get deleted
                 self.acme.cleanup_dns_challenges(
