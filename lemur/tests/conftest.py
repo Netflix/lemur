@@ -13,12 +13,12 @@ from lemur import create_app
 from lemur.common.utils import parse_private_key
 from lemur.database import db as _db
 from lemur.auth.service import create_token
-from lemur.tests.vectors import SAN_CERT_KEY, INTERMEDIATE_KEY
+from lemur.tests.vectors import SAN_CERT_KEY, INTERMEDIATE_KEY, ROOTCA_CERT_STR, ROOTCA_KEY
 
 from .factories import ApiKeyFactory, AuthorityFactory, NotificationFactory, DestinationFactory, \
     CertificateFactory, UserFactory, RoleFactory, SourceFactory, EndpointFactory, \
     RotationPolicyFactory, PendingCertificateFactory, AsyncAuthorityFactory, InvalidCertificateFactory, \
-    CryptoAuthorityFactory
+    CryptoAuthorityFactory, CACertificateFactory
 
 
 def pytest_runtest_setup(item):
@@ -167,6 +167,25 @@ def user(session):
 def pending_certificate(session):
     u = UserFactory()
     a = AsyncAuthorityFactory()
+    p = PendingCertificateFactory(user=u, authority=a)
+    session.commit()
+    return p
+
+
+@pytest.fixture
+def pending_certificate_from_full_chain_ca(session):
+    u = UserFactory()
+    a = AuthorityFactory()
+    p = PendingCertificateFactory(user=u, authority=a)
+    session.commit()
+    return p
+
+
+@pytest.fixture
+def pending_certificate_from_partial_chain_ca(session):
+    u = UserFactory()
+    c = CACertificateFactory(body=ROOTCA_CERT_STR, private_key=ROOTCA_KEY, chain=None)
+    a = AuthorityFactory(authority_certificate=c)
     p = PendingCertificateFactory(user=u, authority=a)
     session.commit()
     return p
