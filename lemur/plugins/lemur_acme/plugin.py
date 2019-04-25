@@ -53,9 +53,11 @@ class AcmeHandler(object):
             current_app.logger.error(f"Unable to fetch DNS Providers: {e}")
             self.all_dns_providers = []
 
-    def find_dns_challenge(self, authorizations):
+    def find_dns_challenge(self, host, authorizations):
         dns_challenges = []
         for authz in authorizations:
+            if not authz.body.identifier.value == host:
+                continue
             for combo in authz.body.challenges:
                 if isinstance(combo.chall, challenges.DNS01):
                     dns_challenges.append(combo)
@@ -72,13 +74,13 @@ class AcmeHandler(object):
     def start_dns_challenge(self, acme_client, account_number, host, dns_provider, order, dns_provider_options):
         current_app.logger.debug("Starting DNS challenge for {0}".format(host))
 
-        dns_challenges = self.find_dns_challenge(order.authorizations)
         change_ids = []
 
         host_to_validate = self.maybe_remove_wildcard(host)
         host_to_validate = self.maybe_add_extension(host_to_validate, dns_provider_options)
+        dns_challenges = self.find_dns_challenge(host_to_validate, order.authorizations)
 
-        for dns_challenge in self.find_dns_challenge(order.authorizations):
+        for dns_challenge in dns_challenges:
             change_id = dns_provider.create_txt_record(
                 dns_challenge.validation_domain_name(host_to_validate),
                 dns_challenge.validation(acme_client.client.net.key),
@@ -140,7 +142,7 @@ class AcmeHandler(object):
         deadline = datetime.datetime.now() + datetime.timedelta(seconds=90)
 
         try:
-            orderr = acme_client.finalize_order(order, deadline)
+            orderr = acme_client.poll_and_finalize(order, deadline)
         except AcmeError:
             sentry.captureException(extra={"order_url": order.uri})
             metrics.send('request_certificate_error', 'counter', 1)
