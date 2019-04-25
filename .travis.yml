@@ -1,6 +1,5 @@
 language: python
-sudo: required
-dist: xenial
+dist: trusty
 
 node_js:
   - "6.2.0"
