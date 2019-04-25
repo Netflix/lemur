@@ -1,5 +1,4 @@
 language: python
-sudo: required
 dist: trusty
 
 node_js:
