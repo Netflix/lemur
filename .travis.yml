@@ -1,5 +1,4 @@
 language: python
-sudo: required
 dist: xenial
 
 node_js:
