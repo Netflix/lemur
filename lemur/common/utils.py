@@ -85,7 +85,9 @@ def parse_cert_chain(pem_chain):
     :param pem_chain: string
     :return: List of parsed certificates
     """
-    return [parse_certificate(cert) for cert in split_pem(pem_chain) if pem_chain]
+    if pem_chain is None:
+        return []
+    return [parse_certificate(cert) for cert in split_pem(pem_chain) if cert]
 
 
 def parse_csr(csr):

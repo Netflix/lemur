@@ -14,14 +14,14 @@ from cryptography.hazmat.backends import default_backend
 from marshmallow.exceptions import ValidationError
 
 
-def get_dns_names_from_csr(data):
+def get_sans_from_csr(data):
     """
-    Fetches DNSNames from CSR.
-    Potentially extendable to any kind of SubjectAlternativeName
+    Fetches SubjectAlternativeNames from CSR.
+    Works with any kind of SubjectAlternativeName
     :param data: PEM-encoded string with CSR
-    :return:
+    :return: List of LemurAPI-compatible subAltNames
     """
-    dns_names = []
+    sub_alt_names = []
     try:
         request = x509.load_pem_x509_csr(data.encode('utf-8'), default_backend())
     except Exception:
@@ -29,14 +29,12 @@ def get_dns_names_from_csr(data):
 
     try:
         alt_names = request.extensions.get_extension_for_class(x509.SubjectAlternativeName)
-
-        for name in alt_names.value.get_values_for_type(x509.DNSName):
-            dns_name = {
-                'nameType': 'DNSName',
-                'value': name
-            }
-            dns_names.append(dns_name)
+        for alt_name in alt_names.value:
+            sub_alt_names.append({
+                'nameType': type(alt_name).__name__,
+                'value': alt_name.value
+            })
     except x509.ExtensionNotFound:
         pass
 
-    return dns_names
+    return sub_alt_names

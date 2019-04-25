@@ -99,4 +99,23 @@ angular.module('lemur')
         $scope.pendingCertificateTable.reload();
       });
     };
+
+    $scope.upload = function (pendingCertificateId) {
+      var uibModalInstance = $uibModal.open({
+        animation: true,
+        controller: 'PendingCertificateUploadController',
+        templateUrl: '/angular/pending_certificates/pending_certificate/upload.tpl.html',
+        size: 'lg',
+        backdrop: 'static',
+        resolve: {
+          uploadId: function () {
+            return pendingCertificateId;
+          }
+        }
+      });
+      uibModalInstance.result.then(function () {
+        $scope.pendingCertificateTable.reload();
+      });
+    };
+
   });
