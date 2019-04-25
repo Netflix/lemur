@@ -5,7 +5,7 @@ import dns.exception
 import dns.name
 import dns.query
 import dns.resolver
-from dyn.tm.errors import DynectCreateError, DynectGetError
+from dyn.tm.errors import DynectCreateError, DynectDeleteError, DynectGetError, DynectUpdateError
 from dyn.tm.session import DynectSession
 from dyn.tm.zones import Node, Zone, get_all_zones
 from flask import current_app
@@ -51,17 +51,23 @@ def _has_dns_propagated(name, token):
 
 def wait_for_dns_change(change_id, account_number=None):
     fqdn, token = change_id
-    number_of_attempts = 10
+    number_of_attempts = 20
     for attempts in range(0, number_of_attempts):
         status = _has_dns_propagated(fqdn, token)
         current_app.logger.debug("Record status for fqdn: {}: {}".format(fqdn, status))
         if status:
             metrics.send('wait_for_dns_change_success', 'counter', 1)
             break
-        time.sleep(20)
+        time.sleep(10)
     if not status:
         # TODO: Delete associated DNS text record here
         metrics.send('wait_for_dns_change_fail', 'counter', 1)
+        sentry.captureException(
+            extra={
+                "fqdn": fqdn, "txt_record": token}
+        )
+        metrics.send('wait_for_dns_change_error', 'counter', 1,
+                     metric_tags={'fqdn': fqdn, 'txt_record': token})
         raise Exception("Unable to query DNS token for fqdn {}.".format(fqdn))
     return
 
@@ -105,7 +111,7 @@ def create_txt_record(domain, token, account_number):
         zone.add_record(node_name, record_type='TXT', txtdata="\"{}\"".format(token), ttl=5)
         zone.publish()
         current_app.logger.debug("TXT record created: {0}, token: {1}".format(fqdn, token))
-    except DynectCreateError as e:
+    except (DynectCreateError, DynectUpdateError) as e:
         if "Cannot duplicate existing record data" in e.message:
             current_app.logger.debug(
                 "Unable to add record. Domain: {}. Token: {}. "
@@ -138,14 +144,33 @@ def delete_txt_record(change_id, account_number, domain, token):
         all_txt_records = node.get_all_records_by_type('TXT')
     except DynectGetError:
         sentry.captureException()
-        metrics.send('delete_txt_record_error', 'counter', 1)
+        metrics.send('delete_txt_record_geterror', 'counter', 1)
         # No Text Records remain or host is not in the zone anymore because all records have been deleted.
         return
     for txt_record in all_txt_records:
         if txt_record.txtdata == ("{}".format(token)):
             current_app.logger.debug("Deleting TXT record name: {0}".format(fqdn))
-            txt_record.delete()
-    zone.publish()
+            try:
+                txt_record.delete()
+            except DynectDeleteError:
+                sentry.captureException(
+                    extra={
+                        "fqdn": fqdn, "zone_name": zone_name, "node_name": node_name,
+                        "txt_record": txt_record.txtdata}
+                )
+                metrics.send('delete_txt_record_deleteerror', 'counter', 1,
+                             metric_tags={'fqdn': fqdn, 'txt_record': txt_record.txtdata})
+
+    try:
+        zone.publish()
+    except DynectUpdateError:
+        sentry.captureException(
+            extra={
+                "fqdn": fqdn, "zone_name": zone_name, "node_name": node_name,
+                "txt_record": txt_record.txtdata}
+        )
+        metrics.send('delete_txt_record_publish_error', 'counter', 1,
+                     metric_tags={'fqdn': fqdn, 'txt_record': txt_record.txtdata})
 
 
 def delete_acme_txt_records(domain):
@@ -171,7 +196,16 @@ def delete_acme_txt_records(domain):
     all_txt_records = node.get_all_records_by_type('TXT')
     for txt_record in all_txt_records:
         current_app.logger.debug("Deleting TXT record name: {0}".format(fqdn))
-        txt_record.delete()
+        try:
+            txt_record.delete()
+        except DynectDeleteError:
+            sentry.captureException(
+                extra={
+                    "fqdn": fqdn, "zone_name": zone_name, "node_name": node_name,
+                    "txt_record": txt_record.txtdata}
+            )
+            metrics.send('delete_txt_record_deleteerror', 'counter', 1,
+                         metric_tags={'fqdn': fqdn, 'txt_record': txt_record.txtdata})
     zone.publish()
 
 
