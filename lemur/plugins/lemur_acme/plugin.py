@@ -142,9 +142,9 @@ class AcmeHandler(object):
         try:
             orderr = acme_client.finalize_order(order, deadline)
         except AcmeError:
-            sentry.captureException()
+            sentry.captureException(extra={"order_url": order.uri})
             metrics.send('request_certificate_error', 'counter', 1)
-            current_app.logger.error(f"Unable to resolve Acme order: {order}", exc_info=True)
+            current_app.logger.error(f"Unable to resolve Acme order: {order.uri}", exc_info=True)
             raise
 
         pem_certificate = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM,
@@ -289,9 +289,10 @@ class AcmeHandler(object):
                 dns_challenges = authz_record.dns_challenge
                 host_to_validate = self.maybe_remove_wildcard(authz_record.host)
                 host_to_validate = self.maybe_add_extension(host_to_validate, dns_provider_options)
+                dns_provider_plugin = self.get_dns_provider(dns_provider.provider_type)
                 for dns_challenge in dns_challenges:
                     try:
-                        dns_provider.delete_txt_record(
+                        dns_provider_plugin.delete_txt_record(
                             authz_record.change_id,
                             account_number,
                             dns_challenge.validation_domain_name(host_to_validate),

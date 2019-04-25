@@ -10,7 +10,7 @@ from flask import current_app
 
 from retrying import retry
 
-from lemur.extensions import metrics
+from lemur.extensions import metrics, sentry
 from lemur.exceptions import InvalidListener
 from lemur.plugins.lemur_aws.sts import sts_client
 
@@ -149,7 +149,7 @@ def describe_listeners_v2(**kwargs):
 
 
 @sts_client('elb')
-@retry(retry_on_exception=retry_throttled, wait_fixed=2000)
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
 def describe_load_balancer_policies(load_balancer_name, policy_names, **kwargs):
     """
     Fetching all policies currently associated with an ELB.
@@ -157,11 +157,18 @@ def describe_load_balancer_policies(load_balancer_name, policy_names, **kwargs):
     :param load_balancer_name:
     :return:
     """
-    return kwargs['client'].describe_load_balancer_policies(LoadBalancerName=load_balancer_name, PolicyNames=policy_names)
+    try:
+        return kwargs['client'].describe_load_balancer_policies(LoadBalancerName=load_balancer_name,
+                                                                PolicyNames=policy_names)
+    except Exception as e:  # noqa
+        metrics.send('describe_load_balancer_policies_fail', 'counter', 1,
+                     metric_tags={"load_balancer_name": load_balancer_name, "policy_names": policy_names, "error": e})
+        sentry.captureException(extra={"load_balancer_name": load_balancer_name, "policy_names": policy_names})
+        raise
 
 
 @sts_client('elbv2')
-@retry(retry_on_exception=retry_throttled, wait_fixed=2000)
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
 def describe_ssl_policies_v2(policy_names, **kwargs):
     """
     Fetching all policies currently associated with an ELB.
@@ -169,7 +176,13 @@ def describe_ssl_policies_v2(policy_names, **kwargs):
     :param policy_names:
     :return:
     """
-    return kwargs['client'].describe_ssl_policies(Names=policy_names)
+    try:
+        return kwargs['client'].describe_ssl_policies(Names=policy_names)
+    except Exception as e:  # noqa
+        metrics.send('describe_ssl_policies_v2_fail', 'counter', 1,
+                     metric_tags={"policy_names": policy_names, "error": e})
+        sentry.captureException(extra={"policy_names": policy_names})
+        raise
 
 
 @sts_client('elb')
