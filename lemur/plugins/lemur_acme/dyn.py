@@ -64,11 +64,10 @@ def wait_for_dns_change(change_id, account_number=None):
         metrics.send('wait_for_dns_change_fail', 'counter', 1)
         sentry.captureException(
             extra={
-                "fqdn": fqdn, "txt_record": token}
+                "fqdn": str(fqdn), "txt_record": str(token)}
         )
         metrics.send('wait_for_dns_change_error', 'counter', 1,
                      metric_tags={'fqdn': fqdn, 'txt_record': token})
-        raise Exception("Unable to query DNS token for fqdn {}.".format(fqdn))
     return
 
 
@@ -155,8 +154,8 @@ def delete_txt_record(change_id, account_number, domain, token):
             except DynectDeleteError:
                 sentry.captureException(
                     extra={
-                        "fqdn": fqdn, "zone_name": zone_name, "node_name": node_name,
-                        "txt_record": txt_record.txtdata}
+                        "fqdn": str(fqdn), "zone_name": str(zone_name), "node_name": str(node_name),
+                        "txt_record": str(txt_record.txtdata)}
                 )
                 metrics.send('delete_txt_record_deleteerror', 'counter', 1,
                              metric_tags={'fqdn': fqdn, 'txt_record': txt_record.txtdata})
@@ -166,11 +165,11 @@ def delete_txt_record(change_id, account_number, domain, token):
     except DynectUpdateError:
         sentry.captureException(
             extra={
-                "fqdn": fqdn, "zone_name": zone_name, "node_name": node_name,
-                "txt_record": txt_record.txtdata}
+                "fqdn": str(fqdn), "zone_name": str(zone_name), "node_name": str(node_name),
+                "txt_record": str(txt_record.txtdata)}
         )
         metrics.send('delete_txt_record_publish_error', 'counter', 1,
-                     metric_tags={'fqdn': fqdn, 'txt_record': txt_record.txtdata})
+                     metric_tags={'fqdn': str(fqdn), 'txt_record': str(txt_record.txtdata)})
 
 
 def delete_acme_txt_records(domain):
@@ -201,8 +200,8 @@ def delete_acme_txt_records(domain):
         except DynectDeleteError:
             sentry.captureException(
                 extra={
-                    "fqdn": fqdn, "zone_name": zone_name, "node_name": node_name,
-                    "txt_record": txt_record.txtdata}
+                    "fqdn": str(fqdn), "zone_name": str(zone_name), "node_name": str(node_name),
+                    "txt_record": str(txt_record.txtdata)}
             )
             metrics.send('delete_txt_record_deleteerror', 'counter', 1,
                          metric_tags={'fqdn': fqdn, 'txt_record': txt_record.txtdata})
