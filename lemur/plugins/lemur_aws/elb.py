@@ -206,7 +206,8 @@ def describe_load_balancer_policies(load_balancer_name, policy_names, **kwargs):
     except Exception as e:  # noqa
         metrics.send('describe_load_balancer_policies_error', 'counter', 1,
                      metric_tags={"load_balancer_name": load_balancer_name, "policy_names": policy_names, "error": e})
-        sentry.captureException(extra={"load_balancer_name": load_balancer_name, "policy_names": policy_names})
+        sentry.captureException(extra={"load_balancer_name": str(load_balancer_name),
+                                       "policy_names": str(policy_names)})
         raise
 
 
@@ -224,7 +225,7 @@ def describe_ssl_policies_v2(policy_names, **kwargs):
     except Exception as e:  # noqa
         metrics.send('describe_ssl_policies_v2_error', 'counter', 1,
                      metric_tags={"policy_names": policy_names, "error": e})
-        sentry.captureException(extra={"policy_names": policy_names})
+        sentry.captureException(extra={"policy_names": str(policy_names)})
         raise
 
 
