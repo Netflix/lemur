@@ -14,7 +14,7 @@ from cryptography import x509
 from flask import current_app
 
 from lemur.common.utils import get_psuedo_random_string
-from lemur.extensions import metrics
+from lemur.extensions import metrics, sentry
 from lemur.plugins import lemur_verisign as verisign
 from lemur.plugins.bases import IssuerPlugin, SourcePlugin
 
@@ -201,7 +201,13 @@ class VerisignIssuerPlugin(IssuerPlugin):
         current_app.logger.info("Requesting a new verisign certificate: {0}".format(data))
 
         response = self.session.post(url, data=data)
-        cert = handle_response(response.content)['Response']['Certificate']
+        try:
+            cert = handle_response(response.content)['Response']['Certificate']
+        except KeyError:
+            metrics.send('verisign_create_certificate_error', 'counter', 1,
+                         metric_tags={"common_name": issuer_options.get("common_name", "")})
+            sentry.captureException(extra={"common_name": issuer_options.get("common_name", "")})
+            raise Exception(f"Error with Verisign: {response.content}")
         # TODO add external id
         return cert, current_app.config.get('VERISIGN_INTERMEDIATE'), None
 
