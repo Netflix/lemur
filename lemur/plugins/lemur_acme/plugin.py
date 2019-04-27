@@ -77,8 +77,9 @@ class AcmeHandler(object):
         change_ids = []
 
         host_to_validate = self.maybe_remove_wildcard(host)
-        host_to_validate = self.maybe_add_extension(host_to_validate, dns_provider_options)
         dns_challenges = self.find_dns_challenge(host_to_validate, order.authorizations)
+        host_to_validate = self.maybe_add_extension(host_to_validate, dns_provider_options)
+
         if not dns_challenges:
             sentry.captureException()
             metrics.send('start_dns_challenge_error_no_dns_challenges', 'counter', 1)
