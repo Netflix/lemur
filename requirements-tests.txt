@@ -7,11 +7,11 @@
 asn1crypto==0.24.0        # via cryptography
 atomicwrites==1.3.0       # via pytest
 attrs==19.1.0             # via pytest
-aws-sam-translator==1.10.0  # via cfn-lint
+aws-sam-translator==1.11.0  # via cfn-lint
 aws-xray-sdk==2.4.2       # via moto
-boto3==1.9.134            # via aws-sam-translator, moto
+boto3==1.9.138            # via aws-sam-translator, moto
 boto==2.49.0              # via moto
-botocore==1.12.134        # via aws-xray-sdk, boto3, moto, s3transfer
+botocore==1.12.138        # via aws-xray-sdk, boto3, moto, s3transfer
 certifi==2019.3.9         # via requests
 cffi==1.12.3              # via cryptography
 cfn-lint==0.19.1          # via moto
@@ -42,7 +42,7 @@ mock==2.0.0               # via moto
 more-itertools==7.0.0     # via pytest
 moto==1.3.8
 nose==1.3.7
-pbr==5.1.3                # via mock
+pbr==5.2.0                # via mock
 pluggy==0.9.0             # via pytest
 py==1.8.0                 # via pytest
 pyasn1==0.4.5             # via rsa
@@ -55,7 +55,7 @@ python-dateutil==2.8.0    # via botocore, faker, freezegun, moto
 python-jose==3.0.1        # via moto
 pytz==2019.1              # via moto
 pyyaml==5.1
-requests-mock==1.5.2
+requests-mock==1.6.0
 requests==2.21.0          # via cfn-lint, docker, moto, requests-mock, responses
 responses==0.10.6         # via moto
 rsa==4.0                  # via python-jose
