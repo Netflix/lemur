@@ -140,13 +140,6 @@ class AcmeHandler(object):
             res = acme_client.answer_challenge(dns_challenge, response)
             current_app.logger.debug(f"answer_challenge response: {res}")
 
-    def get_dns_challenge(self, authzr):
-        for challenge in authzr.body.challenges:
-            if challenge.chall.typ == 'dns-01':
-                return challenge
-        else:
-            raise Exception("Could not find an HTTP challenge!")
-
     def request_certificate(self, acme_client, authorizations, order):
         for authorization in authorizations:
             for authz in authorization.authz:
@@ -505,7 +498,6 @@ class ACMEIssuerPlugin(IssuerPlugin):
                     "pending_cert": entry["pending_cert"],
                 })
             except (PollError, AcmeError, Exception) as e:
-                raise
                 sentry.captureException()
                 metrics.send('get_ordered_certificates_resolution_error', 'counter', 1)
                 order_url = order.uri
