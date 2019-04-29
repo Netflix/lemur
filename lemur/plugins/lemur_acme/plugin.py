@@ -107,21 +107,38 @@ class AcmeHandler(object):
             metrics.send('complete_dns_challenge_error_no_dnsproviders', 'counter', 1)
             raise Exception("No DNS providers found for domain: {}".format(authz_record.host))
 
-        for dns_challenge in authz_record.dns_challenge:
-            response = dns_challenge.response(acme_client.client.net.key)
+        for dns_provider in dns_providers:
+            # Grab account number (For Route53)
+            dns_provider_options = json.loads(dns_provider.credentials)
+            account_number = dns_provider_options.get("account_id")
+            dns_provider_plugin = self.get_dns_provider(dns_provider.provider_type)
+            for change_id in authz_record.change_id:
+                try:
+                    dns_provider_plugin.wait_for_dns_change(change_id, account_number=account_number)
+                except Exception:
+                    metrics.send('complete_dns_challenge_error', 'counter', 1)
+                    sentry.captureException()
+                    current_app.logger.debug(
+                        f"Unable to resolve DNS challenge for change_id: {change_id}, account_id: "
+                        f"{account_number}", exc_info=True)
+                    raise
 
-            verified = response.simple_verify(
-                dns_challenge.chall,
-                authz_record.host,
-                acme_client.client.net.key.public_key()
-            )
+            for dns_challenge in authz_record.dns_challenge:
+                response = dns_challenge.response(acme_client.client.net.key)
+
+                verified = response.simple_verify(
+                    dns_challenge.chall,
+                    authz_record.host,
+                    acme_client.client.net.key.public_key()
+                )
 
             if not verified:
                 metrics.send('complete_dns_challenge_verification_error', 'counter', 1)
                 raise ValueError("Failed verification")
 
             time.sleep(5)
-            acme_client.answer_challenge(dns_challenge, response)
+            res = acme_client.answer_challenge(dns_challenge, response)
+            current_app.logger.debug(f"answer_challenge response: {res}")
 
     def request_certificate(self, acme_client, authorizations, order):
         for authorization in authorizations:
@@ -132,6 +149,7 @@ class AcmeHandler(object):
 
         try:
             orderr = acme_client.poll_and_finalize(order, deadline)
+
         except (AcmeError, TimeoutError):
             sentry.captureException(extra={"order_url": str(order.uri)})
             metrics.send('request_certificate_error', 'counter', 1)

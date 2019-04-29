@@ -7,7 +7,7 @@
 acme==0.33.1
 alabaster==0.7.12         # via sphinx
 alembic-autogenerate-enums==0.0.2
-alembic==1.0.9
+alembic==1.0.10
 amqp==2.4.2
 aniso8601==6.0.0
 arrow==0.13.1
@@ -17,8 +17,8 @@ babel==2.6.0              # via sphinx
 bcrypt==3.1.6
 billiard==3.6.0.0
 blinker==1.4
-boto3==1.9.134
-botocore==1.12.134
+boto3==1.9.138
+botocore==1.12.138
 celery[redis]==4.3.0
 certifi==2019.3.9
 certsrv==2.1.1
@@ -38,7 +38,7 @@ flask-migrate==2.4.0
 flask-principal==0.4.0
 flask-restful==0.3.7
 flask-script==2.0.6
-flask-sqlalchemy==2.3.2
+flask-sqlalchemy==2.4.0
 flask==1.0.2
 future==0.17.1
 gunicorn==19.9.0
@@ -47,7 +47,7 @@ idna==2.8
 imagesize==1.1.0          # via sphinx
 inflection==0.3.1
 itsdangerous==1.1.0
-javaobj-py3==0.2.4
+javaobj-py3==0.3.0
 jinja2==2.10.1
 jmespath==0.9.4
 josepy==1.1.0
@@ -62,10 +62,10 @@ mock==2.0.0
 ndg-httpsclient==0.5.1
 packaging==19.0           # via sphinx
 paramiko==2.4.2
-pbr==5.1.3
+pbr==5.2.0
 pem==19.1.0
 psycopg2==2.8.2
-pyasn1-modules==0.2.4
+pyasn1-modules==0.2.5
 pyasn1==0.4.5
 pycparser==2.19
 pycryptodomex==3.8.1
