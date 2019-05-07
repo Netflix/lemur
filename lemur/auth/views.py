@@ -113,10 +113,7 @@ def retrieve_user(user_api_url, access_token):
     user_params = dict(access_token=access_token, schema='profile')
 
     # retrieve information about the current user.
-    r = requests.get(
-        user_api_url,
-        params=user_params,
-        headers={'Authorization': 'Bearer {}'.format(access_token)})
+    r = requests.get(user_api_url, params=user_params)
     profile = r.json()
 
     user = user_service.get_by_email(profile['email'])
