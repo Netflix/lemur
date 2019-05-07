@@ -132,13 +132,16 @@ def create_user_roles(profile):
     roles = []
 
     # update their google 'roles'
-    for group in profile['googleGroups']:
-        role = role_service.get_by_name(group)
-        if not role:
-            role = role_service.create(group, description='This is a google group based role created by Lemur', third_party=True)
-        if not role.third_party:
-            role = role_service.set_third_party(role.id, third_party_status=True)
-        roles.append(role)
+    if 'googleGroups' in profile:
+        for group in profile['googleGroups']:
+            role = role_service.get_by_name(group)
+            if not role:
+                role = role_service.create(group, description='This is a google group based role created by Lemur', third_party=True)
+            if not role.third_party:
+                role = role_service.set_third_party(role.id, third_party_status=True)
+            roles.append(role)
+    else:
+        current_app.logger.warning("'googleGroups' not sent by identity provider, no specific roles will assigned to the user.")
 
     role = role_service.get_by_name(profile['email'])
 
