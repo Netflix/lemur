@@ -17,9 +17,120 @@ from flask import current_app
 from lemur.common.defaults import common_name
 from lemur.common.utils import parse_certificate
 from lemur.plugins.bases import DestinationPlugin
+from lemur.plugins.bases import SourcePlugin
 
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
+
+
+class VaultSourcePlugin(SourcePlugin):
+    """ Class for importing certificates from Hashicorp Vault"""
+    title = 'Vault'
+    slug = 'vault-source'
+    description = 'Discovers all certificates in a given path'
+
+    author = 'Christopher Jolley'
+    author_url = 'https://github.com/alwaysjolley/lemur'
+
+    options = [
+        {
+            'name': 'vaultUrl',
+            'type': 'str',
+            'required': True,
+            'validation': '^https?://[a-zA-Z0-9.:-]+$',
+            'helpMessage': 'Valid URL to Hashi Vault instance'
+        },
+        {
+            'name': 'vaultKvApiVersion',
+            'type': 'select',
+            'value': '2',
+            'available': [
+                '1',
+                '2'
+            ],
+            'required': True,
+            'helpMessage': 'Version of the Vault KV API to use'
+        },
+        {
+            'name': 'vaultAuthTokenFile',
+            'type': 'str',
+            'required': True,
+            'validation': '(/[^/]+)+',
+            'helpMessage': 'Must be a valid file path!'
+        },
+        {
+            'name': 'vaultMount',
+            'type': 'str',
+            'required': True,
+            'validation': r'^\S+$',
+            'helpMessage': 'Must be a valid Vault secrets mount name!'
+        },
+        {
+            'name': 'vaultPath',
+            'type': 'str',
+            'required': True,
+            'validation': '^([a-zA-Z0-9_-]+/?)+$',
+            'helpMessage': 'Must be a valid Vault secrets path'
+        },
+        {
+            'name': 'objectName',
+            'type': 'str',
+            'required': True,
+            'validation': '[0-9a-zA-Z:_-]+',
+            'helpMessage': 'Object Name to search'
+        },
+    ]
+
+    def get_certificates(self, options, **kwargs):
+        """Pull certificates from objects in Hashicorp Vault"""
+        data = []
+        cert = []
+        body = ''
+        url = self.get_option('vaultUrl', options)
+        token_file = self.get_option('vaultAuthTokenFile', options)
+        mount = self.get_option('vaultMount', options)
+        path = self.get_option('vaultPath', options)
+        obj_name = self.get_option('objectName', options)
+        api_version = self.get_option('vaultKvApiVersion', options)
+        cert_filter = '-----BEGIN CERTIFICATE-----'
+        cert_delimiter = '-----END CERTIFICATE-----'
+
+        with open(token_file, 'r') as tfile:
+            token = tfile.readline().rstrip('\n')
+
+        client = hvac.Client(url=url, token=token)
+        client.secrets.kv.default_kv_version = api_version
+
+        path = '{0}/{1}'.format(path, obj_name)
+
+        secret = get_secret(client, mount, path)
+        for cname in secret['data']:
+            if 'crt' in secret['data'][cname]:
+                cert = secret['data'][cname]['crt'].split(cert_delimiter + '\n')
+            elif 'pem' in secret['data'][cname]:
+                cert = secret['data'][cname]['pem'].split(cert_delimiter + '\n')
+            else:
+                for key in secret['data'][cname]:
+                    if secret['data'][cname][key].startswith(cert_filter):
+                        cert = secret['data'][cname][key].split(cert_delimiter + '\n')
+                        break
+            body = cert[0] + cert_delimiter
+            if 'chain' in secret['data'][cname]:
+                chain = secret['data'][cname]['chain']
+            elif len(cert) > 1:
+                if cert[1].startswith(cert_filter):
+                    chain = cert[1] + cert_delimiter
+                else:
+                    chain = None
+            else:
+                chain = None
+            data.append({'body': body, 'chain': chain, 'name': cname})
+        return [dict(body=c['body'], chain=c.get('chain'), name=c['name']) for c in data]
+
+    def get_endpoints(self, options, **kwargs):
+        """ Not implemented yet """
+        endpoints = []
+        return endpoints
 
 
 class VaultDestinationPlugin(DestinationPlugin):
@@ -61,7 +172,7 @@ class VaultDestinationPlugin(DestinationPlugin):
             'name': 'vaultMount',
             'type': 'str',
             'required': True,
-            'validation': '^\S+$',
+            'validation': r'^\S+$',
             'helpMessage': 'Must be a valid Vault secrets mount name!'
         },
         {
@@ -85,6 +196,7 @@ class VaultDestinationPlugin(DestinationPlugin):
             'available': [
                 'Nginx',
                 'Apache',
+                'PEM',
                 'no chain'
             ],
             'required': True,
@@ -136,8 +248,8 @@ class VaultDestinationPlugin(DestinationPlugin):
                         "Exception compiling regex filter: invalid filter",
                         exc_info=True)
 
-        with open(token_file, 'r') as file:
-            token = file.readline().rstrip('\n')
+        with open(token_file, 'r') as tfile:
+            token = tfile.readline().rstrip('\n')
 
         client = hvac.Client(url=url, token=token)
         client.secrets.kv.default_kv_version = api_version
@@ -150,14 +262,18 @@ class VaultDestinationPlugin(DestinationPlugin):
         secret = get_secret(client, mount, path)
         secret['data'][cname] = {}
 
-        if bundle == 'Nginx' and cert_chain:
+        if bundle == 'Nginx':
             secret['data'][cname]['crt'] = '{0}\n{1}'.format(body, cert_chain)
-        elif bundle == 'Apache' and cert_chain:
+            secret['data'][cname]['key'] = private_key
+        elif bundle == 'Apache':
             secret['data'][cname]['crt'] = body
             secret['data'][cname]['chain'] = cert_chain
+            secret['data'][cname]['key'] = private_key
+        elif bundle == 'PEM':
+            secret['data'][cname]['pem'] = '{0}\n{1}\n{2}'.format(body, cert_chain, private_key)
         else:
             secret['data'][cname]['crt'] = body
-        secret['data'][cname]['key'] = private_key
+            secret['data'][cname]['key'] = private_key
         if isinstance(san_list, list):
             secret['data'][cname]['san'] = san_list
         try:
@@ -184,7 +300,7 @@ def get_san_list(body):
 
 
 def get_secret(client, mount, path):
-    """ retreiive existing data from mount path and return dictionary """
+    """ retreive existing data from mount path and return dictionary """
     result = {'data': {}}
     try:
         if client.secrets.kv.default_kv_version == '1':
