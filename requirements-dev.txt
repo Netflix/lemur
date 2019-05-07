@@ -11,14 +11,14 @@ cfgv==1.6.0               # via pre-commit
 chardet==3.0.4            # via requests
 docutils==0.14            # via readme-renderer
 flake8==3.5.0
-identify==1.4.1           # via pre-commit
+identify==1.4.2           # via pre-commit
 idna==2.8                 # via requests
 importlib-metadata==0.9   # via pre-commit
 invoke==1.2.0
 mccabe==0.6.1             # via flake8
 nodeenv==1.3.3
 pkginfo==1.5.0.1          # via twine
-pre-commit==1.15.2
+pre-commit==1.16.0
 pycodestyle==2.3.1        # via flake8
 pyflakes==1.6.0           # via flake8
 pygments==2.3.1           # via readme-renderer
@@ -30,7 +30,7 @@ six==1.12.0               # via bleach, cfgv, pre-commit, readme-renderer
 toml==0.10.0              # via pre-commit
 tqdm==4.31.1              # via twine
 twine==1.13.0
-urllib3==1.24.2           # via requests
-virtualenv==16.4.3        # via pre-commit
+urllib3==1.24.3           # via requests
+virtualenv==16.5.0        # via pre-commit
 webencodings==0.5.1       # via bleach
-zipp==0.3.3               # via importlib-metadata
+zipp==0.4.0               # via importlib-metadata

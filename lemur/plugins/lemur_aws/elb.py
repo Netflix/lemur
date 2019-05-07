@@ -21,14 +21,22 @@ def retry_throttled(exception):
     :param exception:
     :return:
     """
+
+    # Log details about the exception
+    try:
+        raise exception
+    except Exception as e:
+        current_app.logger.error("ELB retry_throttled triggered", exc_info=True)
+        metrics.send('elb_retry', 'counter', 1,
+                     metric_tags={"exception": e})
+        sentry.captureException()
+
     if isinstance(exception, botocore.exceptions.ClientError):
         if exception.response['Error']['Code'] == 'LoadBalancerNotFound':
             return False
 
         if exception.response['Error']['Code'] == 'CertificateNotFound':
             return False
-
-    metrics.send('elb_retry', 'counter', 1)
     return True
 
 
@@ -63,16 +71,20 @@ def get_all_elbs(**kwargs):
     :return:
     """
     elbs = []
+    try:
+        while True:
+            response = get_elbs(**kwargs)
 
-    while True:
-        response = get_elbs(**kwargs)
+            elbs += response['LoadBalancerDescriptions']
 
-        elbs += response['LoadBalancerDescriptions']
-
-        if not response.get('NextMarker'):
-            return elbs
-        else:
-            kwargs.update(dict(Marker=response['NextMarker']))
+            if not response.get('NextMarker'):
+                return elbs
+            else:
+                kwargs.update(dict(Marker=response['NextMarker']))
+    except Exception as e:  # noqa
+        metrics.send('get_all_elbs_error', 'counter', 1)
+        sentry.captureException()
+        raise
 
 
 def get_all_elbs_v2(**kwargs):
@@ -84,18 +96,23 @@ def get_all_elbs_v2(**kwargs):
     """
     elbs = []
 
-    while True:
-        response = get_elbs_v2(**kwargs)
-        elbs += response['LoadBalancers']
+    try:
+        while True:
+            response = get_elbs_v2(**kwargs)
+            elbs += response['LoadBalancers']
 
-        if not response.get('NextMarker'):
-            return elbs
-        else:
-            kwargs.update(dict(Marker=response['NextMarker']))
+            if not response.get('NextMarker'):
+                return elbs
+            else:
+                kwargs.update(dict(Marker=response['NextMarker']))
+    except Exception as e:  # noqa
+        metrics.send('get_all_elbs_v2_error', 'counter', 1)
+        sentry.captureException()
+        raise
 
 
 @sts_client('elbv2')
-@retry(retry_on_exception=retry_throttled, wait_fixed=2000)
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
 def get_listener_arn_from_endpoint(endpoint_name, endpoint_port, **kwargs):
     """
     Get a listener ARN from an endpoint.
@@ -103,27 +120,40 @@ def get_listener_arn_from_endpoint(endpoint_name, endpoint_port, **kwargs):
     :param endpoint_port:
     :return:
     """
-    client = kwargs.pop('client')
-    elbs = client.describe_load_balancers(Names=[endpoint_name])
-    for elb in elbs['LoadBalancers']:
-        listeners = client.describe_listeners(LoadBalancerArn=elb['LoadBalancerArn'])
-        for listener in listeners['Listeners']:
-            if listener['Port'] == endpoint_port:
-                return listener['ListenerArn']
+    try:
+        client = kwargs.pop('client')
+        elbs = client.describe_load_balancers(Names=[endpoint_name])
+        for elb in elbs['LoadBalancers']:
+            listeners = client.describe_listeners(LoadBalancerArn=elb['LoadBalancerArn'])
+            for listener in listeners['Listeners']:
+                if listener['Port'] == endpoint_port:
+                    return listener['ListenerArn']
+    except Exception as e:  # noqa
+        metrics.send('get_listener_arn_from_endpoint_error', 'counter', 1,
+                     metric_tags={"error": e, "endpoint_name": endpoint_name, "endpoint_port": endpoint_port})
+        sentry.captureException(extra={"endpoint_name": str(endpoint_name),
+                                       "endpoint_port": str(endpoint_port)})
+        raise
 
 
 @sts_client('elb')
-@retry(retry_on_exception=retry_throttled, wait_fixed=2000)
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
 def get_elbs(**kwargs):
     """
     Fetches one page elb objects for a given account and region.
     """
-    client = kwargs.pop('client')
-    return client.describe_load_balancers(**kwargs)
+    try:
+        client = kwargs.pop('client')
+        return client.describe_load_balancers(**kwargs)
+    except Exception as e:  # noqa
+        metrics.send('get_elbs_error', 'counter', 1,
+                     metric_tags={"error": e})
+        sentry.captureException()
+        raise
 
 
 @sts_client('elbv2')
-@retry(retry_on_exception=retry_throttled, wait_fixed=2000)
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
 def get_elbs_v2(**kwargs):
     """
     Fetches one page of elb objects for a given account and region.
@@ -131,12 +161,18 @@ def get_elbs_v2(**kwargs):
     :param kwargs:
     :return:
     """
-    client = kwargs.pop('client')
-    return client.describe_load_balancers(**kwargs)
+    try:
+        client = kwargs.pop('client')
+        return client.describe_load_balancers(**kwargs)
+    except Exception as e:  # noqa
+        metrics.send('get_elbs_v2_error', 'counter', 1,
+                     metric_tags={"error": e})
+        sentry.captureException()
+        raise
 
 
 @sts_client('elbv2')
-@retry(retry_on_exception=retry_throttled, wait_fixed=2000)
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
 def describe_listeners_v2(**kwargs):
     """
     Fetches one page of listener objects for a given elb arn.
@@ -144,8 +180,14 @@ def describe_listeners_v2(**kwargs):
     :param kwargs:
     :return:
     """
-    client = kwargs.pop('client')
-    return client.describe_listeners(**kwargs)
+    try:
+        client = kwargs.pop('client')
+        return client.describe_listeners(**kwargs)
+    except Exception as e:  # noqa
+        metrics.send('describe_listeners_v2_error', 'counter', 1,
+                     metric_tags={"error": e})
+        sentry.captureException()
+        raise
 
 
 @sts_client('elb')
@@ -157,13 +199,15 @@ def describe_load_balancer_policies(load_balancer_name, policy_names, **kwargs):
     :param load_balancer_name:
     :return:
     """
+
     try:
         return kwargs['client'].describe_load_balancer_policies(LoadBalancerName=load_balancer_name,
                                                                 PolicyNames=policy_names)
     except Exception as e:  # noqa
-        metrics.send('describe_load_balancer_policies_fail', 'counter', 1,
+        metrics.send('describe_load_balancer_policies_error', 'counter', 1,
                      metric_tags={"load_balancer_name": load_balancer_name, "policy_names": policy_names, "error": e})
-        sentry.captureException(extra={"load_balancer_name": load_balancer_name, "policy_names": policy_names})
+        sentry.captureException(extra={"load_balancer_name": str(load_balancer_name),
+                                       "policy_names": str(policy_names)})
         raise
 
 
@@ -179,14 +223,14 @@ def describe_ssl_policies_v2(policy_names, **kwargs):
     try:
         return kwargs['client'].describe_ssl_policies(Names=policy_names)
     except Exception as e:  # noqa
-        metrics.send('describe_ssl_policies_v2_fail', 'counter', 1,
+        metrics.send('describe_ssl_policies_v2_error', 'counter', 1,
                      metric_tags={"policy_names": policy_names, "error": e})
-        sentry.captureException(extra={"policy_names": policy_names})
+        sentry.captureException(extra={"policy_names": str(policy_names)})
         raise
 
 
 @sts_client('elb')
-@retry(retry_on_exception=retry_throttled, wait_fixed=2000)
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
 def describe_load_balancer_types(policies, **kwargs):
     """
     Describe the policies with policy details.
@@ -198,7 +242,7 @@ def describe_load_balancer_types(policies, **kwargs):
 
 
 @sts_client('elb')
-@retry(retry_on_exception=retry_throttled, wait_fixed=2000)
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
 def attach_certificate(name, port, certificate_id, **kwargs):
     """
     Attaches a certificate to a listener, throws exception
@@ -218,7 +262,7 @@ def attach_certificate(name, port, certificate_id, **kwargs):
 
 
 @sts_client('elbv2')
-@retry(retry_on_exception=retry_throttled, wait_fixed=2000)
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
 def attach_certificate_v2(listener_arn, port, certificates, **kwargs):
     """
     Attaches a certificate to a listener, throws exception
