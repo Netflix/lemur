@@ -81,7 +81,6 @@ class VaultSourcePlugin(SourcePlugin):
         },
     ]
 
-
     def get_certificates(self, options, **kwargs):
         """Pull certificates from objects in Hashicorp Vault"""
         data = []
@@ -106,22 +105,21 @@ class VaultSourcePlugin(SourcePlugin):
 
         secret = get_secret(client, mount, path)
         for cname in secret['data']:
-            #current_app.logger.info("Certificate Data: {0}".format(secret['data'][cname]))
             if 'crt' in secret['data'][cname]:
-                cert = secret['data'][cname]['crt'].split(cert_delimiter+'\n')
+                cert = secret['data'][cname]['crt'].split(cert_delimiter + '\n')
             elif 'pem' in secret['data'][cname]:
-                cert = secret['data'][cname]['pem'].split(cert_delimiter+'\n')
+                cert = secret['data'][cname]['pem'].split(cert_delimiter + '\n')
             else:
                 for key in secret['data'][cname]:
                     if secret['data'][cname][key].startswith(cert_filter):
-                        cert = secret['data'][cname][key].split(cert_delimiter+'\n')
+                        cert = secret['data'][cname][key].split(cert_delimiter + '\n')
                         break
-            body = cert[0]+cert_delimiter
+            body = cert[0] + cert_delimiter
             if 'chain' in secret['data'][cname]:
                 chain = secret['data'][cname]['chain']
             elif len(cert) > 1:
                 if cert[1].startswith(cert_filter):
-                    chain = cert[1]+cert_delimiter
+                    chain = cert[1] + cert_delimiter
                 else:
                     chain = None
             else:
@@ -213,7 +211,6 @@ class VaultDestinationPlugin(DestinationPlugin):
             'helpMessage': 'Valid regex filter'
         }
     ]
-
 
     def __init__(self, *args, **kwargs):
         super(VaultDestinationPlugin, self).__init__(*args, **kwargs)
