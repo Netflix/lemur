@@ -66,11 +66,12 @@ def create_txt_record(host, value, account_number):
     return zone_id, r['id']
 
 
-def delete_txt_record(change_id, account_number, host, value):
+def delete_txt_record(change_ids, account_number, host, value):
     cf = cf_api_call()
-    zone_id, record_id = change_id
-    current_app.logger.debug("Removing record with id {0}".format(record_id))
-    try:
-        cf.zones.dns_records.delete(zone_id, record_id)
-    except Exception as e:
-        current_app.logger.error('/zones.dns_records.post: %s' % e)
+    for change_id in change_ids:
+        zone_id, record_id = change_id
+        current_app.logger.debug("Removing record with id {0}".format(record_id))
+        try:
+            cf.zones.dns_records.delete(zone_id, record_id)
+        except Exception as e:
+            current_app.logger.error('/zones.dns_records.post: %s' % e)
