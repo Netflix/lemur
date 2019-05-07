@@ -19,7 +19,7 @@ import OpenSSL.crypto
 import josepy as jose
 from acme import challenges, messages
 from acme.client import BackwardsCompatibleClientV2, ClientNetwork
-from acme.errors import PollError, WildcardUnsupportedError
+from acme.errors import PollError, TimeoutError, WildcardUnsupportedError
 from acme.messages import Error as AcmeError
 from botocore.exceptions import ClientError
 from flask import current_app
@@ -56,7 +56,7 @@ class AcmeHandler(object):
     def find_dns_challenge(self, host, authorizations):
         dns_challenges = []
         for authz in authorizations:
-            if not authz.body.identifier.value == host:
+            if not authz.body.identifier.value.lower() == host.lower():
                 continue
             for combo in authz.body.challenges:
                 if isinstance(combo.chall, challenges.DNS01):
@@ -77,8 +77,13 @@ class AcmeHandler(object):
         change_ids = []
 
         host_to_validate = self.maybe_remove_wildcard(host)
-        host_to_validate = self.maybe_add_extension(host_to_validate, dns_provider_options)
         dns_challenges = self.find_dns_challenge(host_to_validate, order.authorizations)
+        host_to_validate = self.maybe_add_extension(host_to_validate, dns_provider_options)
+
+        if not dns_challenges:
+            sentry.captureException()
+            metrics.send('start_dns_challenge_error_no_dns_challenges', 'counter', 1)
+            raise Exception("Unable to determine DNS challenges from authorizations")
 
         for dns_challenge in dns_challenges:
             change_id = dns_provider.create_txt_record(
@@ -127,24 +132,26 @@ class AcmeHandler(object):
                     acme_client.client.net.key.public_key()
                 )
 
-                if not verified:
-                    metrics.send('complete_dns_challenge_verification_error', 'counter', 1)
-                    raise ValueError("Failed verification")
+            if not verified:
+                metrics.send('complete_dns_challenge_verification_error', 'counter', 1)
+                raise ValueError("Failed verification")
 
-                time.sleep(5)
-                acme_client.answer_challenge(dns_challenge, response)
+            time.sleep(5)
+            res = acme_client.answer_challenge(dns_challenge, response)
+            current_app.logger.debug(f"answer_challenge response: {res}")
 
     def request_certificate(self, acme_client, authorizations, order):
         for authorization in authorizations:
             for authz in authorization.authz:
                 authorization_resource, _ = acme_client.poll(authz)
 
-        deadline = datetime.datetime.now() + datetime.timedelta(seconds=90)
+        deadline = datetime.datetime.now() + datetime.timedelta(seconds=360)
 
         try:
             orderr = acme_client.poll_and_finalize(order, deadline)
-        except AcmeError:
-            sentry.captureException(extra={"order_url": order.uri})
+
+        except (AcmeError, TimeoutError):
+            sentry.captureException(extra={"order_url": str(order.uri)})
             metrics.send('request_certificate_error', 'counter', 1)
             current_app.logger.error(f"Unable to resolve Acme order: {order.uri}", exc_info=True)
             raise
