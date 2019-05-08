@@ -642,7 +642,7 @@ for those plugins.
 
 
 Digicert Issuer Plugin
-~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^
 
 The following configuration properties are required to use the Digicert issuer plugin.
 
@@ -708,6 +708,33 @@ The following configuration properties are required to use the CFSSL issuer plug
     :noindex:
 
         This is the intermediate to be used for your CA chain
+
+.. data:: CFSSL_KEY
+    :noindex:
+
+        This is the hmac key to authenticate to the CFSSL service. (Optional)
+
+
+Hashicorp Vault Source/Destination Plugin
+^^^^^^^^^^^^^^^^^^^^^^
+
+Lemur can import and export certificate data to and from a Hashicorp Vault secrets store. Lemur can connect to a different Vault service per source/destination. 
+
+.. note:: This plugin does not supersede or overlap the 3rd party Vault Issuer plugin.
+
+.. note:: Vault does not have any configuration properties however it does read from a file on disk for a vault access token. The Lemur service account needs read access to this file.
+
+Vault Source
+""""""""""""
+
+The Vault Source Plugin will read from one Vault object location per source defined. There is expected to be one or more certificates defined in each object in Vault.
+
+Vault Destination
+"""""""""""""""""
+
+A Vault destination can be one object in Vault or a directory where all certificates will be stored as their own object by CN.
+
+Vault Destination supports a regex filter to prevent certificates with SAN that do not match the regex filter from being deployed. This is an optional feature per destination defined.
 
 
 AWS Source/Destination Plugin
@@ -1193,6 +1220,26 @@ CFSSL
     Issuer
 :Description:
     Basic support for generating certificates from the private certificate authority CFSSL
+
+Vault
+-----
+
+:Authors:
+    Christopher Jolley <chris@alwaysjolley.com>
+:Type:
+    Source
+:Description:
+    Source plugin imports certificates from Hashicorp Vault secret store.
+
+Vault
+-----
+
+:Authors:
+    Christopher Jolley <chris@alwaysjolley.com>
+:Type:
+    Destination
+:Description:
+    Destination plugin to deploy certificates to Hashicorp Vault secret store.
 
 
 3rd Party Plugins
