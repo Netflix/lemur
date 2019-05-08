@@ -716,7 +716,7 @@ The following configuration properties are required to use the CFSSL issuer plug
 
 
 Hashicorp Vault Source/Destination Plugin
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Lemur can import and export certificate data to and from a Hashicorp Vault secrets store. Lemur can connect to a different Vault service per source/destination. 
 
