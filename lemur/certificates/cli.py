@@ -153,15 +153,11 @@ def request_reissue(certificate, commit):
         status = SUCCESS_METRIC_STATUS
 
     except Exception as e:
-        sentry.captureException()
-        current_app.logger.exception("Error reissuing certificate.", exc_info=True)
-        print(
-            "[!] Failed to reissue certificates. Reason: {}".format(
-                e
-            )
-        )
+        sentry.captureException(extra={"certificate_name": str(certificate.name)})
+        current_app.logger.exception(f"Error reissuing certificate: {certificate.name}", exc_info=True)
+        print(f"[!] Failed to reissue certificate: {certificate.name}. Reason: {e}")
 
-    metrics.send('certificate_reissue', 'counter', 1, metric_tags={'status': status})
+    metrics.send('certificate_reissue', 'counter', 1, metric_tags={'status': status, 'certificate': certificate.name})
 
 
 @manager.option('-e', '--endpoint', dest='endpoint_name', help='Name of the endpoint you wish to rotate.')
@@ -187,35 +183,55 @@ def rotate(endpoint_name, new_certificate_name, old_certificate_name, message, c
         endpoint = validate_endpoint(endpoint_name)
 
         if endpoint and new_cert:
-            print("[+] Rotating endpoint: {0} to certificate {1}".format(endpoint.name, new_cert.name))
+            print(f"[+] Rotating endpoint: {endpoint.name} to certificate {new_cert.name}")
             request_rotation(endpoint, new_cert, message, commit)
 
         elif old_cert and new_cert:
-            print("[+] Rotating all endpoints from {0} to {1}".format(old_cert.name, new_cert.name))
+            print(f"[+] Rotating all endpoints from {old_cert.name} to {new_cert.name}")
 
             for endpoint in old_cert.endpoints:
-                print("[+] Rotating {0}".format(endpoint.name))
+                print(f"[+] Rotating {endpoint.name}")
                 request_rotation(endpoint, new_cert, message, commit)
 
         else:
             print("[+] Rotating all endpoints that have new certificates available")
             for endpoint in endpoint_service.get_all_pending_rotation():
                 if len(endpoint.certificate.replaced) == 1:
-                    print("[+] Rotating {0} to {1}".format(endpoint.name, endpoint.certificate.replaced[0].name))
+                    print(f"[+] Rotating {endpoint.name} to {endpoint.certificate.replaced[0].name}")
                     request_rotation(endpoint, endpoint.certificate.replaced[0], message, commit)
                 else:
-                    metrics.send('endpoint_rotation', 'counter', 1, metric_tags={'status': FAILURE_METRIC_STATUS})
-                    print("[!] Failed to rotate endpoint {0} reason: Multiple replacement certificates found.".format(
-                        endpoint.name
-                    ))
+                    metrics.send('endpoint_rotation', 'counter', 1, metric_tags={
+                        'status': FAILURE_METRIC_STATUS,
+                        "old_certificate_name": str(old_cert),
+                        "new_certificate_name": str(endpoint.certificate.replaced[0].name),
+                        "endpoint_name": str(endpoint.name),
+                        "message": str(message),
+                    })
+                    print(
+                        f"[!] Failed to rotate endpoint {endpoint.name} reason: "
+                        "Multiple replacement certificates found."
+                    )
 
         status = SUCCESS_METRIC_STATUS
         print("[+] Done!")
 
     except Exception as e:
-        sentry.captureException()
+        sentry.captureException(
+            extra={
+                "old_certificate_name": str(old_certificate_name),
+                "new_certificate_name": str(new_certificate_name),
+                "endpoint_name": str(endpoint_name),
+                "message": str(message),
+            })
 
-    metrics.send('endpoint_rotation_job', 'counter', 1, metric_tags={'status': status})
+    metrics.send('endpoint_rotation_job', 'counter', 1, metric_tags={
+        "status": status,
+        "old_certificate_name": str(old_certificate_name),
+        "new_certificate_name": str(new_certificate_name),
+        "endpoint_name": str(endpoint_name),
+        "message": str(message),
+        "endpoint": str(globals().get("endpoint"))
+    })
 
 
 @manager.option('-o', '--old-certificate', dest='old_certificate_name', help='Name of the certificate you wish to reissue.')
