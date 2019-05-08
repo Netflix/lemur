@@ -343,8 +343,9 @@ class Ping(Resource):
         )
 
         jwks_url = current_app.config.get('PING_JWKS_URL')
-        validate_id_token(id_token, args['clientId'], jwks_url)
-
+        error_code = validate_id_token(id_token, args['clientId'], jwks_url)
+        if error_code:
+            return error_code
         user, profile = retrieve_user(user_api_url, access_token)
         roles = create_user_roles(profile)
         update_user(user, profile, roles)
@@ -392,7 +393,9 @@ class OAuth2(Resource):
         )
 
         jwks_url = current_app.config.get('PING_JWKS_URL')
-        validate_id_token(id_token, args['clientId'], jwks_url)
+        error_code = validate_id_token(id_token, args['clientId'], jwks_url)
+        if error_code:
+            return error_code
 
         user, profile = retrieve_user(user_api_url, access_token)
         roles = create_user_roles(profile)
