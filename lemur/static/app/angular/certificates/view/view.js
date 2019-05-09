@@ -14,6 +14,11 @@ angular.module('lemur')
         url: '/certificates/:name',
         templateUrl: '/angular/certificates/view/view.tpl.html',
         controller: 'CertificatesViewController'
+      })
+      .state('certificate_name', {
+        url: '/certificates/name/:name',
+        templateUrl: '/angular/certificates/view/view.tpl.html',
+        controller: 'CertificatesViewController'
       });
   })
 
