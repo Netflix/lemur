@@ -37,6 +37,114 @@ mod = Blueprint('certificates', __name__)
 api = Api(mod)
 
 
+class CertificatesNameQuery(AuthenticatedResource):
+    """ Defines the 'certificates/name' endpoint """
+
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        super(CertificatesNameQuery, self).__init__()
+
+    @validate_schema(None, certificates_output_schema)
+    def get(self, certificate_name):
+        """
+        .. http:get:: /certificates/name/<query>
+
+           The current list of certificates
+
+           **Example request**:
+
+           .. sourcecode:: http
+
+              GET /certificates/name/WILDCARD.test.example.net-SymantecCorporation-20160603-20180112 HTTP/1.1
+              Host: example.com
+              Accept: application/json, text/javascript
+
+           **Example response**:
+
+           .. sourcecode:: http
+
+              HTTP/1.1 200 OK
+              Vary: Accept
+              Content-Type: text/javascript
+
+              {
+                "items": [{
+                    "status": null,
+                    "cn": "*.test.example.net",
+                    "chain": "",
+                    "csr": "-----BEGIN CERTIFICATE REQUEST-----"
+                    "authority": {
+                        "active": true,
+                        "owner": "secure@example.com",
+                        "id": 1,
+                        "description": "verisign test authority",
+                        "name": "verisign"
+                    },
+                    "owner": "joe@example.com",
+                    "serial": "82311058732025924142789179368889309156",
+                    "id": 2288,
+                    "issuer": "SymantecCorporation",
+                    "dateCreated": "2016-06-03T06:09:42.133769+00:00",
+                    "notBefore": "2016-06-03T00:00:00+00:00",
+                    "notAfter": "2018-01-12T23:59:59+00:00",
+                    "destinations": [],
+                    "bits": 2048,
+                    "body": "-----BEGIN CERTIFICATE-----...",
+                    "description": null,
+                    "deleted": null,
+                    "notifications": [{
+                        "id": 1
+                    }],
+                    "signingAlgorithm": "sha256",
+                    "user": {
+                        "username": "jane",
+                        "active": true,
+                        "email": "jane@example.com",
+                        "id": 2
+                    },
+                    "active": true,
+                    "domains": [{
+                        "sensitive": false,
+                        "id": 1090,
+                        "name": "*.test.example.net"
+                    }],
+                    "replaces": [],
+                    "replaced": [],
+                    "name": "WILDCARD.test.example.net-SymantecCorporation-20160603-20180112",
+                    "roles": [{
+                        "id": 464,
+                        "description": "This is a google group based role created by Lemur",
+                        "name": "joe@example.com"
+                    }],
+                    "san": null
+                }],
+                "total": 1
+              }
+
+           :query sortBy: field to sort on
+           :query sortDir: asc or desc
+           :query page: int. default is 1
+           :query filter: key value pair format is k;v
+           :query count: count number. default is 10
+           :reqheader Authorization: OAuth token to authenticate
+           :statuscode 200: no error
+           :statuscode 403: unauthenticated
+
+        """
+        parser = paginated_parser.copy()
+        parser.add_argument('timeRange', type=int, dest='time_range', location='args')
+        parser.add_argument('owner', type=inputs.boolean, location='args')
+        parser.add_argument('id', type=str, location='args')
+        parser.add_argument('active', type=inputs.boolean, location='args')
+        parser.add_argument('destinationId', type=int, dest="destination_id", location='args')
+        parser.add_argument('creator', type=str, location='args')
+        parser.add_argument('show', type=str, location='args')
+
+        args = parser.parse_args()
+        args['user'] = g.user
+        return service.query_name(certificate_name, args)
+
+
 class CertificatesList(AuthenticatedResource):
     """ Defines the 'certificates' endpoint """
 
@@ -1080,6 +1188,7 @@ class CertificateRevoke(AuthenticatedResource):
 
 
 api.add_resource(CertificateRevoke, '/certificates/<int:certificate_id>/revoke', endpoint='revokeCertificate')
+api.add_resource(CertificatesNameQuery, '/certificates/name/<string:certificate_name>', endpoint='certificatesNameQuery')
 api.add_resource(CertificatesList, '/certificates', endpoint='certificates')
 api.add_resource(Certificates, '/certificates/<int:certificate_id>', endpoint='certificate')
 api.add_resource(CertificatesStats, '/certificates/stats', endpoint='certificateStats')

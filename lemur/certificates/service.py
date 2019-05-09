@@ -388,6 +388,19 @@ def render(args):
     return result
 
 
+def query_name(certificate_name, args):
+    """
+    Helper function that queries for a certificate by name
+
+    :param args:
+    :return:
+    """
+    query = database.session_query(Certificate)
+    query = query.filter(Certificate.name == certificate_name)
+    result = database.sort_and_page(query, Certificate, args)
+    return result
+
+
 def create_csr(**csr_config):
     """
     Given a list of domains create the appropriate csr
