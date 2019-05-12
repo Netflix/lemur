@@ -30,6 +30,7 @@ paginated_parser.add_argument('page', type=int, default=1, location='args')
 paginated_parser.add_argument('sortDir', type=str, dest='sort_dir', location='args')
 paginated_parser.add_argument('sortBy', type=str, dest='sort_by', location='args')
 paginated_parser.add_argument('filter', type=str, location='args')
+paginated_parser.add_argument('owner', type=str, location='args')
 
 
 def get_psuedo_random_string():
