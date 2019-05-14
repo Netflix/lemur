@@ -275,6 +275,7 @@ def sync_source(source):
         sync([source])
     except SoftTimeLimitExceeded:
         log_data["message"] = "Error syncing source: Time limit exceeded."
+        current_app.logger.error(log_data)
         sentry.captureException()
         metrics.send('sync_source_timeout', 'counter', 1, metric_tags={'source': source})
         return
