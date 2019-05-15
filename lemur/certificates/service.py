@@ -401,6 +401,30 @@ def query_name(certificate_name, args):
     return result
 
 
+def query_common_name(common_name, args):
+    """
+    Helper function that queries for not expired certificates by common name and owner which have auto-rotate enabled
+
+    :param common_name:
+    :param args:
+    :return:
+    """
+    owner = args.pop('owner')
+    if not owner:
+        owner = '%'
+
+    # only not expired certificates
+    current_time = arrow.utcnow()
+
+    result = Certificate.query.filter(Certificate.cn.ilike(common_name)) \
+        .filter(Certificate.owner.ilike(owner))\
+        .filter(Certificate.not_after >= current_time.format('YYYY-MM-DD')) \
+        .filter(Certificate.rotation.is_(True))\
+        .all()
+
+    return result
+
+
 def create_csr(**csr_config):
     """
     Given a list of domains create the appropriate csr
