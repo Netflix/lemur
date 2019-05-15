@@ -187,7 +187,7 @@ def handle_cis_response(response):
     :return:
     """
     if response.status_code > 399:
-        raise Exception(response.json()['errors'][0]['message'])
+        raise Exception(response.text)
 
     return response.json()
 
