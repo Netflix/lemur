@@ -17,7 +17,7 @@ import time
 
 import OpenSSL.crypto
 import josepy as jose
-from acme import challenges, messages
+from acme import challenges, errors, messages
 from acme.client import BackwardsCompatibleClientV2, ClientNetwork
 from acme.errors import PollError, TimeoutError, WildcardUnsupportedError
 from acme.messages import Error as AcmeError
@@ -155,6 +155,11 @@ class AcmeHandler(object):
             metrics.send('request_certificate_error', 'counter', 1)
             current_app.logger.error(f"Unable to resolve Acme order: {order.uri}", exc_info=True)
             raise
+        except errors.ValidationError:
+            if order.fullchain_pem:
+                orderr = order
+            else:
+                raise
 
         pem_certificate = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM,
                                                           OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM,
