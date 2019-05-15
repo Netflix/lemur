@@ -42,11 +42,11 @@ def fetch(ids):
             final_cert = pending_certificate_service.create_certificate(cert, real_cert, cert.user)
             pending_certificate_service.update(
                 cert.id,
-                resolved=True
+                resolved_cert_id=final_cert.id
             )
             pending_certificate_service.update(
                 cert.id,
-                resolved_cert_id=final_cert.id
+                resolved=True
             )
             # add metrics to metrics extension
             new += 1
@@ -100,11 +100,11 @@ def fetch_all_acme():
             final_cert = pending_certificate_service.create_certificate(pending_cert, real_cert, pending_cert.user)
             pending_certificate_service.update(
                 pending_cert.id,
-                resolved=True
+                resolved_cert_id=final_cert.id
             )
             pending_certificate_service.update(
                 pending_cert.id,
-                resolved_cert_id=final_cert.id
+                resolved=True
             )
             # add metrics to metrics extension
             new += 1
