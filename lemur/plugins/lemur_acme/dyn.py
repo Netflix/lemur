@@ -142,7 +142,6 @@ def delete_txt_record(change_id, account_number, domain, token):
     try:
         all_txt_records = node.get_all_records_by_type('TXT')
     except DynectGetError:
-        sentry.captureException()
         metrics.send('delete_txt_record_geterror', 'counter', 1)
         # No Text Records remain or host is not in the zone anymore because all records have been deleted.
         return

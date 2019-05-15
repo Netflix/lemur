@@ -259,13 +259,13 @@ def upload(pending_certificate_id, **kwargs):
 
     final_cert = create_certificate(pending_cert, partial_cert, pending_cert.user)
 
-    update(
-        pending_cert.id,
-        resolved=True
-    )
     pending_cert_final_result = update(
         pending_cert.id,
         resolved_cert_id=final_cert.id
+    )
+    update(
+        pending_cert.id,
+        resolved=True
     )
 
     return pending_cert_final_result
