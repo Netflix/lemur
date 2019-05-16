@@ -77,11 +77,11 @@ def render(args):
     :return:
     """
     query = database.session_query(Domain)
-    filt = args.pop('filter')
-    certificate_id = args.pop('certificate_id', None)
+    filt = args.pop("filter")
+    certificate_id = args.pop("certificate_id", None)
 
     if filt:
-        terms = filt.split(';')
+        terms = filt.split(";")
         query = database.filter(query, Domain, terms)
 
     if certificate_id:

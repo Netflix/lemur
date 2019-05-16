@@ -16,15 +16,21 @@ from lemur.auth.permissions import AuthorityPermission
 from lemur.certificates import service as certificate_service
 
 from lemur.authorities import service
-from lemur.authorities.schemas import authority_input_schema, authority_output_schema, authorities_output_schema, authority_update_schema
+from lemur.authorities.schemas import (
+    authority_input_schema,
+    authority_output_schema,
+    authorities_output_schema,
+    authority_update_schema,
+)
 
 
-mod = Blueprint('authorities', __name__)
+mod = Blueprint("authorities", __name__)
 api = Api(mod)
 
 
 class AuthoritiesList(AuthenticatedResource):
     """ Defines the 'authorities' endpoint """
+
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(AuthoritiesList, self).__init__()
@@ -107,7 +113,7 @@ class AuthoritiesList(AuthenticatedResource):
         """
         parser = paginated_parser.copy()
         args = parser.parse_args()
-        args['user'] = g.current_user
+        args["user"] = g.current_user
         return service.render(args)
 
     @validate_schema(authority_input_schema, authority_output_schema)
@@ -220,7 +226,7 @@ class AuthoritiesList(AuthenticatedResource):
            :statuscode 403: unauthenticated
            :statuscode 200: no error
         """
-        data['creator'] = g.current_user
+        data["creator"] = g.current_user
         return service.create(**data)
 
 
@@ -388,7 +394,7 @@ class Authorities(AuthenticatedResource):
         authority = service.get(authority_id)
 
         if not authority:
-            return dict(message='Not Found'), 404
+            return dict(message="Not Found"), 404
 
         # all the authority role members should be allowed
         roles = [x.name for x in authority.roles]
@@ -397,10 +403,10 @@ class Authorities(AuthenticatedResource):
         if permission.can():
             return service.update(
                 authority_id,
-                owner=data['owner'],
-                description=data['description'],
-                active=data['active'],
-                roles=data['roles']
+                owner=data["owner"],
+                description=data["description"],
+                active=data["active"],
+                roles=data["roles"],
             )
 
         return dict(message="You are not authorized to update this authority."), 403
@@ -505,10 +511,21 @@ class AuthorityVisualizations(AuthenticatedResource):
         ]}
         """
         authority = service.get(authority_id)
-        return dict(name=authority.name, children=[{"name": c.name} for c in authority.certificates])
+        return dict(
+            name=authority.name,
+            children=[{"name": c.name} for c in authority.certificates],
+        )
 
 
-api.add_resource(AuthoritiesList, '/authorities', endpoint='authorities')
-api.add_resource(Authorities, '/authorities/<int:authority_id>', endpoint='authority')
-api.add_resource(AuthorityVisualizations, '/authorities/<int:authority_id>/visualize', endpoint='authority_visualizations')
-api.add_resource(CertificateAuthority, '/certificates/<int:certificate_id>/authority', endpoint='certificateAuthority')
+api.add_resource(AuthoritiesList, "/authorities", endpoint="authorities")
+api.add_resource(Authorities, "/authorities/<int:authority_id>", endpoint="authority")
+api.add_resource(
+    AuthorityVisualizations,
+    "/authorities/<int:authority_id>/visualize",
+    endpoint="authority_visualizations",
+)
+api.add_resource(
+    CertificateAuthority,
+    "/certificates/<int:certificate_id>/authority",
+    endpoint="certificateAuthority",
+)

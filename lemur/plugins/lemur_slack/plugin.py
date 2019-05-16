@@ -17,102 +17,101 @@ import requests
 
 
 def create_certificate_url(name):
-    return 'https://{hostname}/#/certificates/{name}'.format(
-        hostname=current_app.config.get('LEMUR_HOSTNAME'),
-        name=name
+    return "https://{hostname}/#/certificates/{name}".format(
+        hostname=current_app.config.get("LEMUR_HOSTNAME"), name=name
     )
 
 
 def create_expiration_attachments(certificates):
     attachments = []
     for certificate in certificates:
-        attachments.append({
-            'title': certificate['name'],
-            'title_link': create_certificate_url(certificate['name']),
-            'color': 'danger',
-            'fallback': '',
-            'fields': [
-                {
-                    'title': 'Owner',
-                    'value': certificate['owner'],
-                    'short': True
-                },
-                {
-                    'title': 'Expires',
-                    'value': arrow.get(certificate['validityEnd']).format('dddd, MMMM D, YYYY'),
-                    'short': True
-                },
-                {
-                    'title': 'Endpoints Detected',
-                    'value': len(certificate['endpoints']),
-                    'short': True
-                }
-            ],
-            'text': '',
-            'mrkdwn_in': ['text']
-        })
+        attachments.append(
+            {
+                "title": certificate["name"],
+                "title_link": create_certificate_url(certificate["name"]),
+                "color": "danger",
+                "fallback": "",
+                "fields": [
+                    {"title": "Owner", "value": certificate["owner"], "short": True},
+                    {
+                        "title": "Expires",
+                        "value": arrow.get(certificate["validityEnd"]).format(
+                            "dddd, MMMM D, YYYY"
+                        ),
+                        "short": True,
+                    },
+                    {
+                        "title": "Endpoints Detected",
+                        "value": len(certificate["endpoints"]),
+                        "short": True,
+                    },
+                ],
+                "text": "",
+                "mrkdwn_in": ["text"],
+            }
+        )
     return attachments
 
 
 def create_rotation_attachments(certificate):
     return {
-        'title': certificate['name'],
-        'title_link': create_certificate_url(certificate['name']),
-        'fields': [
+        "title": certificate["name"],
+        "title_link": create_certificate_url(certificate["name"]),
+        "fields": [
             {
+                {"title": "Owner", "value": certificate["owner"], "short": True},
                 {
-                    'title': 'Owner',
-                    'value': certificate['owner'],
-                    'short': True
+                    "title": "Expires",
+                    "value": arrow.get(certificate["validityEnd"]).format(
+                        "dddd, MMMM D, YYYY"
+                    ),
+                    "short": True,
                 },
                 {
-                    'title': 'Expires',
-                    'value': arrow.get(certificate['validityEnd']).format('dddd, MMMM D, YYYY'),
-                    'short': True
+                    "title": "Replaced By",
+                    "value": len(certificate["replaced"][0]["name"]),
+                    "short": True,
                 },
                 {
-                    'title': 'Replaced By',
-                    'value': len(certificate['replaced'][0]['name']),
-                    'short': True
+                    "title": "Endpoints Rotated",
+                    "value": len(certificate["endpoints"]),
+                    "short": True,
                 },
-                {
-                    'title': 'Endpoints Rotated',
-                    'value': len(certificate['endpoints']),
-                    'short': True
-                }
             }
-        ]
+        ],
     }
 
 
 class SlackNotificationPlugin(ExpirationNotificationPlugin):
-    title = 'Slack'
-    slug = 'slack-notification'
-    description = 'Sends notifications to Slack'
+    title = "Slack"
+    slug = "slack-notification"
+    description = "Sends notifications to Slack"
     version = slack.VERSION
 
-    author = 'Harm Weites'
-    author_url = 'https://github.com/netflix/lemur'
+    author = "Harm Weites"
+    author_url = "https://github.com/netflix/lemur"
 
     additional_options = [
         {
-            'name': 'webhook',
-            'type': 'str',
-            'required': True,
-            'validation': '^https:\/\/hooks\.slack\.com\/services\/.+$',
-            'helpMessage': 'The url Slack told you to use for this integration',
-        }, {
-            'name': 'username',
-            'type': 'str',
-            'validation': '^.+$',
-            'helpMessage': 'The great storyteller',
-            'default': 'Lemur'
-        }, {
-            'name': 'recipients',
-            'type': 'str',
-            'required': True,
-            'validation': '^(@|#).+$',
-            'helpMessage': 'Where to send to, either @username or #channel',
+            "name": "webhook",
+            "type": "str",
+            "required": True,
+            "validation": "^https:\/\/hooks\.slack\.com\/services\/.+$",
+            "helpMessage": "The url Slack told you to use for this integration",
+        },
+        {
+            "name": "username",
+            "type": "str",
+            "validation": "^.+$",
+            "helpMessage": "The great storyteller",
+            "default": "Lemur",
+        },
+        {
+            "name": "recipients",
+            "type": "str",
+            "required": True,
+            "validation": "^(@|#).+$",
+            "helpMessage": "Where to send to, either @username or #channel",
         },
     ]
 
@@ -122,25 +121,27 @@ class SlackNotificationPlugin(ExpirationNotificationPlugin):
         `lemur notify`
         """
         attachments = None
-        if notification_type == 'expiration':
+        if notification_type == "expiration":
             attachments = create_expiration_attachments(message)
 
-        elif notification_type == 'rotation':
+        elif notification_type == "rotation":
             attachments = create_rotation_attachments(message)
 
         if not attachments:
-            raise Exception('Unable to create message attachments')
+            raise Exception("Unable to create message attachments")
 
         body = {
-            'text': 'Lemur {0} Notification'.format(notification_type.capitalize()),
-            'attachments': attachments,
-            'channel': self.get_option('recipients', options),
-            'username': self.get_option('username', options)
+            "text": "Lemur {0} Notification".format(notification_type.capitalize()),
+            "attachments": attachments,
+            "channel": self.get_option("recipients", options),
+            "username": self.get_option("username", options),
         }
 
-        r = requests.post(self.get_option('webhook', options), json.dumps(body))
+        r = requests.post(self.get_option("webhook", options), json.dumps(body))
 
         if r.status_code not in [200]:
-            raise Exception('Failed to send message')
+            raise Exception("Failed to send message")
 
-        current_app.logger.error("Slack response: {0} Message Body: {1}".format(r.status_code, body))
+        current_app.logger.error(
+            "Slack response: {0} Message Body: {1}".format(r.status_code, body)
+        )

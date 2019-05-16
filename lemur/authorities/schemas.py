@@ -11,7 +11,13 @@ from marshmallow import fields, validates_schema, pre_load
 from marshmallow import validate
 from marshmallow.exceptions import ValidationError
 
-from lemur.schemas import PluginInputSchema, PluginOutputSchema, ExtensionSchema, AssociatedAuthoritySchema, AssociatedRoleSchema
+from lemur.schemas import (
+    PluginInputSchema,
+    PluginOutputSchema,
+    ExtensionSchema,
+    AssociatedAuthoritySchema,
+    AssociatedRoleSchema,
+)
 from lemur.users.schemas import UserNestedOutputSchema
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
 from lemur.common import validators, missing
@@ -30,21 +36,36 @@ class AuthorityInputSchema(LemurInputSchema):
     validity_years = fields.Integer()
 
     # certificate body fields
-    organizational_unit = fields.String(missing=lambda: current_app.config.get('LEMUR_DEFAULT_ORGANIZATIONAL_UNIT'))
-    organization = fields.String(missing=lambda: current_app.config.get('LEMUR_DEFAULT_ORGANIZATION'))
-    location = fields.String(missing=lambda: current_app.config.get('LEMUR_DEFAULT_LOCATION'))
-    country = fields.String(missing=lambda: current_app.config.get('LEMUR_DEFAULT_COUNTRY'))
-    state = fields.String(missing=lambda: current_app.config.get('LEMUR_DEFAULT_STATE'))
+    organizational_unit = fields.String(
+        missing=lambda: current_app.config.get("LEMUR_DEFAULT_ORGANIZATIONAL_UNIT")
+    )
+    organization = fields.String(
+        missing=lambda: current_app.config.get("LEMUR_DEFAULT_ORGANIZATION")
+    )
+    location = fields.String(
+        missing=lambda: current_app.config.get("LEMUR_DEFAULT_LOCATION")
+    )
+    country = fields.String(
+        missing=lambda: current_app.config.get("LEMUR_DEFAULT_COUNTRY")
+    )
+    state = fields.String(missing=lambda: current_app.config.get("LEMUR_DEFAULT_STATE"))
 
     plugin = fields.Nested(PluginInputSchema)
 
     # signing related options
-    type = fields.String(validate=validate.OneOf(['root', 'subca']), missing='root')
+    type = fields.String(validate=validate.OneOf(["root", "subca"]), missing="root")
     parent = fields.Nested(AssociatedAuthoritySchema)
-    signing_algorithm = fields.String(validate=validate.OneOf(['sha256WithRSA', 'sha1WithRSA']), missing='sha256WithRSA')
-    key_type = fields.String(validate=validate.OneOf(['RSA2048', 'RSA4096']), missing='RSA2048')
+    signing_algorithm = fields.String(
+        validate=validate.OneOf(["sha256WithRSA", "sha1WithRSA"]),
+        missing="sha256WithRSA",
+    )
+    key_type = fields.String(
+        validate=validate.OneOf(["RSA2048", "RSA4096"]), missing="RSA2048"
+    )
     key_name = fields.String()
-    sensitivity = fields.String(validate=validate.OneOf(['medium', 'high']), missing='medium')
+    sensitivity = fields.String(
+        validate=validate.OneOf(["medium", "high"]), missing="medium"
+    )
     serial_number = fields.Integer()
     first_serial = fields.Integer(missing=1)
 
@@ -58,9 +79,11 @@ class AuthorityInputSchema(LemurInputSchema):
 
     @validates_schema
     def validate_subca(self, data):
-        if data['type'] == 'subca':
-            if not data.get('parent'):
-                raise ValidationError("If generating a subca, parent 'authority' must be specified.")
+        if data["type"] == "subca":
+            if not data.get("parent"):
+                raise ValidationError(
+                    "If generating a subca, parent 'authority' must be specified."
+                )
 
     @pre_load
     def ensure_dates(self, data):

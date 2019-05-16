@@ -13,21 +13,24 @@ def test_render(certificate, endpoint):
     new_cert.replaces.append(certificate)
 
     data = {
-        'certificates': [certificate_notification_output_schema.dump(certificate).data],
-        'options': [{'name': 'interval', 'value': 10}, {'name': 'unit', 'value': 'days'}]
+        "certificates": [certificate_notification_output_schema.dump(certificate).data],
+        "options": [
+            {"name": "interval", "value": 10},
+            {"name": "unit", "value": "days"},
+        ],
     }
 
-    template = env.get_template('{}.html'.format('expiration'))
+    template = env.get_template("{}.html".format("expiration"))
 
-    body = template.render(dict(message=data, hostname='lemur.test.example.com'))
+    body = template.render(dict(message=data, hostname="lemur.test.example.com"))
 
-    template = env.get_template('{}.html'.format('rotation'))
+    template = env.get_template("{}.html".format("rotation"))
 
     certificate.endpoints.append(endpoint)
 
     body = template.render(
         dict(
             certificate=certificate_notification_output_schema.dump(certificate).data,
-            hostname='lemur.test.example.com'
+            hostname="lemur.test.example.com",
         )
     )

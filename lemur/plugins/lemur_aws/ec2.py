@@ -8,16 +8,16 @@
 from lemur.plugins.lemur_aws.sts import sts_client
 
 
-@sts_client('ec2')
+@sts_client("ec2")
 def get_regions(**kwargs):
-    regions = kwargs['client'].describe_regions()
-    return [x['RegionName'] for x in regions['Regions']]
+    regions = kwargs["client"].describe_regions()
+    return [x["RegionName"] for x in regions["Regions"]]
 
 
-@sts_client('ec2')
+@sts_client("ec2")
 def get_all_instances(**kwargs):
     """
     Fetches all instance objects for a given account and region.
     """
-    paginator = kwargs['client'].get_paginator('describe_instances')
+    paginator = kwargs["client"].get_paginator("describe_instances")
     return paginator.paginate()

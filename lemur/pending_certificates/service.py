@@ -40,17 +40,18 @@ def get_by_external_id(issuer, external_id):
     """
     if isinstance(external_id, int):
         external_id = str(external_id)
-    return PendingCertificate.query \
-        .filter(PendingCertificate.authority_id == issuer.id) \
-        .filter(PendingCertificate.external_id == external_id) \
+    return (
+        PendingCertificate.query.filter(PendingCertificate.authority_id == issuer.id)
+        .filter(PendingCertificate.external_id == external_id)
         .one_or_none()
+    )
 
 
 def get_by_name(pending_cert_name):
     """
     Retrieve pending certificate by name
     """
-    return database.get(PendingCertificate, pending_cert_name, field='name')
+    return database.get(PendingCertificate, pending_cert_name, field="name")
 
 
 def delete(pending_certificate):
@@ -66,7 +67,9 @@ def get_unresolved_pending_certs():
     Retrieve a list of unresolved pending certs given a list of ids
     Filters out non-existing pending certs
     """
-    query = database.session_query(PendingCertificate).filter(PendingCertificate.resolved.is_(False))
+    query = database.session_query(PendingCertificate).filter(
+        PendingCertificate.resolved.is_(False)
+    )
     return database.find_all(query, PendingCertificate, {}).all()
 
 
@@ -76,7 +79,7 @@ def get_pending_certs(pending_ids):
     Filters out non-existing pending certs
     """
     pending_certs = []
-    if 'all' in pending_ids:
+    if "all" in pending_ids:
         query = database.session_query(PendingCertificate)
         return database.find_all(query, PendingCertificate, {}).all()
     else:
@@ -96,23 +99,25 @@ def create_certificate(pending_certificate, certificate, user):
         user: User that called this function, used as 'creator' of the certificate if it does
               not have an owner
     """
-    certificate['owner'] = pending_certificate.owner
+    certificate["owner"] = pending_certificate.owner
     data, errors = CertificateUploadInputSchema().load(certificate)
     if errors:
-        raise Exception("Unable to create certificate: {reasons}".format(reasons=errors))
+        raise Exception(
+            "Unable to create certificate: {reasons}".format(reasons=errors)
+        )
 
     data.update(vars(pending_certificate))
     # Copy relationships, vars doesn't copy this without explicit fields
-    data['notifications'] = list(pending_certificate.notifications)
-    data['destinations'] = list(pending_certificate.destinations)
-    data['sources'] = list(pending_certificate.sources)
-    data['roles'] = list(pending_certificate.roles)
-    data['replaces'] = list(pending_certificate.replaces)
-    data['rotation_policy'] = pending_certificate.rotation_policy
+    data["notifications"] = list(pending_certificate.notifications)
+    data["destinations"] = list(pending_certificate.destinations)
+    data["sources"] = list(pending_certificate.sources)
+    data["roles"] = list(pending_certificate.roles)
+    data["replaces"] = list(pending_certificate.replaces)
+    data["rotation_policy"] = pending_certificate.rotation_policy
 
     # Replace external id and chain with the one fetched from source
-    data['external_id'] = certificate['external_id']
-    data['chain'] = certificate['chain']
+    data["external_id"] = certificate["external_id"]
+    data["chain"] = certificate["chain"]
     creator = user_service.get_by_email(pending_certificate.owner)
     if not creator:
         # Owner of the pending certificate is not the creator, so use the current user who called
@@ -121,8 +126,8 @@ def create_certificate(pending_certificate, certificate, user):
 
     if pending_certificate.rename:
         # If generating name from certificate, remove the one from pending certificate
-        del data['name']
-    data['creator'] = creator
+        del data["name"]
+    data["creator"] = creator
 
     cert = certificate_service.import_certificate(**data)
     database.update(cert)
@@ -159,75 +164,91 @@ def cancel(pending_certificate, **kwargs):
     """
     plugin = plugins.get(pending_certificate.authority.plugin_name)
     plugin.cancel_ordered_certificate(pending_certificate, **kwargs)
-    pending_certificate.status = 'Cancelled'
+    pending_certificate.status = "Cancelled"
     database.update(pending_certificate)
     return pending_certificate
 
 
 def render(args):
     query = database.session_query(PendingCertificate)
-    time_range = args.pop('time_range')
-    destination_id = args.pop('destination_id')
-    notification_id = args.pop('notification_id', None)
-    show = args.pop('show')
+    time_range = args.pop("time_range")
+    destination_id = args.pop("destination_id")
+    notification_id = args.pop("notification_id", None)
+    show = args.pop("show")
     # owner = args.pop('owner')
     # creator = args.pop('creator')  # TODO we should enabling filtering by owner
 
-    filt = args.pop('filter')
+    filt = args.pop("filter")
 
     if filt:
-        terms = filt.split(';')
+        terms = filt.split(";")
 
-        if 'issuer' in terms:
+        if "issuer" in terms:
             # we can't rely on issuer being correct in the cert directly so we combine queries
-            sub_query = database.session_query(Authority.id) \
-                .filter(Authority.name.ilike('%{0}%'.format(terms[1]))) \
+            sub_query = (
+                database.session_query(Authority.id)
+                .filter(Authority.name.ilike("%{0}%".format(terms[1])))
                 .subquery()
+            )
 
             query = query.filter(
                 or_(
-                    PendingCertificate.issuer.ilike('%{0}%'.format(terms[1])),
-                    PendingCertificate.authority_id.in_(sub_query)
+                    PendingCertificate.issuer.ilike("%{0}%".format(terms[1])),
+                    PendingCertificate.authority_id.in_(sub_query),
                 )
             )
 
-        elif 'destination' in terms:
-            query = query.filter(PendingCertificate.destinations.any(Destination.id == terms[1]))
-        elif 'notify' in filt:
+        elif "destination" in terms:
+            query = query.filter(
+                PendingCertificate.destinations.any(Destination.id == terms[1])
+            )
+        elif "notify" in filt:
             query = query.filter(PendingCertificate.notify == truthiness(terms[1]))
-        elif 'active' in filt:
+        elif "active" in filt:
             query = query.filter(PendingCertificate.active == truthiness(terms[1]))
-        elif 'cn' in terms:
+        elif "cn" in terms:
             query = query.filter(
                 or_(
-                    PendingCertificate.cn.ilike('%{0}%'.format(terms[1])),
-                    PendingCertificate.domains.any(Domain.name.ilike('%{0}%'.format(terms[1])))
+                    PendingCertificate.cn.ilike("%{0}%".format(terms[1])),
+                    PendingCertificate.domains.any(
+                        Domain.name.ilike("%{0}%".format(terms[1]))
+                    ),
                 )
             )
-        elif 'id' in terms:
+        elif "id" in terms:
             query = query.filter(PendingCertificate.id == cast(terms[1], Integer))
         else:
             query = database.filter(query, PendingCertificate, terms)
 
     if show:
-        sub_query = database.session_query(Role.name).filter(Role.user_id == args['user'].id).subquery()
+        sub_query = (
+            database.session_query(Role.name)
+            .filter(Role.user_id == args["user"].id)
+            .subquery()
+        )
         query = query.filter(
             or_(
-                PendingCertificate.user_id == args['user'].id,
-                PendingCertificate.owner.in_(sub_query)
+                PendingCertificate.user_id == args["user"].id,
+                PendingCertificate.owner.in_(sub_query),
             )
         )
 
     if destination_id:
-        query = query.filter(PendingCertificate.destinations.any(Destination.id == destination_id))
+        query = query.filter(
+            PendingCertificate.destinations.any(Destination.id == destination_id)
+        )
 
     if notification_id:
-        query = query.filter(PendingCertificate.notifications.any(Notification.id == notification_id))
+        query = query.filter(
+            PendingCertificate.notifications.any(Notification.id == notification_id)
+        )
 
     if time_range:
-        to = arrow.now().replace(weeks=+time_range).format('YYYY-MM-DD')
-        now = arrow.now().format('YYYY-MM-DD')
-        query = query.filter(PendingCertificate.not_after <= to).filter(PendingCertificate.not_after >= now)
+        to = arrow.now().replace(weeks=+time_range).format("YYYY-MM-DD")
+        now = arrow.now().format("YYYY-MM-DD")
+        query = query.filter(PendingCertificate.not_after <= to).filter(
+            PendingCertificate.not_after >= now
+        )
 
     # Only show unresolved certificates in the UI
     query = query.filter(PendingCertificate.resolved.is_(False))
@@ -242,30 +263,26 @@ def upload(pending_certificate_id, **kwargs):
     """
     pending_cert = get(pending_certificate_id)
     partial_cert = kwargs
-    uploaded_chain = partial_cert['chain']
+    uploaded_chain = partial_cert["chain"]
 
     authority = authorities_service.get(pending_cert.authority.id)
 
     # Construct the chain for cert validation
     if uploaded_chain:
-        chain = uploaded_chain + '\n' + authority.authority_certificate.body
+        chain = uploaded_chain + "\n" + authority.authority_certificate.body
     else:
         chain = authority.authority_certificate.body
 
     parsed_chain = parse_cert_chain(chain)
 
     # Check that the certificate is actually signed by the CA to avoid incorrect cert pasting
-    validators.verify_cert_chain([parse_certificate(partial_cert['body'])] + parsed_chain)
+    validators.verify_cert_chain(
+        [parse_certificate(partial_cert["body"])] + parsed_chain
+    )
 
     final_cert = create_certificate(pending_cert, partial_cert, pending_cert.user)
 
-    pending_cert_final_result = update(
-        pending_cert.id,
-        resolved_cert_id=final_cert.id
-    )
-    update(
-        pending_cert.id,
-        resolved=True
-    )
+    pending_cert_final_result = update(pending_cert.id, resolved_cert_id=final_cert.id)
+    update(pending_cert.id, resolved=True)
 
     return pending_cert_final_result

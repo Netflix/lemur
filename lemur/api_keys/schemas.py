@@ -13,12 +13,18 @@ from lemur.users.schemas import UserNestedOutputSchema, UserInputSchema
 
 
 def current_user_id():
-    return {'id': g.current_user.id, 'email': g.current_user.email, 'username': g.current_user.username}
+    return {
+        "id": g.current_user.id,
+        "email": g.current_user.email,
+        "username": g.current_user.username,
+    }
 
 
 class ApiKeyInputSchema(LemurInputSchema):
     name = fields.String(required=False)
-    user = fields.Nested(UserInputSchema, missing=current_user_id, default=current_user_id)
+    user = fields.Nested(
+        UserInputSchema, missing=current_user_id, default=current_user_id
+    )
     ttl = fields.Integer()
 
 

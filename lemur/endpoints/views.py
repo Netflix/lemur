@@ -16,12 +16,13 @@ from lemur.endpoints import service
 from lemur.endpoints.schemas import endpoint_output_schema, endpoints_output_schema
 
 
-mod = Blueprint('endpoints', __name__)
+mod = Blueprint("endpoints", __name__)
 api = Api(mod)
 
 
 class EndpointsList(AuthenticatedResource):
     """ Defines the 'endpoints' endpoint """
+
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(EndpointsList, self).__init__()
@@ -63,7 +64,7 @@ class EndpointsList(AuthenticatedResource):
         """
         parser = paginated_parser.copy()
         args = parser.parse_args()
-        args['user'] = g.current_user
+        args["user"] = g.current_user
         return service.render(args)
 
 
@@ -103,5 +104,5 @@ class Endpoints(AuthenticatedResource):
         return service.get(endpoint_id)
 
 
-api.add_resource(EndpointsList, '/endpoints', endpoint='endpoints')
-api.add_resource(Endpoints, '/endpoints/<int:endpoint_id>', endpoint='endpoint')
+api.add_resource(EndpointsList, "/endpoints", endpoint="endpoints")
+api.add_resource(Endpoints, "/endpoints/<int:endpoint_id>", endpoint="endpoint")

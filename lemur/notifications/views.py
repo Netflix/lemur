@@ -9,7 +9,11 @@
 from flask import Blueprint
 from flask_restful import Api, reqparse, inputs
 from lemur.notifications import service
-from lemur.notifications.schemas import notification_input_schema, notification_output_schema, notifications_output_schema
+from lemur.notifications.schemas import (
+    notification_input_schema,
+    notification_output_schema,
+    notifications_output_schema,
+)
 
 from lemur.auth.service import AuthenticatedResource
 from lemur.common.utils import paginated_parser
@@ -17,12 +21,13 @@ from lemur.common.utils import paginated_parser
 from lemur.common.schema import validate_schema
 
 
-mod = Blueprint('notifications', __name__)
+mod = Blueprint("notifications", __name__)
 api = Api(mod)
 
 
 class NotificationsList(AuthenticatedResource):
     """ Defines the 'notifications' endpoint """
+
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(NotificationsList, self).__init__()
@@ -103,7 +108,7 @@ class NotificationsList(AuthenticatedResource):
            :statuscode 200: no error
         """
         parser = paginated_parser.copy()
-        parser.add_argument('active', type=inputs.boolean, location='args')
+        parser.add_argument("active", type=inputs.boolean, location="args")
         args = parser.parse_args()
         return service.render(args)
 
@@ -215,11 +220,11 @@ class NotificationsList(AuthenticatedResource):
            :statuscode 200: no error
         """
         return service.create(
-            data['label'],
-            data['plugin']['slug'],
-            data['plugin']['plugin_options'],
-            data['description'],
-            data['certificates']
+            data["label"],
+            data["plugin"]["slug"],
+            data["plugin"]["plugin_options"],
+            data["description"],
+            data["certificates"],
         )
 
 
@@ -334,20 +339,21 @@ class Notifications(AuthenticatedResource):
         """
         return service.update(
             notification_id,
-            data['label'],
-            data['plugin']['plugin_options'],
-            data['description'],
-            data['active'],
-            data['certificates']
+            data["label"],
+            data["plugin"]["plugin_options"],
+            data["description"],
+            data["active"],
+            data["certificates"],
         )
 
     def delete(self, notification_id):
         service.delete(notification_id)
-        return {'result': True}
+        return {"result": True}
 
 
 class CertificateNotifications(AuthenticatedResource):
     """ Defines the 'certificate/<int:certificate_id/notifications'' endpoint """
+
     def __init__(self):
         super(CertificateNotifications, self).__init__()
 
@@ -426,10 +432,15 @@ class CertificateNotifications(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
-        return service.render({'certificate_id': certificate_id})
+        return service.render({"certificate_id": certificate_id})
 
 
-api.add_resource(NotificationsList, '/notifications', endpoint='notifications')
-api.add_resource(Notifications, '/notifications/<int:notification_id>', endpoint='notification')
-api.add_resource(CertificateNotifications, '/certificates/<int:certificate_id>/notifications',
-                 endpoint='certificateNotifications')
+api.add_resource(NotificationsList, "/notifications", endpoint="notifications")
+api.add_resource(
+    Notifications, "/notifications/<int:notification_id>", endpoint="notification"
+)
+api.add_resource(
+    CertificateNotifications,
+    "/certificates/<int:certificate_id>/notifications",
+    endpoint="certificateNotifications",
+)

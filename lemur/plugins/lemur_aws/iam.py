@@ -21,10 +21,10 @@ def retry_throttled(exception):
     :return:
     """
     if isinstance(exception, botocore.exceptions.ClientError):
-        if exception.response['Error']['Code'] == 'NoSuchEntity':
+        if exception.response["Error"]["Code"] == "NoSuchEntity":
             return False
 
-    metrics.send('iam_retry', 'counter', 1)
+    metrics.send("iam_retry", "counter", 1)
     return True
 
 
@@ -47,11 +47,11 @@ def create_arn_from_cert(account_number, region, certificate_name):
     :return:
     """
     return "arn:aws:iam::{account_number}:server-certificate/{certificate_name}".format(
-        account_number=account_number,
-        certificate_name=certificate_name)
+        account_number=account_number, certificate_name=certificate_name
+    )
 
 
-@sts_client('iam')
+@sts_client("iam")
 @retry(retry_on_exception=retry_throttled, wait_fixed=2000)
 def upload_cert(name, body, private_key, path, cert_chain=None, **kwargs):
     """
@@ -65,12 +65,12 @@ def upload_cert(name, body, private_key, path, cert_chain=None, **kwargs):
     :return:
     """
     assert isinstance(private_key, str)
-    client = kwargs.pop('client')
+    client = kwargs.pop("client")
 
-    if not path or path == '/':
-        path = '/'
+    if not path or path == "/":
+        path = "/"
     else:
-        name = name + '-' + path.strip('/')
+        name = name + "-" + path.strip("/")
 
     try:
         if cert_chain:
@@ -79,21 +79,21 @@ def upload_cert(name, body, private_key, path, cert_chain=None, **kwargs):
                 ServerCertificateName=name,
                 CertificateBody=str(body),
                 PrivateKey=str(private_key),
-                CertificateChain=str(cert_chain)
+                CertificateChain=str(cert_chain),
             )
         else:
             return client.upload_server_certificate(
                 Path=path,
                 ServerCertificateName=name,
                 CertificateBody=str(body),
-                PrivateKey=str(private_key)
+                PrivateKey=str(private_key),
             )
     except botocore.exceptions.ClientError as e:
-        if e.response['Error']['Code'] != 'EntityAlreadyExists':
+        if e.response["Error"]["Code"] != "EntityAlreadyExists":
             raise e
 
 
-@sts_client('iam')
+@sts_client("iam")
 @retry(retry_on_exception=retry_throttled, wait_fixed=2000)
 def delete_cert(cert_name, **kwargs):
     """
@@ -102,15 +102,15 @@ def delete_cert(cert_name, **kwargs):
     :param cert_name:
     :return:
     """
-    client = kwargs.pop('client')
+    client = kwargs.pop("client")
     try:
         client.delete_server_certificate(ServerCertificateName=cert_name)
     except botocore.exceptions.ClientError as e:
-        if e.response['Error']['Code'] != 'NoSuchEntity':
+        if e.response["Error"]["Code"] != "NoSuchEntity":
             raise e
 
 
-@sts_client('iam')
+@sts_client("iam")
 @retry(retry_on_exception=retry_throttled, wait_fixed=2000)
 def get_certificate(name, **kwargs):
     """
@@ -118,13 +118,13 @@ def get_certificate(name, **kwargs):
 
     :return:
     """
-    client = kwargs.pop('client')
-    return client.get_server_certificate(
-        ServerCertificateName=name
-    )['ServerCertificate']
+    client = kwargs.pop("client")
+    return client.get_server_certificate(ServerCertificateName=name)[
+        "ServerCertificate"
+    ]
 
 
-@sts_client('iam')
+@sts_client("iam")
 @retry(retry_on_exception=retry_throttled, wait_fixed=2000)
 def get_certificates(**kwargs):
     """
@@ -132,7 +132,7 @@ def get_certificates(**kwargs):
     :param kwargs:
     :return:
     """
-    client = kwargs.pop('client')
+    client = kwargs.pop("client")
     return client.list_server_certificates(**kwargs)
 
 
@@ -141,16 +141,20 @@ def get_all_certificates(**kwargs):
     Use STS to fetch all of the SSL certificates from a given account
     """
     certificates = []
-    account_number = kwargs.get('account_number')
+    account_number = kwargs.get("account_number")
 
     while True:
         response = get_certificates(**kwargs)
-        metadata = response['ServerCertificateMetadataList']
+        metadata = response["ServerCertificateMetadataList"]
 
         for m in metadata:
-            certificates.append(get_certificate(m['ServerCertificateName'], account_number=account_number))
+            certificates.append(
+                get_certificate(
+                    m["ServerCertificateName"], account_number=account_number
+                )
+            )
 
-        if not response.get('Marker'):
+        if not response.get("Marker"):
             return certificates
         else:
-            kwargs.update(dict(Marker=response['Marker']))
+            kwargs.update(dict(Marker=response["Marker"]))
