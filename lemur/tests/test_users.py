@@ -4,16 +4,20 @@ import pytest
 
 from lemur.tests.factories import UserFactory, RoleFactory
 from lemur.users.views import *  # noqa
-from .vectors import VALID_ADMIN_API_TOKEN, VALID_ADMIN_HEADER_TOKEN, VALID_USER_HEADER_TOKEN
+from .vectors import (
+    VALID_ADMIN_API_TOKEN,
+    VALID_ADMIN_HEADER_TOKEN,
+    VALID_USER_HEADER_TOKEN,
+)
 
 
 def test_user_input_schema(client):
     from lemur.users.schemas import UserInputSchema
 
     input_data = {
-        'username': 'example',
-        'password': '1233432',
-        'email': 'example@example.com'
+        "username": "example",
+        "password": "1233432",
+        "email": "example@example.com",
     }
 
     data, errors = UserInputSchema().load(input_data)
@@ -21,104 +25,156 @@ def test_user_input_schema(client):
     assert not errors
 
 
-@pytest.mark.parametrize("token,status", [
-    (VALID_USER_HEADER_TOKEN, 200),
-    (VALID_ADMIN_HEADER_TOKEN, 200),
-    (VALID_ADMIN_API_TOKEN, 200),
-    ('', 401)
-])
+@pytest.mark.parametrize(
+    "token,status",
+    [
+        (VALID_USER_HEADER_TOKEN, 200),
+        (VALID_ADMIN_HEADER_TOKEN, 200),
+        (VALID_ADMIN_API_TOKEN, 200),
+        ("", 401),
+    ],
+)
 def test_user_get(client, token, status):
-    assert client.get(api.url_for(Users, user_id=1), headers=token).status_code == status
+    assert (
+        client.get(api.url_for(Users, user_id=1), headers=token).status_code == status
+    )
 
 
-@pytest.mark.parametrize("token,status", [
-    (VALID_USER_HEADER_TOKEN, 405),
-    (VALID_ADMIN_HEADER_TOKEN, 405),
-    (VALID_ADMIN_API_TOKEN, 405),
-    ('', 405)
-])
+@pytest.mark.parametrize(
+    "token,status",
+    [
+        (VALID_USER_HEADER_TOKEN, 405),
+        (VALID_ADMIN_HEADER_TOKEN, 405),
+        (VALID_ADMIN_API_TOKEN, 405),
+        ("", 405),
+    ],
+)
 def test_user_post_(client, token, status):
-    assert client.post(api.url_for(Users, user_id=1), data={}, headers=token).status_code == status
+    assert (
+        client.post(api.url_for(Users, user_id=1), data={}, headers=token).status_code
+        == status
+    )
 
 
-@pytest.mark.parametrize("token,status", [
-    (VALID_USER_HEADER_TOKEN, 403),
-    (VALID_ADMIN_HEADER_TOKEN, 400),
-    (VALID_ADMIN_API_TOKEN, 400),
-    ('', 401)
-])
+@pytest.mark.parametrize(
+    "token,status",
+    [
+        (VALID_USER_HEADER_TOKEN, 403),
+        (VALID_ADMIN_HEADER_TOKEN, 400),
+        (VALID_ADMIN_API_TOKEN, 400),
+        ("", 401),
+    ],
+)
 def test_user_put(client, token, status):
-    assert client.put(api.url_for(Users, user_id=1), data={}, headers=token).status_code == status
+    assert (
+        client.put(api.url_for(Users, user_id=1), data={}, headers=token).status_code
+        == status
+    )
 
 
-@pytest.mark.parametrize("token,status", [
-    (VALID_USER_HEADER_TOKEN, 405),
-    (VALID_ADMIN_HEADER_TOKEN, 405),
-    (VALID_ADMIN_API_TOKEN, 405),
-    ('', 405)
-])
+@pytest.mark.parametrize(
+    "token,status",
+    [
+        (VALID_USER_HEADER_TOKEN, 405),
+        (VALID_ADMIN_HEADER_TOKEN, 405),
+        (VALID_ADMIN_API_TOKEN, 405),
+        ("", 405),
+    ],
+)
 def test_user_delete(client, token, status):
-    assert client.delete(api.url_for(Users, user_id=1), headers=token).status_code == status
+    assert (
+        client.delete(api.url_for(Users, user_id=1), headers=token).status_code
+        == status
+    )
 
 
-@pytest.mark.parametrize("token,status", [
-    (VALID_USER_HEADER_TOKEN, 405),
-    (VALID_ADMIN_HEADER_TOKEN, 405),
-    (VALID_ADMIN_API_TOKEN, 405),
-    ('', 405)
-])
+@pytest.mark.parametrize(
+    "token,status",
+    [
+        (VALID_USER_HEADER_TOKEN, 405),
+        (VALID_ADMIN_HEADER_TOKEN, 405),
+        (VALID_ADMIN_API_TOKEN, 405),
+        ("", 405),
+    ],
+)
 def test_user_patch(client, token, status):
-    assert client.patch(api.url_for(Users, user_id=1), data={}, headers=token).status_code == status
+    assert (
+        client.patch(api.url_for(Users, user_id=1), data={}, headers=token).status_code
+        == status
+    )
 
 
-@pytest.mark.parametrize("token,status", [
-    (VALID_USER_HEADER_TOKEN, 403),
-    (VALID_ADMIN_HEADER_TOKEN, 400),
-    (VALID_ADMIN_API_TOKEN, 400),
-    ('', 401)
-])
+@pytest.mark.parametrize(
+    "token,status",
+    [
+        (VALID_USER_HEADER_TOKEN, 403),
+        (VALID_ADMIN_HEADER_TOKEN, 400),
+        (VALID_ADMIN_API_TOKEN, 400),
+        ("", 401),
+    ],
+)
 def test_user_list_post_(client, token, status):
-    assert client.post(api.url_for(UsersList), data={}, headers=token).status_code == status
+    assert (
+        client.post(api.url_for(UsersList), data={}, headers=token).status_code
+        == status
+    )
 
 
-@pytest.mark.parametrize("token,status", [
-    (VALID_USER_HEADER_TOKEN, 200),
-    (VALID_ADMIN_HEADER_TOKEN, 200),
-    (VALID_ADMIN_API_TOKEN, 200),
-    ('', 401)
-])
+@pytest.mark.parametrize(
+    "token,status",
+    [
+        (VALID_USER_HEADER_TOKEN, 200),
+        (VALID_ADMIN_HEADER_TOKEN, 200),
+        (VALID_ADMIN_API_TOKEN, 200),
+        ("", 401),
+    ],
+)
 def test_user_list_get(client, token, status):
     assert client.get(api.url_for(UsersList), headers=token).status_code == status
 
 
-@pytest.mark.parametrize("token,status", [
-    (VALID_USER_HEADER_TOKEN, 405),
-    (VALID_ADMIN_HEADER_TOKEN, 405),
-    (VALID_ADMIN_API_TOKEN, 405),
-    ('', 405)
-])
+@pytest.mark.parametrize(
+    "token,status",
+    [
+        (VALID_USER_HEADER_TOKEN, 405),
+        (VALID_ADMIN_HEADER_TOKEN, 405),
+        (VALID_ADMIN_API_TOKEN, 405),
+        ("", 405),
+    ],
+)
 def test_user_list_delete(client, token, status):
     assert client.delete(api.url_for(UsersList), headers=token).status_code == status
 
 
-@pytest.mark.parametrize("token,status", [
-    (VALID_USER_HEADER_TOKEN, 405),
-    (VALID_ADMIN_HEADER_TOKEN, 405),
-    (VALID_ADMIN_API_TOKEN, 405),
-    ('', 405)
-])
+@pytest.mark.parametrize(
+    "token,status",
+    [
+        (VALID_USER_HEADER_TOKEN, 405),
+        (VALID_ADMIN_HEADER_TOKEN, 405),
+        (VALID_ADMIN_API_TOKEN, 405),
+        ("", 405),
+    ],
+)
 def test_user_list_patch(client, token, status):
-    assert client.patch(api.url_for(UsersList), data={}, headers=token).status_code == status
+    assert (
+        client.patch(api.url_for(UsersList), data={}, headers=token).status_code
+        == status
+    )
 
 
 def test_sensitive_filter(client):
-    resp = client.get(api.url_for(UsersList) + '?filter=password;a', headers=VALID_ADMIN_HEADER_TOKEN)
-    assert "'password' is not sortable or filterable" in resp.json['message']
+    resp = client.get(
+        api.url_for(UsersList) + "?filter=password;a", headers=VALID_ADMIN_HEADER_TOKEN
+    )
+    assert "'password' is not sortable or filterable" in resp.json["message"]
 
 
 def test_sensitive_sort(client):
-    resp = client.get(api.url_for(UsersList) + '?sortBy=password&sortDir=asc', headers=VALID_ADMIN_HEADER_TOKEN)
-    assert "'password' is not sortable or filterable" in resp.json['message']
+    resp = client.get(
+        api.url_for(UsersList) + "?sortBy=password&sortDir=asc",
+        headers=VALID_ADMIN_HEADER_TOKEN,
+    )
+    assert "'password' is not sortable or filterable" in resp.json["message"]
 
 
 def test_user_role_changes(client, session):
@@ -128,25 +184,30 @@ def test_user_role_changes(client, session):
     session.flush()
 
     data = {
-        'active': True,
-        'id': user.id,
-        'username': user.username,
-        'email': user.email,
-        'roles': [
-            {'id': role1.id},
-            {'id': role2.id},
-        ],
+        "active": True,
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "roles": [{"id": role1.id}, {"id": role2.id}],
     }
 
     # PUT two roles
-    resp = client.put(api.url_for(Users, user_id=user.id), data=json.dumps(data), headers=VALID_ADMIN_HEADER_TOKEN)
+    resp = client.put(
+        api.url_for(Users, user_id=user.id),
+        data=json.dumps(data),
+        headers=VALID_ADMIN_HEADER_TOKEN,
+    )
     assert resp.status_code == 200
-    assert len(resp.json['roles']) == 2
+    assert len(resp.json["roles"]) == 2
     assert set(user.roles) == {role1, role2}
 
     # Remove one role and PUT again
-    del data['roles'][1]
-    resp = client.put(api.url_for(Users, user_id=user.id), data=json.dumps(data), headers=VALID_ADMIN_HEADER_TOKEN)
+    del data["roles"][1]
+    resp = client.put(
+        api.url_for(Users, user_id=user.id),
+        data=json.dumps(data),
+        headers=VALID_ADMIN_HEADER_TOKEN,
+    )
     assert resp.status_code == 200
-    assert len(resp.json['roles']) == 1
+    assert len(resp.json["roles"]) == 1
     assert set(user.roles) == {role1}

@@ -12,7 +12,18 @@ from cryptography import x509
 from cryptography.hazmat.primitives.asymmetric import rsa
 from flask import current_app
 from idna.core import InvalidCodepoint
-from sqlalchemy import event, Integer, ForeignKey, String, PassiveDefault, func, Column, Text, Boolean, Index
+from sqlalchemy import (
+    event,
+    Integer,
+    ForeignKey,
+    String,
+    PassiveDefault,
+    func,
+    Column,
+    Text,
+    Boolean,
+    Index,
+)
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import case, extract
@@ -25,19 +36,25 @@ from lemur.database import db
 from lemur.domains.models import Domain
 from lemur.extensions import metrics
 from lemur.extensions import sentry
-from lemur.models import certificate_associations, certificate_source_associations, \
-    certificate_destination_associations, certificate_notification_associations, \
-    certificate_replacement_associations, roles_certificates, pending_cert_replacement_associations
+from lemur.models import (
+    certificate_associations,
+    certificate_source_associations,
+    certificate_destination_associations,
+    certificate_notification_associations,
+    certificate_replacement_associations,
+    roles_certificates,
+    pending_cert_replacement_associations,
+)
 from lemur.plugins.base import plugins
 from lemur.policies.models import RotationPolicy
 from lemur.utils import Vault
 
 
 def get_sequence(name):
-    if '-' not in name:
+    if "-" not in name:
         return name, None
 
-    parts = name.split('-')
+    parts = name.split("-")
 
     # see if we have an int at the end of our name
     try:
@@ -49,18 +66,22 @@ def get_sequence(name):
     if len(parts[-1]) == 8:
         return name, None
 
-    root = '-'.join(parts[:-1])
+    root = "-".join(parts[:-1])
     return root, seq
 
 
 def get_or_increase_name(name, serial):
-    certificates = Certificate.query.filter(Certificate.name.ilike('{0}%'.format(name))).all()
+    certificates = Certificate.query.filter(
+        Certificate.name.ilike("{0}%".format(name))
+    ).all()
 
     if not certificates:
         return name
 
-    serial_name = '{0}-{1}'.format(name, hex(int(serial))[2:].upper())
-    certificates = Certificate.query.filter(Certificate.name.ilike('{0}%'.format(serial_name))).all()
+    serial_name = "{0}-{1}".format(name, hex(int(serial))[2:].upper())
+    certificates = Certificate.query.filter(
+        Certificate.name.ilike("{0}%".format(serial_name))
+    ).all()
 
     if not certificates:
         return serial_name
@@ -72,21 +93,29 @@ def get_or_increase_name(name, serial):
         if end:
             ends.append(end)
 
-    return '{0}-{1}'.format(root, max(ends) + 1)
+    return "{0}-{1}".format(root, max(ends) + 1)
 
 
 class Certificate(db.Model):
-    __tablename__ = 'certificates'
+    __tablename__ = "certificates"
     __table_args__ = (
-        Index('ix_certificates_cn', "cn",
-              postgresql_ops={"cn": "gin_trgm_ops"},
-              postgresql_using='gin'),
-        Index('ix_certificates_name', "name",
-              postgresql_ops={"name": "gin_trgm_ops"},
-              postgresql_using='gin'),
+        Index(
+            "ix_certificates_cn",
+            "cn",
+            postgresql_ops={"cn": "gin_trgm_ops"},
+            postgresql_using="gin",
+        ),
+        Index(
+            "ix_certificates_name",
+            "name",
+            postgresql_ops={"name": "gin_trgm_ops"},
+            postgresql_using="gin",
+        ),
     )
     id = Column(Integer, primary_key=True)
-    ix = Index('ix_certificates_id_desc', id.desc(), postgresql_using='btree', unique=True)
+    ix = Index(
+        "ix_certificates_id_desc", id.desc(), postgresql_using="btree", unique=True
+    )
     external_id = Column(String(128))
     owner = Column(String(128), nullable=False)
     name = Column(String(256), unique=True)
@@ -102,7 +131,9 @@ class Certificate(db.Model):
     serial = Column(String(128))
     cn = Column(String(128))
     deleted = Column(Boolean, index=True, default=False)
-    dns_provider_id = Column(Integer(), ForeignKey('dns_providers.id', ondelete='CASCADE'), nullable=True)
+    dns_provider_id = Column(
+        Integer(), ForeignKey("dns_providers.id", ondelete="CASCADE"), nullable=True
+    )
 
     not_before = Column(ArrowType)
     not_after = Column(ArrowType)
@@ -114,34 +145,53 @@ class Certificate(db.Model):
     san = Column(String(1024))  # TODO this should be migrated to boolean
 
     rotation = Column(Boolean, default=False)
-    user_id = Column(Integer, ForeignKey('users.id'))
-    authority_id = Column(Integer, ForeignKey('authorities.id', ondelete="CASCADE"))
-    root_authority_id = Column(Integer, ForeignKey('authorities.id', ondelete="CASCADE"))
-    rotation_policy_id = Column(Integer, ForeignKey('rotation_policies.id'))
+    user_id = Column(Integer, ForeignKey("users.id"))
+    authority_id = Column(Integer, ForeignKey("authorities.id", ondelete="CASCADE"))
+    root_authority_id = Column(
+        Integer, ForeignKey("authorities.id", ondelete="CASCADE")
+    )
+    rotation_policy_id = Column(Integer, ForeignKey("rotation_policies.id"))
 
-    notifications = relationship('Notification', secondary=certificate_notification_associations, backref='certificate')
-    destinations = relationship('Destination', secondary=certificate_destination_associations, backref='certificate')
-    sources = relationship('Source', secondary=certificate_source_associations, backref='certificate')
-    domains = relationship('Domain', secondary=certificate_associations, backref='certificate')
-    roles = relationship('Role', secondary=roles_certificates, backref='certificate')
-    replaces = relationship('Certificate',
-                            secondary=certificate_replacement_associations,
-                            primaryjoin=id == certificate_replacement_associations.c.certificate_id,  # noqa
-                            secondaryjoin=id == certificate_replacement_associations.c.replaced_certificate_id,  # noqa
-                            backref='replaced')
+    notifications = relationship(
+        "Notification",
+        secondary=certificate_notification_associations,
+        backref="certificate",
+    )
+    destinations = relationship(
+        "Destination",
+        secondary=certificate_destination_associations,
+        backref="certificate",
+    )
+    sources = relationship(
+        "Source", secondary=certificate_source_associations, backref="certificate"
+    )
+    domains = relationship(
+        "Domain", secondary=certificate_associations, backref="certificate"
+    )
+    roles = relationship("Role", secondary=roles_certificates, backref="certificate")
+    replaces = relationship(
+        "Certificate",
+        secondary=certificate_replacement_associations,
+        primaryjoin=id == certificate_replacement_associations.c.certificate_id,  # noqa
+        secondaryjoin=id
+        == certificate_replacement_associations.c.replaced_certificate_id,  # noqa
+        backref="replaced",
+    )
 
-    replaced_by_pending = relationship('PendingCertificate',
-                                       secondary=pending_cert_replacement_associations,
-                                       backref='pending_replace',
-                                       viewonly=True)
+    replaced_by_pending = relationship(
+        "PendingCertificate",
+        secondary=pending_cert_replacement_associations,
+        backref="pending_replace",
+        viewonly=True,
+    )
 
-    logs = relationship('Log', backref='certificate')
-    endpoints = relationship('Endpoint', backref='certificate')
+    logs = relationship("Log", backref="certificate")
+    endpoints = relationship("Endpoint", backref="certificate")
     rotation_policy = relationship("RotationPolicy")
-    sensitive_fields = ('private_key',)
+    sensitive_fields = ("private_key",)
 
     def __init__(self, **kwargs):
-        self.body = kwargs['body'].strip()
+        self.body = kwargs["body"].strip()
         cert = self.parsed_cert
 
         self.issuer = defaults.issuer(cert)
@@ -152,36 +202,42 @@ class Certificate(db.Model):
         self.serial = defaults.serial(cert)
 
         # when destinations are appended they require a valid name.
-        if kwargs.get('name'):
-            self.name = get_or_increase_name(defaults.text_to_slug(kwargs['name']), self.serial)
+        if kwargs.get("name"):
+            self.name = get_or_increase_name(
+                defaults.text_to_slug(kwargs["name"]), self.serial
+            )
         else:
             self.name = get_or_increase_name(
-                defaults.certificate_name(self.cn, self.issuer, self.not_before, self.not_after, self.san), self.serial)
+                defaults.certificate_name(
+                    self.cn, self.issuer, self.not_before, self.not_after, self.san
+                ),
+                self.serial,
+            )
 
-        self.owner = kwargs['owner']
+        self.owner = kwargs["owner"]
 
-        if kwargs.get('private_key'):
-            self.private_key = kwargs['private_key'].strip()
+        if kwargs.get("private_key"):
+            self.private_key = kwargs["private_key"].strip()
 
-        if kwargs.get('chain'):
-            self.chain = kwargs['chain'].strip()
+        if kwargs.get("chain"):
+            self.chain = kwargs["chain"].strip()
 
-        if kwargs.get('csr'):
-            self.csr = kwargs['csr'].strip()
+        if kwargs.get("csr"):
+            self.csr = kwargs["csr"].strip()
 
-        self.notify = kwargs.get('notify', True)
-        self.destinations = kwargs.get('destinations', [])
-        self.notifications = kwargs.get('notifications', [])
-        self.description = kwargs.get('description')
-        self.roles = list(set(kwargs.get('roles', [])))
-        self.replaces = kwargs.get('replaces', [])
-        self.rotation = kwargs.get('rotation')
-        self.rotation_policy = kwargs.get('rotation_policy')
+        self.notify = kwargs.get("notify", True)
+        self.destinations = kwargs.get("destinations", [])
+        self.notifications = kwargs.get("notifications", [])
+        self.description = kwargs.get("description")
+        self.roles = list(set(kwargs.get("roles", [])))
+        self.replaces = kwargs.get("replaces", [])
+        self.rotation = kwargs.get("rotation")
+        self.rotation_policy = kwargs.get("rotation_policy")
         self.signing_algorithm = defaults.signing_algorithm(cert)
         self.bits = defaults.bitstrength(cert)
-        self.external_id = kwargs.get('external_id')
-        self.authority_id = kwargs.get('authority_id')
-        self.dns_provider_id = kwargs.get('dns_provider_id')
+        self.external_id = kwargs.get("external_id")
+        self.authority_id = kwargs.get("authority_id")
+        self.dns_provider_id = kwargs.get("dns_provider_id")
 
         for domain in defaults.domains(cert):
             self.domains.append(Domain(name=domain))
@@ -195,8 +251,11 @@ class Certificate(db.Model):
         Integrity checks: Does the cert have a valid chain and matching private key?
         """
         if self.private_key:
-            validators.verify_private_key_match(utils.parse_private_key(self.private_key), self.parsed_cert,
-                                                error_class=AssertionError)
+            validators.verify_private_key_match(
+                utils.parse_private_key(self.private_key),
+                self.parsed_cert,
+                error_class=AssertionError,
+            )
 
         if self.chain:
             chain = [self.parsed_cert] + utils.parse_cert_chain(self.chain)
@@ -238,7 +297,9 @@ class Certificate(db.Model):
     @property
     def key_type(self):
         if isinstance(self.parsed_cert.public_key(), rsa.RSAPublicKey):
-            return 'RSA{key_size}'.format(key_size=self.parsed_cert.public_key().key_size)
+            return "RSA{key_size}".format(
+                key_size=self.parsed_cert.public_key().key_size
+            )
 
     @property
     def validity_remaining(self):
@@ -263,26 +324,16 @@ class Certificate(db.Model):
 
     @expired.expression
     def expired(cls):
-        return case(
-            [
-                (cls.not_after <= arrow.utcnow(), True)
-            ],
-            else_=False
-        )
+        return case([(cls.not_after <= arrow.utcnow(), True)], else_=False)
 
     @hybrid_property
     def revoked(self):
-        if 'revoked' == self.status:
+        if "revoked" == self.status:
             return True
 
     @revoked.expression
     def revoked(cls):
-        return case(
-            [
-                (cls.status == 'revoked', True)
-            ],
-            else_=False
-        )
+        return case([(cls.status == "revoked", True)], else_=False)
 
     @hybrid_property
     def in_rotation_window(self):
@@ -305,66 +356,65 @@ class Certificate(db.Model):
         :return:
         """
         return case(
-            [
-                (extract('day', cls.not_after - func.now()) <= RotationPolicy.days, True)
-            ],
-            else_=False
+            [(extract("day", cls.not_after - func.now()) <= RotationPolicy.days, True)],
+            else_=False,
         )
 
     @property
     def extensions(self):
         # setup default values
-        return_extensions = {
-            'sub_alt_names': {'names': []}
-        }
+        return_extensions = {"sub_alt_names": {"names": []}}
 
         try:
             for extension in self.parsed_cert.extensions:
                 value = extension.value
                 if isinstance(value, x509.BasicConstraints):
-                    return_extensions['basic_constraints'] = value
+                    return_extensions["basic_constraints"] = value
 
                 elif isinstance(value, x509.SubjectAlternativeName):
-                    return_extensions['sub_alt_names']['names'] = value
+                    return_extensions["sub_alt_names"]["names"] = value
 
                 elif isinstance(value, x509.ExtendedKeyUsage):
-                    return_extensions['extended_key_usage'] = value
+                    return_extensions["extended_key_usage"] = value
 
                 elif isinstance(value, x509.KeyUsage):
-                    return_extensions['key_usage'] = value
+                    return_extensions["key_usage"] = value
 
                 elif isinstance(value, x509.SubjectKeyIdentifier):
-                    return_extensions['subject_key_identifier'] = {'include_ski': True}
+                    return_extensions["subject_key_identifier"] = {"include_ski": True}
 
                 elif isinstance(value, x509.AuthorityInformationAccess):
-                    return_extensions['certificate_info_access'] = {'include_aia': True}
+                    return_extensions["certificate_info_access"] = {"include_aia": True}
 
                 elif isinstance(value, x509.AuthorityKeyIdentifier):
-                    aki = {
-                        'use_key_identifier': False,
-                        'use_authority_cert': False
-                    }
+                    aki = {"use_key_identifier": False, "use_authority_cert": False}
 
                     if value.key_identifier:
-                        aki['use_key_identifier'] = True
+                        aki["use_key_identifier"] = True
 
                     if value.authority_cert_issuer:
-                        aki['use_authority_cert'] = True
+                        aki["use_authority_cert"] = True
 
-                    return_extensions['authority_key_identifier'] = aki
+                    return_extensions["authority_key_identifier"] = aki
 
                 elif isinstance(value, x509.CRLDistributionPoints):
-                    return_extensions['crl_distribution_points'] = {'include_crl_dp': value}
+                    return_extensions["crl_distribution_points"] = {
+                        "include_crl_dp": value
+                    }
 
                 # TODO: Not supporting custom OIDs yet. https://github.com/Netflix/lemur/issues/665
                 else:
-                    current_app.logger.warning('Custom OIDs not yet supported for clone operation.')
+                    current_app.logger.warning(
+                        "Custom OIDs not yet supported for clone operation."
+                    )
         except InvalidCodepoint as e:
             sentry.captureException()
-            current_app.logger.warning('Unable to parse extensions due to underscore in dns name')
+            current_app.logger.warning(
+                "Unable to parse extensions due to underscore in dns name"
+            )
         except ValueError as e:
             sentry.captureException()
-            current_app.logger.warning('Unable to parse')
+            current_app.logger.warning("Unable to parse")
             current_app.logger.exception(e)
 
         return return_extensions
@@ -373,7 +423,7 @@ class Certificate(db.Model):
         return "Certificate(name={name})".format(name=self.name)
 
 
-@event.listens_for(Certificate.destinations, 'append')
+@event.listens_for(Certificate.destinations, "append")
 def update_destinations(target, value, initiator):
     """
     Attempt to upload certificate to the new destination
@@ -387,17 +437,31 @@ def update_destinations(target, value, initiator):
     status = FAILURE_METRIC_STATUS
     try:
         if target.private_key or not destination_plugin.requires_key:
-            destination_plugin.upload(target.name, target.body, target.private_key, target.chain, value.options)
+            destination_plugin.upload(
+                target.name,
+                target.body,
+                target.private_key,
+                target.chain,
+                value.options,
+            )
             status = SUCCESS_METRIC_STATUS
     except Exception as e:
         sentry.captureException()
         raise
 
-    metrics.send('destination_upload', 'counter', 1,
-                 metric_tags={'status': status, 'certificate': target.name, 'destination': value.label})
+    metrics.send(
+        "destination_upload",
+        "counter",
+        1,
+        metric_tags={
+            "status": status,
+            "certificate": target.name,
+            "destination": value.label,
+        },
+    )
 
 
-@event.listens_for(Certificate.replaces, 'append')
+@event.listens_for(Certificate.replaces, "append")
 def update_replacement(target, value, initiator):
     """
     When a certificate is marked as 'replaced' we should not notify.

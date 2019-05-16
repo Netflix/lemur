@@ -18,7 +18,7 @@ class PluginMount(type):
         if new_cls.title is None:
             new_cls.title = new_cls.__name__
         if not new_cls.slug:
-            new_cls.slug = new_cls.title.replace(' ', '-').lower()
+            new_cls.slug = new_cls.title.replace(" ", "-").lower()
         return new_cls
 
 
@@ -36,6 +36,7 @@ class IPlugin(local):
     As a general rule all inherited methods should allow ``**kwargs`` to ensure
     ease of future compatibility.
     """
+
     # Generic plugin information
     title = None
     slug = None
@@ -72,7 +73,7 @@ class IPlugin(local):
         Returns a string representing the configuration keyspace prefix for this plugin.
         """
         if not self.conf_key:
-            self.conf_key = self.get_conf_title().lower().replace(' ', '_')
+            self.conf_key = self.get_conf_title().lower().replace(" ", "_")
         return self.conf_key
 
     def get_conf_title(self):
@@ -111,8 +112,8 @@ class IPlugin(local):
     @staticmethod
     def get_option(name, options):
         for o in options:
-            if o.get('name') == name:
-                return o.get('value', o.get('default'))
+            if o.get("name") == name:
+                return o.get("value", o.get("default"))
 
 
 class Plugin(IPlugin):
@@ -121,5 +122,6 @@ class Plugin(IPlugin):
     control when or how the plugin gets instantiated, nor is it guaranteed that
     it will happen, or happen more than once.
     """
+
     __version__ = 1
     __metaclass__ = PluginMount

@@ -13,12 +13,13 @@ from lemur.auth.service import AuthenticatedResource
 from lemur.defaults.schemas import default_output_schema
 
 
-mod = Blueprint('default', __name__)
+mod = Blueprint("default", __name__)
 api = Api(mod)
 
 
 class LemurDefaults(AuthenticatedResource):
     """ Defines the 'defaults' endpoint """
+
     def __init__(self):
         super(LemurDefaults)
 
@@ -59,17 +60,21 @@ class LemurDefaults(AuthenticatedResource):
            :statuscode 403: unauthenticated
         """
 
-        default_authority = get_by_name(current_app.config.get('LEMUR_DEFAULT_AUTHORITY'))
+        default_authority = get_by_name(
+            current_app.config.get("LEMUR_DEFAULT_AUTHORITY")
+        )
 
         return dict(
-            country=current_app.config.get('LEMUR_DEFAULT_COUNTRY'),
-            state=current_app.config.get('LEMUR_DEFAULT_STATE'),
-            location=current_app.config.get('LEMUR_DEFAULT_LOCATION'),
-            organization=current_app.config.get('LEMUR_DEFAULT_ORGANIZATION'),
-            organizational_unit=current_app.config.get('LEMUR_DEFAULT_ORGANIZATIONAL_UNIT'),
-            issuer_plugin=current_app.config.get('LEMUR_DEFAULT_ISSUER_PLUGIN'),
+            country=current_app.config.get("LEMUR_DEFAULT_COUNTRY"),
+            state=current_app.config.get("LEMUR_DEFAULT_STATE"),
+            location=current_app.config.get("LEMUR_DEFAULT_LOCATION"),
+            organization=current_app.config.get("LEMUR_DEFAULT_ORGANIZATION"),
+            organizational_unit=current_app.config.get(
+                "LEMUR_DEFAULT_ORGANIZATIONAL_UNIT"
+            ),
+            issuer_plugin=current_app.config.get("LEMUR_DEFAULT_ISSUER_PLUGIN"),
             authority=default_authority,
         )
 
 
-api.add_resource(LemurDefaults, '/defaults', endpoint='default')
+api.add_resource(LemurDefaults, "/defaults", endpoint="default")

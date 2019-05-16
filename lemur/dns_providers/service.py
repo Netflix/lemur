@@ -49,7 +49,9 @@ def get_friendly(dns_provider_id):
     }
 
     if dns_provider.provider_type == "route53":
-        dns_provider_friendly["account_id"] = json.loads(dns_provider.credentials).get("account_id")
+        dns_provider_friendly["account_id"] = json.loads(dns_provider.credentials).get(
+            "account_id"
+        )
     return dns_provider_friendly
 
 
@@ -64,40 +66,40 @@ def delete(dns_provider_id):
 
 def get_types():
     provider_config = current_app.config.get(
-        'ACME_DNS_PROVIDER_TYPES',
-        {"items": [
-            {
-                'name': 'route53',
-                'requirements': [
-                    {
-                        'name': 'account_id',
-                        'type': 'int',
-                        'required': True,
-                        'helpMessage': 'AWS Account number'
-                    },
-                ]
-            },
-            {
-                'name': 'cloudflare',
-                'requirements': [
-                    {
-                        'name': 'email',
-                        'type': 'str',
-                        'required': True,
-                        'helpMessage': 'Cloudflare Email'
-                    },
-                    {
-                        'name': 'key',
-                        'type': 'str',
-                        'required': True,
-                        'helpMessage': 'Cloudflare Key'
-                    },
-                ]
-            },
-            {
-                'name': 'dyn',
-            },
-        ]}
+        "ACME_DNS_PROVIDER_TYPES",
+        {
+            "items": [
+                {
+                    "name": "route53",
+                    "requirements": [
+                        {
+                            "name": "account_id",
+                            "type": "int",
+                            "required": True,
+                            "helpMessage": "AWS Account number",
+                        }
+                    ],
+                },
+                {
+                    "name": "cloudflare",
+                    "requirements": [
+                        {
+                            "name": "email",
+                            "type": "str",
+                            "required": True,
+                            "helpMessage": "Cloudflare Email",
+                        },
+                        {
+                            "name": "key",
+                            "type": "str",
+                            "required": True,
+                            "helpMessage": "Cloudflare Key",
+                        },
+                    ],
+                },
+                {"name": "dyn"},
+            ]
+        },
     )
     if not provider_config:
         raise Exception("No DNS Provider configuration specified.")

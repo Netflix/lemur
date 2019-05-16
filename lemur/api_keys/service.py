@@ -34,7 +34,7 @@ def revoke(aid):
     :return:
     """
     api_key = get(aid)
-    setattr(api_key, 'revoked', False)
+    setattr(api_key, "revoked", False)
 
     return database.update(api_key)
 
@@ -80,10 +80,10 @@ def render(args):
     :return:
     """
     query = database.session_query(ApiKey)
-    user_id = args.pop('user_id', None)
-    aid = args.pop('id', None)
-    has_permission = args.pop('has_permission', False)
-    requesting_user_id = args.pop('requesting_user_id')
+    user_id = args.pop("user_id", None)
+    aid = args.pop("id", None)
+    has_permission = args.pop("has_permission", False)
+    requesting_user_id = args.pop("requesting_user_id")
 
     if user_id:
         query = query.filter(ApiKey.user_id == user_id)

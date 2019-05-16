@@ -15,12 +15,13 @@ from lemur.schemas import plugins_output_schema, plugin_output_schema
 from lemur.common.schema import validate_schema
 from lemur.plugins.base import plugins
 
-mod = Blueprint('plugins', __name__)
+mod = Blueprint("plugins", __name__)
 api = Api(mod)
 
 
 class PluginsList(AuthenticatedResource):
     """ Defines the 'plugins' endpoint """
+
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(PluginsList, self).__init__()
@@ -69,17 +70,18 @@ class PluginsList(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
-        self.reqparse.add_argument('type', type=str, location='args')
+        self.reqparse.add_argument("type", type=str, location="args")
         args = self.reqparse.parse_args()
 
-        if args['type']:
-            return list(plugins.all(plugin_type=args['type']))
+        if args["type"]:
+            return list(plugins.all(plugin_type=args["type"]))
 
         return list(plugins.all())
 
 
 class Plugins(AuthenticatedResource):
     """ Defines the 'plugins' endpoint """
+
     def __init__(self):
         super(Plugins, self).__init__()
 
@@ -118,5 +120,5 @@ class Plugins(AuthenticatedResource):
         return plugins.get(name)
 
 
-api.add_resource(PluginsList, '/plugins', endpoint='plugins')
-api.add_resource(Plugins, '/plugins/<name>', endpoint='pluginName')
+api.add_resource(PluginsList, "/plugins", endpoint="plugins")
+api.add_resource(Plugins, "/plugins/<name>", endpoint="pluginName")

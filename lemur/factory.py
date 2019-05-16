@@ -24,9 +24,7 @@ from lemur.common.health import mod as health
 from lemur.extensions import db, migrate, principal, smtp_mail, metrics, sentry, cors
 
 
-DEFAULT_BLUEPRINTS = (
-    health,
-)
+DEFAULT_BLUEPRINTS = (health,)
 
 API_VERSION = 1
 
@@ -71,16 +69,20 @@ def from_file(file_path, silent=False):
     :param file_path:
     :param silent:
     """
-    d = imp.new_module('config')
+    d = imp.new_module("config")
     d.__file__ = file_path
     try:
         with open(file_path) as config_file:
-            exec(compile(config_file.read(),  # nosec: config file safe
-                 file_path, 'exec'), d.__dict__)
+            exec(
+                compile(
+                    config_file.read(), file_path, "exec"  # nosec: config file safe
+                ),
+                d.__dict__,
+            )
     except IOError as e:
         if silent and e.errno in (errno.ENOENT, errno.EISDIR):
             return False
-        e.strerror = 'Unable to load configuration file (%s)' % e.strerror
+        e.strerror = "Unable to load configuration file (%s)" % e.strerror
         raise
     return d
 
@@ -94,8 +96,8 @@ def configure_app(app, config=None):
     :return:
     """
     # respect the config first
-    if config and config != 'None':
-        app.config['CONFIG_PATH'] = config
+    if config and config != "None":
+        app.config["CONFIG_PATH"] = config
         app.config.from_object(from_file(config))
     else:
         try:
@@ -103,12 +105,21 @@ def configure_app(app, config=None):
         except RuntimeError:
             # look in default paths
             if os.path.isfile(os.path.expanduser("~/.lemur/lemur.conf.py")):
-                app.config.from_object(from_file(os.path.expanduser("~/.lemur/lemur.conf.py")))
+                app.config.from_object(
+                    from_file(os.path.expanduser("~/.lemur/lemur.conf.py"))
+                )
             else:
-                app.config.from_object(from_file(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'default.conf.py')))
+                app.config.from_object(
+                    from_file(
+                        os.path.join(
+                            os.path.dirname(os.path.realpath(__file__)),
+                            "default.conf.py",
+                        )
+                    )
+                )
 
     # we don't use this
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 
 def configure_extensions(app):
@@ -125,9 +136,15 @@ def configure_extensions(app):
     metrics.init_app(app)
     sentry.init_app(app)
 
-    if app.config['CORS']:
-        app.config['CORS_HEADERS'] = 'Content-Type'
-        cors.init_app(app, resources=r'/api/*', headers='Content-Type', origin='*', supports_credentials=True)
+    if app.config["CORS"]:
+        app.config["CORS_HEADERS"] = "Content-Type"
+        cors.init_app(
+            app,
+            resources=r"/api/*",
+            headers="Content-Type",
+            origin="*",
+            supports_credentials=True,
+        )
 
 
 def configure_blueprints(app, blueprints):
@@ -148,22 +165,25 @@ def configure_logging(app):
 
     :param app:
     """
-    handler = RotatingFileHandler(app.config.get('LOG_FILE', 'lemur.log'), maxBytes=10000000, backupCount=100)
+    handler = RotatingFileHandler(
+        app.config.get("LOG_FILE", "lemur.log"), maxBytes=10000000, backupCount=100
+    )
 
-    handler.setFormatter(Formatter(
-        '%(asctime)s %(levelname)s: %(message)s '
-        '[in %(pathname)s:%(lineno)d]'
-    ))
+    handler.setFormatter(
+        Formatter(
+            "%(asctime)s %(levelname)s: %(message)s " "[in %(pathname)s:%(lineno)d]"
+        )
+    )
 
-    handler.setLevel(app.config.get('LOG_LEVEL', 'DEBUG'))
-    app.logger.setLevel(app.config.get('LOG_LEVEL', 'DEBUG'))
+    handler.setLevel(app.config.get("LOG_LEVEL", "DEBUG"))
+    app.logger.setLevel(app.config.get("LOG_LEVEL", "DEBUG"))
     app.logger.addHandler(handler)
 
     stream_handler = StreamHandler()
-    stream_handler.setLevel(app.config.get('LOG_LEVEL', 'DEBUG'))
+    stream_handler.setLevel(app.config.get("LOG_LEVEL", "DEBUG"))
     app.logger.addHandler(stream_handler)
 
-    if app.config.get('DEBUG_DUMP', False):
+    if app.config.get("DEBUG_DUMP", False):
         activate_debug_dump()
 
 
@@ -176,17 +196,21 @@ def install_plugins(app):
     """
     from lemur.plugins import plugins
     from lemur.plugins.base import register
+
     # entry_points={
     #    'lemur.plugins': [
     #         'verisign = lemur_verisign.plugin:VerisignPlugin'
     #     ],
     # },
-    for ep in pkg_resources.iter_entry_points('lemur.plugins'):
+    for ep in pkg_resources.iter_entry_points("lemur.plugins"):
         try:
             plugin = ep.load()
         except Exception:
             import traceback
-            app.logger.error("Failed to load plugin %r:\n%s\n" % (ep.name, traceback.format_exc()))
+
+            app.logger.error(
+                "Failed to load plugin %r:\n%s\n" % (ep.name, traceback.format_exc())
+            )
         else:
             register(plugin)
 
@@ -196,6 +220,9 @@ def install_plugins(app):
         try:
             plugins.get(slug)
         except KeyError:
-            raise Exception("Unable to location notification plugin: {slug}. Ensure that "
-                            "LEMUR_DEFAULT_NOTIFICATION_PLUGIN is set to a valid and installed notification plugin."
-                            .format(slug=slug))
+            raise Exception(
+                "Unable to location notification plugin: {slug}. Ensure that "
+                "LEMUR_DEFAULT_NOTIFICATION_PLUGIN is set to a valid and installed notification plugin.".format(
+                    slug=slug
+                )
+            )

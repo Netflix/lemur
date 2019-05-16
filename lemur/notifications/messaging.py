@@ -36,15 +36,17 @@ def get_certificates(exclude=None):
     now = arrow.utcnow()
     max = now + timedelta(days=90)
 
-    q = database.db.session.query(Certificate) \
-        .filter(Certificate.not_after <= max) \
-        .filter(Certificate.notify == True) \
-        .filter(Certificate.expired == False)  # noqa
+    q = (
+        database.db.session.query(Certificate)
+        .filter(Certificate.not_after <= max)
+        .filter(Certificate.notify == True)
+        .filter(Certificate.expired == False)
+    )  # noqa
 
     exclude_conditions = []
     if exclude:
         for e in exclude:
-            exclude_conditions.append(~Certificate.name.ilike('%{}%'.format(e)))
+            exclude_conditions.append(~Certificate.name.ilike("%{}%".format(e)))
 
         q = q.filter(and_(*exclude_conditions))
 
@@ -101,7 +103,12 @@ def send_notification(event_type, data, targets, notification):
     except Exception as e:
         sentry.captureException()
 
-    metrics.send('notification', 'counter', 1, metric_tags={'status': status, 'event_type': event_type})
+    metrics.send(
+        "notification",
+        "counter",
+        1,
+        metric_tags={"status": status, "event_type": event_type},
+    )
 
     if status == SUCCESS_METRIC_STATUS:
         return True
@@ -115,7 +122,7 @@ def send_expiration_notifications(exclude):
     success = failure = 0
 
     # security team gets all
-    security_email = current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL')
+    security_email = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
 
     security_data = []
     for owner, notification_group in get_eligible_certificates(exclude=exclude).items():
@@ -127,26 +134,43 @@ def send_expiration_notifications(exclude):
 
             for data in certificates:
                 n, certificate = data
-                cert_data = certificate_notification_output_schema.dump(certificate).data
+                cert_data = certificate_notification_output_schema.dump(
+                    certificate
+                ).data
                 notification_data.append(cert_data)
                 security_data.append(cert_data)
 
-            notification_recipient = get_plugin_option('recipients', notification.options)
+            notification_recipient = get_plugin_option(
+                "recipients", notification.options
+            )
             if notification_recipient:
                 notification_recipient = notification_recipient.split(",")
 
-            if send_notification('expiration', notification_data, [owner], notification):
+            if send_notification(
+                "expiration", notification_data, [owner], notification
+            ):
                 success += 1
             else:
                 failure += 1
 
-            if notification_recipient and owner != notification_recipient and security_email != notification_recipient:
-                if send_notification('expiration', notification_data, notification_recipient, notification):
+            if (
+                notification_recipient
+                and owner != notification_recipient
+                and security_email != notification_recipient
+            ):
+                if send_notification(
+                    "expiration",
+                    notification_data,
+                    notification_recipient,
+                    notification,
+                ):
                     success += 1
                 else:
                     failure += 1
 
-            if send_notification('expiration', security_data, security_email, notification):
+            if send_notification(
+                "expiration", security_data, security_email, notification
+            ):
                 success += 1
             else:
                 failure += 1
@@ -165,24 +189,35 @@ def send_rotation_notification(certificate, notification_plugin=None):
     """
     status = FAILURE_METRIC_STATUS
     if not notification_plugin:
-        notification_plugin = plugins.get(current_app.config.get('LEMUR_DEFAULT_NOTIFICATION_PLUGIN'))
+        notification_plugin = plugins.get(
+            current_app.config.get("LEMUR_DEFAULT_NOTIFICATION_PLUGIN")
+        )
 
     data = certificate_notification_output_schema.dump(certificate).data
 
     try:
-        notification_plugin.send('rotation', data, [data['owner']])
+        notification_plugin.send("rotation", data, [data["owner"]])
         status = SUCCESS_METRIC_STATUS
     except Exception as e:
-        current_app.logger.error('Unable to send notification to {}.'.format(data['owner']), exc_info=True)
+        current_app.logger.error(
+            "Unable to send notification to {}.".format(data["owner"]), exc_info=True
+        )
         sentry.captureException()
 
-    metrics.send('notification', 'counter', 1, metric_tags={'status': status, 'event_type': 'rotation'})
+    metrics.send(
+        "notification",
+        "counter",
+        1,
+        metric_tags={"status": status, "event_type": "rotation"},
+    )
 
     if status == SUCCESS_METRIC_STATUS:
         return True
 
 
-def send_pending_failure_notification(pending_cert, notify_owner=True, notify_security=True, notification_plugin=None):
+def send_pending_failure_notification(
+    pending_cert, notify_owner=True, notify_security=True, notification_plugin=None
+):
     """
     Sends a report to certificate owners when their pending certificate failed to be created.
 
@@ -194,32 +229,47 @@ def send_pending_failure_notification(pending_cert, notify_owner=True, notify_se
 
     if not notification_plugin:
         notification_plugin = plugins.get(
-            current_app.config.get('LEMUR_DEFAULT_NOTIFICATION_PLUGIN', 'email-notification')
+            current_app.config.get(
+                "LEMUR_DEFAULT_NOTIFICATION_PLUGIN", "email-notification"
+            )
         )
 
     data = pending_certificate_output_schema.dump(pending_cert).data
-    data["security_email"] = current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL')
+    data["security_email"] = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
 
     if notify_owner:
         try:
-            notification_plugin.send('failed', data, [data['owner']], pending_cert)
+            notification_plugin.send("failed", data, [data["owner"]], pending_cert)
             status = SUCCESS_METRIC_STATUS
         except Exception as e:
-            current_app.logger.error('Unable to send pending failure notification to {}.'.format(data['owner']),
-                                     exc_info=True)
+            current_app.logger.error(
+                "Unable to send pending failure notification to {}.".format(
+                    data["owner"]
+                ),
+                exc_info=True,
+            )
             sentry.captureException()
 
     if notify_security:
         try:
-            notification_plugin.send('failed', data, data["security_email"], pending_cert)
+            notification_plugin.send(
+                "failed", data, data["security_email"], pending_cert
+            )
             status = SUCCESS_METRIC_STATUS
         except Exception as e:
-            current_app.logger.error('Unable to send pending failure notification to '
-                                     '{}.'.format(data['security_email']),
-                                     exc_info=True)
+            current_app.logger.error(
+                "Unable to send pending failure notification to "
+                "{}.".format(data["security_email"]),
+                exc_info=True,
+            )
             sentry.captureException()
 
-    metrics.send('notification', 'counter', 1, metric_tags={'status': status, 'event_type': 'rotation'})
+    metrics.send(
+        "notification",
+        "counter",
+        1,
+        metric_tags={"status": status, "event_type": "rotation"},
+    )
 
     if status == SUCCESS_METRIC_STATUS:
         return True
@@ -242,20 +292,22 @@ def needs_notification(certificate):
         if not notification.active or not notification.options:
             return
 
-        interval = get_plugin_option('interval', notification.options)
-        unit = get_plugin_option('unit', notification.options)
+        interval = get_plugin_option("interval", notification.options)
+        unit = get_plugin_option("unit", notification.options)
 
-        if unit == 'weeks':
+        if unit == "weeks":
             interval *= 7
 
-        elif unit == 'months':
+        elif unit == "months":
             interval *= 30
 
-        elif unit == 'days':  # it's nice to be explicit about the base unit
+        elif unit == "days":  # it's nice to be explicit about the base unit
             pass
 
         else:
-            raise Exception("Invalid base unit for expiration interval: {0}".format(unit))
+            raise Exception(
+                "Invalid base unit for expiration interval: {0}".format(unit)
+            )
 
         if days == interval:
             notifications.append(notification)

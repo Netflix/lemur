@@ -7,8 +7,8 @@ Create Date: 2019-02-05 15:42:25.477587
 """
 
 # revision identifiers, used by Alembic.
-revision = '318b66568358'
-down_revision = '9f79024fe67b'
+revision = "318b66568358"
+down_revision = "9f79024fe67b"
 
 from alembic import op
 
@@ -16,7 +16,7 @@ from alembic import op
 def upgrade():
     connection = op.get_bind()
     # Delete duplicate entries
-    connection.execute('UPDATE certificates SET deleted = false WHERE deleted IS NULL')
+    connection.execute("UPDATE certificates SET deleted = false WHERE deleted IS NULL")
 
 
 def downgrade():

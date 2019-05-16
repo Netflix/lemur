@@ -25,22 +25,22 @@ from lemur.exceptions import InvalidConfiguration
 
 paginated_parser = RequestParser()
 
-paginated_parser.add_argument('count', type=int, default=10, location='args')
-paginated_parser.add_argument('page', type=int, default=1, location='args')
-paginated_parser.add_argument('sortDir', type=str, dest='sort_dir', location='args')
-paginated_parser.add_argument('sortBy', type=str, dest='sort_by', location='args')
-paginated_parser.add_argument('filter', type=str, location='args')
-paginated_parser.add_argument('owner', type=str, location='args')
+paginated_parser.add_argument("count", type=int, default=10, location="args")
+paginated_parser.add_argument("page", type=int, default=1, location="args")
+paginated_parser.add_argument("sortDir", type=str, dest="sort_dir", location="args")
+paginated_parser.add_argument("sortBy", type=str, dest="sort_by", location="args")
+paginated_parser.add_argument("filter", type=str, location="args")
+paginated_parser.add_argument("owner", type=str, location="args")
 
 
 def get_psuedo_random_string():
     """
     Create a random and strongish challenge.
     """
-    challenge = ''.join(random.choice(string.ascii_uppercase) for x in range(6))  # noqa
-    challenge += ''.join(random.choice("~!@#$%^&*()_+") for x in range(6))  # noqa
-    challenge += ''.join(random.choice(string.ascii_lowercase) for x in range(6))
-    challenge += ''.join(random.choice(string.digits) for x in range(6))  # noqa
+    challenge = "".join(random.choice(string.ascii_uppercase) for x in range(6))  # noqa
+    challenge += "".join(random.choice("~!@#$%^&*()_+") for x in range(6))  # noqa
+    challenge += "".join(random.choice(string.ascii_lowercase) for x in range(6))
+    challenge += "".join(random.choice(string.digits) for x in range(6))  # noqa
     return challenge
 
 
@@ -53,7 +53,7 @@ def parse_certificate(body):
     """
     assert isinstance(body, str)
 
-    return x509.load_pem_x509_certificate(body.encode('utf-8'), default_backend())
+    return x509.load_pem_x509_certificate(body.encode("utf-8"), default_backend())
 
 
 def parse_private_key(private_key):
@@ -66,7 +66,9 @@ def parse_private_key(private_key):
     """
     assert isinstance(private_key, str)
 
-    return load_pem_private_key(private_key.encode('utf8'), password=None, backend=default_backend())
+    return load_pem_private_key(
+        private_key.encode("utf8"), password=None, backend=default_backend()
+    )
 
 
 def split_pem(data):
@@ -100,14 +102,15 @@ def parse_csr(csr):
     """
     assert isinstance(csr, str)
 
-    return x509.load_pem_x509_csr(csr.encode('utf-8'), default_backend())
+    return x509.load_pem_x509_csr(csr.encode("utf-8"), default_backend())
 
 
 def get_authority_key(body):
     """Returns the authority key for a given certificate in hex format"""
     parsed_cert = parse_certificate(body)
     authority_key = parsed_cert.extensions.get_extension_for_class(
-        x509.AuthorityKeyIdentifier).value.key_identifier
+        x509.AuthorityKeyIdentifier
+    ).value.key_identifier
     return authority_key.hex()
 
 
@@ -127,20 +130,17 @@ def generate_private_key(key_type):
     _CURVE_TYPES = {
         "ECCPRIME192V1": ec.SECP192R1(),
         "ECCPRIME256V1": ec.SECP256R1(),
-
         "ECCSECP192R1": ec.SECP192R1(),
         "ECCSECP224R1": ec.SECP224R1(),
         "ECCSECP256R1": ec.SECP256R1(),
         "ECCSECP384R1": ec.SECP384R1(),
         "ECCSECP521R1": ec.SECP521R1(),
         "ECCSECP256K1": ec.SECP256K1(),
-
         "ECCSECT163K1": ec.SECT163K1(),
         "ECCSECT233K1": ec.SECT233K1(),
         "ECCSECT283K1": ec.SECT283K1(),
         "ECCSECT409K1": ec.SECT409K1(),
         "ECCSECT571K1": ec.SECT571K1(),
-
         "ECCSECT163R2": ec.SECT163R2(),
         "ECCSECT233R1": ec.SECT233R1(),
         "ECCSECT283R1": ec.SECT283R1(),
@@ -149,22 +149,20 @@ def generate_private_key(key_type):
     }
 
     if key_type not in CERTIFICATE_KEY_TYPES:
-        raise Exception("Invalid key type: {key_type}. Supported key types: {choices}".format(
-            key_type=key_type,
-            choices=",".join(CERTIFICATE_KEY_TYPES)
-        ))
+        raise Exception(
+            "Invalid key type: {key_type}. Supported key types: {choices}".format(
+                key_type=key_type, choices=",".join(CERTIFICATE_KEY_TYPES)
+            )
+        )
 
-    if 'RSA' in key_type:
+    if "RSA" in key_type:
         key_size = int(key_type[3:])
         return rsa.generate_private_key(
-            public_exponent=65537,
-            key_size=key_size,
-            backend=default_backend()
+            public_exponent=65537, key_size=key_size, backend=default_backend()
         )
-    elif 'ECC' in key_type:
+    elif "ECC" in key_type:
         return ec.generate_private_key(
-            curve=_CURVE_TYPES[key_type],
-            backend=default_backend()
+            curve=_CURVE_TYPES[key_type], backend=default_backend()
         )
 
 
@@ -184,11 +182,26 @@ def check_cert_signature(cert, issuer_public_key):
             raise UnsupportedAlgorithm("RSASSA-PSS not supported")
         else:
             padder = padding.PKCS1v15()
-        issuer_public_key.verify(cert.signature, cert.tbs_certificate_bytes, padder, cert.signature_hash_algorithm)
-    elif isinstance(issuer_public_key, ec.EllipticCurvePublicKey) and isinstance(ec.ECDSA(cert.signature_hash_algorithm), ec.ECDSA):
-            issuer_public_key.verify(cert.signature, cert.tbs_certificate_bytes, ec.ECDSA(cert.signature_hash_algorithm))
+        issuer_public_key.verify(
+            cert.signature,
+            cert.tbs_certificate_bytes,
+            padder,
+            cert.signature_hash_algorithm,
+        )
+    elif isinstance(issuer_public_key, ec.EllipticCurvePublicKey) and isinstance(
+        ec.ECDSA(cert.signature_hash_algorithm), ec.ECDSA
+    ):
+        issuer_public_key.verify(
+            cert.signature,
+            cert.tbs_certificate_bytes,
+            ec.ECDSA(cert.signature_hash_algorithm),
+        )
     else:
-        raise UnsupportedAlgorithm("Unsupported Algorithm '{var}'.".format(var=cert.signature_algorithm_oid._name))
+        raise UnsupportedAlgorithm(
+            "Unsupported Algorithm '{var}'.".format(
+                var=cert.signature_algorithm_oid._name
+            )
+        )
 
 
 def is_selfsigned(cert):
@@ -224,7 +237,9 @@ def validate_conf(app, required_vars):
     """
     for var in required_vars:
         if var not in app.config:
-            raise InvalidConfiguration("Required variable '{var}' is not set in Lemur's conf.".format(var=var))
+            raise InvalidConfiguration(
+                "Required variable '{var}' is not set in Lemur's conf.".format(var=var)
+            )
 
 
 # https://bitbucket.org/zzzeek/sqlalchemy/wiki/UsageRecipes/WindowedRangeQuery
@@ -243,18 +258,15 @@ def column_windows(session, column, windowsize):
     be computed.
 
     """
+
     def int_for_range(start_id, end_id):
         if end_id:
-            return and_(
-                column >= start_id,
-                column < end_id
-            )
+            return and_(column >= start_id, column < end_id)
         else:
             return column >= start_id
 
     q = session.query(
-        column,
-        func.row_number().over(order_by=column).label('rownum')
+        column, func.row_number().over(order_by=column).label("rownum")
     ).from_self(column)
 
     if windowsize > 1:
@@ -274,9 +286,7 @@ def column_windows(session, column, windowsize):
 def windowed_query(q, column, windowsize):
     """"Break a Query into windows on a given column."""
 
-    for whereclause in column_windows(
-            q.session,
-            column, windowsize):
+    for whereclause in column_windows(q.session, column, windowsize):
         for row in q.filter(whereclause).order_by(column):
             yield row
 
@@ -284,7 +294,7 @@ def windowed_query(q, column, windowsize):
 def truthiness(s):
     """If input string resembles something truthy then return True, else False."""
 
-    return s.lower() in ('true', 'yes', 'on', 't', '1')
+    return s.lower() in ("true", "yes", "on", "t", "1")
 
 
 def find_matching_certificates_by_hash(cert, matching_certs):
@@ -292,6 +302,8 @@ def find_matching_certificates_by_hash(cert, matching_certs):
     determine if any of the certificate hashes match and return the matches."""
     matching = []
     for c in matching_certs:
-        if parse_certificate(c.body).fingerprint(hashes.SHA256()) == cert.fingerprint(hashes.SHA256()):
+        if parse_certificate(c.body).fingerprint(hashes.SHA256()) == cert.fingerprint(
+            hashes.SHA256()
+        ):
             matching.append(c)
     return matching
