@@ -13,3 +13,12 @@
     hooks:
     - id: black
       language_version: python3.7
+
+-   repo: local
+    hooks:
+    -   id: python-bandit-vulnerability-check
+        name: bandit
+        entry: bandit
+        args: ['--ini', 'tox.ini', '-r', 'consoleme']
+        language: system
+        pass_filenames: false
