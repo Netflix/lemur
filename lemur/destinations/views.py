@@ -15,15 +15,20 @@ from lemur.auth.permissions import admin_permission
 from lemur.common.utils import paginated_parser
 
 from lemur.common.schema import validate_schema
-from lemur.destinations.schemas import destinations_output_schema, destination_input_schema, destination_output_schema
+from lemur.destinations.schemas import (
+    destinations_output_schema,
+    destination_input_schema,
+    destination_output_schema,
+)
 
 
-mod = Blueprint('destinations', __name__)
+mod = Blueprint("destinations", __name__)
 api = Api(mod)
 
 
 class DestinationsList(AuthenticatedResource):
     """ Defines the 'destinations' endpoint """
+
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(DestinationsList, self).__init__()
@@ -176,7 +181,12 @@ class DestinationsList(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
-        return service.create(data['label'], data['plugin']['slug'], data['plugin']['plugin_options'], data['description'])
+        return service.create(
+            data["label"],
+            data["plugin"]["slug"],
+            data["plugin"]["plugin_options"],
+            data["description"],
+        )
 
 
 class Destinations(AuthenticatedResource):
@@ -325,16 +335,22 @@ class Destinations(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
-        return service.update(destination_id, data['label'], data['plugin']['plugin_options'], data['description'])
+        return service.update(
+            destination_id,
+            data["label"],
+            data["plugin"]["plugin_options"],
+            data["description"],
+        )
 
     @admin_permission.require(http_exception=403)
     def delete(self, destination_id):
         service.delete(destination_id)
-        return {'result': True}
+        return {"result": True}
 
 
 class CertificateDestinations(AuthenticatedResource):
     """ Defines the 'certificate/<int:certificate_id/destinations'' endpoint """
+
     def __init__(self):
         super(CertificateDestinations, self).__init__()
 
@@ -401,25 +417,31 @@ class CertificateDestinations(AuthenticatedResource):
         """
         parser = paginated_parser.copy()
         args = parser.parse_args()
-        args['certificate_id'] = certificate_id
+        args["certificate_id"] = certificate_id
         return service.render(args)
 
 
 class DestinationsStats(AuthenticatedResource):
     """ Defines the 'certificates' stats endpoint """
+
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(DestinationsStats, self).__init__()
 
     def get(self):
-        self.reqparse.add_argument('metric', type=str, location='args')
+        self.reqparse.add_argument("metric", type=str, location="args")
         args = self.reqparse.parse_args()
         items = service.stats(**args)
         return dict(items=items, total=len(items))
 
 
-api.add_resource(DestinationsList, '/destinations', endpoint='destinations')
-api.add_resource(Destinations, '/destinations/<int:destination_id>', endpoint='destination')
-api.add_resource(CertificateDestinations, '/certificates/<int:certificate_id>/destinations',
-                 endpoint='certificateDestinations')
-api.add_resource(DestinationsStats, '/destinations/stats', endpoint='destinationStats')
+api.add_resource(DestinationsList, "/destinations", endpoint="destinations")
+api.add_resource(
+    Destinations, "/destinations/<int:destination_id>", endpoint="destination"
+)
+api.add_resource(
+    CertificateDestinations,
+    "/certificates/<int:certificate_id>/destinations",
+    endpoint="certificateDestinations",
+)
+api.add_resource(DestinationsStats, "/destinations/stats", endpoint="destinationStats")

@@ -5,7 +5,9 @@ from lemur.dns_providers.service import get_all_dns_providers, set_domains
 from lemur.extensions import metrics
 from lemur.plugins.base import plugins
 
-manager = Manager(usage="Iterates through all DNS providers and sets DNS zones in the database.")
+manager = Manager(
+    usage="Iterates through all DNS providers and sets DNS zones in the database."
+)
 
 
 @manager.command
@@ -27,5 +29,5 @@ def get_all_zones():
 
     status = SUCCESS_METRIC_STATUS
 
-    metrics.send('get_all_zones', 'counter', 1, metric_tags={'status': status})
+    metrics.send("get_all_zones", "counter", 1, metric_tags={"status": status})
     print("[+] Done with dns provider zone lookup and configuration.")

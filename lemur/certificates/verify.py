@@ -29,31 +29,45 @@ def ocsp_verify(cert, cert_path, issuer_chain_path):
     :param issuer_chain_path:
     :return bool: True if certificate is valid, False otherwise
     """
-    command = ['openssl', 'x509', '-noout', '-ocsp_uri', '-in', cert_path]
+    command = ["openssl", "x509", "-noout", "-ocsp_uri", "-in", cert_path]
     p1 = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     url, err = p1.communicate()
 
     if not url:
-        current_app.logger.debug("No OCSP URL in certificate {}".format(cert.serial_number))
+        current_app.logger.debug(
+            "No OCSP URL in certificate {}".format(cert.serial_number)
+        )
         return None
 
-    p2 = subprocess.Popen(['openssl', 'ocsp', '-issuer', issuer_chain_path,
-                           '-cert', cert_path, "-url", url.strip()],
-                          stdout=subprocess.PIPE,
-                          stderr=subprocess.PIPE)
+    p2 = subprocess.Popen(
+        [
+            "openssl",
+            "ocsp",
+            "-issuer",
+            issuer_chain_path,
+            "-cert",
+            cert_path,
+            "-url",
+            url.strip(),
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
 
     message, err = p2.communicate()
 
-    p_message = message.decode('utf-8')
+    p_message = message.decode("utf-8")
 
-    if 'error' in p_message or 'Error' in p_message:
+    if "error" in p_message or "Error" in p_message:
         raise Exception("Got error when parsing OCSP url")
 
-    elif 'revoked' in p_message:
-        current_app.logger.debug("OCSP reports certificate revoked: {}".format(cert.serial_number))
+    elif "revoked" in p_message:
+        current_app.logger.debug(
+            "OCSP reports certificate revoked: {}".format(cert.serial_number)
+        )
         return False
 
-    elif 'good' not in p_message:
+    elif "good" not in p_message:
         raise Exception("Did not receive a valid response")
 
     return True
@@ -73,7 +87,9 @@ def crl_verify(cert, cert_path):
             x509.OID_CRL_DISTRIBUTION_POINTS
         ).value
     except x509.ExtensionNotFound:
-        current_app.logger.debug("No CRLDP extension in certificate {}".format(cert.serial_number))
+        current_app.logger.debug(
+            "No CRLDP extension in certificate {}".format(cert.serial_number)
+        )
         return None
 
     for p in distribution_points:
@@ -92,8 +108,9 @@ def crl_verify(cert, cert_path):
             except ConnectionError:
                 raise Exception("Unable to retrieve CRL: {0}".format(point))
 
-            crl_cache[point] = x509.load_der_x509_crl(response.content,
-                                                      backend=default_backend())
+            crl_cache[point] = x509.load_der_x509_crl(
+                response.content, backend=default_backend()
+            )
         else:
             current_app.logger.debug("CRL point is cached {}".format(point))
 
@@ -110,8 +127,9 @@ def crl_verify(cert, cert_path):
                 except x509.ExtensionNotFound:
                     pass
 
-                current_app.logger.debug("CRL reports certificate "
-                                         "revoked: {}".format(cert.serial_number))
+                current_app.logger.debug(
+                    "CRL reports certificate " "revoked: {}".format(cert.serial_number)
+                )
                 return False
 
     return True
@@ -125,7 +143,7 @@ def verify(cert_path, issuer_chain_path):
     :param issuer_chain_path:
     :return: True if valid, False otherwise
     """
-    with open(cert_path, 'rt') as c:
+    with open(cert_path, "rt") as c:
         try:
             cert = parse_certificate(c.read())
         except ValueError as e:
@@ -154,10 +172,10 @@ def verify_string(cert_string, issuer_string):
     :return: True if valid, False otherwise
     """
     with mktempfile() as cert_tmp:
-        with open(cert_tmp, 'w') as f:
+        with open(cert_tmp, "w") as f:
             f.write(cert_string)
         with mktempfile() as issuer_tmp:
-            with open(issuer_tmp, 'w') as f:
+            with open(issuer_tmp, "w") as f:
                 f.write(issuer_string)
             status = verify(cert_tmp, issuer_tmp)
     return status

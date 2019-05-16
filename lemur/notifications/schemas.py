@@ -7,7 +7,11 @@
 """
 from marshmallow import fields, post_dump
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
-from lemur.schemas import PluginInputSchema, PluginOutputSchema, AssociatedCertificateSchema
+from lemur.schemas import (
+    PluginInputSchema,
+    PluginOutputSchema,
+    AssociatedCertificateSchema,
+)
 
 
 class NotificationInputSchema(LemurInputSchema):
@@ -30,7 +34,7 @@ class NotificationOutputSchema(LemurOutputSchema):
     @post_dump
     def fill_object(self, data):
         if data:
-            data['plugin']['pluginOptions'] = data['options']
+            data["plugin"]["pluginOptions"] = data["options"]
         return data
 
 

@@ -31,26 +31,28 @@ def create_default_expiration_notifications(name, recipients, intervals=None):
 
     options = [
         {
-            'name': 'unit',
-            'type': 'select',
-            'required': True,
-            'validation': '',
-            'available': ['days', 'weeks', 'months'],
-            'helpMessage': 'Interval unit',
-            'value': 'days',
+            "name": "unit",
+            "type": "select",
+            "required": True,
+            "validation": "",
+            "available": ["days", "weeks", "months"],
+            "helpMessage": "Interval unit",
+            "value": "days",
         },
         {
-            'name': 'recipients',
-            'type': 'str',
-            'required': True,
-            'validation': '^([\w+-.%]+@[\w-.]+\.[A-Za-z]{2,4},?)+$',
-            'helpMessage': 'Comma delimited list of email addresses',
-            'value': ','.join(recipients)
+            "name": "recipients",
+            "type": "str",
+            "required": True,
+            "validation": "^([\w+-.%]+@[\w-.]+\.[A-Za-z]{2,4},?)+$",
+            "helpMessage": "Comma delimited list of email addresses",
+            "value": ",".join(recipients),
         },
     ]
 
     if intervals is None:
-        intervals = current_app.config.get("LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS", [30, 15, 2])
+        intervals = current_app.config.get(
+            "LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS", [30, 15, 2]
+        )
 
     notifications = []
     for i in intervals:
@@ -58,21 +60,25 @@ def create_default_expiration_notifications(name, recipients, intervals=None):
         if not n:
             inter = [
                 {
-                    'name': 'interval',
-                    'type': 'int',
-                    'required': True,
-                    'validation': '^\d+$',
-                    'helpMessage': 'Number of days to be alert before expiration.',
-                    'value': i,
+                    "name": "interval",
+                    "type": "int",
+                    "required": True,
+                    "validation": "^\d+$",
+                    "helpMessage": "Number of days to be alert before expiration.",
+                    "value": i,
                 }
             ]
             inter.extend(options)
             n = create(
                 label="{name}_{interval}_DAY".format(name=name, interval=i),
-                plugin_name=current_app.config.get("LEMUR_DEFAULT_NOTIFICATION_PLUGIN", "email-notification"),
+                plugin_name=current_app.config.get(
+                    "LEMUR_DEFAULT_NOTIFICATION_PLUGIN", "email-notification"
+                ),
                 options=list(inter),
-                description="Default {interval} day expiration notification".format(interval=i),
-                certificates=[]
+                description="Default {interval} day expiration notification".format(
+                    interval=i
+                ),
+                certificates=[],
             )
         notifications.append(n)
 
@@ -91,7 +97,9 @@ def create(label, plugin_name, options, description, certificates):
     :rtype : Notification
     :return:
     """
-    notification = Notification(label=label, options=options, plugin_name=plugin_name, description=description)
+    notification = Notification(
+        label=label, options=options, plugin_name=plugin_name, description=description
+    )
     notification.certificates = certificates
     return database.create(notification)
 
@@ -147,7 +155,7 @@ def get_by_label(label):
     :param label:
     :return:
     """
-    return database.get(Notification, label, field='label')
+    return database.get(Notification, label, field="label")
 
 
 def get_all():
@@ -161,18 +169,20 @@ def get_all():
 
 
 def render(args):
-    filt = args.pop('filter')
-    certificate_id = args.pop('certificate_id', None)
+    filt = args.pop("filter")
+    certificate_id = args.pop("certificate_id", None)
 
     if certificate_id:
-        query = database.session_query(Notification).join(Certificate, Notification.certificate)
+        query = database.session_query(Notification).join(
+            Certificate, Notification.certificate
+        )
         query = query.filter(Certificate.id == certificate_id)
     else:
         query = database.session_query(Notification)
 
     if filt:
-        terms = filt.split(';')
-        if terms[0] == 'active':
+        terms = filt.split(";")
+        if terms[0] == "active":
             query = query.filter(Notification.active == truthiness(terms[1]))
         else:
             query = database.filter(query, Notification, terms)

@@ -2,12 +2,12 @@ from lemur.plugins.bases import DestinationPlugin
 
 
 class TestDestinationPlugin(DestinationPlugin):
-    title = 'Test'
-    slug = 'test-destination'
-    description = 'Enables testing'
+    title = "Test"
+    slug = "test-destination"
+    description = "Enables testing"
 
-    author = 'Kevin Glisson'
-    author_url = 'https://github.com/netflix/lemur.git'
+    author = "Kevin Glisson"
+    author_url = "https://github.com/netflix/lemur.git"
 
     def __init__(self, *args, **kwargs):
         super(TestDestinationPlugin, self).__init__(*args, **kwargs)

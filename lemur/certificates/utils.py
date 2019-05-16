@@ -23,17 +23,18 @@ def get_sans_from_csr(data):
     """
     sub_alt_names = []
     try:
-        request = x509.load_pem_x509_csr(data.encode('utf-8'), default_backend())
+        request = x509.load_pem_x509_csr(data.encode("utf-8"), default_backend())
     except Exception:
-        raise ValidationError('CSR presented is not valid.')
+        raise ValidationError("CSR presented is not valid.")
 
     try:
-        alt_names = request.extensions.get_extension_for_class(x509.SubjectAlternativeName)
+        alt_names = request.extensions.get_extension_for_class(
+            x509.SubjectAlternativeName
+        )
         for alt_name in alt_names.value:
-            sub_alt_names.append({
-                'nameType': type(alt_name).__name__,
-                'value': alt_name.value
-            })
+            sub_alt_names.append(
+                {"nameType": type(alt_name).__name__, "value": alt_name.value}
+            )
     except x509.ExtensionNotFound:
         pass
 

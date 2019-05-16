@@ -17,8 +17,8 @@ def get_plugin_option(name, options):
     :return:
     """
     for o in options:
-        if o.get('name') == name:
-            return o.get('value', o.get('default'))
+        if o.get("name") == name:
+            return o.get("value", o.get("default"))
 
 
 def set_plugin_option(name, value, options):
@@ -27,5 +27,5 @@ def set_plugin_option(name, value, options):
     :param options:
     """
     for o in options:
-        if o.get('name') == name:
-            o.update({'value': value})
+        if o.get("name") == name:
+            o.update({"value": value})

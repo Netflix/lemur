@@ -18,15 +18,20 @@ from lemur.users import service
 from lemur.certificates import service as certificate_service
 from lemur.roles import service as role_service
 
-from lemur.users.schemas import user_input_schema, user_output_schema, users_output_schema
+from lemur.users.schemas import (
+    user_input_schema,
+    user_output_schema,
+    users_output_schema,
+)
 
 
-mod = Blueprint('users', __name__)
+mod = Blueprint("users", __name__)
 api = Api(mod)
 
 
 class UsersList(AuthenticatedResource):
     """ Defines the 'users' endpoint """
+
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(UsersList, self).__init__()
@@ -83,8 +88,8 @@ class UsersList(AuthenticatedResource):
            :statuscode 200: no error
         """
         parser = paginated_parser.copy()
-        parser.add_argument('owner', type=str, location='args')
-        parser.add_argument('id', type=str, location='args')
+        parser.add_argument("owner", type=str, location="args")
+        parser.add_argument("id", type=str, location="args")
         args = parser.parse_args()
         return service.render(args)
 
@@ -137,7 +142,14 @@ class UsersList(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
-        return service.create(data['username'], data['password'], data['email'], data['active'], None, data['roles'])
+        return service.create(
+            data["username"],
+            data["password"],
+            data["email"],
+            data["active"],
+            None,
+            data["roles"],
+        )
 
 
 class Users(AuthenticatedResource):
@@ -225,7 +237,14 @@ class Users(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
-        return service.update(user_id, data['username'], data['email'], data['active'], None, data['roles'])
+        return service.update(
+            user_id,
+            data["username"],
+            data["email"],
+            data["active"],
+            None,
+            data["roles"],
+        )
 
 
 class CertificateUsers(AuthenticatedResource):
@@ -365,8 +384,12 @@ class Me(AuthenticatedResource):
         return g.current_user
 
 
-api.add_resource(Me, '/auth/me', endpoint='me')
-api.add_resource(UsersList, '/users', endpoint='users')
-api.add_resource(Users, '/users/<int:user_id>', endpoint='user')
-api.add_resource(CertificateUsers, '/certificates/<int:certificate_id>/creator', endpoint='certificateCreator')
-api.add_resource(RoleUsers, '/roles/<int:role_id>/users', endpoint='roleUsers')
+api.add_resource(Me, "/auth/me", endpoint="me")
+api.add_resource(UsersList, "/users", endpoint="users")
+api.add_resource(Users, "/users/<int:user_id>", endpoint="user")
+api.add_resource(
+    CertificateUsers,
+    "/certificates/<int:certificate_id>/creator",
+    endpoint="certificateCreator",
+)
+api.add_resource(RoleUsers, "/roles/<int:role_id>/users", endpoint="roleUsers")

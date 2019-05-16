@@ -12,7 +12,7 @@ def test_private_key(session):
     parse_private_key(SAN_CERT_KEY)
 
     with pytest.raises(ValueError):
-        parse_private_key('invalid_private_key')
+        parse_private_key("invalid_private_key")
 
 
 def test_validate_private_key(session):
@@ -29,7 +29,7 @@ def test_sub_alt_type(session):
     from lemur.common.validators import sub_alt_type
 
     with pytest.raises(ValidationError):
-        sub_alt_type('CNAME')
+        sub_alt_type("CNAME")
 
 
 def test_dates(session):
@@ -44,7 +44,13 @@ def test_dates(session):
         dates(dict(validity_end=datetime(2016, 1, 1)))
 
     with pytest.raises(ValidationError):
-        dates(dict(validity_start=datetime(2016, 1, 5), validity_end=datetime(2016, 1, 1)))
+        dates(
+            dict(validity_start=datetime(2016, 1, 5), validity_end=datetime(2016, 1, 1))
+        )
 
     with pytest.raises(ValidationError):
-        dates(dict(validity_start=datetime(2016, 1, 1), validity_end=datetime(2016, 1, 10)))
+        dates(
+            dict(
+                validity_start=datetime(2016, 1, 1), validity_end=datetime(2016, 1, 10)
+            )
+        )

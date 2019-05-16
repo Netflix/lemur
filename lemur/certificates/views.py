@@ -26,14 +26,14 @@ from lemur.certificates.schemas import (
     certificate_upload_input_schema,
     certificates_output_schema,
     certificate_export_input_schema,
-    certificate_edit_input_schema
+    certificate_edit_input_schema,
 )
 
 from lemur.roles import service as role_service
 from lemur.logs import service as log_service
 
 
-mod = Blueprint('certificates', __name__)
+mod = Blueprint("certificates", __name__)
 api = Api(mod)
 
 
@@ -128,8 +128,8 @@ class CertificatesListValid(AuthenticatedResource):
         """
         parser = paginated_parser.copy()
         args = parser.parse_args()
-        args['user'] = g.user
-        common_name = args['filter'].split(';')[1]
+        args["user"] = g.user
+        common_name = args["filter"].split(";")[1]
         return service.query_common_name(common_name, args)
 
 
@@ -228,16 +228,18 @@ class CertificatesNameQuery(AuthenticatedResource):
 
         """
         parser = paginated_parser.copy()
-        parser.add_argument('timeRange', type=int, dest='time_range', location='args')
-        parser.add_argument('owner', type=inputs.boolean, location='args')
-        parser.add_argument('id', type=str, location='args')
-        parser.add_argument('active', type=inputs.boolean, location='args')
-        parser.add_argument('destinationId', type=int, dest="destination_id", location='args')
-        parser.add_argument('creator', type=str, location='args')
-        parser.add_argument('show', type=str, location='args')
+        parser.add_argument("timeRange", type=int, dest="time_range", location="args")
+        parser.add_argument("owner", type=inputs.boolean, location="args")
+        parser.add_argument("id", type=str, location="args")
+        parser.add_argument("active", type=inputs.boolean, location="args")
+        parser.add_argument(
+            "destinationId", type=int, dest="destination_id", location="args"
+        )
+        parser.add_argument("creator", type=str, location="args")
+        parser.add_argument("show", type=str, location="args")
 
         args = parser.parse_args()
-        args['user'] = g.user
+        args["user"] = g.user
         return service.query_name(certificate_name, args)
 
 
@@ -336,16 +338,18 @@ class CertificatesList(AuthenticatedResource):
 
         """
         parser = paginated_parser.copy()
-        parser.add_argument('timeRange', type=int, dest='time_range', location='args')
-        parser.add_argument('owner', type=inputs.boolean, location='args')
-        parser.add_argument('id', type=str, location='args')
-        parser.add_argument('active', type=inputs.boolean, location='args')
-        parser.add_argument('destinationId', type=int, dest="destination_id", location='args')
-        parser.add_argument('creator', type=str, location='args')
-        parser.add_argument('show', type=str, location='args')
+        parser.add_argument("timeRange", type=int, dest="time_range", location="args")
+        parser.add_argument("owner", type=inputs.boolean, location="args")
+        parser.add_argument("id", type=str, location="args")
+        parser.add_argument("active", type=inputs.boolean, location="args")
+        parser.add_argument(
+            "destinationId", type=int, dest="destination_id", location="args"
+        )
+        parser.add_argument("creator", type=str, location="args")
+        parser.add_argument("show", type=str, location="args")
 
         args = parser.parse_args()
-        args['user'] = g.user
+        args["user"] = g.user
         return service.render(args)
 
     @validate_schema(certificate_input_schema, certificate_output_schema)
@@ -463,24 +467,31 @@ class CertificatesList(AuthenticatedResource):
            :statuscode 403: unauthenticated
 
         """
-        role = role_service.get_by_name(data['authority'].owner)
+        role = role_service.get_by_name(data["authority"].owner)
 
         # all the authority role members should be allowed
-        roles = [x.name for x in data['authority'].roles]
+        roles = [x.name for x in data["authority"].roles]
 
         # allow "owner" roles by team DL
         roles.append(role)
-        authority_permission = AuthorityPermission(data['authority'].id, roles)
+        authority_permission = AuthorityPermission(data["authority"].id, roles)
 
         if authority_permission.can():
-            data['creator'] = g.user
+            data["creator"] = g.user
             cert = service.create(**data)
             if isinstance(cert, Certificate):
                 # only log if created, not pending
-                log_service.create(g.user, 'create_cert', certificate=cert)
+                log_service.create(g.user, "create_cert", certificate=cert)
             return cert
 
-        return dict(message="You are not authorized to use the authority: {0}".format(data['authority'].name)), 403
+        return (
+            dict(
+                message="You are not authorized to use the authority: {0}".format(
+                    data["authority"].name
+                )
+            ),
+            403,
+        )
 
 
 class CertificatesUpload(AuthenticatedResource):
@@ -583,12 +594,14 @@ class CertificatesUpload(AuthenticatedResource):
            :statuscode 200: no error
 
         """
-        data['creator'] = g.user
-        if data.get('destinations'):
-            if data.get('private_key'):
+        data["creator"] = g.user
+        if data.get("destinations"):
+            if data.get("private_key"):
                 return service.upload(**data)
             else:
-                raise Exception("Private key must be provided in order to upload certificate to AWS")
+                raise Exception(
+                    "Private key must be provided in order to upload certificate to AWS"
+                )
         return service.upload(**data)
 
 
@@ -600,10 +613,12 @@ class CertificatesStats(AuthenticatedResource):
         super(CertificatesStats, self).__init__()
 
     def get(self):
-        self.reqparse.add_argument('metric', type=str, location='args')
-        self.reqparse.add_argument('range', default=32, type=int, location='args')
-        self.reqparse.add_argument('destinationId', dest='destination_id', location='args')
-        self.reqparse.add_argument('active', type=str, default='true', location='args')
+        self.reqparse.add_argument("metric", type=str, location="args")
+        self.reqparse.add_argument("range", default=32, type=int, location="args")
+        self.reqparse.add_argument(
+            "destinationId", dest="destination_id", location="args"
+        )
+        self.reqparse.add_argument("active", type=str, default="true", location="args")
 
         args = self.reqparse.parse_args()
 
@@ -655,12 +670,12 @@ class CertificatePrivateKey(AuthenticatedResource):
             permission = CertificatePermission(owner_role, [x.name for x in cert.roles])
 
             if not permission.can():
-                return dict(message='You are not authorized to view this key'), 403
+                return dict(message="You are not authorized to view this key"), 403
 
-        log_service.create(g.current_user, 'key_view', certificate=cert)
+        log_service.create(g.current_user, "key_view", certificate=cert)
         response = make_response(jsonify(key=cert.private_key), 200)
-        response.headers['cache-control'] = 'private, max-age=0, no-cache, no-store'
-        response.headers['pragma'] = 'no-cache'
+        response.headers["cache-control"] = "private, max-age=0, no-cache, no-store"
+        response.headers["pragma"] = "no-cache"
         return response
 
 
@@ -850,19 +865,25 @@ class Certificates(AuthenticatedResource):
             permission = CertificatePermission(owner_role, [x.name for x in cert.roles])
 
             if not permission.can():
-                return dict(message='You are not authorized to update this certificate'), 403
+                return (
+                    dict(message="You are not authorized to update this certificate"),
+                    403,
+                )
 
-        for destination in data['destinations']:
+        for destination in data["destinations"]:
             if destination.plugin.requires_key:
                 if not cert.private_key:
-                    return dict(
-                        message='Unable to add destination: {0}. Certificate does not have required private key.'.format(
-                            destination.label
-                        )
-                    ), 400
+                    return (
+                        dict(
+                            message="Unable to add destination: {0}. Certificate does not have required private key.".format(
+                                destination.label
+                            )
+                        ),
+                        400,
+                    )
 
         cert = service.update(certificate_id, **data)
-        log_service.create(g.current_user, 'update_cert', certificate=cert)
+        log_service.create(g.current_user, "update_cert", certificate=cert)
         return cert
 
     def delete(self, certificate_id, data=None):
@@ -891,7 +912,7 @@ class Certificates(AuthenticatedResource):
            :statuscode 405: certificate deletion is disabled
 
         """
-        if not current_app.config.get('ALLOW_CERT_DELETION', False):
+        if not current_app.config.get("ALLOW_CERT_DELETION", False):
             return dict(message="Certificate deletion is disabled"), 405
 
         cert = service.get(certificate_id)
@@ -908,11 +929,14 @@ class Certificates(AuthenticatedResource):
             permission = CertificatePermission(owner_role, [x.name for x in cert.roles])
 
             if not permission.can():
-                return dict(message='You are not authorized to delete this certificate'), 403
+                return (
+                    dict(message="You are not authorized to delete this certificate"),
+                    403,
+                )
 
         service.update(certificate_id, deleted=True)
-        log_service.create(g.current_user, 'delete_cert', certificate=cert)
-        return 'Certificate deleted', 204
+        log_service.create(g.current_user, "delete_cert", certificate=cert)
+        return "Certificate deleted", 204
 
 
 class NotificationCertificatesList(AuthenticatedResource):
@@ -1012,17 +1036,19 @@ class NotificationCertificatesList(AuthenticatedResource):
 
         """
         parser = paginated_parser.copy()
-        parser.add_argument('timeRange', type=int, dest='time_range', location='args')
-        parser.add_argument('owner', type=inputs.boolean, location='args')
-        parser.add_argument('id', type=str, location='args')
-        parser.add_argument('active', type=inputs.boolean, location='args')
-        parser.add_argument('destinationId', type=int, dest="destination_id", location='args')
-        parser.add_argument('creator', type=str, location='args')
-        parser.add_argument('show', type=str, location='args')
+        parser.add_argument("timeRange", type=int, dest="time_range", location="args")
+        parser.add_argument("owner", type=inputs.boolean, location="args")
+        parser.add_argument("id", type=str, location="args")
+        parser.add_argument("active", type=inputs.boolean, location="args")
+        parser.add_argument(
+            "destinationId", type=int, dest="destination_id", location="args"
+        )
+        parser.add_argument("creator", type=str, location="args")
+        parser.add_argument("show", type=str, location="args")
 
         args = parser.parse_args()
-        args['notification_id'] = notification_id
-        args['user'] = g.current_user
+        args["notification_id"] = notification_id
+        args["user"] = g.current_user
         return service.render(args)
 
 
@@ -1195,30 +1221,48 @@ class CertificateExport(AuthenticatedResource):
         if not cert:
             return dict(message="Cannot find specified certificate"), 404
 
-        plugin = data['plugin']['plugin_object']
+        plugin = data["plugin"]["plugin_object"]
 
         if plugin.requires_key:
             if not cert.private_key:
-                return dict(
-                    message='Unable to export certificate, plugin: {0} requires a private key but no key was found.'.format(
-                        plugin.slug)), 400
+                return (
+                    dict(
+                        message="Unable to export certificate, plugin: {0} requires a private key but no key was found.".format(
+                            plugin.slug
+                        )
+                    ),
+                    400,
+                )
 
             else:
                 # allow creators
                 if g.current_user != cert.user:
                     owner_role = role_service.get_by_name(cert.owner)
-                    permission = CertificatePermission(owner_role, [x.name for x in cert.roles])
+                    permission = CertificatePermission(
+                        owner_role, [x.name for x in cert.roles]
+                    )
 
                     if not permission.can():
-                        return dict(message='You are not authorized to export this certificate.'), 403
+                        return (
+                            dict(
+                                message="You are not authorized to export this certificate."
+                            ),
+                            403,
+                        )
 
-        options = data['plugin']['plugin_options']
+        options = data["plugin"]["plugin_options"]
 
-        log_service.create(g.current_user, 'key_view', certificate=cert)
-        extension, passphrase, data = plugin.export(cert.body, cert.chain, cert.private_key, options)
+        log_service.create(g.current_user, "key_view", certificate=cert)
+        extension, passphrase, data = plugin.export(
+            cert.body, cert.chain, cert.private_key, options
+        )
 
         # we take a hit in message size when b64 encoding
-        return dict(extension=extension, passphrase=passphrase, data=base64.b64encode(data).decode('utf-8'))
+        return dict(
+            extension=extension,
+            passphrase=passphrase,
+            data=base64.b64encode(data).decode("utf-8"),
+        )
 
 
 class CertificateRevoke(AuthenticatedResource):
@@ -1269,30 +1313,66 @@ class CertificateRevoke(AuthenticatedResource):
             permission = CertificatePermission(owner_role, [x.name for x in cert.roles])
 
             if not permission.can():
-                return dict(message='You are not authorized to revoke this certificate.'), 403
+                return (
+                    dict(message="You are not authorized to revoke this certificate."),
+                    403,
+                )
 
         if not cert.external_id:
-            return dict(message='Cannot revoke certificate. No external id found.'), 400
+            return dict(message="Cannot revoke certificate. No external id found."), 400
 
         if cert.endpoints:
-            return dict(message='Cannot revoke certificate. Endpoints are deployed with the given certificate.'), 403
+            return (
+                dict(
+                    message="Cannot revoke certificate. Endpoints are deployed with the given certificate."
+                ),
+                403,
+            )
 
         plugin = plugins.get(cert.authority.plugin_name)
         plugin.revoke_certificate(cert, data)
-        log_service.create(g.current_user, 'revoke_cert', certificate=cert)
+        log_service.create(g.current_user, "revoke_cert", certificate=cert)
         return dict(id=cert.id)
 
 
-api.add_resource(CertificateRevoke, '/certificates/<int:certificate_id>/revoke', endpoint='revokeCertificate')
-api.add_resource(CertificatesNameQuery, '/certificates/name/<string:certificate_name>', endpoint='certificatesNameQuery')
-api.add_resource(CertificatesList, '/certificates', endpoint='certificates')
-api.add_resource(CertificatesListValid, '/certificates/valid', endpoint='certificatesListValid')
-api.add_resource(Certificates, '/certificates/<int:certificate_id>', endpoint='certificate')
-api.add_resource(CertificatesStats, '/certificates/stats', endpoint='certificateStats')
-api.add_resource(CertificatesUpload, '/certificates/upload', endpoint='certificateUpload')
-api.add_resource(CertificatePrivateKey, '/certificates/<int:certificate_id>/key', endpoint='privateKeyCertificates')
-api.add_resource(CertificateExport, '/certificates/<int:certificate_id>/export', endpoint='exportCertificate')
-api.add_resource(NotificationCertificatesList, '/notifications/<int:notification_id>/certificates',
-                 endpoint='notificationCertificates')
-api.add_resource(CertificatesReplacementsList, '/certificates/<int:certificate_id>/replacements',
-                 endpoint='replacements')
+api.add_resource(
+    CertificateRevoke,
+    "/certificates/<int:certificate_id>/revoke",
+    endpoint="revokeCertificate",
+)
+api.add_resource(
+    CertificatesNameQuery,
+    "/certificates/name/<string:certificate_name>",
+    endpoint="certificatesNameQuery",
+)
+api.add_resource(CertificatesList, "/certificates", endpoint="certificates")
+api.add_resource(
+    CertificatesListValid, "/certificates/valid", endpoint="certificatesListValid"
+)
+api.add_resource(
+    Certificates, "/certificates/<int:certificate_id>", endpoint="certificate"
+)
+api.add_resource(CertificatesStats, "/certificates/stats", endpoint="certificateStats")
+api.add_resource(
+    CertificatesUpload, "/certificates/upload", endpoint="certificateUpload"
+)
+api.add_resource(
+    CertificatePrivateKey,
+    "/certificates/<int:certificate_id>/key",
+    endpoint="privateKeyCertificates",
+)
+api.add_resource(
+    CertificateExport,
+    "/certificates/<int:certificate_id>/export",
+    endpoint="exportCertificate",
+)
+api.add_resource(
+    NotificationCertificatesList,
+    "/notifications/<int:notification_id>/certificates",
+    endpoint="notificationCertificates",
+)
+api.add_resource(
+    CertificatesReplacementsList,
+    "/certificates/<int:certificate_id>/replacements",
+    endpoint="replacements",
+)

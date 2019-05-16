@@ -12,14 +12,19 @@ from lemur.database import db
 
 
 class ApiKey(db.Model):
-    __tablename__ = 'api_keys'
+    __tablename__ = "api_keys"
     id = Column(Integer, primary_key=True)
     name = Column(String)
-    user_id = Column(Integer, ForeignKey('users.id'))
+    user_id = Column(Integer, ForeignKey("users.id"))
     ttl = Column(BigInteger)
     issued_at = Column(BigInteger)
     revoked = Column(Boolean)
 
     def __repr__(self):
         return "ApiKey(name={name}, user_id={user_id}, ttl={ttl}, issued_at={iat}, revoked={revoked})".format(
-            user_id=self.user_id, name=self.name, ttl=self.ttl, iat=self.issued_at, revoked=self.revoked)
+            user_id=self.user_id,
+            name=self.name,
+            ttl=self.ttl,
+            iat=self.issued_at,
+            revoked=self.revoked,
+        )
