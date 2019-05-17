@@ -17,8 +17,8 @@ babel==2.6.0              # via sphinx
 bcrypt==3.1.6
 billiard==3.6.0.0
 blinker==1.4
-boto3==1.9.149
-botocore==1.12.149
+boto3==1.9.150
+botocore==1.12.150
 celery[redis]==4.3.0
 certifi==2019.3.9
 certsrv==2.1.1
@@ -54,6 +54,7 @@ josepy==1.1.0
 jsonlines==1.2.0
 kombu==4.5.0
 lockfile==0.12.2
+logmatic-python==0.1.7
 mako==1.0.10
 markupsafe==1.1.1
 marshmallow-sqlalchemy==0.16.3
@@ -77,6 +78,7 @@ pyparsing==2.4.0          # via packaging
 pyrfc3339==1.1
 python-dateutil==2.8.0
 python-editor==1.0.4
+python-json-logger==0.1.11
 pytz==2019.1
 pyyaml==5.1
 raven[flask]==6.10.0

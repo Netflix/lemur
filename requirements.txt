@@ -15,8 +15,8 @@ asyncpool==1.0
 bcrypt==3.1.6             # via flask-bcrypt, paramiko
 billiard==3.6.0.0         # via celery
 blinker==1.4              # via flask-mail, flask-principal, raven
-boto3==1.9.149
-botocore==1.12.149
+boto3==1.9.150
+botocore==1.12.150
 celery[redis]==4.3.0
 certifi==2019.3.9
 certsrv==2.1.1
@@ -51,6 +51,7 @@ josepy==1.1.0             # via acme
 jsonlines==1.2.0          # via cloudflare
 kombu==4.5.0
 lockfile==0.12.2
+logmatic-python==0.1.7
 mako==1.0.10              # via alembic
 markupsafe==1.1.1         # via jinja2, mako
 marshmallow-sqlalchemy==0.16.3
@@ -71,6 +72,7 @@ pyopenssl==19.0.0
 pyrfc3339==1.1            # via acme
 python-dateutil==2.8.0    # via alembic, arrow, botocore
 python-editor==1.0.4      # via alembic
+python-json-logger==0.1.11  # via logmatic-python
 python-ldap==3.2.0
 pytz==2019.1              # via acme, celery, flask-restful, pyrfc3339
 pyyaml==5.1

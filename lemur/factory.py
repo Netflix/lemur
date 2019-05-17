@@ -13,11 +13,13 @@ import os
 import imp
 import errno
 import pkg_resources
+import socket
 
 from logging import Formatter, StreamHandler
 from logging.handlers import RotatingFileHandler
 
 from flask import Flask
+import logmatic
 
 from lemur.certificates.hooks import activate_debug_dump
 from lemur.common.health import mod as health
@@ -171,6 +173,11 @@ def configure_logging(app):
             "%(asctime)s %(levelname)s: %(message)s " "[in %(pathname)s:%(lineno)d]"
         )
     )
+
+    if app.config.get("LOG_JSON", False):
+        handler.setFormatter(
+            logmatic.JsonFormatter(extra={"hostname": socket.gethostname()})
+        )
 
     handler.setLevel(app.config.get("LOG_LEVEL", "DEBUG"))
     app.logger.setLevel(app.config.get("LOG_LEVEL", "DEBUG"))

@@ -30,6 +30,7 @@ inflection
 jinja2
 kombu
 lockfile
+logmatic-python
 marshmallow-sqlalchemy
 marshmallow
 ndg-httpsclient
