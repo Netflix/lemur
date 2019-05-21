@@ -72,6 +72,7 @@ def upload_cert(name, body, private_key, path, cert_chain=None, **kwargs):
     else:
         name = name + "-" + path.strip("/")
 
+    metrics.send("upload_cert", "counter", 1, metric_tags={"name": name, "path": path})
     try:
         if cert_chain:
             return client.upload_server_certificate(
@@ -103,6 +104,7 @@ def delete_cert(cert_name, **kwargs):
     :return:
     """
     client = kwargs.pop("client")
+    metrics.send("delete_cert", "counter", 1, metric_tags={"cert_name": cert_name})
     try:
         client.delete_server_certificate(ServerCertificateName=cert_name)
     except botocore.exceptions.ClientError as e:
@@ -119,6 +121,7 @@ def get_certificate(name, **kwargs):
     :return:
     """
     client = kwargs.pop("client")
+    metrics.send("get_certificate", "counter", 1, metric_tags={"name": name})
     return client.get_server_certificate(ServerCertificateName=name)[
         "ServerCertificate"
     ]
@@ -133,6 +136,7 @@ def get_certificates(**kwargs):
     :return:
     """
     client = kwargs.pop("client")
+    metrics.send("get_certificates", "counter", 1)
     return client.list_server_certificates(**kwargs)
 
 
@@ -142,6 +146,12 @@ def get_all_certificates(**kwargs):
     """
     certificates = []
     account_number = kwargs.get("account_number")
+    metrics.send(
+        "get_all_certificates",
+        "counter",
+        1,
+        metric_tags={"account_number": account_number},
+    )
 
     while True:
         response = get_certificates(**kwargs)
