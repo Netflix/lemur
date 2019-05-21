@@ -24,7 +24,7 @@ def retry_throttled(exception):
         if exception.response["Error"]["Code"] == "NoSuchEntity":
             return False
 
-    metrics.send("iam_retry", "counter", 1)
+    metrics.send("iam_retry", "counter", 1, metric_tags={"exception": str(exception)})
     return True
 
 
@@ -52,7 +52,7 @@ def create_arn_from_cert(account_number, region, certificate_name):
 
 
 @sts_client("iam")
-@retry(retry_on_exception=retry_throttled, wait_fixed=2000)
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=25)
 def upload_cert(name, body, private_key, path, cert_chain=None, **kwargs):
     """
     Upload a certificate to AWS
@@ -94,7 +94,7 @@ def upload_cert(name, body, private_key, path, cert_chain=None, **kwargs):
 
 
 @sts_client("iam")
-@retry(retry_on_exception=retry_throttled, wait_fixed=2000)
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=25)
 def delete_cert(cert_name, **kwargs):
     """
     Delete a certificate from AWS
@@ -111,7 +111,7 @@ def delete_cert(cert_name, **kwargs):
 
 
 @sts_client("iam")
-@retry(retry_on_exception=retry_throttled, wait_fixed=2000)
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=25)
 def get_certificate(name, **kwargs):
     """
     Retrieves an SSL certificate.
@@ -125,7 +125,7 @@ def get_certificate(name, **kwargs):
 
 
 @sts_client("iam")
-@retry(retry_on_exception=retry_throttled, wait_fixed=2000)
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=25)
 def get_certificates(**kwargs):
     """
     Fetches one page of certificate objects for a given account.
