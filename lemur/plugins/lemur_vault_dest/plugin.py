@@ -311,6 +311,7 @@ def get_secret(client, mount, path):
             result = client.secrets.kv.v2.read_secret_version(
                 path=path, mount_point=mount
             )
+            result = result['data']
     except ConnectionError:
         pass
     finally:
