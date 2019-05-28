@@ -23,6 +23,7 @@ Flask-Script
 Flask-SQLAlchemy
 Flask
 Flask-Cors
+flask_replicated
 future
 gunicorn
 hvac # required for the vault destination plugin
