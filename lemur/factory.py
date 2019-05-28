@@ -19,6 +19,7 @@ from logging import Formatter, StreamHandler
 from logging.handlers import RotatingFileHandler
 
 from flask import Flask
+from flask_replicated import FlaskReplicated
 import logmatic
 
 from lemur.certificates.hooks import activate_debug_dump
@@ -53,6 +54,7 @@ def create_app(app_name=None, blueprints=None, config=None):
     configure_blueprints(app, blueprints)
     configure_extensions(app)
     configure_logging(app)
+    configure_database(app)
     install_plugins(app)
 
     @app.teardown_appcontext
@@ -156,6 +158,11 @@ def configure_blueprints(app, blueprints):
     """
     for blueprint in blueprints:
         app.register_blueprint(blueprint, url_prefix="/api/{0}".format(API_VERSION))
+
+
+def configure_database(app):
+    if app.config.get("SQLALCHEMY_ENABLE_FLASK_REPLICATED"):
+        FlaskReplicated(app)
 
 
 def configure_logging(app):
