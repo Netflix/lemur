@@ -71,20 +71,20 @@ def get_sequence(name):
 
 
 def get_or_increase_name(name, serial):
-    certificates = Certificate.query.filter(
-        Certificate.name.ilike("{0}%".format(name))
-    ).all()
+    certificates = Certificate.query.filter(Certificate.name == name).all()
 
     if not certificates:
         return name
 
     serial_name = "{0}-{1}".format(name, hex(int(serial))[2:].upper())
-    certificates = Certificate.query.filter(
-        Certificate.name.ilike("{0}%".format(serial_name))
-    ).all()
+    certificates = Certificate.query.filter(Certificate.name == serial_name).all()
 
     if not certificates:
         return serial_name
+
+    certificates = Certificate.query.filter(
+        Certificate.name.ilike("{0}%".format(serial_name))
+    ).all()
 
     ends = [0]
     root, end = get_sequence(serial_name)
