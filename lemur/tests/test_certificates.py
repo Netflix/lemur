@@ -53,7 +53,8 @@ def test_get_or_increase_name(session, certificate):
         == "test-cert-11111111-1-" + serial
     )
 
-    cert2 = CertificateFactory(name="certificate1-" + serial)
+    CertificateFactory(name="certificate1")
+    CertificateFactory(name="certificate1-" + serial)
     session.commit()
 
     assert get_or_increase_name(
