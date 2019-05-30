@@ -40,7 +40,7 @@ def sensitive_domain(domain):
     # Avoid circular import.
     from lemur.domains import service as domain_service
 
-    if any(d.sensitive for d in domain_service.get_by_name(domain)):
+    if domain_service.is_domain_sensitive(domain):
         raise ValidationError(
             "Domain {0} has been marked as sensitive. "
             "Contact an administrator to issue the certificate.".format(domain)

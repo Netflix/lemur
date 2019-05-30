@@ -9,6 +9,7 @@
 from functools import partial
 from collections import namedtuple
 
+from flask import current_app
 from flask_principal import Permission, RoleNeed
 
 # Permissions
@@ -21,7 +22,14 @@ CertificateOwnerNeed = partial(CertificateOwner, "role")
 
 class SensitiveDomainPermission(Permission):
     def __init__(self):
-        super(SensitiveDomainPermission, self).__init__(RoleNeed("admin"))
+        needs = [RoleNeed("admin")]
+        sensitive_domain_roles = current_app.config.get("SENSITIVE_DOMAIN_ROLES", [])
+
+        if sensitive_domain_roles:
+            for role in sensitive_domain_roles:
+                needs.append(RoleNeed(role))
+
+        super(SensitiveDomainPermission, self).__init__(*needs)
 
 
 class CertificatePermission(Permission):
