@@ -7,7 +7,7 @@
 acme==0.34.2
 alembic-autogenerate-enums==0.0.2
 alembic==1.0.10           # via flask-migrate
-amqp==2.4.2               # via kombu
+amqp==2.5.0               # via kombu
 aniso8601==6.0.0          # via flask-restful
 arrow==0.13.2
 asn1crypto==0.24.0        # via cryptography
@@ -15,8 +15,8 @@ asyncpool==1.0
 bcrypt==3.1.6             # via flask-bcrypt, paramiko
 billiard==3.6.0.0         # via celery
 blinker==1.4              # via flask-mail, flask-principal, raven
-boto3==1.9.157
-botocore==1.12.157
+boto3==1.9.158
+botocore==1.12.158
 celery[redis]==4.3.0
 certifi==2019.3.9
 certsrv==2.1.1
@@ -50,7 +50,7 @@ jinja2==2.10.1
 jmespath==0.9.4           # via boto3, botocore
 josepy==1.1.0             # via acme
 jsonlines==1.2.0          # via cloudflare
-kombu==4.5.0
+kombu==4.6.0
 lockfile==0.12.2
 logmatic-python==0.1.7
 mako==1.0.10              # via alembic
@@ -65,7 +65,7 @@ psycopg2==2.8.2
 pyasn1-modules==0.2.5     # via pyjks, python-ldap
 pyasn1==0.4.5             # via ndg-httpsclient, paramiko, pyasn1-modules, pyjks, python-ldap
 pycparser==2.19           # via cffi
-pycryptodomex==3.8.1      # via pyjks
+pycryptodomex==3.8.2      # via pyjks
 pyjks==19.0.0
 pyjwt==1.7.1
 pynacl==1.3.0             # via paramiko
