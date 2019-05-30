@@ -6,10 +6,11 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from lemur.domains.models import Domain
-from lemur.certificates.models import Certificate
+from sqlalchemy import and_
 
 from lemur import database
+from lemur.certificates.models import Certificate
+from lemur.domains.models import Domain
 
 
 def get(domain_id):
@@ -40,6 +41,20 @@ def get_by_name(name):
     :return:
     """
     return database.get_all(Domain, name, field="name").all()
+
+
+def is_domain_sensitive(name):
+    """
+    Return True if domain is marked sensitive
+
+    :param name:
+    :return:
+    """
+    query = database.session_query(Domain)
+
+    query = query.filter(and_(Domain.sensitive, Domain.name == name))
+
+    return database.find_all(query, Domain, {}).all()
 
 
 def create(name, sensitive):

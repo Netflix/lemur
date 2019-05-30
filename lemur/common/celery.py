@@ -19,13 +19,13 @@ from flask import current_app
 
 from lemur.authorities.service import get as get_authority
 from lemur.common.redis import RedisHandler
+from lemur.destinations import service as destinations_service
 from lemur.extensions import metrics, sentry
 from lemur.factory import create_app
 from lemur.notifications.messaging import send_pending_failure_notification
 from lemur.pending_certificates import service as pending_certificate_service
 from lemur.plugins.base import plugins
 from lemur.sources.cli import clean, sync, validate_sources
-from lemur.destinations import service as destinations_service
 from lemur.sources.service import add_aws_destination_to_sources
 
 if current_app:
