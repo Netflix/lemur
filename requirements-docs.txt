@@ -8,7 +8,7 @@ acme==0.34.2
 alabaster==0.7.12         # via sphinx
 alembic-autogenerate-enums==0.0.2
 alembic==1.0.10
-amqp==2.4.2
+amqp==2.5.0
 aniso8601==6.0.0
 arrow==0.13.2
 asn1crypto==0.24.0
@@ -17,8 +17,8 @@ babel==2.7.0              # via sphinx
 bcrypt==3.1.6
 billiard==3.6.0.0
 blinker==1.4
-boto3==1.9.157
-botocore==1.12.157
+boto3==1.9.158
+botocore==1.12.158
 celery[redis]==4.3.0
 certifi==2019.3.9
 certsrv==2.1.1
@@ -53,7 +53,7 @@ jinja2==2.10.1
 jmespath==0.9.4
 josepy==1.1.0
 jsonlines==1.2.0
-kombu==4.5.0
+kombu==4.6.0
 lockfile==0.12.2
 logmatic-python==0.1.7
 mako==1.0.10
@@ -69,7 +69,7 @@ psycopg2==2.8.2
 pyasn1-modules==0.2.5
 pyasn1==0.4.5
 pycparser==2.19
-pycryptodomex==3.8.1
+pycryptodomex==3.8.2
 pygments==2.4.2           # via sphinx
 pyjks==19.0.0
 pyjwt==1.7.1
