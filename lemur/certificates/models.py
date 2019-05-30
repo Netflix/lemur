@@ -106,6 +106,8 @@ class Certificate(db.Model):
 
     not_before = Column(ArrowType)
     not_after = Column(ArrowType)
+    not_after_ix = Index('ix_certificates_not_after', not_after.desc())
+
     date_created = Column(ArrowType, PassiveDefault(func.now()), nullable=False)
 
     signing_algorithm = Column(String(128))
