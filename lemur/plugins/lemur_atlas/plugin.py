@@ -26,44 +26,41 @@ def millis_since_epoch():
 
 
 class AtlasMetricPlugin(MetricPlugin):
-    title = 'Atlas'
-    slug = 'atlas-metric'
-    description = 'Adds support for sending key metrics to Atlas'
+    title = "Atlas"
+    slug = "atlas-metric"
+    description = "Adds support for sending key metrics to Atlas"
     version = atlas.VERSION
 
-    author = 'Kevin Glisson'
-    author_url = 'https://github.com/netflix/lemur'
+    author = "Kevin Glisson"
+    author_url = "https://github.com/netflix/lemur"
 
     options = [
         {
-            'name': 'sidecar_host',
-            'type': 'str',
-            'required': False,
-            'help_message': 'If no host is provided localhost is assumed',
-            'default': 'localhost'
+            "name": "sidecar_host",
+            "type": "str",
+            "required": False,
+            "help_message": "If no host is provided localhost is assumed",
+            "default": "localhost",
         },
-        {
-            'name': 'sidecar_port',
-            'type': 'int',
-            'required': False,
-            'default': 8078
-        }
+        {"name": "sidecar_port", "type": "int", "required": False, "default": 8078},
     ]
 
     metric_data = {}
     sidecar_host = None
     sidecar_port = None
 
-    def submit(self, metric_name, metric_type, metric_value, metric_tags=None, options=None):
+    def submit(
+        self, metric_name, metric_type, metric_value, metric_tags=None, options=None
+    ):
         if not options:
             options = self.options
 
         # TODO marshmallow schema?
-        valid_types = ['COUNTER', 'GAUGE', 'TIMER']
+        valid_types = ["COUNTER", "GAUGE", "TIMER"]
         if metric_type.upper() not in valid_types:
             raise Exception(
                 "Invalid Metric Type for Atlas: '{metric}' choose from: {options}".format(
-                    metric=metric_type, options=','.join(valid_types)
+                    metric=metric_type, options=",".join(valid_types)
                 )
             )
 
@@ -73,31 +70,35 @@ class AtlasMetricPlugin(MetricPlugin):
                     "Invalid Metric Tags for Atlas: Tags must be in dict format"
                 )
 
-        if metric_value == "NaN" or isinstance(metric_value, int) or isinstance(metric_value, float):
-            self.metric_data['value'] = metric_value
+        if (
+            metric_value == "NaN"
+            or isinstance(metric_value, int)
+            or isinstance(metric_value, float)
+        ):
+            self.metric_data["value"] = metric_value
         else:
-            raise Exception(
-                "Invalid Metric Value for Atlas: Metric must be a number"
-            )
+            raise Exception("Invalid Metric Value for Atlas: Metric must be a number")
 
-        self.metric_data['type'] = metric_type.upper()
-        self.metric_data['name'] = str(metric_name)
-        self.metric_data['tags'] = metric_tags
-        self.metric_data['timestamp'] = millis_since_epoch()
+        self.metric_data["type"] = metric_type.upper()
+        self.metric_data["name"] = str(metric_name)
+        self.metric_data["tags"] = metric_tags
+        self.metric_data["timestamp"] = millis_since_epoch()
 
-        self.sidecar_host = self.get_option('sidecar_host', options)
-        self.sidecar_port = self.get_option('sidecar_port', options)
+        self.sidecar_host = self.get_option("sidecar_host", options)
+        self.sidecar_port = self.get_option("sidecar_port", options)
 
         try:
             res = requests.post(
-                'http://{host}:{port}/metrics'.format(
-                    host=self.sidecar_host,
-                    port=self.sidecar_port),
-                data=json.dumps([self.metric_data])
+                "http://{host}:{port}/metrics".format(
+                    host=self.sidecar_host, port=self.sidecar_port
+                ),
+                data=json.dumps([self.metric_data]),
             )
 
             if res.status_code != 200:
-                current_app.logger.warning("Failed to publish altas metric. {0}".format(res.content))
+                current_app.logger.warning(
+                    "Failed to publish altas metric. {0}".format(res.content)
+                )
 
         except ConnectionError:
             current_app.logger.warning(

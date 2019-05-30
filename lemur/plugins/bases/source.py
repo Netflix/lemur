@@ -10,15 +10,15 @@ from lemur.plugins.base import Plugin
 
 
 class SourcePlugin(Plugin):
-    type = 'source'
+    type = "source"
 
     default_options = [
         {
-            'name': 'pollRate',
-            'type': 'int',
-            'required': False,
-            'helpMessage': 'Rate in seconds to poll source for new information.',
-            'default': '60',
+            "name": "pollRate",
+            "type": "int",
+            "required": False,
+            "helpMessage": "Rate in seconds to poll source for new information.",
+            "default": "60",
         }
     ]
 

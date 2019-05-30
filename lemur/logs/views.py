@@ -17,12 +17,13 @@ from lemur.logs.schemas import logs_output_schema
 from lemur.logs import service
 
 
-mod = Blueprint('logs', __name__)
+mod = Blueprint("logs", __name__)
 api = Api(mod)
 
 
 class LogsList(AuthenticatedResource):
     """ Defines the 'logs' endpoint """
+
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(LogsList, self).__init__()
@@ -65,10 +66,10 @@ class LogsList(AuthenticatedResource):
            :statuscode 200: no error
         """
         parser = paginated_parser.copy()
-        parser.add_argument('owner', type=str, location='args')
-        parser.add_argument('id', type=str, location='args')
+        parser.add_argument("owner", type=str, location="args")
+        parser.add_argument("id", type=str, location="args")
         args = parser.parse_args()
         return service.render(args)
 
 
-api.add_resource(LogsList, '/logs', endpoint='logs')
+api.add_resource(LogsList, "/logs", endpoint="logs")

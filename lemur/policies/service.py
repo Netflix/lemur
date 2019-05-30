@@ -24,7 +24,7 @@ def get_by_name(policy_name):
     :param policy_name:
     :return:
     """
-    return database.get_all(RotationPolicy, policy_name, field='name').all()
+    return database.get_all(RotationPolicy, policy_name, field="name").all()
 
 
 def delete(policy_id):

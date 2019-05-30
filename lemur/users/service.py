@@ -96,7 +96,7 @@ def get_by_email(email):
     :param email:
     :return:
     """
-    return database.get(User, email, field='email')
+    return database.get(User, email, field="email")
 
 
 def get_by_username(username):
@@ -106,7 +106,7 @@ def get_by_username(username):
     :param username:
     :return:
     """
-    return database.get(User, username, field='username')
+    return database.get(User, username, field="username")
 
 
 def get_all():
@@ -129,10 +129,10 @@ def render(args):
     """
     query = database.session_query(User)
 
-    filt = args.pop('filter')
+    filt = args.pop("filter")
 
     if filt:
-        terms = filt.split(';')
+        terms = filt.split(";")
         query = database.filter(query, User, terms)
 
     return database.sort_and_page(query, User, args)

@@ -43,7 +43,7 @@ def mint(**kwargs):
     """
     Creates the authority based on the plugin provided.
     """
-    issuer = kwargs['plugin']['plugin_object']
+    issuer = kwargs["plugin"]["plugin_object"]
     values = issuer.create_authority(kwargs)
 
     # support older plugins
@@ -53,7 +53,12 @@ def mint(**kwargs):
     elif len(values) == 4:
         body, private_key, chain, roles = values
 
-    roles = create_authority_roles(roles, kwargs['owner'], kwargs['plugin']['plugin_object'].title, kwargs['creator'])
+    roles = create_authority_roles(
+        roles,
+        kwargs["owner"],
+        kwargs["plugin"]["plugin_object"].title,
+        kwargs["creator"],
+    )
     return body, private_key, chain, roles
 
 
@@ -66,16 +71,17 @@ def create_authority_roles(roles, owner, plugin_title, creator):
     """
     role_objs = []
     for r in roles:
-        role = role_service.get_by_name(r['name'])
+        role = role_service.get_by_name(r["name"])
         if not role:
             role = role_service.create(
-                r['name'],
-                password=r['password'],
+                r["name"],
+                password=r["password"],
                 description="Auto generated role for {0}".format(plugin_title),
-                username=r['username'])
+                username=r["username"],
+            )
 
         # the user creating the authority should be able to administer it
-        if role.username == 'admin':
+        if role.username == "admin":
             creator.roles.append(role)
 
         role_objs.append(role)
@@ -84,8 +90,7 @@ def create_authority_roles(roles, owner, plugin_title, creator):
     owner_role = role_service.get_by_name(owner)
     if not owner_role:
         owner_role = role_service.create(
-            owner,
-            description="Auto generated role based on owner: {0}".format(owner)
+            owner, description="Auto generated role based on owner: {0}".format(owner)
         )
 
     role_objs.append(owner_role)
@@ -98,27 +103,29 @@ def create(**kwargs):
     """
     body, private_key, chain, roles = mint(**kwargs)
 
-    kwargs['creator'].roles = list(set(list(kwargs['creator'].roles) + roles))
+    kwargs["creator"].roles = list(set(list(kwargs["creator"].roles) + roles))
 
-    kwargs['body'] = body
-    kwargs['private_key'] = private_key
-    kwargs['chain'] = chain
+    kwargs["body"] = body
+    kwargs["private_key"] = private_key
+    kwargs["chain"] = chain
 
-    if kwargs.get('roles'):
-        kwargs['roles'] += roles
+    if kwargs.get("roles"):
+        kwargs["roles"] += roles
     else:
-        kwargs['roles'] = roles
+        kwargs["roles"] = roles
 
     cert = upload(**kwargs)
-    kwargs['authority_certificate'] = cert
-    if kwargs.get('plugin', {}).get('plugin_options', []):
-        kwargs['options'] = json.dumps(kwargs['plugin']['plugin_options'])
+    kwargs["authority_certificate"] = cert
+    if kwargs.get("plugin", {}).get("plugin_options", []):
+        kwargs["options"] = json.dumps(kwargs["plugin"]["plugin_options"])
 
     authority = Authority(**kwargs)
     authority = database.create(authority)
-    kwargs['creator'].authorities.append(authority)
+    kwargs["creator"].authorities.append(authority)
 
-    metrics.send('authority_created', 'counter', 1, metric_tags=dict(owner=authority.owner))
+    metrics.send(
+        "authority_created", "counter", 1, metric_tags=dict(owner=authority.owner)
+    )
     return authority
 
 
@@ -150,7 +157,7 @@ def get_by_name(authority_name):
     :param authority_name:
     :return:
     """
-    return database.get(Authority, authority_name, field='name')
+    return database.get(Authority, authority_name, field="name")
 
 
 def get_authority_role(ca_name, creator=None):
@@ -173,29 +180,31 @@ def render(args):
     :return:
     """
     query = database.session_query(Authority)
-    filt = args.pop('filter')
+    filt = args.pop("filter")
 
     if filt:
-        terms = filt.split(';')
-        if 'active' in filt:
+        terms = filt.split(";")
+        if "active" in filt:
             query = query.filter(Authority.active == truthiness(terms[1]))
-        elif 'cn' in filt:
-            term = '%{0}%'.format(terms[1])
-            sub_query = database.session_query(Certificate.root_authority_id) \
-                .filter(Certificate.cn.ilike(term)) \
+        elif "cn" in filt:
+            term = "%{0}%".format(terms[1])
+            sub_query = (
+                database.session_query(Certificate.root_authority_id)
+                .filter(Certificate.cn.ilike(term))
                 .subquery()
+            )
 
             query = query.filter(Authority.id.in_(sub_query))
         else:
             query = database.filter(query, Authority, terms)
 
     # we make sure that a user can only use an authority they either own are a member of - admins can see all
-    if not args['user'].is_admin:
+    if not args["user"].is_admin:
         authority_ids = []
-        for authority in args['user'].authorities:
+        for authority in args["user"].authorities:
             authority_ids.append(authority.id)
 
-        for role in args['user'].roles:
+        for role in args["user"].roles:
             for authority in role.authorities:
                 authority_ids.append(authority.id)
         query = query.filter(Authority.id.in_(authority_ids))

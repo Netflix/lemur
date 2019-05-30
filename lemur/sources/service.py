@@ -29,9 +29,11 @@ def certificate_create(certificate, source):
     data, errors = CertificateUploadInputSchema().load(certificate)
 
     if errors:
-        raise Exception("Unable to import certificate: {reasons}".format(reasons=errors))
+        raise Exception(
+            "Unable to import certificate: {reasons}".format(reasons=errors)
+        )
 
-    data['creator'] = certificate['creator']
+    data["creator"] = certificate["creator"]
 
     cert = certificate_service.import_certificate(**data)
     cert.description = "This certificate was automatically discovered by Lemur"
@@ -70,33 +72,44 @@ def sync_endpoints(source):
     try:
         endpoints = s.get_endpoints(source.options)
     except NotImplementedError:
-        current_app.logger.warning("Unable to sync endpoints for source {0} plugin has not implemented 'get_endpoints'".format(source.label))
+        current_app.logger.warning(
+            "Unable to sync endpoints for source {0} plugin has not implemented 'get_endpoints'".format(
+                source.label
+            )
+        )
         return new, updated
 
     for endpoint in endpoints:
-        exists = endpoint_service.get_by_dnsname_and_port(endpoint['dnsname'], endpoint['port'])
+        exists = endpoint_service.get_by_dnsname_and_port(
+            endpoint["dnsname"], endpoint["port"]
+        )
 
-        certificate_name = endpoint.pop('certificate_name')
+        certificate_name = endpoint.pop("certificate_name")
 
-        endpoint['certificate'] = certificate_service.get_by_name(certificate_name)
+        endpoint["certificate"] = certificate_service.get_by_name(certificate_name)
 
-        if not endpoint['certificate']:
+        if not endpoint["certificate"]:
             current_app.logger.error(
-                "Certificate Not Found. Name: {0} Endpoint: {1}".format(certificate_name, endpoint['name']))
+                "Certificate Not Found. Name: {0} Endpoint: {1}".format(
+                    certificate_name, endpoint["name"]
+                )
+            )
             continue
 
-        policy = endpoint.pop('policy')
+        policy = endpoint.pop("policy")
 
         policy_ciphers = []
-        for nc in policy['ciphers']:
+        for nc in policy["ciphers"]:
             policy_ciphers.append(endpoint_service.get_or_create_cipher(name=nc))
 
-        policy['ciphers'] = policy_ciphers
-        endpoint['policy'] = endpoint_service.get_or_create_policy(**policy)
-        endpoint['source'] = source
+        policy["ciphers"] = policy_ciphers
+        endpoint["policy"] = endpoint_service.get_or_create_policy(**policy)
+        endpoint["source"] = source
 
         if not exists:
-            current_app.logger.debug("Endpoint Created: Name: {name}".format(name=endpoint['name']))
+            current_app.logger.debug(
+                "Endpoint Created: Name: {name}".format(name=endpoint["name"])
+            )
             endpoint_service.create(**endpoint)
             new += 1
 
@@ -119,27 +132,27 @@ def sync_certificates(source, user):
     for certificate in certificates:
         exists = False
 
-        if certificate.get('search', None):
-            conditions = certificate.pop('search')
+        if certificate.get("search", None):
+            conditions = certificate.pop("search")
             exists = certificate_service.get_by_attributes(conditions)
 
-        if not exists and certificate.get('name'):
-            result = certificate_service.get_by_name(certificate['name'])
+        if not exists and certificate.get("name"):
+            result = certificate_service.get_by_name(certificate["name"])
             if result:
                 exists = [result]
 
-        if not exists and certificate.get('serial'):
-            exists = certificate_service.get_by_serial(certificate['serial'])
+        if not exists and certificate.get("serial"):
+            exists = certificate_service.get_by_serial(certificate["serial"])
 
         if not exists:
-            cert = parse_certificate(certificate['body'])
+            cert = parse_certificate(certificate["body"])
             matching_serials = certificate_service.get_by_serial(serial(cert))
             exists = find_matching_certificates_by_hash(cert, matching_serials)
 
-        if not certificate.get('owner'):
-            certificate['owner'] = user.email
+        if not certificate.get("owner"):
+            certificate["owner"] = user.email
 
-        certificate['creator'] = user
+        certificate["creator"] = user
         exists = [x for x in exists if x]
 
         if not exists:
@@ -148,10 +161,10 @@ def sync_certificates(source, user):
 
         else:
             for e in exists:
-                if certificate.get('external_id'):
-                    e.external_id = certificate['external_id']
-                if certificate.get('authority_id'):
-                    e.authority_id = certificate['authority_id']
+                if certificate.get("external_id"):
+                    e.external_id = certificate["external_id"]
+                if certificate.get("authority_id"):
+                    e.authority_id = certificate["authority_id"]
                 certificate_update(e, source)
                 updated += 1
 
@@ -165,7 +178,10 @@ def sync(source, user):
     source.last_run = arrow.utcnow()
     database.update(source)
 
-    return {'endpoints': (new_endpoints, updated_endpoints), 'certificates': (new_certs, updated_certs)}
+    return {
+        "endpoints": (new_endpoints, updated_endpoints),
+        "certificates": (new_certs, updated_certs),
+    }
 
 
 def create(label, plugin_name, options, description=None):
@@ -179,7 +195,9 @@ def create(label, plugin_name, options, description=None):
     :rtype : Source
     :return: New source
     """
-    source = Source(label=label, options=options, plugin_name=plugin_name, description=description)
+    source = Source(
+        label=label, options=options, plugin_name=plugin_name, description=description
+    )
     return database.create(source)
 
 
@@ -230,7 +248,7 @@ def get_by_label(label):
     :param label:
     :return:
     """
-    return database.get(Source, label, field='label')
+    return database.get(Source, label, field="label")
 
 
 def get_all():
@@ -244,8 +262,8 @@ def get_all():
 
 
 def render(args):
-    filt = args.pop('filter')
-    certificate_id = args.pop('certificate_id', None)
+    filt = args.pop("filter")
+    certificate_id = args.pop("certificate_id", None)
 
     if certificate_id:
         query = database.session_query(Source).join(Certificate, Source.certificate)
@@ -254,7 +272,7 @@ def render(args):
         query = database.session_query(Source)
 
     if filt:
-        terms = filt.split(';')
+        terms = filt.split(";")
         query = database.filter(query, Source, terms)
 
     return database.sort_and_page(query, Source, args)
@@ -272,21 +290,27 @@ def add_aws_destination_to_sources(dst):
     src_accounts = set()
     sources = get_all()
     for src in sources:
-        src_accounts.add(get_plugin_option('accountNumber', src.options))
+        src_accounts.add(get_plugin_option("accountNumber", src.options))
 
     # check
     destination_plugin = plugins.get(dst.plugin_name)
-    account_number = get_plugin_option('accountNumber', dst.options)
-    if account_number is not None and \
-            destination_plugin.sync_as_source is not None and \
-            destination_plugin.sync_as_source and \
-            (account_number not in src_accounts):
-        src_options = copy.deepcopy(plugins.get(destination_plugin.sync_as_source_name).options)
-        set_plugin_option('accountNumber', account_number, src_options)
-        create(label=dst.label,
-               plugin_name=destination_plugin.sync_as_source_name,
-               options=src_options,
-               description=dst.description)
+    account_number = get_plugin_option("accountNumber", dst.options)
+    if (
+        account_number is not None
+        and destination_plugin.sync_as_source is not None
+        and destination_plugin.sync_as_source
+        and (account_number not in src_accounts)
+    ):
+        src_options = copy.deepcopy(
+            plugins.get(destination_plugin.sync_as_source_name).options
+        )
+        set_plugin_option("accountNumber", account_number, src_options)
+        create(
+            label=dst.label,
+            plugin_name=destination_plugin.sync_as_source_name,
+            options=src_options,
+            description=dst.description,
+        )
         return True
 
     return False

@@ -27,15 +27,14 @@ def retry_throttled(exception):
         raise exception
     except Exception as e:
         current_app.logger.error("ELB retry_throttled triggered", exc_info=True)
-        metrics.send('elb_retry', 'counter', 1,
-                     metric_tags={"exception": e})
+        metrics.send("elb_retry", "counter", 1, metric_tags={"exception": e})
         sentry.captureException()
 
     if isinstance(exception, botocore.exceptions.ClientError):
-        if exception.response['Error']['Code'] == 'LoadBalancerNotFound':
+        if exception.response["Error"]["Code"] == "LoadBalancerNotFound":
             return False
 
-        if exception.response['Error']['Code'] == 'CertificateNotFound':
+        if exception.response["Error"]["Code"] == "CertificateNotFound":
             return False
     return True
 
@@ -56,7 +55,7 @@ def is_valid(listener_tuple):
     :param listener_tuple:
     """
     lb_port, i_port, lb_protocol, arn = listener_tuple
-    if lb_protocol.lower() in ['ssl', 'https']:
+    if lb_protocol.lower() in ["ssl", "https"]:
         if not arn:
             raise InvalidListener
 
@@ -75,14 +74,14 @@ def get_all_elbs(**kwargs):
         while True:
             response = get_elbs(**kwargs)
 
-            elbs += response['LoadBalancerDescriptions']
+            elbs += response["LoadBalancerDescriptions"]
 
-            if not response.get('NextMarker'):
+            if not response.get("NextMarker"):
                 return elbs
             else:
-                kwargs.update(dict(Marker=response['NextMarker']))
+                kwargs.update(dict(Marker=response["NextMarker"]))
     except Exception as e:  # noqa
-        metrics.send('get_all_elbs_error', 'counter', 1)
+        metrics.send("get_all_elbs_error", "counter", 1)
         sentry.captureException()
         raise
 
@@ -99,19 +98,19 @@ def get_all_elbs_v2(**kwargs):
     try:
         while True:
             response = get_elbs_v2(**kwargs)
-            elbs += response['LoadBalancers']
+            elbs += response["LoadBalancers"]
 
-            if not response.get('NextMarker'):
+            if not response.get("NextMarker"):
                 return elbs
             else:
-                kwargs.update(dict(Marker=response['NextMarker']))
+                kwargs.update(dict(Marker=response["NextMarker"]))
     except Exception as e:  # noqa
-        metrics.send('get_all_elbs_v2_error', 'counter', 1)
+        metrics.send("get_all_elbs_v2_error", "counter", 1)
         sentry.captureException()
         raise
 
 
-@sts_client('elbv2')
+@sts_client("elbv2")
 @retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
 def get_listener_arn_from_endpoint(endpoint_name, endpoint_port, **kwargs):
     """
@@ -121,38 +120,51 @@ def get_listener_arn_from_endpoint(endpoint_name, endpoint_port, **kwargs):
     :return:
     """
     try:
-        client = kwargs.pop('client')
+        client = kwargs.pop("client")
         elbs = client.describe_load_balancers(Names=[endpoint_name])
-        for elb in elbs['LoadBalancers']:
-            listeners = client.describe_listeners(LoadBalancerArn=elb['LoadBalancerArn'])
-            for listener in listeners['Listeners']:
-                if listener['Port'] == endpoint_port:
-                    return listener['ListenerArn']
+        for elb in elbs["LoadBalancers"]:
+            listeners = client.describe_listeners(
+                LoadBalancerArn=elb["LoadBalancerArn"]
+            )
+            for listener in listeners["Listeners"]:
+                if listener["Port"] == endpoint_port:
+                    return listener["ListenerArn"]
     except Exception as e:  # noqa
-        metrics.send('get_listener_arn_from_endpoint_error', 'counter', 1,
-                     metric_tags={"error": e, "endpoint_name": endpoint_name, "endpoint_port": endpoint_port})
-        sentry.captureException(extra={"endpoint_name": str(endpoint_name),
-                                       "endpoint_port": str(endpoint_port)})
+        metrics.send(
+            "get_listener_arn_from_endpoint_error",
+            "counter",
+            1,
+            metric_tags={
+                "error": e,
+                "endpoint_name": endpoint_name,
+                "endpoint_port": endpoint_port,
+            },
+        )
+        sentry.captureException(
+            extra={
+                "endpoint_name": str(endpoint_name),
+                "endpoint_port": str(endpoint_port),
+            }
+        )
         raise
 
 
-@sts_client('elb')
+@sts_client("elb")
 @retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
 def get_elbs(**kwargs):
     """
     Fetches one page elb objects for a given account and region.
     """
     try:
-        client = kwargs.pop('client')
+        client = kwargs.pop("client")
         return client.describe_load_balancers(**kwargs)
     except Exception as e:  # noqa
-        metrics.send('get_elbs_error', 'counter', 1,
-                     metric_tags={"error": e})
+        metrics.send("get_elbs_error", "counter", 1, metric_tags={"error": e})
         sentry.captureException()
         raise
 
 
-@sts_client('elbv2')
+@sts_client("elbv2")
 @retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
 def get_elbs_v2(**kwargs):
     """
@@ -162,16 +174,15 @@ def get_elbs_v2(**kwargs):
     :return:
     """
     try:
-        client = kwargs.pop('client')
+        client = kwargs.pop("client")
         return client.describe_load_balancers(**kwargs)
     except Exception as e:  # noqa
-        metrics.send('get_elbs_v2_error', 'counter', 1,
-                     metric_tags={"error": e})
+        metrics.send("get_elbs_v2_error", "counter", 1, metric_tags={"error": e})
         sentry.captureException()
         raise
 
 
-@sts_client('elbv2')
+@sts_client("elbv2")
 @retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
 def describe_listeners_v2(**kwargs):
     """
@@ -181,16 +192,17 @@ def describe_listeners_v2(**kwargs):
     :return:
     """
     try:
-        client = kwargs.pop('client')
+        client = kwargs.pop("client")
         return client.describe_listeners(**kwargs)
     except Exception as e:  # noqa
-        metrics.send('describe_listeners_v2_error', 'counter', 1,
-                     metric_tags={"error": e})
+        metrics.send(
+            "describe_listeners_v2_error", "counter", 1, metric_tags={"error": e}
+        )
         sentry.captureException()
         raise
 
 
-@sts_client('elb')
+@sts_client("elb")
 @retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
 def describe_load_balancer_policies(load_balancer_name, policy_names, **kwargs):
     """
@@ -201,17 +213,30 @@ def describe_load_balancer_policies(load_balancer_name, policy_names, **kwargs):
     """
 
     try:
-        return kwargs['client'].describe_load_balancer_policies(LoadBalancerName=load_balancer_name,
-                                                                PolicyNames=policy_names)
+        return kwargs["client"].describe_load_balancer_policies(
+            LoadBalancerName=load_balancer_name, PolicyNames=policy_names
+        )
     except Exception as e:  # noqa
-        metrics.send('describe_load_balancer_policies_error', 'counter', 1,
-                     metric_tags={"load_balancer_name": load_balancer_name, "policy_names": policy_names, "error": e})
-        sentry.captureException(extra={"load_balancer_name": str(load_balancer_name),
-                                       "policy_names": str(policy_names)})
+        metrics.send(
+            "describe_load_balancer_policies_error",
+            "counter",
+            1,
+            metric_tags={
+                "load_balancer_name": load_balancer_name,
+                "policy_names": policy_names,
+                "error": e,
+            },
+        )
+        sentry.captureException(
+            extra={
+                "load_balancer_name": str(load_balancer_name),
+                "policy_names": str(policy_names),
+            }
+        )
         raise
 
 
-@sts_client('elbv2')
+@sts_client("elbv2")
 @retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
 def describe_ssl_policies_v2(policy_names, **kwargs):
     """
@@ -221,15 +246,19 @@ def describe_ssl_policies_v2(policy_names, **kwargs):
     :return:
     """
     try:
-        return kwargs['client'].describe_ssl_policies(Names=policy_names)
+        return kwargs["client"].describe_ssl_policies(Names=policy_names)
     except Exception as e:  # noqa
-        metrics.send('describe_ssl_policies_v2_error', 'counter', 1,
-                     metric_tags={"policy_names": policy_names, "error": e})
+        metrics.send(
+            "describe_ssl_policies_v2_error",
+            "counter",
+            1,
+            metric_tags={"policy_names": policy_names, "error": e},
+        )
         sentry.captureException(extra={"policy_names": str(policy_names)})
         raise
 
 
-@sts_client('elb')
+@sts_client("elb")
 @retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
 def describe_load_balancer_types(policies, **kwargs):
     """
@@ -238,10 +267,12 @@ def describe_load_balancer_types(policies, **kwargs):
     :param policies:
     :return:
     """
-    return kwargs['client'].describe_load_balancer_policy_types(PolicyTypeNames=policies)
+    return kwargs["client"].describe_load_balancer_policy_types(
+        PolicyTypeNames=policies
+    )
 
 
-@sts_client('elb')
+@sts_client("elb")
 @retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
 def attach_certificate(name, port, certificate_id, **kwargs):
     """
@@ -253,15 +284,19 @@ def attach_certificate(name, port, certificate_id, **kwargs):
     :param certificate_id:
     """
     try:
-        return kwargs['client'].set_load_balancer_listener_ssl_certificate(LoadBalancerName=name, LoadBalancerPort=port, SSLCertificateId=certificate_id)
+        return kwargs["client"].set_load_balancer_listener_ssl_certificate(
+            LoadBalancerName=name,
+            LoadBalancerPort=port,
+            SSLCertificateId=certificate_id,
+        )
     except botocore.exceptions.ClientError as e:
-        if e.response['Error']['Code'] == 'LoadBalancerNotFound':
+        if e.response["Error"]["Code"] == "LoadBalancerNotFound":
             current_app.logger.warning("Loadbalancer does not exist.")
         else:
             raise e
 
 
-@sts_client('elbv2')
+@sts_client("elbv2")
 @retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
 def attach_certificate_v2(listener_arn, port, certificates, **kwargs):
     """
@@ -273,9 +308,11 @@ def attach_certificate_v2(listener_arn, port, certificates, **kwargs):
     :param certificates:
     """
     try:
-        return kwargs['client'].modify_listener(ListenerArn=listener_arn, Port=port, Certificates=certificates)
+        return kwargs["client"].modify_listener(
+            ListenerArn=listener_arn, Port=port, Certificates=certificates
+        )
     except botocore.exceptions.ClientError as e:
-        if e.response['Error']['Code'] == 'LoadBalancerNotFound':
+        if e.response["Error"]["Code"] == "LoadBalancerNotFound":
             current_app.logger.warning("Loadbalancer does not exist.")
         else:
             raise e

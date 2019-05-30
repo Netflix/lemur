@@ -3,7 +3,7 @@ import time
 from lemur.plugins.lemur_aws.sts import sts_client
 
 
-@sts_client('route53')
+@sts_client("route53")
 def wait_for_dns_change(change_id, client=None):
     _, change_id = change_id
 
@@ -14,7 +14,7 @@ def wait_for_dns_change(change_id, client=None):
         time.sleep(5)
 
 
-@sts_client('route53')
+@sts_client("route53")
 def find_zone_id(domain, client=None):
     paginator = client.get_paginator("list_hosted_zones")
     zones = []
@@ -25,34 +25,35 @@ def find_zone_id(domain, client=None):
                     zones.append((zone["Name"], zone["Id"]))
 
     if not zones:
-        raise ValueError(
-            "Unable to find a Route53 hosted zone for {}".format(domain)
-        )
+        raise ValueError("Unable to find a Route53 hosted zone for {}".format(domain))
     return zones[0][1]
 
 
-@sts_client('route53')
+@sts_client("route53")
 def get_zones(client=None):
     paginator = client.get_paginator("list_hosted_zones")
     zones = []
     for page in paginator.paginate():
         for zone in page["HostedZones"]:
-            zones.append(zone["Name"][:-1])  # We need [:-1] to strip out the trailing dot.
+            zones.append(
+                zone["Name"][:-1]
+            )  # We need [:-1] to strip out the trailing dot.
     return zones
 
 
-@sts_client('route53')
+@sts_client("route53")
 def change_txt_record(action, zone_id, domain, value, client=None):
     current_txt_records = []
     try:
         current_records = client.list_resource_record_sets(
             HostedZoneId=zone_id,
             StartRecordName=domain,
-            StartRecordType='TXT',
-            MaxItems="1")["ResourceRecordSets"]
+            StartRecordType="TXT",
+            MaxItems="1",
+        )["ResourceRecordSets"]
 
         for record in current_records:
-            if record.get('Type') == 'TXT':
+            if record.get("Type") == "TXT":
                 current_txt_records.extend(record.get("ResourceRecords", []))
     except Exception as e:
         # Current Resource Record does not exist
@@ -72,7 +73,9 @@ def change_txt_record(action, zone_id, domain, value, client=None):
         # If we want to delete one record out of many, we'll update the record to not include the deleted value instead.
         # This allows us to support concurrent issuance.
         current_txt_records = [
-            record for record in current_txt_records if not (record.get('Value') == '"{}"'.format(value))
+            record
+            for record in current_txt_records
+            if not (record.get("Value") == '"{}"'.format(value))
         ]
         action = "UPSERT"
 
@@ -87,10 +90,10 @@ def change_txt_record(action, zone_id, domain, value, client=None):
                         "Type": "TXT",
                         "TTL": 300,
                         "ResourceRecords": current_txt_records,
-                    }
+                    },
                 }
             ]
-        }
+        },
     )
     return response["ChangeInfo"]["Id"]
 
@@ -98,11 +101,7 @@ def change_txt_record(action, zone_id, domain, value, client=None):
 def create_txt_record(host, value, account_number):
     zone_id = find_zone_id(host, account_number=account_number)
     change_id = change_txt_record(
-        "UPSERT",
-        zone_id,
-        host,
-        value,
-        account_number=account_number
+        "UPSERT", zone_id, host, value, account_number=account_number
     )
 
     return zone_id, change_id
@@ -113,11 +112,7 @@ def delete_txt_record(change_ids, account_number, host, value):
         zone_id, _ = change_id
         try:
             change_txt_record(
-                "DELETE",
-                zone_id,
-                host,
-                value,
-                account_number=account_number
+                "DELETE", zone_id, host, value, account_number=account_number
             )
         except Exception as e:
             if "but it was not found" in e.response.get("Error", {}).get("Message"):

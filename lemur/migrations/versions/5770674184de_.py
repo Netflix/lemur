@@ -7,8 +7,8 @@ Create Date: 2018-02-23 15:27:30.335435
 """
 
 # revision identifiers, used by Alembic.
-revision = '5770674184de'
-down_revision = 'ce547319f7be'
+revision = "5770674184de"
+down_revision = "ce547319f7be"
 
 from flask_sqlalchemy import SQLAlchemy
 from lemur.models import certificate_notification_associations
@@ -32,7 +32,9 @@ def upgrade():
         # If we've seen a pair already, delete the duplicates
         if seen.get("{}-{}".format(x.certificate_id, x.notification_id)):
             print("Deleting duplicate: {}".format(x))
-            d = session.query(certificate_notification_associations).filter(certificate_notification_associations.c.id==x.id)
+            d = session.query(certificate_notification_associations).filter(
+                certificate_notification_associations.c.id == x.id
+            )
             d.delete(synchronize_session=False)
         seen["{}-{}".format(x.certificate_id, x.notification_id)] = True
     db.session.commit()

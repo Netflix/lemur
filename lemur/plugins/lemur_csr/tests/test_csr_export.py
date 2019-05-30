@@ -4,7 +4,8 @@ from lemur.tests.vectors import INTERNAL_PRIVATE_KEY_A_STR, INTERNAL_CERTIFICATE
 
 def test_export_certificate_to_csr(app):
     from lemur.plugins.base import plugins
-    p = plugins.get('openssl-csr')
+
+    p = plugins.get("openssl-csr")
     options = []
     with pytest.raises(Exception):
         p.export(INTERNAL_CERTIFICATE_A_STR, "", "", options)

@@ -14,35 +14,41 @@ from lemur.roles import service as role_service
 from lemur.common.utils import validate_conf, get_psuedo_random_string
 
 
-class LdapPrincipal():
+class LdapPrincipal:
     """
     Provides methods for authenticating against an LDAP server.
     """
+
     def __init__(self, args):
         self._ldap_validate_conf()
         # setup ldap config
-        if not args['username']:
+        if not args["username"]:
             raise Exception("missing ldap username")
-        if not args['password']:
+        if not args["password"]:
             self.error_message = "missing ldap password"
             raise Exception("missing ldap password")
-        self.ldap_principal = args['username']
+        self.ldap_principal = args["username"]
         self.ldap_email_domain = current_app.config.get("LDAP_EMAIL_DOMAIN", None)
-        if '@' not in self.ldap_principal:
-            self.ldap_principal = '%s@%s' % (self.ldap_principal, self.ldap_email_domain)
-        self.ldap_username = args['username']
-        if '@' in self.ldap_username:
-            self.ldap_username = args['username'].split("@")[0]
-        self.ldap_password = args['password']
-        self.ldap_server = current_app.config.get('LDAP_BIND_URI', None)
+        if "@" not in self.ldap_principal:
+            self.ldap_principal = "%s@%s" % (
+                self.ldap_principal,
+                self.ldap_email_domain,
+            )
+        self.ldap_username = args["username"]
+        if "@" in self.ldap_username:
+            self.ldap_username = args["username"].split("@")[0]
+        self.ldap_password = args["password"]
+        self.ldap_server = current_app.config.get("LDAP_BIND_URI", None)
         self.ldap_base_dn = current_app.config.get("LDAP_BASE_DN", None)
         self.ldap_use_tls = current_app.config.get("LDAP_USE_TLS", False)
         self.ldap_cacert_file = current_app.config.get("LDAP_CACERT_FILE", None)
         self.ldap_default_role = current_app.config.get("LEMUR_DEFAULT_ROLE", None)
         self.ldap_required_group = current_app.config.get("LDAP_REQUIRED_GROUP", None)
         self.ldap_groups_to_roles = current_app.config.get("LDAP_GROUPS_TO_ROLES", None)
-        self.ldap_is_active_directory = current_app.config.get("LDAP_IS_ACTIVE_DIRECTORY", False)
-        self.ldap_attrs = ['memberOf']
+        self.ldap_is_active_directory = current_app.config.get(
+            "LDAP_IS_ACTIVE_DIRECTORY", False
+        )
+        self.ldap_attrs = ["memberOf"]
         self.ldap_client = None
         self.ldap_groups = None
 
@@ -60,8 +66,8 @@ class LdapPrincipal():
                 get_psuedo_random_string(),
                 self.ldap_principal,
                 True,
-                '',     # thumbnailPhotoUrl
-                list(roles)
+                "",  # thumbnailPhotoUrl
+                list(roles),
             )
         else:
             # we add 'lemur' specific roles, so they do not get marked as removed
@@ -76,7 +82,7 @@ class LdapPrincipal():
                 self.ldap_principal,
                 user.active,
                 user.profile_picture,
-                list(roles)
+                list(roles),
             )
         return user
 
@@ -105,9 +111,12 @@ class LdapPrincipal():
         # update their 'roles'
         role = role_service.get_by_name(self.ldap_principal)
         if not role:
-            description = "auto generated role based on owner: {0}".format(self.ldap_principal)
-            role = role_service.create(self.ldap_principal, description=description,
-                third_party=True)
+            description = "auto generated role based on owner: {0}".format(
+                self.ldap_principal
+            )
+            role = role_service.create(
+                self.ldap_principal, description=description, third_party=True
+            )
         if not role.third_party:
             role = role_service.set_third_party(role.id, third_party_status=True)
         roles.add(role)
@@ -118,9 +127,15 @@ class LdapPrincipal():
             role = role_service.get_by_name(role_name)
             if role:
                 if ldap_group_name in self.ldap_groups:
-                    current_app.logger.debug("assigning role {0} to ldap user {1}".format(self.ldap_principal, role))
+                    current_app.logger.debug(
+                        "assigning role {0} to ldap user {1}".format(
+                            self.ldap_principal, role
+                        )
+                    )
                     if not role.third_party:
-                        role = role_service.set_third_party(role.id, third_party_status=True)
+                        role = role_service.set_third_party(
+                            role.id, third_party_status=True
+                        )
                     roles.add(role)
         return roles
 
@@ -132,7 +147,7 @@ class LdapPrincipal():
         self._bind()
         roles = self._authorize()
         if not roles:
-            raise Exception('ldap authorization failed')
+            raise Exception("ldap authorization failed")
         return self._update_user(roles)
 
     def _bind(self):
@@ -141,9 +156,12 @@ class LdapPrincipal():
         list groups for a user.
         raise an exception on error.
         """
-        if '@' not in self.ldap_principal:
-            self.ldap_principal = '%s@%s' % (self.ldap_principal, self.ldap_email_domain)
-        ldap_filter = 'userPrincipalName=%s' % self.ldap_principal
+        if "@" not in self.ldap_principal:
+            self.ldap_principal = "%s@%s" % (
+                self.ldap_principal,
+                self.ldap_email_domain,
+            )
+        ldap_filter = "userPrincipalName=%s" % self.ldap_principal
 
         # query ldap for auth
         try:
@@ -159,37 +177,47 @@ class LdapPrincipal():
                 self.ldap_client.set_option(ldap.OPT_X_TLS_DEMAND, True)
                 self.ldap_client.set_option(ldap.OPT_DEBUG_LEVEL, 255)
             if self.ldap_cacert_file:
-                self.ldap_client.set_option(ldap.OPT_X_TLS_CACERTFILE, self.ldap_cacert_file)
+                self.ldap_client.set_option(
+                    ldap.OPT_X_TLS_CACERTFILE, self.ldap_cacert_file
+                )
             self.ldap_client.simple_bind_s(self.ldap_principal, self.ldap_password)
         except ldap.INVALID_CREDENTIALS:
             self.ldap_client.unbind()
-            raise Exception('The supplied ldap credentials are invalid')
+            raise Exception("The supplied ldap credentials are invalid")
         except ldap.SERVER_DOWN:
-            raise Exception('ldap server unavailable')
+            raise Exception("ldap server unavailable")
         except ldap.LDAPError as e:
             raise Exception("ldap error: {0}".format(e))
 
         if self.ldap_is_active_directory:
             # Lookup user DN, needed to search for group membership
-            userdn = self.ldap_client.search_s(self.ldap_base_dn,
-                                               ldap.SCOPE_SUBTREE, ldap_filter,
-                                               ['distinguishedName'])[0][1]['distinguishedName'][0]
-            userdn = userdn.decode('utf-8')
+            userdn = self.ldap_client.search_s(
+                self.ldap_base_dn,
+                ldap.SCOPE_SUBTREE,
+                ldap_filter,
+                ["distinguishedName"],
+            )[0][1]["distinguishedName"][0]
+            userdn = userdn.decode("utf-8")
             # Search all groups that have the userDN as a member
-            groupfilter = '(&(objectclass=group)(member:1.2.840.113556.1.4.1941:={0}))'.format(userdn)
-            lgroups = self.ldap_client.search_s(self.ldap_base_dn, ldap.SCOPE_SUBTREE, groupfilter, ['cn'])
+            groupfilter = "(&(objectclass=group)(member:1.2.840.113556.1.4.1941:={0}))".format(
+                userdn
+            )
+            lgroups = self.ldap_client.search_s(
+                self.ldap_base_dn, ldap.SCOPE_SUBTREE, groupfilter, ["cn"]
+            )
 
             # Create a list of group CN's from the result
             self.ldap_groups = []
             for group in lgroups:
                 (dn, values) = group
-                self.ldap_groups.append(values['cn'][0].decode('ascii'))
+                self.ldap_groups.append(values["cn"][0].decode("ascii"))
         else:
-            lgroups = self.ldap_client.search_s(self.ldap_base_dn,
-                                                ldap.SCOPE_SUBTREE, ldap_filter, self.ldap_attrs)[0][1]['memberOf']
+            lgroups = self.ldap_client.search_s(
+                self.ldap_base_dn, ldap.SCOPE_SUBTREE, ldap_filter, self.ldap_attrs
+            )[0][1]["memberOf"]
             # lgroups is a list of utf-8 encoded strings
             # convert to a single string of groups to allow matching
-            self.ldap_groups = b''.join(lgroups).decode('ascii')
+            self.ldap_groups = b"".join(lgroups).decode("ascii")
 
         self.ldap_client.unbind()
 
@@ -197,9 +225,5 @@ class LdapPrincipal():
         """
         Confirms required ldap config settings exist.
         """
-        required_vars = [
-            'LDAP_BIND_URI',
-            'LDAP_BASE_DN',
-            'LDAP_EMAIL_DOMAIN',
-        ]
+        required_vars = ["LDAP_BIND_URI", "LDAP_BASE_DN", "LDAP_EMAIL_DOMAIN"]
         validate_conf(current_app, required_vars)
