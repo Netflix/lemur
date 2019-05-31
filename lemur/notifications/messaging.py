@@ -155,7 +155,7 @@ def send_expiration_notifications(exclude):
 
             if (
                 notification_recipient
-                and owner != notification_recipient
+                and owner not in notification_recipient # notification_recipient is a list
                 and security_email != notification_recipient
             ):
                 if send_notification(
