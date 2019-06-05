@@ -145,6 +145,8 @@ def send_expiration_notifications(exclude):
             )
             if notification_recipient:
                 notification_recipient = notification_recipient.split(",")
+            else:
+                notification_recipient = []
 
             if send_notification(
                 "expiration", notification_data, [owner], notification
