@@ -18,6 +18,26 @@ angular.module('lemur')
           this.authority = authority;
           this.authority.maxDate = moment(this.authority.notAfter).subtract(1, 'days').format('YYYY/MM/DD');
         },
+        attachCommonName: function () {
+          if (this.extensions === undefined) {
+            this.extensions = {};
+          }
+
+          if (this.extensions.subAltNames === undefined) {
+            this.extensions.subAltNames = {'names': []};
+          }
+
+          if (angular.isString(this.commonName)) {
+            this.extensions.subAltNames.names.unshift({'nameType': 'DNSName', 'value': this.commonName});
+          }
+        },
+        removeCommonName: function () {
+          if (angular.isDefined(this.extensions) && angular.isDefined(this.extensions.subAltNames)) {
+            if (angular.equals(this.extensions.subAltNames.names[0].value, this.commonName)) {
+              this.extensions.subAltNames.names.shift();
+            }
+          }
+        },
         attachSubAltName: function () {
           if (this.extensions === undefined) {
             this.extensions = {};
