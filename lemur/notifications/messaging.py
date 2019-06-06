@@ -52,7 +52,7 @@ def get_certificates(exclude=None):
 
     certs = []
 
-    for c in windowed_query(q, Certificate.id, 100):
+    for c in windowed_query(q, Certificate.id, 10000):
         if needs_notification(c):
             certs.append(c)
 
