@@ -203,10 +203,10 @@
                   </uib-tab-heading>
                   <pre style="width: 100%">{{ certificate.body }}</pre>
                 </uib-tab>
-                <uib-tab ng-click="loadPrivateKey(certificate)">
+                <uib-tab ng-click="loadPrivateKey(certificate)" disable="!certificate.hasPrivateKey">
                   <uib-tab-heading>
                     Private Key
-                     <i class="glyphicon glyphicon-copy" style="cursor: pointer" clipboard text="certificate.privateKey"></i>
+                    <i class="glyphicon glyphicon-copy" style="cursor: pointer" clipboard ng-if="certificate.hasPrivateKey" text="certificate.privateKey"></i>
                   </uib-tab-heading>
                   <pre style="width: 100%">{{ certificate.privateKey }}</pre>
                 </uib-tab>

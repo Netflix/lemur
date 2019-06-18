@@ -247,6 +247,7 @@ class CertificateOutputSchema(LemurOutputSchema):
     # Note aliasing is the first step in deprecating these fields.
     notify = fields.Boolean()
     active = fields.Boolean(attribute="notify")
+    has_private_key = fields.Boolean()
 
     cn = fields.String()
     common_name = fields.String(attribute="cn")
