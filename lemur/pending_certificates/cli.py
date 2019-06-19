@@ -19,7 +19,9 @@ from lemur.plugins.base import plugins
 manager = Manager(usage="Handles pending certificate related tasks.")
 
 
-@manager.option('-i', dest='ids', action='append', help='IDs of pending certificates to fetch')
+@manager.option(
+    "-i", dest="ids", action="append", help="IDs of pending certificates to fetch"
+)
 def fetch(ids):
     """
     Attempt to get full certificate for each pending certificate listed.
@@ -39,25 +41,18 @@ def fetch(ids):
         if real_cert:
             # If a real certificate was returned from issuer, then create it in Lemur and mark
             # the pending certificate as resolved
-            final_cert = pending_certificate_service.create_certificate(cert, real_cert, cert.user)
-            pending_certificate_service.update(
-                cert.id,
-                resolved=True
+            final_cert = pending_certificate_service.create_certificate(
+                cert, real_cert, cert.user
             )
-            pending_certificate_service.update(
-                cert.id,
-                resolved_cert_id=final_cert.id
-            )
+            pending_certificate_service.update(cert.id, resolved_cert_id=final_cert.id)
+            pending_certificate_service.update(cert.id, resolved=True)
             # add metrics to metrics extension
             new += 1
         else:
             pending_certificate_service.increment_attempt(cert)
             failed += 1
     print(
-        "[+] Certificates: New: {new} Failed: {failed}".format(
-            new=new,
-            failed=failed,
-        )
+        "[+] Certificates: New: {new} Failed: {failed}".format(new=new, failed=failed)
     )
 
 
@@ -69,9 +64,7 @@ def fetch_all_acme():
     certificates.
     """
 
-    log_data = {
-        "function": "{}.{}".format(__name__, sys._getframe().f_code.co_name)
-    }
+    log_data = {"function": "{}.{}".format(__name__, sys._getframe().f_code.co_name)}
     pending_certs = pending_certificate_service.get_unresolved_pending_certs()
     new = 0
     failed = 0
@@ -81,7 +74,7 @@ def fetch_all_acme():
     # We only care about certs using the acme-issuer plugin
     for cert in pending_certs:
         cert_authority = get_authority(cert.authority_id)
-        if cert_authority.plugin_name == 'acme-issuer':
+        if cert_authority.plugin_name == "acme-issuer":
             acme_certs.append(cert)
         else:
             wrong_issuer += 1
@@ -97,15 +90,13 @@ def fetch_all_acme():
         if real_cert:
             # If a real certificate was returned from issuer, then create it in Lemur and mark
             # the pending certificate as resolved
-            final_cert = pending_certificate_service.create_certificate(pending_cert, real_cert, pending_cert.user)
-            pending_certificate_service.update(
-                pending_cert.id,
-                resolved=True
+            final_cert = pending_certificate_service.create_certificate(
+                pending_cert, real_cert, pending_cert.user
             )
             pending_certificate_service.update(
-                pending_cert.id,
-                resolved_cert_id=final_cert.id
+                pending_cert.id, resolved_cert_id=final_cert.id
             )
+            pending_certificate_service.update(pending_cert.id, resolved=True)
             # add metrics to metrics extension
             new += 1
         else:
@@ -118,17 +109,15 @@ def fetch_all_acme():
 
             if pending_cert.number_attempts > 4:
                 error_log["message"] = "Marking pending certificate as resolved"
-                send_pending_failure_notification(pending_cert, notify_owner=pending_cert.notify)
-                # Mark "resolved" as True
-                pending_certificate_service.update(
-                    cert.id,
-                    resolved=True
+                send_pending_failure_notification(
+                    pending_cert, notify_owner=pending_cert.notify
                 )
+                # Mark "resolved" as True
+                pending_certificate_service.update(cert.id, resolved=True)
             else:
                 pending_certificate_service.increment_attempt(pending_cert)
                 pending_certificate_service.update(
-                    cert.get("pending_cert").id,
-                    status=str(cert.get("last_error"))
+                    cert.get("pending_cert").id, status=str(cert.get("last_error"))
                 )
             current_app.logger.error(error_log)
     log_data["message"] = "Complete"
@@ -138,8 +127,6 @@ def fetch_all_acme():
     current_app.logger.debug(log_data)
     print(
         "[+] Certificates: New: {new} Failed: {failed} Not using ACME: {wrong_issuer}".format(
-            new=new,
-            failed=failed,
-            wrong_issuer=wrong_issuer
+            new=new, failed=failed, wrong_issuer=wrong_issuer
         )
     )

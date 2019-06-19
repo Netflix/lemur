@@ -14,7 +14,12 @@ from marshmallow.exceptions import ValidationError
 
 from lemur.common import validators
 from lemur.common.schema import LemurSchema, LemurInputSchema, LemurOutputSchema
-from lemur.common.fields import KeyUsageExtension, ExtendedKeyUsageExtension, BasicConstraintsExtension, SubjectAlternativeNameExtension
+from lemur.common.fields import (
+    KeyUsageExtension,
+    ExtendedKeyUsageExtension,
+    BasicConstraintsExtension,
+    SubjectAlternativeNameExtension,
+)
 
 from lemur.plugins import plugins
 from lemur.plugins.utils import get_plugin_option
@@ -34,40 +39,42 @@ def validate_options(options):
     :param options:
     :return:
     """
-    interval = get_plugin_option('interval', options)
-    unit = get_plugin_option('unit', options)
+    interval = get_plugin_option("interval", options)
+    unit = get_plugin_option("unit", options)
 
     if not interval and not unit:
         return
 
-    if unit == 'month':
+    if unit == "month":
         interval *= 30
 
-    elif unit == 'week':
+    elif unit == "week":
         interval *= 7
 
     if interval > 90:
-        raise ValidationError('Notification cannot be more than 90 days into the future.')
+        raise ValidationError(
+            "Notification cannot be more than 90 days into the future."
+        )
 
 
 def get_object_attribute(data, many=False):
     if many:
-        ids = [d.get('id') for d in data]
-        names = [d.get('name') for d in data]
+        ids = [d.get("id") for d in data]
+        names = [d.get("name") for d in data]
 
         if None in ids:
             if None in names:
-                raise ValidationError('Associated object require a name or id.')
+                raise ValidationError("Associated object require a name or id.")
             else:
-                return 'name'
-        return 'id'
+                return "name"
+        return "id"
     else:
-        if data.get('id'):
-            return 'id'
-        elif data.get('name'):
-            return 'name'
+        if data.get("id"):
+            return "id"
+        elif data.get("name"):
+            return "name"
         else:
-            raise ValidationError('Associated object require a name or id.')
+            raise ValidationError("Associated object require a name or id.")
 
 
 def fetch_objects(model, data, many=False):
@@ -80,10 +87,11 @@ def fetch_objects(model, data, many=False):
         diff = set(values).symmetric_difference(set(found))
 
         if diff:
-            raise ValidationError('Unable to locate {model} with {attr} {diff}'.format(
-                model=model,
-                attr=attr,
-                diff=",".join(list(diff))))
+            raise ValidationError(
+                "Unable to locate {model} with {attr} {diff}".format(
+                    model=model, attr=attr, diff=",".join(list(diff))
+                )
+            )
 
         return items
 
@@ -91,10 +99,11 @@ def fetch_objects(model, data, many=False):
         try:
             return model.query.filter(getattr(model, attr) == data[attr]).one()
         except NoResultFound:
-            raise ValidationError('Unable to find {model} with {attr}: {data}'.format(
-                model=model,
-                attr=attr,
-                data=data[attr]))
+            raise ValidationError(
+                "Unable to find {model} with {attr}: {data}".format(
+                    model=model, attr=attr, data=data[attr]
+                )
+            )
 
 
 class AssociatedAuthoritySchema(LemurInputSchema):
@@ -178,17 +187,19 @@ class PluginInputSchema(LemurInputSchema):
     @post_load
     def get_object(self, data, many=False):
         try:
-            data['plugin_object'] = plugins.get(data['slug'])
+            data["plugin_object"] = plugins.get(data["slug"])
 
             # parse any sub-plugins
-            for option in data.get('plugin_options', []):
-                if 'plugin' in option.get('type', []):
-                    sub_data, errors = PluginInputSchema().load(option['value'])
-                    option['value'] = sub_data
+            for option in data.get("plugin_options", []):
+                if "plugin" in option.get("type", []):
+                    sub_data, errors = PluginInputSchema().load(option["value"])
+                    option["value"] = sub_data
 
             return data
         except Exception as e:
-            raise ValidationError('Unable to find plugin. Slug: {0} Reason: {1}'.format(data['slug'], e))
+            raise ValidationError(
+                "Unable to find plugin. Slug: {0} Reason: {1}".format(data["slug"], e)
+            )
 
 
 class PluginOutputSchema(LemurOutputSchema):
@@ -196,7 +207,7 @@ class PluginOutputSchema(LemurOutputSchema):
     label = fields.String()
     description = fields.String()
     active = fields.Boolean()
-    options = fields.List(fields.Dict(), dump_to='pluginOptions')
+    options = fields.List(fields.Dict(), dump_to="pluginOptions")
     slug = fields.String()
     title = fields.String()
 
@@ -227,7 +238,7 @@ class CertificateInfoAccessSchema(BaseExtensionSchema):
 
     @post_dump
     def handle_keys(self, data):
-        return {'includeAIA': data['include_aia']}
+        return {"includeAIA": data["include_aia"]}
 
 
 class CRLDistributionPointsSchema(BaseExtensionSchema):
@@ -235,7 +246,7 @@ class CRLDistributionPointsSchema(BaseExtensionSchema):
 
     @post_dump
     def handle_keys(self, data):
-        return {'includeCRLDP': data['include_crl_dp']}
+        return {"includeCRLDP": data["include_crl_dp"]}
 
 
 class SubjectKeyIdentifierSchema(BaseExtensionSchema):
@@ -243,7 +254,7 @@ class SubjectKeyIdentifierSchema(BaseExtensionSchema):
 
     @post_dump
     def handle_keys(self, data):
-        return {'includeSKI': data['include_ski']}
+        return {"includeSKI": data["include_ski"]}
 
 
 class CustomOIDSchema(BaseExtensionSchema):
@@ -258,14 +269,18 @@ class NamesSchema(BaseExtensionSchema):
 
 
 class ExtensionSchema(BaseExtensionSchema):
-    basic_constraints = BasicConstraintsExtension()  # some devices balk on default basic constraints
+    basic_constraints = (
+        BasicConstraintsExtension()
+    )  # some devices balk on default basic constraints
     key_usage = KeyUsageExtension()
     extended_key_usage = ExtendedKeyUsageExtension()
     subject_key_identifier = fields.Nested(SubjectKeyIdentifierSchema)
     sub_alt_names = fields.Nested(NamesSchema)
     authority_key_identifier = fields.Nested(AuthorityKeyIdentifierSchema)
     certificate_info_access = fields.Nested(CertificateInfoAccessSchema)
-    crl_distribution_points = fields.Nested(CRLDistributionPointsSchema, dump_to='cRL_distribution_points')
+    crl_distribution_points = fields.Nested(
+        CRLDistributionPointsSchema, dump_to="cRL_distribution_points"
+    )
     # FIXME: Convert custom OIDs to a custom field in fields.py like other Extensions
     # FIXME: Remove support in UI for Critical custom extensions https://github.com/Netflix/lemur/issues/665
     custom = fields.List(fields.Nested(CustomOIDSchema))

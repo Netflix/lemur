@@ -26,10 +26,14 @@ from lemur.plugins.base import plugins
 from lemur.roles import service as role_service
 from lemur.roles.models import Role
 
-csr_created = signals.signal('csr_created', "CSR generated")
-csr_imported = signals.signal('csr_imported', "CSR imported from external source")
-certificate_issued = signals.signal('certificate_issued', "Authority issued a certificate")
-certificate_imported = signals.signal('certificate_imported', "Certificate imported from external source")
+csr_created = signals.signal("csr_created", "CSR generated")
+csr_imported = signals.signal("csr_imported", "CSR imported from external source")
+certificate_issued = signals.signal(
+    "certificate_issued", "Authority issued a certificate"
+)
+certificate_imported = signals.signal(
+    "certificate_imported", "Certificate imported from external source"
+)
 
 
 def get(cert_id):
@@ -49,7 +53,7 @@ def get_by_name(name):
     :param name:
     :return:
     """
-    return database.get(Certificate, name, field='name')
+    return database.get(Certificate, name, field="name")
 
 
 def get_by_serial(serial):
@@ -105,8 +109,12 @@ def get_all_pending_cleaning(source):
     :param source:
     :return:
     """
-    return Certificate.query.filter(Certificate.sources.any(id=source.id)) \
-        .filter(not_(Certificate.endpoints.any())).filter(Certificate.expired).all()
+    return (
+        Certificate.query.filter(Certificate.sources.any(id=source.id))
+        .filter(not_(Certificate.endpoints.any()))
+        .filter(Certificate.expired)
+        .all()
+    )
 
 
 def get_all_pending_reissue():
@@ -119,9 +127,12 @@ def get_all_pending_reissue():
 
     :return:
     """
-    return Certificate.query.filter(Certificate.rotation == True) \
-        .filter(not_(Certificate.replaced.any())) \
-        .filter(Certificate.in_rotation_window == True).all()  # noqa
+    return (
+        Certificate.query.filter(Certificate.rotation == True)
+        .filter(not_(Certificate.replaced.any()))
+        .filter(Certificate.in_rotation_window == True)
+        .all()
+    )  # noqa
 
 
 def find_duplicates(cert):
@@ -133,10 +144,12 @@ def find_duplicates(cert):
     :param cert:
     :return:
     """
-    if cert['chain']:
-        return Certificate.query.filter_by(body=cert['body'].strip(), chain=cert['chain'].strip()).all()
+    if cert["chain"]:
+        return Certificate.query.filter_by(
+            body=cert["body"].strip(), chain=cert["chain"].strip()
+        ).all()
     else:
-        return Certificate.query.filter_by(body=cert['body'].strip(), chain=None).all()
+        return Certificate.query.filter_by(body=cert["body"].strip(), chain=None).all()
 
 
 def export(cert, export_plugin):
@@ -148,8 +161,10 @@ def export(cert, export_plugin):
     :param cert:
     :return:
     """
-    plugin = plugins.get(export_plugin['slug'])
-    return plugin.export(cert.body, cert.chain, cert.private_key, export_plugin['pluginOptions'])
+    plugin = plugins.get(export_plugin["slug"])
+    return plugin.export(
+        cert.body, cert.chain, cert.private_key, export_plugin["pluginOptions"]
+    )
 
 
 def update(cert_id, **kwargs):
@@ -168,17 +183,19 @@ def update(cert_id, **kwargs):
 
 def create_certificate_roles(**kwargs):
     # create an role for the owner and assign it
-    owner_role = role_service.get_by_name(kwargs['owner'])
+    owner_role = role_service.get_by_name(kwargs["owner"])
 
     if not owner_role:
         owner_role = role_service.create(
-            kwargs['owner'],
-            description="Auto generated role based on owner: {0}".format(kwargs['owner'])
+            kwargs["owner"],
+            description="Auto generated role based on owner: {0}".format(
+                kwargs["owner"]
+            ),
         )
 
     # ensure that the authority's owner is also associated with the certificate
-    if kwargs.get('authority'):
-        authority_owner_role = role_service.get_by_name(kwargs['authority'].owner)
+    if kwargs.get("authority"):
+        authority_owner_role = role_service.get_by_name(kwargs["authority"].owner)
         return [owner_role, authority_owner_role]
 
     return [owner_role]
@@ -190,16 +207,16 @@ def mint(**kwargs):
     Support for multiple authorities is handled by individual plugins.
 
     """
-    authority = kwargs['authority']
+    authority = kwargs["authority"]
 
     issuer = plugins.get(authority.plugin_name)
 
     # allow the CSR to be specified by the user
-    if not kwargs.get('csr'):
+    if not kwargs.get("csr"):
         csr, private_key = create_csr(**kwargs)
         csr_created.send(authority=authority, csr=csr)
     else:
-        csr = str(kwargs.get('csr'))
+        csr = str(kwargs.get("csr"))
         private_key = None
         csr_imported.send(authority=authority, csr=csr)
 
@@ -220,8 +237,8 @@ def import_certificate(**kwargs):
 
     :param kwargs:
     """
-    if not kwargs.get('owner'):
-        kwargs['owner'] = current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL')[0]
+    if not kwargs.get("owner"):
+        kwargs["owner"] = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")[0]
 
     return upload(**kwargs)
 
@@ -232,16 +249,16 @@ def upload(**kwargs):
     """
     roles = create_certificate_roles(**kwargs)
 
-    if kwargs.get('roles'):
-        kwargs['roles'] += roles
+    if kwargs.get("roles"):
+        kwargs["roles"] += roles
     else:
-        kwargs['roles'] = roles
+        kwargs["roles"] = roles
 
     cert = Certificate(**kwargs)
-    cert.authority = kwargs.get('authority')
+    cert.authority = kwargs.get("authority")
     cert = database.create(cert)
 
-    kwargs['creator'].certificates.append(cert)
+    kwargs["creator"].certificates.append(cert)
 
     cert = database.update(cert)
     certificate_imported.send(certificate=cert, authority=cert.authority)
@@ -258,39 +275,45 @@ def create(**kwargs):
         current_app.logger.error("Exception minting certificate", exc_info=True)
         sentry.captureException()
         raise
-    kwargs['body'] = cert_body
-    kwargs['private_key'] = private_key
-    kwargs['chain'] = cert_chain
-    kwargs['external_id'] = external_id
-    kwargs['csr'] = csr
+    kwargs["body"] = cert_body
+    kwargs["private_key"] = private_key
+    kwargs["chain"] = cert_chain
+    kwargs["external_id"] = external_id
+    kwargs["csr"] = csr
 
     roles = create_certificate_roles(**kwargs)
 
-    if kwargs.get('roles'):
-        kwargs['roles'] += roles
+    if kwargs.get("roles"):
+        kwargs["roles"] += roles
     else:
-        kwargs['roles'] = roles
+        kwargs["roles"] = roles
 
     if cert_body:
         cert = Certificate(**kwargs)
-        kwargs['creator'].certificates.append(cert)
+        kwargs["creator"].certificates.append(cert)
     else:
         cert = PendingCertificate(**kwargs)
-        kwargs['creator'].pending_certificates.append(cert)
+        kwargs["creator"].pending_certificates.append(cert)
 
-    cert.authority = kwargs['authority']
+    cert.authority = kwargs["authority"]
 
     database.commit()
 
     if isinstance(cert, Certificate):
         certificate_issued.send(certificate=cert, authority=cert.authority)
-        metrics.send('certificate_issued', 'counter', 1, metric_tags=dict(owner=cert.owner, issuer=cert.issuer))
+        metrics.send(
+            "certificate_issued",
+            "counter",
+            1,
+            metric_tags=dict(owner=cert.owner, issuer=cert.issuer),
+        )
 
     if isinstance(cert, PendingCertificate):
         # We need to refresh the pending certificate to avoid "Instance is not bound to a Session; "
         # "attribute refresh operation cannot proceed"
         pending_cert = database.session_query(PendingCertificate).get(cert.id)
         from lemur.common.celery import fetch_acme_cert
+
         if not current_app.config.get("ACME_DISABLE_AUTORESOLVE", False):
             fetch_acme_cert.apply_async((pending_cert.id,), countdown=5)
 
@@ -306,51 +329,61 @@ def render(args):
     """
     query = database.session_query(Certificate)
 
-    time_range = args.pop('time_range')
-    destination_id = args.pop('destination_id')
-    notification_id = args.pop('notification_id', None)
-    show = args.pop('show')
+    time_range = args.pop("time_range")
+    if not time_range:
+        six_month_old = arrow.now()\
+            .shift(months=current_app.config.get("HIDE_EXPIRED_CERTS_AFTER_MONTHS", -6))\
+            .format("YYYY-MM-DD")
+        query = query.filter(Certificate.not_after > six_month_old)
+
+    destination_id = args.pop("destination_id")
+    notification_id = args.pop("notification_id", None)
+    show = args.pop("show")
     # owner = args.pop('owner')
     # creator = args.pop('creator')  # TODO we should enabling filtering by owner
 
-    filt = args.pop('filter')
+    filt = args.pop("filter")
 
     if filt:
-        terms = filt.split(';')
-        term = '%{0}%'.format(terms[1])
+        terms = filt.split(";")
+        term = "%{0}%".format(terms[1])
         # Exact matches for quotes. Only applies to name, issuer, and cn
         if terms[1].startswith('"') and terms[1].endswith('"'):
             term = terms[1][1:-1]
 
-        if 'issuer' in terms:
+        if "issuer" in terms:
             # we can't rely on issuer being correct in the cert directly so we combine queries
-            sub_query = database.session_query(Authority.id) \
-                .filter(Authority.name.ilike(term)) \
+            sub_query = (
+                database.session_query(Authority.id)
+                .filter(Authority.name.ilike(term))
                 .subquery()
+            )
 
             query = query.filter(
                 or_(
                     Certificate.issuer.ilike(term),
-                    Certificate.authority_id.in_(sub_query)
+                    Certificate.authority_id.in_(sub_query),
                 )
             )
 
-        elif 'destination' in terms:
-            query = query.filter(Certificate.destinations.any(Destination.id == terms[1]))
-        elif 'notify' in filt:
+        elif "destination" in terms:
+            query = query.filter(
+                Certificate.destinations.any(Destination.id == terms[1])
+            )
+        elif "notify" in filt:
             query = query.filter(Certificate.notify == truthiness(terms[1]))
-        elif 'active' in filt:
+        elif "active" in filt:
             query = query.filter(Certificate.active == truthiness(terms[1]))
-        elif 'cn' in terms:
+        elif "cn" in terms:
             query = query.filter(
                 or_(
                     Certificate.cn.ilike(term),
-                    Certificate.domains.any(Domain.name.ilike(term))
+                    Certificate.domains.any(Domain.name.ilike(term)),
                 )
             )
-        elif 'id' in terms:
+        elif "id" in terms:
             query = query.filter(Certificate.id == cast(terms[1], Integer))
-        elif 'name' in terms:
+        elif "name" in terms:
             query = query.filter(
                 or_(
                     Certificate.name.ilike(term),
@@ -362,29 +395,77 @@ def render(args):
             query = database.filter(query, Certificate, terms)
 
     if show:
-        sub_query = database.session_query(Role.name).filter(Role.user_id == args['user'].id).subquery()
+        sub_query = (
+            database.session_query(Role.name)
+            .filter(Role.user_id == args["user"].id)
+            .subquery()
+        )
         query = query.filter(
             or_(
-                Certificate.user_id == args['user'].id,
-                Certificate.owner.in_(sub_query)
+                Certificate.user_id == args["user"].id, Certificate.owner.in_(sub_query)
             )
         )
 
     if destination_id:
-        query = query.filter(Certificate.destinations.any(Destination.id == destination_id))
+        query = query.filter(
+            Certificate.destinations.any(Destination.id == destination_id)
+        )
 
     if notification_id:
-        query = query.filter(Certificate.notifications.any(Notification.id == notification_id))
+        query = query.filter(
+            Certificate.notifications.any(Notification.id == notification_id)
+        )
 
     if time_range:
-        to = arrow.now().replace(weeks=+time_range).format('YYYY-MM-DD')
-        now = arrow.now().format('YYYY-MM-DD')
-        query = query.filter(Certificate.not_after <= to).filter(Certificate.not_after >= now)
+        to = arrow.now().replace(weeks=+time_range).format("YYYY-MM-DD")
+        now = arrow.now().format("YYYY-MM-DD")
+        query = query.filter(Certificate.not_after <= to).filter(
+            Certificate.not_after >= now
+        )
 
-    if current_app.config.get('ALLOW_CERT_DELETION', False):
+    if current_app.config.get("ALLOW_CERT_DELETION", False):
         query = query.filter(Certificate.deleted == False)  # noqa
 
     result = database.sort_and_page(query, Certificate, args)
+    return result
+
+
+def query_name(certificate_name, args):
+    """
+    Helper function that queries for a certificate by name
+
+    :param args:
+    :return:
+    """
+    query = database.session_query(Certificate)
+    query = query.filter(Certificate.name == certificate_name)
+    result = database.sort_and_page(query, Certificate, args)
+    return result
+
+
+def query_common_name(common_name, args):
+    """
+    Helper function that queries for not expired certificates by common name and owner which have auto-rotate enabled
+
+    :param common_name:
+    :param args:
+    :return:
+    """
+    owner = args.pop("owner")
+    if not owner:
+        owner = "%"
+
+    # only not expired certificates
+    current_time = arrow.utcnow()
+
+    result = (
+        Certificate.query.filter(Certificate.cn.ilike(common_name))
+        .filter(Certificate.owner.ilike(owner))
+        .filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))
+        .filter(Certificate.rotation.is_(True))
+        .all()
+    )
+
     return result
 
 
@@ -395,62 +476,77 @@ def create_csr(**csr_config):
 
     :param csr_config:
     """
-    private_key = generate_private_key(csr_config.get('key_type'))
+    private_key = generate_private_key(csr_config.get("key_type"))
 
     builder = x509.CertificateSigningRequestBuilder()
-    name_list = [x509.NameAttribute(x509.OID_COMMON_NAME, csr_config['common_name'])]
-    if current_app.config.get('LEMUR_OWNER_EMAIL_IN_SUBJECT', True):
-        name_list.append(x509.NameAttribute(x509.OID_EMAIL_ADDRESS, csr_config['owner']))
-    if 'organization' in csr_config and csr_config['organization'].strip():
-        name_list.append(x509.NameAttribute(x509.OID_ORGANIZATION_NAME, csr_config['organization']))
-    if 'organizational_unit' in csr_config and csr_config['organizational_unit'].strip():
-        name_list.append(x509.NameAttribute(x509.OID_ORGANIZATIONAL_UNIT_NAME, csr_config['organizational_unit']))
-    if 'country' in csr_config and csr_config['country'].strip():
-        name_list.append(x509.NameAttribute(x509.OID_COUNTRY_NAME, csr_config['country']))
-    if 'state' in csr_config and csr_config['state'].strip():
-        name_list.append(x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, csr_config['state']))
-    if 'location' in csr_config and csr_config['location'].strip():
-        name_list.append(x509.NameAttribute(x509.OID_LOCALITY_NAME, csr_config['location']))
+    name_list = [x509.NameAttribute(x509.OID_COMMON_NAME, csr_config["common_name"])]
+    if current_app.config.get("LEMUR_OWNER_EMAIL_IN_SUBJECT", True):
+        name_list.append(
+            x509.NameAttribute(x509.OID_EMAIL_ADDRESS, csr_config["owner"])
+        )
+    if "organization" in csr_config and csr_config["organization"].strip():
+        name_list.append(
+            x509.NameAttribute(x509.OID_ORGANIZATION_NAME, csr_config["organization"])
+        )
+    if (
+        "organizational_unit" in csr_config
+        and csr_config["organizational_unit"].strip()
+    ):
+        name_list.append(
+            x509.NameAttribute(
+                x509.OID_ORGANIZATIONAL_UNIT_NAME, csr_config["organizational_unit"]
+            )
+        )
+    if "country" in csr_config and csr_config["country"].strip():
+        name_list.append(
+            x509.NameAttribute(x509.OID_COUNTRY_NAME, csr_config["country"])
+        )
+    if "state" in csr_config and csr_config["state"].strip():
+        name_list.append(
+            x509.NameAttribute(x509.OID_STATE_OR_PROVINCE_NAME, csr_config["state"])
+        )
+    if "location" in csr_config and csr_config["location"].strip():
+        name_list.append(
+            x509.NameAttribute(x509.OID_LOCALITY_NAME, csr_config["location"])
+        )
     builder = builder.subject_name(x509.Name(name_list))
 
-    extensions = csr_config.get('extensions', {})
-    critical_extensions = ['basic_constraints', 'sub_alt_names', 'key_usage']
-    noncritical_extensions = ['extended_key_usage']
+    extensions = csr_config.get("extensions", {})
+    critical_extensions = ["basic_constraints", "sub_alt_names", "key_usage"]
+    noncritical_extensions = ["extended_key_usage"]
     for k, v in extensions.items():
         if v:
             if k in critical_extensions:
-                current_app.logger.debug('Adding Critical Extension: {0} {1}'.format(k, v))
-                if k == 'sub_alt_names':
-                    if v['names']:
-                        builder = builder.add_extension(v['names'], critical=True)
+                current_app.logger.debug(
+                    "Adding Critical Extension: {0} {1}".format(k, v)
+                )
+                if k == "sub_alt_names":
+                    if v["names"]:
+                        builder = builder.add_extension(v["names"], critical=True)
                 else:
                     builder = builder.add_extension(v, critical=True)
 
             if k in noncritical_extensions:
-                current_app.logger.debug('Adding Extension: {0} {1}'.format(k, v))
+                current_app.logger.debug("Adding Extension: {0} {1}".format(k, v))
                 builder = builder.add_extension(v, critical=False)
 
-    ski = extensions.get('subject_key_identifier', {})
-    if ski.get('include_ski', False):
+    ski = extensions.get("subject_key_identifier", {})
+    if ski.get("include_ski", False):
         builder = builder.add_extension(
             x509.SubjectKeyIdentifier.from_public_key(private_key.public_key()),
-            critical=False
+            critical=False,
         )
 
-    request = builder.sign(
-        private_key, hashes.SHA256(), default_backend()
-    )
+    request = builder.sign(private_key, hashes.SHA256(), default_backend())
 
     # serialize our private key and CSR
     private_key = private_key.private_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PrivateFormat.TraditionalOpenSSL,  # would like to use PKCS8 but AWS ELBs don't like it
-        encryption_algorithm=serialization.NoEncryption()
-    ).decode('utf-8')
+        encryption_algorithm=serialization.NoEncryption(),
+    ).decode("utf-8")
 
-    csr = request.public_bytes(
-        encoding=serialization.Encoding.PEM
-    ).decode('utf-8')
+    csr = request.public_bytes(encoding=serialization.Encoding.PEM).decode("utf-8")
 
     return csr, private_key
 
@@ -462,16 +558,19 @@ def stats(**kwargs):
     :param kwargs:
     :return:
     """
-    if kwargs.get('metric') == 'not_after':
+    if kwargs.get("metric") == "not_after":
         start = arrow.utcnow()
         end = start.replace(weeks=+32)
-        items = database.db.session.query(Certificate.issuer, func.count(Certificate.id)) \
-            .group_by(Certificate.issuer) \
-            .filter(Certificate.not_after <= end.format('YYYY-MM-DD')) \
-            .filter(Certificate.not_after >= start.format('YYYY-MM-DD')).all()
+        items = (
+            database.db.session.query(Certificate.issuer, func.count(Certificate.id))
+            .group_by(Certificate.issuer)
+            .filter(Certificate.not_after <= end.format("YYYY-MM-DD"))
+            .filter(Certificate.not_after >= start.format("YYYY-MM-DD"))
+            .all()
+        )
 
     else:
-        attr = getattr(Certificate, kwargs.get('metric'))
+        attr = getattr(Certificate, kwargs.get("metric"))
         query = database.db.session.query(attr, func.count(attr))
 
         items = query.group_by(attr).all()
@@ -482,7 +581,7 @@ def stats(**kwargs):
         keys.append(key)
         values.append(count)
 
-    return {'labels': keys, 'values': values}
+    return {"labels": keys, "values": values}
 
 
 def get_account_number(arn):
@@ -529,22 +628,24 @@ def get_certificate_primitives(certificate):
     certificate via `create`.
     """
     start, end = calculate_reissue_range(certificate.not_before, certificate.not_after)
-    ser = CertificateInputSchema().load(CertificateOutputSchema().dump(certificate).data)
+    ser = CertificateInputSchema().load(
+        CertificateOutputSchema().dump(certificate).data
+    )
     assert not ser.errors, "Error re-serializing certificate: %s" % ser.errors
     data = ser.data
 
     # we can't quite tell if we are using a custom name, as this is an automated process (typically)
     # we will rely on the Lemur generated name
-    data.pop('name', None)
+    data.pop("name", None)
 
     # TODO this can be removed once we migrate away from cn
-    data['cn'] = data['common_name']
+    data["cn"] = data["common_name"]
 
     # needed until we move off not_*
-    data['not_before'] = start
-    data['not_after'] = end
-    data['validity_start'] = start
-    data['validity_end'] = end
+    data["not_before"] = start
+    data["not_after"] = end
+    data["validity_start"] = start
+    data["validity_end"] = end
     return data
 
 
@@ -562,13 +663,13 @@ def reissue_certificate(certificate, replace=None, user=None):
         #  We do not want to re-use the CSR when creating a certificate because this defeats the purpose of rotation.
         del primitives["csr"]
     if not user:
-        primitives['creator'] = certificate.user
+        primitives["creator"] = certificate.user
 
     else:
-        primitives['creator'] = user
+        primitives["creator"] = user
 
     if replace:
-        primitives['replaces'] = [certificate]
+        primitives["replaces"] = [certificate]
 
     new_cert = create(**primitives)
 

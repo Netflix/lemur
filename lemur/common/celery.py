@@ -12,15 +12,17 @@ import sys
 from datetime import datetime, timezone, timedelta
 
 from celery import Celery
+from celery.exceptions import SoftTimeLimitExceeded
 from flask import current_app
 
 from lemur.authorities.service import get as get_authority
+from lemur.destinations import service as destinations_service
+from lemur.extensions import metrics, sentry
 from lemur.factory import create_app
 from lemur.notifications.messaging import send_pending_failure_notification
 from lemur.pending_certificates import service as pending_certificate_service
 from lemur.plugins.base import plugins
 from lemur.sources.cli import clean, sync, validate_sources
-from lemur.destinations import service as destinations_service
 from lemur.sources.service import add_aws_destination_to_sources
 
 if current_app:
@@ -30,8 +32,11 @@ else:
 
 
 def make_celery(app):
-    celery = Celery(app.import_name, backend=app.config.get('CELERY_RESULT_BACKEND'),
-                    broker=app.config.get('CELERY_BROKER_URL'))
+    celery = Celery(
+        app.import_name,
+        backend=app.config.get("CELERY_RESULT_BACKEND"),
+        broker=app.config.get("CELERY_BROKER_URL"),
+    )
     celery.conf.update(app.config)
     TaskBase = celery.Task
 
@@ -51,6 +56,7 @@ celery = make_celery(flask_app)
 
 def is_task_active(fun, task_id, args):
     from celery.task.control import inspect
+
     i = inspect()
     active_tasks = i.active()
     for _, tasks in active_tasks.items():
@@ -62,7 +68,7 @@ def is_task_active(fun, task_id, args):
     return False
 
 
-@celery.task()
+@celery.task(soft_time_limit=600)
 def fetch_acme_cert(id):
     """
     Attempt to get the full certificate for the pending certificate listed.
@@ -70,11 +76,24 @@ def fetch_acme_cert(id):
     Args:
         id: an id of a PendingCertificate
     """
+    task_id = None
+    if celery.current_task:
+        task_id = celery.current_task.request.id
+
     log_data = {
         "function": "{}.{}".format(__name__, sys._getframe().f_code.co_name),
-        "message": "Resolving pending certificate {}".format(id)
+        "message": "Resolving pending certificate {}".format(id),
+        "task_id": task_id,
+        "id": id,
     }
+
     current_app.logger.debug(log_data)
+
+    if task_id and is_task_active(log_data["function"], task_id, (id,)):
+        log_data["message"] = "Skipping task: Task is already active"
+        current_app.logger.debug(log_data)
+        return
+
     pending_certs = pending_certificate_service.get_pending_certs([id])
     new = 0
     failed = 0
@@ -84,7 +103,7 @@ def fetch_acme_cert(id):
     # We only care about certs using the acme-issuer plugin
     for cert in pending_certs:
         cert_authority = get_authority(cert.authority_id)
-        if cert_authority.plugin_name == 'acme-issuer':
+        if cert_authority.plugin_name == "acme-issuer":
             acme_certs.append(cert)
         else:
             wrong_issuer += 1
@@ -97,20 +116,22 @@ def fetch_acme_cert(id):
         # It's necessary to reload the pending cert due to detached instance: http://sqlalche.me/e/bhk3
         pending_cert = pending_certificate_service.get(cert.get("pending_cert").id)
         if not pending_cert:
-            log_data["message"] = "Pending certificate doesn't exist anymore. Was it resolved by another process?"
+            log_data[
+                "message"
+            ] = "Pending certificate doesn't exist anymore. Was it resolved by another process?"
             current_app.logger.error(log_data)
             continue
         if real_cert:
             # If a real certificate was returned from issuer, then create it in Lemur and mark
             # the pending certificate as resolved
-            final_cert = pending_certificate_service.create_certificate(pending_cert, real_cert, pending_cert.user)
-            pending_certificate_service.update(
-                cert.get("pending_cert").id,
-                resolved=True
+            final_cert = pending_certificate_service.create_certificate(
+                pending_cert, real_cert, pending_cert.user
             )
             pending_certificate_service.update(
-                cert.get("pending_cert").id,
-                resolved_cert_id=final_cert.id
+                cert.get("pending_cert").id, resolved_cert_id=final_cert.id
+            )
+            pending_certificate_service.update(
+                cert.get("pending_cert").id, resolved=True
             )
             # add metrics to metrics extension
             new += 1
@@ -124,17 +145,17 @@ def fetch_acme_cert(id):
 
             if pending_cert.number_attempts > 4:
                 error_log["message"] = "Deleting pending certificate"
-                send_pending_failure_notification(pending_cert, notify_owner=pending_cert.notify)
+                send_pending_failure_notification(
+                    pending_cert, notify_owner=pending_cert.notify
+                )
                 # Mark the pending cert as resolved
                 pending_certificate_service.update(
-                    cert.get("pending_cert").id,
-                    resolved=True
+                    cert.get("pending_cert").id, resolved=True
                 )
             else:
                 pending_certificate_service.increment_attempt(pending_cert)
                 pending_certificate_service.update(
-                    cert.get("pending_cert").id,
-                    status=str(cert.get("last_error"))
+                    cert.get("pending_cert").id, status=str(cert.get("last_error"))
                 )
                 # Add failed pending cert task back to queue
                 fetch_acme_cert.delay(id)
@@ -146,9 +167,7 @@ def fetch_acme_cert(id):
     current_app.logger.debug(log_data)
     print(
         "[+] Certificates: New: {new} Failed: {failed} Not using ACME: {wrong_issuer}".format(
-            new=new,
-            failed=failed,
-            wrong_issuer=wrong_issuer
+            new=new, failed=failed, wrong_issuer=wrong_issuer
         )
     )
 
@@ -160,7 +179,7 @@ def fetch_all_pending_acme_certs():
 
     log_data = {
         "function": "{}.{}".format(__name__, sys._getframe().f_code.co_name),
-        "message": "Starting job."
+        "message": "Starting job.",
     }
 
     current_app.logger.debug(log_data)
@@ -168,7 +187,7 @@ def fetch_all_pending_acme_certs():
     # We only care about certs using the acme-issuer plugin
     for cert in pending_certs:
         cert_authority = get_authority(cert.authority_id)
-        if cert_authority.plugin_name == 'acme-issuer':
+        if cert_authority.plugin_name == "acme-issuer":
             if datetime.now(timezone.utc) - cert.last_updated > timedelta(minutes=5):
                 log_data["message"] = "Triggering job for cert {}".format(cert.name)
                 log_data["cert_name"] = cert.name
@@ -180,19 +199,17 @@ def fetch_all_pending_acme_certs():
 @celery.task()
 def remove_old_acme_certs():
     """Prune old pending acme certificates from the database"""
-    log_data = {
-        "function": "{}.{}".format(__name__, sys._getframe().f_code.co_name)
-    }
-    pending_certs = pending_certificate_service.get_pending_certs('all')
+    log_data = {"function": "{}.{}".format(__name__, sys._getframe().f_code.co_name)}
+    pending_certs = pending_certificate_service.get_pending_certs("all")
 
     # Delete pending certs more than a week old
     for cert in pending_certs:
         if datetime.now(timezone.utc) - cert.last_updated > timedelta(days=7):
-            log_data['pending_cert_id'] = cert.id
-            log_data['pending_cert_name'] = cert.name
-            log_data['message'] = "Deleting pending certificate"
+            log_data["pending_cert_id"] = cert.id
+            log_data["pending_cert_name"] = cert.name
+            log_data["message"] = "Deleting pending certificate"
             current_app.logger.debug(log_data)
-            pending_certificate_service.delete(cert.id)
+            pending_certificate_service.delete(cert)
 
 
 @celery.task()
@@ -203,7 +220,9 @@ def clean_all_sources():
     """
     sources = validate_sources("all")
     for source in sources:
-        current_app.logger.debug("Creating celery task to clean source {}".format(source.label))
+        current_app.logger.debug(
+            "Creating celery task to clean source {}".format(source.label)
+        )
         clean_source.delay(source.label)
 
 
@@ -227,11 +246,13 @@ def sync_all_sources():
     """
     sources = validate_sources("all")
     for source in sources:
-        current_app.logger.debug("Creating celery task to sync source {}".format(source.label))
+        current_app.logger.debug(
+            "Creating celery task to sync source {}".format(source.label)
+        )
         sync_source.delay(source.label)
 
 
-@celery.task()
+@celery.task(soft_time_limit=3600)
 def sync_source(source):
     """
     This celery task will sync the specified source.
@@ -241,7 +262,9 @@ def sync_source(source):
     """
 
     function = "{}.{}".format(__name__, sys._getframe().f_code.co_name)
-    task_id = celery.current_task.request.id
+    task_id = None
+    if celery.current_task:
+        task_id = celery.current_task.request.id
     log_data = {
         "function": function,
         "message": "Syncing source",
@@ -250,11 +273,21 @@ def sync_source(source):
     }
     current_app.logger.debug(log_data)
 
-    if is_task_active(function, task_id, (source,)):
+    if task_id and is_task_active(function, task_id, (source,)):
         log_data["message"] = "Skipping task: Task is already active"
         current_app.logger.debug(log_data)
         return
-    sync([source])
+    try:
+        sync([source])
+    except SoftTimeLimitExceeded:
+        log_data["message"] = "Error syncing source: Time limit exceeded."
+        current_app.logger.error(log_data)
+        sentry.captureException()
+        metrics.send(
+            "sync_source_timeout", "counter", 1, metric_tags={"source": source}
+        )
+        return
+
     log_data["message"] = "Done syncing source"
     current_app.logger.debug(log_data)
 

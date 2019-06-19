@@ -19,10 +19,16 @@ from lemur.auth.permissions import ApiKeyCreatorPermission
 from lemur.common.schema import validate_schema
 from lemur.common.utils import paginated_parser
 
-from lemur.api_keys.schemas import api_key_input_schema, api_key_revoke_schema, api_key_output_schema, \
-    api_keys_output_schema, api_key_described_output_schema, user_api_key_input_schema
+from lemur.api_keys.schemas import (
+    api_key_input_schema,
+    api_key_revoke_schema,
+    api_key_output_schema,
+    api_keys_output_schema,
+    api_key_described_output_schema,
+    user_api_key_input_schema,
+)
 
-mod = Blueprint('api_keys', __name__)
+mod = Blueprint("api_keys", __name__)
 api = Api(mod)
 
 
@@ -81,8 +87,8 @@ class ApiKeyList(AuthenticatedResource):
         """
         parser = paginated_parser.copy()
         args = parser.parse_args()
-        args['has_permission'] = ApiKeyCreatorPermission().can()
-        args['requesting_user_id'] = g.current_user.id
+        args["has_permission"] = ApiKeyCreatorPermission().can()
+        args["requesting_user_id"] = g.current_user.id
         return service.render(args)
 
     @validate_schema(api_key_input_schema, api_key_output_schema)
@@ -124,12 +130,26 @@ class ApiKeyList(AuthenticatedResource):
            :statuscode 403: unauthenticated
         """
         if not ApiKeyCreatorPermission().can():
-            if data['user']['id'] != g.current_user.id:
-                return dict(message="You are not authorized to create tokens for: {0}".format(data['user']['username'])), 403
+            if data["user"]["id"] != g.current_user.id:
+                return (
+                    dict(
+                        message="You are not authorized to create tokens for: {0}".format(
+                            data["user"]["username"]
+                        )
+                    ),
+                    403,
+                )
 
-        access_token = service.create(name=data['name'], user_id=data['user']['id'], ttl=data['ttl'],
-                                      revoked=False, issued_at=int(datetime.utcnow().timestamp()))
-        return dict(jwt=create_token(access_token.user_id, access_token.id, access_token.ttl))
+        access_token = service.create(
+            name=data["name"],
+            user_id=data["user"]["id"],
+            ttl=data["ttl"],
+            revoked=False,
+            issued_at=int(datetime.utcnow().timestamp()),
+        )
+        return dict(
+            jwt=create_token(access_token.user_id, access_token.id, access_token.ttl)
+        )
 
 
 class ApiKeyUserList(AuthenticatedResource):
@@ -186,9 +206,9 @@ class ApiKeyUserList(AuthenticatedResource):
         """
         parser = paginated_parser.copy()
         args = parser.parse_args()
-        args['has_permission'] = ApiKeyCreatorPermission().can()
-        args['requesting_user_id'] = g.current_user.id
-        args['user_id'] = user_id
+        args["has_permission"] = ApiKeyCreatorPermission().can()
+        args["requesting_user_id"] = g.current_user.id
+        args["user_id"] = user_id
         return service.render(args)
 
     @validate_schema(user_api_key_input_schema, api_key_output_schema)
@@ -230,11 +250,25 @@ class ApiKeyUserList(AuthenticatedResource):
         """
         if not ApiKeyCreatorPermission().can():
             if user_id != g.current_user.id:
-                return dict(message="You are not authorized to create tokens for: {0}".format(user_id)), 403
+                return (
+                    dict(
+                        message="You are not authorized to create tokens for: {0}".format(
+                            user_id
+                        )
+                    ),
+                    403,
+                )
 
-        access_token = service.create(name=data['name'], user_id=user_id, ttl=data['ttl'],
-                                      revoked=False, issued_at=int(datetime.utcnow().timestamp()))
-        return dict(jwt=create_token(access_token.user_id, access_token.id, access_token.ttl))
+        access_token = service.create(
+            name=data["name"],
+            user_id=user_id,
+            ttl=data["ttl"],
+            revoked=False,
+            issued_at=int(datetime.utcnow().timestamp()),
+        )
+        return dict(
+            jwt=create_token(access_token.user_id, access_token.id, access_token.ttl)
+        )
 
 
 class ApiKeys(AuthenticatedResource):
@@ -329,7 +363,9 @@ class ApiKeys(AuthenticatedResource):
             if not ApiKeyCreatorPermission().can():
                 return dict(message="You are not authorized to update this token!"), 403
 
-        service.update(access_key, name=data['name'], revoked=data['revoked'], ttl=data['ttl'])
+        service.update(
+            access_key, name=data["name"], revoked=data["revoked"], ttl=data["ttl"]
+        )
         return dict(jwt=create_token(access_key.user_id, access_key.id, access_key.ttl))
 
     def delete(self, aid):
@@ -371,7 +407,7 @@ class ApiKeys(AuthenticatedResource):
                 return dict(message="You are not authorized to delete this token!"), 403
 
         service.delete(access_key)
-        return {'result': True}
+        return {"result": True}
 
 
 class UserApiKeys(AuthenticatedResource):
@@ -472,7 +508,9 @@ class UserApiKeys(AuthenticatedResource):
         if access_key.user_id != uid:
             return dict(message="You are not authorized to update this token!"), 403
 
-        service.update(access_key, name=data['name'], revoked=data['revoked'], ttl=data['ttl'])
+        service.update(
+            access_key, name=data["name"], revoked=data["revoked"], ttl=data["ttl"]
+        )
         return dict(jwt=create_token(access_key.user_id, access_key.id, access_key.ttl))
 
     def delete(self, uid, aid):
@@ -517,7 +555,7 @@ class UserApiKeys(AuthenticatedResource):
             return dict(message="You are not authorized to delete this token!"), 403
 
         service.delete(access_key)
-        return {'result': True}
+        return {"result": True}
 
 
 class ApiKeysDescribed(AuthenticatedResource):
@@ -572,8 +610,12 @@ class ApiKeysDescribed(AuthenticatedResource):
         return access_key
 
 
-api.add_resource(ApiKeyList, '/keys', endpoint='api_keys')
-api.add_resource(ApiKeys, '/keys/<int:aid>', endpoint='api_key')
-api.add_resource(ApiKeysDescribed, '/keys/<int:aid>/described', endpoint='api_key_described')
-api.add_resource(ApiKeyUserList, '/users/<int:user_id>/keys', endpoint='user_api_keys')
-api.add_resource(UserApiKeys, '/users/<int:uid>/keys/<int:aid>', endpoint='user_api_key')
+api.add_resource(ApiKeyList, "/keys", endpoint="api_keys")
+api.add_resource(ApiKeys, "/keys/<int:aid>", endpoint="api_key")
+api.add_resource(
+    ApiKeysDescribed, "/keys/<int:aid>/described", endpoint="api_key_described"
+)
+api.add_resource(ApiKeyUserList, "/users/<int:user_id>/keys", endpoint="user_api_keys")
+api.add_resource(
+    UserApiKeys, "/users/<int:uid>/keys/<int:aid>", endpoint="user_api_key"
+)

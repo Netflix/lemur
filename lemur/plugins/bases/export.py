@@ -14,7 +14,8 @@ class ExportPlugin(Plugin):
     This is the base class from which all supported
     exporters will inherit from.
     """
-    type = 'export'
+
+    type = "export"
     requires_key = True
 
     def export(self, body, chain, key, options, **kwargs):

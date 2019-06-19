@@ -33,6 +33,8 @@
                uib-tooltip="If you need a certificate with multiple domains enter your primary domain here and the rest under 'Subject Alternate Names' by clicking 'More Options'"
                ng-model="certificate.commonName" placeholder="Common Name" class="form-control"
                ng-maxlength="64"
+               ng-blur="certificate.attachCommonName()"
+               ng-focus="certificate.removeCommonName()"
                required/>
 
         <p ng-show="trackingForm.commonName.$invalid && !trackingForm.commonName.$pristine" class="help-block">

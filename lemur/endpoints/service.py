@@ -46,7 +46,7 @@ def get_by_name(name):
     :param name:
     :return:
     """
-    return database.get(Endpoint, name, field='name')
+    return database.get(Endpoint, name, field="name")
 
 
 def get_by_dnsname(dnsname):
@@ -56,7 +56,7 @@ def get_by_dnsname(dnsname):
     :param dnsname:
     :return:
     """
-    return database.get(Endpoint, dnsname, field='dnsname')
+    return database.get(Endpoint, dnsname, field="dnsname")
 
 
 def get_by_dnsname_and_port(dnsname, port):
@@ -66,7 +66,11 @@ def get_by_dnsname_and_port(dnsname, port):
     :param port:
     :return:
     """
-    return Endpoint.query.filter(Endpoint.dnsname == dnsname).filter(Endpoint.port == port).scalar()
+    return (
+        Endpoint.query.filter(Endpoint.dnsname == dnsname)
+        .filter(Endpoint.port == port)
+        .scalar()
+    )
 
 
 def get_by_source(source_label):
@@ -95,12 +99,14 @@ def create(**kwargs):
     """
     endpoint = Endpoint(**kwargs)
     database.create(endpoint)
-    metrics.send('endpoint_added', 'counter', 1, metric_tags={'source': endpoint.source.label})
+    metrics.send(
+        "endpoint_added", "counter", 1, metric_tags={"source": endpoint.source.label}
+    )
     return endpoint
 
 
 def get_or_create_policy(**kwargs):
-    policy = database.get(Policy, kwargs['name'], field='name')
+    policy = database.get(Policy, kwargs["name"], field="name")
 
     if not policy:
         policy = Policy(**kwargs)
@@ -110,7 +116,7 @@ def get_or_create_policy(**kwargs):
 
 
 def get_or_create_cipher(**kwargs):
-    cipher = database.get(Cipher, kwargs['name'], field='name')
+    cipher = database.get(Cipher, kwargs["name"], field="name")
 
     if not cipher:
         cipher = Cipher(**kwargs)
@@ -122,11 +128,13 @@ def get_or_create_cipher(**kwargs):
 def update(endpoint_id, **kwargs):
     endpoint = database.get(Endpoint, endpoint_id)
 
-    endpoint.policy = kwargs['policy']
-    endpoint.certificate = kwargs['certificate']
-    endpoint.source = kwargs['source']
+    endpoint.policy = kwargs["policy"]
+    endpoint.certificate = kwargs["certificate"]
+    endpoint.source = kwargs["source"]
     endpoint.last_updated = arrow.utcnow()
-    metrics.send('endpoint_updated', 'counter', 1, metric_tags={'source': endpoint.source.label})
+    metrics.send(
+        "endpoint_updated", "counter", 1, metric_tags={"source": endpoint.source.label}
+    )
     database.update(endpoint)
     return endpoint
 
@@ -138,19 +146,17 @@ def render(args):
     :return:
     """
     query = database.session_query(Endpoint)
-    filt = args.pop('filter')
+    filt = args.pop("filter")
 
     if filt:
-        terms = filt.split(';')
-        if 'active' in filt:  # this is really weird but strcmp seems to not work here??
+        terms = filt.split(";")
+        if "active" in filt:  # this is really weird but strcmp seems to not work here??
             query = query.filter(Endpoint.active == truthiness(terms[1]))
-        elif 'port' in filt:
-            if terms[1] != 'null':  # ng-table adds 'null' if a number is removed
+        elif "port" in filt:
+            if terms[1] != "null":  # ng-table adds 'null' if a number is removed
                 query = query.filter(Endpoint.port == terms[1])
-        elif 'ciphers' in filt:
-            query = query.filter(
-                Cipher.name == terms[1]
-            )
+        elif "ciphers" in filt:
+            query = query.filter(Cipher.name == terms[1])
         else:
             query = database.filter(query, Endpoint, terms)
 
@@ -164,7 +170,7 @@ def stats(**kwargs):
     :param kwargs:
     :return:
     """
-    attr = getattr(Endpoint, kwargs.get('metric'))
+    attr = getattr(Endpoint, kwargs.get("metric"))
     query = database.db.session.query(attr, func.count(attr))
 
     items = query.group_by(attr).all()
@@ -175,4 +181,4 @@ def stats(**kwargs):
         keys.append(key)
         values.append(count)
 
-    return {'labels': keys, 'values': values}
+    return {"labels": keys, "values": values}

@@ -22,13 +22,15 @@ Flask-Script
 Flask-SQLAlchemy
 Flask
 Flask-Cors
+flask_replicated
 future
 gunicorn
 hvac # required for the vault destination plugin
 inflection
 jinja2
-kombu
+kombu<4.6.0 # Bug with inspecting active tasks: https://github.com/celery/kombu/issues/1051
 lockfile
+logmatic-python
 marshmallow-sqlalchemy
 marshmallow
 ndg-httpsclient

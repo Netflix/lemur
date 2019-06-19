@@ -12,21 +12,30 @@ import subprocess
 
 from flask import current_app
 
-from lemur.certificates.service import csr_created, csr_imported, certificate_issued, certificate_imported
+from lemur.certificates.service import (
+    csr_created,
+    csr_imported,
+    certificate_issued,
+    certificate_imported,
+)
 
 
 def csr_dump_handler(sender, csr, **kwargs):
     try:
-        subprocess.run(['openssl', 'req', '-text', '-noout', '-reqopt', 'no_sigdump,no_pubkey'],
-                       input=csr.encode('utf8'))
+        subprocess.run(
+            ["openssl", "req", "-text", "-noout", "-reqopt", "no_sigdump,no_pubkey"],
+            input=csr.encode("utf8"),
+        )
     except Exception as err:
         current_app.logger.warning("Error inspecting CSR: %s", err)
 
 
 def cert_dump_handler(sender, certificate, **kwargs):
     try:
-        subprocess.run(['openssl', 'x509', '-text', '-noout', '-certopt', 'no_sigdump,no_pubkey'],
-                       input=certificate.body.encode('utf8'))
+        subprocess.run(
+            ["openssl", "x509", "-text", "-noout", "-certopt", "no_sigdump,no_pubkey"],
+            input=certificate.body.encode("utf8"),
+        )
     except Exception as err:
         current_app.logger.warning("Error inspecting certificate: %s", err)
 

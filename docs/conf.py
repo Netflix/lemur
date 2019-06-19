@@ -68,7 +68,7 @@ copyright = u'2018, Netflix Inc.'
 base_dir = os.path.join(os.path.dirname(__file__), os.pardir)
 about = {}
 with open(os.path.join(base_dir, "lemur", "__about__.py")) as f:
-    exec(f.read(), about)
+    exec(f.read(), about)  # nosec
 
 version = release = about["__version__"]
 

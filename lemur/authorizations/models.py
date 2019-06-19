@@ -13,7 +13,7 @@ from lemur.plugins.base import plugins
 
 
 class Authorization(db.Model):
-    __tablename__ = 'pending_dns_authorizations'
+    __tablename__ = "pending_dns_authorizations"
     id = Column(Integer, primary_key=True, autoincrement=True)
     account_number = Column(String(128))
     domains = Column(JSONType)

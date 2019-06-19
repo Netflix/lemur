@@ -26,10 +26,12 @@ def create(label, plugin_name, options, description=None):
     """
     # remove any sub-plugin objects before try to save the json options
     for option in options:
-        if 'plugin' in option['type']:
-            del option['value']['plugin_object']
+        if "plugin" in option["type"]:
+            del option["value"]["plugin_object"]
 
-    destination = Destination(label=label, options=options, plugin_name=plugin_name, description=description)
+    destination = Destination(
+        label=label, options=options, plugin_name=plugin_name, description=description
+    )
     current_app.logger.info("Destination: %s created", label)
 
     # add the destination as source, to avoid new destinations that are not in source, as long as an AWS destination
@@ -85,7 +87,7 @@ def get_by_label(label):
     :param label:
     :return:
     """
-    return database.get(Destination, label, field='label')
+    return database.get(Destination, label, field="label")
 
 
 def get_all():
@@ -99,17 +101,19 @@ def get_all():
 
 
 def render(args):
-    filt = args.pop('filter')
-    certificate_id = args.pop('certificate_id', None)
+    filt = args.pop("filter")
+    certificate_id = args.pop("certificate_id", None)
 
     if certificate_id:
-        query = database.session_query(Destination).join(Certificate, Destination.certificate)
+        query = database.session_query(Destination).join(
+            Certificate, Destination.certificate
+        )
         query = query.filter(Certificate.id == certificate_id)
     else:
         query = database.session_query(Destination)
 
     if filt:
-        terms = filt.split(';')
+        terms = filt.split(";")
         query = database.filter(query, Destination, terms)
 
     return database.sort_and_page(query, Destination, args)
@@ -122,9 +126,15 @@ def stats(**kwargs):
     :param kwargs:
     :return:
     """
-    items = database.db.session.query(Destination.label, func.count(certificate_destination_associations.c.certificate_id))\
-        .join(certificate_destination_associations)\
-        .group_by(Destination.label).all()
+    items = (
+        database.db.session.query(
+            Destination.label,
+            func.count(certificate_destination_associations.c.certificate_id),
+        )
+        .join(certificate_destination_associations)
+        .group_by(Destination.label)
+        .all()
+    )
 
     keys = []
     values = []
@@ -132,4 +142,4 @@ def stats(**kwargs):
         keys.append(key)
         values.append(count)
 
-    return {'labels': keys, 'values': values}
+    return {"labels": keys, "values": values}

@@ -32,14 +32,26 @@ from lemur.pending_certificates.views import mod as pending_certificates_bp
 from lemur.dns_providers.views import mod as dns_providers_bp
 
 from lemur.__about__ import (
-    __author__, __copyright__, __email__, __license__, __summary__, __title__,
-    __uri__, __version__
+    __author__,
+    __copyright__,
+    __email__,
+    __license__,
+    __summary__,
+    __title__,
+    __uri__,
+    __version__,
 )
 
 
 __all__ = [
-    "__title__", "__summary__", "__uri__", "__version__", "__author__",
-    "__email__", "__license__", "__copyright__",
+    "__title__",
+    "__summary__",
+    "__uri__",
+    "__version__",
+    "__author__",
+    "__email__",
+    "__license__",
+    "__copyright__",
 ]
 
 LEMUR_BLUEPRINTS = (
@@ -63,7 +75,9 @@ LEMUR_BLUEPRINTS = (
 
 
 def create_app(config_path=None):
-    app = factory.create_app(app_name=__name__, blueprints=LEMUR_BLUEPRINTS, config=config_path)
+    app = factory.create_app(
+        app_name=__name__, blueprints=LEMUR_BLUEPRINTS, config=config_path
+    )
     configure_hook(app)
     return app
 
@@ -93,7 +107,7 @@ def configure_hook(app):
     @app.after_request
     def after_request(response):
         # Return early if we don't have the start time
-        if not hasattr(g, 'request_start_time'):
+        if not hasattr(g, "request_start_time"):
             return response
 
         # Get elapsed time in milliseconds
@@ -102,12 +116,12 @@ def configure_hook(app):
 
         # Collect request/response tags
         tags = {
-            'endpoint': request.endpoint,
-            'request_method': request.method.lower(),
-            'status_code': response.status_code
+            "endpoint": request.endpoint,
+            "request_method": request.method.lower(),
+            "status_code": response.status_code,
         }
 
         # Record our response time metric
-        metrics.send('response_time', 'TIMER', elapsed, metric_tags=tags)
-        metrics.send('status_code_{}'.format(response.status_code), 'counter', 1)
+        metrics.send("response_time", "TIMER", elapsed, metric_tags=tags)
+        metrics.send("status_code_{}".format(response.status_code), "counter", 1)
         return response

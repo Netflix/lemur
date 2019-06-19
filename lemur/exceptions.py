@@ -21,7 +21,9 @@ class DuplicateError(LemurException):
 
 class InvalidListener(LemurException):
     def __str__(self):
-        return repr("Invalid listener, ensure you select a certificate if you are using a secure protocol")
+        return repr(
+            "Invalid listener, ensure you select a certificate if you are using a secure protocol"
+        )
 
 
 class AttrNotFound(LemurException):

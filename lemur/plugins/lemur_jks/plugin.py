@@ -31,10 +31,10 @@ def create_truststore(cert, chain, alias, passphrase):
     entries = []
     for idx, cert_bytes in enumerate(cert_chain_as_der(cert, chain)):
         # The original cert gets name <ALIAS>_cert, first chain element is <ALIAS>_cert_1, etc.
-        cert_alias = alias + '_cert' + ('_{}'.format(idx) if idx else '')
+        cert_alias = alias + "_cert" + ("_{}".format(idx) if idx else "")
         entries.append(TrustedCertEntry.new(cert_alias, cert_bytes))
 
-    return KeyStore.new('jks', entries).saves(passphrase)
+    return KeyStore.new("jks", entries).saves(passphrase)
 
 
 def create_keystore(cert, chain, key, alias, passphrase):
@@ -42,36 +42,36 @@ def create_keystore(cert, chain, key, alias, passphrase):
     key_bytes = parse_private_key(key).private_bytes(
         encoding=serialization.Encoding.DER,
         format=serialization.PrivateFormat.PKCS8,
-        encryption_algorithm=serialization.NoEncryption()
+        encryption_algorithm=serialization.NoEncryption(),
     )
     entry = PrivateKeyEntry.new(alias, certs_bytes, key_bytes)
 
-    return KeyStore.new('jks', [entry]).saves(passphrase)
+    return KeyStore.new("jks", [entry]).saves(passphrase)
 
 
 class JavaTruststoreExportPlugin(ExportPlugin):
-    title = 'Java Truststore (JKS)'
-    slug = 'java-truststore-jks'
-    description = 'Generates a JKS truststore'
+    title = "Java Truststore (JKS)"
+    slug = "java-truststore-jks"
+    description = "Generates a JKS truststore"
     requires_key = False
     version = jks.VERSION
 
-    author = 'Marti Raudsepp'
-    author_url = 'https://github.com/intgr'
+    author = "Marti Raudsepp"
+    author_url = "https://github.com/intgr"
 
     options = [
         {
-            'name': 'alias',
-            'type': 'str',
-            'required': False,
-            'helpMessage': 'Enter the alias you wish to use for the truststore.',
+            "name": "alias",
+            "type": "str",
+            "required": False,
+            "helpMessage": "Enter the alias you wish to use for the truststore.",
         },
         {
-            'name': 'passphrase',
-            'type': 'str',
-            'required': False,
-            'helpMessage': 'If no passphrase is given one will be generated for you, we highly recommend this.',
-            'validation': ''
+            "name": "passphrase",
+            "type": "str",
+            "required": False,
+            "helpMessage": "If no passphrase is given one will be generated for you, we highly recommend this.",
+            "validation": "",
         },
     ]
 
@@ -80,44 +80,44 @@ class JavaTruststoreExportPlugin(ExportPlugin):
         Generates a Java Truststore
         """
 
-        if self.get_option('alias', options):
-            alias = self.get_option('alias', options)
+        if self.get_option("alias", options):
+            alias = self.get_option("alias", options)
         else:
             alias = common_name(parse_certificate(body))
 
-        if self.get_option('passphrase', options):
-            passphrase = self.get_option('passphrase', options)
+        if self.get_option("passphrase", options):
+            passphrase = self.get_option("passphrase", options)
         else:
-            passphrase = Fernet.generate_key().decode('utf-8')
+            passphrase = Fernet.generate_key().decode("utf-8")
 
         raw = create_truststore(body, chain, alias, passphrase)
 
-        return 'jks', passphrase, raw
+        return "jks", passphrase, raw
 
 
 class JavaKeystoreExportPlugin(ExportPlugin):
-    title = 'Java Keystore (JKS)'
-    slug = 'java-keystore-jks'
-    description = 'Generates a JKS keystore'
+    title = "Java Keystore (JKS)"
+    slug = "java-keystore-jks"
+    description = "Generates a JKS keystore"
     version = jks.VERSION
 
-    author = 'Marti Raudsepp'
-    author_url = 'https://github.com/intgr'
+    author = "Marti Raudsepp"
+    author_url = "https://github.com/intgr"
 
     options = [
         {
-            'name': 'passphrase',
-            'type': 'str',
-            'required': False,
-            'helpMessage': 'If no passphrase is given one will be generated for you, we highly recommend this.',
-            'validation': ''
+            "name": "passphrase",
+            "type": "str",
+            "required": False,
+            "helpMessage": "If no passphrase is given one will be generated for you, we highly recommend this.",
+            "validation": "",
         },
         {
-            'name': 'alias',
-            'type': 'str',
-            'required': False,
-            'helpMessage': 'Enter the alias you wish to use for the keystore.',
-        }
+            "name": "alias",
+            "type": "str",
+            "required": False,
+            "helpMessage": "Enter the alias you wish to use for the keystore.",
+        },
     ]
 
     def export(self, body, chain, key, options, **kwargs):
@@ -125,16 +125,16 @@ class JavaKeystoreExportPlugin(ExportPlugin):
         Generates a Java Keystore
         """
 
-        if self.get_option('passphrase', options):
-            passphrase = self.get_option('passphrase', options)
+        if self.get_option("passphrase", options):
+            passphrase = self.get_option("passphrase", options)
         else:
-            passphrase = Fernet.generate_key().decode('utf-8')
+            passphrase = Fernet.generate_key().decode("utf-8")
 
-        if self.get_option('alias', options):
-            alias = self.get_option('alias', options)
+        if self.get_option("alias", options):
+            alias = self.get_option("alias", options)
         else:
             alias = common_name(parse_certificate(body))
 
         raw = create_keystore(body, chain, key, alias, passphrase)
 
-        return 'jks', passphrase, raw
+        return "jks", passphrase, raw
