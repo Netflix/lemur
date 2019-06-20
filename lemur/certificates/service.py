@@ -445,7 +445,7 @@ def query_name(certificate_name, args):
 
 def query_common_name(common_name, args):
     """
-    Helper function that queries for not expired certificates by common name and owner which have auto-rotate enabled
+    Helper function that queries for not expired certificates by common name (and owner)
 
     :param common_name:
     :param args:
@@ -462,7 +462,6 @@ def query_common_name(common_name, args):
         Certificate.query.filter(Certificate.cn.ilike(common_name))
         .filter(Certificate.owner.ilike(owner))
         .filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))
-        .filter(Certificate.rotation.is_(True))
         .all()
     )
 
