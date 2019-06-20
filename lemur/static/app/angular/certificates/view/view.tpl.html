@@ -17,6 +17,11 @@
                   btn-checkbox-true="1"
                   btn-checkbox-false="0">Filter</button>
         </div>
+        <div class="btn-group">
+          <button ng-click="showExpired()" class="btn btn-default">
+            {{ expiredButton }}
+          </button>
+        </div>
         <!--<select class="form-control" ng-model="show" ng-options="item.value as item.title for item in fields"></select>-->
         <div class="clearfix"></div>
       </div>
