@@ -30,7 +30,7 @@
       </label>
       <div class="col-sm-10">
         <input name="commonName"
-               uib-tooltip="If you need a certificate with multiple domains enter your primary domain here and the rest under 'Subject Alternate Names' by clicking 'More Options'"
+               uib-tooltip="If you need a certificate with multiple domains enter your primary domain here and add additional 'DNSName' entries unders 'Subject Alternate Names' below"
                ng-model="certificate.commonName" placeholder="Common Name" class="form-control"
                ng-maxlength="64"
                ng-blur="certificate.attachCommonName()"
