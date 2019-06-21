@@ -329,12 +329,14 @@ def render(args):
     """
     query = database.session_query(Certificate)
 
-    time_range = args.pop("time_range")
-    if not time_range:
-        six_month_old = arrow.now()\
-            .shift(months=current_app.config.get("HIDE_EXPIRED_CERTS_AFTER_MONTHS", -6))\
+    show_expired = args.pop("showExpired")
+    if show_expired != 1:
+        one_month_old = arrow.now()\
+            .shift(months=current_app.config.get("HIDE_EXPIRED_CERTS_AFTER_MONTHS", -1))\
             .format("YYYY-MM-DD")
-        query = query.filter(Certificate.not_after > six_month_old)
+        query = query.filter(Certificate.not_after > one_month_old)
+
+    time_range = args.pop("time_range")
 
     destination_id = args.pop("destination_id")
     notification_id = args.pop("notification_id", None)
