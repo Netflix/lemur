@@ -258,7 +258,7 @@ class VaultDestinationPlugin(DestinationPlugin):
         secret = get_secret(client, mount, path)
         secret["data"][cname] = {}
 
-        if cert_chain == 'None':
+        if not cert_chain:
           chain = ''
         else:
           chain = cert_chain
