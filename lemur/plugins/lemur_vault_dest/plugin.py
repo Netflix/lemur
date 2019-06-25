@@ -259,16 +259,21 @@ class VaultDestinationPlugin(DestinationPlugin):
         secret = get_secret(client, mount, path)
         secret["data"][cname] = {}
 
+        if not cert_chain:
+            chain = ''
+        else:
+            chain = cert_chain
+
         if bundle == "Nginx":
-            secret["data"][cname]["crt"] = "{0}\n{1}".format(body, cert_chain)
+            secret["data"][cname]["crt"] = "{0}\n{1}".format(body, chain)
             secret["data"][cname]["key"] = private_key
         elif bundle == "Apache":
             secret["data"][cname]["crt"] = body
-            secret["data"][cname]["chain"] = cert_chain
+            secret["data"][cname]["chain"] = chain
             secret["data"][cname]["key"] = private_key
         elif bundle == "PEM":
             secret["data"][cname]["pem"] = "{0}\n{1}\n{2}".format(
-                body, cert_chain, private_key
+                body, chain, private_key
             )
         else:
             secret["data"][cname]["crt"] = body
