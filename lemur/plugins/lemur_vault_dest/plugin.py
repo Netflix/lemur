@@ -260,9 +260,9 @@ class VaultDestinationPlugin(DestinationPlugin):
         secret["data"][cname] = {}
 
         if not cert_chain:
-          chain = ''
+            chain = ''
         else:
-          chain = cert_chain
+            chain = cert_chain
 
         if bundle == "Nginx":
             secret["data"][cname]["crt"] = "{0}\n{1}".format(body, chain)
