@@ -67,14 +67,14 @@ class VaultSourcePlugin(SourcePlugin):
             "name": "vaultPath",
             "type": "str",
             "required": True,
-            "validation": "^([a-zA-Z0-9_-]+/?)+$",
+            "validation": "^([a-zA-Z0-9._-]+/?)+$",
             "helpMessage": "Must be a valid Vault secrets path",
         },
         {
             "name": "objectName",
             "type": "str",
             "required": True,
-            "validation": "[0-9a-zA-Z:_-]+",
+            "validation": "[0-9a-zA-Z.:_-]+",
             "helpMessage": "Object Name to search",
         },
     ]
@@ -177,14 +177,14 @@ class VaultDestinationPlugin(DestinationPlugin):
             "name": "vaultPath",
             "type": "str",
             "required": True,
-            "validation": "^([a-zA-Z0-9_-]+/?)+$",
+            "validation": "^([a-zA-Z0-9._-]+/?)+$",
             "helpMessage": "Must be a valid Vault secrets path",
         },
         {
             "name": "objectName",
             "type": "str",
             "required": False,
-            "validation": "[0-9a-zA-Z:_-]+",
+            "validation": "[0-9a-zA-Z.:_-]+",
             "helpMessage": "Name to bundle certs under, if blank use cn",
         },
         {

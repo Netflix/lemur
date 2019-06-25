@@ -329,12 +329,14 @@ def render(args):
     """
     query = database.session_query(Certificate)
 
-    time_range = args.pop("time_range")
-    if not time_range:
-        six_month_old = arrow.now()\
-            .shift(months=current_app.config.get("HIDE_EXPIRED_CERTS_AFTER_MONTHS", -6))\
+    show_expired = args.pop("showExpired")
+    if show_expired != 1:
+        one_month_old = arrow.now()\
+            .shift(months=current_app.config.get("HIDE_EXPIRED_CERTS_AFTER_MONTHS", -1))\
             .format("YYYY-MM-DD")
-        query = query.filter(Certificate.not_after > six_month_old)
+        query = query.filter(Certificate.not_after > one_month_old)
+
+    time_range = args.pop("time_range")
 
     destination_id = args.pop("destination_id")
     notification_id = args.pop("notification_id", None)
@@ -445,7 +447,7 @@ def query_name(certificate_name, args):
 
 def query_common_name(common_name, args):
     """
-    Helper function that queries for not expired certificates by common name and owner which have auto-rotate enabled
+    Helper function that queries for not expired certificates by common name (and owner)
 
     :param common_name:
     :param args:
@@ -462,7 +464,6 @@ def query_common_name(common_name, args):
         Certificate.query.filter(Certificate.cn.ilike(common_name))
         .filter(Certificate.owner.ilike(owner))
         .filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))
-        .filter(Certificate.rotation.is_(True))
         .all()
     )
 
