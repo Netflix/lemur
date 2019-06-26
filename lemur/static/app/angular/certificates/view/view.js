@@ -17,7 +17,7 @@ angular.module('lemur')
       });
   })
 
-  .controller('CertificatesViewController', function ($q, $scope, $uibModal, $stateParams, $location, CertificateApi, CertificateService, MomentService, ngTableParams, toaster) {
+  .controller('CertificatesViewController', function ($q, $scope, $uibModal, $stateParams, CertificateApi, CertificateService, MomentService, ngTableParams, toaster) {
     $scope.filter = $stateParams;
     $scope.expiredText = ['Show Expired', 'Hide Expired'];
     $scope.expiredValue = 0;
@@ -32,24 +32,11 @@ angular.module('lemur')
     }, {
       total: 0,           // length of data
       getData: function ($defer, params) {
-        $scope.path = $location.path();
-        // Handle Permalink clicks through a separate API
-        // Clicking on Permalink adds the certificate name to the URL after "certificates/", which is used to identify the click
-        if ($scope.path.indexOf('certificates/') > -1 && $scope.path.split('/')[2].length > 0) {
-          $scope.certificateName = $scope.path.split('/')[2];
-          CertificateApi.one('name').one($scope.certificateName).getList()
-            .then(function (data) {
-              params.total(data.total);
-              $defer.resolve(data);
-            });
-        }
-        else {
-          CertificateApi.getList(params.url())
-              .then(function (data) {
-                params.total(data.total);
-                $defer.resolve(data);
-              });
-        }
+        CertificateApi.getList(params.url())
+          .then(function (data) {
+            params.total(data.total);
+            $defer.resolve(data);
+          });
       }
     });
 
