@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from __future__ import unicode_literals  # at top of module
 
 import os
