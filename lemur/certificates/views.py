@@ -348,6 +348,7 @@ class CertificatesList(AuthenticatedResource):
         parser.add_argument("creator", type=str, location="args")
         parser.add_argument("show", type=str, location="args")
         parser.add_argument("showExpired", type=int, location="args")
+        parser.add_argument("perma", type=int, location="args")
 
         args = parser.parse_args()
         args["user"] = g.user

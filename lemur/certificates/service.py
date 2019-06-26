@@ -353,6 +353,11 @@ def render(args):
         if terms[1].startswith('"') and terms[1].endswith('"'):
             term = terms[1][1:-1]
 
+        perma = args.pop("perma")
+        if perma == 1:
+            if "name" in terms:
+                return query_name(term[1:-1], args)
+
         if "issuer" in terms:
             # we can't rely on issuer being correct in the cert directly so we combine queries
             sub_query = (
