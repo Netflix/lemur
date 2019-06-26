@@ -32,24 +32,16 @@ angular.module('lemur')
     }, {
       total: 0,           // length of data
       getData: function ($defer, params) {
-        $scope.path = $location.path();
-        // Handle Permalink clicks through a separate API
-        // Clicking on Permalink adds the certificate name to the URL after "certificates/", which is used to identify the click
-        if ($scope.path.indexOf('certificates/') > -1 && $scope.path.split('/')[2].length > 0) {
-          $scope.certificateName = $scope.path.split('/')[2];
-          CertificateApi.one('name').one($scope.certificateName).getList()
-            .then(function (data) {
-              params.total(data.total);
-              $defer.resolve(data);
-            });
+        $scope.url = $location.url();
+        $scope.temp_url = angular.copy(params.url());
+         if ($scope.url.indexOf('perma') > -1) {
+          $scope.temp_url.perma = 1;
         }
-        else {
-          CertificateApi.getList(params.url())
-              .then(function (data) {
-                params.total(data.total);
-                $defer.resolve(data);
-              });
-        }
+        CertificateApi.getList($scope.temp_url)
+          .then(function (data) {
+            params.total(data.total);
+            $defer.resolve(data);
+          });
       }
     });
 
