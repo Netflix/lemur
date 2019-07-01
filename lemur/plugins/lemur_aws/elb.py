@@ -27,7 +27,7 @@ def retry_throttled(exception):
         raise exception
     except Exception as e:
         current_app.logger.error("ELB retry_throttled triggered", exc_info=True)
-        metrics.send("elb_retry", "counter", 1, metric_tags={"exception": e})
+        metrics.send("elb_retry", "counter", 1, metric_tags={"exception": str(e)})
         sentry.captureException()
 
     if isinstance(exception, botocore.exceptions.ClientError):
@@ -135,7 +135,7 @@ def get_listener_arn_from_endpoint(endpoint_name, endpoint_port, **kwargs):
             "counter",
             1,
             metric_tags={
-                "error": e,
+                "error": str(e),
                 "endpoint_name": endpoint_name,
                 "endpoint_port": endpoint_port,
             },
@@ -159,7 +159,7 @@ def get_elbs(**kwargs):
         client = kwargs.pop("client")
         return client.describe_load_balancers(**kwargs)
     except Exception as e:  # noqa
-        metrics.send("get_elbs_error", "counter", 1, metric_tags={"error": e})
+        metrics.send("get_elbs_error", "counter", 1, metric_tags={"error": str(e)})
         sentry.captureException()
         raise
 
@@ -177,7 +177,7 @@ def get_elbs_v2(**kwargs):
         client = kwargs.pop("client")
         return client.describe_load_balancers(**kwargs)
     except Exception as e:  # noqa
-        metrics.send("get_elbs_v2_error", "counter", 1, metric_tags={"error": e})
+        metrics.send("get_elbs_v2_error", "counter", 1, metric_tags={"error": str(e)})
         sentry.captureException()
         raise
 
@@ -196,7 +196,7 @@ def describe_listeners_v2(**kwargs):
         return client.describe_listeners(**kwargs)
     except Exception as e:  # noqa
         metrics.send(
-            "describe_listeners_v2_error", "counter", 1, metric_tags={"error": e}
+            "describe_listeners_v2_error", "counter", 1, metric_tags={"error": str(e)}
         )
         sentry.captureException()
         raise
@@ -224,7 +224,7 @@ def describe_load_balancer_policies(load_balancer_name, policy_names, **kwargs):
             metric_tags={
                 "load_balancer_name": load_balancer_name,
                 "policy_names": policy_names,
-                "error": e,
+                "error": str(e),
             },
         )
         sentry.captureException(
@@ -252,7 +252,7 @@ def describe_ssl_policies_v2(policy_names, **kwargs):
             "describe_ssl_policies_v2_error",
             "counter",
             1,
-            metric_tags={"policy_names": policy_names, "error": e},
+            metric_tags={"policy_names": policy_names, "error": str(e)},
         )
         sentry.captureException(extra={"policy_names": str(policy_names)})
         raise
