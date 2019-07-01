@@ -301,7 +301,7 @@ def sync_all_sources():
     metrics.send(f"{function}.success", 'counter', 1)
 
 
-@celery.task(soft_time_limit=3600)
+@celery.task(soft_time_limit=7200)
 def sync_source(source):
     """
     This celery task will sync the specified source.
