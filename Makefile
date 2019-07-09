@@ -36,7 +36,7 @@ endif
 	@echo ""
 
 dev-docs:
-	pip install -r docs/requirements.txt
+	pip install -r requirements-docs.txt
 
 reset-db:
 	@echo "--> Dropping existing 'lemur' database"
