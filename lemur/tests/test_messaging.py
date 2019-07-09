@@ -8,14 +8,21 @@ from moto import mock_ses
 
 def test_needs_notification(app, certificate, notification):
     from lemur.notifications.messaging import needs_notification
+
     assert not needs_notification(certificate)
 
     with pytest.raises(Exception):
-        notification.options = [{'name': 'interval', 'value': 10}, {'name': 'unit', 'value': 'min'}]
+        notification.options = [
+            {"name": "interval", "value": 10},
+            {"name": "unit", "value": "min"},
+        ]
         certificate.notifications.append(notification)
         needs_notification(certificate)
 
-    certificate.notifications[0].options = [{'name': 'interval', 'value': 10}, {'name': 'unit', 'value': 'days'}]
+    certificate.notifications[0].options = [
+        {"name": "interval", "value": 10},
+        {"name": "unit", "value": "days"},
+    ]
     assert not needs_notification(certificate)
 
     delta = certificate.not_after - timedelta(days=10)
@@ -30,7 +37,8 @@ def test_get_certificates(app, certificate, notification):
     delta = certificate.not_after - timedelta(days=2)
 
     notification.options = [
-        {'name': 'interval', 'value': 2}, {'name': 'unit', 'value': 'days'}
+        {"name": "interval", "value": 2},
+        {"name": "unit", "value": "days"},
     ]
 
     with freeze_time(delta.datetime):
@@ -55,11 +63,16 @@ def test_get_eligible_certificates(app, certificate, notification):
     from lemur.notifications.messaging import get_eligible_certificates
 
     certificate.notifications.append(notification)
-    certificate.notifications[0].options = [{'name': 'interval', 'value': 10}, {'name': 'unit', 'value': 'days'}]
+    certificate.notifications[0].options = [
+        {"name": "interval", "value": 10},
+        {"name": "unit", "value": "days"},
+    ]
 
     delta = certificate.not_after - timedelta(days=10)
     with freeze_time(delta.datetime):
-        assert get_eligible_certificates() == {certificate.owner: {notification.label: [(notification, certificate)]}}
+        assert get_eligible_certificates() == {
+            certificate.owner: {notification.label: [(notification, certificate)]}
+        }
 
 
 @mock_ses
@@ -67,7 +80,10 @@ def test_send_expiration_notification(certificate, notification, notification_pl
     from lemur.notifications.messaging import send_expiration_notifications
 
     certificate.notifications.append(notification)
-    certificate.notifications[0].options = [{'name': 'interval', 'value': 10}, {'name': 'unit', 'value': 'days'}]
+    certificate.notifications[0].options = [
+        {"name": "interval", "value": 10},
+        {"name": "unit", "value": "days"},
+    ]
 
     delta = certificate.not_after - timedelta(days=10)
     with freeze_time(delta.datetime):
@@ -75,7 +91,9 @@ def test_send_expiration_notification(certificate, notification, notification_pl
 
 
 @mock_ses
-def test_send_expiration_notification_with_no_notifications(certificate, notification, notification_plugin):
+def test_send_expiration_notification_with_no_notifications(
+    certificate, notification, notification_plugin
+):
     from lemur.notifications.messaging import send_expiration_notifications
 
     delta = certificate.not_after - timedelta(days=10)
@@ -86,4 +104,5 @@ def test_send_expiration_notification_with_no_notifications(certificate, notific
 @mock_ses
 def test_send_rotation_notification(notification_plugin, certificate):
     from lemur.notifications.messaging import send_rotation_notification
+
     send_rotation_notification(certificate, notification_plugin=notification_plugin)

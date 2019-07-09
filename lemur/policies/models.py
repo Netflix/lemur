@@ -12,10 +12,12 @@ from lemur.database import db
 
 
 class RotationPolicy(db.Model):
-    __tablename__ = 'rotation_policies'
+    __tablename__ = "rotation_policies"
     id = Column(Integer, primary_key=True)
     name = Column(String)
     days = Column(Integer)
 
     def __repr__(self):
-        return "RotationPolicy(days={days}, name={name})".format(days=self.days, name=self.name)
+        return "RotationPolicy(days={days}, name={name})".format(
+            days=self.days, name=self.name
+        )

@@ -17,6 +17,11 @@
                   btn-checkbox-true="1"
                   btn-checkbox-false="0">Filter</button>
         </div>
+        <div class="btn-group">
+          <button ng-click="showExpired()" class="btn btn-info">
+            {{ expiredButton }}
+          </button>
+        </div>
         <!--<select class="form-control" ng-model="show" ng-options="item.value as item.title for item in fields"></select>-->
         <div class="clearfix"></div>
       </div>
@@ -198,10 +203,10 @@
                   </uib-tab-heading>
                   <pre style="width: 100%">{{ certificate.body }}</pre>
                 </uib-tab>
-                <uib-tab ng-click="loadPrivateKey(certificate)">
+                <uib-tab ng-click="loadPrivateKey(certificate)" disable="!certificate.hasPrivateKey">
                   <uib-tab-heading>
                     Private Key
-                     <i class="glyphicon glyphicon-copy" style="cursor: pointer" clipboard text="certificate.privateKey"></i>
+                    <i class="glyphicon glyphicon-copy" style="cursor: pointer" clipboard ng-if="certificate.hasPrivateKey" text="certificate.privateKey"></i>
                   </uib-tab-heading>
                   <pre style="width: 100%">{{ certificate.privateKey }}</pre>
                 </uib-tab>

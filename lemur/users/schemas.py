@@ -8,7 +8,11 @@
 from marshmallow import fields
 
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
-from lemur.schemas import AssociatedRoleSchema, AssociatedCertificateSchema, AssociatedAuthoritySchema
+from lemur.schemas import (
+    AssociatedRoleSchema,
+    AssociatedCertificateSchema,
+    AssociatedAuthoritySchema,
+)
 
 
 class UserInputSchema(LemurInputSchema):

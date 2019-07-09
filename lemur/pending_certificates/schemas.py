@@ -1,5 +1,7 @@
-from marshmallow import fields, post_load
+from marshmallow import fields, validates_schema, post_load
+from marshmallow.exceptions import ValidationError
 
+from lemur.common import utils, validators
 from lemur.authorities.schemas import AuthorityNestedOutputSchema
 from lemur.certificates.schemas import CertificateNestedOutputSchema
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
@@ -15,14 +17,14 @@ from lemur.schemas import (
     AssociatedNotificationSchema,
     AssociatedRoleSchema,
     EndpointNestedOutputSchema,
-    ExtensionSchema
+    ExtensionSchema,
 )
 from lemur.users.schemas import UserNestedOutputSchema
 
 
 class PendingCertificateSchema(LemurInputSchema):
     owner = fields.Email(required=True)
-    description = fields.String(missing='', allow_none=True)
+    description = fields.String(missing="", allow_none=True)
 
 
 class PendingCertificateOutputSchema(LemurOutputSchema):
@@ -44,10 +46,10 @@ class PendingCertificateOutputSchema(LemurOutputSchema):
 
     # Note aliasing is the first step in deprecating these fields.
     notify = fields.Boolean()
-    active = fields.Boolean(attribute='notify')
+    active = fields.Boolean(attribute="notify")
 
     cn = fields.String()
-    common_name = fields.String(attribute='cn')
+    common_name = fields.String(attribute="cn")
 
     owner = fields.Email()
 
@@ -64,7 +66,9 @@ class PendingCertificateOutputSchema(LemurOutputSchema):
     authority = fields.Nested(AuthorityNestedOutputSchema)
     roles = fields.Nested(RoleNestedOutputSchema, many=True)
     endpoints = fields.Nested(EndpointNestedOutputSchema, many=True, missing=[])
-    replaced_by = fields.Nested(CertificateNestedOutputSchema, many=True, attribute='replaced')
+    replaced_by = fields.Nested(
+        CertificateNestedOutputSchema, many=True, attribute="replaced"
+    )
     rotation_policy = fields.Nested(RotationPolicyNestedOutputSchema)
 
 
@@ -87,10 +91,15 @@ class PendingCertificateEditInputSchema(PendingCertificateSchema):
         :param data:
         :return:
         """
-        if data['owner']:
-            notification_name = "DEFAULT_{0}".format(data['owner'].split('@')[0].upper())
-            data['notifications'] += notification_service.create_default_expiration_notifications(notification_name,
-                                                                                                  [data['owner']])
+        if data["owner"]:
+            notification_name = "DEFAULT_{0}".format(
+                data["owner"].split("@")[0].upper()
+            )
+            data[
+                "notifications"
+            ] += notification_service.create_default_expiration_notifications(
+                notification_name, [data["owner"]]
+            )
         return data
 
 
@@ -98,6 +107,35 @@ class PendingCertificateCancelSchema(LemurInputSchema):
     note = fields.String()
 
 
+class PendingCertificateUploadInputSchema(LemurInputSchema):
+    external_id = fields.String(missing=None, allow_none=True)
+    body = fields.String(required=True)
+    chain = fields.String(missing=None, allow_none=True)
+
+    @validates_schema
+    def validate_cert_chain(self, data):
+        cert = None
+        if data.get("body"):
+            try:
+                cert = utils.parse_certificate(data["body"])
+            except ValueError:
+                raise ValidationError(
+                    "Public certificate presented is not valid.", field_names=["body"]
+                )
+
+        if data.get("chain"):
+            try:
+                chain = utils.parse_cert_chain(data["chain"])
+            except ValueError:
+                raise ValidationError(
+                    "Invalid certificate in certificate chain.", field_names=["chain"]
+                )
+
+            # Throws ValidationError
+            validators.verify_cert_chain([cert] + chain)
+
+
 pending_certificate_output_schema = PendingCertificateOutputSchema()
 pending_certificate_edit_input_schema = PendingCertificateEditInputSchema()
 pending_certificate_cancel_schema = PendingCertificateCancelSchema()
+pending_certificate_upload_input_schema = PendingCertificateUploadInputSchema()

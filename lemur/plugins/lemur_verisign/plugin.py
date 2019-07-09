@@ -14,7 +14,7 @@ from cryptography import x509
 from flask import current_app
 
 from lemur.common.utils import get_psuedo_random_string
-from lemur.extensions import metrics
+from lemur.extensions import metrics, sentry
 from lemur.plugins import lemur_verisign as verisign
 from lemur.plugins.bases import IssuerPlugin, SourcePlugin
 
@@ -58,7 +58,7 @@ VERISIGN_ERRORS = {
     "0x300a": "Domain/SubjectAltName Mismatched -- make sure that the SANs have the proper domain suffix",
     "0x950e": "Invalid Common Name -- make sure the CN has a proper domain suffix",
     "0xa00e": "Pending. (Insufficient number of tokens.)",
-    "0x8134": "Pending. (Domain failed CAA validation.)"
+    "0x8134": "Pending. (Domain failed CAA validation.)",
 }
 
 
@@ -71,7 +71,7 @@ def log_status_code(r, *args, **kwargs):
     :param kwargs:
     :return:
     """
-    metrics.send('symantec_status_code_{}'.format(r.status_code), 'counter', 1)
+    metrics.send("symantec_status_code_{}".format(r.status_code), "counter", 1)
 
 
 def get_additional_names(options):
@@ -83,8 +83,8 @@ def get_additional_names(options):
     """
     names = []
     # add SANs if present
-    if options.get('extensions'):
-        for san in options['extensions']['sub_alt_names']:
+    if options.get("extensions"):
+        for san in options["extensions"]["sub_alt_names"]:
             if isinstance(san, x509.DNSName):
                 names.append(san.value)
     return names
@@ -99,37 +99,43 @@ def process_options(options):
     :return: dict or valid verisign options
     """
     data = {
-        'challenge': get_psuedo_random_string(),
-        'serverType': 'Apache',
-        'certProductType': 'Server',
-        'firstName': current_app.config.get("VERISIGN_FIRST_NAME"),
-        'lastName': current_app.config.get("VERISIGN_LAST_NAME"),
-        'signatureAlgorithm': 'sha256WithRSAEncryption',
-        'email': current_app.config.get("VERISIGN_EMAIL"),
-        'ctLogOption': current_app.config.get("VERISIGN_CS_LOG_OPTION", "public"),
+        "challenge": get_psuedo_random_string(),
+        "serverType": "Apache",
+        "certProductType": "Server",
+        "firstName": current_app.config.get("VERISIGN_FIRST_NAME"),
+        "lastName": current_app.config.get("VERISIGN_LAST_NAME"),
+        "signatureAlgorithm": "sha256WithRSAEncryption",
+        "email": current_app.config.get("VERISIGN_EMAIL"),
+        "ctLogOption": current_app.config.get("VERISIGN_CS_LOG_OPTION", "public"),
     }
 
-    data['subject_alt_names'] = ",".join(get_additional_names(options))
+    data["subject_alt_names"] = ",".join(get_additional_names(options))
 
-    if options.get('validity_end') > arrow.utcnow().replace(years=2):
-        raise Exception("Verisign issued certificates cannot exceed two years in validity")
+    if options.get("validity_end") > arrow.utcnow().replace(years=2):
+        raise Exception(
+            "Verisign issued certificates cannot exceed two years in validity"
+        )
 
-    if options.get('validity_end'):
+    if options.get("validity_end"):
         # VeriSign (Symantec) only accepts strictly smaller than 2 year end date
-        if options.get('validity_end') < arrow.utcnow().replace(years=2).replace(days=-1):
+        if options.get("validity_end") < arrow.utcnow().replace(years=2).replace(
+            days=-1
+        ):
             period = get_default_issuance(options)
-            data['specificEndDate'] = options['validity_end'].format("MM/DD/YYYY")
-            data['validityPeriod'] = period
+            data["specificEndDate"] = options["validity_end"].format("MM/DD/YYYY")
+            data["validityPeriod"] = period
         else:
             # allowing Symantec website setting the end date, given the validity period
-            data['validityPeriod'] = str(get_default_issuance(options))
-            options.pop('validity_end', None)
+            data["validityPeriod"] = str(get_default_issuance(options))
+            options.pop("validity_end", None)
 
-    elif options.get('validity_years'):
-        if options['validity_years'] in [1, 2]:
-            data['validityPeriod'] = str(options['validity_years']) + 'Y'
+    elif options.get("validity_years"):
+        if options["validity_years"] in [1, 2]:
+            data["validityPeriod"] = str(options["validity_years"]) + "Y"
         else:
-            raise Exception("Verisign issued certificates cannot exceed two years in validity")
+            raise Exception(
+                "Verisign issued certificates cannot exceed two years in validity"
+            )
 
     return data
 
@@ -143,12 +149,14 @@ def get_default_issuance(options):
     """
     now = arrow.utcnow()
 
-    if options['validity_end'] < now.replace(years=+1):
-        validity_period = '1Y'
-    elif options['validity_end'] < now.replace(years=+2):
-        validity_period = '2Y'
+    if options["validity_end"] < now.replace(years=+1):
+        validity_period = "1Y"
+    elif options["validity_end"] < now.replace(years=+2):
+        validity_period = "2Y"
     else:
-        raise Exception("Verisign issued certificates cannot exceed two years in validity")
+        raise Exception(
+            "Verisign issued certificates cannot exceed two years in validity"
+        )
 
     return validity_period
 
@@ -161,27 +169,27 @@ def handle_response(content):
     """
     d = xmltodict.parse(content)
     global VERISIGN_ERRORS
-    if d.get('Error'):
-        status_code = d['Error']['StatusCode']
-    elif d.get('Response'):
-        status_code = d['Response']['StatusCode']
+    if d.get("Error"):
+        status_code = d["Error"]["StatusCode"]
+    elif d.get("Response"):
+        status_code = d["Response"]["StatusCode"]
     if status_code in VERISIGN_ERRORS.keys():
         raise Exception(VERISIGN_ERRORS[status_code])
     return d
 
 
 class VerisignIssuerPlugin(IssuerPlugin):
-    title = 'Verisign'
-    slug = 'verisign-issuer'
-    description = 'Enables the creation of certificates by the VICE2.0 verisign API.'
+    title = "Verisign"
+    slug = "verisign-issuer"
+    description = "Enables the creation of certificates by the VICE2.0 verisign API."
     version = verisign.VERSION
 
-    author = 'Kevin Glisson'
-    author_url = 'https://github.com/netflix/lemur.git'
+    author = "Kevin Glisson"
+    author_url = "https://github.com/netflix/lemur.git"
 
     def __init__(self, *args, **kwargs):
         self.session = requests.Session()
-        self.session.cert = current_app.config.get('VERISIGN_PEM_PATH')
+        self.session.cert = current_app.config.get("VERISIGN_PEM_PATH")
         self.session.hooks = dict(response=log_status_code)
         super(VerisignIssuerPlugin, self).__init__(*args, **kwargs)
 
@@ -193,17 +201,31 @@ class VerisignIssuerPlugin(IssuerPlugin):
         :param issuer_options:
         :return: :raise Exception:
         """
-        url = current_app.config.get("VERISIGN_URL") + '/rest/services/enroll'
+        url = current_app.config.get("VERISIGN_URL") + "/rest/services/enroll"
 
         data = process_options(issuer_options)
-        data['csr'] = csr
+        data["csr"] = csr
 
-        current_app.logger.info("Requesting a new verisign certificate: {0}".format(data))
+        current_app.logger.info(
+            "Requesting a new verisign certificate: {0}".format(data)
+        )
 
         response = self.session.post(url, data=data)
-        cert = handle_response(response.content)['Response']['Certificate']
+        try:
+            cert = handle_response(response.content)["Response"]["Certificate"]
+        except KeyError:
+            metrics.send(
+                "verisign_create_certificate_error",
+                "counter",
+                1,
+                metric_tags={"common_name": issuer_options.get("common_name", "")},
+            )
+            sentry.captureException(
+                extra={"common_name": issuer_options.get("common_name", "")}
+            )
+            raise Exception(f"Error with Verisign: {response.content}")
         # TODO add external id
-        return cert, current_app.config.get('VERISIGN_INTERMEDIATE'), None
+        return cert, current_app.config.get("VERISIGN_INTERMEDIATE"), None
 
     @staticmethod
     def create_authority(options):
@@ -214,8 +236,8 @@ class VerisignIssuerPlugin(IssuerPlugin):
         :param options:
         :return:
         """
-        role = {'username': '', 'password': '', 'name': 'verisign'}
-        return current_app.config.get('VERISIGN_ROOT'), "", [role]
+        role = {"username": "", "password": "", "name": "verisign"}
+        return current_app.config.get("VERISIGN_ROOT"), "", [role]
 
     def get_available_units(self):
         """
@@ -224,9 +246,11 @@ class VerisignIssuerPlugin(IssuerPlugin):
 
         :return:
         """
-        url = current_app.config.get("VERISIGN_URL") + '/rest/services/getTokens'
-        response = self.session.post(url, headers={'content-type': 'application/x-www-form-urlencoded'})
-        return handle_response(response.content)['Response']['Order']
+        url = current_app.config.get("VERISIGN_URL") + "/rest/services/getTokens"
+        response = self.session.post(
+            url, headers={"content-type": "application/x-www-form-urlencoded"}
+        )
+        return handle_response(response.content)["Response"]["Order"]
 
     def clear_pending_certificates(self):
         """
@@ -234,52 +258,54 @@ class VerisignIssuerPlugin(IssuerPlugin):
 
         :return:
         """
-        url = current_app.config.get('VERISIGN_URL') + '/reportingws'
+        url = current_app.config.get("VERISIGN_URL") + "/reportingws"
 
         end = arrow.now()
         start = end.replace(days=-7)
 
         data = {
-            'reportType': 'detail',
-            'certProductType': 'Server',
-            'certStatus': 'Pending',
-            'startDate': start.format("MM/DD/YYYY"),
-            'endDate': end.format("MM/DD/YYYY")
+            "reportType": "detail",
+            "certProductType": "Server",
+            "certStatus": "Pending",
+            "startDate": start.format("MM/DD/YYYY"),
+            "endDate": end.format("MM/DD/YYYY"),
         }
         response = self.session.post(url, data=data)
 
-        url = current_app.config.get('VERISIGN_URL') + '/rest/services/reject'
-        for order_id in response.json()['orderNumber']:
-            response = self.session.get(url, params={'transaction_id': order_id})
+        url = current_app.config.get("VERISIGN_URL") + "/rest/services/reject"
+        for order_id in response.json()["orderNumber"]:
+            response = self.session.get(url, params={"transaction_id": order_id})
 
             if response.status_code == 200:
                 print("Rejecting certificate. TransactionId: {}".format(order_id))
 
 
 class VerisignSourcePlugin(SourcePlugin):
-    title = 'Verisign'
-    slug = 'verisign-source'
-    description = 'Allows for the polling of issued certificates from the VICE2.0 verisign API.'
+    title = "Verisign"
+    slug = "verisign-source"
+    description = (
+        "Allows for the polling of issued certificates from the VICE2.0 verisign API."
+    )
     version = verisign.VERSION
 
-    author = 'Kevin Glisson'
-    author_url = 'https://github.com/netflix/lemur.git'
+    author = "Kevin Glisson"
+    author_url = "https://github.com/netflix/lemur.git"
 
     def __init__(self, *args, **kwargs):
         self.session = requests.Session()
-        self.session.cert = current_app.config.get('VERISIGN_PEM_PATH')
+        self.session.cert = current_app.config.get("VERISIGN_PEM_PATH")
         super(VerisignSourcePlugin, self).__init__(*args, **kwargs)
 
     def get_certificates(self):
-        url = current_app.config.get('VERISIGN_URL') + '/reportingws'
+        url = current_app.config.get("VERISIGN_URL") + "/reportingws"
         end = arrow.now()
         start = end.replace(years=-5)
         data = {
-            'reportType': 'detail',
-            'startDate': start.format("MM/DD/YYYY"),
-            'endDate': end.format("MM/DD/YYYY"),
-            'structuredRecord': 'Y',
-            'certStatus': 'Valid',
+            "reportType": "detail",
+            "startDate": start.format("MM/DD/YYYY"),
+            "endDate": end.format("MM/DD/YYYY"),
+            "structuredRecord": "Y",
+            "certStatus": "Valid",
         }
         current_app.logger.debug(data)
         response = self.session.post(url, data=data)

@@ -9,22 +9,23 @@ from lemur.utils import Vault
 
 
 class DnsProvider(db.Model):
-    __tablename__ = 'dns_providers'
-    id = Column(
-        Integer(),
-        primary_key=True,
-    )
+    __tablename__ = "dns_providers"
+    id = Column(Integer(), primary_key=True)
     name = Column(String(length=256), unique=True, nullable=True)
     description = Column(Text(), nullable=True)
     provider_type = Column(String(length=256), nullable=True)
     credentials = Column(Vault, nullable=True)
     api_endpoint = Column(String(length=256), nullable=True)
-    date_created = Column(ArrowType(), server_default=text('now()'), nullable=False)
+    date_created = Column(ArrowType(), server_default=text("now()"), nullable=False)
     status = Column(String(length=128), nullable=True)
     options = Column(JSON, nullable=True)
     domains = Column(JSON, nullable=True)
-    certificates = relationship("Certificate", backref='dns_provider', foreign_keys='Certificate.dns_provider_id',
-                                lazy='dynamic')
+    certificates = relationship(
+        "Certificate",
+        backref="dns_provider",
+        foreign_keys="Certificate.dns_provider_id",
+        lazy="dynamic",
+    )
 
     def __init__(self, name, description, provider_type, credentials):
         self.name = name

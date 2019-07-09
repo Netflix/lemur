@@ -11,6 +11,7 @@ class Metrics(object):
     """
     :param app: The Flask application object. Defaults to None.
     """
+
     _providers = []
 
     def __init__(self, app=None):
@@ -22,11 +23,14 @@ class Metrics(object):
 
         :param app: The Flask application object.
         """
-        self._providers = app.config.get('METRIC_PROVIDERS', [])
+        self._providers = app.config.get("METRIC_PROVIDERS", [])
 
     def send(self, metric_name, metric_type, metric_value, *args, **kwargs):
         for provider in self._providers:
             current_app.logger.debug(
-                "Sending metric '{metric}' to the {provider} provider.".format(metric=metric_name, provider=provider))
+                "Sending metric '{metric}' to the {provider} provider.".format(
+                    metric=metric_name, provider=provider
+                )
+            )
             p = plugins.get(provider)
             p.submit(metric_name, metric_type, metric_value, *args, **kwargs)

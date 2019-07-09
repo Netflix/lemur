@@ -13,10 +13,13 @@ services:
       VIRTUAL_ENV: 'true'
 
   postgres:
-    image: postgres:9.4
+    image: postgres
+    restart: always
     environment:
       POSTGRES_USER: lemur
       POSTGRES_PASSWORD: lemur
+    ports:
+      - "5432:5432"
 
   redis:
     image: "redis:alpine"

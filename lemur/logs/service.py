@@ -24,7 +24,11 @@ def create(user, type, certificate=None):
     :param certificate:
     :return:
     """
-    current_app.logger.info("[lemur-audit] action: {0}, user: {1}, certificate: {2}.".format(type, user.email, certificate.name))
+    current_app.logger.info(
+        "[lemur-audit] action: {0}, user: {1}, certificate: {2}.".format(
+            type, user.email, certificate.name
+        )
+    )
     view = Log(user_id=user.id, log_type=type, certificate_id=certificate.id)
     database.add(view)
     database.commit()
@@ -50,20 +54,22 @@ def render(args):
     """
     query = database.session_query(Log)
 
-    filt = args.pop('filter')
+    filt = args.pop("filter")
 
     if filt:
-        terms = filt.split(';')
+        terms = filt.split(";")
 
-        if 'certificate.name' in terms:
-            sub_query = database.session_query(Certificate.id)\
-                .filter(Certificate.name.ilike('%{0}%'.format(terms[1])))
+        if "certificate.name" in terms:
+            sub_query = database.session_query(Certificate.id).filter(
+                Certificate.name.ilike("%{0}%".format(terms[1]))
+            )
 
             query = query.filter(Log.certificate_id.in_(sub_query))
 
-        elif 'user.email' in terms:
-            sub_query = database.session_query(User.id)\
-                .filter(User.email.ilike('%{0}%'.format(terms[1])))
+        elif "user.email" in terms:
+            sub_query = database.session_query(User.id).filter(
+                User.email.ilike("%{0}%".format(terms[1]))
+            )
 
             query = query.filter(Log.user_id.in_(sub_query))
 

@@ -31,7 +31,9 @@ def mktempfile():
 @contextmanager
 def mktemppath():
     try:
-        path = os.path.join(tempfile._get_default_tempdir(), next(tempfile._get_candidate_names()))
+        path = os.path.join(
+            tempfile._get_default_tempdir(), next(tempfile._get_candidate_names())
+        )
         yield path
     finally:
         try:
@@ -53,7 +55,7 @@ def get_keys():
 
     # when running lemur create_config, this code needs to work despite
     # the fact that there is not a current_app with a config at that point
-    keys = current_app.config.get('LEMUR_ENCRYPTION_KEYS', [])
+    keys = current_app.config.get("LEMUR_ENCRYPTION_KEYS", [])
 
     # this function is expected to return a list of keys, but we want
     # to let people just specify a single key
@@ -97,7 +99,7 @@ class Vault(types.TypeDecorator):
 
         # ensure bytes for fernet
         if isinstance(value, str):
-            value = value.encode('utf-8')
+            value = value.encode("utf-8")
 
         return MultiFernet(self.keys).encrypt(value)
 
@@ -117,4 +119,4 @@ class Vault(types.TypeDecorator):
         if not value:
             return
 
-        return MultiFernet(self.keys).decrypt(value).decode('utf8')
+        return MultiFernet(self.keys).decrypt(value).decode("utf8")

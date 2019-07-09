@@ -7,21 +7,40 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from flask import current_app
 from flask_principal import identity_changed, Identity
+from sqlalchemy.sql import text
 
 from lemur import create_app
 from lemur.common.utils import parse_private_key
 from lemur.database import db as _db
 from lemur.auth.service import create_token
-from lemur.tests.vectors import SAN_CERT_KEY, INTERMEDIATE_KEY
+from lemur.tests.vectors import (
+    SAN_CERT_KEY,
+    INTERMEDIATE_KEY,
+    ROOTCA_CERT_STR,
+    ROOTCA_KEY,
+)
 
-from .factories import ApiKeyFactory, AuthorityFactory, NotificationFactory, DestinationFactory, \
-    CertificateFactory, UserFactory, RoleFactory, SourceFactory, EndpointFactory, \
-    RotationPolicyFactory, PendingCertificateFactory, AsyncAuthorityFactory, InvalidCertificateFactory, \
-    CryptoAuthorityFactory
+from .factories import (
+    ApiKeyFactory,
+    AuthorityFactory,
+    NotificationFactory,
+    DestinationFactory,
+    CertificateFactory,
+    UserFactory,
+    RoleFactory,
+    SourceFactory,
+    EndpointFactory,
+    RotationPolicyFactory,
+    PendingCertificateFactory,
+    AsyncAuthorityFactory,
+    InvalidCertificateFactory,
+    CryptoAuthorityFactory,
+    CACertificateFactory,
+)
 
 
 def pytest_runtest_setup(item):
-    if 'slow' in item.keywords and not item.config.getoption("--runslow"):
+    if "slow" in item.keywords and not item.config.getoption("--runslow"):
         pytest.skip("need --runslow option to run")
 
     if "incremental" in item.keywords:
@@ -43,7 +62,9 @@ def app(request):
     Creates a new Flask application for a test duration.
     Uses application factory `create_app`.
     """
-    _app = create_app(config_path=os.path.dirname(os.path.realpath(__file__)) + '/conf.py')
+    _app = create_app(
+        config_path=os.path.dirname(os.path.realpath(__file__)) + "/conf.py"
+    )
     ctx = _app.app_context()
     ctx.push()
 
@@ -55,14 +76,15 @@ def app(request):
 @pytest.yield_fixture(scope="session")
 def db(app, request):
     _db.drop_all()
+    _db.engine.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
     _db.create_all()
 
     _db.app = app
 
     UserFactory()
-    r = RoleFactory(name='admin')
+    r = RoleFactory(name="admin")
     u = UserFactory(roles=[r])
-    rp = RotationPolicyFactory(name='default')
+    rp = RotationPolicyFactory(name="default")
     ApiKeyFactory(user=u)
 
     _db.session.commit()
@@ -157,14 +179,33 @@ def user(session):
     u = UserFactory()
     session.commit()
     user_token = create_token(u)
-    token = {'Authorization': 'Basic ' + user_token}
-    return {'user': u, 'token': token}
+    token = {"Authorization": "Basic " + user_token}
+    return {"user": u, "token": token}
 
 
 @pytest.fixture
 def pending_certificate(session):
     u = UserFactory()
     a = AsyncAuthorityFactory()
+    p = PendingCertificateFactory(user=u, authority=a)
+    session.commit()
+    return p
+
+
+@pytest.fixture
+def pending_certificate_from_full_chain_ca(session):
+    u = UserFactory()
+    a = AuthorityFactory()
+    p = PendingCertificateFactory(user=u, authority=a)
+    session.commit()
+    return p
+
+
+@pytest.fixture
+def pending_certificate_from_partial_chain_ca(session):
+    u = UserFactory()
+    c = CACertificateFactory(body=ROOTCA_CERT_STR, private_key=ROOTCA_KEY, chain=None)
+    a = AuthorityFactory(authority_certificate=c)
     p = PendingCertificateFactory(user=u, authority=a)
     session.commit()
     return p
@@ -182,18 +223,19 @@ def invalid_certificate(session):
 @pytest.fixture
 def admin_user(session):
     u = UserFactory()
-    admin_role = RoleFactory(name='admin')
+    admin_role = RoleFactory(name="admin")
     u.roles.append(admin_role)
     session.commit()
     user_token = create_token(u)
-    token = {'Authorization': 'Basic ' + user_token}
-    return {'user': u, 'token': token}
+    token = {"Authorization": "Basic " + user_token}
+    return {"user": u, "token": token}
 
 
 @pytest.fixture
 def async_issuer_plugin():
     from lemur.plugins.base import register
     from .plugins.issuer_plugin import TestAsyncIssuerPlugin
+
     register(TestAsyncIssuerPlugin)
     return TestAsyncIssuerPlugin
 
@@ -202,6 +244,7 @@ def async_issuer_plugin():
 def issuer_plugin():
     from lemur.plugins.base import register
     from .plugins.issuer_plugin import TestIssuerPlugin
+
     register(TestIssuerPlugin)
     return TestIssuerPlugin
 
@@ -210,6 +253,7 @@ def issuer_plugin():
 def notification_plugin():
     from lemur.plugins.base import register
     from .plugins.notification_plugin import TestNotificationPlugin
+
     register(TestNotificationPlugin)
     return TestNotificationPlugin
 
@@ -218,6 +262,7 @@ def notification_plugin():
 def destination_plugin():
     from lemur.plugins.base import register
     from .plugins.destination_plugin import TestDestinationPlugin
+
     register(TestDestinationPlugin)
     return TestDestinationPlugin
 
@@ -226,6 +271,7 @@ def destination_plugin():
 def source_plugin():
     from lemur.plugins.base import register
     from .plugins.source_plugin import TestSourcePlugin
+
     register(TestSourcePlugin)
     return TestSourcePlugin
 
@@ -256,13 +302,19 @@ def issuer_private_key():
 
 @pytest.fixture
 def cert_builder(private_key):
-    return (x509.CertificateBuilder()
-            .subject_name(x509.Name([x509.NameAttribute(x509.NameOID.COMMON_NAME, 'foo.com')]))
-            .issuer_name(x509.Name([x509.NameAttribute(x509.NameOID.COMMON_NAME, 'foo.com')]))
-            .serial_number(1)
-            .public_key(private_key.public_key())
-            .not_valid_before(datetime.datetime(2017, 12, 22))
-            .not_valid_after(datetime.datetime(2040, 1, 1)))
+    return (
+        x509.CertificateBuilder()
+        .subject_name(
+            x509.Name([x509.NameAttribute(x509.NameOID.COMMON_NAME, "foo.com")])
+        )
+        .issuer_name(
+            x509.Name([x509.NameAttribute(x509.NameOID.COMMON_NAME, "foo.com")])
+        )
+        .serial_number(1)
+        .public_key(private_key.public_key())
+        .not_valid_before(datetime.datetime(2017, 12, 22))
+        .not_valid_after(datetime.datetime(2040, 1, 1))
+    )
 
 
 @pytest.fixture
@@ -271,9 +323,9 @@ def selfsigned_cert(cert_builder, private_key):
     return cert_builder.sign(private_key, hashes.SHA256(), default_backend())
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def aws_credentials():
-    os.environ['AWS_ACCESS_KEY_ID'] = 'testing'
-    os.environ['AWS_SECRET_ACCESS_KEY'] = 'testing'
-    os.environ['AWS_SECURITY_TOKEN'] = 'testing'
-    os.environ['AWS_SESSION_TOKEN'] = 'testing'
+    os.environ["AWS_ACCESS_KEY_ID"] = "testing"
+    os.environ["AWS_SECRET_ACCESS_KEY"] = "testing"
+    os.environ["AWS_SECURITY_TOKEN"] = "testing"
+    os.environ["AWS_SESSION_TOKEN"] = "testing"

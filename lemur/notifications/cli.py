@@ -14,7 +14,14 @@ from lemur.notifications.messaging import send_expiration_notifications
 manager = Manager(usage="Handles notification related tasks.")
 
 
-@manager.option('-e', '--exclude', dest='exclude', action='append', default=[], help='Common name matching of certificates that should be excluded from notification')
+@manager.option(
+    "-e",
+    "--exclude",
+    dest="exclude",
+    action="append",
+    default=[],
+    help="Common name matching of certificates that should be excluded from notification",
+)
 def expirations(exclude):
     """
     Runs Lemur's notification engine, that looks for expired certificates and sends
@@ -33,12 +40,13 @@ def expirations(exclude):
         success, failed = send_expiration_notifications(exclude)
         print(
             "Finished notifying subscribers about expiring certificates! Sent: {success} Failed: {failed}".format(
-                success=success,
-                failed=failed
+                success=success, failed=failed
             )
         )
         status = SUCCESS_METRIC_STATUS
     except Exception as e:
         sentry.captureException()
 
-    metrics.send('expiration_notification_job', 'counter', 1, metric_tags={'status': status})
+    metrics.send(
+        "expiration_notification_job", "counter", 1, metric_tags={"status": status}
+    )

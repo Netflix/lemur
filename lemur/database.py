@@ -43,7 +43,7 @@ def session_query(model):
     :param model: sqlalchemy model
     :return: query object for model
     """
-    return model.query if hasattr(model, 'query') else db.session.query(model)
+    return model.query if hasattr(model, "query") else db.session.query(model)
 
 
 def create_query(model, kwargs):
@@ -77,7 +77,7 @@ def add(model):
 
 
 def get_model_column(model, field):
-    if field in getattr(model, 'sensitive_fields', ()):
+    if field in getattr(model, "sensitive_fields", ()):
         raise AttrNotFound(field)
     column = model.__table__.columns._data.get(field, None)
     if column is None:
@@ -100,7 +100,7 @@ def find_all(query, model, kwargs):
     kwargs = filter_none(kwargs)
     for attr, value in kwargs.items():
         if not isinstance(value, list):
-            value = value.split(',')
+            value = value.split(",")
 
         conditions.append(get_model_column(model, attr).in_(value))
 
@@ -200,7 +200,7 @@ def filter(query, model, terms):
     :return:
     """
     column = get_model_column(model, underscore(terms[0]))
-    return query.filter(column.ilike('%{}%'.format(terms[1])))
+    return query.filter(column.ilike("%{}%".format(terms[1])))
 
 
 def sort(query, model, field, direction):
@@ -214,7 +214,7 @@ def sort(query, model, field, direction):
     :param direction:
     """
     column = get_model_column(model, underscore(field))
-    return query.order_by(column.desc() if direction == 'desc' else column.asc())
+    return query.order_by(column.desc() if direction == "desc" else column.asc())
 
 
 def paginate(query, page, count):
@@ -247,10 +247,10 @@ def update_list(model, model_attr, item_model, items):
 
     for i in items:
         for item in getattr(model, model_attr):
-            if item.id == i['id']:
+            if item.id == i["id"]:
                 break
         else:
-            getattr(model, model_attr).append(get(item_model, i['id']))
+            getattr(model, model_attr).append(get(item_model, i["id"]))
 
     return model
 
@@ -276,9 +276,9 @@ def get_count(q):
     disable_group_by = False
     if len(q._entities) > 1:
         # currently support only one entity
-        raise Exception('only one entity is supported for get_count, got: %s' % q)
+        raise Exception("only one entity is supported for get_count, got: %s" % q)
     entity = q._entities[0]
-    if hasattr(entity, 'column'):
+    if hasattr(entity, "column"):
         # _ColumnEntity has column attr - on case: query(Model.column)...
         col = entity.column
         if q._group_by and q._distinct:
@@ -295,7 +295,11 @@ def get_count(q):
         count_func = func.count()
     if q._group_by and not disable_group_by:
         count_func = count_func.over(None)
-    count_q = q.options(lazyload('*')).statement.with_only_columns([count_func]).order_by(None)
+    count_q = (
+        q.options(lazyload("*"))
+        .statement.with_only_columns([count_func])
+        .order_by(None)
+    )
     if disable_group_by:
         count_q = count_q.group_by(None)
     count = q.session.execute(count_q).scalar()
@@ -311,13 +315,13 @@ def sort_and_page(query, model, args):
     :param args:
     :return:
     """
-    sort_by = args.pop('sort_by')
-    sort_dir = args.pop('sort_dir')
-    page = args.pop('page')
-    count = args.pop('count')
+    sort_by = args.pop("sort_by")
+    sort_dir = args.pop("sort_dir")
+    page = args.pop("page")
+    count = args.pop("count")
 
-    if args.get('user'):
-        user = args.pop('user')
+    if args.get("user"):
+        user = args.pop("user")
 
     query = find_all(query, model, args)
 

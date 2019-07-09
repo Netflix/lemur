@@ -17,14 +17,19 @@ from lemur.auth.permissions import SensitiveDomainPermission
 from lemur.common.schema import validate_schema
 from lemur.common.utils import paginated_parser
 
-from lemur.domains.schemas import domain_input_schema, domain_output_schema, domains_output_schema
+from lemur.domains.schemas import (
+    domain_input_schema,
+    domain_output_schema,
+    domains_output_schema,
+)
 
-mod = Blueprint('domains', __name__)
+mod = Blueprint("domains", __name__)
 api = Api(mod)
 
 
 class DomainsList(AuthenticatedResource):
     """ Defines the 'domains' endpoint """
+
     def __init__(self):
         super(DomainsList, self).__init__()
 
@@ -123,7 +128,7 @@ class DomainsList(AuthenticatedResource):
            :statuscode 200: no error
            :statuscode 403: unauthenticated
         """
-        return service.create(data['name'], data['sensitive'])
+        return service.create(data["name"], data["sensitive"])
 
 
 class Domains(AuthenticatedResource):
@@ -205,13 +210,14 @@ class Domains(AuthenticatedResource):
            :statuscode 403: unauthenticated
         """
         if SensitiveDomainPermission().can():
-            return service.update(domain_id, data['name'], data['sensitive'])
+            return service.update(domain_id, data["name"], data["sensitive"])
 
-        return dict(message='You are not authorized to modify this domain'), 403
+        return dict(message="You are not authorized to modify this domain"), 403
 
 
 class CertificateDomains(AuthenticatedResource):
     """ Defines the 'domains' endpoint """
+
     def __init__(self):
         super(CertificateDomains, self).__init__()
 
@@ -265,10 +271,14 @@ class CertificateDomains(AuthenticatedResource):
         """
         parser = paginated_parser.copy()
         args = parser.parse_args()
-        args['certificate_id'] = certificate_id
+        args["certificate_id"] = certificate_id
         return service.render(args)
 
 
-api.add_resource(DomainsList, '/domains', endpoint='domains')
-api.add_resource(Domains, '/domains/<int:domain_id>', endpoint='domain')
-api.add_resource(CertificateDomains, '/certificates/<int:certificate_id>/domains', endpoint='certificateDomains')
+api.add_resource(DomainsList, "/domains", endpoint="domains")
+api.add_resource(Domains, "/domains/<int:domain_id>", endpoint="domain")
+api.add_resource(
+    CertificateDomains,
+    "/certificates/<int:certificate_id>/domains",
+    endpoint="certificateDomains",
+)

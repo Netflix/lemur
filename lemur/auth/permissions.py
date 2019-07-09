@@ -9,24 +9,32 @@
 from functools import partial
 from collections import namedtuple
 
+from flask import current_app
 from flask_principal import Permission, RoleNeed
 
 # Permissions
-operator_permission = Permission(RoleNeed('operator'))
-admin_permission = Permission(RoleNeed('admin'))
+operator_permission = Permission(RoleNeed("operator"))
+admin_permission = Permission(RoleNeed("admin"))
 
-CertificateOwner = namedtuple('certificate', ['method', 'value'])
-CertificateOwnerNeed = partial(CertificateOwner, 'role')
+CertificateOwner = namedtuple("certificate", ["method", "value"])
+CertificateOwnerNeed = partial(CertificateOwner, "role")
 
 
 class SensitiveDomainPermission(Permission):
     def __init__(self):
-        super(SensitiveDomainPermission, self).__init__(RoleNeed('admin'))
+        needs = [RoleNeed("admin")]
+        sensitive_domain_roles = current_app.config.get("SENSITIVE_DOMAIN_ROLES", [])
+
+        if sensitive_domain_roles:
+            for role in sensitive_domain_roles:
+                needs.append(RoleNeed(role))
+
+        super(SensitiveDomainPermission, self).__init__(*needs)
 
 
 class CertificatePermission(Permission):
     def __init__(self, owner, roles):
-        needs = [RoleNeed('admin'), RoleNeed(owner), RoleNeed('creator')]
+        needs = [RoleNeed("admin"), RoleNeed(owner), RoleNeed("creator")]
         for r in roles:
             needs.append(CertificateOwnerNeed(str(r)))
             # Backwards compatibility with mixed-case role names
@@ -38,29 +46,29 @@ class CertificatePermission(Permission):
 
 class ApiKeyCreatorPermission(Permission):
     def __init__(self):
-        super(ApiKeyCreatorPermission, self).__init__(RoleNeed('admin'))
+        super(ApiKeyCreatorPermission, self).__init__(RoleNeed("admin"))
 
 
-RoleMember = namedtuple('role', ['method', 'value'])
-RoleMemberNeed = partial(RoleMember, 'member')
+RoleMember = namedtuple("role", ["method", "value"])
+RoleMemberNeed = partial(RoleMember, "member")
 
 
 class RoleMemberPermission(Permission):
     def __init__(self, role_id):
-        needs = [RoleNeed('admin'), RoleMemberNeed(role_id)]
+        needs = [RoleNeed("admin"), RoleMemberNeed(role_id)]
         super(RoleMemberPermission, self).__init__(*needs)
 
 
-AuthorityCreator = namedtuple('authority', ['method', 'value'])
-AuthorityCreatorNeed = partial(AuthorityCreator, 'authorityUse')
+AuthorityCreator = namedtuple("authority", ["method", "value"])
+AuthorityCreatorNeed = partial(AuthorityCreator, "authorityUse")
 
-AuthorityOwner = namedtuple('authority', ['method', 'value'])
-AuthorityOwnerNeed = partial(AuthorityOwner, 'role')
+AuthorityOwner = namedtuple("authority", ["method", "value"])
+AuthorityOwnerNeed = partial(AuthorityOwner, "role")
 
 
 class AuthorityPermission(Permission):
     def __init__(self, authority_id, roles):
-        needs = [RoleNeed('admin'), AuthorityCreatorNeed(str(authority_id))]
+        needs = [RoleNeed("admin"), AuthorityCreatorNeed(str(authority_id))]
         for r in roles:
             needs.append(AuthorityOwnerNeed(str(r)))
 

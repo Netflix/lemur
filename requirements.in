@@ -22,28 +22,31 @@ Flask-Script
 Flask-SQLAlchemy
 Flask
 Flask-Cors
+flask_replicated
 future
 gunicorn
 hvac # required for the vault destination plugin
 inflection
 jinja2
-kombu==4.3.0 # kombu 4.4.0 requires redis 3
+kombu<4.6.0 # Bug with inspecting active tasks: https://github.com/celery/kombu/issues/1051
 lockfile
+logmatic-python
 marshmallow-sqlalchemy
 marshmallow
 ndg-httpsclient
 paramiko  # required for the SFTP destination plugin
 pem
 psycopg2
+pyjks >= 19 # pyjks < 19 depends on pycryptodome, which conflicts with dyn's usage of pycrypto
 pyjwt
 pyOpenSSL
+pyyaml>=4.2b1 #high severity alert
 python_ldap
 raven[flask]
-redis<3 # redis>=3 is not compatible with celery
+redis
 requests
 retrying
 six
 SQLAlchemy-Utils
 tabulate
 xmltodict
-pyyaml>=4.2b1 #high severity alert

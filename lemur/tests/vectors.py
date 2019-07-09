@@ -1,20 +1,23 @@
 from lemur.common.utils import parse_certificate
 
 VALID_USER_HEADER_TOKEN = {
-    'Authorization': 'Basic ' + 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE1MjE2NTIwMjIsImV4cCI6MjM4NTY1MjAyMiwic3ViIjoxfQ.uK4PZjVAs0gt6_9h2EkYkKd64nFXdOq-rHsJZzeQicc',
-    'Content-Type': 'application/json'
+    "Authorization": "Basic "
+    + "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE1MjE2NTIwMjIsImV4cCI6MjM4NTY1MjAyMiwic3ViIjoxfQ.uK4PZjVAs0gt6_9h2EkYkKd64nFXdOq-rHsJZzeQicc",
+    "Content-Type": "application/json",
 }
 
 
 VALID_ADMIN_HEADER_TOKEN = {
-    'Authorization': 'Basic ' + 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1MjE2NTE2NjMsInN1YiI6MiwiYWlkIjoxfQ.wyf5PkQNcggLrMFqxDfzjY-GWPw_XsuWvU2GmQaC5sg',
-    'Content-Type': 'application/json'
+    "Authorization": "Basic "
+    + "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1MjE2NTE2NjMsInN1YiI6MiwiYWlkIjoxfQ.wyf5PkQNcggLrMFqxDfzjY-GWPw_XsuWvU2GmQaC5sg",
+    "Content-Type": "application/json",
 }
 
 
 VALID_ADMIN_API_TOKEN = {
-    'Authorization': 'Basic ' + 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImFpZCI6MSwiaWF0IjoxNDM1MjMzMzY5fQ.umW0I_oh4MVZ2qrClzj9SfYnQl6cd0HGzh9EwkDW60I',
-    'Content-Type': 'application/json'
+    "Authorization": "Basic "
+    + "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImFpZCI6MSwiaWF0IjoxNDM1MjMzMzY5fQ.umW0I_oh4MVZ2qrClzj9SfYnQl6cd0HGzh9EwkDW60I",
+    "Content-Type": "application/json",
 }
 
 
@@ -137,6 +140,26 @@ eMVHHbWm1CpGO294R+vMBv4jcuhIBOx63KZE4VaoJuaazF6TE5czDw==
 
 
 #: CN=san.example.org, issued by LemurTrust Unittests Class 1 CA 2018
+SAN_CERT_CSR = """\
+-----BEGIN CERTIFICATE REQUEST-----
+MIICvTCCAaUCAQAweDELMAkGA1UEBhMCRUUxDDAKBgNVBAgMA04vQTEOMAwGA1UE
+BwwFRWFydGgxGDAWBgNVBAoMD0RhbmllbCBTYW4gJiBjbzEXMBUGA1UECwwOS2Fy
+YXRlIExlc3NvbnMxGDAWBgNVBAMMD3Nhbi5leGFtcGxlLm9yZzCCASIwDQYJKoZI
+hvcNAQEBBQADggEPADCCAQoCggEBAMia9BcpypZUU9xJoknzdEp+AevQE93XSAyl
+IlXji80ZlYS/T/mVWtu6hNwz2IJDBFh6nPaHT1Ud/AI4YanDMa+fF4KJxzlkKPbY
+quWx4EOjTZ2sFBBCivwxlo1So8r5Hf4NZ9Ewu4AIma3zmk+dzxJTpnWbTIFJGsDG
+LwJO9iu6uqf79VdYkGELCusq3dyF2j2DNDiGHoRcQYFMMhDKR6uYmCTYvwjf0+sf
+6k1zk2EK1X+ZWUyjP+Nl2NB6bpL0TydF75fuplWROczceiO6BKO4YT2uNPdF4BAH
+p/kQCkqnjw5FCX7PONRT4wTW/AjDkt5WOgY+AB90zQBPxvXWbUMCAwEAAaAAMA0G
+CSqGSIb3DQEBCwUAA4IBAQAFYgEafwRmsqdK1i1xrLFYbNNLkzmAZyL+6gXUBVIJ
+TbGVVWSNNIcEmHIX8O9X4lN52qDYWOsxH/OKPVxpXqoHm/ztczFlte76wOYg+VAS
+yK8DwQRP/+n+j6J40o1cZwnilPWqHgee5zbIL7lpCVxuFDofWpskwP5PLbxibFq8
+4TWynhjKKUw4+q4h4iCHG3PQhbV0ExWOyqX05QyDtJdkEwgJUWz1m9caHU2Jl7kX
+5bWKOtXORpCYA7ed3WqktKQIxBD6vCVbQ+LuLZPYeWzGHYjfOejL6usD32KmNa2E
+ZhDsC0fjqSX0FJKz6gOhP88bkbbapyHuGB71o2dwhCKV
+-----END CERTIFICATE REQUEST-----
+"""
+
 SAN_CERT_STR = """\
 -----BEGIN CERTIFICATE-----
 MIIESjCCAzKgAwIBAgIRAK/y20+NLU2OgPo4KuJ8IzMwDQYJKoZIhvcNAQELBQAw

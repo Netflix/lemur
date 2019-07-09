@@ -13,9 +13,12 @@ from lemur.auth.service import AuthenticatedResource
 from lemur.common.schema import validate_schema
 from lemur.common.utils import paginated_parser
 from lemur.dns_providers import service
-from lemur.dns_providers.schemas import dns_provider_output_schema, dns_provider_input_schema
+from lemur.dns_providers.schemas import (
+    dns_provider_output_schema,
+    dns_provider_input_schema,
+)
 
-mod = Blueprint('dns_providers', __name__)
+mod = Blueprint("dns_providers", __name__)
 api = Api(mod)
 
 
@@ -71,12 +74,12 @@ class DnsProvidersList(AuthenticatedResource):
 
         """
         parser = paginated_parser.copy()
-        parser.add_argument('dns_provider_id', type=int, location='args')
-        parser.add_argument('name', type=str, location='args')
-        parser.add_argument('type', type=str, location='args')
+        parser.add_argument("dns_provider_id", type=int, location="args")
+        parser.add_argument("name", type=str, location="args")
+        parser.add_argument("type", type=str, location="args")
 
         args = parser.parse_args()
-        args['user'] = g.user
+        args["user"] = g.user
         return service.render(args)
 
     @validate_schema(dns_provider_input_schema, None)
@@ -152,7 +155,7 @@ class DnsProviders(AuthenticatedResource):
     @admin_permission.require(http_exception=403)
     def delete(self, dns_provider_id):
         service.delete(dns_provider_id)
-        return {'result': True}
+        return {"result": True}
 
 
 class DnsProviderOptions(AuthenticatedResource):
@@ -166,6 +169,10 @@ class DnsProviderOptions(AuthenticatedResource):
         return service.get_types()
 
 
-api.add_resource(DnsProvidersList, '/dns_providers', endpoint='dns_providers')
-api.add_resource(DnsProviders, '/dns_providers/<int:dns_provider_id>', endpoint='dns_provider')
-api.add_resource(DnsProviderOptions, '/dns_provider_options', endpoint='dns_provider_options')
+api.add_resource(DnsProvidersList, "/dns_providers", endpoint="dns_providers")
+api.add_resource(
+    DnsProviders, "/dns_providers/<int:dns_provider_id>", endpoint="dns_provider"
+)
+api.add_resource(
+    DnsProviderOptions, "/dns_provider_options", endpoint="dns_provider_options"
+)
