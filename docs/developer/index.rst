@@ -22,11 +22,17 @@ Once you've got all that, the rest is simple:
     # If you have a fork, you'll want to clone it instead
     git clone git://github.com/netflix/lemur.git
 
-    # Create a python virtualenv
-    mkvirtualenv lemur
+    # Create and activate python virtualenv from within the lemur repo
+    python3 -m venv env
+    . env/bin/activate
 
-    # Make the magic happen
+    # Install doc requirements
+
     make dev-docs
+
+    # Make the docs
+    cd docs
+    make html
 
 Running ``make dev-docs`` will install the basic requirements to get Sphinx running.
 
@@ -58,7 +64,7 @@ Once you've got all that, the rest is simple:
     git clone git://github.com/lemur/lemur.git
 
     # Create a python virtualenv
-    mkvirtualenv lemur
+    python3 -m venv env
 
     # Make the magic happen
     make
@@ -135,7 +141,7 @@ The test suite consists of multiple parts, testing both the Python and JavaScrip
 
     make test
 
-If you only need to run the Python tests, you can do so with ``make test-python``, as well as ``test-js`` for the JavaScript tests.
+If you only need to run the Python tests, you can do so with ``make test-python``, as well as ``make test-js`` for the JavaScript tests.
 
 
 You'll notice that the test suite is structured based on where the code lives, and strongly encourages using the mock library to drive more accurate individual tests.
