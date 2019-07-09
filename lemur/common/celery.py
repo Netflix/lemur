@@ -24,6 +24,9 @@ from lemur.pending_certificates import service as pending_certificate_service
 from lemur.plugins.base import plugins
 from lemur.sources.cli import clean, sync, validate_sources
 from lemur.sources.service import add_aws_destination_to_sources
+from lemur.certificates import cli as cli_certificate
+from lemur.dns_providers import cli as cli_dns_providers
+from lemur.endpoints import cli as cli_endpoints
 
 if current_app:
     flask_app = current_app
@@ -308,3 +311,55 @@ def sync_source_destination():
             current_app.logger.debug("Source: %s added", dst.label)
 
     current_app.logger.debug("Completed Syncing AWS destinations and sources")
+
+
+@celery.task()
+def certificate_reissue():
+    """
+    This celery task reissues certificates which are pending reissue
+    :return:
+    """
+    current_app.logger.debug("reissuing certificates")
+    cli_certificate.reissue("-c")
+    current_app.logger.debug("reissuance completed")
+
+
+@celery.task()
+def certificate_rotate():
+    """
+    This celery task rotates certificates which are reissued but having endpoints attached to the replaced cert
+    :return:
+    """
+    current_app.logger.debug("rotating certificates")
+    cli_certificate.rotate("-c")
+    current_app.logger.debug("rotation completed")
+
+
+@celery.task()
+def endpoints_expire():
+    """
+    This celery task removes all endpoints that have not been recently updated
+    :return:
+    """
+    current_app.logger.debug("endpoints expire")
+    cli_endpoints.expire()
+
+
+@celery.task()
+def get_all_zones():
+    """
+    This celery syncs all zones from the available dns providers
+    :return:
+    """
+    current_app.logger.debug("get_all_zones")
+    cli_dns_providers.get_all_zones()
+
+
+@celery.task()
+def check_revoked():
+    """
+    This celery task attempts to check if any certs are expired
+    :return:
+    """
+    current_app.logger.debug("check if any certificates are revoked revoked")
+    cli_certificate.check_revoked()
