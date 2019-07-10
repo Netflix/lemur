@@ -1086,6 +1086,18 @@ progress and the API is not frozen.
 
 Lemur includes several plugins by default. Including extensive support for AWS, VeriSign/Symantec.
 
+Active Directory Certificate Services
+--------
+
+:Authors:
+    sirferl
+:Type:
+    Issuer
+:Description:
+    Enables the creation of certificates by ADCS (Active Directory Certificate Services)
+:Links:
+    https://github.com/sirferl/lemur
+
 Verisign/Symantec
 -----------------
 
