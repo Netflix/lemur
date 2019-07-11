@@ -36,7 +36,6 @@ else:
 red = asyncio.get_event_loop().run_until_complete(RedisHandler().redis())
 
 
-
 def make_celery(app):
     celery = Celery(
         app.import_name,
@@ -72,7 +71,6 @@ def is_task_active(fun, task_id, args):
             if task.get("name") == fun and task.get("args") == str(args):
                 return True
     return False
-
 
 
 @celery.task()
