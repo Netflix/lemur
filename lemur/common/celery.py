@@ -36,6 +36,7 @@ else:
 red = asyncio.get_event_loop().run_until_complete(RedisHandler().redis())
 
 
+
 def make_celery(app):
     celery = Celery(
         app.import_name,
@@ -111,7 +112,6 @@ def fetch_acme_cert(id):
         task_id = celery.current_task.request.id
 
     function = "{}.{}".format(__name__, sys._getframe().f_code.co_name)
-
     log_data = {
         "function": function,
         "message": "Resolving pending certificate {}".format(id),
@@ -211,10 +211,11 @@ def fetch_acme_cert(id):
 def fetch_all_pending_acme_certs():
     """Instantiate celery workers to resolve all pending Acme certificates"""
     pending_certs = pending_certificate_service.get_unresolved_pending_certs()
+
     function = "{}.{}".format(__name__, sys._getframe().f_code.co_name)
     log_data = {
         "function": function,
-        "message": "Starting job."
+        "message": "Starting job.",
     }
 
     current_app.logger.debug(log_data)
@@ -231,6 +232,7 @@ def fetch_all_pending_acme_certs():
                 fetch_acme_cert.delay(cert.id)
 
     metrics.send(f"{function}.success", 'counter', 1)
+    red.set(f'{function}.last_success', int(time.time()))
 
 
 @celery.task()
@@ -238,10 +240,10 @@ def remove_old_acme_certs():
     """Prune old pending acme certificates from the database"""
     function = "{}.{}".format(__name__, sys._getframe().f_code.co_name)
     log_data = {
-        "function": function
+        "function": function,
+        "message": "Starting job.",
     }
     pending_certs = pending_certificate_service.get_pending_certs('all')
-
     # Delete pending certs more than a week old
     for cert in pending_certs:
         if datetime.now(timezone.utc) - cert.last_updated > timedelta(days=7):
@@ -252,7 +254,7 @@ def remove_old_acme_certs():
             pending_certificate_service.delete(cert)
 
     metrics.send(f"{function}.success", 'counter', 1)
-
+    red.set(f'{function}.last_success', int(time.time()))
 
 
 @celery.task()
@@ -270,6 +272,7 @@ def clean_all_sources():
         clean_source.delay(source.label)
 
     metrics.send(f"{function}.success", 'counter', 1)
+    red.set(f'{function}.last_success', int(time.time()))
 
 
 @celery.task()
@@ -299,6 +302,7 @@ def sync_all_sources():
         sync_source.delay(source.label)
 
     metrics.send(f"{function}.success", 'counter', 1)
+    red.set(f'{function}.last_success', int(time.time()))
 
 
 @celery.task(soft_time_limit=7200)
@@ -328,6 +332,7 @@ def sync_source(source):
         return
     try:
         sync([source])
+        metrics.send(f"{function}.success", 'counter', '1', metric_tags={"source": source})
     except SoftTimeLimitExceeded:
         log_data["message"] = "Error syncing source: Time limit exceeded."
         current_app.logger.error(log_data)
@@ -352,9 +357,11 @@ def sync_source_destination():
     We rely on account numbers to avoid duplicates.
     """
     current_app.logger.debug("Syncing AWS destinations and sources")
+    function = "{}.{}".format(__name__, sys._getframe().f_code.co_name)
 
     for dst in destinations_service.get_all():
         if add_aws_destination_to_sources(dst):
             current_app.logger.debug("Source: %s added", dst.label)
 
     current_app.logger.debug("Completed Syncing AWS destinations and sources")
+    metrics.send(f"{function}.success", 'counter', '1')
