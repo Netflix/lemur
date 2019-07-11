@@ -9,22 +9,53 @@ command: celery -A lemur.common.celery worker --loglevel=info -l DEBUG -B
 """
 import copy
 import sys
+import asyncio
+import time
 from datetime import datetime, timezone, timedelta
 
 from celery import Celery
 from flask import current_app
 
 from lemur.authorities.service import get as get_authority
+from lemur.common.redis import RedisHandler
 from lemur.factory import create_app
 from lemur.notifications.messaging import send_pending_failure_notification
 from lemur.pending_certificates import service as pending_certificate_service
 from lemur.plugins.base import plugins
 from lemur.sources.cli import clean, sync, validate_sources
+from lemur.extensions import metrics
+
 
 if current_app:
     flask_app = current_app
 else:
     flask_app = create_app()
+
+red = asyncio.get_event_loop().run_until_complete(RedisHandler().redis())
+
+
+@app.task
+def report_celery_last_success_metrics():
+    """
+    For each celery task, this will determine the number of seconds since it has last been successful.
+
+    Celery tasks should be emitting redis stats with a deterministic key (In our case, `f"{task}.last_success"`.
+    report_celery_last_success_metrics should be ran periodically to emit metrics on when a task was last successful.
+    Admins can then alert when tasks are not ran when intended. Admins should also alert when no metrics are emitted
+    from this function.
+
+    """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    current_time = int(time.time())
+    schedule = current_app.config.get('CELERYBEAT_SCHEDULE')
+    for _, t in schedule.items():
+        task = t.get("task")
+        last_success = int(red.get(f"{task}.last_success") or 0)
+        metrics.send(f"{task}.time_since_last_success", 'gauge', current_time - last_success)
+    red.set(
+        f"{function}.last_success", int(time.time())
+    )  # Alert if this metric is not seen
+    metrics.send(f"{function}.success", 'counter', '1')
 
 
 def make_celery(app):
@@ -68,8 +99,9 @@ def fetch_acme_cert(id):
     Args:
         id: an id of a PendingCertificate
     """
+    function = "{}.{}".format(__name__, sys._getframe().f_code.co_name)
     log_data = {
-        "function": "{}.{}".format(__name__, sys._getframe().f_code.co_name),
+        "function": function,
         "message": "Resolving pending certificate {}".format(id)
     }
     current_app.logger.debug(log_data)
@@ -142,6 +174,9 @@ def fetch_acme_cert(id):
     log_data["failed"] = failed
     log_data["wrong_issuer"] = wrong_issuer
     current_app.logger.debug(log_data)
+    metrics.send(f"{function}.resolved", 'gauge', new)
+    metrics.send(f"{function}.failed", 'gauge', failed)
+    metrics.send(f"{function}.wrong_issuer", 'gauge', wrong_issuer)
     print(
         "[+] Certificates: New: {new} Failed: {failed} Not using ACME: {wrong_issuer}".format(
             new=new,
@@ -155,9 +190,9 @@ def fetch_acme_cert(id):
 def fetch_all_pending_acme_certs():
     """Instantiate celery workers to resolve all pending Acme certificates"""
     pending_certs = pending_certificate_service.get_unresolved_pending_certs()
-
+    function = "{}.{}".format(__name__, sys._getframe().f_code.co_name)
     log_data = {
-        "function": "{}.{}".format(__name__, sys._getframe().f_code.co_name),
+        "function": function,
         "message": "Starting job."
     }
 
@@ -174,12 +209,16 @@ def fetch_all_pending_acme_certs():
                 current_app.logger.debug(log_data)
                 fetch_acme_cert.delay(cert.id)
 
+    metrics.send(f"{function}.success", 'counter', '1')
+    red.set(f'{function}.last_success', int(time.time()))
+
 
 @celery.task()
 def remove_old_acme_certs():
     """Prune old pending acme certificates from the database"""
+    function = "{}.{}".format(__name__, sys._getframe().f_code.co_name)
     log_data = {
-        "function": "{}.{}".format(__name__, sys._getframe().f_code.co_name)
+        "function": function
     }
     pending_certs = pending_certificate_service.get_pending_certs('all')
 
@@ -192,6 +231,9 @@ def remove_old_acme_certs():
             current_app.logger.debug(log_data)
             pending_certificate_service.delete(cert.id)
 
+    metrics.send(f"{function}.success", 'counter', '1')
+    red.set(f'{function}.last_success', int(time.time()))
+
 
 @celery.task()
 def clean_all_sources():
@@ -199,10 +241,14 @@ def clean_all_sources():
     This function will clean unused certificates from sources. This is a destructive operation and should only
     be ran periodically. This function triggers one celery task per source.
     """
+    function = "{}.{}".format(__name__, sys._getframe().f_code.co_name)
     sources = validate_sources("all")
     for source in sources:
         current_app.logger.debug("Creating celery task to clean source {}".format(source.label))
         clean_source.delay(source.label)
+
+    metrics.send(f"{function}.success", 'counter', '1')
+    red.set(f'{function}.last_success', int(time.time()))
 
 
 @celery.task()
@@ -223,10 +269,14 @@ def sync_all_sources():
     """
     This function will sync certificates from all sources. This function triggers one celery task per source.
     """
+    function = "{}.{}".format(__name__, sys._getframe().f_code.co_name)
     sources = validate_sources("all")
     for source in sources:
         current_app.logger.debug("Creating celery task to sync source {}".format(source.label))
         sync_source.delay(source.label)
+
+    metrics.send(f"{function}.success", 'counter', '1')
+    red.set(f'{function}.last_success', int(time.time()))
 
 
 @celery.task()
@@ -252,6 +302,8 @@ def sync_source(source):
         log_data["message"] = "Skipping task: Task is already active"
         current_app.logger.debug(log_data)
         return
+
     sync([source])
     log_data["message"] = "Done syncing source"
     current_app.logger.debug(log_data)
+    metrics.send(f"{function}.success", 'counter', '1', metric_tags=source)
