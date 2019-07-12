@@ -9,7 +9,6 @@ command: celery -A lemur.common.celery worker --loglevel=info -l DEBUG -B
 """
 import copy
 import sys
-import asyncio
 import time
 from datetime import datetime, timezone, timedelta
 
@@ -33,7 +32,7 @@ if current_app:
 else:
     flask_app = create_app()
 
-red = asyncio.get_event_loop().run_until_complete(RedisHandler().redis())
+red = RedisHandler().redis()
 
 
 def make_celery(app):

@@ -3,7 +3,6 @@
 acme
 alembic-autogenerate-enums
 arrow
-asgiref # Allows sync_to_async call, executes synchronous code in its own threadpool.
 asyncpool
 boto3
 botocore
