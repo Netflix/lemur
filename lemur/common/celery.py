@@ -203,6 +203,7 @@ def fetch_acme_cert(id):
             new=new, failed=failed, wrong_issuer=wrong_issuer
         )
     )
+    red.set(f'{function}.last_success', int(time.time()))
 
 
 @celery.task()
@@ -229,6 +230,7 @@ def fetch_all_pending_acme_certs():
                 current_app.logger.debug(log_data)
                 fetch_acme_cert.delay(cert.id)
 
+    red.set(f'{function}.last_success', int(time.time()))
     metrics.send(f"{function}.success", 'counter', 1)
     red.set(f'{function}.last_success', int(time.time()))
 
@@ -251,6 +253,7 @@ def remove_old_acme_certs():
             current_app.logger.debug(log_data)
             pending_certificate_service.delete(cert)
 
+    red.set(f'{function}.last_success', int(time.time()))
     metrics.send(f"{function}.success", 'counter', 1)
     red.set(f'{function}.last_success', int(time.time()))
 
@@ -269,6 +272,7 @@ def clean_all_sources():
         )
         clean_source.delay(source.label)
 
+    red.set(f'{function}.last_success', int(time.time()))
     metrics.send(f"{function}.success", 'counter', 1)
     red.set(f'{function}.last_success', int(time.time()))
 
@@ -299,6 +303,7 @@ def sync_all_sources():
         )
         sync_source.delay(source.label)
 
+    red.set(f'{function}.last_success', int(time.time()))
     metrics.send(f"{function}.success", 'counter', 1)
     red.set(f'{function}.last_success', int(time.time()))
 
@@ -343,6 +348,7 @@ def sync_source(source):
     log_data["message"] = "Done syncing source"
     current_app.logger.debug(log_data)
     metrics.send(f"{function}.success", 'counter', 1, metric_tags=source)
+    red.set(f'{function}.last_success', int(time.time()))
 
 
 @celery.task()
@@ -362,4 +368,5 @@ def sync_source_destination():
             current_app.logger.debug("Source: %s added", dst.label)
 
     current_app.logger.debug("Completed Syncing AWS destinations and sources")
+    red.set(f'{function}.last_success', int(time.time()))
     metrics.send(f"{function}.success", 'counter', 1)
