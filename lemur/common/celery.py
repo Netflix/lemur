@@ -362,4 +362,4 @@ def sync_source_destination():
             current_app.logger.debug("Source: %s added", dst.label)
 
     current_app.logger.debug("Completed Syncing AWS destinations and sources")
-    metrics.send(f"{function}.success", 'counter', '1')
+    metrics.send(f"{function}.success", 'counter', 1)
