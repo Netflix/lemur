@@ -23,7 +23,7 @@ class RedisHandler:
     def redis(self, db=0):
         # The decode_responses flag here directs the client to convert the responses from Redis into Python strings
         # using the default encoding utf-8.  This is client specific.
-        red = redis.StrictRedis(host=self.host, port=self.port, db=self.db, charset="utf-8", decode_responses=True)
+        red = redis.StrictRedis(host=self.host, port=self.port, db=self.db, encoding="utf-8", decode_responses=True)
         return red
 
 
