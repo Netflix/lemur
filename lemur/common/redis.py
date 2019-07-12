@@ -11,6 +11,7 @@ if current_app:
 else:
     flask_app = create_app()
 
+
 class RedisHandler:
     def __init__(self, host=flask_app.config.get('REDIS_HOST', 'localhost'),
                  port=flask_app.config.get('REDIS_PORT', 6379),
