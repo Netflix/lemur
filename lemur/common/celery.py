@@ -68,6 +68,30 @@ def is_task_active(fun, task_id, args):
 
 
 @celery.task()
+def report_celery_last_success_metrics():
+    """
+    For each celery task, this will determine the number of seconds since it has last been successful.
+
+    Celery tasks should be emitting redis stats with a deterministic key (In our case, `f"{task}.last_success"`.
+    report_celery_last_success_metrics should be ran periodically to emit metrics on when a task was last successful.
+    Admins can then alert when tasks are not ran when intended. Admins should also alert when no metrics are emitted
+    from this function.
+
+    """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    current_time = int(time.time())
+    schedule = current_app.config.get('CELERYBEAT_SCHEDULE')
+    for _, t in schedule.items():
+        task = t.get("task")
+        last_success = int(red.get(f"{task}.last_success") or 0)
+        metrics.send(f"{task}.time_since_last_success", 'gauge', current_time - last_success)
+    red.set(
+        f"{function}.last_success", int(time.time())
+    )  # Alert if this metric is not seen
+    metrics.send(f"{function}.success", 'counter', 1)
+
+
+@celery.task()
 def fetch_acme_cert(id):
     """
     Attempt to get the full certificate for the pending certificate listed.
