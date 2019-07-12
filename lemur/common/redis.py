@@ -3,14 +3,18 @@ Helper Class for Redis
 
 """
 import redis
-#from flask import current_app
+from flask import current_app
+from lemur.factory import create_app
 
+if current_app:
+    flask_app = current_app
+else:
+    flask_app = create_app()
 
 class RedisHandler:
-    #def __init__(self, host=current_app.config.get('REDIS_HOST', 'localhost'),
-    #            port=current_app.config.get('REDIS_PORT', 6379),
-    #             db=current_app.config.get('REDIS_DB', 0)):
-    def __init__(self, host, port, db):
+    def __init__(self, host=flask_app.config.get('REDIS_HOST', 'localhost'),
+                 port=flask_app.config.get('REDIS_PORT', 6379),
+                 db=flask_app.config.get('REDIS_DB', 0)):
         self.host = host
         self.port = port
         self.db = db
