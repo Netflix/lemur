@@ -35,9 +35,8 @@ if current_app:
 else:
     flask_app = create_app()
 
-red = RedisHandler(host=current_app.config.get('REDIS_HOST', 'localhost'),
-                   port=current_app.config.get('REDIS_PORT', 6379),
-                   db=current_app.config.get('REDIS_DB', 0)).redis()
+red = RedisHandler().redis()
+
 
 def make_celery(app):
     celery = Celery(
