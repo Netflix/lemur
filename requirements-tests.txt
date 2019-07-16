@@ -28,7 +28,9 @@ docutils==0.14            # via botocore
 ecdsa==0.13.2             # via python-jose, sshpubkeys
 factory-boy==2.12.0
 faker==1.0.7
-flask==1.1.1              # via pytest-flask
+fakeredis==1.0.3
+flask==1.0.3              # via pytest-flask
+
 freezegun==0.3.12
 future==0.17.1            # via aws-xray-sdk, python-jose
 gitdb2==2.0.5             # via gitpython
@@ -62,16 +64,17 @@ pytest-mock==1.10.4
 pytest==5.0.1
 python-dateutil==2.8.0    # via botocore, faker, freezegun, moto
 python-jose==3.0.1        # via moto
-pytz==2019.1              # via datetime, moto
-pyyaml==5.1.1
+pytz==2019.1              # via moto
+pyyaml==5.1
+redis==3.2.1              # via fakeredis
 requests-mock==1.6.0
 requests==2.22.0          # via cfn-lint, docker, moto, requests-mock, responses
 responses==0.10.6         # via moto
 rsa==4.0                  # via python-jose
-s3transfer==0.2.1         # via boto3
-six==1.12.0               # via aws-sam-translator, bandit, cfn-lint, cryptography, docker, faker, freezegun, jsonschema, mock, moto, packaging, pyrsistent, python-dateutil, python-jose, requests-mock, responses, stevedore, websocket-client
+s3transfer==0.2.0         # via boto3
+six==1.12.0               # via aws-sam-translator, bandit, cfn-lint, cryptography, docker, faker, fakeredis, freezegun, mock, moto, packaging, pytest, python-dateutil, python-jose, requests-mock, responses, stevedore, websocket-client
 smmap2==2.0.5             # via gitdb2
-sshpubkeys==3.1.0         # via moto
+sortedcontainers==2.1.0   # via fakeredis
 stevedore==1.30.1         # via bandit
 text-unidecode==1.2       # via faker
 toml==0.10.0              # via black
@@ -81,8 +84,8 @@ websocket-client==0.56.0  # via docker
 werkzeug==0.15.4          # via flask, moto, pytest-flask
 wrapt==1.11.2             # via aws-xray-sdk
 xmltodict==0.12.0         # via moto
-zipp==0.5.2               # via importlib-metadata
-zope.interface==4.6.0     # via datetime
+zipp==0.5.1               # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
-# setuptools==41.0.1        # via cfn-lint, jsonschema, zope.interface
+# setuptools==41.0.1        # via cfn-lint
+
