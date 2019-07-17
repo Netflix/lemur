@@ -108,7 +108,7 @@ def fetch_acme_cert(id):
     if celery.current_task:
         task_id = celery.current_task.request.id
 
-    function = "{}.{}".format(__name__, sys._getframe().f_code.co_name)
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
     log_data = {
         "function": function,
         "message": "Resolving pending certificate {}".format(id),
@@ -210,7 +210,7 @@ def fetch_all_pending_acme_certs():
     """Instantiate celery workers to resolve all pending Acme certificates"""
     pending_certs = pending_certificate_service.get_unresolved_pending_certs()
 
-    function = "{}.{}".format(__name__, sys._getframe().f_code.co_name)
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
     log_data = {
         "function": function,
         "message": "Starting job.",
@@ -236,7 +236,7 @@ def fetch_all_pending_acme_certs():
 @celery.task()
 def remove_old_acme_certs():
     """Prune old pending acme certificates from the database"""
-    function = "{}.{}".format(__name__, sys._getframe().f_code.co_name)
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
     log_data = {
         "function": function,
         "message": "Starting job.",
@@ -262,7 +262,7 @@ def clean_all_sources():
     This function will clean unused certificates from sources. This is a destructive operation and should only
     be ran periodically. This function triggers one celery task per source.
     """
-    function = "{}.{}".format(__name__, sys._getframe().f_code.co_name)
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
     sources = validate_sources("all")
     for source in sources:
         current_app.logger.debug(
@@ -292,7 +292,7 @@ def sync_all_sources():
     """
     This function will sync certificates from all sources. This function triggers one celery task per source.
     """
-    function = "{}.{}".format(__name__, sys._getframe().f_code.co_name)
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
     sources = validate_sources("all")
     for source in sources:
         current_app.logger.debug(
@@ -313,7 +313,7 @@ def sync_source(source):
     :return:
     """
 
-    function = "{}.{}".format(__name__, sys._getframe().f_code.co_name)
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
     task_id = None
     if celery.current_task:
         task_id = celery.current_task.request.id
@@ -357,7 +357,7 @@ def sync_source_destination():
     We rely on account numbers to avoid duplicates.
     """
     current_app.logger.debug("Syncing AWS destinations and sources")
-    function = "{}.{}".format(__name__, sys._getframe().f_code.co_name)
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
 
     for dst in destinations_service.get_all():
         if add_aws_destination_to_sources(dst):
