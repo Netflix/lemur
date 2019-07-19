@@ -343,7 +343,7 @@ def sync_source(source):
 
     log_data["message"] = "Done syncing source"
     current_app.logger.debug(log_data)
-    metrics.send(f"{function}.success", 'counter', 1, metric_tags=source)
+    metrics.send(f"{function}.success", 'counter', 1, metric_tags={"source": source})
     red.set(f'{function}.last_success', int(time.time()))
 
 
