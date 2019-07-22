@@ -31,7 +31,7 @@ from lemur.exceptions import InvalidAuthority, InvalidConfiguration, UnknownProv
 from lemur.extensions import metrics, sentry
 from lemur.plugins import lemur_acme as acme
 from lemur.plugins.bases import IssuerPlugin
-from lemur.plugins.lemur_acme import cloudflare, dyn, route53
+from lemur.plugins.lemur_acme import cloudflare, dyn, route53, nsone
 
 
 class AuthorizationRecord(object):

@@ -34,6 +34,7 @@ logmatic-python
 marshmallow-sqlalchemy
 marshmallow
 ndg-httpsclient
+ns1-python
 paramiko  # required for the SFTP destination plugin
 pem
 psycopg2
