@@ -180,7 +180,7 @@ def create_txt_record(domain, token, account_number):
     fqdn = "{0}.{1}".format(node_name, zone_name)
     path = "/v2/zones/{0}/rrsets/TXT/{1}".format(zone_name, node_name)
     params = {
-        "ttl": 300,
+        "ttl": 5,
         "rdata": [
             "{}".format(token)
         ],
@@ -244,7 +244,7 @@ def delete_txt_record(change_id, account_number, domain, token):
     # if len(rrsets["rrSets"][0]["rdata"]) > 0:
     if len(record.rdata) > 0:
         params = {
-            "ttl": 300,
+            "ttl": 5,
             "rdata": record.rdata,
         }
         _post(path, params)
