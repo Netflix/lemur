@@ -2,6 +2,7 @@ import time
 import requests
 import json
 from .ultradns_zone import Zone
+from .ultradns_record import Record
 
 import dns
 import dns.exception
@@ -223,13 +224,15 @@ def delete_txt_record(change_id, account_number, domain, token):
 
     try:
         rrsets = _get(path)
+        record = Record(rrsets)
     except Exception as e:
         metrics.send("delete_txt_record_geterror", "counter", 1)
         # No Text Records remain or host is not in the zone anymore because all records have been deleted.
         return
     try:
         # Remove the record from the RRSet locally
-        rrsets["rrSets"][0]["rdata"].remove("{}".format(token))
+        # rrsets["rrSets"][0]["rdata"].remove("{}".format(token))
+        record.rdata.remove("{}".format(token))
     except ValueError:
         current_app.logger.debug("Token not found")
         return
@@ -238,10 +241,11 @@ def delete_txt_record(change_id, account_number, domain, token):
     _delete(path)
 
     # Check if the RRSet has more records. If yes, add the modified RRSet back to UltraDNS
-    if len(rrsets["rrSets"][0]["rdata"]) > 0:
+    # if len(rrsets["rrSets"][0]["rdata"]) > 0:
+    if len(record.rdata) > 0:
         params = {
             "ttl": 300,
-            "rdata": rrsets["rrSets"][0]["rdata"],
+            "rdata": record.rdata,
         }
         _post(path, params)
 
