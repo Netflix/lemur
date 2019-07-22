@@ -1,6 +1,7 @@
 import time
 import requests
 import json
+from .ultradns_zone import Zone
 
 import dns
 import dns.exception
@@ -11,10 +12,11 @@ import dns.resolver
 from flask import current_app
 from lemur.extensions import metrics, sentry
 
-use_http = False
-
 
 def get_ultradns_token():
+    # Function to call the UltraDNS Authorization API. Returns the Authorization access_token
+    # which is valid for 1 hour. Each request calls this function and we generate a new token
+    # every time.
     path = "/v2/authorization/token"
     data = {
         "grant_type": "password",
@@ -27,6 +29,8 @@ def get_ultradns_token():
 
 
 def _generate_header():
+    # Function to generate the header for a request. Contains the Authorization access_key
+    # obtained from the get_ultradns_token() function.
     access_token = get_ultradns_token()
     return {"Authorization": "Bearer {}".format(access_token), "Content-Type": "application/json"}
 
@@ -34,8 +38,6 @@ def _generate_header():
 def _paginate(path, key):
     limit = 100
     params = {"offset": 0, "limit": 1}
-    # params["offset"] = 0
-    # params["limit"] = 1
     resp = _get(path, params)
     for index in range(0, resp["resultInfo"]["totalCount"], limit):
         params["offset"] = index
@@ -45,6 +47,7 @@ def _paginate(path, key):
 
 
 def _get(path, params=None):
+    # Function to execute a GET request on the given URL (base_uri + path) with given params
     base_uri = current_app.config.get("ACME_ULTRADNS_DOMAIN", "")
     resp = requests.get(
         "{0}{1}".format(base_uri, path),
@@ -57,6 +60,7 @@ def _get(path, params=None):
 
 
 def _delete(path):
+    # Function to execute a DELETE request on the given URL
     base_uri = current_app.config.get("ACME_ULTRADNS_DOMAIN", "")
     resp = requests.delete(
         "{0}{1}".format(base_uri, path),
@@ -67,6 +71,7 @@ def _delete(path):
 
 
 def _post(path, params):
+    # Executes a POST request on given URL. Body is sent in JSON format
     base_uri = current_app.config.get("ACME_ULTRADNS_DOMAIN", "")
     resp = requests.post(
         "{0}{1}".format(base_uri, path),
@@ -78,6 +83,8 @@ def _post(path, params):
 
 
 def _has_dns_propagated(name, token):
+    # Check whether the DNS change made by Lemur have propagated to the public DNS or not.
+    # Invoked by wait_for_dns_change() function
     txt_records = []
     try:
         dns_resolver = dns.resolver.Resolver()
@@ -99,6 +106,7 @@ def _has_dns_propagated(name, token):
 
 
 def wait_for_dns_change(change_id, account_number=None):
+    # Waits and checks if the DNS changes have propagated or not.
     fqdn, token = change_id
     number_of_attempts = 20
     for attempts in range(0, number_of_attempts):
@@ -122,20 +130,26 @@ def wait_for_dns_change(change_id, account_number=None):
 
 
 def get_zones(account_number):
+    # Get zones from the UltraDNS
     path = "/v2/zones/"
     zones = []
     for page in _paginate(path, "zones"):
         for elem in page:
-            zones.append(elem["properties"]["name"][:-1])
+            # UltraDNS zone names end with a "." - Example - lemur.example.com.
+            # We pick out the names minus the "." at the end while returning the list
+            zone = Zone(elem)
+            # TODO : Check for active & Primary
+            # if elem["properties"]["type"] == "PRIMARY" and elem["properties"]["status"] == "ACTIVE":
+            if zone.authoritative_type == "PRIMARY" and zone.status == "ACTIVE":
+                zones.append(zone.name)
 
     return zones
 
 
 def get_zone_name(domain, account_number):
+    # Get the matching zone for the given domain
     zones = get_zones(account_number)
-
     zone_name = ""
-
     for z in zones:
         if domain.endswith(z):
             # Find the most specific zone possible for the domain
@@ -150,12 +164,20 @@ def get_zone_name(domain, account_number):
 
 
 def create_txt_record(domain, token, account_number):
+    # Create a TXT record for the given domain.
+    # The part of the domain that matches with the zone becomes the zone name.
+    # The remainder becomes the owner name (referred to as node name here)
+    # Example: Let's say we have a zone named "exmaple.com" in UltraDNS and we
+    # get a request to create a cert for lemur.example.com
+    # Domain - _acme-challenge.lemur.example.com
+    # Matching zone - example.com
+    # Owner name - _acme-challenge.lemur
+
     zone_name = get_zone_name(domain, account_number)
     zone_parts = len(zone_name.split("."))
     node_name = ".".join(domain.split(".")[:-zone_parts])
     fqdn = "{0}.{1}".format(node_name, zone_name)
     path = "/v2/zones/{0}/rrsets/TXT/{1}".format(zone_name, node_name)
-    # zone = Zone(zone_name)
     params = {
         "ttl": 300,
         "rdata": [
@@ -180,7 +202,16 @@ def create_txt_record(domain, token, account_number):
 
 
 def delete_txt_record(change_id, account_number, domain, token):
-    # client = get_ultradns_client()
+    # Delete the TXT record that was created in the create_txt_record() function.
+    # UltraDNS handles records differently compared to Dyn. It creates an RRSet
+    # which is a set of records of the same type and owner. This means
+    # that while deleting the record, we cannot delete any individual record from
+    # the RRSet. Instead, we have to delete the entire RRSet. If multiple certs are
+    # being created for the same domain at the same time, the challenge TXT records
+    # that are created will be added under the same RRSet. If the RRSet had more
+    # than 1 record, then we create a new RRSet on UltraDNS minus the record that
+    # has to be deleted.
+
     if not domain:
         current_app.logger.debug("delete_txt_record: No domain passed")
         return
@@ -188,27 +219,26 @@ def delete_txt_record(change_id, account_number, domain, token):
     zone_name = get_zone_name(domain, account_number)
     zone_parts = len(zone_name.split("."))
     node_name = ".".join(domain.split(".")[:-zone_parts])
-    fqdn = "{0}.{1}".format(node_name, zone_name)
     path = "/v2/zones/{}/rrsets/16/{}".format(zone_name, node_name)
 
     try:
-        # rrsets = client.get_rrsets_by_type_owner(zone_name, "TXT", node_name)
         rrsets = _get(path)
     except Exception as e:
         metrics.send("delete_txt_record_geterror", "counter", 1)
         # No Text Records remain or host is not in the zone anymore because all records have been deleted.
         return
     try:
+        # Remove the record from the RRSet locally
         rrsets["rrSets"][0]["rdata"].remove("{}".format(token))
     except ValueError:
         current_app.logger.debug("Token not found")
         return
 
-    #client.delete_rrset(zone_name, "TXT", node_name)
+    # Delete the RRSet from UltraDNS
     _delete(path)
 
+    # Check if the RRSet has more records. If yes, add the modified RRSet back to UltraDNS
     if len(rrsets["rrSets"][0]["rdata"]) > 0:
-        #client.create_rrset(zone_name, "TXT", node_name, 300, rrsets["rrSets"][0]["rdata"])
         params = {
             "ttl": 300,
             "rdata": rrsets["rrSets"][0]["rdata"],
@@ -216,6 +246,42 @@ def delete_txt_record(change_id, account_number, domain, token):
         _post(path, params)
 
 
+def delete_acme_txt_records(domain):
+
+    if not domain:
+        current_app.logger.debug("delete_acme_txt_records: No domain passed")
+        return
+    acme_challenge_string = "_acme-challenge"
+    if not domain.startswith(acme_challenge_string):
+        current_app.logger.debug(
+            "delete_acme_txt_records: Domain {} doesn't start with string {}. "
+            "Cowardly refusing to delete TXT records".format(
+                domain, acme_challenge_string
+            )
+        )
+        return
+
+    zone_name = get_zone_name(domain)
+    zone_parts = len(zone_name.split("."))
+    node_name = ".".join(domain.split(".")[:-zone_parts])
+    path = "/v2/zones/{}/rrsets/16/{}".format(zone_name, node_name)
+
+    _delete(path)
+
+
 def get_authoritative_nameserver(domain):
-    # return "8.8.8.8"
-    return "156.154.64.154"
+    """
+    REMEMBER TO CHANGE THE RETURN VALUE
+    REMEMBER TO CHANGE THE RETURN VALUE
+    REMEMBER TO CHANGE THE RETURN VALUE
+    REMEMBER TO CHANGE THE RETURN VALUE
+    REMEMBER TO CHANGE THE RETURN VALUE
+    REMEMBER TO CHANGE THE RETURN VALUE
+    REMEMBER TO CHANGE THE RETURN VALUE
+    REMEMBER TO CHANGE THE RETURN VALUE
+    REMEMBER TO CHANGE THE RETURN VALUE
+    REMEMBER TO CHANGE THE RETURN VALUE
+    REMEMBER TO CHANGE THE RETURN VALUE
+    """
+    return "8.8.8.8"
+    # return "156.154.64.154"
