@@ -29,6 +29,7 @@ from lemur.sources.service import add_aws_destination_to_sources
 from lemur.certificates import cli as cli_certificate
 from lemur.dns_providers import cli as cli_dns_providers
 from lemur.endpoints import cli as cli_endpoints
+from lemur.notifications import cli as cli_notification
 
 if current_app:
     flask_app = current_app
@@ -434,5 +435,18 @@ def check_revoked():
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     current_app.logger.debug("check if any certificates are revoked revoked")
     cli_certificate.check_revoked()
+    red.set(f'{function}.last_success', int(time.time()))
+    metrics.send(f"{function}.success", 'counter', 1)
+
+
+@celery.task()
+def notify_expirations():
+    """
+    This celery task notifies about expiring certs
+    :return:
+    """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    current_app.logger.debug(f"{function}: Cert Expiration Notifcation")
+    cli_notification.expirations(["MetatronUserCertfor", "Metatron-User-Cert-for"])
     red.set(f'{function}.last_success', int(time.time()))
     metrics.send(f"{function}.success", 'counter', 1)
