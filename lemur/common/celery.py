@@ -377,9 +377,12 @@ def certificate_reissue():
     This celery task reissues certificates which are pending reissue
     :return:
     """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
     current_app.logger.debug("reissuing certificates")
     cli_certificate.reissue("-c")
     current_app.logger.debug("reissuance completed")
+    red.set(f'{function}.last_success', int(time.time()))
+    metrics.send(f"{function}.success", 'counter', 1)
 
 
 @celery.task()
@@ -388,9 +391,12 @@ def certificate_rotate():
     This celery task rotates certificates which are reissued but having endpoints attached to the replaced cert
     :return:
     """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
     current_app.logger.debug("rotating certificates")
     cli_certificate.rotate("-c")
     current_app.logger.debug("rotation completed")
+    red.set(f'{function}.last_success', int(time.time()))
+    metrics.send(f"{function}.success", 'counter', 1)
 
 
 @celery.task()
@@ -399,8 +405,11 @@ def endpoints_expire():
     This celery task removes all endpoints that have not been recently updated
     :return:
     """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
     current_app.logger.debug("endpoints expire")
     cli_endpoints.expire()
+    red.set(f'{function}.last_success', int(time.time()))
+    metrics.send(f"{function}.success", 'counter', 1)
 
 
 @celery.task()
@@ -409,8 +418,11 @@ def get_all_zones():
     This celery syncs all zones from the available dns providers
     :return:
     """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
     current_app.logger.debug("get_all_zones")
     cli_dns_providers.get_all_zones()
+    red.set(f'{function}.last_success', int(time.time()))
+    metrics.send(f"{function}.success", 'counter', 1)
 
 
 @celery.task()
@@ -419,5 +431,8 @@ def check_revoked():
     This celery task attempts to check if any certs are expired
     :return:
     """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
     current_app.logger.debug("check if any certificates are revoked revoked")
     cli_certificate.check_revoked()
+    red.set(f'{function}.last_success', int(time.time()))
+    metrics.send(f"{function}.success", 'counter', 1)
