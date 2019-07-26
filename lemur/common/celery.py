@@ -270,7 +270,7 @@ def clean_all_sources():
     sources = validate_sources("all")
     for source in sources:
         current_app.logger.debug(
-            "Creating celery task to clean source {}".format(source.label)
+            f"{function}: Creating celery task to clean source {source.label}"
         )
         clean_source.delay(source.label)
 
@@ -287,7 +287,8 @@ def clean_source(source):
     :param source:
     :return:
     """
-    current_app.logger.debug("Cleaning source {}".format(source))
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    current_app.logger.debug(f"{function}:Cleaning source {}".format(source))
     clean([source], True)
 
 
@@ -300,7 +301,7 @@ def sync_all_sources():
     sources = validate_sources("all")
     for source in sources:
         current_app.logger.debug(
-            "Creating celery task to sync source {}".format(source.label)
+            f"{function}: Creating celery task to sync source {source.label}"
         )
         sync_source.delay(source.label)
 
@@ -360,14 +361,14 @@ def sync_source_destination():
     The destination sync_as_source_name reveals the name of the suitable source-plugin.
     We rely on account numbers to avoid duplicates.
     """
-    current_app.logger.debug("Syncing AWS destinations and sources")
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    current_app.logger.debug(f"{function}: Syncing AWS destinations and sources")
 
     for dst in destinations_service.get_all():
         if add_aws_destination_to_sources(dst):
-            current_app.logger.debug("Source: %s added", dst.label)
+            current_app.logger.debug(f"{function}: Source: {dst.label} added")
 
-    current_app.logger.debug("Completed Syncing AWS destinations and sources")
+    current_app.logger.debug(f"{function}: Completed Syncing AWS destinations and sources")
     red.set(f'{function}.last_success', int(time.time()))
     metrics.send(f"{function}.success", 'counter', 1)
 
@@ -379,9 +380,9 @@ def certificate_reissue():
     :return:
     """
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
-    current_app.logger.debug("reissuing certificates")
+    current_app.logger.debug(f"{function}: reissuing certificates")
     cli_certificate.reissue(None, True)
-    current_app.logger.debug("reissuance completed")
+    current_app.logger.debug(f"{function}: reissuance completed")
     red.set(f'{function}.last_success', int(time.time()))
     metrics.send(f"{function}.success", 'counter', 1)
 
@@ -393,9 +394,9 @@ def certificate_rotate():
     :return:
     """
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
-    current_app.logger.debug("rotating certificates")
+    current_app.logger.debug(f"{function}: rotating certificates")
     cli_certificate.rotate(None, None, None, None, True)
-    current_app.logger.debug("rotation completed")
+    current_app.logger.debug(f"{function}: rotation completed")
     red.set(f'{function}.last_success', int(time.time()))
     metrics.send(f"{function}.success", 'counter', 1)
 
@@ -407,7 +408,7 @@ def endpoints_expire():
     :return:
     """
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
-    current_app.logger.debug("endpoints expire")
+    current_app.logger.debug(f"{function}: endpoints expire")
     cli_endpoints.expire(2)
     red.set(f'{function}.last_success', int(time.time()))
     metrics.send(f"{function}.success", 'counter', 1)
@@ -420,7 +421,7 @@ def get_all_zones():
     :return:
     """
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
-    current_app.logger.debug("get_all_zones")
+    current_app.logger.debug(f"{function}: get_all_zones")
     cli_dns_providers.get_all_zones()
     red.set(f'{function}.last_success', int(time.time()))
     metrics.send(f"{function}.success", 'counter', 1)
@@ -433,7 +434,7 @@ def check_revoked():
     :return:
     """
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
-    current_app.logger.debug("check if any certificates are revoked revoked")
+    current_app.logger.debug(f"{function}: check if any certificates are revoked revoked")
     cli_certificate.check_revoked()
     red.set(f'{function}.last_success', int(time.time()))
     metrics.send(f"{function}.success", 'counter', 1)
