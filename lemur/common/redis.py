@@ -3,7 +3,9 @@ Helper Class for Redis
 
 """
 import redis
+import sys
 from flask import current_app
+from lemur.extensions import sentry
 from lemur.factory import create_app
 
 if current_app:
@@ -23,7 +25,19 @@ class RedisHandler:
     def redis(self, db=0):
         # The decode_responses flag here directs the client to convert the responses from Redis into Python strings
         # using the default encoding utf-8.  This is client specific.
-        red = redis.StrictRedis(host=self.host, port=self.port, db=self.db, encoding="utf-8", decode_responses=True)
+        function = f"{__name__}.{sys._getframe().f_code.co_name}"
+        try:
+            red = redis.StrictRedis(host=self.host, port=self.port, db=self.db, encoding="utf-8", decode_responses=True)
+            red.set("test", 0)
+        except redis.ConnectionError:
+            log_data = {
+                "function": function,
+                "message": "Redis Connection error",
+                "host": self.host,
+                "port": self.port
+            }
+            current_app.logger.error(log_data)
+            sentry.captureException()
         return red
 
 
