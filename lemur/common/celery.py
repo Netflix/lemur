@@ -379,7 +379,7 @@ def certificate_reissue():
     """
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     current_app.logger.debug("reissuing certificates")
-    cli_certificate.reissue("-c")
+    cli_certificate.reissue(None, True)
     current_app.logger.debug("reissuance completed")
     red.set(f'{function}.last_success', int(time.time()))
     metrics.send(f"{function}.success", 'counter', 1)
@@ -393,7 +393,7 @@ def certificate_rotate():
     """
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     current_app.logger.debug("rotating certificates")
-    cli_certificate.rotate("-c")
+    cli_certificate.rotate(None, None, None, None, True)
     current_app.logger.debug("rotation completed")
     red.set(f'{function}.last_success', int(time.time()))
     metrics.send(f"{function}.success", 'counter', 1)
@@ -407,7 +407,7 @@ def endpoints_expire():
     """
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     current_app.logger.debug("endpoints expire")
-    cli_endpoints.expire()
+    cli_endpoints.expire(2)
     red.set(f'{function}.last_success', int(time.time()))
     metrics.send(f"{function}.success", 'counter', 1)
 
