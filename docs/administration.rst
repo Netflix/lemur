@@ -320,7 +320,7 @@ LDAP support requires the pyldap python library, which also depends on the follo
 To configure the use of an LDAP server, a number of settings need to be configured in `lemur.conf.py`.
 
 Here is an example LDAP configuration stanza you can add to your config. Adjust to suit your environment of course.
- 
+
 .. code-block:: python
 
         LDAP_AUTH = True
@@ -718,7 +718,7 @@ The following configuration properties are required to use the CFSSL issuer plug
 Hashicorp Vault Source/Destination Plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Lemur can import and export certificate data to and from a Hashicorp Vault secrets store. Lemur can connect to a different Vault service per source/destination. 
+Lemur can import and export certificate data to and from a Hashicorp Vault secrets store. Lemur can connect to a different Vault service per source/destination.
 
 .. note:: This plugin does not supersede or overlap the 3rd party Vault Issuer plugin.
 
@@ -1090,7 +1090,9 @@ Verisign/Symantec
 -----------------
 
 :Authors:
-    Kevin Glisson <kglisson@netflix.com>
+    Kevin Glisson <kglisson@netflix.com>,
+    Curtis Castrapel <ccastrapel@netflix.com>,
+    Hossein Shafagh <hshafagh@netflix.com>
 :Type:
     Issuer
 :Description:
@@ -1116,6 +1118,8 @@ Acme
 
 :Authors:
     Kevin Glisson <kglisson@netflix.com>,
+    Curtis Castrapel <ccastrapel@netflix.com>,
+    Hossein Shafagh <hshafagh@netflix.com>,
     Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
 :Type:
     Issuer
@@ -1127,7 +1131,9 @@ Atlas
 -----
 
 :Authors:
-    Kevin Glisson <kglisson@netflix.com>
+    Kevin Glisson <kglisson@netflix.com>,
+    Curtis Castrapel <ccastrapel@netflix.com>,
+    Hossein Shafagh <hshafagh@netflix.com>
 :Type:
     Metric
 :Description:
@@ -1138,7 +1144,9 @@ Email
 -----
 
 :Authors:
-    Kevin Glisson <kglisson@netflix.com>
+    Kevin Glisson <kglisson@netflix.com>,
+    Curtis Castrapel <ccastrapel@netflix.com>,
+    Hossein Shafagh <hshafagh@netflix.com>
 :Type:
     Notification
 :Description:
@@ -1160,7 +1168,9 @@ AWS
 ----
 
 :Authors:
-    Kevin Glisson <kglisson@netflix.com>
+    Kevin Glisson <kglisson@netflix.com>,
+    Curtis Castrapel <ccastrapel@netflix.com>,
+    Hossein Shafagh <hshafagh@netflix.com>
 :Type:
     Source
 :Description:
@@ -1171,7 +1181,9 @@ AWS
 ----
 
 :Authors:
-    Kevin Glisson <kglisson@netflix.com>
+    Kevin Glisson <kglisson@netflix.com>,
+    Curtis Castrapel <ccastrapel@netflix.com>,
+    Hossein Shafagh <hshafagh@netflix.com>
 :Type:
     Destination
 :Description:

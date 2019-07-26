@@ -17,7 +17,7 @@ angular.module('lemur')
       });
   })
 
-  .controller('CertificatesViewController', function ($q, $scope, $uibModal, $stateParams, $location, CertificateApi, CertificateService, MomentService, ngTableParams, toaster) {
+  .controller('CertificatesViewController', function ($q, $scope, $uibModal, $stateParams, CertificateApi, CertificateService, MomentService, ngTableParams, toaster) {
     $scope.filter = $stateParams;
     $scope.expiredText = ['Show Expired', 'Hide Expired'];
     $scope.expiredValue = 0;

@@ -255,7 +255,7 @@ def sync_all_sources():
         sync_source.delay(source.label)
 
 
-@celery.task(soft_time_limit=3600)
+@celery.task(soft_time_limit=7200)
 def sync_source(source):
     """
     This celery task will sync the specified source.

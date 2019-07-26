@@ -12,7 +12,7 @@ Dependencies
 Some basic prerequisites which you'll need in order to run Lemur:
 
 * A UNIX-based operating system (we test on Ubuntu, develop on OS X)
-* Python 3.5 or greater
+* Python 3.7 or greater
 * PostgreSQL 9.4 or greater
 * Nginx
 
