@@ -83,13 +83,15 @@ def _post(path, params):
     resp.raise_for_status()
 
 
-def _has_dns_propagated(name, token):
+def _has_dns_propagated(name, token, domain="8.8.8.8"):
     # Check whether the DNS change made by Lemur have propagated to the public DNS or not.
     # Invoked by wait_for_dns_change() function
     txt_records = []
     try:
         dns_resolver = dns.resolver.Resolver()
-        dns_resolver.nameservers = [get_authoritative_nameserver(name)]
+        # dns_resolver.nameservers = [get_authoritative_nameserver(name)]
+        # dns_resolver.nameservers = ["156.154.64.154"]
+        dns_resolver.nameservers = [domain]
         dns_response = dns_resolver.query(name, "TXT")
         for rdata in dns_response:
             for txt_record in rdata.strings:
@@ -111,12 +113,21 @@ def wait_for_dns_change(change_id, account_number=None):
     fqdn, token = change_id
     number_of_attempts = 20
     for attempts in range(0, number_of_attempts):
-        status = _has_dns_propagated(fqdn, token)
+        status = _has_dns_propagated(fqdn, token, "156.154.64.154")
         current_app.logger.debug("Record status for fqdn: {}: {}".format(fqdn, status))
         if status:
-            metrics.send("wait_for_dns_change_success", "counter", 1)
+            # metrics.send("wait_for_dns_change_success", "counter", 1)
+            time.sleep(10)
             break
         time.sleep(10)
+    if status:
+        for attempts in range(0, number_of_attempts):
+            status = _has_dns_propagated(fqdn, token, "8.8.8.8")
+            current_app.logger.debug("Record status for fqdn: {}: {}".format(fqdn, status))
+            if status:
+                metrics.send("wait_for_dns_change_success", "counter", 1)
+                break
+            time.sleep(10)
     if not status:
         # TODO: Delete associated DNS text record here
         metrics.send("wait_for_dns_change_fail", "counter", 1)
@@ -132,7 +143,7 @@ def wait_for_dns_change(change_id, account_number=None):
 
 def get_zones(account_number):
     # Get zones from the UltraDNS
-    path = "/v2/zones/"
+    path = "/v2/zones"
     zones = []
     for page in _paginate(path, "zones"):
         for elem in page:
@@ -287,5 +298,5 @@ def get_authoritative_nameserver(domain):
     REMEMBER TO CHANGE THE RETURN VALUE
     REMEMBER TO CHANGE THE RETURN VALUE
     """
-    return "8.8.8.8"
-    # return "156.154.64.154"
+    # return "8.8.8.8"
+    return "156.154.64.154"
