@@ -83,14 +83,12 @@ def _post(path, params):
     resp.raise_for_status()
 
 
-def _has_dns_propagated(name, token, domain="8.8.8.8"):
+def _has_dns_propagated(name, token, domain):
     # Check whether the DNS change made by Lemur have propagated to the public DNS or not.
     # Invoked by wait_for_dns_change() function
     txt_records = []
     try:
         dns_resolver = dns.resolver.Resolver()
-        # dns_resolver.nameservers = [get_authoritative_nameserver(name)]
-        # dns_resolver.nameservers = ["156.154.64.154"]
         dns_resolver.nameservers = [domain]
         dns_response = dns_resolver.query(name, "TXT")
         for rdata in dns_response:
@@ -110,19 +108,21 @@ def _has_dns_propagated(name, token, domain="8.8.8.8"):
 
 def wait_for_dns_change(change_id, account_number=None):
     # Waits and checks if the DNS changes have propagated or not.
+    # First check the domains authoritative server. Once this succeeds,
+    # we ask a public DNS server (Google <8.8.8.8> in our case).
     fqdn, token = change_id
     number_of_attempts = 20
+    nameserver = get_authoritative_nameserver(fqdn)
     for attempts in range(0, number_of_attempts):
-        status = _has_dns_propagated(fqdn, token, "156.154.64.154")
+        status = _has_dns_propagated(fqdn, token, nameserver)
         current_app.logger.debug("Record status for fqdn: {}: {}".format(fqdn, status))
         if status:
-            # metrics.send("wait_for_dns_change_success", "counter", 1)
             time.sleep(10)
             break
         time.sleep(10)
     if status:
         for attempts in range(0, number_of_attempts):
-            status = _has_dns_propagated(fqdn, token, "8.8.8.8")
+            status = _has_dns_propagated(fqdn, token, get_public_authoritative_nameserver())
             current_app.logger.debug("Record status for fqdn: {}: {}".format(fqdn, status))
             if status:
                 metrics.send("wait_for_dns_change_success", "counter", 1)
@@ -150,8 +150,6 @@ def get_zones(account_number):
             # UltraDNS zone names end with a "." - Example - lemur.example.com.
             # We pick out the names minus the "." at the end while returning the list
             zone = Zone(elem)
-            # TODO : Check for active & Primary
-            # if elem["properties"]["type"] == "PRIMARY" and elem["properties"]["status"] == "ACTIVE":
             if zone.authoritative_type == "PRIMARY" and zone.status == "ACTIVE":
                 zones.append(zone.name)
 
@@ -242,7 +240,6 @@ def delete_txt_record(change_id, account_number, domain, token):
         return
     try:
         # Remove the record from the RRSet locally
-        # rrsets["rrSets"][0]["rdata"].remove("{}".format(token))
         record.rdata.remove("{}".format(token))
     except ValueError:
         current_app.logger.debug("Token not found")
@@ -252,7 +249,6 @@ def delete_txt_record(change_id, account_number, domain, token):
     _delete(path)
 
     # Check if the RRSet has more records. If yes, add the modified RRSet back to UltraDNS
-    # if len(rrsets["rrSets"][0]["rdata"]) > 0:
     if len(record.rdata) > 0:
         params = {
             "ttl": 5,
@@ -285,18 +281,44 @@ def delete_acme_txt_records(domain):
 
 
 def get_authoritative_nameserver(domain):
-    """
-    REMEMBER TO CHANGE THE RETURN VALUE
-    REMEMBER TO CHANGE THE RETURN VALUE
-    REMEMBER TO CHANGE THE RETURN VALUE
-    REMEMBER TO CHANGE THE RETURN VALUE
-    REMEMBER TO CHANGE THE RETURN VALUE
-    REMEMBER TO CHANGE THE RETURN VALUE
-    REMEMBER TO CHANGE THE RETURN VALUE
-    REMEMBER TO CHANGE THE RETURN VALUE
-    REMEMBER TO CHANGE THE RETURN VALUE
-    REMEMBER TO CHANGE THE RETURN VALUE
-    REMEMBER TO CHANGE THE RETURN VALUE
-    """
-    # return "8.8.8.8"
-    return "156.154.64.154"
+    n = dns.name.from_text(domain)
+
+    depth = 2
+    default = dns.resolver.get_default_resolver()
+    nameserver = default.nameservers[0]
+
+    last = False
+    while not last:
+        s = n.split(depth)
+
+        last = s[0].to_unicode() == u"@"
+        sub = s[1]
+
+        query = dns.message.make_query(sub, dns.rdatatype.NS)
+        response = dns.query.udp(query, nameserver)
+
+        rcode = response.rcode()
+        if rcode != dns.rcode.NOERROR:
+            metrics.send("get_authoritative_nameserver_error", "counter", 1)
+            if rcode == dns.rcode.NXDOMAIN:
+                raise Exception("%s does not exist." % sub)
+            else:
+                raise Exception("Error %s" % dns.rcode.to_text(rcode))
+
+        if len(response.authority) > 0:
+            rrset = response.authority[0]
+        else:
+            rrset = response.answer[0]
+
+        rr = rrset[0]
+        if rr.rdtype != dns.rdatatype.SOA:
+            authority = rr.target
+            nameserver = default.query(authority).rrset[0].to_text()
+
+        depth += 1
+
+    return nameserver
+
+
+def get_public_authoritative_nameserver():
+    return "8.8.8.8"
