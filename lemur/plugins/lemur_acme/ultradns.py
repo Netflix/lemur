@@ -115,7 +115,7 @@ def wait_for_dns_change(change_id, account_number=None):
     nameserver = get_authoritative_nameserver(fqdn)
     for attempts in range(0, number_of_attempts):
         status = _has_dns_propagated(fqdn, token, nameserver)
-        current_app.logger.debug("Record status for fqdn: {}: {}".format(fqdn, status))
+        current_app.logger.debug("Record status on ultraDNS authoritative server for fqdn: {}: {}".format(fqdn, status))
         if status:
             time.sleep(10)
             break
@@ -123,7 +123,7 @@ def wait_for_dns_change(change_id, account_number=None):
     if status:
         for attempts in range(0, number_of_attempts):
             status = _has_dns_propagated(fqdn, token, get_public_authoritative_nameserver())
-            current_app.logger.debug("Record status for fqdn: {}: {}".format(fqdn, status))
+            current_app.logger.debug("Record status on Google DNS for fqdn: {}: {}".format(fqdn, status))
             if status:
                 metrics.send("wait_for_dns_change_success", "counter", 1)
                 break
