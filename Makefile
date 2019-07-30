@@ -36,7 +36,7 @@ endif
 	@echo ""
 
 dev-docs:
-	pip install -r docs/requirements.txt
+	pip install -r requirements-docs.txt
 
 reset-db:
 	@echo "--> Dropping existing 'lemur' database"
@@ -46,7 +46,7 @@ reset-db:
 	@echo "--> Enabling pg_trgm extension"
 	psql lemur -c "create extension IF NOT EXISTS pg_trgm;"
 	@echo "--> Applying migrations"
-	lemur db upgrade
+	cd lemur && lemur db upgrade
 
 setup-git:
 	@echo "--> Installing git hooks"

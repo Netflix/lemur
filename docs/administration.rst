@@ -320,7 +320,7 @@ LDAP support requires the pyldap python library, which also depends on the follo
 To configure the use of an LDAP server, a number of settings need to be configured in `lemur.conf.py`.
 
 Here is an example LDAP configuration stanza you can add to your config. Adjust to suit your environment of course.
- 
+
 .. code-block:: python
 
         LDAP_AUTH = True
@@ -593,8 +593,60 @@ If you are not using a metric provider you do not need to configure any of these
 Plugin Specific Options
 -----------------------
 
+Active Directory Certificate Services Plugin
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. data:: ADCS_SERVER
+    :noindex:
+
+        FQDN of your ADCS Server
+
+
+.. data:: ADCS_AUTH_METHOD
+    :noindex:
+
+        The chosen authentication method. Either ‘basic’ (the default), ‘ntlm’ or ‘cert’ (SSL client certificate). The next 2 variables are interpreted differently for different methods.
+
+
+.. data:: ADCS_USER
+    :noindex:
+
+        The username (basic) or the path to the public cert (cert) of the user accessing PKI
+
+
+.. data:: ADCS_PWD
+    :noindex:
+
+        The passwd (basic) or the path to the private key (cert) of the user accessing PKI
+
+
+.. data:: ADCS_TEMPLATE
+    :noindex:
+
+        Template to be used for certificate issuing. Usually display name w/o spaces
+
+
+.. data:: ADCS_START
+    :noindex:
+
+.. data:: ADCS_STOP
+    :noindex:
+
+.. data:: ADCS_ISSUING
+    :noindex:
+
+        Contains the issuing cert of the CA
+
+
+.. data:: ADCS_ROOT
+    :noindex:
+
+        Contains the root cert of the CA
+
+
 Verisign Issuer Plugin
-^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~
 
 Authorities will each have their own configuration options. There is currently just one plugin bundled with Lemur,
 Verisign/Symantec. Additional plugins may define additional options. Refer to the plugin's own documentation
@@ -642,7 +694,7 @@ for those plugins.
 
 
 Digicert Issuer Plugin
-^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~
 
 The following configuration properties are required to use the Digicert issuer plugin.
 
@@ -690,7 +742,7 @@ The following configuration properties are required to use the Digicert issuer p
 
 
 CFSSL Issuer Plugin
-^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~
 
 The following configuration properties are required to use the CFSSL issuer plugin.
 
@@ -716,9 +768,9 @@ The following configuration properties are required to use the CFSSL issuer plug
 
 
 Hashicorp Vault Source/Destination Plugin
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Lemur can import and export certificate data to and from a Hashicorp Vault secrets store. Lemur can connect to a different Vault service per source/destination. 
+Lemur can import and export certificate data to and from a Hashicorp Vault secrets store. Lemur can connect to a different Vault service per source/destination.
 
 .. note:: This plugin does not supersede or overlap the 3rd party Vault Issuer plugin.
 
@@ -738,7 +790,7 @@ Vault Destination supports a regex filter to prevent certificates with SAN that 
 
 
 AWS Source/Destination Plugin
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In order for Lemur to manage its own account and other accounts we must ensure it has the correct AWS permissions.
 
@@ -1090,7 +1142,9 @@ Verisign/Symantec
 -----------------
 
 :Authors:
-    Kevin Glisson <kglisson@netflix.com>
+    Kevin Glisson <kglisson@netflix.com>,
+    Curtis Castrapel <ccastrapel@netflix.com>,
+    Hossein Shafagh <hshafagh@netflix.com>
 :Type:
     Issuer
 :Description:
@@ -1116,6 +1170,8 @@ Acme
 
 :Authors:
     Kevin Glisson <kglisson@netflix.com>,
+    Curtis Castrapel <ccastrapel@netflix.com>,
+    Hossein Shafagh <hshafagh@netflix.com>,
     Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
 :Type:
     Issuer
@@ -1127,7 +1183,9 @@ Atlas
 -----
 
 :Authors:
-    Kevin Glisson <kglisson@netflix.com>
+    Kevin Glisson <kglisson@netflix.com>,
+    Curtis Castrapel <ccastrapel@netflix.com>,
+    Hossein Shafagh <hshafagh@netflix.com>
 :Type:
     Metric
 :Description:
@@ -1138,7 +1196,9 @@ Email
 -----
 
 :Authors:
-    Kevin Glisson <kglisson@netflix.com>
+    Kevin Glisson <kglisson@netflix.com>,
+    Curtis Castrapel <ccastrapel@netflix.com>,
+    Hossein Shafagh <hshafagh@netflix.com>
 :Type:
     Notification
 :Description:
@@ -1160,7 +1220,9 @@ AWS
 ----
 
 :Authors:
-    Kevin Glisson <kglisson@netflix.com>
+    Kevin Glisson <kglisson@netflix.com>,
+    Curtis Castrapel <ccastrapel@netflix.com>,
+    Hossein Shafagh <hshafagh@netflix.com>
 :Type:
     Source
 :Description:
@@ -1171,7 +1233,9 @@ AWS
 ----
 
 :Authors:
-    Kevin Glisson <kglisson@netflix.com>
+    Kevin Glisson <kglisson@netflix.com>,
+    Curtis Castrapel <ccastrapel@netflix.com>,
+    Hossein Shafagh <hshafagh@netflix.com>
 :Type:
     Destination
 :Description:
