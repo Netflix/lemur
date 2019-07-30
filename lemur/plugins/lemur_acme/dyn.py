@@ -33,22 +33,22 @@ def get_dynect_session():
     return dynect_session
 
 
-def _has_dns_propagated(name, token):
+def _has_dns_propagated(fqdn, token):
     txt_records = []
     try:
         dns_resolver = dns.resolver.Resolver()
-        dns_resolver.nameservers = [get_authoritative_nameserver(name)]
-        dns_response = dns_resolver.query(name, "TXT")
+        dns_resolver.nameservers = [get_authoritative_nameserver(fqdn)]
+        dns_response = dns_resolver.query(fqdn, "TXT")
         for rdata in dns_response:
             for txt_record in rdata.strings:
                 txt_records.append(txt_record.decode("utf-8"))
     except dns.exception.DNSException:
-        metrics.send("has_dns_propagated_fail", "counter", 1)
+        metrics.send("has_dns_propagated_fail", "counter", 1, metric_tags={"dns": fqdn})
         return False
 
     for txt_record in txt_records:
         if txt_record == token:
-            metrics.send("has_dns_propagated_success", "counter", 1)
+            metrics.send("has_dns_propagated_success", "counter", 1, metric_tags={"dns": fqdn})
             return True
 
     return False
@@ -61,12 +61,12 @@ def wait_for_dns_change(change_id, account_number=None):
         status = _has_dns_propagated(fqdn, token)
         current_app.logger.debug("Record status for fqdn: {}: {}".format(fqdn, status))
         if status:
-            metrics.send("wait_for_dns_change_success", "counter", 1)
+            metrics.send("wait_for_dns_change_success", "counter", 1, metric_tags={"dns": fqdn})
             break
         time.sleep(10)
     if not status:
         # TODO: Delete associated DNS text record here
-        metrics.send("wait_for_dns_change_fail", "counter", 1)
+        metrics.send("wait_for_dns_change_fail", "counter", 1, metric_tags={"dns": fqdn})
         sentry.captureException(extra={"fqdn": str(fqdn), "txt_record": str(token)})
         metrics.send(
             "wait_for_dns_change_error",
