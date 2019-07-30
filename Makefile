@@ -46,7 +46,7 @@ reset-db:
 	@echo "--> Enabling pg_trgm extension"
 	psql lemur -c "create extension IF NOT EXISTS pg_trgm;"
 	@echo "--> Applying migrations"
-	lemur db upgrade
+	cd lemur && lemur db upgrade
 
 setup-git:
 	@echo "--> Installing git hooks"
