@@ -26,6 +26,11 @@ from lemur.pending_certificates import service as pending_certificate_service
 from lemur.plugins.base import plugins
 from lemur.sources.cli import clean, sync, validate_sources
 from lemur.sources.service import add_aws_destination_to_sources
+from lemur.certificates import cli as cli_certificate
+from lemur.dns_providers import cli as cli_dns_providers
+from lemur.notifications import cli as cli_notification
+from lemur.endpoints import cli as cli_endpoints
+
 
 if current_app:
     flask_app = current_app
@@ -364,5 +369,85 @@ def sync_source_destination():
             current_app.logger.debug("Source: %s added", dst.label)
 
     current_app.logger.debug("Completed Syncing AWS destinations and sources")
+    red.set(f'{function}.last_success', int(time.time()))
+    metrics.send(f"{function}.success", 'counter', 1)
+
+
+@celery.task()
+def certificate_reissue():
+    """
+    This celery task reissues certificates which are pending reissue
+    :return:
+    """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    current_app.logger.debug(f"{function}: reissuing certificates")
+    cli_certificate.reissue(None, True)
+    current_app.logger.debug(f"{function}: reissuance completed")
+    red.set(f'{function}.last_success', int(time.time()))
+    metrics.send(f"{function}.success", 'counter', 1)
+
+
+@celery.task()
+def certificate_rotate():
+    """
+    This celery task rotates certificates which are reissued but having endpoints attached to the replaced cert
+    :return:
+    """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    current_app.logger.debug(f"{function}: rotating certificates")
+    cli_certificate.rotate(None, None, None, None, True)
+    current_app.logger.debug(f"{function}: rotation completed")
+    red.set(f'{function}.last_success', int(time.time()))
+    metrics.send(f"{function}.success", 'counter', 1)
+
+
+@celery.task()
+def endpoints_expire():
+    """
+    This celery task removes all endpoints that have not been recently updated
+    :return:
+    """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    current_app.logger.debug(f"{function}: endpoints expire")
+    cli_endpoints.expire(2)
+    red.set(f'{function}.last_success', int(time.time()))
+    metrics.send(f"{function}.success", 'counter', 1)
+
+
+@celery.task()
+def get_all_zones():
+    """
+    This celery syncs all zones from the available dns providers
+    :return:
+    """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    current_app.logger.debug(f"{function}: get_all_zones")
+    cli_dns_providers.get_all_zones()
+    red.set(f'{function}.last_success', int(time.time()))
+    metrics.send(f"{function}.success", 'counter', 1)
+
+
+@celery.task()
+def check_revoked():
+    """
+    This celery task attempts to check if any certs are expired
+    :return:
+    """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    current_app.logger.debug(f"{function}: check if any certificates are revoked revoked")
+    cli_certificate.check_revoked()
+    red.set(f'{function}.last_success', int(time.time()))
+    metrics.send(f"{function}.success", 'counter', 1)
+
+
+@celery.task()
+def notify_expirations():
+    """
+    This celery task notifies about expiring certs
+    :return:
+    """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    current_app.logger.debug(f"{function}: Cert Expiration Notifcation")
+    cli_notification.expirations(["MetatronUserCertfor", "Metatron-User-Cert-for"])
     red.set(f'{function}.last_success', int(time.time()))
     metrics.send(f"{function}.success", 'counter', 1)
