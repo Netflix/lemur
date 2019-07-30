@@ -129,7 +129,6 @@ def wait_for_dns_change(change_id, account_number=None):
                 break
             time.sleep(10)
     if not status:
-        # TODO: Delete associated DNS text record here
         metrics.send("wait_for_dns_change_fail", "counter", 1)
         sentry.captureException(extra={"fqdn": str(fqdn), "txt_record": str(token)})
         metrics.send(
