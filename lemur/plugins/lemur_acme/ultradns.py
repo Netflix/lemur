@@ -2,8 +2,6 @@ import time
 import requests
 import json
 import sys
-from .ultradns_zone import Zone
-from .ultradns_record import Record
 
 import dns
 import dns.exception
@@ -13,6 +11,70 @@ import dns.resolver
 
 from flask import current_app
 from lemur.extensions import metrics, sentry
+
+
+class Record:
+    """
+    This class implements an Ultra DNS record.
+
+    Accepts the response from the API call as the argument.
+    """
+
+    def __init__(self, _data):
+        # Since we are dealing with only TXT records for Lemur, we expect only 1 RRSet in the response.
+        # Thus we default to picking up the first entry (_data["rrsets"][0]) from the response.
+        self._data = _data["rrSets"][0]
+
+    @property
+    def name(self):
+        return self._data["ownerName"]
+
+    @property
+    def rrtype(self):
+        return self._data["rrtype"]
+
+    @property
+    def rdata(self):
+        return self._data["rdata"]
+
+    @property
+    def ttl(self):
+        return self._data["ttl"]
+
+
+class Zone:
+    """
+    This class implements an Ultra DNS zone.
+    """
+
+    def __init__(self, _data, _client="Client"):
+        self._data = _data
+        self._client = _client
+
+    @property
+    def name(self):
+        """
+        Zone name, has a trailing "." at the end, which we manually remove.
+        """
+        return self._data["properties"]["name"][:-1]
+
+    @property
+    def authoritative_type(self):
+        """
+        Indicates whether the zone is setup as a PRIMARY or SECONDARY
+        """
+        return self._data["properties"]["type"]
+
+    @property
+    def record_count(self):
+        return self._data["properties"]["resourceRecordCount"]
+
+    @property
+    def status(self):
+        """
+        Returns the status of the zone - ACTIVE, SUSPENDED, etc
+        """
+        return self._data["properties"]["status"]
 
 
 def get_ultradns_token():
