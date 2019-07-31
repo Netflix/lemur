@@ -96,12 +96,14 @@ def _has_dns_propagated(name, token, domain):
             for txt_record in rdata.strings:
                 txt_records.append(txt_record.decode("utf-8"))
     except dns.exception.DNSException:
-        metrics.send("has_dns_propagated_fail", "counter", 1)
+        function = sys._getframe().f_code.co_name
+        metrics.send("{}.fail".format(function), "counter", 1)
         return False
 
     for txt_record in txt_records:
         if txt_record == token:
-            metrics.send("has_dns_propagated_success", "counter", 1)
+            function = sys._getframe().f_code.co_name
+            metrics.send("{}.success".format(function), "counter", 1)
             return True
 
     return False
@@ -132,7 +134,6 @@ def wait_for_dns_change(change_id, account_number=None):
         nameserver = get_public_authoritative_nameserver()
         for attempts in range(0, number_of_attempts):
             status = _has_dns_propagated(fqdn, token, nameserver)
-            function = sys._getframe().f_code.co_name
             log_data = {
                 "function": function,
                 "fqdn": fqdn,
@@ -141,18 +142,12 @@ def wait_for_dns_change(change_id, account_number=None):
             }
             current_app.logger.debug(log_data)
             if status:
-                metrics.send("wait_for_dns_change_success", "counter", 1)
+                metrics.send("{}.success".format(function), "counter", 1)
                 break
             time.sleep(10)
     if not status:
-        metrics.send("wait_for_dns_change_fail", "counter", 1)
+        metrics.send("{}.fail".format, "counter", 1, metric_tags={"fqdn": fqdn, "txt_record": token})
         sentry.captureException(extra={"fqdn": str(fqdn), "txt_record": str(token)})
-        metrics.send(
-            "wait_for_dns_change_error",
-            "counter",
-            1,
-            metric_tags={"fqdn": fqdn, "txt_record": token},
-        )
     return
 
 
@@ -183,7 +178,8 @@ def get_zone_name(domain, account_number):
             if z.count(".") > zone_name.count("."):
                 zone_name = z
     if not zone_name:
-        metrics.send("ultradns_no_zone_name", "counter", 1)
+        function = sys._getframe().f_code.co_name
+        metrics.send("{}.fail".format(function), "counter", 1)
         raise Exception("No UltraDNS zone found for domain: {}".format(domain))
     return zone_name
 
@@ -264,7 +260,8 @@ def delete_txt_record(change_id, account_number, domain, token):
         rrsets = _get(path)
         record = Record(rrsets)
     except Exception as e:
-        metrics.send("delete_txt_record_geterror", "counter", 1)
+        function = sys._getframe().f_code.co_name
+        metrics.send("{}.geterror".format(function), "counter", 1)
         # No Text Records remain or host is not in the zone anymore because all records have been deleted.
         return
     try:
@@ -341,7 +338,8 @@ def get_authoritative_nameserver(domain):
 
         rcode = response.rcode()
         if rcode != dns.rcode.NOERROR:
-            metrics.send("get_authoritative_nameserver_error", "counter", 1)
+            function = sys._getframe().f_code.co_name
+            metrics.send("{}.error".format(function), "counter", 1)
             if rcode == dns.rcode.NXDOMAIN:
                 raise Exception("%s does not exist." % sub)
             else:
