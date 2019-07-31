@@ -16,9 +16,12 @@ from lemur.extensions import metrics, sentry
 
 
 def get_ultradns_token():
-    # Function to call the UltraDNS Authorization API. Returns the Authorization access_token
-    # which is valid for 1 hour. Each request calls this function and we generate a new token
-    # every time.
+    """
+    Function to call the UltraDNS Authorization API.
+
+    Returns the Authorization access_token which is valid for 1 hour.
+    Each request calls this function and we generate a new token every time.
+    """
     path = "/v2/authorization/token"
     data = {
         "grant_type": "password",
@@ -31,8 +34,11 @@ def get_ultradns_token():
 
 
 def _generate_header():
-    # Function to generate the header for a request. Contains the Authorization access_key
-    # obtained from the get_ultradns_token() function.
+    """
+    Function to generate the header for a request.
+
+    Contains the Authorization access_key obtained from the get_ultradns_token() function.
+    """
     access_token = get_ultradns_token()
     return {"Authorization": "Bearer {}".format(access_token), "Content-Type": "application/json"}
 
@@ -49,7 +55,7 @@ def _paginate(path, key):
 
 
 def _get(path, params=None):
-    # Function to execute a GET request on the given URL (base_uri + path) with given params
+    """Function to execute a GET request on the given URL (base_uri + path) with given params"""
     base_uri = current_app.config.get("ACME_ULTRADNS_DOMAIN", "")
     resp = requests.get(
         "{0}{1}".format(base_uri, path),
@@ -62,7 +68,7 @@ def _get(path, params=None):
 
 
 def _delete(path):
-    # Function to execute a DELETE request on the given URL
+    """Function to execute a DELETE request on the given URL"""
     base_uri = current_app.config.get("ACME_ULTRADNS_DOMAIN", "")
     resp = requests.delete(
         "{0}{1}".format(base_uri, path),
@@ -73,7 +79,7 @@ def _delete(path):
 
 
 def _post(path, params):
-    # Executes a POST request on given URL. Body is sent in JSON format
+    """Executes a POST request on given URL. Body is sent in JSON format"""
     base_uri = current_app.config.get("ACME_ULTRADNS_DOMAIN", "")
     resp = requests.post(
         "{0}{1}".format(base_uri, path),
@@ -85,8 +91,11 @@ def _post(path, params):
 
 
 def _has_dns_propagated(name, token, domain):
-    # Check whether the DNS change made by Lemur have propagated to the public DNS or not.
-    # Invoked by wait_for_dns_change() function
+    """
+    Check whether the DNS change made by Lemur have propagated to the public DNS or not.
+
+    Invoked by wait_for_dns_change() function
+    """
     txt_records = []
     try:
         dns_resolver = dns.resolver.Resolver()
@@ -110,9 +119,12 @@ def _has_dns_propagated(name, token, domain):
 
 
 def wait_for_dns_change(change_id, account_number=None):
-    # Waits and checks if the DNS changes have propagated or not.
-    # First check the domains authoritative server. Once this succeeds,
-    # we ask a public DNS server (Google <8.8.8.8> in our case).
+    """
+    Waits and checks if the DNS changes have propagated or not.
+
+    First check the domains authoritative server. Once this succeeds,
+    we ask a public DNS server (Google <8.8.8.8> in our case).
+    """
     fqdn, token = change_id
     number_of_attempts = 20
     nameserver = get_authoritative_nameserver(fqdn)
@@ -152,7 +164,7 @@ def wait_for_dns_change(change_id, account_number=None):
 
 
 def get_zones(account_number):
-    # Get zones from the UltraDNS
+    """Get zones from the UltraDNS"""
     path = "/v2/zones"
     zones = []
     for page in _paginate(path, "zones"):
@@ -167,7 +179,7 @@ def get_zones(account_number):
 
 
 def get_zone_name(domain, account_number):
-    # Get the matching zone for the given domain
+    """Get the matching zone for the given domain"""
     zones = get_zones(account_number)
     zone_name = ""
     for z in zones:
@@ -185,14 +197,17 @@ def get_zone_name(domain, account_number):
 
 
 def create_txt_record(domain, token, account_number):
-    # Create a TXT record for the given domain.
-    # The part of the domain that matches with the zone becomes the zone name.
-    # The remainder becomes the owner name (referred to as node name here)
-    # Example: Let's say we have a zone named "exmaple.com" in UltraDNS and we
-    # get a request to create a cert for lemur.example.com
-    # Domain - _acme-challenge.lemur.example.com
-    # Matching zone - example.com
-    # Owner name - _acme-challenge.lemur
+    """
+    Create a TXT record for the given domain.
+
+    The part of the domain that matches with the zone becomes the zone name.
+    The remainder becomes the owner name (referred to as node name here)
+    Example: Let's say we have a zone named "exmaple.com" in UltraDNS and we
+    get a request to create a cert for lemur.example.com
+    Domain - _acme-challenge.lemur.example.com
+    Matching zone - example.com
+    Owner name - _acme-challenge.lemur
+    """
 
     zone_name = get_zone_name(domain, account_number)
     zone_parts = len(zone_name.split("."))
@@ -232,15 +247,18 @@ def create_txt_record(domain, token, account_number):
 
 
 def delete_txt_record(change_id, account_number, domain, token):
-    # Delete the TXT record that was created in the create_txt_record() function.
-    # UltraDNS handles records differently compared to Dyn. It creates an RRSet
-    # which is a set of records of the same type and owner. This means
-    # that while deleting the record, we cannot delete any individual record from
-    # the RRSet. Instead, we have to delete the entire RRSet. If multiple certs are
-    # being created for the same domain at the same time, the challenge TXT records
-    # that are created will be added under the same RRSet. If the RRSet had more
-    # than 1 record, then we create a new RRSet on UltraDNS minus the record that
-    # has to be deleted.
+    """
+    Delete the TXT record that was created in the create_txt_record() function.
+
+    UltraDNS handles records differently compared to Dyn. It creates an RRSet
+    which is a set of records of the same type and owner. This means
+    that while deleting the record, we cannot delete any individual record from
+    the RRSet. Instead, we have to delete the entire RRSet. If multiple certs are
+    being created for the same domain at the same time, the challenge TXT records
+    that are created will be added under the same RRSet. If the RRSet had more
+    than 1 record, then we create a new RRSet on UltraDNS minus the record that
+    has to be deleted.
+    """
 
     if not domain:
         function = sys._getframe().f_code.co_name
@@ -320,6 +338,7 @@ def delete_acme_txt_records(domain):
 
 
 def get_authoritative_nameserver(domain):
+    """Get the authoritative nameserver for the given domain"""
     n = dns.name.from_text(domain)
 
     depth = 2
