@@ -129,8 +129,9 @@ def wait_for_dns_change(change_id, account_number=None):
             break
         time.sleep(10)
     if status:
+        nameserver = get_public_authoritative_nameserver()
         for attempts in range(0, number_of_attempts):
-            status = _has_dns_propagated(fqdn, token, get_public_authoritative_nameserver())
+            status = _has_dns_propagated(fqdn, token, nameserver)
             function = sys._getframe().f_code.co_name
             log_data = {
                 "function": function,
