@@ -1,8 +1,10 @@
+import json
 import unittest
+from requests.models import Response
 
 from mock import MagicMock, Mock, patch
 
-from lemur.plugins.lemur_acme import plugin
+from lemur.plugins.lemur_acme import plugin, ultradns
 
 
 class TestAcme(unittest.TestCase):
@@ -360,3 +362,62 @@ class TestAcme(unittest.TestCase):
         mock_request_certificate.return_value = ("pem_certificate", "chain")
         result = provider.create_certificate(csr, issuer_options)
         assert result
+
+    @patch("lemur.plugins.lemur_acme.ultradns.requests")
+    @patch("lemur.plugins.lemur_acme.ultradns.current_app")
+    def test_get_ultradns_token(self, mock_current_app, mock_requests):
+        # ret_val = json.dumps({"access_token": "access"})
+        the_response = Response()
+        the_response._content = b'{"access_token": "access"}'
+        mock_requests.post = Mock(return_value=the_response)
+        mock_current_app.config.get = Mock(return_value="Test")
+        result = ultradns.get_ultradns_token()
+        self.assertTrue(len(result) > 0)
+
+    @patch("lemur.plugins.lemur_acme.ultradns.get_zone_name")
+    @patch("lemur.plugins.lemur_acme.ultradns._post")
+    @patch("lemur.plugins.lemur_acme.ultradns.current_app")
+    def test_create_txt_record(self, mock_current_app, mock__post, mock_get_zone_name):
+        domain = "test.example.com"
+        token = "ABCDEFGHIJ"
+        account_number = "1234567890"
+        change_id = (domain, token)
+        mock_current_app.logger.debug = Mock()
+        mock_get_zone_name = Mock(domain, account_number, return_value="example.com")
+        path = "a/b/c"
+        params = {
+            "test": "Test"
+        }
+        mock__post = Mock(path, params)
+        result = ultradns.create_txt_record(domain, token, account_number)
+        self.assertEqual(type(change_id), type(result))
+
+    # @patch("lemur.plugins.lemur_acme.ultradns.get_zone_name")
+    # @patch("lemur.plugins.lemur_acme.ultradns._get")
+    # @patch("lemur.plugins.lemur_acme.ultradns._delete")
+    # @patch("lemur.plugins.lemur_acme.ultradns._post")
+    # @patch("lemur.plugins.lemur_acme.ultradns.current_app")
+    # def test_delete_txt_record(self, mock_get_zone_name):
+    #     domain = "test.example.com"
+    #     token = "ABCDEFGHIJ"
+    #     account_number = "1234567890"
+    #     change_id = (domain, token)
+    #     mock_get_zone_name = Mock(domain, account_number, return_value="example.com")
+
+    # @patch("lemur.plugins.lemur_acme.ultradns.get_authoritative_nameserver")
+    # @patch("lemur.plugins.lemur_acme.ultradns._has_dns_propagated")
+    # @patch("lemur.plugins.lemur_acme.ultradns.current_app")
+    # def test_wait_for_dns_change(self, mock_current_app, mock_has_dns_propagated, mock_get_authoritative_nameserver):
+    #     domain = "test.example.com"
+    #     token = "ABCDEFGHIJ"
+    #     account_number = "1234567890"
+    #     change_id = (domain, token)
+    #     mock_current_app.logger.debug = Mock()
+    #     result = ultradns.wait_for_dns_change(change_id, token)
+    #     self.assertEqual(result, true)
+
+    # def test_has_dns_propagated(self):
+
+
+
+
