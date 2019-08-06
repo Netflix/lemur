@@ -4,6 +4,7 @@
     :license: Apache, see LICENSE for more details.
 """
 from flask_sqlalchemy import SQLAlchemy as SA
+from sqlalchemy_searchable import make_searchable
 
 
 class SQLAlchemy(SA):
@@ -13,6 +14,7 @@ class SQLAlchemy(SA):
 
 
 db = SQLAlchemy()
+make_searchable(db.metadata)
 
 from flask_migrate import Migrate
 

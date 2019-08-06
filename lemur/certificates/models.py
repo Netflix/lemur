@@ -28,6 +28,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import case, extract
 from sqlalchemy_utils.types.arrow import ArrowType
+from sqlalchemy_utils.types import TSVectorType
 from werkzeug.utils import cached_property
 
 from lemur.common import defaults, utils, validators
@@ -113,9 +114,7 @@ class Certificate(db.Model):
         ),
     )
     id = Column(Integer, primary_key=True)
-    ix = Index(
-        "ix_certificates_id_desc", id.desc(), postgresql_using="btree", unique=True
-    )
+    ix = Index("ix_certificates_id_desc", id.desc(), postgresql_using="btree", unique=True)
     external_id = Column(String(128))
     owner = Column(String(128), nullable=False)
     name = Column(String(256), unique=True)
@@ -149,34 +148,25 @@ class Certificate(db.Model):
     rotation = Column(Boolean, default=False)
     user_id = Column(Integer, ForeignKey("users.id"))
     authority_id = Column(Integer, ForeignKey("authorities.id", ondelete="CASCADE"))
-    root_authority_id = Column(
-        Integer, ForeignKey("authorities.id", ondelete="CASCADE")
-    )
+    root_authority_id = Column(Integer, ForeignKey("authorities.id", ondelete="CASCADE"))
     rotation_policy_id = Column(Integer, ForeignKey("rotation_policies.id"))
 
     notifications = relationship(
-        "Notification",
-        secondary=certificate_notification_associations,
-        backref="certificate",
+        "Notification", secondary=certificate_notification_associations, backref="certificate"
     )
     destinations = relationship(
-        "Destination",
-        secondary=certificate_destination_associations,
-        backref="certificate",
+        "Destination", secondary=certificate_destination_associations, backref="certificate"
     )
     sources = relationship(
         "Source", secondary=certificate_source_associations, backref="certificate"
     )
-    domains = relationship(
-        "Domain", secondary=certificate_associations, backref="certificate"
-    )
+    domains = relationship("Domain", secondary=certificate_associations, backref="certificate")
     roles = relationship("Role", secondary=roles_certificates, backref="certificate")
     replaces = relationship(
         "Certificate",
         secondary=certificate_replacement_associations,
         primaryjoin=id == certificate_replacement_associations.c.certificate_id,  # noqa
-        secondaryjoin=id
-        == certificate_replacement_associations.c.replaced_certificate_id,  # noqa
+        secondaryjoin=id == certificate_replacement_associations.c.replaced_certificate_id,  # noqa
         backref="replaced",
     )
 
@@ -190,6 +180,17 @@ class Certificate(db.Model):
     logs = relationship("Log", backref="certificate")
     endpoints = relationship("Endpoint", backref="certificate")
     rotation_policy = relationship("RotationPolicy")
+
+    search_vector = Column(
+        TSVectorType(
+            "name",
+            "cn",
+            "description",
+            "owner",
+            weights={"name": "A", "cn": "B", "description": "D", "owner": "C"},
+        )
+    )
+
     sensitive_fields = ("private_key",)
 
     def __init__(self, **kwargs):
@@ -205,9 +206,7 @@ class Certificate(db.Model):
 
         # when destinations are appended they require a valid name.
         if kwargs.get("name"):
-            self.name = get_or_increase_name(
-                defaults.text_to_slug(kwargs["name"]), self.serial
-            )
+            self.name = get_or_increase_name(defaults.text_to_slug(kwargs["name"]), self.serial)
         else:
             self.name = get_or_increase_name(
                 defaults.certificate_name(
@@ -299,9 +298,7 @@ class Certificate(db.Model):
     @property
     def key_type(self):
         if isinstance(self.parsed_cert.public_key(), rsa.RSAPublicKey):
-            return "RSA{key_size}".format(
-                key_size=self.parsed_cert.public_key().key_size
-            )
+            return "RSA{key_size}".format(key_size=self.parsed_cert.public_key().key_size)
 
     @property
     def validity_remaining(self):
@@ -366,15 +363,13 @@ class Certificate(db.Model):
         :return:
         """
         return case(
-            [(extract("day", cls.not_after - func.now()) <= RotationPolicy.days, True)],
-            else_=False,
+            [(extract("day", cls.not_after - func.now()) <= RotationPolicy.days, True)], else_=False
         )
 
     @property
     def extensions(self):
         # setup default values
         return_extensions = {"sub_alt_names": {"names": []}}
-
         try:
             for extension in self.parsed_cert.extensions:
                 value = extension.value
@@ -408,20 +403,14 @@ class Certificate(db.Model):
                     return_extensions["authority_key_identifier"] = aki
 
                 elif isinstance(value, x509.CRLDistributionPoints):
-                    return_extensions["crl_distribution_points"] = {
-                        "include_crl_dp": value
-                    }
+                    return_extensions["crl_distribution_points"] = {"include_crl_dp": value}
 
                 # TODO: Not supporting custom OIDs yet. https://github.com/Netflix/lemur/issues/665
                 else:
-                    current_app.logger.warning(
-                        "Custom OIDs not yet supported for clone operation."
-                    )
+                    current_app.logger.warning("Custom OIDs not yet supported for clone operation.")
         except InvalidCodepoint as e:
             sentry.captureException()
-            current_app.logger.warning(
-                "Unable to parse extensions due to underscore in dns name"
-            )
+            current_app.logger.warning("Unable to parse extensions due to underscore in dns name")
         except ValueError as e:
             sentry.captureException()
             current_app.logger.warning("Unable to parse")
@@ -448,11 +437,7 @@ def update_destinations(target, value, initiator):
     try:
         if target.private_key or not destination_plugin.requires_key:
             destination_plugin.upload(
-                target.name,
-                target.body,
-                target.private_key,
-                target.chain,
-                value.options,
+                target.name, target.body, target.private_key, target.chain, value.options
             )
             status = SUCCESS_METRIC_STATUS
     except Exception as e:
@@ -463,11 +448,7 @@ def update_destinations(target, value, initiator):
         "destination_upload",
         "counter",
         1,
-        metric_tags={
-            "status": status,
-            "certificate": target.name,
-            "destination": value.label,
-        },
+        metric_tags={"status": status, "certificate": target.name, "destination": value.label},
     )
 
 

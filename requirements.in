@@ -48,5 +48,6 @@ requests
 retrying
 six
 SQLAlchemy-Utils
+SQLAlchemy-Searchable
 tabulate
 xmltodict
