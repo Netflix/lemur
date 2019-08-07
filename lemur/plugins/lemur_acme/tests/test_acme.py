@@ -450,24 +450,31 @@ class TestAcme(unittest.TestCase):
         account_number = "1234567890"
         path = "a/b/c"
         zones = ['example.com', 'test.example.com']
-        paginate_response = [{'properties': {'name': 'example.com.', 'accountName': 'example', 'type': 'PRIMARY',
-                                             'dnssecStatus': 'UNSIGNED', 'status': 'ACTIVE', 'resourceRecordCount': 9,
-                                             'lastModifiedDateTime': '2017-06-14T06:45Z'}, 'registrarInfo': {
-                                'nameServers': {'missing': ['example.ultradns.com.', 'example.ultradns.net.',
-                                                            'example.ultradns.biz.', 'example.ultradns.org.']}},
-                              'inherit': 'ALL'},
-                             {'properties': {'name': 'test.example.com.', 'accountName': 'example', 'type': 'PRIMARY',
-                                             'dnssecStatus': 'UNSIGNED', 'status': 'ACTIVE', 'resourceRecordCount': 9,
-                                             'lastModifiedDateTime': '2017-06-14T06:45Z'}, 'registrarInfo': {
-                                 'nameServers': {'missing': ['example.ultradns.com.', 'example.ultradns.net.',
-                                                             'example.ultradns.biz.', 'example.ultradns.org.']}},
-                              'inherit': 'ALL'},
-                             {'properties': {'name': 'example2.com.', 'accountName': 'example', 'type': 'SECONDARY',
-                                             'dnssecStatus': 'UNSIGNED', 'status': 'ACTIVE', 'resourceRecordCount': 9,
-                                             'lastModifiedDateTime': '2017-06-14T06:45Z'}, 'registrarInfo': {
-                                 'nameServers': {'missing': ['example.ultradns.com.', 'example.ultradns.net.',
-                                                             'example.ultradns.biz.', 'example.ultradns.org.']}},
-                              'inherit': 'ALL'}]
+        paginate_response = [{
+            'properties': {
+                'name': 'example.com.', 'accountName': 'example', 'type': 'PRIMARY',
+                'dnssecStatus': 'UNSIGNED', 'status': 'ACTIVE', 'resourceRecordCount': 9,
+                'lastModifiedDateTime': '2017-06-14T06:45Z'},
+            'registrarInfo': {
+                'nameServers': {'missing': ['example.ultradns.com.', 'example.ultradns.net.',
+                                            'example.ultradns.biz.', 'example.ultradns.org.']}},
+            'inherit': 'ALL'}, {
+            'properties': {
+                'name': 'test.example.com.', 'accountName': 'example', 'type': 'PRIMARY',
+                'dnssecStatus': 'UNSIGNED', 'status': 'ACTIVE', 'resourceRecordCount': 9,
+                'lastModifiedDateTime': '2017-06-14T06:45Z'},
+            'registrarInfo': {
+                'nameServers': {'missing': ['example.ultradns.com.', 'example.ultradns.net.',
+                                            'example.ultradns.biz.', 'example.ultradns.org.']}},
+            'inherit': 'ALL'}, {
+            'properties': {
+                'name': 'example2.com.', 'accountName': 'example', 'type': 'SECONDARY',
+                'dnssecStatus': 'UNSIGNED', 'status': 'ACTIVE', 'resourceRecordCount': 9,
+                'lastModifiedDateTime': '2017-06-14T06:45Z'},
+            'registrarInfo': {
+                'nameServers': {'missing': ['example.ultradns.com.', 'example.ultradns.net.',
+                                            'example.ultradns.biz.', 'example.ultradns.org.']}},
+            'inherit': 'ALL'}]
         ultradns._paginate = Mock(path, "zones")
         ultradns._paginate.side_effect = [[paginate_response]]
         result = ultradns.get_zones(account_number)
