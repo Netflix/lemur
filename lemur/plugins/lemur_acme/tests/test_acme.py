@@ -435,7 +435,6 @@ class TestAcme(unittest.TestCase):
         }
         mock_current_app.logger.debug.assert_called_with(log_data)
 
-
     def test_get_zone_name(self):
         zones = ['example.com', 'test.example.com']
         zone = "test.example.com"
