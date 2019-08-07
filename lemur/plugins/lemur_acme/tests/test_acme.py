@@ -415,12 +415,26 @@ class TestAcme(unittest.TestCase):
         mock_current_app.logger.debug.assert_not_called()
         mock_metrics.send.assert_not_called()
 
+    @patch("lemur.plugins.lemur_acme.ultradns.current_app")
     @patch("lemur.extensions.metrics")
-    def test_wait_for_dns_change(self, mock_metrics):
+    def test_wait_for_dns_change(self, mock_metrics, mock_current_app):
         ultradns._has_dns_propagated = Mock(return_value=True)
         ultradns.get_authoritative_nameserver = Mock(return_value="0.0.0.0")
         mock_metrics.send = Mock()
-        mock_metrics.send.assert_not_called()
+        domain = "_acme-challenge.test.example.com"
+        token = "ABCDEFGHIJ"
+        change_id = (domain, token)
+        mock_current_app.logger.debug = Mock()
+        ultradns.wait_for_dns_change(change_id)
+        # mock_metrics.send.assert_not_called()
+        log_data = {
+            "function": "wait_for_dns_change",
+            "fqdn": domain,
+            "status": True,
+            "message": "Record status on Public DNS"
+        }
+        mock_current_app.logger.debug.assert_called_with(log_data)
+
 
     def test_get_zone_name(self):
         zones = ['example.com', 'test.example.com']
