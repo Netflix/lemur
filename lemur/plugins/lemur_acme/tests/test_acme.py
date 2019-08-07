@@ -383,8 +383,9 @@ class TestAcme(unittest.TestCase):
         paginate_response = [{'properties': {'name': 'example.com.', 'accountName': 'netflix', 'type': 'PRIMARY',
                                              'dnssecStatus': 'UNSIGNED', 'status': 'ACTIVE', 'resourceRecordCount': 9,
                                              'lastModifiedDateTime': '2017-06-14T06:45Z'}, 'registrarInfo': {
-            'nameServers': {'missing': ['pdns154.ultradns.com.', 'pdns154.ultradns.net.', 'pdns154.ultradns.biz.',
-                                        'pdns154.ultradns.org.']}}, 'inherit': 'ALL'},
+                                'nameServers': {'missing': ['pdns154.ultradns.com.', 'pdns154.ultradns.net.',
+                                                            'pdns154.ultradns.biz.', 'pdns154.ultradns.org.']}},
+                              'inherit': 'ALL'},
                              {'properties': {'name': 'test.example.com.', 'accountName': 'netflix', 'type': 'PRIMARY',
                                              'dnssecStatus': 'UNSIGNED', 'status': 'ACTIVE', 'resourceRecordCount': 9,
                                              'lastModifiedDateTime': '2017-06-14T06:45Z'}, 'registrarInfo': {
@@ -456,3 +457,38 @@ class TestAcme(unittest.TestCase):
         ultradns.get_authoritative_nameserver = Mock(return_value="0.0.0.0")
         mock_metrics.send = Mock()
         mock_metrics.send.assert_not_called()
+
+    def test_get_zone_name(self):
+        zones = ['example.com', 'test.example.com']
+        zone = "test.example.com"
+        domain = "_acme-challenge.test.example.com"
+        account_number = "1234567890"
+        ultradns.get_zones = Mock(return_value=zones)
+        result = ultradns.get_zone_name(domain, account_number)
+        self.assertEqual(result, zone)
+
+    def test_get_zones(self):
+        account_number = "1234567890"
+        path = "a/b/c"
+        zones = ['example.com', 'test.example.com']
+        paginate_response = [{'properties': {'name': 'example.com.', 'accountName': 'netflix', 'type': 'PRIMARY',
+                                             'dnssecStatus': 'UNSIGNED', 'status': 'ACTIVE', 'resourceRecordCount': 9,
+                                             'lastModifiedDateTime': '2017-06-14T06:45Z'}, 'registrarInfo': {
+            'nameServers': {'missing': ['pdns154.ultradns.com.', 'pdns154.ultradns.net.', 'pdns154.ultradns.biz.',
+                                        'pdns154.ultradns.org.']}}, 'inherit': 'ALL'},
+                             {'properties': {'name': 'test.example.com.', 'accountName': 'netflix', 'type': 'PRIMARY',
+                                             'dnssecStatus': 'UNSIGNED', 'status': 'ACTIVE', 'resourceRecordCount': 9,
+                                             'lastModifiedDateTime': '2017-06-14T06:45Z'}, 'registrarInfo': {
+                                 'nameServers': {'missing': ['pdns154.ultradns.com.', 'pdns154.ultradns.net.',
+                                                             'pdns154.ultradns.biz.', 'pdns154.ultradns.org.']}},
+                              'inherit': 'ALL'},
+                             {'properties': {'name': 'example2.com.', 'accountName': 'netflix', 'type': 'SECONDARY',
+                                             'dnssecStatus': 'UNSIGNED', 'status': 'ACTIVE', 'resourceRecordCount': 9,
+                                             'lastModifiedDateTime': '2017-06-14T06:45Z'}, 'registrarInfo': {
+                                 'nameServers': {'missing': ['pdns154.ultradns.com.', 'pdns154.ultradns.net.',
+                                                             'pdns154.ultradns.biz.', 'pdns154.ultradns.org.']}},
+                              'inherit': 'ALL'}]
+        ultradns._paginate = Mock(path, "zones")
+        ultradns._paginate.side_effect = [[paginate_response]]
+        result = ultradns.get_zones(account_number)
+        self.assertEqual(result, zones)
