@@ -158,7 +158,7 @@ def map_cis_fields(options, csr):
         )
 
     data = {
-        "profile_name": current_app.config.get("DIGICERT_CIS_PROFILE_NAMES")[options['authority'].name],
+        "profile_name": current_app.config.get("DIGICERT_CIS_PROFILE_NAMES", {}).get(options['authority'].name),
         "common_name": options["common_name"],
         "additional_dns_names": get_additional_names(options),
         "csr": csr,
@@ -537,14 +537,14 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
         if "ECC" in issuer_options["key_type"]:
             return (
                 "\n".join(str(end_entity).splitlines()),
-                current_app.config.get("DIGICERT_ECC_CIS_INTERMEDIATES")[issuer_options['authority'].name],
+                current_app.config.get("DIGICERT_ECC_CIS_INTERMEDIATES", {}).get(issuer_options['authority'].name),
                 data["id"],
             )
 
         # By default return RSA
         return (
             "\n".join(str(end_entity).splitlines()),
-            current_app.config.get("DIGICERT_CIS_INTERMEDIATES")[issuer_options['authority'].name],
+            current_app.config.get("DIGICERT_CIS_INTERMEDIATES", {}).get(issuer_options['authority'].name),
             data["id"],
         )
 
@@ -577,4 +577,4 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
         :return:
         """
         role = {"username": "", "password": "", "name": "digicert"}
-        return current_app.config.get("DIGICERT_CIS_ROOTS")[options['authority'].name], "", [role]
+        return current_app.config.get("DIGICERT_CIS_ROOTS", {}).get(options['authority'].name), "", [role]
