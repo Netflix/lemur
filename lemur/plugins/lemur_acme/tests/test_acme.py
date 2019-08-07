@@ -420,7 +420,7 @@ class TestAcme(unittest.TestCase):
     @patch("lemur.extensions.metrics")
     def test_wait_for_dns_change(self, mock_metrics, mock_current_app):
         ultradns._has_dns_propagated = Mock(return_value=True)
-        nameserver = "0.0.0.0"
+        nameserver = "1.1.1.1"
         ultradns.get_authoritative_nameserver = Mock(return_value=nameserver)
         mock_metrics.send = Mock()
         domain = "_acme-challenge.test.example.com"
