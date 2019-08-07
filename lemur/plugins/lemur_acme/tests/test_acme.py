@@ -380,6 +380,7 @@ class TestAcme(unittest.TestCase):
         zone = "test.example.com"
         token = "ABCDEFGHIJ"
         account_number = "1234567890"
+        change_id = (domain, token)
         ultradns.get_zone_name = Mock(return_value=zone)
         mock_current_app.logger.debug = Mock()
         ultradns._post = Mock()
@@ -390,8 +391,8 @@ class TestAcme(unittest.TestCase):
             "message": "TXT record created"
         }
         result = ultradns.create_txt_record(domain, token, account_number)
-        # TODO: check change_id
         mock_current_app.logger.debug.assert_called_with(log_data)
+        self.assertEqual(result, change_id)
 
     @patch("lemur.plugins.lemur_acme.ultradns.current_app")
     @patch("lemur.extensions.metrics")
