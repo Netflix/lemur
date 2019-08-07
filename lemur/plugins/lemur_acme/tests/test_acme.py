@@ -429,6 +429,7 @@ class TestAcme(unittest.TestCase):
                 'resultInfo': {'totalCount': 1, 'offset': 0, 'returnedCount': 1}}
         ultradns._delete = Mock()
         mock_metrics.send = Mock()
+        ultradns.delete_txt_record(change_id, account_number, domain, token)
         mock_current_app.logger.debug.assert_not_called()
         mock_metrics.send.assert_not_called()
 
