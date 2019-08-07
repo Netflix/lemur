@@ -454,8 +454,9 @@ class TestAcme(unittest.TestCase):
         paginate_response = [{'properties': {'name': 'example.com.', 'accountName': 'example', 'type': 'PRIMARY',
                                              'dnssecStatus': 'UNSIGNED', 'status': 'ACTIVE', 'resourceRecordCount': 9,
                                              'lastModifiedDateTime': '2017-06-14T06:45Z'}, 'registrarInfo': {
-            'nameServers': {'missing': ['example.ultradns.com.', 'example.ultradns.net.', 'example.ultradns.biz.',
-                                        'example.ultradns.org.']}}, 'inherit': 'ALL'},
+                                'nameServers': {'missing': ['example.ultradns.com.', 'example.ultradns.net.',
+                                                            'example.ultradns.biz.', 'example.ultradns.org.']}},
+                              'inherit': 'ALL'},
                              {'properties': {'name': 'test.example.com.', 'accountName': 'example', 'type': 'PRIMARY',
                                              'dnssecStatus': 'UNSIGNED', 'status': 'ACTIVE', 'resourceRecordCount': 9,
                                              'lastModifiedDateTime': '2017-06-14T06:45Z'}, 'registrarInfo': {
