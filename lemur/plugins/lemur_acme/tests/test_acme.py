@@ -377,29 +377,10 @@ class TestAcme(unittest.TestCase):
     @patch("lemur.plugins.lemur_acme.ultradns.current_app")
     def test_create_txt_record(self, mock_current_app):
         domain = "_acme_challenge.test.example.com"
+        zone = "test.example.com"
         token = "ABCDEFGHIJ"
         account_number = "1234567890"
-        path = "a/b/c"
-        paginate_response = [{'properties': {'name': 'example.com.', 'accountName': 'netflix', 'type': 'PRIMARY',
-                                             'dnssecStatus': 'UNSIGNED', 'status': 'ACTIVE', 'resourceRecordCount': 9,
-                                             'lastModifiedDateTime': '2017-06-14T06:45Z'}, 'registrarInfo': {
-                                'nameServers': {'missing': ['pdns154.ultradns.com.', 'pdns154.ultradns.net.',
-                                                            'pdns154.ultradns.biz.', 'pdns154.ultradns.org.']}},
-                              'inherit': 'ALL'},
-                             {'properties': {'name': 'test.example.com.', 'accountName': 'netflix', 'type': 'PRIMARY',
-                                             'dnssecStatus': 'UNSIGNED', 'status': 'ACTIVE', 'resourceRecordCount': 9,
-                                             'lastModifiedDateTime': '2017-06-14T06:45Z'}, 'registrarInfo': {
-                                 'nameServers': {'missing': ['pdns154.ultradns.com.', 'pdns154.ultradns.net.',
-                                                             'pdns154.ultradns.biz.', 'pdns154.ultradns.org.']}},
-                              'inherit': 'ALL'},
-                             {'properties': {'name': 'example2.com.', 'accountName': 'netflix', 'type': 'SECONDARY',
-                                             'dnssecStatus': 'UNSIGNED', 'status': 'ACTIVE', 'resourceRecordCount': 9,
-                                             'lastModifiedDateTime': '2017-06-14T06:45Z'}, 'registrarInfo': {
-                                 'nameServers': {'missing': ['pdns154.ultradns.com.', 'pdns154.ultradns.net.',
-                                                             'pdns154.ultradns.biz.', 'pdns154.ultradns.org.']}},
-                              'inherit': 'ALL'}]
-        ultradns._paginate = Mock(path, "zones")
-        ultradns._paginate.side_effect = [[paginate_response]]
+        ultradns.get_zone_name = Mock(return_value=zone)
         mock_current_app.logger.debug = Mock()
         ultradns._post = Mock()
         log_data = {
