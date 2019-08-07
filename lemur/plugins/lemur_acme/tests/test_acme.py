@@ -374,50 +374,85 @@ class TestAcme(unittest.TestCase):
         result = ultradns.get_ultradns_token()
         self.assertTrue(len(result) > 0)
 
-    @patch("lemur.plugins.lemur_acme.ultradns.get_zone_name")
-    @patch("lemur.plugins.lemur_acme.ultradns._post")
     @patch("lemur.plugins.lemur_acme.ultradns.current_app")
-    def test_create_txt_record(self, mock_current_app, mock__post, mock_get_zone_name):
-        domain = "test.example.com"
+    def test_create_txt_record(self, mock_current_app):
+        domain = "_acme_challenge.test.example.com"
+        token = "ABCDEFGHIJ"
+        account_number = "1234567890"
+        path = "a/b/c"
+        paginate_response = [{'properties': {'name': 'example.com.', 'accountName': 'netflix', 'type': 'PRIMARY',
+                                             'dnssecStatus': 'UNSIGNED', 'status': 'ACTIVE', 'resourceRecordCount': 9,
+                                             'lastModifiedDateTime': '2017-06-14T06:45Z'}, 'registrarInfo': {
+            'nameServers': {'missing': ['pdns154.ultradns.com.', 'pdns154.ultradns.net.', 'pdns154.ultradns.biz.',
+                                        'pdns154.ultradns.org.']}}, 'inherit': 'ALL'},
+                             {'properties': {'name': 'test.example.com.', 'accountName': 'netflix', 'type': 'PRIMARY',
+                                             'dnssecStatus': 'UNSIGNED', 'status': 'ACTIVE', 'resourceRecordCount': 9,
+                                             'lastModifiedDateTime': '2017-06-14T06:45Z'}, 'registrarInfo': {
+                                 'nameServers': {'missing': ['pdns154.ultradns.com.', 'pdns154.ultradns.net.',
+                                                             'pdns154.ultradns.biz.', 'pdns154.ultradns.org.']}},
+                              'inherit': 'ALL'},
+                             {'properties': {'name': 'example2.com.', 'accountName': 'netflix', 'type': 'SECONDARY',
+                                             'dnssecStatus': 'UNSIGNED', 'status': 'ACTIVE', 'resourceRecordCount': 9,
+                                             'lastModifiedDateTime': '2017-06-14T06:45Z'}, 'registrarInfo': {
+                                 'nameServers': {'missing': ['pdns154.ultradns.com.', 'pdns154.ultradns.net.',
+                                                             'pdns154.ultradns.biz.', 'pdns154.ultradns.org.']}},
+                              'inherit': 'ALL'}]
+        ultradns._paginate = Mock(path, "zones")
+        ultradns._paginate.side_effect = [[paginate_response]]
+        mock_current_app.logger.debug = Mock()
+        ultradns._post = Mock()
+        log_data = {
+            "function": "create_txt_record",
+            "fqdn": domain,
+            "token": token,
+            "message": "TXT record created"
+        }
+        result = ultradns.create_txt_record(domain, token, account_number)
+        mock_current_app.logger.debug.assert_called_with(log_data)
+
+    @patch("lemur.plugins.lemur_acme.ultradns.current_app")
+    @patch("lemur.extensions.metrics")
+    def test_delete_txt_record(self, mock_metrics, mock_current_app):
+        domain = "_acme_challenge.test.example.com"
         token = "ABCDEFGHIJ"
         account_number = "1234567890"
         change_id = (domain, token)
-        mock_current_app.logger.debug = Mock()
-        mock_get_zone_name = Mock(domain, account_number, return_value="example.com")
         path = "a/b/c"
-        params = {
-            "test": "Test"
-        }
-        mock__post = Mock(path, params)
-        result = ultradns.create_txt_record(domain, token, account_number)
-        self.assertEqual(type(change_id), type(result))
+        paginate_response = [{'properties': {'name': 'example.com.', 'accountName': 'netflix', 'type': 'PRIMARY',
+                                             'dnssecStatus': 'UNSIGNED', 'status': 'ACTIVE', 'resourceRecordCount': 9,
+                                             'lastModifiedDateTime': '2017-06-14T06:45Z'}, 'registrarInfo': {
+            'nameServers': {'missing': ['pdns154.ultradns.com.', 'pdns154.ultradns.net.', 'pdns154.ultradns.biz.',
+                                        'pdns154.ultradns.org.']}}, 'inherit': 'ALL'},
+                             {'properties': {'name': 'test.example.com.', 'accountName': 'netflix', 'type': 'PRIMARY',
+                                             'dnssecStatus': 'UNSIGNED', 'status': 'ACTIVE', 'resourceRecordCount': 9,
+                                             'lastModifiedDateTime': '2017-06-14T06:45Z'}, 'registrarInfo': {
+                                 'nameServers': {'missing': ['pdns154.ultradns.com.', 'pdns154.ultradns.net.',
+                                                             'pdns154.ultradns.biz.', 'pdns154.ultradns.org.']}},
+                              'inherit': 'ALL'},
+                             {'properties': {'name': 'example2.com.', 'accountName': 'netflix', 'type': 'SECONDARY',
+                                             'dnssecStatus': 'UNSIGNED', 'status': 'ACTIVE', 'resourceRecordCount': 9,
+                                             'lastModifiedDateTime': '2017-06-14T06:45Z'}, 'registrarInfo': {
+                                 'nameServers': {'missing': ['pdns154.ultradns.com.', 'pdns154.ultradns.net.',
+                                                             'pdns154.ultradns.biz.', 'pdns154.ultradns.org.']}},
+                              'inherit': 'ALL'}]
+        ultradns._paginate = Mock(path, "zones")
+        ultradns._paginate.side_effect = [[paginate_response]]
+        mock_current_app.logger.debug = Mock()
+        ultradns._post = Mock()
+        ultradns._get = Mock()
+        ultradns._get.return_value = {'zoneName': 'test.example.com.com',
+                'rrSets': [{'ownerName': '_acme-challenge.test.example.com.',
+                            'rrtype': 'TXT (16)', 'ttl': 5, 'rdata': ['ABCDEFGHIJ']}],
+                'queryInfo': {'sort': 'OWNER', 'reverse': False, 'limit': 100},
+                'resultInfo': {'totalCount': 1, 'offset': 0, 'returnedCount': 1}}
+        ultradns._delete = Mock()
+        mock_metrics.send = Mock()
+        mock_current_app.logger.debug.assert_not_called()
+        mock_metrics.send.assert_not_called()
 
-    # @patch("lemur.plugins.lemur_acme.ultradns.get_zone_name")
-    # @patch("lemur.plugins.lemur_acme.ultradns._get")
-    # @patch("lemur.plugins.lemur_acme.ultradns._delete")
-    # @patch("lemur.plugins.lemur_acme.ultradns._post")
-    # @patch("lemur.plugins.lemur_acme.ultradns.current_app")
-    # def test_delete_txt_record(self, mock_get_zone_name):
-    #     domain = "test.example.com"
-    #     token = "ABCDEFGHIJ"
-    #     account_number = "1234567890"
-    #     change_id = (domain, token)
-    #     mock_get_zone_name = Mock(domain, account_number, return_value="example.com")
-
-    # @patch("lemur.plugins.lemur_acme.ultradns.get_authoritative_nameserver")
-    # @patch("lemur.plugins.lemur_acme.ultradns._has_dns_propagated")
-    # @patch("lemur.plugins.lemur_acme.ultradns.current_app")
-    # def test_wait_for_dns_change(self, mock_current_app, mock_has_dns_propagated, mock_get_authoritative_nameserver):
-    #     domain = "test.example.com"
-    #     token = "ABCDEFGHIJ"
-    #     account_number = "1234567890"
-    #     change_id = (domain, token)
-    #     mock_current_app.logger.debug = Mock()
-    #     result = ultradns.wait_for_dns_change(change_id, token)
-    #     self.assertEqual(result, true)
-
-    # def test_has_dns_propagated(self):
-
-
-
-
+    @patch("lemur.extensions.metrics")
+    def test_wait_for_dns_change(self, mock_metrics):
+        ultradns._has_dns_propagated = Mock(return_value=True)
+        ultradns.get_authoritative_nameserver = Mock(return_value="0.0.0.0")
+        mock_metrics.send = Mock()
+        mock_metrics.send.assert_not_called()
