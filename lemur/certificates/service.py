@@ -120,7 +120,6 @@ def get_all_valid_certs(authority_ids):
         )
 
 
-
 def get_all_pending_cleaning(source):
     """
     Retrieves all certificates that are available for cleaning.
