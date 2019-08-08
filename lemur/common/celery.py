@@ -533,9 +533,6 @@ def check_revoked():
     metrics.send(f"{function}.success", 'counter', 1)
 
 
-check_revoked()
-
-
 @celery.task(soft_time_limit=3600)
 def notify_expirations():
     """
