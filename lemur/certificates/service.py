@@ -102,6 +102,25 @@ def get_all_certs():
     return Certificate.query.all()
 
 
+def get_all_valid_certs(authority_ids):
+    """
+    Retrieves all valid (not expired) certificates within Lemur, for the given authority_ids
+    ignored if no authority_ids provided.
+
+    :return:
+    """
+    if authority_ids:
+        return (
+            Certificate.query.filter(Certificate.not_after > arrow.now().format("YYYY-MM-DD"))
+            .filter(Certificate.authority_id.in_(authority_ids)).all()
+        )
+    else:
+        return (
+            Certificate.query.filter(Certificate.not_after > arrow.now().format("YYYY-MM-DD")).all()
+        )
+
+
+
 def get_all_pending_cleaning(source):
     """
     Retrieves all certificates that are available for cleaning.

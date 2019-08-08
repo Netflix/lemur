@@ -33,7 +33,7 @@ from lemur.certificates.service import (
     get_certificate_primitives,
     get_all_pending_reissue,
     get_by_name,
-    get_all_certs,
+    get_all_valid_certs,
     get,
 )
 
@@ -467,7 +467,9 @@ def check_revoked():
     encounters an issue with verification it marks the certificate status
     as `unknown`.
     """
-    for cert in get_all_certs():
+
+    certs = get_all_valid_certs(current_app.config.get("CHECK_REVOCATION_AUTHORITY_IDS", []))
+    for cert in certs:
         try:
             if cert.chain:
                 status = verify_string(cert.body, cert.chain)
