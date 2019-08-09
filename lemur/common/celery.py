@@ -348,7 +348,7 @@ def sync_source(source):
         return
     try:
         sync([source])
-        metrics.send(f"{function}.success", 'counter', '1', metric_tags={"source": source})
+        metrics.send(f"{function}.success", 'counter', 1, metric_tags={"source": source})
     except SoftTimeLimitExceeded:
         log_data["message"] = "Error syncing source: Time limit exceeded."
         current_app.logger.error(log_data)
