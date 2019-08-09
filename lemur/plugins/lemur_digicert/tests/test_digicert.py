@@ -66,7 +66,7 @@ def test_map_fields_with_validity_years(app):
     }
 
 
-def test_map_cis_fields(app):
+def test_map_cis_fields(app, authority):
     from lemur.plugins.lemur_digicert.plugin import map_cis_fields
 
     names = [u"one.example.com", u"two.example.com", u"three.example.com"]
@@ -80,6 +80,7 @@ def test_map_cis_fields(app):
         "organizational_unit": "Example Org",
         "validity_end": arrow.get(2017, 5, 7),
         "validity_start": arrow.get(2016, 10, 30),
+        "authority": authority,
     }
 
     data = map_cis_fields(options, CSR_STR)
@@ -104,6 +105,7 @@ def test_map_cis_fields(app):
         "organization": "Example, Inc.",
         "organizational_unit": "Example Org",
         "validity_years": 2,
+        "authority": authority,
     }
 
     with freeze_time(time_to_freeze=arrow.get(2016, 11, 3).datetime):
