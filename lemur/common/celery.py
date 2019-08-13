@@ -31,7 +31,6 @@ from lemur.dns_providers import cli as cli_dns_providers
 from lemur.notifications import cli as cli_notification
 from lemur.endpoints import cli as cli_endpoints
 
-
 if current_app:
     flask_app = current_app
 else:
@@ -256,7 +255,7 @@ def remove_old_acme_certs():
         log_data["message"] = "Skipping task: Task is already active"
         current_app.logger.debug(log_data)
         return
-    
+
     # Delete pending certs more than a week old
     for cert in pending_certs:
         if datetime.now(timezone.utc) - cert.last_updated > timedelta(days=7):
@@ -330,7 +329,6 @@ def sync_all_sources():
         current_app.logger.debug(log_data)
         return
 
-
     sources = validate_sources("all")
     for source in sources:
         log_data["source"] = source.label
@@ -369,7 +367,6 @@ def sync_source(source):
         log_data["message"] = "Skipping task: Task is already active"
         current_app.logger.debug(log_data)
         return
-
 
     current_app.logger.debug(log_data)
 
