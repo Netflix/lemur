@@ -304,7 +304,7 @@ def clean_source(source):
         log_data["message"] = "Clean source: Time limit exceeded."
         current_app.logger.error(log_data)
         sentry.captureException()
-        metrics.send("clean_source_timeout", "counter", 1)
+        metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
 
 
 @celery.task()
@@ -359,9 +359,8 @@ def sync_source(source):
         log_data["message"] = "Error syncing source: Time limit exceeded."
         current_app.logger.error(log_data)
         sentry.captureException()
-        metrics.send(
-            "sync_source_timeout", "counter", 1, metric_tags={"source": source}
-        )
+        metrics.send("sync_source_timeout", "counter", 1, metric_tags={"source": source})
+        metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
         return
 
     log_data["message"] = "Done syncing source"
@@ -415,8 +414,9 @@ def certificate_reissue():
         log_data["message"] = "Certificate reissue: Time limit exceeded."
         current_app.logger.error(log_data)
         sentry.captureException()
-        metrics.send("certificate_reissue_timeout", "counter", 1)
+        metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
         return
+
     log_data["message"] = "reissuance completed"
     current_app.logger.debug(log_data)
     red.set(f'{function}.last_success', int(time.time()))
@@ -441,8 +441,9 @@ def certificate_rotate():
         log_data["message"] = "Certificate rotate: Time limit exceeded."
         current_app.logger.error(log_data)
         sentry.captureException()
-        metrics.send("certificate_rotate_timeout", "counter", 1)
+        metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
         return
+
     log_data["message"] = "rotation completed"
     current_app.logger.debug(log_data)
     red.set(f'{function}.last_success', int(time.time()))
@@ -467,8 +468,9 @@ def endpoints_expire():
         log_data["message"] = "endpoint expire: Time limit exceeded."
         current_app.logger.error(log_data)
         sentry.captureException()
-        metrics.send("endpoints_expire_timeout", "counter", 1)
+        metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
         return
+
     red.set(f'{function}.last_success', int(time.time()))
     metrics.send(f"{function}.success", 'counter', 1)
 
@@ -491,8 +493,9 @@ def get_all_zones():
         log_data["message"] = "get all zones: Time limit exceeded."
         current_app.logger.error(log_data)
         sentry.captureException()
-        metrics.send("get_all_zones_timeout", "counter", 1)
+        metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
         return
+
     red.set(f'{function}.last_success', int(time.time()))
     metrics.send(f"{function}.success", 'counter', 1)
 
@@ -526,7 +529,7 @@ def check_revoked():
         log_data["message"] = "Checking revoked: Time limit exceeded."
         current_app.logger.error(log_data)
         sentry.captureException()
-        metrics.send("check_revoked_timeout", "counter", 1)
+        metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
         return
 
     red.set(f'{function}.last_success', int(time.time()))
@@ -551,7 +554,8 @@ def notify_expirations():
         log_data["message"] = "Notify expiring Time limit exceeded."
         current_app.logger.error(log_data)
         sentry.captureException()
-        metrics.send("notify_expirations_timeout", "counter", 1)
+        metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
         return
+
     red.set(f'{function}.last_success', int(time.time()))
     metrics.send(f"{function}.success", 'counter', 1)
