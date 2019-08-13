@@ -65,6 +65,9 @@ celery = make_celery(flask_app)
 def is_task_active(fun, task_id, args):
     from celery.task.control import inspect
 
+    if not args:
+        args = '()'  # empty args
+
     i = inspect()
     active_tasks = i.active()
     for _, tasks in active_tasks.items():
