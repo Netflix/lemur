@@ -31,6 +31,7 @@ from lemur.dns_providers import cli as cli_dns_providers
 from lemur.notifications import cli as cli_notification
 from lemur.endpoints import cli as cli_endpoints
 
+
 if current_app:
     flask_app = current_app
 else:
