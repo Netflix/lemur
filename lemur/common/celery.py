@@ -503,18 +503,18 @@ def check_revoked():
     This celery task attempts to check if any certs are expired
     :return:
     """
-
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
     task_id = None
     if celery.current_task:
         task_id = celery.current_task.request.id
 
-    function = f"{__name__}.{sys._getframe().f_code.co_name}"
     log_data = {
         "function": function,
         "message": "check if any certificates are revoked revoked",
+        "task_id": task_id,
     }
 
-    if task_id and is_task_active(function, task_id, (id,)):
+    if task_id and is_task_active(function, task_id, None):
         log_data["message"] = "Skipping task: Task is already active"
         current_app.logger.debug(log_data)
         return
