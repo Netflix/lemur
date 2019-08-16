@@ -370,7 +370,7 @@ class AcmeHandler(object):
                         pass
 
     def get_dns_provider(self, type):
-        provider_types = {"cloudflare": cloudflare, "dyn": dyn, "route53": route53}
+        provider_types = {"cloudflare": cloudflare, "dyn": dyn, "route53": route53, "nsone": nsone}
         provider = provider_types.get(type)
         if not provider:
             raise UnknownProvider("No such DNS provider: {}".format(type))
@@ -424,7 +424,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
     def get_dns_provider(self, type):
         self.acme = AcmeHandler()
 
-        provider_types = {"cloudflare": cloudflare, "dyn": dyn, "route53": route53}
+        provider_types = {"cloudflare": cloudflare, "dyn": dyn, "route53": route53, "nsone": nsone}
         provider = provider_types.get(type)
         if not provider:
             raise UnknownProvider("No such DNS provider: {}".format(type))

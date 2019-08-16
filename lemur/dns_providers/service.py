@@ -98,6 +98,7 @@ def get_types():
                     ],
                 },
                 {"name": "dyn"},
+                {"name": "nsone"},
             ]
         },
     )

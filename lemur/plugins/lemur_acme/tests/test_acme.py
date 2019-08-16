@@ -236,12 +236,14 @@ class TestAcme(unittest.TestCase):
     @patch("lemur.plugins.lemur_acme.plugin.current_app")
     @patch("lemur.plugins.lemur_acme.dyn.current_app")
     @patch("lemur.plugins.lemur_acme.cloudflare.current_app")
+    @patch("lemur.plugins.lemur_acme.nsone.current_app"
     @patch("lemur.plugins.lemur_acme.plugin.dns_provider_service")
     def test_get_dns_provider(
         self,
         mock_dns_provider_service,
         mock_current_app_cloudflare,
         mock_current_app_dyn,
+        mock_current_app_nsone,
         mock_current_app,
     ):
         provider = plugin.ACMEIssuerPlugin()
@@ -251,6 +253,8 @@ class TestAcme(unittest.TestCase):
         assert cloudflare
         dyn = provider.get_dns_provider("dyn")
         assert dyn
+        nsone = provider.get_dns_provider("nsone")
+        assert nsone
 
     @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.setup_acme_client")
     @patch("lemur.plugins.lemur_acme.plugin.current_app")
