@@ -15,6 +15,7 @@ from lemur.sources.models import Source
 from lemur.certificates.models import Certificate
 from lemur.certificates import service as certificate_service
 from lemur.endpoints import service as endpoint_service
+from lemur.extensions import metrics
 from lemur.destinations import service as destination_service
 
 from lemur.certificates.schemas import CertificateUploadInputSchema
@@ -94,6 +95,8 @@ def sync_endpoints(source):
                     certificate_name, endpoint["name"]
                 )
             )
+            metrics.send("endpoint.certificate.not.found",
+                         "counter", 1, metric_tags={"cert": certificate_name, "endpoint": endpoint["name"]})
             continue
 
         policy = endpoint.pop("policy")
