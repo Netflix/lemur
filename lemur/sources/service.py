@@ -96,7 +96,8 @@ def sync_endpoints(source):
                 )
             )
             metrics.send("endpoint.certificate.not.found",
-                         "counter", 1, metric_tags={"cert": certificate_name, "endpoint": endpoint["name"]})
+                         "counter", 1,
+                         metric_tags={"cert": certificate_name, "endpoint": endpoint["name"], "acct": s.get_option("accountNumber", source.options)})
             continue
 
         policy = endpoint.pop("policy")
