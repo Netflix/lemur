@@ -46,10 +46,10 @@ class PendingCertificateOutputSchema(LemurOutputSchema):
 
     # Note aliasing is the first step in deprecating these fields.
     notify = fields.Boolean()
-    active = fields.Boolean(attribute="notify", dump_only=True)
+    active = fields.Boolean(attribute="notify")
 
     cn = fields.String()
-    common_name = fields.String(attribute="cn", dump_only=True)
+    common_name = fields.String(attribute="cn")
 
     owner = fields.Email()
 
