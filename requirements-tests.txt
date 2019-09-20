@@ -28,6 +28,7 @@ docutils==0.15.2          # via botocore
 ecdsa==0.13.2             # via python-jose, sshpubkeys
 factory-boy==2.12.0
 faker==2.0.2
+fakeredis==1.0.5
 flask==1.1.1              # via pytest-flask
 freezegun==0.3.12
 future==0.17.1            # via aws-xray-sdk, python-jose
@@ -64,13 +65,15 @@ python-dateutil==2.8.0    # via botocore, faker, freezegun, moto
 python-jose==3.0.1        # via moto
 pytz==2019.2              # via datetime, moto
 pyyaml==5.1.2
+redis==3.3.8              # via fakeredis
 requests-mock==1.7.0
 requests==2.22.0          # via docker, moto, requests-mock, responses
 responses==0.10.6         # via moto
 rsa==4.0                  # via python-jose
 s3transfer==0.2.1         # via boto3
-six==1.12.0               # via aws-sam-translator, bandit, cfn-lint, cryptography, docker, faker, freezegun, jsonschema, mock, moto, packaging, pyrsistent, python-dateutil, python-jose, requests-mock, responses, stevedore, websocket-client
+six==1.12.0               # via aws-sam-translator, bandit, cfn-lint, cryptography, docker, faker, fakeredis, freezegun, jsonschema, mock, moto, packaging, pyrsistent, python-dateutil, python-jose, requests-mock, responses, stevedore, websocket-client
 smmap2==2.0.5             # via gitdb2
+sortedcontainers==2.1.0   # via fakeredis
 sshpubkeys==3.1.0         # via moto
 stevedore==1.31.0         # via bandit
 text-unidecode==1.3       # via faker

@@ -31,7 +31,7 @@ from lemur.exceptions import InvalidAuthority, InvalidConfiguration, UnknownProv
 from lemur.extensions import metrics, sentry
 from lemur.plugins import lemur_acme as acme
 from lemur.plugins.bases import IssuerPlugin
-from lemur.plugins.lemur_acme import cloudflare, dyn, route53
+from lemur.plugins.lemur_acme import cloudflare, dyn, route53, ultradns
 
 
 class AuthorizationRecord(object):
@@ -294,7 +294,7 @@ class AcmeHandler(object):
             if not dns_provider.domains:
                 continue
             for name in dns_provider.domains:
-                if domain.endswith("." + name):
+                if name == domain or domain.endswith("." + name):
                     if len(name) > match_length:
                         self.dns_providers_for_domain[domain] = [dns_provider]
                         match_length = len(name)
@@ -370,7 +370,12 @@ class AcmeHandler(object):
                         pass
 
     def get_dns_provider(self, type):
-        provider_types = {"cloudflare": cloudflare, "dyn": dyn, "route53": route53}
+        provider_types = {
+            "cloudflare": cloudflare,
+            "dyn": dyn,
+            "route53": route53,
+            "ultradns": ultradns,
+        }
         provider = provider_types.get(type)
         if not provider:
             raise UnknownProvider("No such DNS provider: {}".format(type))
@@ -424,7 +429,12 @@ class ACMEIssuerPlugin(IssuerPlugin):
     def get_dns_provider(self, type):
         self.acme = AcmeHandler()
 
-        provider_types = {"cloudflare": cloudflare, "dyn": dyn, "route53": route53}
+        provider_types = {
+            "cloudflare": cloudflare,
+            "dyn": dyn,
+            "route53": route53,
+            "ultradns": ultradns,
+        }
         provider = provider_types.get(type)
         if not provider:
             raise UnknownProvider("No such DNS provider: {}".format(type))

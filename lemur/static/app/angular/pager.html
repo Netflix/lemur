@@ -4,6 +4,9 @@
       <button ng-repeat="count in params.settings().counts" type="button" ng-class="{'active':params.count()==count}" ng-click="params.count(count)" class="btn btn-default">
         <span ng-bind="count"></span>
       </button>
+      <div class="centered-cell">
+        <span ng-bind="params.data.total"></span>&#160;Found
+      </div>
     </div>
     <div class="btn-group pull-right">
       <span ng-repeat="page in pages" ng-switch="page.type" ng-class="{'disabled': !page.active && !page.current, 'active': page.current}">

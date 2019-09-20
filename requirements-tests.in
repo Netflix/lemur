@@ -5,6 +5,7 @@ black
 coverage
 factory-boy
 Faker
+fakeredis
 freezegun
 moto
 nose
