@@ -32,7 +32,7 @@ kombu<4.6.0 # Bug with inspecting active tasks: https://github.com/celery/kombu/
 lockfile
 logmatic-python
 marshmallow-sqlalchemy
-marshmallow
+marshmallow<2.20.5 #schema duplicate issues https://github.com/marshmallow-code/marshmallow-sqlalchemy/issues/121
 ndg-httpsclient
 paramiko  # required for the SFTP destination plugin
 pem

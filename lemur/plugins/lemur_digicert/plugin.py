@@ -72,11 +72,11 @@ def determine_validity_years(end_date):
     """
     now = arrow.utcnow()
 
-    if end_date < now.replace(years=+1):
+    if end_date < now.shift(years=+1):
         return 1
-    elif end_date < now.replace(years=+2):
+    elif end_date < now.shift(years=+2):
         return 2
-    elif end_date < now.replace(years=+3):
+    elif end_date < now.shift(years=+3):
         return 3
 
     raise Exception(
@@ -148,12 +148,12 @@ def map_cis_fields(options, csr):
     """
     if not options.get("validity_years"):
         if not options.get("validity_end"):
-            options["validity_end"] = arrow.utcnow().replace(
+            options["validity_end"] = arrow.utcnow().shift(
                 years=current_app.config.get("DIGICERT_DEFAULT_VALIDITY", 1)
             )
         options["validity_years"] = determine_validity_years(options["validity_end"])
     else:
-        options["validity_end"] = arrow.utcnow().replace(
+        options["validity_end"] = arrow.utcnow().shift(
             years=options["validity_years"]
         )
 
