@@ -8,84 +8,84 @@ appdirs==1.4.3            # via black
 asn1crypto==0.24.0        # via cryptography
 atomicwrites==1.3.0       # via pytest
 attrs==19.1.0             # via black, jsonschema, pytest
-aws-sam-translator==1.12.0  # via cfn-lint
+aws-sam-translator==1.14.0  # via cfn-lint
 aws-xray-sdk==2.4.2       # via moto
 bandit==1.6.2
 black==19.3b0
-boto3==1.9.187            # via aws-sam-translator, moto
+boto3==1.9.232            # via aws-sam-translator, moto
 boto==2.49.0              # via moto
-botocore==1.12.187        # via aws-xray-sdk, boto3, moto, s3transfer
-certifi==2019.6.16        # via requests
+botocore==1.12.232        # via aws-xray-sdk, boto3, moto, s3transfer
+certifi==2019.9.11        # via requests
 cffi==1.12.3              # via cryptography
-cfn-lint==0.22.2          # via moto
+cfn-lint==0.24.1          # via moto
 chardet==3.0.4            # via requests
 click==7.0                # via black, flask
-coverage==4.5.3
+coverage==4.5.4
 cryptography==2.7         # via moto, sshpubkeys
 datetime==4.3             # via moto
 docker==4.0.2             # via moto
-docutils==0.14            # via botocore
+docutils==0.15.2          # via botocore
 ecdsa==0.13.2             # via python-jose, sshpubkeys
 factory-boy==2.12.0
-faker==1.0.7
-fakeredis==1.0.3
+faker==2.0.2
+fakeredis==1.0.5
 flask==1.1.1              # via pytest-flask
 freezegun==0.3.12
 future==0.17.1            # via aws-xray-sdk, python-jose
 gitdb2==2.0.5             # via gitpython
-gitpython==2.1.11         # via bandit
+gitpython==3.0.2          # via bandit
 idna==2.8                 # via moto, requests
-importlib-metadata==0.18  # via pluggy, pytest
+importlib-metadata==0.23  # via pluggy, pytest
 itsdangerous==1.1.0       # via flask
 jinja2==2.10.1            # via flask, moto
 jmespath==0.9.4           # via boto3, botocore
 jsondiff==1.1.2           # via moto
-jsonpatch==1.23           # via cfn-lint
+jsonpatch==1.24           # via cfn-lint
 jsonpickle==1.2           # via aws-xray-sdk
 jsonpointer==2.0          # via jsonpatch
-jsonschema==3.0.1         # via aws-sam-translator, cfn-lint
+jsonschema==3.0.2         # via aws-sam-translator, cfn-lint
 markupsafe==1.1.1         # via jinja2
 mock==3.0.5               # via moto
-more-itertools==7.1.0     # via pytest
-moto==1.3.11
+more-itertools==7.2.0     # via pytest, zipp
+moto==1.3.13
 nose==1.3.7
-packaging==19.0           # via pytest
-pbr==5.4.0                # via stevedore
-pluggy==0.12.0            # via pytest
+packaging==19.2           # via pytest
+pbr==5.4.3                # via stevedore
+pluggy==0.13.0            # via pytest
 py==1.8.0                 # via pytest
-pyasn1==0.4.5             # via rsa
+pyasn1==0.4.7             # via rsa
 pycparser==2.19           # via cffi
 pyflakes==2.1.1
-pyparsing==2.4.0          # via packaging
-pyrsistent==0.15.3        # via jsonschema
+pyparsing==2.4.2          # via packaging
+pyrsistent==0.15.4        # via jsonschema
 pytest-flask==0.15.0
 pytest-mock==1.10.4
-pytest==5.0.1
+pytest==5.1.2
 python-dateutil==2.8.0    # via botocore, faker, freezegun, moto
 python-jose==3.0.1        # via moto
-pytz==2019.1              # via datetime, moto
-pyyaml==5.1.1
-redis==3.2.1              # via fakeredis
-requests-mock==1.6.0
-requests==2.22.0          # via cfn-lint, docker, moto, requests-mock, responses
+pytz==2019.2              # via datetime, moto
+pyyaml==5.1.2
+redis==3.3.8              # via fakeredis
+requests-mock==1.7.0
+requests==2.22.0          # via docker, moto, requests-mock, responses
 responses==0.10.6         # via moto
 rsa==4.0                  # via python-jose
 s3transfer==0.2.1         # via boto3
-six==1.12.0               # via aws-sam-translator, bandit, cfn-lint, cryptography, docker, faker, freezegun, jsonschema, mock, moto, packaging, pyrsistent, python-dateutil, python-jose, requests-mock, responses, stevedore, websocket-client
+six==1.12.0               # via aws-sam-translator, bandit, cfn-lint, cryptography, docker, faker, fakeredis, freezegun, jsonschema, mock, moto, packaging, pyrsistent, python-dateutil, python-jose, requests-mock, responses, stevedore, websocket-client
 smmap2==2.0.5             # via gitdb2
-sshpubkeys==3.1.0         # via moto
 sortedcontainers==2.1.0   # via fakeredis
-stevedore==1.30.1         # via bandit
-text-unidecode==1.2       # via faker
+sshpubkeys==3.1.0         # via moto
+stevedore==1.31.0         # via bandit
+text-unidecode==1.3       # via faker
 toml==0.10.0              # via black
-urllib3==1.25.3           # via botocore, requests
+urllib3==1.25.5           # via botocore, requests
 wcwidth==0.1.7            # via pytest
 websocket-client==0.56.0  # via docker
-werkzeug==0.15.4          # via flask, moto, pytest-flask
+werkzeug==0.16.0          # via flask, moto, pytest-flask
 wrapt==1.11.2             # via aws-xray-sdk
 xmltodict==0.12.0         # via moto
-zipp==0.5.2               # via importlib-metadata
+zipp==0.6.0               # via importlib-metadata
 zope.interface==4.6.0     # via datetime
 
 # The following packages are considered to be unsafe in a requirements file:
-# setuptools==41.0.1        # via cfn-lint, jsonschema, zope.interface
+# setuptools==41.2.0        # via cfn-lint, jsonschema, zope.interface

@@ -111,16 +111,14 @@ def process_options(options):
 
     data["subject_alt_names"] = ",".join(get_additional_names(options))
 
-    if options.get("validity_end") > arrow.utcnow().replace(years=2):
+    if options.get("validity_end") > arrow.utcnow().shift(years=2):
         raise Exception(
             "Verisign issued certificates cannot exceed two years in validity"
         )
 
     if options.get("validity_end"):
         # VeriSign (Symantec) only accepts strictly smaller than 2 year end date
-        if options.get("validity_end") < arrow.utcnow().replace(years=2).replace(
-            days=-1
-        ):
+        if options.get("validity_end") < arrow.utcnow().shift(years=2, days=-1):
             period = get_default_issuance(options)
             data["specificEndDate"] = options["validity_end"].format("MM/DD/YYYY")
             data["validityPeriod"] = period
@@ -149,9 +147,9 @@ def get_default_issuance(options):
     """
     now = arrow.utcnow()
 
-    if options["validity_end"] < now.replace(years=+1):
+    if options["validity_end"] < now.shift(years=+1):
         validity_period = "1Y"
-    elif options["validity_end"] < now.replace(years=+2):
+    elif options["validity_end"] < now.shift(years=+2):
         validity_period = "2Y"
     else:
         raise Exception(
@@ -261,7 +259,7 @@ class VerisignIssuerPlugin(IssuerPlugin):
         url = current_app.config.get("VERISIGN_URL") + "/reportingws"
 
         end = arrow.now()
-        start = end.replace(days=-7)
+        start = end.shift(days=-7)
 
         data = {
             "reportType": "detail",
@@ -299,7 +297,7 @@ class VerisignSourcePlugin(SourcePlugin):
     def get_certificates(self):
         url = current_app.config.get("VERISIGN_URL") + "/reportingws"
         end = arrow.now()
-        start = end.replace(years=-5)
+        start = end.shift(years=-5)
         data = {
             "reportType": "detail",
             "startDate": start.format("MM/DD/YYYY"),

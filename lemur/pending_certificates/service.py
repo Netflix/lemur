@@ -244,7 +244,7 @@ def render(args):
         )
 
     if time_range:
-        to = arrow.now().replace(weeks=+time_range).format("YYYY-MM-DD")
+        to = arrow.now().shift(weeks=+time_range).format("YYYY-MM-DD")
         now = arrow.now().format("YYYY-MM-DD")
         query = query.filter(PendingCertificate.not_after <= to).filter(
             PendingCertificate.not_after >= now

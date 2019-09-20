@@ -419,7 +419,7 @@ def render(args):
         )
 
     if time_range:
-        to = arrow.now().replace(weeks=+time_range).format("YYYY-MM-DD")
+        to = arrow.now().shift(weeks=+time_range).format("YYYY-MM-DD")
         now = arrow.now().format("YYYY-MM-DD")
         query = query.filter(Certificate.not_after <= to).filter(
             Certificate.not_after >= now
@@ -561,7 +561,7 @@ def stats(**kwargs):
     """
     if kwargs.get("metric") == "not_after":
         start = arrow.utcnow()
-        end = start.replace(weeks=+32)
+        end = start.shift(weeks=+32)
         items = (
             database.db.session.query(Certificate.issuer, func.count(Certificate.id))
             .group_by(Certificate.issuer)
