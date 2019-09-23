@@ -40,10 +40,11 @@ from lemur.plugins.lemur_aws import iam, s3, elb, ec2
 
 
 def get_region_from_dns(dns):
-    # XXX.REGION.elb.amazonaws.com
+    #  XXX.REGION.elb.amazonaws.com
     if dns.endswith(".elb.amazonaws.com"):
         return dns.split(".")[-4]
-    else: # NLBs have a different pattern on the dns XXXX.elb.REGION.amazonaws.com
+    else:
+        #  NLBs have a different pattern on the dns XXXX.elb.REGION.amazonaws.com
         return dns.split(".")[-3]
 
 
