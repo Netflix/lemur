@@ -170,8 +170,17 @@ class SFTPDestinationPlugin(DestinationPlugin):
                 current_app.logger.debug(
                     "Uploading {0} to {1}".format(filename, dst_path_cn)
                 )
-                with sftp.open(dst_path_cn + "/" + filename, "w") as f:
-                    f.write(data)
+                try:
+                    with sftp.open(dst_path_cn + "/" + filename, "w") as f:
+                        f.write(data)
+                except (PermissionError) as permerror:
+                    if permerror.errno == 13: 
+                        current_app.logger.debug(
+                            "Uploading {0} to {1} returned Permission Denied Error, making file writable and retrying".format(filename, dst_path_cn)
+                        )
+                        sftp.chmod(dst_path_cn + "/" + filename, 0o600)
+                        with sftp.open(dst_path_cn + "/" + filename, "w") as f:
+                            f.write(data)
                 # read only for owner, -r--------
                 sftp.chmod(dst_path_cn + "/" + filename, 0o400)
 
