@@ -65,7 +65,7 @@ def sync_update_destination(certificate, source):
             certificate.destinations.append(dest)
 
 
-def sync_endpoints(source):
+def sync_endpoints(source, certs_with_mismatched_name):
     new, updated = 0, 0
     current_app.logger.debug("Retrieving endpoints from {0}".format(source.label))
     s = plugins.get(source.plugin_name)
@@ -88,6 +88,20 @@ def sync_endpoints(source):
         certificate_name = endpoint.pop("certificate_name")
 
         endpoint["certificate"] = certificate_service.get_by_name(certificate_name)
+
+        if not endpoint["certificate"] and certificate_name in certs_with_mismatched_name:
+            endpoint["certificate"] = certs_with_mismatched_name[certificate_name][0]
+            if len(certs_with_mismatched_name[certificate_name]) > 1:
+                current_app.logger.error(
+                    "Too Many Matching Lemur Certificates Found. Name: {0} Endpoint: {1}".format(
+                        certificate_name, endpoint["name"]
+                    )
+                )
+                metrics.send("endpoint.certificate.conflict",
+                             "counter", 1,
+                             metric_tags={"cert": certificate_name, "endpoint": endpoint["name"],
+                                          "acct": s.get_option("accountNumber", source.options),
+                                          "matching_certs": certs_with_mismatched_name})
 
         if not endpoint["certificate"]:
             current_app.logger.error(
@@ -128,6 +142,7 @@ def sync_endpoints(source):
 # TODO this is very slow as we don't batch update certificates
 def sync_certificates(source, user):
     new, updated = 0, 0
+    certs_with_mismatched_name = {}
 
     current_app.logger.debug("Retrieving certificates from {0}".format(source.label))
     s = plugins.get(source.plugin_name)
@@ -152,6 +167,8 @@ def sync_certificates(source, user):
             cert = parse_certificate(certificate["body"])
             matching_serials = certificate_service.get_by_serial(serial(cert))
             exists = find_matching_certificates_by_hash(cert, matching_serials)
+            # create a mapping for mis-matched certificates due to different names
+            certs_with_mismatched_name[certificate["name"]] = [x for x in exists if x]
 
         if not certificate.get("owner"):
             certificate["owner"] = user.email
@@ -172,12 +189,12 @@ def sync_certificates(source, user):
                 certificate_update(e, source)
                 updated += 1
 
-    return new, updated
+    return new, updated, certs_with_mismatched_name
 
 
 def sync(source, user):
-    new_certs, updated_certs = sync_certificates(source, user)
-    new_endpoints, updated_endpoints = sync_endpoints(source)
+    new_certs, updated_certs, certs_with_mismatched_name = sync_certificates(source, user)
+    new_endpoints, updated_endpoints = sync_endpoints(source, certs_with_mismatched_name)
 
     source.last_run = arrow.utcnow()
     database.update(source)
