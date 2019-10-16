@@ -89,7 +89,8 @@ def sync_endpoints(source, certs_with_mismatched_name):
 
         endpoint["certificate"] = certificate_service.get_by_name(certificate_name)
 
-        if not endpoint["certificate"] and certificate_name in certs_with_mismatched_name:
+        if not endpoint["certificate"] and certs_with_mismatched_name \
+                and certificate_name in certs_with_mismatched_name:
             endpoint["certificate"] = certs_with_mismatched_name[certificate_name][0]
             if len(certs_with_mismatched_name[certificate_name]) > 1:
                 current_app.logger.error(
@@ -168,7 +169,8 @@ def sync_certificates(source, user):
             matching_serials = certificate_service.get_by_serial(serial(cert))
             exists = find_matching_certificates_by_hash(cert, matching_serials)
             # create a mapping for mis-matched certificates due to different names
-            certs_with_mismatched_name[certificate["name"]] = [x for x in exists if x]
+            if exists:
+                certs_with_mismatched_name[certificate["name"]] = [x for x in exists if x]
 
         if not certificate.get("owner"):
             certificate["owner"] = user.email
@@ -195,6 +197,11 @@ def sync_certificates(source, user):
 def sync(source, user):
     new_certs, updated_certs, certs_with_mismatched_name = sync_certificates(source, user)
     new_endpoints, updated_endpoints = sync_endpoints(source, certs_with_mismatched_name)
+
+    if len(certs_with_mismatched_name):
+        metrics.send("source.sync_certificates.found_by_hash",
+                     'gauge', len(certs_with_mismatched_name),
+                     metric_tags={"source": source.label, "certificates": list(certs_with_mismatched_name.keys())})
 
     source.last_run = arrow.utcnow()
     database.update(source)
