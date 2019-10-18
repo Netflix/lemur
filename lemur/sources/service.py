@@ -15,7 +15,7 @@ from lemur.sources.models import Source
 from lemur.certificates.models import Certificate
 from lemur.certificates import service as certificate_service
 from lemur.endpoints import service as endpoint_service
-from lemur.extensions import metrics
+from lemur.extensions import metrics, sentry
 from lemur.destinations import service as destination_service
 
 from lemur.certificates.schemas import CertificateUploadInputSchema
@@ -92,7 +92,18 @@ def sync_endpoints(source):
         # if get cert by name failed, we attempt a search via serial number and hash comparison
         # and link the endpoint certificate to Lemur certificate
         if not endpoint["certificate"]:
-            certificate_attached_to_endpoint = endpoint.pop("certificate")
+            certificate_attached_to_endpoint = None
+            try:
+                certificate_attached_to_endpoint = s.get_certificate_by_name(certificate_name, source.options)
+            except NotImplementedError:
+                current_app.logger.warning(
+                    "Unable to describe server certificate for endpoints in source {0}:"
+                    " plugin has not implemented 'get_certificate_by_name'".format(
+                        source.label
+                    )
+                )
+                sentry.captureException()
+
             if certificate_attached_to_endpoint:
                 lemur_matching_cert, updated_by_hash_tmp = find_cert(certificate_attached_to_endpoint)
                 updated_by_hash += updated_by_hash_tmp
@@ -111,7 +122,6 @@ def sync_endpoints(source):
                                  metric_tags={"cert": certificate_name, "endpoint": endpoint["name"],
                                               "acct": s.get_option("accountNumber", source.options)})
 
-        # this indicates the we were not able to describe the endpoint cert
         if not endpoint["certificate"]:
             current_app.logger.error(
                 "Certificate Not Found. Name: {0} Endpoint: {1}".format(
