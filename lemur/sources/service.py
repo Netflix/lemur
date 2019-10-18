@@ -113,12 +113,12 @@ def sync_endpoints(source):
 
                 if len(lemur_matching_cert) > 1:
                     current_app.logger.error(
-                        "Too Many Certificates Found. Name: {0} Endpoint: {1}".format(
-                            certificate_name, endpoint["name"]
+                        "Too Many Certificates Found{0}. Name: {1} Endpoint: {2}".format(
+                            len(lemur_matching_cert), certificate_name, endpoint["name"]
                         )
                     )
                     metrics.send("endpoint.certificate.conflict",
-                                 "counter", 1,
+                                 "gauge", len(lemur_matching_cert),
                                  metric_tags={"cert": certificate_name, "endpoint": endpoint["name"],
                                               "acct": s.get_option("accountNumber", source.options)})
 
