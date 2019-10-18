@@ -78,7 +78,7 @@ def sync_endpoints(source):
                 source.label
             )
         )
-        return new, updated
+        return new, updated, updated_by_hash
 
     for endpoint in endpoints:
         exists = endpoint_service.get_by_dnsname_and_port(
