@@ -221,6 +221,14 @@ def sync(source, user):
     new_certs, updated_certs, updated_certs_by_hash = sync_certificates(source, user)
     new_endpoints, updated_endpoints, updated_endpoints_by_hash = sync_endpoints(source)
 
+    metrics.send("sync.updated_certs_by_hash",
+                 "gauge", updated_certs_by_hash,
+                 metric_tags={"source": source.label})
+
+    metrics.send("sync.updated_endpoints_by_hash",
+                 "gauge", updated_endpoints_by_hash,
+                 metric_tags={"source": source.label})
+
     source.last_run = arrow.utcnow()
     database.update(source)
 
