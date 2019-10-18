@@ -10,7 +10,7 @@ import botocore
 
 from retrying import retry
 
-from lemur.extensions import metrics
+from lemur.extensions import metrics, sentry
 from lemur.plugins.lemur_aws.sts import sts_client
 
 
@@ -122,9 +122,11 @@ def get_certificate(name, **kwargs):
     """
     client = kwargs.pop("client")
     metrics.send("get_certificate", "counter", 1, metric_tags={"name": name})
-    return client.get_server_certificate(ServerCertificateName=name)[
-        "ServerCertificate"
-    ]
+    try:
+        return client.get_server_certificate(ServerCertificateName=name)["ServerCertificate"]
+    except client.exceptions.NoSuchEntityException:
+        sentry.captureException()
+        return None
 
 
 @sts_client("iam")

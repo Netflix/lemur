@@ -280,11 +280,12 @@ class AWSSourcePlugin(SourcePlugin):
             certificate_name = certificate_name.split('/')[1]
         try:
             cert = iam.get_certificate(certificate_name, account_number=account_number)
-            return dict(
-                body=cert["CertificateBody"],
-                chain=cert.get("CertificateChain"),
-                name=cert["ServerCertificateMetadata"]["ServerCertificateName"],
-            )
+            if cert:
+                return dict(
+                    body=cert["CertificateBody"],
+                    chain=cert.get("CertificateChain"),
+                    name=cert["ServerCertificateMetadata"]["ServerCertificateName"],
+                )
         except ClientError:
             current_app.logger.warning(
                 "get_elb_certificate_failed: Unable to get certificate for {0}".format(certificate_name))
