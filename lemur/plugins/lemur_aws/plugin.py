@@ -32,7 +32,9 @@
 .. moduleauthor:: Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
 .. moduleauthor:: Harm Weites <harm@weites.com>
 """
+from acme.errors import ClientError
 from flask import current_app
+from lemur.extensions import sentry, metrics
 
 from lemur.plugins import lemur_aws as aws
 from lemur.plugins.bases import DestinationPlugin, ExportDestinationPlugin, SourcePlugin
@@ -110,6 +112,8 @@ def get_elb_endpoints(account_number, region, elb_dict):
                 listener["Listener"]["SSLCertificateId"]
             ),
         )
+        endpoint["certificate"] = get_elb_certificate_by_name(certificate_name=endpoint["certificate_name"],
+                                                              account_number=account_number)
 
         if listener["PolicyNames"]:
             policy = elb.describe_load_balancer_policies(
@@ -125,6 +129,28 @@ def get_elb_endpoints(account_number, region, elb_dict):
         endpoints.append(endpoint)
 
     return endpoints
+
+
+def get_elb_certificate_by_name(certificate_name, account_number):
+    # certificate name may contain path, in which case we remove it
+    if "/" in certificate_name:
+        certificate_name = certificate_name.split('/')[1]
+    try:
+        cert = iam.get_certificate(certificate_name, account_number=account_number)
+        return dict(
+            body=cert["CertificateBody"],
+            chain=cert.get("CertificateChain"),
+            name=cert["ServerCertificateMetadata"]["ServerCertificateName"],
+        )
+    except ClientError:
+        current_app.logger.warning(
+            "get_elb_certificate_failed: Unable to get certificate for {0}".format(certificate_name))
+        sentry.captureException()
+        metrics.send(
+            "get_elb_certificate_failed", "counter", 1,
+            metric_tags={"certificate_name": certificate_name, "account_number": account_number}
+        )
+    return None
 
 
 def get_elb_endpoints_v2(account_number, region, elb_dict):
@@ -153,6 +179,8 @@ def get_elb_endpoints_v2(account_number, region, elb_dict):
                 port=listener["Port"],
                 certificate_name=iam.get_name_from_arn(certificate["CertificateArn"]),
             )
+            endpoint["certificate"] = get_elb_certificate_by_name(certificate_name=endpoint["certificate_name"],
+                                                                  account_number=account_number)
 
         if listener["SslPolicy"]:
             policy = elb.describe_ssl_policies_v2(
