@@ -277,7 +277,7 @@ class AWSSourcePlugin(SourcePlugin):
         account_number = self.get_option("accountNumber", options)
         # certificate name may contain path, in which case we remove it
         if "/" in certificate_name:
-            certificate_name = certificate_name.split('/')[1]
+            certificate_name = certificate_name.split('/')[-1]
         try:
             cert = iam.get_certificate(certificate_name, account_number=account_number)
             if cert:
