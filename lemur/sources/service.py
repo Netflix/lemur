@@ -124,40 +124,47 @@ def sync_endpoints(source):
 
     return new, updated
 
+def find_cert(certificate):
+    updated_by_hash = 0
+    exists = False
+
+    if certificate.get("search", None):
+        conditions = certificate.pop("search")
+        exists = certificate_service.get_by_attributes(conditions)
+
+    if not exists and certificate.get("name"):
+        result = certificate_service.get_by_name(certificate["name"])
+        if result:
+            exists = [result]
+
+    if not exists and certificate.get("serial"):
+        exists = certificate_service.get_by_serial(certificate["serial"])
+
+    if not exists:
+        cert = parse_certificate(certificate["body"])
+        matching_serials = certificate_service.get_by_serial(serial(cert))
+        exists = find_matching_certificates_by_hash(cert, matching_serials)
+        updated_by_hash += 1
+
+    exists = [x for x in exists if x]
+    return exists, updated_by_hash
+
 
 # TODO this is very slow as we don't batch update certificates
 def sync_certificates(source, user):
-    new, updated = 0, 0
+    new, updated, updated_by_hash = 0, 0, 0
 
     current_app.logger.debug("Retrieving certificates from {0}".format(source.label))
     s = plugins.get(source.plugin_name)
     certificates = s.get_certificates(source.options)
 
     for certificate in certificates:
-        exists = False
-
-        if certificate.get("search", None):
-            conditions = certificate.pop("search")
-            exists = certificate_service.get_by_attributes(conditions)
-
-        if not exists and certificate.get("name"):
-            result = certificate_service.get_by_name(certificate["name"])
-            if result:
-                exists = [result]
-
-        if not exists and certificate.get("serial"):
-            exists = certificate_service.get_by_serial(certificate["serial"])
-
-        if not exists:
-            cert = parse_certificate(certificate["body"])
-            matching_serials = certificate_service.get_by_serial(serial(cert))
-            exists = find_matching_certificates_by_hash(cert, matching_serials)
+        exists, updated_by_hash  = find_cert(certificate)
 
         if not certificate.get("owner"):
             certificate["owner"] = user.email
 
         certificate["creator"] = user
-        exists = [x for x in exists if x]
 
         if not exists:
             certificate_create(certificate, source)
