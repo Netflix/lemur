@@ -32,6 +32,7 @@ from lemur.extensions import metrics, sentry
 from lemur.plugins import lemur_acme as acme
 from lemur.plugins.bases import IssuerPlugin
 from lemur.plugins.lemur_acme import cloudflare, dyn, route53, ultradns
+from retrying import retry
 
 
 class AuthorizationRecord(object):
@@ -197,6 +198,7 @@ class AcmeHandler(object):
         )
         return pem_certificate, pem_certificate_chain
 
+    @retry(stop_max_attempt_number=5, wait_fixed=5000)
     def setup_acme_client(self, authority):
         if not authority.options:
             raise InvalidAuthority("Invalid authority. Options not set")
