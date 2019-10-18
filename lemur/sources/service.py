@@ -66,7 +66,7 @@ def sync_update_destination(certificate, source):
 
 
 def sync_endpoints(source):
-    new, updated = 0, 0
+    new, updated, updated_by_hash = 0, 0, 0
     current_app.logger.debug("Retrieving endpoints from {0}".format(source.label))
     s = plugins.get(source.plugin_name)
 
@@ -89,6 +89,29 @@ def sync_endpoints(source):
 
         endpoint["certificate"] = certificate_service.get_by_name(certificate_name)
 
+        # if get cert by name failed, we attempt a search via serial number and hash comparison
+        # and link the endpoint certificate to Lemur certificate
+        if not endpoint["certificate"]:
+            certificate_attached_to_endpoint = endpoint.pop("certificate")
+            if certificate_attached_to_endpoint:
+                lemur_matching_cert, updated_by_hash_tmp = find_cert(certificate_attached_to_endpoint)
+                updated_by_hash += updated_by_hash_tmp
+
+                if lemur_matching_cert:
+                    endpoint["certificate"] = lemur_matching_cert[0]
+
+                if len(lemur_matching_cert) > 1:
+                    current_app.logger.error(
+                        "Too Many Certificates Found. Name: {0} Endpoint: {1}".format(
+                            certificate_name, endpoint["name"]
+                        )
+                    )
+                    metrics.send("endpoint.certificate.conflict",
+                                 "counter", 1,
+                                 metric_tags={"cert": certificate_name, "endpoint": endpoint["name"],
+                                              "acct": s.get_option("accountNumber", source.options)})
+
+        # this indicates the we were not able to describe the endpoint cert
         if not endpoint["certificate"]:
             current_app.logger.error(
                 "Certificate Not Found. Name: {0} Endpoint: {1}".format(
@@ -97,7 +120,8 @@ def sync_endpoints(source):
             )
             metrics.send("endpoint.certificate.not.found",
                          "counter", 1,
-                         metric_tags={"cert": certificate_name, "endpoint": endpoint["name"], "acct": s.get_option("accountNumber", source.options)})
+                         metric_tags={"cert": certificate_name, "endpoint": endpoint["name"],
+                                      "acct": s.get_option("accountNumber", source.options)})
             continue
 
         policy = endpoint.pop("policy")
@@ -122,7 +146,8 @@ def sync_endpoints(source):
             endpoint_service.update(exists.id, **endpoint)
             updated += 1
 
-    return new, updated
+    return new, updated, updated_by_hash
+
 
 def find_cert(certificate):
     updated_by_hash = 0
@@ -159,7 +184,7 @@ def sync_certificates(source, user):
     certificates = s.get_certificates(source.options)
 
     for certificate in certificates:
-        exists, updated_by_hash  = find_cert(certificate)
+        exists, updated_by_hash = find_cert(certificate)
 
         if not certificate.get("owner"):
             certificate["owner"] = user.email
@@ -179,12 +204,12 @@ def sync_certificates(source, user):
                 certificate_update(e, source)
                 updated += 1
 
-    return new, updated
+    return new, updated, updated_by_hash
 
 
 def sync(source, user):
-    new_certs, updated_certs = sync_certificates(source, user)
-    new_endpoints, updated_endpoints = sync_endpoints(source)
+    new_certs, updated_certs, updated_certs_by_hash = sync_certificates(source, user)
+    new_endpoints, updated_endpoints, updated_endpoints_by_hash = sync_endpoints(source)
 
     source.last_run = arrow.utcnow()
     database.update(source)
