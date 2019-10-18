@@ -32,7 +32,9 @@
 .. moduleauthor:: Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
 .. moduleauthor:: Harm Weites <harm@weites.com>
 """
+from acme.errors import ClientError
 from flask import current_app
+from lemur.extensions import sentry, metrics
 
 from lemur.plugins import lemur_aws as aws
 from lemur.plugins.bases import DestinationPlugin, ExportDestinationPlugin, SourcePlugin
@@ -270,6 +272,29 @@ class AWSSourcePlugin(SourcePlugin):
     def clean(self, certificate, options, **kwargs):
         account_number = self.get_option("accountNumber", options)
         iam.delete_cert(certificate.name, account_number=account_number)
+
+    def get_certificate_by_name(self, certificate_name, options):
+        account_number = self.get_option("accountNumber", options)
+        # certificate name may contain path, in which case we remove it
+        if "/" in certificate_name:
+            certificate_name = certificate_name.split('/')[-1]
+        try:
+            cert = iam.get_certificate(certificate_name, account_number=account_number)
+            if cert:
+                return dict(
+                    body=cert["CertificateBody"],
+                    chain=cert.get("CertificateChain"),
+                    name=cert["ServerCertificateMetadata"]["ServerCertificateName"],
+                )
+        except ClientError:
+            current_app.logger.warning(
+                "get_elb_certificate_failed: Unable to get certificate for {0}".format(certificate_name))
+            sentry.captureException()
+            metrics.send(
+                "get_elb_certificate_failed", "counter", 1,
+                metric_tags={"certificate_name": certificate_name, "account_number": account_number}
+            )
+        return None
 
 
 class AWSDestinationPlugin(DestinationPlugin):
