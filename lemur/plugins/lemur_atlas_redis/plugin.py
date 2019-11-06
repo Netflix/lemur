@@ -6,7 +6,7 @@
 
 .. moduleauthor:: Jay Zarfoss
 """
-from time import time
+
 from redis import Redis
 import json
 from datetime import datetime
@@ -27,7 +27,7 @@ def millis_since_epoch():
 
 class AtlasMetricRedisPlugin(MetricPlugin):
     title = "AtlasRedis"
-    slug = "atlas-metric-Redius"
+    slug = "atlas-metric-redis"
     description = "Adds support for sending key metrics to Atlas via local Redis"
     version = atlas.VERSION
 
@@ -89,9 +89,9 @@ class AtlasMetricRedisPlugin(MetricPlugin):
         try:
             r = Redis(host=self.redis_host, port=self.redis_port, socket_timeout=0.1)
             r.rpush('atlas-agent', json.dumps(self.metric_data))
-        except Exception:
+        except Exception as e:
             current_app.logger.warning(
-                "AtlasMetricsRedis: could not post atlas metrics to AtlasRedis {host}:{port}".format(
-                    host=self.redis_host, port=self.redis_port
+                "AtlasMetricsRedis: exception [{exception}] could not post atlas metrics to AtlasRedis [{host}:{port}], metric [{metricdata}]".format(
+                    exception=e, host=self.redis_host, port=self.redis_port, metricdata=json.dumps(self.metric_data)
                 )
             )
