@@ -393,6 +393,9 @@ def render(args):
                     Certificate.cn.ilike(term),
                 )
             )
+        elif "fixedName" in terms:
+            # only what matches the fixed name directly if a fixedname is provided
+            query = query.filter(Certificate.name == terms[1])
         else:
             query = database.filter(query, Certificate, terms)
 
