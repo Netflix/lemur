@@ -31,7 +31,7 @@ If installing Lemur on a bare Ubuntu OS you will need to grab the following pack
 
 .. note:: PostgreSQL is only required if your database is going to be on the same host as the webserver.  npm is needed if you're installing Lemur from the source (e.g., from git).
 
-.. note:: Installing node from a package manager may creat the nodejs bin at  /usr/bin/nodejs instead of /usr/bin/node If that is the case run the following
+.. note:: Installing node from a package manager may create the nodejs bin at  /usr/bin/nodejs instead of /usr/bin/node If that is the case run the following
     sudo ln -s /user/bin/nodejs /usr/bin/node
 
 Now, install Python ``virtualenv`` package:
