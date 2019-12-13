@@ -6,6 +6,8 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from flask import current_app
+from flask_restful import inputs
+from flask_restful.reqparse import RequestParser
 from marshmallow import fields, validate, validates_schema, post_load, pre_load
 from marshmallow.exceptions import ValidationError
 
@@ -285,6 +287,16 @@ class CertificateOutputSchema(LemurOutputSchema):
     rotation_policy = fields.Nested(RotationPolicyNestedOutputSchema)
 
 
+class CertificateShortOutputSchema(LemurOutputSchema):
+    id = fields.Integer()
+    name = fields.String()
+    owner = fields.Email()
+    notify = fields.Boolean()
+    authority = fields.Nested(AuthorityNestedOutputSchema)
+    issuer = fields.String()
+    cn = fields.String()
+
+
 class CertificateUploadInputSchema(CertificateCreationSchema):
     name = fields.String()
     authority = fields.Nested(AssociatedAuthoritySchema, required=False)
@@ -363,9 +375,22 @@ class CertificateRevokeSchema(LemurInputSchema):
     comments = fields.String()
 
 
+certificates_list_request_parser = RequestParser()
+certificates_list_request_parser.add_argument("short", type=inputs.boolean, default=False, location="args")
+
+
+def certificates_list_output_schema_factory():
+    args = certificates_list_request_parser.parse_args()
+    if args["short"]:
+        return certificates_short_output_schema
+    else:
+        return certificates_output_schema
+
+
 certificate_input_schema = CertificateInputSchema()
 certificate_output_schema = CertificateOutputSchema()
 certificates_output_schema = CertificateOutputSchema(many=True)
+certificates_short_output_schema = CertificateShortOutputSchema(many=True)
 certificate_upload_input_schema = CertificateUploadInputSchema()
 certificate_export_input_schema = CertificateExportInputSchema()
 certificate_edit_input_schema = CertificateEditInputSchema()

@@ -28,6 +28,7 @@ angular.module('lemur')
       sorting: {
         id: 'desc'     // initial sorting
       },
+      short: true,
       filter: $scope.filter
     }, {
       total: 0,           // length of data
@@ -54,6 +55,7 @@ angular.module('lemur')
         sorting: {
           id: 'desc'     // initial sorting
         },
+        short: true,
         filter: $scope.filter
       }, {
         getData: function ($defer, params) {

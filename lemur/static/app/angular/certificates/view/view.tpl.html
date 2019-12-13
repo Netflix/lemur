@@ -71,7 +71,7 @@
                 </div>
             </td>
           </tr>
-          <tr class="warning" ng-if="certificate.toggle" ng-repeat-end>
+          <tr class="warning" ng-if="certificate.toggle" ng-controller="CertificateInfoController" ng-init="fetchFullCertificate(certificate.id)" ng-repeat-end>
             <td colspan="12">
               <uib-tabset justified="true" class="col-md-8">
                 <uib-tab>
