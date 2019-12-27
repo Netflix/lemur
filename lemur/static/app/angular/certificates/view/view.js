@@ -11,7 +11,7 @@ angular.module('lemur')
         controller: 'CertificatesViewController'
       })
       .state('certificate', {
-        url: '/certificates/:name',
+        url: '/certificates/:fixedName', // use "fixedName" if in URL to indicate 'like' query can be avoided
         templateUrl: '/angular/certificates/view/view.tpl.html',
         controller: 'CertificatesViewController'
       });
