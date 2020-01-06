@@ -169,7 +169,12 @@ def validate_schema(input_schema, output_schema):
             if not resp:
                 return dict(message="No data found"), 404
 
-            return unwrap_pagination(resp, output_schema), 200
+            if callable(output_schema):
+                output_schema_to_use = output_schema()
+            else:
+                output_schema_to_use = output_schema
+
+            return unwrap_pagination(resp, output_schema_to_use), 200
 
         return decorated_function
 
