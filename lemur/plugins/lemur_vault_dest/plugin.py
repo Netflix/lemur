@@ -107,7 +107,7 @@ class VaultSourcePlugin(SourcePlugin):
             with open(auth_key, "r") as tfile:
                 token = tfile.readline().rstrip("\n")
             client.token = token
-        
+
         if auth_method == 'kubernetes':
             f = open('/var/run/secrets/kubernetes.io/serviceaccount/token')
             jwt = f.read()
@@ -275,7 +275,7 @@ class VaultDestinationPlugin(DestinationPlugin):
             with open(auth_key, "r") as tfile:
                 token = tfile.readline().rstrip("\n")
             client.token = token
-        
+
         if auth_method == 'kubernetes':
             f = open('/var/run/secrets/kubernetes.io/serviceaccount/token')
             jwt = f.read()
