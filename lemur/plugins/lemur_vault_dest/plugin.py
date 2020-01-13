@@ -109,8 +109,9 @@ class VaultSourcePlugin(SourcePlugin):
             client.token = token
 
         if auth_method == 'kubernetes':
-            f = open('/var/run/secrets/kubernetes.io/serviceaccount/token')
-            jwt = f.read()
+            token_path = '/var/run/secrets/kubernetes.io/serviceaccount/token' 
+            with open(token_path, 'r') as f:
+                jwt = f.read()
             client.auth_kubernetes(auth_key, jwt)
 
         client.secrets.kv.default_kv_version = api_version
@@ -277,8 +278,9 @@ class VaultDestinationPlugin(DestinationPlugin):
             client.token = token
 
         if auth_method == 'kubernetes':
-            f = open('/var/run/secrets/kubernetes.io/serviceaccount/token')
-            jwt = f.read()
+            token_path = '/var/run/secrets/kubernetes.io/serviceaccount/token'
+            with open(token_path, 'r') as f:
+                jwt = f.read()
             client.auth_kubernetes(auth_key, jwt)
 
         client.secrets.kv.default_kv_version = api_version
