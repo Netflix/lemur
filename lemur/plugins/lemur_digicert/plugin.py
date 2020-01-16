@@ -171,6 +171,9 @@ def map_cis_fields(options, csr):
             "units": [options["organizational_unit"]],
         },
     }
+    #  possibility to default to a SIGNING_ALGORITHM for a given profile
+    if current_app.config.get("DIGICERT_CIS_SIGNING_ALGORITHMS", {}).get(options['authority'].name):
+        data["signature_hash"] = current_app.config.get("DIGICERT_CIS_SIGNING_ALGORITHMS", {}).get(options['authority'].name)
 
     return data
 
