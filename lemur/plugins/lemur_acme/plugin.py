@@ -31,7 +31,7 @@ from lemur.exceptions import InvalidAuthority, InvalidConfiguration, UnknownProv
 from lemur.extensions import metrics, sentry
 from lemur.plugins import lemur_acme as acme
 from lemur.plugins.bases import IssuerPlugin
-from lemur.plugins.lemur_acme import cloudflare, dyn, route53, ultradns
+from lemur.plugins.lemur_acme import cloudflare, dyn, route53, ultradns, powerdns
 from retrying import retry
 
 
@@ -377,6 +377,7 @@ class AcmeHandler(object):
             "dyn": dyn,
             "route53": route53,
             "ultradns": ultradns,
+            # "powerdns": powerdns,
         }
         provider = provider_types.get(type)
         if not provider:
@@ -436,6 +437,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
             "dyn": dyn,
             "route53": route53,
             "ultradns": ultradns,
+            # "powerdns": powerdns,
         }
         provider = provider_types.get(type)
         if not provider:
