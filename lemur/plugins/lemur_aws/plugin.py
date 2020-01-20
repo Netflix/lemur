@@ -212,7 +212,7 @@ class AWSSourcePlugin(SourcePlugin):
         if not regions:
             regions = ec2.get_regions(account_number=account_number)
         else:
-            regions = regions.split(",")
+            regions = "".join(regions.split()).split(",")
 
         for region in regions:
             elbs = elb.get_all_elbs(account_number=account_number, region=region)
