@@ -5,6 +5,7 @@ from mock import MagicMock, Mock, patch
 
 from lemur.plugins.lemur_acme import plugin, powerdns
 
+
 class TestPowerdns(unittest.TestCase):
     @patch("lemur.plugins.lemur_acme.plugin.dns_provider_service")
     def setUp(self, mock_dns_provider_service):
@@ -18,37 +19,6 @@ class TestPowerdns(unittest.TestCase):
             "www.test.com": [mock_dns_provider],
             "test.fakedomain.net": [mock_dns_provider],
         }
-
-    @patch("lemur.plugins.lemur_acme.powerdns.requests")
-    @patch("lemur.plugins.lemur_acme.powerdns.current_app")
-    def test_powerdns_get_token(self, mock_current_app, mock_requests):
-        # ret_val = json.dumps({"access_token": "access"})
-        the_response = Response()
-        the_response._content = b'{"access_token": "access"}'
-        mock_requests.post = Mock(return_value=the_response)
-        mock_current_app.config.get = Mock(return_value="Test")
-        result = powerdns.get_powerdns_token()
-        self.assertTrue(len(result) > 0)
-
-    @patch("lemur.plugins.lemur_acme.powerdns.current_app")
-    def test_powerdns_create_txt_record(self, mock_current_app):
-        domain = "_acme_challenge.test.example.com"
-        zone = "test.example.com"
-        token = "ABCDEFGHIJ"
-        account_number = "1234567890"
-        change_id = (domain, token)
-        powerdns.get_zone_name = Mock(return_value=zone)
-        mock_current_app.logger.debug = Mock()
-        powerdns._post = Mock()
-        log_data = {
-            "function": "create_txt_record",
-            "fqdn": domain,
-            "token": token,
-            "message": "TXT record created"
-        }
-        result = powerdns.create_txt_record(domain, token, account_number)
-        mock_current_app.logger.debug.assert_called_with(log_data)
-        self.assertEqual(result, change_id)
 
     @patch("lemur.plugins.lemur_acme.powerdns.current_app")
     @patch("lemur.extensions.metrics")
@@ -94,15 +64,6 @@ class TestPowerdns(unittest.TestCase):
         }
         mock_current_app.logger.debug.assert_called_with(log_data)
 
-    def test_powerdns_get_zone_name(self):
-        zones = ['example.com', 'test.example.com']
-        zone = "test.example.com"
-        domain = "_acme-challenge.test.example.com"
-        account_number = "1234567890"
-        powerdns.get_zones = Mock(return_value=zones)
-        result = powerdns.get_zone_name(domain, account_number)
-        self.assertEqual(result, zone)
-
     @patch("lemur.plugins.lemur_acme.powerdns.current_app")
     def test_powerdns_get_zones(self, mock_current_app):
         account_number = "1234567890"
@@ -122,3 +83,44 @@ class TestPowerdns(unittest.TestCase):
         mock_current_app.config.get = Mock(return_value="localhost")
         result = powerdns.get_zones(account_number)
         self.assertEqual(result, zones)
+
+    def test_powerdns_get_zone_name(self):
+        zones = ['example.com', 'test.example.com']
+        zone = "test.example.com"
+        domain = "_acme-challenge.test.example.com"
+        account_number = "1234567890"
+        powerdns.get_zones = Mock(return_value=zones)
+        result = powerdns._get_zone_name(domain, account_number)
+        self.assertEqual(result, zone)
+
+    def mock_current_app_config_get(a, b):
+        """ Mock of current_app.config.get() """
+        config = {
+            'ACME_POWERDNS_APIKEYNAME':  'X-API-Key',
+            'ACME_POWERDNS_APIKEY': 'KEY',
+            'ACME_POWERDNS_DOMAIN':  'http://internal-dnshiddenmaster-1486232504.us-east-1.elb.amazonaws.com',
+            'ACME_POWERDNS_SERVERID':  'localhost'
+        }
+        return config[a]
+
+    @patch("lemur.plugins.lemur_acme.powerdns.current_app")
+    # @patch("lemur.plugins.lemur_acme.powerdns.current_app.config.get", side_effect=mock_current_app_config_get)
+    def test_powerdns_create_txt_record(self, mock_current_app):
+        domain = "_acme_challenge.test.example.com"
+        zone = "test.example.com"
+        token = "ABCDEFGHIJ"
+        account_number = "1234567890"
+        change_id = (domain, token)
+        powerdns._get_zone_name = Mock(return_value=zone)
+        mock_current_app.logger.debug = Mock()
+        mock_current_app.config.get = Mock(return_value="localhost")
+        powerdns._patch = Mock()
+        log_data = {
+            "function": "create_txt_record",
+            "fqdn": domain,
+            "token": token,
+            "message": "TXT record successfully created"
+        }
+        result = powerdns.create_txt_record(domain, token, account_number)
+        mock_current_app.logger.debug.assert_called_with(log_data)
+        self.assertEqual(result, change_id)

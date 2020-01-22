@@ -57,6 +57,18 @@ def _get(path, params=None):
     resp.raise_for_status()
     return resp.json()
 
+def _patch(path, payload):
+    """
+    Function to execute a Patch request on the given URL (base_uri + path) with given data
+    """
+    base_uri = current_app.config.get("ACME_POWERDNS_DOMAIN", "")
+    resp = requests.patch(
+        f"{base_uri}{path}",
+        headers=_generate_header(),
+        data=json.dumps(payload)
+    )
+    resp.raise_for_status()
+
 
 def get_zones(account_number):
     """Get zones from the PowerDNS"""
@@ -68,6 +80,23 @@ def get_zones(account_number):
         if zone.kind == 'Master':
             zones.append(zone.name)
     return zones
+
+def _get_zone_name(domain, account_number):
+    """Get the matching zone for the given domain"""
+    zones = get_zones(account_number)
+    zone_name = ""
+    for z in zones:
+        if domain.endswith(z):
+            # Find the most specific zone possible for the domain
+            # Ex: If fqdn is a.b.c.com, there is a zone for c.com,
+            # and a zone for b.c.com, we want to use b.c.com.
+            if z.count(".") > zone_name.count("."):
+                zone_name = z
+    if not zone_name:
+        function = sys._getframe().f_code.co_name
+        metrics.send(f"{function}.fail", "counter", 1)
+        raise Exception(f"No PowerDNS zone found for domain: {domain}")
+    return zone_name
 
 def create_txt_record(domain, token, account_number):
     """
@@ -81,7 +110,57 @@ def create_txt_record(domain, token, account_number):
     Matching zone - example.com
     Owner name - _acme-challenge.lemur
     """
-    pass
+
+    zone_name = _get_zone_name(domain, account_number)
+    node_name = domain[:-len(".".join(zone_name))]
+
+    server_id = current_app.config.get("ACME_POWERDNS_SERVERID", "")
+    zone_id = zone_name.join(".")
+    domain_id = domain.join(".")
+
+    path = f"/api/v1/servers/{server_id}/zones/{zone_id}"
+    payload = {
+        "rrsets": [
+            {
+                "name": f"{domain_id}",
+                "type": "TXT",
+                "ttl": "300",
+                "changetype": "REPLACE",
+                "records": [
+                    {
+                        "content": f"{token}",
+                        "disabled": "false"
+                    }
+                ],
+                "comments": []
+            }
+        ]
+    }
+
+    try:
+        _patch(path, payload)
+        function = sys._getframe().f_code.co_name
+        log_data = {
+            "function": function,
+            "fqdn": domain,
+            "token": token,
+            "message": "TXT record successfully created"
+        }
+        current_app.logger.debug(log_data)
+    except Exception as e:
+        function = sys._getframe().f_code.co_name
+        log_data = {
+            "function": function,
+            "domain": domain,
+            "token": token,
+            "Exception": e,
+            "message": "Unable to create TXT record"
+        }
+        current_app.logger.debug(log_data)
+
+    change_id = (domain, token)
+    return change_id
+
 
 def wait_for_dns_change(change_id, account_number=None):
     """
