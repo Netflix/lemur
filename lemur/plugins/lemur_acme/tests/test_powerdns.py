@@ -44,27 +44,6 @@ class TestPowerdns(unittest.TestCase):
         mock_metrics.send.assert_not_called()
 
     @patch("lemur.plugins.lemur_acme.powerdns.current_app")
-    @patch("lemur.extensions.metrics")
-    def test_powerdns_wait_for_dns_change(self, mock_metrics, mock_current_app):
-        powerdns._has_dns_propagated = Mock(return_value=True)
-        nameserver = "1.1.1.1"
-        powerdns.get_authoritative_nameserver = Mock(return_value=nameserver)
-        mock_metrics.send = Mock()
-        domain = "_acme-challenge.test.example.com"
-        token = "ABCDEFGHIJ"
-        change_id = (domain, token)
-        mock_current_app.logger.debug = Mock()
-        powerdns.wait_for_dns_change(change_id)
-        # mock_metrics.send.assert_not_called()
-        log_data = {
-            "function": "wait_for_dns_change",
-            "fqdn": domain,
-            "status": True,
-            "message": "Record status on Public DNS"
-        }
-        mock_current_app.logger.debug.assert_called_with(log_data)
-
-    @patch("lemur.plugins.lemur_acme.powerdns.current_app")
     def test_powerdns_get_zones(self, mock_current_app):
         account_number = "1234567890"
         path = "a/b/c"
@@ -124,3 +103,24 @@ class TestPowerdns(unittest.TestCase):
         result = powerdns.create_txt_record(domain, token, account_number)
         mock_current_app.logger.debug.assert_called_with(log_data)
         self.assertEqual(result, change_id)
+
+    @patch("lemur.plugins.lemur_acme.powerdns.current_app")
+    @patch("lemur.extensions.metrics")
+    def test_powerdns_wait_for_dns_change(self, mock_metrics, mock_current_app):
+        powerdns._has_dns_propagated = Mock(return_value=True)
+        nameserver = "1.1.1.1"
+        powerdns._get_authoritative_nameserver = Mock(return_value=nameserver)
+        mock_metrics.send = Mock()
+        domain = "_acme-challenge.test.example.com"
+        token = "ABCDEFGHIJ"
+        change_id = (domain, token)
+        mock_current_app.logger.debug = Mock()
+        powerdns.wait_for_dns_change(change_id)
+        # mock_metrics.send.assert_not_called()
+        log_data = {
+            "function": "wait_for_dns_change",
+            "fqdn": domain,
+            "status": True,
+            "message": "Record status on Public DNS"
+        }
+        mock_current_app.logger.debug.assert_called_with(log_data)
