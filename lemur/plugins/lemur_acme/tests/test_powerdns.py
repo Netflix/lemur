@@ -21,30 +21,7 @@ class TestPowerdns(unittest.TestCase):
         }
 
     @patch("lemur.plugins.lemur_acme.powerdns.current_app")
-    @patch("lemur.extensions.metrics")
-    def test_powerdns_delete_txt_record(self, mock_metrics, mock_current_app):
-        domain = "_acme_challenge.test.example.com"
-        zone = "test.example.com"
-        token = "ABCDEFGHIJ"
-        account_number = "1234567890"
-        change_id = (domain, token)
-        mock_current_app.logger.debug = Mock()
-        powerdns.get_zone_name = Mock(return_value=zone)
-        powerdns._post = Mock()
-        powerdns._get = Mock()
-        powerdns._get.return_value = {'zoneName': 'test.example.com.com',
-                'rrSets': [{'ownerName': '_acme-challenge.test.example.com.',
-                            'rrtype': 'TXT (16)', 'ttl': 5, 'rdata': ['ABCDEFGHIJ']}],
-                'queryInfo': {'sort': 'OWNER', 'reverse': False, 'limit': 100},
-                'resultInfo': {'totalCount': 1, 'offset': 0, 'returnedCount': 1}}
-        powerdns._delete = Mock()
-        mock_metrics.send = Mock()
-        powerdns.delete_txt_record(change_id, account_number, domain, token)
-        mock_current_app.logger.debug.assert_not_called()
-        mock_metrics.send.assert_not_called()
-
-    @patch("lemur.plugins.lemur_acme.powerdns.current_app")
-    def test_powerdns_get_zones(self, mock_current_app):
+    def test_get_zones(self, mock_current_app):
         account_number = "1234567890"
         path = "a/b/c"
         zones = ['example.com', 'test.example.com']
@@ -63,7 +40,7 @@ class TestPowerdns(unittest.TestCase):
         result = powerdns.get_zones(account_number)
         self.assertEqual(result, zones)
 
-    def test_powerdns_get_zone_name(self):
+    def test_get_zone_name(self):
         zones = ['example.com', 'test.example.com']
         zone = "test.example.com"
         domain = "_acme-challenge.test.example.com"
@@ -72,19 +49,8 @@ class TestPowerdns(unittest.TestCase):
         result = powerdns._get_zone_name(domain, account_number)
         self.assertEqual(result, zone)
 
-    def mock_current_app_config_get(a, b):
-        """ Mock of current_app.config.get() """
-        config = {
-            'ACME_POWERDNS_APIKEYNAME':  'X-API-Key',
-            'ACME_POWERDNS_APIKEY': 'KEY',
-            'ACME_POWERDNS_DOMAIN':  'http://internal-dnshiddenmaster-1486232504.us-east-1.elb.amazonaws.com',
-            'ACME_POWERDNS_SERVERID':  'localhost'
-        }
-        return config[a]
-
     @patch("lemur.plugins.lemur_acme.powerdns.current_app")
-    # @patch("lemur.plugins.lemur_acme.powerdns.current_app.config.get", side_effect=mock_current_app_config_get)
-    def test_powerdns_create_txt_record(self, mock_current_app):
+    def test_create_txt_record(self, mock_current_app):
         domain = "_acme_challenge.test.example.com"
         zone = "test.example.com"
         token = "ABCDEFGHIJ"
@@ -106,21 +72,50 @@ class TestPowerdns(unittest.TestCase):
 
     @patch("lemur.plugins.lemur_acme.powerdns.current_app")
     @patch("lemur.extensions.metrics")
-    def test_powerdns_wait_for_dns_change(self, mock_metrics, mock_current_app):
-        powerdns._has_dns_propagated = Mock(return_value=True)
+    @patch("time.sleep")
+    def test_wait_for_dns_change(self, mock_sleep, mock_metrics, mock_current_app):
         nameserver = "1.1.1.1"
         powerdns._get_authoritative_nameserver = Mock(return_value=nameserver)
+        powerdns._has_dns_propagated = Mock(return_value=True)
         mock_metrics.send = Mock()
+        mock_sleep.return_value = False
         domain = "_acme-challenge.test.example.com"
         token = "ABCDEFGHIJ"
         change_id = (domain, token)
         mock_current_app.logger.debug = Mock()
         powerdns.wait_for_dns_change(change_id)
-        # mock_metrics.send.assert_not_called()
-        log_data = {
+
+        auth_log_data = {
+            "function": "wait_for_dns_change",
+            "fqdn": domain,
+            "status": True,
+            "message": "Record status on UltraDNS authoritative server"
+        }
+        pub_log_data = {
             "function": "wait_for_dns_change",
             "fqdn": domain,
             "status": True,
             "message": "Record status on Public DNS"
         }
+        mock_current_app.logger.debug.assert_any_call(auth_log_data)
+        mock_current_app.logger.debug.assert_any_call(pub_log_data)
+
+    @patch("lemur.plugins.lemur_acme.powerdns.current_app")
+    def test_delete_txt_record(self, mock_current_app):
+        domain = "_acme_challenge.test.example.com"
+        zone = "test.example.com"
+        token = "ABCDEFGHIJ"
+        account_number = "1234567890"
+        change_id = (domain, token)
+        powerdns._get_zone_name = Mock(return_value=zone)
+        mock_current_app.logger.debug = Mock()
+        mock_current_app.config.get = Mock(return_value="localhost")
+        powerdns._patch = Mock()
+        log_data = {
+            "function": "delete_txt_record",
+            "fqdn": domain,
+            "token": token,
+            "message": "TXT record successfully deleted"
+        }
+        powerdns.delete_txt_record(change_id, account_number, domain, token)
         mock_current_app.logger.debug.assert_called_with(log_data)
