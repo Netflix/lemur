@@ -377,7 +377,7 @@ class AcmeHandler(object):
             "dyn": dyn,
             "route53": route53,
             "ultradns": ultradns,
-            # "powerdns": powerdns,
+            "powerdns": powerdns
         }
         provider = provider_types.get(type)
         if not provider:
@@ -437,7 +437,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
             "dyn": dyn,
             "route53": route53,
             "ultradns": ultradns,
-            # "powerdns": powerdns,
+            "powerdns": powerdns
         }
         provider = provider_types.get(type)
         if not provider:

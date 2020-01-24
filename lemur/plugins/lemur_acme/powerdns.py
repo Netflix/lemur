@@ -74,8 +74,8 @@ def create_txt_record(domain, token, account_number):
     """ Create a TXT record for the given domain and token and return a change_id tuple """
     zone_name = _get_zone_name(domain, account_number)
     server_id = current_app.config.get("ACME_POWERDNS_SERVERID", "")
-    zone_id = zone_name.join(".")
-    domain_id = domain.join(".")
+    zone_id = zone_name + "."
+    domain_id = domain + "."
     path = f"/api/v1/servers/{server_id}/zones/{zone_id}"
     payload = {
         "rrsets": [
@@ -170,8 +170,8 @@ def delete_txt_record(change_id, account_number, domain, token):
     """ Delete the TXT record for the given domain and token """
     zone_name = _get_zone_name(domain, account_number)
     server_id = current_app.config.get("ACME_POWERDNS_SERVERID", "")
-    zone_id = zone_name.join(".")
-    domain_id = domain.join(".")
+    zone_id = zone_name + "."
+    domain_id = domain + "."
     path = f"/api/v1/servers/{server_id}/zones/{zone_id}"
     payload = {
         "rrsets": [

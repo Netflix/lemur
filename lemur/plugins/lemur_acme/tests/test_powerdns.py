@@ -1,8 +1,5 @@
 import unittest
-from requests.models import Response
-
-from mock import MagicMock, Mock, patch
-
+from mock import Mock, patch
 from lemur.plugins.lemur_acme import plugin, powerdns
 
 
