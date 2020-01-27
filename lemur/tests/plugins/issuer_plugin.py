@@ -4,12 +4,12 @@ from lemur.tests.vectors import SAN_CERT_STR, INTERMEDIATE_CERT_STR
 
 
 class TestIssuerPlugin(IssuerPlugin):
-    title = 'Test'
-    slug = 'test-issuer'
-    description = 'Enables testing'
+    title = "Test"
+    slug = "test-issuer"
+    description = "Enables testing"
 
-    author = 'Kevin Glisson'
-    author_url = 'https://github.com/netflix/lemur.git'
+    author = "Kevin Glisson"
+    author_url = "https://github.com/netflix/lemur.git"
 
     def __init__(self, *args, **kwargs):
         super(TestIssuerPlugin, self).__init__(*args, **kwargs)
@@ -20,17 +20,17 @@ class TestIssuerPlugin(IssuerPlugin):
 
     @staticmethod
     def create_authority(options):
-        role = {'username': '', 'password': '', 'name': 'test'}
+        role = {"username": "", "password": "", "name": "test"}
         return SAN_CERT_STR, "", [role]
 
 
 class TestAsyncIssuerPlugin(IssuerPlugin):
-    title = 'Test Async'
-    slug = 'test-issuer-async'
-    description = 'Enables testing with pending certificates'
+    title = "Test Async"
+    slug = "test-issuer-async"
+    description = "Enables testing with pending certificates"
 
-    author = 'James Chuong'
-    author_url = 'https://github.com/jchuong'
+    author = "James Chuong"
+    author_url = "https://github.com/jchuong"
 
     def __init__(self, *args, **kwargs):
         super(TestAsyncIssuerPlugin, self).__init__(*args, **kwargs)
@@ -43,7 +43,7 @@ class TestAsyncIssuerPlugin(IssuerPlugin):
 
     @staticmethod
     def create_authority(options):
-        role = {'username': '', 'password': '', 'name': 'test'}
+        role = {"username": "", "password": "", "name": "test"}
         return SAN_CERT_STR, "", [role]
 
     def cancel_ordered_certificate(self, pending_certificate, **kwargs):

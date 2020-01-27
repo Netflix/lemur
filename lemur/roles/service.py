@@ -47,7 +47,9 @@ def set_third_party(role_id, third_party_status=False):
     return role
 
 
-def create(name, password=None, description=None, username=None, users=None, third_party=False):
+def create(
+    name, password=None, description=None, username=None, users=None, third_party=False
+):
     """
     Create a new role
 
@@ -58,7 +60,13 @@ def create(name, password=None, description=None, username=None, users=None, thi
     :param password:
     :return:
     """
-    role = Role(name=name, description=description, username=username, password=password, third_party=third_party)
+    role = Role(
+        name=name,
+        description=description,
+        username=username,
+        password=password,
+        third_party=third_party,
+    )
 
     if users:
         role.users = users
@@ -83,7 +91,7 @@ def get_by_name(role_name):
     :param role_name:
     :return:
     """
-    return database.get(Role, role_name, field='name')
+    return database.get(Role, role_name, field="name")
 
 
 def delete(role_id):
@@ -105,9 +113,9 @@ def render(args):
     :return:
     """
     query = database.session_query(Role)
-    filt = args.pop('filter')
-    user_id = args.pop('user_id', None)
-    authority_id = args.pop('authority_id', None)
+    filt = args.pop("filter")
+    user_id = args.pop("user_id", None)
+    authority_id = args.pop("authority_id", None)
 
     if user_id:
         query = query.filter(Role.users.any(User.id == user_id))
@@ -116,7 +124,7 @@ def render(args):
         query = query.filter(Role.authority_id == authority_id)
 
     if filt:
-        terms = filt.split(';')
+        terms = filt.split(";")
         query = database.filter(query, Role, terms)
 
     return database.sort_and_page(query, Role, args)

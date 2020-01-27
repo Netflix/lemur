@@ -11,19 +11,24 @@ from flask_restful import Api, reqparse
 from lemur.sources import service
 
 from lemur.common.schema import validate_schema
-from lemur.sources.schemas import source_input_schema, source_output_schema, sources_output_schema
+from lemur.sources.schemas import (
+    source_input_schema,
+    source_output_schema,
+    sources_output_schema,
+)
 
 from lemur.auth.service import AuthenticatedResource
 from lemur.auth.permissions import admin_permission
 from lemur.common.utils import paginated_parser
 
 
-mod = Blueprint('sources', __name__)
+mod = Blueprint("sources", __name__)
 api = Api(mod)
 
 
 class SourcesList(AuthenticatedResource):
     """ Defines the 'sources' endpoint """
+
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(SourcesList, self).__init__()
@@ -151,7 +156,12 @@ class SourcesList(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
-        return service.create(data['label'], data['plugin']['slug'], data['plugin']['plugin_options'], data['description'])
+        return service.create(
+            data["label"],
+            data["plugin"]["slug"],
+            data["plugin"]["plugin_options"],
+            data["description"],
+        )
 
 
 class Sources(AuthenticatedResource):
@@ -271,16 +281,22 @@ class Sources(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
-        return service.update(source_id, data['label'], data['plugin']['plugin_options'], data['description'])
+        return service.update(
+            source_id,
+            data["label"],
+            data["plugin"]["plugin_options"],
+            data["description"],
+        )
 
     @admin_permission.require(http_exception=403)
     def delete(self, source_id):
         service.delete(source_id)
-        return {'result': True}
+        return {"result": True}
 
 
 class CertificateSources(AuthenticatedResource):
     """ Defines the 'certificate/<int:certificate_id/sources'' endpoint """
+
     def __init__(self):
         super(CertificateSources, self).__init__()
 
@@ -340,11 +356,14 @@ class CertificateSources(AuthenticatedResource):
         """
         parser = paginated_parser.copy()
         args = parser.parse_args()
-        args['certificate_id'] = certificate_id
+        args["certificate_id"] = certificate_id
         return service.render(args)
 
 
-api.add_resource(SourcesList, '/sources', endpoint='sources')
-api.add_resource(Sources, '/sources/<int:source_id>', endpoint='account')
-api.add_resource(CertificateSources, '/certificates/<int:certificate_id>/sources',
-                 endpoint='certificateSources')
+api.add_resource(SourcesList, "/sources", endpoint="sources")
+api.add_resource(Sources, "/sources/<int:source_id>", endpoint="account")
+api.add_resource(
+    CertificateSources,
+    "/certificates/<int:certificate_id>/sources",
+    endpoint="certificateSources",
+)

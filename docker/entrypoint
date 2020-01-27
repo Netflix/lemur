@@ -1,0 +1,54 @@
+#!/bin/sh
+
+if [ -z "${POSTGRES_USER}" ] || [ -z "${POSTGRES_PASSWORD}" ] || [ -z "${POSTGRES_HOST}" ] || [ -z "${POSTGRES_DB}" ];then
+  echo "Database vars not set"
+  exit 1
+fi
+
+export POSTGRES_PORT="${POSTGRES_PORT:-5432}"
+
+echo 'export SQLALCHEMY_DATABASE_URI="postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB"' >> /etc/profile
+
+source /etc/profile
+
+PGPASSWORD=$POSTGRES_PASSWORD psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -d $POSTGRES_DB --command 'select 1;'
+
+echo " # Create Postgres trgm extension"
+PGPASSWORD=$POSTGRES_PASSWORD psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -d $POSTGRES_DB --command 'CREATE EXTENSION pg_trgm;'
+echo " # Done"
+
+if [ -z "${SKIP_SSL}" ]; then
+  if [ ! -f /etc/nginx/ssl/server.crt ] && [ ! -f /etc/nginx/ssl/server.key ]; then
+    openssl req -x509 -newkey rsa:4096 -nodes -keyout /etc/nginx/ssl/server.key -out /etc/nginx/ssl/server.crt -days 365 -subj "/C=US/ST=FAKE/L=FAKE/O=FAKE/OU=FAKE/CN=FAKE"
+  fi
+  mv /etc/nginx/conf.d/default-ssl.conf.a /etc/nginx/conf.d/default-ssl.conf
+  mv /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf.a
+fi
+
+# if [ ! -f /home/lemur/.lemur/lemur.conf.py ]; then
+# echo "Creating config"
+# https://github.com/Netflix/lemur/issues/2257
+# python3 /opt/lemur/lemur/manage.py create_config
+# echo "Done"
+# fi
+
+echo " # Running init"
+su lemur -c "python3 /opt/lemur/lemur/manage.py init"
+echo " # Done"
+
+# echo "Creating user"
+# https://github.com/Netflix/lemur/issues/
+# echo "something that will create user" | python3 /opt/lemur/lemur/manage.py shell
+# echo "Done"
+
+cron_notify="${CRON_NOTIFY:-"0 22 * * *"}"
+cron_sync="${CRON_SYNC:-"*/15 * * * *"}"
+cron_revoked="${CRON_CHECK_REVOKED:-"0 22 * * *"}"
+
+echo " # Populating crontab"
+echo "${cron_notify} lemur python3 /opt/lemur/lemur/manage.py notify expirations" > /etc/crontabs/lemur_notify
+echo "${cron_sync} lemur python3 /opt/lemur/lemur/manage.py source sync -s all" > /etc/crontabs/lemur_sync
+echo "${cron_revoked} lemur python3 /opt/lemur/lemur/manage.py certificate check_revoked" > /etc/crontabs/lemur_revoked
+echo " # Done"
+
+exec "$@"

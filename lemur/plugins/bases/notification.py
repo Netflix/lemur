@@ -14,7 +14,8 @@ class NotificationPlugin(Plugin):
     This is the base class from which all of the supported
     issuers will inherit from.
     """
-    type = 'notification'
+
+    type = "notification"
 
     def send(self, notification_type, message, targets, options, **kwargs):
         raise NotImplementedError
@@ -26,22 +27,23 @@ class ExpirationNotificationPlugin(NotificationPlugin):
     It contains some default options that are needed for all expiration
     notification plugins.
     """
+
     default_options = [
         {
-            'name': 'interval',
-            'type': 'int',
-            'required': True,
-            'validation': '^\d+$',
-            'helpMessage': 'Number of days to be alert before expiration.',
+            "name": "interval",
+            "type": "int",
+            "required": True,
+            "validation": "^\d+$",
+            "helpMessage": "Number of days to be alert before expiration.",
         },
         {
-            'name': 'unit',
-            'type': 'select',
-            'required': True,
-            'validation': '',
-            'available': ['days', 'weeks', 'months'],
-            'helpMessage': 'Interval unit',
-        }
+            "name": "unit",
+            "type": "select",
+            "required": True,
+            "validation": "",
+            "available": ["days", "weeks", "months"],
+            "helpMessage": "Interval unit",
+        },
     ]
 
     @property

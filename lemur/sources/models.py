@@ -15,7 +15,7 @@ from sqlalchemy_utils import ArrowType
 
 
 class Source(db.Model):
-    __tablename__ = 'sources'
+    __tablename__ = "sources"
     id = Column(Integer, primary_key=True)
     label = Column(String(32), unique=True)
     options = Column(JSONType)

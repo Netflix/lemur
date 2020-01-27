@@ -17,15 +17,20 @@ from lemur.auth.permissions import RoleMemberPermission, admin_permission
 from lemur.common.utils import paginated_parser
 
 from lemur.common.schema import validate_schema
-from lemur.roles.schemas import role_input_schema, role_output_schema, roles_output_schema
+from lemur.roles.schemas import (
+    role_input_schema,
+    role_output_schema,
+    roles_output_schema,
+)
 
 
-mod = Blueprint('roles', __name__)
+mod = Blueprint("roles", __name__)
 api = Api(mod)
 
 
 class RolesList(AuthenticatedResource):
     """ Defines the 'roles' endpoint """
+
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(RolesList, self).__init__()
@@ -79,11 +84,11 @@ class RolesList(AuthenticatedResource):
            :statuscode 403: unauthenticated
         """
         parser = paginated_parser.copy()
-        parser.add_argument('owner', type=str, location='args')
-        parser.add_argument('id', type=str, location='args')
+        parser.add_argument("owner", type=str, location="args")
+        parser.add_argument("id", type=str, location="args")
 
         args = parser.parse_args()
-        args['user'] = g.current_user
+        args["user"] = g.current_user
         return service.render(args)
 
     @admin_permission.require(http_exception=403)
@@ -135,8 +140,13 @@ class RolesList(AuthenticatedResource):
            :statuscode 200: no error
            :statuscode 403: unauthenticated
         """
-        return service.create(data['name'], data.get('password'), data.get('description'), data.get('username'),
-                              data.get('users'))
+        return service.create(
+            data["name"],
+            data.get("password"),
+            data.get("description"),
+            data.get("username"),
+            data.get("users"),
+        )
 
 
 class RoleViewCredentials(AuthenticatedResource):
@@ -177,11 +187,18 @@ class RoleViewCredentials(AuthenticatedResource):
         permission = RoleMemberPermission(role_id)
         if permission.can():
             role = service.get(role_id)
-            response = make_response(jsonify(username=role.username, password=role.password), 200)
-            response.headers['cache-control'] = 'private, max-age=0, no-cache, no-store'
-            response.headers['pragma'] = 'no-cache'
+            response = make_response(
+                jsonify(username=role.username, password=role.password), 200
+            )
+            response.headers["cache-control"] = "private, max-age=0, no-cache, no-store"
+            response.headers["pragma"] = "no-cache"
             return response
-        return dict(message='You are not authorized to view the credentials for this role.'), 403
+        return (
+            dict(
+                message="You are not authorized to view the credentials for this role."
+            ),
+            403,
+        )
 
 
 class Roles(AuthenticatedResource):
@@ -227,7 +244,12 @@ class Roles(AuthenticatedResource):
         if permission.can():
             return service.get(role_id)
 
-        return dict(message="You are not allowed to view a role which you are not a member of."), 403
+        return (
+            dict(
+                message="You are not allowed to view a role which you are not a member of."
+            ),
+            403,
+        )
 
     @validate_schema(role_input_schema, role_output_schema)
     def put(self, role_id, data=None):
@@ -269,8 +291,10 @@ class Roles(AuthenticatedResource):
         """
         permission = RoleMemberPermission(role_id)
         if permission.can():
-            return service.update(role_id, data['name'], data.get('description'), data.get('users'))
-        return dict(message='You are not authorized to modify this role.'), 403
+            return service.update(
+                role_id, data["name"], data.get("description"), data.get("users")
+            )
+        return dict(message="You are not authorized to modify this role."), 403
 
     @admin_permission.require(http_exception=403)
     def delete(self, role_id):
@@ -304,11 +328,12 @@ class Roles(AuthenticatedResource):
            :statuscode 403: unauthenticated
         """
         service.delete(role_id)
-        return {'message': 'ok'}
+        return {"message": "ok"}
 
 
 class UserRolesList(AuthenticatedResource):
     """ Defines the 'roles' endpoint """
+
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(UserRolesList, self).__init__()
@@ -362,12 +387,13 @@ class UserRolesList(AuthenticatedResource):
         """
         parser = paginated_parser.copy()
         args = parser.parse_args()
-        args['user_id'] = user_id
+        args["user_id"] = user_id
         return service.render(args)
 
 
 class AuthorityRolesList(AuthenticatedResource):
     """ Defines the 'roles' endpoint """
+
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         super(AuthorityRolesList, self).__init__()
@@ -421,12 +447,18 @@ class AuthorityRolesList(AuthenticatedResource):
         """
         parser = paginated_parser.copy()
         args = parser.parse_args()
-        args['authority_id'] = authority_id
+        args["authority_id"] = authority_id
         return service.render(args)
 
 
-api.add_resource(RolesList, '/roles', endpoint='roles')
-api.add_resource(Roles, '/roles/<int:role_id>', endpoint='role')
-api.add_resource(RoleViewCredentials, '/roles/<int:role_id>/credentials', endpoint='roleCredentials`')
-api.add_resource(AuthorityRolesList, '/authorities/<int:authority_id>/roles', endpoint='authorityRoles')
-api.add_resource(UserRolesList, '/users/<int:user_id>/roles', endpoint='userRoles')
+api.add_resource(RolesList, "/roles", endpoint="roles")
+api.add_resource(Roles, "/roles/<int:role_id>", endpoint="role")
+api.add_resource(
+    RoleViewCredentials, "/roles/<int:role_id>/credentials", endpoint="roleCredentials`"
+)
+api.add_resource(
+    AuthorityRolesList,
+    "/authorities/<int:authority_id>/roles",
+    endpoint="authorityRoles",
+)
+api.add_resource(UserRolesList, "/users/<int:user_id>/roles", endpoint="userRoles")

@@ -161,6 +161,13 @@ Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create c
 
         Dump all imported or generated CSR and certificate details to stdout using OpenSSL. (default: `False`)
 
+.. data:: ALLOW_CERT_DELETION
+    :noindex:
+
+        When set to True, certificates can be marked as deleted via the API and deleted certificates will not be displayed
+        in the UI. When set to False (the default), the certificate delete API will always return "405 method not allowed"
+        and deleted certificates will always be visible in the UI. (default: `False`)
+
 
 Certificate Default Options
 ---------------------------
@@ -313,7 +320,7 @@ LDAP support requires the pyldap python library, which also depends on the follo
 To configure the use of an LDAP server, a number of settings need to be configured in `lemur.conf.py`.
 
 Here is an example LDAP configuration stanza you can add to your config. Adjust to suit your environment of course.
- 
+
 .. code-block:: python
 
         LDAP_AUTH = True
@@ -586,8 +593,60 @@ If you are not using a metric provider you do not need to configure any of these
 Plugin Specific Options
 -----------------------
 
+Active Directory Certificate Services Plugin
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. data:: ADCS_SERVER
+    :noindex:
+
+        FQDN of your ADCS Server
+
+
+.. data:: ADCS_AUTH_METHOD
+    :noindex:
+
+        The chosen authentication method. Either ‘basic’ (the default), ‘ntlm’ or ‘cert’ (SSL client certificate). The next 2 variables are interpreted differently for different methods.
+
+
+.. data:: ADCS_USER
+    :noindex:
+
+        The username (basic) or the path to the public cert (cert) of the user accessing PKI
+
+
+.. data:: ADCS_PWD
+    :noindex:
+
+        The passwd (basic) or the path to the private key (cert) of the user accessing PKI
+
+
+.. data:: ADCS_TEMPLATE
+    :noindex:
+
+        Template to be used for certificate issuing. Usually display name w/o spaces
+
+
+.. data:: ADCS_START
+    :noindex:
+
+.. data:: ADCS_STOP
+    :noindex:
+
+.. data:: ADCS_ISSUING
+    :noindex:
+
+        Contains the issuing cert of the CA
+
+
+.. data:: ADCS_ROOT
+    :noindex:
+
+        Contains the root cert of the CA
+
+
 Verisign Issuer Plugin
-^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~
 
 Authorities will each have their own configuration options. There is currently just one plugin bundled with Lemur,
 Verisign/Symantec. Additional plugins may define additional options. Refer to the plugin's own documentation
@@ -683,7 +742,7 @@ The following configuration properties are required to use the Digicert issuer p
 
 
 CFSSL Issuer Plugin
-^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~
 
 The following configuration properties are required to use the CFSSL issuer plugin.
 
@@ -702,9 +761,36 @@ The following configuration properties are required to use the CFSSL issuer plug
 
         This is the intermediate to be used for your CA chain
 
+.. data:: CFSSL_KEY
+    :noindex:
+
+        This is the hmac key to authenticate to the CFSSL service. (Optional)
+
+
+Hashicorp Vault Source/Destination Plugin
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Lemur can import and export certificate data to and from a Hashicorp Vault secrets store. Lemur can connect to a different Vault service per source/destination.
+
+.. note:: This plugin does not supersede or overlap the 3rd party Vault Issuer plugin.
+
+.. note:: Vault does not have any configuration properties however it does read from a file on disk for a vault access token. The Lemur service account needs read access to this file.
+
+Vault Source
+""""""""""""
+
+The Vault Source Plugin will read from one Vault object location per source defined. There is expected to be one or more certificates defined in each object in Vault.
+
+Vault Destination
+"""""""""""""""""
+
+A Vault destination can be one object in Vault or a directory where all certificates will be stored as their own object by CN.
+
+Vault Destination supports a regex filter to prevent certificates with SAN that do not match the regex filter from being deployed. This is an optional feature per destination defined.
+
 
 AWS Source/Destination Plugin
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In order for Lemur to manage its own account and other accounts we must ensure it has the correct AWS permissions.
 
@@ -1056,7 +1142,9 @@ Verisign/Symantec
 -----------------
 
 :Authors:
-    Kevin Glisson <kglisson@netflix.com>
+    Kevin Glisson <kglisson@netflix.com>,
+    Curtis Castrapel <ccastrapel@netflix.com>,
+    Hossein Shafagh <hshafagh@netflix.com>
 :Type:
     Issuer
 :Description:
@@ -1082,6 +1170,8 @@ Acme
 
 :Authors:
     Kevin Glisson <kglisson@netflix.com>,
+    Curtis Castrapel <ccastrapel@netflix.com>,
+    Hossein Shafagh <hshafagh@netflix.com>,
     Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
 :Type:
     Issuer
@@ -1093,7 +1183,9 @@ Atlas
 -----
 
 :Authors:
-    Kevin Glisson <kglisson@netflix.com>
+    Kevin Glisson <kglisson@netflix.com>,
+    Curtis Castrapel <ccastrapel@netflix.com>,
+    Hossein Shafagh <hshafagh@netflix.com>
 :Type:
     Metric
 :Description:
@@ -1104,7 +1196,9 @@ Email
 -----
 
 :Authors:
-    Kevin Glisson <kglisson@netflix.com>
+    Kevin Glisson <kglisson@netflix.com>,
+    Curtis Castrapel <ccastrapel@netflix.com>,
+    Hossein Shafagh <hshafagh@netflix.com>
 :Type:
     Notification
 :Description:
@@ -1126,7 +1220,9 @@ AWS
 ----
 
 :Authors:
-    Kevin Glisson <kglisson@netflix.com>
+    Kevin Glisson <kglisson@netflix.com>,
+    Curtis Castrapel <ccastrapel@netflix.com>,
+    Hossein Shafagh <hshafagh@netflix.com>
 :Type:
     Source
 :Description:
@@ -1137,7 +1233,9 @@ AWS
 ----
 
 :Authors:
-    Kevin Glisson <kglisson@netflix.com>
+    Kevin Glisson <kglisson@netflix.com>,
+    Curtis Castrapel <ccastrapel@netflix.com>,
+    Hossein Shafagh <hshafagh@netflix.com>
 :Type:
     Destination
 :Description:
@@ -1186,6 +1284,26 @@ CFSSL
     Issuer
 :Description:
     Basic support for generating certificates from the private certificate authority CFSSL
+
+Vault
+-----
+
+:Authors:
+    Christopher Jolley <chris@alwaysjolley.com>
+:Type:
+    Source
+:Description:
+    Source plugin imports certificates from Hashicorp Vault secret store.
+
+Vault
+-----
+
+:Authors:
+    Christopher Jolley <chris@alwaysjolley.com>
+:Type:
+    Destination
+:Description:
+    Destination plugin to deploy certificates to Hashicorp Vault secret store.
 
 
 3rd Party Plugins

@@ -143,10 +143,11 @@ setup(
             'aws_s3 = lemur.plugins.lemur_aws.plugin:S3DestinationPlugin',
             'email_notification = lemur.plugins.lemur_email.plugin:EmailNotificationPlugin',
             'slack_notification = lemur.plugins.lemur_slack.plugin:SlackNotificationPlugin',
-            'java_truststore_export = lemur.plugins.lemur_java.plugin:JavaTruststoreExportPlugin',
-            'java_keystore_export = lemur.plugins.lemur_java.plugin:JavaKeystoreExportPlugin',
+            'java_truststore_export = lemur.plugins.lemur_jks.plugin:JavaTruststoreExportPlugin',
+            'java_keystore_export = lemur.plugins.lemur_jks.plugin:JavaKeystoreExportPlugin',
             'openssl_export = lemur.plugins.lemur_openssl.plugin:OpenSSLExportPlugin',
             'atlas_metric = lemur.plugins.lemur_atlas.plugin:AtlasMetricPlugin',
+            'atlas_metric_redis = lemur.plugins.lemur_atlas_redis.plugin:AtlasMetricRedisPlugin',
             'kubernetes_destination = lemur.plugins.lemur_kubernetes.plugin:KubernetesDestinationPlugin',
             'cryptography_issuer = lemur.plugins.lemur_cryptography.plugin:CryptographyIssuerPlugin',
             'cfssl_issuer = lemur.plugins.lemur_cfssl.plugin:CfsslIssuerPlugin',
@@ -154,7 +155,11 @@ setup(
             'digicert_cis_issuer = lemur.plugins.lemur_digicert.plugin:DigiCertCISIssuerPlugin',
             'digicert_cis_source = lemur.plugins.lemur_digicert.plugin:DigiCertCISSourcePlugin',
             'csr_export = lemur.plugins.lemur_csr.plugin:CSRExportPlugin',
-            'sftp_destination = lemur.plugins.lemur_sftp.plugin:SFTPDestinationPlugin'
+            'sftp_destination = lemur.plugins.lemur_sftp.plugin:SFTPDestinationPlugin',
+            'vault_source = lemur.plugins.lemur_vault_dest.plugin:VaultSourcePlugin',
+            'vault_desination = lemur.plugins.lemur_vault_dest.plugin:VaultDestinationPlugin',
+            'adcs_issuer = lemur.plugins.lemur_adcs.plugin:ADCSIssuerPlugin',
+            'adcs_source = lemur.plugins.lemur_adcs.plugin:ADCSSourcePlugin'
         ],
     },
     classifiers=[

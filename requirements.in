@@ -8,6 +8,7 @@ boto3
 botocore
 celery[redis]
 certifi
+certsrv
 CloudFlare
 cryptography
 dnspython3
@@ -21,22 +22,27 @@ Flask-Script
 Flask-SQLAlchemy
 Flask
 Flask-Cors
+flask_replicated
 future
 gunicorn
+hvac # required for the vault destination plugin
 inflection
 jinja2
 lockfile
+logmatic-python
 marshmallow-sqlalchemy
-marshmallow
+marshmallow<2.20.5 #schema duplicate issues https://github.com/marshmallow-code/marshmallow-sqlalchemy/issues/121
 ndg-httpsclient
 paramiko  # required for the SFTP destination plugin
 pem
 psycopg2
+pyjks >= 19 # pyjks < 19 depends on pycryptodome, which conflicts with dyn's usage of pycrypto
 pyjwt
 pyOpenSSL
+pyyaml>=4.2b1 #high severity alert
 python_ldap
 raven[flask]
-redis<3 # redis>=3 is not compatible with celery
+redis
 requests
 retrying
 six

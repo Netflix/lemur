@@ -14,7 +14,8 @@ from flask import current_app
 from lemur.utils import mktempfile, mktemppath
 from lemur.plugins.bases import ExportPlugin
 from lemur.plugins import lemur_openssl as openssl
-from lemur.common.utils import get_psuedo_random_string
+from lemur.common.utils import get_psuedo_random_string, parse_certificate
+from lemur.common.defaults import common_name
 
 
 def run_process(command):
@@ -44,69 +45,71 @@ def create_pkcs12(cert, chain, p12_tmp, key, alias, passphrase):
     :param alias:
     :param passphrase:
     """
-    if isinstance(cert, bytes):
-        cert = cert.decode('utf-8')
-
-    if isinstance(chain, bytes):
-        chain = chain.decode('utf-8')
-
-    if isinstance(key, bytes):
-        key = key.decode('utf-8')
+    assert isinstance(cert, str)
+    assert isinstance(chain, str)
+    assert isinstance(key, str)
 
     with mktempfile() as key_tmp:
-        with open(key_tmp, 'w') as f:
+        with open(key_tmp, "w") as f:
             f.write(key)
 
         # Create PKCS12 keystore from private key and public certificate
         with mktempfile() as cert_tmp:
-            with open(cert_tmp, 'w') as f:
+            with open(cert_tmp, "w") as f:
                 if chain:
                     f.writelines([cert.strip() + "\n", chain.strip() + "\n"])
                 else:
                     f.writelines([cert.strip() + "\n"])
 
-            run_process([
-                "openssl",
-                "pkcs12",
-                "-export",
-                "-name", alias,
-                "-in", cert_tmp,
-                "-inkey", key_tmp,
-                "-out", p12_tmp,
-                "-password", "pass:{}".format(passphrase)
-            ])
+            run_process(
+                [
+                    "openssl",
+                    "pkcs12",
+                    "-export",
+                    "-name",
+                    alias,
+                    "-in",
+                    cert_tmp,
+                    "-inkey",
+                    key_tmp,
+                    "-out",
+                    p12_tmp,
+                    "-password",
+                    "pass:{}".format(passphrase),
+                ]
+            )
 
 
 class OpenSSLExportPlugin(ExportPlugin):
-    title = 'OpenSSL'
-    slug = 'openssl-export'
-    description = 'Is a loose interface to openssl and support various formats'
+    title = "OpenSSL"
+    slug = "openssl-export"
+    description = "Is a loose interface to openssl and support various formats"
     version = openssl.VERSION
 
-    author = 'Kevin Glisson'
-    author_url = 'https://github.com/netflix/lemur'
+    author = "Kevin Glisson"
+    author_url = "https://github.com/netflix/lemur"
 
     options = [
         {
-            'name': 'type',
-            'type': 'select',
-            'required': True,
-            'available': ['PKCS12 (.p12)'],
-            'helpMessage': 'Choose the format you wish to export',
+            "name": "type",
+            "type": "select",
+            "required": True,
+            "available": ["PKCS12 (.p12)"],
+            "helpMessage": "Choose the format you wish to export",
         },
         {
-            'name': 'passphrase',
-            'type': 'str',
-            'required': False,
-            'helpMessage': 'If no passphrase is given one will be generated for you, we highly recommend this.',
-            'validation': ''
+            "name": "passphrase",
+            "type": "str",
+            "required": False,
+            "helpMessage": "If no passphrase is given one will be generated for you, we highly recommend this.",
+            "validation": "",
         },
         {
-            'name': 'alias',
-            'type': 'str',
-            'required': False,
-            'helpMessage': 'Enter the alias you wish to use for the keystore.',
-        }
+            "name": "alias",
+            "type": "str",
+            "required": False,
+            "helpMessage": "Enter the alias you wish to use for the keystore.",
+        },
     ]
 
     def export(self, body, chain, key, options, **kwargs):
@@ -119,20 +122,20 @@ class OpenSSLExportPlugin(ExportPlugin):
         :param options:
         :param kwargs:
         """
-        if self.get_option('passphrase', options):
-            passphrase = self.get_option('passphrase', options)
+        if self.get_option("passphrase", options):
+            passphrase = self.get_option("passphrase", options)
         else:
             passphrase = get_psuedo_random_string()
 
-        if self.get_option('alias', options):
-            alias = self.get_option('alias', options)
+        if self.get_option("alias", options):
+            alias = self.get_option("alias", options)
         else:
-            alias = "blah"
+            alias = common_name(parse_certificate(body))
 
-        type = self.get_option('type', options)
+        type = self.get_option("type", options)
 
         with mktemppath() as output_tmp:
-            if type == 'PKCS12 (.p12)':
+            if type == "PKCS12 (.p12)":
                 if not key:
                     raise Exception("Private Key required by {0}".format(type))
 
@@ -141,7 +144,7 @@ class OpenSSLExportPlugin(ExportPlugin):
             else:
                 raise Exception("Unable to export, unsupported type: {0}".format(type))
 
-            with open(output_tmp, 'rb') as f:
+            with open(output_tmp, "rb") as f:
                 raw = f.read()
 
         return extension, passphrase, raw

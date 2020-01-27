@@ -36,7 +36,7 @@ endif
 	@echo ""
 
 dev-docs:
-	pip install -r docs/requirements.txt
+	pip install -r requirements-docs.txt
 
 reset-db:
 	@echo "--> Dropping existing 'lemur' database"
@@ -46,7 +46,7 @@ reset-db:
 	@echo "--> Enabling pg_trgm extension"
 	psql lemur -c "create extension IF NOT EXISTS pg_trgm;"
 	@echo "--> Applying migrations"
-	lemur db upgrade
+	cd lemur && lemur db upgrade
 
 setup-git:
 	@echo "--> Installing git hooks"
@@ -113,10 +113,10 @@ endif
 	@echo "--> Updating Python requirements"
 	pip install --upgrade pip
 	pip install --upgrade pip-tools
+	pip-compile --output-file requirements.txt requirements.in -U --no-index
 	pip-compile --output-file requirements-docs.txt requirements-docs.in -U --no-index
 	pip-compile --output-file requirements-dev.txt requirements-dev.in -U --no-index
 	pip-compile --output-file requirements-tests.txt requirements-tests.in -U --no-index
-	pip-compile --output-file requirements.txt requirements.in -U --no-index
 	@echo "--> Done updating Python requirements"
 	@echo "--> Removing python-ldap from requirements-docs.txt"
 	grep -v "python-ldap" requirements-docs.txt > tempreqs && mv tempreqs requirements-docs.txt
@@ -124,6 +124,10 @@ endif
 	pip install -e .
 	@echo "--> Done installing new dependencies"
 	@echo ""
+
+# Execute with make checkout-pr pr=<pr number>
+checkout-pr:
+	git fetch upstream pull/$(pr)/head:pr-$(pr)
 
 
 .PHONY: develop dev-postgres dev-docs setup-git build clean update-submodules test testloop test-cli test-js test-python lint lint-python lint-js coverage publish release

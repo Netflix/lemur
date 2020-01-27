@@ -11,7 +11,7 @@ angular.module('lemur')
         controller: 'CertificatesViewController'
       })
       .state('certificate', {
-        url: '/certificates/:name',
+        url: '/certificates/:fixedName', // use "fixedName" if in URL to indicate 'like' query can be avoided
         templateUrl: '/angular/certificates/view/view.tpl.html',
         controller: 'CertificatesViewController'
       });
@@ -19,12 +19,16 @@ angular.module('lemur')
 
   .controller('CertificatesViewController', function ($q, $scope, $uibModal, $stateParams, CertificateApi, CertificateService, MomentService, ngTableParams, toaster) {
     $scope.filter = $stateParams;
+    $scope.expiredText = ['Show Expired', 'Hide Expired'];
+    $scope.expiredValue = 0;
+    $scope.expiredButton = $scope.expiredText[$scope.expiredValue];
     $scope.certificateTable = new ngTableParams({
       page: 1,            // show first page
       count: 10,          // count per page
       sorting: {
         id: 'desc'     // initial sorting
       },
+      short: true,
       filter: $scope.filter
     }, {
       total: 0,           // length of data
@@ -36,6 +40,35 @@ angular.module('lemur')
           });
       }
     });
+
+    $scope.showExpired = function () {
+      if ($scope.expiredValue === 0) {
+        $scope.expiredValue = 1;
+      }
+      else {
+        $scope.expiredValue = 0;
+      }
+      $scope.expiredButton = $scope.expiredText[$scope.expiredValue];
+      $scope.certificateTable = new ngTableParams({
+        page: 1,            // show first page
+        count: 10,          // count per page
+        sorting: {
+          id: 'desc'     // initial sorting
+        },
+        short: true,
+        filter: $scope.filter
+      }, {
+        getData: function ($defer, params) {
+          $scope.temp = angular.copy(params.url());
+          $scope.temp.showExpired = $scope.expiredValue;
+          CertificateApi.getList($scope.temp)
+            .then(function (data) {
+              params.total(data.total);
+              $defer.resolve(data);
+            });
+        }
+      });
+    };
 
     $scope.momentService = MomentService;
 

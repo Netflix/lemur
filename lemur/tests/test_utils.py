@@ -1,38 +1,49 @@
 import pytest
 
+from lemur.tests.vectors import (
+    SAN_CERT,
+    INTERMEDIATE_CERT,
+    ROOTCA_CERT,
+    EC_CERT_EXAMPLE,
+    ECDSA_PRIME256V1_CERT,
+    ECDSA_SECP384r1_CERT,
+    DSA_CERT,
+)
+
 
 def test_generate_private_key():
     from lemur.common.utils import generate_private_key
 
-    assert generate_private_key('RSA2048')
-    assert generate_private_key('RSA4096')
-    assert generate_private_key('ECCPRIME192V1')
-    assert generate_private_key('ECCPRIME256V1')
-    assert generate_private_key('ECCSECP192R1')
-    assert generate_private_key('ECCSECP224R1')
-    assert generate_private_key('ECCSECP256R1')
-    assert generate_private_key('ECCSECP384R1')
-    assert generate_private_key('ECCSECP521R1')
-    assert generate_private_key('ECCSECP256K1')
-    assert generate_private_key('ECCSECT163K1')
-    assert generate_private_key('ECCSECT233K1')
-    assert generate_private_key('ECCSECT283K1')
-    assert generate_private_key('ECCSECT409K1')
-    assert generate_private_key('ECCSECT571K1')
-    assert generate_private_key('ECCSECT163R2')
-    assert generate_private_key('ECCSECT233R1')
-    assert generate_private_key('ECCSECT283R1')
-    assert generate_private_key('ECCSECT409R1')
-    assert generate_private_key('ECCSECT571R2')
+    assert generate_private_key("RSA2048")
+    assert generate_private_key("RSA4096")
+    assert generate_private_key("ECCPRIME192V1")
+    assert generate_private_key("ECCPRIME256V1")
+    assert generate_private_key("ECCSECP192R1")
+    assert generate_private_key("ECCSECP224R1")
+    assert generate_private_key("ECCSECP256R1")
+    assert generate_private_key("ECCSECP384R1")
+    assert generate_private_key("ECCSECP521R1")
+    assert generate_private_key("ECCSECP256K1")
+    assert generate_private_key("ECCSECT163K1")
+    assert generate_private_key("ECCSECT233K1")
+    assert generate_private_key("ECCSECT283K1")
+    assert generate_private_key("ECCSECT409K1")
+    assert generate_private_key("ECCSECT571K1")
+    assert generate_private_key("ECCSECT163R2")
+    assert generate_private_key("ECCSECT233R1")
+    assert generate_private_key("ECCSECT283R1")
+    assert generate_private_key("ECCSECT409R1")
+    assert generate_private_key("ECCSECT571R2")
 
     with pytest.raises(Exception):
-        generate_private_key('LEMUR')
+        generate_private_key("LEMUR")
 
 
 def test_get_authority_key():
-    '''test get authority key function'''
+    """test get authority key function"""
     from lemur.common.utils import get_authority_key
-    test_cert = '''-----BEGIN CERTIFICATE-----
+
+    test_cert = """-----BEGIN CERTIFICATE-----
 MIIGYjCCBEqgAwIBAgIUVS7mn6LR5XlQyEGxQ4w9YAWL/XIwDQYJKoZIhvcNAQEN
 BQAweTELMAkGA1UEBhMCREUxDTALBgNVBAgTBEJvbm4xEDAOBgNVBAcTB0dlcm1h
 bnkxITAfBgNVBAoTGFRlbGVrb20gRGV1dHNjaGxhbmQgR21iSDELMAkGA1UECxMC
@@ -68,6 +79,24 @@ zc75IDsn5wP6A3KflduWW7ri0bYUiKe5higMcbUM0aXzTEAVxsxPk8aEsR9dazF7
 y4L/msew3UjFE3ovDHgStjWM1NBMxuIvJEbWOsiB2WA2l3FiT8HvFi0eX/0hbkGi
 5LL+oz7nvm9Of7te/BV6Rq0rXWN4d6asO+QlLkTqbmAH6rwunmPCY7MbLXXtP/qM
 KFfxwrO1
------END CERTIFICATE-----'''
+-----END CERTIFICATE-----"""
     authority_key = get_authority_key(test_cert)
-    assert authority_key == 'feacb541be81771293affa412d8dc9f66a3ebb80'
+    assert authority_key == "feacb541be81771293affa412d8dc9f66a3ebb80"
+
+
+def test_is_selfsigned(selfsigned_cert):
+    from lemur.common.utils import is_selfsigned
+
+    assert is_selfsigned(selfsigned_cert) is True
+    assert is_selfsigned(SAN_CERT) is False
+    assert is_selfsigned(INTERMEDIATE_CERT) is False
+    # Root CA certificates are also technically self-signed
+    assert is_selfsigned(ROOTCA_CERT) is True
+    assert is_selfsigned(EC_CERT_EXAMPLE) is False
+
+    # selfsigned certs
+    assert is_selfsigned(ECDSA_PRIME256V1_CERT) is True
+    assert is_selfsigned(ECDSA_SECP384r1_CERT) is True
+    # unsupported algorithm (DSA)
+    with pytest.raises(Exception):
+        is_selfsigned(DSA_CERT)

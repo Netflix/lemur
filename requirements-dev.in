@@ -5,3 +5,4 @@ pre-commit
 invoke
 twine
 nodeenv
+pyyaml>=4.2b1

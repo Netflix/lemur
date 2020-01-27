@@ -1,8 +1,11 @@
 # Run `make up-reqs` to update pinned dependencies in requirement text files
 
+bandit
+black
 coverage
 factory-boy
 Faker
+fakeredis
 freezegun
 moto
 nose
@@ -11,3 +14,4 @@ pytest
 pytest-flask
 pytest-mock
 requests-mock
+pyyaml>=4.2b1

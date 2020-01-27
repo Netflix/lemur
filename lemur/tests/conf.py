@@ -15,49 +15,51 @@ debug = False
 TESTING = True
 
 # this is the secret key used by flask session management
-SECRET_KEY = 'I/dVhOZNSMZMqrFJa5tWli6VQccOGudKerq3eWPMSzQNmHHVhMAQfQ=='
+SECRET_KEY = "I/dVhOZNSMZMqrFJa5tWli6VQccOGudKerq3eWPMSzQNmHHVhMAQfQ=="
 
 # You should consider storing these separately from your config
-LEMUR_TOKEN_SECRET = 'test'
-LEMUR_ENCRYPTION_KEYS = 'o61sBLNBSGtAckngtNrfVNd8xy8Hp9LBGDstTbMbqCY='
+LEMUR_TOKEN_SECRET = "test"
+LEMUR_ENCRYPTION_KEYS = "o61sBLNBSGtAckngtNrfVNd8xy8Hp9LBGDstTbMbqCY="
 
 # List of domain regular expressions that non-admin users can issue
 LEMUR_WHITELISTED_DOMAINS = [
-    '^[a-zA-Z0-9-]+\.example\.com$',
-    '^[a-zA-Z0-9-]+\.example\.org$',
-    '^example\d+\.long\.com$',
+    "^[a-zA-Z0-9-]+\.example\.com$",
+    "^[a-zA-Z0-9-]+\.example\.org$",
+    "^example\d+\.long\.com$",
 ]
 
 # Mail Server
 
 # Lemur currently only supports SES for sending email, this address
 # needs to be verified
-LEMUR_EMAIL = ''
-LEMUR_SECURITY_TEAM_EMAIL = ['security@example.com']
+LEMUR_EMAIL = ""
+LEMUR_SECURITY_TEAM_EMAIL = ["security@example.com"]
 
-LEMUR_HOSTNAME = 'lemur.example.com'
+LEMUR_HOSTNAME = "lemur.example.com"
 
 # Logging
 
 LOG_LEVEL = "DEBUG"
 LOG_FILE = "lemur.log"
 
-LEMUR_DEFAULT_COUNTRY = 'US'
-LEMUR_DEFAULT_STATE = 'California'
-LEMUR_DEFAULT_LOCATION = 'Los Gatos'
-LEMUR_DEFAULT_ORGANIZATION = 'Example, Inc.'
-LEMUR_DEFAULT_ORGANIZATIONAL_UNIT = 'Example'
+LEMUR_DEFAULT_COUNTRY = "US"
+LEMUR_DEFAULT_STATE = "California"
+LEMUR_DEFAULT_LOCATION = "Los Gatos"
+LEMUR_DEFAULT_ORGANIZATION = "Example, Inc."
+LEMUR_DEFAULT_ORGANIZATIONAL_UNIT = "Example"
 
 LEMUR_ALLOW_WEEKEND_EXPIRATION = False
 
 # Database
 
 # modify this if you are not using a local database
-SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI', 'postgresql://lemur:lemur@localhost:5432/lemur')
+SQLALCHEMY_DATABASE_URI = os.getenv(
+    "SQLALCHEMY_DATABASE_URI", "postgresql://lemur:lemur@localhost:5432/lemur"
+)
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 # AWS
-LEMUR_INSTANCE_PROFILE = 'Lemur'
+LEMUR_INSTANCE_PROFILE = "Lemur"
 
 # Issuers
 
@@ -72,21 +74,28 @@ LEMUR_INSTANCE_PROFILE = 'Lemur'
 # CLOUDCA_DEFAULT_VALIDITY = 2
 
 
-DIGICERT_URL = 'mock://www.digicert.com'
-DIGICERT_ORDER_TYPE = 'ssl_plus'
-DIGICERT_API_KEY = 'api-key'
+DIGICERT_URL = "mock://www.digicert.com"
+DIGICERT_ORDER_TYPE = "ssl_plus"
+DIGICERT_API_KEY = "api-key"
 DIGICERT_ORG_ID = 111111
 DIGICERT_ROOT = "ROOT"
 
-VERISIGN_URL = 'http://example.com'
-VERISIGN_PEM_PATH = '~/'
-VERISIGN_FIRST_NAME = 'Jim'
-VERISIGN_LAST_NAME = 'Bob'
-VERSIGN_EMAIL = 'jim@example.com'
+DIGICERT_CIS_URL = "mock://www.digicert.com"
+DIGICERT_CIS_PROFILE_NAMES = {"sha2-rsa-ecc-root": "ssl_plus"}
+DIGICERT_CIS_API_KEY = "api-key"
+DIGICERT_CIS_ROOTS = {"root": "ROOT"}
+DIGICERT_CIS_INTERMEDIATES = {"inter": "INTERMEDIATE_CA_CERT"}
 
-ACME_AWS_ACCOUNT_NUMBER = '11111111111'
 
-ACME_PRIVATE_KEY = '''
+VERISIGN_URL = "http://example.com"
+VERISIGN_PEM_PATH = "~/"
+VERISIGN_FIRST_NAME = "Jim"
+VERISIGN_LAST_NAME = "Bob"
+VERSIGN_EMAIL = "jim@example.com"
+
+ACME_AWS_ACCOUNT_NUMBER = "11111111111"
+
+ACME_PRIVATE_KEY = """
 -----BEGIN RSA PRIVATE KEY-----
 MIIJJwIBAAKCAgEA0+jySNCc1i73LwDZEuIdSkZgRYQ4ZQVIioVf38RUhDElxy51
 4gdWZwp8/TDpQ8cVXMj6QhdRpTVLluOz71hdvBAjxXTISRCRlItzizTgBD9CLXRh
@@ -138,7 +147,7 @@ cRe4df5/EbRiUOyx/ZBepttB1meTnsH6cGPN0JnmTMQHQvanL3jjtjrC13408ONK
 omsEEjDt4qVqGvSyy+V/1EhqGPzm9ri3zapnorf69rscuXYYsMBZ8M6AtSio4ldB
 LjCRNS1lR6/mV8AqUNR9Kn2NLQyJ76yDoEVLulKZqGUsC9STN4oGJLUeFw==
 -----END RSA PRIVATE KEY-----
-'''
+"""
 
 ACME_ROOT = """
 -----BEGIN CERTIFICATE-----
@@ -174,15 +183,17 @@ PB0t6JzUA81mSqM3kxl5e+IZwhYAyO0OTg3/fs8HqGTNKd9BqoUwSRBzp06JMg5b
 rUCGwbCUDI0mxadJ3Bz4WxR6fyNpBK2yAinWEsikxqEt
 -----END CERTIFICATE-----
 """
-ACME_URL = 'https://acme-v01.api.letsencrypt.org'
-ACME_EMAIL = 'jim@example.com'
-ACME_TEL = '4088675309'
-ACME_DIRECTORY_URL = 'https://acme-v01.api.letsencrypt.org'
+ACME_URL = "https://acme-v01.api.letsencrypt.org"
+ACME_EMAIL = "jim@example.com"
+ACME_TEL = "4088675309"
+ACME_DIRECTORY_URL = "https://acme-v01.api.letsencrypt.org"
 ACME_DISABLE_AUTORESOLVE = True
 
 LDAP_AUTH = True
-LDAP_BIND_URI = 'ldap://localhost'
-LDAP_BASE_DN = 'dc=example,dc=com'
-LDAP_EMAIL_DOMAIN = 'example.com'
-LDAP_REQUIRED_GROUP = 'Lemur Access'
-LDAP_DEFAULT_ROLE = 'role1'
+LDAP_BIND_URI = "ldap://localhost"
+LDAP_BASE_DN = "dc=example,dc=com"
+LDAP_EMAIL_DOMAIN = "example.com"
+LDAP_REQUIRED_GROUP = "Lemur Access"
+LDAP_DEFAULT_ROLE = "role1"
+
+ALLOW_CERT_DELETION = True

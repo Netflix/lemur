@@ -12,8 +12,8 @@ from lemur.policies import service as policy_service
 manager = Manager(usage="Handles all policy related tasks.")
 
 
-@manager.option('-d', '--days', dest='days', help='Number of days before expiration.')
-@manager.option('-n', '--name', dest='name', help='Policy name.')
+@manager.option("-d", "--days", dest="days", help="Number of days before expiration.")
+@manager.option("-n", "--name", dest="name", help="Policy name.")
 def create(days, name):
     """
     Create a new certificate rotation policy

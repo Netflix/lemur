@@ -12,7 +12,7 @@ Dependencies
 Some basic prerequisites which you'll need in order to run Lemur:
 
 * A UNIX-based operating system (we test on Ubuntu, develop on OS X)
-* Python 3.5 or greater
+* Python 3.7 or greater
 * PostgreSQL 9.4 or greater
 * Nginx
 
@@ -22,7 +22,7 @@ Some basic prerequisites which you'll need in order to run Lemur:
 Installing Build Dependencies
 -----------------------------
 
-If installing Lemur on a bare Ubuntu OS you will need to grab the following packages so that Lemur can correctly build it's dependencies:
+If installing Lemur on a bare Ubuntu OS you will need to grab the following packages so that Lemur can correctly build its dependencies:
 
 .. code-block:: bash
 
@@ -31,7 +31,7 @@ If installing Lemur on a bare Ubuntu OS you will need to grab the following pack
 
 .. note:: PostgreSQL is only required if your database is going to be on the same host as the webserver.  npm is needed if you're installing Lemur from the source (e.g., from git).
 
-.. note:: Installing node from a package manager may creat the nodejs bin at  /usr/bin/nodejs instead of /usr/bin/node If that is the case run the following
+.. note:: Installing node from a package manager may create the nodejs bin at  /usr/bin/nodejs instead of /usr/bin/node If that is the case run the following
     sudo ln -s /user/bin/nodejs /usr/bin/node
 
 Now, install Python ``virtualenv`` package:
@@ -117,7 +117,7 @@ Simply run:
 
 .. note:: This command will create a default configuration under ``~/.lemur/lemur.conf.py`` you can specify this location by passing the ``config_path`` parameter to the ``create_config`` command.
 
-You can specify ``-c`` or ``--config`` to any Lemur command to specify the current environment you are working in. Lemur will also look under the environmental variable ``LEMUR_CONF`` should that be easier to setup in your environment.
+You can specify ``-c`` or ``--config`` to any Lemur command to specify the current environment you are working in. Lemur will also look under the environmental variable ``LEMUR_CONF`` should that be easier to set up in your environment.
 
 
 Update your configuration
@@ -144,7 +144,7 @@ Before Lemur will run you need to fill in a few required variables in the config
     LEMUR_DEFAULT_ORGANIZATION
     LEMUR_DEFAULT_ORGANIZATIONAL_UNIT
 
-Setup Postgres
+Set Up Postgres
 --------------
 
 For production, a dedicated database is recommended, for this guide we will assume postgres has been installed and is on the same machine that Lemur is installed on.
@@ -180,6 +180,13 @@ Lemur provides a helpful command that will initialize your database for you. It 
 
 In addition to creating a new user, Lemur also creates a few default email notifications.  These notifications are based on a few configuration options such as ``LEMUR_SECURITY_TEAM_EMAIL``.  They basically guarantee that every certificate within Lemur will send one expiration notification to the security team.
 
+Your database installation requires the pg_trgm extension. If you do not have this installed already, you can allow the script to install this for you by adding the SUPERUSER permission to the lemur database user.
+
+.. code-block:: bash
+    sudo -u postgres -i
+    psql
+    postgres=# ALTER USER lemur WITH SUPERUSER
+
 Additional notifications can be created through the UI or API.  See :ref:`Creating Notifications <CreatingNotifications>` and :ref:`Command Line Interface <CommandLineInterface>` for details.
 
 **Make note of the password used as this will be used during first login to the Lemur UI.**
@@ -189,14 +196,20 @@ Additional notifications can be created through the UI or API.  See :ref:`Creati
     cd /www/lemur/lemur
     lemur init
 
+.. note:: If you added the SUPERUSER permission to the lemur database user above, it is recommended you revoke that permission now.
+
+.. code-block:: bash
+    sudo -u postgres -i
+    psql
+    postgres=# ALTER USER lemur WITH NOSUPERUSER
+
 
 .. note:: It is recommended that once the ``lemur`` user is created that you create individual users for every day access.  There is currently no way for a user to self enroll for Lemur access, they must have an administrator create an account for them or be enrolled automatically through SSO.  This can be done through the CLI or UI.  See :ref:`Creating Users <CreatingUsers>` and :ref:`Command Line Interface <CommandLineInterface>` for details.
 
-
-Setup a Reverse Proxy
+Set Up a Reverse Proxy
 ---------------------
 
-By default, Lemur runs on port 8000.  Even if you change this, under normal conditions you won't be able to bind to port 80. To get around this (and to avoid running Lemur as a privileged user, which you shouldn't), we need setup a simple web proxy. There are many different web servers you can use for this, we like and recommend Nginx.
+By default, Lemur runs on port 8000.  Even if you change this, under normal conditions you won't be able to bind to port 80. To get around this (and to avoid running Lemur as a privileged user, which you shouldn't), we need to set up a simple web proxy. There are many different web servers you can use for this, we like and recommend Nginx.
 
 
 Proxying with Nginx

@@ -10,20 +10,20 @@ from flask import Blueprint
 from lemur.database import db
 from lemur.extensions import sentry
 
-mod = Blueprint('healthCheck', __name__)
+mod = Blueprint("healthCheck", __name__)
 
 
-@mod.route('/healthcheck')
+@mod.route("/healthcheck")
 def health():
     try:
         if healthcheck(db):
-            return 'ok'
+            return "ok"
     except Exception:
         sentry.captureException()
-        return 'db check failed'
+        return "db check failed"
 
 
 def healthcheck(db):
     with db.engine.connect() as connection:
-        connection.execute('SELECT 1;')
+        connection.execute("SELECT 1;")
     return True

@@ -3,22 +3,29 @@ import unicodedata
 
 from cryptography import x509
 from flask import current_app
+
+from lemur.common.utils import is_selfsigned
 from lemur.extensions import sentry
 from lemur.constants import SAN_NAMING_TEMPLATE, DEFAULT_NAMING_TEMPLATE
 
 
-def text_to_slug(value):
-    """Normalize a string to a "slug" value, stripping character accents and removing non-alphanum characters."""
+def text_to_slug(value, joiner="-"):
+    """
+    Normalize a string to a "slug" value, stripping character accents and removing non-alphanum characters.
+    A series of non-alphanumeric characters is replaced with the joiner character.
+    """
 
     # Strip all character accents: decompose Unicode characters and then drop combining chars.
-    value = ''.join(c for c in unicodedata.normalize('NFKD', value) if not unicodedata.combining(c))
+    value = "".join(
+        c for c in unicodedata.normalize("NFKD", value) if not unicodedata.combining(c)
+    )
 
-    # Replace all remaining non-alphanumeric characters with '-'. Multiple characters get collapsed into a single dash.
-    # Except, keep 'xn--' used in IDNA domain names as is.
-    value = re.sub(r'[^A-Za-z0-9.]+(?<!xn--)', '-', value)
+    # Replace all remaining non-alphanumeric characters with joiner string. Multiple characters get collapsed into a
+    # single joiner. Except, keep 'xn--' used in IDNA domain names as is.
+    value = re.sub(r"[^A-Za-z0-9.]+(?<!xn--)", joiner, value)
 
     # '-' in the beginning or end of string looks ugly.
-    return value.strip('-')
+    return value.strip(joiner)
 
 
 def certificate_name(common_name, issuer, not_before, not_after, san):
@@ -43,12 +50,12 @@ def certificate_name(common_name, issuer, not_before, not_after, san):
 
     temp = t.format(
         subject=common_name,
-        issuer=issuer.replace(' ', ''),
-        not_before=not_before.strftime('%Y%m%d'),
-        not_after=not_after.strftime('%Y%m%d')
+        issuer=issuer.replace(" ", ""),
+        not_before=not_before.strftime("%Y%m%d"),
+        not_after=not_after.strftime("%Y%m%d"),
     )
 
-    temp = temp.replace('*', "WILDCARD")
+    temp = temp.replace("*", "WILDCARD")
     return text_to_slug(temp)
 
 
@@ -64,9 +71,9 @@ def common_name(cert):
     :return: Common name or None
     """
     try:
-        return cert.subject.get_attributes_for_oid(
-            x509.OID_COMMON_NAME
-        )[0].value.strip()
+        return cert.subject.get_attributes_for_oid(x509.OID_COMMON_NAME)[
+            0
+        ].value.strip()
     except Exception as e:
         sentry.captureException()
         current_app.logger.error("Unable to get common name! {0}".format(e))
@@ -79,9 +86,9 @@ def organization(cert):
     :return:
     """
     try:
-        return cert.subject.get_attributes_for_oid(
-            x509.OID_ORGANIZATION_NAME
-        )[0].value.strip()
+        return cert.subject.get_attributes_for_oid(x509.OID_ORGANIZATION_NAME)[
+            0
+        ].value.strip()
     except Exception as e:
         sentry.captureException()
         current_app.logger.error("Unable to get organization! {0}".format(e))
@@ -94,9 +101,9 @@ def organizational_unit(cert):
     :return:
     """
     try:
-        return cert.subject.get_attributes_for_oid(
-            x509.OID_ORGANIZATIONAL_UNIT_NAME
-        )[0].value.strip()
+        return cert.subject.get_attributes_for_oid(x509.OID_ORGANIZATIONAL_UNIT_NAME)[
+            0
+        ].value.strip()
     except Exception as e:
         sentry.captureException()
         current_app.logger.error("Unable to get organizational unit! {0}".format(e))
@@ -109,9 +116,9 @@ def country(cert):
     :return:
     """
     try:
-        return cert.subject.get_attributes_for_oid(
-            x509.OID_COUNTRY_NAME
-        )[0].value.strip()
+        return cert.subject.get_attributes_for_oid(x509.OID_COUNTRY_NAME)[
+            0
+        ].value.strip()
     except Exception as e:
         sentry.captureException()
         current_app.logger.error("Unable to get country! {0}".format(e))
@@ -124,9 +131,9 @@ def state(cert):
     :return:
     """
     try:
-        return cert.subject.get_attributes_for_oid(
-            x509.OID_STATE_OR_PROVINCE_NAME
-        )[0].value.strip()
+        return cert.subject.get_attributes_for_oid(x509.OID_STATE_OR_PROVINCE_NAME)[
+            0
+        ].value.strip()
     except Exception as e:
         sentry.captureException()
         current_app.logger.error("Unable to get state! {0}".format(e))
@@ -139,9 +146,9 @@ def location(cert):
     :return:
     """
     try:
-        return cert.subject.get_attributes_for_oid(
-            x509.OID_LOCALITY_NAME
-        )[0].value.strip()
+        return cert.subject.get_attributes_for_oid(x509.OID_LOCALITY_NAME)[
+            0
+        ].value.strip()
     except Exception as e:
         sentry.captureException()
         current_app.logger.error("Unable to get location! {0}".format(e))
@@ -219,29 +226,34 @@ def bitstrength(cert):
         return cert.public_key().key_size
     except AttributeError:
         sentry.captureException()
-        current_app.logger.debug('Unable to get bitstrength.')
+        current_app.logger.debug("Unable to get bitstrength.")
 
 
 def issuer(cert):
     """
-    Gets a sane issuer name from a given certificate.
+    Gets a sane issuer slug from a given certificate, stripping non-alphanumeric characters.
 
-    :param cert:
-    :return: Issuer
+    For self-signed certificates, the special value '<selfsigned>' is returned.
+    If issuer cannot be determined, '<unknown>' is returned.
+
+    :param cert: Parsed certificate object
+    :return: Issuer slug
     """
-    delchars = ''.join(c for c in map(chr, range(256)) if not c.isalnum())
-    try:
-        # Try organization name or fall back to CN
-        issuer = (cert.issuer.get_attributes_for_oid(x509.OID_COMMON_NAME) or
-                  cert.issuer.get_attributes_for_oid(x509.OID_ORGANIZATION_NAME))
-        issuer = str(issuer[0].value)
-        for c in delchars:
-            issuer = issuer.replace(c, "")
-        return issuer
-    except Exception as e:
-        sentry.captureException()
-        current_app.logger.error("Unable to get issuer! {0}".format(e))
-        return "Unknown"
+    # If certificate is self-signed, we return a special value -- there really is no distinct "issuer" for it
+    if is_selfsigned(cert):
+        return "<selfsigned>"
+
+    # Try Common Name or fall back to Organization name
+    attrs = cert.issuer.get_attributes_for_oid(
+        x509.OID_COMMON_NAME
+    ) or cert.issuer.get_attributes_for_oid(x509.OID_ORGANIZATION_NAME)
+    if not attrs:
+        current_app.logger.error(
+            "Unable to get issuer! Cert serial {:x}".format(cert.serial_number)
+        )
+        return "<unknown>"
+
+    return text_to_slug(attrs[0].value, "")
 
 
 def not_before(cert):

@@ -2,12 +2,12 @@ from lemur.plugins.bases import SourcePlugin
 
 
 class TestSourcePlugin(SourcePlugin):
-    title = 'Test'
-    slug = 'test-source'
-    description = 'Enables testing'
+    title = "Test"
+    slug = "test-source"
+    description = "Enables testing"
 
-    author = 'Kevin Glisson'
-    author_url = 'https://github.com/netflix/lemur.git'
+    author = "Kevin Glisson"
+    author_url = "https://github.com/netflix/lemur.git"
 
     def __init__(self, *args, **kwargs):
         super(TestSourcePlugin, self).__init__(*args, **kwargs)

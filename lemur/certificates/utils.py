@@ -1,0 +1,41 @@
+"""
+Utils to parse certificate data.
+
+.. module: lemur.certificates.hooks
+    :platform: Unix
+    :copyright: (c) 2019 by Javier Ramos, see AUTHORS for more
+    :license: Apache, see LICENSE for more details.
+
+.. moduleauthor:: Javier Ramos <javier.ramos@booking.com>
+"""
+
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+from marshmallow.exceptions import ValidationError
+
+
+def get_sans_from_csr(data):
+    """
+    Fetches SubjectAlternativeNames from CSR.
+    Works with any kind of SubjectAlternativeName
+    :param data: PEM-encoded string with CSR
+    :return: List of LemurAPI-compatible subAltNames
+    """
+    sub_alt_names = []
+    try:
+        request = x509.load_pem_x509_csr(data.encode("utf-8"), default_backend())
+    except Exception:
+        raise ValidationError("CSR presented is not valid.")
+
+    try:
+        alt_names = request.extensions.get_extension_for_class(
+            x509.SubjectAlternativeName
+        )
+        for alt_name in alt_names.value:
+            sub_alt_names.append(
+                {"nameType": type(alt_name).__name__, "value": alt_name.value}
+            )
+    except x509.ExtensionNotFound:
+        pass
+
+    return sub_alt_names

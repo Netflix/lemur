@@ -1,4 +1,5 @@
-from __future__ import unicode_literals    # at top of module
+#!/usr/bin/env python
+from __future__ import unicode_literals  # at top of module
 
 import os
 import sys
@@ -49,25 +50,27 @@ from lemur.policies.models import RotationPolicy  # noqa
 from lemur.pending_certificates.models import PendingCertificate  # noqa
 from lemur.dns_providers.models import DnsProvider  # noqa
 
+from sqlalchemy.sql import text
+
 manager = Manager(create_app)
-manager.add_option('-c', '--config', dest='config')
+manager.add_option("-c", "--config", dest="config_path", required=False)
 
 migrate = Migrate(create_app)
 
 REQUIRED_VARIABLES = [
-    'LEMUR_SECURITY_TEAM_EMAIL',
-    'LEMUR_DEFAULT_ORGANIZATIONAL_UNIT',
-    'LEMUR_DEFAULT_ORGANIZATION',
-    'LEMUR_DEFAULT_LOCATION',
-    'LEMUR_DEFAULT_COUNTRY',
-    'LEMUR_DEFAULT_STATE',
-    'SQLALCHEMY_DATABASE_URI'
+    "LEMUR_SECURITY_TEAM_EMAIL",
+    "LEMUR_DEFAULT_ORGANIZATIONAL_UNIT",
+    "LEMUR_DEFAULT_ORGANIZATION",
+    "LEMUR_DEFAULT_LOCATION",
+    "LEMUR_DEFAULT_COUNTRY",
+    "LEMUR_DEFAULT_STATE",
+    "SQLALCHEMY_DATABASE_URI",
 ]
 
 KEY_LENGTH = 40
-DEFAULT_CONFIG_PATH = '~/.lemur/lemur.conf.py'
-DEFAULT_SETTINGS = 'lemur.conf.server'
-SETTINGS_ENVVAR = 'LEMUR_CONF'
+DEFAULT_CONFIG_PATH = "~/.lemur/lemur.conf.py"
+DEFAULT_SETTINGS = "lemur.conf.server"
+SETTINGS_ENVVAR = "LEMUR_CONF"
 
 CONFIG_TEMPLATE = """
 # This is just Python which means you can inherit and tweak settings
@@ -142,8 +145,9 @@ SQLALCHEMY_DATABASE_URI = 'postgresql://lemur:lemur@localhost:5432/lemur'
 
 @MigrateCommand.command
 def create():
+    database.db.engine.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
     database.db.create_all()
-    stamp(revision='head')
+    stamp(revision="head")
 
 
 @MigrateCommand.command
@@ -171,9 +175,9 @@ def generate_settings():
     output = CONFIG_TEMPLATE.format(
         # we use Fernet.generate_key to make sure that the key length is
         # compatible with Fernet
-        encryption_key=Fernet.generate_key().decode('utf-8'),
-        secret_token=base64.b64encode(os.urandom(KEY_LENGTH)).decode('utf-8'),
-        flask_secret_key=base64.b64encode(os.urandom(KEY_LENGTH)).decode('utf-8'),
+        encryption_key=Fernet.generate_key().decode("utf-8"),
+        secret_token=base64.b64encode(os.urandom(KEY_LENGTH)).decode("utf-8"),
+        flask_secret_key=base64.b64encode(os.urandom(KEY_LENGTH)).decode("utf-8"),
     )
 
     return output
@@ -187,39 +191,44 @@ class InitializeApp(Command):
     Additionally a Lemur user will be created as a default user
     and be used when certificates are discovered by Lemur.
     """
-    option_list = (
-        Option('-p', '--password', dest='password'),
-    )
+
+    option_list = (Option("-p", "--password", dest="password"),)
 
     def run(self, password):
         create()
         user = user_service.get_by_username("lemur")
 
-        admin_role = role_service.get_by_name('admin')
+        admin_role = role_service.get_by_name("admin")
 
         if admin_role:
             sys.stdout.write("[-] Admin role already created, skipping...!\n")
         else:
             # we create an admin role
-            admin_role = role_service.create('admin', description='This is the Lemur administrator role.')
+            admin_role = role_service.create(
+                "admin", description="This is the Lemur administrator role."
+            )
             sys.stdout.write("[+] Created 'admin' role\n")
 
-        operator_role = role_service.get_by_name('operator')
+        operator_role = role_service.get_by_name("operator")
 
         if operator_role:
             sys.stdout.write("[-] Operator role already created, skipping...!\n")
         else:
             # we create an operator role
-            operator_role = role_service.create('operator', description='This is the Lemur operator role.')
+            operator_role = role_service.create(
+                "operator", description="This is the Lemur operator role."
+            )
             sys.stdout.write("[+] Created 'operator' role\n")
 
-        read_only_role = role_service.get_by_name('read-only')
+        read_only_role = role_service.get_by_name("read-only")
 
         if read_only_role:
             sys.stdout.write("[-] Read only role already created, skipping...!\n")
         else:
             # we create an read only role
-            read_only_role = role_service.create('read-only', description='This is the Lemur read only role.')
+            read_only_role = role_service.create(
+                "read-only", description="This is the Lemur read only role."
+            )
             sys.stdout.write("[+] Created 'read-only' role\n")
 
         if not user:
@@ -232,34 +241,54 @@ class InitializeApp(Command):
                     sys.stderr.write("[!] Passwords do not match!\n")
                     sys.exit(1)
 
-            user_service.create("lemur", password, 'lemur@nobody.com', True, None, [admin_role])
-            sys.stdout.write("[+] Created the user 'lemur' and granted it the 'admin' role!\n")
+            user_service.create(
+                "lemur", password, "lemur@nobody.com", True, None, [admin_role]
+            )
+            sys.stdout.write(
+                "[+] Created the user 'lemur' and granted it the 'admin' role!\n"
+            )
 
         else:
-            sys.stdout.write("[-] Default user has already been created, skipping...!\n")
+            sys.stdout.write(
+                "[-] Default user has already been created, skipping...!\n"
+            )
 
-        intervals = current_app.config.get("LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS", [])
+        intervals = current_app.config.get(
+            "LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS", []
+        )
         sys.stdout.write(
             "[!] Creating {num} notifications for {intervals} days as specified by LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS\n".format(
-                num=len(intervals),
-                intervals=",".join([str(x) for x in intervals])
+                num=len(intervals), intervals=",".join([str(x) for x in intervals])
             )
         )
 
-        recipients = current_app.config.get('LEMUR_SECURITY_TEAM_EMAIL')
+        recipients = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
         sys.stdout.write("[+] Creating expiration email notifications!\n")
-        sys.stdout.write("[!] Using {0} as specified by LEMUR_SECURITY_TEAM_EMAIL for notifications\n".format(recipients))
-        notification_service.create_default_expiration_notifications("DEFAULT_SECURITY", recipients=recipients)
+        sys.stdout.write(
+            "[!] Using {0} as specified by LEMUR_SECURITY_TEAM_EMAIL for notifications\n".format(
+                recipients
+            )
+        )
+        notification_service.create_default_expiration_notifications(
+            "DEFAULT_SECURITY", recipients=recipients
+        )
 
-        _DEFAULT_ROTATION_INTERVAL = 'default'
-        default_rotation_interval = policy_service.get_by_name(_DEFAULT_ROTATION_INTERVAL)
+        _DEFAULT_ROTATION_INTERVAL = "default"
+        default_rotation_interval = policy_service.get_by_name(
+            _DEFAULT_ROTATION_INTERVAL
+        )
 
         if default_rotation_interval:
-            sys.stdout.write("[-] Default rotation interval policy already created, skipping...!\n")
+            sys.stdout.write(
+                "[-] Default rotation interval policy already created, skipping...!\n"
+            )
         else:
             days = current_app.config.get("LEMUR_DEFAULT_ROTATION_INTERVAL", 30)
-            sys.stdout.write("[+] Creating default certificate rotation policy of {days} days before issuance.\n".format(
-                days=days))
+            sys.stdout.write(
+                "[+] Creating default certificate rotation policy of {days} days before issuance.\n".format(
+                    days=days
+                )
+            )
             policy_service.create(days=days, name=_DEFAULT_ROTATION_INTERVAL)
 
         sys.stdout.write("[/] Done!\n")
@@ -269,14 +298,16 @@ class CreateUser(Command):
     """
     This command allows for the creation of a new user within Lemur.
     """
+
     option_list = (
-        Option('-u', '--username', dest='username', required=True),
-        Option('-e', '--email', dest='email', required=True),
-        Option('-a', '--active', dest='active', default=True),
-        Option('-r', '--roles', dest='roles', action='append', default=[])
+        Option("-u", "--username", dest="username", required=True),
+        Option("-e", "--email", dest="email", required=True),
+        Option("-a", "--active", dest="active", default=True),
+        Option("-r", "--roles", dest="roles", action="append", default=[]),
+        Option("-p", "--password", dest="password", default=None),
     )
 
-    def run(self, username, email, active, roles):
+    def run(self, username, email, active, roles, password):
         role_objs = []
         for r in roles:
             role_obj = role_service.get_by_name(r)
@@ -286,14 +317,16 @@ class CreateUser(Command):
                 sys.stderr.write("[!] Cannot find role {0}\n".format(r))
                 sys.exit(1)
 
-        password1 = prompt_pass("Password")
-        password2 = prompt_pass("Confirm Password")
+        if not password:
+            password1 = prompt_pass("Password")
+            password2 = prompt_pass("Confirm Password")
+            password = password1
 
-        if password1 != password2:
-            sys.stderr.write("[!] Passwords do not match!\n")
-            sys.exit(1)
+            if password1 != password2:
+                sys.stderr.write("[!] Passwords do not match!\n")
+                sys.exit(1)
 
-        user_service.create(username, password1, email, active, None, role_objs)
+        user_service.create(username, password, email, active, None, role_objs)
         sys.stdout.write("[+] Created new user: {0}\n".format(username))
 
 
@@ -301,9 +334,8 @@ class ResetPassword(Command):
     """
     This command allows you to reset a user's password.
     """
-    option_list = (
-        Option('-u', '--username', dest='username', required=True),
-    )
+
+    option_list = (Option("-u", "--username", dest="username", required=True),)
 
     def run(self, username):
         user = user_service.get_by_username(username)
@@ -329,10 +361,11 @@ class CreateRole(Command):
     """
     This command allows for the creation of a new role within Lemur
     """
+
     option_list = (
-        Option('-n', '--name', dest='name', required=True),
-        Option('-u', '--users', dest='users', default=[]),
-        Option('-d', '--description', dest='description', required=True)
+        Option("-n", "--name", dest="name", required=True),
+        Option("-u", "--users", dest="users", default=[]),
+        Option("-d", "--description", dest="description", required=True),
     )
 
     def run(self, name, users, description):
@@ -363,7 +396,8 @@ class LemurServer(Command):
 
     Will start gunicorn with 4 workers bound to 127.0.0.0:8002
     """
-    description = 'Run the app within Gunicorn'
+
+    description = "Run the app within Gunicorn"
 
     def get_options(self):
         settings = make_settings()
@@ -371,8 +405,10 @@ class LemurServer(Command):
         for setting, klass in settings.items():
             if klass.cli:
                 if klass.action:
-                    if klass.action == 'store_const':
-                        options.append(Option(*klass.cli, const=klass.const, action=klass.action))
+                    if klass.action == "store_const":
+                        options.append(
+                            Option(*klass.cli, const=klass.const, action=klass.action)
+                        )
                     else:
                         options.append(Option(*klass.cli, action=klass.action))
                 else:
@@ -388,7 +424,9 @@ class LemurServer(Command):
         # run startup tasks on an app like object
         validate_conf(current_app, REQUIRED_VARIABLES)
 
-        app.app_uri = 'lemur:create_app(config="{0}")'.format(current_app.config.get('CONFIG_PATH'))
+        app.app_uri = 'lemur:create_app(config_path="{0}")'.format(
+            current_app.config.get("CONFIG_PATH")
+        )
 
         return app.run()
 
@@ -408,7 +446,7 @@ def create_config(config_path=None):
         os.makedirs(dir)
 
     config = generate_settings()
-    with open(config_path, 'w') as f:
+    with open(config_path, "w") as f:
         f.write(config)
 
     sys.stdout.write("[+] Created a new configuration file {0}\n".format(config_path))
@@ -430,7 +468,7 @@ def lock(path=None):
     :param: path
     """
     if not path:
-        path = os.path.expanduser('~/.lemur/keys')
+        path = os.path.expanduser("~/.lemur/keys")
 
     dest_dir = os.path.join(path, "encrypted")
     sys.stdout.write("[!] Generating a new key...\n")
@@ -441,15 +479,17 @@ def lock(path=None):
         sys.stdout.write("[+] Creating encryption directory: {0}\n".format(dest_dir))
         os.makedirs(dest_dir)
 
-    for root, dirs, files in os.walk(os.path.join(path, 'decrypted')):
+    for root, dirs, files in os.walk(os.path.join(path, "decrypted")):
         for f in files:
             source = os.path.join(root, f)
             dest = os.path.join(dest_dir, f + ".enc")
-            with open(source, 'rb') as in_file, open(dest, 'wb') as out_file:
+            with open(source, "rb") as in_file, open(dest, "wb") as out_file:
                 f = Fernet(key)
                 data = f.encrypt(in_file.read())
                 out_file.write(data)
-                sys.stdout.write("[+] Writing file: {0} Source: {1}\n".format(dest, source))
+                sys.stdout.write(
+                    "[+] Writing file: {0} Source: {1}\n".format(dest, source)
+                )
 
     sys.stdout.write("[+] Keys have been encrypted with key {0}\n".format(key))
 
@@ -469,7 +509,7 @@ def unlock(path=None):
     key = prompt_pass("[!] Please enter the encryption password")
 
     if not path:
-        path = os.path.expanduser('~/.lemur/keys')
+        path = os.path.expanduser("~/.lemur/keys")
 
     dest_dir = os.path.join(path, "decrypted")
     source_dir = os.path.join(path, "encrypted")
@@ -482,11 +522,13 @@ def unlock(path=None):
         for f in files:
             source = os.path.join(source_dir, f)
             dest = os.path.join(dest_dir, ".".join(f.split(".")[:-1]))
-            with open(source, 'rb') as in_file, open(dest, 'wb') as out_file:
+            with open(source, "rb") as in_file, open(dest, "wb") as out_file:
                 f = Fernet(key)
                 data = f.decrypt(in_file.read())
                 out_file.write(data)
-                sys.stdout.write("[+] Writing file: {0} Source: {1}\n".format(dest, source))
+                sys.stdout.write(
+                    "[+] Writing file: {0} Source: {1}\n".format(dest, source)
+                )
 
     sys.stdout.write("[+] Keys have been unencrypted!\n")
 
@@ -499,15 +541,16 @@ def publish_verisign_units():
     :return:
     """
     from lemur.plugins import plugins
-    v = plugins.get('verisign-issuer')
+
+    v = plugins.get("verisign-issuer")
     units = v.get_available_units()
 
     metrics = {}
     for item in units:
-        if item['@type'] in metrics.keys():
-            metrics[item['@type']] += int(item['@remaining'])
+        if item["@type"] in metrics.keys():
+            metrics[item["@type"]] += int(item["@remaining"])
         else:
-            metrics.update({item['@type']: int(item['@remaining'])})
+            metrics.update({item["@type"]: int(item["@remaining"])})
 
     for name, value in metrics.items():
         metric = [
@@ -516,16 +559,16 @@ def publish_verisign_units():
                 "type": "GAUGE",
                 "name": "Symantec {0} Unit Count".format(name),
                 "tags": {},
-                "value": value
+                "value": value,
             }
         ]
 
-        requests.post('http://localhost:8078/metrics', data=json.dumps(metric))
+        requests.post("http://localhost:8078/metrics", data=json.dumps(metric))
 
 
 def main():
     manager.add_command("start", LemurServer())
-    manager.add_command("runserver", Server(host='127.0.0.1', threaded=True))
+    manager.add_command("runserver", Server(host="127.0.0.1", threaded=True))
     manager.add_command("clean", Clean())
     manager.add_command("show_urls", ShowUrls())
     manager.add_command("db", MigrateCommand)

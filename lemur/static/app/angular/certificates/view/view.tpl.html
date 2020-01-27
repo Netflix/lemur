@@ -17,6 +17,11 @@
                   btn-checkbox-true="1"
                   btn-checkbox-false="0">Filter</button>
         </div>
+        <div class="btn-group">
+          <button ng-click="showExpired()" class="btn btn-info">
+            {{ expiredButton }}
+          </button>
+        </div>
         <!--<select class="form-control" ng-model="show" ng-options="item.value as item.title for item in fields"></select>-->
         <div class="clearfix"></div>
       </div>
@@ -47,7 +52,7 @@
             </td>
             <td data-title="''" style="text-align: center; vertical-align: middle;">
                 <div class="btn-group pull-right" role="group" aria-label="...">
-                  <a class="btn btn-sm btn-primary" ui-sref="certificate({name: certificate.name})">Permalink</a>
+                  <a class="btn btn-sm btn-primary" ui-sref="certificate({fixedName: certificate.name})">Permalink</a>
                   <button ng-model="certificate.toggle" class="btn btn-sm btn-info" uib-btn-checkbox btn-checkbox-true="1"
                             btn-checkbox-false="0">More
                   </button>
@@ -66,7 +71,7 @@
                 </div>
             </td>
           </tr>
-          <tr class="warning" ng-if="certificate.toggle" ng-repeat-end>
+          <tr class="warning" ng-if="certificate.toggle" ng-controller="CertificateInfoController" ng-init="fetchFullCertificate(certificate.id)" ng-repeat-end>
             <td colspan="12">
               <uib-tabset justified="true" class="col-md-8">
                 <uib-tab>
@@ -83,6 +88,8 @@
                     </div>
                     <!-- Certificate fields -->
                     <div class="list-group-item">
+                      <dt>Distinguished Name</dt>
+                      <dd>{{ certificate.distinguishedName }}</dd>
                       <dt>Certificate Authority</dt>
                       <dd>{{ certificate.authority ? certificate.authority.name : "Imported" }} <span class="text-muted">({{ certificate.issuer }})</span></dd>
                       <dt>Serial</dt>
@@ -196,10 +203,10 @@
                   </uib-tab-heading>
                   <pre style="width: 100%">{{ certificate.body }}</pre>
                 </uib-tab>
-                <uib-tab ng-click="loadPrivateKey(certificate)">
+                <uib-tab ng-click="loadPrivateKey(certificate)" disable="!certificate.hasPrivateKey">
                   <uib-tab-heading>
                     Private Key
-                     <i class="glyphicon glyphicon-copy" style="cursor: pointer" clipboard text="certificate.privateKey"></i>
+                    <i class="glyphicon glyphicon-copy" style="cursor: pointer" clipboard ng-if="certificate.hasPrivateKey" text="certificate.privateKey"></i>
                   </uib-tab-heading>
                   <pre style="width: 100%">{{ certificate.privateKey }}</pre>
                 </uib-tab>
