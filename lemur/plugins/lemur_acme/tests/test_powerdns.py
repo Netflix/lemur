@@ -67,35 +67,34 @@ class TestPowerdns(unittest.TestCase):
         mock_current_app.logger.debug.assert_called_with(log_data)
         self.assertEqual(result, change_id)
 
+    @patch("lemur.plugins.lemur_acme.powerdns.dnsutil")
     @patch("lemur.plugins.lemur_acme.powerdns.current_app")
     @patch("lemur.extensions.metrics")
     @patch("time.sleep")
-    def test_wait_for_dns_change(self, mock_sleep, mock_metrics, mock_current_app):
-        nameserver = "1.1.1.1"
-        powerdns._get_authoritative_nameserver = Mock(return_value=nameserver)
-        powerdns._has_dns_propagated = Mock(return_value=True)
-        mock_metrics.send = Mock()
-        mock_sleep.return_value = False
+    def test_wait_for_dns_change(self, mock_sleep, mock_metrics, mock_current_app, mock_dnsutil):
         domain = "_acme-challenge.test.example.com"
-        token = "ABCDEFGHIJ"
+        token = "ABCDEFG"
+        zone_name = "test.example.com"
+        nameserver = "1.1.1.1"
         change_id = (domain, token)
+        mock_records = (token,)
+
+        mock_current_app.config.get = Mock(return_value=1)
+        powerdns._get_zone_name = Mock(return_value=zone_name)
+        mock_dnsutil.get_authoritative_nameserver = Mock(return_value=nameserver)
+        mock_dnsutil.get_dns_records = Mock(return_value=mock_records)
+        mock_sleep.return_value = False
+        mock_metrics.send = Mock()
         mock_current_app.logger.debug = Mock()
         powerdns.wait_for_dns_change(change_id)
 
-        auth_log_data = {
+        log_data = {
             "function": "wait_for_dns_change",
             "fqdn": domain,
             "status": True,
-            "message": "Record status on UltraDNS authoritative server"
+            "message": "Record status on PowerDNS authoritative server"
         }
-        pub_log_data = {
-            "function": "wait_for_dns_change",
-            "fqdn": domain,
-            "status": True,
-            "message": "Record status on Public DNS"
-        }
-        mock_current_app.logger.debug.assert_any_call(auth_log_data)
-        mock_current_app.logger.debug.assert_any_call(pub_log_data)
+        mock_current_app.logger.debug.assert_called_with(log_data)
 
     @patch("lemur.plugins.lemur_acme.powerdns.current_app")
     def test_delete_txt_record(self, mock_current_app):

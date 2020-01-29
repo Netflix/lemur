@@ -224,6 +224,21 @@ def _generate_header():
     return headers
 
 
+def _get_zone_name(domain, account_number):
+    """Get most specific matching zone for the given domain and return as a String"""
+    zones = get_zones(account_number)
+    zone_name = ""
+    for z in zones:
+        if domain.endswith(z):
+            if z.count(".") > zone_name.count("."):
+                zone_name = z
+    if not zone_name:
+        function = sys._getframe().f_code.co_name
+        metrics.send(f"{function}.fail", "counter", 1)
+        raise Exception(f"No PowerDNS zone found for domain: {domain}")
+    return zone_name
+
+
 def _get(path, params=None):
     """ Execute a GET request on the given URL (base_uri + path) and return response as JSON object """
     base_uri = current_app.config.get("ACME_POWERDNS_DOMAIN", "")
@@ -246,19 +261,3 @@ def _patch(path, payload):
         headers=_generate_header()
     )
     resp.raise_for_status()
-
-
-def _get_zone_name(domain, account_number):
-    """Get most specific matching zone for the given domain and return as a String"""
-    zones = get_zones(account_number)
-    zone_name = ""
-    for z in zones:
-        if domain.endswith(z):
-            if z.count(".") > zone_name.count("."):
-                zone_name = z
-    if not zone_name:
-        function = sys._getframe().f_code.co_name
-        metrics.send(f"{function}.fail", "counter", 1)
-        raise Exception(f"No PowerDNS zone found for domain: {domain}")
-    return zone_name
-
