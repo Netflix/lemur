@@ -139,7 +139,7 @@ def wait_for_dns_change(change_id, account_number=None):
     Retries and waits until successful.
     """
     domain, token = change_id
-    number_of_attempts = 20
+    number_of_attempts = current_app.config.get("ACME_POWERDNS_RETRIES", "")
     zone_name = _get_zone_name(domain, account_number)
     nameserver = dnsutil.get_authoritative_nameserver(zone_name)
     record_found = False
