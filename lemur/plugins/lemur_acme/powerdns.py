@@ -3,11 +3,7 @@ import requests
 import json
 import sys
 
-import dns
-import dns.exception
-import dns.name
-import dns.query
-import dns.resolver
+import lemur.dns_providers.util as dnsutil
 
 from flask import current_app
 from lemur.extensions import metrics, sentry
@@ -63,8 +59,25 @@ def get_zones(account_number):
     server_id = current_app.config.get("ACME_POWERDNS_SERVERID", "")
     path = f"/api/v1/servers/{server_id}/zones"
     zones = []
-    for elem in _get(path):
-        zone = Zone(elem)
+    try:
+        records = _get(path)
+        function = sys._getframe().f_code.co_name
+        log_data = {
+            "function": function,
+            "message": "Retrieved Zones Successfully"
+        }
+        current_app.logger.debug(log_data)
+    except Exception as e:
+        records = _get(path)
+        function = sys._getframe().f_code.co_name
+        log_data = {
+            "function": function,
+            "message": "Failed to Retrieve Zone Data"
+        }
+        current_app.logger.debug(log_data)
+
+    for record in records:
+        zone = Zone(record)
         if zone.kind == 'Master':
             zones.append(zone.name)
     return zones
@@ -80,14 +93,14 @@ def create_txt_record(domain, token, account_number):
     payload = {
         "rrsets": [
             {
-                "name": f"{domain_id}",
+                "name": domain_id,
                 "type": "TXT",
-                "ttl": "300",
+                "ttl": 300,
                 "changetype": "REPLACE",
                 "records": [
                     {
-                        "content": f"{token}",
-                        "disabled": "false"
+                        "content": f"\"{token}\"",
+                        "disabled": False
                     }
                 ],
                 "comments": []
@@ -105,7 +118,7 @@ def create_txt_record(domain, token, account_number):
             "message": "TXT record successfully created"
         }
         current_app.logger.debug(log_data)
-    except requests.exceptions.RequestException as e:
+    except Exception as e:
         function = sys._getframe().f_code.co_name
         log_data = {
             "function": function,
@@ -122,46 +135,36 @@ def create_txt_record(domain, token, account_number):
 
 def wait_for_dns_change(change_id, account_number=None):
     """
-    Checks if changes have propagated to DNS
-    Verifies both the authoritative DNS server and a public DNS server(Google <8.8.8.8> in our case)
+    Checks the authoritative DNS Server to see if changes have propagated to DNS
     Retries and waits until successful.
     """
     domain, token = change_id
     number_of_attempts = 20
-
-    nameserver = _get_authoritative_nameserver(domain)
-    status = False
+    zone_name = _get_zone_name(domain, account_number)
+    nameserver = dnsutil.get_authoritative_nameserver(zone_name)
+    record_found = False
     for attempts in range(0, number_of_attempts):
-        status = _has_dns_propagated(domain, token, nameserver)
-        function = sys._getframe().f_code.co_name
-        log_data = {
-            "function": function,
-            "fqdn": domain,
-            "status": status,
-            "message": "Record status on UltraDNS authoritative server"
-        }
-        current_app.logger.debug(log_data)
-        if status:
-            time.sleep(10)
+        txt_records = dnsutil.get_dns_records(domain, "TXT", nameserver)
+        for txt_record in txt_records:
+            if txt_record == token:
+                record_found = True
+                break
+        if record_found:
             break
         time.sleep(10)
-    if status:
-        nameserver = _get_public_authoritative_nameserver()
-        for attempts in range(0, number_of_attempts):
-            status = _has_dns_propagated(domain, token, nameserver)
-            function = sys._getframe().f_code.co_name
-            log_data = {
-                "function": function,
-                "fqdn": domain,
-                "status": status,
-                "message": "Record status on Public DNS"
-            }
-            current_app.logger.debug(log_data)
-            if status:
-                metrics.send(f"{function}.success", "counter", 1)
-                break
-            time.sleep(10)
-    if not status:
+
+    function = sys._getframe().f_code.co_name
+    log_data = {
+        "function": function,
+        "fqdn": domain,
+        "status": record_found,
+        "message": "Record status on PowerDNS authoritative server"
+    }
+    current_app.logger.debug(log_data)
+
+    if record_found:
+        metrics.send(f"{function}.success", "counter", 1, metric_tags={"fqdn": domain, "txt_record": token})
+    else:
         metrics.send(f"{function}.fail", "counter", 1, metric_tags={"fqdn": domain, "txt_record": token})
         sentry.captureException(extra={"fqdn": str(domain), "txt_record": str(token)})
 
@@ -176,14 +179,14 @@ def delete_txt_record(change_id, account_number, domain, token):
     payload = {
         "rrsets": [
             {
-                "name": f"{domain_id}",
+                "name": domain_id,
                 "type": "TXT",
-                "ttl": "300",
+                "ttl": 300,
                 "changetype": "DELETE",
                 "records": [
                     {
-                        "content": f"{token}",
-                        "disabled": "false"
+                        "content": f"\"{token}\"",
+                        "disabled": False
                     }
                 ],
                 "comments": []
@@ -201,7 +204,7 @@ def delete_txt_record(change_id, account_number, domain, token):
             "message": "TXT record successfully deleted"
         }
         current_app.logger.debug(log_data)
-    except requests.exceptions.RequestException as e:
+    except Exception as e:
         function = sys._getframe().f_code.co_name
         log_data = {
             "function": function,
@@ -217,7 +220,8 @@ def _generate_header():
     """Generate a PowerDNS API header and return it as a dictionary"""
     api_key_name = current_app.config.get("ACME_POWERDNS_APIKEYNAME", "")
     api_key = current_app.config.get("ACME_POWERDNS_APIKEY", "")
-    return {api_key_name: api_key}
+    headers = {api_key_name: api_key}
+    return headers
 
 
 def _get(path, params=None):
@@ -238,8 +242,8 @@ def _patch(path, payload):
     base_uri = current_app.config.get("ACME_POWERDNS_DOMAIN", "")
     resp = requests.patch(
         f"{base_uri}{path}",
-        headers=_generate_header(),
-        data=json.dumps(payload)
+        data=json.dumps(payload),
+        headers=_generate_header()
     )
     resp.raise_for_status()
 
@@ -258,72 +262,3 @@ def _get_zone_name(domain, account_number):
         raise Exception(f"No PowerDNS zone found for domain: {domain}")
     return zone_name
 
-
-def _get_authoritative_nameserver(domain):
-    """Get the authoritative nameserver for the given domain"""
-    n = dns.name.from_text(domain)
-
-    depth = 2
-    default = dns.resolver.get_default_resolver()
-    nameserver = default.nameservers[0]
-
-    last = False
-    while not last:
-        s = n.split(depth)
-
-        last = s[0].to_unicode() == u"@"
-        sub = s[1]
-
-        query = dns.message.make_query(sub, dns.rdatatype.NS)
-        response = dns.query.udp(query, nameserver)
-
-        rcode = response.rcode()
-        if rcode != dns.rcode.NOERROR:
-            function = sys._getframe().f_code.co_name
-            metrics.send(f"{function}.error", "counter", 1)
-            if rcode == dns.rcode.NXDOMAIN:
-                raise Exception("%s does not exist." % sub)
-            else:
-                raise Exception("Error %s" % dns.rcode.to_text(rcode))
-
-        if len(response.authority) > 0:
-            rrset = response.authority[0]
-        else:
-            rrset = response.answer[0]
-
-        rr = rrset[0]
-        if rr.rdtype != dns.rdatatype.SOA:
-            authority = rr.target
-            nameserver = default.query(authority).rrset[0].to_text()
-
-        depth += 1
-
-    return nameserver
-
-
-def _get_public_authoritative_nameserver():
-    return "8.8.8.8"
-
-
-def _has_dns_propagated(name, token, domain):
-    """Check whether the DNS change has propagated to the public DNS"""
-    txt_records = []
-    try:
-        dns_resolver = dns.resolver.Resolver()
-        dns_resolver.nameservers = [domain]
-        dns_response = dns_resolver.query(name, "TXT")
-        for rdata in dns_response:
-            for txt_record in rdata.strings:
-                txt_records.append(txt_record.decode("utf-8"))
-    except dns.exception.DNSException:
-        function = sys._getframe().f_code.co_name
-        metrics.send(f"{function}.fail", "counter", 1)
-        return False
-
-    for txt_record in txt_records:
-        if txt_record == token:
-            function = sys._getframe().f_code.co_name
-            metrics.send(f"{function}.success", "counter", 1)
-            return True
-
-    return False
