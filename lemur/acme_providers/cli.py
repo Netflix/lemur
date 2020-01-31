@@ -10,7 +10,7 @@ from lemur.constants import SUCCESS_METRIC_STATUS
 from lemur.plugins.lemur_acme.plugin import AcmeHandler
 
 manager = Manager(
-    usage="This provides ability to test ACME issuance"
+    usage="Handles all ACME related tasks"
 )
 
 
@@ -30,7 +30,7 @@ manager = Manager(
 )
 def dnstest(domain, token):
     """
-    Attempts to create, verify, and delete DNS TXT records with an autodetected provider.
+    Create, verify, and delete DNS TXT records using an autodetected provider.
     """
     print("[+] Starting ACME Tests.")
     change_id = (domain, token)
@@ -53,7 +53,7 @@ def dnstest(domain, token):
         change_id = dns_provider_plugin.create_txt_record(domain, token, account_number)
 
     print("[+] Verifying TXT Record has propagated to DNS.")
-    print("[+] Waiting 60 second before continuing...")
+    print("[+] This step could take a while...")
     time.sleep(10)
 
     # Verify TXT Records
@@ -64,7 +64,7 @@ def dnstest(domain, token):
 
         try:
             dns_provider_plugin.wait_for_dns_change(change_id, account_number)
-            print(f"[+] Verfied TXT Record in `{dns_provider.name}` provider")
+            print(f"[+] Verified TXT Record in `{dns_provider.name}` provider")
         except Exception:
             metrics.send("complete_dns_challenge_error", "counter", 1)
             sentry.captureException()

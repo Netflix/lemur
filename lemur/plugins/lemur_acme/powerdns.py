@@ -67,20 +67,20 @@ def get_zones(account_number):
             "message": "Retrieved Zones Successfully"
         }
         current_app.logger.debug(log_data)
+        for record in records:
+            zone = Zone(record)
+            if zone.kind == 'Master':
+                zones.append(zone.name)
+        return zones
+
     except Exception as e:
-        records = _get(path)
         function = sys._getframe().f_code.co_name
         log_data = {
             "function": function,
             "message": "Failed to Retrieve Zone Data"
         }
         current_app.logger.debug(log_data)
-
-    for record in records:
-        zone = Zone(record)
-        if zone.kind == 'Master':
-            zones.append(zone.name)
-    return zones
+        raise
 
 
 def create_txt_record(domain, token, account_number):

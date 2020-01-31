@@ -6,8 +6,7 @@ import dns.query
 import dns.resolver
 import re
 
-from flask import current_app
-from lemur.extensions import metrics, sentry
+from lemur.extensions import metrics
 
 
 class DNSError(Exception):
@@ -86,9 +85,6 @@ def get_authoritative_nameserver(domain):
 
 def get_dns_records(domain, rdtype, nameserver):
     """Retrieves the DNS records matching the name and type and returns a list of records"""
-    # if not nameserver:
-    #     nameserver = get_authoritative_nameserver(domain)[0]
-
     records = []
     try:
         dns_resolver = dns.resolver.Resolver()
