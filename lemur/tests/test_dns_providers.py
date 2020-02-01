@@ -1,5 +1,4 @@
 import unittest
-from mock import Mock, patch
 from lemur.dns_providers import util as dnsutil
 
 
