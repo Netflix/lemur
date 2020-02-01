@@ -23,7 +23,11 @@ from setuptools import setup, find_packages
 from subprocess import check_output
 
 import pip
-if tuple(map(int, pip.__version__.split('.'))) >= (10, 0, 0):
+if tuple(map(int, pip.__version__.split('.'))) >= (19, 3, 0):
+    from pip._internal.network.session import PipSession
+    from pip._internal.req import parse_requirements
+
+elif tuple(map(int, pip.__version__.split('.'))) >= (10, 0, 0):
     from pip._internal.download import PipSession
     from pip._internal.req import parse_requirements
 else:
