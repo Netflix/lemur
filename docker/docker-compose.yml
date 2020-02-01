@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  postgres:
+    image: "postgres:10"
+    restart: always
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    env_file:
+      - pgsql-env
+
+  lemur:
+    # image: "netlix-lemur:latest"
+    build: .
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - lemur-env
+      - pgsql-env
+    ports:
+      - 80:80
+      - 443:443
+
+  redis:
+    image: "redis:alpine"
+
+volumes:
+    pg_data: {}
