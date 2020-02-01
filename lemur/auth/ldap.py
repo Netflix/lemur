@@ -105,7 +105,7 @@ class LdapPrincipal:
             role = role_service.get_by_name(self.ldap_default_role)
             if role:
                 if not role.third_party:
-                    role = role.set_third_party(role.id, third_party_status=True)
+                    role = role_service.set_third_party(role.id, third_party_status=True)
                 roles.add(role)
 
         # update their 'roles'
