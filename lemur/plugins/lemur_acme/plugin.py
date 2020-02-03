@@ -183,6 +183,10 @@ class AcmeHandler(object):
             else:
                 raise
 
+        current_app.logger.debug(
+            f"Successfully resolved Acme order: {order.uri}", exc_info=True
+        )
+
         pem_certificate = OpenSSL.crypto.dump_certificate(
             OpenSSL.crypto.FILETYPE_PEM,
             OpenSSL.crypto.load_certificate(
