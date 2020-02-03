@@ -46,7 +46,7 @@ class ADCSIssuerPlugin(IssuerPlugin):
         )
         current_app.logger.info("Requesting CSR: {0}".format(csr))
         current_app.logger.info("Issuer options: {0}".format(issuer_options))
-        cert, req_id = (
+        cert = (
             ca_server.get_cert(csr, adcs_template, encoding="b64")
             .decode("utf-8")
             .replace("\r\n", "\n")
@@ -54,7 +54,7 @@ class ADCSIssuerPlugin(IssuerPlugin):
         chain = (
             ca_server.get_ca_cert(encoding="b64").decode("utf-8").replace("\r\n", "\n")
         )
-        return cert, chain, req_id
+        return cert, chain, None
 
     def revoke_certificate(self, certificate, comments):
         raise NotImplementedError("Not implemented\n", self, certificate, comments)
