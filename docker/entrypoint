@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/bin/bash
+
+set -eo pipefail
 
 if [ -z "${POSTGRES_USER}" ] || [ -z "${POSTGRES_PASSWORD}" ] || [ -z "${POSTGRES_HOST}" ] || [ -z "${POSTGRES_DB}" ];then
   echo "Database vars not set"
@@ -7,22 +9,23 @@ fi
 
 export POSTGRES_PORT="${POSTGRES_PORT:-5432}"
 
-echo 'export SQLALCHEMY_DATABASE_URI="postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB"' >> /etc/profile
+export LEMUR_ADMIN_PASSWORD="${LEMUR_ADMIN_PASSWORD:-admin}"
 
-source /etc/profile
+export SQLALCHEMY_DATABASE_URI="postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB"
+
 
 PGPASSWORD=$POSTGRES_PASSWORD psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -d $POSTGRES_DB --command 'select 1;'
 
 echo " # Create Postgres trgm extension"
-PGPASSWORD=$POSTGRES_PASSWORD psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -d $POSTGRES_DB --command 'CREATE EXTENSION pg_trgm;'
+PGPASSWORD=$POSTGRES_PASSWORD psql -h $POSTGRES_HOST -p $POSTGRES_PORT -U $POSTGRES_USER -d $POSTGRES_DB --command 'CREATE EXTENSION IF NOT EXISTS pg_trgm;'
 echo " # Done"
 
 if [ -z "${SKIP_SSL}" ]; then
   if [ ! -f /etc/nginx/ssl/server.crt ] && [ ! -f /etc/nginx/ssl/server.key ]; then
     openssl req -x509 -newkey rsa:4096 -nodes -keyout /etc/nginx/ssl/server.key -out /etc/nginx/ssl/server.crt -days 365 -subj "/C=US/ST=FAKE/L=FAKE/O=FAKE/OU=FAKE/CN=FAKE"
   fi
-  mv /etc/nginx/conf.d/default-ssl.conf.a /etc/nginx/conf.d/default-ssl.conf
-  mv /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf.a
+  [ -f "/etc/nginx/conf.d/default-ssl.conf.a" ] && mv /etc/nginx/conf.d/default-ssl.conf.a /etc/nginx/conf.d/default-ssl.conf
+  [ -f "/etc/nginx/conf.d/default.conf" ] && mv -f /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf.a
 fi
 
 # if [ ! -f /home/lemur/.lemur/lemur.conf.py ]; then
@@ -33,7 +36,7 @@ fi
 # fi
 
 echo " # Running init"
-su lemur -c "python3 /opt/lemur/lemur/manage.py init"
+su lemur -s /bin/bash -c "cd /opt/lemur/lemur; python3 /opt/lemur/lemur/manage.py init -p ${LEMUR_ADMIN_PASSWORD}"
 echo " # Done"
 
 # echo "Creating user"

@@ -1,0 +1,25 @@
+# SKIP_SSL=1
+# LEMUR_TOKEN_SECRET=
+# LEMUR_DEFAULT_COUNTRY=
+# LEMUR_DEFAULT_STATE=
+# LEMUR_DEFAULT_LOCATION=
+# LEMUR_DEFAULT_ORGANIZATION=
+# LEMUR_DEFAULT_ORGANIZATIONAL_UNIT=
+# LEMUR_DEFAULT_ISSUER_PLUGIN=cryptography-issuer
+# LEMUR_DEFAULT_AUTHORITY=cryptography
+# MAIL_SERVER=mail.example.com
+# MAIL_PORT=25
+# LEMUR_EMAIL=lemur@example.com
+# LEMUR_SECURITY_TEAM_EMAIL=['team@example.com']
+# LEMUR_TOKEN_SECRET=
+# LEMUR_ENCRYPTION_KEYS=['']
+# DEBUG=True
+# LDAP_DEBUG=True
+# LDAP_AUTH=True
+# LDAP_BIND_URI=ldap://example.com
+# LDAP_BASE_DN=DC=example,DC=com
+# LDAP_EMAIL_DOMAIN=example.com
+# LDAP_USE_TLS=False
+# LDAP_REQUIRED_GROUP=certificate-management-admins
+# LDAP_GROUPS_TO_ROLES={'certificate-management-admins': 'admin', 'Team': 'team@example.com'}
+# LDAP_IS_ACTIVE_DIRECTORY=False
