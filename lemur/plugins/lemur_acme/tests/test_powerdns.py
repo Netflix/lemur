@@ -31,6 +31,7 @@ class TestPowerdns(unittest.TestCase):
          {'account': '', 'dnssec': 'False', 'id': 'test.example.com.', 'kind': 'Master', 'last_check': 0,
           'masters': [], 'name': 'test.example.com.', 'notified_serial': '2019112501', 'serial': '2019112501',
           'url': '/api/v1/servers/localhost/zones/test.example.com.'}]
+        powerdns._check_conf = Mock()
         powerdns._get = Mock(path)
         powerdns._get.side_effect = [get_response]
         mock_current_app.config.get = Mock(return_value="localhost")
@@ -53,6 +54,7 @@ class TestPowerdns(unittest.TestCase):
         token = "ABCDEFGHIJ"
         account_number = "1234567890"
         change_id = (domain, token)
+        powerdns._check_conf = Mock()
         powerdns._get_zone_name = Mock(return_value=zone)
         mock_current_app.logger.debug = Mock()
         mock_current_app.config.get = Mock(return_value="localhost")
@@ -77,8 +79,8 @@ class TestPowerdns(unittest.TestCase):
         zone_name = "test.example.com"
         nameserver = "1.1.1.1"
         change_id = (domain, token)
+        powerdns._check_conf = Mock()
         mock_records = (token,)
-
         mock_current_app.config.get = Mock(return_value=1)
         powerdns._get_zone_name = Mock(return_value=zone_name)
         mock_dnsutil.get_authoritative_nameserver = Mock(return_value=nameserver)
@@ -103,6 +105,7 @@ class TestPowerdns(unittest.TestCase):
         token = "ABCDEFGHIJ"
         account_number = "1234567890"
         change_id = (domain, token)
+        powerdns._check_conf = Mock()
         powerdns._get_zone_name = Mock(return_value=zone)
         mock_current_app.logger.debug = Mock()
         mock_current_app.config.get = Mock(return_value="localhost")

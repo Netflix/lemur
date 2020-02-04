@@ -5,7 +5,6 @@ from flask_script import Manager
 from flask import current_app
 
 from lemur.extensions import sentry
-from lemur.extensions import metrics
 from lemur.constants import SUCCESS_METRIC_STATUS
 from lemur.plugins.lemur_acme.plugin import AcmeHandler
 
@@ -38,9 +37,6 @@ def dnstest(domain, token):
     acme_handler = AcmeHandler()
     acme_handler.autodetect_dns_providers(domain)
     if not acme_handler.dns_providers_for_domain[domain]:
-        metrics.send(
-            "get_authorizations_no_dns_provider_for_domain", "counter", 1
-        )
         raise Exception(f"No DNS providers found for domain: {format(domain)}.")
 
     # Create TXT Records
@@ -66,7 +62,6 @@ def dnstest(domain, token):
             dns_provider_plugin.wait_for_dns_change(change_id, account_number)
             print(f"[+] Verified TXT Record in `{dns_provider.name}` provider")
         except Exception:
-            metrics.send("complete_dns_challenge_error", "counter", 1)
             sentry.captureException()
             current_app.logger.debug(
                 f"Unable to resolve DNS challenge for change_id: {change_id}, account_id: "
@@ -88,5 +83,4 @@ def dnstest(domain, token):
         print(f"[+] Deleted TXT Record in `{dns_provider.name}` provider")
 
     status = SUCCESS_METRIC_STATUS
-    metrics.send("dnstest", "counter", 1, metric_tags={"status": status})
     print("[+] Done with ACME Tests.")

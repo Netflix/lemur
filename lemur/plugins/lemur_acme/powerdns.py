@@ -3,10 +3,21 @@ import requests
 import json
 import sys
 
+import lemur.common.utils as utils
 import lemur.dns_providers.util as dnsutil
 
 from flask import current_app
 from lemur.extensions import metrics, sentry
+
+REQUIRED_VARIABLES = [
+    "ACME_POWERDNS_APIKEYNAME",
+    "ACME_POWERDNS_APIKEY",
+    "ACME_POWERDNS_DOMAIN",
+]
+
+
+def _check_conf():
+    utils.validate_conf(current_app, REQUIRED_VARIABLES)
 
 
 class Zone:
@@ -56,37 +67,37 @@ class Record:
 
 def get_zones(account_number):
     """Retrieve authoritative zones from the PowerDNS API and return a list"""
-    server_id = current_app.config.get("ACME_POWERDNS_SERVERID", "")
+    _check_conf()
+    server_id = current_app.config.get("ACME_POWERDNS_SERVERID", "localhost")
     path = f"/api/v1/servers/{server_id}/zones"
     zones = []
+    function = sys._getframe().f_code.co_name
+    log_data = {
+        "function": function
+    }
     try:
         records = _get(path)
-        function = sys._getframe().f_code.co_name
-        log_data = {
-            "function": function,
-            "message": "Retrieved Zones Successfully"
-        }
+        log_data["message"] = "Retrieved Zones Successfully"
         current_app.logger.debug(log_data)
-        for record in records:
-            zone = Zone(record)
-            if zone.kind == 'Master':
-                zones.append(zone.name)
-        return zones
 
     except Exception as e:
-        function = sys._getframe().f_code.co_name
-        log_data = {
-            "function": function,
-            "message": "Failed to Retrieve Zone Data"
-        }
+        sentry.captureException()
+        log_data["message"] = "Failed to Retrieve Zone Data"
         current_app.logger.debug(log_data)
         raise
+
+    for record in records:
+        zone = Zone(record)
+        if zone.kind == 'Master':
+            zones.append(zone.name)
+    return zones
 
 
 def create_txt_record(domain, token, account_number):
     """ Create a TXT record for the given domain and token and return a change_id tuple """
+    _check_conf()
     zone_name = _get_zone_name(domain, account_number)
-    server_id = current_app.config.get("ACME_POWERDNS_SERVERID", "")
+    server_id = current_app.config.get("ACME_POWERDNS_SERVERID", "localhost")
     zone_id = zone_name + "."
     domain_id = domain + "."
     path = f"/api/v1/servers/{server_id}/zones/{zone_id}"
@@ -107,26 +118,20 @@ def create_txt_record(domain, token, account_number):
             }
         ]
     }
-
+    function = sys._getframe().f_code.co_name
+    log_data = {
+        "function": function,
+        "fqdn": domain,
+        "token": token,
+    }
     try:
         _patch(path, payload)
-        function = sys._getframe().f_code.co_name
-        log_data = {
-            "function": function,
-            "fqdn": domain,
-            "token": token,
-            "message": "TXT record successfully created"
-        }
+        log_data["message"] = "TXT record successfully created"
         current_app.logger.debug(log_data)
     except Exception as e:
-        function = sys._getframe().f_code.co_name
-        log_data = {
-            "function": function,
-            "domain": domain,
-            "token": token,
-            "Exception": e,
-            "message": "Unable to create TXT record"
-        }
+        sentry.captureException()
+        log_data["Exception"] = e
+        log_data["message"] = "Unable to create TXT record"
         current_app.logger.debug(log_data)
 
     change_id = (domain, token)
@@ -138,8 +143,9 @@ def wait_for_dns_change(change_id, account_number=None):
     Checks the authoritative DNS Server to see if changes have propagated to DNS
     Retries and waits until successful.
     """
+    _check_conf()
     domain, token = change_id
-    number_of_attempts = current_app.config.get("ACME_POWERDNS_RETRIES", "")
+    number_of_attempts = current_app.config.get("ACME_POWERDNS_RETRIES", "3")
     zone_name = _get_zone_name(domain, account_number)
     nameserver = dnsutil.get_authoritative_nameserver(zone_name)
     record_found = False
@@ -166,13 +172,13 @@ def wait_for_dns_change(change_id, account_number=None):
         metrics.send(f"{function}.success", "counter", 1, metric_tags={"fqdn": domain, "txt_record": token})
     else:
         metrics.send(f"{function}.fail", "counter", 1, metric_tags={"fqdn": domain, "txt_record": token})
-        sentry.captureException(extra={"fqdn": str(domain), "txt_record": str(token)})
 
 
 def delete_txt_record(change_id, account_number, domain, token):
     """ Delete the TXT record for the given domain and token """
+    _check_conf()
     zone_name = _get_zone_name(domain, account_number)
-    server_id = current_app.config.get("ACME_POWERDNS_SERVERID", "")
+    server_id = current_app.config.get("ACME_POWERDNS_SERVERID", "localhost")
     zone_id = zone_name + "."
     domain_id = domain + "."
     path = f"/api/v1/servers/{server_id}/zones/{zone_id}"
@@ -193,33 +199,27 @@ def delete_txt_record(change_id, account_number, domain, token):
             }
         ]
     }
-
+    function = sys._getframe().f_code.co_name
+    log_data = {
+        "function": function,
+        "fqdn": domain,
+        "token": token
+    }
     try:
         _patch(path, payload)
-        function = sys._getframe().f_code.co_name
-        log_data = {
-            "function": function,
-            "fqdn": domain,
-            "token": token,
-            "message": "TXT record successfully deleted"
-        }
+        log_data["message"] = "TXT record successfully deleted"
         current_app.logger.debug(log_data)
     except Exception as e:
-        function = sys._getframe().f_code.co_name
-        log_data = {
-            "function": function,
-            "domain": domain,
-            "token": token,
-            "Exception": e,
-            "message": "Unable to delete TXT record"
-        }
+        sentry.captureException()
+        log_data["Exception"] = e
+        log_data["message"] = "Unable to delete TXT record"
         current_app.logger.debug(log_data)
 
 
 def _generate_header():
     """Generate a PowerDNS API header and return it as a dictionary"""
-    api_key_name = current_app.config.get("ACME_POWERDNS_APIKEYNAME", "")
-    api_key = current_app.config.get("ACME_POWERDNS_APIKEY", "")
+    api_key_name = current_app.config.get("ACME_POWERDNS_APIKEYNAME")
+    api_key = current_app.config.get("ACME_POWERDNS_APIKEY")
     headers = {api_key_name: api_key}
     return headers
 
@@ -241,7 +241,7 @@ def _get_zone_name(domain, account_number):
 
 def _get(path, params=None):
     """ Execute a GET request on the given URL (base_uri + path) and return response as JSON object """
-    base_uri = current_app.config.get("ACME_POWERDNS_DOMAIN", "")
+    base_uri = current_app.config.get("ACME_POWERDNS_DOMAIN")
     resp = requests.get(
         f"{base_uri}{path}",
         headers=_generate_header(),
@@ -254,7 +254,7 @@ def _get(path, params=None):
 
 def _patch(path, payload):
     """ Execute a Patch request on the given URL (base_uri + path) with given payload """
-    base_uri = current_app.config.get("ACME_POWERDNS_DOMAIN", "")
+    base_uri = current_app.config.get("ACME_POWERDNS_DOMAIN")
     resp = requests.patch(
         f"{base_uri}{path}",
         data=json.dumps(payload),
