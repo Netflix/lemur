@@ -234,8 +234,12 @@ def _get_zone_name(domain, account_number):
                 zone_name = z
     if not zone_name:
         function = sys._getframe().f_code.co_name
+        log_data = {
+            "function": function,
+            "fqdn": domain,
+            "message": "No PowerDNS zone name found.",
+        }
         metrics.send(f"{function}.fail", "counter", 1)
-        raise Exception(f"No PowerDNS zone found for domain: {domain}")
     return zone_name
 
 
