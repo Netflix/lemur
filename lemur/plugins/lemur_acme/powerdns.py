@@ -16,10 +16,6 @@ REQUIRED_VARIABLES = [
 ]
 
 
-def _check_conf():
-    utils.validate_conf(current_app, REQUIRED_VARIABLES)
-
-
 class Zone:
     """ This class implements a PowerDNS zone in JSON. """
 
@@ -214,6 +210,10 @@ def delete_txt_record(change_id, account_number, domain, token):
         log_data["Exception"] = e
         log_data["message"] = "Unable to delete TXT record"
         current_app.logger.debug(log_data)
+
+
+def _check_conf():
+    utils.validate_conf(current_app, REQUIRED_VARIABLES)
 
 
 def _generate_header():
