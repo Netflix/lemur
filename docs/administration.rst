@@ -988,7 +988,7 @@ The following configuration properties are required to use the PowerDNS ACME Plu
 .. data:: ACME_POWERDNS_SERVERID
     :noindex:
 
-            This is the ServerID attribute of the PowerDNS API Server (i.e. "localhost"
+            This is the ServerID attribute of the PowerDNS API Server (i.e. "localhost")
 
 
 .. data:: ACME_POWERDNS_APIKEYNAME
@@ -1104,6 +1104,15 @@ All commands default to `~/.lemur/lemur.conf.py` if a configuration is not speci
     ::
 
         lemur notify
+
+
+.. data:: acme
+
+    Handles all ACME related tasks, like ACME plugin testing.
+
+    ::
+
+        lemur acme
 
 
 Sub-commands
