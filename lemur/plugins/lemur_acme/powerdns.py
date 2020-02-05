@@ -141,7 +141,7 @@ def wait_for_dns_change(change_id, account_number=None):
     """
     _check_conf()
     domain, token = change_id
-    number_of_attempts = current_app.config.get("ACME_POWERDNS_RETRIES", "3")
+    number_of_attempts = current_app.config.get("ACME_POWERDNS_RETRIES", 3)
     zone_name = _get_zone_name(domain, account_number)
     nameserver = dnsutil.get_authoritative_nameserver(zone_name)
     record_found = False
