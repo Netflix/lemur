@@ -96,7 +96,7 @@ def build_secret(secret_format, secret_name, body, private_key, cert_chain):
     if secret_format == "TLS":
         secret["type"] = "kubernetes.io/tls"
         secret["data"] = {
-            "tls.crt": base64encode(cert_chain),
+            "tls.crt": base64encode(body),
             "tls.key": base64encode(private_key),
         }
     if secret_format == "Certificate":
