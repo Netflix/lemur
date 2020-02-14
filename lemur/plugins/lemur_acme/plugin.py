@@ -172,7 +172,7 @@ class AcmeHandler(object):
 
         except (AcmeError, TimeoutError):
             sentry.captureException(extra={"order_url": str(order.uri)})
-            metrics.send("request_certificate_error", "counter", 1)
+            metrics.send("request_certificate_error", "counter", 1, metric_tags={"uri": order.uri})
             current_app.logger.error(
                 f"Unable to resolve Acme order: {order.uri}", exc_info=True
             )
@@ -183,7 +183,8 @@ class AcmeHandler(object):
             else:
                 raise
 
-        current_app.logger.debug(
+        metrics.send("request_certificate_success", "counter", 1, metric_tags={"uri": order.uri})
+        current_app.logger.info(
             f"Successfully resolved Acme order: {order.uri}", exc_info=True
         )
 
