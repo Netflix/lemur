@@ -1,4 +1,6 @@
 import unittest
+
+from cryptography.x509 import DNSName
 from requests.models import Response
 
 from mock import MagicMock, Mock, patch
@@ -74,12 +76,14 @@ class TestAcme(unittest.TestCase):
     @patch("acme.client.Client")
     @patch("lemur.plugins.lemur_acme.plugin.current_app")
     @patch("lemur.plugins.lemur_acme.cloudflare.wait_for_dns_change")
+    @patch("time.sleep")
     def test_complete_dns_challenge_success(
-        self, mock_wait_for_dns_change, mock_current_app, mock_acme
+        self, mock_sleep, mock_wait_for_dns_change, mock_current_app, mock_acme
     ):
         mock_dns_provider = Mock()
         mock_dns_provider.wait_for_dns_change = Mock(return_value=True)
         mock_authz = Mock()
+        mock_sleep.return_value = False
         mock_authz.dns_challenge.response = Mock()
         mock_authz.dns_challenge.response.simple_verify = Mock(return_value=True)
         mock_authz.authz = []
@@ -179,12 +183,25 @@ class TestAcme(unittest.TestCase):
         options = {
             "common_name": "test.netflix.net",
             "extensions": {
-                "sub_alt_names": {"names": ["test2.netflix.net", "test3.netflix.net"]}
+                "sub_alt_names": {"names": [DNSName("test2.netflix.net"), DNSName("test3.netflix.net")]}
             },
         }
         result = self.acme.get_domains(options)
         self.assertEqual(
             result, [options["common_name"], "test2.netflix.net", "test3.netflix.net"]
+        )
+
+    @patch("lemur.plugins.lemur_acme.plugin.current_app")
+    def test_get_domains_san(self, mock_current_app):
+        options = {
+            "common_name": "test.netflix.net",
+            "extensions": {
+                "sub_alt_names": {"names": [DNSName("test.netflix.net"), DNSName("test2.netflix.net")]}
+            },
+        }
+        result = self.acme.get_domains(options)
+        self.assertEqual(
+            result, [options["common_name"], "test2.netflix.net"]
         )
 
     @patch(
@@ -364,7 +381,7 @@ class TestAcme(unittest.TestCase):
 
     @patch("lemur.plugins.lemur_acme.ultradns.requests")
     @patch("lemur.plugins.lemur_acme.ultradns.current_app")
-    def test_get_ultradns_token(self, mock_current_app, mock_requests):
+    def test_ultradns_get_token(self, mock_current_app, mock_requests):
         # ret_val = json.dumps({"access_token": "access"})
         the_response = Response()
         the_response._content = b'{"access_token": "access"}'
@@ -374,7 +391,7 @@ class TestAcme(unittest.TestCase):
         self.assertTrue(len(result) > 0)
 
     @patch("lemur.plugins.lemur_acme.ultradns.current_app")
-    def test_create_txt_record(self, mock_current_app):
+    def test_ultradns_create_txt_record(self, mock_current_app):
         domain = "_acme_challenge.test.example.com"
         zone = "test.example.com"
         token = "ABCDEFGHIJ"
@@ -395,7 +412,7 @@ class TestAcme(unittest.TestCase):
 
     @patch("lemur.plugins.lemur_acme.ultradns.current_app")
     @patch("lemur.extensions.metrics")
-    def test_delete_txt_record(self, mock_metrics, mock_current_app):
+    def test_ultradns_delete_txt_record(self, mock_metrics, mock_current_app):
         domain = "_acme_challenge.test.example.com"
         zone = "test.example.com"
         token = "ABCDEFGHIJ"
@@ -418,7 +435,7 @@ class TestAcme(unittest.TestCase):
 
     @patch("lemur.plugins.lemur_acme.ultradns.current_app")
     @patch("lemur.extensions.metrics")
-    def test_wait_for_dns_change(self, mock_metrics, mock_current_app):
+    def test_ultradns_wait_for_dns_change(self, mock_metrics, mock_current_app):
         ultradns._has_dns_propagated = Mock(return_value=True)
         nameserver = "1.1.1.1"
         ultradns.get_authoritative_nameserver = Mock(return_value=nameserver)
@@ -437,7 +454,7 @@ class TestAcme(unittest.TestCase):
         }
         mock_current_app.logger.debug.assert_called_with(log_data)
 
-    def test_get_zone_name(self):
+    def test_ultradns_get_zone_name(self):
         zones = ['example.com', 'test.example.com']
         zone = "test.example.com"
         domain = "_acme-challenge.test.example.com"
@@ -446,7 +463,7 @@ class TestAcme(unittest.TestCase):
         result = ultradns.get_zone_name(domain, account_number)
         self.assertEqual(result, zone)
 
-    def test_get_zones(self):
+    def test_ultradns_get_zones(self):
         account_number = "1234567890"
         path = "a/b/c"
         zones = ['example.com', 'test.example.com']

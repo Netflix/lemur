@@ -31,7 +31,7 @@ from lemur.exceptions import InvalidAuthority, InvalidConfiguration, UnknownProv
 from lemur.extensions import metrics, sentry
 from lemur.plugins import lemur_acme as acme
 from lemur.plugins.bases import IssuerPlugin
-from lemur.plugins.lemur_acme import cloudflare, dyn, route53, ultradns
+from lemur.plugins.lemur_acme import cloudflare, dyn, route53, ultradns, powerdns
 from retrying import retry
 
 
@@ -259,8 +259,9 @@ class AcmeHandler(object):
 
         domains = [options["common_name"]]
         if options.get("extensions"):
-            for name in options["extensions"]["sub_alt_names"]["names"]:
-                domains.append(name)
+            for dns_name in options["extensions"]["sub_alt_names"]["names"]:
+                if dns_name.value not in domains:
+                    domains.append(dns_name.value)
 
         current_app.logger.debug("Got these domains: {0}".format(domains))
         return domains
@@ -382,6 +383,7 @@ class AcmeHandler(object):
             "dyn": dyn,
             "route53": route53,
             "ultradns": ultradns,
+            "powerdns": powerdns
         }
         provider = provider_types.get(type)
         if not provider:
@@ -441,6 +443,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
             "dyn": dyn,
             "route53": route53,
             "ultradns": ultradns,
+            "powerdns": powerdns
         }
         provider = provider_types.get(type)
         if not provider:
@@ -643,15 +646,8 @@ class ACMEIssuerPlugin(IssuerPlugin):
         domains = self.acme.get_domains(issuer_options)
         if not create_immediately:
             # Create pending authorizations that we'll need to do the creation
-            authz_domains = []
-            for d in domains:
-                if type(d) == str:
-                    authz_domains.append(d)
-                else:
-                    authz_domains.append(d.value)
-
             dns_authorization = authorization_service.create(
-                account_number, authz_domains, provider_type
+                account_number, domains, provider_type
             )
             # Return id of the DNS Authorization
             return None, None, dns_authorization.id
