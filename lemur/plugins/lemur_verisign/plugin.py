@@ -110,7 +110,7 @@ def process_options(options):
     }
 
     data["subject_alt_names"] = ",".join(get_additional_names(options))
-    
+
     if options.get("validity_end"):
         # VeriSign (Symantec) only accepts strictly smaller than 2 year end date
         if options.get("validity_end") < arrow.utcnow().shift(years=2, days=-1):
