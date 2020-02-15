@@ -98,14 +98,12 @@ def process_options(options):
     :param options:
     :return: dict or valid verisign options
     """
-
     # if there is a config variable with VERISIGN_PRODUCT_<upper(authority.name)> take the value as Cert product-type
     # else default to "Server", to be compatoible with former versions
     authority = options.get("authority").name.upper()
     product_type = current_app.config.get("VERISIGN_PRODUCT_{0}".format(authority))
     if product_type is None:
         product_type = "Server"
-
     data = {
         "challenge": get_psuedo_random_string(),
         "serverType": "Apache",
