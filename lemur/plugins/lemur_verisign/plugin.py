@@ -209,7 +209,7 @@ class VerisignIssuerPlugin(IssuerPlugin):
 
         response = self.session.post(url, data=data)
         try:
-             response_dict = handle_response(response.content)
+            response_dict = handle_response(response.content)
         except KeyError:
             metrics.send(
                 "verisign_create_certificate_error",
@@ -225,7 +225,7 @@ class VerisignIssuerPlugin(IssuerPlugin):
         authority = issuer_options.get("authority").name.upper()
         cert = response_dict['Response']['Certificate']
         external_id = response_dict['Response']['Transaction_ID']
-        chain = current_app.config.get("VERISIGN_INTERMEDIATE_{0}".format(authority),  current_app.config.get("VERISIGN_INTERMEDIATE"))
+        chain = current_app.config.get("VERISIGN_INTERMEDIATE_{0}".format(authority), current_app.config.get("VERISIGN_INTERMEDIATE"))
         return cert, chain, external_id
 
     @staticmethod
