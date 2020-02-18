@@ -181,6 +181,13 @@ class VaultDestinationPlugin(DestinationPlugin):
             "helpMessage": "Must be a valid Vault secrets path",
         },
         {
+            "name": "vaultSuffix",
+            "type": "str",
+            "required": False,
+            "validation": "^([a-zA-Z0-9._-]+/?)+$",
+            "helpMessage": "Must be a valid Vault secrets path",
+        },
+        {
             "name": "objectName",
             "type": "str",
             "required": False,
@@ -222,6 +229,7 @@ class VaultDestinationPlugin(DestinationPlugin):
         token_file = self.get_option("vaultAuthTokenFile", options)
         mount = self.get_option("vaultMount", options)
         path = self.get_option("vaultPath", options)
+        suffix = self.get_option("vaultSuffix", options)
         bundle = self.get_option("bundleChain", options)
         obj_name = self.get_option("objectName", options)
         api_version = self.get_option("vaultKvApiVersion", options)
@@ -255,6 +263,9 @@ class VaultDestinationPlugin(DestinationPlugin):
             path = "{0}/{1}".format(path, obj_name)
         else:
             path = "{0}/{1}".format(path, cname)
+        
+        if suffix:
+            path = "{0}/{1}".format(path, suffix)
 
         secret = get_secret(client, mount, path)
         secret["data"][cname] = {}
