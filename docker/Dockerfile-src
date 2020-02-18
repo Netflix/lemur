@@ -35,7 +35,7 @@ RUN addgroup -S ${group} -g ${gid} && \
     mkdir -p /home/lemur/.lemur/ && \
     mkdir -p /run/nginx/ /etc/nginx/ssl/
 
-COPY lemur /opt/lemur    
+COPY ./ /opt/lemur    
 WORKDIR /opt/lemur
 
 RUN chown -R $user:$group /opt/lemur/ /home/lemur/.lemur/ && \
