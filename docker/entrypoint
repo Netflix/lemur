@@ -36,7 +36,7 @@ fi
 # fi
 
 echo " # Running init"
-su lemur -s /bin/bash -c "cd /opt/lemur/lemur; python3 /opt/lemur/lemur/manage.py init -p ${LEMUR_ADMIN_PASSWORD}"
+su lemur -s /bin/bash -c "cd /opt/lemur/lemur; lemur init -p ${LEMUR_ADMIN_PASSWORD}"
 echo " # Done"
 
 # echo "Creating user"
@@ -49,9 +49,9 @@ cron_sync="${CRON_SYNC:-"*/15 * * * *"}"
 cron_revoked="${CRON_CHECK_REVOKED:-"0 22 * * *"}"
 
 echo " # Populating crontab"
-echo "${cron_notify} python3 /opt/lemur/lemur/manage.py notify expirations" > /etc/crontabs/lemur
-echo "${cron_sync} python3 /opt/lemur/lemur/manage.py source sync -s all" >> /etc/crontabs/lemur
-echo "${cron_revoked} python3 /opt/lemur/lemur/manage.py certificate check_revoked" >> /etc/crontabs/lemur
+echo "${cron_notify} lemur notify expirations" > /etc/crontabs/lemur
+echo "${cron_sync} lemur source sync -s all" >> /etc/crontabs/lemur
+echo "${cron_revoked} lemur certificate check_revoked" >> /etc/crontabs/lemur
 echo " # Done"
 
 exec "$@"
