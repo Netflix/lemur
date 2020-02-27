@@ -35,7 +35,6 @@ def get_all_zones():
             print("[+] Error with DNS Provider {}: {}".format(dns_provider.name, e))
             log_data["message"] = f"get all zones failed for {dns_provider} {e}."
             sentry.captureException(extra=log_data)
-            set_domains(dns_provider, [])
 
     status = SUCCESS_METRIC_STATUS
 
