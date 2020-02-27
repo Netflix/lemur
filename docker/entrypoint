@@ -47,11 +47,13 @@ echo " # Done"
 cron_notify="${CRON_NOTIFY:-"0 22 * * *"}"
 cron_sync="${CRON_SYNC:-"*/15 * * * *"}"
 cron_revoked="${CRON_CHECK_REVOKED:-"0 22 * * *"}"
+cron_reissue="${CRON_REISSUE:-"0 23 * * *"}"
 
 echo " # Populating crontab"
 echo "${cron_notify} lemur notify expirations" > /etc/crontabs/lemur
 echo "${cron_sync} lemur source sync -s all" >> /etc/crontabs/lemur
 echo "${cron_revoked} lemur certificate check_revoked" >> /etc/crontabs/lemur
+echo "${cron_reissue} lemur certificate reissue -c" >> /etc/crontabs/lemur
 echo " # Done"
 
 exec "$@"
