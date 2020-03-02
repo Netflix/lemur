@@ -297,7 +297,7 @@ class VaultDestinationPlugin(DestinationPlugin):
             path = "{0}/{1}".format(path, obj_name)
         else:
             path = "{0}/{1}".format(path, cname)
-        
+
         if suffix:
             path = "{0}/{1}".format(path, suffix)
 
