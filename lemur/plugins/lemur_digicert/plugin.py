@@ -72,8 +72,7 @@ def determine_validity_years(years):
         return max_years
     if years not in [1, 2, 3]:
         return default_years
-    else:
-        return years
+    return years
 
 
 def determine_end_date(end_date):
