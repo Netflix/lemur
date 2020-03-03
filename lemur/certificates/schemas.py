@@ -146,7 +146,9 @@ class CertificateInputSchema(CertificateCreationSchema):
                 data["extensions"]["subAltNames"] = {"names": []}
             elif not data["extensions"]["subAltNames"].get("names"):
                 data["extensions"]["subAltNames"]["names"] = []
-            data["extensions"]["subAltNames"]["names"] += csr_sans
+
+            if not data["extensions"]["subAltNames"]["names"]:
+                data["extensions"]["subAltNames"]["names"] += csr_sans
         return missing.convert_validity_years(data)
 
 
