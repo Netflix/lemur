@@ -17,7 +17,7 @@ def config_mock(*args):
         "DIGICERT_DEFAULT_VALIDITY": 1,
         "DIGICERT_MAX_VALIDITY": 2,
         "DIGICERT_CIS_PROFILE_NAMES": {"digicert": 'digicert'},
-        "DIGICERT_CIS_SIGNING_ALGORITHMS": {"verisign-sha1-intermediary": 'sha1'},
+        "DIGICERT_CIS_SIGNING_ALGORITHMS": {"digicert": 'digicert'},
     }
     return values[args[0]]
 
