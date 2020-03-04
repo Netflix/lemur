@@ -1,4 +1,6 @@
 import unittest
+
+from cryptography.x509 import DNSName
 from requests.models import Response
 
 from mock import MagicMock, Mock, patch
@@ -74,12 +76,14 @@ class TestAcme(unittest.TestCase):
     @patch("acme.client.Client")
     @patch("lemur.plugins.lemur_acme.plugin.current_app")
     @patch("lemur.plugins.lemur_acme.cloudflare.wait_for_dns_change")
+    @patch("time.sleep")
     def test_complete_dns_challenge_success(
-        self, mock_wait_for_dns_change, mock_current_app, mock_acme
+        self, mock_sleep, mock_wait_for_dns_change, mock_current_app, mock_acme
     ):
         mock_dns_provider = Mock()
         mock_dns_provider.wait_for_dns_change = Mock(return_value=True)
         mock_authz = Mock()
+        mock_sleep.return_value = False
         mock_authz.dns_challenge.response = Mock()
         mock_authz.dns_challenge.response.simple_verify = Mock(return_value=True)
         mock_authz.authz = []
@@ -179,12 +183,25 @@ class TestAcme(unittest.TestCase):
         options = {
             "common_name": "test.netflix.net",
             "extensions": {
-                "sub_alt_names": {"names": ["test2.netflix.net", "test3.netflix.net"]}
+                "sub_alt_names": {"names": [DNSName("test2.netflix.net"), DNSName("test3.netflix.net")]}
             },
         }
         result = self.acme.get_domains(options)
         self.assertEqual(
             result, [options["common_name"], "test2.netflix.net", "test3.netflix.net"]
+        )
+
+    @patch("lemur.plugins.lemur_acme.plugin.current_app")
+    def test_get_domains_san(self, mock_current_app):
+        options = {
+            "common_name": "test.netflix.net",
+            "extensions": {
+                "sub_alt_names": {"names": [DNSName("test.netflix.net"), DNSName("test2.netflix.net")]}
+            },
+        }
+        result = self.acme.get_domains(options)
+        self.assertEqual(
+            result, [options["common_name"], "test2.netflix.net"]
         )
 
     @patch(

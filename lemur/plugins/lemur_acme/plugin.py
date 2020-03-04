@@ -172,7 +172,7 @@ class AcmeHandler(object):
 
         except (AcmeError, TimeoutError):
             sentry.captureException(extra={"order_url": str(order.uri)})
-            metrics.send("request_certificate_error", "counter", 1)
+            metrics.send("request_certificate_error", "counter", 1, metric_tags={"uri": order.uri})
             current_app.logger.error(
                 f"Unable to resolve Acme order: {order.uri}", exc_info=True
             )
@@ -182,6 +182,11 @@ class AcmeHandler(object):
                 orderr = order
             else:
                 raise
+
+        metrics.send("request_certificate_success", "counter", 1, metric_tags={"uri": order.uri})
+        current_app.logger.info(
+            f"Successfully resolved Acme order: {order.uri}", exc_info=True
+        )
 
         pem_certificate = OpenSSL.crypto.dump_certificate(
             OpenSSL.crypto.FILETYPE_PEM,
@@ -254,8 +259,9 @@ class AcmeHandler(object):
 
         domains = [options["common_name"]]
         if options.get("extensions"):
-            for name in options["extensions"]["sub_alt_names"]["names"]:
-                domains.append(name)
+            for dns_name in options["extensions"]["sub_alt_names"]["names"]:
+                if dns_name.value not in domains:
+                    domains.append(dns_name.value)
 
         current_app.logger.debug("Got these domains: {0}".format(domains))
         return domains
@@ -640,15 +646,8 @@ class ACMEIssuerPlugin(IssuerPlugin):
         domains = self.acme.get_domains(issuer_options)
         if not create_immediately:
             # Create pending authorizations that we'll need to do the creation
-            authz_domains = []
-            for d in domains:
-                if type(d) == str:
-                    authz_domains.append(d)
-                else:
-                    authz_domains.append(d.value)
-
             dns_authorization = authorization_service.create(
-                account_number, authz_domains, provider_type
+                account_number, domains, provider_type
             )
             # Return id of the DNS Authorization
             return None, None, dns_authorization.id
