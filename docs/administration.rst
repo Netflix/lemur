@@ -738,7 +738,7 @@ The following configuration properties are required to use the Digicert issuer p
 .. data:: DIGICERT_MAX_VALIDITY
     :noindex:
 
-            This is the maximum validity (in years). (Default: DIGICERT_DEFAULT_VALIDITY)
+            This is the maximum validity (in years). (Default: value of DIGICERT_DEFAULT_VALIDITY)
 
 
 .. data:: DIGICERT_PRIVATE
