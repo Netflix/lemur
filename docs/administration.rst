@@ -1012,10 +1012,10 @@ The following configuration properties are required to use the PowerDNS ACME Plu
 .. data:: ACME_POWERDNS_VERIFY
     :noindex:
 
-            This configures how PowerDNS verifies TLS certificates.  The PowerDNS Plugin relies on the requests library, supported options are as follows:
-            * True: Verifies the certificate chains to a known publicly-trusted CA. (Default)
-            * False: Disable certificate validation (Not Recommended)
-            * File/Dir path to CA Bundle: Verify that the certificate chains to a Certificate Authority in the provided CA bundle.
+            This configures how TLS certificates on the PowerDNS API target are validated.  The PowerDNS Plugin depends on the PyPi requests library, which supports the following options:
+            * True: Verifies the TLS certificate was issued by a known publicly-trusted CA. (Default)
+            * False: Disables certificate validation (Not Recommended)
+            * File/Dir path to CA Bundle: Verifies the TLS certificate was issued by a Certificate Authority in the provided CA bundle.
 
 .. _CommandLineInterface:
 
