@@ -246,11 +246,12 @@ def _get_zone_name(domain, account_number):
 def _get(path, params=None):
     """ Execute a GET request on the given URL (base_uri + path) and return response as JSON object """
     base_uri = current_app.config.get("ACME_POWERDNS_DOMAIN")
+    verify_value = current_app.config.get("ACME_POWERDNS_VERIFY", True)
     resp = requests.get(
         f"{base_uri}{path}",
         headers=_generate_header(),
         params=params,
-        verify=True,
+        verify=verify_value,
     )
     resp.raise_for_status()
     return resp.json()
@@ -259,9 +260,11 @@ def _get(path, params=None):
 def _patch(path, payload):
     """ Execute a Patch request on the given URL (base_uri + path) with given payload """
     base_uri = current_app.config.get("ACME_POWERDNS_DOMAIN")
+    verify_value = current_app.config.get("ACME_POWERDNS_VERIFY", True)
     resp = requests.patch(
         f"{base_uri}{path}",
         data=json.dumps(payload),
-        headers=_generate_header()
+        headers=_generate_header(),
+        verify=verify_value,
     )
     resp.raise_for_status()

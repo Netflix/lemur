@@ -1008,6 +1008,15 @@ The following configuration properties are required to use the PowerDNS ACME Plu
 
             This is the number of times DNS Verification should be attempted (i.e. 20)
 
+
+.. data:: ACME_POWERDNS_VERIFY
+    :noindex:
+
+            This configures how PowerDNS verifies TLS certificates.  The PowerDNS Plugin relies on the requests library, supported options are as follows:
+            * True: Verifies the certificate chains to a known publicly-trusted CA. (Default)
+            * False: Disable certificate validation (Not Recommended)
+            * File/Dir path to CA Bundle: Verify that the certificate chains to a Certificate Authority in the provided CA bundle.
+
 .. _CommandLineInterface:
 
 Command Line Interface
