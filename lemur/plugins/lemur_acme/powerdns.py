@@ -251,7 +251,7 @@ def _get(path, params=None):
         f"{base_uri}{path}",
         headers=_generate_header(),
         params=params,
-        verify=verify_value,
+        verify=verify_value
     )
     resp.raise_for_status()
     return resp.json()
@@ -265,6 +265,6 @@ def _patch(path, payload):
         f"{base_uri}{path}",
         data=json.dumps(payload),
         headers=_generate_header(),
-        verify=verify_value,
+        verify=verify_value
     )
     resp.raise_for_status()
