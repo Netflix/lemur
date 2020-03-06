@@ -98,10 +98,14 @@ def process_options(options):
     :param options:
     :return: dict or valid verisign options
     """
+    # if there is a config variable with VERISIGN_PRODUCT_<upper(authority.name)> take the value as Cert product-type
+    # else default to "Server", to be compatoible with former versions
+    authority = options.get("authority").name.upper()
+    product_type = current_app.config.get("VERISIGN_PRODUCT_{0}".format(authority), "Server")
     data = {
         "challenge": get_psuedo_random_string(),
         "serverType": "Apache",
-        "certProductType": "Server",
+        "certProductType": product_type,
         "firstName": current_app.config.get("VERISIGN_FIRST_NAME"),
         "lastName": current_app.config.get("VERISIGN_LAST_NAME"),
         "signatureAlgorithm": "sha256WithRSAEncryption",
@@ -110,11 +114,6 @@ def process_options(options):
     }
 
     data["subject_alt_names"] = ",".join(get_additional_names(options))
-
-    if options.get("validity_end") > arrow.utcnow().shift(years=2):
-        raise Exception(
-            "Verisign issued certificates cannot exceed two years in validity"
-        )
 
     if options.get("validity_end"):
         # VeriSign (Symantec) only accepts strictly smaller than 2 year end date
@@ -210,7 +209,7 @@ class VerisignIssuerPlugin(IssuerPlugin):
 
         response = self.session.post(url, data=data)
         try:
-            cert = handle_response(response.content)["Response"]["Certificate"]
+            response_dict = handle_response(response.content)
         except KeyError:
             metrics.send(
                 "verisign_create_certificate_error",
@@ -222,8 +221,13 @@ class VerisignIssuerPlugin(IssuerPlugin):
                 extra={"common_name": issuer_options.get("common_name", "")}
             )
             raise Exception(f"Error with Verisign: {response.content}")
-        # TODO add external id
-        return cert, current_app.config.get("VERISIGN_INTERMEDIATE"), None
+        authority = issuer_options.get("authority").name.upper()
+        cert = response_dict['Response']['Certificate']
+        external_id = None
+        if 'Transaction_ID' in response_dict['Response'].keys():
+            external_id = response_dict['Response']['Transaction_ID']
+        chain = current_app.config.get("VERISIGN_INTERMEDIATE_{0}".format(authority), current_app.config.get("VERISIGN_INTERMEDIATE"))
+        return cert, chain, external_id
 
     @staticmethod
     def create_authority(options):
