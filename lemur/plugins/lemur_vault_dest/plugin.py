@@ -14,7 +14,7 @@ import re
 import hvac
 from flask import current_app
 
-from lemur.common.defaults import common_name
+from lemur.common.defaults import common_name,country,state,location,organizational_unit,organization
 from lemur.common.utils import parse_certificate
 from lemur.plugins.bases import DestinationPlugin
 from lemur.plugins.bases import SourcePlugin
@@ -202,22 +202,15 @@ class VaultDestinationPlugin(DestinationPlugin):
             "name": "vaultPath",
             "type": "str",
             "required": True,
-            "validation": "^([a-zA-Z0-9._-]+/?)+$",
-            "helpMessage": "Must be a valid Vault secrets path",
-        },
-        {
-            "name": "vaultSuffix",
-            "type": "str",
-            "required": False,
-            "validation": "^([a-zA-Z0-9._-]+/?)+$",
-            "helpMessage": "Must be a valid Vault secrets path",
+            "validation": "^(([a-zA-Z0-9._-]+|{(CN|OU|O|L|S|C)})+/?)+$",
+            "helpMessage": "Must be a valid Vault secrets path. Support vars: {CN|OU|O|L|S|C}",
         },
         {
             "name": "objectName",
             "type": "str",
             "required": False,
-            "validation": "[0-9a-zA-Z.:_-]+",
-            "helpMessage": "Name to bundle certs under, if blank use cn",
+            "validation": "^([0-9a-zA-Z.:_-]+|{(CN|OU|O|L|S|C)})+$",
+            "helpMessage": "Name to bundle certs under, if blank use {CN}. Support vars: {CN|OU|O|L|S|C}",
         },
         {
             "name": "bundleChain",
@@ -248,14 +241,20 @@ class VaultDestinationPlugin(DestinationPlugin):
         :param cert_chain:
         :return:
         """
-        cname = common_name(parse_certificate(body))
+        cert = parse_certificate(body)
+
+        cn = common_name(cert)
+        ou= organizational_unit(cert)
+        o= organization(cert)
+        l= location(cert)
+        s= state(cert)
+        c= country(cert)
 
         url = self.get_option("vaultUrl", options)
         auth_method = self.get_option("authenticationMethod", options)
         auth_key = self.get_option("tokenFile/vaultRole", options)
         mount = self.get_option("vaultMount", options)
         path = self.get_option("vaultPath", options)
-        suffix = self.get_option("vaultSuffix", options)
         bundle = self.get_option("bundleChain", options)
         obj_name = self.get_option("objectName", options)
         api_version = self.get_option("vaultKvApiVersion", options)
@@ -293,15 +292,30 @@ class VaultDestinationPlugin(DestinationPlugin):
 
         client.secrets.kv.default_kv_version = api_version
 
-        if obj_name:
-            path = "{0}/{1}".format(path, obj_name)
-        else:
-            path = "{0}/{1}".format(path, cname)
+        t_path = path.format(
+            CN=cn,
+            OU=ou,
+            O=o,
+            L=l,
+            S=s,
+            C=c
+        )
+        if not obj_name:
+            obj_name = '{CN}'    
+        
+        f_obj_name = obj_name.format(
+            CN=cn,
+            OU=ou,
+            O=o,
+            L=l,
+            S=s,
+            C=c
+        )
 
-        if suffix:
-            path = "{0}/{1}".format(path, suffix)
+        path = "{0}/{1}".format(t_path, obj_name)
+        # TODO: obj_name support for vars
 
-        secret = get_secret(client, mount, path)
+        secret_t = get_secret(client, mount, path)
         secret["data"][cname] = {}
 
         if not cert_chain:
