@@ -289,10 +289,10 @@ class VaultDestinationPlugin(DestinationPlugin):
         t_path = path.format(
             CN=cname,
             OU=organizational_unit(cert),
-            O=organization(cert),
+            O=organization(cert),  # noqa: E741
             L=location(cert),
             S=state(cert),
-            C=country(cert)
+            C=country(cert),
         )
         if not obj_name:
             obj_name = '{CN}'
@@ -300,14 +300,13 @@ class VaultDestinationPlugin(DestinationPlugin):
         f_obj_name = obj_name.format(
             CN=cname,
             OU=organizational_unit(cert),
-            O=organization(cert),
+            O=organization(cert),  # noqa: E741
             L=location(cert),
             S=state(cert),
-            C=country(cert)
+            C=country(cert),
         )
 
         path = "{0}/{1}".format(t_path, f_obj_name)
-        # TODO: obj_name support for vars
 
         secret = get_secret(client, mount, path)
         secret["data"][cname] = {}
