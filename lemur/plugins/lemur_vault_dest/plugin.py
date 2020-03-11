@@ -58,7 +58,7 @@ class VaultSourcePlugin(SourcePlugin):
             "helpMessage": "Authentication method to use",
         },
         {
-            "name": "tokenFile/VaultRole",
+            "name": "tokenFileOrVaultRole",
             "type": "str",
             "required": True,
             "validation": "^([a-zA-Z0-9/._-]+/?)+$",
@@ -94,7 +94,7 @@ class VaultSourcePlugin(SourcePlugin):
         body = ""
         url = self.get_option("vaultUrl", options)
         auth_method = self.get_option("authenticationMethod", options)
-        auth_key = self.get_option("tokenFile/vaultRole", options)
+        auth_key = self.get_option("tokenFileOrVaultRole", options)
         mount = self.get_option("vaultMount", options)
         path = self.get_option("vaultPath", options)
         obj_name = self.get_option("objectName", options)
@@ -185,7 +185,7 @@ class VaultDestinationPlugin(DestinationPlugin):
             "helpMessage": "Authentication method to use",
         },
         {
-            "name": "tokenFile/VaultRole",
+            "name": "tokenFileOrVaultRole",
             "type": "str",
             "required": True,
             "validation": "^([a-zA-Z0-9/._-]+/?)+$",
@@ -252,7 +252,7 @@ class VaultDestinationPlugin(DestinationPlugin):
 
         url = self.get_option("vaultUrl", options)
         auth_method = self.get_option("authenticationMethod", options)
-        auth_key = self.get_option("tokenFile/vaultRole", options)
+        auth_key = self.get_option("tokenFileOrVaultRole", options)
         mount = self.get_option("vaultMount", options)
         path = self.get_option("vaultPath", options)
         bundle = self.get_option("bundleChain", options)
