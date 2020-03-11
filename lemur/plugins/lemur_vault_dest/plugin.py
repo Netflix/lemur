@@ -14,7 +14,7 @@ import re
 import hvac
 from flask import current_app
 
-from lemur.common.defaults import common_name,country,state,location,organizational_unit,organization
+from lemur.common.defaults import common_name, country, state, location, organizational_unit, organization
 from lemur.common.utils import parse_certificate
 from lemur.plugins.bases import DestinationPlugin
 from lemur.plugins.bases import SourcePlugin
@@ -242,13 +242,7 @@ class VaultDestinationPlugin(DestinationPlugin):
         :return:
         """
         cert = parse_certificate(body)
-
-        cn = common_name(cert)
-        ou= organizational_unit(cert)
-        o= organization(cert)
-        l= location(cert)
-        s= state(cert)
-        c= country(cert)
+        cname = common_name(cert)
 
         url = self.get_option("vaultUrl", options)
         auth_method = self.get_option("authenticationMethod", options)
@@ -293,23 +287,23 @@ class VaultDestinationPlugin(DestinationPlugin):
         client.secrets.kv.default_kv_version = api_version
 
         t_path = path.format(
-            CN=cn,
-            OU=ou,
-            O=o,
-            L=l,
-            S=s,
-            C=c
+            CN=cname,
+            OU=organizational_unit(cert),
+            O=organization(cert),
+            L=location(cert),
+            S=state(cert),
+            C=country(cert)
         )
         if not obj_name:
             obj_name = '{CN}'
 
         f_obj_name = obj_name.format(
-            CN=cn,
-            OU=ou,
-            O=o,
-            L=l,
-            S=s,
-            C=c
+            CN=cname,
+            OU=organizational_unit(cert),
+            O=organization(cert),
+            L=location(cert),
+            S=state(cert),
+            C=country(cert)
         )
 
         path = "{0}/{1}".format(t_path, f_obj_name)
