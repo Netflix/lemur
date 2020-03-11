@@ -292,7 +292,7 @@ class VaultDestinationPlugin(DestinationPlugin):
             O=organization(cert),  # noqa: E741
             L=location(cert),
             S=state(cert),
-            C=country(cert),
+            C=country(cert)
         )
         if not obj_name:
             obj_name = '{CN}'
@@ -303,7 +303,7 @@ class VaultDestinationPlugin(DestinationPlugin):
             O=organization(cert),  # noqa: E741
             L=location(cert),
             S=state(cert),
-            C=country(cert),
+            C=country(cert)
         )
 
         path = "{0}/{1}".format(t_path, f_obj_name)
