@@ -301,8 +301,8 @@ class VaultDestinationPlugin(DestinationPlugin):
             C=c
         )
         if not obj_name:
-            obj_name = '{CN}'    
-        
+            obj_name = '{CN}'
+
         f_obj_name = obj_name.format(
             CN=cn,
             OU=ou,
@@ -312,10 +312,10 @@ class VaultDestinationPlugin(DestinationPlugin):
             C=c
         )
 
-        path = "{0}/{1}".format(t_path, obj_name)
+        path = "{0}/{1}".format(t_path, f_obj_name)
         # TODO: obj_name support for vars
 
-        secret_t = get_secret(client, mount, path)
+        secret = get_secret(client, mount, path)
         secret["data"][cname] = {}
 
         if not cert_chain:
