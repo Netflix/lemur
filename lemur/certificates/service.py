@@ -147,7 +147,7 @@ def get_all_pending_cleaning_not_in_use_certs(source, days_since_issuance):
     return (
         Certificate.query.filter(Certificate.sources.any(id=source.id))
         .filter(not_(Certificate.endpoints.any()))
-        .filter(Certificate.date_created < not_in_use_window)
+        .filter(Certificate.date_created > not_in_use_window)
         .all()
     )
 
