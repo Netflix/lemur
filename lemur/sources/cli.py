@@ -54,6 +54,17 @@ def validate_sources(source_strings):
     return sources
 
 
+def execute_clean(plugin, certificate, source):
+    try:
+        plugin.clean(certificate, source.options)
+        certificate.sources.remove(source)
+        certificate_service.database.update(certificate)
+        return SUCCESS_METRIC_STATUS
+    except Exception as e:
+        current_app.logger.exception(e)
+        sentry.captureException()
+
+
 @manager.option(
     "-s",
     "--sources",
@@ -147,14 +158,7 @@ def clean(source_strings, commit):
         for certificate in certificate_service.get_all_pending_cleaning(source):
             status = FAILURE_METRIC_STATUS
             if commit:
-                try:
-                    s.clean(certificate, source.options)
-                    certificate.sources.remove(source)
-                    certificate_service.database.update(certificate)
-                    status = SUCCESS_METRIC_STATUS
-                except Exception as e:
-                    current_app.logger.exception(e)
-                    sentry.captureException()
+                status = execute_clean(s, certificate, source)
 
             metrics.send(
                 "clean",
