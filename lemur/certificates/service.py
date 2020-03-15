@@ -117,6 +117,41 @@ def get_all_pending_cleaning(source):
     )
 
 
+def get_all_pending_cleaning_about_to_expire_certs(source, days_to_expire):
+    """
+    Retrieves all certificates that are available for cleaning: not attached to endpoint,
+    and within X days from expiration.
+
+    :param days_to_expire:
+    :param source:
+    :return:
+    """
+    expiration_window = arrow.now().shift(days=+days_to_expire).format("YYYY-MM-DD")
+    return (
+        Certificate.query.filter(Certificate.sources.any(id=source.id))
+        .filter(not_(Certificate.endpoints.any()))
+        .filter(Certificate.not_after < expiration_window)
+        .all()
+    )
+
+
+def get_all_pending_cleaning_not_in_use_certs(source, days_since_issuance):
+    """
+    Retrieves all certificates that are available for cleaning: not attached to endpoint, and X days since issuance.
+
+    :param days_since_issuance:
+    :param source:
+    :return:
+    """
+    not_in_use_window = arrow.now().shift(days=-days_since_issuance).format("YYYY-MM-DD")
+    return (
+        Certificate.query.filter(Certificate.sources.any(id=source.id))
+        .filter(not_(Certificate.endpoints.any()))
+        .filter(Certificate.date_created < not_in_use_window)
+        .all()
+    )
+
+
 def get_all_pending_reissue():
     """
     Retrieves all certificates that need to be rotated.
