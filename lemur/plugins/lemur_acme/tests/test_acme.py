@@ -23,11 +23,12 @@ class TestAcme(unittest.TestCase):
         }
 
     @patch("lemur.plugins.lemur_acme.plugin.len", return_value=1)
-    def test_find_dns_challenge(self, mock_len):
+    def test_get_dns_challenges(self, mock_len):
         assert mock_len
 
         from acme import challenges
 
+        host = "example.com"
         c = challenges.DNS01()
 
         mock_authz = Mock()
@@ -35,8 +36,17 @@ class TestAcme(unittest.TestCase):
         mock_entry = Mock()
         mock_entry.chall = c
         mock_authz.body.resolved_combinations.append(mock_entry)
-        result = yield self.acme.find_dns_challenge(mock_authz)
+        result = yield self.acme.get_dns_challenges(host, mock_authz)
         self.assertEqual(result, mock_entry)
+
+    def test_strip_wildcard(self):
+        expected = ("example.com", False)
+        result = self.acme.strip_wildcard("example.com")
+        self.assertEqual(expected, result)
+
+        expected = ("example.com", True)
+        result = self.acme.strip_wildcard("*.example.com")
+        self.assertEqual(expected, result)
 
     def test_authz_record(self):
         a = plugin.AuthorizationRecord("host", "authz", "challenge", "id")
@@ -45,9 +55,9 @@ class TestAcme(unittest.TestCase):
     @patch("acme.client.Client")
     @patch("lemur.plugins.lemur_acme.plugin.current_app")
     @patch("lemur.plugins.lemur_acme.plugin.len", return_value=1)
-    @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.find_dns_challenge")
+    @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.get_dns_challenges")
     def test_start_dns_challenge(
-        self, mock_find_dns_challenge, mock_len, mock_app, mock_acme
+        self, mock_get_dns_challenges, mock_len, mock_app, mock_acme
     ):
         assert mock_len
         mock_order = Mock()
@@ -65,9 +75,12 @@ class TestAcme(unittest.TestCase):
         mock_dns_provider.create_txt_record = Mock(return_value=1)
 
         values = [mock_entry]
-        iterable = mock_find_dns_challenge.return_value
+        iterable = mock_get_dns_challenges.return_value
         iterator = iter(values)
         iterable.__iter__.return_value = iterator
+
+        # mock_get_dns_challenges = Mock(return_value="")
+
         result = self.acme.start_dns_challenge(
             mock_acme, "accountid", "host", mock_dns_provider, mock_order, {}
         )
@@ -102,7 +115,7 @@ class TestAcme(unittest.TestCase):
     @patch("lemur.plugins.lemur_acme.plugin.current_app")
     @patch("lemur.plugins.lemur_acme.cloudflare.wait_for_dns_change")
     def test_complete_dns_challenge_fail(
-        self, mock_wait_for_dns_change, mock_current_app, mock_acme
+            self, mock_wait_for_dns_change, mock_current_app, mock_acme
     ):
         mock_dns_provider = Mock()
         mock_dns_provider.wait_for_dns_change = Mock(return_value=True)
@@ -127,15 +140,15 @@ class TestAcme(unittest.TestCase):
     @patch("acme.client.Client")
     @patch("OpenSSL.crypto", return_value="mock_cert")
     @patch("josepy.util.ComparableX509")
-    @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.find_dns_challenge")
+    @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.get_dns_challenges")
     @patch("lemur.plugins.lemur_acme.plugin.current_app")
     def test_request_certificate(
-        self,
-        mock_current_app,
-        mock_find_dns_challenge,
-        mock_jose,
-        mock_crypto,
-        mock_acme,
+            self,
+            mock_current_app,
+            mock_get_dns_challenges,
+            mock_jose,
+            mock_crypto,
+            mock_acme,
     ):
         mock_cert_response = Mock()
         mock_cert_response.body = "123"
@@ -256,11 +269,11 @@ class TestAcme(unittest.TestCase):
     @patch("lemur.plugins.lemur_acme.cloudflare.current_app")
     @patch("lemur.plugins.lemur_acme.plugin.dns_provider_service")
     def test_get_dns_provider(
-        self,
-        mock_dns_provider_service,
-        mock_current_app_cloudflare,
-        mock_current_app_dyn,
-        mock_current_app,
+            self,
+            mock_dns_provider_service,
+            mock_current_app_cloudflare,
+            mock_current_app_dyn,
+            mock_current_app,
     ):
         provider = plugin.ACMEIssuerPlugin()
         route53 = provider.get_dns_provider("route53")
@@ -278,14 +291,14 @@ class TestAcme(unittest.TestCase):
     @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.finalize_authorizations")
     @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.request_certificate")
     def test_get_ordered_certificate(
-        self,
-        mock_request_certificate,
-        mock_finalize_authorizations,
-        mock_get_authorizations,
-        mock_dns_provider_service,
-        mock_authorization_service,
-        mock_current_app,
-        mock_acme,
+            self,
+            mock_request_certificate,
+            mock_finalize_authorizations,
+            mock_get_authorizations,
+            mock_dns_provider_service,
+            mock_authorization_service,
+            mock_current_app,
+            mock_acme,
     ):
         mock_client = Mock()
         mock_acme.return_value = (mock_client, "")
@@ -309,14 +322,14 @@ class TestAcme(unittest.TestCase):
     @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.finalize_authorizations")
     @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.request_certificate")
     def test_get_ordered_certificates(
-        self,
-        mock_request_certificate,
-        mock_finalize_authorizations,
-        mock_get_authorizations,
-        mock_dns_provider_service,
-        mock_authorization_service,
-        mock_current_app,
-        mock_acme,
+            self,
+            mock_request_certificate,
+            mock_finalize_authorizations,
+            mock_get_authorizations,
+            mock_dns_provider_service,
+            mock_authorization_service,
+            mock_current_app,
+            mock_acme,
     ):
         mock_client = Mock()
         mock_acme.return_value = (mock_client, "")
@@ -349,14 +362,14 @@ class TestAcme(unittest.TestCase):
     @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.request_certificate")
     @patch("lemur.plugins.lemur_acme.plugin.authorization_service")
     def test_create_certificate(
-        self,
-        mock_authorization_service,
-        mock_request_certificate,
-        mock_finalize_authorizations,
-        mock_get_authorizations,
-        mock_current_app,
-        mock_dns_provider_service,
-        mock_acme,
+            self,
+            mock_authorization_service,
+            mock_request_certificate,
+            mock_finalize_authorizations,
+            mock_get_authorizations,
+            mock_current_app,
+            mock_dns_provider_service,
+            mock_acme,
     ):
         provider = plugin.ACMEIssuerPlugin()
         mock_authority = Mock()
@@ -423,10 +436,10 @@ class TestAcme(unittest.TestCase):
         ultradns._post = Mock()
         ultradns._get = Mock()
         ultradns._get.return_value = {'zoneName': 'test.example.com.com',
-                'rrSets': [{'ownerName': '_acme-challenge.test.example.com.',
-                            'rrtype': 'TXT (16)', 'ttl': 5, 'rdata': ['ABCDEFGHIJ']}],
-                'queryInfo': {'sort': 'OWNER', 'reverse': False, 'limit': 100},
-                'resultInfo': {'totalCount': 1, 'offset': 0, 'returnedCount': 1}}
+                                      'rrSets': [{'ownerName': '_acme-challenge.test.example.com.',
+                                                  'rrtype': 'TXT (16)', 'ttl': 5, 'rdata': ['ABCDEFGHIJ']}],
+                                      'queryInfo': {'sort': 'OWNER', 'reverse': False, 'limit': 100},
+                                      'resultInfo': {'totalCount': 1, 'offset': 0, 'returnedCount': 1}}
         ultradns._delete = Mock()
         mock_metrics.send = Mock()
         ultradns.delete_txt_record(change_id, account_number, domain, token)

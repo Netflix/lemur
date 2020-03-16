@@ -55,7 +55,7 @@ class AcmeHandler(object):
             self.all_dns_providers = []
 
     def get_dns_challenges(self, host, authorizations):
-        """Get final domain to validate and dns challenges for it"""
+        """Get dns challenges for provided domain"""
 
         domain_to_validate, is_wildcard = self.strip_wildcard(host)
         dns_challenges = []
@@ -70,7 +70,7 @@ class AcmeHandler(object):
                 if isinstance(combo.chall, challenges.DNS01):
                     dns_challenges.append(combo)
 
-        return domain_to_validate, dns_challenges
+        return dns_challenges
 
     def strip_wildcard(self, host):
         """Removes the leading *. and returns Host and whether it was removed or not (True/False)"""
@@ -98,7 +98,8 @@ class AcmeHandler(object):
         current_app.logger.debug("Starting DNS challenge for {0}".format(host))
 
         change_ids = []
-        host_to_validate, dns_challenges = self.get_dns_challenges(host, order.authorizations)
+        dns_challenges = self.get_dns_challenges(host, order.authorizations)
+        host_to_validate, _ = self.strip_wildcard(host)
         host_to_validate = self.maybe_add_extension(
             host_to_validate, dns_provider_options
         )
