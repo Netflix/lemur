@@ -108,7 +108,7 @@ def get_all_pending_cleaning_expired(source):
     attached to any endpoints.
 
     :param source: the source to search for certificates
-    :return: the pending certificates
+    :return: list of pending certificates
     """
     return (
         Certificate.query.filter(Certificate.sources.any(id=source.id))
@@ -125,7 +125,7 @@ def get_all_pending_cleaning_expiring_in_days(source, days_to_expire):
 
     :param days_to_expire: defines how many days till the certificate is expired
     :param source: the source to search for certificates
-    :return: the pending certificates
+    :return: list of pending certificates
     """
     expiration_window = arrow.now().shift(days=+days_to_expire).format("YYYY-MM-DD")
     return (
@@ -142,7 +142,7 @@ def get_all_pending_cleaning_issued_since_days(source, days_since_issuance):
 
     :param days_since_issuance: defines how many days since the certificate is issued
     :param source: the source to search for certificates
-    :return: the pending certificates
+    :return: list of pending certificates
     """
     not_in_use_window = arrow.now().shift(days=-days_since_issuance).format("YYYY-MM-DD")
     return (
