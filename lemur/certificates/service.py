@@ -102,12 +102,13 @@ def get_all_certs():
     return Certificate.query.all()
 
 
-def get_all_pending_cleaning(source):
+def get_all_pending_cleaning_expired(source):
     """
-    Retrieves all certificates that are available for cleaning.
+    Retrieves all certificates that are available for cleaning. These are certificates which are expired and are not
+    attached to any endpoints.
 
-    :param source:
-    :return:
+    :param source: the source to search for certificates
+    :return: the pending certificates
     """
     return (
         Certificate.query.filter(Certificate.sources.any(id=source.id))
@@ -117,14 +118,14 @@ def get_all_pending_cleaning(source):
     )
 
 
-def get_all_pending_cleaning_about_to_expire_certs(source, days_to_expire):
+def get_all_pending_cleaning_expiring_in_days(source, days_to_expire):
     """
-    Retrieves all certificates that are available for cleaning: not attached to endpoint,
+    Retrieves all certificates that are available for cleaning, not attached to endpoint,
     and within X days from expiration.
 
-    :param days_to_expire:
-    :param source:
-    :return:
+    :param days_to_expire: defines how many days till the certificate is expired
+    :param source: the source to search for certificates
+    :return: the pending certificates
     """
     expiration_window = arrow.now().shift(days=+days_to_expire).format("YYYY-MM-DD")
     return (
@@ -135,13 +136,13 @@ def get_all_pending_cleaning_about_to_expire_certs(source, days_to_expire):
     )
 
 
-def get_all_pending_cleaning_not_in_use_certs(source, days_since_issuance):
+def get_all_pending_cleaning_issued_since_days(source, days_since_issuance):
     """
     Retrieves all certificates that are available for cleaning: not attached to endpoint, and X days since issuance.
 
-    :param days_since_issuance:
-    :param source:
-    :return:
+    :param days_since_issuance: defines how many days since the certificate is issued
+    :param source: the source to search for certificates
+    :return: the pending certificates
     """
     not_in_use_window = arrow.now().shift(days=-days_since_issuance).format("YYYY-MM-DD")
     return (
