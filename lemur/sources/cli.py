@@ -54,6 +54,17 @@ def validate_sources(source_strings):
     return sources
 
 
+def execute_clean(plugin, certificate, source):
+    try:
+        plugin.clean(certificate, source.options)
+        certificate.sources.remove(source)
+        certificate_service.database.update(certificate)
+        return SUCCESS_METRIC_STATUS
+    except Exception as e:
+        current_app.logger.exception(e)
+        sentry.captureException()
+
+
 @manager.option(
     "-s",
     "--sources",
@@ -132,11 +143,9 @@ def clean(source_strings, commit):
         s = plugins.get(source.plugin_name)
 
         if not hasattr(s, "clean"):
-            print(
-                "Cannot clean source: {0}, source plugin does not implement 'clean()'".format(
-                    source.label
-                )
-            )
+            info_text = f"Cannot clean source: {source.label}, source plugin does not implement 'clean()'"
+            current_app.logger.warning(info_text)
+            print(info_text)
             continue
 
         start_time = time.time()
@@ -144,35 +153,147 @@ def clean(source_strings, commit):
         print("[+] Staring to clean source: {label}!\n".format(label=source.label))
 
         cleaned = 0
-        for certificate in certificate_service.get_all_pending_cleaning(source):
+        certificates = certificate_service.get_all_pending_cleaning_expired(source)
+        for certificate in certificates:
             status = FAILURE_METRIC_STATUS
             if commit:
-                try:
-                    s.clean(certificate, source.options)
-                    certificate.sources.remove(source)
-                    certificate_service.database.update(certificate)
-                    status = SUCCESS_METRIC_STATUS
-                except Exception as e:
-                    current_app.logger.exception(e)
-                    sentry.captureException()
+                status = execute_clean(s, certificate, source)
 
             metrics.send(
-                "clean",
+                "certificate_clean",
                 "counter",
                 1,
-                metric_tags={"source": source.label, "status": status},
+                metric_tags={"status": status, "source": source.label, "certificate": certificate.name},
             )
-
-            current_app.logger.warning(
-                "Removed {0} from source {1} during cleaning".format(
-                    certificate.name, source.label
-                )
-            )
-
+            current_app.logger.warning(f"Removed {certificate.name} from source {source.label} during cleaning")
             cleaned += 1
 
-        print(
-            "[+] Finished cleaning source: {label}. Removed {cleaned} certificates from source. Run Time: {time}\n".format(
-                label=source.label, time=(time.time() - start_time), cleaned=cleaned
+        info_text = f"[+] Finished cleaning source: {source.label}. " \
+                    f"Removed {cleaned} certificates from source. " \
+                    f"Run Time: {(time.time() - start_time)}\n"
+        print(info_text)
+        current_app.logger.warning(info_text)
+
+
+@manager.option(
+    "-s",
+    "--sources",
+    dest="source_strings",
+    action="append",
+    help="Sources to operate on.",
+)
+@manager.option(
+    "-d",
+    "--days",
+    dest="days_to_expire",
+    type=int,
+    action="store",
+    required=True,
+    help="The expiry range within days.",
+)
+@manager.option(
+    "-c",
+    "--commit",
+    dest="commit",
+    action="store_true",
+    default=False,
+    help="Persist changes.",
+)
+def clean_unused_and_expiring_within_days(source_strings, days_to_expire, commit):
+    sources = validate_sources(source_strings)
+    for source in sources:
+        s = plugins.get(source.plugin_name)
+
+        if not hasattr(s, "clean"):
+            info_text = f"Cannot clean source: {source.label}, source plugin does not implement 'clean()'"
+            current_app.logger.warning(info_text)
+            print(info_text)
+            continue
+
+        start_time = time.time()
+
+        print("[+] Staring to clean source: {label}!\n".format(label=source.label))
+
+        cleaned = 0
+        certificates = certificate_service.get_all_pending_cleaning_expiring_in_days(source, days_to_expire)
+        for certificate in certificates:
+            status = FAILURE_METRIC_STATUS
+            if commit:
+                status = execute_clean(s, certificate, source)
+
+            metrics.send(
+                "certificate_clean",
+                "counter",
+                1,
+                metric_tags={"status": status, "source": source.label, "certificate": certificate.name},
             )
-        )
+            current_app.logger.warning(f"Removed {certificate.name} from source {source.label} during cleaning")
+            cleaned += 1
+
+        info_text = f"[+] Finished cleaning source: {source.label}. " \
+                    f"Removed {cleaned} certificates from source. " \
+                    f"Run Time: {(time.time() - start_time)}\n"
+        print(info_text)
+        current_app.logger.warning(info_text)
+
+
+@manager.option(
+    "-s",
+    "--sources",
+    dest="source_strings",
+    action="append",
+    help="Sources to operate on.",
+)
+@manager.option(
+    "-d",
+    "--days",
+    dest="days_since_issuance",
+    type=int,
+    action="store",
+    required=True,
+    help="Days since issuance.",
+)
+@manager.option(
+    "-c",
+    "--commit",
+    dest="commit",
+    action="store_true",
+    default=False,
+    help="Persist changes.",
+)
+def clean_unused_and_issued_since_days(source_strings, days_since_issuance, commit):
+    sources = validate_sources(source_strings)
+    for source in sources:
+        s = plugins.get(source.plugin_name)
+
+        if not hasattr(s, "clean"):
+            info_text = f"Cannot clean source: {source.label}, source plugin does not implement 'clean()'"
+            current_app.logger.warning(info_text)
+            print(info_text)
+            continue
+
+        start_time = time.time()
+
+        print("[+] Staring to clean source: {label}!\n".format(label=source.label))
+
+        cleaned = 0
+        certificates = certificate_service.get_all_pending_cleaning_issued_since_days(source, days_since_issuance)
+        for certificate in certificates:
+            status = FAILURE_METRIC_STATUS
+            if commit:
+                status = execute_clean(s, certificate, source)
+
+            metrics.send(
+                "certificate_clean",
+                "counter",
+                1,
+                metric_tags={"status": status, "source": source.label, "certificate": certificate.name},
+            )
+            current_app.logger.warning(f"Removed {certificate.name} from source {source.label} during cleaning")
+            cleaned += 1
+
+        info_text = f"[+] Finished cleaning source: {source.label}. " \
+                    f"Removed {cleaned} certificates from source. " \
+                    f"Run Time: {(time.time() - start_time)}\n"
+        print(info_text)
+        current_app.logger.warning(info_text)
