@@ -63,7 +63,7 @@ marshmallow==3.5.1
 mock==4.0.2
 more-itertools==8.2.0
 ndg-httpsclient==0.5.1
-packaging==19.2           # via sphinx
+packaging==20.3           # via sphinx
 paramiko==2.7.1
 pem==19.3.0
 psycopg2==2.8.4
