@@ -77,7 +77,7 @@ python-editor==1.0.4      # via alembic
 python-json-logger==0.1.11  # via logmatic-python
 python-ldap==3.2.0
 pytz==2019.3              # via acme, celery, flask-restful, pyrfc3339
-pyyaml==5.2
+pyyaml==5.3
 raven[flask]==6.10.0
 redis==3.3.11
 requests-toolbelt==0.9.1  # via acme
