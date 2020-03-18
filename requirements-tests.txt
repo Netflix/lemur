@@ -71,7 +71,7 @@ responses==0.10.12         # via moto
 rsa==4.0                  # via python-jose
 s3transfer==0.3.3         # via boto3
 six==1.14.0               # via aws-sam-translator, bandit, cfn-lint, cryptography, docker, ecdsa, faker, fakeredis, freezegun, jsonschema, mock, moto, packaging, pyrsistent, python-dateutil, python-jose, requests-mock, responses, stevedore, websocket-client
-smmap2==2.0.5             # via gitdb2
+smmap2==3.0.1             # via gitdb2
 sortedcontainers==2.1.0   # via fakeredis
 sshpubkeys==3.1.0         # via moto
 stevedore==1.31.0         # via bandit
