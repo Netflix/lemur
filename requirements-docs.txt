@@ -86,7 +86,7 @@ pyyaml==5.3
 raven[flask]==6.10.0
 redis==3.4.1
 requests-toolbelt==0.9.1
-requests[security]==2.22.0
+requests[security]==2.23.0
 retrying==1.3.3
 s3transfer==0.2.1
 six==1.13.0
