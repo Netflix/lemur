@@ -58,7 +58,7 @@ markupsafe==1.1.1         # via jinja2, mako
 marshmallow-sqlalchemy==0.22.3
 marshmallow==3.5.1
 mock==4.0.2               # via acme
-more-itertools==8.0.2     # via zipp
+more-itertools==8.2.0     # via zipp
 ndg-httpsclient==0.5.1
 paramiko==2.7.1
 pem==19.3.0
