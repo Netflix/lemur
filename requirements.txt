@@ -61,7 +61,7 @@ mock==4.0.2               # via acme
 more-itertools==8.2.0     # via zipp
 ndg-httpsclient==0.5.1
 paramiko==2.7.1
-pem==19.3.0
+pem==20.1.0
 psycopg2==2.8.4
 pyasn1-modules==0.2.7     # via pyjks, python-ldap
 pyasn1==0.4.8             # via ndg-httpsclient, pyasn1-modules, pyjks, python-ldap
