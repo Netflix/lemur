@@ -31,7 +31,7 @@ readme-renderer==25.0     # via twine
 requests-toolbelt==0.9.1  # via twine
 requests==2.23.0          # via requests-toolbelt, twine
 secretstorage==3.1.2      # via keyring
-six==1.13.0               # via bleach, cfgv, cryptography, pre-commit, readme-renderer
+six==1.14.0               # via bleach, cfgv, cryptography, pre-commit, readme-renderer
 toml==0.10.0              # via pre-commit
 tqdm==4.41.1              # via twine
 twine==3.1.1
