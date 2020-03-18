@@ -6,7 +6,7 @@
 #
 appdirs==1.4.3            # via black
 attrs==19.3.0             # via black, jsonschema, pytest
-aws-sam-translator==1.19.1  # via cfn-lint
+aws-sam-translator==1.22.0  # via cfn-lint
 aws-xray-sdk==2.4.3       # via moto
 bandit==1.6.2
 black==19.10b0
