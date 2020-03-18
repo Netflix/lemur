@@ -50,7 +50,7 @@ inflection==0.3.1
 itsdangerous==1.1.0
 javaobj-py3==0.4.0.1
 jinja2==2.11.1
-jmespath==0.9.4
+jmespath==0.9.5
 josepy==1.2.0
 jsonlines==1.2.0
 kombu==4.6.7
