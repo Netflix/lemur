@@ -17,7 +17,7 @@ certifi==2019.11.28       # via requests
 cffi==1.14.0              # via cryptography
 cfn-lint==0.29.0          # via moto
 chardet==3.0.4            # via requests
-click==7.0                # via black, flask
+click==7.1                # via black, flask
 coverage==5.0.1
 cryptography==2.8         # via moto, sshpubkeys
 docker==4.1.0             # via moto
