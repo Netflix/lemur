@@ -65,7 +65,7 @@ pem==20.1.0
 psycopg2==2.8.4
 pyasn1-modules==0.2.8     # via pyjks, python-ldap
 pyasn1==0.4.8             # via ndg-httpsclient, pyasn1-modules, pyjks, python-ldap
-pycparser==2.19           # via cffi
+pycparser==2.20           # via cffi
 pycryptodomex==3.9.4      # via pyjks
 pyjks==19.0.0
 pyjwt==1.7.1
