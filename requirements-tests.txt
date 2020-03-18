@@ -55,7 +55,7 @@ pyasn1==0.4.8             # via python-jose, rsa
 pycparser==2.20           # via cffi
 pyflakes==2.1.1
 pyparsing==2.4.6          # via packaging
-pyrsistent==0.15.6        # via jsonschema
+pyrsistent==0.15.7        # via jsonschema
 pytest-flask==0.15.0
 pytest-mock==1.13.0
 pytest==5.3.2
