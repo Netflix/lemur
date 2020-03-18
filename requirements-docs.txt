@@ -84,7 +84,7 @@ python-json-logger==0.1.11
 pytz==2019.3
 pyyaml==5.3
 raven[flask]==6.10.0
-redis==3.3.11
+redis==3.4.1
 requests-toolbelt==0.9.1
 requests[security]==2.22.0
 retrying==1.3.3
