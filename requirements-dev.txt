@@ -36,7 +36,7 @@ toml==0.10.0              # via pre-commit
 tqdm==4.43.0              # via twine
 twine==3.1.1
 urllib3==1.25.8           # via requests
-virtualenv==16.7.9        # via pre-commit
+virtualenv==20.0.10        # via pre-commit
 webencodings==0.5.1       # via bleach
 
 # The following packages are considered to be unsafe in a requirements file:
