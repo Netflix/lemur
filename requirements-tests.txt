@@ -12,7 +12,7 @@ bandit==1.6.2
 black==19.10b0
 boto3==1.12.23            # via aws-sam-translator, moto
 boto==2.49.0              # via moto
-botocore==1.13.46         # via aws-xray-sdk, boto3, moto, s3transfer
+botocore==1.15.23         # via aws-xray-sdk, boto3, moto, s3transfer
 certifi==2019.11.28       # via requests
 cffi==1.13.2              # via cryptography
 cfn-lint==0.26.2          # via moto
