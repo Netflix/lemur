@@ -28,7 +28,7 @@
     "gulp-ng-html2js": "^0.2.3",
     "gulp-notify": "^2.2.0",
     "gulp-plumber": "^1.1.0",
-    "gulp-print": "^2.0.1",
+    "gulp-print": "^5.0.2",
     "gulp-protractor": "3.0.0",
     "gulp-replace": "~0.5.3",
     "gulp-replace-task": "~0.11.0",
