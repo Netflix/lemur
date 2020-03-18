@@ -50,7 +50,7 @@ jinja2==2.11.1
 jmespath==0.9.5           # via boto3, botocore
 josepy==1.3.0             # via acme
 jsonlines==1.2.0          # via cloudflare
-kombu==4.6.7              # via celery
+kombu==4.6.8              # via celery
 lockfile==0.12.2
 logmatic-python==0.1.7
 mako==1.1.0               # via alembic
