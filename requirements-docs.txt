@@ -89,7 +89,7 @@ requests-toolbelt==0.9.1
 requests[security]==2.23.0
 retrying==1.3.3
 s3transfer==0.3.3
-six==1.13.0
+six==1.14.0
 snowballstemmer==2.0.0    # via sphinx
 sphinx-rtd-theme==0.4.3
 sphinx==2.3.1
