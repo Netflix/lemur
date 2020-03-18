@@ -59,7 +59,7 @@ logmatic-python==0.1.7
 mako==1.1.2
 markupsafe==1.1.1
 marshmallow-sqlalchemy==0.22.3
-marshmallow==2.20.4
+marshmallow==3.5.1
 mock==3.0.5
 more-itertools==8.0.2
 ndg-httpsclient==0.5.1
