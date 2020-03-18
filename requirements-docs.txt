@@ -82,7 +82,7 @@ python-dateutil==2.8.1
 python-editor==1.0.4
 python-json-logger==0.1.11
 pytz==2019.3
-pyyaml==5.2
+pyyaml==5.3
 raven[flask]==6.10.0
 redis==3.3.11
 requests-toolbelt==0.9.1
