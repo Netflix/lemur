@@ -46,7 +46,7 @@ importlib-metadata==1.5.0  # via kombu
 inflection==0.3.1
 itsdangerous==1.1.0       # via flask
 javaobj-py3==0.4.0.1      # via pyjks
-jinja2==2.10.3
+jinja2==2.11.1
 jmespath==0.9.4           # via boto3, botocore
 josepy==1.2.0             # via acme
 jsonlines==1.2.0          # via cloudflare
