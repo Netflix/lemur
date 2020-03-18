@@ -38,7 +38,7 @@ jinja2==2.11.1            # via flask, moto
 jmespath==0.9.5           # via boto3, botocore
 jsondiff==1.2.0           # via moto
 jsonpatch==1.25           # via cfn-lint
-jsonpickle==1.2           # via aws-xray-sdk
+jsonpickle==1.3           # via aws-xray-sdk
 jsonpointer==2.0          # via jsonpatch
 jsonschema==3.2.0         # via aws-sam-translator, cfn-lint
 markupsafe==1.1.1         # via jinja2
