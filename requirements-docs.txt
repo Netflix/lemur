@@ -70,7 +70,7 @@ psycopg2==2.8.4
 pyasn1-modules==0.2.8
 pyasn1==0.4.8
 pycparser==2.20
-pycryptodomex==3.9.4
+pycryptodomex==3.9.7
 pygments==2.5.2           # via sphinx
 pyjks==19.0.0
 pyjwt==1.7.1
