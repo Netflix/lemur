@@ -27,7 +27,7 @@ click==7.1
 cloudflare==2.6.3
 cryptography==2.8
 dnspython3==1.15.0
-dnspython==1.15.0
+dnspython==1.16.0
 docutils==0.15.2
 dyn==1.8.1
 flask-bcrypt==0.7.1
