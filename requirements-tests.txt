@@ -34,7 +34,7 @@ gitpython==3.1.0          # via bandit
 idna==2.9                 # via moto, requests
 importlib-metadata==1.5.0  # via jsonschema, pluggy, pytest
 itsdangerous==1.1.0       # via flask
-jinja2==2.10.3            # via flask, moto
+jinja2==2.11.1            # via flask, moto
 jmespath==0.9.4           # via boto3, botocore
 jsondiff==1.1.2           # via moto
 jsonpatch==1.24           # via cfn-lint
