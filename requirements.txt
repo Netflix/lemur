@@ -53,7 +53,7 @@ jsonlines==1.2.0          # via cloudflare
 kombu==4.6.8              # via celery
 lockfile==0.12.2
 logmatic-python==0.1.7
-mako==1.1.0               # via alembic
+mako==1.1.2               # via alembic
 markupsafe==1.1.1         # via jinja2, mako
 marshmallow-sqlalchemy==0.21.0
 marshmallow==2.20.4
