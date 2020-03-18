@@ -57,7 +57,7 @@ mako==1.1.2               # via alembic
 markupsafe==1.1.1         # via jinja2, mako
 marshmallow-sqlalchemy==0.22.3
 marshmallow==3.5.1
-mock==3.0.5               # via acme
+mock==4.0.2               # via acme
 more-itertools==8.0.2     # via zipp
 ndg-httpsclient==0.5.1
 paramiko==2.7.1
