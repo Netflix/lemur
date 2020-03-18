@@ -58,7 +58,7 @@ pyparsing==2.4.6          # via packaging
 pyrsistent==0.15.7        # via jsonschema
 pytest-flask==1.0.0
 pytest-mock==2.0.0
-pytest==5.3.2
+pytest==5.4.1
 python-dateutil==2.8.1    # via botocore, faker, freezegun, moto
 python-jose==3.1.0        # via moto
 pytz==2019.3              # via moto
