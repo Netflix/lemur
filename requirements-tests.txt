@@ -35,7 +35,7 @@ idna==2.9                 # via moto, requests
 importlib-metadata==1.5.0  # via jsonschema, pluggy, pytest
 itsdangerous==1.1.0       # via flask
 jinja2==2.11.1            # via flask, moto
-jmespath==0.9.4           # via boto3, botocore
+jmespath==0.9.5           # via boto3, botocore
 jsondiff==1.1.2           # via moto
 jsonpatch==1.24           # via cfn-lint
 jsonpickle==1.2           # via aws-xray-sdk
