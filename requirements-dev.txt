@@ -33,7 +33,7 @@ requests==2.23.0          # via requests-toolbelt, twine
 secretstorage==3.1.2      # via keyring
 six==1.14.0               # via bleach, cfgv, cryptography, pre-commit, readme-renderer
 toml==0.10.0              # via pre-commit
-tqdm==4.41.1              # via twine
+tqdm==4.43.0              # via twine
 twine==3.1.1
 urllib3==1.25.7           # via requests
 virtualenv==16.7.9        # via pre-commit
