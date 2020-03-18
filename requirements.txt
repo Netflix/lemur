@@ -55,7 +55,7 @@ lockfile==0.12.2
 logmatic-python==0.1.7
 mako==1.1.2               # via alembic
 markupsafe==1.1.1         # via jinja2, mako
-marshmallow-sqlalchemy==0.21.0
+marshmallow-sqlalchemy==0.22.3
 marshmallow==2.20.4
 mock==3.0.5               # via acme
 more-itertools==8.0.2     # via zipp
