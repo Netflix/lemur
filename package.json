@@ -59,7 +59,7 @@
     "test": "gulp test"
   },
   "devDependencies": {
-    "gulp": "^3.9.1",
+    "gulp": "^4.0.2",
     "jshint": "^2.8.0",
     "karma-chrome-launcher": "^2.0.0"
   }
