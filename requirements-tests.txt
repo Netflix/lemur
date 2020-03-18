@@ -20,7 +20,7 @@ chardet==3.0.4            # via requests
 click==7.1                # via black, flask
 coverage==5.0.4
 cryptography==2.8         # via moto, sshpubkeys
-docker==4.1.0             # via moto
+docker==4.2.0             # via moto
 docutils==0.15.2          # via botocore
 ecdsa==0.15               # via python-jose, sshpubkeys
 factory-boy==2.12.0
