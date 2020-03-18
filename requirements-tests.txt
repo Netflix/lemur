@@ -18,7 +18,7 @@ cffi==1.14.0              # via cryptography
 cfn-lint==0.29.0          # via moto
 chardet==3.0.4            # via requests
 click==7.1                # via black, flask
-coverage==5.0.1
+coverage==5.0.4
 cryptography==2.8         # via moto, sshpubkeys
 docker==4.1.0             # via moto
 docutils==0.15.2          # via botocore
