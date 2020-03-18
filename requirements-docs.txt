@@ -49,7 +49,7 @@ importlib-metadata==1.5.0
 inflection==0.3.1
 itsdangerous==1.1.0
 javaobj-py3==0.4.0.1
-jinja2==2.10.3
+jinja2==2.11.1
 jmespath==0.9.4
 josepy==1.2.0
 jsonlines==1.2.0
