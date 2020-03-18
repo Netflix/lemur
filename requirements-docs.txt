@@ -65,7 +65,7 @@ more-itertools==8.2.0
 ndg-httpsclient==0.5.1
 packaging==20.3           # via sphinx
 paramiko==2.7.1
-pem==19.3.0
+pem==20.1.0
 psycopg2==2.8.4
 pyasn1-modules==0.2.7
 pyasn1==0.4.8
