@@ -26,7 +26,7 @@
     "gulp-minify-html": "~1.0.6",
     "gulp-ng-annotate": "~2.0.0",
     "gulp-ng-html2js": "^0.2.3",
-    "gulp-notify": "^2.2.0",
+    "gulp-notify": "^3.2.0",
     "gulp-plumber": "^1.1.0",
     "gulp-print": "^5.0.2",
     "gulp-protractor": "3.0.0",
