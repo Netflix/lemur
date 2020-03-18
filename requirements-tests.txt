@@ -69,7 +69,7 @@ requests-mock==1.7.0
 requests==2.23.0          # via docker, moto, requests-mock, responses
 responses==0.10.12         # via moto
 rsa==4.0                  # via python-jose
-s3transfer==0.2.1         # via boto3
+s3transfer==0.3.3         # via boto3
 six==1.13.0               # via aws-sam-translator, bandit, cfn-lint, cryptography, docker, ecdsa, faker, fakeredis, freezegun, jsonschema, mock, moto, packaging, pyrsistent, python-dateutil, python-jose, requests-mock, responses, stevedore, websocket-client
 smmap2==2.0.5             # via gitdb2
 sortedcontainers==2.1.0   # via fakeredis
