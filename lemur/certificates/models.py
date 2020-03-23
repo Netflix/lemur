@@ -445,6 +445,9 @@ def update_destinations(target, value, initiator):
     """
     destination_plugin = plugins.get(value.plugin_name)
     status = FAILURE_METRIC_STATUS
+
+    if target.expired:
+        return
     try:
         if target.private_key or not destination_plugin.requires_key:
             destination_plugin.upload(
