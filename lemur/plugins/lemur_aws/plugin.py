@@ -325,14 +325,17 @@ class AWSDestinationPlugin(DestinationPlugin):
     ]
 
     def upload(self, name, body, private_key, cert_chain, options, **kwargs):
-        iam.upload_cert(
-            name,
-            body,
-            private_key,
-            self.get_option("path", options),
-            cert_chain=cert_chain,
-            account_number=self.get_option("accountNumber", options),
-        )
+        try:
+            iam.upload_cert(
+                name,
+                body,
+                private_key,
+                self.get_option("path", options),
+                cert_chain=cert_chain,
+                account_number=self.get_option("accountNumber", options),
+            )
+        except ClientError:
+            sentry.captureException()
 
     def deploy(self, elb_name, account, region, certificate):
         pass
