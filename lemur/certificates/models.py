@@ -321,7 +321,8 @@ class Certificate(db.Model):
 
     @hybrid_property
     def expired(self):
-        if self.not_after <= arrow.utcnow():
+        # can't compare offset-naive and offset-aware datetimes
+        if arrow.Arrow.fromdatetime(self.not_after) <= arrow.utcnow():
             return True
 
     @expired.expression
