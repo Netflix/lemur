@@ -49,16 +49,20 @@ class Record:
         return self._data["name"]
 
     @property
-    def disabled(self):
-        return self._data["disabled"]
+    def type(self):
+        return self._data["type"]
+
+    @property
+    def ttl(self):
+        return self._data["ttl"]
 
     @property
     def content(self):
         return self._data["content"]
 
     @property
-    def ttl(self):
-        return self._data["ttl"]
+    def disabled(self):
+        return self._data["disabled"]
 
 
 def get_zones(account_number):
@@ -92,42 +96,32 @@ def get_zones(account_number):
 def create_txt_record(domain, token, account_number):
     """ Create a TXT record for the given domain and token and return a change_id tuple """
     _check_conf()
-    zone_name = _get_zone_name(domain, account_number)
-    server_id = current_app.config.get("ACME_POWERDNS_SERVERID", "localhost")
-    zone_id = zone_name + "."
-    domain_id = domain + "."
-    path = f"/api/v1/servers/{server_id}/zones/{zone_id}"
-    payload = {
-        "rrsets": [
-            {
-                "name": domain_id,
-                "type": "TXT",
-                "ttl": 300,
-                "changetype": "REPLACE",
-                "records": [
-                    {
-                        "content": f"\"{token}\"",
-                        "disabled": False
-                    }
-                ],
-                "comments": []
-            }
-        ]
-    }
+
     function = sys._getframe().f_code.co_name
     log_data = {
         "function": function,
         "fqdn": domain,
         "token": token,
     }
+
+    # Create new record
+    domain_id = domain + "."
+    records = [Record({'name': domain_id, 'content': f"\"{token}\"", 'disabled': False})]
+
+    # Get current records
+    cur_records = _get_txt_records(domain)
+    for record in cur_records:
+        if record.content != token:
+            records.append(record)
+
     try:
-        _patch(path, payload)
-        log_data["message"] = "TXT record successfully created"
+        _patch_txt_records(domain, account_number, records)
+        log_data["message"] = "TXT record(s) successfully created"
         current_app.logger.debug(log_data)
     except Exception as e:
         sentry.captureException()
         log_data["Exception"] = e
-        log_data["message"] = "Unable to create TXT record"
+        log_data["message"] = "Unable to create TXT record(s)"
         current_app.logger.debug(log_data)
 
     change_id = (domain, token)
@@ -173,43 +167,78 @@ def wait_for_dns_change(change_id, account_number=None):
 def delete_txt_record(change_id, account_number, domain, token):
     """ Delete the TXT record for the given domain and token """
     _check_conf()
-    zone_name = _get_zone_name(domain, account_number)
-    server_id = current_app.config.get("ACME_POWERDNS_SERVERID", "localhost")
-    zone_id = zone_name + "."
-    domain_id = domain + "."
-    path = f"/api/v1/servers/{server_id}/zones/{zone_id}"
-    payload = {
-        "rrsets": [
-            {
-                "name": domain_id,
-                "type": "TXT",
-                "ttl": 300,
-                "changetype": "DELETE",
-                "records": [
-                    {
-                        "content": f"\"{token}\"",
-                        "disabled": False
-                    }
-                ],
-                "comments": []
-            }
-        ]
-    }
+
     function = sys._getframe().f_code.co_name
     log_data = {
         "function": function,
         "fqdn": domain,
-        "token": token
+        "token": token,
     }
-    try:
-        _patch(path, payload)
-        log_data["message"] = "TXT record successfully deleted"
+
+    # Determine if we can delete whole RRset or just one record
+    cur_records = _get_txt_records(domain)
+    found = False
+    new_records = []
+    for record in cur_records:
+        if record.content == f"\"{token}\"":
+            found = True
+        else:
+            new_records.append(record)
+
+    if not found:  # Record not found in DNS
+        log_data["message"] = "Unable to delete TXT record: TXT record not found"
         current_app.logger.debug(log_data)
-    except Exception as e:
-        sentry.captureException()
-        log_data["Exception"] = e
-        log_data["message"] = "Unable to delete TXT record"
-        current_app.logger.debug(log_data)
+        return
+
+    elif new_records:  # Removing Record from RRSet via Patch
+        try:
+            _patch_txt_records(domain, account_number, new_records)
+            log_data["message"] = "TXT record successfully deleted"
+            current_app.logger.debug(log_data)
+        except Exception as e:
+            sentry.captureException()
+            log_data["Exception"] = e
+            log_data["message"] = "Unable to delete TXT record: patching exception"
+            current_app.logger.debug(log_data)
+
+    else:  # Delete current records
+        zone_name = _get_zone_name(domain, account_number)
+        server_id = current_app.config.get("ACME_POWERDNS_SERVERID", "localhost")
+        zone_id = zone_name + "."
+        domain_id = domain + "."
+        path = f"/api/v1/servers/{server_id}/zones/{zone_id}"
+        payload = {
+            "rrsets": [
+                {
+                    "name": domain_id,
+                    "type": "TXT",
+                    "ttl": 300,
+                    "changetype": "DELETE",
+                    "records": [
+                        {
+                            "content": f"\"{token}\"",
+                            "disabled": False
+                        }
+                    ],
+                    "comments": []
+                }
+            ]
+        }
+        function = sys._getframe().f_code.co_name
+        log_data = {
+            "function": function,
+            "fqdn": domain,
+            "token": token
+        }
+        try:
+            _patch(path, payload)
+            log_data["message"] = "TXT record successfully deleted"
+            current_app.logger.debug(log_data)
+        except Exception as e:
+            sentry.captureException()
+            log_data["Exception"] = e
+            log_data["message"] = "Unable to delete TXT record"
+            current_app.logger.debug(log_data)
 
 
 def _check_conf():
@@ -243,6 +272,33 @@ def _get_zone_name(domain, account_number):
     return zone_name
 
 
+def _get_txt_records(domain):
+    """Retrieve TXT records for a given domain and return list of Record Objects"""
+    server_id = current_app.config.get("ACME_POWERDNS_SERVERID", "localhost")
+
+    path = f"/api/v1/servers/{server_id}/search-data?q={domain}&max=100&object_type=record"
+    function = sys._getframe().f_code.co_name
+    log_data = {
+        "function": function
+    }
+    try:
+        records = _get(path)
+        log_data["message"] = "Retrieved TXT Records Successfully"
+        current_app.logger.debug(log_data)
+
+    except Exception as e:
+        sentry.captureException()
+        log_data["message"] = "Failed to Retrieve TXT Records"
+        current_app.logger.debug(log_data)
+        raise
+
+    txt_records = []
+    for record in records:
+        cur_record = Record(record)
+        txt_records.append(cur_record)
+    return txt_records
+
+
 def _get(path, params=None):
     """ Execute a GET request on the given URL (base_uri + path) and return response as JSON object """
     base_uri = current_app.config.get("ACME_POWERDNS_DOMAIN")
@@ -255,6 +311,40 @@ def _get(path, params=None):
     )
     resp.raise_for_status()
     return resp.json()
+
+
+def _patch_txt_records(domain, account_number, records):
+    """Send Patch request to PowerDNS Server"""
+
+    domain_id = domain + "."
+
+    # Create records
+    txt_records = []
+    for record in records:
+        txt_records.append(
+            {'content': record.content, 'disabled': record.disabled}
+        )
+
+    # Create RRSet
+    payload = {
+        "rrsets": [
+            {
+                "name": domain_id,
+                "type": "TXT",
+                "ttl": 300,
+                "changetype": "REPLACE",
+                "records": txt_records,
+                "comments": []
+            }
+        ]
+    }
+
+    # Create Txt Records
+    server_id = current_app.config.get("ACME_POWERDNS_SERVERID", "localhost")
+    zone_name = _get_zone_name(domain, account_number)
+    zone_id = zone_name + "."
+    path = f"/api/v1/servers/{server_id}/zones/{zone_id}"
+    _patch(path, payload)
 
 
 def _patch(path, payload):
