@@ -79,7 +79,7 @@ class TestPowerdns(unittest.TestCase):
         change_id = (domain, token)
         powerdns._check_conf = Mock()
         cur_token = "123456"
-        cur_records = [powerdns.Record({'name': domain, 'content': cur_token, 'disabled': False})]
+        cur_records = [powerdns.Record({'name': domain, 'content': f"\"{cur_token}\"", 'disabled': False})]
         powerdns._get_txt_records = Mock(return_value=cur_records)
         powerdns._get_zone_name = Mock(return_value=zone)
         mock_current_app.logger.debug = Mock()

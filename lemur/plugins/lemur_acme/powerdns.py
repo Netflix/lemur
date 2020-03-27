@@ -1,11 +1,10 @@
-import time
-import requests
 import json
 import sys
+import time
 
 import lemur.common.utils as utils
 import lemur.dns_providers.util as dnsutil
-
+import requests
 from flask import current_app
 from lemur.extensions import metrics, sentry
 
@@ -17,7 +16,9 @@ REQUIRED_VARIABLES = [
 
 
 class Zone:
-    """ This class implements a PowerDNS zone in JSON. """
+    """
+    This class implements a PowerDNS zone in JSON.
+    """
 
     def __init__(self, _data):
         self._data = _data
@@ -39,7 +40,9 @@ class Zone:
 
 
 class Record:
-    """ This class implements a PowerDNS record. """
+    """
+    This class implements a PowerDNS record.
+    """
 
     def __init__(self, _data):
         self._data = _data
@@ -66,7 +69,12 @@ class Record:
 
 
 def get_zones(account_number):
-    """Retrieve authoritative zones from the PowerDNS API and return a list"""
+    """
+    Retrieve authoritative zones from the PowerDNS API and return a list
+    :param account_number:
+    :raise: Exception
+    :return: list of Zone Objects
+    """
     _check_conf()
     server_id = current_app.config.get("ACME_POWERDNS_SERVERID", "localhost")
     path = f"/api/v1/servers/{server_id}/zones"
@@ -94,7 +102,14 @@ def get_zones(account_number):
 
 
 def create_txt_record(domain, token, account_number):
-    """ Create a TXT record for the given domain and token and return a change_id tuple """
+    """
+    Create a TXT record for the given domain and token and return a change_id tuple
+
+    :param domain: FQDN
+    :param token: challenge value
+    :param account_number:
+    :return: tuple of domain/token
+    """
     _check_conf()
 
     function = sys._getframe().f_code.co_name
@@ -130,8 +145,11 @@ def create_txt_record(domain, token, account_number):
 
 def wait_for_dns_change(change_id, account_number=None):
     """
-    Checks the authoritative DNS Server to see if changes have propagated to DNS
-    Retries and waits until successful.
+    Checks the authoritative DNS Server to see if changes have propagated.
+
+    :param change_id: tuple of domain/token
+    :param account_number:
+    :return:
     """
     _check_conf()
     domain, token = change_id
@@ -165,7 +183,15 @@ def wait_for_dns_change(change_id, account_number=None):
 
 
 def delete_txt_record(change_id, account_number, domain, token):
-    """ Delete the TXT record for the given domain and token """
+    """
+    Delete the TXT record for the given domain and token
+
+    :param change_id: tuple of domain/token
+    :param account_number:
+    :param domain: FQDN
+    :param token: challenge to delete
+    :return:
+    """
     _check_conf()
 
     function = sys._getframe().f_code.co_name
@@ -242,11 +268,20 @@ def delete_txt_record(change_id, account_number, domain, token):
 
 
 def _check_conf():
+    """
+    Verifies required configuration variables are set
+
+    :return:
+    """
     utils.validate_conf(current_app, REQUIRED_VARIABLES)
 
 
 def _generate_header():
-    """Generate a PowerDNS API header and return it as a dictionary"""
+    """
+    Generate a PowerDNS API header and return it as a dictionary
+
+    :return: Dict of header parameters
+    """
     api_key_name = current_app.config.get("ACME_POWERDNS_APIKEYNAME")
     api_key = current_app.config.get("ACME_POWERDNS_APIKEY")
     headers = {api_key_name: api_key}
@@ -254,7 +289,13 @@ def _generate_header():
 
 
 def _get_zone_name(domain, account_number):
-    """Get most specific matching zone for the given domain and return as a String"""
+    """
+    Get most specific matching zone for the given domain and return as a String
+
+    :param domain: FQDN
+    :param account_number:
+    :return: FQDN of domain
+    """
     zones = get_zones(account_number)
     zone_name = ""
     for z in zones:
@@ -273,7 +314,13 @@ def _get_zone_name(domain, account_number):
 
 
 def _get_txt_records(domain):
-    """Retrieve TXT records for a given domain and return list of Record Objects"""
+    """
+    Retrieve TXT records for a given domain and return list of Record Objects
+
+    :param domain: FQDN
+    :raise: Exception
+    :return: list of Record objects
+    """
     server_id = current_app.config.get("ACME_POWERDNS_SERVERID", "localhost")
 
     path = f"/api/v1/servers/{server_id}/search-data?q={domain}&max=100&object_type=record"
@@ -300,7 +347,13 @@ def _get_txt_records(domain):
 
 
 def _get(path, params=None):
-    """ Execute a GET request on the given URL (base_uri + path) and return response as JSON object """
+    """
+    Execute a GET request on the given URL (base_uri + path) and return response as JSON object
+
+    :param path: Relative URL path
+    :param params: additional parameters
+    :return: json response
+    """
     base_uri = current_app.config.get("ACME_POWERDNS_DOMAIN")
     verify_value = current_app.config.get("ACME_POWERDNS_VERIFY", True)
     resp = requests.get(
@@ -314,8 +367,14 @@ def _get(path, params=None):
 
 
 def _patch_txt_records(domain, account_number, records):
-    """Send Patch request to PowerDNS Server"""
+    """
+    Send Patch request to PowerDNS Server
 
+    :param domain: FQDN
+    :param account_number:
+    :param records: List of Record objects
+    :return:
+    """
     domain_id = domain + "."
 
     # Create records
@@ -348,7 +407,13 @@ def _patch_txt_records(domain, account_number, records):
 
 
 def _patch(path, payload):
-    """ Execute a Patch request on the given URL (base_uri + path) with given payload """
+    """
+    Execute a Patch request on the given URL (base_uri + path) with given payload
+
+    :param path:
+    :param payload:
+    :return:
+    """
     base_uri = current_app.config.get("ACME_POWERDNS_DOMAIN")
     verify_value = current_app.config.get("ACME_POWERDNS_VERIFY", True)
     resp = requests.patch(
