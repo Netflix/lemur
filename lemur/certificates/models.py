@@ -8,8 +8,6 @@
 from datetime import timedelta
 
 import arrow
-import pytz
-import datetime
 from cryptography import x509
 from cryptography.hazmat.primitives.asymmetric import rsa
 from flask import current_app
@@ -323,13 +321,9 @@ class Certificate(db.Model):
 
     @hybrid_property
     def expired(self):
-        if isinstance(self.not_after, datetime.datetime):
-            # can't compare offset-naive and offset-aware datetimes
-            if self.not_after.replace(tzinfo=pytz.UTC) <= arrow.utcnow():
-                return True
-        else:
-            if self.not_after <= arrow.utcnow():
-                return True
+        # can't compare offset-naive and offset-aware datetimes
+        if arrow.Arrow.fromdatetime(self.not_after) <= arrow.utcnow():
+            return True
 
     @expired.expression
     def expired(cls):
