@@ -70,8 +70,8 @@ class Record:
 
 def get_zones(account_number):
     """
-    Retrieve authoritative zones from the PowerDNS API and return a list
-    
+    Retrieve authoritative zones from the PowerDNS API and return a list of zones
+
     :param account_number:
     :raise: Exception
     :return: list of Zone Objects
