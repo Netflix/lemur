@@ -332,7 +332,7 @@ def clean_all_sources():
     metrics.send(f"{function}.success", 'counter', 1)
 
 
-@celery.task(soft_time_limit=600)
+@celery.task(soft_time_limit=3600)
 def clean_source(source):
     """
     This celery task will clean the specified source. This is a destructive operation that will delete unused
