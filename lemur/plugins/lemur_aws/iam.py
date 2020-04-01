@@ -115,7 +115,10 @@ def delete_cert(cert_name, **kwargs):
         client.delete_server_certificate(ServerCertificateName=cert_name)
     except botocore.exceptions.ClientError as e:
         if e.response["Error"]["Code"] != "NoSuchEntity":
-            raise e
+            # If the certificate is already deleted in AWS,
+            # we should continue with the remainder of the deletion process in Lemur
+            # which includes removing applicable sources and destinations
+            return
 
 
 @sts_client("iam")
