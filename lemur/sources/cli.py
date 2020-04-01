@@ -58,6 +58,13 @@ def execute_clean(plugin, certificate, source):
     try:
         plugin.clean(certificate, source.options)
         certificate.sources.remove(source)
+
+        # If we want to remove the source from the certificate, we also need to clear any equivalent destinations to
+        # prevent Lemur from re-uploading the certificate.
+        for destination in certificate.destinations:
+            if destination.label == source.label:
+                certificate.destinations.remove(destination)
+
         certificate_service.database.update(certificate)
         return SUCCESS_METRIC_STATUS
     except Exception as e:
