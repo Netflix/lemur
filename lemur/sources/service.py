@@ -193,6 +193,11 @@ def sync_certificates(source, user):
     s = plugins.get(source.plugin_name)
     certificates = s.get_certificates(source.options)
 
+    # emitting the count of certificates on the source
+    metrics.send("sync_certificates_count",
+                 "gauge", len(certificates),
+                 metric_tags={"source": source.label})
+
     for certificate in certificates:
         exists, updated_by_hash = find_cert(certificate)
 
