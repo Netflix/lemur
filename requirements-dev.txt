@@ -5,7 +5,7 @@
 #    pip-compile --no-index --output-file=requirements-dev.txt requirements-dev.in
 #
 aspy.yaml==1.3.0          # via pre-commit
-bleach==3.1.2             # via readme-renderer
+bleach==3.1.4             # via readme-renderer
 certifi==2019.11.28       # via requests
 cffi==1.14.0              # via cryptography
 cfgv==2.0.1               # via pre-commit
