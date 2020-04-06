@@ -202,7 +202,11 @@ def delete_txt_record(change_id, account_number, domain, token):
         "token": token,
     }
 
-    # Determine if we can delete whole RRset or just one record
+    """
+    Get existing TXT records matching the domain from DNS
+    The token to be deleted should already exist
+    There may be other records with different tokens as well
+    """
     cur_records = _get_txt_records(domain)
     found = False
     new_records = []
@@ -212,12 +216,16 @@ def delete_txt_record(change_id, account_number, domain, token):
         else:
             new_records.append(record)
 
-    if not found:  # Record not found in DNS
-        log_data["message"] = "Unable to delete TXT record: TXT record not found"
+    # Since the matching token is not in DNS, there is nothing to delete
+    if not found:
+        log_data["message"] = "Unable to delete TXT record: Token not found in existing TXT records"
         current_app.logger.debug(log_data)
         return
 
-    elif new_records:  # Removing Record from RRSet via Patch
+    # The record to delete has been found AND there are other tokens set on the same domain
+    # Since we only want to delete one token value from the RRSet, we need to use the Patch command to
+    # overwrite the current RRSet with the existing records.
+    elif new_records:
         try:
             _patch_txt_records(domain, account_number, new_records)
             log_data["message"] = "TXT record successfully deleted"
@@ -228,7 +236,9 @@ def delete_txt_record(change_id, account_number, domain, token):
             log_data["message"] = "Unable to delete TXT record: patching exception"
             current_app.logger.debug(log_data)
 
-    else:  # Delete current records
+    # The record to delete has been found AND there are no other token values set on the same domain
+    # Use the Delete command to delete the whole RRSet.
+    else:
         zone_name = _get_zone_name(domain, account_number)
         server_id = current_app.config.get("ACME_POWERDNS_SERVERID", "localhost")
         zone_id = zone_name + "."
@@ -319,7 +329,6 @@ def _get_txt_records(domain):
     Retrieve TXT records for a given domain and return list of Record Objects
 
     :param domain: FQDN
-    :raise: Exception
     :return: list of Record objects
     """
     server_id = current_app.config.get("ACME_POWERDNS_SERVERID", "localhost")
@@ -336,9 +345,10 @@ def _get_txt_records(domain):
 
     except Exception as e:
         sentry.captureException()
+        log_data["Exception"] = e
         log_data["message"] = "Failed to Retrieve TXT Records"
         current_app.logger.debug(log_data)
-        raise
+        return []
 
     txt_records = []
     for record in records:

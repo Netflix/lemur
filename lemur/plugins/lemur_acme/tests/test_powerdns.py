@@ -165,7 +165,7 @@ class TestPowerdns(unittest.TestCase):
             "function": "delete_txt_record",
             "fqdn": domain,
             "token": token,
-            "message": "Unable to delete TXT record: TXT record not found"
+            "message": "Unable to delete TXT record: Token not found in existing TXT records"
         }
         powerdns.delete_txt_record(change_id, account_number, domain, token)
         mock_current_app.logger.debug.assert_called_with(log_data)
