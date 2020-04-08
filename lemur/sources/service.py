@@ -123,15 +123,19 @@ def sync_endpoints(source):
                                               "acct": s.get_option("accountNumber", source.options)})
 
         if not endpoint["certificate"]:
-            current_app.logger.error(
-                "Certificate Not Found. Name: {0} Endpoint: {1}".format(
-                    certificate_name, endpoint["name"]
-                )
-            )
+            current_app.logger.error({
+                "message": "Certificate Not Found",
+                "certificate_name": certificate_name,
+                "endpoint_name": endpoint["name"],
+                "dns_name": endpoint.get("dnsname"),
+                "account": s.get_option("accountNumber", source.options),
+            })
+
             metrics.send("endpoint.certificate.not.found",
                          "counter", 1,
                          metric_tags={"cert": certificate_name, "endpoint": endpoint["name"],
-                                      "acct": s.get_option("accountNumber", source.options)})
+                                      "acct": s.get_option("accountNumber", source.options),
+                                      "dnsname": endpoint.get("dnsname")})
             continue
 
         policy = endpoint.pop("policy")
