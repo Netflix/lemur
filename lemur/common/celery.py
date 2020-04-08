@@ -120,7 +120,6 @@ def report_celery_last_success_metrics():
     report_celery_last_success_metrics should be ran periodically to emit metrics on when a task was last successful.
     Admins can then alert when tasks are not ran when intended. Admins should also alert when no metrics are emitted
     from this function.
-
     """
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     task_id = None
@@ -158,12 +157,6 @@ def report_number_pending_tasks(**kwargs):
     Report the number of pending tasks to our metrics broker every time a task is published. This metric can be used
     for autoscaling workers.
     https://docs.celeryproject.org/en/latest/userguide/signals.html#task-received
-
-    :param sender:
-    :param headers:
-    :param body:
-    :param kwargs:
-    :return:
     """
     with flask_app.app_context():
         metrics.send(
@@ -180,12 +173,6 @@ def report_successful_task(**kwargs):
     Report a generic success metric as tasks to our metrics broker every time a task finished correctly.
     This metric can be used for autoscaling workers.
     https://docs.celeryproject.org/en/latest/userguide/signals.html#task-success
-
-    :param sender:
-    :param headers:
-    :param body:
-    :param kwargs:
-    :return:
     """
     with flask_app.app_context():
         tags = get_celery_request_tags(**kwargs)
@@ -199,12 +186,6 @@ def report_failed_task(**kwargs):
     Report a generic failure metric as tasks to our metrics broker every time a task fails.
     This metric can be used for alerting.
     https://docs.celeryproject.org/en/latest/userguide/signals.html#task-failure
-
-    :param sender:
-    :param headers:
-    :param body:
-    :param kwargs:
-    :return:
     """
     with flask_app.app_context():
         log_data = {
@@ -230,12 +211,6 @@ def report_revoked_task(**kwargs):
     Report a generic failure metric as tasks to our metrics broker every time a task is revoked.
     This metric can be used for alerting.
     https://docs.celeryproject.org/en/latest/userguide/signals.html#task-revoked
-
-    :param sender:
-    :param headers:
-    :param body:
-    :param kwargs:
-    :return:
     """
     with flask_app.app_context():
         log_data = {
