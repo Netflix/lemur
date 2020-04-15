@@ -60,7 +60,7 @@
   },
   "devDependencies": {
     "gulp": "^3.9.1",
-    "jshint": "^2.8.0",
+    "jshint": "^2.11.0",
     "karma-chrome-launcher": "^2.0.0"
   }
 }
