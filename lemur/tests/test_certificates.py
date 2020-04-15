@@ -9,7 +9,8 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from marshmallow import ValidationError
 from freezegun import freeze_time
-from mock import patch
+# from mock import patch
+from unittest.mock import patch
 
 from lemur.certificates.service import create_csr
 from lemur.certificates.views import *  # noqa
@@ -906,12 +907,12 @@ def test_certificate_get_body(client):
     assert response_body["serial"] == "211983098819107449768450703123665283596"
     assert response_body["serialHex"] == "9F7A75B39DAE4C3F9524C68B06DA6A0C"
     assert response_body["distinguishedName"] == (
-        "CN=LemurTrust Unittests Class 1 CA 2018,"
-        "O=LemurTrust Enterprises Ltd,"
-        "OU=Unittesting Operations Center,"
-        "C=EE,"
+        "L=Earth,"
         "ST=N/A,"
-        "L=Earth"
+        "C=EE,"
+        "OU=Unittesting Operations Center,"
+        "O=LemurTrust Enterprises Ltd,"
+        "CN=LemurTrust Unittests Class 1 CA 2018"
     )
 
 
