@@ -5,7 +5,8 @@
     :license: Apache, see LICENSE for more details.
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
-
+.. moduleauthor:: Curtis Castrapel <ccastrapel@netflix.com>
+.. moduleauthor:: Hossein Shafagh <hshafagh@netflix.com>
 
 """
 import time

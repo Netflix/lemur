@@ -8,12 +8,6 @@ ENV gid 1337
 ENV user lemur
 ENV group lemur
 
-COPY entrypoint /
-COPY src/lemur.conf.py /home/lemur/.lemur/lemur.conf.py
-COPY supervisor.conf /
-COPY nginx/default.conf /etc/nginx/conf.d/
-COPY nginx/default-ssl.conf /etc/nginx/conf.d/
-
 RUN addgroup -S ${group} -g ${gid} && \
     adduser -D -S ${user} -G ${group} -u ${uid} && \
     apk --update add python3 libldap postgresql-client nginx supervisor curl tzdata openssl bash && \
@@ -40,7 +34,6 @@ RUN addgroup -S ${group} -g ${gid} && \
     curl -sSL https://github.com/Netflix/lemur/archive/$VERSION.tar.gz | tar xz -C /opt/lemur --strip-components=1 && \
     pip3 install --upgrade pip && \
     pip3 install --upgrade setuptools && \
-    chmod +x /entrypoint && \
     mkdir -p /run/nginx/ /etc/nginx/ssl/ && \
     chown -R $user:$group /opt/lemur/ /home/lemur/.lemur/
     
@@ -52,6 +45,13 @@ RUN npm install --unsafe-perm && \
     node_modules/.bin/gulp package --urlContextPath=$(urlContextPath) && \
     apk del build-dependencies
 
+COPY entrypoint /
+COPY src/lemur.conf.py /home/lemur/.lemur/lemur.conf.py
+COPY supervisor.conf /
+COPY nginx/default.conf /etc/nginx/conf.d/
+COPY nginx/default-ssl.conf /etc/nginx/conf.d/
+
+RUN chmod +x /entrypoint
 WORKDIR /
 
 HEALTHCHECK --interval=12s --timeout=12s --start-period=30s \  

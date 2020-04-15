@@ -1,7 +1,9 @@
 """ACME DNS providor for NS1"""
 from time import sleep
 import ns1
+
 from flask import current_app
+from lemur.extensions import metrics, sentry
 
 def nsone_api_call():
     """Create NS1 api object"""

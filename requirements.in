@@ -28,11 +28,10 @@ gunicorn
 hvac # required for the vault destination plugin
 inflection
 jinja2
-kombu<4.6.0 # Bug with inspecting active tasks: https://github.com/celery/kombu/issues/1051
 lockfile
 logmatic-python
 marshmallow-sqlalchemy
-marshmallow
+marshmallow<2.20.5 #schema duplicate issues https://github.com/marshmallow-code/marshmallow-sqlalchemy/issues/121
 ndg-httpsclient
 ns1-python
 paramiko  # required for the SFTP destination plugin

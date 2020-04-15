@@ -32,7 +32,9 @@
 .. moduleauthor:: Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
 .. moduleauthor:: Harm Weites <harm@weites.com>
 """
+from acme.errors import ClientError
 from flask import current_app
+from lemur.extensions import sentry, metrics
 
 from lemur.plugins import lemur_aws as aws
 from lemur.plugins.bases import DestinationPlugin, ExportDestinationPlugin, SourcePlugin
@@ -40,7 +42,12 @@ from lemur.plugins.lemur_aws import iam, s3, elb, ec2
 
 
 def get_region_from_dns(dns):
-    return dns.split(".")[-4]
+    #  XXX.REGION.elb.amazonaws.com
+    if dns.endswith(".elb.amazonaws.com"):
+        return dns.split(".")[-4]
+    else:
+        #  NLBs have a different pattern on the dns XXXX.elb.REGION.amazonaws.com
+        return dns.split(".")[-3]
 
 
 def format_elb_cipher_policy_v2(policy):
@@ -205,7 +212,7 @@ class AWSSourcePlugin(SourcePlugin):
         if not regions:
             regions = ec2.get_regions(account_number=account_number)
         else:
-            regions = regions.split(",")
+            regions = "".join(regions.split()).split(",")
 
         for region in regions:
             elbs = elb.get_all_elbs(account_number=account_number, region=region)
@@ -266,6 +273,29 @@ class AWSSourcePlugin(SourcePlugin):
         account_number = self.get_option("accountNumber", options)
         iam.delete_cert(certificate.name, account_number=account_number)
 
+    def get_certificate_by_name(self, certificate_name, options):
+        account_number = self.get_option("accountNumber", options)
+        # certificate name may contain path, in which case we remove it
+        if "/" in certificate_name:
+            certificate_name = certificate_name.split('/')[-1]
+        try:
+            cert = iam.get_certificate(certificate_name, account_number=account_number)
+            if cert:
+                return dict(
+                    body=cert["CertificateBody"],
+                    chain=cert.get("CertificateChain"),
+                    name=cert["ServerCertificateMetadata"]["ServerCertificateName"],
+                )
+        except ClientError:
+            current_app.logger.warning(
+                "get_elb_certificate_failed: Unable to get certificate for {0}".format(certificate_name))
+            sentry.captureException()
+            metrics.send(
+                "get_elb_certificate_failed", "counter", 1,
+                metric_tags={"certificate_name": certificate_name, "account_number": account_number}
+            )
+        return None
+
 
 class AWSDestinationPlugin(DestinationPlugin):
     title = "AWS"
@@ -295,14 +325,17 @@ class AWSDestinationPlugin(DestinationPlugin):
     ]
 
     def upload(self, name, body, private_key, cert_chain, options, **kwargs):
-        iam.upload_cert(
-            name,
-            body,
-            private_key,
-            self.get_option("path", options),
-            cert_chain=cert_chain,
-            account_number=self.get_option("accountNumber", options),
-        )
+        try:
+            iam.upload_cert(
+                name,
+                body,
+                private_key,
+                self.get_option("path", options),
+                cert_chain=cert_chain,
+                account_number=self.get_option("accountNumber", options),
+            )
+        except ClientError:
+            sentry.captureException()
 
     def deploy(self, elb_name, account, region, certificate):
         pass

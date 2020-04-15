@@ -50,11 +50,19 @@ class VaultSourcePlugin(SourcePlugin):
             "helpMessage": "Version of the Vault KV API to use",
         },
         {
-            "name": "vaultAuthTokenFile",
+            "name": "authenticationMethod",
+            "type": "select",
+            "value": "token",
+            "available": ["token", "kubernetes"],
+            "required": True,
+            "helpMessage": "Authentication method to use",
+        },
+        {
+            "name": "tokenFile/VaultRole",
             "type": "str",
             "required": True,
-            "validation": "(/[^/]+)+",
-            "helpMessage": "Must be a valid file path!",
+            "validation": "^([a-zA-Z0-9/._-]+/?)+$",
+            "helpMessage": "Must be vaild file path for token based auth and valid role if k8s based auth",
         },
         {
             "name": "vaultMount",
@@ -85,7 +93,8 @@ class VaultSourcePlugin(SourcePlugin):
         cert = []
         body = ""
         url = self.get_option("vaultUrl", options)
-        token_file = self.get_option("vaultAuthTokenFile", options)
+        auth_method = self.get_option("authenticationMethod", options)
+        auth_key = self.get_option("tokenFile/vaultRole", options)
         mount = self.get_option("vaultMount", options)
         path = self.get_option("vaultPath", options)
         obj_name = self.get_option("objectName", options)
@@ -93,10 +102,18 @@ class VaultSourcePlugin(SourcePlugin):
         cert_filter = "-----BEGIN CERTIFICATE-----"
         cert_delimiter = "-----END CERTIFICATE-----"
 
-        with open(token_file, "r") as tfile:
-            token = tfile.readline().rstrip("\n")
+        client = hvac.Client(url=url)
+        if auth_method == 'token':
+            with open(auth_key, "r") as tfile:
+                token = tfile.readline().rstrip("\n")
+            client.token = token
 
-        client = hvac.Client(url=url, token=token)
+        if auth_method == 'kubernetes':
+            token_path = '/var/run/secrets/kubernetes.io/serviceaccount/token'
+            with open(token_path, 'r') as f:
+                jwt = f.read()
+            client.auth_kubernetes(auth_key, jwt)
+
         client.secrets.kv.default_kv_version = api_version
 
         path = "{0}/{1}".format(path, obj_name)
@@ -160,11 +177,19 @@ class VaultDestinationPlugin(DestinationPlugin):
             "helpMessage": "Version of the Vault KV API to use",
         },
         {
-            "name": "vaultAuthTokenFile",
+            "name": "authenticationMethod",
+            "type": "select",
+            "value": "token",
+            "available": ["token", "kubernetes"],
+            "required": True,
+            "helpMessage": "Authentication method to use",
+        },
+        {
+            "name": "tokenFile/VaultRole",
             "type": "str",
             "required": True,
-            "validation": "(/[^/]+)+",
-            "helpMessage": "Must be a valid file path!",
+            "validation": "^([a-zA-Z0-9/._-]+/?)+$",
+            "helpMessage": "Must be vaild file path for token based auth and valid role if k8s based auth",
         },
         {
             "name": "vaultMount",
@@ -219,7 +244,8 @@ class VaultDestinationPlugin(DestinationPlugin):
         cname = common_name(parse_certificate(body))
 
         url = self.get_option("vaultUrl", options)
-        token_file = self.get_option("vaultAuthTokenFile", options)
+        auth_method = self.get_option("authenticationMethod", options)
+        auth_key = self.get_option("tokenFile/vaultRole", options)
         mount = self.get_option("vaultMount", options)
         path = self.get_option("vaultPath", options)
         bundle = self.get_option("bundleChain", options)
@@ -245,10 +271,18 @@ class VaultDestinationPlugin(DestinationPlugin):
                         exc_info=True,
                     )
 
-        with open(token_file, "r") as tfile:
-            token = tfile.readline().rstrip("\n")
+        client = hvac.Client(url=url)
+        if auth_method == 'token':
+            with open(auth_key, "r") as tfile:
+                token = tfile.readline().rstrip("\n")
+            client.token = token
 
-        client = hvac.Client(url=url, token=token)
+        if auth_method == 'kubernetes':
+            token_path = '/var/run/secrets/kubernetes.io/serviceaccount/token'
+            with open(token_path, 'r') as f:
+                jwt = f.read()
+            client.auth_kubernetes(auth_key, jwt)
+
         client.secrets.kv.default_kv_version = api_version
 
         if obj_name:
@@ -259,16 +293,21 @@ class VaultDestinationPlugin(DestinationPlugin):
         secret = get_secret(client, mount, path)
         secret["data"][cname] = {}
 
+        if not cert_chain:
+            chain = ''
+        else:
+            chain = cert_chain
+
         if bundle == "Nginx":
-            secret["data"][cname]["crt"] = "{0}\n{1}".format(body, cert_chain)
+            secret["data"][cname]["crt"] = "{0}\n{1}".format(body, chain)
             secret["data"][cname]["key"] = private_key
         elif bundle == "Apache":
             secret["data"][cname]["crt"] = body
-            secret["data"][cname]["chain"] = cert_chain
+            secret["data"][cname]["chain"] = chain
             secret["data"][cname]["key"] = private_key
         elif bundle == "PEM":
             secret["data"][cname]["pem"] = "{0}\n{1}\n{2}".format(
-                body, cert_chain, private_key
+                body, chain, private_key
             )
         else:
             secret["data"][cname]["crt"] = body

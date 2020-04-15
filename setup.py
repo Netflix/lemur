@@ -23,7 +23,11 @@ from setuptools import setup, find_packages
 from subprocess import check_output
 
 import pip
-if tuple(map(int, pip.__version__.split('.'))) >= (10, 0, 0):
+if tuple(map(int, pip.__version__.split('.'))) >= (19, 3, 0):
+    from pip._internal.network.session import PipSession
+    from pip._internal.req import parse_requirements
+
+elif tuple(map(int, pip.__version__.split('.'))) >= (10, 0, 0):
     from pip._internal.download import PipSession
     from pip._internal.req import parse_requirements
 else:
@@ -147,6 +151,7 @@ setup(
             'java_keystore_export = lemur.plugins.lemur_jks.plugin:JavaKeystoreExportPlugin',
             'openssl_export = lemur.plugins.lemur_openssl.plugin:OpenSSLExportPlugin',
             'atlas_metric = lemur.plugins.lemur_atlas.plugin:AtlasMetricPlugin',
+            'atlas_metric_redis = lemur.plugins.lemur_atlas_redis.plugin:AtlasMetricRedisPlugin',
             'kubernetes_destination = lemur.plugins.lemur_kubernetes.plugin:KubernetesDestinationPlugin',
             'cryptography_issuer = lemur.plugins.lemur_cryptography.plugin:CryptographyIssuerPlugin',
             'cfssl_issuer = lemur.plugins.lemur_cfssl.plugin:CfsslIssuerPlugin',

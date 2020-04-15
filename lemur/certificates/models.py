@@ -137,7 +137,7 @@ class Certificate(db.Model):
 
     not_before = Column(ArrowType)
     not_after = Column(ArrowType)
-    not_after_ix = Index('ix_certificates_not_after', not_after.desc())
+    not_after_ix = Index("ix_certificates_not_after", not_after.desc())
 
     date_created = Column(ArrowType, PassiveDefault(func.now()), nullable=False)
 
@@ -321,7 +321,8 @@ class Certificate(db.Model):
 
     @hybrid_property
     def expired(self):
-        if self.not_after <= arrow.utcnow():
+        # can't compare offset-naive and offset-aware datetimes
+        if arrow.Arrow.fromdatetime(self.not_after) <= arrow.utcnow():
             return True
 
     @expired.expression
@@ -336,6 +337,14 @@ class Certificate(db.Model):
     @revoked.expression
     def revoked(cls):
         return case([(cls.status == "revoked", True)], else_=False)
+
+    @hybrid_property
+    def has_private_key(self):
+        return self.private_key is not None
+
+    @has_private_key.expression
+    def has_private_key(cls):
+        return case([(cls.private_key.is_(None), True)], else_=False)
 
     @hybrid_property
     def in_rotation_window(self):
@@ -437,6 +446,9 @@ def update_destinations(target, value, initiator):
     """
     destination_plugin = plugins.get(value.plugin_name)
     status = FAILURE_METRIC_STATUS
+
+    if target.expired:
+        return
     try:
         if target.private_key or not destination_plugin.requires_key:
             destination_plugin.upload(

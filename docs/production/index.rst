@@ -217,23 +217,23 @@ An example apache config::
         # HSTS (mod_headers is required) (15768000 seconds = 6 months)
         Header always set Strict-Transport-Security "max-age=15768000"
         ...
-        
+
      # Set the lemur DocumentRoot to static/dist
      DocumentRoot /www/lemur/lemur/static/dist
-     
+
      # Uncomment to force http 1.0 connections to proxy
      # SetEnv force-proxy-request-1.0 1
-     
+
      #Don't keep proxy connections alive
      SetEnv proxy-nokeepalive 1
-     
+
      # Only need to do reverse proxy
      ProxyRequests Off
-     
+
      # Proxy requests to the api to the lemur service (and sanitize redirects from it)
      ProxyPass "/api" "http://127.0.0.1:8000/api"
      ProxyPassReverse "/api" "http://127.0.0.1:8000/api"
-     
+
     </VirtualHost>
 
 Also included in the configurations above are several best practices when it comes to deploying TLS. Things like enabling
@@ -318,7 +318,7 @@ Periodic Tasks
 ==============
 
 Lemur contains a few tasks that are run and scheduled basis, currently the recommend way to run these tasks is to create
-a cron job that runs the commands.
+celery tasks or cron jobs that run these commands.
 
 There are currently three commands that could/should be run on a periodic basis:
 
@@ -326,11 +326,124 @@ There are currently three commands that could/should be run on a periodic basis:
 - `check_revoked`
 - `sync`
 
+If you are using LetsEncrypt, you must also run the following:
+
+- `fetch_all_pending_acme_certs`
+- `remove_old_acme_certs`
+
 How often you run these commands is largely up to the user. `notify` and `check_revoked` are typically run at least once a day.
-`sync` is typically run every 15 minutes.
+`sync` is typically run every 15 minutes. `fetch_all_pending_acme_certs` should be ran frequently (Every minute is fine).
+`remove_old_acme_certs` can be ran more rarely, such as once every week.
 
 Example cron entries::
 
     0 22 * * * lemuruser export LEMUR_CONF=/Users/me/.lemur/lemur.conf.py; /www/lemur/bin/lemur notify expirations
     */15 * * * * lemuruser export LEMUR_CONF=/Users/me/.lemur/lemur.conf.py; /www/lemur/bin/lemur source sync -s all
     0 22 * * * lemuruser export LEMUR_CONF=/Users/me/.lemur/lemur.conf.py; /www/lemur/bin/lemur certificate check_revoked
+
+
+Example Celery configuration (To be placed in your configuration file)::
+
+    CELERYBEAT_SCHEDULE = {
+        'fetch_all_pending_acme_certs': {
+            'task': 'lemur.common.celery.fetch_all_pending_acme_certs',
+            'options': {
+                'expires': 180
+            },
+            'schedule': crontab(minute="*"),
+        },
+        'remove_old_acme_certs': {
+            'task': 'lemur.common.celery.remove_old_acme_certs',
+            'options': {
+                'expires': 180
+            },
+            'schedule': crontab(hour=7, minute=30, day_of_week=1),
+        },
+        'clean_all_sources': {
+            'task': 'lemur.common.celery.clean_all_sources',
+            'options': {
+                'expires': 180
+            },
+            'schedule': crontab(hour=1, minute=0, day_of_week=1),
+        },
+        'sync_all_sources': {
+            'task': 'lemur.common.celery.sync_all_sources',
+            'options': {
+                'expires': 180
+            },
+            'schedule': crontab(hour="*/3", minute=5),
+        },
+        'sync_source_destination': {
+            'task': 'lemur.common.celery.sync_source_destination',
+            'options': {
+                'expires': 180
+            },
+            'schedule': crontab(hour="*"),
+        }
+    }
+
+To enable celery support, you must also have configuration values that tell Celery which broker and backend to use.
+Here are the Celery configuration variables that should be set::
+
+    CELERY_RESULT_BACKEND = 'redis://your_redis_url:6379'
+    CELERY_BROKER_URL = 'redis://your_redis_url:6379'
+    CELERY_IMPORTS = ('lemur.common.celery')
+    CELERY_TIMEZONE = 'UTC'
+
+You must start a single Celery scheduler instance and one or more worker instances in order to handle incoming tasks.
+The scheduler can be started with::
+
+    LEMUR_CONF='/location/to/conf.py' /location/to/lemur/bin/celery -A lemur.common.celery beat
+
+And the worker can be started with desired options such as the following::
+
+    LEMUR_CONF='/location/to/conf.py' /location/to/lemur/bin/celery -A lemur.common.celery worker --concurrency 10 -E -n lemurworker1@%%h
+
+supervisor or systemd configurations should be created for these in production environments as appropriate.
+
+Add support for LetsEncrypt
+===========================
+
+LetsEncrypt is a free, limited-feature certificate authority that offers publicly trusted certificates that are valid
+for 90 days. LetsEncrypt does not use organizational validation (OV), and instead relies on domain validation (DV).
+LetsEncrypt requires that we prove ownership of a domain before we're able to issue a certificate for that domain, each
+time we want a certificate.
+
+The most common methods to prove ownership are HTTP validation and DNS validation. Lemur supports DNS validation
+through the creation of DNS TXT records.
+
+In a nutshell, when we send a certificate request to LetsEncrypt, they generate a random token and ask us to put that
+token in a DNS text record to prove ownership of a domain. If a certificate request has multiple domains, we must
+prove ownership of all of these domains through this method. The token is typically written to a TXT record at
+-acme_challenge.domain.com. Once we create the appropriate TXT record(s), Lemur will try to validate propagation
+before requesting that LetsEncrypt finalize the certificate request and send us the certificate.
+
+.. figure:: letsencrypt_flow.png
+
+To start issuing certificates through LetsEncrypt, you must enable Celery support within Lemur first. After doing so,
+you need to create a LetsEncrypt authority. To do this, visit
+Authorities -> Create. Set the applicable attributes and click "More Options".
+
+.. figure:: letsencrypt_authority_1.png
+
+You will need to set "Certificate" to LetsEncrypt's active chain of trust for the authority you want to use. To find
+the active chain of trust at the time of writing, please visit `LetsEncrypt
+<https://letsencrypt.org/certificates/>`_.
+
+Under Acme_url, enter in the appropriate endpoint URL. Lemur supports LetsEncrypt's V2 API, and we recommend you to use
+this. At the time of writing, the staging and production URLs for LetsEncrypt V2 are
+https://acme-staging-v02.api.letsencrypt.org/directory and https://acme-v02.api.letsencrypt.org/directory.
+
+.. figure:: letsencrypt_authority_2.png
+
+After creating the authorities, we will need to create a DNS provider. Visit `Admin` -> `DNS Providers` and click
+`Create`. Lemur comes with a few provider plugins built in, with different options. Create a DNS provider with the
+appropriate choices.
+
+.. figure:: create_dns_provider.png
+
+By default, users will need to select the DNS provider that is authoritative over their domain in order for the
+LetsEncrypt flow to function. However, Lemur will attempt to automatically determine the appropriate provider if
+possible. To enable this functionality, periodically (or through Cron/Celery) run `lemur dns_providers get_all_zones`.
+This command will traverse all DNS providers, determine which zones they control, and upload this list of zones to
+Lemur's database (in the dns_providers table). Alternatively, you can manually input this data.

@@ -56,7 +56,7 @@ class CfsslIssuerPlugin(IssuerPlugin):
         try:
             hex_key = current_app.config.get("CFSSL_KEY")
             key = bytes.fromhex(hex_key)
-        except (ValueError, NameError):
+        except (ValueError, NameError, TypeError):
             # unable to find CFSSL_KEY in config, continue using normal sign method
             pass
         else:

@@ -99,6 +99,8 @@ def get_types():
                 },
                 {"name": "dyn"},
                 {"name": "nsone"},
+                {"name": "ultradns"},
+                {"name": "powerdns"},
             ]
         },
     )

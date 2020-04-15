@@ -98,10 +98,14 @@ def process_options(options):
     :param options:
     :return: dict or valid verisign options
     """
+    # if there is a config variable with VERISIGN_PRODUCT_<upper(authority.name)> take the value as Cert product-type
+    # else default to "Server", to be compatoible with former versions
+    authority = options.get("authority").name.upper()
+    product_type = current_app.config.get("VERISIGN_PRODUCT_{0}".format(authority), "Server")
     data = {
         "challenge": get_psuedo_random_string(),
         "serverType": "Apache",
-        "certProductType": "Server",
+        "certProductType": product_type,
         "firstName": current_app.config.get("VERISIGN_FIRST_NAME"),
         "lastName": current_app.config.get("VERISIGN_LAST_NAME"),
         "signatureAlgorithm": "sha256WithRSAEncryption",
@@ -111,16 +115,9 @@ def process_options(options):
 
     data["subject_alt_names"] = ",".join(get_additional_names(options))
 
-    if options.get("validity_end") > arrow.utcnow().replace(years=2):
-        raise Exception(
-            "Verisign issued certificates cannot exceed two years in validity"
-        )
-
     if options.get("validity_end"):
         # VeriSign (Symantec) only accepts strictly smaller than 2 year end date
-        if options.get("validity_end") < arrow.utcnow().replace(years=2).replace(
-            days=-1
-        ):
+        if options.get("validity_end") < arrow.utcnow().shift(years=2, days=-1):
             period = get_default_issuance(options)
             data["specificEndDate"] = options["validity_end"].format("MM/DD/YYYY")
             data["validityPeriod"] = period
@@ -149,9 +146,9 @@ def get_default_issuance(options):
     """
     now = arrow.utcnow()
 
-    if options["validity_end"] < now.replace(years=+1):
+    if options["validity_end"] < now.shift(years=+1):
         validity_period = "1Y"
-    elif options["validity_end"] < now.replace(years=+2):
+    elif options["validity_end"] < now.shift(years=+2):
         validity_period = "2Y"
     else:
         raise Exception(
@@ -212,7 +209,7 @@ class VerisignIssuerPlugin(IssuerPlugin):
 
         response = self.session.post(url, data=data)
         try:
-            cert = handle_response(response.content)["Response"]["Certificate"]
+            response_dict = handle_response(response.content)
         except KeyError:
             metrics.send(
                 "verisign_create_certificate_error",
@@ -224,8 +221,13 @@ class VerisignIssuerPlugin(IssuerPlugin):
                 extra={"common_name": issuer_options.get("common_name", "")}
             )
             raise Exception(f"Error with Verisign: {response.content}")
-        # TODO add external id
-        return cert, current_app.config.get("VERISIGN_INTERMEDIATE"), None
+        authority = issuer_options.get("authority").name.upper()
+        cert = response_dict['Response']['Certificate']
+        external_id = None
+        if 'Transaction_ID' in response_dict['Response'].keys():
+            external_id = response_dict['Response']['Transaction_ID']
+        chain = current_app.config.get("VERISIGN_INTERMEDIATE_{0}".format(authority), current_app.config.get("VERISIGN_INTERMEDIATE"))
+        return cert, chain, external_id
 
     @staticmethod
     def create_authority(options):
@@ -261,7 +263,7 @@ class VerisignIssuerPlugin(IssuerPlugin):
         url = current_app.config.get("VERISIGN_URL") + "/reportingws"
 
         end = arrow.now()
-        start = end.replace(days=-7)
+        start = end.shift(days=-7)
 
         data = {
             "reportType": "detail",
@@ -299,7 +301,7 @@ class VerisignSourcePlugin(SourcePlugin):
     def get_certificates(self):
         url = current_app.config.get("VERISIGN_URL") + "/reportingws"
         end = arrow.now()
-        start = end.replace(years=-5)
+        start = end.shift(years=-5)
         data = {
             "reportType": "detail",
             "startDate": start.format("MM/DD/YYYY"),

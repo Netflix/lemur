@@ -102,17 +102,53 @@ def get_all_certs():
     return Certificate.query.all()
 
 
-def get_all_pending_cleaning(source):
+def get_all_pending_cleaning_expired(source):
     """
-    Retrieves all certificates that are available for cleaning.
+    Retrieves all certificates that are available for cleaning. These are certificates which are expired and are not
+    attached to any endpoints.
 
-    :param source:
-    :return:
+    :param source: the source to search for certificates
+    :return: list of pending certificates
     """
     return (
         Certificate.query.filter(Certificate.sources.any(id=source.id))
         .filter(not_(Certificate.endpoints.any()))
         .filter(Certificate.expired)
+        .all()
+    )
+
+
+def get_all_pending_cleaning_expiring_in_days(source, days_to_expire):
+    """
+    Retrieves all certificates that are available for cleaning, not attached to endpoint,
+    and within X days from expiration.
+
+    :param days_to_expire: defines how many days till the certificate is expired
+    :param source: the source to search for certificates
+    :return: list of pending certificates
+    """
+    expiration_window = arrow.now().shift(days=+days_to_expire).format("YYYY-MM-DD")
+    return (
+        Certificate.query.filter(Certificate.sources.any(id=source.id))
+        .filter(not_(Certificate.endpoints.any()))
+        .filter(Certificate.not_after < expiration_window)
+        .all()
+    )
+
+
+def get_all_pending_cleaning_issued_since_days(source, days_since_issuance):
+    """
+    Retrieves all certificates that are available for cleaning: not attached to endpoint, and X days since issuance.
+
+    :param days_since_issuance: defines how many days since the certificate is issued
+    :param source: the source to search for certificates
+    :return: list of pending certificates
+    """
+    not_in_use_window = arrow.now().shift(days=-days_since_issuance).format("YYYY-MM-DD")
+    return (
+        Certificate.query.filter(Certificate.sources.any(id=source.id))
+        .filter(not_(Certificate.endpoints.any()))
+        .filter(Certificate.date_created > not_in_use_window)
         .all()
     )
 
@@ -393,6 +429,9 @@ def render(args):
                     Certificate.cn.ilike(term),
                 )
             )
+        elif "fixedName" in terms:
+            # only what matches the fixed name directly if a fixedname is provided
+            query = query.filter(Certificate.name == terms[1])
         else:
             query = database.filter(query, Certificate, terms)
 
@@ -419,7 +458,7 @@ def render(args):
         )
 
     if time_range:
-        to = arrow.now().replace(weeks=+time_range).format("YYYY-MM-DD")
+        to = arrow.now().shift(weeks=+time_range).format("YYYY-MM-DD")
         now = arrow.now().format("YYYY-MM-DD")
         query = query.filter(Certificate.not_after <= to).filter(
             Certificate.not_after >= now
@@ -561,7 +600,7 @@ def stats(**kwargs):
     """
     if kwargs.get("metric") == "not_after":
         start = arrow.utcnow()
-        end = start.replace(weeks=+32)
+        end = start.shift(weeks=+32)
         items = (
             database.db.session.query(Certificate.issuer, func.count(Certificate.id))
             .group_by(Certificate.issuer)
