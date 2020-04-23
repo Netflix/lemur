@@ -1,5 +1,5 @@
 import unittest
-from mock import Mock, patch
+from unittest.mock import patch, Mock
 from lemur.plugins.lemur_acme import plugin, powerdns
 
 
