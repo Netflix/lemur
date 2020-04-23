@@ -32,14 +32,12 @@ def get_zones():
         records = _get(path)
         log_data["message"] = "Retrieved Zones Successfully"
         current_app.logger.debug(log_data)
-
     except Exception as err:
         sentry.captureException()
         log_data["message"] = "Failed to Retrieve Zone Data"
         log_data["error"] = err
         current_app.logger.debug(log_data)
         raise
-
     for record in records:
         zone = record['zone']
         if record['primary']['enabled']:
@@ -65,10 +63,8 @@ def create_txt_record(domain, token, account_number=None):
         "token": token,
         "account": account_number,
     }
-
     # Create new record
     answer = {"answer": [token]}
-
     # Get current records
     found = False
     records = _get_txt_records(domain)
@@ -91,7 +87,6 @@ def create_txt_record(domain, token, account_number=None):
         log_data["Exception"] = err
         log_data["message"] = "Unable to create TXT record(s)"
         current_app.logger.debug(log_data)
-
     change_id = (domain, token)
     return change_id
 
@@ -121,7 +116,6 @@ def wait_for_dns_change(change_id, account_number=None):
             break
         time.sleep(5)
         attempts += 1
-
     function = inspect.currentframe().f_code.co_name
     log_data = {
         "function": function,
@@ -131,7 +125,6 @@ def wait_for_dns_change(change_id, account_number=None):
         "message": "Record status on NS1 authoritative server",
     }
     current_app.logger.debug(log_data)
-
     if record_found:
         metrics.send(
             f"{function}.success",
@@ -157,7 +150,6 @@ def delete_txt_record(change_id, account_number, domain, token):
     :return:
     """
     _check_conf()
-
     function = inspect.currentframe().f_code.co_name
     log_data = {
         "function": function,
@@ -166,9 +158,7 @@ def delete_txt_record(change_id, account_number, domain, token):
         "change": change_id,
         "account": account_number,
     }
-
     zone = _get_zone_name(domain)
-
     records = _get_txt_records(domain)
     found = False
     for each in records['answers']:
@@ -196,13 +186,12 @@ def delete_txt_record(change_id, account_number, domain, token):
                     log_data["Exception"] = err
                     log_data["message"] = "Unable to delete TXT record"
                     current_app.logger.debug(log_data)
-
-
     # Since the matching token is not in DNS, there is nothing to delete
     if not found:
         log_data["message"] = "Unable to delete TXT record: Token not found in existing TXT records"
         current_app.logger.debug(log_data)
         return
+
 
 def _check_conf():
     """
@@ -235,7 +224,7 @@ def _get_zone_name(domain):
     zones = get_zones()
     zone_name = ""
     for zone in zones:
-        if domain.endswith("." + zone) or :
+        if domain.endswith("." + zone) or domain == zone:
             if zone.count(".") > zone_name.count("."):
                 zone_name = zone
     if not zone_name:
@@ -312,7 +301,6 @@ def _patch_txt_records(domain, records, patch=True):
     :param records: List of Record objects
     :return:
     """
-
     # Create Txt Records
     zone = _get_zone_name(domain)
     path = f"/v1/zones/{zone}/{domain}/TXT"
