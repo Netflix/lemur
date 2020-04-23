@@ -1,4 +1,5 @@
 import json
+from unittest.mock import patch, Mock
 
 import arrow
 import pytest
@@ -6,7 +7,6 @@ from cryptography import x509
 from freezegun import freeze_time
 from lemur.plugins.lemur_digicert import plugin
 from lemur.tests.vectors import CSR_STR
-from mock import Mock, patch
 
 
 def config_mock(*args):
