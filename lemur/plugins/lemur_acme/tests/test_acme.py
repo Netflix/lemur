@@ -263,7 +263,7 @@ class TestAcme(unittest.TestCase):
     @patch("lemur.plugins.lemur_acme.plugin.current_app")
     @patch("lemur.plugins.lemur_acme.dyn.current_app")
     @patch("lemur.plugins.lemur_acme.cloudflare.current_app")
-    @patch("lemur.plugins.lemur_acme.nsone.current_app"
+    @patch("lemur.plugins.lemur_acme.nsone.current_app")
     @patch("lemur.plugins.lemur_acme.plugin.dns_provider_service")
     def test_get_dns_provider(
             self,
