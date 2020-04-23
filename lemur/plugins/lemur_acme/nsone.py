@@ -47,7 +47,7 @@ def get_zones():
     return zones
 
 
-def create_txt_record(domain, token, account_number):
+def create_txt_record(domain, token, account_number=None):
     """
     Create a TXT record for the given domain and token and return a change_id tuple
 
