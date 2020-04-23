@@ -1026,6 +1026,16 @@ The following configuration properties are required to use the PowerDNS ACME Plu
 
             File/Dir path to CA Bundle: Verifies the TLS certificate was issued by a Certificate Authority in the provided CA bundle.
 
+NS1 ACME Plugin
+~~~~~~~~~~~~~~~
+
+The following configuration properties are required to use NS1 ACME Plugin for domain validation.
+
+.. data:: ACME_NSONE_APIKEY
+    :noindex:
+
+            This is the API Key for authenitication to the NS1 API (i.e. "X-NSONE-Key")
+
 .. _CommandLineInterface:
 
 Command Line Interface
