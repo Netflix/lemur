@@ -821,15 +821,18 @@ def enable_autorotate_for_certs_attached_to_endpoint():
     attached to an endpoint but do not have autorotate enabled.
     :return:
     """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
     task_id = None
     if celery.current_task:
         task_id = celery.current_task.request.id
 
     log_data = {
-        "function": f"{__name__}.{sys._getframe().f_code.co_name}",
+        "function": function,
         "task_id": task_id,
         "message": "Enabling autorotate to eligible certificates",
     }
     current_app.logger.debug(log_data)
 
     cli_certificate.automatically_enable_autorotate()
+    metrics.send(f"{function}.success", "counter", 1)
+    return log_data
