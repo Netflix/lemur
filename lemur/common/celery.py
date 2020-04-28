@@ -17,10 +17,8 @@ from celery.signals import task_failure, task_received, task_revoked, task_succe
 from datetime import datetime, timezone, timedelta
 from flask import current_app
 
-from lemur import database
 from lemur.authorities.service import get as get_authority
 from lemur.certificates import cli as cli_certificate
-from lemur.certificates.service import get_all_certs_attached_to_endpoint_without_rotate
 from lemur.common.redis import RedisHandler
 from lemur.destinations import service as destinations_service
 from lemur.dns_providers import cli as cli_dns_providers
@@ -818,21 +816,20 @@ def notify_expirations():
 
 @celery.task(soft_time_limit=3600)
 def enable_autorotate_for_certs_attached_to_endpoint():
-    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    """
+    This celery task automatically enables autorotation for unexpired certificates that are
+    attached to an endpoint but do not have autorotate enabled.
+    :return:
+    """
     task_id = None
     if celery.current_task:
         task_id = celery.current_task.request.id
 
     log_data = {
-        "function": function,
+        "function": f"{__name__}.{sys._getframe().f_code.co_name}",
         "task_id": task_id,
+        "message": "Enabling autorotate to eligible certificates",
     }
+    current_app.logger.debug(log_data)
 
-    eligible_certs = get_all_certs_attached_to_endpoint_without_rotate()
-    for cert in eligible_certs:
-        log_data["certificate"] = cert.name
-        log_data["certificate_id"] = cert.id
-        log_data["message"] = "Enabling auto-rotate for certificate"
-        current_app.logger.info(log_data)
-        cert.rotation = True
-        database.update(cert)
+    cli_certificate.automatically_enable_autorotate()
