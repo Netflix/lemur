@@ -286,6 +286,171 @@ def rotate(endpoint_name, new_certificate_name, old_certificate_name, message, c
 
 
 @manager.option(
+    "-e",
+    "--endpoint",
+    dest="endpoint_name",
+    help="Name of the endpoint you wish to rotate.",
+)
+@manager.option(
+    "-n",
+    "--new-certificate",
+    dest="new_certificate_name",
+    help="Name of the certificate you wish to rotate to.",
+)
+@manager.option(
+    "-o",
+    "--old-certificate",
+    dest="old_certificate_name",
+    help="Name of the certificate you wish to rotate.",
+)
+@manager.option(
+    "-a",
+    "--notify",
+    dest="message",
+    action="store_true",
+    help="Send a rotation notification to the certificates owner.",
+)
+@manager.option(
+    "-c",
+    "--commit",
+    dest="commit",
+    action="store_true",
+    default=False,
+    help="Persist changes.",
+)
+@manager.option(
+    "-r",
+    "--region",
+    dest="region",
+    action="store_true",
+    required=True,
+    help="Region in which to rotate the endpoint.",
+)
+def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, message, commit, region):
+    """
+    Rotates an endpoint in a defined region it if it has not already been replaced. If it has
+    been replaced, will use the replacement certificate for the rotation.
+    :param old_certificate_name: Name of the certificate you wish to rotate.
+    :param new_certificate_name: Name of the certificate you wish to rotate to.
+    :param endpoint_name: Name of the endpoint you wish to rotate.
+    :param message: Send a rotation notification to the certificates owner.
+    :param commit: Persist changes.
+    :param region: Region in which to rotate the endpoint.
+    """
+    if commit:
+        print("[!] Running in COMMIT mode.")
+
+    print("[+] Starting endpoint rotation.")
+    status = FAILURE_METRIC_STATUS
+
+    try:
+        old_cert = validate_certificate(old_certificate_name)
+        new_cert = validate_certificate(new_certificate_name)
+        endpoint = validate_endpoint(endpoint_name)
+
+        if endpoint and new_cert:
+            if region in endpoint.dnsname:
+                log_data = f"[+] Rotating endpoint in region: {endpoint.dnsname} to certificate {new_cert.name}"
+                print(log_data)
+                current_app.logger.info(log_data)
+                #request_rotation(endpoint, new_cert, message, commit)
+            else:
+                log_data = f"[+] Skipping rotation of {endpoint.dnsname} since not in {region}"
+                print(log_data)
+                current_app.logger.info(log_data)
+
+        elif old_cert and new_cert:
+            log_data = f"[+] Rotating all endpoints in {region} from {old_cert.name} to {new_cert.name}"
+            print(log_data)
+            current_app.logger.info(log_data)
+            for endpoint in old_cert.endpoints:
+                if region in endpoint.dnsname:
+                    log_data = f"[+] Rotating {endpoint.dnsname} in {region}"
+                    print(log_data)
+                    current_app.logger.info(log_data)
+                    #request_rotation(endpoint, new_cert, message, commit)
+                else:
+                    log_data = f"[+] Skipping rotation of {endpoint.dnsname} since not in {region}"
+                    print(log_data)
+                    current_app.logger.info(log_data)
+        else:
+            log_data = f"[+] Rotating all endpoints that have new certificates available in {region}"
+            print(log_data)
+            current_app.logger.info(log_data)
+            for endpoint in endpoint_service.get_all_pending_rotation():
+                if region not in endpoint.dnsname:
+                    log_data = f"[+] Skipping rotation of {endpoint.dnsname} since not in {region}"
+                    print(log_data)
+                    current_app.logger.info(log_data)
+                    metrics.send(
+                        "endpoint_rotation_region_skipped",
+                        "counter",
+                        1,
+                        metric_tags={
+                            "region": region,
+                            "old_certificate_name": str(old_cert),
+                            "new_certificate_name": str(endpoint.certificate.replaced[0].name),
+                            "endpoint_name": str(endpoint.name),
+                        },
+                    )
+
+                if len(endpoint.certificate.replaced) == 1:
+                    log_data = f"[+] Rotating {endpoint.dnsname} in {region} to {endpoint.certificate.replaced[0].name}"
+                    print(log_data)
+                    current_app.logger.info(log_data)
+                    #request_rotation(endpoint, endpoint.certificate.replaced[0], message, commit)
+                    status = SUCCESS_METRIC_STATUS
+                else:
+                    status = FAILURE_METRIC_STATUS
+                    log_data = f"[!] Failed to rotate endpoint {endpoint.dnsname} reason: " \
+                               f"Multiple replacement certificates found."
+                    print(log_data)
+                    current_app.logger.info(log_data)
+
+                metrics.send(
+                    "endpoint_rotation_region",
+                    "counter",
+                    1,
+                    metric_tags={
+                        "status": FAILURE_METRIC_STATUS,
+                        "old_certificate_name": str(old_cert),
+                        "new_certificate_name": str(endpoint.certificate.replaced[0].name),
+                        "endpoint_name": str(endpoint.dnsname),
+                        "message": str(message),
+                        "region": str(region),
+                    },
+                )
+        status = SUCCESS_METRIC_STATUS
+        print("[+] Done!")
+
+    except Exception as e:
+        sentry.captureException(
+            extra={
+                "old_certificate_name": str(old_certificate_name),
+                "new_certificate_name": str(new_certificate_name),
+                "endpoint": str(endpoint_name),
+                "message": str(message),
+                "region": str(region),
+            }
+        )
+
+    metrics.send(
+        "endpoint_rotation_region_job",
+        "counter",
+        1,
+        metric_tags={
+            "status": status,
+            "old_certificate_name": str(old_certificate_name),
+            "new_certificate_name": str(new_certificate_name),
+            "endpoint_name": str(endpoint_name),
+            "message": str(message),
+            "endpoint": str(globals().get("endpoint")),
+            "region": str(region),
+        },
+    )
+
+
+@manager.option(
     "-o",
     "--old-certificate",
     dest="old_certificate_name",
