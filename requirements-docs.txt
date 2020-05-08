@@ -25,7 +25,7 @@ cffi==1.14.0              # via -r requirements.txt, bcrypt, cryptography, pynac
 chardet==3.0.4            # via -r requirements.txt, requests
 click==7.1.1              # via -r requirements.txt, flask
 cloudflare==2.6.5         # via -r requirements.txt
-cryptography==2.9         # via -r requirements.txt, acme, josepy, paramiko, pyopenssl, requests
+cryptography==2.9.2       # via -r requirements.txt, acme, josepy, paramiko, pyopenssl, requests
 dnspython3==1.15.0        # via -r requirements.txt
 dnspython==1.15.0         # via -r requirements.txt, dnspython3
 docutils==0.15.2          # via -r requirements.txt, botocore, sphinx
@@ -45,7 +45,6 @@ gunicorn==20.0.4          # via -r requirements.txt
 hvac==0.10.1              # via -r requirements.txt
 idna==2.9                 # via -r requirements.txt, requests
 imagesize==1.2.0          # via sphinx
-importlib-metadata==1.6.0  # via -r requirements.txt, kombu
 inflection==0.4.0         # via -r requirements.txt
 itsdangerous==1.1.0       # via -r requirements.txt, flask
 javaobj-py3==0.4.0.1      # via -r requirements.txt, pyjks
@@ -66,6 +65,8 @@ packaging==20.3           # via sphinx
 paramiko==2.7.1           # via -r requirements.txt
 pem==20.1.0               # via -r requirements.txt
 psycopg2==2.8.5           # via -r requirements.txt
+pyasn1-modules==0.2.8     # via -r requirements.txt, pyjks, python-ldap
+pyasn1==0.4.8             # via -r requirements.txt, ndg-httpsclient, pyasn1-modules, pyjks, python-ldap
 pycparser==2.20           # via -r requirements.txt, cffi
 pycryptodomex==3.9.7      # via -r requirements.txt, pyjks
 pygments==2.6.1           # via sphinx
@@ -78,6 +79,7 @@ pyrfc3339==1.1            # via -r requirements.txt, acme
 python-dateutil==2.8.1    # via -r requirements.txt, alembic, arrow, botocore
 python-editor==1.0.4      # via -r requirements.txt, alembic
 python-json-logger==0.1.11  # via -r requirements.txt, logmatic-python
+python-ldap==3.2.0        # via -r requirements.txt
 pytz==2019.3              # via -r requirements.txt, acme, babel, celery, flask-restful, pyrfc3339
 pyyaml==5.3.1             # via -r requirements.txt, cloudflare
 raven[flask]==6.10.0      # via -r requirements.txt
@@ -105,7 +107,6 @@ urllib3==1.25.8           # via -r requirements.txt, botocore, requests
 vine==1.3.0               # via -r requirements.txt, amqp, celery
 werkzeug==1.0.1           # via -r requirements.txt, flask
 xmltodict==0.12.0         # via -r requirements.txt
-zipp==3.1.0               # via -r requirements.txt, importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
