@@ -648,18 +648,33 @@ def check_revoked():
 @manager.command
 def automatically_enable_autorotate():
     """
-    This function automatically enables autorotation for unexpired certificates that are
+    This function automatically enables auto-rotation for unexpired certificates that are
     attached to an endpoint but do not have autorotate enabled.
+
+    WARNING: This will overwrite the Auto-rotate toggle!
     """
     log_data = {
         "function": f"{__name__}.{sys._getframe().f_code.co_name}",
     }
 
+    permitted_authorities = current_app.config.get("ENABLE_AUTO_ROTATE_AUTHORITY", [])
+
     eligible_certs = get_all_certs_attached_to_endpoint_without_autorotate()
     for cert in eligible_certs:
+
+        if cert.authority_id not in permitted_authorities:
+            continue
+
         log_data["certificate"] = cert.name
         log_data["certificate_id"] = cert.id
         log_data["message"] = "Enabling auto-rotate for certificate"
         current_app.logger.info(log_data)
+        # TODO:  add the cert destination to the logging
+        metrics.send("automatically_enable_autorotate",
+                     "counter", 1,
+                     metric_tags={"certificate": cert.name,
+                                  "certificate_id": cert.id,
+                                  "authority_id": cert.authority_id,
+                                  "authority_name": Authority.get(cert.authority_id).name})
         cert.rotation = True
         database.update(cert)
