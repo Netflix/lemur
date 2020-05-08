@@ -353,7 +353,7 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
                 log_data = f"[+] Rotating endpoint in region: {endpoint.dnsname} to certificate {new_cert.name}"
                 print(log_data)
                 current_app.logger.info(log_data)
-                #request_rotation(endpoint, new_cert, message, commit)
+                request_rotation(endpoint, new_cert, message, commit)
             else:
                 log_data = f"[+] Skipping rotation of {endpoint.dnsname} since not in {region}"
                 print(log_data)
@@ -368,7 +368,7 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
                     log_data = f"[+] Rotating {endpoint.dnsname} in {region}"
                     print(log_data)
                     current_app.logger.info(log_data)
-                    #request_rotation(endpoint, new_cert, message, commit)
+                    request_rotation(endpoint, new_cert, message, commit)
                 else:
                     log_data = f"[+] Skipping rotation of {endpoint.dnsname} since not in {region}"
                     print(log_data)
@@ -398,7 +398,7 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
                     log_data = f"[+] Rotating {endpoint.dnsname} in {region} to {endpoint.certificate.replaced[0].name}"
                     print(log_data)
                     current_app.logger.info(log_data)
-                    #request_rotation(endpoint, endpoint.certificate.replaced[0], message, commit)
+                    request_rotation(endpoint, endpoint.certificate.replaced[0], message, commit)
                     status = SUCCESS_METRIC_STATUS
                 else:
                     status = FAILURE_METRIC_STATUS
