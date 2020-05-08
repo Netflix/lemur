@@ -98,7 +98,7 @@ sphinxcontrib-httpdomain==1.7.0  # via -r requirements-docs.in
 sphinxcontrib-jsmath==1.0.1  # via sphinx
 sphinxcontrib-qthelp==1.0.3  # via sphinx
 sphinxcontrib-serializinghtml==1.1.4  # via sphinx
-sqlalchemy-utils==0.36.3  # via -r requirements.txt
+sqlalchemy-utils==0.36.5  # via -r requirements.txt
 sqlalchemy==1.3.16        # via -r requirements.txt, alembic, flask-sqlalchemy, marshmallow-sqlalchemy, sqlalchemy-utils
 tabulate==0.8.7           # via -r requirements.txt
 twofish==0.3.0            # via -r requirements.txt, pyjks
