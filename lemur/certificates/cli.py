@@ -504,8 +504,6 @@ def automatically_enable_autorotate():
         log_data["certificate_id"] = cert.id
         log_data["message"] = "Enabling auto-rotate for certificate"
         current_app.logger.info(log_data)
-        cert.rotation = True
-        database.update(cert)
         # TODO:  add the cert destination to the logging
         metrics.send("automatically_enable_autorotate",
                      "counter", 1,
