@@ -23,7 +23,7 @@ cffi==1.14.0              # via bcrypt, cryptography, pynacl
 chardet==3.0.4            # via requests
 click==7.1.1              # via flask
 cloudflare==2.6.5         # via -r requirements.in
-cryptography==2.9         # via -r requirements.in, acme, josepy, paramiko, pyopenssl, requests
+cryptography==2.9.2       # via -r requirements.in, acme, josepy, paramiko, pyopenssl, requests
 dnspython3==1.15.0        # via -r requirements.in
 dnspython==1.15.0         # via dnspython3
 docutils==0.15.2          # via botocore
@@ -42,7 +42,6 @@ future==0.18.2            # via -r requirements.in, cloudflare
 gunicorn==20.0.4          # via -r requirements.in
 hvac==0.10.1              # via -r requirements.in
 idna==2.9                 # via requests
-importlib-metadata==1.6.0  # via kombu
 inflection==0.4.0         # via -r requirements.in
 itsdangerous==1.1.0       # via flask
 javaobj-py3==0.4.0.1      # via pyjks
@@ -92,7 +91,6 @@ urllib3==1.25.8           # via botocore, requests
 vine==1.3.0               # via amqp, celery
 werkzeug==1.0.1           # via flask
 xmltodict==0.12.0         # via -r requirements.in
-zipp==3.1.0               # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
