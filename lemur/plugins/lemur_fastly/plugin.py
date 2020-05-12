@@ -36,12 +36,12 @@ class FastlyDestinationPlugin(DestinationPlugin):
 
     options = [
         {
-            "name": "fastlyFilter",
-            "type": "str",
-            "value": ".*",
-            "required": False,
-            "validation": ".*",
-            "helpMessage": "Valid regex filter",
+            "name": "fastlyUnique",
+            "type": "select",
+            "value": False,
+            "available": [False, True], 
+            "required": True,
+            "helpMessage": "Should Lemur remove old certificates with matching CN",
         },
     ]
 
@@ -59,6 +59,7 @@ class FastlyDestinationPlugin(DestinationPlugin):
         :return:
         """
         key_id = None
+        unique = self.get_option("fastlyUnique", options)
         cname = common_name(parse_certificate(body))
         priv_keys = get_all_private_keys()
         log_data = {
@@ -68,11 +69,12 @@ class FastlyDestinationPlugin(DestinationPlugin):
             if each['name'] == cname:
                 key_id = each['id']
                 if each['sha1'] != get_public_key_sha1(private_key):
-                    cert_keys = get_all_certificates()
-                    for cert in cert_keys:
-                        if cert['name'] == cname:
-                            delete_certificate(each['id'])
-                    delete_private_key(key_id)
+                    if unique:
+                        cert_keys = get_all_certificates()
+                        for cert in cert_keys:
+                            if cert['name'] == cname:
+                                delete_certificate(each['id'])
+                        delete_private_key(key_id)
                     key_id = None
         if not key_id:
             post_private_key(private_key, name=cname)
