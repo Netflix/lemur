@@ -795,6 +795,15 @@ A Vault destination can be one object in Vault or a directory where all certific
 Vault Destination supports a regex filter to prevent certificates with SAN that do not match the regex filter from being deployed. This is an optional feature per destination defined.
 
 
+Fastly CDN Destination Plugin
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Fastly Destination
+""""""""""""""""""
+
+This plugin uploads and mantains certificates in the Fastly API found here: https://docs.fastly.com/api/tls
+Required: 'FASTLY_KEY' = Token key for the Fastly Account.
+
 AWS Source/Destination Plugin
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
