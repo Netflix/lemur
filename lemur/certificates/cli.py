@@ -285,6 +285,17 @@ def rotate(endpoint_name, new_certificate_name, old_certificate_name, message, c
     )
 
 
+def request_rotation_region(region, endpoint, new_cert, message, commit, log_data):
+    if region in endpoint.dnsname:
+        log_data["message"] = "Rotating endpoint in region"
+        #request_rotation(endpoint, new_cert, message, commit)
+    else:
+        log_data["message"] = "Skipping rotation, region mismatch"
+
+    print(log_data)
+    current_app.logger.info(log_data)
+
+
 @manager.option(
     "-e",
     "--endpoint",
@@ -343,43 +354,38 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
     print("[+] Starting endpoint rotation.")
     status = FAILURE_METRIC_STATUS
 
+    log_data = {
+        "function": f"{__name__}.{sys._getframe().f_code.co_name}",
+        "region": region,
+    }
+
     try:
         old_cert = validate_certificate(old_certificate_name)
         new_cert = validate_certificate(new_certificate_name)
         endpoint = validate_endpoint(endpoint_name)
 
         if endpoint and new_cert:
-            if region in endpoint.dnsname:
-                log_data = f"[+] Rotating endpoint in region: {endpoint.dnsname} to certificate {new_cert.name}"
-                print(log_data)
-                current_app.logger.info(log_data)
-                request_rotation(endpoint, new_cert, message, commit)
-            else:
-                log_data = f"[+] Skipping rotation of {endpoint.dnsname} since not in {region}"
-                print(log_data)
-                current_app.logger.info(log_data)
+            log_data["endpoint"] = endpoint.dnsname
+            log_data["certificate"] = new_cert.name
+            request_rotation_region(region, endpoint, new_cert, message, commit, log_data)
 
         elif old_cert and new_cert:
-            log_data = f"[+] Rotating all endpoints in {region} from {old_cert.name} to {new_cert.name}"
+            log_data["certificate"] = new_cert.name
+            log_data["certificate_old"] = old_cert.name
+            log_data["message"] = "Rotating endpoint from old to new cert"
             print(log_data)
             current_app.logger.info(log_data)
             for endpoint in old_cert.endpoints:
-                if region in endpoint.dnsname:
-                    log_data = f"[+] Rotating {endpoint.dnsname} in {region}"
-                    print(log_data)
-                    current_app.logger.info(log_data)
-                    request_rotation(endpoint, new_cert, message, commit)
-                else:
-                    log_data = f"[+] Skipping rotation of {endpoint.dnsname} since not in {region}"
-                    print(log_data)
-                    current_app.logger.info(log_data)
+                log_data["endpoint"] = endpoint.dnsname
+                request_rotation_region(region, endpoint, new_cert, message, commit, log_data)
         else:
-            log_data = f"[+] Rotating all endpoints that have new certificates available in {region}"
+            log_data["message"] = "Rotating all endpoints that have new certificates available"
             print(log_data)
             current_app.logger.info(log_data)
             for endpoint in endpoint_service.get_all_pending_rotation():
+                log_data["endpoint"] = endpoint.dnsname
                 if region not in endpoint.dnsname:
-                    log_data = f"[+] Skipping rotation of {endpoint.dnsname} since not in {region}"
+                    log_data["message"] = "Skipping rotation, region mismatch"
                     print(log_data)
                     current_app.logger.info(log_data)
                     metrics.send(
@@ -395,15 +401,15 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
                     )
 
                 if len(endpoint.certificate.replaced) == 1:
-                    log_data = f"[+] Rotating {endpoint.dnsname} in {region} to {endpoint.certificate.replaced[0].name}"
+                    log_data["certificate"] = endpoint.certificate.replaced[0].name
+                    log_data["message"] = "Rotating all endpoints in region"
                     print(log_data)
                     current_app.logger.info(log_data)
-                    request_rotation(endpoint, endpoint.certificate.replaced[0], message, commit)
+                    #request_rotation(endpoint, endpoint.certificate.replaced[0], message, commit)
                     status = SUCCESS_METRIC_STATUS
                 else:
                     status = FAILURE_METRIC_STATUS
-                    log_data = f"[!] Failed to rotate endpoint {endpoint.dnsname} reason: " \
-                               f"Multiple replacement certificates found."
+                    log_data["message"] = "Failed to rotate endpoint due to Multiple replacement certificates found"
                     print(log_data)
                     current_app.logger.info(log_data)
 
