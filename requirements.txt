@@ -54,7 +54,7 @@ lockfile==0.12.2          # via -r requirements.in
 logmatic-python==0.1.7    # via -r requirements.in
 mako==1.1.2               # via alembic
 markupsafe==1.1.1         # via jinja2, mako
-marshmallow-sqlalchemy==0.22.3  # via -r requirements.in
+marshmallow-sqlalchemy==0.23.0  # via -r requirements.in
 marshmallow==2.20.4       # via -r requirements.in, marshmallow-sqlalchemy
 ndg-httpsclient==0.5.1    # via -r requirements.in
 paramiko==2.7.1           # via -r requirements.in
