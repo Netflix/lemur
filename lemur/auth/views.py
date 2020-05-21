@@ -127,6 +127,10 @@ def retrieve_user(user_api_url, access_token):
 
     # retrieve information about the current user.
     r = requests.get(user_api_url, params=user_params, headers=headers)
+    # Some IDPs, like "Keycloak", require a POST instead of a GET
+    if r.status_code == 400:
+        r = requests.post(user_api_url, data=user_params, headers=headers)
+
     profile = r.json()
 
     user = user_service.get_by_email(profile["email"])
@@ -434,7 +438,7 @@ class OAuth2(Resource):
             verify_cert=verify_cert,
         )
 
-        jwks_url = current_app.config.get("PING_JWKS_URL")
+        jwks_url = current_app.config.get("OAUTH2_JWKS_URL")
         error_code = validate_id_token(id_token, args["clientId"], jwks_url)
         if error_code:
             return error_code
