@@ -15,6 +15,7 @@ from tabulate import tabulate
 
 from lemur import database
 from lemur.authorities.models import Authority
+from lemur.authorities.service import get as authorities_get_by_id
 from lemur.certificates.models import Certificate
 from lemur.certificates.schemas import CertificateOutputSchema
 from lemur.certificates.service import (
@@ -490,6 +491,7 @@ def automatically_enable_autorotate():
     """
     log_data = {
         "function": f"{__name__}.{sys._getframe().f_code.co_name}",
+        "message": "Enabling auto-rotate for certificate"
     }
 
     permitted_authorities = current_app.config.get("ENABLE_AUTO_ROTATE_AUTHORITY", [])
@@ -502,14 +504,20 @@ def automatically_enable_autorotate():
 
         log_data["certificate"] = cert.name
         log_data["certificate_id"] = cert.id
-        log_data["message"] = "Enabling auto-rotate for certificate"
+        log_data["authority_id"] = cert.authority_id
+        log_data["authority_name"] = authorities_get_by_id(cert.authority_id).name
+        if cert.destinations:
+            log_data["destination_names"] = ', '.join([d.label for d in cert.destinations])
+        else:
+            log_data["destination_names"] = "NONE"
         current_app.logger.info(log_data)
-        # TODO:  add the cert destination to the logging
         metrics.send("automatically_enable_autorotate",
                      "counter", 1,
-                     metric_tags={"certificate": cert.name,
-                                  "certificate_id": cert.id,
-                                  "authority_id": cert.authority_id,
-                                  "authority_name": Authority.get(cert.authority_id).name})
+                     metric_tags={"certificate": log_data["certificate"],
+                                  "certificate_id": log_data["certificate_id"],
+                                  "authority_id": log_data["authority_id"],
+                                  "authority_name": log_data["authority_name"],
+                                  "destination_names": log_data["destination_names"]
+                                  })
         cert.rotation = True
         database.update(cert)
