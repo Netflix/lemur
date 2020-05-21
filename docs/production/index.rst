@@ -390,6 +390,10 @@ Here are the Celery configuration variables that should be set::
     CELERY_IMPORTS = ('lemur.common.celery')
     CELERY_TIMEZONE = 'UTC'
 
+Do not forget to import crontab module in your configuration file::
+
+    from celery.task.schedules import crontab
+
 You must start a single Celery scheduler instance and one or more worker instances in order to handle incoming tasks.
 The scheduler can be started with::
 
