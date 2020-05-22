@@ -286,10 +286,10 @@ def rotate(endpoint_name, new_certificate_name, old_certificate_name, message, c
     )
 
 
-def request_rotation_region(region, endpoint, new_cert, message, commit, log_data):
+def request_rotation_region(endpoint, new_cert, message, commit, log_data, region):
     if region in endpoint.dnsname:
         log_data["message"] = "Rotating endpoint in region"
-        #request_rotation(endpoint, new_cert, message, commit)
+        request_rotation(endpoint, new_cert, message, commit)
     else:
         log_data["message"] = "Skipping rotation, region mismatch"
 
@@ -334,7 +334,6 @@ def request_rotation_region(region, endpoint, new_cert, message, commit, log_dat
     "-r",
     "--region",
     dest="region",
-    action="store_true",
     required=True,
     help="Region in which to rotate the endpoint.",
 )
@@ -368,7 +367,7 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
         if endpoint and new_cert:
             log_data["endpoint"] = endpoint.dnsname
             log_data["certificate"] = new_cert.name
-            request_rotation_region(region, endpoint, new_cert, message, commit, log_data)
+            request_rotation_region(endpoint, new_cert, message, commit, log_data, region)
 
         elif old_cert and new_cert:
             log_data["certificate"] = new_cert.name
@@ -378,12 +377,14 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
             current_app.logger.info(log_data)
             for endpoint in old_cert.endpoints:
                 log_data["endpoint"] = endpoint.dnsname
-                request_rotation_region(region, endpoint, new_cert, message, commit, log_data)
+                request_rotation_region(endpoint, new_cert, message, commit, log_data, region)
+
         else:
             log_data["message"] = "Rotating all endpoints that have new certificates available"
             print(log_data)
             current_app.logger.info(log_data)
-            for endpoint in endpoint_service.get_all_pending_rotation():
+            all_pending_rotation_endpoints = endpoint_service.get_all_pending_rotation()
+            for endpoint in all_pending_rotation_endpoints:
                 log_data["endpoint"] = endpoint.dnsname
                 if region not in endpoint.dnsname:
                     log_data["message"] = "Skipping rotation, region mismatch"
@@ -397,7 +398,7 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
                             "region": region,
                             "old_certificate_name": str(old_cert),
                             "new_certificate_name": str(endpoint.certificate.replaced[0].name),
-                            "endpoint_name": str(endpoint.name),
+                            "endpoint_name": str(endpoint.dnsname),
                         },
                     )
 
@@ -406,7 +407,7 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
                     log_data["message"] = "Rotating all endpoints in region"
                     print(log_data)
                     current_app.logger.info(log_data)
-                    #request_rotation(endpoint, endpoint.certificate.replaced[0], message, commit)
+                    request_rotation(endpoint, endpoint.certificate.replaced[0], message, commit)
                     status = SUCCESS_METRIC_STATUS
                 else:
                     status = FAILURE_METRIC_STATUS
