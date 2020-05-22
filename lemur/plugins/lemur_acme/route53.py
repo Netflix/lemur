@@ -35,9 +35,10 @@ def get_zones(client=None):
     zones = []
     for page in paginator.paginate():
         for zone in page["HostedZones"]:
-            zones.append(
-                zone["Name"][:-1]
-            )  # We need [:-1] to strip out the trailing dot.
+            if not zone["Config"]["PrivateZone"]:
+                zones.append(
+                    zone["Name"][:-1]
+                )  # We need [:-1] to strip out the trailing dot.
     return zones
 
 
