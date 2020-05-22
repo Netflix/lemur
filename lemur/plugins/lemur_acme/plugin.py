@@ -54,18 +54,30 @@ class AcmeHandler(object):
             current_app.logger.error(f"Unable to fetch DNS Providers: {e}")
             self.all_dns_providers = []
 
-    def find_dns_challenge(self, host, authorizations):
+    def get_dns_challenges(self, host, authorizations):
+        """Get dns challenges for provided domain"""
+
+        domain_to_validate, is_wildcard = self.strip_wildcard(host)
         dns_challenges = []
         for authz in authorizations:
-            if not authz.body.identifier.value.lower() == host.lower():
+            if not authz.body.identifier.value.lower() == domain_to_validate.lower():
+                continue
+            if is_wildcard and not authz.body.wildcard:
+                continue
+            if not is_wildcard and authz.body.wildcard:
                 continue
             for combo in authz.body.challenges:
                 if isinstance(combo.chall, challenges.DNS01):
                     dns_challenges.append(combo)
+
         return dns_challenges
 
-    def maybe_remove_wildcard(self, host):
-        return host.replace("*.", "")
+    def strip_wildcard(self, host):
+        """Removes the leading *. and returns Host and whether it was removed or not (True/False)"""
+        prefix = "*."
+        if host.startswith(prefix):
+            return host[len(prefix):], True
+        return host, False
 
     def maybe_add_extension(self, host, dns_provider_options):
         if dns_provider_options and dns_provider_options.get(
@@ -86,9 +98,8 @@ class AcmeHandler(object):
         current_app.logger.debug("Starting DNS challenge for {0}".format(host))
 
         change_ids = []
-
-        host_to_validate = self.maybe_remove_wildcard(host)
-        dns_challenges = self.find_dns_challenge(host_to_validate, order.authorizations)
+        dns_challenges = self.get_dns_challenges(host, order.authorizations)
+        host_to_validate, _ = self.strip_wildcard(host)
         host_to_validate = self.maybe_add_extension(
             host_to_validate, dns_provider_options
         )
@@ -172,7 +183,7 @@ class AcmeHandler(object):
 
         except (AcmeError, TimeoutError):
             sentry.captureException(extra={"order_url": str(order.uri)})
-            metrics.send("request_certificate_error", "counter", 1)
+            metrics.send("request_certificate_error", "counter", 1, metric_tags={"uri": order.uri})
             current_app.logger.error(
                 f"Unable to resolve Acme order: {order.uri}", exc_info=True
             )
@@ -182,6 +193,11 @@ class AcmeHandler(object):
                 orderr = order
             else:
                 raise
+
+        metrics.send("request_certificate_success", "counter", 1, metric_tags={"uri": order.uri})
+        current_app.logger.info(
+            f"Successfully resolved Acme order: {order.uri}", exc_info=True
+        )
 
         pem_certificate = OpenSSL.crypto.dump_certificate(
             OpenSSL.crypto.FILETYPE_PEM,
@@ -254,8 +270,9 @@ class AcmeHandler(object):
 
         domains = [options["common_name"]]
         if options.get("extensions"):
-            for name in options["extensions"]["sub_alt_names"]["names"]:
-                domains.append(name)
+            for dns_name in options["extensions"]["sub_alt_names"]["names"]:
+                if dns_name.value not in domains:
+                    domains.append(dns_name.value)
 
         current_app.logger.debug("Got these domains: {0}".format(domains))
         return domains
@@ -319,7 +336,7 @@ class AcmeHandler(object):
                     )
                     dns_provider_options = json.loads(dns_provider.credentials)
                     account_number = dns_provider_options.get("account_id")
-                    host_to_validate = self.maybe_remove_wildcard(authz_record.host)
+                    host_to_validate, _ = self.strip_wildcard(authz_record.host)
                     host_to_validate = self.maybe_add_extension(
                         host_to_validate, dns_provider_options
                     )
@@ -351,7 +368,7 @@ class AcmeHandler(object):
                 dns_provider_options = json.loads(dns_provider.credentials)
                 account_number = dns_provider_options.get("account_id")
                 dns_challenges = authz_record.dns_challenge
-                host_to_validate = self.maybe_remove_wildcard(authz_record.host)
+                host_to_validate, _ = self.strip_wildcard(authz_record.host)
                 host_to_validate = self.maybe_add_extension(
                     host_to_validate, dns_provider_options
                 )
@@ -640,15 +657,8 @@ class ACMEIssuerPlugin(IssuerPlugin):
         domains = self.acme.get_domains(issuer_options)
         if not create_immediately:
             # Create pending authorizations that we'll need to do the creation
-            authz_domains = []
-            for d in domains:
-                if type(d) == str:
-                    authz_domains.append(d)
-                else:
-                    authz_domains.append(d.value)
-
             dns_authorization = authorization_service.create(
-                account_number, authz_domains, provider_type
+                account_number, domains, provider_type
             )
             # Return id of the DNS Authorization
             return None, None, dns_authorization.id

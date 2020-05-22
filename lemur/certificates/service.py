@@ -102,17 +102,70 @@ def get_all_certs():
     return Certificate.query.all()
 
 
-def get_all_pending_cleaning(source):
+def get_all_pending_cleaning_expired(source):
     """
-    Retrieves all certificates that are available for cleaning.
+    Retrieves all certificates that are available for cleaning. These are certificates which are expired and are not
+    attached to any endpoints.
 
-    :param source:
-    :return:
+    :param source: the source to search for certificates
+    :return: list of pending certificates
     """
     return (
         Certificate.query.filter(Certificate.sources.any(id=source.id))
         .filter(not_(Certificate.endpoints.any()))
         .filter(Certificate.expired)
+        .all()
+    )
+
+
+def get_all_certs_attached_to_endpoint_without_autorotate():
+    """
+        Retrieves all certificates that are attached to an endpoint, but that do not have autorotate enabled.
+
+        :return: list of certificates attached to an endpoint without autorotate
+        """
+    return (
+        Certificate.query.filter(Certificate.endpoints.any())
+        .filter(Certificate.rotation == False)
+        .filter(Certificate.not_after >= arrow.now())
+        .filter(not_(Certificate.replaced.any()))
+        .all()  # noqa
+    )
+
+
+def get_all_pending_cleaning_expiring_in_days(source, days_to_expire):
+    """
+    Retrieves all certificates that are available for cleaning, not attached to endpoint,
+    and within X days from expiration.
+
+    :param days_to_expire: defines how many days till the certificate is expired
+    :param source: the source to search for certificates
+    :return: list of pending certificates
+    """
+    expiration_window = arrow.now().shift(days=+days_to_expire).format("YYYY-MM-DD")
+    return (
+        Certificate.query.filter(Certificate.sources.any(id=source.id))
+        .filter(not_(Certificate.endpoints.any()))
+        .filter(Certificate.not_after < expiration_window)
+        .all()
+    )
+
+
+def get_all_pending_cleaning_issued_since_days(source, days_since_issuance):
+    """
+    Retrieves all certificates that are available for cleaning: not attached to endpoint, and X days since issuance.
+
+    :param days_since_issuance: defines how many days since the certificate is issued
+    :param source: the source to search for certificates
+    :return: list of pending certificates
+    """
+    not_in_use_window = (
+        arrow.now().shift(days=-days_since_issuance).format("YYYY-MM-DD")
+    )
+    return (
+        Certificate.query.filter(Certificate.sources.any(id=source.id))
+        .filter(not_(Certificate.endpoints.any()))
+        .filter(Certificate.date_created > not_in_use_window)
         .all()
     )
 
@@ -331,9 +384,11 @@ def render(args):
 
     show_expired = args.pop("showExpired")
     if show_expired != 1:
-        one_month_old = arrow.now()\
-            .shift(months=current_app.config.get("HIDE_EXPIRED_CERTS_AFTER_MONTHS", -1))\
+        one_month_old = (
+            arrow.now()
+            .shift(months=current_app.config.get("HIDE_EXPIRED_CERTS_AFTER_MONTHS", -1))
             .format("YYYY-MM-DD")
+        )
         query = query.filter(Certificate.not_after > one_month_old)
 
     time_range = args.pop("time_range")
