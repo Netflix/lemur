@@ -210,6 +210,10 @@ def rotate(endpoint_name, new_certificate_name, old_certificate_name, message, c
 
     status = FAILURE_METRIC_STATUS
 
+    log_data = {
+        "function": f"{__name__}.{sys._getframe().f_code.co_name}",
+    }
+
     try:
         old_cert = validate_certificate(old_certificate_name)
         new_cert = validate_certificate(new_certificate_name)
@@ -219,26 +223,44 @@ def rotate(endpoint_name, new_certificate_name, old_certificate_name, message, c
             print(
                 f"[+] Rotating endpoint: {endpoint.name} to certificate {new_cert.name}"
             )
+            log_data["message"] = "Rotating endpoint"
+            log_data["endpoint"] = endpoint.dnsname
+            log_data["certificate"] = new_cert.name
             request_rotation(endpoint, new_cert, message, commit)
+            current_app.logger.info(log_data)
 
         elif old_cert and new_cert:
             print(f"[+] Rotating all endpoints from {old_cert.name} to {new_cert.name}")
 
+            
+            log_data["message"] = "Rotating all endpoints"
+            log_data["certificate"] = new_cert.name
+            log_data["certificate_old"] = old_cert.name
+            log_data["message"] = "Rotating endpoint from old to new cert"
             for endpoint in old_cert.endpoints:
                 print(f"[+] Rotating {endpoint.name}")
+                log_data["endpoint"] = endpoint.dnsname
                 request_rotation(endpoint, new_cert, message, commit)
+                current_app.logger.info(log_data)
 
         else:
             print("[+] Rotating all endpoints that have new certificates available")
+            log_data["message"] = "Rotating all endpoints that have new certificates available"
             for endpoint in endpoint_service.get_all_pending_rotation():
+                log_data["endpoint"] = endpoint.dnsname
                 if len(endpoint.certificate.replaced) == 1:
                     print(
                         f"[+] Rotating {endpoint.name} to {endpoint.certificate.replaced[0].name}"
                     )
+                    log_data["certificate"] = endpoint.certificate.replaced[0].name
                     request_rotation(
                         endpoint, endpoint.certificate.replaced[0], message, commit
                     )
+                    current_app.logger.info(log_data)
+
                 else:
+                    log_data["message"] = "Failed to rotate endpoint due to Multiple replacement certificates found"
+                    print(log_data)
                     metrics.send(
                         "endpoint_rotation",
                         "counter",
