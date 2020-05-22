@@ -14,7 +14,6 @@
 MANIFEST
 test.conf
 pip-log.txt
-package-lock.json
 /htmlcov
 /cover
 /build
