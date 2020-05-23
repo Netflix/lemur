@@ -15,7 +15,7 @@ from lemur.sources.models import Source
 from lemur.certificates.models import Certificate
 from lemur.certificates import service as certificate_service
 from lemur.endpoints import service as endpoint_service
-from lemur.extensions import metrics
+from lemur.extensions import metrics, sentry
 from lemur.destinations import service as destination_service
 
 from lemur.certificates.schemas import CertificateUploadInputSchema
@@ -66,7 +66,7 @@ def sync_update_destination(certificate, source):
 
 
 def sync_endpoints(source):
-    new, updated = 0, 0
+    new, updated, updated_by_hash = 0, 0, 0
     current_app.logger.debug("Retrieving endpoints from {0}".format(source.label))
     s = plugins.get(source.plugin_name)
 
@@ -78,7 +78,7 @@ def sync_endpoints(source):
                 source.label
             )
         )
-        return new, updated
+        return new, updated, updated_by_hash
 
     for endpoint in endpoints:
         exists = endpoint_service.get_by_dnsname_and_port(
@@ -89,15 +89,53 @@ def sync_endpoints(source):
 
         endpoint["certificate"] = certificate_service.get_by_name(certificate_name)
 
+        # if get cert by name failed, we attempt a search via serial number and hash comparison
+        # and link the endpoint certificate to Lemur certificate
         if not endpoint["certificate"]:
-            current_app.logger.error(
-                "Certificate Not Found. Name: {0} Endpoint: {1}".format(
-                    certificate_name, endpoint["name"]
+            certificate_attached_to_endpoint = None
+            try:
+                certificate_attached_to_endpoint = s.get_certificate_by_name(certificate_name, source.options)
+            except NotImplementedError:
+                current_app.logger.warning(
+                    "Unable to describe server certificate for endpoints in source {0}:"
+                    " plugin has not implemented 'get_certificate_by_name'".format(
+                        source.label
+                    )
                 )
-            )
+                sentry.captureException()
+
+            if certificate_attached_to_endpoint:
+                lemur_matching_cert, updated_by_hash_tmp = find_cert(certificate_attached_to_endpoint)
+                updated_by_hash += updated_by_hash_tmp
+
+                if lemur_matching_cert:
+                    endpoint["certificate"] = lemur_matching_cert[0]
+
+                if len(lemur_matching_cert) > 1:
+                    current_app.logger.error(
+                        "Too Many Certificates Found{0}. Name: {1} Endpoint: {2}".format(
+                            len(lemur_matching_cert), certificate_name, endpoint["name"]
+                        )
+                    )
+                    metrics.send("endpoint.certificate.conflict",
+                                 "gauge", len(lemur_matching_cert),
+                                 metric_tags={"cert": certificate_name, "endpoint": endpoint["name"],
+                                              "acct": s.get_option("accountNumber", source.options)})
+
+        if not endpoint["certificate"]:
+            current_app.logger.error({
+                "message": "Certificate Not Found",
+                "certificate_name": certificate_name,
+                "endpoint_name": endpoint["name"],
+                "dns_name": endpoint.get("dnsname"),
+                "account": s.get_option("accountNumber", source.options),
+            })
+
             metrics.send("endpoint.certificate.not.found",
                          "counter", 1,
-                         metric_tags={"cert": certificate_name, "endpoint": endpoint["name"], "acct": s.get_option("accountNumber", source.options)})
+                         metric_tags={"cert": certificate_name, "endpoint": endpoint["name"],
+                                      "acct": s.get_option("accountNumber", source.options),
+                                      "dnsname": endpoint.get("dnsname")})
             continue
 
         policy = endpoint.pop("policy")
@@ -122,42 +160,55 @@ def sync_endpoints(source):
             endpoint_service.update(exists.id, **endpoint)
             updated += 1
 
-    return new, updated
+    return new, updated, updated_by_hash
+
+
+def find_cert(certificate):
+    updated_by_hash = 0
+    exists = False
+
+    if certificate.get("search", None):
+        conditions = certificate.pop("search")
+        exists = certificate_service.get_by_attributes(conditions)
+
+    if not exists and certificate.get("name"):
+        result = certificate_service.get_by_name(certificate["name"])
+        if result:
+            exists = [result]
+
+    if not exists and certificate.get("serial"):
+        exists = certificate_service.get_by_serial(certificate["serial"])
+
+    if not exists:
+        cert = parse_certificate(certificate["body"])
+        matching_serials = certificate_service.get_by_serial(serial(cert))
+        exists = find_matching_certificates_by_hash(cert, matching_serials)
+        updated_by_hash += 1
+
+    exists = [x for x in exists if x]
+    return exists, updated_by_hash
 
 
 # TODO this is very slow as we don't batch update certificates
 def sync_certificates(source, user):
-    new, updated = 0, 0
+    new, updated, updated_by_hash = 0, 0, 0
 
     current_app.logger.debug("Retrieving certificates from {0}".format(source.label))
     s = plugins.get(source.plugin_name)
     certificates = s.get_certificates(source.options)
 
+    # emitting the count of certificates on the source
+    metrics.send("sync_certificates_count",
+                 "gauge", len(certificates),
+                 metric_tags={"source": source.label})
+
     for certificate in certificates:
-        exists = False
-
-        if certificate.get("search", None):
-            conditions = certificate.pop("search")
-            exists = certificate_service.get_by_attributes(conditions)
-
-        if not exists and certificate.get("name"):
-            result = certificate_service.get_by_name(certificate["name"])
-            if result:
-                exists = [result]
-
-        if not exists and certificate.get("serial"):
-            exists = certificate_service.get_by_serial(certificate["serial"])
-
-        if not exists:
-            cert = parse_certificate(certificate["body"])
-            matching_serials = certificate_service.get_by_serial(serial(cert))
-            exists = find_matching_certificates_by_hash(cert, matching_serials)
+        exists, updated_by_hash = find_cert(certificate)
 
         if not certificate.get("owner"):
             certificate["owner"] = user.email
 
         certificate["creator"] = user
-        exists = [x for x in exists if x]
 
         if not exists:
             certificate_create(certificate, source)
@@ -172,12 +223,20 @@ def sync_certificates(source, user):
                 certificate_update(e, source)
                 updated += 1
 
-    return new, updated
+    return new, updated, updated_by_hash
 
 
 def sync(source, user):
-    new_certs, updated_certs = sync_certificates(source, user)
-    new_endpoints, updated_endpoints = sync_endpoints(source)
+    new_certs, updated_certs, updated_certs_by_hash = sync_certificates(source, user)
+    new_endpoints, updated_endpoints, updated_endpoints_by_hash = sync_endpoints(source)
+
+    metrics.send("sync.updated_certs_by_hash",
+                 "gauge", updated_certs_by_hash,
+                 metric_tags={"source": source.label})
+
+    metrics.send("sync.updated_endpoints_by_hash",
+                 "gauge", updated_endpoints_by_hash,
+                 metric_tags={"source": source.label})
 
     source.last_run = arrow.utcnow()
     database.update(source)

@@ -371,4 +371,12 @@ angular.module('lemur')
         });
       });
   };
-});
+})
+.controller('CertificateInfoController', function ($scope, CertificateApi) {
+  $scope.fetchFullCertificate = function (certId) {
+    CertificateApi.get(certId).then(function (certificate) {
+      $scope.certificate = certificate;
+    });
+  };
+})
+;

@@ -23,7 +23,11 @@ from setuptools import setup, find_packages
 from subprocess import check_output
 
 import pip
-if tuple(map(int, pip.__version__.split('.'))) >= (10, 0, 0):
+if tuple(map(int, pip.__version__.split('.'))) >= (19, 3, 0):
+    from pip._internal.network.session import PipSession
+    from pip._internal.req import parse_requirements
+
+elif tuple(map(int, pip.__version__.split('.'))) >= (10, 0, 0):
     from pip._internal.download import PipSession
     from pip._internal.req import parse_requirements
 else:
@@ -41,16 +45,20 @@ with open(os.path.join(ROOT, 'lemur', '__about__.py')) as f:
     exec(f.read(), about)  # nosec: about file is benign
 
 install_requires_g = parse_requirements("requirements.txt", session=PipSession())
-install_requires = [str(ir.req) for ir in install_requires_g]
-
 tests_require_g = parse_requirements("requirements-tests.txt", session=PipSession())
-tests_require = [str(ir.req) for ir in tests_require_g]
-
 docs_require_g = parse_requirements("requirements-docs.txt", session=PipSession())
-docs_require = [str(ir.req) for ir in docs_require_g]
-
 dev_requires_g = parse_requirements("requirements-dev.txt", session=PipSession())
-dev_requires = [str(ir.req) for ir in dev_requires_g]
+
+if tuple(map(int, pip.__version__.split('.'))) >= (20, 1):
+    install_requires = [str(ir.requirement) for ir in install_requires_g]
+    tests_require = [str(ir.requirement) for ir in tests_require_g]
+    docs_require = [str(ir.requirement) for ir in docs_require_g]
+    dev_requires = [str(ir.requirement) for ir in dev_requires_g]
+else:
+    install_requires = [str(ir.req) for ir in install_requires_g]
+    tests_require = [str(ir.req) for ir in tests_require_g]
+    docs_require = [str(ir.req) for ir in docs_require_g]
+    dev_requires = [str(ir.req) for ir in dev_requires_g]
 
 
 class SmartInstall(install):
@@ -147,6 +155,7 @@ setup(
             'java_keystore_export = lemur.plugins.lemur_jks.plugin:JavaKeystoreExportPlugin',
             'openssl_export = lemur.plugins.lemur_openssl.plugin:OpenSSLExportPlugin',
             'atlas_metric = lemur.plugins.lemur_atlas.plugin:AtlasMetricPlugin',
+            'atlas_metric_redis = lemur.plugins.lemur_atlas_redis.plugin:AtlasMetricRedisPlugin',
             'kubernetes_destination = lemur.plugins.lemur_kubernetes.plugin:KubernetesDestinationPlugin',
             'cryptography_issuer = lemur.plugins.lemur_cryptography.plugin:CryptographyIssuerPlugin',
             'cfssl_issuer = lemur.plugins.lemur_cfssl.plugin:CfsslIssuerPlugin',

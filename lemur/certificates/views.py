@@ -27,6 +27,7 @@ from lemur.certificates.schemas import (
     certificates_output_schema,
     certificate_export_input_schema,
     certificate_edit_input_schema,
+    certificates_list_output_schema_factory,
 )
 
 from lemur.roles import service as role_service
@@ -250,7 +251,7 @@ class CertificatesList(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(CertificatesList, self).__init__()
 
-    @validate_schema(None, certificates_output_schema)
+    @validate_schema(None, certificates_list_output_schema_factory)
     def get(self):
         """
         .. http:get:: /certificates

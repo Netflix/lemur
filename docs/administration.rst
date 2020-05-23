@@ -735,6 +735,12 @@ The following configuration properties are required to use the Digicert issuer p
             This is the default validity (in years), if no end date is specified. (Default: 1)
 
 
+.. data:: DIGICERT_MAX_VALIDITY
+    :noindex:
+
+            This is the maximum validity (in years). (Default: value of DIGICERT_DEFAULT_VALIDITY)
+
+
 .. data:: DIGICERT_PRIVATE
     :noindex:
 
@@ -973,6 +979,53 @@ Will be the sender of all notifications, so ensure that it is verified with AWS.
 SES if the default notification gateway and will be used unless SMTP settings are configured in the application configuration
 settings.
 
+PowerDNS ACME Plugin
+~~~~~~~~~~~~~~~~~~~~~~
+
+The following configuration properties are required to use the PowerDNS ACME Plugin for domain validation.
+
+
+.. data:: ACME_POWERDNS_DOMAIN
+    :noindex:
+
+            This is the FQDN for the PowerDNS API (without path)
+
+
+.. data:: ACME_POWERDNS_SERVERID
+    :noindex:
+
+            This is the ServerID attribute of the PowerDNS API Server (i.e. "localhost")
+
+
+.. data:: ACME_POWERDNS_APIKEYNAME
+    :noindex:
+
+            This is the Key name to use for authentication (i.e. "X-API-Key")
+
+
+.. data:: ACME_POWERDNS_APIKEY
+    :noindex:
+
+            This is the API Key to use for authentication (i.e. "Password")
+
+
+.. data:: ACME_POWERDNS_RETRIES
+    :noindex:
+
+            This is the number of times DNS Verification should be attempted (i.e. 20)
+
+
+.. data:: ACME_POWERDNS_VERIFY
+    :noindex:
+
+            This configures how TLS certificates on the PowerDNS API target are validated.  The PowerDNS Plugin depends on the PyPi requests library, which supports the following options for the verify parameter:
+
+            True: Verifies the TLS certificate was issued by a known publicly-trusted CA. (Default)
+
+            False: Disables certificate validation (Not Recommended)
+
+            File/Dir path to CA Bundle: Verifies the TLS certificate was issued by a Certificate Authority in the provided CA bundle.
+
 .. _CommandLineInterface:
 
 Command Line Interface
@@ -1069,6 +1122,15 @@ All commands default to `~/.lemur/lemur.conf.py` if a configuration is not speci
     ::
 
         lemur notify
+
+
+.. data:: acme
+
+    Handles all ACME related tasks, like ACME plugin testing.
+
+    ::
+
+        lemur acme
 
 
 Sub-commands
@@ -1172,11 +1234,12 @@ Acme
     Kevin Glisson <kglisson@netflix.com>,
     Curtis Castrapel <ccastrapel@netflix.com>,
     Hossein Shafagh <hshafagh@netflix.com>,
-    Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
+    Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>,
+    Chad Sine <csine@netflix.com>
 :Type:
     Issuer
 :Description:
-    Adds support for the ACME protocol (including LetsEncrypt) with domain validation being handled Route53.
+    Adds support for the ACME protocol (including LetsEncrypt) with domain validation using several providers.
 
 
 Atlas

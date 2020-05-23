@@ -5,29 +5,19 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import sys
 import multiprocessing
-from tabulate import tabulate
-from sqlalchemy import or_
-
+import sys
 from flask import current_app
-
-from flask_script import Manager
 from flask_principal import Identity, identity_changed
-
+from flask_script import Manager
+from sqlalchemy import or_
+from tabulate import tabulate
 
 from lemur import database
-from lemur.extensions import sentry
-from lemur.extensions import metrics
-from lemur.plugins.base import plugins
-from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
-from lemur.deployment import service as deployment_service
-from lemur.endpoints import service as endpoint_service
-from lemur.notifications.messaging import send_rotation_notification
-from lemur.domains.models import Domain
 from lemur.authorities.models import Authority
-from lemur.certificates.schemas import CertificateOutputSchema
+from lemur.authorities.service import get as authorities_get_by_id
 from lemur.certificates.models import Certificate
+from lemur.certificates.schemas import CertificateOutputSchema
 from lemur.certificates.service import (
     reissue_certificate,
     get_certificate_primitives,
@@ -35,9 +25,16 @@ from lemur.certificates.service import (
     get_by_name,
     get_all_valid_certs,
     get,
+    get_all_certs_attached_to_endpoint_without_autorotate,
 )
-
 from lemur.certificates.verify import verify_string
+from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
+from lemur.deployment import service as deployment_service
+from lemur.domains.models import Domain
+from lemur.endpoints import service as endpoint_service
+from lemur.extensions import sentry, metrics
+from lemur.notifications.messaging import send_rotation_notification
+from lemur.plugins.base import plugins
 
 manager = Manager(usage="Handles all certificate related tasks.")
 
@@ -502,4 +499,46 @@ def check_revoked():
             current_app.logger.exception(e)
             cert.status = "unknown"
 
+        database.update(cert)
+
+
+@manager.command
+def automatically_enable_autorotate():
+    """
+    This function automatically enables auto-rotation for unexpired certificates that are
+    attached to an endpoint but do not have autorotate enabled.
+
+    WARNING: This will overwrite the Auto-rotate toggle!
+    """
+    log_data = {
+        "function": f"{__name__}.{sys._getframe().f_code.co_name}",
+        "message": "Enabling auto-rotate for certificate"
+    }
+
+    permitted_authorities = current_app.config.get("ENABLE_AUTO_ROTATE_AUTHORITY", [])
+
+    eligible_certs = get_all_certs_attached_to_endpoint_without_autorotate()
+    for cert in eligible_certs:
+
+        if cert.authority_id not in permitted_authorities:
+            continue
+
+        log_data["certificate"] = cert.name
+        log_data["certificate_id"] = cert.id
+        log_data["authority_id"] = cert.authority_id
+        log_data["authority_name"] = authorities_get_by_id(cert.authority_id).name
+        if cert.destinations:
+            log_data["destination_names"] = ', '.join([d.label for d in cert.destinations])
+        else:
+            log_data["destination_names"] = "NONE"
+        current_app.logger.info(log_data)
+        metrics.send("automatically_enable_autorotate",
+                     "counter", 1,
+                     metric_tags={"certificate": log_data["certificate"],
+                                  "certificate_id": log_data["certificate_id"],
+                                  "authority_id": log_data["authority_id"],
+                                  "authority_name": log_data["authority_name"],
+                                  "destination_names": log_data["destination_names"]
+                                  })
+        cert.rotation = True
         database.update(cert)

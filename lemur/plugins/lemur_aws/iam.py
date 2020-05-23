@@ -10,7 +10,7 @@ import botocore
 
 from retrying import retry
 
-from lemur.extensions import metrics
+from lemur.extensions import metrics, sentry
 from lemur.plugins.lemur_aws.sts import sts_client
 
 
@@ -22,6 +22,12 @@ def retry_throttled(exception):
     """
     if isinstance(exception, botocore.exceptions.ClientError):
         if exception.response["Error"]["Code"] == "NoSuchEntity":
+            return False
+
+        # No need to retry deletion requests if there is a DeleteConflict error.
+        # This error indicates that the certificate is still attached to an entity
+        # and cannot be deleted.
+        if exception.response["Error"]["Code"] == "DeleteConflict":
             return False
 
     metrics.send("iam_retry", "counter", 1, metric_tags={"exception": str(exception)})
@@ -122,9 +128,11 @@ def get_certificate(name, **kwargs):
     """
     client = kwargs.pop("client")
     metrics.send("get_certificate", "counter", 1, metric_tags={"name": name})
-    return client.get_server_certificate(ServerCertificateName=name)[
-        "ServerCertificate"
-    ]
+    try:
+        return client.get_server_certificate(ServerCertificateName=name)["ServerCertificate"]
+    except client.exceptions.NoSuchEntityException:
+        sentry.captureException()
+        return None
 
 
 @sts_client("iam")

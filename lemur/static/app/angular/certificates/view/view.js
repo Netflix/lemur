@@ -11,7 +11,7 @@ angular.module('lemur')
         controller: 'CertificatesViewController'
       })
       .state('certificate', {
-        url: '/certificates/:name',
+        url: '/certificates/:fixedName', // use "fixedName" if in URL to indicate 'like' query can be avoided
         templateUrl: '/angular/certificates/view/view.tpl.html',
         controller: 'CertificatesViewController'
       });
@@ -28,6 +28,7 @@ angular.module('lemur')
       sorting: {
         id: 'desc'     // initial sorting
       },
+      short: true,
       filter: $scope.filter
     }, {
       total: 0,           // length of data
@@ -54,6 +55,7 @@ angular.module('lemur')
         sorting: {
           id: 'desc'     // initial sorting
         },
+        short: true,
         filter: $scope.filter
       }, {
         getData: function ($defer, params) {

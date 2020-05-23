@@ -321,7 +321,8 @@ class Certificate(db.Model):
 
     @hybrid_property
     def expired(self):
-        if self.not_after <= arrow.utcnow():
+        # can't compare offset-naive and offset-aware datetimes
+        if arrow.Arrow.fromdatetime(self.not_after) <= arrow.utcnow():
             return True
 
     @expired.expression
@@ -445,6 +446,9 @@ def update_destinations(target, value, initiator):
     """
     destination_plugin = plugins.get(value.plugin_name)
     status = FAILURE_METRIC_STATUS
+
+    if target.expired:
+        return
     try:
         if target.private_key or not destination_plugin.requires_key:
             destination_plugin.upload(
