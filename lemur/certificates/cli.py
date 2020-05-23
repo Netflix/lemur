@@ -660,7 +660,7 @@ def check_revoked():
                     "certificate_revoked",
                     "counter",
                     1,
-                    metric_tags={"status":  log_data["valid"],
+                    metric_tags={"status": log_data["valid"],
                                  "certificate_name": log_data["certificate_name"],
                                  "certificate_id": log_data["certificate_id"]},
                 )
