@@ -232,7 +232,6 @@ def rotate(endpoint_name, new_certificate_name, old_certificate_name, message, c
         elif old_cert and new_cert:
             print(f"[+] Rotating all endpoints from {old_cert.name} to {new_cert.name}")
 
-            
             log_data["message"] = "Rotating all endpoints"
             log_data["certificate"] = new_cert.name
             log_data["certificate_old"] = old_cert.name
