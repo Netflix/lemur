@@ -468,6 +468,11 @@ def check_revoked():
     as `unknown`.
     """
 
+    log_data = {
+        "function": f"{__name__}.{sys._getframe().f_code.co_name}",
+        "message": "Checking for revoked Certificates"
+    }
+
     certs = get_all_valid_certs(current_app.config.get("SUPPORTED_REVOCATION_AUTHORITY_PLUGINS", []))
     for cert in certs:
         try:
@@ -477,6 +482,20 @@ def check_revoked():
                 status = verify_string(cert.body, "")
 
             cert.status = "valid" if status else "revoked"
+
+            if cert.status == "revoked":
+                log_data["valid"] = cert.status
+                log_data["certificate_name"] = cert.name
+                log_data["certificate_id"] = cert.id
+                metrics.send(
+                    "certificate_revoked",
+                    "counter",
+                    1,
+                    metric_tags={"status":  log_data["valid"],
+                                 "certificate_name": log_data["certificate_name"],
+                                 "certificate_id": log_data["certificate_id"]},
+                )
+                current_app.logger.info(log_data)
 
         except Exception as e:
             sentry.captureException()
