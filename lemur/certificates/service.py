@@ -102,17 +102,20 @@ def get_all_certs():
     return Certificate.query.all()
 
 
-def get_all_valid_certs(authority_ids):
+def get_all_valid_certs(authority_plugin_name):
     """
-    Retrieves all valid (not expired) certificates within Lemur, for the given authority_ids
-    ignored if no authority_ids provided.
+    Retrieves all valid (not expired) certificates within Lemur, for the given authority plugin names
+    ignored if no authority_plugin_name provided.
+
+    Note that depending on the DB size retrieving all certificates might an expensive operation
 
     :return:
     """
-    if authority_ids:
+    if authority_plugin_name:
         return (
-            Certificate.query.filter(Certificate.not_after > arrow.now().format("YYYY-MM-DD"))
-            .filter(Certificate.authority_id.in_(authority_ids)).all()
+            Certificate.query.outerjoin(Authority, Authority.id == Certificate.authority_id).filter(
+                Certificate.not_after > arrow.now().format("YYYY-MM-DD")).filter(
+                Authority.plugin_name.in_(authority_plugin_name)).all()
         )
     else:
         return (

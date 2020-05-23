@@ -468,7 +468,7 @@ def check_revoked():
     as `unknown`.
     """
 
-    certs = get_all_valid_certs(current_app.config.get("CHECK_REVOCATION_AUTHORITY_IDS", []))
+    certs = get_all_valid_certs(current_app.config.get("SUPPORTED_REVOCATION_AUTHORITY_PLUGINS", []))
     for cert in certs:
         try:
             if cert.chain:
