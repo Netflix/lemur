@@ -59,6 +59,7 @@ class FastlyDestinationPlugin(DestinationPlugin):
         :return:
         """
         key_id = None
+        cert_id = None
         unique = self.get_option("fastlyUnique", options)
         cname = common_name(parse_certificate(body))
         priv_keys = get_all_private_keys()
@@ -69,16 +70,20 @@ class FastlyDestinationPlugin(DestinationPlugin):
             if each['name'] == cname:
                 key_id = each['id']
                 if each['sha1'] != get_public_key_sha1(private_key):
-                    if unique:
                         cert_keys = get_all_certificates()
                         for cert in cert_keys:
                             if cert['name'] == cname:
-                                delete_certificate(each['id'])
-                        delete_private_key(key_id)
-                    key_id = None
-        if not key_id:
+                                cert_id = each['id']
+                                priv_id = key_id
+        if cert_id:
             post_private_key(private_key, name=cname)
             post_certificate(body, cert_chain, name=cname)
+            log_data["message"] = f"Certificate updated: ${priv_id}"
+            act_id = get_activation(cert_id)
+            if act_id:
+                post_activation(act_id, cert_id)
+                log_data["message"] = f"Certificate updated: ${pric_id} activated: ${act_id}"
+            delete_certificate(priv_id)
         else:
             log_data["message"] = f"Certificate up to data, no changes made"
             current_app.logger.debug(log_data)
@@ -356,6 +361,66 @@ def delete_certificate(key_id):
         log_data['message'] = f"certificate delete {key_id} success"
     except Exception as err:
         log_data['message'] = f"certificate delete {key_id} failure"
+        log_data['error'] = err
+    current_app.logger.debug(log_data)
+
+
+def get_all_activations():
+    """get all the activations"""
+    path = '/tls/activations'
+    jdata = {}
+    log_data = {
+        "function": inspect.currentframe().f_code.co_name
+    }
+    try:
+        jdata = _get(path)
+        log_data['message'] = 'activation get success'
+    except Exception as err:
+        log_data['message'] = 'activation get failure'
+        log_data['error'] = err
+    current_app.logger.debug(log_data)
+    return jdata
+
+
+def get_activations(cert_id):
+    """get activation by certificate id"""
+    path = '/tls/activations'
+    jdata = {}
+    act_id = None
+    log_data = {
+        "function": inspect.currentframe().f_code.co_name
+    }
+    try:
+        jdata = _get(path)
+        for each in jdata['data']:
+            if each['relationships']['tls_certificate']['data']['id'] == cert_id:
+                act_id = each['id']
+        log_data['message'] = 'activation get success'
+    except Exception as err:
+        log_data['message'] = 'activation get failure'
+        log_data['error'] = err
+    current_app.logger.debug(log_data)
+    return act_id
+
+
+def patch_activation(act_id, cert_id):
+    """update activation to use new certificate"""
+    path = f"/tls/activations/{act_id}"
+    data = {
+        "data": {
+            "type": "tls_activation",
+            "relationships": {
+                "tls_certificate": {
+                    "data": { "type": "tls_certificate", "id": cert_id }
+                }
+            }
+        }
+    }
+    try:
+        _patch(path, data)
+        log_data['message'] = f"activation patch {act_id} success"
+    except Exception as err:
+        log_data['message'] = f"activation pathc {act_id} failure"
         log_data['error'] = err
     current_app.logger.debug(log_data)
 
