@@ -34,16 +34,7 @@ class FastlyDestinationPlugin(DestinationPlugin):
     author = "Christopher Jolley"
     author_url = "https://github.com/Netflix/lemur"
 
-    options = [
-        {
-            "name": "fastlyUnique",
-            "type": "select",
-            "value": False,
-            "available": [False, True], 
-            "required": True,
-            "helpMessage": "Should Lemur remove old certificates with matching CN",
-        },
-    ]
+    options = []
 
 
     def __init__(self, *args, **kwargs):
@@ -70,11 +61,11 @@ class FastlyDestinationPlugin(DestinationPlugin):
             if each['name'] == cname:
                 key_id = each['id']
                 if each['sha1'] != get_public_key_sha1(private_key):
-                        cert_keys = get_all_certificates()
-                        for cert in cert_keys:
-                            if cert['name'] == cname:
-                                cert_id = each['id']
-                                priv_id = key_id
+                    cert_keys = get_all_certificates()
+                    for cert in cert_keys:
+                        if cert['name'] == cname:
+                            cert_id = each['id']
+                            priv_id = key_id
         if cert_id:
             post_private_key(private_key, name=cname)
             post_certificate(body, cert_chain, name=cname)
@@ -82,7 +73,7 @@ class FastlyDestinationPlugin(DestinationPlugin):
             act_id = get_activation(cert_id)
             if act_id:
                 post_activation(act_id, cert_id)
-                log_data["message"] = f"Certificate updated: ${pric_id} activated: ${act_id}"
+                log_data["message"] = f"Certificate updated: ${priv_id} activated: ${act_id}"
             delete_certificate(priv_id)
         else:
             log_data["message"] = f"Certificate up to data, no changes made"
@@ -382,7 +373,7 @@ def get_all_activations():
     return jdata
 
 
-def get_activations(cert_id):
+def get_activation(cert_id):
     """get activation by certificate id"""
     path = '/tls/activations'
     jdata = {}
@@ -403,15 +394,18 @@ def get_activations(cert_id):
     return act_id
 
 
-def patch_activation(act_id, cert_id):
+def post_activation(act_id, cert_id):
     """update activation to use new certificate"""
     path = f"/tls/activations/{act_id}"
+    log_data = {
+        "function": inspect.currentframe().f_code.co_name
+    }
     data = {
         "data": {
             "type": "tls_activation",
             "relationships": {
                 "tls_certificate": {
-                    "data": { "type": "tls_certificate", "id": cert_id }
+                    "data": {"type": "tls_certificate", "id": cert_id}
                 }
             }
         }
