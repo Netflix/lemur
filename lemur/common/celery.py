@@ -631,7 +631,8 @@ def certificate_reissue():
 
 
 @celery.task(soft_time_limit=3600)
-def certificate_rotate():
+def certificate_rotate(**kwargs):
+
     """
     This celery task rotates certificates which are reissued but having endpoints attached to the replaced cert
     :return:
@@ -641,6 +642,7 @@ def certificate_rotate():
     if celery.current_task:
         task_id = celery.current_task.request.id
 
+    region = kwargs.get("region")
     log_data = {
         "function": function,
         "message": "rotating certificates",
@@ -654,7 +656,11 @@ def certificate_rotate():
 
     current_app.logger.debug(log_data)
     try:
-        cli_certificate.rotate(None, None, None, None, True)
+        if region:
+            log_data["region"] = region
+            cli_certificate.rotate_region(None, None, None, None, True, region)
+        else:
+            cli_certificate.rotate(None, None, None, None, True)
     except SoftTimeLimitExceeded:
         log_data["message"] = "Certificate rotate: Time limit exceeded."
         current_app.logger.error(log_data)
