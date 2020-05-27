@@ -82,7 +82,7 @@ requests[security]==2.23.0  # via -r requirements.in, acme, certsrv, cloudflare,
 retrying==1.3.3           # via -r requirements.in
 s3transfer==0.3.3         # via boto3
 six==1.15.0               # via -r requirements.in, acme, bcrypt, cryptography, flask-cors, flask-restful, hvac, josepy, jsonlines, pynacl, pyopenssl, python-dateutil, retrying, sqlalchemy-utils
-sqlalchemy-utils==0.36.5  # via -r requirements.in
+sqlalchemy-utils==0.36.6  # via -r requirements.in
 sqlalchemy==1.3.16        # via alembic, flask-sqlalchemy, marshmallow-sqlalchemy, sqlalchemy-utils
 tabulate==0.8.7           # via -r requirements.in
 twofish==0.3.0            # via pyjks
