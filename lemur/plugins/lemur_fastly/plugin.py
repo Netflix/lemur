@@ -105,7 +105,7 @@ def get_public_key_sha1(private_key):
         encoding=serialization.Encoding.PEM,
         format=serialization.PublicFormat.SubjectPublicKeyInfo
     )
-    return hashlib.sha1(pub_key).hexdigest()
+    return hashlib.sha1(pub_key).hexdigest() # nosec
 
 
 def get_all_private_keys():
