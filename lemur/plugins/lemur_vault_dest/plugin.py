@@ -14,7 +14,7 @@ import re
 import hvac
 from flask import current_app
 
-from lemur.common.defaults import common_name
+from lemur.common.defaults import common_name, country, state, location, organizational_unit, organization
 from lemur.common.utils import parse_certificate
 from lemur.plugins.bases import DestinationPlugin
 from lemur.plugins.bases import SourcePlugin
@@ -58,7 +58,7 @@ class VaultSourcePlugin(SourcePlugin):
             "helpMessage": "Authentication method to use",
         },
         {
-            "name": "tokenFile/VaultRole",
+            "name": "tokenFileOrVaultRole",
             "type": "str",
             "required": True,
             "validation": "^([a-zA-Z0-9/._-]+/?)+$",
@@ -94,7 +94,7 @@ class VaultSourcePlugin(SourcePlugin):
         body = ""
         url = self.get_option("vaultUrl", options)
         auth_method = self.get_option("authenticationMethod", options)
-        auth_key = self.get_option("tokenFile/vaultRole", options)
+        auth_key = self.get_option("tokenFileOrVaultRole", options)
         mount = self.get_option("vaultMount", options)
         path = self.get_option("vaultPath", options)
         obj_name = self.get_option("objectName", options)
@@ -185,7 +185,7 @@ class VaultDestinationPlugin(DestinationPlugin):
             "helpMessage": "Authentication method to use",
         },
         {
-            "name": "tokenFile/VaultRole",
+            "name": "tokenFileOrVaultRole",
             "type": "str",
             "required": True,
             "validation": "^([a-zA-Z0-9/._-]+/?)+$",
@@ -202,15 +202,15 @@ class VaultDestinationPlugin(DestinationPlugin):
             "name": "vaultPath",
             "type": "str",
             "required": True,
-            "validation": "^([a-zA-Z0-9._-]+/?)+$",
-            "helpMessage": "Must be a valid Vault secrets path",
+            "validation": "^(([a-zA-Z0-9._-]+|{(CN|OU|O|L|S|C)})+/?)+$",
+            "helpMessage": "Must be a valid Vault secrets path. Support vars: {CN|OU|O|L|S|C}",
         },
         {
             "name": "objectName",
             "type": "str",
             "required": False,
-            "validation": "[0-9a-zA-Z.:_-]+",
-            "helpMessage": "Name to bundle certs under, if blank use cn",
+            "validation": "^([0-9a-zA-Z.:_-]+|{(CN|OU|O|L|S|C)})+$",
+            "helpMessage": "Name to bundle certs under, if blank use {CN}. Support vars: {CN|OU|O|L|S|C}",
         },
         {
             "name": "bundleChain",
@@ -241,11 +241,12 @@ class VaultDestinationPlugin(DestinationPlugin):
         :param cert_chain:
         :return:
         """
-        cname = common_name(parse_certificate(body))
+        cert = parse_certificate(body)
+        cname = common_name(cert)
 
         url = self.get_option("vaultUrl", options)
         auth_method = self.get_option("authenticationMethod", options)
-        auth_key = self.get_option("tokenFile/vaultRole", options)
+        auth_key = self.get_option("tokenFileOrVaultRole", options)
         mount = self.get_option("vaultMount", options)
         path = self.get_option("vaultPath", options)
         bundle = self.get_option("bundleChain", options)
@@ -285,10 +286,27 @@ class VaultDestinationPlugin(DestinationPlugin):
 
         client.secrets.kv.default_kv_version = api_version
 
-        if obj_name:
-            path = "{0}/{1}".format(path, obj_name)
-        else:
-            path = "{0}/{1}".format(path, cname)
+        t_path = path.format(
+            CN=cname,
+            OU=organizational_unit(cert),
+            O=organization(cert),  # noqa: E741
+            L=location(cert),
+            S=state(cert),
+            C=country(cert)
+        )
+        if not obj_name:
+            obj_name = '{CN}'
+
+        f_obj_name = obj_name.format(
+            CN=cname,
+            OU=organizational_unit(cert),
+            O=organization(cert),  # noqa: E741
+            L=location(cert),
+            S=state(cert),
+            C=country(cert)
+        )
+
+        path = "{0}/{1}".format(t_path, f_obj_name)
 
         secret = get_secret(client, mount, path)
         secret["data"][cname] = {}
