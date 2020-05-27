@@ -16,8 +16,8 @@ babel==2.8.0              # via sphinx
 bcrypt==3.1.7             # via -r requirements.txt, flask-bcrypt, paramiko
 billiard==3.6.3.0         # via -r requirements.txt, celery
 blinker==1.4              # via -r requirements.txt, flask-mail, flask-principal, raven
-boto3==1.13.11            # via -r requirements.txt
-botocore==1.16.11         # via -r requirements.txt, boto3, s3transfer
+boto3==1.13.18            # via -r requirements.txt
+botocore==1.16.18         # via -r requirements.txt, boto3, s3transfer
 celery[redis]==4.4.2      # via -r requirements.txt
 certifi==2020.4.5.1       # via -r requirements.txt, requests
 certsrv==2.1.1            # via -r requirements.txt
