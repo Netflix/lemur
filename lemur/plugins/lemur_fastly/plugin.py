@@ -24,6 +24,7 @@ from lemur.plugins.bases import DestinationPlugin
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 
+
 class FastlyDestinationPlugin(DestinationPlugin):
     """Fastly Destination plugin for Lemur"""
 
@@ -96,7 +97,7 @@ def get_public_key_sha1(private_key):
         encoding=serialization.Encoding.PEM,
         format=serialization.PublicFormat.SubjectPublicKeyInfo
     )
-    return hashlib.sha1(pub_key).hexdigest() # nosec
+    return hashlib.sha1(pub_key).hexdigest()  # nosec
 
 
 def get_all_private_keys():
