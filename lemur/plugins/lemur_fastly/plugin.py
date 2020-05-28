@@ -37,10 +37,8 @@ class FastlyDestinationPlugin(DestinationPlugin):
 
     options = []
 
-
     def __init__(self, *args, **kwargs):
         super(FastlyDestinationPlugin, self).__init__(*args, **kwargs)
-
 
     def upload(self, name, body, private_key, cert_chain, options, **kwargs):
         """
