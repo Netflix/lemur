@@ -57,7 +57,7 @@ lockfile==0.12.2          # via -r requirements.txt
 logmatic-python==0.1.7    # via -r requirements.txt
 mako==1.1.2               # via -r requirements.txt, alembic
 markupsafe==1.1.1         # via -r requirements.txt, jinja2, mako
-marshmallow-sqlalchemy==0.23.0  # via -r requirements.txt
+marshmallow-sqlalchemy==0.23.1  # via -r requirements.txt
 marshmallow==2.20.4       # via -r requirements.txt, marshmallow-sqlalchemy
 ndg-httpsclient==0.5.1    # via -r requirements.txt
 packaging==20.3           # via sphinx
