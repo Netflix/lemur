@@ -15,7 +15,7 @@ bcrypt==3.1.7             # via flask-bcrypt, paramiko
 billiard==3.6.3.0         # via celery
 blinker==1.4              # via flask-mail, flask-principal, raven
 boto3==1.13.18            # via -r requirements.in
-botocore==1.16.18         # via -r requirements.in, boto3, s3transfer
+botocore==1.16.19         # via -r requirements.in, boto3, s3transfer
 celery[redis]==4.4.2      # via -r requirements.in
 certifi==2020.4.5.1       # via -r requirements.in, requests
 certsrv==2.1.1            # via -r requirements.in
@@ -54,7 +54,7 @@ lockfile==0.12.2          # via -r requirements.in
 logmatic-python==0.1.7    # via -r requirements.in
 mako==1.1.2               # via alembic
 markupsafe==1.1.1         # via jinja2, mako
-marshmallow-sqlalchemy==0.23.0  # via -r requirements.in
+marshmallow-sqlalchemy==0.23.1  # via -r requirements.in
 marshmallow==2.20.4       # via -r requirements.in, marshmallow-sqlalchemy
 ndg-httpsclient==0.5.1    # via -r requirements.in
 paramiko==2.7.1           # via -r requirements.in
