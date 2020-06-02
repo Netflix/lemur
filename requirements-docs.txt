@@ -17,7 +17,7 @@ bcrypt==3.1.7             # via -r requirements.txt, flask-bcrypt, paramiko
 billiard==3.6.3.0         # via -r requirements.txt, celery
 blinker==1.4              # via -r requirements.txt, flask-mail, flask-principal, raven
 boto3==1.13.18            # via -r requirements.txt
-botocore==1.16.18         # via -r requirements.txt, boto3, s3transfer
+botocore==1.16.19         # via -r requirements.txt, boto3, s3transfer
 celery[redis]==4.4.2      # via -r requirements.txt
 certifi==2020.4.5.1       # via -r requirements.txt, requests
 certsrv==2.1.1            # via -r requirements.txt
@@ -57,7 +57,7 @@ lockfile==0.12.2          # via -r requirements.txt
 logmatic-python==0.1.7    # via -r requirements.txt
 mako==1.1.2               # via -r requirements.txt, alembic
 markupsafe==1.1.1         # via -r requirements.txt, jinja2, mako
-marshmallow-sqlalchemy==0.23.0  # via -r requirements.txt
+marshmallow-sqlalchemy==0.23.1  # via -r requirements.txt
 marshmallow==2.20.4       # via -r requirements.txt, marshmallow-sqlalchemy
 ndg-httpsclient==0.5.1    # via -r requirements.txt
 packaging==20.3           # via sphinx
@@ -90,7 +90,7 @@ s3transfer==0.3.3         # via -r requirements.txt, boto3
 six==1.15.0               # via -r requirements.txt, acme, bcrypt, cryptography, flask-cors, flask-restful, hvac, josepy, jsonlines, packaging, pynacl, pyopenssl, python-dateutil, retrying, sphinxcontrib-httpdomain, sqlalchemy-utils
 snowballstemmer==2.0.0    # via sphinx
 sphinx-rtd-theme==0.4.3   # via -r requirements-docs.in
-sphinx==3.0.3             # via -r requirements-docs.in, sphinx-rtd-theme, sphinxcontrib-httpdomain
+sphinx==3.0.4             # via -r requirements-docs.in, sphinx-rtd-theme, sphinxcontrib-httpdomain
 sphinxcontrib-applehelp==1.0.2  # via sphinx
 sphinxcontrib-devhelp==1.0.2  # via sphinx
 sphinxcontrib-htmlhelp==1.0.3  # via sphinx
