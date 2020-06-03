@@ -35,7 +35,7 @@ def is_valid_domain(domain):
         domain = domain[:-1]
     if len(domain) > 253:
         return False
-    fqdn_re = re.compile("(?=^.{1,63}$)(^(?:[a-z0-9](?:-*[a-z0-9])+)|[a-z0-9]$)", re.IGNORECASE)
+    fqdn_re = re.compile("(?=^.{1,63}$)(^(?:[a-z0-9](?:-*[a-z0-9])+)$|^[a-z0-9]$)", re.IGNORECASE)
     return all(fqdn_re.match(d) for d in domain.split("."))
 
 
