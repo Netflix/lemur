@@ -48,35 +48,42 @@ class FastlyDestinationPlugin(DestinationPlugin):
         :param cert_chain:
         :return:
         """
-        key_id = None
+        priv_id = None
         cert_id = None
-        unique = self.get_option("fastlyUnique", options)
+        name_found = False
         cname = common_name(parse_certificate(body))
         priv_keys = get_all_private_keys()
+        cert_keys = get_all_certificates()
         log_data = {
             "function": inspect.currentframe().f_code.co_name
         }
         for each in priv_keys:
             if each['name'] == cname:
-                key_id = each['id']
-                if each['sha1'] != get_public_key_sha1(private_key):
-                    cert_keys = get_all_certificates()
+                name_found = True
+                if each['sha1'] == get_public_key_sha1(private_key):
+                    priv_id = None
+                    break
+                else:
+                    priv_id = each['id']
                     for cert in cert_keys:
                         if cert['name'] == cname:
-                            cert_id = each['id']
-                            priv_id = key_id
-        if cert_id:
+                            cert_id = cert['id']
+        if priv_id or not name_found:
             post_private_key(private_key, name=cname)
-            post_certificate(body, cert_chain, name=cname)
-            log_data["message"] = f"Certificate updated: ${priv_id}"
+            new_cert_id = post_certificate(body, cert_chain, name=cname)
+            log_data["message"] = f"Certificate updated: {cname}"
             act_id = get_activation(cert_id)
-            if act_id:
-                post_activation(act_id, cert_id)
-                log_data["message"] = f"Certificate updated: ${priv_id} activated: ${act_id}"
-            delete_certificate(priv_id)
+            if len(act_id) > 0 and new_cert_id:
+                for each in act_id:
+                    patch_activation(each, new_cert_id)
+                    log_data["message"] = f"Certificate updated: {new_cert_id} activated: {act_id}"
+            if cert_id:
+                delete_certificate(cert_id)
+            if priv_id:
+                delete_private_key(priv_id)
         else:
             log_data["message"] = f"Certificate up to data, no changes made"
-            current_app.logger.debug(log_data)
+        current_app.logger.debug(log_data)
 
 
 def get_public_key_sha1(private_key):
@@ -128,7 +135,7 @@ def get_all_private_keys():
     except Exception as err:
         log_data['message'] = 'Failure to get all private keys'
         log_data['error'] = err
-        current_app.logger.debug(log_data)
+    current_app.logger.debug(log_data)
     return p_keys
 
 
@@ -161,7 +168,7 @@ def get_private_key(key_id):
     except Exception as err:
         log_data['message'] = f"Failure to get private key: {key_id}"
         log_data['error'] = err
-        current_app.logger.debug(log_data)
+    current_app.logger.debug(log_data)
     return jdata
 
 
@@ -188,18 +195,22 @@ def post_private_key(private_key, name=None):
             }
         }
     }
+    jdata = {}
+    priv_id = None
     log_data = {
         "function": inspect.currentframe().f_code.co_name
     }
     if name is not None:
         data['data']['attributes']['name'] = name
     try:
-        _post(path, data)
+        jdata = _post(path, data)
+        priv_id = jdata['data']['id']
         log_data['message'] = "private key upload: success"
     except Exception as err:
         log_data['message'] = "private key upload: failure"
         log_data['error'] = err
     current_app.logger.debug(log_data)
+    return priv_id
 
 
 def delete_private_key(key_id):
@@ -282,7 +293,7 @@ def get_certificate(key_id):
     }
     try:
         jdata = _get(path)
-        log_data['message'] = f"Fet certificate {key_id} success"
+        log_data['message'] = f"get certificate {key_id} success"
     except Exception as err:
         log_data['message'] = f"get certificate {key_id} failure"
         log_data['error'] = err
@@ -294,6 +305,7 @@ def post_certificate(cert, chain, name=None):
     """upload public certificate"""
     path = '/tls/certificates'
     full_cert = f"{cert}\n{chain}"
+    cert_id = None
     data = {
         "data": {
             "type": "tls_certificate",
@@ -305,15 +317,17 @@ def post_certificate(cert, chain, name=None):
     log_data = {
         "function": inspect.currentframe().f_code.co_name
     }
-    if name is not None:
+    if name:
         data['data']['attributes']['name'] = name
     try:
-        _post(path, data)
+        jdata = _post(path, data)
+        cert_id = jdata['data']['id']
         log_data['message'] = f"certificate upload {name} success"
     except Exception as err:
         log_data['message'] = f"certificate upload {name} failure"
         log_data['error'] = err
     current_app.logger.debug(log_data)
+    return cert_id
 
 
 def patch_certificate(cert, chain, key_id):
@@ -376,7 +390,7 @@ def get_activation(cert_id):
     """get activation by certificate id"""
     path = '/tls/activations'
     jdata = {}
-    act_id = None
+    act_id = []
     log_data = {
         "function": inspect.currentframe().f_code.co_name
     }
@@ -384,7 +398,7 @@ def get_activation(cert_id):
         jdata = _get(path)
         for each in jdata['data']:
             if each['relationships']['tls_certificate']['data']['id'] == cert_id:
-                act_id = each['id']
+                act_id.append(each['id'])
         log_data['message'] = 'activation get success'
     except Exception as err:
         log_data['message'] = 'activation get failure'
@@ -393,7 +407,7 @@ def get_activation(cert_id):
     return act_id
 
 
-def post_activation(act_id, cert_id):
+def patch_activation(act_id, cert_id):
     """update activation to use new certificate"""
     path = f"/tls/activations/{act_id}"
     log_data = {
@@ -462,8 +476,8 @@ def _post(path, payload):
         headers=_generate_header(),
         verify=True
     )
-    print(resp.json)
     resp.raise_for_status()
+    return resp.json()
 
 
 def _patch(path, payload):
