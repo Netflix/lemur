@@ -38,7 +38,7 @@ flask-principal==0.4.0    # via -r requirements.txt
 flask-replicated==1.3     # via -r requirements.txt
 flask-restful==0.3.8      # via -r requirements.txt
 flask-script==2.0.6       # via -r requirements.txt
-flask-sqlalchemy==2.4.1   # via -r requirements.txt, flask-migrate
+flask-sqlalchemy==2.4.3   # via -r requirements.txt, flask-migrate
 flask==1.1.2              # via -r requirements.txt, flask-bcrypt, flask-cors, flask-mail, flask-migrate, flask-principal, flask-restful, flask-script, flask-sqlalchemy, raven
 future==0.18.2            # via -r requirements.txt, cloudflare
 gunicorn==20.0.4          # via -r requirements.txt
