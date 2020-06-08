@@ -3,6 +3,8 @@ FROM alpine:3.8
 ARG VERSION
 ENV VERSION master
 
+ARG URLCONTEXT
+
 ENV uid 1337
 ENV gid 1337
 ENV user lemur
@@ -22,6 +24,7 @@ RUN addgroup -S ${group} -g ${gid} && \
                 gcc \
                 autoconf \
                 automake \
+                libtool \
                 make \
                 nasm  \
                 zlib-dev \
@@ -42,7 +45,7 @@ RUN chown -R $user:$group /opt/lemur/ /home/lemur/.lemur/ && \
     npm install --unsafe-perm && \
     pip3 install -e . && \
     node_modules/.bin/gulp build && \
-    node_modules/.bin/gulp package --urlContextPath=$(urlContextPath) && \
+    node_modules/.bin/gulp package --urlContextPath=${URLCONTEXT} && \
     apk del build-dependencies
 
 COPY docker/entrypoint /
