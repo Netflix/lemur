@@ -31,11 +31,11 @@ class DNSResolveError(DNSError):
 
 def is_valid_domain(domain):
     """Checks if a domain is syntactically valid and returns a bool"""
-    if len(domain) > 253:
-        return False
     if domain[-1] == ".":
         domain = domain[:-1]
-    fqdn_re = re.compile("(?=^.{1,254}$)(^(?:(?!\d+\.|-)[a-zA-Z0-9_\-]{1,63}(?<!-)\.?)+(?:[a-zA-Z]{2,})$)", re.IGNORECASE)
+    if len(domain) > 253:
+        return False
+    fqdn_re = re.compile("(?=^.{1,63}$)(^(?:[a-z0-9_](?:-*[a-z0-9_])+)$|^[a-z0-9]$)", re.IGNORECASE)
     return all(fqdn_re.match(d) for d in domain.split("."))
 
 
