@@ -23,7 +23,7 @@ from lemur.certificates.service import (
     get_certificate_primitives,
     get_all_pending_reissue,
     get_by_name,
-    get_all_certs,
+    get_all_valid_certs,
     get,
     get_all_certs_attached_to_endpoint_without_autorotate,
 )
@@ -636,7 +636,14 @@ def check_revoked():
     encounters an issue with verification it marks the certificate status
     as `unknown`.
     """
-    for cert in get_all_certs():
+
+    log_data = {
+        "function": f"{__name__}.{sys._getframe().f_code.co_name}",
+        "message": "Checking for revoked Certificates"
+    }
+
+    certs = get_all_valid_certs(current_app.config.get("SUPPORTED_REVOCATION_AUTHORITY_PLUGINS", []))
+    for cert in certs:
         try:
             if cert.chain:
                 status = verify_string(cert.body, cert.chain)
@@ -644,6 +651,20 @@ def check_revoked():
                 status = verify_string(cert.body, "")
 
             cert.status = "valid" if status else "revoked"
+
+            if cert.status == "revoked":
+                log_data["valid"] = cert.status
+                log_data["certificate_name"] = cert.name
+                log_data["certificate_id"] = cert.id
+                metrics.send(
+                    "certificate_revoked",
+                    "counter",
+                    1,
+                    metric_tags={"status": log_data["valid"],
+                                 "certificate_name": log_data["certificate_name"],
+                                 "certificate_id": log_data["certificate_id"]},
+                )
+                current_app.logger.info(log_data)
 
         except Exception as e:
             sentry.captureException()
