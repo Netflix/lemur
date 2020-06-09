@@ -65,7 +65,7 @@ python-dateutil==2.8.1    # via botocore, faker, freezegun, moto
 python-jose==3.1.0        # via moto
 pytz==2019.3              # via moto
 pyyaml==5.3.1             # via -r requirements-tests.in, bandit, cfn-lint, moto
-redis==3.5.2              # via fakeredis
+redis==3.5.3              # via fakeredis
 regex==2020.4.4           # via black
 requests-mock==1.8.0      # via -r requirements-tests.in
 requests==2.23.0          # via docker, moto, requests-mock, responses
