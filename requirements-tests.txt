@@ -12,8 +12,8 @@ bandit==1.6.2             # via -r requirements-tests.in
 black==19.10b0            # via -r requirements-tests.in
 boto3==1.13.19            # via aws-sam-translator, moto
 boto==2.49.0              # via moto
-botocore==1.16.19         # via aws-xray-sdk, boto3, moto, s3transfer
-certifi==2020.4.5.1       # via requests
+botocore==1.16.25         # via aws-xray-sdk, boto3, moto, s3transfer
+certifi==2020.4.5.2       # via requests
 cffi==1.14.0              # via cryptography
 cfn-lint==0.29.5          # via moto
 chardet==3.0.4            # via requests
@@ -59,13 +59,13 @@ pyflakes==2.2.0           # via -r requirements-tests.in
 pyparsing==2.4.7          # via packaging
 pyrsistent==0.16.0        # via jsonschema
 pytest-flask==1.0.0       # via -r requirements-tests.in
-pytest-mock==3.1.0        # via -r requirements-tests.in
-pytest==5.4.2             # via -r requirements-tests.in, pytest-flask, pytest-mock
+pytest-mock==3.1.1        # via -r requirements-tests.in
+pytest==5.4.3             # via -r requirements-tests.in, pytest-flask, pytest-mock
 python-dateutil==2.8.1    # via botocore, faker, freezegun, moto
 python-jose==3.1.0        # via moto
 pytz==2019.3              # via moto
 pyyaml==5.3.1             # via -r requirements-tests.in, bandit, cfn-lint, moto
-redis==3.5.2              # via fakeredis
+redis==3.5.3              # via fakeredis
 regex==2020.4.4           # via black
 requests-mock==1.8.0      # via -r requirements-tests.in
 requests==2.23.0          # via docker, moto, requests-mock, responses
