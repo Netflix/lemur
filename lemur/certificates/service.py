@@ -20,6 +20,7 @@ from lemur.common.utils import generate_private_key, truthiness
 from lemur.destinations.models import Destination
 from lemur.domains.models import Domain
 from lemur.extensions import metrics, sentry, signals
+from lemur.models import certificate_associations
 from lemur.notifications.models import Notification
 from lemur.pending_certificates.models import PendingCertificate
 from lemur.plugins.base import plugins
@@ -455,8 +456,8 @@ def render(args):
         elif "cn" in terms:
             query = query.filter(
                 or_(
-                    Certificate.cn.ilike(term),
-                    Certificate.domains.any(Domain.name.ilike(term)),
+                    func.lower(Certificate.cn).like(term.lower()),
+                    Certificate.id.in_(like_domain_query(term)),
                 )
             )
         elif "id" in terms:
@@ -464,9 +465,9 @@ def render(args):
         elif "name" in terms:
             query = query.filter(
                 or_(
-                    Certificate.name.ilike(term),
-                    Certificate.domains.any(Domain.name.ilike(term)),
-                    Certificate.cn.ilike(term),
+                    func.lower(Certificate.name).like(term.lower()),
+                    Certificate.id.in_(like_domain_query(term)),
+                    func.lower(Certificate.cn).like(term.lower()),
                 )
             )
         elif "fixedName" in terms:
@@ -509,6 +510,14 @@ def render(args):
 
     result = database.sort_and_page(query, Certificate, args)
     return result
+
+
+def like_domain_query(term):
+    domain_query = database.session_query(Domain.id)
+    domain_query = domain_query.filter(func.lower(Domain.name).like(term.lower()))
+    assoc_query = database.session_query(certificate_associations.c.certificate_id)
+    assoc_query = assoc_query.filter(certificate_associations.c.domain_id.in_(domain_query))
+    return assoc_query
 
 
 def query_name(certificate_name, args):
