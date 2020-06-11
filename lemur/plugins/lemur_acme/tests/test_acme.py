@@ -2,9 +2,8 @@ import unittest
 from unittest.mock import patch, Mock
 
 from cryptography.x509 import DNSName
-from lemur.plugins.lemur_acme import plugin, ultradns
+from lemur.plugins.lemur_acme import plugin
 from mock import MagicMock
-from requests.models import Response
 
 
 class TestAcme(unittest.TestCase):
@@ -387,4 +386,3 @@ class TestAcme(unittest.TestCase):
         mock_request_certificate.return_value = ("pem_certificate", "chain")
         result = provider.create_certificate(csr, issuer_options)
         assert result
-
