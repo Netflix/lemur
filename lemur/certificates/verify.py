@@ -153,6 +153,7 @@ def verify(cert_path, issuer_chain_path):
 
     # OCSP is our main source of truth, in a lot of cases CRLs
     # have been deprecated and are no longer updated
+    verify_result = None
     try:
         verify_result = ocsp_verify(cert, cert_path, issuer_chain_path)
     except Exception as e:
