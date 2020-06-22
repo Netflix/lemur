@@ -68,7 +68,7 @@ pyyaml==5.3.1             # via -r requirements-tests.in, bandit, cfn-lint, moto
 redis==3.5.3              # via fakeredis
 regex==2020.4.4           # via black
 requests-mock==1.8.0      # via -r requirements-tests.in
-requests==2.23.0          # via docker, moto, requests-mock, responses
+requests==2.24.0          # via docker, moto, requests-mock, responses
 responses==0.10.12        # via moto
 rsa==4.0                  # via python-jose
 s3transfer==0.3.3         # via boto3
