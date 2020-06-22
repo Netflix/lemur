@@ -34,11 +34,11 @@ flask-cors==3.0.8         # via -r requirements.in
 flask-mail==0.9.1         # via -r requirements.in
 flask-migrate==2.5.3      # via -r requirements.in
 flask-principal==0.4.0    # via -r requirements.in
-flask-replicated==1.3     # via -r requirements.in
 flask-restful==0.3.8      # via -r requirements.in
 flask-script==2.0.6       # via -r requirements.in
 flask-sqlalchemy==2.4.3   # via -r requirements.in, flask-migrate
 flask==1.1.2              # via -r requirements.in, flask-bcrypt, flask-cors, flask-mail, flask-migrate, flask-principal, flask-restful, flask-script, flask-sqlalchemy, raven
+flask_replicated==1.4     # via -r requirements.in
 future==0.18.2            # via -r requirements.in
 gunicorn==20.0.4          # via -r requirements.in
 hvac==0.10.4              # via -r requirements.in
