@@ -9,7 +9,7 @@ alembic-autogenerate-enums==0.0.2  # via -r requirements.in
 alembic==1.4.2            # via flask-migrate
 amqp==2.5.2               # via kombu
 aniso8601==8.0.0          # via flask-restful
-arrow==0.15.6             # via -r requirements.in
+arrow==0.15.7             # via -r requirements.in
 asyncpool==1.0            # via -r requirements.in
 bcrypt==3.1.7             # via flask-bcrypt, paramiko
 beautifulsoup4==4.9.1     # via cloudflare
@@ -34,11 +34,11 @@ flask-cors==3.0.8         # via -r requirements.in
 flask-mail==0.9.1         # via -r requirements.in
 flask-migrate==2.5.3      # via -r requirements.in
 flask-principal==0.4.0    # via -r requirements.in
+flask-replicated==1.4     # via -r requirements.in
 flask-restful==0.3.8      # via -r requirements.in
 flask-script==2.0.6       # via -r requirements.in
 flask-sqlalchemy==2.4.3   # via -r requirements.in, flask-migrate
 flask==1.1.2              # via -r requirements.in, flask-bcrypt, flask-cors, flask-mail, flask-migrate, flask-principal, flask-restful, flask-script, flask-sqlalchemy, raven
-flask_replicated==1.4     # via -r requirements.in
 future==0.18.2            # via -r requirements.in
 gunicorn==20.0.4          # via -r requirements.in
 hvac==0.10.4              # via -r requirements.in
