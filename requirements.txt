@@ -40,7 +40,7 @@ flask-sqlalchemy==2.4.3   # via -r requirements.in, flask-migrate
 flask==1.1.2              # via -r requirements.in, flask-bcrypt, flask-cors, flask-mail, flask-migrate, flask-principal, flask-restful, flask-script, flask-sqlalchemy, raven
 future==0.18.2            # via -r requirements.in, cloudflare
 gunicorn==20.0.4          # via -r requirements.in
-hvac==0.10.3              # via -r requirements.in
+hvac==0.10.4              # via -r requirements.in
 idna==2.9                 # via requests
 inflection==0.5.0         # via -r requirements.in
 itsdangerous==1.1.0       # via flask

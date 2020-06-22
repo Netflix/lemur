@@ -42,7 +42,7 @@ flask-sqlalchemy==2.4.3   # via -r requirements.txt, flask-migrate
 flask==1.1.2              # via -r requirements.txt, flask-bcrypt, flask-cors, flask-mail, flask-migrate, flask-principal, flask-restful, flask-script, flask-sqlalchemy, raven
 future==0.18.2            # via -r requirements.txt, cloudflare
 gunicorn==20.0.4          # via -r requirements.txt
-hvac==0.10.3              # via -r requirements.txt
+hvac==0.10.4              # via -r requirements.txt
 idna==2.9                 # via -r requirements.txt, requests
 imagesize==1.2.0          # via sphinx
 inflection==0.5.0         # via -r requirements.txt
