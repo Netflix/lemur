@@ -90,7 +90,7 @@ s3transfer==0.3.3         # via -r requirements.txt, boto3
 six==1.15.0               # via -r requirements.txt, acme, bcrypt, cryptography, flask-cors, flask-restful, hvac, josepy, jsonlines, packaging, pynacl, pyopenssl, python-dateutil, retrying, sphinxcontrib-httpdomain, sqlalchemy-utils
 snowballstemmer==2.0.0    # via sphinx
 sphinx-rtd-theme==0.5.0   # via -r requirements-docs.in
-sphinx==3.1.0             # via -r requirements-docs.in, sphinx-rtd-theme, sphinxcontrib-httpdomain
+sphinx==3.1.1             # via -r requirements-docs.in, sphinx-rtd-theme, sphinxcontrib-httpdomain
 sphinxcontrib-applehelp==1.0.2  # via sphinx
 sphinxcontrib-devhelp==1.0.2  # via sphinx
 sphinxcontrib-htmlhelp==1.0.3  # via sphinx
