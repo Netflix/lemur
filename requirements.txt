@@ -72,7 +72,7 @@ pyrfc3339==1.1            # via acme
 python-dateutil==2.8.1    # via alembic, arrow, botocore
 python-editor==1.0.4      # via alembic
 python-json-logger==0.1.11  # via logmatic-python
-python-ldap==3.2.0        # via -r requirements.in
+python_ldap==3.3.0        # via -r requirements.in
 pytz==2019.3              # via acme, celery, flask-restful, pyrfc3339
 pyyaml==5.3.1             # via -r requirements.in, cloudflare
 raven[flask]==6.10.0      # via -r requirements.in
