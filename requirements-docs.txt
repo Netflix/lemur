@@ -20,7 +20,7 @@ blinker==1.4              # via -r requirements.txt, flask-mail, flask-principal
 boto3==1.14.8             # via -r requirements.txt
 botocore==1.17.8          # via -r requirements.txt, boto3, s3transfer
 celery[redis]==4.4.2      # via -r requirements.txt
-certifi==2020.4.5.2       # via -r requirements.txt, requests
+certifi==2020.6.20        # via -r requirements.txt, requests
 certsrv==2.1.1            # via -r requirements.txt
 cffi==1.14.0              # via -r requirements.txt, bcrypt, cryptography, pynacl
 chardet==3.0.4            # via -r requirements.txt, requests
