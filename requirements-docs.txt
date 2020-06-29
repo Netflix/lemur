@@ -25,7 +25,7 @@ certsrv==2.1.1            # via -r requirements.txt
 cffi==1.14.0              # via -r requirements.txt, bcrypt, cryptography, pynacl
 chardet==3.0.4            # via -r requirements.txt, requests
 click==7.1.1              # via -r requirements.txt, flask
-cloudflare==2.8.2         # via -r requirements.txt
+cloudflare==2.8.3         # via -r requirements.txt
 cryptography==2.9.2       # via -r requirements.txt, acme, josepy, paramiko, pyopenssl, requests
 dnspython3==1.15.0        # via -r requirements.txt
 dnspython==1.15.0         # via -r requirements.txt, dnspython3
