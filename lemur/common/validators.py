@@ -99,8 +99,12 @@ def csr(data):
         raise ValidationError("CSR presented is not valid.")
 
     # Validate common name and SubjectAltNames
-    for name in request.subject.get_attributes_for_oid(NameOID.COMMON_NAME):
-        common_name(name.value)
+    try:
+        for name in request.subject.get_attributes_for_oid(NameOID.COMMON_NAME):
+            common_name(name.value)
+    except ValueError as err:
+        current_app.logger.info("Error parsing Subject from CSR: %s", err)
+        raise ValidationError("Invalid Subject value in supplied CSR")
 
     try:
         alt_names = request.extensions.get_extension_for_class(
