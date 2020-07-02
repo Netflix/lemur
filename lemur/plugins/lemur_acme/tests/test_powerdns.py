@@ -91,7 +91,7 @@ class TestPowerdns(unittest.TestCase):
             "token": token,
             "message": "TXT record(s) successfully created"
         }
-        expected_path = f"/api/v1/servers/localhost/zones/test.example.com."
+        expected_path = "/api/v1/servers/localhost/zones/test.example.com."
         expected_payload = {
             "rrsets": [
                 {
