@@ -24,7 +24,7 @@ keyring==21.2.0           # via twine
 mccabe==0.6.1             # via flake8
 nodeenv==1.4.0            # via -r requirements-dev.in, pre-commit
 pkginfo==1.5.0.1          # via twine
-pre-commit==2.5.1         # via -r requirements-dev.in
+pre-commit==2.6.0         # via -r requirements-dev.in
 pycodestyle==2.3.1        # via flake8
 pycparser==2.20           # via cffi
 pyflakes==1.6.0           # via flake8
