@@ -24,7 +24,12 @@ from lemur.certificates.service import create_csr
 def build_certificate_authority(options):
     options["certificate_authority"] = True
     csr, private_key = create_csr(**options)
-    cert_pem, chain_cert_pem = issue_certificate(csr, options, private_key)
+
+    if options.get("parent"):
+        # Intermediate Cert Issuance
+        cert_pem, chain_cert_pem = issue_certificate(csr, options, None)
+    else:
+        cert_pem, chain_cert_pem = issue_certificate(csr, options, private_key)
 
     return cert_pem, private_key, chain_cert_pem
 
