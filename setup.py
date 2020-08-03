@@ -45,16 +45,20 @@ with open(os.path.join(ROOT, 'lemur', '__about__.py')) as f:
     exec(f.read(), about)  # nosec: about file is benign
 
 install_requires_g = parse_requirements("requirements.txt", session=PipSession())
-install_requires = [str(ir.req) for ir in install_requires_g]
-
 tests_require_g = parse_requirements("requirements-tests.txt", session=PipSession())
-tests_require = [str(ir.req) for ir in tests_require_g]
-
 docs_require_g = parse_requirements("requirements-docs.txt", session=PipSession())
-docs_require = [str(ir.req) for ir in docs_require_g]
-
 dev_requires_g = parse_requirements("requirements-dev.txt", session=PipSession())
-dev_requires = [str(ir.req) for ir in dev_requires_g]
+
+if tuple(map(int, pip.__version__.split('.'))) >= (20, 1):
+    install_requires = [str(ir.requirement) for ir in install_requires_g]
+    tests_require = [str(ir.requirement) for ir in tests_require_g]
+    docs_require = [str(ir.requirement) for ir in docs_require_g]
+    dev_requires = [str(ir.requirement) for ir in dev_requires_g]
+else:
+    install_requires = [str(ir.req) for ir in install_requires_g]
+    tests_require = [str(ir.req) for ir in tests_require_g]
+    docs_require = [str(ir.req) for ir in docs_require_g]
+    dev_requires = [str(ir.req) for ir in dev_requires_g]
 
 
 class SmartInstall(install):

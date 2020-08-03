@@ -8,6 +8,7 @@
 import requests
 import subprocess
 from flask import current_app
+from lemur.extensions import sentry
 from requests.exceptions import ConnectionError, InvalidSchema
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
@@ -152,10 +153,19 @@ def verify(cert_path, issuer_chain_path):
 
     # OCSP is our main source of truth, in a lot of cases CRLs
     # have been deprecated and are no longer updated
-    verify_result = ocsp_verify(cert, cert_path, issuer_chain_path)
+    verify_result = None
+    try:
+        verify_result = ocsp_verify(cert, cert_path, issuer_chain_path)
+    except Exception as e:
+        sentry.captureException()
+        current_app.logger.exception(e)
 
     if verify_result is None:
-        verify_result = crl_verify(cert, cert_path)
+        try:
+            verify_result = crl_verify(cert, cert_path)
+        except Exception as e:
+            sentry.captureException()
+            current_app.logger.exception(e)
 
     if verify_result is None:
         current_app.logger.debug("Failed to verify {}".format(cert.serial_number))

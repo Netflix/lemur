@@ -24,6 +24,12 @@ def retry_throttled(exception):
         if exception.response["Error"]["Code"] == "NoSuchEntity":
             return False
 
+        # No need to retry deletion requests if there is a DeleteConflict error.
+        # This error indicates that the certificate is still attached to an entity
+        # and cannot be deleted.
+        if exception.response["Error"]["Code"] == "DeleteConflict":
+            return False
+
     metrics.send("iam_retry", "counter", 1, metric_tags={"exception": str(exception)})
     return True
 
