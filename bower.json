@@ -24,7 +24,7 @@
     "angularjs-toaster": "~1.0.0",
     "angular-chart.js": "~0.8.8",
     "ngletteravatar": "~4.0.0",
-    "bootswatch": "~3.4.1",
+    "bootswatch": "3.4.1+1",
     "fontawesome": "~4.5.0",
     "satellizer": "~0.13.4",
     "angular-ui-router": "~0.2.15",
