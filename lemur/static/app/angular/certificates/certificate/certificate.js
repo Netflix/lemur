@@ -215,11 +215,14 @@ angular.module('lemur')
   $scope.certificate = LemurRestangular.restangularizeElement(null, {}, 'certificates');
   CertificateApi.get(editId).then(function (certificate) {
     $scope.certificate = certificate;
+    // prepare the certificate for cloning
     $scope.certificate.name = ''; // we should prefer the generated name
     $scope.certificate.csr = null;  // should not clone CSR in case other settings are changed in clone
     $scope.certificate.validityStart = null;
     $scope.certificate.validityEnd = null;
     $scope.certificate.keyType = 'RSA2048'; // default algo to show during clone
+    $scope.certificate.replacedBy = []; // should not clone 'replaced by' info
+    $scope.certificate.removeReplaces(); // should not clone 'replacement cert' info
     CertificateService.getDefaults($scope.certificate);
   });
 
