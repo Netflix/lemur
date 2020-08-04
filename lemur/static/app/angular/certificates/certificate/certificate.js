@@ -212,12 +212,14 @@ angular.module('lemur')
   })
 
 .controller('CertificateCloneController', function ($scope, $uibModalInstance, CertificateApi, CertificateService, DestinationService, AuthorityService, AuthorityApi, PluginService, MomentService, WizardHandler, LemurRestangular, NotificationService, toaster, editId) {
+  $scope.certificate = LemurRestangular.restangularizeElement(null, {}, 'certificates');
   CertificateApi.get(editId).then(function (certificate) {
     $scope.certificate = certificate;
     $scope.certificate.name = ''; // we should prefer the generated name
     $scope.certificate.csr = null;  // should not clone CSR in case other settings are changed in clone
     $scope.certificate.validityStart = null;
     $scope.certificate.validityEnd = null;
+    $scope.certificate.keyType = 'RSA2048'; // default algo to show during clone
     CertificateService.getDefaults($scope.certificate);
   });
 
