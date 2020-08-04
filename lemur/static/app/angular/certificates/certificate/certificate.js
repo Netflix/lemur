@@ -221,6 +221,7 @@ angular.module('lemur')
     $scope.certificate.validityStart = null;
     $scope.certificate.validityEnd = null;
     $scope.certificate.keyType = 'RSA2048'; // default algo to show during clone
+    $scope.certificate.description = 'Cloning from cert ID ' + editId;
     $scope.certificate.replacedBy = []; // should not clone 'replaced by' info
     $scope.certificate.removeReplaces(); // should not clone 'replacement cert' info
     CertificateService.getDefaults($scope.certificate);
