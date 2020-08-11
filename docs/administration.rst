@@ -729,16 +729,16 @@ The following configuration properties are required to use the Digicert issuer p
             This is the root to be used for your CA chain
 
 
-.. data:: DIGICERT_DEFAULT_VALIDITY
+.. data:: DIGICERT_DEFAULT_VALIDITY_DAYS
     :noindex:
 
-            This is the default validity (in years), if no end date is specified. (Default: 1)
+            This is the default validity (in days), if no end date is specified. (Default: 397)
 
 
-.. data:: DIGICERT_MAX_VALIDITY
+.. data:: DIGICERT_MAX_VALIDITY_DAYS
     :noindex:
 
-            This is the maximum validity (in years). (Default: value of DIGICERT_DEFAULT_VALIDITY)
+            This is the maximum validity (in days). (Default: value of DIGICERT_DEFAULT_VALIDITY_DAYS)
 
 
 .. data:: DIGICERT_PRIVATE
