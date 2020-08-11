@@ -155,7 +155,7 @@ def dates(data):
             # Allow no more than PUBLIC_CA_MAX_VALIDITY_DAYS (Default: 397) days of validity
             # for certs issued by public CA
             # The list of public issuers can be managed through a config named PUBLIC_CA
-            public_CA = current_app.config.get("PUBLIC_CA", [])
+            public_CA = current_app.config.get("PUBLIC_CA_AUTHORITY_NAMES", [])
             if data["authority"].name.lower() in [ca.lower() for ca in public_CA]:
                 max_validity_days = current_app.config.get("PUBLIC_CA_MAX_VALIDITY_DAYS", 397)
                 if (
