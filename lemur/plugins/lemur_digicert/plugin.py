@@ -82,11 +82,11 @@ def determine_end_date(end_date):
     :param end_date:
     :return: validity_end
     """
-    default_years = current_app.config.get("DIGICERT_DEFAULT_VALIDITY", 1)
-    max_validity_end = arrow.utcnow().shift(years=current_app.config.get("DIGICERT_MAX_VALIDITY", default_years))
+    default_days = current_app.config.get("DIGICERT_DEFAULT_VALIDITY_DAYS", 397)
+    max_validity_end = arrow.utcnow().shift(days=current_app.config.get("DIGICERT_MAX_VALIDITY_DAYS", default_days))
 
     if not end_date:
-        end_date = arrow.utcnow().shift(years=default_years)
+        end_date = arrow.utcnow().shift(days=default_days)
 
     if end_date > max_validity_end:
         end_date = max_validity_end
