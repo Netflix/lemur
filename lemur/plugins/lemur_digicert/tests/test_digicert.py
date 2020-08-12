@@ -14,8 +14,6 @@ def config_mock(*args):
         "DIGICERT_ORG_ID": 111111,
         "DIGICERT_PRIVATE": False,
         "DIGICERT_DEFAULT_SIGNING_ALGORITHM": "sha256",
-        "DIGICERT_DEFAULT_VALIDITY": 1,
-        "DIGICERT_MAX_VALIDITY": 2,
         "DIGICERT_CIS_PROFILE_NAMES": {"digicert": 'digicert'},
         "DIGICERT_CIS_SIGNING_ALGORITHMS": {"digicert": 'digicert'},
     }
@@ -24,10 +22,9 @@ def config_mock(*args):
 
 @patch("lemur.plugins.lemur_digicert.plugin.current_app")
 def test_determine_validity_years(mock_current_app):
-    mock_current_app.config.get = Mock(return_value=2)
     assert plugin.determine_validity_years(1) == 1
-    assert plugin.determine_validity_years(0) == 2
-    assert plugin.determine_validity_years(3) == 2
+    assert plugin.determine_validity_years(0) == 1
+    assert plugin.determine_validity_years(3) == 1
 
 
 @patch("lemur.plugins.lemur_digicert.plugin.current_app")
@@ -52,7 +49,7 @@ def test_map_fields_with_validity_years(mock_current_app):
             "owner": "bob@example.com",
             "description": "test certificate",
             "extensions": {"sub_alt_names": {"names": [x509.DNSName(x) for x in names]}},
-            "validity_years": 2
+            "validity_years": 1
         }
         expected = {
             "certificate": {
@@ -62,7 +59,7 @@ def test_map_fields_with_validity_years(mock_current_app):
                 "signature_hash": "sha256",
             },
             "organization": {"id": 111111},
-            "validity_years": 2,
+            "validity_years": 1,
         }
         assert expected == plugin.map_fields(options, CSR_STR)
 

@@ -61,18 +61,16 @@ def signature_hash(signing_algorithm):
 
 
 def determine_validity_years(years):
-    """Given an end date determine how many years into the future that date is.
-    :param years:
-    :return: validity in years
     """
-    default_years = current_app.config.get("DIGICERT_DEFAULT_VALIDITY", 1)
-    max_years = current_app.config.get("DIGICERT_MAX_VALIDITY", default_years)
+    Considering maximum allowed certificate validity period of 398 days, this method should not return
+    more than 1 year of validity. Thus changing it to return 1.
+    Lemur will change this method in future to handle validity in months (determine_validity_months)
+    instead of years. This will allow flexibility to handle short-lived certificates.
 
-    if years > max_years:
-        return max_years
-    if years not in [1, 2, 3]:
-        return default_years
-    return years
+    :param years:
+    :return: 1
+    """
+    return 1
 
 
 def determine_end_date(end_date):
