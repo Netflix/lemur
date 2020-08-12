@@ -62,8 +62,8 @@ def signature_hash(signing_algorithm):
 
 def determine_validity_years(years):
     """
-    Considering maximum allowed certificate validity period of 398 days, this method should not return
-    more than 1 year of validity. Thus changing it to return 1.
+    Considering maximum allowed certificate validity period of 397 days, this method should not return
+    more than 1 year of validity. Thus changing it to always return 1.
     Lemur will change this method in future to handle validity in months (determine_validity_months)
     instead of years. This will allow flexibility to handle short-lived certificates.
 
