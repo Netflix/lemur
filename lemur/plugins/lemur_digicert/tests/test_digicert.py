@@ -32,11 +32,11 @@ def test_determine_validity_years(mock_current_app):
 
 @patch("lemur.plugins.lemur_digicert.plugin.current_app")
 def test_determine_end_date(mock_current_app):
-    mock_current_app.config.get = Mock(return_value=2)
+    mock_current_app.config.get = Mock(return_value=397)  # 397 days validity
     with freeze_time(time_to_freeze=arrow.get(2016, 11, 3).datetime):
-        assert arrow.get(2018, 11, 3) == plugin.determine_end_date(0)
-        assert arrow.get(2018, 5, 7) == plugin.determine_end_date(arrow.get(2018, 5, 7))
-        assert arrow.get(2018, 11, 3) == plugin.determine_end_date(arrow.get(2020, 5, 7))
+        assert arrow.get(2017, 12, 5) == plugin.determine_end_date(0)  # 397 days from (2016, 11, 3)
+        assert arrow.get(2017, 12, 5) == plugin.determine_end_date(arrow.get(2017, 12, 5))
+        assert arrow.get(2017, 12, 5) == plugin.determine_end_date(arrow.get(2020, 5, 7))
 
 
 @patch("lemur.plugins.lemur_digicert.plugin.current_app")
