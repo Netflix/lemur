@@ -240,7 +240,7 @@ and are used when Lemur creates the CSR for your certificates.
 
     ::
 
-        LEMUR_DEFAULT_ORGANIZATIONAL_UNIT = "Operations"
+        LEMUR_DEFAULT_ORGANIZATIONAL_UNIT = ""
 
 
 .. data:: LEMUR_DEFAULT_ISSUER_PLUGIN
