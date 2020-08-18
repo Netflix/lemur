@@ -14,8 +14,6 @@ def config_mock(*args):
         "DIGICERT_ORG_ID": 111111,
         "DIGICERT_PRIVATE": False,
         "DIGICERT_DEFAULT_SIGNING_ALGORITHM": "sha256",
-        "DIGICERT_DEFAULT_VALIDITY": 1,
-        "DIGICERT_MAX_VALIDITY": 2,
         "DIGICERT_CIS_PROFILE_NAMES": {"digicert": 'digicert'},
         "DIGICERT_CIS_SIGNING_ALGORITHMS": {"digicert": 'digicert'},
     }
@@ -24,19 +22,18 @@ def config_mock(*args):
 
 @patch("lemur.plugins.lemur_digicert.plugin.current_app")
 def test_determine_validity_years(mock_current_app):
-    mock_current_app.config.get = Mock(return_value=2)
     assert plugin.determine_validity_years(1) == 1
-    assert plugin.determine_validity_years(0) == 2
-    assert plugin.determine_validity_years(3) == 2
+    assert plugin.determine_validity_years(0) == 1
+    assert plugin.determine_validity_years(3) == 1
 
 
 @patch("lemur.plugins.lemur_digicert.plugin.current_app")
 def test_determine_end_date(mock_current_app):
-    mock_current_app.config.get = Mock(return_value=2)
+    mock_current_app.config.get = Mock(return_value=397)  # 397 days validity
     with freeze_time(time_to_freeze=arrow.get(2016, 11, 3).datetime):
-        assert arrow.get(2018, 11, 3) == plugin.determine_end_date(0)
-        assert arrow.get(2018, 5, 7) == plugin.determine_end_date(arrow.get(2018, 5, 7))
-        assert arrow.get(2018, 11, 3) == plugin.determine_end_date(arrow.get(2020, 5, 7))
+        assert arrow.get(2017, 12, 5) == plugin.determine_end_date(0)  # 397 days from (2016, 11, 3)
+        assert arrow.get(2017, 12, 5) == plugin.determine_end_date(arrow.get(2017, 12, 5))
+        assert arrow.get(2017, 12, 5) == plugin.determine_end_date(arrow.get(2020, 5, 7))
 
 
 @patch("lemur.plugins.lemur_digicert.plugin.current_app")
@@ -52,7 +49,7 @@ def test_map_fields_with_validity_years(mock_current_app):
             "owner": "bob@example.com",
             "description": "test certificate",
             "extensions": {"sub_alt_names": {"names": [x509.DNSName(x) for x in names]}},
-            "validity_years": 2
+            "validity_years": 1
         }
         expected = {
             "certificate": {
@@ -62,7 +59,7 @@ def test_map_fields_with_validity_years(mock_current_app):
                 "signature_hash": "sha256",
             },
             "organization": {"id": 111111},
-            "validity_years": 2,
+            "validity_years": 1,
         }
         assert expected == plugin.map_fields(options, CSR_STR)
 
