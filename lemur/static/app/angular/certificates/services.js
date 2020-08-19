@@ -167,8 +167,10 @@ angular.module('lemur')
         },
         setValidityEndDateRange: function (value) {
           // clear selected validity end date as we are about to calculate new range
-          if(this.validityEnd) this.validityEnd = '';
-
+          if(this.validityEnd) {
+            this.validityEnd = '';
+          }
+          
           // Minimum end date will be same as selected start date
           this.authority.authorityCertificate.minValidityEnd = value;
 
