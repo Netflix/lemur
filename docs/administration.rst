@@ -172,15 +172,15 @@ Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create c
         PUBLIC_CA_MAX_VALIDITY_DAYS = 365
 
 
-.. data:: INTERNAL_CA_MAX_VALIDITY_DAYS
+.. data:: DEFAULT_MAX_VALIDITY_DAYS
     :noindex:
-        Use this config to override the limit of 365 days of validity for certificates issued by internal CA. Any CA which is
-        not listed in PUBLIC_CA_AUTHORITY_NAMES will be treated as internal. Below example overrides the default validity of
-        365 days and sets it to 90 days.
+        Use this config to override the default limit of 1095 days (3 years) of validity. Any CA which is not listed in
+        PUBLIC_CA_AUTHORITY_NAMES will be using this validity to display date range on UI. Below example overrides the
+        default validity of 1095 days and sets it to 365 days.
 
     ::
 
-        INTERNAL_CA_MAX_VALIDITY_DAYS = 90
+        DEFAULT_MAX_VALIDITY_DAYS = 365
 
 
 .. data:: DEBUG_DUMP
