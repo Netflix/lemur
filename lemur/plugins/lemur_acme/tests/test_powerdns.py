@@ -1,5 +1,5 @@
 import unittest
-from mock import Mock, patch
+from unittest.mock import patch, Mock
 from lemur.plugins.lemur_acme import plugin, powerdns
 
 
@@ -48,13 +48,14 @@ class TestPowerdns(unittest.TestCase):
         self.assertEqual(result, zone)
 
     @patch("lemur.plugins.lemur_acme.powerdns.current_app")
-    def test_create_txt_record(self, mock_current_app):
+    def test_create_txt_record_write_only(self, mock_current_app):
         domain = "_acme_challenge.test.example.com"
         zone = "test.example.com"
         token = "ABCDEFGHIJ"
         account_number = "1234567890"
         change_id = (domain, token)
         powerdns._check_conf = Mock()
+        powerdns._get_txt_records = Mock(return_value=[])
         powerdns._get_zone_name = Mock(return_value=zone)
         mock_current_app.logger.debug = Mock()
         mock_current_app.config.get = Mock(return_value="localhost")
@@ -63,10 +64,59 @@ class TestPowerdns(unittest.TestCase):
             "function": "create_txt_record",
             "fqdn": domain,
             "token": token,
-            "message": "TXT record successfully created"
+            "message": "TXT record(s) successfully created"
         }
         result = powerdns.create_txt_record(domain, token, account_number)
         mock_current_app.logger.debug.assert_called_with(log_data)
+        self.assertEqual(result, change_id)
+
+    @patch("lemur.plugins.lemur_acme.powerdns.current_app")
+    def test_create_txt_record_append(self, mock_current_app):
+        domain = "_acme_challenge.test.example.com"
+        zone = "test.example.com"
+        token = "ABCDEFGHIJ"
+        account_number = "1234567890"
+        change_id = (domain, token)
+        powerdns._check_conf = Mock()
+        cur_token = "123456"
+        cur_records = [powerdns.Record({'name': domain, 'content': f"\"{cur_token}\"", 'disabled': False})]
+        powerdns._get_txt_records = Mock(return_value=cur_records)
+        powerdns._get_zone_name = Mock(return_value=zone)
+        mock_current_app.logger.debug = Mock()
+        mock_current_app.config.get = Mock(return_value="localhost")
+        powerdns._patch = Mock()
+        log_data = {
+            "function": "create_txt_record",
+            "fqdn": domain,
+            "token": token,
+            "message": "TXT record(s) successfully created"
+        }
+        expected_path = "/api/v1/servers/localhost/zones/test.example.com."
+        expected_payload = {
+            "rrsets": [
+                {
+                    "name": domain + ".",
+                    "type": "TXT",
+                    "ttl": 300,
+                    "changetype": "REPLACE",
+                    "records": [
+                        {
+                            "content": f"\"{token}\"",
+                            "disabled": False
+                        },
+                        {
+                            "content": f"\"{cur_token}\"",
+                            "disabled": False
+                        }
+                    ],
+                    "comments": []
+                }
+            ]
+        }
+
+        result = powerdns.create_txt_record(domain, token, account_number)
+        mock_current_app.logger.debug.assert_called_with(log_data)
+        powerdns._patch.assert_called_with(expected_path, expected_payload)
         self.assertEqual(result, change_id)
 
     @patch("lemur.plugins.lemur_acme.powerdns.dnsutil")
@@ -75,12 +125,13 @@ class TestPowerdns(unittest.TestCase):
     @patch("time.sleep")
     def test_wait_for_dns_change(self, mock_sleep, mock_metrics, mock_current_app, mock_dnsutil):
         domain = "_acme-challenge.test.example.com"
-        token = "ABCDEFG"
+        token1 = "ABCDEFG"
+        token2 = "HIJKLMN"
         zone_name = "test.example.com"
         nameserver = "1.1.1.1"
-        change_id = (domain, token)
+        change_id = (domain, token1)
         powerdns._check_conf = Mock()
-        mock_records = (token,)
+        mock_records = (token2, token1)
         mock_current_app.config.get = Mock(return_value=1)
         powerdns._get_zone_name = Mock(return_value=zone_name)
         mock_dnsutil.get_authoritative_nameserver = Mock(return_value=nameserver)
@@ -114,7 +165,7 @@ class TestPowerdns(unittest.TestCase):
             "function": "delete_txt_record",
             "fqdn": domain,
             "token": token,
-            "message": "TXT record successfully deleted"
+            "message": "Unable to delete TXT record: Token not found in existing TXT records"
         }
         powerdns.delete_txt_record(change_id, account_number, domain, token)
         mock_current_app.logger.debug.assert_called_with(log_data)

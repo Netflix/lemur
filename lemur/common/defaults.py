@@ -2,6 +2,7 @@ import re
 import unicodedata
 
 from cryptography import x509
+from cryptography.hazmat.primitives.serialization import Encoding
 from flask import current_app
 
 from lemur.common.utils import is_selfsigned
@@ -71,12 +72,20 @@ def common_name(cert):
     :return: Common name or None
     """
     try:
-        return cert.subject.get_attributes_for_oid(x509.OID_COMMON_NAME)[
-            0
-        ].value.strip()
+        subject_oid = cert.subject.get_attributes_for_oid(x509.OID_COMMON_NAME)
+        if len(subject_oid) > 0:
+            return subject_oid[0].value.strip()
+        return None
     except Exception as e:
         sentry.captureException()
-        current_app.logger.error("Unable to get common name! {0}".format(e))
+        current_app.logger.error(
+            {
+                "message": "Unable to get common name",
+                "error": e,
+                "public_key": cert.public_bytes(Encoding.PEM).decode("utf-8")
+            },
+            exc_info=True
+        )
 
 
 def organization(cert):

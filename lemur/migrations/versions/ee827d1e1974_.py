@@ -45,6 +45,6 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_index("ix_domains_name", table_name="domains")
+    op.drop_index("ix_domains_name_gin", table_name="domains")
     op.drop_index("ix_certificates_name", table_name="certificates")
     op.drop_index("ix_certificates_cn", table_name="certificates")

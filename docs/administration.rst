@@ -66,7 +66,7 @@ Basic Configuration
 
 
 .. data:: SQLALCHEMY_POOL_SIZE
-:noindex:
+    :noindex:
 
             The default connection pool size is 5 for sqlalchemy managed connections.   Depending on the number of Lemur instances,
             please specify per instance connection pool size.  Below is an example to set connection pool size to 10.
@@ -80,7 +80,7 @@ Basic Configuration
 This is an optional setting but important to review and set for optimal database connection usage and for overall database performance.
 
 .. data:: SQLALCHEMY_MAX_OVERFLOW
-:noindex:
+    :noindex:
 
         This setting allows to create connections in addition to specified number of connections in pool size.   By default, sqlalchemy
         allows 10 connections to create in addition to the pool size.  This is also an optional setting.  If `SQLALCHEMY_POOL_SIZE` and
@@ -154,6 +154,22 @@ Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create c
     ::
 
         LEMUR_ENCRYPTION_KEYS = ['1YeftooSbxCiX2zo8m1lXtpvQjy27smZcUUaGmffhMY=', 'LAfQt6yrkLqOK5lwpvQcT4jf2zdeTQJV1uYeh9coT5s=']
+
+.. data:: PUBLIC_CA_AUTHORITY_NAMES
+    :noindex:
+        A list of public issuers which would be checked against to determine whether limit of max validity of 397 days
+        should be applied to the certificate. Configure public CA authority names in this list to enforce validity check.
+        This is an optional setting. Using this will allow the sanity check as mentioned. The name check is a case-insensitive
+        string comparision.
+
+.. data:: PUBLIC_CA_MAX_VALIDITY_DAYS
+    :noindex:
+        Use this config to override the limit of 397 days of validity for certificates issued by public issuers configured
+        using PUBLIC_CA_AUTHORITY_NAMES. Below example overrides the default validity of 397 days and sets it to 365 days.
+
+    ::
+
+        PUBLIC_CA_MAX_VALIDITY_DAYS = 365
 
 
 .. data:: DEBUG_DUMP
@@ -729,10 +745,16 @@ The following configuration properties are required to use the Digicert issuer p
             This is the root to be used for your CA chain
 
 
-.. data:: DIGICERT_DEFAULT_VALIDITY
+.. data:: DIGICERT_DEFAULT_VALIDITY_DAYS
     :noindex:
 
-            This is the default validity (in years), if no end date is specified. (Default: 1)
+            This is the default validity (in days), if no end date is specified. (Default: 397)
+
+
+.. data:: DIGICERT_MAX_VALIDITY_DAYS
+    :noindex:
+
+            This is the maximum validity (in days). (Default: value of DIGICERT_DEFAULT_VALIDITY_DAYS)
 
 
 .. data:: DIGICERT_PRIVATE
@@ -1007,6 +1029,18 @@ The following configuration properties are required to use the PowerDNS ACME Plu
     :noindex:
 
             This is the number of times DNS Verification should be attempted (i.e. 20)
+
+
+.. data:: ACME_POWERDNS_VERIFY
+    :noindex:
+
+            This configures how TLS certificates on the PowerDNS API target are validated.  The PowerDNS Plugin depends on the PyPi requests library, which supports the following options for the verify parameter:
+
+            True: Verifies the TLS certificate was issued by a known publicly-trusted CA. (Default)
+
+            False: Disables certificate validation (Not Recommended)
+
+            File/Dir path to CA Bundle: Verifies the TLS certificate was issued by a Certificate Authority in the provided CA bundle.
 
 .. _CommandLineInterface:
 

@@ -20,6 +20,7 @@ from lemur.common.utils import generate_private_key, truthiness
 from lemur.destinations.models import Destination
 from lemur.domains.models import Domain
 from lemur.extensions import metrics, sentry, signals
+from lemur.models import certificate_associations
 from lemur.notifications.models import Notification
 from lemur.pending_certificates.models import PendingCertificate
 from lemur.plugins.base import plugins
@@ -102,17 +103,91 @@ def get_all_certs():
     return Certificate.query.all()
 
 
-def get_all_pending_cleaning(source):
+def get_all_valid_certs(authority_plugin_name):
     """
-    Retrieves all certificates that are available for cleaning.
+    Retrieves all valid (not expired) certificates within Lemur, for the given authority plugin names
+    ignored if no authority_plugin_name provided.
 
-    :param source:
+    Note that depending on the DB size retrieving all certificates might an expensive operation
+
     :return:
+    """
+    if authority_plugin_name:
+        return (
+            Certificate.query.outerjoin(Authority, Authority.id == Certificate.authority_id).filter(
+                Certificate.not_after > arrow.now().format("YYYY-MM-DD")).filter(
+                Authority.plugin_name.in_(authority_plugin_name)).all()
+        )
+    else:
+        return (
+            Certificate.query.filter(Certificate.not_after > arrow.now().format("YYYY-MM-DD")).all()
+        )
+
+
+def get_all_pending_cleaning_expired(source):
+    """
+    Retrieves all certificates that are available for cleaning. These are certificates which are expired and are not
+    attached to any endpoints.
+
+    :param source: the source to search for certificates
+    :return: list of pending certificates
     """
     return (
         Certificate.query.filter(Certificate.sources.any(id=source.id))
         .filter(not_(Certificate.endpoints.any()))
         .filter(Certificate.expired)
+        .all()
+    )
+
+
+def get_all_certs_attached_to_endpoint_without_autorotate():
+    """
+        Retrieves all certificates that are attached to an endpoint, but that do not have autorotate enabled.
+
+        :return: list of certificates attached to an endpoint without autorotate
+        """
+    return (
+        Certificate.query.filter(Certificate.endpoints.any())
+        .filter(Certificate.rotation == False)
+        .filter(Certificate.not_after >= arrow.now())
+        .filter(not_(Certificate.replaced.any()))
+        .all()  # noqa
+    )
+
+
+def get_all_pending_cleaning_expiring_in_days(source, days_to_expire):
+    """
+    Retrieves all certificates that are available for cleaning, not attached to endpoint,
+    and within X days from expiration.
+
+    :param days_to_expire: defines how many days till the certificate is expired
+    :param source: the source to search for certificates
+    :return: list of pending certificates
+    """
+    expiration_window = arrow.now().shift(days=+days_to_expire).format("YYYY-MM-DD")
+    return (
+        Certificate.query.filter(Certificate.sources.any(id=source.id))
+        .filter(not_(Certificate.endpoints.any()))
+        .filter(Certificate.not_after < expiration_window)
+        .all()
+    )
+
+
+def get_all_pending_cleaning_issued_since_days(source, days_since_issuance):
+    """
+    Retrieves all certificates that are available for cleaning: not attached to endpoint, and X days since issuance.
+
+    :param days_since_issuance: defines how many days since the certificate is issued
+    :param source: the source to search for certificates
+    :return: list of pending certificates
+    """
+    not_in_use_window = (
+        arrow.now().shift(days=-days_since_issuance).format("YYYY-MM-DD")
+    )
+    return (
+        Certificate.query.filter(Certificate.sources.any(id=source.id))
+        .filter(not_(Certificate.endpoints.any()))
+        .filter(Certificate.date_created > not_in_use_window)
         .all()
     )
 
@@ -331,9 +406,11 @@ def render(args):
 
     show_expired = args.pop("showExpired")
     if show_expired != 1:
-        one_month_old = arrow.now()\
-            .shift(months=current_app.config.get("HIDE_EXPIRED_CERTS_AFTER_MONTHS", -1))\
+        one_month_old = (
+            arrow.now()
+            .shift(months=current_app.config.get("HIDE_EXPIRED_CERTS_AFTER_MONTHS", -1))
             .format("YYYY-MM-DD")
+        )
         query = query.filter(Certificate.not_after > one_month_old)
 
     time_range = args.pop("time_range")
@@ -379,8 +456,8 @@ def render(args):
         elif "cn" in terms:
             query = query.filter(
                 or_(
-                    Certificate.cn.ilike(term),
-                    Certificate.domains.any(Domain.name.ilike(term)),
+                    func.lower(Certificate.cn).like(term.lower()),
+                    Certificate.id.in_(like_domain_query(term)),
                 )
             )
         elif "id" in terms:
@@ -388,9 +465,9 @@ def render(args):
         elif "name" in terms:
             query = query.filter(
                 or_(
-                    Certificate.name.ilike(term),
-                    Certificate.domains.any(Domain.name.ilike(term)),
-                    Certificate.cn.ilike(term),
+                    func.lower(Certificate.name).like(term.lower()),
+                    Certificate.id.in_(like_domain_query(term)),
+                    func.lower(Certificate.cn).like(term.lower()),
                 )
             )
         elif "fixedName" in terms:
@@ -433,6 +510,14 @@ def render(args):
 
     result = database.sort_and_page(query, Certificate, args)
     return result
+
+
+def like_domain_query(term):
+    domain_query = database.session_query(Domain.id)
+    domain_query = domain_query.filter(func.lower(Domain.name).like(term.lower()))
+    assoc_query = database.session_query(certificate_associations.c.certificate_id)
+    assoc_query = assoc_query.filter(certificate_associations.c.domain_id.in_(domain_query))
+    return assoc_query
 
 
 def query_name(certificate_name, args):

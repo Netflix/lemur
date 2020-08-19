@@ -99,8 +99,12 @@ def csr(data):
         raise ValidationError("CSR presented is not valid.")
 
     # Validate common name and SubjectAltNames
-    for name in request.subject.get_attributes_for_oid(NameOID.COMMON_NAME):
-        common_name(name.value)
+    try:
+        for name in request.subject.get_attributes_for_oid(NameOID.COMMON_NAME):
+            common_name(name.value)
+    except ValueError as err:
+        current_app.logger.info("Error parsing Subject from CSR: %s", err)
+        raise ValidationError("Invalid Subject value in supplied CSR")
 
     try:
         alt_names = request.extensions.get_extension_for_class(
@@ -148,6 +152,18 @@ def dates(data):
                         data["authority"].authority_certificate.not_after
                     )
                 )
+            # Allow no more than PUBLIC_CA_MAX_VALIDITY_DAYS (Default: 397) days of validity
+            # for certs issued by public CA
+            # The list of public issuers can be managed through a config named PUBLIC_CA
+            public_CA = current_app.config.get("PUBLIC_CA_AUTHORITY_NAMES", [])
+            if data["authority"].name.lower() in [ca.lower() for ca in public_CA]:
+                max_validity_days = current_app.config.get("PUBLIC_CA_MAX_VALIDITY_DAYS", 397)
+                if (
+                    (data.get("validity_end").date() - data.get("validity_start").date()).days
+                    > max_validity_days
+                ):
+                    raise ValidationError("Certificate cannot be valid for more than " +
+                                          str(max_validity_days) + " days")
 
     return data
 

@@ -14,21 +14,17 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import json
+
 import arrow
-import requests
-
 import pem
-from retrying import retry
-
-from flask import current_app
-
+import requests
 from cryptography import x509
-
-from lemur.extensions import metrics
+from flask import current_app
 from lemur.common.utils import validate_conf
-from lemur.plugins.bases import IssuerPlugin, SourcePlugin
-
+from lemur.extensions import metrics
 from lemur.plugins import lemur_digicert as digicert
+from lemur.plugins.bases import IssuerPlugin, SourcePlugin
+from retrying import retry
 
 
 def log_status_code(r, *args, **kwargs):
@@ -64,24 +60,35 @@ def signature_hash(signing_algorithm):
     raise Exception("Unsupported signing algorithm.")
 
 
-def determine_validity_years(end_date):
-    """Given an end date determine how many years into the future that date is.
+def determine_validity_years(years):
+    """
+    Considering maximum allowed certificate validity period of 397 days, this method should not return
+    more than 1 year of validity. Thus changing it to always return 1.
+    Lemur will change this method in future to handle validity in months (determine_validity_months)
+    instead of years. This will allow flexibility to handle short-lived certificates.
+
+    :param years:
+    :return: 1
+    """
+    return 1
+
+
+def determine_end_date(end_date):
+    """
+    Determine appropriate end date
 
     :param end_date:
-    :return: str validity in years
+    :return: validity_end
     """
-    now = arrow.utcnow()
+    default_days = current_app.config.get("DIGICERT_DEFAULT_VALIDITY_DAYS", 397)
+    max_validity_end = arrow.utcnow().shift(days=current_app.config.get("DIGICERT_MAX_VALIDITY_DAYS", default_days))
 
-    if end_date < now.shift(years=+1):
-        return 1
-    elif end_date < now.shift(years=+2):
-        return 2
-    elif end_date < now.shift(years=+3):
-        return 3
+    if not end_date:
+        end_date = arrow.utcnow().shift(days=default_days)
 
-    raise Exception(
-        "DigiCert issued certificates cannot exceed three" " years in validity"
-    )
+    if end_date > max_validity_end:
+        end_date = max_validity_end
+    return end_date
 
 
 def get_additional_names(options):
@@ -107,12 +114,6 @@ def map_fields(options, csr):
     :param csr:
     :return: dict or valid DigiCert options
     """
-    if not options.get("validity_years"):
-        if not options.get("validity_end"):
-            options["validity_years"] = current_app.config.get(
-                "DIGICERT_DEFAULT_VALIDITY", 1
-            )
-
     data = dict(
         certificate={
             "common_name": options["common_name"],
@@ -125,9 +126,11 @@ def map_fields(options, csr):
     data["certificate"]["dns_names"] = get_additional_names(options)
 
     if options.get("validity_years"):
-        data["validity_years"] = options["validity_years"]
+        data["validity_years"] = determine_validity_years(options.get("validity_years"))
+    elif options.get("validity_end"):
+        data["custom_expiration_date"] = determine_end_date(options.get("validity_end")).format("YYYY-MM-DD")
     else:
-        data["custom_expiration_date"] = options["validity_end"].format("YYYY-MM-DD")
+        data["validity_years"] = determine_validity_years(0)
 
     if current_app.config.get("DIGICERT_PRIVATE", False):
         if "product" in data:
@@ -144,18 +147,15 @@ def map_cis_fields(options, csr):
 
     :param options:
     :param csr:
-    :return:
+    :return: data
     """
-    if not options.get("validity_years"):
-        if not options.get("validity_end"):
-            options["validity_end"] = arrow.utcnow().shift(
-                years=current_app.config.get("DIGICERT_DEFAULT_VALIDITY", 1)
-            )
-        options["validity_years"] = determine_validity_years(options["validity_end"])
+
+    if options.get("validity_years"):
+        validity_end = determine_end_date(arrow.utcnow().shift(years=options["validity_years"]))
+    elif options.get("validity_end"):
+        validity_end = determine_end_date(options.get("validity_end"))
     else:
-        options["validity_end"] = arrow.utcnow().shift(
-            years=options["validity_years"]
-        )
+        validity_end = determine_end_date(False)
 
     data = {
         "profile_name": current_app.config.get("DIGICERT_CIS_PROFILE_NAMES", {}).get(options['authority'].name),
@@ -164,7 +164,7 @@ def map_cis_fields(options, csr):
         "csr": csr,
         "signature_hash": signature_hash(options.get("signing_algorithm")),
         "validity": {
-            "valid_to": options["validity_end"].format("YYYY-MM-DDTHH:MM") + "Z"
+            "valid_to": validity_end.format("YYYY-MM-DDTHH:MM") + "Z"
         },
         "organization": {
             "name": options["organization"],
@@ -173,7 +173,8 @@ def map_cis_fields(options, csr):
     }
     #  possibility to default to a SIGNING_ALGORITHM for a given profile
     if current_app.config.get("DIGICERT_CIS_SIGNING_ALGORITHMS", {}).get(options['authority'].name):
-        data["signature_hash"] = current_app.config.get("DIGICERT_CIS_SIGNING_ALGORITHMS", {}).get(options['authority'].name)
+        data["signature_hash"] = current_app.config.get("DIGICERT_CIS_SIGNING_ALGORITHMS", {}).get(
+            options['authority'].name)
 
     return data
 
