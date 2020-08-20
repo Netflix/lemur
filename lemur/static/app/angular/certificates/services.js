@@ -164,6 +164,20 @@ angular.module('lemur')
               this.extensions.keyUsage.useDecipherOnly = true;
             }
           }
+        },
+        setValidityEndDateRange: function (value) {
+          // clear selected validity end date as we are about to calculate new range
+          if(this.validityEnd) {
+            this.validityEnd = '';
+          }
+          
+          // Minimum end date will be same as selected start date
+          this.authority.authorityCertificate.minValidityEnd = value;
+
+          // Move max end date by maxIssuanceDays
+          let endDate = new Date(value);
+          endDate.setDate(endDate.getDate() + this.authority.authorityCertificate.maxIssuanceDays);
+          this.authority.authorityCertificate.maxValidityEnd = endDate;
         }
       });
     });
@@ -264,6 +278,9 @@ angular.module('lemur')
           }
         }
 
+        certificate.authority.authorityCertificate.minValidityEnd = defaults.authority.authorityCertificate.notBefore;
+        certificate.authority.authorityCertificate.maxValidityEnd = defaults.authority.authorityCertificate.notAfter;
+
         if (certificate.dnsProviderId) {
           certificate.dnsProvider = {id: certificate.dnsProviderId};
         }
@@ -292,3 +309,4 @@ angular.module('lemur')
 
     return CertificateService;
   });
+
