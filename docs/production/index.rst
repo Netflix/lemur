@@ -49,7 +49,7 @@ The amount of effort you wish to expend ensuring that Lemur has good entropy to 
 
 If you wish to generate more entropy for your system we would suggest you take a look at the following resources:
 
-- `WES-entropy-client <https://github.com/WhitewoodCrypto/WES-entropy-client>`_
+- `WES-entropy-client <https://github.com/Virginian/WES-entropy-client>`_
 - `haveged <http://www.issihosts.com/haveged/>`_
 
 For additional information about OpenSSL entropy issues:
