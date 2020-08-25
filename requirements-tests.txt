@@ -25,7 +25,7 @@ docker==4.2.0             # via moto
 docutils==0.15.2          # via botocore
 ecdsa==0.15               # via python-jose, sshpubkeys
 factory-boy==3.0.1        # via -r requirements-tests.in
-faker==4.1.1              # via -r requirements-tests.in, factory-boy
+faker==4.1.2              # via -r requirements-tests.in, factory-boy
 fakeredis==1.4.3          # via -r requirements-tests.in
 flask==1.1.2              # via pytest-flask
 freezegun==0.3.15         # via -r requirements-tests.in
