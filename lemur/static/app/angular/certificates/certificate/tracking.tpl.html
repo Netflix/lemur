@@ -96,7 +96,7 @@
         Certificate Authority
       </label>
       <div class="col-sm-10">
-        <ui-select class="input-md" ng-model="certificate.authority" theme="bootstrap" title="choose an authority">
+        <ui-select class="input-md" ng-model="certificate.authority" theme="bootstrap" title="choose an authority" ng-change="clearDates()">
           <ui-select-match placeholder="select an authority...">{{$select.selected.name}}</ui-select-match>
           <ui-select-choices class="form-control" repeat="authority in authorities"
                              refresh="getAuthoritiesByName($select.search)"
@@ -159,6 +159,7 @@
                  min-date="certificate.authority.authorityCertificate.notBefore"
                  alt-input-formats="altInputFormats"
                  placeholder="Start Date"
+                 readonly="true"
           />
           <span class="input-group-btn">
                         <button type="button" class="btn btn-default" ng-click="open1()"><i
@@ -179,6 +180,7 @@
                  min-date="certificate.authority.authorityCertificate.minValidityEnd"
                  alt-input-formats="altInputFormats"
                  placeholder="End Date"
+                 readonly="true"
           />
           <span class="input-group-btn">
                         <button type="button" class="btn btn-default" ng-click="open2()"><i

@@ -317,8 +317,6 @@ class Certificate(db.Model):
         if self.name.lower() in [ca.lower() for ca in public_CA]:
             return current_app.config.get("PUBLIC_CA_MAX_VALIDITY_DAYS", 397)
 
-        return current_app.config.get("DEFAULT_MAX_VALIDITY_DAYS", 1095)   # 3 years default
-
     @property
     def subject(self):
         return self.parsed_cert.subject
