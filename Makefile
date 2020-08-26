@@ -49,10 +49,13 @@ reset-db:
 	cd lemur && lemur db upgrade
 
 setup-git:
-	@echo "--> Installing git hooks"
-	git config branch.autosetuprebase always
-	cd .git/hooks && ln -sf ../../hooks/* ./
-	@echo ""
+	if [ -d .git/hooks ]; then \
+		@echo "--> Installing git hooks"; \
+		git config branch.autosetuprebase always; \
+		cd .git/hooks && ln -sf ../../hooks/* ./; \
+		@echo ""; \
+	fi
+
 
 clean:
 	@echo "--> Cleaning static cache"
