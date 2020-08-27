@@ -34,6 +34,29 @@ def test_authority_input_schema(client, role, issuer_plugin, logged_in_user):
     assert not errors
 
 
+def test_authority_input_schema_ecc(client, role, issuer_plugin, logged_in_user):
+    from lemur.authorities.schemas import AuthorityInputSchema
+
+    input_data = {
+        "name": "Example Authority",
+        "owner": "jim@example.com",
+        "description": "An example authority.",
+        "commonName": "An Example Authority",
+        "plugin": {
+            "slug": "test-issuer",
+            "plugin_options": [{"name": "test", "value": "blah"}],
+        },
+        "type": "root",
+        "signingAlgorithm": "sha256WithECDSA",
+        "keyType": "EC256",
+        "sensitivity": "medium",
+    }
+
+    data, errors = AuthorityInputSchema().load(input_data)
+
+    assert not errors
+
+
 def test_user_authority(session, client, authority, role, user, issuer_plugin):
     u = user["user"]
     u.roles.append(role)
