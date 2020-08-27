@@ -197,7 +197,7 @@ angular.module('lemur')
     CertificateService.create = function (certificate) {
       certificate.attachSubAltName();
       certificate.attachCustom();
-      if (certificate.validityYears === '') { // if a user de-selects validity years we ignore it
+      if (certificate.validityYears === '') { // if a user de-selects validity years we ignore it - might not be needed anymore
         delete certificate.validityYears;
       }
       return CertificateApi.post(certificate);
@@ -282,6 +282,9 @@ angular.module('lemur')
 
         certificate.authority.authorityCertificate.minValidityEnd = defaults.authority.authorityCertificate.notBefore;
         certificate.authority.authorityCertificate.maxValidityEnd = defaults.authority.authorityCertificate.notAfter;
+
+        // pre-select validity type radio button to default days
+        certificate.validityType = 'defaultDays';
 
         if (certificate.dnsProviderId) {
           certificate.dnsProvider = {id: certificate.dnsProviderId};

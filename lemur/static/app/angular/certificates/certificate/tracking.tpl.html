@@ -136,19 +136,17 @@
              uib-tooltip="If no date is selected Lemur attempts to issue a 1 year certificate">
         Validity Range <span class="glyphicon glyphicon-question-sign"></span>
       </label>
-      <div class="col-sm-2">
-        <select ng-model="certificate.validityYears" class="form-control">
-          <option value="">-</option>
-          <option value="1">1 year</option>
-        </select>
+      <div class="col-sm-4">
+        <div class="btn-group">
+          <label class="btn btn-success" ng-model="certificate.validityType" uib-btn-radio="'defaultDays'" ng-click="clearDates()">
+              Default ({{certificate.authority.authorityCertificate.defaultValidityDays}} days)</label>
+          <label class="btn btn-success" ng-model="certificate.validityType" uib-btn-radio="'dates'">Select Date</label>
+        </div>
       </div>
-      <span style="padding-top: 15px" class="text-center col-sm-1">
-                <strong>or</strong>
-            </span>
-      <div class="col-sm-3">
+      <div class="col-sm-3" ng-if="certificate.validityType==='dates'">
         <div class="input-group">
           <input type="text" class="form-control"
-                 uib-tooltip="yyyy/MM/dd"
+                 uib-tooltip="Start Date (yyyy/MM/dd)"
                  uib-datepicker-popup="yyyy/MM/dd"
                  ng-model="certificate.validityStart"
                  ng-change="certificate.setValidityEndDateRange(certificate.validityStart)"
@@ -167,10 +165,10 @@
                     </span>
         </div>
       </div>
-      <div class="col-sm-3">
+      <div class="col-sm-3" ng-if="certificate.validityType==='dates'">
         <div class="input-group">
           <input type="text" class="form-control"
-                 uib-tooltip="yyyy/MM/dd"
+                 uib-tooltip="End Date (yyyy/MM/dd)"
                  uib-datepicker-popup="yyyy/MM/dd"
                  ng-model="certificate.validityEnd"
                  is-open="popup2.opened"
@@ -187,10 +185,6 @@
                           class="glyphicon glyphicon-calendar"></i></button>
                     </span>
         </div>
-      </div>
-      <div class="col-sm-1">
-        <button uib-tooltip="Clear Validity" ng-click="clearDates()" class="btn btn-default"><i
-          class="glyphicon glyphicon-remove"></i></button>
       </div>
     </div>
     <div class="form-group" ng-show="certificate.authority.plugin.slug == 'acme-issuer'">

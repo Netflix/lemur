@@ -107,7 +107,6 @@ angular.module('lemur')
       startingDay: 1
     };
 
-
     $scope.open1 = function() {
       $scope.popup1.opened = true;
     };
@@ -140,6 +139,12 @@ angular.module('lemur')
     );
 
     $scope.create = function (certificate) {
+      if(certificate.validityType === 'dates' &&
+          (!certificate.validityStart || !certificate.validityEnd)) { // these are not mandatory fields in schema, thus handling validation in js
+          return showMissingDateError();
+      }
+      delete certificate.validityType;
+
       WizardHandler.wizard().context.loading = true;
       CertificateService.create(certificate).then(
         function () {
@@ -163,6 +168,23 @@ angular.module('lemur')
           WizardHandler.wizard().context.loading = false;
         });
     };
+
+    function showMissingDateError() {
+      let error = {};
+        error.message = '';
+        error.reasons = {};
+        error.reasons.validityRange = 'Valid start and end dates are needed, else select Default option';
+
+        toaster.pop({
+          type: 'error',
+          title: 'Validation Error',
+          body: 'lemur-bad-request',
+          bodyOutputType: 'directive',
+          directiveData: error,
+          timeout: 100000
+        });
+        return;
+    }
 
     $scope.templates = [
       {
