@@ -48,7 +48,7 @@ def test_authority_input_schema_ecc(client, role, issuer_plugin, logged_in_user)
         },
         "type": "root",
         "signingAlgorithm": "sha256WithECDSA",
-        "keyType": "EC256",
+        "keyType": "ECCPRIME256V1",
         "sensitivity": "medium",
     }
 
