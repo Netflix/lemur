@@ -12,7 +12,7 @@ bandit==1.6.2             # via -r requirements-tests.in
 black==19.10b0            # via -r requirements-tests.in
 boto3==1.14.48            # via aws-sam-translator, moto
 boto==2.49.0              # via moto
-botocore==1.17.48         # via aws-xray-sdk, boto3, moto, s3transfer
+botocore==1.17.51         # via aws-xray-sdk, boto3, moto, s3transfer
 certifi==2020.6.20        # via requests
 cffi==1.14.0              # via cryptography
 cfn-lint==0.29.5          # via moto
