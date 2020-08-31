@@ -62,7 +62,7 @@ class AuthorityInputSchema(LemurInputSchema):
         missing="sha256WithRSA",
     )
     key_type = fields.String(
-        validate=validate.OneOf(CERTIFICATE_KEY_TYPES + ["EC256"]), missing="RSA2048"
+        validate=validate.OneOf(CERTIFICATE_KEY_TYPES), missing="RSA2048"
     )
     key_name = fields.String()
     sensitivity = fields.String(
