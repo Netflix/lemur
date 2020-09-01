@@ -18,8 +18,9 @@ import json
 import arrow
 import pem
 import requests
+import sys
 from cryptography import x509
-from flask import current_app
+from flask import current_app, g
 from lemur.common.utils import validate_conf
 from lemur.extensions import metrics
 from lemur.plugins import lemur_digicert as digicert
@@ -129,6 +130,9 @@ def map_fields(options, csr):
         data["validity_years"] = determine_validity_years(options.get("validity_years"))
     elif options.get("validity_end"):
         data["custom_expiration_date"] = determine_end_date(options.get("validity_end")).format("YYYY-MM-DD")
+        # check if validity got truncated. If resultant validity is not equal to requested validity, it just got truncated
+        if data["custom_expiration_date"] != options.get("validity_end"):
+            log_validity_truncation(options, f"{__name__}.{sys._getframe().f_code.co_name}")
     else:
         data["validity_years"] = determine_validity_years(0)
 
@@ -154,6 +158,9 @@ def map_cis_fields(options, csr):
         validity_end = determine_end_date(arrow.utcnow().shift(years=options["validity_years"]))
     elif options.get("validity_end"):
         validity_end = determine_end_date(options.get("validity_end"))
+        # check if validity got truncated. If resultant validity is not equal to requested validity, it just got truncated
+        if validity_end != options.get("validity_end"):
+            log_validity_truncation(options, f"{__name__}.{sys._getframe().f_code.co_name}")
     else:
         validity_end = determine_end_date(False)
 
@@ -178,6 +185,16 @@ def map_cis_fields(options, csr):
 
     return data
 
+def log_validity_truncation(options, function):
+    log_data = {
+        "cn": options["common_name"],
+        "creator": g.user.username
+    }
+    metrics.send("digicert_validity_truncated", "counter", 1, metric_tags=log_data)
+
+    log_data["function"] = function
+    log_data["message"] = "Digicert Plugin truncated the validity of certificate, cn = {0}".format(options["common_name"])
+    current_app.logger.info(log_data)
 
 def handle_response(response):
     """
