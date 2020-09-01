@@ -14,12 +14,12 @@ import json
 import os.path
 import datetime
 
-from distutils import log
-from distutils.core import Command
 from setuptools.command.develop import develop
 from setuptools.command.install import install
 from setuptools.command.sdist import sdist
 from setuptools import setup, find_packages
+from distutils import log
+from distutils.core import Command
 from subprocess import check_output
 
 import pip
