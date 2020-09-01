@@ -16,18 +16,18 @@ import os.path
 import sys
 from subprocess import check_output
 
-import pip
+import pkg_resources
 from setuptools import Command
 from setuptools import setup, find_packages
 from setuptools.command.develop import develop
 from setuptools.command.install import install
 from setuptools.command.sdist import sdist
 
-if tuple(map(int, pip.__version__.split('.'))) >= (19, 3, 0):
+if tuple(map(int, pkg_resources.require("pip")[0].version.split('.'))) >= (19, 3, 0):
     from pip._internal.network.session import PipSession
-    from pip._internal.req import parse_requirements
+    from pip._internal.req.req_file import parse_requirements
 
-elif tuple(map(int, pip.__version__.split('.'))) >= (10, 0, 0):
+elif tuple(map(int, pkg_resources.require("pip")[0].version.split('.'))) >= (10, 0, 0):
     from pip._internal.download import PipSession
     from pip._internal.req import parse_requirements
 else:
@@ -49,7 +49,7 @@ tests_require_g = parse_requirements("requirements-tests.txt", session=PipSessio
 docs_require_g = parse_requirements("requirements-docs.txt", session=PipSession())
 dev_requires_g = parse_requirements("requirements-dev.txt", session=PipSession())
 
-if tuple(map(int, pip.__version__.split('.'))) >= (20, 1):
+if tuple(map(int, pkg_resources.require("pip")[0].version.split('.'))) >= (20, 1):
     install_requires = [str(ir.requirement) for ir in install_requires_g]
     tests_require = [str(ir.requirement) for ir in tests_require_g]
     docs_require = [str(ir.requirement) for ir in docs_require_g]
