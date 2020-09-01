@@ -9,20 +9,20 @@ Is a TLS management and orchestration tool.
 """
 from __future__ import absolute_import
 
-import sys
-import json
-import os.path
 import datetime
-
-from setuptools.command.develop import develop
-from setuptools.command.install import install
-from setuptools.command.sdist import sdist
-from setuptools import setup, find_packages
-from distutils import log
-from distutils.core import Command
+import json
+import logging
+import os.path
+import sys
 from subprocess import check_output
 
 import pip
+from setuptools import Command
+from setuptools import setup, find_packages
+from setuptools.command.develop import develop
+from setuptools.command.install import install
+from setuptools.command.sdist import sdist
+
 if tuple(map(int, pip.__version__.split('.'))) >= (19, 3, 0):
     from pip._internal.network.session import PipSession
     from pip._internal.req import parse_requirements
@@ -105,16 +105,16 @@ class BuildStatic(Command):
         pass
 
     def run(self):
-        log.info("running [npm install --quiet] in {0}".format(ROOT))
+        logging.info("running [npm install --quiet] in {0}".format(ROOT))
         try:
             check_output(['npm', 'install', '--quiet'], cwd=ROOT)
 
-            log.info("running [gulp build]")
+            logging.info("running [gulp build]")
             check_output([os.path.join(ROOT, 'node_modules', '.bin', 'gulp'), 'build'], cwd=ROOT)
-            log.info("running [gulp package]")
+            logging.info("running [gulp package]")
             check_output([os.path.join(ROOT, 'node_modules', '.bin', 'gulp'), 'package'], cwd=ROOT)
         except Exception as e:
-            log.warn("Unable to build static content")
+            logging.warn("Unable to build static content")
 
 
 setup(
