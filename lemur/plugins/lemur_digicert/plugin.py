@@ -131,7 +131,7 @@ def map_fields(options, csr):
     elif options.get("validity_end"):
         data["custom_expiration_date"] = determine_end_date(options.get("validity_end")).format("YYYY-MM-DD")
         # check if validity got truncated. If resultant validity is not equal to requested validity, it just got truncated
-        if data["custom_expiration_date"] != options.get("validity_end"):
+        if data["custom_expiration_date"] != options.get("validity_end").format("YYYY-MM-DD"):
             log_validity_truncation(options, f"{__name__}.{sys._getframe().f_code.co_name}")
     else:
         data["validity_years"] = determine_validity_years(0)
@@ -185,6 +185,7 @@ def map_cis_fields(options, csr):
 
     return data
 
+
 def log_validity_truncation(options, function):
     log_data = {
         "cn": options["common_name"],
@@ -195,6 +196,7 @@ def log_validity_truncation(options, function):
     log_data["function"] = function
     log_data["message"] = "Digicert Plugin truncated the validity of certificate, cn = {0}".format(options["common_name"])
     current_app.logger.info(log_data)
+
 
 def handle_response(response):
     """
