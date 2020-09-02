@@ -16,23 +16,11 @@ import os.path
 import sys
 from subprocess import check_output
 
-import pkg_resources
 from setuptools import Command
 from setuptools import setup, find_packages
 from setuptools.command.develop import develop
 from setuptools.command.install import install
 from setuptools.command.sdist import sdist
-
-if tuple(map(int, pkg_resources.require("pip")[0].version.split('.'))) >= (19, 3, 0):
-    from pip._internal.network.session import PipSession
-    from pip._internal.req.req_file import parse_requirements
-
-elif tuple(map(int, pkg_resources.require("pip")[0].version.split('.'))) >= (10, 0, 0):
-    from pip._internal.download import PipSession
-    from pip._internal.req import parse_requirements
-else:
-    from pip.download import PipSession
-    from pip.req import parse_requirements
 
 ROOT = os.path.realpath(os.path.join(os.path.dirname(__file__)))
 
@@ -44,21 +32,18 @@ about = {}
 with open(os.path.join(ROOT, 'lemur', '__about__.py')) as f:
     exec(f.read(), about)  # nosec: about file is benign
 
-install_requires_g = parse_requirements("requirements.txt", session=PipSession())
-tests_require_g = parse_requirements("requirements-tests.txt", session=PipSession())
-docs_require_g = parse_requirements("requirements-docs.txt", session=PipSession())
-dev_requires_g = parse_requirements("requirements-dev.txt", session=PipSession())
+# Parse requirements files
+with open('requirements.txt') as f:
+    install_requirements = f.read().splitlines()
 
-if tuple(map(int, pkg_resources.require("pip")[0].version.split('.'))) >= (20, 1):
-    install_requires = [str(ir.requirement) for ir in install_requires_g]
-    tests_require = [str(ir.requirement) for ir in tests_require_g]
-    docs_require = [str(ir.requirement) for ir in docs_require_g]
-    dev_requires = [str(ir.requirement) for ir in dev_requires_g]
-else:
-    install_requires = [str(ir.req) for ir in install_requires_g]
-    tests_require = [str(ir.req) for ir in tests_require_g]
-    docs_require = [str(ir.req) for ir in docs_require_g]
-    dev_requires = [str(ir.req) for ir in dev_requires_g]
+with open('requirements-tests.txt') as f:
+    tests_requirements = f.read().splitlines()
+
+with open('requirements-docs.txt') as f:
+    docs_requirements = f.read().splitlines()
+
+with open('requirements-dev.txt') as f:
+    dev_requirements = f.read().splitlines()
 
 
 class SmartInstall(install):
@@ -67,6 +52,7 @@ class SmartInstall(install):
     If the package indicator is missing, this will also force a run of
     `build_static` which is required for JavaScript assets and other things.
     """
+
     def _needs_static(self):
         return not os.path.exists(os.path.join(ROOT, 'lemur/static/dist'))
 
@@ -128,11 +114,11 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
-    install_requires=install_requires,
+    install_requires=install_requirements,
     extras_require={
-        'tests': tests_require,
-        'docs': docs_require,
-        'dev': dev_requires,
+        'tests': tests_requirements,
+        'docs': docs_requirements,
+        'dev': dev_requirements,
     },
     cmdclass={
         'build_static': BuildStatic,

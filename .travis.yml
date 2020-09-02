@@ -20,6 +20,7 @@ cache:
 env:
   global:
     - PIP_DOWNLOAD_CACHE=".pip_download_cache"
+    # The following line is a temporary workaround for this issue: https://github.com/pypa/setuptools/issues/2230
     - SETUPTOOLS_USE_DISTUTILS=stdlib
     # do not load /etc/boto.cfg with Python 3 incompatible plugin
     # https://github.com/travis-ci/travis-ci/issues/5246#issuecomment-166460882
