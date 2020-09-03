@@ -62,7 +62,7 @@ marshmallow-sqlalchemy==0.23.1  # via -r requirements.txt
 marshmallow==2.20.4       # via -r requirements.txt, marshmallow-sqlalchemy
 ndg-httpsclient==0.5.1    # via -r requirements.txt
 packaging==20.3           # via sphinx
-paramiko==2.7.1           # via -r requirements.txt
+paramiko==2.7.2           # via -r requirements.txt
 pem==20.1.0               # via -r requirements.txt
 psycopg2==2.8.5           # via -r requirements.txt
 pyasn1-modules==0.2.8     # via -r requirements.txt, pyjks, python-ldap
