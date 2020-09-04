@@ -39,7 +39,7 @@
     "gulp-uglify": "^2.0.0",
     "gulp-useref": "^3.1.2",
     "gulp-util": "^3.0.1",
-    "http-proxy": "~1.16.2",
+    "http-proxy": "~1.18.1",
     "jshint-stylish": "^2.2.1",
     "karma": "^4.4.1",
     "karma-jasmine": "^1.1.0",
