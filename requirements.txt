@@ -15,8 +15,8 @@ bcrypt==3.1.7             # via flask-bcrypt, paramiko
 beautifulsoup4==4.9.1     # via cloudflare
 billiard==3.6.3.0         # via celery
 blinker==1.4              # via flask-mail, flask-principal, raven
-boto3==1.14.54            # via -r requirements.in
-botocore==1.17.54         # via -r requirements.in, boto3, s3transfer
+boto3==1.14.56            # via -r requirements.in
+botocore==1.17.56         # via -r requirements.in, boto3, s3transfer
 celery[redis]==4.4.2      # via -r requirements.in
 certifi==2020.6.20        # via -r requirements.in, requests
 certsrv==2.1.1            # via -r requirements.in
@@ -60,7 +60,7 @@ marshmallow==2.20.4       # via -r requirements.in, marshmallow-sqlalchemy
 ndg-httpsclient==0.5.1    # via -r requirements.in
 paramiko==2.7.2           # via -r requirements.in
 pem==20.1.0               # via -r requirements.in
-psycopg2==2.8.5           # via -r requirements.in
+psycopg2==2.8.6           # via -r requirements.in
 pyasn1-modules==0.2.8     # via pyjks, python-ldap
 pyasn1==0.4.8             # via ndg-httpsclient, pyasn1-modules, pyjks, python-ldap
 pycparser==2.20           # via cffi
