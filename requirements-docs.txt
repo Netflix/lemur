@@ -64,7 +64,7 @@ ndg-httpsclient==0.5.1    # via -r requirements.txt
 packaging==20.3           # via sphinx
 paramiko==2.7.2           # via -r requirements.txt
 pem==20.1.0               # via -r requirements.txt
-psycopg2==2.8.5           # via -r requirements.txt
+psycopg2==2.8.6           # via -r requirements.txt
 pyasn1-modules==0.2.8     # via -r requirements.txt, pyjks, python-ldap
 pyasn1==0.4.8             # via -r requirements.txt, ndg-httpsclient, pyasn1-modules, pyjks, python-ldap
 pycparser==2.20           # via -r requirements.txt, cffi
