@@ -60,7 +60,7 @@ marshmallow==2.20.4       # via -r requirements.in, marshmallow-sqlalchemy
 ndg-httpsclient==0.5.1    # via -r requirements.in
 paramiko==2.7.2           # via -r requirements.in
 pem==20.1.0               # via -r requirements.in
-psycopg2==2.8.5           # via -r requirements.in
+psycopg2==2.8.6           # via -r requirements.in
 pyasn1-modules==0.2.8     # via pyjks, python-ldap
 pyasn1==0.4.8             # via ndg-httpsclient, pyasn1-modules, pyjks, python-ldap
 pycparser==2.20           # via cffi
