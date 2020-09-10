@@ -20,7 +20,7 @@
                           name="certificate signing request"
                           ng-model="certificate.csr"
                           placeholder="PEM encoded string..." class="form-control"
-                          ng-pattern="/^-----BEGIN CERTIFICATE REQUEST-----/"></textarea>
+                          ng-pattern="/(^-----BEGIN CERTIFICATE REQUEST-----[\S\s]*-----END CERTIFICATE REQUEST-----)|(^-----BEGIN NEW CERTIFICATE REQUEST-----[\S\s]*-----END NEW CERTIFICATE REQUEST-----)/"></textarea>
 
           <p ng-show="trackingForm.csr.$invalid && !trackingForm.csr.$pristine"
              class="help-block">Enter a valid certificate signing request.</p>
