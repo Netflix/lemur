@@ -125,9 +125,7 @@ def get_key_type_from_ec_curve(curve_name):
     _CURVE_TYPES = {
         ec.SECP192R1().name: "ECCPRIME192V1",
         ec.SECP256R1().name: "ECCPRIME256V1",
-        ec.SECP192R1().name: "ECCSECP192R1",
         ec.SECP224R1().name: "ECCSECP224R1",
-        ec.SECP256R1().name: "ECCSECP256R1",
         ec.SECP384R1().name: "ECCSECP384R1",
         ec.SECP521R1().name: "ECCSECP521R1",
         ec.SECP256K1().name: "ECCSECP256K1",
@@ -163,11 +161,11 @@ def generate_private_key(key_type):
     """
 
     _CURVE_TYPES = {
-        "ECCPRIME192V1": ec.SECP192R1(),
-        "ECCPRIME256V1": ec.SECP256R1(),
-        "ECCSECP192R1": ec.SECP192R1(),
+        "ECCPRIME192V1": ec.SECP192R1(),  # duplicate
+        "ECCPRIME256V1": ec.SECP256R1(),  # duplicate
+        "ECCSECP192R1": ec.SECP192R1(),  # duplicate
         "ECCSECP224R1": ec.SECP224R1(),
-        "ECCSECP256R1": ec.SECP256R1(),
+        "ECCSECP256R1": ec.SECP256R1(),  # duplicate
         "ECCSECP384R1": ec.SECP384R1(),
         "ECCSECP521R1": ec.SECP521R1(),
         "ECCSECP256K1": ec.SECP256K1(),
