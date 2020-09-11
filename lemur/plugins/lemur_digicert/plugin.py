@@ -194,7 +194,7 @@ def log_validity_truncation(options, function):
     metrics.send("digicert_validity_truncated", "counter", 1, metric_tags=log_data)
 
     log_data["function"] = function
-    log_data["message"] = "Digicert Plugin truncated the validity of certificate, cn = {0}".format(options["common_name"])
+    log_data["message"] = "Digicert Plugin truncated the validity of certificate"
     current_app.logger.info(log_data)
 
 
