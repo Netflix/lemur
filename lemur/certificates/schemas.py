@@ -148,6 +148,13 @@ class CertificateInputSchema(CertificateCreationSchema):
                 data["extensions"]["subAltNames"]["names"] = []
 
             data["extensions"]["subAltNames"]["names"] = csr_sans
+
+            common_name = cert_utils.get_cn_from_csr(data["csr"])
+            if common_name:
+                data["common_name"] = common_name
+            key_type = cert_utils.get_key_type_from_csr(data["csr"])
+            if key_type:
+                data["key_type"] = key_type
         return missing.convert_validity_years(data)
 
 
