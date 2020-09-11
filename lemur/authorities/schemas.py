@@ -23,6 +23,7 @@ from lemur.common.schema import LemurInputSchema, LemurOutputSchema
 from lemur.common import validators, missing
 
 from lemur.common.fields import ArrowDateTime
+from lemur.constants import CERTIFICATE_KEY_TYPES
 
 
 class AuthorityInputSchema(LemurInputSchema):
@@ -56,11 +57,12 @@ class AuthorityInputSchema(LemurInputSchema):
     type = fields.String(validate=validate.OneOf(["root", "subca"]), missing="root")
     parent = fields.Nested(AssociatedAuthoritySchema)
     signing_algorithm = fields.String(
-        validate=validate.OneOf(["sha256WithRSA", "sha1WithRSA"]),
+        validate=validate.OneOf(["sha256WithRSA", "sha1WithRSA",
+                                 "sha256WithECDSA", "SHA384withECDSA", "SHA512withECDSA"]),
         missing="sha256WithRSA",
     )
     key_type = fields.String(
-        validate=validate.OneOf(["RSA2048", "RSA4096"]), missing="RSA2048"
+        validate=validate.OneOf(CERTIFICATE_KEY_TYPES), missing="RSA2048"
     )
     key_name = fields.String()
     sensitivity = fields.String(
