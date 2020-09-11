@@ -33,7 +33,7 @@ def process_options(options):
     authority = options.get("authority").name.upper()
     product_type = current_app.config.get("ENTRUST_PRODUCT_{0}".format(authority), "STANDARD_SSL")
     expiry_date = arrow.utcnow().shift(years=1, days=+10).format('YYYY-MM-DD')
-  
+
     tracking_data = {
         "requesterName": current_app.config.get("ENTRUST_NAME"),
         "requesterEmail": current_app.config.get("ENTRUST_EMAIL"),
@@ -163,7 +163,7 @@ class EntrustSourcePlugin(SourcePlugin):
 
     def get_certificates(self, options, **kwargs):
         # Not needed for ENTRUST
-        raise NotImplementedError("Not implemented\n", self, options, **kwargs
+        raise NotImplementedError("Not implemented\n", self, options, **kwargs)
 
     def get_endpoints(self, options, **kwargs):
         # There are no endpoints in ENTRUST
