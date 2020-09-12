@@ -114,6 +114,39 @@ def get_authority_key(body):
     return authority_key.hex()
 
 
+def get_key_type_from_ec_curve(curve_name):
+    """
+    Give an EC curve name, return the matching key_type.
+
+    :param: curve_name
+    :return: key_type
+    """
+
+    _CURVE_TYPES = {
+        ec.SECP192R1().name: "ECCPRIME192V1",
+        ec.SECP256R1().name: "ECCPRIME256V1",
+        ec.SECP224R1().name: "ECCSECP224R1",
+        ec.SECP384R1().name: "ECCSECP384R1",
+        ec.SECP521R1().name: "ECCSECP521R1",
+        ec.SECP256K1().name: "ECCSECP256K1",
+        ec.SECT163K1().name: "ECCSECT163K1",
+        ec.SECT233K1().name: "ECCSECT233K1",
+        ec.SECT283K1().name: "ECCSECT283K1",
+        ec.SECT409K1().name: "ECCSECT409K1",
+        ec.SECT571K1().name: "ECCSECT571K1",
+        ec.SECT163R2().name: "ECCSECT163R2",
+        ec.SECT233R1().name: "ECCSECT233R1",
+        ec.SECT283R1().name: "ECCSECT283R1",
+        ec.SECT409R1().name: "ECCSECT409R1",
+        ec.SECT571R1().name: "ECCSECT571R2",
+    }
+
+    if curve_name in _CURVE_TYPES.keys():
+        return _CURVE_TYPES[curve_name]
+    else:
+        return None
+
+
 def generate_private_key(key_type):
     """
     Generates a new private key based on key_type.
@@ -128,11 +161,11 @@ def generate_private_key(key_type):
     """
 
     _CURVE_TYPES = {
-        "ECCPRIME192V1": ec.SECP192R1(),
-        "ECCPRIME256V1": ec.SECP256R1(),
-        "ECCSECP192R1": ec.SECP192R1(),
+        "ECCPRIME192V1": ec.SECP192R1(),  # duplicate
+        "ECCPRIME256V1": ec.SECP256R1(),  # duplicate
+        "ECCSECP192R1": ec.SECP192R1(),  # duplicate
         "ECCSECP224R1": ec.SECP224R1(),
-        "ECCSECP256R1": ec.SECP256R1(),
+        "ECCSECP256R1": ec.SECP256R1(),  # duplicate
         "ECCSECP384R1": ec.SECP384R1(),
         "ECCSECP521R1": ec.SECP521R1(),
         "ECCSECP256K1": ec.SECP256K1(),
