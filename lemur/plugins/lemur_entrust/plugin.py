@@ -5,6 +5,7 @@ import json
 from lemur.plugins import lemur_entrust as ENTRUST
 from flask import current_app
 from lemur.extensions import metrics
+from lemur.common.utils import validate_conf
 
 
 def log_status_code(r, *args, **kwargs):
@@ -61,6 +62,20 @@ class EntrustIssuerPlugin(IssuerPlugin):
 
     def __init__(self, *args, **kwargs):
         """Initialize the issuer with the appropriate details."""
+        required_vars = [
+            "ENTRUST_API_CERT",
+            "ENTRUST_API_KEY",
+            "ENTRUST_API_USER",
+            "ENTRUST_API_PASS", 
+            "ENTRUST_URL",
+            "ENTRUST_ROOT",
+            "ENTRUST_NAME",
+            "ENTRUST_EMAIL",
+            "ENTRUST_PHONE", 
+            "ENTRUST_ISSUING",
+        ]
+        validate_conf(current_app, required_vars)
+
         self.session = requests.Session()
         cert_file_path = current_app.config.get("ENTRUST_API_CERT")
         key_file_path = current_app.config.get("ENTRUST_API_KEY")
