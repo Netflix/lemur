@@ -67,7 +67,8 @@ def handle_response(my_response):
     }
     try:
         d = json.loads(my_response.content)
-    except: 
+    except Exception as e:
+        # catch an empty jason object here 
         d = {'errors': 'No detailled message'}
     s = my_response.status_code
     if s > 399:
@@ -102,12 +103,12 @@ class EntrustIssuerPlugin(IssuerPlugin):
         validate_conf(current_app, required_vars)
 
         self.session = requests.Session()
-        cert_file_path = current_app.config.get("ENTRUST_API_CERT")
-        key_file_path = current_app.config.get("ENTRUST_API_KEY")
+        cert_file = current_app.config.get("ENTRUST_API_CERT")
+        key_file = current_app.config.get("ENTRUST_API_KEY")
         user = current_app.config.get("ENTRUST_API_USER")
-        passw = current_app.config.get("ENTRUST_API_PASS")
+        password = current_app.config.get("ENTRUST_API_PASS")
         self.session.cert = (cert_file_path, key_file_path)
-        self.session.auth = (user, passw)
+        self.session.auth = (user, password)
         self.session.hooks = dict(response=log_status_code)
         # self.session.config['keep_alive'] = False
         super(EntrustIssuerPlugin, self).__init__(*args, **kwargs)
@@ -155,16 +156,15 @@ class EntrustIssuerPlugin(IssuerPlugin):
             base_url, certificate.external_id
         )
         metrics.send("entrust_revoke_certificate", "counter", 1)
-        if comments == '' or comments == None:
+        if comments == '' or not comments:
             comments = "revoked via API"
         data = {
             "crlReason": "superseded",
             "revocationComment": comments
         }
-        response = self.session.post(revoke_url, json = data)
+        response = self.session.post(revoke_url, json=data)
 
         data = handle_response(response)
-        
 
     @staticmethod
     def create_authority(options):
