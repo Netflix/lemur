@@ -19,21 +19,23 @@ def log_status_code(r, *args, **kwargs):
     """
     metrics.send("ENTRUST_status_code_{}".format(r.status_code), "counter", 1)
 
+
 def determine_end_date(end_date):
     """
     Determine appropriate end date
     :param end_date:
     :return: validity_end
     """
-    #ENTRUST only allows 13 months of max certificate duration
+    # ENTRUST only allows 13 months of max certificate duration
     max_validity_end = arrow.utcnow().shift(years=1, months=+1).format('YYYY-MM-DD')
 
     if not end_date:
-        end_date = max_validity_end 
+        end_date = max_validity_end
 
     if end_date > max_validity_end:
         end_date = max_validity_end
     return end_date
+
 
 def process_options(options):
     """
