@@ -68,7 +68,7 @@ def handle_response(my_response):
     try:
         d = json.loads(my_response.content)
     except: 
-        d = {'errors': 'No error message'}
+        d = {'errors': 'No detailled message'}
     s = my_response.status_code
     if s > 399:
         raise Exception("ENTRUST error: {0}\n{1}".format(msg.get(s, s), d['errors']))
@@ -151,12 +151,17 @@ class EntrustIssuerPlugin(IssuerPlugin):
         base_url = current_app.config.get("ENTRUST_URL")
 
         # make certificate revoke request
-        create_url = "{0}/certificates/{1}/revocations".format(
+        revoke_url = "{0}/certificates/{1}/revocations".format(
             base_url, certificate.external_id
         )
         metrics.send("entrust_revoke_certificate", "counter", 1)
-        response = self.session.put(create_url, 
-            data=json.dumps({"crlReason": "superseded", "comments": comments}))
+        if comments == '' or comments == None:
+            comments = "revoked via API"
+        data = {
+            "crlReason": "superseded",
+            "revocationComment": comments
+        }
+        response = self.session.post(revoke_url, json = data)
 
         data = handle_response(response)
         
