@@ -50,6 +50,27 @@ def process_options(options):
     }
     return data
 
+def handle_response(my_response):
+    """
+    Helper function for parsing responses from the Entrust API.
+    :param content:
+    :return: :raise Exception:
+    """
+    msg = {
+        200: "The request had the validateOnly flag set to true and validation was successful.",
+        201: "Certificate created",
+        202: "Request accepted and queued for approval",
+        400: "Invalid request parameters",
+        404: "Unknown jobId",
+        429: "Too many requests"
+    }
+    d = json.loads(my_response.content)
+    s = my_response.status_code
+    if s != 201:
+        raise Exception("ENTRUST error : {0}\n{1}".format(msg.get(s,"unknown"),d['errors']))
+    current_app.logger.info("Response: {0}, {1} ".format(s, d))
+    return d
+
 
 class EntrustIssuerPlugin(IssuerPlugin):
     title = "ENTRUST"
@@ -66,12 +87,12 @@ class EntrustIssuerPlugin(IssuerPlugin):
             "ENTRUST_API_CERT",
             "ENTRUST_API_KEY",
             "ENTRUST_API_USER",
-            "ENTRUST_API_PASS", 
+            "ENTRUST_API_PASS",
             "ENTRUST_URL",
             "ENTRUST_ROOT",
             "ENTRUST_NAME",
             "ENTRUST_EMAIL",
-            "ENTRUST_PHONE", 
+            "ENTRUST_PHONE",
             "ENTRUST_ISSUING",
         ]
         validate_conf(current_app, required_vars)
@@ -103,26 +124,15 @@ class EntrustIssuerPlugin(IssuerPlugin):
 
         data = process_options(issuer_options)
         data["csr"] = csr
-        current_req = arrow.utcnow().format('YYYY-MM-DD HH:mm:ss')
-        current_app.logger.info(
-            "Entrust-Request Data (id: {1})  : {0}".format(data, current_req)
-        )
 
         try:
             response = self.session.post(url, json=data, timeout=(15, 40))
         except requests.exceptions.Timeout:
-            raise Exception("Timeout Error while posting to ENTRUST (ID: {0})".format(current_req))
+            raise Exception("Timeout for POST")
         except requests.exceptions.RequestException as e:
-            raise Exception("Error while posting to ENTRUST (ID: {1}):  {0}".format(e, current_req))
+            raise Exception("Error for POST {0}".format(e))
 
-        current_app.logger.info(
-            "After Post and Errorhandling (ID: {1}) : {0}".format(response.status_code, current_req)
-        )
-
-        response_dict = json.loads(response.content)
-        if response.status_code != 201:
-            raise Exception("Error with ENTRUST (ID: {1}): {0}".format(response_dict['errors'], current_req))
-        current_app.logger.info("Response: {0}, {1} ".format(response.status_code, response_dict))
+        response_dict = handle_response(response)
         external_id = response_dict['trackingId']
         cert = response_dict['endEntityCert']
         chain = response_dict['chainCerts'][1]
