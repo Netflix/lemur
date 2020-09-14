@@ -19,6 +19,21 @@ def log_status_code(r, *args, **kwargs):
     """
     metrics.send("ENTRUST_status_code_{}".format(r.status_code), "counter", 1)
 
+def determine_end_date(end_date):
+    """
+    Determine appropriate end date
+    :param end_date:
+    :return: validity_end
+    """
+    #ENTRUST only allows 13 months of max certificate duration
+    max_validity_end = arrow.utcnow().shift(years=1, months=+1).format('YYYY-MM-DD')
+
+    if not end_date:
+        end_date = max_validity_end 
+
+    if end_date > max_validity_end:
+        end_date = max_validity_end
+    return end_date
 
 def process_options(options):
     """
@@ -33,7 +48,11 @@ def process_options(options):
     # else default to "STANDARD_SSL"
     authority = options.get("authority").name.upper()
     product_type = current_app.config.get("ENTRUST_PRODUCT_{0}".format(authority), "STANDARD_SSL")
-    expiry_date = arrow.utcnow().shift(years=1, days=+10).format('YYYY-MM-DD')
+
+    if options.get("validity_end"):
+        validity_end = determine_end_date(options.get("validity_end"))
+    else:
+        validity_end = determine_end_date(False)
 
     tracking_data = {
         "requesterName": current_app.config.get("ENTRUST_NAME"),
@@ -45,7 +64,7 @@ def process_options(options):
         "signingAlg": "SHA-2",
         "eku": "SERVER_AND_CLIENT_AUTH",
         "certType": product_type,
-        "certExpiryDate": expiry_date,
+        "certExpiryDate": validity_end,
         "tracking": tracking_data
     }
     return data
@@ -197,15 +216,6 @@ class EntrustSourcePlugin(SourcePlugin):
 
     author = "sirferl"
     author_url = "https://github.com/sirferl/lemur"
-    options = [
-        {
-            "name": "dummy",
-            "type": "str",
-            "required": False,
-            "validation": "/^[0-9]{12,12}$/",
-            "helpMessage": "Just to prevent error",
-        }
-    ]
 
     def get_certificates(self, options, **kwargs):
         # Not needed for ENTRUST
