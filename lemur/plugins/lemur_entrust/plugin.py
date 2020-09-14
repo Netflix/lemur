@@ -68,7 +68,7 @@ def handle_response(my_response):
     try:
         d = json.loads(my_response.content)
     except Exception as e:
-        # catch an empty jason object here 
+        # catch an empty jason object here
         d = {'errors': 'No detailled message'}
     s = my_response.status_code
     if s > 399:
@@ -107,7 +107,7 @@ class EntrustIssuerPlugin(IssuerPlugin):
         key_file = current_app.config.get("ENTRUST_API_KEY")
         user = current_app.config.get("ENTRUST_API_USER")
         password = current_app.config.get("ENTRUST_API_PASS")
-        self.session.cert = (cert_file_path, key_file_path)
+        self.session.cert = (cert_file, key_file)
         self.session.auth = (user, password)
         self.session.hooks = dict(response=log_status_code)
         # self.session.config['keep_alive'] = False
