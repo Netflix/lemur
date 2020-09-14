@@ -112,6 +112,7 @@ class RootAuthorityCertificateOutputSchema(LemurOutputSchema):
     not_after = fields.DateTime()
     not_before = fields.DateTime()
     max_issuance_days = fields.Integer()
+    default_validity_days = fields.Integer()
     owner = fields.Email()
     status = fields.Boolean()
     user = fields.Nested(UserNestedOutputSchema)
@@ -137,7 +138,7 @@ class AuthorityNestedOutputSchema(LemurOutputSchema):
     owner = fields.Email()
     plugin = fields.Nested(PluginOutputSchema)
     active = fields.Boolean()
-    authority_certificate = fields.Nested(RootAuthorityCertificateOutputSchema, only=["max_issuance_days"])
+    authority_certificate = fields.Nested(RootAuthorityCertificateOutputSchema, only=["max_issuance_days", "default_validity_days"])
 
 
 authority_update_schema = AuthorityUpdateSchema()
