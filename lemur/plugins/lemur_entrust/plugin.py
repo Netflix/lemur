@@ -50,6 +50,7 @@ def process_options(options):
     }
     return data
 
+
 def handle_response(my_response):
     """
     Helper function for parsing responses from the Entrust API.
@@ -64,10 +65,13 @@ def handle_response(my_response):
         404: "Unknown jobId",
         429: "Too many requests"
     }
-    d = json.loads(my_response.content)
+    try:
+        d = json.loads(my_response.content)
+    except: 
+        d = {'errors': 'No error message'}
     s = my_response.status_code
-    if s != 201:
-        raise Exception("ENTRUST error : {0}\n{1}".format(msg.get(s,"unknown"),d['errors']))
+    if s > 399:
+        raise Exception("ENTRUST error: {0}\n{1}".format(msg.get(s, s), d['errors']))
     current_app.logger.info("Response: {0}, {1} ".format(s, d))
     return d
 
@@ -142,6 +146,21 @@ class EntrustIssuerPlugin(IssuerPlugin):
 
         return cert, chain, external_id
 
+    def revoke_certificate(self, certificate, comments):
+        """Revoke a Digicert certificate."""
+        base_url = current_app.config.get("ENTRUST_URL")
+
+        # make certificate revoke request
+        create_url = "{0}/certificates/{1}/revocations".format(
+            base_url, certificate.external_id
+        )
+        metrics.send("entrust_revoke_certificate", "counter", 1)
+        response = self.session.put(create_url, 
+            data=json.dumps({"crlReason": "superseded", "comments": comments}))
+
+        data = handle_response(response)
+        
+
     @staticmethod
     def create_authority(options):
         """Create an authority.
@@ -157,9 +176,6 @@ class EntrustIssuerPlugin(IssuerPlugin):
         role = {"username": "", "password": "", "name": "entrust"}
         current_app.logger.info("Creating Auth: {0} {1}".format(options, entrust_issuing))
         return entrust_root, "", [role]
-
-    def revoke_certificate(self, certificate, comments):
-        raise NotImplementedError("Not implemented\n", self, certificate, comments)
 
     def get_ordered_certificate(self, order_id):
         raise NotImplementedError("Not implemented\n", self, order_id)
