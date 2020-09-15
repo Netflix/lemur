@@ -18,8 +18,9 @@ import json
 import arrow
 import pem
 import requests
+import sys
 from cryptography import x509
-from flask import current_app
+from flask import current_app, g
 from lemur.common.utils import validate_conf
 from lemur.extensions import metrics
 from lemur.plugins import lemur_digicert as digicert
@@ -61,18 +62,16 @@ def signature_hash(signing_algorithm):
 
 
 def determine_validity_years(years):
-    """Given an end date determine how many years into the future that date is.
-    :param years:
-    :return: validity in years
     """
-    default_years = current_app.config.get("DIGICERT_DEFAULT_VALIDITY", 1)
-    max_years = current_app.config.get("DIGICERT_MAX_VALIDITY", default_years)
+    Considering maximum allowed certificate validity period of 397 days, this method should not return
+    more than 1 year of validity. Thus changing it to always return 1.
+    Lemur will change this method in future to handle validity in months (determine_validity_months)
+    instead of years. This will allow flexibility to handle short-lived certificates.
 
-    if years > max_years:
-        return max_years
-    if years not in [1, 2, 3]:
-        return default_years
-    return years
+    :param years:
+    :return: 1
+    """
+    return 1
 
 
 def determine_end_date(end_date):
@@ -82,11 +81,11 @@ def determine_end_date(end_date):
     :param end_date:
     :return: validity_end
     """
-    default_years = current_app.config.get("DIGICERT_DEFAULT_VALIDITY", 1)
-    max_validity_end = arrow.utcnow().shift(years=current_app.config.get("DIGICERT_MAX_VALIDITY", default_years))
+    default_days = current_app.config.get("DIGICERT_DEFAULT_VALIDITY_DAYS", 397)
+    max_validity_end = arrow.utcnow().shift(days=current_app.config.get("DIGICERT_MAX_VALIDITY_DAYS", default_days))
 
     if not end_date:
-        end_date = arrow.utcnow().shift(years=default_years)
+        end_date = arrow.utcnow().shift(days=default_days)
 
     if end_date > max_validity_end:
         end_date = max_validity_end
@@ -131,6 +130,9 @@ def map_fields(options, csr):
         data["validity_years"] = determine_validity_years(options.get("validity_years"))
     elif options.get("validity_end"):
         data["custom_expiration_date"] = determine_end_date(options.get("validity_end")).format("YYYY-MM-DD")
+        # check if validity got truncated. If resultant validity is not equal to requested validity, it just got truncated
+        if data["custom_expiration_date"] != options.get("validity_end").format("YYYY-MM-DD"):
+            log_validity_truncation(options, f"{__name__}.{sys._getframe().f_code.co_name}")
     else:
         data["validity_years"] = determine_validity_years(0)
 
@@ -156,6 +158,9 @@ def map_cis_fields(options, csr):
         validity_end = determine_end_date(arrow.utcnow().shift(years=options["validity_years"]))
     elif options.get("validity_end"):
         validity_end = determine_end_date(options.get("validity_end"))
+        # check if validity got truncated. If resultant validity is not equal to requested validity, it just got truncated
+        if validity_end != options.get("validity_end"):
+            log_validity_truncation(options, f"{__name__}.{sys._getframe().f_code.co_name}")
     else:
         validity_end = determine_end_date(False)
 
@@ -179,6 +184,18 @@ def map_cis_fields(options, csr):
             options['authority'].name)
 
     return data
+
+
+def log_validity_truncation(options, function):
+    log_data = {
+        "cn": options["common_name"],
+        "creator": g.user.username
+    }
+    metrics.send("digicert_validity_truncated", "counter", 1, metric_tags=log_data)
+
+    log_data["function"] = function
+    log_data["message"] = "Digicert Plugin truncated the validity of certificate"
+    current_app.logger.info(log_data)
 
 
 def handle_response(response):

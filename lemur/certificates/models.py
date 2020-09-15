@@ -9,9 +9,10 @@ from datetime import timedelta
 
 import arrow
 from cryptography import x509
-from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric import rsa, ec
 from flask import current_app
 from idna.core import InvalidCodepoint
+from lemur.common.utils import get_key_type_from_ec_curve
 from sqlalchemy import (
     event,
     Integer,
@@ -302,6 +303,8 @@ class Certificate(db.Model):
             return "RSA{key_size}".format(
                 key_size=self.parsed_cert.public_key().key_size
             )
+        elif isinstance(self.parsed_cert.public_key(), ec.EllipticCurvePublicKey):
+            return get_key_type_from_ec_curve(self.parsed_cert.public_key().curve.name)
 
     @property
     def validity_remaining(self):
@@ -310,6 +313,20 @@ class Certificate(db.Model):
     @property
     def validity_range(self):
         return self.not_after - self.not_before
+
+    @property
+    def max_issuance_days(self):
+        public_CA = current_app.config.get("PUBLIC_CA_AUTHORITY_NAMES", [])
+        if self.name.lower() in [ca.lower() for ca in public_CA]:
+            return current_app.config.get("PUBLIC_CA_MAX_VALIDITY_DAYS", 397)
+
+    @property
+    def default_validity_days(self):
+        public_CA = current_app.config.get("PUBLIC_CA_AUTHORITY_NAMES", [])
+        if self.name.lower() in [ca.lower() for ca in public_CA]:
+            return current_app.config.get("PUBLIC_CA_MAX_VALIDITY_DAYS", 397)
+
+        return current_app.config.get("DEFAULT_VALIDITY_DAYS", 365)   # 1 year default
 
     @property
     def subject(self):
