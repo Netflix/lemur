@@ -653,13 +653,20 @@ Active Directory Certificate Services Plugin
     :noindex:
 
         Template to be used for certificate issuing. Usually display name w/o spaces
+        
+.. data:: ADCS_TEMPLATE_<upper(authority.name)>
+    :noindex:
 
+        If there is a config variable ADCS_TEMPLATE_<upper(authority.name)> take the value as Cert template else default to ADCS_TEMPLATE to be compatible with former versions. Template to be used for certificate issuing. Usually display name w/o spaces
 
 .. data:: ADCS_START
     :noindex:
+        Used in ADCS-Sourceplugin. Minimum id of the first certificate to be returned. ID is increased by one until ADCS_STOP. Missing cert-IDs are ignored
 
 .. data:: ADCS_STOP
     :noindex:
+        Used for ADCS-Sourceplugin. Maximum id of the certificates returned. 
+        
 
 .. data:: ADCS_ISSUING
     :noindex:
@@ -672,6 +679,68 @@ Active Directory Certificate Services Plugin
 
         Contains the root cert of the CA
 
+Entrust Plugin
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Enables the creation of Entrust certificates. You need to set the API access up with Entrust support. Check the information in the Entrust Portal as well. 
+Certificates are created as "SERVER_AND_CLIENT_AUTH".
+Caution: Sometimes the entrust API does not respond in a timely manner. This error is handled and reported by the plugin. Should this happen you just have to hit the create button again after to create a valid certificate. 
+The following parameters have to be set in the configuration files.
+
+.. data:: ENTRUST_URL
+    :noindex:
+    
+       This is the url for the Entrust API. Refer to the API documentation.
+       
+.. data:: ENTRUST_API_CERT
+    :noindex:
+    
+       Path to the certificate file in PEM format. This certificate is created in the onboarding process. Refer to the API documentation.
+       
+.. data:: ENTRUST_API_KEY
+    :noindex:
+    
+       Path to the key file in RSA format. This certificate is created in the onboarding process. Refer to the API documentation. Caution: the request library cannot handle encrypted keys. The keyfile therefore has to contain the unencrypted key. Please put this in a secure location on the server.
+       
+.. data:: ENTRUST_API_USER
+    :noindex:
+    
+       String with the API user. This user is created in the onboarding process. Refer to the API documentation.   
+       
+.. data:: ENTRUST_API_PASS
+    :noindex:
+    
+       String with the password for the API user. This password is created in the onboarding process. Refer to the API documentation.
+
+.. data:: ENTRUST_NAME
+    :noindex:
+    
+        String with the name that should appear as certificate owner in the Entrust portal. Refer to the API documentation.
+
+.. data:: ENTRUST_EMAIL
+    :noindex:
+    
+        String with the email address that should appear as certificate contact email in the Entrust portal. Refer to the API documentation.       
+
+.. data:: ENTRUST_PHONE
+    :noindex:
+    
+        String with the phone number that should appear as certificate contact in the Entrust portal. Refer to the API documentation.        
+
+.. data:: ENTRUST_ISSUING
+    :noindex:
+    
+        Contains the issuing cert of the CA
+
+.. data:: ENTRUST_ROOT
+    :noindex:
+    
+        Contains the root cert of the CA
+
+.. data:: ENTRUST_PRODUCT_<upper(authority.name)>
+    :noindex:
+
+        If there is a config variable ENTRUST_PRODUCT_<upper(authority.name)> take the value as cert product name else default to "STANDARD_SSL". Refer to the API documentation for valid products names.
 
 Verisign Issuer Plugin
 ~~~~~~~~~~~~~~~~~~~~~~
