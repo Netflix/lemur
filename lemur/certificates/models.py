@@ -9,10 +9,8 @@ from datetime import timedelta
 
 import arrow
 from cryptography import x509
-from cryptography.hazmat.primitives.asymmetric import rsa, ec
 from flask import current_app
 from idna.core import InvalidCodepoint
-from lemur.common.utils import get_key_type_from_ec_curve
 from sqlalchemy import (
     event,
     Integer,

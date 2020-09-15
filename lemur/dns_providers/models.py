@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, text, Text
+from sqlalchemy import Column, Integer, String, text
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import ArrowType
