@@ -50,8 +50,10 @@ reset-db:
 
 setup-git:
 	@echo "--> Installing git hooks"
-	git config branch.autosetuprebase always
-	cd .git/hooks && ln -sf ../../hooks/* ./
+	if [ -d .git/hooks ]; then \
+		git config branch.autosetuprebase always; \
+		cd .git/hooks && ln -sf ../../hooks/* ./; \
+	fi
 	@echo ""
 
 clean:
