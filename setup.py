@@ -153,7 +153,9 @@ setup(
             'vault_source = lemur.plugins.lemur_vault_dest.plugin:VaultSourcePlugin',
             'vault_desination = lemur.plugins.lemur_vault_dest.plugin:VaultDestinationPlugin',
             'adcs_issuer = lemur.plugins.lemur_adcs.plugin:ADCSIssuerPlugin',
-            'adcs_source = lemur.plugins.lemur_adcs.plugin:ADCSSourcePlugin'
+            'adcs_source = lemur.plugins.lemur_adcs.plugin:ADCSSourcePlugin',
+            'entrust_issuer = lemur.plugins.lemur_entrust.plugin:EntrustIssuerPlugin',
+            'entrust_source = lemur.plugins.lemur_entrust.plugin:EntrustSourcePlugin'
         ],
     },
     classifiers=[
