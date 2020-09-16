@@ -107,7 +107,6 @@ angular.module('lemur')
       startingDay: 1
     };
 
-
     $scope.open1 = function() {
       $scope.popup1.opened = true;
     };
@@ -140,6 +139,14 @@ angular.module('lemur')
     );
 
     $scope.create = function (certificate) {
+      if(certificate.validityType === 'customDates' &&
+          (!certificate.validityStart || !certificate.validityEnd)) { // these are not mandatory fields in schema, thus handling validation in js
+          return showMissingDateError();
+      }
+      if(certificate.validityType === 'defaultDays') {
+        populateValidityDateAsPerDefault(certificate);
+      }
+
       WizardHandler.wizard().context.loading = true;
       CertificateService.create(certificate).then(
         function () {
@@ -163,6 +170,30 @@ angular.module('lemur')
           WizardHandler.wizard().context.loading = false;
         });
     };
+
+    function showMissingDateError() {
+      let error = {};
+      error.message = '';
+      error.reasons = {};
+      error.reasons.validityRange = 'Valid start and end dates are needed, else select Default option';
+
+      toaster.pop({
+        type: 'error',
+        title: 'Validation Error',
+        body: 'lemur-bad-request',
+        bodyOutputType: 'directive',
+        directiveData: error,
+        timeout: 100000
+      });
+    }
+
+    function populateValidityDateAsPerDefault(certificate) {
+      // calculate start and end date as per default validity
+      let startDate = new Date(), endDate = new Date();
+      endDate.setDate(startDate.getDate() + certificate.authority.authorityCertificate.defaultValidityDays);
+      certificate.validityStart = startDate;
+      certificate.validityEnd = endDate;
+    }
 
     $scope.templates = [
       {
@@ -212,12 +243,18 @@ angular.module('lemur')
   })
 
 .controller('CertificateCloneController', function ($scope, $uibModalInstance, CertificateApi, CertificateService, DestinationService, AuthorityService, AuthorityApi, PluginService, MomentService, WizardHandler, LemurRestangular, NotificationService, toaster, editId) {
+  $scope.certificate = LemurRestangular.restangularizeElement(null, {}, 'certificates');
   CertificateApi.get(editId).then(function (certificate) {
     $scope.certificate = certificate;
+    // prepare the certificate for cloning
     $scope.certificate.name = ''; // we should prefer the generated name
     $scope.certificate.csr = null;  // should not clone CSR in case other settings are changed in clone
     $scope.certificate.validityStart = null;
     $scope.certificate.validityEnd = null;
+    $scope.certificate.keyType = 'RSA2048'; // default algo to show during clone
+    $scope.certificate.description = 'Cloning from cert ID ' + editId;
+    $scope.certificate.replacedBy = []; // should not clone 'replaced by' info
+    $scope.certificate.removeReplaces(); // should not clone 'replacement cert' info
     CertificateService.getDefaults($scope.certificate);
   });
 
@@ -271,6 +308,14 @@ angular.module('lemur')
   };
 
   $scope.create = function (certificate) {
+     if(certificate.validityType === 'customDates' &&
+          (!certificate.validityStart || !certificate.validityEnd)) { // these are not mandatory fields in schema, thus handling validation in js
+          return showMissingDateError();
+     }
+     if(certificate.validityType === 'defaultDays') {
+        populateValidityDateAsPerDefault(certificate);
+     }
+
     WizardHandler.wizard().context.loading = true;
     CertificateService.create(certificate).then(
       function () {
@@ -294,6 +339,30 @@ angular.module('lemur')
         WizardHandler.wizard().context.loading = false;
       });
   };
+
+  function showMissingDateError() {
+      let error = {};
+      error.message = '';
+      error.reasons = {};
+      error.reasons.validityRange = 'Valid start and end dates are needed, else select Default option';
+
+      toaster.pop({
+        type: 'error',
+        title: 'Validation Error',
+        body: 'lemur-bad-request',
+        bodyOutputType: 'directive',
+        directiveData: error,
+        timeout: 100000
+      });
+    }
+
+    function populateValidityDateAsPerDefault(certificate) {
+      // calculate start and end date as per default validity
+      let startDate = new Date(), endDate = new Date();
+      endDate.setDate(startDate.getDate() + certificate.authority.authorityCertificate.defaultValidityDays);
+      certificate.validityStart = startDate;
+      certificate.validityEnd = endDate;
+    }
 
   $scope.templates = [
     {
