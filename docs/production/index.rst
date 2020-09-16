@@ -52,6 +52,8 @@ If you wish to generate more entropy for your system we would suggest you take a
 - `WES-entropy-client <https://github.com/Virginian/WES-entropy-client>`_
 - `haveged <http://www.issihosts.com/haveged/>`_
 
+The original *WES-entropy-client* repository by WhitewoodCrypto was removed, the link now points to a fork of it.
+
 For additional information about OpenSSL entropy issues:
 
 - `Managing and Understanding Entropy Usage <https://www.blackhat.com/docs/us-15/materials/us-15-Potter-Understanding-And-Managing-Entropy-Usage.pdf>`_
