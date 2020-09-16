@@ -11,6 +11,12 @@ from lemur.tests.vectors import (
 )
 
 
+def test_get_key_type_from_ec_curve():
+    from lemur.common.utils import get_key_type_from_ec_curve
+
+    assert get_key_type_from_ec_curve("secp256r1") == "ECCPRIME256V1"
+
+
 def test_generate_private_key():
     from lemur.common.utils import generate_private_key
 

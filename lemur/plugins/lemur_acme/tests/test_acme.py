@@ -156,6 +156,7 @@ class TestAcme(unittest.TestCase):
         mock_acme.fetch_chain = Mock(return_value="mock_chain")
         mock_crypto.dump_certificate = Mock(return_value=b"chain")
         mock_order = Mock()
+        mock_current_app.config = {}
         self.acme.request_certificate(mock_acme, [], mock_order)
 
     def test_setup_acme_client_fail(self):

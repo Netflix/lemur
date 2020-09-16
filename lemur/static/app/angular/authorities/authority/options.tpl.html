@@ -4,7 +4,7 @@
       Signing Algorithm
     </label>
     <div class="col-sm-10">
-      <select class="form-control" ng-model="authority.signingAlgorithm" ng-options="option for option in ['sha1WithRSA', 'sha256WithRSA']" ng-init="authority.signingAlgorithm = 'sha256WithRSA'"></select>
+      <select class="form-control" ng-model="authority.signingAlgorithm" ng-options="option for option in ['sha1WithRSA', 'sha256WithRSA', 'sha256WithECDSA', 'SHA384withECDSA', 'SHA512withECDSA']" ng-init="authority.signingAlgorithm = 'sha256WithRSA'"></select>
     </div>
   </div>
   <div class="form-group">
