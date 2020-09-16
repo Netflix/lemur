@@ -297,6 +297,7 @@ class Certificate(db.Model):
         return self.parsed_cert.subject.rfc4514_string()
 
     """
+    # Commenting this property as key_type is now added as a column. This code can be removed in future.
     @property
     def key_type(self):
         if isinstance(self.parsed_cert.public_key(), rsa.RSAPublicKey):
