@@ -20,7 +20,7 @@ def log_status_code(r, *args, **kwargs):
     :param kwargs:
     :return:
     """
-    metrics.send("ENTRUST_status_code_{}".format(r.status_code), "counter", 1)
+    metrics.send("entrust_status_code", "counter", 1, metadata={"status_code": r.status_code})
 
 
 def determine_end_date(end_date):
@@ -55,7 +55,7 @@ def process_options(options):
     # STANDARD_SSL (cn=domain, san=www.domain),
     # ADVANTAGE_SSL (cn=domain, san=[www.domain, one_more_option]),
     # WILDCARD_SSL (unlimited sans, and wildcard)
-    product_type = current_app.config.get("ENTRUST_PRODUCT_{0}".format(authority), "STANDARD_SSL")
+    product_type = current_app.config.get(f"ENTRUST_PRODUCT_{authority}", "STANDARD_SSL")
 
     if options.get("validity_end"):
         validity_end = determine_end_date(options.get("validity_end"))
@@ -173,7 +173,7 @@ class EntrustIssuerPlugin(IssuerPlugin):
         except requests.exceptions.Timeout:
             raise Exception("Timeout for POST")
         except requests.exceptions.RequestException as e:
-            raise Exception("Error for POST {0}".format(e))
+            raise Exception(f"Error for POST {e}")
 
         response_dict = handle_response(response)
         external_id = response_dict['trackingId']
