@@ -390,6 +390,9 @@ Here are the Celery configuration variables that should be set::
     CELERY_IMPORTS = ('lemur.common.celery')
     CELERY_TIMEZONE = 'UTC'
 
+    REDIS_HOST="your_redis_url"
+    REDIS_PORT="6379"
+
 Do not forget to import crontab module in your configuration file::
 
     from celery.task.schedules import crontab
