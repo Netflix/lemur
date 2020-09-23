@@ -328,6 +328,54 @@ Lemur supports sending certification expiration notifications through SES and SM
           LEMUR_SECURITY_TEAM_EMAIL_INTERVALS = [15, 2]
 
 
+Celery Options
+---------------
+To make use of automated tasks within lemur (e.g. syncing source/destinations, or reissuing ACME certificates), you
+need to configure celery. See :ref:`Periodic Tasks <PeriodicTasks>` for more in depth documentation.
+
+.. data:: CELERY_RESULT_BACKEND
+    :noindex:
+
+        The url to your redis backend (needs to be in the format `redis://<host>:<port>/<database>`)
+
+.. data:: CELERY_BROKER_URL
+    :noindex:
+
+        The url to your redis broker (needs to be in the format `redis://<host>:<port>/<database>`)
+
+.. data:: CELERY_IMPORTS
+    :noindex:
+
+        The module that celery needs to import, in our case thats `lemur.common.celery`
+
+.. data:: CELERY_TIMEZONE
+    :noindex:
+
+        The timezone for celery to work with
+
+
+.. data:: CELERYBEAT_SCHEDULE
+    :noindex:
+
+        This defines the schedule, with which the celery beat makes the worker run the specified tasks.
+
+Since the celery module, relies on the RedisHandler, the following options also need to be set.
+
+.. data:: REDIS_HOST
+    :noindex:
+
+        Hostname of your redis instance
+
+.. data:: REDIS_PORT
+    :noindex:
+
+        Port on which redis is running (default: 6379)
+
+.. data:: REDIS_DB
+    :noindex:
+
+        Which redis database to be used, by default redis offers databases 0-15 (default: 0)
+
 Authentication Options
 ----------------------
 Lemur currently supports Basic Authentication, LDAP Authentication, Ping OAuth2, and Google out of the box. Additional flows can be added relatively easily.
