@@ -28,12 +28,13 @@ from alembic import op
 from sqlalchemy.sql import text
 from lemur.common import utils
 import time
+import datetime
 
-log_file = open('upgrade_logs', 'a')
+log_file = open('db_upgrade.log', 'a')
 
 
 def upgrade():
-    log_file.write("\n*** Starting new run ***\n")
+    log_file.write("\n*** Starting new run(%s) ***\n" % datetime.datetime.now())
     start_time = time.time()
 
     # Update RSA keys using the key length information
