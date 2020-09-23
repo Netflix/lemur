@@ -6,9 +6,12 @@ the algorithm is determined based on the key length. For rest of the keys,
 the certificate body is parsed to determine the exact key type information.
 
 Each individual change is explicitly committed. The logs are added to file
-named upgrade_logs in current working directory. If faced any issue while
-running this upgrade, there is no harm in re-running the upgrade. Each run
-processes only the keys for which key type information is not yet determined.
+named db_upgrade.log in current working directory. Any error encountered
+while parsing a certificate will also be logged along with the certificate
+ID. If faced any issue while running this upgrade, there is no harm in
+re-running the upgrade. Each run processes only the keys for which key type
+information is not yet determined.
+
 A successful end to end run will end up updating the Alembic Version to new
 Revision ID c301c59688d2. Currently only RSA and ECC certificates are supported
 by Lemur. This could be a long running job depending upon the number of
@@ -89,8 +92,8 @@ def update_key_type():
     ):
         try:
             cert_key_type = utils.get_key_type_from_certificate(body)
-        except ValueError:
-            log_file.write("Error in processing certificate. ID: %s\n" % cert_id)
+        except ValueError as e:
+            log_file.write("Error in processing certificate - ID: %s Error: %s \n" % (cert_id, str(e)))
         else:
             log_file.write("Processing certificate - ID: %s key_type: %s\n" % (cert_id, cert_key_type))
             stmt = text(
