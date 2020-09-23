@@ -169,7 +169,8 @@ class TestAcme(unittest.TestCase):
     @patch("lemur.plugins.lemur_acme.plugin.current_app")
     def test_setup_acme_client_success(self, mock_current_app, mock_acme):
         mock_authority = Mock()
-        mock_authority.options = '[{"name": "mock_name", "value": "mock_value"}]'
+        mock_authority.options = '[{"name": "mock_name", "value": "mock_value"}, ' \
+                                 '{"name": "store_account", "value": false}] '
         mock_client = Mock()
         mock_registration = Mock()
         mock_registration.uri = "http://test.com"
