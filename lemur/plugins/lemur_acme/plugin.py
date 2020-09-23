@@ -240,6 +240,7 @@ class AcmeHandler(object):
         existing_regr = options.get("acme_regr", current_app.config.get("ACME_REGR"))
 
         if existing_key and existing_regr:
+            current_app.logger.debug("Reusing existing ACME account")
             # Reuse the same account for each certificate issuance
             key = jose.JWK.json_loads(existing_key)
             regr = messages.RegistrationResource.json_loads(existing_regr)
@@ -253,6 +254,7 @@ class AcmeHandler(object):
             # Create an account for each certificate issuance
             key = jose.JWKRSA(key=generate_private_key("RSA2048"))
 
+            current_app.logger.debug("Creating a new ACME account")
             current_app.logger.debug(
                 "Connecting with directory at {0}".format(directory_url)
             )
@@ -447,6 +449,13 @@ class ACMEIssuerPlugin(IssuerPlugin):
             "validation": "/^-----BEGIN CERTIFICATE-----/",
             "helpMessage": "Certificate to use",
         },
+        {
+            "name": "store_account",
+            "type": "bool",
+            "required": False,
+            "helpMessage": "Disable to create a new account for each ACME request",
+            "default": True,
+        }
     ]
 
     def __init__(self, *args, **kwargs):
