@@ -398,7 +398,7 @@ Here are the Celery configuration variables that should be set::
     REDIS_DB=0
 
 Out of the box, every Redis instance supports 16 databases. The default database (`REDIS_DB`) is  set to 0, however, you can use any of the databases from 0-15. Via `redis.conf` more databases can be supported.
-In the `redis://` url, the database number needs to be added with a slash after the port.
+In the `redis://` url, the database number can be added with a slash after the port. (defaults to 0, if omitted)
 
 Do not forget to import crontab module in your configuration file::
 
