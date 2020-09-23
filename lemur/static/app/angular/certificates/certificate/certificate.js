@@ -251,10 +251,13 @@ angular.module('lemur')
     $scope.certificate.csr = null;  // should not clone CSR in case other settings are changed in clone
     $scope.certificate.validityStart = null;
     $scope.certificate.validityEnd = null;
-    $scope.certificate.keyType = 'RSA2048'; // default algo to show during clone
     $scope.certificate.description = 'Cloning from cert ID ' + editId;
     $scope.certificate.replacedBy = []; // should not clone 'replaced by' info
     $scope.certificate.removeReplaces(); // should not clone 'replacement cert' info
+
+    if(!$scope.certificate.keyType) {
+      $scope.certificate.keyType = 'RSA2048'; // default algo to show during clone if backend did not return algo
+    }
     CertificateService.getDefaults($scope.certificate);
   });
 
