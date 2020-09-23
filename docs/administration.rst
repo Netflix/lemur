@@ -1171,6 +1171,23 @@ The following configuration properties are required to use the PowerDNS ACME Plu
 
             File/Dir path to CA Bundle: Verifies the TLS certificate was issued by a Certificate Authority in the provided CA bundle.
 
+ACME Plugin
+~~~~~~~~~~~~
+
+The following configration properties are optional for the ACME plugin to use. They allow reusing an existing ACME
+account.
+
+
+.. data:: ACME_PRIVATE_KEY
+    :noindex:
+
+            This is the private key, the account was registered with (in JWK format)
+
+.. data:: ACME_REGR
+    :noindex:
+
+            This is the registration for the ACME account, the most important part is the uri attribute (in JSON)
+
 .. _CommandLineInterface:
 
 Command Line Interface
