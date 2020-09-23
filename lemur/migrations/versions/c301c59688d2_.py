@@ -6,18 +6,18 @@ keys, the algorithm is determined based on the key length. For
 the rest of the keys, the certificate body is parsed to determine 
 the exact key_type information.
 
-Each individual DB change is explicitly committed, and the 
-respective log is added to a file named db_upgrade.log in the current
-working directory. Any error encountered while parsing a certificate 
-will also be logged along with the certificate ID. If faced with
-any issue while running this upgrade, there is no harm in
-re-running the upgrade. Each run processes only rows for which
-key_type information is not yet determined.
+Each individual DB change is explicitly committed, and the respective
+log is added to a file named db_upgrade.log in the current working
+directory. Any error encountered while parsing a certificate will
+also be logged along with the certificate ID. If faced with any issue
+while running this upgrade, there is no harm in re-running the upgrade.
+Each run processes only rows for which key_type information is not yet
+determined.
 
-A successful complete run will end up updating the Alembic Version 
-to the new Revision ID c301c59688d2. Currently, only RSA and ECC 
-certificates are supported by Lemur. This could be a long-running 
-job depending upon the number of DB entries it may process.
+A successful complete run will end up updating the Alembic Version to
+the new Revision ID c301c59688d2. Currently, Lemur supports only RSA
+and ECC certificates. This could be a long-running job depending upon
+the number of DB entries it may process.
 
 Revision ID: c301c59688d2
 Revises: 434c29e40511
@@ -72,7 +72,7 @@ def update_key_type_rsa(bits):
     log_file.write("Processing certificate with key type RSA %s\n" % bits)
 
     stmt = text(
-        "update certificates set key_type='RSA{0}' where bits={0} and not_after > CURRENT_DATE - 31 and key_type is null".format(bits)
+        f"update certificates set key_type='RSA{bits}' where bits={bits} and not_after > CURRENT_DATE - 31 and key_type is null"
     )
     log_file.write("Query: %s\n" % stmt)
 
