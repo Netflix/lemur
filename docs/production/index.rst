@@ -540,7 +540,7 @@ configuration.
     }
 
 
-Using `python-jwt` converting a existing private key in PEM format is quite easy::
+Using `python-jwt` converting an existing private key in PEM format is quite easy::
 
     import python_jwt as jwt, jwcrypto.jwk as jwk
 
@@ -554,4 +554,4 @@ Using `python-jwt` converting a existing private key in PEM format is quite easy
 
     {"body": {}, "uri": "https://acme-staging-v02.api.letsencrypt.org/acme/acct/<ACCOUNT_NUMBER>"}
 
-The uri can be retrieved from the ACME create account endpoint, when trying to create a new account, using the existing key.
+The URI can be retrieved from the ACME create account endpoint when creating a new account, using the existing key.
