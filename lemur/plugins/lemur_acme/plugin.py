@@ -32,6 +32,7 @@ from lemur.extensions import metrics, sentry
 from lemur.plugins import lemur_acme as acme
 from lemur.plugins.bases import IssuerPlugin
 from lemur.plugins.lemur_acme import cloudflare, dyn, route53, ultradns, powerdns
+from lemur.authorities import service as authorities_service
 from retrying import retry
 
 
@@ -264,6 +265,27 @@ class AcmeHandler(object):
             registration = client.new_account_and_tos(
                 messages.NewRegistration.from_data(email=email)
             )
+
+            # if store_account is checked, add the private_key and registration resources to the options
+            if options['store_account']:
+                new_options = json.loads(authority.options)
+                # the key returned by fields_to_partial_json is missing the key type, so we add it manually
+                key_dict = key.fields_to_partial_json()
+                key_dict["kty"] = "RSA"
+                acme_private_key = {
+                    "name": "acme_private_key",
+                    "value": json.dumps(key_dict)
+                }
+                new_options.append(acme_private_key)
+
+                acme_regr = {
+                    "name": "acme_regr",
+                    "value": json.dumps({"body": {}, "uri": registration.uri})
+                }
+                new_options.append(acme_regr)
+
+                authorities_service.update_options(authority.id, options=json.dumps(new_options))
+
             current_app.logger.debug("Connected: {0}".format(registration.uri))
 
         return client, registration
