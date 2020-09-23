@@ -20,7 +20,7 @@ def log_status_code(r, *args, **kwargs):
     :param kwargs:
     :return:
     """
-    metrics.send("entrust_status_code", "counter", 1, metadata={"status_code": r.status_code})
+    metrics.send(f"entrust_status_code_{r.status_code}", "counter", 1)
 
 
 def determine_end_date(end_date):
@@ -206,12 +206,12 @@ class EntrustIssuerPlugin(IssuerPlugin):
         metrics.send("entrust_revoke_certificate", "counter", 1)
         return handle_response(response)
 
-    def deactivate_certificate(self, certificate, comments):
+    def deactivate_certificate(self, certificate):
         """Deactivates an Entrust certificate."""
         base_url = current_app.config.get("ENTRUST_URL")
-        revoke_url = f"{base_url}/certificates/{certificate.external_id}/deactivations"
-        response = self.session.post(revoke_url)
-        metrics.send("entrust_revoke_certificate", "counter", 1)
+        deactivate_url = f"{base_url}/certificates/{certificate.external_id}/deactivations"
+        response = self.session.post(deactivate_url)
+        metrics.send("entrust_deactivate_certificate", "counter", 1)
         return handle_response(response)
 
     @staticmethod
