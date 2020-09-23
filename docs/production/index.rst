@@ -513,6 +513,8 @@ The following must be added to the config file to activate the pinning (the pinn
     """
 
 
+.. _AcmeAccountReuse:
+
 LetsEncrypt: Using a pre-existing ACME account
 -----------------------------------------------
 

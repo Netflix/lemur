@@ -1175,7 +1175,7 @@ ACME Plugin
 ~~~~~~~~~~~~
 
 The following configration properties are optional for the ACME plugin to use. They allow reusing an existing ACME
-account.
+account. See :ref:`Using a pre-existing ACME account <AcmeAccountReuse>` for more details.
 
 
 .. data:: ACME_PRIVATE_KEY
