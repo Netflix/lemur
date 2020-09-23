@@ -54,6 +54,7 @@ def update_options(authority_id, options):
 
     return database.update(authority)
 
+
 def mint(**kwargs):
     """
     Creates the authority based on the plugin provided.
