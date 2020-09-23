@@ -388,12 +388,16 @@ To enable celery support, you must also have configuration values that tell Cele
 Here are the Celery configuration variables that should be set::
 
     CELERY_RESULT_BACKEND = 'redis://your_redis_url:6379'
-    CELERY_BROKER_URL = 'redis://your_redis_url:6379'
+    CELERY_BROKER_URL = 'redis://your_redis_url:6379/0'
     CELERY_IMPORTS = ('lemur.common.celery')
     CELERY_TIMEZONE = 'UTC'
 
     REDIS_HOST="your_redis_url"
-    REDIS_PORT="6379"
+    REDIS_PORT=6379
+    REDIS_DB=0
+
+Out of the box, every Redis instance supports 16 databases. The default database (`REDIS_DB`) is  set to 0, however, you can use any of the databases from 0-15. Via `redis.conf` more databases can be supported.
+In the `redis://` url, the database number needs to be added with a slash after the port.
 
 Do not forget to import crontab module in your configuration file::
 
