@@ -315,6 +315,7 @@ It will start a shell from which you can start/stop/restart the service.
 
 You can read all errors that might occur from /tmp/lemur.log.
 
+.. _PeriodicTasks:
 
 Periodic Tasks
 ==============
