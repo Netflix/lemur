@@ -1,21 +1,23 @@
 """
 
-This upgrade of database updates the key_type information for certificates
-that are either still valid or have expired in last 30 days. For RSA keys,
-the algorithm is determined based on the key length. For rest of the keys,
-the certificate body is parsed to determine the exact key type information.
+This database upgrade updates the key_type information for either
+still valid or expired certificates in the last 30 days. For RSA
+keys, the algorithm is determined based on the key length. For 
+the rest of the keys, the certificate body is parsed to determine 
+the exact key_type information.
 
-Each individual change is explicitly committed. The logs are added to file
-named db_upgrade.log in current working directory. Any error encountered
-while parsing a certificate will also be logged along with the certificate
-ID. If faced any issue while running this upgrade, there is no harm in
-re-running the upgrade. Each run processes only the keys for which key type
-information is not yet determined.
+Each individual DB change is explicitly committed, and the 
+respective log is added to a file named db_upgrade.log in the current
+working directory. Any error encountered while parsing a certificate 
+will also be logged along with the certificate ID. If faced with
+any issue while running this upgrade, there is no harm in
+re-running the upgrade. Each run processes only rows for which
+key_type information is not yet determined.
 
-A successful end to end run will end up updating the Alembic Version to new
-Revision ID c301c59688d2. Currently only RSA and ECC certificates are supported
-by Lemur. This could be a long running job depending upon the number of
-keys it may process.
+A successful complete run will end up updating the Alembic Version 
+to the new Revision ID c301c59688d2. Currently, only RSA and ECC 
+certificates are supported by Lemur. This could be a long-running 
+job depending upon the number of DB entries it may process.
 
 Revision ID: c301c59688d2
 Revises: 434c29e40511
