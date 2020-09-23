@@ -2,11 +2,13 @@ import pytest
 
 from lemur.tests.vectors import (
     SAN_CERT,
+    SAN_CERT_STR,
     INTERMEDIATE_CERT,
     ROOTCA_CERT,
     EC_CERT_EXAMPLE,
     ECDSA_PRIME256V1_CERT,
     ECDSA_SECP384r1_CERT,
+    ECDSA_SECP384r1_CERT_STR,
     DSA_CERT,
 )
 
@@ -106,3 +108,9 @@ def test_is_selfsigned(selfsigned_cert):
     # unsupported algorithm (DSA)
     with pytest.raises(Exception):
         is_selfsigned(DSA_CERT)
+
+
+def test_get_key_type_from_certificate():
+    from lemur.common.utils import get_key_type_from_certificate
+    assert (get_key_type_from_certificate(SAN_CERT_STR) == "RSA2048")
+    assert (get_key_type_from_certificate(ECDSA_SECP384r1_CERT_STR) == "ECCSECP384R1")
