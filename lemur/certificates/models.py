@@ -9,10 +9,8 @@ from datetime import timedelta
 
 import arrow
 from cryptography import x509
-from cryptography.hazmat.primitives.asymmetric import rsa, ec
 from flask import current_app
 from idna.core import InvalidCodepoint
-from lemur.common.utils import get_key_type_from_ec_curve
 from sqlalchemy import (
     event,
     Integer,
@@ -154,6 +152,7 @@ class Certificate(db.Model):
         Integer, ForeignKey("authorities.id", ondelete="CASCADE")
     )
     rotation_policy_id = Column(Integer, ForeignKey("rotation_policies.id"))
+    key_type = Column(String(128))
 
     notifications = relationship(
         "Notification",
@@ -297,6 +296,8 @@ class Certificate(db.Model):
     def distinguished_name(self):
         return self.parsed_cert.subject.rfc4514_string()
 
+    """
+    # Commenting this property as key_type is now added as a column. This code can be removed in future.
     @property
     def key_type(self):
         if isinstance(self.parsed_cert.public_key(), rsa.RSAPublicKey):
@@ -305,6 +306,7 @@ class Certificate(db.Model):
             )
         elif isinstance(self.parsed_cert.public_key(), ec.EllipticCurvePublicKey):
             return get_key_type_from_ec_curve(self.parsed_cert.public_key().curve.name)
+    """
 
     @property
     def validity_remaining(self):

@@ -1,9 +1,12 @@
-from lemur.plugins.bases import IssuerPlugin, SourcePlugin
+
 import arrow
 import requests
 import json
-from lemur.plugins import lemur_entrust as ENTRUST
+import sys
 from flask import current_app
+
+from lemur.plugins import lemur_entrust as entrust
+from lemur.plugins.bases import IssuerPlugin, SourcePlugin
 from lemur.extensions import metrics
 from lemur.common.utils import validate_conf
 
@@ -17,24 +20,24 @@ def log_status_code(r, *args, **kwargs):
     :param kwargs:
     :return:
     """
-    metrics.send("ENTRUST_status_code_{}".format(r.status_code), "counter", 1)
+    metrics.send(f"entrust_status_code_{r.status_code}", "counter", 1)
 
 
 def determine_end_date(end_date):
     """
     Determine appropriate end date
     :param end_date:
-    :return: validity_end
+    :return: validity_end as string
     """
     # ENTRUST only allows 13 months of max certificate duration
-    max_validity_end = arrow.utcnow().shift(years=1, months=+1).format('YYYY-MM-DD')
+    max_validity_end = arrow.utcnow().shift(years=1, months=+1)
 
     if not end_date:
         end_date = max_validity_end
 
     if end_date > max_validity_end:
         end_date = max_validity_end
-    return end_date
+    return end_date.format('YYYY-MM-DD')
 
 
 def process_options(options):
@@ -49,7 +52,10 @@ def process_options(options):
     # take the value as Cert product-type
     # else default to "STANDARD_SSL"
     authority = options.get("authority").name.upper()
-    product_type = current_app.config.get("ENTRUST_PRODUCT_{0}".format(authority), "STANDARD_SSL")
+    # STANDARD_SSL (cn=domain, san=www.domain),
+    # ADVANTAGE_SSL (cn=domain, san=[www.domain, one_more_option]),
+    # WILDCARD_SSL (unlimited sans, and wildcard)
+    product_type = current_app.config.get(f"ENTRUST_PRODUCT_{authority}", "STANDARD_SSL")
 
     if options.get("validity_end"):
         validity_end = determine_end_date(options.get("validity_end"))
@@ -67,6 +73,7 @@ def process_options(options):
         "eku": "SERVER_AND_CLIENT_AUTH",
         "certType": product_type,
         "certExpiryDate": validity_end,
+        # "keyType": "RSA", Entrust complaining about this parameter
         "tracking": tracking_data
     }
     return data
@@ -86,23 +93,31 @@ def handle_response(my_response):
         404: "Unknown jobId",
         429: "Too many requests"
     }
+
     try:
         d = json.loads(my_response.content)
-    except Exception as e:
+    except ValueError:
         # catch an empty jason object here
-        d = {'errors': 'No detailled message'}
+        d = {'response': 'No detailed message'}
     s = my_response.status_code
     if s > 399:
-        raise Exception("ENTRUST error: {0}\n{1}".format(msg.get(s, s), d['errors']))
-    current_app.logger.info("Response: {0}, {1} ".format(s, d))
+        raise Exception(f"ENTRUST error: {msg.get(s, s)}\n{d['errors']}")
+
+    log_data = {
+        "function": f"{__name__}.{sys._getframe().f_code.co_name}",
+        "message": "Response",
+        "status": s,
+        "response": d
+    }
+    current_app.logger.info(log_data)
     return d
 
 
 class EntrustIssuerPlugin(IssuerPlugin):
-    title = "ENTRUST"
+    title = "Entrust"
     slug = "entrust-issuer"
     description = "Enables the creation of certificates by ENTRUST"
-    version = ENTRUST.VERSION
+    version = entrust.VERSION
 
     author = "sirferl"
     author_url = "https://github.com/sirferl/lemur"
@@ -119,7 +134,6 @@ class EntrustIssuerPlugin(IssuerPlugin):
             "ENTRUST_NAME",
             "ENTRUST_EMAIL",
             "ENTRUST_PHONE",
-            "ENTRUST_ISSUING",
         ]
         validate_conf(current_app, required_vars)
 
@@ -142,9 +156,12 @@ class EntrustIssuerPlugin(IssuerPlugin):
         :param issuer_options:
         :return: :raise Exception:
         """
-        current_app.logger.info(
-            "Requesting options: {0}".format(issuer_options)
-        )
+        log_data = {
+            "function": f"{__name__}.{sys._getframe().f_code.co_name}",
+            "message": "Requesting options",
+            "options": issuer_options
+        }
+        current_app.logger.info(log_data)
 
         url = current_app.config.get("ENTRUST_URL") + "/certificates"
 
@@ -156,36 +173,46 @@ class EntrustIssuerPlugin(IssuerPlugin):
         except requests.exceptions.Timeout:
             raise Exception("Timeout for POST")
         except requests.exceptions.RequestException as e:
-            raise Exception("Error for POST {0}".format(e))
+            raise Exception(f"Error for POST {e}")
 
         response_dict = handle_response(response)
         external_id = response_dict['trackingId']
         cert = response_dict['endEntityCert']
-        chain = response_dict['chainCerts'][1]
-        current_app.logger.info(
-            "Received Chain: {0}".format(chain)
-        )
+        if len(response_dict['chainCerts']) < 2:
+            # certificate signed by CA directly, no ICA included ini the chain
+            chain = None
+        else:
+            chain = response_dict['chainCerts'][1]
+
+        log_data["message"] = "Received Chain"
+        log_data["options"] = f"chain: {chain}"
+        current_app.logger.info(log_data)
 
         return cert, chain, external_id
 
     def revoke_certificate(self, certificate, comments):
-        """Revoke a Digicert certificate."""
+        """Revoke an Entrust certificate."""
         base_url = current_app.config.get("ENTRUST_URL")
 
         # make certificate revoke request
-        revoke_url = "{0}/certificates/{1}/revocations".format(
-            base_url, certificate.external_id
-        )
-        metrics.send("entrust_revoke_certificate", "counter", 1)
-        if comments == '' or not comments:
+        revoke_url = f"{base_url}/certificates/{certificate.external_id}/revocations"
+        if not comments or comments == '':
             comments = "revoked via API"
         data = {
-            "crlReason": "superseded",
+            "crlReason": "superseded",  # enum (keyCompromise, affiliationChanged, superseded, cessationOfOperation)
             "revocationComment": comments
         }
         response = self.session.post(revoke_url, json=data)
+        metrics.send("entrust_revoke_certificate", "counter", 1)
+        return handle_response(response)
 
-        data = handle_response(response)
+    def deactivate_certificate(self, certificate):
+        """Deactivates an Entrust certificate."""
+        base_url = current_app.config.get("ENTRUST_URL")
+        deactivate_url = f"{base_url}/certificates/{certificate.external_id}/deactivations"
+        response = self.session.post(deactivate_url)
+        metrics.send("entrust_deactivate_certificate", "counter", 1)
+        return handle_response(response)
 
     @staticmethod
     def create_authority(options):
@@ -200,7 +227,8 @@ class EntrustIssuerPlugin(IssuerPlugin):
         entrust_root = current_app.config.get("ENTRUST_ROOT")
         entrust_issuing = current_app.config.get("ENTRUST_ISSUING")
         role = {"username": "", "password": "", "name": "entrust"}
-        current_app.logger.info("Creating Auth: {0} {1}".format(options, entrust_issuing))
+        current_app.logger.info(f"Creating Auth: {options} {entrust_issuing}")
+        # body, chain, role
         return entrust_root, "", [role]
 
     def get_ordered_certificate(self, order_id):
@@ -211,10 +239,10 @@ class EntrustIssuerPlugin(IssuerPlugin):
 
 
 class EntrustSourcePlugin(SourcePlugin):
-    title = "ENTRUST"
+    title = "Entrust"
     slug = "entrust-source"
-    description = "Enables the collecion of certificates"
-    version = ENTRUST.VERSION
+    description = "Enables the collection of certificates"
+    version = entrust.VERSION
 
     author = "sirferl"
     author_url = "https://github.com/sirferl/lemur"

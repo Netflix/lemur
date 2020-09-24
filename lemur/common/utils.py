@@ -71,6 +71,23 @@ def parse_private_key(private_key):
     )
 
 
+def get_key_type_from_certificate(body):
+    """
+
+    Helper function to determine key type by pasrding given PEM certificate
+
+    :param body: PEM string
+    :return: Key type string
+    """
+    parsed_cert = parse_certificate(body)
+    if isinstance(parsed_cert.public_key(), rsa.RSAPublicKey):
+        return "RSA{key_size}".format(
+            key_size=parsed_cert.public_key().key_size
+        )
+    elif isinstance(parsed_cert.public_key(), ec.EllipticCurvePublicKey):
+        return get_key_type_from_ec_curve(parsed_cert.public_key().curve.name)
+
+
 def split_pem(data):
     """
     Split a string of several PEM payloads to a list of strings.
