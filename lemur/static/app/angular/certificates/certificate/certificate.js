@@ -256,7 +256,7 @@ angular.module('lemur')
     $scope.certificate.removeReplaces(); // should not clone 'replacement cert' info
 
     if(!$scope.certificate.keyType) {
-      $scope.certificate.keyType = 'RSA2048'; // default algo to show during clone if backend did not return algo
+      $scope.certificate.keyType = 'RSA2048'; // default algo to select during clone if backend did not return algo
     }
     CertificateService.getDefaults($scope.certificate);
   });
