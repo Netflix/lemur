@@ -61,8 +61,8 @@ LEMUR_ALLOW_WEEKEND_EXPIRATION = False
 
 # Database
 
-# modify this if you are not using a local database. Please do not use any DB used for development or production purpose
-# Please note that Unit Tests drop the whole schema, recreate and again drop everything at the end
+# modify this if you are not using a local database. Do not use any development or production DBs,
+# as Unit Tests drop the whole schema, recreate and again drop everything at the end
 SQLALCHEMY_DATABASE_URI = os.getenv(
     "SQLALCHEMY_DATABASE_URI", "postgresql://lemur:lemur@localhost:5432/lemur"
 )
