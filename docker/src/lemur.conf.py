@@ -16,6 +16,7 @@ def get_random_secret(length):
     secret_key = secret_key + ''.join(random.choice(string.ascii_lowercase) for x in range(round(length / 4)))
     return secret_key + ''.join(random.choice(string.digits) for x in range(round(length / 4)))
 
+
 SECRET_KEY = repr(os.environ.get('SECRET_KEY', get_random_secret(32).encode('utf8')))
 
 LEMUR_TOKEN_SECRET = repr(os.environ.get('LEMUR_TOKEN_SECRET',
