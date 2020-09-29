@@ -376,7 +376,13 @@ class CertificateUploadInputSchema(CertificateCreationSchema):
 
     @pre_load
     def load_data(self, data):
-        data["key_type"] = utils.get_key_type_from_certificate(data["body"])
+        if data.get("body"):
+            try:
+                data["key_type"] = utils.get_key_type_from_certificate(data["body"])
+            except ValueError:
+                raise ValidationError(
+                    "Public certificate presented is not valid.", field_names=["body"]
+                )
 
 
 class CertificateExportInputSchema(LemurInputSchema):
