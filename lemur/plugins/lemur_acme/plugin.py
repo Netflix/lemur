@@ -30,6 +30,8 @@ from lemur.destinations import service as destination_service
 from lemur.dns_providers import service as dns_provider_service
 from lemur.exceptions import InvalidAuthority, InvalidConfiguration, UnknownProvider
 from lemur.extensions import metrics, sentry
+
+from lemur.plugins.base import plugins
 from lemur.plugins import lemur_acme as acme
 from lemur.plugins.bases import IssuerPlugin
 from lemur.plugins.lemur_acme import cloudflare, dyn, route53, ultradns, powerdns
@@ -83,19 +85,19 @@ class AcmeHandler(object):
 
     def maybe_add_extension(self, host, dns_provider_options):
         if dns_provider_options and dns_provider_options.get(
-            "acme_challenge_extension"
+                "acme_challenge_extension"
         ):
             host = host + dns_provider_options.get("acme_challenge_extension")
         return host
 
     def start_dns_challenge(
-        self,
-        acme_client,
-        account_number,
-        host,
-        dns_provider,
-        order,
-        dns_provider_options,
+            self,
+            acme_client,
+            account_number,
+            host,
+            dns_provider,
+            order,
+            dns_provider_options,
     ):
         current_app.logger.debug("Starting DNS challenge for {0}".format(host))
 
@@ -210,12 +212,12 @@ class AcmeHandler(object):
 
         if current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA", False) \
                 and datetime.datetime.now() < datetime.datetime.strptime(
-                    current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA_EXPIRATION_DATE", "17/03/21"), '%d/%m/%y'):
+            current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA_EXPIRATION_DATE", "17/03/21"), '%d/%m/%y'):
             pem_certificate_chain = current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA")
         else:
             pem_certificate_chain = orderr.fullchain_pem[
-                len(pem_certificate) :  # noqa
-            ].lstrip()
+                                    len(pem_certificate):  # noqa
+                                    ].lstrip()
 
         current_app.logger.debug(
             "{0} {1}".format(type(pem_certificate), type(pem_certificate_chain))
@@ -692,6 +694,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
             account_number = None
             provider_type = None
 
+        acme_client.new_order()
         domains = self.acme.get_domains(issuer_options)
         if not create_immediately:
             # Create pending authorizations that we'll need to do the creation
@@ -810,7 +813,51 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
                     self.destination_list.append(destination.label)
 
     def create_certificate(self, csr, issuer_options):
-        pass
+        """
+        Creates an ACME certificate using the HTTP-01 challenge.
+
+        :param csr:
+        :param issuer_options:
+        :return: :raise Exception:
+        """
+        self.acme = AcmeHandler()
+        authority = issuer_options.get("authority")
+        create_immediately = issuer_options.get("create_immediately", False)
+        acme_client, registration = self.acme.setup_acme_client(authority)
+
+        orderr = acme_client.new_order(csr)
+        challenge = None
+
+        for authz in orderr.authorizations:
+            # Choosing challenge.
+            # authz.body.challenges is a set of ChallengeBody objects.
+            for i in authz.body.challenges:
+                # Find the supported challenge.
+                if isinstance(i.chall, challenges.HTTP01):
+                    challenge = i
+
+        if challenge is None:
+            raise Exception('HTTP-01 challenge was not offered by the CA server.')
+        else:
+            # Here we probably should create a pending certificate and make use of celery, but for now
+            # I'll ignore all of that
+            for option in json.loads(issuer_options["authority"].options):
+                if option["name"] == "tokenDestination":
+                    token_destination = destination_service.get_by_label(option["value"])
+
+            if token_destination is None:
+                raise Exception('No token_destination configured for this authority. Cant complete HTTP-01 challenge')
+
+        destination_plugin = plugins.get(token_destination.plugin_name)
+        destination_plugin.upload_acme_token(challenge.chall.path, challenge.chall.token, token_destination.options)
+
+        current_app.logger.info("Uploaded HTTP-01 challenge token, trying to poll and finalize the order")
+
+        pem_certificate, pem_certificate_chain = self.acme.request_certificate(
+            acme_client, orderr.authorizations, csr
+        )
+        # TODO add external ID (if possible)
+        return pem_certificate, pem_certificate_chain, None
 
     @staticmethod
     def create_authority(options):
