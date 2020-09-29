@@ -326,6 +326,7 @@ class CertificateUploadInputSchema(CertificateCreationSchema):
     body = fields.String(required=True)
     chain = fields.String(missing=None, allow_none=True)
     csr = fields.String(required=False, allow_none=True, validate=validators.csr)
+    key_type = fields.String()
 
     destinations = fields.Nested(AssociatedDestinationSchema, missing=[], many=True)
     notifications = fields.Nested(AssociatedNotificationSchema, missing=[], many=True)
@@ -372,6 +373,10 @@ class CertificateUploadInputSchema(CertificateCreationSchema):
 
             # Throws ValidationError
             validators.verify_cert_chain([cert] + chain)
+
+    @pre_load
+    def load_data(self, data):
+        data["key_type"] = utils.get_key_type_from_certificate(data["body"])
 
 
 class CertificateExportInputSchema(LemurInputSchema):
