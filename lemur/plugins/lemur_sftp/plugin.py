@@ -16,7 +16,7 @@
 
 .. moduleauthor:: Dmitry Zykov https://github.com/DmitryZykov
 """
-from os import path
+from os import path, walk
 
 import paramiko
 
@@ -121,15 +121,17 @@ class SFTPDestinationPlugin(DestinationPlugin):
         self.upload_file(dst_path_cn, files, options)
 
     # this is called from the acme http challenge
-    def upload_acme_token(self, token, thumbprint, options, **kwargs):
+    def upload_acme_token(self, token_path, token, options, **kwargs):
 
         current_app.logger.debug("SFTP destination plugin is started for HTTP-01 challenge")
 
         dst_path = self.get_option("destinationPath", options)
-        dst_path = path.join(dst_path, "/.well-known/acme-challenge/")
+        dst_path = path.join(dst_path, ".well-known/acme-challenge/")
+
+        _, filename = path.split(token_path)
 
         # prepare files for upload
-        files = {token: thumbprint}
+        files = {filename: token}
 
         self.upload_file(dst_path, files, options)
 
@@ -169,15 +171,37 @@ class SFTPDestinationPlugin(DestinationPlugin):
                 )
                 raise paramiko.ssh_exception.AuthenticationException
 
+            # split the path into it's segments, so we can create it recursively
+            allparts = []
+            path_copy = dst_path
+            while True:
+                parts = path.split(path_copy)
+                if parts[0] == path_copy:  # sentinel for absolute paths
+                    allparts.insert(0, parts[0])
+                    break
+                elif parts[1] == path_copy:  # sentinel for relative paths
+                    allparts.insert(0, parts[1])
+                    break
+                else:
+                    path_copy = parts[0]
+                    allparts.insert(0, parts[1])
+
             # open the sftp session inside the ssh connection
             sftp = ssh.open_sftp()
 
-            # make sure that the destination path exist
-            try:
-                current_app.logger.debug("Creating {0}".format(dst_path))
-                sftp.mkdir(dst_path)
-            except IOError:
-                current_app.logger.debug("{0} already exist, resuming".format(dst_path))
+            # make sure that the destination path exists, recursively
+            remote_path = allparts[0]
+            for part in allparts:
+                try:
+                    if part != "/" and part != "":
+                        remote_path = path.join(remote_path, part);
+                    sftp.stat(remote_path)
+                except IOError:
+                    current_app.logger.debug("{0} doesn't exist, trying to create it".format(remote_path))
+                    try:
+                        sftp.mkdir(remote_path)
+                    except IOError as ioerror:
+                        current_app.logger.debug("Couldn't create {0}, error message: {1}".format(remote_path, ioerror))
 
             # upload certificate files to the sftp destination
             for filename, data in files.items():
@@ -185,7 +209,7 @@ class SFTPDestinationPlugin(DestinationPlugin):
                     "Uploading {0} to {1}".format(filename, dst_path)
                 )
                 try:
-                    with sftp.open(dst_path + "/" + filename, "w") as f:
+                    with sftp.open(path.join(dst_path, filename), "w") as f:
                         f.write(data)
                 except PermissionError as permerror:
                     if permerror.errno == 13:
@@ -193,11 +217,11 @@ class SFTPDestinationPlugin(DestinationPlugin):
                             "Uploading {0} to {1} returned Permission Denied Error, making file writable and retrying".format(
                                 filename, dst_path)
                         )
-                        sftp.chmod(dst_path + "/" + filename, 0o600)
-                        with sftp.open(dst_path + "/" + filename, "w") as f:
+                        sftp.chmod(path.join(dst_path, filename), 0o600)
+                        with sftp.open(path.join(dst_path, filename), "w") as f:
                             f.write(data)
                 # read only for owner, -r--------
-                sftp.chmod(dst_path + "/" + filename, 0o400)
+                sftp.chmod(path.join(dst_path, filename), 0o400)
 
             ssh.close()
 
