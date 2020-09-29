@@ -16,6 +16,7 @@
 
 .. moduleauthor:: Dmitry Zykov https://github.com/DmitryZykov
 """
+from os import path
 
 import paramiko
 
@@ -95,18 +96,14 @@ class SFTPDestinationPlugin(DestinationPlugin):
         },
     ]
 
+    # this is called when using this as a default destination plugin
     def upload(self, name, body, private_key, cert_chain, options, **kwargs):
 
         current_app.logger.debug("SFTP destination plugin is started")
 
         cn = common_name(parse_certificate(body))
-        host = self.get_option("host", options)
-        port = self.get_option("port", options)
-        user = self.get_option("user", options)
-        password = self.get_option("password", options)
-        ssh_priv_key = self.get_option("privateKeyPath", options)
-        ssh_priv_key_pass = self.get_option("privateKeyPass", options)
         dst_path = self.get_option("destinationPath", options)
+        dst_path_cn = dst_path + "/" + cn
         export_format = self.get_option("exportFormat", options)
 
         # prepare files for upload
@@ -120,6 +117,31 @@ class SFTPDestinationPlugin(DestinationPlugin):
             elif export_format == "Apache":
                 # store chain in the separate file
                 files[cn + ".ca.bundle.pem"] = cert_chain
+
+        self.upload_file(dst_path_cn, files, options)
+
+    # this is called from the acme http challenge
+    def upload_acme_token(self, token, thumbprint, options, **kwargs):
+
+        current_app.logger.debug("SFTP destination plugin is started for HTTP-01 challenge")
+
+        dst_path = self.get_option("destinationPath", options)
+        dst_path = path.join(dst_path, "/.well-known/acme-challenge/")
+
+        # prepare files for upload
+        files = {token: thumbprint}
+
+        self.upload_file(dst_path, files, options)
+
+    # here the file is uploaded for real, this helps to keep this class DRY
+    def upload_file(self, dst_path, files, options):
+
+        host = self.get_option("host", options)
+        port = self.get_option("port", options)
+        user = self.get_option("user", options)
+        password = self.get_option("password", options)
+        ssh_priv_key = self.get_option("privateKeyPath", options)
+        ssh_priv_key_pass = self.get_option("privateKeyPass", options)
 
         # upload files
         try:
@@ -156,33 +178,26 @@ class SFTPDestinationPlugin(DestinationPlugin):
                 sftp.mkdir(dst_path)
             except IOError:
                 current_app.logger.debug("{0} already exist, resuming".format(dst_path))
-            try:
-                dst_path_cn = dst_path + "/" + cn
-                current_app.logger.debug("Creating {0}".format(dst_path_cn))
-                sftp.mkdir(dst_path_cn)
-            except IOError:
-                current_app.logger.debug(
-                    "{0} already exist, resuming".format(dst_path_cn)
-                )
 
             # upload certificate files to the sftp destination
             for filename, data in files.items():
                 current_app.logger.debug(
-                    "Uploading {0} to {1}".format(filename, dst_path_cn)
+                    "Uploading {0} to {1}".format(filename, dst_path)
                 )
                 try:
-                    with sftp.open(dst_path_cn + "/" + filename, "w") as f:
+                    with sftp.open(dst_path + "/" + filename, "w") as f:
                         f.write(data)
-                except (PermissionError) as permerror:
+                except PermissionError as permerror:
                     if permerror.errno == 13:
                         current_app.logger.debug(
-                            "Uploading {0} to {1} returned Permission Denied Error, making file writable and retrying".format(filename, dst_path_cn)
+                            "Uploading {0} to {1} returned Permission Denied Error, making file writable and retrying".format(
+                                filename, dst_path)
                         )
-                        sftp.chmod(dst_path_cn + "/" + filename, 0o600)
-                        with sftp.open(dst_path_cn + "/" + filename, "w") as f:
+                        sftp.chmod(dst_path + "/" + filename, 0o600)
+                        with sftp.open(dst_path + "/" + filename, "w") as f:
                             f.write(data)
                 # read only for owner, -r--------
-                sftp.chmod(dst_path_cn + "/" + filename, 0o400)
+                sftp.chmod(dst_path + "/" + filename, 0o400)
 
             ssh.close()
 
