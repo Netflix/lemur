@@ -132,6 +132,7 @@ setup(
         'lemur.plugins': [
             'verisign_issuer = lemur.plugins.lemur_verisign.plugin:VerisignIssuerPlugin',
             'acme_issuer = lemur.plugins.lemur_acme.plugin:ACMEIssuerPlugin',
+            'acme_http_issuer = lemur.plugins.lemur_acme.plugin:ACMEHttpIssuerPlugin',
             'aws_destination = lemur.plugins.lemur_aws.plugin:AWSDestinationPlugin',
             'aws_source = lemur.plugins.lemur_aws.plugin:AWSSourcePlugin',
             'aws_s3 = lemur.plugins.lemur_aws.plugin:S3DestinationPlugin',

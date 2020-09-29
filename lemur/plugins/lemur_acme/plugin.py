@@ -26,6 +26,7 @@ from flask import current_app
 
 from lemur.authorizations import service as authorization_service
 from lemur.common.utils import generate_private_key
+from lemur.destinations import service as destination_service
 from lemur.dns_providers import service as dns_provider_service
 from lemur.exceptions import InvalidAuthority, InvalidConfiguration, UnknownProvider
 from lemur.extensions import metrics, sentry
@@ -436,7 +437,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
     title = "Acme"
     slug = "acme-issuer"
     description = (
-        "Enables the creation of certificates via ACME CAs (including Let's Encrypt)"
+        "Enables the creation of certificates via ACME CAs (including Let's Encrypt), using the DNS-01 challenge"
     )
     version = acme.VERSION
 
@@ -719,6 +720,97 @@ class ACMEIssuerPlugin(IssuerPlugin):
         )
         # TODO add external ID (if possible)
         return pem_certificate, pem_certificate_chain, None
+
+    @staticmethod
+    def create_authority(options):
+        """
+        Creates an authority, this authority is then used by Lemur to allow a user
+        to specify which Certificate Authority they want to sign their certificate.
+
+        :param options:
+        :return:
+        """
+        role = {"username": "", "password": "", "name": "acme"}
+        plugin_options = options.get("plugin", {}).get("plugin_options")
+        if not plugin_options:
+            error = "Invalid options for lemur_acme plugin: {}".format(options)
+            current_app.logger.error(error)
+            raise InvalidConfiguration(error)
+        # Define static acme_root based off configuration variable by default. However, if user has passed a
+        # certificate, use this certificate as the root.
+        acme_root = current_app.config.get("ACME_ROOT")
+        for option in plugin_options:
+            if option.get("name") == "certificate":
+                acme_root = option.get("value")
+        return acme_root, "", [role]
+
+    def cancel_ordered_certificate(self, pending_cert, **kwargs):
+        # Needed to override issuer function.
+        pass
+
+
+class ACMEHttpIssuerPlugin(IssuerPlugin):
+    title = "Acme HTTP-01"
+    slug = "acme-http-issuer"
+    description = (
+        "Enables the creation of certificates via ACME CAs (including Let's Encrypt), using the HTTP-01 challenge"
+    )
+    version = acme.VERSION
+
+    author = "Netflix"
+    author_url = "https://github.com/netflix/lemur.git"
+
+    destination_list = []
+
+    options = [
+        {
+            "name": "acme_url",
+            "type": "str",
+            "required": True,
+            "validation": "/^http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+$/",
+            "helpMessage": "Must be a valid web url starting with http[s]://",
+        },
+        {
+            "name": "telephone",
+            "type": "str",
+            "default": "",
+            "helpMessage": "Telephone to use",
+        },
+        {
+            "name": "email",
+            "type": "str",
+            "default": "",
+            "validation": "/^?([-a-zA-Z0-9.`?{}]+@\w+\.\w+)$/",
+            "helpMessage": "Email to use",
+        },
+        {
+            "name": "certificate",
+            "type": "textarea",
+            "default": "",
+            "validation": "/^-----BEGIN CERTIFICATE-----/",
+            "helpMessage": "Certificate to use",
+        },
+        {
+            "name": "tokenDestination",
+            "type": "select",
+            "required": True,
+            "available": destination_list,
+            "helpMessage": "The destination to use to deploy the token.",
+        },
+    ]
+
+    def __init__(self, *args, **kwargs):
+        super(ACMEHttpIssuerPlugin, self).__init__(*args, **kwargs)
+
+        if len(self.destination_list) == 0:
+            destinations = destination_service.get_all()
+            for destination in destinations:
+                # we only want to use sftp destinations here
+                if destination.plugin_name == "sftp-destination":
+                    self.destination_list.append(destination.label)
+
+    def create_certificate(self, csr, issuer_options):
+        pass
 
     @staticmethod
     def create_authority(options):
