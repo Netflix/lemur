@@ -16,7 +16,7 @@
 
 .. moduleauthor:: Dmitry Zykov https://github.com/DmitryZykov
 """
-from os import path, walk
+from os import path
 
 import paramiko
 
@@ -194,7 +194,7 @@ class SFTPDestinationPlugin(DestinationPlugin):
             for part in allparts:
                 try:
                     if part != "/" and part != "":
-                        remote_path = path.join(remote_path, part);
+                        remote_path = path.join(remote_path, part)
                     sftp.stat(remote_path)
                 except IOError:
                     current_app.logger.debug("{0} doesn't exist, trying to create it".format(remote_path))
