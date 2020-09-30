@@ -219,9 +219,10 @@ class TestAcme(unittest.TestCase):
         '{"name": "acme_private_key", "value": "{\\"n\\": \\"PwIOkViO\\", \\"kty\\": \\"RSA\\"}"}, '
         '{"name": "acme_regr", "value": "{\\"body\\": {}, \\"uri\\": \\"http://test.com\\"}"}]')
 
+    @patch("lemur.plugins.lemur_acme.plugin.authorities_service")
     @patch("lemur.plugins.lemur_acme.plugin.BackwardsCompatibleClientV2")
     @patch("lemur.plugins.lemur_acme.plugin.current_app")
-    def test_setup_acme_client_success(self, mock_current_app, mock_acme):
+    def test_setup_acme_client_success(self, mock_current_app, mock_acme, mock_authorities_service):
         mock_authority = Mock()
         mock_authority.options = '[{"name": "mock_name", "value": "mock_value"}, ' \
                                  '{"name": "store_account", "value": false}]'
@@ -233,6 +234,7 @@ class TestAcme(unittest.TestCase):
         mock_acme.return_value = mock_client
         mock_current_app.config = {}
         result_client, result_registration = self.acme.setup_acme_client(mock_authority)
+        mock_authorities_service.update_options.assert_not_called()
         assert result_client
         assert result_registration
 
