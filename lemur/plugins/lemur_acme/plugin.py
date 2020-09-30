@@ -841,6 +841,7 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
         else:
             # Here we probably should create a pending certificate and make use of celery, but for now
             # I'll ignore all of that
+            token_destination = None
             for option in json.loads(issuer_options["authority"].options):
                 if option["name"] == "tokenDestination":
                     token_destination = destination_service.get_by_label(option["value"])
