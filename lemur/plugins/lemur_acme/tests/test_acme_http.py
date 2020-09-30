@@ -6,19 +6,11 @@ from lemur.plugins.lemur_acme import plugin
 
 
 class TestAcmeHttp(unittest.TestCase):
-    @patch("lemur.plugins.lemur_acme.plugin.dns_provider_service")
     @patch("lemur.plugins.lemur_acme.plugin.destination_service")
-    def setUp(self, mock_dns_provider_service, mock_destination_provider):
+    def setUp(self, mock_destination_provider):
         self.ACMEHttpIssuerPlugin = plugin.ACMEHttpIssuerPlugin()
         self.acme = plugin.AcmeHandler()
-        mock_dns_provider = Mock()
-        mock_dns_provider.name = "cloudflare"
-        mock_dns_provider.credentials = "{}"
-        mock_dns_provider.provider_type = "cloudflare"
-        self.acme.dns_providers_for_domain = {
-            "www.test.com": [mock_dns_provider],
-            "test.fakedomain.net": [mock_dns_provider],
-        }
+
         mock_destination_provider = Mock()
         mock_destination_provider.label = "mock-sftp-destination"
         mock_destination_provider.plugin_name = "sftp-destination"
@@ -38,20 +30,14 @@ class TestAcmeHttp(unittest.TestCase):
     @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.setup_acme_client")
     @patch("lemur.plugins.base.manager.PluginManager.get")
     @patch("lemur.plugins.lemur_acme.plugin.destination_service")
-    @patch("lemur.plugins.lemur_acme.plugin.dns_provider_service")
     @patch("lemur.plugins.lemur_acme.plugin.current_app")
-    @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.get_authorizations")
-    @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.finalize_authorizations")
     @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.request_certificate")
     @patch("lemur.plugins.lemur_acme.plugin.authorization_service")
     def test_create_certificate(
             self,
             mock_authorization_service,
             mock_request_certificate,
-            mock_finalize_authorizations,
-            mock_get_authorizations,
             mock_current_app,
-            mock_dns_provider_service,
             mock_destination_service,
             mock_plugin_manager_get,
             mock_acme,
@@ -91,20 +77,14 @@ class TestAcmeHttp(unittest.TestCase):
     @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.setup_acme_client")
     @patch("lemur.plugins.base.manager.PluginManager.get")
     @patch("lemur.plugins.lemur_acme.plugin.destination_service")
-    @patch("lemur.plugins.lemur_acme.plugin.dns_provider_service")
     @patch("lemur.plugins.lemur_acme.plugin.current_app")
-    @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.get_authorizations")
-    @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.finalize_authorizations")
     @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.request_certificate")
     @patch("lemur.plugins.lemur_acme.plugin.authorization_service")
     def test_create_certificate_missing_destination_token(
             self,
             mock_authorization_service,
             mock_request_certificate,
-            mock_finalize_authorizations,
-            mock_get_authorizations,
             mock_current_app,
-            mock_dns_provider_service,
             mock_destination_service,
             mock_plugin_manager_get,
             mock_acme,
@@ -145,20 +125,14 @@ class TestAcmeHttp(unittest.TestCase):
     @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.setup_acme_client")
     @patch("lemur.plugins.base.manager.PluginManager.get")
     @patch("lemur.plugins.lemur_acme.plugin.destination_service")
-    @patch("lemur.plugins.lemur_acme.plugin.dns_provider_service")
     @patch("lemur.plugins.lemur_acme.plugin.current_app")
-    @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.get_authorizations")
-    @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.finalize_authorizations")
     @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.request_certificate")
     @patch("lemur.plugins.lemur_acme.plugin.authorization_service")
     def test_create_certificate_missing_http_challenge(
             self,
             mock_authorization_service,
             mock_request_certificate,
-            mock_finalize_authorizations,
-            mock_get_authorizations,
             mock_current_app,
-            mock_dns_provider_service,
             mock_destination_service,
             mock_plugin_manager_get,
             mock_acme,
