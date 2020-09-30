@@ -830,17 +830,17 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
         acme_client, registration = self.acme.setup_acme_client(authority)
 
         orderr = acme_client.new_order(csr)
-        challenge = None
 
+        chall = []
         for authz in orderr.authorizations:
             # Choosing challenge.
             # authz.body.challenges is a set of ChallengeBody objects.
             for i in authz.body.challenges:
                 # Find the supported challenge.
                 if isinstance(i.chall, challenges.HTTP01):
-                    challenge = i
+                    chall.append(i)
 
-        if challenge is None:
+        if len(chall) == 0:
             raise Exception('HTTP-01 challenge was not offered by the CA server.')
         else:
             # Here we probably should create a pending certificate and make use of celery, but for now
@@ -854,13 +854,42 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
                 raise Exception('No token_destination configured for this authority. Cant complete HTTP-01 challenge')
 
         destination_plugin = plugins.get(token_destination.plugin_name)
-        destination_plugin.upload_acme_token(challenge.chall.path, challenge.chall.token, token_destination.options)
 
-        current_app.logger.info("Uploaded HTTP-01 challenge token, trying to poll and finalize the order")
+        for challenge in chall:
+            response, validation = challenge.response_and_validation(acme_client.net.key)
 
-        pem_certificate, pem_certificate_chain = self.acme.request_certificate(
-            acme_client, orderr.authorizations, csr
-        )
+            destination_plugin.upload_acme_token(challenge.chall.path, validation, token_destination.options)
+
+            # Let the CA server know that we are ready for the challenge.
+            acme_client.answer_challenge(challenge, response)
+
+        current_app.logger.info("Uploaded HTTP-01 challenge tokens, trying to poll and finalize the order")
+
+        # Wait for challenge status and then issue a certificate.
+
+        for authz in orderr.authorizations:
+            authzr, resp = acme_client.poll(authz)
+            current_app.logger.info(authzr.body.status)
+
+        # It is possible to set a deadline time.
+        finalized_orderr = acme_client.finalize_order(orderr, datetime.datetime.now() + datetime.timedelta(minutes=1))
+
+        pem_certificate = OpenSSL.crypto.dump_certificate(
+            OpenSSL.crypto.FILETYPE_PEM,
+            OpenSSL.crypto.load_certificate(
+                OpenSSL.crypto.FILETYPE_PEM, finalized_orderr.fullchain_pem
+            ),
+        ).decode()
+
+        if current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA", False) \
+                and datetime.datetime.now() < datetime.datetime.strptime(
+            current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA_EXPIRATION_DATE", "17/03/21"), '%d/%m/%y'):
+            pem_certificate_chain = current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA")
+        else:
+            pem_certificate_chain = finalized_orderr.fullchain_pem[
+                                    len(pem_certificate):  # noqa
+                                    ].lstrip()
+
         # TODO add external ID (if possible)
         return pem_certificate, pem_certificate_chain, None
 
