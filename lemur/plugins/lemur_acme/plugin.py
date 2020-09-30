@@ -476,7 +476,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
             "type": "bool",
             "required": False,
             "helpMessage": "Disable to create a new account for each ACME request",
-            "default": True,
+            "default": False,
         }
     ]
 
