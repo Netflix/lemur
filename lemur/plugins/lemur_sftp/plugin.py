@@ -126,7 +126,6 @@ class SFTPDestinationPlugin(DestinationPlugin):
         current_app.logger.debug("SFTP destination plugin is started for HTTP-01 challenge")
 
         dst_path = self.get_option("destinationPath", options)
-        dst_path = path.join(dst_path, ".well-known/acme-challenge/")
 
         _, filename = path.split(token_path)
 
@@ -220,8 +219,8 @@ class SFTPDestinationPlugin(DestinationPlugin):
                         sftp.chmod(path.join(dst_path, filename), 0o600)
                         with sftp.open(path.join(dst_path, filename), "w") as f:
                             f.write(data)
-                # read only for owner, -r--------
-                sftp.chmod(path.join(dst_path, filename), 0o400)
+                # most likely the upload user isn't the webuser, -rw-r--r--
+                sftp.chmod(path.join(dst_path, filename), 0o644)
 
             ssh.close()
 

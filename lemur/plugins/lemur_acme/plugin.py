@@ -866,7 +866,6 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
         current_app.logger.info("Uploaded HTTP-01 challenge tokens, trying to poll and finalize the order")
 
         # Wait for challenge status and then issue a certificate.
-
         for authz in orderr.authorizations:
             authzr, resp = acme_client.poll(authz)
             current_app.logger.info(authzr.body.status)
@@ -883,7 +882,7 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
 
         if current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA", False) \
                 and datetime.datetime.now() < datetime.datetime.strptime(
-            current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA_EXPIRATION_DATE", "17/03/21"), '%d/%m/%y'):
+                current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA_EXPIRATION_DATE", "17/03/21"), '%d/%m/%y'):
             pem_certificate_chain = current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA")
         else:
             pem_certificate_chain = finalized_orderr.fullchain_pem[
