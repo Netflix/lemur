@@ -1,8 +1,10 @@
 import unittest
 from unittest.mock import patch, Mock
 
+import josepy as jose
 from cryptography.x509 import DNSName
 from lemur.plugins.lemur_acme import plugin
+from lemur.common.utils import generate_private_key
 from mock import MagicMock
 
 
@@ -164,6 +166,28 @@ class TestAcme(unittest.TestCase):
         mock_authority.options = []
         with self.assertRaises(Exception):
             self.acme.setup_acme_client(mock_authority)
+
+    @patch("lemur.plugins.lemur_acme.plugin.jose.JWK.json_loads")
+    @patch("lemur.plugins.lemur_acme.plugin.BackwardsCompatibleClientV2")
+    @patch("lemur.plugins.lemur_acme.plugin.current_app")
+    def test_setup_acme_client_success_load_account_from_authority(self, mock_current_app, mock_acme, mock_key_json_load):
+        mock_authority = Mock()
+        mock_authority.id = 2
+        mock_authority.options = '[{"name": "mock_name", "value": "mock_value"}, ' \
+                                 '{"name": "store_account", "value": true},' \
+                                 '{"name": "acme_private_key", "value": "{\\"n\\": \\"PwIOkViO\\", \\"kty\\": \\"RSA\\"}"}, ' \
+                                 '{"name": "acme_regr", "value": "{\\"body\\": {}, \\"uri\\": \\"http://test.com\\"}"}]'
+        mock_client = Mock()
+        mock_acme.return_value = mock_client
+        mock_current_app.config = {}
+
+        mock_key_json_load.return_value = jose.JWKRSA(key=generate_private_key("RSA2048"))
+
+        result_client, result_registration = self.acme.setup_acme_client(mock_authority)
+
+        mock_acme.new_account_and_tos.assert_not_called()
+        assert result_client
+        assert not result_registration
 
     @patch("lemur.plugins.lemur_acme.plugin.jose.JWKRSA.fields_to_partial_json")
     @patch("lemur.plugins.lemur_acme.plugin.authorities_service")
