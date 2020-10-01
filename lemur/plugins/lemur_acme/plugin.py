@@ -865,11 +865,6 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
 
         current_app.logger.info("Uploaded HTTP-01 challenge tokens, trying to poll and finalize the order")
 
-        # Wait for challenge status and then issue a certificate.
-        for authz in orderr.authorizations:
-            authzr, resp = acme_client.poll(authz)
-            current_app.logger.info(authzr.body.status)
-
         # It is possible to set a deadline time.
         finalized_orderr = acme_client.finalize_order(orderr, datetime.datetime.now() + datetime.timedelta(minutes=1))
 
