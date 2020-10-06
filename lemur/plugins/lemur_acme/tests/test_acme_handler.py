@@ -28,6 +28,34 @@ class TestAcmeHandler(unittest.TestCase):
         with self.assertRaises(Exception):
             self.acme.setup_acme_client(mock_authority)
 
+    def test_reuse_account_not_defined(self):
+        mock_authority = Mock()
+        mock_authority.options = []
+        with self.assertRaises(Exception):
+            self.acme.reuse_account(mock_authority)
+
+    def test_reuse_account_from_authority(self):
+        mock_authority = Mock()
+        mock_authority.options = '[{"name": "acme_private_key", "value": "PRIVATE_KEY"}, {"name": "acme_regr", "value": "ACME_REGR"}]'
+
+        self.assertTrue(self.acme.reuse_account(mock_authority))
+
+    @patch("lemur.plugins.lemur_acme.plugin.current_app")
+    def test_reuse_account_from_config(self, mock_current_app):
+        mock_authority = Mock()
+        mock_authority.options = '[{"name": "mock_name", "value": "mock_value"}]'
+        mock_current_app.config = {"ACME_PRIVATE_KEY": "PRIVATE_KEY", "ACME_REGR": "ACME_REGR"}
+
+        self.assertTrue(self.acme.reuse_account(mock_authority))
+
+    @patch("lemur.plugins.lemur_acme.plugin.current_app")
+    def test_reuse_account_no_configuration(self, mock_current_app):
+        mock_authority = Mock()
+        mock_authority.options = '[{"name": "mock_name", "value": "mock_value"}]'
+        mock_current_app.config = {}
+
+        self.assertFalse(self.acme.reuse_account(mock_authority))
+
     @patch("lemur.plugins.lemur_acme.plugin.BackwardsCompatibleClientV2")
     @patch("lemur.plugins.lemur_acme.plugin.current_app")
     def test_setup_acme_client_success(self, mock_current_app, mock_acme):
