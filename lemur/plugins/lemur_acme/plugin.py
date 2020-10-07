@@ -905,8 +905,7 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
 
         current_app.logger.info("Uploaded HTTP-01 challenge tokens, trying to poll and finalize the order")
 
-        # It is possible to set a deadline time.
-        finalized_orderr = acme_client.finalize_order(orderr, datetime.datetime.now() + datetime.timedelta(minutes=1))
+        finalized_orderr = acme_client.finalize_order(orderr, datetime.datetime.now() + datetime.timedelta(seconds=90))
 
         pem_certificate = OpenSSL.crypto.dump_certificate(
             OpenSSL.crypto.FILETYPE_PEM,
