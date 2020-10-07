@@ -721,7 +721,6 @@ class ACMEIssuerPlugin(IssuerPlugin):
             account_number = None
             provider_type = None
 
-        acme_client.new_order()
         domains = self.acme.get_domains(issuer_options)
         if not create_immediately:
             # Create pending authorizations that we'll need to do the creation
@@ -844,9 +843,8 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
         },
         {
             "name": "tokenDestination",
-            "type": "select",
+            "type": "destinationSelect",
             "required": True,
-            "available": destination_list,
             "helpMessage": "The destination to use to deploy the token.",
         },
     ]
@@ -871,7 +869,6 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
         """
         self.acme = AcmeHandler()
         authority = issuer_options.get("authority")
-        create_immediately = issuer_options.get("create_immediately", False)
         acme_client, registration = self.acme.setup_acme_client(authority)
 
         orderr = acme_client.new_order(csr)
@@ -888,12 +885,10 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
         if len(chall) == 0:
             raise Exception('HTTP-01 challenge was not offered by the CA server.')
         else:
-            # Here we probably should create a pending certificate and make use of celery, but for now
-            # I'll ignore all of that
             token_destination = None
             for option in json.loads(issuer_options["authority"].options):
                 if option["name"] == "tokenDestination":
-                    token_destination = destination_service.get_by_label(option["value"])
+                    token_destination = destination_service.get(option["value"])
 
             if token_destination is None:
                 raise Exception('No token_destination configured for this authority. Cant complete HTTP-01 challenge')
