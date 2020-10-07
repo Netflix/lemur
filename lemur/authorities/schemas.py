@@ -43,13 +43,13 @@ class AuthorityInputSchema(LemurInputSchema):
     organization = fields.String(
         missing=lambda: current_app.config.get("LEMUR_DEFAULT_ORGANIZATION")
     )
-    location = fields.String(
-        missing=lambda: current_app.config.get("LEMUR_DEFAULT_LOCATION")
-    )
+    location = fields.String()
     country = fields.String(
         missing=lambda: current_app.config.get("LEMUR_DEFAULT_COUNTRY")
     )
     state = fields.String(missing=lambda: current_app.config.get("LEMUR_DEFAULT_STATE"))
+    # Creating a String field instead of Email to allow empty value
+    email = fields.String()
 
     plugin = fields.Nested(PluginInputSchema)
 

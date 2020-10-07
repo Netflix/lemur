@@ -26,8 +26,7 @@
         Location
       </label>
       <div class="col-sm-10">
-        <input name="location" ng-model="authority.location" placeholder="Location" class="form-control" required/>
-        <p ng-show="dnForm.location.$invalid && !dnForm.location.$pristine" class="help-block">You must enter a location</p>
+        <input name="location" ng-model="authority.location" placeholder="Location" class="form-control"/>
       </div>
     </div>
     <div class="form-group"
@@ -47,6 +46,15 @@
       </label>
       <div class="col-sm-10">
         <input name="organizationalUnit" ng-model="authority.organizationalUnit" placeholder="Organizational Unit" class="form-control"/>
+      </div>
+    </div>
+    <div class="form-group"
+         ng-class="{'has-error': dnForm.email.$invalid, 'has-success': !dnForm.$invalid&&dnForm.email.$dirty}">
+      <label class="control-label col-sm-2">
+        Email
+      </label>
+      <div class="col-sm-10">
+        <input type="email" name="email" ng-model="authority.email" placeholder="Email Address" class="form-control"/>
       </div>
     </div>
   </div>
