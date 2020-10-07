@@ -124,4 +124,9 @@ angular.module('lemur')
       opened: false
     };
 
+    $scope.populateSubjectEmail = function () {
+      if($scope.authority.plugin.title.toLowerCase() === 'cloudca')
+        $scope.authority.email = $scope.authority.owner;
+    };
+
   });
