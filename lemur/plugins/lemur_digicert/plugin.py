@@ -21,7 +21,7 @@ import requests
 import sys
 from cryptography import x509
 from flask import current_app, g
-from lemur.common.utils import validate_conf
+from lemur.common.utils import validate_conf, convert_pkcs7_bytes_to_pem
 from lemur.extensions import metrics
 from lemur.plugins import lemur_digicert as digicert
 from lemur.plugins.bases import IssuerPlugin, SourcePlugin
@@ -235,15 +235,18 @@ def get_certificate_id(session, base_url, order_id):
 
 @retry(stop_max_attempt_number=10, wait_fixed=10000)
 def get_cis_certificate(session, base_url, order_id):
-    """Retrieve certificate order id from Digicert API."""
-    certificate_url = "{0}/platform/cis/certificate/{1}".format(base_url, order_id)
-    session.headers.update({"Accept": "application/x-pem-file"})
+    """Retrieve certificate order id from Digicert API, including the chain"""
+    certificate_url = "{0}/platform/cis/certificate/{1}/download".format(base_url, order_id)
+    session.headers.update({"Accept": "application/x-pkcs7-certificates"})
     response = session.get(certificate_url)
 
     if response.status_code == 404:
         raise Exception("Order not in issued state.")
 
-    return response.content
+    cert_chain_pem = convert_pkcs7_bytes_to_pem(response.content)
+    if len(cert_chain_pem) < 3:
+        raise Exception("Missing the certificate chain")
+    return cert_chain_pem
 
 
 class DigiCertSourcePlugin(SourcePlugin):
@@ -552,22 +555,15 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
         data = handle_cis_response(response)
 
         # retrieve certificate
-        certificate_pem = get_cis_certificate(self.session, base_url, data["id"])
+        certificate_chain_pem = get_cis_certificate(self.session, base_url, data["id"])
 
         self.session.headers.pop("Accept")
-        end_entity = pem.parse(certificate_pem)[0]
+        end_entity = certificate_chain_pem[0]
+        intermediate = certificate_chain_pem[1]
 
-        if "ECC" in issuer_options["key_type"]:
-            return (
-                "\n".join(str(end_entity).splitlines()),
-                current_app.config.get("DIGICERT_ECC_CIS_INTERMEDIATES", {}).get(issuer_options['authority'].name),
-                data["id"],
-            )
-
-        # By default return RSA
         return (
             "\n".join(str(end_entity).splitlines()),
-            current_app.config.get("DIGICERT_CIS_INTERMEDIATES", {}).get(issuer_options['authority'].name),
+            "\n".join(str(intermediate).splitlines()),
             data["id"],
         )
 
