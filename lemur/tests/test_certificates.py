@@ -922,19 +922,25 @@ def test_certificate_get_body(client):
 @pytest.mark.parametrize(
     "token,status",
     [
-        (VALID_USER_HEADER_TOKEN, 405),
-        (VALID_ADMIN_HEADER_TOKEN, 405),
-        (VALID_ADMIN_API_TOKEN, 405),
-        ("", 405),
+        (VALID_USER_HEADER_TOKEN, 403),
+        (VALID_ADMIN_HEADER_TOKEN, 200),
+        (VALID_ADMIN_API_TOKEN, 200),
+        ("", 401),
     ],
 )
-def test_certificate_post(client, token, status):
-    assert (
-        client.post(
-            api.url_for(Certificates, certificate_id=1), data={}, headers=token
-        ).status_code
-        == status
+def test_certificate_post_update_notify(client, certificate, token, status):
+    # negate the current notify flag and pass it to update POST call to flip the notify
+    toggled_notify = not certificate.notify
+
+    response = client.post(
+        api.url_for(Certificates, certificate_id=certificate.id),
+        data=json.dumps({"notify": toggled_notify}),
+        headers=token
     )
+    
+    assert response.status_code == status
+    if status == 200:
+        assert response.json.get("notify") == toggled_notify
 
 
 @pytest.mark.parametrize(
