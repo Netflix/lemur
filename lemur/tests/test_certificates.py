@@ -937,7 +937,7 @@ def test_certificate_post_update_notify(client, certificate, token, status):
         data=json.dumps({"notify": toggled_notify}),
         headers=token
     )
-    
+
     assert response.status_code == status
     if status == 200:
         assert response.json.get("notify") == toggled_notify
