@@ -450,7 +450,6 @@ class DigiCertCISSourcePlugin(SourcePlugin):
             "DIGICERT_CIS_API_KEY",
             "DIGICERT_CIS_URL",
             "DIGICERT_CIS_ROOTS",
-            "DIGICERT_CIS_INTERMEDIATES",
             "DIGICERT_CIS_PROFILE_NAMES",
         ]
         validate_conf(current_app, required_vars)
@@ -525,7 +524,6 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
             "DIGICERT_CIS_API_KEY",
             "DIGICERT_CIS_URL",
             "DIGICERT_CIS_ROOTS",
-            "DIGICERT_CIS_INTERMEDIATES",
             "DIGICERT_CIS_PROFILE_NAMES",
         ]
 
