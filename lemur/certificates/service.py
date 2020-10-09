@@ -256,6 +256,17 @@ def update(cert_id, **kwargs):
     return database.update(cert)
 
 
+def update_notify(cert, notify_flag):
+    """
+    Toggle notification value which is a boolean
+    :param notify_flag: new notify value
+    :param cert: Certificate object to be updated
+    :return:
+    """
+    cert.notify = notify_flag
+    return database.update(cert)
+
+
 def create_certificate_roles(**kwargs):
     # create an role for the owner and assign it
     owner_role = role_service.get_by_name(kwargs["owner"])
