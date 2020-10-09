@@ -23,6 +23,7 @@ from lemur.domains.schemas import DomainNestedOutputSchema
 from lemur.notifications import service as notification_service
 from lemur.notifications.schemas import NotificationNestedOutputSchema
 from lemur.policies.schemas import RotationPolicyNestedOutputSchema
+from lemur.roles import service as roles_service
 from lemur.roles.schemas import RoleNestedOutputSchema
 from lemur.schemas import (
     AssociatedAuthoritySchema,
@@ -184,13 +185,33 @@ class CertificateEditInputSchema(CertificateSchema):
             data["replaces"] = data[
                 "replacements"
             ]  # TODO remove when field is deprecated
+
+        if data.get("owner"):
+            # Check if role already exists. This avoids adding duplicate role.
+            if data.get("roles") and any(r.get("name") == data["owner"] for r in data["roles"]):
+                return data
+
+            # Add required role
+            owner_role = roles_service.get_or_create(
+                data["owner"],
+                description="Auto generated role based on owner: {0}".format(data["owner"])
+            )
+
+            # Put  role info in correct format using RoleNestedOutputSchema
+            owner_role_dict = RoleNestedOutputSchema().dump(owner_role).data
+            if data.get("roles"):
+                data["roles"].append(owner_role_dict)
+            else:
+                data["roles"] = [owner_role_dict]
+
         return data
 
     @post_load
     def enforce_notifications(self, data):
         """
-        Ensures that when an owner changes, default notifications are added for the new owner.
-        Old owner notifications are retained unless explicitly removed.
+        Add default notification for current owner if none exist.
+        This ensures that the default notifications are added in the even of owner change.
+        Old owner notifications are retained unless explicitly removed later in the code path.
         :param data:
         :return:
         """
@@ -198,11 +219,18 @@ class CertificateEditInputSchema(CertificateSchema):
             notification_name = "DEFAULT_{0}".format(
                 data["owner"].split("@")[0].upper()
             )
+
+            # Even if one default role exists, return
+            # This allows a User to remove unwanted default notification for current owner
+            if any(n.label.startswith(notification_name) for n in data["notifications"]):
+                return data
+
             data[
                 "notifications"
             ] += notification_service.create_default_expiration_notifications(
                 notification_name, [data["owner"]]
             )
+
         return data
 
 
