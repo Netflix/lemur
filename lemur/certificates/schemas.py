@@ -107,9 +107,7 @@ class CertificateInputSchema(CertificateCreationSchema):
     organization = fields.String(
         missing=lambda: current_app.config.get("LEMUR_DEFAULT_ORGANIZATION")
     )
-    location = fields.String(
-        missing=lambda: current_app.config.get("LEMUR_DEFAULT_LOCATION")
-    )
+    location = fields.String()
     country = fields.String(
         missing=lambda: current_app.config.get("LEMUR_DEFAULT_COUNTRY")
     )
@@ -155,6 +153,14 @@ class CertificateInputSchema(CertificateCreationSchema):
             key_type = cert_utils.get_key_type_from_csr(data["csr"])
             if key_type:
                 data["key_type"] = key_type
+
+        # This code will be exercised for certificate import (without CSR)
+        if data.get("key_type") is None:
+            if data.get("body"):
+                data["key_type"] = utils.get_key_type_from_certificate(data["body"])
+            else:
+                data["key_type"] = "RSA2048"  # default value
+
         return missing.convert_validity_years(data)
 
 
@@ -277,6 +283,7 @@ class CertificateOutputSchema(LemurOutputSchema):
     serial = fields.String()
     serial_hex = Hex(attribute="serial")
     signing_algorithm = fields.String()
+    key_type = fields.String(allow_none=True)
 
     status = fields.String()
     user = fields.Nested(UserNestedOutputSchema)
@@ -317,6 +324,7 @@ class CertificateUploadInputSchema(CertificateCreationSchema):
     body = fields.String(required=True)
     chain = fields.String(missing=None, allow_none=True)
     csr = fields.String(required=False, allow_none=True, validate=validators.csr)
+    key_type = fields.String()
 
     destinations = fields.Nested(AssociatedDestinationSchema, missing=[], many=True)
     notifications = fields.Nested(AssociatedNotificationSchema, missing=[], many=True)
@@ -363,6 +371,16 @@ class CertificateUploadInputSchema(CertificateCreationSchema):
 
             # Throws ValidationError
             validators.verify_cert_chain([cert] + chain)
+
+    @pre_load
+    def load_data(self, data):
+        if data.get("body"):
+            try:
+                data["key_type"] = utils.get_key_type_from_certificate(data["body"])
+            except ValueError:
+                raise ValidationError(
+                    "Public certificate presented is not valid.", field_names=["body"]
+                )
 
 
 class CertificateExportInputSchema(LemurInputSchema):

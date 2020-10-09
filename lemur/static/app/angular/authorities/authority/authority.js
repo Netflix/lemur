@@ -124,4 +124,8 @@ angular.module('lemur')
       opened: false
     };
 
+    $scope.populateSubjectEmail = function () {
+      $scope.authority.email = $scope.authority.owner;
+    };
+
   });

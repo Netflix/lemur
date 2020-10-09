@@ -90,7 +90,7 @@ def update_key_type():
     # Loop through all certificates that are valid today or expired in the last 30 days.
     for cert_id, body in conn.execute(
             text(
-                "select id, body from certificates where bits < 1024 and not_after > CURRENT_DATE - 31 and key_type is null")
+                "select id, body from certificates where not_after > CURRENT_DATE - 31 and key_type is null")
     ):
         try:
             cert_key_type = utils.get_key_type_from_certificate(body)
