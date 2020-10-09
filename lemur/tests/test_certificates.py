@@ -154,7 +154,8 @@ def test_get_certificate_primitives(certificate):
 
     with freeze_time(datetime.date(year=2016, month=10, day=30)):
         primitives = get_certificate_primitives(certificate)
-        assert len(primitives) == 26
+        assert len(primitives) == 25
+        assert (primitives["key_type"] == "RSA2048")
 
 
 def test_certificate_output_schema(session, certificate, issuer_plugin):
@@ -253,17 +254,18 @@ def test_certificate_input_schema(client, authority):
         "validityStart": arrow.get(2018, 11, 9).isoformat(),
         "validityEnd": arrow.get(2019, 11, 9).isoformat(),
         "dnsProvider": None,
+        "location": "A Place"
     }
 
     data, errors = CertificateInputSchema().load(input_data)
 
     assert not errors
     assert data["authority"].id == authority.id
+    assert data["location"] == "A Place"
 
     # make sure the defaults got set
     assert data["common_name"] == "test.example.com"
     assert data["country"] == "US"
-    assert data["location"] == "Los Gatos"
 
     assert len(data.keys()) == 19
 
@@ -759,6 +761,7 @@ def test_reissue_certificate(
     certificate.authority = crypto_authority
     new_cert = reissue_certificate(certificate)
     assert new_cert
+    assert (new_cert.key_type == "RSA2048")
 
 
 def test_create_csr():
