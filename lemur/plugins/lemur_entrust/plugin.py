@@ -34,8 +34,7 @@ def determine_end_date(end_date):
 
     if not end_date:
         end_date = max_validity_end
-
-    if end_date > max_validity_end:
+    elif end_date > max_validity_end:
         end_date = max_validity_end
     return end_date.format('YYYY-MM-DD')
 
