@@ -1,5 +1,6 @@
 # This is just Python which means you can inherit and tweak settings
 
+import base64
 import os
 import random
 import string
@@ -9,8 +10,10 @@ _basedir = os.path.abspath(os.path.dirname(__file__))
 
 # generate random secrets for unittest
 def get_random_secret(length):
-    input_ascii = string.ascii_letters + string.digits
-    return ''.join(random.choice(input_ascii) for i in range(length))
+    secret_key = ''.join(random.choice(string.ascii_uppercase) for x in range(round(length / 4)))
+    secret_key = secret_key + ''.join(random.choice("~!@#$%^&*()_+") for x in range(round(length / 4)))
+    secret_key = secret_key + ''.join(random.choice(string.ascii_lowercase) for x in range(round(length / 4)))
+    return secret_key + ''.join(random.choice(string.digits) for x in range(round(length / 4)))
 
 
 THREADS_PER_PAGE = 8
@@ -23,12 +26,14 @@ debug = False
 
 TESTING = True
 
-# this is the secret key used by flask session management
-SECRET_KEY = "I/dVhOZNSMZMqrFJa5tWli6VQccOGudKerq3eWPMSzQNmHHVhMAQfQ=="
+# this is the secret key used by flask session management (utf8 encoded)
+SECRET_KEY = get_random_secret(length=32).encode('utf8')
 
-# You should consider storing these separately from your config
+
+# You should consider storing these separately from your config (should be URL-safe)
 LEMUR_TOKEN_SECRET = "test"
-LEMUR_ENCRYPTION_KEYS = "o61sBLNBSGtAckngtNrfVNd8xy8Hp9LBGDstTbMbqCY="
+LEMUR_ENCRYPTION_KEYS = base64.urlsafe_b64encode(get_random_secret(length=32).encode('utf8'))
+
 
 # List of domain regular expressions that non-admin users can issue
 LEMUR_WHITELISTED_DOMAINS = [
@@ -61,7 +66,8 @@ LEMUR_ALLOW_WEEKEND_EXPIRATION = False
 
 # Database
 
-# modify this if you are not using a local database
+# modify this if you are not using a local database. Do not use any development or production DBs,
+# as Unit Tests drop the whole schema, recreate and again drop everything at the end
 SQLALCHEMY_DATABASE_URI = os.getenv(
     "SQLALCHEMY_DATABASE_URI", "postgresql://lemur:lemur@localhost:5432/lemur"
 )

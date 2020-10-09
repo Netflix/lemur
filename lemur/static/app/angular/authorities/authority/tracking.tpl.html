@@ -21,7 +21,7 @@
             <div class="col-sm-10">
                 <input type="email" name="owner" ng-model="authority.owner" placeholder="TeamDL@example.com"
                        uib-tooltip="This is the authorities team distribution list or the main point of contact for this authority"
-                       class="form-control" required/>
+                       class="form-control" ng-change="populateSubjectEmail()" required/>
                 <p ng-show="trackingForm.owner.$invalid && !trackingForm.owner.$pristine" class="help-block">You must
                     enter an Certificate Authority owner</p>
             </div>
