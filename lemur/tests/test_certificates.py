@@ -397,7 +397,7 @@ def test_certificate_cn_admin(client, authority, logged_in_admin):
     from lemur.certificates.schemas import CertificateInputSchema
 
     input_data = {
-        "commonName": "*.admin-overrides-whitelist.com",
+        "commonName": "*.admin-overrides-allowlist.com",
         "owner": "jim@example.com",
         "authority": {"id": authority.id},
         "description": "testtestest",
@@ -458,7 +458,7 @@ def test_certificate_incative_authority(client, authority, session, logged_in_us
 
 
 def test_certificate_disallowed_names(client, authority, session, logged_in_user):
-    """The CN and SAN are disallowed by LEMUR_WHITELISTED_DOMAINS."""
+    """The CN and SAN are disallowed by LEMUR_ALLOWED_DOMAINS."""
     from lemur.certificates.schemas import CertificateInputSchema
 
     input_data = {
@@ -481,10 +481,10 @@ def test_certificate_disallowed_names(client, authority, session, logged_in_user
 
     data, errors = CertificateInputSchema().load(input_data)
     assert errors["common_name"][0].startswith(
-        "Domain *.example.com does not match whitelisted domain patterns"
+        "Domain *.example.com does not match allowed domain patterns"
     )
     assert errors["extensions"]["sub_alt_names"]["names"][0].startswith(
-        "Domain evilhacker.org does not match whitelisted domain patterns"
+        "Domain evilhacker.org does not match allowed domain patterns"
     )
 
 
@@ -671,7 +671,7 @@ def test_csr_empty_san(client):
 
 
 def test_csr_disallowed_cn(client, logged_in_user):
-    """Domain name CN is disallowed via LEMUR_WHITELISTED_DOMAINS."""
+    """Domain name CN is disallowed via LEMUR_ALLOWED_DOMAINS."""
     from lemur.common import validators
 
     request, pkey = create_csr(
@@ -680,12 +680,12 @@ def test_csr_disallowed_cn(client, logged_in_user):
     with pytest.raises(ValidationError) as err:
         validators.csr(request)
     assert str(err.value).startswith(
-        "Domain evilhacker.org does not match whitelisted domain patterns"
+        "Domain evilhacker.org does not match allowed domain patterns"
     )
 
 
 def test_csr_disallowed_san(client, logged_in_user):
-    """SAN name is disallowed by LEMUR_WHITELISTED_DOMAINS."""
+    """SAN name is disallowed by LEMUR_ALLOWED_DOMAINS."""
     from lemur.common import validators
 
     request, pkey = create_csr(
@@ -701,7 +701,7 @@ def test_csr_disallowed_san(client, logged_in_user):
     with pytest.raises(ValidationError) as err:
         validators.csr(request)
     assert str(err.value).startswith(
-        "Domain evilhacker.org does not match whitelisted domain patterns"
+        "Domain evilhacker.org does not match allowed domain patterns"
     )
 
 

@@ -95,7 +95,7 @@ LEMUR_TOKEN_SECRET = '{secret_token}'
 LEMUR_ENCRYPTION_KEYS = '{encryption_key}'
 
 # List of domain regular expressions that non-admin users can issue
-LEMUR_WHITELISTED_DOMAINS = []
+LEMUR_ALLOWED_DOMAINS = []
 
 # Mail Server
 
