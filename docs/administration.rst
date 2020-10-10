@@ -100,7 +100,7 @@ Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create c
 
         Specifies whether to allow certificates created by Lemur to expire on weekends. Default is True.
 
-.. data:: LEMUR_WHITELISTED_DOMAINS
+.. data:: LEMUR_ALLOWED_DOMAINS
     :noindex:
 
         List of regular expressions for domain restrictions; if the list is not empty, normal users can only issue
