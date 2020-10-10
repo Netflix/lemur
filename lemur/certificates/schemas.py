@@ -194,7 +194,7 @@ class CertificateEditInputSchema(CertificateSchema):
         :param data:
         :return:
         """
-        if data["owner"]:
+        if data.get("owner"):
             notification_name = "DEFAULT_{0}".format(
                 data["owner"].split("@")[0].upper()
             )

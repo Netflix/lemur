@@ -301,7 +301,7 @@ angular.module('lemur')
     };
 
     CertificateService.updateNotify = function (certificate) {
-      return certificate.put();
+      return certificate.post();
     };
 
     CertificateService.export = function (certificate) {
