@@ -128,3 +128,11 @@ def render(args):
         query = database.filter(query, Role, terms)
 
     return database.sort_and_page(query, Role, args)
+
+
+def get_or_create(role_name, description):
+    role = get_by_name(role_name)
+    if not role:
+        role = create(name=role_name, description=description)
+
+    return role
