@@ -9,6 +9,7 @@
 import random
 import re
 import string
+import pem
 
 import sqlalchemy
 from cryptography import x509
@@ -16,7 +17,7 @@ from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, ec, padding
-from cryptography.hazmat.primitives.serialization import load_pem_private_key
+from cryptography.hazmat.primitives.serialization import load_pem_private_key, Encoding, pkcs7
 from flask_restful.reqparse import RequestParser
 from sqlalchemy import and_, func
 
@@ -357,3 +358,19 @@ def find_matching_certificates_by_hash(cert, matching_certs):
         ):
             matching.append(c)
     return matching
+
+
+def convert_pkcs7_bytes_to_pem(certs_pkcs7):
+    """
+    Given a list of certificates in pkcs7 encoding (bytes), covert them into a list of PEM encoded files
+    :raises ValueError or ValidationError
+    :param certs_pkcs7:
+    :return: list of certs in PEM format
+    """
+
+    certificates = pkcs7.load_pem_pkcs7_certificates(certs_pkcs7)
+    certificates_pem = []
+    for cert in certificates:
+        certificates_pem.append(pem.parse(cert.public_bytes(encoding=Encoding.PEM))[0])
+
+    return certificates_pem
