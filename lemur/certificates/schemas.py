@@ -194,7 +194,7 @@ class CertificateEditInputSchema(CertificateSchema):
             # Add required role
             owner_role = roles_service.get_or_create(
                 data["owner"],
-                description="Auto generated role based on owner: {0}".format(data["owner"])
+                description=f"Auto generated role based on owner: {data['owner']}"
             )
 
             # Put  role info in correct format using RoleNestedOutputSchema
@@ -210,7 +210,7 @@ class CertificateEditInputSchema(CertificateSchema):
     def enforce_notifications(self, data):
         """
         Add default notification for current owner if none exist.
-        This ensures that the default notifications are added in the even of owner change.
+        This ensures that the default notifications are added in the event of owner change.
         Old owner notifications are retained unless explicitly removed later in the code path.
         :param data:
         :return:

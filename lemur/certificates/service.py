@@ -258,9 +258,7 @@ def update(cert_id, **kwargs):
 
 def cleanup_owner_roles_notification(owner_name, kwargs):
     kwargs["roles"] = [r for r in kwargs["roles"] if r.name != owner_name]
-    notification_prefix = "DEFAULT_{0}".format(
-        owner_name.split("@")[0].upper()
-    )
+    notification_prefix = f"DEFAULT_{owner_name.split('@')[0].upper()}"
     kwargs["notifications"] = [n for n in kwargs["notifications"] if not n.label.startswith(notification_prefix)]
 
 
@@ -279,9 +277,7 @@ def create_certificate_roles(**kwargs):
     # create a role for the owner and assign it
     owner_role = role_service.get_or_create(
         kwargs["owner"],
-        description="Auto generated role based on owner: {0}".format(
-            kwargs["owner"]
-        )
+        description=f"Auto generated role based on owner: {kwargs['owner']}"
     )
 
     # ensure that the authority's owner is also associated with the certificate
