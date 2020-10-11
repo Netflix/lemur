@@ -154,7 +154,7 @@ def test_get_certificate_primitives(certificate):
 
     with freeze_time(datetime.date(year=2016, month=10, day=30)):
         primitives = get_certificate_primitives(certificate)
-        assert len(primitives) == 26
+        assert len(primitives) == 25
         assert (primitives["key_type"] == "RSA2048")
 
 
@@ -180,7 +180,10 @@ def test_certificate_edit_schema(session):
 
     input_data = {"owner": "bob@example.com"}
     data, errors = CertificateEditInputSchema().load(input_data)
+
+    assert not errors
     assert len(data["notifications"]) == 3
+    assert data["roles"][0].name == input_data["owner"]
 
 
 def test_authority_key_identifier_schema():
@@ -254,17 +257,18 @@ def test_certificate_input_schema(client, authority):
         "validityStart": arrow.get(2018, 11, 9).isoformat(),
         "validityEnd": arrow.get(2019, 11, 9).isoformat(),
         "dnsProvider": None,
+        "location": "A Place"
     }
 
     data, errors = CertificateInputSchema().load(input_data)
 
     assert not errors
     assert data["authority"].id == authority.id
+    assert data["location"] == "A Place"
 
     # make sure the defaults got set
     assert data["common_name"] == "test.example.com"
     assert data["country"] == "US"
-    assert data["location"] == "Los Gatos"
 
     assert len(data.keys()) == 19
 
@@ -921,19 +925,25 @@ def test_certificate_get_body(client):
 @pytest.mark.parametrize(
     "token,status",
     [
-        (VALID_USER_HEADER_TOKEN, 405),
-        (VALID_ADMIN_HEADER_TOKEN, 405),
-        (VALID_ADMIN_API_TOKEN, 405),
-        ("", 405),
+        (VALID_USER_HEADER_TOKEN, 403),
+        (VALID_ADMIN_HEADER_TOKEN, 200),
+        (VALID_ADMIN_API_TOKEN, 200),
+        ("", 401),
     ],
 )
-def test_certificate_post(client, token, status):
-    assert (
-        client.post(
-            api.url_for(Certificates, certificate_id=1), data={}, headers=token
-        ).status_code
-        == status
+def test_certificate_post_update_notify(client, certificate, token, status):
+    # negate the current notify flag and pass it to update POST call to flip the notify
+    toggled_notify = not certificate.notify
+
+    response = client.post(
+        api.url_for(Certificates, certificate_id=certificate.id),
+        data=json.dumps({"notify": toggled_notify}),
+        headers=token
     )
+
+    assert response.status_code == status
+    if status == 200:
+        assert response.json.get("notify") == toggled_notify
 
 
 @pytest.mark.parametrize(
@@ -963,6 +973,9 @@ def test_certificate_put_with_data(client, certificate, issuer_plugin):
         headers=VALID_ADMIN_HEADER_TOKEN,
     )
     assert resp.status_code == 200
+    assert len(certificate.notifications) == 3
+    assert certificate.roles[0].name == "bob@example.com"
+    assert certificate.notify
 
 
 @pytest.mark.parametrize(

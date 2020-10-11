@@ -256,17 +256,29 @@ def update(cert_id, **kwargs):
     return database.update(cert)
 
 
-def create_certificate_roles(**kwargs):
-    # create an role for the owner and assign it
-    owner_role = role_service.get_by_name(kwargs["owner"])
+def cleanup_owner_roles_notification(owner_name, kwargs):
+    kwargs["roles"] = [r for r in kwargs["roles"] if r.name != owner_name]
+    notification_prefix = f"DEFAULT_{owner_name.split('@')[0].upper()}"
+    kwargs["notifications"] = [n for n in kwargs["notifications"] if not n.label.startswith(notification_prefix)]
 
-    if not owner_role:
-        owner_role = role_service.create(
-            kwargs["owner"],
-            description="Auto generated role based on owner: {0}".format(
-                kwargs["owner"]
-            ),
-        )
+
+def update_notify(cert, notify_flag):
+    """
+    Toggle notification value which is a boolean
+    :param notify_flag: new notify value
+    :param cert: Certificate object to be updated
+    :return:
+    """
+    cert.notify = notify_flag
+    return database.update(cert)
+
+
+def create_certificate_roles(**kwargs):
+    # create a role for the owner and assign it
+    owner_role = role_service.get_or_create(
+        kwargs["owner"],
+        description=f"Auto generated role based on owner: {kwargs['owner']}"
+    )
 
     # ensure that the authority's owner is also associated with the certificate
     if kwargs.get("authority"):
