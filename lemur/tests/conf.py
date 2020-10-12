@@ -99,7 +99,6 @@ DIGICERT_CIS_URL = "mock://www.digicert.com"
 DIGICERT_CIS_PROFILE_NAMES = {"sha2-rsa-ecc-root": "ssl_plus"}
 DIGICERT_CIS_API_KEY = "api-key"
 DIGICERT_CIS_ROOTS = {"root": "ROOT"}
-DIGICERT_CIS_INTERMEDIATES = {"inter": "INTERMEDIATE_CA_CERT"}
 
 VERISIGN_URL = "http://example.com"
 VERISIGN_PEM_PATH = "~/"

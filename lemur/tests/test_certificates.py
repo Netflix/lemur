@@ -180,7 +180,10 @@ def test_certificate_edit_schema(session):
 
     input_data = {"owner": "bob@example.com"}
     data, errors = CertificateEditInputSchema().load(input_data)
+
+    assert not errors
     assert len(data["notifications"]) == 3
+    assert data["roles"][0].name == input_data["owner"]
 
 
 def test_authority_key_identifier_schema():
@@ -970,6 +973,9 @@ def test_certificate_put_with_data(client, certificate, issuer_plugin):
         headers=VALID_ADMIN_HEADER_TOKEN,
     )
     assert resp.status_code == 200
+    assert len(certificate.notifications) == 3
+    assert certificate.roles[0].name == "bob@example.com"
+    assert certificate.notify
 
 
 @pytest.mark.parametrize(
