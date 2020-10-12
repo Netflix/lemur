@@ -1,8 +1,10 @@
 import unittest
 from unittest.mock import patch, Mock
 
+import josepy as jose
 from cryptography.x509 import DNSName
 from lemur.plugins.lemur_acme import plugin
+from lemur.common.utils import generate_private_key
 from mock import MagicMock
 
 
@@ -165,11 +167,65 @@ class TestAcme(unittest.TestCase):
         with self.assertRaises(Exception):
             self.acme.setup_acme_client(mock_authority)
 
+    @patch("lemur.plugins.lemur_acme.plugin.jose.JWK.json_loads")
     @patch("lemur.plugins.lemur_acme.plugin.BackwardsCompatibleClientV2")
     @patch("lemur.plugins.lemur_acme.plugin.current_app")
-    def test_setup_acme_client_success(self, mock_current_app, mock_acme):
+    def test_setup_acme_client_success_load_account_from_authority(self, mock_current_app, mock_acme, mock_key_json_load):
         mock_authority = Mock()
-        mock_authority.options = '[{"name": "mock_name", "value": "mock_value"}]'
+        mock_authority.id = 2
+        mock_authority.options = '[{"name": "mock_name", "value": "mock_value"}, ' \
+                                 '{"name": "store_account", "value": true},' \
+                                 '{"name": "acme_private_key", "value": "{\\"n\\": \\"PwIOkViO\\", \\"kty\\": \\"RSA\\"}"}, ' \
+                                 '{"name": "acme_regr", "value": "{\\"body\\": {}, \\"uri\\": \\"http://test.com\\"}"}]'
+        mock_client = Mock()
+        mock_acme.return_value = mock_client
+        mock_current_app.config = {}
+
+        mock_key_json_load.return_value = jose.JWKRSA(key=generate_private_key("RSA2048"))
+
+        result_client, result_registration = self.acme.setup_acme_client(mock_authority)
+
+        mock_acme.new_account_and_tos.assert_not_called()
+        assert result_client
+        assert not result_registration
+
+    @patch("lemur.plugins.lemur_acme.plugin.jose.JWKRSA.fields_to_partial_json")
+    @patch("lemur.plugins.lemur_acme.plugin.authorities_service")
+    @patch("lemur.plugins.lemur_acme.plugin.BackwardsCompatibleClientV2")
+    @patch("lemur.plugins.lemur_acme.plugin.current_app")
+    def test_setup_acme_client_success_store_new_account(self, mock_current_app, mock_acme, mock_authorities_service,
+                                                         mock_key_generation):
+        mock_authority = Mock()
+        mock_authority.id = 2
+        mock_authority.options = '[{"name": "mock_name", "value": "mock_value"}, ' \
+                                 '{"name": "store_account", "value": true}]'
+        mock_client = Mock()
+        mock_registration = Mock()
+        mock_registration.uri = "http://test.com"
+        mock_client.register = mock_registration
+        mock_client.agree_to_tos = Mock(return_value=True)
+        mock_client.new_account_and_tos.return_value = mock_registration
+        mock_acme.return_value = mock_client
+        mock_current_app.config = {}
+
+        mock_key_generation.return_value = {"n": "PwIOkViO"}
+
+        mock_authorities_service.update_options = Mock(return_value=True)
+
+        self.acme.setup_acme_client(mock_authority)
+
+        mock_authorities_service.update_options.assert_called_with(2, options='[{"name": "mock_name", "value": "mock_value"}, '
+        '{"name": "store_account", "value": true}, '
+        '{"name": "acme_private_key", "value": "{\\"n\\": \\"PwIOkViO\\", \\"kty\\": \\"RSA\\"}"}, '
+        '{"name": "acme_regr", "value": "{\\"body\\": {}, \\"uri\\": \\"http://test.com\\"}"}]')
+
+    @patch("lemur.plugins.lemur_acme.plugin.authorities_service")
+    @patch("lemur.plugins.lemur_acme.plugin.BackwardsCompatibleClientV2")
+    @patch("lemur.plugins.lemur_acme.plugin.current_app")
+    def test_setup_acme_client_success(self, mock_current_app, mock_acme, mock_authorities_service):
+        mock_authority = Mock()
+        mock_authority.options = '[{"name": "mock_name", "value": "mock_value"}, ' \
+                                 '{"name": "store_account", "value": false}]'
         mock_client = Mock()
         mock_registration = Mock()
         mock_registration.uri = "http://test.com"
@@ -178,6 +234,7 @@ class TestAcme(unittest.TestCase):
         mock_acme.return_value = mock_client
         mock_current_app.config = {}
         result_client, result_registration = self.acme.setup_acme_client(mock_authority)
+        mock_authorities_service.update_options.assert_not_called()
         assert result_client
         assert result_registration
 

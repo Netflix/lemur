@@ -39,6 +39,22 @@ def update(authority_id, description, owner, active, roles):
     return database.update(authority)
 
 
+def update_options(authority_id, options):
+    """
+    Update an authority with new options.
+
+    :param authority_id:
+    :param options: the new options to be saved into the authority
+    :return:
+    """
+
+    authority = get(authority_id)
+
+    authority.options = options
+
+    return database.update(authority)
+
+
 def mint(**kwargs):
     """
     Creates the authority based on the plugin provided.
