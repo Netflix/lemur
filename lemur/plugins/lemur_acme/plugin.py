@@ -811,8 +811,6 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
     author = "Netflix"
     author_url = "https://github.com/netflix/lemur.git"
 
-    destination_list = []
-
     options = [
         {
             "name": "acme_url",
@@ -851,13 +849,6 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
 
     def __init__(self, *args, **kwargs):
         super(ACMEHttpIssuerPlugin, self).__init__(*args, **kwargs)
-
-        if len(self.destination_list) == 0:
-            destinations = destination_service.get_all()
-            for destination in destinations:
-                # we only want to use sftp destinations here
-                if destination.plugin_name == "sftp-destination":
-                    self.destination_list.append(destination.label)
 
     def create_certificate(self, csr, issuer_options):
         """
