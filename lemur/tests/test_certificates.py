@@ -791,12 +791,25 @@ def test_reissue_certificate(
     issuer_plugin, crypto_authority, certificate, logged_in_user
 ):
     from lemur.certificates.service import reissue_certificate
+    from lemur.authorities.service import update_options
+    from lemur.tests.conf import LEMUR_DEFAULT_ORGANIZATION
 
     # test-authority would return a mismatching private key, so use 'cryptography-issuer' plugin instead.
     certificate.authority = crypto_authority
     new_cert = reissue_certificate(certificate)
     assert new_cert
-    assert (new_cert.key_type == "RSA2048")
+    assert new_cert.key_type == "RSA2048"
+    assert new_cert.organization != certificate.organization
+    # Check for default value since authority does not have cab_compliant option set
+    assert new_cert.organization == LEMUR_DEFAULT_ORGANIZATION
+
+    # update cab_compliant option to false for crypto_authority to maintain subject details
+    update_options(crypto_authority.id, '[{"name": "cab_compliant","value":false}]')
+    new_cert = reissue_certificate(certificate)
+    assert new_cert.organization == certificate.organization
+
+    # reset options
+    update_options(crypto_authority.id, None)
 
 
 def test_create_csr():
