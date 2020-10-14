@@ -196,6 +196,16 @@ def test_certificate_output_schema_subject_details(session, certificate, issuer_
     assert data["organization"] == "Daniel San & co"
     assert data["organizationalUnit"] == "Karate Lessons"
 
+    # Mark authority as cab-compliant
+    update_options(certificate.authority.id, '[{"name": "cab_compliant","value":true}]')
+    data, errors = CertificateOutputSchema().dump(certificate)
+    assert not errors
+    assert "country" not in data
+    assert "state" not in data
+    assert "location" not in data
+    assert "organization" not in data
+    assert "organizationalUnit" not in data
+
 
 def test_certificate_edit_schema(session):
     from lemur.certificates.schemas import CertificateEditInputSchema
