@@ -808,9 +808,6 @@ def test_reissue_certificate(
     new_cert = reissue_certificate(certificate)
     assert new_cert.organization == certificate.organization
 
-    # reset options
-    update_options(crypto_authority.id, None)
-
 
 def test_create_csr():
     csr, private_key = create_csr(
