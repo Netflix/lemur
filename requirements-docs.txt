@@ -10,7 +10,7 @@ alembic-autogenerate-enums==0.0.2  # via -r requirements.txt
 alembic==1.4.2            # via -r requirements.txt, flask-migrate
 amqp==2.5.2               # via -r requirements.txt, kombu
 aniso8601==8.0.0          # via -r requirements.txt, flask-restful
-arrow==0.16.0             # via -r requirements.txt
+arrow==0.17.0             # via -r requirements.txt
 asyncpool==1.0            # via -r requirements.txt
 babel==2.8.0              # via sphinx
 bcrypt==3.1.7             # via -r requirements.txt, flask-bcrypt, paramiko
