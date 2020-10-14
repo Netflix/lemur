@@ -340,8 +340,8 @@ class CertificateOutputSchema(LemurOutputSchema):
 
     @post_dump
     def handle_subject_details(self, data):
-        # Remove subject details if authority is CAB compliant. The code will use default set of values in that case.
-        # If CAB compliance of an authority is unknown (None), it is safe to fallback to default values. Thus below
+        # Remove subject details if authority is CA/Browser Forum compliant. The code will use default set of values in that case.
+        # If CA/Browser Forum compliance of an authority is unknown (None), it is safe to fallback to default values. Thus below
         # condition checks for 'not False' ==> 'True or None'
         if data.get("authority"):
             is_cab_compliant = data.get("authority").get("isCabCompliant")
