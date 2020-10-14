@@ -139,6 +139,7 @@ class AuthorityNestedOutputSchema(LemurOutputSchema):
     plugin = fields.Nested(PluginOutputSchema)
     active = fields.Boolean()
     authority_certificate = fields.Nested(RootAuthorityCertificateOutputSchema, only=["max_issuance_days", "default_validity_days"])
+    is_cab_compliant = fields.Boolean()
 
 
 authority_update_schema = AuthorityUpdateSchema()

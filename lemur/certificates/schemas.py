@@ -8,7 +8,7 @@
 from flask import current_app
 from flask_restful import inputs
 from flask_restful.reqparse import RequestParser
-from marshmallow import fields, validate, validates_schema, post_load, pre_load
+from marshmallow import fields, validate, validates_schema, post_load, pre_load, post_dump
 from marshmallow.exceptions import ValidationError
 
 from lemur.authorities.schemas import AuthorityNestedOutputSchema
@@ -331,6 +331,27 @@ class CertificateOutputSchema(LemurOutputSchema):
         CertificateNestedOutputSchema, many=True, attribute="replaced"
     )
     rotation_policy = fields.Nested(RotationPolicyNestedOutputSchema)
+
+    country = fields.String()
+    location = fields.String()
+    state = fields.String()
+    organization = fields.String()
+    organizational_unit = fields.String()
+
+    @post_dump
+    def handle_subject_details(self, data):
+        # Remove subject details if authority is CAB compliant. The code will use default set of values in that case.
+        # If CAB compliance of an authority is unknown (None), it is safe to fallback to default values. Thus below
+        # condition checks for 'not False' ==> 'True or None'
+        if data.get("authority"):
+            is_cab_compliant = data.get("authority").get("isCabCompliant")
+
+            if is_cab_compliant is not False:
+                data.pop("country", None)
+                data.pop("state", None)
+                data.pop("location", None)
+                data.pop("organization", None)
+                data.pop("organizational_unit", None)
 
 
 class CertificateShortOutputSchema(LemurOutputSchema):

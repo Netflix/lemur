@@ -6,6 +6,8 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+import json
+
 from sqlalchemy.orm import relationship
 from sqlalchemy import (
     Column,
@@ -79,6 +81,21 @@ class Authority(db.Model):
     @property
     def plugin(self):
         return plugins.get(self.plugin_name)
+
+    @property
+    def is_cab_compliant(self):
+        """
+        Parse the options to find whether authority is CAB Compliant. Returns None if
+        option is not available
+        """
+        if not self.options:
+            return None
+
+        for option in json.loads(self.options):
+            if option["name"] == 'cab_compliant':
+                return option["value"]
+
+        return None
 
     def __repr__(self):
         return "Authority(name={name})".format(name=self.name)
