@@ -85,8 +85,9 @@ class Authority(db.Model):
     @property
     def is_cab_compliant(self):
         """
-        Parse the options to find whether authority is CAB Compliant. Returns None if
-        option is not available
+        Parse the options to find whether authority is CAB Forum Compliant 
+        i.e., adhering to the CA/Browser Forum Baseline Requirements.
+        Returns None if option is not available
         """
         if not self.options:
             return None
