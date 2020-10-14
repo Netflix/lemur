@@ -9,7 +9,6 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from marshmallow import ValidationError
 from freezegun import freeze_time
-# from mock import patch
 from unittest.mock import patch
 
 from lemur.certificates.service import create_csr
@@ -171,8 +170,31 @@ def test_certificate_output_schema(session, certificate, issuer_plugin):
     ) as wrapper:
         data, errors = CertificateOutputSchema().dump(certificate)
         assert data["issuer"] == "LemurTrustUnittestsClass1CA2018"
+        assert data["distinguishedName"] == "L=Earth,ST=N/A,C=EE,OU=Karate Lessons,O=Daniel San & co,CN=san.example.org"
+        # Authority does not have 'cab_compliant', thus subject details should not be returned
+        assert "organization" not in data
 
     assert wrapper.call_count == 1
+
+
+def test_certificate_output_schema_subject_details(session, certificate, issuer_plugin):
+    from lemur.certificates.schemas import CertificateOutputSchema
+    from lemur.authorities.service import update_options
+
+    # Mark authority as non-cab-compliant
+    update_options(certificate.authority.id, '[{"name": "cab_compliant","value":false}]')
+
+    data, errors = CertificateOutputSchema().dump(certificate)
+    assert not errors
+    assert data["issuer"] == "LemurTrustUnittestsClass1CA2018"
+    assert data["distinguishedName"] == "L=Earth,ST=N/A,C=EE,OU=Karate Lessons,O=Daniel San & co,CN=san.example.org"
+
+    # Original subject details should be returned because of cab_compliant option update above
+    assert data["country"] == "EE"
+    assert data["state"] == "N/A"
+    assert data["location"] == "Earth"
+    assert data["organization"] == "Daniel San & co"
+    assert data["organizationalUnit"] == "Karate Lessons"
 
 
 def test_certificate_edit_schema(session):
@@ -920,6 +942,14 @@ def test_certificate_get_body(client):
         "O=LemurTrust Enterprises Ltd,"
         "CN=LemurTrust Unittests Class 1 CA 2018"
     )
+
+    # No authority details are provided in this test, no information about being cab_compliant is available.
+    # Thus original subject details should be returned.
+    assert response_body["country"] == "EE"
+    assert response_body["state"] == "N/A"
+    assert response_body["location"] == "Earth"
+    assert response_body["organization"] == "LemurTrust Enterprises Ltd"
+    assert response_body["organizationalUnit"] == "Unittesting Operations Center"
 
 
 @pytest.mark.parametrize(
