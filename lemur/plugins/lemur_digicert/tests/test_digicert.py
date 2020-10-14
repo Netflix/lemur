@@ -121,7 +121,7 @@ def test_map_cis_fields_with_validity_years(mock_current_app, authority):
             "csr": CSR_STR,
             "additional_dns_names": names,
             "signature_hash": "sha256",
-            "organization": {"name": "Example, Inc.", "units": ["Example Org"]},
+            "organization": {"name": "Example, Inc."},
             "validity": {
                 "valid_to": arrow.get(2018, 11, 3).format("YYYY-MM-DDTHH:MM") + "Z"
             },
@@ -157,7 +157,7 @@ def test_map_cis_fields_with_validity_end_and_start(mock_current_app, app, autho
             "csr": CSR_STR,
             "additional_dns_names": names,
             "signature_hash": "sha256",
-            "organization": {"name": "Example, Inc.", "units": ["Example Org"]},
+            "organization": {"name": "Example, Inc."},
             "validity": {
                 "valid_to": arrow.get(2017, 5, 7).format("YYYY-MM-DDTHH:MM") + "Z"
             },
