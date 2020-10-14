@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-index --output-file=requirements-docs.txt requirements-docs.in
 #
-acme==1.8.0               # via -r requirements.txt
+acme==1.9.0               # via -r requirements.txt
 alabaster==0.7.12         # via sphinx
 alembic-autogenerate-enums==0.0.2  # via -r requirements.txt
 alembic==1.4.2            # via -r requirements.txt, flask-migrate
