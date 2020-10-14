@@ -289,6 +289,11 @@ angular.module('lemur')
         if (certificate.dnsProviderId) {
           certificate.dnsProvider = {id: certificate.dnsProviderId};
         }
+
+        if(!certificate.keyType) {
+          certificate.keyType = 'RSA2048'; // default algo to select during clone if backend did not return algo
+        }
+
       });
     };
 
