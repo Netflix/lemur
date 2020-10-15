@@ -8,6 +8,7 @@
 """
 import json
 
+from flask import current_app
 from sqlalchemy.orm import relationship
 from sqlalchemy import (
     Column,
@@ -97,6 +98,18 @@ class Authority(db.Model):
                 return option["value"]
 
         return None
+
+    @property
+    def max_issuance_days(self):
+        if self.is_cab_compliant:
+            return current_app.config.get("PUBLIC_CA_MAX_VALIDITY_DAYS", 397)
+
+    @property
+    def default_validity_days(self):
+        if self.is_cab_compliant:
+            return current_app.config.get("PUBLIC_CA_MAX_VALIDITY_DAYS", 397)
+
+        return current_app.config.get("DEFAULT_VALIDITY_DAYS", 365)  # 1 year default
 
     def __repr__(self):
         return "Authority(name={name})".format(name=self.name)
