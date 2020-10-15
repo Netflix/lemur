@@ -159,7 +159,7 @@ Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create c
 .. data:: PUBLIC_CA_MAX_VALIDITY_DAYS
     :noindex:
         Use this config to override the limit of 397 days of validity for certificates issued by CA/Browser compliant authorities.
-        The authorities with cab_compliant option set to true will use this config. Below example overrides the default validity
+        The authorities with cab_compliant option set to true will use this config. The example below overrides the default validity
         of 397 days and sets it to 365 days.
 
     ::
@@ -171,7 +171,7 @@ Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create c
     :noindex:
         Use this config to override the default validity of 365 days for certificates offered through Lemur UI. Any CA which
         is not CA/Browser Forum compliant will be using this value as default validity to be displayed on UI. Please
-        note that this config is used for cert issuance only through Lemur UI. Below example overrides the default validity
+        note that this config is used for cert issuance only through Lemur UI. The example below overrides the default validity
         of 365 days and sets it to 1095 days (3 years).
 
     ::
