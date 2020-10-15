@@ -93,7 +93,7 @@ class Authority(db.Model):
             return None
 
         for option in json.loads(self.options):
-            if option["name"] == 'cab_compliant':
+            if "name" in option and option["name"] == 'cab_compliant':
                 return option["value"]
 
         return None
