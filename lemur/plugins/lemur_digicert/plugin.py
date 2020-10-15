@@ -175,7 +175,6 @@ def map_cis_fields(options, csr):
         },
         "organization": {
             "name": options["organization"],
-            "units": [options["organizational_unit"]],
         },
     }
     #  possibility to default to a SIGNING_ALGORITHM for a given profile
