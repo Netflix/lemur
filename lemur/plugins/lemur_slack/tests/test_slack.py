@@ -21,3 +21,48 @@ def test_formatting(certificate):
     }
 
     assert attachment == create_expiration_attachments(data)[0]
+
+
+def get_options():
+    return [
+        {"name": "interval", "value": 10},
+        {"name": "unit", "value": "days"},
+    ]
+
+
+# Currently disabled as we have no good way to mock Slack webhooks
+# def test_send_expiration_notification():
+#     from lemur.notifications.messaging import send_expiration_notifications
+#     from lemur.tests.factories import CertificateFactory
+#
+#     now = arrow.utcnow()
+#     in_ten_days = now + timedelta(days=10, hours=1)  # a bit more than 10 days since we'll check in the future
+#     certificate = CertificateFactory()
+#     notification = NotificationFactory(plugin_name="slack-notification")
+#
+#     certificate.not_after = in_ten_days
+#     certificate.notifications.append(notification)
+#     certificate.notifications[0].options = get_options()
+#
+#     assert send_expiration_notifications([]) == (2, 0)
+
+
+# Currently disabled as we have no good way to mock Slack webhooks
+# def test_send_rotation_notification(endpoint, source_plugin):
+#     from lemur.notifications.messaging import send_rotation_notification
+#     from lemur.deployment.service import rotate_certificate
+#
+#     notification = NotificationFactory(plugin_name="slack-notification")
+#
+#     new_certificate = CertificateFactory()
+#     rotate_certificate(endpoint, new_certificate)
+#     assert endpoint.certificate == new_certificate
+#
+#     assert send_rotation_notification(new_certificate, notification_plugin=notification.plugin)
+
+
+# Currently disabled as the Slack plugin doesn't support this type of notification
+# def test_send_pending_failure_notification(user, pending_certificate, async_issuer_plugin):
+#     from lemur.notifications.messaging import send_pending_failure_notification
+#
+#     assert send_pending_failure_notification(pending_certificate, notification_plugin=plugins.get("slack-notification"))
