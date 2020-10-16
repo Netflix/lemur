@@ -8,6 +8,7 @@ def test_put_delete_s3_object(app):
     from lemur.plugins.lemur_aws.s3 import put, delete, get
 
     bucket = "public-bucket"
+    region = "us-east-1"
     account = "123456789012"
     path = "some-path/foo"
     data = "dummy data"
@@ -16,11 +17,12 @@ def test_put_delete_s3_object(app):
     s3_client.create_bucket(Bucket=bucket)
 
     put(bucket_name=bucket,
-        region=None,
+        region_name=region,
         prefix=path,
         data=data,
         encrypt=False,
-        account_number=account)
+        account_number=account,
+        region=region)
 
     response = get(bucket_name=bucket, prefix=path, account_number=account)
 
