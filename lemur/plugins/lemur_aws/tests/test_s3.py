@@ -9,16 +9,16 @@ def test_put_delete_s3_object(app):
 
     bucket = "public-bucket"
     account = "123456789012"
-    path = "some_path/foo"
+    path = "some-path/foo"
+    data = "dummy data"
 
     s3_client = boto3.client('s3')
     s3_client.create_bucket(Bucket=bucket)
 
-    data = "dummy data"
     put(bucket_name=bucket,
         prefix=path,
         data=data,
-        encrypt=None,
+        encrypt=False,
         account_number=account)
 
     response = get(bucket_name=bucket, prefix=path, account_number=account)
