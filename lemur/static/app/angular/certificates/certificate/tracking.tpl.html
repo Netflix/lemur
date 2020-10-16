@@ -139,7 +139,7 @@
       <div class="col-sm-4">
         <div class="btn-group btn-group-toggle" data-toggle="buttons">
           <label class="btn btn-info" ng-model="certificate.validityType" uib-btn-radio="'defaultDays'" ng-click="clearDates()">
-              Default ({{certificate.authority.authorityCertificate.defaultValidityDays}} days)</label>
+              Default ({{certificate.authority.defaultValidityDays}} days)</label>
           <label class="btn btn-info" ng-model="certificate.validityType" uib-btn-radio="'customDates'" ng-change="clearDates()">Custom</label>
         </div>
       </div>
