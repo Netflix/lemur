@@ -16,6 +16,7 @@ def test_put_delete_s3_object(app):
     s3_client.create_bucket(Bucket=bucket)
 
     put(bucket_name=bucket,
+        region=None,
         prefix=path,
         data=data,
         encrypt=False,
