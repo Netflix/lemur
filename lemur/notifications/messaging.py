@@ -8,6 +8,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
+import sys
 from collections import defaultdict
 from datetime import timedelta
 from itertools import groupby
@@ -96,14 +97,20 @@ def send_notification(event_type, data, targets, notification):
     :param notification:
     :return:
     """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    log_data = {
+        "function": function,
+        "message": "Sending expiration notification for to targets {}".format(targets),
+        "notification_type": "rotation",
+        "targets": targets,
+    }
     status = FAILURE_METRIC_STATUS
     try:
         notification.plugin.send(event_type, data, targets, notification.options)
         status = SUCCESS_METRIC_STATUS
     except Exception as e:
-        current_app.logger.error(
-            "Unable to send notification to {}.".format(targets), exc_info=True
-        )
+        log_data["message"] = "Unable to send expiration notification to targets {}".format(targets)
+        current_app.logger.error(log_data, exc_info=True)
         sentry.captureException()
 
     metrics.send(
@@ -190,6 +197,14 @@ def send_rotation_notification(certificate, notification_plugin=None):
     :param notification_plugin:
     :return:
     """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    log_data = {
+        "function": function,
+        "message": "Sending rotation notification for certificate {}".format(certificate.name),
+        "notification_type": "rotation",
+        "name": certificate.name,
+        "owner": certificate.owner,
+    }
     status = FAILURE_METRIC_STATUS
     if not notification_plugin:
         notification_plugin = plugins.get(
@@ -202,9 +217,9 @@ def send_rotation_notification(certificate, notification_plugin=None):
         notification_plugin.send("rotation", data, [data["owner"]], [])
         status = SUCCESS_METRIC_STATUS
     except Exception as e:
-        current_app.logger.error(
-            "Unable to send notification to {}.".format(data["owner"]), exc_info=True
-        )
+        log_data["message"] = "Unable to send rotation notification for certificate {0} to ownner {1}" \
+            .format(certificate.name, data["owner"])
+        current_app.logger.error(log_data)
         sentry.captureException()
 
     metrics.send(
@@ -228,6 +243,14 @@ def send_pending_failure_notification(
     :param notification_plugin:
     :return:
     """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    log_data = {
+        "function": function,
+        "message": "Sending pending failure notification for pending certificate {}".format(pending_cert.name),
+        "notification_type": "rotation",
+        "name": pending_cert.name,
+        "owner": pending_cert.owner,
+    }
     status = FAILURE_METRIC_STATUS
 
     if not notification_plugin:
@@ -245,12 +268,10 @@ def send_pending_failure_notification(
             notification_plugin.send("failed", data, [data["owner"]], pending_cert)
             status = SUCCESS_METRIC_STATUS
         except Exception as e:
-            current_app.logger.error(
-                "Unable to send pending failure notification to {}.".format(
-                    data["owner"]
-                ),
-                exc_info=True,
-            )
+            log_data["recipient"] = data["owner"]
+            log_data["message"] = "Unable to send pending failure notification for certificate {0} to owner {1}" \
+                .format(pending_cert.name, pending_cert.owner)
+            current_app.logger.error(log_data, exc_info=True)
             sentry.captureException()
 
     if notify_security:
@@ -260,11 +281,10 @@ def send_pending_failure_notification(
             )
             status = SUCCESS_METRIC_STATUS
         except Exception as e:
-            current_app.logger.error(
-                "Unable to send pending failure notification to "
-                "{}.".format(data["security_email"]),
-                exc_info=True,
-            )
+            log_data["recipient"] = data["security_email"]
+            log_data["message"] = "Unable to send pending failure notification for certificate {0} to security email " \
+                                  "{1}".format(pending_cert.name, pending_cert.owner)
+            current_app.logger.error(log_data, exc_info=True)
             sentry.captureException()
 
     metrics.send(
