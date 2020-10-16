@@ -101,8 +101,8 @@ def send_notification(event_type, data, targets, notification):
     log_data = {
         "function": function,
         "message": "Sending expiration notification for to targets {}".format(targets),
-        "notification_type": "rotation",
-        "targets": targets,
+        "notification_type": "expiration",
+        "certificate_targets": targets,
     }
     status = FAILURE_METRIC_STATUS
     try:
@@ -202,8 +202,8 @@ def send_rotation_notification(certificate, notification_plugin=None):
         "function": function,
         "message": "Sending rotation notification for certificate {}".format(certificate.name),
         "notification_type": "rotation",
-        "name": certificate.name,
-        "owner": certificate.owner,
+        "certificate_name": certificate.name,
+        "certificate_owner": certificate.owner,
     }
     status = FAILURE_METRIC_STATUS
     if not notification_plugin:
@@ -247,9 +247,9 @@ def send_pending_failure_notification(
     log_data = {
         "function": function,
         "message": "Sending pending failure notification for pending certificate {}".format(pending_cert.name),
-        "notification_type": "rotation",
-        "name": pending_cert.name,
-        "owner": pending_cert.owner,
+        "notification_type": "failed",
+        "certificate_name": pending_cert.name,
+        "certificate_owner": pending_cert.owner,
     }
     status = FAILURE_METRIC_STATUS
 
