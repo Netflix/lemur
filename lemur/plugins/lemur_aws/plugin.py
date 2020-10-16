@@ -406,3 +406,25 @@ class S3DestinationPlugin(ExportDestinationPlugin):
                 self.get_option("encrypt", options),
                 account_number=self.get_option("accountNumber", options),
             )
+
+    def upload_acme_token(self, token_path, token, options, **kwargs):
+        """
+         This is called from the acme http challenge
+        :param self:
+        :param token_path:
+        :param token:
+        :param options:
+        :param kwargs:
+        :return:
+        """
+        current_app.logger.debug("S3 destination plugin is started for HTTP-01 challenge")
+
+        account_number = self.get_option("accountNumber", options)
+        bucket_name = self.get_option("bucket", options)
+        prefix = self.get_option("prefix", options)
+        region = self.get_option("region", options)
+        filename = token_path.split("/")[-1]
+        if not prefix.endswith("/"):
+            prefix + "/"
+
+        s3.put(bucket_name, region, prefix + filename, token, encrypt=False, account_number=account_number)
