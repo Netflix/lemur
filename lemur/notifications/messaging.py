@@ -101,6 +101,9 @@ def send_notification(event_type, data, targets, notification):
         notification.plugin.send(event_type, data, targets, notification.options)
         status = SUCCESS_METRIC_STATUS
     except Exception as e:
+        current_app.logger.error(
+            "Unable to send notification to {}.".format(targets), exc_info=True
+        )
         sentry.captureException()
 
     metrics.send(
@@ -190,13 +193,13 @@ def send_rotation_notification(certificate, notification_plugin=None):
     status = FAILURE_METRIC_STATUS
     if not notification_plugin:
         notification_plugin = plugins.get(
-            current_app.config.get("LEMUR_DEFAULT_NOTIFICATION_PLUGIN")
+            current_app.config.get("LEMUR_DEFAULT_NOTIFICATION_PLUGIN", "email-notification")
         )
 
     data = certificate_notification_output_schema.dump(certificate).data
 
     try:
-        notification_plugin.send("rotation", data, [data["owner"]])
+        notification_plugin.send("rotation", data, [data["owner"]], [])
         status = SUCCESS_METRIC_STATUS
     except Exception as e:
         current_app.logger.error(
@@ -290,7 +293,7 @@ def needs_notification(certificate):
 
     for notification in certificate.notifications:
         if not notification.active or not notification.options:
-            return
+            continue
 
         interval = get_plugin_option("interval", notification.options)
         unit = get_plugin_option("unit", notification.options)
