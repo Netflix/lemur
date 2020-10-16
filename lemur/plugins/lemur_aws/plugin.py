@@ -427,4 +427,9 @@ class S3DestinationPlugin(ExportDestinationPlugin):
         if not prefix.endswith("/"):
             prefix + "/"
 
-        s3.put(bucket_name, region, prefix + filename, token, encrypt=False, account_number=account_number)
+        s3.put(bucket_name=bucket_name,
+               region_name=region,
+               prefix=prefix + filename,
+               data=token,
+               encrypt=False,
+               account_number=account_number)
