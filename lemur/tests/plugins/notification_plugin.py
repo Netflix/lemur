@@ -14,4 +14,5 @@ class TestNotificationPlugin(NotificationPlugin):
 
     @staticmethod
     def send(notification_type, message, targets, options, **kwargs):
+        print("TODO REMOVE: sending email to {}".format(targets))
         return

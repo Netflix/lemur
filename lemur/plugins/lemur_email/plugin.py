@@ -17,6 +17,7 @@ from lemur.plugins.bases import ExpirationNotificationPlugin
 from lemur.plugins import lemur_email as email
 
 from lemur.plugins.lemur_email.templates.config import env
+from lemur.plugins.utils import get_plugin_option
 
 
 def render_html(template_name, message):
@@ -105,8 +106,23 @@ class EmailNotificationPlugin(ExpirationNotificationPlugin):
 
         s_type = current_app.config.get("LEMUR_EMAIL_SENDER", "ses").lower()
 
-        if s_type == "ses":
-            send_via_ses(subject, body, targets)
+        current_app.logger.info("ALPACA: Would send an email to {0} with subject \"{1}\" here".format(targets, subject))
 
-        elif s_type == "smtp":
-            send_via_smtp(subject, body, targets)
+        # if s_type == "ses":
+        #     send_via_ses(subject, body, targets)
+        #
+        # elif s_type == "smtp":
+        #     send_via_smtp(subject, body, targets)
+
+    @staticmethod
+    def filter_recipients(options, excluded_recipients):
+        print("ALPACA: Getting recipients for notification {0}".format(options))
+        notification_recipients = get_plugin_option("recipients", options)
+        print(
+            "ALPACA: Sending certificate notifications to recipients {0}".format(notification_recipients.split(",")))
+        if notification_recipients:
+            notification_recipients = notification_recipients.split(",")
+            # removing owner and security_email from notification_recipient
+            notification_recipients = [i for i in notification_recipients if i not in excluded_recipients]
+
+        return notification_recipients

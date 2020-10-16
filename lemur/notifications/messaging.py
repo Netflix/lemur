@@ -29,12 +29,14 @@ from lemur.plugins.utils import get_plugin_option
 
 def get_certificates(exclude=None):
     """
-    Finds all certificates that are eligible for notifications.
+    Finds all certificates that are eligible for expiration notifications.
     :param exclude:
     :return:
     """
     now = arrow.utcnow()
     max = now + timedelta(days=90)
+
+    print("ALPACA: Checking for certs not after {0} with notify enabled and not expired".format(max))
 
     q = (
         database.db.session.query(Certificate)
@@ -42,6 +44,8 @@ def get_certificates(exclude=None):
         .filter(Certificate.notify == True)
         .filter(Certificate.expired == False)
     )  # noqa
+
+    print("ALPACA: Excluding {0}".format(exclude))
 
     exclude_conditions = []
     if exclude:
@@ -56,17 +60,22 @@ def get_certificates(exclude=None):
         if needs_notification(c):
             certs.append(c)
 
+    print("ALPACA: Found {0} eligible certs".format(len(certs)))
+
     return certs
 
 
 def get_eligible_certificates(exclude=None):
     """
-    Finds all certificates that are eligible for certificate expiration.
+    Finds all certificates that are eligible for certificate expiration notification.
+    Returns the set of all eligible certificates, grouped by owner, with a list of applicable notifications.
     :param exclude:
     :return:
     """
     certificates = defaultdict(dict)
     certs = get_certificates(exclude=exclude)
+
+    print("ALPACA: Found {0} certificates to check for notifications".format(len(certs)))
 
     # group by owner
     for owner, items in groupby(certs, lambda x: x.owner):
@@ -74,33 +83,41 @@ def get_eligible_certificates(exclude=None):
 
         for certificate in items:
             notifications = needs_notification(certificate)
+            print("ALPACA: Considering sending {0} notifications for cert {1}".format(len(notifications), certificate))
 
             if notifications:
                 for notification in notifications:
+                    print("ALPACA: Will send notification {0} for certificate {1}".format(notification, certificate))
                     notification_groups.append((notification, certificate))
 
         # group by notification
         for notification, items in groupby(notification_groups, lambda x: x[0].label):
             certificates[owner][notification] = list(items)
 
+    print("ALPACA: Certificates that need notifications: {0}".format(certificates))
+
     return certificates
 
 
-def send_notification(event_type, data, targets, notification):
+def send_plugin_notification(event_type, data, recipients, notification):
     """
     Executes the plugin and handles failure.
 
     :param event_type:
     :param data:
-    :param targets:
+    :param recipients:
     :param notification:
     :return:
     """
     status = FAILURE_METRIC_STATUS
     try:
-        notification.plugin.send(event_type, data, targets, notification.options)
+        print("ALPACA: Trying to send notification {0} (plugin: {1})".format(notification, notification.plugin))
+        notification.plugin.send(event_type, data, recipients, notification.options)
         status = SUCCESS_METRIC_STATUS
     except Exception as e:
+        current_app.logger.error(
+            "Unable to send notification {}.".format(notification), exc_info=True
+        )
         sentry.captureException()
 
     metrics.send(
@@ -140,36 +157,31 @@ def send_expiration_notifications(exclude):
                 notification_data.append(cert_data)
                 security_data.append(cert_data)
 
-            if send_notification(
-                "expiration", notification_data, [owner], notification
+            print("ALPACA: Sending owner notification to {0} for certificate {1}. Data: {2}".format(owner, certificates, notification_data))
+
+            if send_default_notification(
+                    "expiration", notification_data, [owner], notification.options
             ):
                 success += 1
             else:
                 failure += 1
 
-            notification_recipient = get_plugin_option(
-                "recipients", notification.options
-            )
-            if notification_recipient:
-                notification_recipient = notification_recipient.split(",")
-                # removing owner and security_email from notification_recipient
-                notification_recipient = [i for i in notification_recipient if i not in security_email and i != owner]
+            recipients = notification.plugin.filter_recipients(security_email + [owner], notification.options)
 
-            if (
-                notification_recipient
+            print("ALPACA: Sending plugin notification {0} for certificate {1} to recipients {2}".format(notification, certificates, recipients))
+            if send_plugin_notification(
+                "expiration",
+                notification_data,
+                recipients,
+                notification,
             ):
-                if send_notification(
-                    "expiration",
-                    notification_data,
-                    notification_recipient,
-                    notification,
-                ):
-                    success += 1
-                else:
-                    failure += 1
+                success += 1
+            else:
+                failure += 1
 
-            if send_notification(
-                "expiration", security_data, security_email, notification
+            print("ALPACA: Sending security notification to {0}".format(security_email))
+            if send_default_notification(
+                "expiration", security_data, security_email, notification.options
             ):
                 success += 1
             else:
@@ -178,29 +190,29 @@ def send_expiration_notifications(exclude):
     return success, failure
 
 
-def send_rotation_notification(certificate, notification_plugin=None):
+def send_default_notification(notification_type, data, targets, notification_options=None):
     """
-    Sends a report to certificate owners when their certificate has been
-    rotated.
+    Sends a report to the specified target via the default notification plugin. Applicable for any notification_type.
+    At present, "default" means email, as the other notification plugins do not support dynamically configured targets.
 
-    :param certificate:
-    :param notification_plugin:
+    :param notification_type:
+    :param data:
+    :param targets:
+    :param notification_options:
     :return:
     """
     status = FAILURE_METRIC_STATUS
-    if not notification_plugin:
-        notification_plugin = plugins.get(
-            current_app.config.get("LEMUR_DEFAULT_NOTIFICATION_PLUGIN")
-        )
-
-    data = certificate_notification_output_schema.dump(certificate).data
+    notification_plugin = plugins.get(
+        current_app.config.get("LEMUR_DEFAULT_NOTIFICATION_PLUGIN", "email-notification")
+    )
 
     try:
-        notification_plugin.send("rotation", data, [data["owner"]])
+        # we need the notification.options here because the email templates utilize the interval/unit info
+        notification_plugin.send(notification_type, data, targets, notification_options)
         status = SUCCESS_METRIC_STATUS
     except Exception as e:
         current_app.logger.error(
-            "Unable to send notification to {}.".format(data["owner"]), exc_info=True
+            "Unable to send notification to {}.".format(targets), exc_info=True
         )
         sentry.captureException()
 
@@ -208,77 +220,49 @@ def send_rotation_notification(certificate, notification_plugin=None):
         "notification",
         "counter",
         1,
-        metric_tags={"status": status, "event_type": "rotation"},
+        metric_tags={"status": status, "event_type": notification_type},
     )
 
     if status == SUCCESS_METRIC_STATUS:
         return True
 
 
+def send_rotation_notification(certificate):
+    data = certificate_notification_output_schema.dump(certificate).data
+    return send_default_notification("rotation", data, [data["owner"]])
+
+
 def send_pending_failure_notification(
-    pending_cert, notify_owner=True, notify_security=True, notification_plugin=None
+    pending_cert, notify_owner=True, notify_security=True
 ):
     """
     Sends a report to certificate owners when their pending certificate failed to be created.
 
     :param pending_cert:
-    :param notification_plugin:
+    :param notify_owner:
+    :param notify_security:
     :return:
     """
-    status = FAILURE_METRIC_STATUS
-
-    if not notification_plugin:
-        notification_plugin = plugins.get(
-            current_app.config.get(
-                "LEMUR_DEFAULT_NOTIFICATION_PLUGIN", "email-notification"
-            )
-        )
 
     data = pending_certificate_output_schema.dump(pending_cert).data
     data["security_email"] = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
 
+    notify_owner_success = False
     if notify_owner:
-        try:
-            notification_plugin.send("failed", data, [data["owner"]], pending_cert)
-            status = SUCCESS_METRIC_STATUS
-        except Exception as e:
-            current_app.logger.error(
-                "Unable to send pending failure notification to {}.".format(
-                    data["owner"]
-                ),
-                exc_info=True,
-            )
-            sentry.captureException()
+        notify_owner_success = send_default_notification("failed", data, [data["owner"]], pending_cert)
 
+    notify_security_success = False
     if notify_security:
-        try:
-            notification_plugin.send(
-                "failed", data, data["security_email"], pending_cert
-            )
-            status = SUCCESS_METRIC_STATUS
-        except Exception as e:
-            current_app.logger.error(
-                "Unable to send pending failure notification to "
-                "{}.".format(data["security_email"]),
-                exc_info=True,
-            )
-            sentry.captureException()
+        notify_security_success = send_default_notification("failed", data, data["security_email"], pending_cert)
 
-    metrics.send(
-        "notification",
-        "counter",
-        1,
-        metric_tags={"status": status, "event_type": "rotation"},
-    )
-
-    if status == SUCCESS_METRIC_STATUS:
-        return True
+    return notify_owner_success or notify_security_success
 
 
 def needs_notification(certificate):
     """
-    Determine if notifications for a given certificate should
-    currently be sent
+    Determine if notifications for a given certificate should currently be sent.
+    For each notification configured for the cert, verifies it is active, properly configured,
+    and that the configured expiration period is currently met.
 
     :param certificate:
     :return:
@@ -288,9 +272,13 @@ def needs_notification(certificate):
 
     notifications = []
 
+    print("ALPACA: Considering if cert {0} needs notifications".format(certificate))
+    print("ALPACA: Notifications for {0}: {1}".format(certificate, certificate.notifications))
+
     for notification in certificate.notifications:
+        print("ALPACA: Considering if cert {0} needs notification {1}".format(certificate, notification))
         if not notification.active or not notification.options:
-            return
+            continue
 
         interval = get_plugin_option("interval", notification.options)
         unit = get_plugin_option("unit", notification.options)
@@ -309,6 +297,8 @@ def needs_notification(certificate):
                 "Invalid base unit for expiration interval: {0}".format(unit)
             )
 
+        print("ALPACA: Considering if cert {0} is applicable for notification {1}: {2} days remaining, configured as "
+              "{3} days".format(certificate, notification, days, interval))
         if days == interval:
             notifications.append(notification)
     return notifications

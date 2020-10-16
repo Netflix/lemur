@@ -119,6 +119,9 @@ class SlackNotificationPlugin(ExpirationNotificationPlugin):
         """
         A typical check can be performed using the notify command:
         `lemur notify`
+
+        While we receive a `targets` parameter here, it is unused, as Slack webhooks do not allow
+        dynamic re-targeting of messages. The webhook itself specifies a channel.
         """
         attachments = None
         if notification_type == "expiration":
@@ -142,6 +145,6 @@ class SlackNotificationPlugin(ExpirationNotificationPlugin):
         if r.status_code not in [200]:
             raise Exception("Failed to send message")
 
-        current_app.logger.error(
+        current_app.logger.info(
             "Slack response: {0} Message Body: {1}".format(r.status_code, body)
         )

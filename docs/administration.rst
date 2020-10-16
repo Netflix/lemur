@@ -1441,7 +1441,7 @@ Slack
     Adds support for slack notifications.
 
 
-AWS
+AWS (Source)
 ----
 
 :Authors:
@@ -1454,7 +1454,7 @@ AWS
     Uses AWS IAM as a source of certificates to manage. Supports a multi-account deployment.
 
 
-AWS
+AWS (Destination)
 ----
 
 :Authors:
@@ -1465,6 +1465,19 @@ AWS
     Destination
 :Description:
     Uses AWS IAM as a destination for Lemur generated certificates. Support a multi-account deployment.
+
+
+AWS (Notification)
+-----
+
+:Authors:
+    Jasmine Schladen <jschladen@netflix.com>
+:Type:
+    Notification
+:Description:
+    Adds support for SNS notifications. SNS notifications (like other notification plugins) are currently only supported
+    for certificate expiration. Configuration requires a region, account number, and SNS topic name; these elements
+    are then combined to build the topic ARN. Lemur must have access to publish messages to the specified SNS topic.
 
 
 Kubernetes

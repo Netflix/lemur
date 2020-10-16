@@ -34,3 +34,15 @@ def test_render(certificate, endpoint):
             hostname="lemur.test.example.com",
         )
     )
+
+
+def test_filter_recipients(certificate, endpoint):
+    from lemur.plugins.lemur_email.plugin import EmailNotificationPlugin
+
+    options = [{"name": "recipients", "value": "security@netflix.com,bob@netflix.com,joe@netflix.com"}]
+    assert EmailNotificationPlugin.filter_recipients(options, []) == ["security@netflix.com", "bob@netflix.com",
+                                                                      "joe@netflix.com"]
+    assert EmailNotificationPlugin.filter_recipients(options, ["security@netflix.com"]) == ["bob@netflix.com",
+                                                                                            "joe@netflix.com"]
+    assert EmailNotificationPlugin.filter_recipients(options, ["security@netflix.com", "bob@netflix.com",
+                                                               "joe@netflix.com"]) == []
