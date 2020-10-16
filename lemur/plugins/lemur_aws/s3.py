@@ -6,11 +6,11 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from flask import current_app
-from .sts import sts_client
-
 from botocore.exceptions import ClientError
+from flask import current_app
 from lemur.extensions import sentry
+
+from .sts import sts_client
 
 
 @sts_client("s3", service_type="resource")
