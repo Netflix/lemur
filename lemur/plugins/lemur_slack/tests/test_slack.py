@@ -1,3 +1,10 @@
+from datetime import timedelta
+
+import arrow
+
+from lemur.tests.factories import NotificationFactory, CertificateFactory
+
+
 def test_formatting(certificate):
     from lemur.plugins.lemur_slack.plugin import create_expiration_attachments
     from lemur.certificates.schemas import certificate_notification_output_schema
@@ -27,32 +34,33 @@ def get_options():
     return [
         {"name": "interval", "value": 10},
         {"name": "unit", "value": "days"},
+        {"name": "webhook", "value": "https://slack.com/api/api.test"},
     ]
 
 
-# Currently disabled as we have no good way to mock Slack webhooks
-# def test_send_expiration_notification():
-#     from lemur.notifications.messaging import send_expiration_notifications
-#     from lemur.tests.factories import CertificateFactory
-#
-#     now = arrow.utcnow()
-#     in_ten_days = now + timedelta(days=10, hours=1)  # a bit more than 10 days since we'll check in the future
-#     certificate = CertificateFactory()
-#     notification = NotificationFactory(plugin_name="slack-notification")
-#
-#     certificate.not_after = in_ten_days
-#     certificate.notifications.append(notification)
-#     certificate.notifications[0].options = get_options()
-#
-#     assert send_expiration_notifications([]) == (2, 0)
+def test_send_expiration_notification():
+    from lemur.notifications.messaging import send_expiration_notifications
+
+    notification = NotificationFactory(plugin_name="slack-notification")
+    notification.options = get_options()
+
+    now = arrow.utcnow()
+    in_ten_days = now + timedelta(days=10, hours=1)  # a bit more than 10 days since we'll check in the future
+
+    certificate = CertificateFactory()
+    certificate.not_after = in_ten_days
+    certificate.notifications.append(notification)
+
+    assert send_expiration_notifications([]) == (2, 0)
 
 
-# Currently disabled as we have no good way to mock Slack webhooks
+# Currently disabled as the Slack plugin doesn't support this type of notification
 # def test_send_rotation_notification(endpoint, source_plugin):
 #     from lemur.notifications.messaging import send_rotation_notification
 #     from lemur.deployment.service import rotate_certificate
 #
 #     notification = NotificationFactory(plugin_name="slack-notification")
+#     notification.options = get_options()
 #
 #     new_certificate = CertificateFactory()
 #     rotate_certificate(endpoint, new_certificate)

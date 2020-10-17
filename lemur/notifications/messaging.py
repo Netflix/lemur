@@ -217,9 +217,9 @@ def send_rotation_notification(certificate, notification_plugin=None):
         notification_plugin.send("rotation", data, [data["owner"]], [])
         status = SUCCESS_METRIC_STATUS
     except Exception as e:
-        log_data["message"] = "Unable to send rotation notification for certificate {0} to ownner {1}" \
+        log_data["message"] = "Unable to send rotation notification for certificate {0} to owner {1}" \
             .format(certificate.name, data["owner"])
-        current_app.logger.error(log_data)
+        current_app.logger.error(log_data, exc_info=True)
         sentry.captureException()
 
     metrics.send(
