@@ -10,7 +10,7 @@ aws-sam-translator==1.22.0  # via cfn-lint
 aws-xray-sdk==2.5.0       # via moto
 bandit==1.6.2             # via -r requirements-tests.in
 black==20.8b1             # via -r requirements-tests.in
-boto3==1.15.12            # via aws-sam-translator, moto
+boto3==1.15.16            # via aws-sam-translator, moto
 boto==2.49.0              # via moto
 botocore==1.18.16         # via aws-xray-sdk, boto3, moto, s3transfer
 certifi==2020.6.20        # via requests
@@ -24,7 +24,7 @@ decorator==4.4.2          # via networkx
 docker==4.2.0             # via moto
 ecdsa==0.14.1             # via moto, python-jose, sshpubkeys
 factory-boy==3.1.0        # via -r requirements-tests.in
-faker==4.4.0              # via -r requirements-tests.in, factory-boy
+faker==4.14.0             # via -r requirements-tests.in, factory-boy
 fakeredis==1.4.3          # via -r requirements-tests.in
 flask==1.1.2              # via pytest-flask
 freezegun==1.0.0          # via -r requirements-tests.in
