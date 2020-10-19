@@ -246,7 +246,7 @@ def send_pending_failure_notification(
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     log_data = {
         "function": function,
-        "message": f"Sending pending failure notification for pending certificate {pending_cert}"
+        "message": f"Sending pending failure notification for pending certificate {pending_cert}",
         "notification_type": "failed",
         "certificate_name": pending_cert.name,
         "certificate_owner": pending_cert.owner,
