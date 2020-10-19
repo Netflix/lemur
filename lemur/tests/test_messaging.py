@@ -1,8 +1,8 @@
+from datetime import timedelta
+
+import arrow
 import pytest
 from freezegun import freeze_time
-
-from datetime import timedelta
-import arrow
 from moto import mock_ses
 
 
@@ -105,4 +105,11 @@ def test_send_expiration_notification_with_no_notifications(
 def test_send_rotation_notification(notification_plugin, certificate):
     from lemur.notifications.messaging import send_rotation_notification
 
-    send_rotation_notification(certificate, notification_plugin=notification_plugin)
+    assert send_rotation_notification(certificate, notification_plugin=notification_plugin)
+
+
+@mock_ses
+def test_send_pending_failure_notification(notification_plugin, async_issuer_plugin, pending_certificate):
+    from lemur.notifications.messaging import send_pending_failure_notification
+
+    assert send_pending_failure_notification(pending_certificate, notification_plugin=notification_plugin)

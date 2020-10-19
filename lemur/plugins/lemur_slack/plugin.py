@@ -58,26 +58,19 @@ def create_rotation_attachments(certificate):
         "title": certificate["name"],
         "title_link": create_certificate_url(certificate["name"]),
         "fields": [
+            {"title": "Owner", "value": certificate["owner"], "short": True},
             {
-                {"title": "Owner", "value": certificate["owner"], "short": True},
-                {
-                    "title": "Expires",
-                    "value": arrow.get(certificate["validityEnd"]).format(
-                        "dddd, MMMM D, YYYY"
-                    ),
-                    "short": True,
-                },
-                {
-                    "title": "Replaced By",
-                    "value": len(certificate["replaced"][0]["name"]),
-                    "short": True,
-                },
-                {
-                    "title": "Endpoints Rotated",
-                    "value": len(certificate["endpoints"]),
-                    "short": True,
-                },
-            }
+                "title": "Expires",
+                "value": arrow.get(certificate["validityEnd"]).format(
+                    "dddd, MMMM D, YYYY"
+                ),
+                "short": True,
+            },
+            {
+                "title": "Endpoints Rotated",
+                "value": len(certificate["endpoints"]),
+                "short": True,
+            },
         ],
     }
 
