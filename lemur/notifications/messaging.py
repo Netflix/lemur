@@ -100,7 +100,7 @@ def send_notification(event_type, data, targets, notification):
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     log_data = {
         "function": function,
-        "message": "Sending expiration notification for to targets {}".format(targets),
+        "message": f"Sending expiration notification for to targets {targets}",
         "notification_type": "expiration",
         "certificate_targets": targets,
     }
@@ -109,7 +109,7 @@ def send_notification(event_type, data, targets, notification):
         notification.plugin.send(event_type, data, targets, notification.options)
         status = SUCCESS_METRIC_STATUS
     except Exception as e:
-        log_data["message"] = "Unable to send expiration notification to targets {}".format(targets)
+        log_data["message"] = f"Unable to send expiration notification to targets {targets}"
         current_app.logger.error(log_data, exc_info=True)
         sentry.captureException()
 
@@ -200,7 +200,7 @@ def send_rotation_notification(certificate, notification_plugin=None):
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     log_data = {
         "function": function,
-        "message": "Sending rotation notification for certificate {}".format(certificate.name),
+        "message": f"Sending rotation notification for certificate {certificate.name}",
         "notification_type": "rotation",
         "certificate_name": certificate.name,
         "certificate_owner": certificate.owner,
@@ -217,8 +217,8 @@ def send_rotation_notification(certificate, notification_plugin=None):
         notification_plugin.send("rotation", data, [data["owner"]], [])
         status = SUCCESS_METRIC_STATUS
     except Exception as e:
-        log_data["message"] = "Unable to send rotation notification for certificate {0} to owner {1}" \
-            .format(certificate.name, data["owner"])
+        log_data["message"] = f"Unable to send rotation notification for certificate {certificate.name} " \
+                              f"to owner {data['owner']}"
         current_app.logger.error(log_data, exc_info=True)
         sentry.captureException()
 
@@ -246,7 +246,7 @@ def send_pending_failure_notification(
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     log_data = {
         "function": function,
-        "message": "Sending pending failure notification for pending certificate {}".format(pending_cert.name),
+        "message": f"Sending pending failure notification for pending certificate {pending_cert}"
         "notification_type": "failed",
         "certificate_name": pending_cert.name,
         "certificate_owner": pending_cert.owner,
@@ -269,8 +269,8 @@ def send_pending_failure_notification(
             status = SUCCESS_METRIC_STATUS
         except Exception as e:
             log_data["recipient"] = data["owner"]
-            log_data["message"] = "Unable to send pending failure notification for certificate {0} to owner {1}" \
-                .format(pending_cert.name, pending_cert.owner)
+            log_data["message"] = f"Unable to send pending failure notification for certificate {pending_cert.name} " \
+                                  f"to owner {pending_cert.owner}"
             current_app.logger.error(log_data, exc_info=True)
             sentry.captureException()
 
@@ -282,8 +282,8 @@ def send_pending_failure_notification(
             status = SUCCESS_METRIC_STATUS
         except Exception as e:
             log_data["recipient"] = data["security_email"]
-            log_data["message"] = "Unable to send pending failure notification for certificate {0} to security email " \
-                                  "{1}".format(pending_cert.name, pending_cert.owner)
+            log_data["message"] = f"Unable to send pending failure notification for certificate {pending_cert.name} " \
+                                  f"to security email {pending_cert.owner}"
             current_app.logger.error(log_data, exc_info=True)
             sentry.captureException()
 
@@ -291,7 +291,7 @@ def send_pending_failure_notification(
         "notification",
         "counter",
         1,
-        metric_tags={"status": status, "event_type": "rotation"},
+        metric_tags={"status": status, "event_type": "failed"},
     )
 
     if status == SUCCESS_METRIC_STATUS:
@@ -329,7 +329,7 @@ def needs_notification(certificate):
 
         else:
             raise Exception(
-                "Invalid base unit for expiration interval: {0}".format(unit)
+                f"Invalid base unit for expiration interval: {unit}"
             )
 
         if days == interval:
