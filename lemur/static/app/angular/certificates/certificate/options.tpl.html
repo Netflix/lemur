@@ -32,10 +32,14 @@
         </label>
         <div class="col-sm-10">
           <select class="form-control" ng-model="certificate.keyType"
-                  ng-options="option for option in ['RSA2048', 'RSA4096', 'ECCPRIME192V1', 'ECCPRIME256V1', 'ECCSECP192R1',
-                                                    'ECCSECP224R1', 'ECCSECP256R1', 'ECCSECP384R1', 'ECCSECP521R1', 'ECCSECP256K1',
-                                                    'ECCSECT163K1', 'ECCSECT233K1', 'ECCSECT283K1', 'ECCSECT409K1', 'ECCSECT571K1',
-                                                    'ECCSECT163R2', 'ECCSECT233R1', 'ECCSECT283R1', 'ECCSECT409R1', 'ECCSECT571R2']"
+                  ng-options="option.value as option.name for option in [
+                      {'name': 'RSA-2048', 'value': 'RSA2048'},
+                      {'name': 'RSA-4096', 'value': 'RSA4096'},
+                      {'name': 'ECC-PRIME192V1', 'value': 'ECCPRIME192V1'},
+                      {'name': 'ECC-PRIME256V1', 'value': 'ECCPRIME256V1'},
+                      {'name': 'ECC-SECP384R1', 'value': 'ECCSECP384R1'},
+                      {'name': 'ECC-SECP521R1', 'value': 'ECCSECP521R1'}]"
+
                   ng-init="certificate.keyType = 'RSA2048'"></select>
         </div>
       </div>
