@@ -1,9 +1,16 @@
+from datetime import timedelta
+
+import arrow
+import boto3
 import pytest
 from freezegun import freeze_time
-
-from datetime import timedelta
-import arrow
 from moto import mock_ses
+
+
+@mock_ses
+def verify_sender_email():
+    ses_client = boto3.client("ses", region_name="us-east-1")
+    ses_client.verify_email_identity(EmailAddress="lemur@example.com")
 
 
 def test_needs_notification(app, certificate, notification):
@@ -78,6 +85,7 @@ def test_get_eligible_certificates(app, certificate, notification):
 @mock_ses
 def test_send_expiration_notification(certificate, notification, notification_plugin):
     from lemur.notifications.messaging import send_expiration_notifications
+    verify_sender_email()
 
     certificate.notifications.append(notification)
     certificate.notifications[0].options = [
@@ -105,23 +113,15 @@ def test_send_expiration_notification_with_no_notifications(
 
 @mock_ses
 def test_send_rotation_notification(notification_plugin, certificate):
-    from lemur.tests.factories import UserFactory
-    from lemur.tests.factories import CertificateFactory
     from lemur.notifications.messaging import send_rotation_notification
+    verify_sender_email()
 
-    user = UserFactory(email="jschladen@netflix.com")
-
-    new_cert = CertificateFactory(user=user)
-    assert send_rotation_notification(new_cert)
+    assert send_rotation_notification(certificate)
 
 
 @mock_ses
-def test_send_pending_failure_notification(certificate, endpoint):
-    from lemur.tests.factories import UserFactory
-    from lemur.tests.factories import PendingCertificateFactory
+def test_send_pending_failure_notification(notification_plugin, async_issuer_plugin, pending_certificate):
     from lemur.notifications.messaging import send_pending_failure_notification
+    verify_sender_email()
 
-    user = UserFactory(email="jschladen@netflix.com")
-
-    pending_cert = PendingCertificateFactory(user=user)
-    assert send_pending_failure_notification(pending_cert)
+    assert send_pending_failure_notification(pending_certificate)

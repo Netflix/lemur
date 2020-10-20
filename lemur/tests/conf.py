@@ -46,7 +46,7 @@ LEMUR_ALLOWED_DOMAINS = [
 
 # Lemur currently only supports SES for sending email, this address
 # needs to be verified
-LEMUR_EMAIL = ""
+LEMUR_EMAIL = "lemur@example.com"
 LEMUR_SECURITY_TEAM_EMAIL = ["security@example.com"]
 
 LEMUR_HOSTNAME = "lemur.example.com"

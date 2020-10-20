@@ -8,6 +8,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
+import sys
 from collections import defaultdict
 from datetime import timedelta
 from itertools import groupby
@@ -36,16 +37,12 @@ def get_certificates(exclude=None):
     now = arrow.utcnow()
     max = now + timedelta(days=90)
 
-    print("ALPACA: Checking for certs not after {0} with notify enabled and not expired".format(max))
-
     q = (
         database.db.session.query(Certificate)
         .filter(Certificate.not_after <= max)
         .filter(Certificate.notify == True)
         .filter(Certificate.expired == False)
     )  # noqa
-
-    print("ALPACA: Excluding {0}".format(exclude))
 
     exclude_conditions = []
     if exclude:
@@ -60,8 +57,6 @@ def get_certificates(exclude=None):
         if needs_notification(c):
             certs.append(c)
 
-    print("ALPACA: Found {0} eligible certs".format(len(certs)))
-
     return certs
 
 
@@ -75,26 +70,20 @@ def get_eligible_certificates(exclude=None):
     certificates = defaultdict(dict)
     certs = get_certificates(exclude=exclude)
 
-    print("ALPACA: Found {0} certificates to check for notifications".format(len(certs)))
-
     # group by owner
     for owner, items in groupby(certs, lambda x: x.owner):
         notification_groups = []
 
         for certificate in items:
             notifications = needs_notification(certificate)
-            print("ALPACA: Considering sending {0} notifications for cert {1}".format(len(notifications), certificate))
 
             if notifications:
                 for notification in notifications:
-                    print("ALPACA: Will send notification {0} for certificate {1}".format(notification, certificate))
                     notification_groups.append((notification, certificate))
 
         # group by notification
         for notification, items in groupby(notification_groups, lambda x: x[0].label):
             certificates[owner][notification] = list(items)
-
-    print("ALPACA: Certificates that need notifications: {0}".format(certificates))
 
     return certificates
 
@@ -109,15 +98,20 @@ def send_plugin_notification(event_type, data, recipients, notification):
     :param notification:
     :return:
     """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    log_data = {
+        "function": function,
+        "message": f"Sending expiration notification for to recipients {recipients}",
+        "notification_type": "expiration",
+        "certificate_targets": recipients,
+    }
     status = FAILURE_METRIC_STATUS
     try:
-        print("ALPACA: Trying to send notification {0} (plugin: {1})".format(notification, notification.plugin))
         notification.plugin.send(event_type, data, recipients, notification.options)
         status = SUCCESS_METRIC_STATUS
     except Exception as e:
-        current_app.logger.error(
-            "Unable to send notification {}.".format(notification), exc_info=True
-        )
+        log_data["message"] = f"Unable to send expiration notification to recipients {recipients}"
+        current_app.logger.error(log_data, exc_info=True)
         sentry.captureException()
 
     metrics.send(
@@ -157,8 +151,6 @@ def send_expiration_notifications(exclude):
                 notification_data.append(cert_data)
                 security_data.append(cert_data)
 
-            print("ALPACA: Sending owner notification to {0} for certificate {1}. Data: {2}".format(owner, certificates, notification_data))
-
             if send_default_notification(
                     "expiration", notification_data, [owner], notification.options
             ):
@@ -166,9 +158,8 @@ def send_expiration_notifications(exclude):
             else:
                 failure += 1
 
-            recipients = notification.plugin.filter_recipients(security_email + [owner], notification.options)
+            recipients = notification.plugin.filter_recipients(notification.options, security_email + [owner])
 
-            print("ALPACA: Sending plugin notification {0} for certificate {1} to recipients {2}".format(notification, certificates, recipients))
             if send_plugin_notification(
                 "expiration",
                 notification_data,
@@ -179,7 +170,6 @@ def send_expiration_notifications(exclude):
             else:
                 failure += 1
 
-            print("ALPACA: Sending security notification to {0}".format(security_email))
             if send_default_notification(
                 "expiration", security_data, security_email, notification.options
             ):
@@ -201,6 +191,12 @@ def send_default_notification(notification_type, data, targets, notification_opt
     :param notification_options:
     :return:
     """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    log_data = {
+        "function": function,
+        "message": f"Sending notification for certificate data {data}",
+        "notification_type": notification_type,
+    }
     status = FAILURE_METRIC_STATUS
     notification_plugin = plugins.get(
         current_app.config.get("LEMUR_DEFAULT_NOTIFICATION_PLUGIN", "email-notification")
@@ -211,9 +207,9 @@ def send_default_notification(notification_type, data, targets, notification_opt
         notification_plugin.send(notification_type, data, targets, notification_options)
         status = SUCCESS_METRIC_STATUS
     except Exception as e:
-        current_app.logger.error(
-            "Unable to send notification to {}.".format(targets), exc_info=True
-        )
+        log_data["message"] = f"Unable to send {notification_type} notification for certificate data {data} " \
+                              f"to target {targets}"
+        current_app.logger.error(log_data, exc_info=True)
         sentry.captureException()
 
     metrics.send(
@@ -272,11 +268,7 @@ def needs_notification(certificate):
 
     notifications = []
 
-    print("ALPACA: Considering if cert {0} needs notifications".format(certificate))
-    print("ALPACA: Notifications for {0}: {1}".format(certificate, certificate.notifications))
-
     for notification in certificate.notifications:
-        print("ALPACA: Considering if cert {0} needs notification {1}".format(certificate, notification))
         if not notification.active or not notification.options:
             continue
 
@@ -294,11 +286,10 @@ def needs_notification(certificate):
 
         else:
             raise Exception(
-                "Invalid base unit for expiration interval: {0}".format(unit)
+                f"Invalid base unit for expiration interval: {unit}"
             )
-
-        print("ALPACA: Considering if cert {0} is applicable for notification {1}: {2} days remaining, configured as "
-              "{3} days".format(certificate, notification, days, interval))
+        print(f"Does cert {certificate.name} need a notification {notification.label}? Actual: {days}, "
+              f"configured: {interval}")  # TODO REMOVE
         if days == interval:
             notifications.append(notification)
     return notifications

@@ -155,17 +155,12 @@ Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create c
 
         LEMUR_ENCRYPTION_KEYS = ['1YeftooSbxCiX2zo8m1lXtpvQjy27smZcUUaGmffhMY=', 'LAfQt6yrkLqOK5lwpvQcT4jf2zdeTQJV1uYeh9coT5s=']
 
-.. data:: PUBLIC_CA_AUTHORITY_NAMES
-    :noindex:
-        A list of public issuers which would be checked against to determine whether limit of max validity of 397 days
-        should be applied to the certificate. Configure public CA authority names in this list to enforce validity check.
-        This is an optional setting. Using this will allow the sanity check as mentioned. The name check is a case-insensitive
-        string comparision.
 
 .. data:: PUBLIC_CA_MAX_VALIDITY_DAYS
     :noindex:
-        Use this config to override the limit of 397 days of validity for certificates issued by public issuers configured
-        using PUBLIC_CA_AUTHORITY_NAMES. Below example overrides the default validity of 397 days and sets it to 365 days.
+        Use this config to override the limit of 397 days of validity for certificates issued by CA/Browser compliant authorities.
+        The authorities with cab_compliant option set to true will use this config. The example below overrides the default validity
+        of 397 days and sets it to 365 days.
 
     ::
 
@@ -175,8 +170,8 @@ Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create c
 .. data:: DEFAULT_VALIDITY_DAYS
     :noindex:
         Use this config to override the default validity of 365 days for certificates offered through Lemur UI. Any CA which
-        is not listed in PUBLIC_CA_AUTHORITY_NAMES will be using this value as default validity to be displayed on UI. Please
-        note that this config is used for cert issuance only through Lemur UI. Below example overrides the default validity
+        is not CA/Browser Forum compliant will be using this value as default validity to be displayed on UI. Please
+        note that this config is used for cert issuance only through Lemur UI. The example below overrides the default validity
         of 365 days and sets it to 1095 days (3 years).
 
     ::

@@ -434,7 +434,7 @@ class SNSNotificationPlugin(ExpirationNotificationPlugin):
             "helpMessage": "Region in which the SNS topic is located, e.g. \"us-east-1\"",
         },
         {
-            "name": "Topic Name",
+            "name": "topicName",
             "type": "str",
             "required": True,
             # base topic name is 1-256 characters (alphanumeric plus underscore and hyphen)
@@ -449,13 +449,12 @@ class SNSNotificationPlugin(ExpirationNotificationPlugin):
         plugin configuration, and can't reasonably be changed dynamically.
         """
 
-        topic_arn = "arn:aws:sns:{0}:{1}:{2}".format(self.get_option("region", options),
-                                                     self.get_option("accountNumber", options),
-                                                     self.get_option("Topic Name", options))
+        topic_arn = f"arn:aws:sns:{self.get_option('region', options)}:" \
+                    f"{self.get_option('accountNumber', options)}:" \
+                    f"{self.get_option('topicName', options)}"
 
-        current_app.logger.debug("Publishing {0} notification to topic {1}".format(notification_type, topic_arn))
-        print("ALPACA: Trying to send {0} SNS notification to topic {1}".format(notification_type, topic_arn))
+        current_app.logger.debug(f"Publishing {notification_type} notification to topic {topic_arn}")
         try:
             sns.publish(topic_arn, message, notification_type, region_name=self.get_option("region", options))
         except Exception:
-            current_app.logger.exception("Error publishing {0} notification to topic {1}".format(notification_type, topic_arn))
+            current_app.logger.exception(f"Error publishing {notification_type} notification to topic {topic_arn}")

@@ -190,7 +190,7 @@ angular.module('lemur')
     function populateValidityDateAsPerDefault(certificate) {
       // calculate start and end date as per default validity
       let startDate = new Date(), endDate = new Date();
-      endDate.setDate(startDate.getDate() + certificate.authority.authorityCertificate.defaultValidityDays);
+      endDate.setDate(startDate.getDate() + certificate.authority.defaultValidityDays);
       certificate.validityStart = startDate;
       certificate.validityEnd = endDate;
     }
@@ -359,7 +359,7 @@ angular.module('lemur')
     function populateValidityDateAsPerDefault(certificate) {
       // calculate start and end date as per default validity
       let startDate = new Date(), endDate = new Date();
-      endDate.setDate(startDate.getDate() + certificate.authority.authorityCertificate.defaultValidityDays);
+      endDate.setDate(startDate.getDate() + certificate.authority.defaultValidityDays);
       certificate.validityStart = startDate;
       certificate.validityEnd = endDate;
     }

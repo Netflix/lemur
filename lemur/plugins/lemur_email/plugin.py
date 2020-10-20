@@ -20,14 +20,16 @@ from lemur.plugins.lemur_email.templates.config import env
 from lemur.plugins.utils import get_plugin_option
 
 
-def render_html(template_name, message):
+def render_html(template_name, options, certificates):
     """
     Renders the html for our email notification.
 
     :param template_name:
-    :param message:
+    :param options:
+    :param certificates:
     :return:
     """
+    message = {"options": options, "certificates": certificates}
     template = env.get_template("{}.html".format(template_name))
     return template.render(
         dict(message=message, hostname=current_app.config.get("LEMUR_HOSTNAME"))
@@ -101,25 +103,21 @@ class EmailNotificationPlugin(ExpirationNotificationPlugin):
 
         subject = "Lemur: {0} Notification".format(notification_type.capitalize())
 
-        data = {"options": options, "certificates": message}
-        body = render_html(notification_type, data)
+        body = render_html(notification_type, options, message)
 
         s_type = current_app.config.get("LEMUR_EMAIL_SENDER", "ses").lower()
 
-        current_app.logger.info("ALPACA: Would send an email to {0} with subject \"{1}\" here".format(targets, subject))
+        print(f"Would send {s_type} email to {targets}: {subject}")
 
-        # if s_type == "ses":
-        #     send_via_ses(subject, body, targets)
-        #
-        # elif s_type == "smtp":
-        #     send_via_smtp(subject, body, targets)
+#        if s_type == "ses":
+ #           send_via_ses(subject, body, targets)
+
+ #       elif s_type == "smtp":
+ #           send_via_smtp(subject, body, targets)
 
     @staticmethod
-    def filter_recipients(options, excluded_recipients):
-        print("ALPACA: Getting recipients for notification {0}".format(options))
+    def filter_recipients(options, excluded_recipients, **kwargs):
         notification_recipients = get_plugin_option("recipients", options)
-        print(
-            "ALPACA: Sending certificate notifications to recipients {0}".format(notification_recipients.split(",")))
         if notification_recipients:
             notification_recipients = notification_recipients.split(",")
             # removing owner and security_email from notification_recipient

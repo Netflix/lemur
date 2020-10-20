@@ -14,7 +14,6 @@ from flask import current_app
 
 def publish(topic_arn, certificates, notification_type, **kwargs):
     sns_client = boto3.client("sns", **kwargs)
-    print("ALPACA: SNS client: {0}, certificates: {1}".format(sns_client, certificates))
     message_ids = {}
     for certificate in certificates:
         message_ids[certificate["name"]] = publish_single(sns_client, topic_arn, certificate, notification_type)
@@ -30,11 +29,9 @@ def publish_single(sns_client, topic_arn, certificate, notification_type):
 
     response_code = response["ResponseMetadata"]["HTTPStatusCode"]
     if response_code != 200:
-        raise Exception("Failed to publish notification to SNS, response code was {}".format(response_code))
+        raise Exception(f"Failed to publish notification to SNS, response code was {response_code}")
 
-    current_app.logger.debug(
-        "AWS SNS message published to topic [{0}]: [{1}]".format(topic_arn, response)
-    )
+    current_app.logger.debug(f"AWS SNS message published to topic [{topic_arn}]: [{response}]")
 
     return response["MessageId"]
 

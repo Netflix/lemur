@@ -318,20 +318,6 @@ class Certificate(db.Model):
         return self.not_after - self.not_before
 
     @property
-    def max_issuance_days(self):
-        public_CA = current_app.config.get("PUBLIC_CA_AUTHORITY_NAMES", [])
-        if self.name.lower() in [ca.lower() for ca in public_CA]:
-            return current_app.config.get("PUBLIC_CA_MAX_VALIDITY_DAYS", 397)
-
-    @property
-    def default_validity_days(self):
-        public_CA = current_app.config.get("PUBLIC_CA_AUTHORITY_NAMES", [])
-        if self.name.lower() in [ca.lower() for ca in public_CA]:
-            return current_app.config.get("PUBLIC_CA_MAX_VALIDITY_DAYS", 397)
-
-        return current_app.config.get("DEFAULT_VALIDITY_DAYS", 365)   # 1 year default
-
-    @property
     def subject(self):
         return self.parsed_cert.subject
 
