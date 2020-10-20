@@ -107,6 +107,7 @@ def send_plugin_notification(event_type, data, recipients, notification):
     }
     status = FAILURE_METRIC_STATUS
     try:
+        current_app.logger.debug(log_data)
         notification.plugin.send(event_type, data, recipients, notification.options)
         status = SUCCESS_METRIC_STATUS
     except Exception as e:
@@ -203,6 +204,7 @@ def send_default_notification(notification_type, data, targets, notification_opt
     )
 
     try:
+        current_app.logger.debug(log_data)
         # we need the notification.options here because the email templates utilize the interval/unit info
         notification_plugin.send(notification_type, data, targets, notification_options)
         status = SUCCESS_METRIC_STATUS
@@ -288,8 +290,6 @@ def needs_notification(certificate):
             raise Exception(
                 f"Invalid base unit for expiration interval: {unit}"
             )
-        print(f"Does cert {certificate.name} need a notification {notification.label}? Actual: {days}, "
-              f"configured: {interval}")  # TODO REMOVE
         if days == interval:
             notifications.append(notification)
     return notifications

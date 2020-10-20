@@ -107,13 +107,11 @@ class EmailNotificationPlugin(ExpirationNotificationPlugin):
 
         s_type = current_app.config.get("LEMUR_EMAIL_SENDER", "ses").lower()
 
-        print(f"Would send {s_type} email to {targets}: {subject}")
+        if s_type == "ses":
+            send_via_ses(subject, body, targets)
 
-#        if s_type == "ses":
- #           send_via_ses(subject, body, targets)
-
- #       elif s_type == "smtp":
- #           send_via_smtp(subject, body, targets)
+        elif s_type == "smtp":
+            send_via_smtp(subject, body, targets)
 
     @staticmethod
     def filter_recipients(options, excluded_recipients, **kwargs):

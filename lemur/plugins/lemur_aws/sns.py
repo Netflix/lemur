@@ -3,7 +3,7 @@
     :platform: Unix
     :copyright: (c) 2020 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
-.. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
+.. moduleauthor:: Jasmine Schladen <jschladen@netflix.com>
 """
 import json
 

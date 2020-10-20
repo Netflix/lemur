@@ -1462,7 +1462,7 @@ AWS (Destination)
     Uses AWS IAM as a destination for Lemur generated certificates. Support a multi-account deployment.
 
 
-AWS (Notification)
+AWS (SNS Notification)
 -----
 
 :Authors:

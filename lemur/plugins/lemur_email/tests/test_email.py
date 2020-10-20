@@ -81,10 +81,10 @@ def test_send_pending_failure_notification(user, pending_certificate, async_issu
 def test_filter_recipients(certificate, endpoint):
     from lemur.plugins.lemur_email.plugin import EmailNotificationPlugin
 
-    options = [{"name": "recipients", "value": "security@netflix.com,bob@netflix.com,joe@netflix.com"}]
-    assert EmailNotificationPlugin.filter_recipients(options, []) == ["security@netflix.com", "bob@netflix.com",
-                                                                      "joe@netflix.com"]
-    assert EmailNotificationPlugin.filter_recipients(options, ["security@netflix.com"]) == ["bob@netflix.com",
-                                                                                            "joe@netflix.com"]
-    assert EmailNotificationPlugin.filter_recipients(options, ["security@netflix.com", "bob@netflix.com",
-                                                               "joe@netflix.com"]) == []
+    options = [{"name": "recipients", "value": "security@example.com,bob@example.com,joe@example.com"}]
+    assert EmailNotificationPlugin.filter_recipients(options, []) == ["security@example.com", "bob@example.com",
+                                                                      "joe@example.com"]
+    assert EmailNotificationPlugin.filter_recipients(options, ["security@example.com"]) == ["bob@example.com",
+                                                                                            "joe@example.com"]
+    assert EmailNotificationPlugin.filter_recipients(options, ["security@example.com", "bob@example.com",
+                                                               "joe@example.com"]) == []
