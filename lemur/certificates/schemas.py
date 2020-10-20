@@ -353,6 +353,12 @@ class CertificateOutputSchema(LemurOutputSchema):
                 data.pop("organization", None)
                 data.pop("organizational_unit", None)
 
+        # Removing optional fields if None, else it complains in de-serialization
+        if "location" in data and data["location"] is None:
+            data.pop("location")
+        if "organizational_unit" in data and data["organizational_unit"] is None:
+            data.pop("organizational_unit")
+
 
 class CertificateShortOutputSchema(LemurOutputSchema):
     id = fields.Integer()
