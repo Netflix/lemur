@@ -340,6 +340,8 @@ class CertificateOutputSchema(LemurOutputSchema):
 
     @post_dump
     def handle_subject_details(self, data):
+        subject_details = ["country", "state", "location", "organization", "organizational_unit"]
+
         # Remove subject details if authority is CA/Browser Forum compliant. The code will use default set of values in that case.
         # If CA/Browser Forum compliance of an authority is unknown (None), it is safe to fallback to default values. Thus below
         # condition checks for 'not False' ==> 'True or None'
@@ -347,11 +349,13 @@ class CertificateOutputSchema(LemurOutputSchema):
             is_cab_compliant = data.get("authority").get("isCabCompliant")
 
             if is_cab_compliant is not False:
-                data.pop("country", None)
-                data.pop("state", None)
-                data.pop("location", None)
-                data.pop("organization", None)
-                data.pop("organizational_unit", None)
+                for field in subject_details:
+                    data.pop(field, None)
+
+        # Removing subject fields if None, else it complains in de-serialization
+        for field in subject_details:
+            if field in data and data[field] is None:
+                data.pop(field)
 
 
 class CertificateShortOutputSchema(LemurOutputSchema):
