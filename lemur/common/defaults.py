@@ -95,9 +95,11 @@ def organization(cert):
     :return:
     """
     try:
-        return cert.subject.get_attributes_for_oid(x509.OID_ORGANIZATION_NAME)[
-            0
-        ].value.strip()
+        o = cert.subject.get_attributes_for_oid(x509.OID_ORGANIZATION_NAME)
+        if not o:
+            return None
+
+        return o[0].value.strip()
     except Exception as e:
         sentry.captureException()
         current_app.logger.error("Unable to get organization! {0}".format(e))
@@ -127,9 +129,11 @@ def country(cert):
     :return:
     """
     try:
-        return cert.subject.get_attributes_for_oid(x509.OID_COUNTRY_NAME)[
-            0
-        ].value.strip()
+        c = cert.subject.get_attributes_for_oid(x509.OID_COUNTRY_NAME)
+        if not c:
+            return None
+
+        return c[0].value.strip()
     except Exception as e:
         sentry.captureException()
         current_app.logger.error("Unable to get country! {0}".format(e))
@@ -142,9 +146,11 @@ def state(cert):
     :return:
     """
     try:
-        return cert.subject.get_attributes_for_oid(x509.OID_STATE_OR_PROVINCE_NAME)[
-            0
-        ].value.strip()
+        s = cert.subject.get_attributes_for_oid(x509.OID_STATE_OR_PROVINCE_NAME)
+        if not s:
+            return None
+
+        return s[0].value.strip()
     except Exception as e:
         sentry.captureException()
         current_app.logger.error("Unable to get state! {0}".format(e))
