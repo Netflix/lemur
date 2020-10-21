@@ -110,9 +110,11 @@ def organizational_unit(cert):
     :return:
     """
     try:
-        return cert.subject.get_attributes_for_oid(x509.OID_ORGANIZATIONAL_UNIT_NAME)[
-            0
-        ].value.strip()
+        ou = cert.subject.get_attributes_for_oid(x509.OID_ORGANIZATIONAL_UNIT_NAME)
+        if not ou:
+            return None
+
+        return ou[0].value.strip()
     except Exception as e:
         sentry.captureException()
         current_app.logger.error("Unable to get organizational unit! {0}".format(e))
@@ -155,9 +157,11 @@ def location(cert):
     :return:
     """
     try:
-        return cert.subject.get_attributes_for_oid(x509.OID_LOCALITY_NAME)[
-            0
-        ].value.strip()
+        loc = cert.subject.get_attributes_for_oid(x509.OID_LOCALITY_NAME)
+        if not loc:
+            return None
+
+        return loc[0].value.strip()
     except Exception as e:
         sentry.captureException()
         current_app.logger.error("Unable to get location! {0}".format(e))
