@@ -14,11 +14,15 @@ import OpenSSL
 from acme import challenges
 from flask import current_app
 
-from lemur.exceptions import LemurException
+from lemur.dns_providers import service as dns_provider_service
+from lemur.extensions import metrics, sentry
+
+from lemur.authorizations import service as authorization_service
+from lemur.exceptions import LemurException, InvalidConfiguration
 from lemur.plugins.base import plugins
 from lemur.destinations import service as destination_service
 from lemur.destinations.models import Destination
-from lemur.plugins.lemur_acme.acme_handlers import AcmeHandler
+from lemur.plugins.lemur_acme.acme_handlers import AcmeHandler, AcmeDnsHandler
 
 
 class AcmeChallengeMissmatchError(LemurException):
@@ -53,10 +57,11 @@ class AcmeChallenge(object):
         """
         raise NotImplementedError
 
-    def cleanup(self, challenge, validation_target):
+    def cleanup(self, challenge, acme_client, validation_target):
         """
         Ideally the challenge should be cleaned up, after the validation is done
         :param challenge: Needed to identify the challenge to be removed
+        :param acme_client: an already bootstrapped acme_client, to avoid passing all issuer_options and so on
         :param validation_target: Needed to remove the validation
         """
         raise NotImplementedError
@@ -73,9 +78,9 @@ class AcmeHttpChallenge(AcmeChallenge):
         :param issuer_options:
         :return: :raise Exception:
         """
-        acme = AcmeHandler()
+        self.acme = AcmeHandler()
         authority = issuer_options.get("authority")
-        acme_client, registration = acme.setup_acme_client(authority)
+        acme_client, registration = self.acme.setup_acme_client(authority)
 
         orderr = acme_client.new_order(csr)
 
@@ -149,15 +154,101 @@ class AcmeHttpChallenge(AcmeChallenge):
 
         return response
 
-    def cleanup(self, challenge, validation_target):
+    def cleanup(self, challenge, acme_client, validation_target):
         pass
 
 
 class AcmeDnsChallenge(AcmeChallenge):
     challengeType = challenges.DNS01
 
+    def __init__(self):
+        self.dns_providers_for_domain = {}
+        try:
+            self.all_dns_providers = dns_provider_service.get_all_dns_providers()
+        except Exception as e:
+            metrics.send("AcmeHandler_init_error", "counter", 1)
+            sentry.captureException()
+            current_app.logger.error(f"Unable to fetch DNS Providers: {e}")
+            self.all_dns_providers = []
+
+    def create_certificate(self, csr, issuer_options):
+        """
+        Creates an ACME certificate.
+
+        :param csr:
+        :param issuer_options:
+        :return: :raise Exception:
+        """
+        self.acme = AcmeDnsHandler()
+        authority = issuer_options.get("authority")
+        create_immediately = issuer_options.get("create_immediately", False)
+        acme_client, registration = self.acme.setup_acme_client(authority)
+        dns_provider = issuer_options.get("dns_provider", {})
+
+        if dns_provider:
+            dns_provider_options = dns_provider.options
+            credentials = json.loads(dns_provider.credentials)
+            current_app.logger.debug(
+                "Using DNS provider: {0}".format(dns_provider.provider_type)
+            )
+            dns_provider_plugin = __import__(
+                dns_provider.provider_type, globals(), locals(), [], 1
+            )
+            account_number = credentials.get("account_id")
+            provider_type = dns_provider.provider_type
+            if provider_type == "route53" and not account_number:
+                error = "Route53 DNS Provider {} does not have an account number configured.".format(
+                    dns_provider.name
+                )
+                current_app.logger.error(error)
+                raise InvalidConfiguration(error)
+        else:
+            dns_provider = {}
+            dns_provider_options = None
+            account_number = None
+            provider_type = None
+
+        domains = self.acme.get_domains(issuer_options)
+        if not create_immediately:
+            # Create pending authorizations that we'll need to do the creation
+            dns_authorization = authorization_service.create(
+                account_number, domains, provider_type
+            )
+            # Return id of the DNS Authorization
+            return None, None, dns_authorization.id
+
+        authorizations = self.acme.get_authorizations(
+            acme_client,
+            account_number,
+            domains,
+            dns_provider_plugin,
+            dns_provider_options,
+        )
+        self.acme.finalize_authorizations(
+            acme_client,
+            account_number,
+            dns_provider_plugin,
+            authorizations,
+            dns_provider_options,
+        )
+        pem_certificate, pem_certificate_chain = self.acme.request_certificate(
+            acme_client, authorizations, csr
+        )
+        # TODO add external ID (if possible)
+        return pem_certificate, pem_certificate_chain, None
+
     def deploy(self, challenge, acme_client, validation_target):
         pass
 
-    def cleanup(self, challenge, validation_target):
-        pass
+    def cleanup(self, authorizations, acme_client, validation_target):
+        """
+        Best effort attempt to delete DNS challenges that may not have been deleted previously. This is usually called
+        on an exception
+
+        :param authorizations: all the authorizations to be cleaned up
+        :param acme_client: an already bootstrapped acme_client, to avoid passing all issuer_options and so on
+        :param validation_target: Unused right now
+        :return:
+        """
+        acme = AcmeDnsHandler()
+        acme.cleanup_dns_challenges(acme_client, authorizations)

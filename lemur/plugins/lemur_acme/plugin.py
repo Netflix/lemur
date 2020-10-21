@@ -11,7 +11,6 @@
 .. moduleauthor:: Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
 .. moduleauthor:: Curtis Castrapel <ccastrapel@netflix.com>
 """
-import json
 
 import OpenSSL.crypto
 import josepy as jose
@@ -23,14 +22,13 @@ from flask import current_app
 
 from lemur.authorizations import service as authorization_service
 from lemur.dns_providers import service as dns_provider_service
-from lemur.exceptions import InvalidConfiguration, UnknownProvider
+from lemur.exceptions import InvalidConfiguration
 from lemur.extensions import metrics, sentry
 
 from lemur.plugins import lemur_acme as acme
 from lemur.plugins.bases import IssuerPlugin
-from lemur.plugins.lemur_acme import cloudflare, dyn, route53, ultradns, powerdns
 from lemur.plugins.lemur_acme.acme_handlers import AcmeHandler, AcmeDnsHandler
-from lemur.plugins.lemur_acme.challenge_types import AcmeHttpChallenge
+from lemur.plugins.lemur_acme.challenge_types import AcmeHttpChallenge, AcmeDnsChallenge
 
 
 class ACMEIssuerPlugin(IssuerPlugin):
@@ -84,28 +82,6 @@ class ACMEIssuerPlugin(IssuerPlugin):
     def __init__(self, *args, **kwargs):
         super(ACMEIssuerPlugin, self).__init__(*args, **kwargs)
 
-    def get_dns_provider(self, type):
-        self.acme = AcmeDnsHandler()
-
-        provider_types = {
-            "cloudflare": cloudflare,
-            "dyn": dyn,
-            "route53": route53,
-            "ultradns": ultradns,
-            "powerdns": powerdns
-        }
-        provider = provider_types.get(type)
-        if not provider:
-            raise UnknownProvider("No such DNS provider: {}".format(type))
-        return provider
-
-    def get_all_zones(self, dns_provider):
-        self.acme = AcmeDnsHandler()
-        dns_provider_options = json.loads(dns_provider.credentials)
-        account_number = dns_provider_options.get("account_id")
-        dns_provider_plugin = self.get_dns_provider(dns_provider.provider_type)
-        return dns_provider_plugin.get_zones(account_number=account_number)
-
     def get_ordered_certificate(self, pending_cert):
         self.acme = AcmeDnsHandler()
         acme_client, registration = self.acme.setup_acme_client(pending_cert.authority)
@@ -154,6 +130,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
 
     def get_ordered_certificates(self, pending_certs):
         self.acme = AcmeDnsHandler()
+        self.acme_dns_challenge = AcmeDnsChallenge()
         pending = []
         certs = []
         for pending_cert in pending_certs:
@@ -250,76 +227,23 @@ class ACMEIssuerPlugin(IssuerPlugin):
                     }
                 )
                 # Ensure DNS records get deleted
-                self.acme.cleanup_dns_challenges(
-                    entry["acme_client"], entry["authorizations"]
+                self.acme_dns_challenge.cleanup(
+                    entry["authorizations"], entry["acme_client"]
                 )
         return certs
 
     def create_certificate(self, csr, issuer_options):
         """
-        Creates an ACME certificate.
+        Creates an ACME certificate using the DNS-01 challenge.
 
         :param csr:
         :param issuer_options:
         :return: :raise Exception:
         """
-        self.acme = AcmeDnsHandler()
-        authority = issuer_options.get("authority")
-        create_immediately = issuer_options.get("create_immediately", False)
-        acme_client, registration = self.acme.setup_acme_client(authority)
-        dns_provider = issuer_options.get("dns_provider", {})
+        acme_dns_challenge = AcmeDnsChallenge()
 
-        if dns_provider:
-            dns_provider_options = dns_provider.options
-            credentials = json.loads(dns_provider.credentials)
-            current_app.logger.debug(
-                "Using DNS provider: {0}".format(dns_provider.provider_type)
-            )
-            dns_provider_plugin = __import__(
-                dns_provider.provider_type, globals(), locals(), [], 1
-            )
-            account_number = credentials.get("account_id")
-            provider_type = dns_provider.provider_type
-            if provider_type == "route53" and not account_number:
-                error = "Route53 DNS Provider {} does not have an account number configured.".format(
-                    dns_provider.name
-                )
-                current_app.logger.error(error)
-                raise InvalidConfiguration(error)
-        else:
-            dns_provider = {}
-            dns_provider_options = None
-            account_number = None
-            provider_type = None
+        return acme_dns_challenge.create_certificate(csr, issuer_options)
 
-        domains = self.acme.get_domains(issuer_options)
-        if not create_immediately:
-            # Create pending authorizations that we'll need to do the creation
-            dns_authorization = authorization_service.create(
-                account_number, domains, provider_type
-            )
-            # Return id of the DNS Authorization
-            return None, None, dns_authorization.id
-
-        authorizations = self.acme.get_authorizations(
-            acme_client,
-            account_number,
-            domains,
-            dns_provider_plugin,
-            dns_provider_options,
-        )
-        self.acme.finalize_authorizations(
-            acme_client,
-            account_number,
-            dns_provider_plugin,
-            authorizations,
-            dns_provider_options,
-        )
-        pem_certificate, pem_certificate_chain = self.acme.request_certificate(
-            acme_client, authorizations, csr
-        )
-        # TODO add external ID (if possible)
-        return pem_certificate, pem_certificate_chain, None
 
     @staticmethod
     def create_authority(options):
