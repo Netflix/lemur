@@ -35,11 +35,11 @@ from lemur.common import utils
 import time
 import datetime
 
-log_file = open('db_upgrade.log', 'a')
-
+import logging
+log = logging.getLogger(__name__)
 
 def upgrade():
-    log_file.write("\n*** Starting new run(%s) ***\n" % datetime.datetime.now())
+    log.info("\n*** Starting new run(%s) ***\n" % datetime.datetime.now())
     start_time = time.time()
 
     # Update RSA keys using the key length information
@@ -50,8 +50,7 @@ def upgrade():
     # Process remaining certificates. Though below method does not make any assumptions, most of the remaining ones should be ECC certs.
     update_key_type()
 
-    log_file.write("--- Total %s seconds ---\n" % (time.time() - start_time))
-    log_file.close()
+    log.info("--- Total %s seconds ---\n" % (time.time() - start_time))
 
 
 def downgrade():
@@ -69,18 +68,18 @@ def downgrade():
 
 
 def update_key_type_rsa(bits):
-    log_file.write("Processing certificate with key type RSA %s\n" % bits)
+    log.info("Processing certificate with key type RSA %s\n" % bits)
 
     stmt = text(
         f"update certificates set key_type='RSA{bits}' where bits={bits} and not_after > CURRENT_DATE - 31 and key_type is null"
     )
-    log_file.write("Query: %s\n" % stmt)
+    log.info("Query: %s\n" % stmt)
 
     start_time = time.time()
     op.execute(stmt)
     commit()
 
-    log_file.write("--- %s seconds ---\n" % (time.time() - start_time))
+    log.info("--- %s seconds ---\n" % (time.time() - start_time))
 
 
 def update_key_type():
@@ -95,9 +94,9 @@ def update_key_type():
         try:
             cert_key_type = utils.get_key_type_from_certificate(body)
         except ValueError as e:
-            log_file.write("Error in processing certificate - ID: %s Error: %s \n" % (cert_id, str(e)))
+            log.info("Error in processing certificate - ID: %s Error: %s \n" % (cert_id, str(e)))
         else:
-            log_file.write("Processing certificate - ID: %s key_type: %s\n" % (cert_id, cert_key_type))
+            log.info("Processing certificate - ID: %s key_type: %s\n" % (cert_id, cert_key_type))
             stmt = text(
                 "update certificates set key_type=:key_type where id=:id"
             )
@@ -106,7 +105,7 @@ def update_key_type():
 
             commit()
 
-    log_file.write("--- %s seconds ---\n" % (time.time() - start_time))
+    log.info("--- %s seconds ---\n" % (time.time() - start_time))
 
 
 def commit():
