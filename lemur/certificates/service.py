@@ -359,7 +359,12 @@ def create(**kwargs):
     try:
         cert_body, private_key, cert_chain, external_id, csr = mint(**kwargs)
     except Exception:
-        current_app.logger.error("Exception minting certificate", exc_info=True)
+        log_data = {
+            "message": "Exception minting certificate",
+            "issuer": kwargs["authority"].name,
+            "cn": kwargs["common_name"],
+        }
+        current_app.logger.error(log_data, exc_info=True)
         sentry.captureException()
         raise
     kwargs["body"] = cert_body
