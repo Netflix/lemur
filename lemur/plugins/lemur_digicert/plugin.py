@@ -37,7 +37,13 @@ def log_status_code(r, *args, **kwargs):
     :param kwargs:
     :return:
     """
+    log_data = {
+        "reason": (r.reason if r.reason else ""),
+        "status_code": r.status_code,
+        "url": (r.url if r.url else ""),
+    }
     metrics.send("digicert_status_code_{}".format(r.status_code), "counter", 1)
+    current_app.logger.info(log_data)
 
 
 def signature_hash(signing_algorithm):
