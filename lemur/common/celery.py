@@ -845,7 +845,7 @@ def enable_autorotate_for_certs_attached_to_endpoint():
 
 
 @celery.task(soft_time_limit=3600)
-def deactivate_entrust():
+def deactivate_entrust_test_certificates():
     """
     This celery task attempts to deactivate all not yet deactivated Entrust certificates, and should only run in TEST
     :return:
