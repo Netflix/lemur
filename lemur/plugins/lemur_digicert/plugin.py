@@ -210,7 +210,7 @@ def handle_response(response):
     :return:
     """
     if response.status_code > 399:
-        raise Exception(response.json()["errors"][0]["message"])
+        raise Exception("DigiCert rejected certificate request with the following error:" + response.json()["errors"][0]["message"])
 
     return response.json()
 
