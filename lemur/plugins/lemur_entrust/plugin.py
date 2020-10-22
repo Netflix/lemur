@@ -109,7 +109,12 @@ def handle_response(my_response):
         "response": d
     }
     current_app.logger.info(log_data)
-    return d
+    if d == {'response': 'No detailed message'}:
+        # status if no data
+        return s
+    else:
+        #  return data from the response
+        return d
 
 
 class EntrustIssuerPlugin(IssuerPlugin):
@@ -211,7 +216,7 @@ class EntrustIssuerPlugin(IssuerPlugin):
         deactivate_url = f"{base_url}/certificates/{certificate.external_id}/deactivations"
         response = self.session.post(deactivate_url)
         metrics.send("entrust_deactivate_certificate", "counter", 1)
-        return handle_response(response)
+        return response.status_code
 
     @staticmethod
     def create_authority(options):
