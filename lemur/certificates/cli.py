@@ -774,5 +774,7 @@ def deactivate_entrust_certificates():
             database.update(cert)
 
         except Exception as e:
+            current_app.logger.info(log_data)
             sentry.captureException()
             current_app.logger.exception(e)
+            
