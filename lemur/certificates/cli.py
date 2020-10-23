@@ -735,3 +735,45 @@ def automatically_enable_autorotate():
                                   })
         cert.rotation = True
         database.update(cert)
+
+
+@manager.command
+def deactivate_entrust_certificates():
+    """
+    Attempt to deactivate test certificates issued by Entrust
+    """
+
+    log_data = {
+        "function": f"{__name__}.{sys._getframe().f_code.co_name}",
+        "message": "Deactivating Entrust certificates"
+    }
+
+    certificates = get_all_valid_certs(['entrust-issuer'])
+    entrust_plugin = plugins.get('entrust-issuer')
+    for cert in certificates:
+        try:
+            response = entrust_plugin.deactivate_certificate(cert)
+            if response == 200:
+                cert.status = "revoked"
+            else:
+                cert.status = "unknown"
+
+            log_data["valid"] = cert.status
+            log_data["certificate_name"] = cert.name
+            log_data["certificate_id"] = cert.id
+            metrics.send(
+                "certificate_deactivate",
+                "counter",
+                1,
+                metric_tags={"status": log_data["valid"],
+                             "certificate_name": log_data["certificate_name"],
+                             "certificate_id": log_data["certificate_id"]},
+            )
+            current_app.logger.info(log_data)
+
+            database.update(cert)
+
+        except Exception as e:
+            current_app.logger.info(log_data)
+            sentry.captureException()
+            current_app.logger.exception(e)
