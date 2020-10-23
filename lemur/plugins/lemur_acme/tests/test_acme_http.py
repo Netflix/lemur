@@ -6,15 +6,10 @@ from lemur.plugins.lemur_acme import plugin
 
 
 class TestAcmeHttp(unittest.TestCase):
-    @patch("lemur.plugins.lemur_acme.plugin.destination_service")
-    def setUp(self, mock_destination_provider):
+
+    def setUp(self):
         self.ACMEHttpIssuerPlugin = plugin.ACMEHttpIssuerPlugin()
         self.acme = plugin.AcmeHandler()
-
-        mock_destination_provider = Mock()
-        mock_destination_provider.label = "mock-sftp-destination"
-        mock_destination_provider.plugin_name = "sftp-destination"
-        self.ACMEHttpIssuerPlugin.destination_list = ["mock-sftp-destination", "mock-s3-destination"]
 
     @patch("lemur.plugins.lemur_acme.plugin.current_app")
     def test_create_authority(self, mock_current_app):
@@ -29,8 +24,8 @@ class TestAcmeHttp(unittest.TestCase):
 
     @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.setup_acme_client")
     @patch("lemur.plugins.base.manager.PluginManager.get")
-    @patch("lemur.plugins.lemur_acme.plugin.destination_service")
-    @patch("lemur.plugins.lemur_acme.plugin.current_app")
+    @patch("lemur.plugins.lemur_acme.challenge_types.destination_service")
+    @patch("lemur.plugins.lemur_acme.challenge_types.current_app")
     @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.request_certificate")
     @patch("lemur.plugins.lemur_acme.plugin.authorization_service")
     def test_create_certificate(
@@ -68,7 +63,7 @@ class TestAcmeHttp(unittest.TestCase):
         mock_destination = Mock()
         mock_destination.label = "mock-sftp-destination"
         mock_destination.plugin_name = "SFTPDestinationPlugin"
-        mock_destination_service.get_by_label.return_value = mock_destination
+        mock_destination_service.get.return_value = mock_destination
 
         mock_destination_plugin = Mock()
         mock_destination_plugin.upload_acme_token.return_value = True
@@ -89,7 +84,7 @@ class TestAcmeHttp(unittest.TestCase):
 
     @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.setup_acme_client")
     @patch("lemur.plugins.base.manager.PluginManager.get")
-    @patch("lemur.plugins.lemur_acme.plugin.destination_service")
+    @patch("lemur.plugins.lemur_acme.challenge_types.destination_service")
     @patch("lemur.plugins.lemur_acme.plugin.current_app")
     @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.request_certificate")
     @patch("lemur.plugins.lemur_acme.plugin.authorization_service")
@@ -137,7 +132,7 @@ class TestAcmeHttp(unittest.TestCase):
 
     @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.setup_acme_client")
     @patch("lemur.plugins.base.manager.PluginManager.get")
-    @patch("lemur.plugins.lemur_acme.plugin.destination_service")
+    @patch("lemur.plugins.lemur_acme.challenge_types.destination_service")
     @patch("lemur.plugins.lemur_acme.plugin.current_app")
     @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.request_certificate")
     @patch("lemur.plugins.lemur_acme.plugin.authorization_service")

@@ -141,7 +141,7 @@ class AcmeHttpChallenge(AcmeChallenge):
 
         destination = destination_service.get(validation_target)
 
-        if not isinstance(destination, Destination):
+        if destination is None:
             raise Exception(
                 'Couldn\'t find the destination with name {}. Cant complete HTTP01 challenge'.format(validation_target))
 
