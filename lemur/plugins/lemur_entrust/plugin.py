@@ -216,7 +216,7 @@ class EntrustIssuerPlugin(IssuerPlugin):
         deactivate_url = f"{base_url}/certificates/{certificate.external_id}/deactivations"
         response = self.session.post(deactivate_url)
         metrics.send("entrust_deactivate_certificate", "counter", 1)
-        return response.status_code
+        return handle_response(response)
 
     @staticmethod
     def create_authority(options):
