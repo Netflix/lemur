@@ -35,10 +35,8 @@
                   ng-options="option.value as option.name for option in [
                       {'name': 'RSA-2048', 'value': 'RSA2048'},
                       {'name': 'RSA-4096', 'value': 'RSA4096'},
-                      {'name': 'ECC-PRIME192V1', 'value': 'ECCPRIME192V1'},
                       {'name': 'ECC-PRIME256V1', 'value': 'ECCPRIME256V1'},
-                      {'name': 'ECC-SECP384R1', 'value': 'ECCSECP384R1'},
-                      {'name': 'ECC-SECP521R1', 'value': 'ECCSECP521R1'}]"
+                      {'name': 'ECC-SECP384R1', 'value': 'ECCSECP384R1'}]"
 
                   ng-init="certificate.keyType = 'RSA2048'"></select>
         </div>
