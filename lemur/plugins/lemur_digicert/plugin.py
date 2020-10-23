@@ -222,9 +222,9 @@ def handle_cis_response(response):
     :return:
     """
     if response.status_code == 404:
-        raise Exception("DigiCert: Order not in issued state.")
+        raise Exception("DigiCert: order not in issued state")
     elif response.status_code == 406:
-        raise Exception("DigiCert: Wrong Header")
+        raise Exception("DigiCert: wrong header request format")
     elif response.status_code > 399:
         raise Exception("DigiCert rejected request with the error:" + response.text)
 
