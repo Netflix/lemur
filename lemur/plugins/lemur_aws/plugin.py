@@ -454,7 +454,4 @@ class SNSNotificationPlugin(ExpirationNotificationPlugin):
                     f"{self.get_option('topicName', options)}"
 
         current_app.logger.debug(f"Publishing {notification_type} notification to topic {topic_arn}")
-        try:
-            sns.publish(topic_arn, message, notification_type, region_name=self.get_option("region", options))
-        except Exception:
-            current_app.logger.exception(f"Error publishing {notification_type} notification to topic {topic_arn}")
+        sns.publish(topic_arn, message, notification_type, region_name=self.get_option("region", options))

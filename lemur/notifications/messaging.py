@@ -111,7 +111,7 @@ def send_plugin_notification(event_type, data, recipients, notification):
         notification.plugin.send(event_type, data, recipients, notification.options)
         status = SUCCESS_METRIC_STATUS
     except Exception as e:
-        log_data["message"] = f"Unable to send expiration notification to recipients {recipients}"
+        log_data["message"] = f"Unable to send {event_type} notification to recipients {recipients}"
         current_app.logger.error(log_data, exc_info=True)
         sentry.captureException()
 

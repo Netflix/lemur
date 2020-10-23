@@ -127,7 +127,7 @@ class SlackNotificationPlugin(ExpirationNotificationPlugin):
             raise Exception("Unable to create message attachments")
 
         body = {
-            "text": "Lemur {0} Notification".format(notification_type.capitalize()),
+            "text": f"Lemur {notification_type.capitalize()} Notification",
             "attachments": attachments,
             "channel": self.get_option("recipients", options),
             "username": self.get_option("username", options),
@@ -136,8 +136,8 @@ class SlackNotificationPlugin(ExpirationNotificationPlugin):
         r = requests.post(self.get_option("webhook", options), json.dumps(body))
 
         if r.status_code not in [200]:
-            raise Exception("Failed to send message")
+            raise Exception(f"Failed to send message. Slack response: {r.status_code} {body}")
 
         current_app.logger.info(
-            "Slack response: {0} Message Body: {1}".format(r.status_code, body)
+            f"Slack response: {r.status_code} Message Body: {body}"
         )

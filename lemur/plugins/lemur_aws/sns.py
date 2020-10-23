@@ -29,7 +29,8 @@ def publish_single(sns_client, topic_arn, certificate, notification_type):
 
     response_code = response["ResponseMetadata"]["HTTPStatusCode"]
     if response_code != 200:
-        raise Exception(f"Failed to publish notification to SNS, response code was {response_code}")
+        raise Exception(f"Failed to publish {notification_type} notification to SNS topic {topic_arn}. "
+                        f"SNS response: {response_code} {response}")
 
     current_app.logger.debug(f"AWS SNS message published to topic [{topic_arn}]: [{response}]")
 
