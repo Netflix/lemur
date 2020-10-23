@@ -777,4 +777,3 @@ def deactivate_entrust_certificates():
             current_app.logger.info(log_data)
             sentry.captureException()
             current_app.logger.exception(e)
-            
