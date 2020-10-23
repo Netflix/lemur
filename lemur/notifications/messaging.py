@@ -42,6 +42,7 @@ def get_certificates(exclude=None):
         .filter(Certificate.not_after <= max)
         .filter(Certificate.notify == True)
         .filter(Certificate.expired == False)
+        .filter(Certificate.revoked == False)
     )  # noqa
 
     exclude_conditions = []
