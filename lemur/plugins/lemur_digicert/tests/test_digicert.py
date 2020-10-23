@@ -159,7 +159,7 @@ def test_map_cis_fields_with_validity_end_and_start(mock_current_app, app, autho
             "signature_hash": "sha256",
             "organization": {"name": "Example, Inc."},
             "validity": {
-                "valid_to": arrow.get(2017, 5, 7).format("YYYY-MM-DDTHH:MM") + "Z"
+                "valid_to": arrow.get(2017, 5, 7).format("YYYY-MM-DDTHH:MM:SS") + "Z"
             },
             "profile_name": None,
         }
