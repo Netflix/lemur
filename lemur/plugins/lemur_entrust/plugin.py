@@ -20,7 +20,13 @@ def log_status_code(r, *args, **kwargs):
     :param kwargs:
     :return:
     """
+    log_data = {
+        "reason": (r.reason if r.reason else ""),
+        "status_code": r.status_code,
+        "url": (r.url if r.url else ""),
+    }
     metrics.send(f"entrust_status_code_{r.status_code}", "counter", 1)
+    current_app.logger.info(log_data)
 
 
 def determine_end_date(end_date):
@@ -109,7 +115,12 @@ def handle_response(my_response):
         "response": d
     }
     current_app.logger.info(log_data)
-    return d
+    if d == {'response': 'No detailed message'}:
+        # status if no data
+        return s
+    else:
+        #  return data from the response
+        return d
 
 
 class EntrustIssuerPlugin(IssuerPlugin):
