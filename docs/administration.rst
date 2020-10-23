@@ -269,7 +269,7 @@ Certificates marked as inactive will **not** be notified of upcoming expiration.
 silence the expiration. If a certificate is active and is expiring the above will be notified according to the `LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS` or
 30, 15, 2 days before expiration if no intervals are set.
 
-Lemur supports sending certification expiration notifications through SES and SMTP.
+Lemur supports sending certificate expiration notifications through SES and SMTP.
 
 
 .. data:: LEMUR_EMAIL_SENDER

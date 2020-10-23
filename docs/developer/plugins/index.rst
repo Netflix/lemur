@@ -215,7 +215,7 @@ Notification
 ------------
 
 Lemur includes the ability to create Email notifications by **default**. These notifications
-currently come in the form of expiration and rotation notices. Lemur periodically checks certifications expiration dates and
+currently come in the form of expiration and rotation notices. Lemur periodically checks certificate expiration dates and
 determines if a given certificate is eligible for notification. There are currently only two parameters used to
 determine if a certificate is eligible; validity expiration (date the certificate is no longer valid) and the number
 of days the current date (UTC) is from that expiration date.
@@ -223,12 +223,12 @@ of days the current date (UTC) is from that expiration date.
 Expiration notifications can also be configured for Slack or AWS SNS. Rotation notifications are not configurable.
 Notifications sent to a certificate owner and security team (`LEMUR_SECURITY_TEAM_EMAIL`) can currently only be sent via email.
 
-There are currently two objects that available for notification plugins. The first is `NotificationPlugin`, which is the base object for
-any notification within Lemur. Currently the only supported notification type is an certificate expiration notification. If you
+There are currently two objects that are available for notification plugins. The first is `NotificationPlugin`, which is the base object for
+any notification within Lemur. Currently the only supported notification type is a certificate expiration notification. If you
 are trying to create a new notification type (audit, failed logins, etc.) this would be the object to base your plugin on.
 You would also then need to build additional code to trigger the new notification type.
 
-The second is `ExpirationNotificationPlugin`, which inherits from `NotificationPlugin` object.
+The second is `ExpirationNotificationPlugin`, which inherits from the `NotificationPlugin` object.
 You will most likely want to base your plugin on this object if you want to add new channels for expiration notices (HipChat, Jira, etc.). It adds default options that are required by
 all expiration notifications (interval, unit). This interface expects for the child to define the following function::
 
