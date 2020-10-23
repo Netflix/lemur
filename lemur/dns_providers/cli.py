@@ -6,7 +6,6 @@ from lemur.constants import SUCCESS_METRIC_STATUS
 from lemur.plugins.lemur_acme.acme_handlers import AcmeDnsHandler
 from lemur.dns_providers.service import get_all_dns_providers, set_domains
 from lemur.extensions import metrics, sentry
-from lemur.plugins.base import plugins
 
 manager = Manager(
     usage="Iterates through all DNS providers and sets DNS zones in the database."

@@ -244,7 +244,6 @@ class ACMEIssuerPlugin(IssuerPlugin):
 
         return acme_dns_challenge.create_certificate(csr, issuer_options)
 
-
     @staticmethod
     def create_authority(options):
         """
