@@ -105,7 +105,7 @@ def get_all_certs():
 
 def get_all_valid_certs(authority_plugin_name):
     """
-    Retrieves all valid (not expired) certificates within Lemur, for the given authority plugin names
+    Retrieves all valid (not expired & not revoked) certificates within Lemur, for the given authority plugin names
     ignored if no authority_plugin_name provided.
 
     Note that depending on the DB size retrieving all certificates might an expensive operation
@@ -116,11 +116,12 @@ def get_all_valid_certs(authority_plugin_name):
         return (
             Certificate.query.outerjoin(Authority, Authority.id == Certificate.authority_id).filter(
                 Certificate.not_after > arrow.now().format("YYYY-MM-DD")).filter(
-                Authority.plugin_name.in_(authority_plugin_name)).all()
+                Authority.plugin_name.in_(authority_plugin_name)).filter(Certificate.revoked.is_(False)).all()
         )
     else:
         return (
-            Certificate.query.filter(Certificate.not_after > arrow.now().format("YYYY-MM-DD")).all()
+            Certificate.query.filter(Certificate.not_after > arrow.now().format("YYYY-MM-DD")).filter(
+                Certificate.revoked.is_(False)).all()
         )
 
 

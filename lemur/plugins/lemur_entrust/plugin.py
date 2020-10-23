@@ -115,7 +115,12 @@ def handle_response(my_response):
         "response": d
     }
     current_app.logger.info(log_data)
-    return d
+    if d == {'response': 'No detailed message'}:
+        # status if no data
+        return s
+    else:
+        #  return data from the response
+        return d
 
 
 class EntrustIssuerPlugin(IssuerPlugin):
