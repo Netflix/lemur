@@ -78,7 +78,6 @@ def process_options(options):
         "eku": "SERVER_AND_CLIENT_AUTH",
         "certType": product_type,
         "certExpiryDate": validity_end,
-        # "keyType": "RSA", Entrust complaining about this parameter
         "tracking": tracking_data
     }
     return data
