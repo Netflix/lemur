@@ -6,6 +6,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import arrow
+import re
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
@@ -777,6 +778,19 @@ def reissue_certificate(certificate, replace=None, user=None):
 
     if replace:
         primitives["replaces"] = [certificate]
+
+    # Modify description to include the certificate ID being reissued and mention that this is created by Lemur
+    # as part of reissue
+    reissue_message_prefix = "Reissued by Lemur for cert ID "
+    reissue_message = re.compile(f"{reissue_message_prefix}([0-9]+)")
+    if primitives["description"]:
+        match = reissue_message.search(primitives["description"])
+        if match:
+            primitives["description"] = primitives["description"].replace(match.group(1), str(certificate.id))
+        else:
+            primitives["description"] = f"{reissue_message_prefix}{certificate.id}, {primitives['description']}"
+    else:
+        primitives["description"] = f"{reissue_message_prefix}{certificate.id}"
 
     new_cert = create(**primitives)
 
