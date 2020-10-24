@@ -259,7 +259,7 @@ class EntrustIssuerPlugin(IssuerPlugin):
     def get_ordered_certificate(self, order_id):
         raise NotImplementedError("Not implemented\n", self, order_id)
 
-    def canceled_ordered_certificate(self, pending_cert, **kwargs):
+    def cancel_ordered_certificate(self, pending_cert, **kwargs):
         raise NotImplementedError("Not implemented\n", self, pending_cert, **kwargs)
 
 
