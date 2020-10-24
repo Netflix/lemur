@@ -87,7 +87,7 @@ def process_options(options):
 def handle_response(my_response):
     """
     Helper function for parsing responses from the Entrust API.
-    :param content:
+    :param my_response:
     :return: :raise Exception:
     """
     msg = {
