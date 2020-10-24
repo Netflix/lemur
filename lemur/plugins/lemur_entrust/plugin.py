@@ -121,6 +121,24 @@ def handle_response(my_response):
     else:
         #  return data from the response
         return d
+@retry(stop_max_attempt_number=3, wait_fixed=5000)
+def get_certificate_order(session, url, data):
+    """
+    Helper function place a cert order and downloading it
+    :param session:
+    :param url: Entrust endpoint url
+    :param data: CSR, and the required order details, such as validity length
+    :return: the cert chain
+    :raise Exception:
+    """
+    try:
+        response = session.post(url, json=data, timeout=(15, 40))
+    except requests.exceptions.Timeout:
+        raise Exception("Timeout for POST")
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"Error for POST {e}")
+
+    return handle_response(response)
 
 
 class EntrustIssuerPlugin(IssuerPlugin):
@@ -178,14 +196,8 @@ class EntrustIssuerPlugin(IssuerPlugin):
         data = process_options(issuer_options)
         data["csr"] = csr
 
-        try:
-            response = self.session.post(url, json=data, timeout=(15, 40))
-        except requests.exceptions.Timeout:
-            raise Exception("Timeout for POST")
-        except requests.exceptions.RequestException as e:
-            raise Exception(f"Error for POST {e}")
+        response_dict = get_certificate_order(self.session, url, data)
 
-        response_dict = handle_response(response)
         external_id = response_dict['trackingId']
         cert = response_dict['endEntityCert']
         if len(response_dict['chainCerts']) < 2:
