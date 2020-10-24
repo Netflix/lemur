@@ -100,27 +100,29 @@ def handle_response(my_response):
     }
 
     try:
-        d = json.loads(my_response.content)
+        data = json.loads(my_response.content)
     except ValueError:
         # catch an empty jason object here
-        d = {'response': 'No detailed message'}
-    s = my_response.status_code
-    if s > 399:
-        raise Exception(f"ENTRUST error: {msg.get(s, s)}\n{d['errors']}")
+        data = {'response': 'No detailed message'}
+    status_code = my_response.status_code
+    if status_code > 399:
+        raise Exception(f"ENTRUST error: {msg.get(status_code, status_code)}\n{data['errors']}")
 
     log_data = {
         "function": f"{__name__}.{sys._getframe().f_code.co_name}",
         "message": "Response",
-        "status": s,
-        "response": d
+        "status": status_code,
+        "response": data
     }
     current_app.logger.info(log_data)
-    if d == {'response': 'No detailed message'}:
+    if data == {'response': 'No detailed message'}:
         # status if no data
-        return s
+        return status_code
     else:
         #  return data from the response
-        return d
+        return data
+
+
 @retry(stop_max_attempt_number=3, wait_fixed=5000)
 def get_certificate_order(session, url, data):
     """
