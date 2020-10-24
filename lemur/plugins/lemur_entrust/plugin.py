@@ -200,6 +200,7 @@ class EntrustIssuerPlugin(IssuerPlugin):
 
         return cert, chain, external_id
 
+    @retry(stop_max_attempt_number=3, wait_fixed=1000)
     def revoke_certificate(self, certificate, comments):
         """Revoke an Entrust certificate."""
         base_url = current_app.config.get("ENTRUST_URL")
@@ -216,6 +217,7 @@ class EntrustIssuerPlugin(IssuerPlugin):
         metrics.send("entrust_revoke_certificate", "counter", 1)
         return handle_response(response)
 
+    @retry(stop_max_attempt_number=3, wait_fixed=1000)
     def deactivate_certificate(self, certificate):
         """Deactivates an Entrust certificate."""
         base_url = current_app.config.get("ENTRUST_URL")
