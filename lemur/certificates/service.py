@@ -85,6 +85,16 @@ def get_by_attributes(conditions):
     return database.find_all(query, Certificate, conditions).all()
 
 
+def get_by_root_authority(id):
+    """
+    Retrieves certificate by its root_authority's id.
+
+    :param id:
+    :return:
+    """
+    return database.get(Certificate, id, field="root_authority_id")
+
+
 def delete(cert_id):
     """
     Delete's a certificate.
