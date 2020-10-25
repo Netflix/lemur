@@ -28,6 +28,13 @@ Basic Configuration
 
         LOG_FILE = "/logs/lemur/lemur-test.log"
 
+.. data:: LOG_UPGRADE_FILE
+    :noindex:
+
+    ::
+
+        LOG_UPGRADE_FILE = "/logs/lemur/db_upgrade.log"
+
 .. data:: DEBUG
     :noindex:
 

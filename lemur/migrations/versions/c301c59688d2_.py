@@ -31,12 +31,25 @@ down_revision = '434c29e40511'
 
 from alembic import op
 from sqlalchemy.sql import text
-from lemur.common import utils
 import time
 import datetime
+from flask import current_app
 
-import logging
-log = logging.getLogger(__name__)
+from logging import Formatter, FileHandler, getLogger
+
+from lemur.common import utils
+
+log = getLogger(__name__)
+handler = FileHandler(current_app.config.get("LOG_UPGRADE_FILE", "db_upgrade.log"))
+handler.setFormatter(
+    Formatter(
+        "%(asctime)s %(levelname)s: %(message)s " "[in %(pathname)s:%(lineno)d]"
+    )
+)
+handler.setLevel(current_app.config.get("LOG_LEVEL", "DEBUG"))
+log.setLevel(current_app.config.get("LOG_LEVEL", "DEBUG"))
+log.addHandler(handler)
+
 
 def upgrade():
     log.info("\n*** Starting new run(%s) ***\n" % datetime.datetime.now())
@@ -94,9 +107,9 @@ def update_key_type():
         try:
             cert_key_type = utils.get_key_type_from_certificate(body)
         except ValueError as e:
-            log.info("Error in processing certificate - ID: %s Error: %s \n" % (cert_id, str(e)))
+            log.error("Error in processing certificate - ID: %s Error: %s \n" % (cert_id, str(e)))
         else:
-            log.info("Processing certificate - ID: %s key_type: %s\n" % (cert_id, cert_key_type))
+            log.error("Processing certificate - ID: %s key_type: %s\n" % (cert_id, cert_key_type))
             stmt = text(
                 "update certificates set key_type=:key_type where id=:id"
             )
