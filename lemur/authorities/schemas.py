@@ -7,7 +7,7 @@
 """
 from flask import current_app
 
-from marshmallow import fields, validates_schema, pre_load
+from marshmallow import fields, validates_schema, pre_load, post_dump
 from marshmallow import validate
 from marshmallow.exceptions import ValidationError
 
@@ -24,6 +24,7 @@ from lemur.common import validators, missing
 
 from lemur.common.fields import ArrowDateTime
 from lemur.constants import CERTIFICATE_KEY_TYPES
+from lemur.plugins.base import plugins
 
 
 class AuthorityInputSchema(LemurInputSchema):
@@ -128,6 +129,14 @@ class AuthorityOutputSchema(LemurOutputSchema):
     max_issuance_days = fields.Integer()
     default_validity_days = fields.Integer()
     authority_certificate = fields.Nested(RootAuthorityCertificateOutputSchema)
+
+    @post_dump
+    def handle_auth_certificate(self, cert):
+        plugin = plugins.get(cert['plugin']['slug'])
+        cert['authority_certificate']['body'] = plugin.wrap_auth_certificate(
+                cert['authority_certificate']['body'],
+                cert['authority_certificate']['cn']
+        )
 
 
 class AuthorityNestedOutputSchema(LemurOutputSchema):

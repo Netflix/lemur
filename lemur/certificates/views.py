@@ -675,7 +675,16 @@ class CertificatePrivateKey(AuthenticatedResource):
                 return dict(message="You are not authorized to view this key"), 403
 
         log_service.create(g.current_user, "key_view", certificate=cert)
-        response = make_response(jsonify(key=cert.private_key), 200)
+
+        # wrap_private_key
+        if cert.root_authority:
+            authority = cert.root_authority
+        else:
+            authority = cert.authority
+        plugin = plugins.get(authority.plugin_name)
+        private_key = plugin.wrap_private_key(cert)
+
+        response = make_response(jsonify(key=private_key), 200)
         response.headers["cache-control"] = "private, max-age=0, no-cache, no-store"
         response.headers["pragma"] = "no-cache"
         return response

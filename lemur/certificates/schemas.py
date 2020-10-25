@@ -38,6 +38,7 @@ from lemur.schemas import (
     AssociatedRotationPolicySchema,
 )
 from lemur.users.schemas import UserNestedOutputSchema
+from lemur.plugins.base import plugins
 
 
 class CertificateSchema(LemurInputSchema):
@@ -324,6 +325,7 @@ class CertificateOutputSchema(LemurOutputSchema):
     notifications = fields.Nested(NotificationNestedOutputSchema, many=True)
     replaces = fields.Nested(CertificateNestedOutputSchema, many=True)
     authority = fields.Nested(AuthorityNestedOutputSchema)
+    root_authority = fields.Nested(AuthorityNestedOutputSchema)
     dns_provider = fields.Nested(DnsProvidersNestedOutputSchema)
     roles = fields.Nested(RoleNestedOutputSchema, many=True)
     endpoints = fields.Nested(EndpointNestedOutputSchema, many=True, missing=[])
@@ -352,6 +354,20 @@ class CertificateOutputSchema(LemurOutputSchema):
                 data.pop("location", None)
                 data.pop("organization", None)
                 data.pop("organizational_unit", None)
+
+    @post_dump
+    def handle_certificate(self, cert):
+        if cert['root_authority']:
+            authority = cert['root_authority']
+        else:
+            authority = cert['authority']
+        authority_id = authority['id']
+        plugin = plugins.get(authority['plugin']['slug'])
+        cert['body'], cert['csr'], cert['chain'] = plugin.wrap_certificate(
+                cert,
+                authority_id
+        )
+        del cert['root_authority']
 
 
 class CertificateShortOutputSchema(LemurOutputSchema):
