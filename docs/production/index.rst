@@ -555,3 +555,122 @@ Using `python-jwt` converting an existing private key in PEM format is quite eas
     {"body": {}, "uri": "https://acme-staging-v02.api.letsencrypt.org/acme/acct/<ACCOUNT_NUMBER>"}
 
 The URI can be retrieved from the ACME create account endpoint when creating a new account, using the existing key.
+
+OpenSSH
+=======
+
+OpenSSH (also known as OpenBSD Secure Shell) is a suite of secure networking utilities based on the Secure Shell (SSH) protocol, which provides a secure channel over an unsecured network in a client–server architecture.
+
+Using a PKI with OpenSSH means you can sign a key for a user and it can log into any server that trust the CA.
+
+Using a CA avoids TOFU or synchronize a list of server public keys to `known_hosts` files.
+
+This is useful when you're managing large number of machines or for an immutable infrastructure.
+
+Add first OpenSSH authority
+---------------------------
+
+To start issuing OpenSSH, you need to create an OpenSSH authority. To do this, visit
+Authorities -> Create. Set the applicable attributes:
+
+- Name : OpenSSH
+- Common Name: example.net
+
+Then click "More Options" and change the plugin value to "OpenSSH".
+
+Just click to "Create" button to add this authority.
+
+.. note:: OpenSSH do not support sub CA feature.
+
+Add a server certificate
+-------------------------
+
+Now visit Certificates -> Create to add a server certificate. Set the applicable attributes:
+
+- Common Name: server.example.net
+
+Then click "More Options" and set the Certificate Template to "Server Certificate".
+
+This step is important, a certificat for a server and for a client is not exactly the same thing.
+In this case "Common Name" and all Subject Alternate Names with type DNSName will be added in the certificate.
+
+Finally click on "Create" button.
+
+Add a client certificate
+------------------------
+
+Now visit Certificates -> Create to add a client certificate. Set the applicable attributes:
+
+- Common Name: example.net
+
+Then click "More Options" and set the Certificate Template to "Client Certificate".
+
+In this case the name of the creator is used as principal (in this documentation we assume that this certificate is created by the user "lemur").
+
+Finally click on "Create" button.
+
+Configure OpenSSH server
+------------------------
+
+Connect to the server.example.net server to correctly configure the OpenSSH server with the CA created previously.
+
+First of all add the CA chain, private and public certificates:
+
+- Create file `/etc/ssh/ca.pub` and copy the "CHAIN" content of the *server certificate* (everything in one line).
+- Create file `/etc/ssh/ssh_host_key` and copy "PRIVATE KEY" content.
+- Create file `/etc/ssh/ssh_host_key.pub` and copy "PUBLIC CERTIFICATE" content (everything in one line).
+
+Set the appropriate right:
+
+.. code-block:: bash
+
+    chmod 600 /etc/ssh/ca.pub /etc/ssh/ssh_host_key
+    chmod 644 /etc/ssh/ssh_host_key.pub
+    chown root: /etc/ssh/ca.pub /etc/ssh/ssh_host_key /etc/ssh/ssh_host_key.pub
+
+Then change OpenSSH server configuration to use these files. Edit `/etc/ssh/sshd_config` and add::
+
+    TrustedUserCAKeys /etc/ssh/ca.pub
+    HostKey /etc/ssh/ssh_host_key
+    HostCertificate /etc/ssh/ssh_host_key.pub
+
+You can remove all other `HostKey` lines.
+
+Finally restart OpenSSH.
+
+.. note:: By default the server public certificate is sign for 2 weeks. You must update the `/etc/ssh/ssh_host_key.pub` file before this delay. You can use the config's parameter OPENSSH_VALID_INTERVAL_SERVER to change this behavor (unit is number of day).
+
+Configure the OpenSSH client
+----------------------------
+
+Now you can configure the user's computer.
+
+First of all add private and public certificates:
+
+- Create file `~/.ssh/key` and copy "PRIVATE KEY" content.
+- Create file `~/.ssh/key.pub` and copy "PUBLIC CERTIFICATE" content of the *client certicate* (everything in one line).
+
+Set the appropriate right:
+
+.. code-block:: bash
+
+    chmod 600 ~/.ssh/key.pub ~/.ssh/key
+
+To avoid TOFU, edite the `~/.ssh/known_hosts` file and add a new line (all in one line):
+
+- @cert-authority \*example.net
+- the "CHAIN" content
+
+Now you can connect to server with (here 'lemur' is the principal name and must exists on the server):
+
+.. code-block:: bash
+
+    ssh lemur@server.example.net -i ~/.ssh/key
+
+With this configuration you don't have any line like::
+
+    Warning: Permanently added 'server.example.net,192.168.0.1' (RSA) to the list of known hosts.
+
+And you don't have to enter any password.
+
+.. note:: By default the client public certificate is sign for 1 day. You must update the `.ssh/key.pub` everyday. You can use the config's parameter OPENSSH_VALID_INTERVAL_CLIENT to change this behavor (unit is number of day).
