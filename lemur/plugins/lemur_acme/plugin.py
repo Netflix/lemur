@@ -16,6 +16,7 @@ import json
 import time
 
 import OpenSSL.crypto
+import dns.resolver
 import josepy as jose
 from acme import challenges, errors, messages
 from acme.client import BackwardsCompatibleClientV2, ClientNetwork
@@ -23,7 +24,6 @@ from acme.errors import PollError, TimeoutError, WildcardUnsupportedError
 from acme.messages import Error as AcmeError
 from botocore.exceptions import ClientError
 from flask import current_app
-
 from lemur.authorizations import service as authorization_service
 from lemur.common.utils import generate_private_key
 from lemur.dns_providers import service as dns_provider_service
@@ -287,6 +287,13 @@ class AcmeHandler(object):
         authorizations = []
 
         for domain in order_info.domains:
+
+            # Replace domain if doing CNAME delegation
+            if current_app.config.get("ACME_ENABLE_DELEGATED_CNAME", False):
+                cname = self.get_cname(domain)
+                if cname:
+                    domain = cname
+
             if not self.dns_providers_for_domain.get(domain):
                 metrics.send(
                     "get_authorizations_no_dns_provider_for_domain", "counter", 1
@@ -406,6 +413,19 @@ class AcmeHandler(object):
         if not provider:
             raise UnknownProvider("No such DNS provider: {}".format(type))
         return provider
+
+    def get_cname(self, domain):
+        """
+        :param domain: Domain name to look up a CNAME for.
+        :param record_type: Type of DNS record to lookup.
+        :return: First CNAME target or False if no CNAME record exists.
+        """
+        try:
+            result = dns.resolver.query(domain, 'CNAME')
+            if len(result) > 0:
+                return str(result[0].target).rstrip('.')
+        except dns.exception.DNSException:
+            return False
 
 
 class ACMEIssuerPlugin(IssuerPlugin):

@@ -620,6 +620,20 @@ If you are not using a metric provider you do not need to configure any of these
 Plugin Specific Options
 -----------------------
 
+ACME Plugin
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. data:: ACME_DNS_PROVIDER_TYPES
+    :noindex:
+
+        Dictionary of ACME DNS Providers and their requirements.
+
+.. data:: ACME_ENABLE_DELEGATED_CNAME
+    :noindex:
+
+        Enables delegated DNS domain validation using CNAMES.  When enabled, Lemur will attempt to follow CNAME records to authoritative DNS servers when creating DNS-01 challenges.
+
+
 Active Directory Certificate Services Plugin
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
