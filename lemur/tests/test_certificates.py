@@ -802,6 +802,7 @@ def test_reissue_certificate(
     assert new_cert.organization != certificate.organization
     # Check for default value since authority does not have cab_compliant option set
     assert new_cert.organization == LEMUR_DEFAULT_ORGANIZATION
+    assert new_cert.description.startswith(f"Reissued by Lemur for cert ID {certificate.id}")
 
     # update cab_compliant option to false for crypto_authority to maintain subject details
     update_options(crypto_authority.id, '[{"name": "cab_compliant","value":false}]')
