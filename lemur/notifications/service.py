@@ -104,12 +104,13 @@ def create(label, plugin_name, options, description, certificates):
     return database.create(notification)
 
 
-def update(notification_id, label, options, description, active, certificates):
+def update(notification_id, label, plugin_name, options, description, active, certificates):
     """
     Updates an existing notification.
 
     :param notification_id:
     :param label: Notification label
+    :param plugin_name:
     :param options:
     :param description:
     :param active:
@@ -120,6 +121,7 @@ def update(notification_id, label, options, description, active, certificates):
     notification = get(notification_id)
 
     notification.label = label
+    notification.plugin_name = plugin_name
     notification.options = options
     notification.description = description
     notification.active = active
