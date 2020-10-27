@@ -1,0 +1,306 @@
+2020-10-27 13:04:27,089 ERROR: 403 Forbidden: <Permission needs={Need(method='role', value='admin')} excludes=set()> [in /Users/hshafagh/lemur-dev/lemur/lemur/__init__.py:101]
+Traceback (most recent call last):
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/app.py", line 1950, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/app.py", line 1936, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_restful/__init__.py", line 468, in wrapper
+    resp = resource(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/views.py", line 89, in view
+    return self.dispatch_request(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_restful/__init__.py", line 583, in dispatch_request
+    resp = meth(*args, **kwargs)
+  File "/Users/hshafagh/lemur-dev/lemur/lemur/auth/service.py", line 139, in decorated_function
+    return f(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_principal.py", line 198, in _decorated
+    with self:
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_principal.py", line 207, in __enter__
+    abort(self.http_exception, self.permission)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/werkzeug/exceptions.py", line 822, in abort
+    return _aborter(status, *args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/werkzeug/exceptions.py", line 807, in __call__
+    raise self.mapping[code](*args, **kwargs)
+werkzeug.exceptions.Forbidden: 403 Forbidden: <Permission needs={Need(method='role', value='admin')} excludes=set()>
+2020-10-27 13:04:27,146 ERROR: 403 Forbidden: <Permission needs={Need(method='role', value='admin')} excludes=set()> [in /Users/hshafagh/lemur-dev/lemur/lemur/__init__.py:101]
+Traceback (most recent call last):
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/app.py", line 1950, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/app.py", line 1936, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_restful/__init__.py", line 468, in wrapper
+    resp = resource(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/views.py", line 89, in view
+    return self.dispatch_request(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_restful/__init__.py", line 583, in dispatch_request
+    resp = meth(*args, **kwargs)
+  File "/Users/hshafagh/lemur-dev/lemur/lemur/auth/service.py", line 139, in decorated_function
+    return f(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_principal.py", line 198, in _decorated
+    with self:
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_principal.py", line 207, in __enter__
+    abort(self.http_exception, self.permission)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/werkzeug/exceptions.py", line 822, in abort
+    return _aborter(status, *args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/werkzeug/exceptions.py", line 807, in __call__
+    raise self.mapping[code](*args, **kwargs)
+werkzeug.exceptions.Forbidden: 403 Forbidden: <Permission needs={Need(method='role', value='admin')} excludes=set()>
+2020-10-27 13:04:27,242 ERROR: 403 Forbidden: <Permission needs={Need(method='role', value='admin')} excludes=set()> [in /Users/hshafagh/lemur-dev/lemur/lemur/__init__.py:101]
+Traceback (most recent call last):
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/app.py", line 1950, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/app.py", line 1936, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_restful/__init__.py", line 468, in wrapper
+    resp = resource(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/views.py", line 89, in view
+    return self.dispatch_request(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_restful/__init__.py", line 583, in dispatch_request
+    resp = meth(*args, **kwargs)
+  File "/Users/hshafagh/lemur-dev/lemur/lemur/auth/service.py", line 139, in decorated_function
+    return f(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_principal.py", line 198, in _decorated
+    with self:
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_principal.py", line 207, in __enter__
+    abort(self.http_exception, self.permission)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/werkzeug/exceptions.py", line 822, in abort
+    return _aborter(status, *args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/werkzeug/exceptions.py", line 807, in __call__
+    raise self.mapping[code](*args, **kwargs)
+werkzeug.exceptions.Forbidden: 403 Forbidden: <Permission needs={Need(method='role', value='admin')} excludes=set()>
+2020-10-27 13:04:27,780 WARNING: Plugin 'CloudCAIssuerPlugin' may not work correctly. Required variable 'CLOUDCA_PEM_PATH' is not set in Lemur's conf. [in /Users/hshafagh/lemur-dev/lemur/lemur/common/managers.py:66]
+2020-10-27 13:04:27,781 WARNING: Plugin 'CloudCASourcePlugin' may not work correctly. Required variable 'CLOUDCA_PEM_PATH' is not set in Lemur's conf. [in /Users/hshafagh/lemur-dev/lemur/lemur/common/managers.py:66]
+2020-10-27 13:04:28,090 DEBUG: assigning role user@example.com to ldap user Role(name=admin) [in /Users/hshafagh/lemur-dev/lemur/lemur/auth/ldap.py:132]
+2020-10-27 13:04:28,394 INFO: [lemur-audit] action: key_view, user: user17@example.com, certificate: certificate81. [in /Users/hshafagh/lemur-dev/lemur/lemur/logs/service.py:29]
+2047-12-21 14:00:00,000 WARNING: Plugin 'CloudCAIssuerPlugin' may not work correctly. Required variable 'CLOUDCA_PEM_PATH' is not set in Lemur's conf. [in /Users/hshafagh/lemur-dev/lemur/lemur/common/managers.py:66]
+2047-12-21 14:00:00,000 WARNING: Plugin 'CloudCASourcePlugin' may not work correctly. Required variable 'CLOUDCA_PEM_PATH' is not set in Lemur's conf. [in /Users/hshafagh/lemur-dev/lemur/lemur/common/managers.py:66]
+2020-10-27 13:04:30,890 WARNING: Plugin 'CloudCAIssuerPlugin' may not work correctly. Required variable 'CLOUDCA_PEM_PATH' is not set in Lemur's conf. [in /Users/hshafagh/lemur-dev/lemur/lemur/common/managers.py:66]
+2020-10-27 13:04:30,891 WARNING: Plugin 'CloudCASourcePlugin' may not work correctly. Required variable 'CLOUDCA_PEM_PATH' is not set in Lemur's conf. [in /Users/hshafagh/lemur-dev/lemur/lemur/common/managers.py:66]
+2020-10-27 13:04:30,952 WARNING: Plugin 'CloudCAIssuerPlugin' may not work correctly. Required variable 'CLOUDCA_PEM_PATH' is not set in Lemur's conf. [in /Users/hshafagh/lemur-dev/lemur/lemur/common/managers.py:66]
+2020-10-27 13:04:30,953 WARNING: Plugin 'CloudCASourcePlugin' may not work correctly. Required variable 'CLOUDCA_PEM_PATH' is not set in Lemur's conf. [in /Users/hshafagh/lemur-dev/lemur/lemur/common/managers.py:66]
+2020-10-27 13:04:30,974 WARNING: Plugin 'CloudCAIssuerPlugin' may not work correctly. Required variable 'CLOUDCA_PEM_PATH' is not set in Lemur's conf. [in /Users/hshafagh/lemur-dev/lemur/lemur/common/managers.py:66]
+2020-10-27 13:04:30,975 WARNING: Plugin 'CloudCASourcePlugin' may not work correctly. Required variable 'CLOUDCA_PEM_PATH' is not set in Lemur's conf. [in /Users/hshafagh/lemur-dev/lemur/lemur/common/managers.py:66]
+2020-10-27 13:04:30,995 WARNING: Plugin 'CloudCAIssuerPlugin' may not work correctly. Required variable 'CLOUDCA_PEM_PATH' is not set in Lemur's conf. [in /Users/hshafagh/lemur-dev/lemur/lemur/common/managers.py:66]
+2020-10-27 13:04:30,996 WARNING: Plugin 'CloudCASourcePlugin' may not work correctly. Required variable 'CLOUDCA_PEM_PATH' is not set in Lemur's conf. [in /Users/hshafagh/lemur-dev/lemur/lemur/common/managers.py:66]
+2020-10-27 13:04:31,016 WARNING: Plugin 'CloudCAIssuerPlugin' may not work correctly. Required variable 'CLOUDCA_PEM_PATH' is not set in Lemur's conf. [in /Users/hshafagh/lemur-dev/lemur/lemur/common/managers.py:66]
+2020-10-27 13:04:31,017 WARNING: Plugin 'CloudCASourcePlugin' may not work correctly. Required variable 'CLOUDCA_PEM_PATH' is not set in Lemur's conf. [in /Users/hshafagh/lemur-dev/lemur/lemur/common/managers.py:66]
+2020-10-27 13:04:31,283 WARNING: Plugin 'CloudCAIssuerPlugin' may not work correctly. Required variable 'CLOUDCA_PEM_PATH' is not set in Lemur's conf. [in /Users/hshafagh/lemur-dev/lemur/lemur/common/managers.py:66]
+2020-10-27 13:04:31,284 WARNING: Plugin 'CloudCASourcePlugin' may not work correctly. Required variable 'CLOUDCA_PEM_PATH' is not set in Lemur's conf. [in /Users/hshafagh/lemur-dev/lemur/lemur/common/managers.py:66]
+2020-10-27 13:04:31,307 WARNING: Plugin 'CloudCAIssuerPlugin' may not work correctly. Required variable 'CLOUDCA_PEM_PATH' is not set in Lemur's conf. [in /Users/hshafagh/lemur-dev/lemur/lemur/common/managers.py:66]
+2020-10-27 13:04:31,308 WARNING: Plugin 'CloudCASourcePlugin' may not work correctly. Required variable 'CLOUDCA_PEM_PATH' is not set in Lemur's conf. [in /Users/hshafagh/lemur-dev/lemur/lemur/common/managers.py:66]
+2020-10-27 13:04:31,331 WARNING: Plugin 'CloudCAIssuerPlugin' may not work correctly. Required variable 'CLOUDCA_PEM_PATH' is not set in Lemur's conf. [in /Users/hshafagh/lemur-dev/lemur/lemur/common/managers.py:66]
+2020-10-27 13:04:31,332 WARNING: Plugin 'CloudCASourcePlugin' may not work correctly. Required variable 'CLOUDCA_PEM_PATH' is not set in Lemur's conf. [in /Users/hshafagh/lemur-dev/lemur/lemur/common/managers.py:66]
+2020-10-27 13:04:31,931 WARNING: Plugin 'CloudCAIssuerPlugin' may not work correctly. Required variable 'CLOUDCA_PEM_PATH' is not set in Lemur's conf. [in /Users/hshafagh/lemur-dev/lemur/lemur/common/managers.py:66]
+2020-10-27 13:04:31,932 WARNING: Plugin 'CloudCASourcePlugin' may not work correctly. Required variable 'CLOUDCA_PEM_PATH' is not set in Lemur's conf. [in /Users/hshafagh/lemur-dev/lemur/lemur/common/managers.py:66]
+2020-10-27 13:04:36,453 ERROR: 403 Forbidden: <Permission needs={Need(method='role', value='admin')} excludes=set()> [in /Users/hshafagh/lemur-dev/lemur/lemur/__init__.py:101]
+Traceback (most recent call last):
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/app.py", line 1950, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/app.py", line 1936, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_restful/__init__.py", line 468, in wrapper
+    resp = resource(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/views.py", line 89, in view
+    return self.dispatch_request(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_restful/__init__.py", line 583, in dispatch_request
+    resp = meth(*args, **kwargs)
+  File "/Users/hshafagh/lemur-dev/lemur/lemur/auth/service.py", line 139, in decorated_function
+    return f(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_principal.py", line 198, in _decorated
+    with self:
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_principal.py", line 207, in __enter__
+    abort(self.http_exception, self.permission)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/werkzeug/exceptions.py", line 822, in abort
+    return _aborter(status, *args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/werkzeug/exceptions.py", line 807, in __call__
+    raise self.mapping[code](*args, **kwargs)
+werkzeug.exceptions.Forbidden: 403 Forbidden: <Permission needs={Need(method='role', value='admin')} excludes=set()>
+2020-10-27 13:04:36,572 ERROR: 403 Forbidden: <Permission needs={Need(method='role', value='admin')} excludes=set()> [in /Users/hshafagh/lemur-dev/lemur/lemur/__init__.py:101]
+Traceback (most recent call last):
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/app.py", line 1950, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/app.py", line 1936, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_restful/__init__.py", line 468, in wrapper
+    resp = resource(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/views.py", line 89, in view
+    return self.dispatch_request(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_restful/__init__.py", line 583, in dispatch_request
+    resp = meth(*args, **kwargs)
+  File "/Users/hshafagh/lemur-dev/lemur/lemur/auth/service.py", line 139, in decorated_function
+    return f(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_principal.py", line 198, in _decorated
+    with self:
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_principal.py", line 207, in __enter__
+    abort(self.http_exception, self.permission)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/werkzeug/exceptions.py", line 822, in abort
+    return _aborter(status, *args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/werkzeug/exceptions.py", line 807, in __call__
+    raise self.mapping[code](*args, **kwargs)
+werkzeug.exceptions.Forbidden: 403 Forbidden: <Permission needs={Need(method='role', value='admin')} excludes=set()>
+2020-10-27 13:04:36,922 ERROR: "The field 'password' is not sortable or filterable" [in /Users/hshafagh/lemur-dev/lemur/lemur/common/schema.py:163]
+Traceback (most recent call last):
+  File "/Users/hshafagh/lemur-dev/lemur/lemur/common/schema.py", line 160, in decorated_function
+    resp = f(*args, **kwargs)
+  File "/Users/hshafagh/lemur-dev/lemur/lemur/roles/views.py", line 92, in get
+    return service.render(args)
+  File "/Users/hshafagh/lemur-dev/lemur/lemur/roles/service.py", line 128, in render
+    query = database.filter(query, Role, terms)
+  File "/Users/hshafagh/lemur-dev/lemur/lemur/database.py", line 202, in filter
+    column = get_model_column(model, underscore(terms[0]))
+  File "/Users/hshafagh/lemur-dev/lemur/lemur/database.py", line 81, in get_model_column
+    raise AttrNotFound(field)
+lemur.exceptions.AttrNotFound: "The field 'password' is not sortable or filterable"
+2020-10-27 13:04:37,330 ERROR: 403 Forbidden: <Permission needs={Need(method='role', value='admin')} excludes=set()> [in /Users/hshafagh/lemur-dev/lemur/lemur/__init__.py:101]
+Traceback (most recent call last):
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/app.py", line 1950, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/app.py", line 1936, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_restful/__init__.py", line 468, in wrapper
+    resp = resource(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/views.py", line 89, in view
+    return self.dispatch_request(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_restful/__init__.py", line 583, in dispatch_request
+    resp = meth(*args, **kwargs)
+  File "/Users/hshafagh/lemur-dev/lemur/lemur/auth/service.py", line 139, in decorated_function
+    return f(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_principal.py", line 198, in _decorated
+    with self:
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_principal.py", line 207, in __enter__
+    abort(self.http_exception, self.permission)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/werkzeug/exceptions.py", line 822, in abort
+    return _aborter(status, *args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/werkzeug/exceptions.py", line 807, in __call__
+    raise self.mapping[code](*args, **kwargs)
+werkzeug.exceptions.Forbidden: 403 Forbidden: <Permission needs={Need(method='role', value='admin')} excludes=set()>
+2020-10-27 13:04:37,378 ERROR: 403 Forbidden: <Permission needs={Need(method='role', value='admin')} excludes=set()> [in /Users/hshafagh/lemur-dev/lemur/lemur/__init__.py:101]
+Traceback (most recent call last):
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/app.py", line 1950, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/app.py", line 1936, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_restful/__init__.py", line 468, in wrapper
+    resp = resource(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/views.py", line 89, in view
+    return self.dispatch_request(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_restful/__init__.py", line 583, in dispatch_request
+    resp = meth(*args, **kwargs)
+  File "/Users/hshafagh/lemur-dev/lemur/lemur/auth/service.py", line 139, in decorated_function
+    return f(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_principal.py", line 198, in _decorated
+    with self:
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_principal.py", line 207, in __enter__
+    abort(self.http_exception, self.permission)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/werkzeug/exceptions.py", line 822, in abort
+    return _aborter(status, *args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/werkzeug/exceptions.py", line 807, in __call__
+    raise self.mapping[code](*args, **kwargs)
+werkzeug.exceptions.Forbidden: 403 Forbidden: <Permission needs={Need(method='role', value='admin')} excludes=set()>
+2020-10-27 13:04:37,455 WARNING: Plugin 'CloudCAIssuerPlugin' may not work correctly. Required variable 'CLOUDCA_PEM_PATH' is not set in Lemur's conf. [in /Users/hshafagh/lemur-dev/lemur/lemur/common/managers.py:66]
+2020-10-27 13:04:37,459 WARNING: Plugin 'CloudCASourcePlugin' may not work correctly. Required variable 'CLOUDCA_PEM_PATH' is not set in Lemur's conf. [in /Users/hshafagh/lemur-dev/lemur/lemur/common/managers.py:66]
+2020-10-27 13:04:37,484 WARNING: Plugin 'CloudCAIssuerPlugin' may not work correctly. Required variable 'CLOUDCA_PEM_PATH' is not set in Lemur's conf. [in /Users/hshafagh/lemur-dev/lemur/lemur/common/managers.py:66]
+2020-10-27 13:04:37,485 WARNING: Plugin 'CloudCASourcePlugin' may not work correctly. Required variable 'CLOUDCA_PEM_PATH' is not set in Lemur's conf. [in /Users/hshafagh/lemur-dev/lemur/lemur/common/managers.py:66]
+2020-10-27 13:04:37,503 WARNING: Plugin 'CloudCAIssuerPlugin' may not work correctly. Required variable 'CLOUDCA_PEM_PATH' is not set in Lemur's conf. [in /Users/hshafagh/lemur-dev/lemur/lemur/common/managers.py:66]
+2020-10-27 13:04:37,504 WARNING: Plugin 'CloudCASourcePlugin' may not work correctly. Required variable 'CLOUDCA_PEM_PATH' is not set in Lemur's conf. [in /Users/hshafagh/lemur-dev/lemur/lemur/common/managers.py:66]
+2020-10-27 13:04:37,523 ERROR: 403 Forbidden: <Permission needs={Need(method='role', value='admin')} excludes=set()> [in /Users/hshafagh/lemur-dev/lemur/lemur/__init__.py:101]
+Traceback (most recent call last):
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/app.py", line 1950, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/app.py", line 1936, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_restful/__init__.py", line 468, in wrapper
+    resp = resource(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/views.py", line 89, in view
+    return self.dispatch_request(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_restful/__init__.py", line 583, in dispatch_request
+    resp = meth(*args, **kwargs)
+  File "/Users/hshafagh/lemur-dev/lemur/lemur/auth/service.py", line 139, in decorated_function
+    return f(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_principal.py", line 198, in _decorated
+    with self:
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_principal.py", line 207, in __enter__
+    abort(self.http_exception, self.permission)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/werkzeug/exceptions.py", line 822, in abort
+    return _aborter(status, *args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/werkzeug/exceptions.py", line 807, in __call__
+    raise self.mapping[code](*args, **kwargs)
+werkzeug.exceptions.Forbidden: 403 Forbidden: <Permission needs={Need(method='role', value='admin')} excludes=set()>
+2020-10-27 13:04:37,732 ERROR: 403 Forbidden: <Permission needs={Need(method='role', value='admin')} excludes=set()> [in /Users/hshafagh/lemur-dev/lemur/lemur/__init__.py:101]
+Traceback (most recent call last):
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/app.py", line 1950, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/app.py", line 1936, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_restful/__init__.py", line 468, in wrapper
+    resp = resource(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/views.py", line 89, in view
+    return self.dispatch_request(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_restful/__init__.py", line 583, in dispatch_request
+    resp = meth(*args, **kwargs)
+  File "/Users/hshafagh/lemur-dev/lemur/lemur/auth/service.py", line 139, in decorated_function
+    return f(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_principal.py", line 198, in _decorated
+    with self:
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_principal.py", line 207, in __enter__
+    abort(self.http_exception, self.permission)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/werkzeug/exceptions.py", line 822, in abort
+    return _aborter(status, *args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/werkzeug/exceptions.py", line 807, in __call__
+    raise self.mapping[code](*args, **kwargs)
+werkzeug.exceptions.Forbidden: 403 Forbidden: <Permission needs={Need(method='role', value='admin')} excludes=set()>
+2020-10-27 13:04:37,849 ERROR: 403 Forbidden: <Permission needs={Need(method='role', value='admin')} excludes=set()> [in /Users/hshafagh/lemur-dev/lemur/lemur/__init__.py:101]
+Traceback (most recent call last):
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/app.py", line 1950, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/app.py", line 1936, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_restful/__init__.py", line 468, in wrapper
+    resp = resource(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask/views.py", line 89, in view
+    return self.dispatch_request(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_restful/__init__.py", line 583, in dispatch_request
+    resp = meth(*args, **kwargs)
+  File "/Users/hshafagh/lemur-dev/lemur/lemur/auth/service.py", line 139, in decorated_function
+    return f(*args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_principal.py", line 198, in _decorated
+    with self:
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/flask_principal.py", line 207, in __enter__
+    abort(self.http_exception, self.permission)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/werkzeug/exceptions.py", line 822, in abort
+    return _aborter(status, *args, **kwargs)
+  File "/Users/hshafagh/.pyenv/versions/3.7.7/lib/python3.7/site-packages/werkzeug/exceptions.py", line 807, in __call__
+    raise self.mapping[code](*args, **kwargs)
+werkzeug.exceptions.Forbidden: 403 Forbidden: <Permission needs={Need(method='role', value='admin')} excludes=set()>
+2020-10-27 13:04:38,059 ERROR: "The field 'password' is not sortable or filterable" [in /Users/hshafagh/lemur-dev/lemur/lemur/common/schema.py:163]
+Traceback (most recent call last):
+  File "/Users/hshafagh/lemur-dev/lemur/lemur/common/schema.py", line 160, in decorated_function
+    resp = f(*args, **kwargs)
+  File "/Users/hshafagh/lemur-dev/lemur/lemur/users/views.py", line 94, in get
+    return service.render(args)
+  File "/Users/hshafagh/lemur-dev/lemur/lemur/users/service.py", line 136, in render
+    query = database.filter(query, User, terms)
+  File "/Users/hshafagh/lemur-dev/lemur/lemur/database.py", line 202, in filter
+    column = get_model_column(model, underscore(terms[0]))
+  File "/Users/hshafagh/lemur-dev/lemur/lemur/database.py", line 81, in get_model_column
+    raise AttrNotFound(field)
+lemur.exceptions.AttrNotFound: "The field 'password' is not sortable or filterable"
+2020-10-27 13:04:38,074 ERROR: "The field 'password' is not sortable or filterable" [in /Users/hshafagh/lemur-dev/lemur/lemur/common/schema.py:163]
+Traceback (most recent call last):
+  File "/Users/hshafagh/lemur-dev/lemur/lemur/common/schema.py", line 160, in decorated_function
+    resp = f(*args, **kwargs)
+  File "/Users/hshafagh/lemur-dev/lemur/lemur/users/views.py", line 94, in get
+    return service.render(args)
+  File "/Users/hshafagh/lemur-dev/lemur/lemur/users/service.py", line 138, in render
+    return database.sort_and_page(query, User, args)
+  File "/Users/hshafagh/lemur-dev/lemur/lemur/database.py", line 329, in sort_and_page
+    query = sort(query, model, sort_by, sort_dir)
+  File "/Users/hshafagh/lemur-dev/lemur/lemur/database.py", line 216, in sort
+    column = get_model_column(model, underscore(field))
+  File "/Users/hshafagh/lemur-dev/lemur/lemur/database.py", line 81, in get_model_column
+    raise AttrNotFound(field)
+lemur.exceptions.AttrNotFound: "The field 'password' is not sortable or filterable"
+2020-10-27 13:04:38,956 DEBUG: No OCSP URL in certificate 211983098819107449768450703123665283596 [in /Users/hshafagh/lemur-dev/lemur/lemur/certificates/verify.py:39]
+2020-10-27 13:04:38,957 DEBUG: No CRLDP extension in certificate 211983098819107449768450703123665283596 [in /Users/hshafagh/lemur-dev/lemur/lemur/certificates/verify.py:92]
+2020-10-27 13:04:38,958 DEBUG: Failed to verify 211983098819107449768450703123665283596 [in /Users/hshafagh/lemur-dev/lemur/lemur/certificates/verify.py:171]
+2020-10-27 13:04:38,971 DEBUG: Retrieving CRL: ldap://ldap.example.org/cn=Example%20Certificate%20Authority?certificateRevocationList;binary [in /Users/hshafagh/lemur-dev/lemur/lemur/certificates/verify.py:100]
+2020-10-27 13:04:39,022 DEBUG: Retrieving CRL: http://invalid.example.org/crl/foobar.crl [in /Users/hshafagh/lemur-dev/lemur/lemur/certificates/verify.py:100]

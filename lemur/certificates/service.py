@@ -567,16 +567,12 @@ def query_common_name(common_name, args):
         .filter(not_(Certificate.revoked))\
         .filter(not_(Certificate.replaced.any()))  # ignore rotated certificates to avoid duplicates
 
-    if common_name == "%" and not owner:
-        # return all valid, and not revoked certs.
-        # This use-case should be deprecated, owner should become mandatory.
-        return query.all()
-    elif common_name == "%":
-        # all valid certs from the owner
+    if owner:
         query = query.filter(Certificate.owner.ilike(owner))
-    else:
-        # search based on owner and cn
-        query = query.filter(Certificate.cn.ilike(common_name)).filter(Certificate.owner.ilike(owner))
+
+    if common_name != "%":
+        # if common_name is a wildcard ('%'), no need to include it in the query
+        query = query.filter(Certificate.cn.ilike(common_name))
 
     return query.all()
 
