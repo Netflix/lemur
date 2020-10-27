@@ -127,7 +127,7 @@ class TestAcmeHttp(unittest.TestCase):
         }
         csr = "123"
         mock_request_certificate.return_value = ("pem_certificate", "chain")
-        with self.assertRaisesRegexp(Exception, "No token_destination configured"):
+        with self.assertRaisesRegex(Exception, "No token_destination configured"):
             provider.create_certificate(csr, issuer_options)
 
     @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.setup_acme_client")
@@ -166,5 +166,5 @@ class TestAcmeHttp(unittest.TestCase):
         }
         csr = "123"
         mock_request_certificate.return_value = ("pem_certificate", "chain")
-        with self.assertRaisesRegexp(Exception, "HTTP-01 challenge was not offered"):
+        with self.assertRaisesRegex(Exception, "HTTP-01 challenge was not offered"):
             provider.create_certificate(csr, issuer_options)
