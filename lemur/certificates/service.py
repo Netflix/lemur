@@ -566,6 +566,7 @@ def query_common_name(common_name, args):
     if common_name == "%" and not owner:
         result = (
             Certificate.query.filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))
+            .filter(not_(Certificate.revoked))
             .all()
         )
     elif common_name == "%":
@@ -573,6 +574,7 @@ def query_common_name(common_name, args):
         result = (
             Certificate.query.filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))
             .filter(Certificate.owner == owner)
+            .filter(not_(Certificate.revoked))
             .all()
         )
     else:
@@ -581,6 +583,7 @@ def query_common_name(common_name, args):
             Certificate.query.filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))
             .filter(Certificate.cn.like(common_name))
             .filter(Certificate.owner == owner)
+            .filter(not_(Certificate.revoked))
             .all()
         )
 
