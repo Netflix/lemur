@@ -24,7 +24,7 @@ cffi==1.14.0              # via bcrypt, cryptography, pynacl
 chardet==3.0.4            # via requests
 click==7.1.1              # via flask
 cloudflare==2.8.13        # via -r requirements.in
-cryptography==3.1.1       # via -r requirements.in, acme, josepy, paramiko, pyopenssl, requests
+cryptography==3.2         # via -r requirements.in, acme, josepy, paramiko, pyopenssl, requests
 dnspython3==1.15.0        # via -r requirements.in
 dnspython==1.15.0         # via dnspython3
 dyn==1.8.1                # via -r requirements.in
