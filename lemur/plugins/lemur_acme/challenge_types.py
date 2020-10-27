@@ -14,14 +14,10 @@ import OpenSSL
 from acme import challenges
 from flask import current_app
 
-from lemur.dns_providers import service as dns_provider_service
-from lemur.extensions import metrics, sentry
-
 from lemur.authorizations import service as authorization_service
 from lemur.exceptions import LemurException, InvalidConfiguration
 from lemur.plugins.base import plugins
 from lemur.destinations import service as destination_service
-from lemur.destinations.models import Destination
 from lemur.plugins.lemur_acme.acme_handlers import AcmeHandler, AcmeDnsHandler
 
 
@@ -160,16 +156,6 @@ class AcmeHttpChallenge(AcmeChallenge):
 
 class AcmeDnsChallenge(AcmeChallenge):
     challengeType = challenges.DNS01
-
-    def __init__(self):
-        self.dns_providers_for_domain = {}
-        try:
-            self.all_dns_providers = dns_provider_service.get_all_dns_providers()
-        except Exception as e:
-            metrics.send("AcmeHandler_init_error", "counter", 1)
-            sentry.captureException()
-            current_app.logger.error(f"Unable to fetch DNS Providers: {e}")
-            self.all_dns_providers = []
 
     def create_certificate(self, csr, issuer_options):
         """
