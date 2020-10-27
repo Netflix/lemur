@@ -568,6 +568,8 @@ def query_common_name(common_name, args):
         .filter(not_(Certificate.replaced.any()))  # ignore rotated certificates to avoid duplicates
 
     if common_name == "%" and not owner:
+        # return all valid, and not revoked certs.
+        # This use-case should be deprecated, owner should become mandatory.
         return query.all()
     elif common_name == "%":
         # all valid certs from the owner
