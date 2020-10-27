@@ -110,7 +110,7 @@ def update_key_type():
         except ValueError as e:
             log.error("Error in processing certificate - ID: %s Error: %s \n" % (cert_id, str(e)))
         else:
-            log.error("Processing certificate - ID: %s key_type: %s\n" % (cert_id, cert_key_type))
+            log.info("Processing certificate - ID: %s key_type: %s\n" % (cert_id, cert_key_type))
             stmt = text(
                 "update certificates set key_type=:key_type where id=:id"
             )
