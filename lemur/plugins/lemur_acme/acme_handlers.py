@@ -400,7 +400,27 @@ class AcmeDnsHandler(AcmeHandler):
         for authz_record in authorizations:
             self.complete_dns_challenge(acme_client, authz_record)
 
-        self.cleanup_dns_challenges(acme_client, authorizations)
+        for authz_record in authorizations:
+            dns_challenges = authz_record.dns_challenge
+            for dns_challenge in dns_challenges:
+                dns_providers = self.dns_providers_for_domain.get(authz_record.host)
+                for dns_provider in dns_providers:
+                    # Grab account number (For Route53)
+                    dns_provider_plugin = self.get_dns_provider(
+                        dns_provider.provider_type
+                    )
+                    dns_provider_options = json.loads(dns_provider.credentials)
+                    account_number = dns_provider_options.get("account_id")
+                    host_to_validate, _ = self.strip_wildcard(authz_record.host)
+                    host_to_validate = self.maybe_add_extension(
+                        host_to_validate, dns_provider_options
+                    )
+                    dns_provider_plugin.delete_txt_record(
+                        authz_record.change_id,
+                        account_number,
+                        dns_challenge.validation_domain_name(host_to_validate),
+                        dns_challenge.validation(acme_client.client.net.key),
+                    )
 
         return authorizations
 
