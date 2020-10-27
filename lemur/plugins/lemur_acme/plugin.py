@@ -334,6 +334,13 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
             "helpMessage": "Certificate to use",
         },
         {
+            "name": "store_account",
+            "type": "bool",
+            "required": False,
+            "helpMessage": "Disable to create a new account for each ACME request",
+            "default": False,
+        },
+        {
             "name": "tokenDestination",
             "type": "destinationSelect",
             "required": True,
