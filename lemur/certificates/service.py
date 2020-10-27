@@ -560,18 +560,29 @@ def query_common_name(common_name, args):
     :return:
     """
     owner = args.pop("owner")
-    if not owner:
-        owner = "%"
-
     # only not expired certificates
     current_time = arrow.utcnow()
 
-    result = (
-        Certificate.query.filter(Certificate.cn.ilike(common_name))
-        .filter(Certificate.owner.ilike(owner))
-        .filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))
-        .all()
-    )
+    if common_name == "%" and not owner:
+        result = (
+            Certificate.query.filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))
+            .all()
+        )
+    elif common_name == "%":
+        # all valid certs from the owner
+        result = (
+            Certificate.query.filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))
+            .filter(Certificate.owner == owner)
+            .all()
+        )
+    else:
+        # search based on owner and cn
+        result = (
+            Certificate.query.filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))
+            .filter(Certificate.cn.like(common_name))
+            .filter(Certificate.owner == owner)
+            .all()
+        )
 
     return result
 
