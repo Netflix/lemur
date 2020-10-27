@@ -123,9 +123,9 @@ def handle_response(my_response):
 
 
 @retry(stop_max_attempt_number=3, wait_fixed=5000)
-def get_certificate_order(session, url, data):
+def order_and_download_certificate(session, url, data):
     """
-    Helper function place a cert order and downloading it
+    Helper function to place a certificacte order and download it
     :param session:
     :param url: Entrust endpoint url
     :param data: CSR, and the required order details, such as validity length
@@ -197,7 +197,7 @@ class EntrustIssuerPlugin(IssuerPlugin):
         data = process_options(issuer_options)
         data["csr"] = csr
 
-        response_dict = get_certificate_order(self.session, url, data)
+        response_dict = order_and_download_certificate(self.session, url, data)
 
         external_id = response_dict['trackingId']
         cert = response_dict['endEntityCert']
