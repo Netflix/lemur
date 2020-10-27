@@ -453,5 +453,5 @@ class SNSNotificationPlugin(ExpirationNotificationPlugin):
                     f"{self.get_option('accountNumber', options)}:" \
                     f"{self.get_option('topicName', options)}"
 
-        current_app.logger.debug(f"Publishing {notification_type} notification to topic {topic_arn}")
+        current_app.logger.info(f"Publishing {notification_type} notification to topic {topic_arn}")
         sns.publish(topic_arn, message, notification_type, region_name=self.get_option("region", options))

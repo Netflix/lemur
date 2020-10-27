@@ -108,7 +108,7 @@ def send_plugin_notification(event_type, data, recipients, notification):
     }
     status = FAILURE_METRIC_STATUS
     try:
-        current_app.logger.debug(log_data)
+        current_app.logger.info(log_data)
         notification.plugin.send(event_type, data, recipients, notification.options)
         status = SUCCESS_METRIC_STATUS
     except Exception as e:
