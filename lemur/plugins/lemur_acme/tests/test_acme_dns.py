@@ -327,17 +327,21 @@ class TestAcmeDns(unittest.TestCase):
     @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.setup_acme_client")
     @patch("lemur.plugins.lemur_acme.acme_handlers.dns_provider_service")
     @patch("lemur.plugins.lemur_acme.plugin.current_app")
+    @patch("lemur.plugins.lemur_acme.acme_handlers.current_app")
+    @patch("lemur.plugins.lemur_acme.challenge_types.current_app")
     @patch("lemur.plugins.lemur_acme.plugin.AcmeDnsHandler.get_authorizations")
     @patch("lemur.plugins.lemur_acme.plugin.AcmeDnsHandler.finalize_authorizations")
     @patch("lemur.plugins.lemur_acme.plugin.AcmeDnsHandler.request_certificate")
-    @patch("lemur.plugins.lemur_acme.plugin.authorization_service")
+    @patch("lemur.plugins.lemur_acme.challenge_types.authorization_service")
     def test_create_certificate(
             self,
             mock_authorization_service,
             mock_request_certificate,
             mock_finalize_authorizations,
             mock_get_authorizations,
-            mock_current_app,
+            mock_current_app_c,
+            mock_current_app_a,
+            mock_current_app_p,
             mock_dns_provider_service,
             mock_acme,
     ):
