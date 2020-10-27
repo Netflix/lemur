@@ -583,7 +583,7 @@ def query_common_name(common_name, args):
         # search based on owner and cn
         result = (
             Certificate.query.filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))
-            .filter(Certificate.cn.like(common_name))
+            .filter(Certificate.cn.ilike(common_name))
             .filter(Certificate.owner == owner)
             .filter(not_(Certificate.revoked))
             .filter(not_(Certificate.replaced.any()))  # ignore rotated certificates to avoid duplicates
