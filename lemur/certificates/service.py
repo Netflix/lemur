@@ -563,34 +563,20 @@ def query_common_name(common_name, args):
     # only not expired certificates
     current_time = arrow.utcnow()
 
+    query = Certificate.query.filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))\
+        .filter(not_(Certificate.revoked))\
+        .filter(not_(Certificate.replaced.any()))  # ignore rotated certificates to avoid duplicates
+
     if common_name == "%" and not owner:
-        result = (
-            Certificate.query.filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))
-            .filter(not_(Certificate.revoked))
-            .filter(not_(Certificate.replaced.any()))  # ignore rotated certificates to avoid duplicates
-            .all()
-        )
+        return query.all()
     elif common_name == "%":
         # all valid certs from the owner
-        result = (
-            Certificate.query.filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))
-            .filter(Certificate.owner == owner)
-            .filter(not_(Certificate.revoked))
-            .filter(not_(Certificate.replaced.any()))  # ignore rotated certificates to avoid duplicates
-            .all()
-        )
+        query = query.filter(Certificate.owner.ilike(owner))
     else:
         # search based on owner and cn
-        result = (
-            Certificate.query.filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))
-            .filter(Certificate.cn.ilike(common_name))
-            .filter(Certificate.owner == owner)
-            .filter(not_(Certificate.revoked))
-            .filter(not_(Certificate.replaced.any()))  # ignore rotated certificates to avoid duplicates
-            .all()
-        )
+        query = query.filter(Certificate.cn.ilike(common_name)).filter(Certificate.owner.ilike(owner))
 
-    return result
+    return query.all()
 
 
 def create_csr(**csr_config):
