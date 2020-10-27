@@ -7,8 +7,9 @@ the rest of the keys, the certificate body is parsed to determine
 the exact key_type information.
 
 Each individual DB change is explicitly committed, and the respective
-log is added to a file named db_upgrade.log in the current working
-directory. Any error encountered while parsing a certificate will
+log is added to a file configured in LOG_UPGRADE_FILE or, by default,
+to a file named db_upgrade.log in the current working directory.
+Any error encountered while parsing a certificate will
 also be logged along with the certificate ID. If faced with any issue
 while running this upgrade, there is no harm in re-running the upgrade.
 Each run processes only rows for which key_type information is not yet
