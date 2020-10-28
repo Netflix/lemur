@@ -167,17 +167,19 @@ angular.module('lemur')
         },
         setValidityEndDateRange: function (value) {
           // clear selected validity end date as we are about to calculate new range
-          if(this.validityEnd) {
-            this.validityEnd = '';
-          }
-          
+          this.validityEnd = '';
+
           // Minimum end date will be same as selected start date
           this.authority.authorityCertificate.minValidityEnd = value;
 
-          // Move max end date by maxIssuanceDays
-          let endDate = new Date(value);
-          endDate.setDate(endDate.getDate() + this.authority.authorityCertificate.maxIssuanceDays);
-          this.authority.authorityCertificate.maxValidityEnd = endDate;
+          if(!this.authority.maxIssuanceDays) {
+            this.authority.authorityCertificate.maxValidityEnd = this.authority.authorityCertificate.notAfter;
+          } else {
+            // Move max end date by maxIssuanceDays
+            let endDate = new Date(value);
+            endDate.setDate(endDate.getDate() + this.authority.maxIssuanceDays);
+            this.authority.authorityCertificate.maxValidityEnd = endDate;
+          }
         }
       });
     });
@@ -195,7 +197,7 @@ angular.module('lemur')
     CertificateService.create = function (certificate) {
       certificate.attachSubAltName();
       certificate.attachCustom();
-      if (certificate.validityYears === '') { // if a user de-selects validity years we ignore it
+      if (certificate.validityYears === '') { // if a user de-selects validity years we ignore it - might not be needed anymore
         delete certificate.validityYears;
       }
       return CertificateApi.post(certificate);
@@ -281,9 +283,17 @@ angular.module('lemur')
         certificate.authority.authorityCertificate.minValidityEnd = defaults.authority.authorityCertificate.notBefore;
         certificate.authority.authorityCertificate.maxValidityEnd = defaults.authority.authorityCertificate.notAfter;
 
+        // pre-select validity type radio button to default days
+        certificate.validityType = 'defaultDays';
+
         if (certificate.dnsProviderId) {
           certificate.dnsProvider = {id: certificate.dnsProviderId};
         }
+
+        if(!certificate.keyType) {
+          certificate.keyType = 'RSA2048'; // default algo to select during clone if backend did not return algo
+        }
+
       });
     };
 
@@ -296,7 +306,7 @@ angular.module('lemur')
     };
 
     CertificateService.updateNotify = function (certificate) {
-      return certificate.put();
+      return certificate.post();
     };
 
     CertificateService.export = function (certificate) {

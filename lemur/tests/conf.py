@@ -1,8 +1,20 @@
 # This is just Python which means you can inherit and tweak settings
 
+import base64
 import os
+import random
+import string
 
 _basedir = os.path.abspath(os.path.dirname(__file__))
+
+
+# generate random secrets for unittest
+def get_random_secret(length):
+    secret_key = ''.join(random.choice(string.ascii_uppercase) for x in range(round(length / 4)))
+    secret_key = secret_key + ''.join(random.choice("~!@#$%^&*()_+") for x in range(round(length / 4)))
+    secret_key = secret_key + ''.join(random.choice(string.ascii_lowercase) for x in range(round(length / 4)))
+    return secret_key + ''.join(random.choice(string.digits) for x in range(round(length / 4)))
+
 
 THREADS_PER_PAGE = 8
 
@@ -14,25 +26,27 @@ debug = False
 
 TESTING = True
 
-# this is the secret key used by flask session management
-SECRET_KEY = "I/dVhOZNSMZMqrFJa5tWli6VQccOGudKerq3eWPMSzQNmHHVhMAQfQ=="
+# this is the secret key used by flask session management (utf8 encoded)
+SECRET_KEY = get_random_secret(length=32).encode('utf8')
 
-# You should consider storing these separately from your config
+
+# You should consider storing these separately from your config (should be URL-safe)
 LEMUR_TOKEN_SECRET = "test"
-LEMUR_ENCRYPTION_KEYS = "o61sBLNBSGtAckngtNrfVNd8xy8Hp9LBGDstTbMbqCY="
+LEMUR_ENCRYPTION_KEYS = base64.urlsafe_b64encode(get_random_secret(length=32).encode('utf8'))
+
 
 # List of domain regular expressions that non-admin users can issue
-LEMUR_WHITELISTED_DOMAINS = [
-    "^[a-zA-Z0-9-]+\.example\.com$",
-    "^[a-zA-Z0-9-]+\.example\.org$",
-    "^example\d+\.long\.com$",
+LEMUR_ALLOWED_DOMAINS = [
+    r"^[a-zA-Z0-9-]+\.example\.com$",
+    r"^[a-zA-Z0-9-]+\.example\.org$",
+    r"^example\d+\.long\.com$",
 ]
 
 # Mail Server
 
 # Lemur currently only supports SES for sending email, this address
 # needs to be verified
-LEMUR_EMAIL = ""
+LEMUR_EMAIL = "lemur@example.com"
 LEMUR_SECURITY_TEAM_EMAIL = ["security@example.com"]
 
 LEMUR_HOSTNAME = "lemur.example.com"
@@ -52,7 +66,8 @@ LEMUR_ALLOW_WEEKEND_EXPIRATION = False
 
 # Database
 
-# modify this if you are not using a local database
+# modify this if you are not using a local database. Do not use any development or production DBs,
+# as Unit Tests drop the whole schema, recreate and again drop everything at the end
 SQLALCHEMY_DATABASE_URI = os.getenv(
     "SQLALCHEMY_DATABASE_URI", "postgresql://lemur:lemur@localhost:5432/lemur"
 )
@@ -84,8 +99,6 @@ DIGICERT_CIS_URL = "mock://www.digicert.com"
 DIGICERT_CIS_PROFILE_NAMES = {"sha2-rsa-ecc-root": "ssl_plus"}
 DIGICERT_CIS_API_KEY = "api-key"
 DIGICERT_CIS_ROOTS = {"root": "ROOT"}
-DIGICERT_CIS_INTERMEDIATES = {"inter": "INTERMEDIATE_CA_CERT"}
-
 
 VERISIGN_URL = "http://example.com"
 VERISIGN_PEM_PATH = "~/"
@@ -197,3 +210,41 @@ LDAP_REQUIRED_GROUP = "Lemur Access"
 LDAP_DEFAULT_ROLE = "role1"
 
 ALLOW_CERT_DELETION = True
+
+ENTRUST_API_CERT = "api-cert"
+ENTRUST_API_KEY = get_random_secret(32)
+ENTRUST_API_USER = "user"
+ENTRUST_API_PASS = get_random_secret(32)
+ENTRUST_URL = "https://api.entrust.net/enterprise/v2"
+ENTRUST_ROOT = """
+-----BEGIN CERTIFICATE-----
+MIIEPjCCAyagAwIBAgIESlOMKDANBgkqhkiG9w0BAQsFADCBvjELMAkGA1UEBhMC
+VVMxFjAUBgNVBAoTDUVudHJ1c3QsIEluYy4xKDAmBgNVBAsTH1NlZSB3d3cuZW50
+cnVzdC5uZXQvbGVnYWwtdGVybXMxOTA3BgNVBAsTMChjKSAyMDA5IEVudHJ1c3Qs
+IEluYy4gLSBmb3IgYXV0aG9yaXplZCB1c2Ugb25seTEyMDAGA1UEAxMpRW50cnVz
+dCBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IC0gRzIwHhcNMDkwNzA3MTcy
+NTU0WhcNMzAxMjA3MTc1NTU0WjCBvjELMAkGA1UEBhMCVVMxFjAUBgNVBAoTDUVu
+dHJ1c3QsIEluYy4xKDAmBgNVBAsTH1NlZSB3d3cuZW50cnVzdC5uZXQvbGVnYWwt
+dGVybXMxOTA3BgNVBAsTMChjKSAyMDA5IEVudHJ1c3QsIEluYy4gLSBmb3IgYXV0
+aG9yaXplZCB1c2Ugb25seTEyMDAGA1UEAxMpRW50cnVzdCBSb290IENlcnRpZmlj
+YXRpb24gQXV0aG9yaXR5IC0gRzIwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK
+AoIBAQC6hLZy254Ma+KZ6TABp3bqMriVQRrJ2mFOWHLP/vaCeb9zYQYKpSfYs1/T
+RU4cctZOMvJyig/3gxnQaoCAAEUesMfnmr8SVycco2gvCoe9amsOXmXzHHfV1IWN
+cCG0szLni6LVhjkCsbjSR87kyUnEO6fe+1R9V77w6G7CebI6C1XiUJgWMhNcL3hW
+wcKUs/Ja5CeanyTXxuzQmyWC48zCxEXFjJd6BmsqEZ+pCm5IO2/b1BEZQvePB7/1
+U1+cPvQXLOZprE4yTGJ36rfo5bs0vBmLrpxR57d+tVOxMyLlbc9wPBr64ptntoP0
+jaWvYkxN4FisZDQSA/i2jZRjJKRxAgMBAAGjQjBAMA4GA1UdDwEB/wQEAwIBBjAP
+BgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBRqciZ60B7vfec7aVHUbI2fkBJmqzAN
+BgkqhkiG9w0BAQsFAAOCAQEAeZ8dlsa2eT8ijYfThwMEYGprmi5ZiXMRrEPR9RP/
+jTkrwPK9T3CMqS/qF8QLVJ7UG5aYMzyorWKiAHarWWluBh1+xLlEjZivEtRh2woZ
+Rkfz6/djwUAFQKXSt/S1mja/qYh2iARVBCuch38aNzx+LaUa2NSJXsq9rD1s2G2v
+1fN2D807iDginWyTmsQ9v4IbZT+mD12q/OWyFcq1rca8PdCE6OoGcrBNOTJ4vz4R
+nAuknZoh8/CbCzB428Hch0P+vGOaysXCHMnHjf87ElgI5rY97HosTvuDls4MPGmH
+VHOkc8KT/1EQrBVUAdj8BbGJoX90g5pJ19xOe4pIb4tF9g==
+-----END CERTIFICATE-----
+"""
+ENTRUST_NAME = "lemur"
+ENTRUST_EMAIL = "lemur@example.com"
+ENTRUST_PHONE = "123456"
+ENTRUST_ISSUING = ""
+ENTRUST_PRODUCT_ENTRUST = "ADVANTAGE_SSL"

@@ -9,7 +9,6 @@ from datetime import timedelta
 
 import arrow
 from cryptography import x509
-from cryptography.hazmat.primitives.asymmetric import rsa
 from flask import current_app
 from idna.core import InvalidCodepoint
 from sqlalchemy import (
@@ -153,6 +152,7 @@ class Certificate(db.Model):
         Integer, ForeignKey("authorities.id", ondelete="CASCADE")
     )
     rotation_policy_id = Column(Integer, ForeignKey("rotation_policies.id"))
+    key_type = Column(String(128))
 
     notifications = relationship(
         "Notification",
@@ -235,6 +235,7 @@ class Certificate(db.Model):
         self.replaces = kwargs.get("replaces", [])
         self.rotation = kwargs.get("rotation")
         self.rotation_policy = kwargs.get("rotation_policy")
+        self.key_type = kwargs.get("key_type")
         self.signing_algorithm = defaults.signing_algorithm(cert)
         self.bits = defaults.bitstrength(cert)
         self.external_id = kwargs.get("external_id")
@@ -296,12 +297,17 @@ class Certificate(db.Model):
     def distinguished_name(self):
         return self.parsed_cert.subject.rfc4514_string()
 
+    """
+    # Commenting this property as key_type is now added as a column. This code can be removed in future.
     @property
     def key_type(self):
         if isinstance(self.parsed_cert.public_key(), rsa.RSAPublicKey):
             return "RSA{key_size}".format(
                 key_size=self.parsed_cert.public_key().key_size
             )
+        elif isinstance(self.parsed_cert.public_key(), ec.EllipticCurvePublicKey):
+            return get_key_type_from_ec_curve(self.parsed_cert.public_key().curve.name)
+    """
 
     @property
     def validity_remaining(self):
@@ -310,14 +316,6 @@ class Certificate(db.Model):
     @property
     def validity_range(self):
         return self.not_after - self.not_before
-
-    @property
-    def max_issuance_days(self):
-        public_CA = current_app.config.get("PUBLIC_CA_AUTHORITY_NAMES", [])
-        if self.name.lower() in [ca.lower() for ca in public_CA]:
-            return current_app.config.get("PUBLIC_CA_MAX_VALIDITY_DAYS", 397)
-
-        return current_app.config.get("DEFAULT_MAX_VALIDITY_DAYS", 1095)   # 3 years default
 
     @property
     def subject(self):

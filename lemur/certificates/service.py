@@ -105,7 +105,7 @@ def get_all_certs():
 
 def get_all_valid_certs(authority_plugin_name):
     """
-    Retrieves all valid (not expired) certificates within Lemur, for the given authority plugin names
+    Retrieves all valid (not expired & not revoked) certificates within Lemur, for the given authority plugin names
     ignored if no authority_plugin_name provided.
 
     Note that depending on the DB size retrieving all certificates might an expensive operation
@@ -116,11 +116,12 @@ def get_all_valid_certs(authority_plugin_name):
         return (
             Certificate.query.outerjoin(Authority, Authority.id == Certificate.authority_id).filter(
                 Certificate.not_after > arrow.now().format("YYYY-MM-DD")).filter(
-                Authority.plugin_name.in_(authority_plugin_name)).all()
+                Authority.plugin_name.in_(authority_plugin_name)).filter(Certificate.revoked.is_(False)).all()
         )
     else:
         return (
-            Certificate.query.filter(Certificate.not_after > arrow.now().format("YYYY-MM-DD")).all()
+            Certificate.query.filter(Certificate.not_after > arrow.now().format("YYYY-MM-DD")).filter(
+                Certificate.revoked.is_(False)).all()
         )
 
 
@@ -256,17 +257,29 @@ def update(cert_id, **kwargs):
     return database.update(cert)
 
 
-def create_certificate_roles(**kwargs):
-    # create an role for the owner and assign it
-    owner_role = role_service.get_by_name(kwargs["owner"])
+def cleanup_owner_roles_notification(owner_name, kwargs):
+    kwargs["roles"] = [r for r in kwargs["roles"] if r.name != owner_name]
+    notification_prefix = f"DEFAULT_{owner_name.split('@')[0].upper()}"
+    kwargs["notifications"] = [n for n in kwargs["notifications"] if not n.label.startswith(notification_prefix)]
 
-    if not owner_role:
-        owner_role = role_service.create(
-            kwargs["owner"],
-            description="Auto generated role based on owner: {0}".format(
-                kwargs["owner"]
-            ),
-        )
+
+def update_notify(cert, notify_flag):
+    """
+    Toggle notification value which is a boolean
+    :param notify_flag: new notify value
+    :param cert: Certificate object to be updated
+    :return:
+    """
+    cert.notify = notify_flag
+    return database.update(cert)
+
+
+def create_certificate_roles(**kwargs):
+    # create a role for the owner and assign it
+    owner_role = role_service.get_or_create(
+        kwargs["owner"],
+        description=f"Auto generated role based on owner: {kwargs['owner']}"
+    )
 
     # ensure that the authority's owner is also associated with the certificate
     if kwargs.get("authority"):
@@ -347,7 +360,12 @@ def create(**kwargs):
     try:
         cert_body, private_key, cert_chain, external_id, csr = mint(**kwargs)
     except Exception:
-        current_app.logger.error("Exception minting certificate", exc_info=True)
+        log_data = {
+            "message": "Exception minting certificate",
+            "issuer": kwargs["authority"].name,
+            "cn": kwargs["common_name"],
+        }
+        current_app.logger.error(log_data, exc_info=True)
         sentry.captureException()
         raise
     kwargs["body"] = cert_body
@@ -542,20 +560,21 @@ def query_common_name(common_name, args):
     :return:
     """
     owner = args.pop("owner")
-    if not owner:
-        owner = "%"
-
     # only not expired certificates
     current_time = arrow.utcnow()
 
-    result = (
-        Certificate.query.filter(Certificate.cn.ilike(common_name))
-        .filter(Certificate.owner.ilike(owner))
-        .filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))
-        .all()
-    )
+    query = Certificate.query.filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))\
+        .filter(not_(Certificate.revoked))\
+        .filter(not_(Certificate.replaced.any()))  # ignore rotated certificates to avoid duplicates
 
-    return result
+    if owner:
+        query = query.filter(Certificate.owner.ilike(owner))
+
+    if common_name != "%":
+        # if common_name is a wildcard ('%'), no need to include it in the query
+        query = query.filter(Certificate.cn.ilike(common_name))
+
+    return query.all()
 
 
 def create_csr(**csr_config):

@@ -20,6 +20,15 @@ class NotificationPlugin(Plugin):
     def send(self, notification_type, message, targets, options, **kwargs):
         raise NotImplementedError
 
+    def filter_recipients(self, options, excluded_recipients):
+        """
+        Given a set of options (which should include configured recipient info), filters out recipients that
+        we do NOT want to notify.
+
+        For any notification types where recipients can't be dynamically modified, this returns an empty list.
+        """
+        return []
+
 
 class ExpirationNotificationPlugin(NotificationPlugin):
     """
@@ -50,5 +59,5 @@ class ExpirationNotificationPlugin(NotificationPlugin):
     def options(self):
         return self.default_options + self.additional_options
 
-    def send(self, notification_type, message, targets, options, **kwargs):
+    def send(self, notification_type, message, excluded_targets, options, **kwargs):
         raise NotImplementedError

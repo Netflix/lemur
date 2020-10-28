@@ -9,30 +9,18 @@ Is a TLS management and orchestration tool.
 """
 from __future__ import absolute_import
 
-import sys
-import json
-import os.path
 import datetime
+import json
+import logging
+import os.path
+import sys
+from subprocess import check_output
 
-from distutils import log
-from distutils.core import Command
+from setuptools import Command
+from setuptools import setup, find_packages
 from setuptools.command.develop import develop
 from setuptools.command.install import install
 from setuptools.command.sdist import sdist
-from setuptools import setup, find_packages
-from subprocess import check_output
-
-import pip
-if tuple(map(int, pip.__version__.split('.'))) >= (19, 3, 0):
-    from pip._internal.network.session import PipSession
-    from pip._internal.req import parse_requirements
-
-elif tuple(map(int, pip.__version__.split('.'))) >= (10, 0, 0):
-    from pip._internal.download import PipSession
-    from pip._internal.req import parse_requirements
-else:
-    from pip.download import PipSession
-    from pip.req import parse_requirements
 
 ROOT = os.path.realpath(os.path.join(os.path.dirname(__file__)))
 
@@ -44,21 +32,18 @@ about = {}
 with open(os.path.join(ROOT, 'lemur', '__about__.py')) as f:
     exec(f.read(), about)  # nosec: about file is benign
 
-install_requires_g = parse_requirements("requirements.txt", session=PipSession())
-tests_require_g = parse_requirements("requirements-tests.txt", session=PipSession())
-docs_require_g = parse_requirements("requirements-docs.txt", session=PipSession())
-dev_requires_g = parse_requirements("requirements-dev.txt", session=PipSession())
+# Parse requirements files
+with open('requirements.txt') as f:
+    install_requirements = f.read().splitlines()
 
-if tuple(map(int, pip.__version__.split('.'))) >= (20, 1):
-    install_requires = [str(ir.requirement) for ir in install_requires_g]
-    tests_require = [str(ir.requirement) for ir in tests_require_g]
-    docs_require = [str(ir.requirement) for ir in docs_require_g]
-    dev_requires = [str(ir.requirement) for ir in dev_requires_g]
-else:
-    install_requires = [str(ir.req) for ir in install_requires_g]
-    tests_require = [str(ir.req) for ir in tests_require_g]
-    docs_require = [str(ir.req) for ir in docs_require_g]
-    dev_requires = [str(ir.req) for ir in dev_requires_g]
+with open('requirements-tests.txt') as f:
+    tests_requirements = f.read().splitlines()
+
+with open('requirements-docs.txt') as f:
+    docs_requirements = f.read().splitlines()
+
+with open('requirements-dev.txt') as f:
+    dev_requirements = f.read().splitlines()
 
 
 class SmartInstall(install):
@@ -67,6 +52,7 @@ class SmartInstall(install):
     If the package indicator is missing, this will also force a run of
     `build_static` which is required for JavaScript assets and other things.
     """
+
     def _needs_static(self):
         return not os.path.exists(os.path.join(ROOT, 'lemur/static/dist'))
 
@@ -105,16 +91,16 @@ class BuildStatic(Command):
         pass
 
     def run(self):
-        log.info("running [npm install --quiet] in {0}".format(ROOT))
+        logging.info("running [npm install --quiet] in {0}".format(ROOT))
         try:
             check_output(['npm', 'install', '--quiet'], cwd=ROOT)
 
-            log.info("running [gulp build]")
+            logging.info("running [gulp build]")
             check_output([os.path.join(ROOT, 'node_modules', '.bin', 'gulp'), 'build'], cwd=ROOT)
-            log.info("running [gulp package]")
+            logging.info("running [gulp package]")
             check_output([os.path.join(ROOT, 'node_modules', '.bin', 'gulp'), 'package'], cwd=ROOT)
         except Exception as e:
-            log.warn("Unable to build static content")
+            logging.warn("Unable to build static content")
 
 
 setup(
@@ -128,11 +114,11 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
-    install_requires=install_requires,
+    install_requires=install_requirements,
     extras_require={
-        'tests': tests_require,
-        'docs': docs_require,
-        'dev': dev_requires,
+        'tests': tests_requirements,
+        'docs': docs_requirements,
+        'dev': dev_requirements,
     },
     cmdclass={
         'build_static': BuildStatic,
@@ -149,6 +135,7 @@ setup(
             'aws_destination = lemur.plugins.lemur_aws.plugin:AWSDestinationPlugin',
             'aws_source = lemur.plugins.lemur_aws.plugin:AWSSourcePlugin',
             'aws_s3 = lemur.plugins.lemur_aws.plugin:S3DestinationPlugin',
+            'aws_sns = lemur.plugins.lemur_aws.plugin:SNSNotificationPlugin',
             'email_notification = lemur.plugins.lemur_email.plugin:EmailNotificationPlugin',
             'slack_notification = lemur.plugins.lemur_slack.plugin:SlackNotificationPlugin',
             'java_truststore_export = lemur.plugins.lemur_jks.plugin:JavaTruststoreExportPlugin',
@@ -167,7 +154,9 @@ setup(
             'vault_source = lemur.plugins.lemur_vault_dest.plugin:VaultSourcePlugin',
             'vault_desination = lemur.plugins.lemur_vault_dest.plugin:VaultDestinationPlugin',
             'adcs_issuer = lemur.plugins.lemur_adcs.plugin:ADCSIssuerPlugin',
-            'adcs_source = lemur.plugins.lemur_adcs.plugin:ADCSSourcePlugin'
+            'adcs_source = lemur.plugins.lemur_adcs.plugin:ADCSSourcePlugin',
+            'entrust_issuer = lemur.plugins.lemur_entrust.plugin:EntrustIssuerPlugin',
+            'entrust_source = lemur.plugins.lemur_entrust.plugin:EntrustSourcePlugin'
         ],
     },
     classifiers=[

@@ -49,8 +49,10 @@ The amount of effort you wish to expend ensuring that Lemur has good entropy to 
 
 If you wish to generate more entropy for your system we would suggest you take a look at the following resources:
 
-- `WES-entropy-client <https://github.com/WhitewoodCrypto/WES-entropy-client>`_
+- `WES-entropy-client <https://github.com/Virginian/WES-entropy-client>`_
 - `haveged <http://www.issihosts.com/haveged/>`_
+
+The original *WES-entropy-client* repository by WhitewoodCrypto was removed, the link now points to a fork of it.
 
 For additional information about OpenSSL entropy issues:
 
@@ -313,6 +315,7 @@ It will start a shell from which you can start/stop/restart the service.
 
 You can read all errors that might occur from /tmp/lemur.log.
 
+.. _PeriodicTasks:
 
 Periodic Tasks
 ==============
@@ -386,9 +389,16 @@ To enable celery support, you must also have configuration values that tell Cele
 Here are the Celery configuration variables that should be set::
 
     CELERY_RESULT_BACKEND = 'redis://your_redis_url:6379'
-    CELERY_BROKER_URL = 'redis://your_redis_url:6379'
+    CELERY_BROKER_URL = 'redis://your_redis_url:6379/0'
     CELERY_IMPORTS = ('lemur.common.celery')
     CELERY_TIMEZONE = 'UTC'
+
+    REDIS_HOST="your_redis_url"
+    REDIS_PORT=6379
+    REDIS_DB=0
+
+Out of the box, every Redis instance supports 16 databases. The default database (`REDIS_DB`) is  set to 0, however, you can use any of the databases from 0-15. Via `redis.conf` more databases can be supported.
+In the `redis://` url, the database number can be added with a slash after the port. (defaults to 0, if omitted)
 
 Do not forget to import crontab module in your configuration file::
 
@@ -501,3 +511,47 @@ The following must be added to the config file to activate the pinning (the pinn
     KOqkqm57TH2H3eDJAkSnh6/DNFu0Qg==
     -----END CERTIFICATE-----
     """
+
+
+.. _AcmeAccountReuse:
+
+LetsEncrypt: Using a pre-existing ACME account
+-----------------------------------------------
+
+Let's Encrypt allows reusing an existing ACME account, to create and especially revoke certificates. The current
+implementation in the acme plugin, only allows for a single account for all ACME authorities, which might be an issue,
+when you try to use Let's Encrypt together with another certificate authority that uses the ACME protocol.
+
+To use an existing account, you need to configure the `ACME_PRIVATE_KEY` and `ACME_REGR` variables in the lemur
+configuration.
+
+`ACME_PRIVATE_KEY` needs to be in the JWK format::
+
+    {
+        "kty": "RSA",
+        "n": "yr1qBwHizA7ME_iV32bY10ILp.....",
+        "e": "AQAB",
+        "d": "llBlYhil3I.....",
+        "p": "-5LW2Lewogo.........",
+        "q": "zk6dHqHfHksd.........",
+        "dp": "qfe9fFIu3mu.......",
+        "dq": "cXFO-loeOyU.......",
+        "qi": "AfK1sh0_8sLTb..........."
+    }
+
+
+Using `python-jwt` converting an existing private key in PEM format is quite easy::
+
+    import python_jwt as jwt, jwcrypto.jwk as jwk
+
+    priv_key = jwk.JWK.from_pem(b"""-----BEGIN RSA PRIVATE KEY-----
+    ...
+    -----END RSA PRIVATE KEY-----""")
+
+    print(priv_key.export())
+
+`ACME_REGR` needs to be a valid JSON with a `body` and a `uri` attribute, similar to this::
+
+    {"body": {}, "uri": "https://acme-staging-v02.api.letsencrypt.org/acme/acct/<ACCOUNT_NUMBER>"}
+
+The URI can be retrieved from the ACME create account endpoint when creating a new account, using the existing key.
