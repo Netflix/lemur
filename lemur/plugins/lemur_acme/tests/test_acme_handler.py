@@ -56,7 +56,6 @@ class TestAcmeHandler(unittest.TestCase):
 
         self.assertFalse(self.acme.reuse_account(mock_authority))
 
-
     @patch("lemur.plugins.lemur_acme.acme_handlers.authorities_service")
     @patch("lemur.plugins.lemur_acme.acme_handlers.BackwardsCompatibleClientV2")
     @patch("lemur.plugins.lemur_acme.acme_handlers.current_app")
