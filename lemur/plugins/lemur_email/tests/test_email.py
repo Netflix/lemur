@@ -2,26 +2,21 @@ import os
 from datetime import timedelta
 
 import arrow
-import boto3
 from moto import mock_ses
 
 from lemur.certificates.schemas import certificate_notification_output_schema
 from lemur.plugins.lemur_email.plugin import render_html
 from lemur.tests.factories import CertificateFactory
+from lemur.tests.test_messaging import verify_sender_email
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-
-
-@mock_ses
-def verify_sender_email():
-    ses_client = boto3.client("ses", region_name="us-east-1")
-    ses_client.verify_email_identity(EmailAddress="lemur@example.com")
 
 
 def get_options():
     return [
         {"name": "interval", "value": 10},
         {"name": "unit", "value": "days"},
+        {"name": "recipients", "value": "person1@example.com,person2@example.com"},
     ]
 
 
@@ -59,7 +54,7 @@ def test_send_expiration_notification():
     certificate.notifications[0].options = get_options()
 
     verify_sender_email()
-    assert send_expiration_notifications([]) == (2, 0)
+    assert send_expiration_notifications([]) == (3, 0)  # owner, recipients (only counted as 1), and security
 
 
 @mock_ses
@@ -81,3 +76,15 @@ def test_send_pending_failure_notification(user, pending_certificate, async_issu
 
     verify_sender_email()
     assert send_pending_failure_notification(pending_certificate)
+
+
+def test_filter_recipients(certificate, endpoint):
+    from lemur.plugins.lemur_email.plugin import EmailNotificationPlugin
+
+    options = [{"name": "recipients", "value": "security@example.com,bob@example.com,joe@example.com"}]
+    assert EmailNotificationPlugin.filter_recipients(options, []) == ["security@example.com", "bob@example.com",
+                                                                      "joe@example.com"]
+    assert EmailNotificationPlugin.filter_recipients(options, ["security@example.com"]) == ["bob@example.com",
+                                                                                            "joe@example.com"]
+    assert EmailNotificationPlugin.filter_recipients(options, ["security@example.com", "bob@example.com",
+                                                               "joe@example.com"]) == []
