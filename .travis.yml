@@ -1,5 +1,5 @@
 language: python
-dist: xenial
+dist: bionic
 
 node_js:
   - "6.2.0"
