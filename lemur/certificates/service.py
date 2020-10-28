@@ -560,20 +560,21 @@ def query_common_name(common_name, args):
     :return:
     """
     owner = args.pop("owner")
-    if not owner:
-        owner = "%"
-
     # only not expired certificates
     current_time = arrow.utcnow()
 
-    result = (
-        Certificate.query.filter(Certificate.cn.ilike(common_name))
-        .filter(Certificate.owner.ilike(owner))
-        .filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))
-        .all()
-    )
+    query = Certificate.query.filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))\
+        .filter(not_(Certificate.revoked))\
+        .filter(not_(Certificate.replaced.any()))  # ignore rotated certificates to avoid duplicates
 
-    return result
+    if owner:
+        query = query.filter(Certificate.owner.ilike(owner))
+
+    if common_name != "%":
+        # if common_name is a wildcard ('%'), no need to include it in the query
+        query = query.filter(Certificate.cn.ilike(common_name))
+
+    return query.all()
 
 
 def create_csr(**csr_config):
