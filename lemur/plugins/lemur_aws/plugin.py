@@ -32,13 +32,14 @@
 .. moduleauthor:: Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
 .. moduleauthor:: Harm Weites <harm@weites.com>
 """
+
 from acme.errors import ClientError
 from flask import current_app
-from lemur.extensions import sentry, metrics
 
-from lemur.plugins import lemur_aws as aws
+from lemur.extensions import sentry, metrics
+from lemur.plugins import lemur_aws as aws, ExpirationNotificationPlugin
 from lemur.plugins.bases import DestinationPlugin, ExportDestinationPlugin, SourcePlugin
-from lemur.plugins.lemur_aws import iam, s3, elb, ec2
+from lemur.plugins.lemur_aws import iam, s3, elb, ec2, sns
 
 
 def get_region_from_dns(dns):
@@ -407,6 +408,7 @@ class S3DestinationPlugin(ExportDestinationPlugin):
                 account_number=self.get_option("accountNumber", options),
             )
 
+
     def upload_acme_token(self, token_path, token, options, **kwargs):
         """
          This is called from the acme http challenge
@@ -433,3 +435,52 @@ class S3DestinationPlugin(ExportDestinationPlugin):
                data=token,
                encrypt=False,
                account_number=account_number)
+
+
+class SNSNotificationPlugin(ExpirationNotificationPlugin):
+    title = "AWS SNS"
+    slug = "aws-sns"
+    description = "Sends notifications to AWS SNS"
+    version = aws.VERSION
+
+    author = "Jasmine Schladen <jschladen@netflix.com>"
+    author_url = "https://github.com/Netflix/lemur"
+
+    additional_options = [
+        {
+            "name": "accountNumber",
+            "type": "str",
+            "required": True,
+            "validation": "[0-9]{12}",
+            "helpMessage": "A valid AWS account number with permission to access the SNS topic",
+        },
+        {
+            "name": "region",
+            "type": "str",
+            "required": True,
+            "validation": "[0-9a-z\\-]{1,25}",
+            "helpMessage": "Region in which the SNS topic is located, e.g. \"us-east-1\"",
+        },
+        {
+            "name": "topicName",
+            "type": "str",
+            "required": True,
+            # base topic name is 1-256 characters (alphanumeric plus underscore and hyphen)
+            "validation": "^[a-zA-Z0-9_\\-]{1,256}$",
+            "helpMessage": "The name of the topic to use for expiration notifications",
+        }
+    ]
+
+    def send(self, notification_type, message, excluded_targets, options, **kwargs):
+        """
+        While we receive a `targets` parameter here, it is unused, as the SNS topic is pre-configured in the
+        plugin configuration, and can't reasonably be changed dynamically.
+        """
+
+        topic_arn = f"arn:aws:sns:{self.get_option('region', options)}:" \
+                    f"{self.get_option('accountNumber', options)}:" \
+                    f"{self.get_option('topicName', options)}"
+
+        current_app.logger.info(f"Publishing {notification_type} notification to topic {topic_arn}")
+        sns.publish(topic_arn, message, notification_type, region_name=self.get_option("region", options))
+
