@@ -61,9 +61,7 @@ def send_via_ses(subject, body, targets):
     :param targets:
     :return:
     """
-    ses_region = current_app.config.get("LEMUR_SES_REGION")
-    if not ses_region:
-        ses_region = "us-east-1"
+    ses_region = current_app.config.get("LEMUR_SES_REGION", "us-east-1")
     client = boto3.client("ses", region_name=ses_region)
     source_arn = current_app.config.get("LEMUR_SES_SOURCE_ARN")
     args = {
