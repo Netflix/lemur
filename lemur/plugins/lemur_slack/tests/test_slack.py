@@ -1,8 +1,10 @@
 from datetime import timedelta
 
 import arrow
+from moto import mock_ses
 
 from lemur.tests.factories import NotificationFactory, CertificateFactory
+from lemur.tests.test_messaging import verify_sender_email
 
 
 def test_formatting(certificate):
@@ -38,8 +40,11 @@ def get_options():
     ]
 
 
+@mock_ses()  # because email notifications are also sent
 def test_send_expiration_notification():
     from lemur.notifications.messaging import send_expiration_notifications
+
+    verify_sender_email()  # emails are sent to owner and security; Slack only used for configured notification
 
     notification = NotificationFactory(plugin_name="slack-notification")
     notification.options = get_options()
@@ -51,7 +56,7 @@ def test_send_expiration_notification():
     certificate.not_after = in_ten_days
     certificate.notifications.append(notification)
 
-    assert send_expiration_notifications([]) == (2, 0)
+    assert send_expiration_notifications([]) == (3, 0)  # owner, Slack, and security
 
 
 # Currently disabled as the Slack plugin doesn't support this type of notification
