@@ -1,9 +1,16 @@
+from datetime import timedelta
+
+import arrow
+import boto3
 import pytest
 from freezegun import freeze_time
-
-from datetime import timedelta
-import arrow
 from moto import mock_ses
+
+
+@mock_ses
+def verify_sender_email():
+    ses_client = boto3.client("ses", region_name="us-east-1")
+    ses_client.verify_email_identity(EmailAddress="lemur@example.com")
 
 
 def test_needs_notification(app, certificate, notification):
@@ -78,6 +85,7 @@ def test_get_eligible_certificates(app, certificate, notification):
 @mock_ses
 def test_send_expiration_notification(certificate, notification, notification_plugin):
     from lemur.notifications.messaging import send_expiration_notifications
+    verify_sender_email()
 
     certificate.notifications.append(notification)
     certificate.notifications[0].options = [
@@ -87,7 +95,9 @@ def test_send_expiration_notification(certificate, notification, notification_pl
 
     delta = certificate.not_after - timedelta(days=10)
     with freeze_time(delta.datetime):
-        assert send_expiration_notifications([]) == (2, 0)
+        # this will only send owner and security emails (no additional recipients),
+        # but it executes 3 successful send attempts
+        assert send_expiration_notifications([]) == (3, 0)
 
 
 @mock_ses
@@ -104,5 +114,14 @@ def test_send_expiration_notification_with_no_notifications(
 @mock_ses
 def test_send_rotation_notification(notification_plugin, certificate):
     from lemur.notifications.messaging import send_rotation_notification
+    verify_sender_email()
 
-    send_rotation_notification(certificate, notification_plugin=notification_plugin)
+    assert send_rotation_notification(certificate)
+
+
+@mock_ses
+def test_send_pending_failure_notification(notification_plugin, async_issuer_plugin, pending_certificate):
+    from lemur.notifications.messaging import send_pending_failure_notification
+    verify_sender_email()
+
+    assert send_pending_failure_notification(pending_certificate)

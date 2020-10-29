@@ -6,6 +6,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import arrow
+import re
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
@@ -115,7 +116,7 @@ def get_all_certs():
 
 def get_all_valid_certs(authority_plugin_name):
     """
-    Retrieves all valid (not expired) certificates within Lemur, for the given authority plugin names
+    Retrieves all valid (not expired & not revoked) certificates within Lemur, for the given authority plugin names
     ignored if no authority_plugin_name provided.
 
     Note that depending on the DB size retrieving all certificates might an expensive operation
@@ -126,11 +127,12 @@ def get_all_valid_certs(authority_plugin_name):
         return (
             Certificate.query.outerjoin(Authority, Authority.id == Certificate.authority_id).filter(
                 Certificate.not_after > arrow.now().format("YYYY-MM-DD")).filter(
-                Authority.plugin_name.in_(authority_plugin_name)).all()
+                Authority.plugin_name.in_(authority_plugin_name)).filter(Certificate.revoked.is_(False)).all()
         )
     else:
         return (
-            Certificate.query.filter(Certificate.not_after > arrow.now().format("YYYY-MM-DD")).all()
+            Certificate.query.filter(Certificate.not_after > arrow.now().format("YYYY-MM-DD")).filter(
+                Certificate.revoked.is_(False)).all()
         )
 
 
@@ -369,7 +371,12 @@ def create(**kwargs):
     try:
         cert_body, private_key, cert_chain, external_id, csr = mint(**kwargs)
     except Exception:
-        current_app.logger.error("Exception minting certificate", exc_info=True)
+        log_data = {
+            "message": "Exception minting certificate",
+            "issuer": kwargs["authority"].name,
+            "cn": kwargs["common_name"],
+        }
+        current_app.logger.error(log_data, exc_info=True)
         sentry.captureException()
         raise
     kwargs["body"] = cert_body
@@ -564,20 +571,21 @@ def query_common_name(common_name, args):
     :return:
     """
     owner = args.pop("owner")
-    if not owner:
-        owner = "%"
-
     # only not expired certificates
     current_time = arrow.utcnow()
 
-    result = (
-        Certificate.query.filter(Certificate.cn.ilike(common_name))
-        .filter(Certificate.owner.ilike(owner))
-        .filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))
-        .all()
-    )
+    query = Certificate.query.filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))\
+        .filter(not_(Certificate.revoked))\
+        .filter(not_(Certificate.replaced.any()))  # ignore rotated certificates to avoid duplicates
 
-    return result
+    if owner:
+        query = query.filter(Certificate.owner.ilike(owner))
+
+    if common_name != "%":
+        # if common_name is a wildcard ('%'), no need to include it in the query
+        query = query.filter(Certificate.cn.ilike(common_name))
+
+    return query.all()
 
 
 def create_csr(**csr_config):
@@ -781,6 +789,19 @@ def reissue_certificate(certificate, replace=None, user=None):
 
     if replace:
         primitives["replaces"] = [certificate]
+
+    # Modify description to include the certificate ID being reissued and mention that this is created by Lemur
+    # as part of reissue
+    reissue_message_prefix = "Reissued by Lemur for cert ID "
+    reissue_message = re.compile(f"{reissue_message_prefix}([0-9]+)")
+    if primitives["description"]:
+        match = reissue_message.search(primitives["description"])
+        if match:
+            primitives["description"] = primitives["description"].replace(match.group(1), str(certificate.id))
+        else:
+            primitives["description"] = f"{reissue_message_prefix}{certificate.id}, {primitives['description']}"
+    else:
+        primitives["description"] = f"{reissue_message_prefix}{certificate.id}"
 
     new_cert = create(**primitives)
 
