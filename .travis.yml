@@ -47,4 +47,4 @@ after_success:
 
 notifications:
   email:
-    ccastrapel@netflix.com
+    lemur@netflix.com
