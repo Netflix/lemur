@@ -292,6 +292,25 @@ Lemur supports sending certificate expiration notifications through SES and SMTP
         you can send any mail. See: `Verifying Email Address in Amazon SES <http://docs.aws.amazon.com/ses/latest/DeveloperGuide/verify-email-addresses.html>`_
 
 
+.. data:: LEMUR_SES_SOURCE_ARN
+    :noindex:
+
+    Specifies an ARN to use as the SourceArn when sending emails via SES.
+
+    .. note::
+        This parameter is only required if you're using a sending authorization with SES.
+        See: `Using sending authorization with Amazon SES <https://docs.aws.amazon.com/ses/latest/DeveloperGuide/sending-authorization.html>`_
+
+
+.. data:: LEMUR_SES_REGION
+    :noindex:
+
+    Specifies a region for sending emails via SES.
+
+    .. note::
+        This parameter defaults to us-east-1 and is only required if you wish to use a different region.
+
+
 .. data:: LEMUR_EMAIL
     :noindex:
 
