@@ -234,7 +234,7 @@ def handle_cis_response(response):
         return response.json()
 
 
-@retry(stop_max_attempt_number=10, wait_fixed=10000)
+@retry(stop_max_attempt_number=10, wait_fixed=1000)
 def get_certificate_id(session, base_url, order_id):
     """Retrieve certificate order id from Digicert API."""
     order_url = "{0}/services/v2/order/certificate/{1}".format(base_url, order_id)
@@ -245,7 +245,7 @@ def get_certificate_id(session, base_url, order_id):
     return response_data["certificate"]["id"]
 
 
-@retry(stop_max_attempt_number=10, wait_fixed=10000)
+@retry(stop_max_attempt_number=10, wait_fixed=1000)
 def get_cis_certificate(session, base_url, order_id):
     """Retrieve certificate order id from Digicert API, including the chain"""
     certificate_url = "{0}/platform/cis/certificate/{1}/download".format(base_url, order_id)
