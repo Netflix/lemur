@@ -98,7 +98,7 @@ class AcmeHandler(object):
         order,
         dns_provider_options,
     ):
-        current_app.logger.debug("Starting DNS challenge for {0}".format(target_domain))
+        current_app.logger.debug(f"Starting DNS challenge for {domain} using target domain {target_domain}.")
 
         change_ids = []
         dns_challenges = self.get_dns_challenges(domain, order.authorizations)
