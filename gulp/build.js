@@ -237,7 +237,7 @@ gulp.task('addUrlContextPath',['addUrlContextPath:revreplace'], function(){
   .forEach(function(file){
     return gulp.src(file)
       .pipe(gulpif(urlContextPathExists, replace('api/', argv.urlContextPath + '/api/')))
-      .pipe(gulpif(urlContextPathExists, replace('angular/', argv.urlContextPath + '/angular/')))
+      .pipe(gulpif(urlContextPathExists, replace('/angular/', '/' + argv.urlContextPath + '/angular/')))
       .pipe(gulp.dest(function(file){
         return file.base;
       }))
@@ -256,7 +256,6 @@ gulp.task('addUrlContextPath:revreplace', ['addUrlContextPath:revision'], functi
   var manifest = gulp.src("lemur/static/dist/rev-manifest.json");
   var urlContextPathExists = argv.urlContextPath ? true : false;
   return gulp.src( "lemur/static/dist/index.html")
-    .pipe(gulpif(urlContextPathExists, revReplace({prefix: argv.urlContextPath + '/', manifest: manifest}, revReplace({manifest: manifest}))))
     .pipe(gulp.dest('lemur/static/dist'));
 })
 
