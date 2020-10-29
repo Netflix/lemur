@@ -15,16 +15,18 @@ from flask import current_app
 def publish(topic_arn, certificates, notification_type, **kwargs):
     sns_client = boto3.client("sns", **kwargs)
     message_ids = {}
+    subject = "Lemur: {0} Notification".format(notification_type.capitalize())
     for certificate in certificates:
-        message_ids[certificate["name"]] = publish_single(sns_client, topic_arn, certificate, notification_type)
+        message_ids[certificate["name"]] = publish_single(sns_client, topic_arn, certificate, notification_type, subject)
 
     return message_ids
 
 
-def publish_single(sns_client, topic_arn, certificate, notification_type):
+def publish_single(sns_client, topic_arn, certificate, notification_type, subject):
     response = sns_client.publish(
         TopicArn=topic_arn,
         Message=format_message(certificate, notification_type),
+        Subject=subject,
     )
 
     response_code = response["ResponseMetadata"]["HTTPStatusCode"]
@@ -48,8 +50,9 @@ def format_message(certificate, notification_type):
     json_message = {
         "notification_type": notification_type,
         "certificate_name": certificate["name"],
-        "expires": arrow.get(certificate["validityEnd"]).format("YYYY-MM-ddTHH:mm:ss"),  # 2047-12-T22:00:00
+        "expires": arrow.get(certificate["validityEnd"]).format("YYYY-MM-DDTHH:mm:ss"),  # 2047-12-31T22:00:00
         "endpoints_detected": len(certificate["endpoints"]),
+        "owner": certificate["owner"],
         "details": create_certificate_url(certificate["name"])
     }
     return json.dumps(json_message)
