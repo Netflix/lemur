@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 
 from lemur.utils import mktempfile
 from lemur.plugins import lemur_openssh as openssh
-from lemur.common.utils import parse_private_key , parse_certificate
+from lemur.common.utils import parse_private_key, parse_certificate
 from lemur.plugins.lemur_cryptography.plugin import CryptographyIssuerPlugin
 from lemur.certificates.service import get_by_root_authority
 
@@ -44,7 +44,7 @@ def split_cert(body):
     :retur: splitted certificate
     """
     length = 65
-    return '\n'.join([body[i:i+length] for i in range(0, len(body), length)])
+    return '\n'.join([body[i:i + length] for i in range(0, len(body), length)])
 
 
 def sign_certificate(common_name, public_key, authority_private_key, user, extensions, not_before, not_after):
@@ -85,6 +85,10 @@ def sign_certificate(common_name, public_key, authority_private_key, user, exten
 
 
 class OpenSSHIssuerPlugin(CryptographyIssuerPlugin):
+    """This issuer plugins is base in Cryptography plugin
+    Certificates and authorities are x509 certificates created by Cryptography plugin.
+    Those certificates are converted to OpenSSH format when people get them.
+    """
     title = "OpenSSH"
     slug = "openssh-issuer"
     description = "Enables the creation and signing OpenSSH keys"
@@ -101,48 +105,48 @@ class OpenSSHIssuerPlugin(CryptographyIssuerPlugin):
         cert_pem, private_key, chain_cert_pem, roles = super().create_authority(options)
         return cert_pem, private_key, chain_cert_pem, roles
 
-    def wrap_certificate(self, cert, authority_id):
-        # convert public_key in OpenSSH format
+    def wrap_certificate(self, cert):
+        # get public_key in OpenSSH format
         public_key = parse_certificate(cert['body']).public_key().public_bytes(
             encoding=serialization.Encoding.OpenSSH,
             format=serialization.PublicFormat.OpenSSH,
         ).decode()
         public_key += ' ' + cert['user']['email']
-        # sign it with authority key
-        authority = get_by_root_authority(authority_id)
+        # sign it with authority private key
+        authority = get_by_root_authority(cert['authority']['id'])
         authority_private_key = authority.private_key
-        body = sign_certificate(
-                cert['common_name'],
-                public_key,
-                authority_private_key,
-                cert['user'],
-                cert['extensions'],
-                cert['not_before'],
-                cert['not_after']
+        cert['body'] = sign_certificate(
+            cert['common_name'],
+            public_key,
+            authority_private_key,
+            cert['user'],
+            cert['extensions'],
+            cert['not_before'],
+            cert['not_after']
         )
         # convert chain in OpenSSH format
         if cert['chain']:
-            chain_key = self.wrap_auth_certificate(cert['chain'], authority.cn)
-        else:
-            chain_key = None
-        return body, None, chain_key
+            chain_cert = {'body': cert['chain'], 'cn': authority.cn}
+            self.wrap_auth_certificate(chain_cert)
+            cert['chain'] = chain_cert['body']
+        # OpenSSH do not support csr
+        cert['csr'] = None
 
     @staticmethod
-    def wrap_auth_certificate(body, common_name):
+    def wrap_auth_certificate(auth_cert):
         # convert chain in OpenSSH format
-        chain_key = parse_certificate(body).public_key().public_bytes(
+        chain_key = parse_certificate(auth_cert['body']).public_key().public_bytes(
             encoding=serialization.Encoding.OpenSSH,
             format=serialization.PublicFormat.OpenSSH,
         ).decode()
-        chain_key += ' root@' + common_name
-        return split_cert(chain_key)
+        chain_key += ' root@' + auth_cert['cn']
+        auth_cert['body'] = split_cert(chain_key)
 
     @staticmethod
     def wrap_private_key(cert):
         # convert private_key in OpenSSH format
-        key_bytes = parse_private_key(cert.private_key).private_bytes(
+        cert.private_key = parse_private_key(cert.private_key).private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.OpenSSH,
             encryption_algorithm=serialization.NoEncryption(),
         )
-        return key_bytes
