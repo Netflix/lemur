@@ -49,7 +49,7 @@ class TestAcme(unittest.TestCase):
         self.assertEqual(expected, result)
 
     def test_authz_record(self):
-        a = plugin.AuthorizationRecord("host", "authz", "challenge", "id")
+        a = plugin.AuthorizationRecord("domain", "host", "authz", "challenge", "id")
         self.assertEqual(type(a), plugin.AuthorizationRecord)
 
     @patch("acme.client.Client")
@@ -79,7 +79,7 @@ class TestAcme(unittest.TestCase):
         iterator = iter(values)
         iterable.__iter__.return_value = iterator
         result = self.acme.start_dns_challenge(
-            mock_acme, "accountid", "host", mock_dns_provider, mock_order, {}
+            mock_acme, "accountid", "domain", "host", mock_dns_provider, mock_order, {}
         )
         self.assertEqual(type(result), plugin.AuthorizationRecord)
 
@@ -270,11 +270,9 @@ class TestAcme(unittest.TestCase):
             result, [options["common_name"], "test2.netflix.net"]
         )
 
-    @patch(
-        "lemur.plugins.lemur_acme.plugin.AcmeHandler.start_dns_challenge",
-        return_value="test",
-    )
-    def test_get_authorizations(self, mock_start_dns_challenge):
+    @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.start_dns_challenge", return_value="test")
+    @patch("lemur.plugins.lemur_acme.plugin.current_app", return_value=False)
+    def test_get_authorizations(self, mock_current_app, mock_start_dns_challenge):
         mock_order = Mock()
         mock_order.body.identifiers = []
         mock_domain = Mock()
