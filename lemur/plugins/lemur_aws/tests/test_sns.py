@@ -20,8 +20,9 @@ def test_format(certificate, endpoint):
         expected_message = {
             "notification_type": "expiration",
             "certificate_name": certificate["name"],
-            "expires": arrow.get(certificate["validityEnd"]).format("YYYY-MM-ddTHH:mm:ss"),
+            "expires": arrow.get(certificate["validityEnd"]).format("YYYY-MM-DDTHH:mm:ss"),
             "endpoints_detected": 0,
+            "owner": certificate["owner"],
             "details": "https://lemur.example.com/#/certificates/{name}".format(name=certificate["name"])
         }
         assert expected_message == json.loads(format_message(certificate, "expiration"))
@@ -57,7 +58,9 @@ def test_publish(certificate, endpoint):
         expected_message_id = message_ids[certificate["name"]]
         actual_message = next(
             (m for m in received_messages if json.loads(m["Body"])["MessageId"] == expected_message_id), None)
-        assert json.loads(actual_message["Body"])["Message"] == format_message(certificate, "expiration")
+        actual_json = json.loads(actual_message["Body"])
+        assert actual_json["Message"] == format_message(certificate, "expiration")
+        assert actual_json["Subject"] == "Lemur: Expiration Notification"
 
 
 def get_options():
