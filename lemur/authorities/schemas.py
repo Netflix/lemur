@@ -132,11 +132,9 @@ class AuthorityOutputSchema(LemurOutputSchema):
 
     @post_dump
     def handle_auth_certificate(self, cert):
+        # Plugins may need to modify the cert object before returning it to the user
         plugin = plugins.get(cert['plugin']['slug'])
-        cert['authority_certificate']['body'] = plugin.wrap_auth_certificate(
-                cert['authority_certificate']['body'],
-                cert['authority_certificate']['cn']
-        )
+        plugin.wrap_auth_certificate(cert['authority_certificate'])
 
 
 class AuthorityNestedOutputSchema(LemurOutputSchema):

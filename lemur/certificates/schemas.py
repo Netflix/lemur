@@ -325,6 +325,7 @@ class CertificateOutputSchema(LemurOutputSchema):
     notifications = fields.Nested(NotificationNestedOutputSchema, many=True)
     replaces = fields.Nested(CertificateNestedOutputSchema, many=True)
     authority = fields.Nested(AuthorityNestedOutputSchema)
+    # if this certificate is an authority, the authority informations are in root_authority
     root_authority = fields.Nested(AuthorityNestedOutputSchema)
     dns_provider = fields.Nested(DnsProvidersNestedOutputSchema)
     roles = fields.Nested(RoleNestedOutputSchema, many=True)
@@ -357,17 +358,13 @@ class CertificateOutputSchema(LemurOutputSchema):
 
     @post_dump
     def handle_certificate(self, cert):
-        if cert['root_authority']:
-            authority = cert['root_authority']
-        else:
-            authority = cert['authority']
-        authority_id = authority['id']
-        plugin = plugins.get(authority['plugin']['slug'])
-        cert['body'], cert['csr'], cert['chain'] = plugin.wrap_certificate(
-                cert,
-                authority_id
-        )
+        # Plugins may need to modify the cert object before returning it to the user
+        if cert['root_authority'] and cert['authority'] is None:
+            # this certificate is an authority
+            cert['authority'] = cert['root_authority']
         del cert['root_authority']
+        plugin = plugins.get(cert['authority']['plugin']['slug'])
+        plugin.wrap_certificate(cert)
 
 
 class CertificateShortOutputSchema(LemurOutputSchema):

@@ -32,11 +32,11 @@ class IssuerPlugin(Plugin):
     def cancel_ordered_certificate(self, pending_cert, **kwargs):
         raise NotImplementedError
 
-    def wrap_certificate(self, cert, authority_id):
-        return cert['body'], cert['csr'], cert['chain']
+    def wrap_certificate(self, cert):
+        pass
 
-    def wrap_auth_certificate(self, body, common_name):
-        return body
+    def wrap_auth_certificate(self, cert):
+        pass
 
     def wrap_private_key(self, cert):
-        return cert.private_key
+        pass

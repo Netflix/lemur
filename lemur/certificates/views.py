@@ -676,15 +676,16 @@ class CertificatePrivateKey(AuthenticatedResource):
 
         log_service.create(g.current_user, "key_view", certificate=cert)
 
-        # wrap_private_key
+        # Plugins may need to modify the cert object before returning it to the user
         if cert.root_authority:
-            authority = cert.root_authority
+            # this certificate is an authority
+            plugin_name = cert.root_authority.plugin_name
         else:
-            authority = cert.authority
-        plugin = plugins.get(authority.plugin_name)
-        private_key = plugin.wrap_private_key(cert)
+            plugin_name = cert.authority.plugin_name
+        plugin = plugins.get(plugin_name)
+        plugin.wrap_private_key(cert)
 
-        response = make_response(jsonify(key=private_key), 200)
+        response = make_response(jsonify(key=cert.private_key), 200)
         response.headers["cache-control"] = "private, max-age=0, no-cache, no-store"
         response.headers["pragma"] = "no-cache"
         return response
