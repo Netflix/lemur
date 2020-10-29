@@ -97,7 +97,7 @@ class TestAcme(unittest.TestCase):
         mock_authz.dns_challenge.response = Mock()
         mock_authz.dns_challenge.response.simple_verify = Mock(return_value=True)
         mock_authz.authz = []
-        mock_authz.host = "www.test.com"
+        mock_authz.target_domain = "www.test.com"
         mock_authz_record = Mock()
         mock_authz_record.body.identifier.value = "test"
         mock_authz.authz.append(mock_authz_record)
@@ -121,7 +121,7 @@ class TestAcme(unittest.TestCase):
         mock_authz.dns_challenge.response = Mock()
         mock_authz.dns_challenge.response.simple_verify = Mock(return_value=False)
         mock_authz.authz = []
-        mock_authz.host = "www.test.com"
+        mock_authz.target_domain = "www.test.com"
         mock_authz_record = Mock()
         mock_authz_record.body.identifier.value = "test"
         mock_authz.authz.append(mock_authz_record)
