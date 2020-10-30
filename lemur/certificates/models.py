@@ -184,7 +184,6 @@ class Certificate(db.Model):
         "PendingCertificate",
         secondary=pending_cert_replacement_associations,
         backref="pending_replace",
-        viewonly=True,
     )
 
     logs = relationship("Log", backref="certificate")
