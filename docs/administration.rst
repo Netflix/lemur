@@ -292,6 +292,25 @@ Lemur supports sending certificate expiration notifications through SES and SMTP
         you can send any mail. See: `Verifying Email Address in Amazon SES <http://docs.aws.amazon.com/ses/latest/DeveloperGuide/verify-email-addresses.html>`_
 
 
+.. data:: LEMUR_SES_SOURCE_ARN
+    :noindex:
+
+    Specifies an ARN to use as the SourceArn when sending emails via SES.
+
+    .. note::
+        This parameter is only required if you're using a sending authorization with SES.
+        See: `Using sending authorization with Amazon SES <https://docs.aws.amazon.com/ses/latest/DeveloperGuide/sending-authorization.html>`_
+
+
+.. data:: LEMUR_SES_REGION
+    :noindex:
+
+    Specifies a region for sending emails via SES.
+
+    .. note::
+        This parameter defaults to us-east-1 and is only required if you wish to use a different region.
+
+
 .. data:: LEMUR_EMAIL
     :noindex:
 
@@ -670,6 +689,20 @@ If you are not using a metric provider you do not need to configure any of these
 
 Plugin Specific Options
 -----------------------
+
+ACME Plugin
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. data:: ACME_DNS_PROVIDER_TYPES
+    :noindex:
+
+        Dictionary of ACME DNS Providers and their requirements.
+
+.. data:: ACME_ENABLE_DELEGATED_CNAME
+    :noindex:
+
+        Enables delegated DNS domain validation using CNAMES.  When enabled, Lemur will attempt to follow CNAME records to authoritative DNS servers when creating DNS-01 challenges.
+
 
 Active Directory Certificate Services Plugin
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

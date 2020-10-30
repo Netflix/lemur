@@ -41,12 +41,14 @@ def create(label, plugin_name, options, description=None):
     return database.create(destination)
 
 
-def update(destination_id, label, options, description):
+def update(destination_id, label, plugin_name, options, description):
     """
     Updates an existing destination.
 
     :param destination_id:  Lemur assigned ID
     :param label: Destination common name
+    :param plugin_name:
+    :param options:
     :param description:
     :rtype : Destination
     :return:
@@ -54,6 +56,11 @@ def update(destination_id, label, options, description):
     destination = get(destination_id)
 
     destination.label = label
+    destination.plugin_name = plugin_name
+    # remove any sub-plugin objects before try to save the json options
+    for option in options:
+        if "plugin" in option["type"]:
+            del option["value"]["plugin_object"]
     destination.options = options
     destination.description = description
 

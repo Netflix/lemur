@@ -264,13 +264,14 @@ def create(label, plugin_name, options, description=None):
     return database.create(source)
 
 
-def update(source_id, label, options, description):
+def update(source_id, label, plugin_name, options, description):
     """
     Updates an existing source.
 
     :param source_id:  Lemur assigned ID
     :param label: Source common name
     :param options:
+    :param plugin_name:
     :param description:
     :rtype : Source
     :return:
@@ -278,6 +279,7 @@ def update(source_id, label, options, description):
     source = get(source_id)
 
     source.label = label
+    source.plugin_name = plugin_name
     source.options = options
     source.description = description
 

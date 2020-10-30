@@ -338,6 +338,7 @@ class Destinations(AuthenticatedResource):
         return service.update(
             destination_id,
             data["label"],
+            data["plugin"]["slug"],
             data["plugin"]["plugin_options"],
             data["description"],
         )
