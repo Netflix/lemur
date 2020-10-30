@@ -74,6 +74,7 @@ def downgrade():
         "update certificates set key_type=null where not_after > CURRENT_DATE - 32"
     )
     op.execute(stmt)
+    commit()
 
 
 """
