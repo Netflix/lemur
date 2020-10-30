@@ -41,19 +41,11 @@ angular.module('lemur')
       PluginService.getByType('source').then(function (plugins) {
         $scope.plugins = plugins;
         _.each($scope.plugins, function (plugin) {
-          if (plugin.slug === $scope.source.pluginName) {
+          if (plugin.slug === $scope.source.plugin.slug) {
+            plugin.pluginOptions = $scope.source.plugin.pluginOptions;
             $scope.source.plugin = plugin;
           }
         });
-      });
-    });
-
-    PluginService.getByType('source').then(function (plugins) {
-      $scope.plugins = plugins;
-      _.each($scope.plugins, function (plugin) {
-        if (plugin.slug === $scope.source.pluginName) {
-          $scope.source.plugin = plugin;
-        }
       });
     });
 
