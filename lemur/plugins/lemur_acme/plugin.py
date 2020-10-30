@@ -424,7 +424,7 @@ class AcmeHandler(object):
                 dns_provider_plugin = self.get_dns_provider(dns_provider.provider_type)
                 for dns_challenge in dns_challenges:
                     if authz_record.domain == authz_record.target_domain:
-                        host_to_validate = dns_challenge.validation_domain_name(host_to_validate),
+                        host_to_validate = dns_challenge.validation_domain_name(host_to_validate)
                     try:
                         dns_provider_plugin.delete_txt_record(
                             authz_record.change_id,
