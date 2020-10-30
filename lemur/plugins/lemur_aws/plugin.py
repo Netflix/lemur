@@ -408,7 +408,6 @@ class S3DestinationPlugin(ExportDestinationPlugin):
                 account_number=self.get_option("accountNumber", options),
             )
 
-
     def upload_acme_token(self, token_path, token, options, **kwargs):
         """
          This is called from the acme http challenge
@@ -483,4 +482,3 @@ class SNSNotificationPlugin(ExpirationNotificationPlugin):
 
         current_app.logger.info(f"Publishing {notification_type} notification to topic {topic_arn}")
         sns.publish(topic_arn, message, notification_type, region_name=self.get_option("region", options))
-
