@@ -24,18 +24,18 @@ def test_put_delete_s3_object(app):
         account_number=account,
         region=region)
 
-    response = get(bucket_name=bucket, prefix=path, account_number=account)
+    response = get(bucket_name=bucket, prefixed_object_name=path, account_number=account)
 
     # put data, and getting the same data
     assert (response == data)
 
-    response = get(bucket_name="wrong-bucket", prefix=path, account_number=account)
+    response = get(bucket_name="wrong-bucket", prefixed_object_name=path, account_number=account)
 
     # attempting to get thccle wrong data
     assert (response is None)
 
-    delete(bucket_name=bucket, prefix=path, account_number=account)
-    response = get(bucket_name=bucket, prefix=path, account_number=account)
+    delete(bucket_name=bucket, prefixed_object_name=path, account_number=account)
+    response = get(bucket_name=bucket, prefixed_object_name=path, account_number=account)
 
     # delete data, and getting the same data
     assert (response is None)

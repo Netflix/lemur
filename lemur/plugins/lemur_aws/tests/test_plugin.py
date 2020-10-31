@@ -74,7 +74,7 @@ def test_upload_acme_token(app):
                         options=additional_options)
 
     response = get(bucket_name=bucket,
-                   prefix=prefix + token_name,
+                   prefixed_object_name=prefix + token_name,
                    encrypt=False,
                    account_number=account)
 
