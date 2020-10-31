@@ -10,7 +10,6 @@ from lemur.constants import SUCCESS_METRIC_STATUS
 from lemur.plugins import plugins
 from lemur.plugins.lemur_acme.plugin import AcmeHandler
 from lemur.plugins.lemur_aws import s3
-from lemur.utils import get_random_secret
 
 manager = Manager(
     usage="Handles all ACME related tasks"
