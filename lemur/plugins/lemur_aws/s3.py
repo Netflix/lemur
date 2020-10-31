@@ -37,8 +37,10 @@ def put(bucket_name, region_name, prefix, data, encrypt, **kwargs):
     else:
         try:
             bucket.put_object(Key=prefix, Body=data, ACL="bucket-owner-full-control")
+            return True
         except ClientError:
             sentry.captureException()
+            return False
 
 
 @sts_client("s3", service_type="client")
@@ -55,6 +57,7 @@ def delete(bucket_name, prefix, **kwargs):
         return response['ResponseMetadata']['HTTPStatusCode'] < 300
     except ClientError:
         sentry.captureException()
+        return False
 
 
 @sts_client("s3", service_type="client")
@@ -69,3 +72,4 @@ def get(bucket_name, prefix, **kwargs):
         return response['Body'].read().decode("utf-8")
     except ClientError:
         sentry.captureException()
+        return None
