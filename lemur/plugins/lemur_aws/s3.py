@@ -44,15 +44,15 @@ def put(bucket_name, region_name, prefix, data, encrypt, **kwargs):
 
 
 @sts_client("s3", service_type="client")
-def delete(bucket_name, prefix, **kwargs):
+def delete(bucket_name, prefixed_object_name, **kwargs):
     """
     Use STS to delete an object
     """
     try:
-        response = kwargs["client"].delete_object(Bucket=bucket_name, Key=prefix)
+        response = kwargs["client"].delete_object(Bucket=bucket_name, Key=prefixed_object_name)
         current_app.logger.debug(f"Delete data from S3."
                                  f"Bucket: {bucket_name},"
-                                 f"Prefix: {prefix},"
+                                 f"Prefix: {prefixed_object_name},"
                                  f"Status_code: {response}")
         return response['ResponseMetadata']['HTTPStatusCode'] < 300
     except ClientError:
@@ -61,14 +61,14 @@ def delete(bucket_name, prefix, **kwargs):
 
 
 @sts_client("s3", service_type="client")
-def get(bucket_name, prefix, **kwargs):
+def get(bucket_name, prefixed_object_name, **kwargs):
     """
     Use STS to get an object
     """
     try:
-        response = kwargs["client"].get_object(Bucket=bucket_name, Key=prefix)
+        response = kwargs["client"].get_object(Bucket=bucket_name, Key=prefixed_object_name)
         current_app.logger.debug(f"Get data from S3. Bucket: {bucket_name},"
-                                 f"Prefix: {prefix}")
+                                 f"object_name: {prefixed_object_name}")
         return response['Body'].read().decode("utf-8")
     except ClientError:
         sentry.captureException()
