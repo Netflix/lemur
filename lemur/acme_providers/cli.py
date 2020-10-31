@@ -128,7 +128,16 @@ def dnstest(domain, token):
     help="Bucket Name",
 )
 def upload_acme_token_s3(token, token_name, prefix, account_number, bucket_name):
-
+    """
+    This method serves for testing the upload_acme_token to S3, fetching the token to verify it, and then deleting it.
+    It mainly serves for testing purposes.
+    :param token:
+    :param token_name:
+    :param prefix:
+    :param account_number:
+    :param bucket_name:
+    :return:
+    """
     additional_options = [
         {
             "name": "bucket",
