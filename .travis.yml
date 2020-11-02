@@ -48,3 +48,5 @@ after_success:
 notifications:
   email:
     lemur@netflix.com
+    on_success: never
+    on_failure: always
