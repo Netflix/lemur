@@ -337,7 +337,6 @@ class Notifications(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
-        print(f"Updating with data: {data}")
         return service.update(
             notification_id,
             data["label"],
