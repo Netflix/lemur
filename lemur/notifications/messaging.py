@@ -105,6 +105,7 @@ def send_plugin_notification(event_type, data, recipients, notification):
         "message": f"Sending expiration notification for to recipients {recipients}",
         "notification_type": "expiration",
         "certificate_targets": recipients,
+        "plugin": notification.plugin.slug,
     }
     status = FAILURE_METRIC_STATUS
     try:
@@ -120,7 +121,7 @@ def send_plugin_notification(event_type, data, recipients, notification):
         "notification",
         "counter",
         1,
-        metric_tags={"status": status, "event_type": event_type},
+        metric_tags={"status": status, "event_type": event_type, "plugin": notification.plugin.slug},
     )
 
     if status == SUCCESS_METRIC_STATUS:

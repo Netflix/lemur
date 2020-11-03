@@ -337,6 +337,7 @@ class Notifications(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
+        print(f"Updating with data: {data}")
         return service.update(
             notification_id,
             data["label"],
@@ -345,6 +346,8 @@ class Notifications(AuthenticatedResource):
             data["description"],
             data["active"],
             data["certificates"],
+            data["added_certificates"],
+            data["removed_certificates"],
         )
 
     def delete(self, notification_id):

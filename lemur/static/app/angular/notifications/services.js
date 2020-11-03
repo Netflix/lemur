@@ -8,10 +8,27 @@ angular.module('lemur')
           if (this.certificates === undefined) {
             this.certificates = [];
           }
+          if (this.addedCertificates === undefined) {
+            this.addedCertificates = [];
+          }
           this.certificates.push(certificate);
+          this.addedCertificates.push(certificate);
+          if (this.removedCertificates !== undefined) {
+            const index = this.removedCertificates.indexOf(certificate);
+            if (index > -1) {
+              this.removedCertificates.splice(index, 1);
+            }
+          }
         },
         removeCertificate: function (index) {
-          this.certificates.splice(index, 1);
+          if (this.removedCertificates === undefined) {
+            this.removedCertificates = [];
+          }
+          const removedCert = this.certificates.splice(index, 1);
+          this.removedCertificates.push(removedCert);
+          if (this.addedCertificates !== undefined && this.addedCertificates.indexOf(removedCert) > -1) {
+            this.addedCertificates.splice(this.addedCertificates.indexOf(removedCert), 1);
+          }
         }
       });
     });
@@ -52,6 +69,7 @@ angular.module('lemur')
     };
 
     NotificationService.update = function (notification) {
+      this.certificates = [];
       return notification.put();
     };
 
