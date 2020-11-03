@@ -42,7 +42,7 @@ class ExpirationNotificationPlugin(NotificationPlugin):
             "name": "interval",
             "type": "int",
             "required": True,
-            "validation": "^\d+$",
+            "validation": r"^\d+$",
             "helpMessage": "Number of days to be alert before expiration.",
         },
         {
