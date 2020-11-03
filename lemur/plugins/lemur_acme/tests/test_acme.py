@@ -132,7 +132,7 @@ class TestAcme(unittest.TestCase):
         mock_authz.dns_challenge.append(dns_challenge)
         # with self.assertRaises(ValueError):
         #    self.acme.complete_dns_challenge(mock_acme, mock_authz)
-        self.assertRaises(ValueError, self.acme.complete_dns_challenge(mock_acme, mock_authz))
+        self.assertRaises(ValueError, self.acme.complete_dns_challenge, mock_acme, mock_authz)
 
     @patch("acme.client.Client")
     @patch("OpenSSL.crypto", return_value="mock_cert")
