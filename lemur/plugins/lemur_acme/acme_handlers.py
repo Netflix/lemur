@@ -18,6 +18,7 @@ import time
 
 import OpenSSL.crypto
 import josepy as jose
+import dns.resolver
 from acme import challenges, errors, messages
 from acme.client import BackwardsCompatibleClientV2, ClientNetwork
 from acme.errors import TimeoutError
@@ -35,8 +36,9 @@ from retrying import retry
 
 
 class AuthorizationRecord(object):
-    def __init__(self, host, authz, dns_challenge, change_id):
-        self.host = host
+    def __init__(self, domain, target_domain, authz, dns_challenge, change_id):
+        self.domain = domain
+        self.target_domain = target_domain
         self.authz = authz
         self.dns_challenge = dns_challenge
         self.change_id = change_id
@@ -270,19 +272,18 @@ class AcmeDnsHandler(AcmeHandler):
             self,
             acme_client,
             account_number,
-            host,
+            domain,
+            target_domain,
             dns_provider,
             order,
             dns_provider_options,
     ):
-        current_app.logger.debug("Starting DNS challenge for {0}".format(host))
+        current_app.logger.debug(f"Starting DNS challenge for {domain} using target domain {target_domain}.")
 
         change_ids = []
-        dns_challenges = self.get_dns_challenges(host, order.authorizations)
-        host_to_validate, _ = self.strip_wildcard(host)
-        host_to_validate = self.maybe_add_extension(
-            host_to_validate, dns_provider_options
-        )
+        dns_challenges = self.get_dns_challenges(domain, order.authorizations)
+        host_to_validate, _ = self.strip_wildcard(target_domain)
+        host_to_validate = self.maybe_add_extension(host_to_validate, dns_provider_options)
 
         if not dns_challenges:
             sentry.captureException()
@@ -290,15 +291,20 @@ class AcmeDnsHandler(AcmeHandler):
             raise Exception("Unable to determine DNS challenges from authorizations")
 
         for dns_challenge in dns_challenges:
+
+            # Only prepend '_acme-challenge' if not using CNAME redirection
+            if domain == target_domain:
+                host_to_validate = dns_challenge.validation_domain_name(host_to_validate)
+
             change_id = dns_provider.create_txt_record(
-                dns_challenge.validation_domain_name(host_to_validate),
+                host_to_validate,
                 dns_challenge.validation(acme_client.client.net.key),
                 account_number,
             )
             change_ids.append(change_id)
 
         return AuthorizationRecord(
-            host, order.authorizations, dns_challenges, change_ids
+            domain, target_domain, order.authorizations, dns_challenges, change_ids
         )
 
     def complete_dns_challenge(self, acme_client, authz_record):
@@ -307,11 +313,11 @@ class AcmeDnsHandler(AcmeHandler):
                 authz_record.authz[0].body.identifier.value
             )
         )
-        dns_providers = self.dns_providers_for_domain.get(authz_record.host)
+        dns_providers = self.dns_providers_for_domain.get(authz_record.target_domain)
         if not dns_providers:
             metrics.send("complete_dns_challenge_error_no_dnsproviders", "counter", 1)
             raise Exception(
-                "No DNS providers found for domain: {}".format(authz_record.host)
+                "No DNS providers found for domain: {}".format(authz_record.target_domain)
             )
 
         for dns_provider in dns_providers:
@@ -339,7 +345,7 @@ class AcmeDnsHandler(AcmeHandler):
 
                 verified = response.simple_verify(
                     dns_challenge.chall,
-                    authz_record.host,
+                    authz_record.target_domain,
                     acme_client.client.net.key.public_key(),
                 )
 
@@ -355,12 +361,24 @@ class AcmeDnsHandler(AcmeHandler):
         authorizations = []
 
         for domain in order_info.domains:
-            if not self.dns_providers_for_domain.get(domain):
+
+            # If CNAME exists, set host to the target address
+            target_domain = domain
+            if current_app.config.get("ACME_ENABLE_DELEGATED_CNAME", False):
+                cname_result, _ = self.strip_wildcard(domain)
+                cname_result = challenges.DNS01().validation_domain_name(cname_result)
+                cname_result = self.get_cname(cname_result)
+                if cname_result:
+                    target_domain = cname_result
+                    self.autodetect_dns_providers(target_domain)
+
+            if not self.dns_providers_for_domain.get(target_domain):
                 metrics.send(
                     "get_authorizations_no_dns_provider_for_domain", "counter", 1
                 )
-                raise Exception("No DNS providers found for domain: {}".format(domain))
-            for dns_provider in self.dns_providers_for_domain[domain]:
+                raise Exception("No DNS providers found for domain: {}".format(target_domain))
+
+            for dns_provider in self.dns_providers_for_domain[target_domain]:
                 dns_provider_plugin = self.get_dns_provider(dns_provider.provider_type)
                 dns_provider_options = json.loads(dns_provider.credentials)
                 account_number = dns_provider_options.get("account_id")
@@ -368,6 +386,7 @@ class AcmeDnsHandler(AcmeHandler):
                     acme_client,
                     account_number,
                     domain,
+                    target_domain,
                     dns_provider_plugin,
                     order,
                     dns_provider.options,
@@ -399,11 +418,10 @@ class AcmeDnsHandler(AcmeHandler):
     def finalize_authorizations(self, acme_client, authorizations):
         for authz_record in authorizations:
             self.complete_dns_challenge(acme_client, authz_record)
-
         for authz_record in authorizations:
             dns_challenges = authz_record.dns_challenge
             for dns_challenge in dns_challenges:
-                dns_providers = self.dns_providers_for_domain.get(authz_record.host)
+                dns_providers = self.dns_providers_for_domain.get(authz_record.target_domain)
                 for dns_provider in dns_providers:
                     # Grab account number (For Route53)
                     dns_provider_plugin = self.get_dns_provider(
@@ -411,14 +429,14 @@ class AcmeDnsHandler(AcmeHandler):
                     )
                     dns_provider_options = json.loads(dns_provider.credentials)
                     account_number = dns_provider_options.get("account_id")
-                    host_to_validate, _ = self.strip_wildcard(authz_record.host)
-                    host_to_validate = self.maybe_add_extension(
-                        host_to_validate, dns_provider_options
-                    )
+                    host_to_validate, _ = self.strip_wildcard(authz_record.target_domain)
+                    host_to_validate = self.maybe_add_extension(host_to_validate, dns_provider_options)
+                    if authz_record.domain == authz_record.target_domain:
+                        host_to_validate = challenges.DNS01().validation_domain_name(host_to_validate)
                     dns_provider_plugin.delete_txt_record(
                         authz_record.change_id,
                         account_number,
-                        dns_challenge.validation_domain_name(host_to_validate),
+                        host_to_validate,
                         dns_challenge.validation(acme_client.client.net.key),
                     )
 
@@ -437,23 +455,26 @@ class AcmeDnsHandler(AcmeHandler):
         :return:
         """
         for authz_record in authorizations:
-            dns_providers = self.dns_providers_for_domain.get(authz_record.host)
+            dns_providers = self.dns_providers_for_domain.get(authz_record.target_domain)
             for dns_provider in dns_providers:
                 # Grab account number (For Route53)
                 dns_provider_options = json.loads(dns_provider.credentials)
                 account_number = dns_provider_options.get("account_id")
                 dns_challenges = authz_record.dns_challenge
-                host_to_validate, _ = self.strip_wildcard(authz_record.host)
+                host_to_validate, _ = self.strip_wildcard(authz_record.target_domain)
                 host_to_validate = self.maybe_add_extension(
                     host_to_validate, dns_provider_options
                 )
+
                 dns_provider_plugin = self.get_dns_provider(dns_provider.provider_type)
                 for dns_challenge in dns_challenges:
+                    if authz_record.domain == authz_record.target_domain:
+                        host_to_validate = dns_challenge.validation_domain_name(host_to_validate)
                     try:
                         dns_provider_plugin.delete_txt_record(
                             authz_record.change_id,
                             account_number,
-                            dns_challenge.validation_domain_name(host_to_validate),
+                            host_to_validate,
                             dns_challenge.validation(acme_client.client.net.key),
                         )
                     except Exception as e:
@@ -462,3 +483,15 @@ class AcmeDnsHandler(AcmeHandler):
                         metrics.send("cleanup_dns_challenges_error", "counter", 1)
                         sentry.captureException()
                         pass
+
+    def get_cname(self, domain):
+        """
+        :param domain: Domain name to look up a CNAME for.
+        :return: First CNAME target or False if no CNAME record exists.
+        """
+        try:
+            result = dns.resolver.query(domain, 'CNAME')
+            if len(result) > 0:
+                return str(result[0].target).rstrip('.')
+        except dns.exception.DNSException:
+            return False

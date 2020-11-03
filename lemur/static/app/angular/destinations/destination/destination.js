@@ -52,19 +52,19 @@ angular.module('lemur')
           if (plugin.slug === $scope.destination.plugin.slug) {
             plugin.pluginOptions = $scope.destination.plugin.pluginOptions;
             $scope.destination.plugin = plugin;
-            _.each($scope.destination.plugin.pluginOptions, function (option) {
-              if (option.type === 'export-plugin') {
-                PluginService.getByType('export').then(function (plugins) {
-                  $scope.exportPlugins = plugins;
+            PluginService.getByType('export').then(function (plugins) {
+              $scope.exportPlugins = plugins;
 
+              _.each($scope.destination.plugin.pluginOptions, function (option) {
+                if (option.type === 'export-plugin') {
                   _.each($scope.exportPlugins, function (plugin) {
                     if (plugin.slug === option.value.slug) {
                       plugin.pluginOptions = option.value.pluginOptions;
                       option.value = plugin;
                     }
                   });
-                });
-              }
+                }
+              });
             });
           }
         });

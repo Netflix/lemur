@@ -47,4 +47,7 @@ after_success:
 
 notifications:
   email:
-    ccastrapel@netflix.com
+    recipients:
+      - lemur@netflix.com
+    on_success: never
+    on_failure: always

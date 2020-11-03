@@ -40,6 +40,19 @@ class TestAcmeDns(unittest.TestCase):
         result = yield self.acme.get_dns_challenges(host, mock_authz)
         self.assertEqual(result, mock_entry)
 
+    def test_strip_wildcard(self):
+        expected = ("example.com", False)
+        result = self.acme.strip_wildcard("example.com")
+        self.assertEqual(expected, result)
+
+        expected = ("example.com", True)
+        result = self.acme.strip_wildcard("*.example.com")
+        self.assertEqual(expected, result)
+
+    def test_authz_record(self):
+        a = AuthorizationRecord("domain", "host", "authz", "challenge", "id")
+        self.assertEqual(type(a), AuthorizationRecord)
+
     @patch("acme.client.Client")
     @patch("lemur.plugins.lemur_acme.acme_handlers.current_app")
     @patch("lemur.plugins.lemur_acme.plugin.len", return_value=1)
@@ -67,7 +80,7 @@ class TestAcmeDns(unittest.TestCase):
         iterator = iter(values)
         iterable.__iter__.return_value = iterator
         result = self.acme.start_dns_challenge(
-            mock_acme, "accountid", "host", mock_dns_provider, mock_order, {}
+            mock_acme, "accountid", "domain", "host", mock_dns_provider, mock_order, {}
         )
         self.assertEqual(type(result), AuthorizationRecord)
 
@@ -85,7 +98,7 @@ class TestAcmeDns(unittest.TestCase):
         mock_authz.dns_challenge.response = Mock()
         mock_authz.dns_challenge.response.simple_verify = Mock(return_value=True)
         mock_authz.authz = []
-        mock_authz.host = "www.test.com"
+        mock_authz.target_domain = "www.test.com"
         mock_authz_record = Mock()
         mock_authz_record.body.identifier.value = "test"
         mock_authz.authz.append(mock_authz_record)
@@ -109,7 +122,7 @@ class TestAcmeDns(unittest.TestCase):
         mock_authz.dns_challenge.response = Mock()
         mock_authz.dns_challenge.response.simple_verify = Mock(return_value=False)
         mock_authz.authz = []
-        mock_authz.host = "www.test.com"
+        mock_authz.target_domain = "www.test.com"
         mock_authz_record = Mock()
         mock_authz_record.body.identifier.value = "test"
         mock_authz.authz.append(mock_authz_record)
@@ -330,11 +343,9 @@ class TestAcmeDns(unittest.TestCase):
         result = provider.create_certificate(csr, issuer_options)
         assert result
 
-    @patch(
-        "lemur.plugins.lemur_acme.plugin.AcmeDnsHandler.start_dns_challenge",
-        return_value="test",
-    )
-    def test_get_authorizations(self, mock_start_dns_challenge):
+    @patch("lemur.plugins.lemur_acme.plugin.AcmeDnsHandler.start_dns_challenge", return_value="test")
+    @patch("lemur.plugins.lemur_acme.acme_handlers.current_app", return_value=False)
+    def test_get_authorizations(self, mock_current_app, mock_start_dns_challenge):
         mock_order = Mock()
         mock_order.body.identifiers = []
         mock_domain = Mock()

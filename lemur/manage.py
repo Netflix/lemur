@@ -120,6 +120,7 @@ METRIC_PROVIDERS = []
 
 LOG_LEVEL = "DEBUG"
 LOG_FILE = "lemur.log"
+LOG_UPGRADE_FILE = "db_upgrade.log"
 
 
 # Database

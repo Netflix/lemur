@@ -6,6 +6,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import arrow
+import re
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
@@ -560,20 +561,21 @@ def query_common_name(common_name, args):
     :return:
     """
     owner = args.pop("owner")
-    if not owner:
-        owner = "%"
-
     # only not expired certificates
     current_time = arrow.utcnow()
 
-    result = (
-        Certificate.query.filter(Certificate.cn.ilike(common_name))
-        .filter(Certificate.owner.ilike(owner))
-        .filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))
-        .all()
-    )
+    query = Certificate.query.filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))\
+        .filter(not_(Certificate.revoked))\
+        .filter(not_(Certificate.replaced.any()))  # ignore rotated certificates to avoid duplicates
 
-    return result
+    if owner:
+        query = query.filter(Certificate.owner.ilike(owner))
+
+    if common_name != "%":
+        # if common_name is a wildcard ('%'), no need to include it in the query
+        query = query.filter(Certificate.cn.ilike(common_name))
+
+    return query.all()
 
 
 def create_csr(**csr_config):
@@ -777,6 +779,19 @@ def reissue_certificate(certificate, replace=None, user=None):
 
     if replace:
         primitives["replaces"] = [certificate]
+
+    # Modify description to include the certificate ID being reissued and mention that this is created by Lemur
+    # as part of reissue
+    reissue_message_prefix = "Reissued by Lemur for cert ID "
+    reissue_message = re.compile(f"{reissue_message_prefix}([0-9]+)")
+    if primitives["description"]:
+        match = reissue_message.search(primitives["description"])
+        if match:
+            primitives["description"] = primitives["description"].replace(match.group(1), str(certificate.id))
+        else:
+            primitives["description"] = f"{reissue_message_prefix}{certificate.id}, {primitives['description']}"
+    else:
+        primitives["description"] = f"{reissue_message_prefix}{certificate.id}"
 
     new_cert = create(**primitives)
 

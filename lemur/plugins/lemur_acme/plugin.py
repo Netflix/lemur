@@ -19,7 +19,6 @@ from acme.errors import PollError, WildcardUnsupportedError
 from acme.messages import Error as AcmeError
 from botocore.exceptions import ClientError
 from flask import current_app
-
 from lemur.authorizations import service as authorization_service
 from lemur.dns_providers import service as dns_provider_service
 from lemur.exceptions import InvalidConfiguration
