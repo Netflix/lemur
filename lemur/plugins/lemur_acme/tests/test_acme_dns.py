@@ -40,19 +40,6 @@ class TestAcmeDns(unittest.TestCase):
         result = yield self.acme.get_dns_challenges(host, mock_authz)
         self.assertEqual(result, mock_entry)
 
-    def test_strip_wildcard(self):
-        expected = ("example.com", False)
-        result = self.acme.strip_wildcard("example.com")
-        self.assertEqual(expected, result)
-
-        expected = ("example.com", True)
-        result = self.acme.strip_wildcard("*.example.com")
-        self.assertEqual(expected, result)
-
-    def test_authz_record(self):
-        a = AuthorizationRecord("domain", "host", "authz", "challenge", "id")
-        self.assertEqual(type(a), AuthorizationRecord)
-
     @patch("acme.client.Client")
     @patch("lemur.plugins.lemur_acme.acme_handlers.current_app")
     @patch("lemur.plugins.lemur_acme.plugin.len", return_value=1)
