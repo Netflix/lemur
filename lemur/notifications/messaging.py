@@ -137,11 +137,11 @@ def send_expiration_notifications(exclude):
     # security team gets all
     security_email = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
 
-    security_data = []
     for owner, notification_group in get_eligible_certificates(exclude=exclude).items():
 
         for notification_label, certificates in notification_group.items():
             notification_data = []
+            security_data = []
 
             notification = certificates[0][0]
 
