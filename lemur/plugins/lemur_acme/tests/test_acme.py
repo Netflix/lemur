@@ -3,6 +3,7 @@ from unittest.mock import patch, Mock
 
 import josepy as jose
 from cryptography.x509 import DNSName
+from flask import Flask
 from lemur.plugins.lemur_acme import plugin
 from lemur.common.utils import generate_private_key
 from mock import MagicMock
@@ -21,6 +22,15 @@ class TestAcme(unittest.TestCase):
             "www.test.com": [mock_dns_provider],
             "test.fakedomain.net": [mock_dns_provider],
         }
+
+        # Creates a new Flask application for a test duration.
+        _app = Flask('lemur_test_acme')
+        self.ctx = _app.app_context()
+        assert self.ctx
+        self.ctx.push()
+
+    def tearDown(self):
+        self.ctx.pop()
 
     @patch("lemur.plugins.lemur_acme.plugin.len", return_value=1)
     def test_get_dns_challenges(self, mock_len):
