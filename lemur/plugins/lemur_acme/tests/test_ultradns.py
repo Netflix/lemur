@@ -20,7 +20,8 @@ class TestUltradns(unittest.TestCase):
             "test.fakedomain.net": [mock_dns_provider],
         }
 
-        # Creates a new Flask application for a test duration.
+        # Creates a new Flask application for a test duration. In python 3.8, manual push of application context is
+        # needed to run tests in dev environment without getting error 'Working outside of application context'.
         _app = Flask('lemur_test_acme')
         self.ctx = _app.app_context()
         assert self.ctx
