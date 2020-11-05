@@ -91,7 +91,7 @@ class EmailNotificationPlugin(ExpirationNotificationPlugin):
             "name": "recipients",
             "type": "str",
             "required": True,
-            "validation": "^([\w+-.%]+@[\w-.]+\.[A-Za-z]{2,4},?)+$",
+            "validation": r"^([\w+-.%]+@[\w-.]+\.[A-Za-z]{2,4},?)+$",
             "helpMessage": "Comma delimited list of email addresses",
         }
     ]

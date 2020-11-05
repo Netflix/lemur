@@ -101,7 +101,8 @@ def login_required(f):
             return dict(message="Token is invalid"), 403
 
         try:
-            payload = jwt.decode(token, current_app.config["LEMUR_TOKEN_SECRET"])
+            header_data = fetch_token_header(token)
+            payload = jwt.decode(token, current_app.config["LEMUR_TOKEN_SECRET"], algorithms=[header_data["alg"]])
         except jwt.DecodeError:
             return dict(message="Token is invalid"), 403
         except jwt.ExpiredSignatureError:

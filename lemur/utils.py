@@ -81,7 +81,7 @@ class Vault(types.TypeDecorator):
     """
 
     # required by SQLAlchemy. defines the underlying column type
-    impl = types.Binary
+    impl = types.LargeBinary
 
     def process_bind_param(self, value, dialect):
         """
