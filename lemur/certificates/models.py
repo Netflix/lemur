@@ -16,7 +16,7 @@ from sqlalchemy import (
     Integer,
     ForeignKey,
     String,
-    PassiveDefault,
+    DefaultClause,
     func,
     Column,
     Text,
@@ -138,7 +138,7 @@ class Certificate(db.Model):
     not_after = Column(ArrowType)
     not_after_ix = Index("ix_certificates_not_after", not_after.desc())
 
-    date_created = Column(ArrowType, PassiveDefault(func.now()), nullable=False)
+    date_created = Column(ArrowType, DefaultClause(func.now()), nullable=False)
 
     signing_algorithm = Column(String(128))
     status = Column(String(128))
@@ -184,7 +184,6 @@ class Certificate(db.Model):
         "PendingCertificate",
         secondary=pending_cert_replacement_associations,
         backref="pending_replace",
-        viewonly=True,
     )
 
     logs = relationship("Log", backref="certificate")

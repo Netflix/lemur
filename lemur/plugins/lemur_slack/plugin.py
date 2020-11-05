@@ -89,7 +89,7 @@ class SlackNotificationPlugin(ExpirationNotificationPlugin):
             "name": "webhook",
             "type": "str",
             "required": True,
-            "validation": "^https:\/\/hooks\.slack\.com\/services\/.+$",
+            "validation": r"^https:\/\/hooks\.slack\.com\/services\/.+$",
             "helpMessage": "The url Slack told you to use for this integration",
         },
         {
