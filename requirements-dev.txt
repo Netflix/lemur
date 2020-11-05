@@ -15,9 +15,9 @@ cryptography==3.2.1       # via secretstorage
 distlib==0.3.0            # via virtualenv
 docutils==0.16            # via readme-renderer
 filelock==3.0.12          # via virtualenv
-flake8==3.8.0             # via -r requirements-dev.in
 identify==1.4.14          # via pre-commit
 idna==2.9                 # via requests
+flake8==3.8.4             # via -r requirements-dev.in
 invoke==1.4.1             # via -r requirements-dev.in
 jeepney==0.4.3            # via keyring, secretstorage
 keyring==21.2.0           # via twine
