@@ -16,6 +16,7 @@ from itertools import groupby
 import arrow
 from flask import current_app
 from sqlalchemy import and_
+from sqlalchemy.sql.expression import false, true
 
 from lemur import database
 from lemur.certificates.models import Certificate
@@ -40,10 +41,10 @@ def get_certificates(exclude=None):
     q = (
         database.db.session.query(Certificate)
         .filter(Certificate.not_after <= max)
-        .filter(Certificate.notify == True)
-        .filter(Certificate.expired == False)
-        .filter(Certificate.revoked == False)
-    )  # noqa
+        .filter(Certificate.notify == true())
+        .filter(Certificate.expired == false())
+        .filter(Certificate.revoked == false())
+    )
 
     exclude_conditions = []
     if exclude:
