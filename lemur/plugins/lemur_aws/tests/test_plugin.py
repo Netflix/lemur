@@ -28,7 +28,7 @@ def test_upload_acme_token(app):
             "value": bucket,
             "type": "str",
             "required": True,
-            "validation": "[0-9a-z.-]{3,63}",
+            "validation": r"[0-9a-z.-]{3,63}",
             "helpMessage": "Must be a valid S3 bucket name!",
         },
         {
@@ -36,7 +36,7 @@ def test_upload_acme_token(app):
             "type": "str",
             "value": account,
             "required": True,
-            "validation": "[0-9]{12}",
+            "validation": r"[0-9]{12}",
             "helpMessage": "A valid AWS account number with permission to access S3",
         },
         {
