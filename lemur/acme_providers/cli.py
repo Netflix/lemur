@@ -144,7 +144,7 @@ def upload_acme_token_s3(token, token_name, prefix, account_number, bucket_name)
             "value": bucket_name,
             "type": "str",
             "required": True,
-            "validation": "[0-9a-z.-]{3,63}",
+            "validation": r"[0-9a-z.-]{3,63}",
             "helpMessage": "Must be a valid S3 bucket name!",
         },
         {
@@ -152,7 +152,7 @@ def upload_acme_token_s3(token, token_name, prefix, account_number, bucket_name)
             "type": "str",
             "value": account_number,
             "required": True,
-            "validation": "[0-9]{12}",
+            "validation": r"[0-9]{12}",
             "helpMessage": "A valid AWS account number with permission to access S3",
         },
         {
