@@ -59,7 +59,7 @@ pycparser==2.20           # via cffi
 pyflakes==2.2.0           # via -r requirements-tests.in
 pyparsing==2.4.7          # via packaging
 pyrsistent==0.16.0        # via jsonschema
-pytest-flask==1.0.0       # via -r requirements-tests.in
+pytest-flask==1.1.0       # via -r requirements-tests.in
 pytest-mock==3.3.1        # via -r requirements-tests.in
 pytest==6.1.2             # via -r requirements-tests.in, pytest-flask, pytest-mock
 python-dateutil==2.8.1    # via botocore, faker, freezegun, moto
