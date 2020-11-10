@@ -12,6 +12,7 @@ import json
 
 import OpenSSL
 from acme import challenges
+from acme.messages import STATUS_VALID
 from flask import current_app
 
 from lemur.authorizations import service as authorization_service
@@ -81,17 +82,23 @@ class AcmeHttpChallenge(AcmeChallenge):
         orderr = acme_client.new_order(csr)
 
         chall = []
+        validations = {}
+        all_pre_validated = True
         for authz in orderr.authorizations:
             # Choosing challenge.
             # authz.body.challenges is a set of ChallengeBody objects.
             for i in authz.body.challenges:
                 # Find the supported challenge.
-                if isinstance(i.chall, challenges.HTTP01):
-                    chall.append(i)
+                if i.status != STATUS_VALID:
+                    if isinstance(i.chall, challenges.HTTP01):
+                        chall.append(i)
+                        all_pre_validated = False
+                else:
+                    current_app.logger.info("{} already validated, skipping".format(authz.body.identifier.value))
 
-        if len(chall) == 0:
+        if len(chall) == 0 and not all_pre_validated:
             raise Exception('HTTP-01 challenge was not offered by the CA server.')
-        else:
+        elif not all_pre_validated:
             validation_target = None
             for option in json.loads(issuer_options["authority"].options):
                 if option["name"] == "tokenDestination":
@@ -100,13 +107,12 @@ class AcmeHttpChallenge(AcmeChallenge):
             if validation_target is None:
                 raise Exception('No token_destination configured for this authority. Cant complete HTTP-01 challenge')
 
-        validations = {}
-        for challenge in chall:
-            response, validation = self.deploy(challenge, acme_client, validation_target)
-            validations[challenge.chall.path] = validation
-            acme_client.answer_challenge(challenge, response)
+            for challenge in chall:
+                response, validation = self.deploy(challenge, acme_client, validation_target)
+                validations[challenge.chall.path] = validation
+                acme_client.answer_challenge(challenge, response)
 
-        current_app.logger.info("Uploaded HTTP-01 challenge tokens, trying to poll and finalize the order")
+            current_app.logger.info("Uploaded HTTP-01 challenge tokens, trying to poll and finalize the order")
 
         finalized_orderr = acme_client.finalize_order(orderr, datetime.datetime.now() + datetime.timedelta(seconds=90))
 
@@ -124,8 +130,9 @@ class AcmeHttpChallenge(AcmeChallenge):
         else:
             pem_certificate_chain = finalized_orderr.fullchain_pem[len(pem_certificate):].lstrip()
 
-        for token_path, token in validations.items():
-            self.cleanup(token_path, token, validation_target)
+        if len(validations) != 0:
+            for token_path, token in validations.items():
+                self.cleanup(token_path, token, validation_target)
 
         # validation is a random string, we use it as external id, to make it possible to implement revoke_certificate
         return pem_certificate, pem_certificate_chain, None
