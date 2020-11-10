@@ -168,7 +168,7 @@ class TestAcmeDns(unittest.TestCase):
         with self.assertRaises(Exception):
             self.acme.setup_acme_client(mock_authority)
 
-    @patch("lemur.plugins.lemur_acme.plugin.jose.JWK.json_loads")
+    @patch("lemur.plugins.lemur_acme.acme_handlers.jose.JWK.json_loads")
     @patch("lemur.plugins.lemur_acme.acme_handlers.BackwardsCompatibleClientV2")
     @patch("lemur.plugins.lemur_acme.acme_handlers.current_app")
     def test_setup_acme_client_success_load_account_from_authority(self, mock_current_app, mock_acme, mock_key_json_load):
@@ -190,7 +190,7 @@ class TestAcmeDns(unittest.TestCase):
         assert result_client
         assert not result_registration
 
-    @patch("lemur.plugins.lemur_acme.plugin.jose.JWKRSA.fields_to_partial_json")
+    @patch("lemur.plugins.lemur_acme.acme_handlers.jose.JWKRSA.fields_to_partial_json")
     @patch("lemur.plugins.lemur_acme.acme_handlers.authorities_service")
     @patch("lemur.plugins.lemur_acme.acme_handlers.BackwardsCompatibleClientV2")
     @patch("lemur.plugins.lemur_acme.acme_handlers.current_app")

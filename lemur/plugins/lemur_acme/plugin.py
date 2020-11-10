@@ -12,9 +12,6 @@
 .. moduleauthor:: Curtis Castrapel <ccastrapel@netflix.com>
 """
 
-import OpenSSL.crypto
-import josepy as jose
-from acme import errors
 from acme.errors import PollError, WildcardUnsupportedError
 from acme.messages import Error as AcmeError
 from botocore.exceptions import ClientError
@@ -272,25 +269,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
 
     def revoke_certificate(self, certificate, comments):
         self.acme = AcmeDnsHandler()
-        if not self.acme.reuse_account(certificate.authority):
-            raise InvalidConfiguration("There is no ACME account saved, unable to revoke the certificate.")
-        acme_client, _ = self.acme.setup_acme_client(certificate.authority)
-
-        fullchain_com = jose.ComparableX509(
-            OpenSSL.crypto.load_certificate(
-                OpenSSL.crypto.FILETYPE_PEM, certificate.body))
-
-        try:
-            acme_client.revoke(fullchain_com, 0)  # revocation reason = 0
-        except (errors.ConflictError, errors.ClientError, errors.Error) as e:
-            # Certificate already revoked.
-            current_app.logger.error("Certificate revocation failed with message: " + e.detail)
-            metrics.send("acme_revoke_certificate_failure", "counter", 1)
-            return False
-
-        current_app.logger.warning("Certificate succesfully revoked: " + certificate.name)
-        metrics.send("acme_revoke_certificate_success", "counter", 1)
-        return True
+        return self.acme.revoke_certificate(certificate)
 
 
 class ACMEHttpIssuerPlugin(IssuerPlugin):
@@ -391,22 +370,4 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
 
     def revoke_certificate(self, certificate, comments):
         self.acme = AcmeHandler()
-        if not self.acme.reuse_account(certificate.authority):
-            raise InvalidConfiguration("There is no ACME account saved, unable to revoke the certificate.")
-        acme_client, _ = self.acme.setup_acme_client(certificate.authority)
-
-        fullchain_com = jose.ComparableX509(
-            OpenSSL.crypto.load_certificate(
-                OpenSSL.crypto.FILETYPE_PEM, certificate.body))
-
-        try:
-            acme_client.revoke(fullchain_com, 0)  # revocation reason = 0
-        except (errors.ConflictError, errors.ClientError, errors.Error) as e:
-            # Certificate already revoked.
-            current_app.logger.error("Certificate revocation failed with message: " + e.detail)
-            metrics.send("acme_revoke_certificate_failure", "counter", 1)
-            return False
-
-        current_app.logger.warning("Certificate succesfully revoked: " + certificate.name)
-        metrics.send("acme_revoke_certificate_success", "counter", 1)
-        return True
+        return self.acme.revoke_certificate(certificate)

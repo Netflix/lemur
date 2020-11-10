@@ -27,7 +27,7 @@ from flask import current_app
 
 from lemur.common.utils import generate_private_key
 from lemur.dns_providers import service as dns_provider_service
-from lemur.exceptions import InvalidAuthority, UnknownProvider
+from lemur.exceptions import InvalidAuthority, UnknownProvider, InvalidConfiguration
 from lemur.extensions import metrics, sentry
 
 from lemur.plugins.lemur_acme import cloudflare, dyn, route53, ultradns, powerdns
@@ -215,6 +215,27 @@ class AcmeHandler(object):
 
         current_app.logger.debug("Got these domains: {0}".format(domains))
         return domains
+
+    def revoke_certificate(self, certificate):
+        if not self.reuse_account(certificate.authority):
+            raise InvalidConfiguration("There is no ACME account saved, unable to revoke the certificate.")
+        acme_client, _ = self.acme.setup_acme_client(certificate.authority)
+
+        fullchain_com = jose.ComparableX509(
+            OpenSSL.crypto.load_certificate(
+                OpenSSL.crypto.FILETYPE_PEM, certificate.body))
+
+        try:
+            acme_client.revoke(fullchain_com, 0)  # revocation reason = 0
+        except (errors.ConflictError, errors.ClientError, errors.Error) as e:
+            # Certificate already revoked.
+            current_app.logger.error("Certificate revocation failed with message: " + e.detail)
+            metrics.send("acme_revoke_certificate_failure", "counter", 1)
+            return False
+
+        current_app.logger.warning("Certificate succesfully revoked: " + certificate.name)
+        metrics.send("acme_revoke_certificate_success", "counter", 1)
+        return True
 
 
 class AcmeDnsHandler(AcmeHandler):
