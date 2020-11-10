@@ -82,4 +82,4 @@ def get_key_type_from_csr(data):
             raise Exception("Unsupported key type")
 
     except NotImplemented:
-        raise NotImplemented()
+        raise NotImplementedError

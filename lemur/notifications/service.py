@@ -43,7 +43,7 @@ def create_default_expiration_notifications(name, recipients, intervals=None):
             "name": "recipients",
             "type": "str",
             "required": True,
-            "validation": "^([\w+-.%]+@[\w-.]+\.[A-Za-z]{2,4},?)+$",
+            "validation": r"^([\w+-.%]+@[\w-.]+\.[A-Za-z]{2,4},?)+$",
             "helpMessage": "Comma delimited list of email addresses",
             "value": ",".join(recipients),
         },
@@ -63,7 +63,7 @@ def create_default_expiration_notifications(name, recipients, intervals=None):
                     "name": "interval",
                     "type": "int",
                     "required": True,
-                    "validation": "^\d+$",
+                    "validation": r"^\d+$",
                     "helpMessage": "Number of days to be alert before expiration.",
                     "value": i,
                 }

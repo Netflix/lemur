@@ -12,6 +12,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from flask import current_app
 from sqlalchemy import func, or_, not_, cast, Integer
+from sqlalchemy.sql.expression import false, true
 
 from lemur import database
 from lemur.authorities.models import Authority
@@ -150,7 +151,7 @@ def get_all_certs_attached_to_endpoint_without_autorotate():
         """
     return (
         Certificate.query.filter(Certificate.endpoints.any())
-        .filter(Certificate.rotation == False)
+        .filter(Certificate.rotation == false())
         .filter(Certificate.not_after >= arrow.now())
         .filter(not_(Certificate.replaced.any()))
         .all()  # noqa
@@ -205,9 +206,9 @@ def get_all_pending_reissue():
     :return:
     """
     return (
-        Certificate.query.filter(Certificate.rotation == True)
+        Certificate.query.filter(Certificate.rotation == true())
         .filter(not_(Certificate.replaced.any()))
-        .filter(Certificate.in_rotation_window == True)
+        .filter(Certificate.in_rotation_window == true())
         .all()
     )  # noqa
 
@@ -525,7 +526,7 @@ def render(args):
         )
 
     if current_app.config.get("ALLOW_CERT_DELETION", False):
-        query = query.filter(Certificate.deleted == False)  # noqa
+        query = query.filter(Certificate.deleted == false())
 
     result = database.sort_and_page(query, Certificate, args)
     return result

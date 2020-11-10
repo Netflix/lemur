@@ -9,7 +9,7 @@ from sqlalchemy import (
     Integer,
     ForeignKey,
     String,
-    PassiveDefault,
+    DefaultClause,
     func,
     Column,
     Text,
@@ -76,14 +76,14 @@ class PendingCertificate(db.Model):
     chain = Column(Text())
     private_key = Column(Vault, nullable=True)
 
-    date_created = Column(ArrowType, PassiveDefault(func.now()), nullable=False)
+    date_created = Column(ArrowType, DefaultClause(func.now()), nullable=False)
     dns_provider_id = Column(
         Integer, ForeignKey("dns_providers.id", ondelete="CASCADE")
     )
 
     status = Column(Text(), nullable=True)
     last_updated = Column(
-        ArrowType, PassiveDefault(func.now()), onupdate=func.now(), nullable=False
+        ArrowType, DefaultClause(func.now()), onupdate=func.now(), nullable=False
     )
 
     rotation = Column(Boolean, default=False)

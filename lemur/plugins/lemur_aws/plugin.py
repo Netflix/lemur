@@ -33,6 +33,7 @@
 .. moduleauthor:: Harm Weites <harm@weites.com>
 """
 
+import sys
 from acme.errors import ClientError
 from flask import current_app
 
@@ -407,6 +408,47 @@ class S3DestinationPlugin(ExportDestinationPlugin):
                 self.get_option("encrypt", options),
                 account_number=self.get_option("accountNumber", options),
             )
+
+    def upload_acme_token(self, token_path, token, options, **kwargs):
+        """
+         This is called from the acme http challenge
+        :param self:
+        :param token_path:
+        :param token:
+        :param options:
+        :param kwargs:
+        :return:
+        """
+        current_app.logger.debug("S3 destination plugin is started for HTTP-01 challenge")
+
+        function = f"{__name__}.{sys._getframe().f_code.co_name}"
+
+        account_number = self.get_option("accountNumber", options)
+        bucket_name = self.get_option("bucket", options)
+        prefix = self.get_option("prefix", options)
+        region = self.get_option("region", options)
+        filename = token_path.split("/")[-1]
+        if not prefix.endswith("/"):
+            prefix + "/"
+
+        res = s3.put(bucket_name=bucket_name,
+                     region_name=region,
+                     prefix=prefix + filename,
+                     data=token,
+                     encrypt=False,
+                     account_number=account_number)
+        res = "Success" if res else "Failure"
+        log_data = {
+            "function": function,
+            "message": "check if any valid certificate is revoked",
+            "result": res,
+            "bucket_name": bucket_name,
+            "filename": filename
+        }
+        current_app.logger.info(log_data)
+        metrics.send(f"{function}", "counter", 1, metric_tags={"result": res,
+                                                               "bucket_name": bucket_name,
+                                                               "filename": filename})
 
 
 class SNSNotificationPlugin(ExpirationNotificationPlugin):
