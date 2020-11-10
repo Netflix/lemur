@@ -86,15 +86,16 @@ class AcmeHttpChallenge(AcmeChallenge):
         all_pre_validated = True
         for authz in orderr.authorizations:
             # Choosing challenge.
-            # authz.body.challenges is a set of ChallengeBody objects.
-            for i in authz.body.challenges:
-                # Find the supported challenge.
-                if i.status != STATUS_VALID:
+            # check if authorizations is already in a valid state
+            if authz.body.status != STATUS_VALID:
+                all_pre_validated = False
+                # authz.body.challenges is a set of ChallengeBody objects.
+                for i in authz.body.challenges:
+                    # Find the supported challenge.
                     if isinstance(i.chall, challenges.HTTP01):
                         chall.append(i)
-                        all_pre_validated = False
-                else:
-                    current_app.logger.info("{} already validated, skipping".format(authz.body.identifier.value))
+            else:
+                current_app.logger.info("{} already validated, skipping".format(authz.body.identifier.value))
 
         if len(chall) == 0 and not all_pre_validated:
             raise Exception('HTTP-01 challenge was not offered by the CA server.')
@@ -114,7 +115,7 @@ class AcmeHttpChallenge(AcmeChallenge):
 
             current_app.logger.info("Uploaded HTTP-01 challenge tokens, trying to poll and finalize the order")
 
-        finalized_orderr = acme_client.finalize_order(orderr, datetime.datetime.now() + datetime.timedelta(seconds=90))
+        finalized_orderr = acme_client.poll_and_finalize(orderr, datetime.datetime.now() + datetime.timedelta(seconds=90))
 
         pem_certificate = OpenSSL.crypto.dump_certificate(
             OpenSSL.crypto.FILETYPE_PEM,
