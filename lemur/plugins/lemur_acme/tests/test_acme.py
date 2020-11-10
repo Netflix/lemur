@@ -3,6 +3,7 @@ from unittest.mock import patch, Mock
 
 import josepy as jose
 from cryptography.x509 import DNSName
+from flask import Flask
 from lemur.plugins.lemur_acme import plugin
 from lemur.common.utils import generate_private_key
 from mock import MagicMock
@@ -21,6 +22,16 @@ class TestAcme(unittest.TestCase):
             "www.test.com": [mock_dns_provider],
             "test.fakedomain.net": [mock_dns_provider],
         }
+
+        # Creates a new Flask application for a test duration. In python 3.8, manual push of application context is
+        # needed to run tests in dev environment without getting error 'Working outside of application context'.
+        _app = Flask('lemur_test_acme')
+        self.ctx = _app.app_context()
+        assert self.ctx
+        self.ctx.push()
+
+    def tearDown(self):
+        self.ctx.pop()
 
     @patch("lemur.plugins.lemur_acme.plugin.len", return_value=1)
     def test_get_dns_challenges(self, mock_len):
@@ -49,7 +60,7 @@ class TestAcme(unittest.TestCase):
         self.assertEqual(expected, result)
 
     def test_authz_record(self):
-        a = plugin.AuthorizationRecord("host", "authz", "challenge", "id")
+        a = plugin.AuthorizationRecord("domain", "host", "authz", "challenge", "id")
         self.assertEqual(type(a), plugin.AuthorizationRecord)
 
     @patch("acme.client.Client")
@@ -79,7 +90,7 @@ class TestAcme(unittest.TestCase):
         iterator = iter(values)
         iterable.__iter__.return_value = iterator
         result = self.acme.start_dns_challenge(
-            mock_acme, "accountid", "host", mock_dns_provider, mock_order, {}
+            mock_acme, "accountid", "domain", "host", mock_dns_provider, mock_order, {}
         )
         self.assertEqual(type(result), plugin.AuthorizationRecord)
 
@@ -97,7 +108,7 @@ class TestAcme(unittest.TestCase):
         mock_authz.dns_challenge.response = Mock()
         mock_authz.dns_challenge.response.simple_verify = Mock(return_value=True)
         mock_authz.authz = []
-        mock_authz.host = "www.test.com"
+        mock_authz.target_domain = "www.test.com"
         mock_authz_record = Mock()
         mock_authz_record.body.identifier.value = "test"
         mock_authz.authz.append(mock_authz_record)
@@ -117,22 +128,24 @@ class TestAcme(unittest.TestCase):
         mock_dns_provider = Mock()
         mock_dns_provider.wait_for_dns_change = Mock(return_value=True)
 
+        mock_dns_challenge = Mock()
+        response = Mock()
+        response.simple_verify = Mock(return_value=False)
+        mock_dns_challenge.response = Mock(return_value=response)
+
         mock_authz = Mock()
-        mock_authz.dns_challenge.response = Mock()
-        mock_authz.dns_challenge.response.simple_verify = Mock(return_value=False)
-        mock_authz.authz = []
-        mock_authz.host = "www.test.com"
+        mock_authz.dns_challenge = []
+        mock_authz.dns_challenge.append(mock_dns_challenge)
+
+        mock_authz.target_domain = "www.test.com"
         mock_authz_record = Mock()
         mock_authz_record.body.identifier.value = "test"
+        mock_authz.authz = []
         mock_authz.authz.append(mock_authz_record)
         mock_authz.change_id = []
         mock_authz.change_id.append("123")
-        mock_authz.dns_challenge = []
-        dns_challenge = Mock()
-        mock_authz.dns_challenge.append(dns_challenge)
-        self.assertRaises(
-            ValueError, self.acme.complete_dns_challenge(mock_acme, mock_authz)
-        )
+        with self.assertRaises(ValueError):
+            self.acme.complete_dns_challenge(mock_acme, mock_authz)
 
     @patch("acme.client.Client")
     @patch("OpenSSL.crypto", return_value="mock_cert")
@@ -270,11 +283,9 @@ class TestAcme(unittest.TestCase):
             result, [options["common_name"], "test2.netflix.net"]
         )
 
-    @patch(
-        "lemur.plugins.lemur_acme.plugin.AcmeHandler.start_dns_challenge",
-        return_value="test",
-    )
-    def test_get_authorizations(self, mock_start_dns_challenge):
+    @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.start_dns_challenge", return_value="test")
+    @patch("lemur.plugins.lemur_acme.plugin.current_app", return_value=False)
+    def test_get_authorizations(self, mock_current_app, mock_start_dns_challenge):
         mock_order = Mock()
         mock_order.body.identifiers = []
         mock_domain = Mock()

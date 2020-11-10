@@ -18,7 +18,7 @@ from sqlalchemy import (
     func,
     ForeignKey,
     DateTime,
-    PassiveDefault,
+    DefaultClause,
     Boolean,
 )
 from sqlalchemy.dialects.postgresql import JSON
@@ -39,7 +39,7 @@ class Authority(db.Model):
     plugin_name = Column(String(64))
     description = Column(Text)
     options = Column(JSON)
-    date_created = Column(DateTime, PassiveDefault(func.now()), nullable=False)
+    date_created = Column(DateTime, DefaultClause(func.now()), nullable=False)
     roles = relationship(
         "Role",
         secondary=roles_authorities,
@@ -93,9 +93,11 @@ class Authority(db.Model):
         if not self.options:
             return None
 
-        for option in json.loads(self.options):
-            if "name" in option and option["name"] == 'cab_compliant':
-                return option["value"]
+        options_array = json.loads(self.options)
+        if isinstance(options_array, list):
+            for option in options_array:
+                if "name" in option and option["name"] == 'cab_compliant':
+                    return option["value"]
 
         return None
 

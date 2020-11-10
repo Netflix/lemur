@@ -284,6 +284,7 @@ class Sources(AuthenticatedResource):
         return service.update(
             source_id,
             data["label"],
+            data["plugin"]["slug"],
             data["plugin"]["plugin_options"],
             data["description"],
         )

@@ -1,6 +1,6 @@
 # Run `make up-reqs` to update pinned dependencies in requirement text files
 
-flake8==3.5.0 # flake8 3.6.0 is giving erroneous "W605 invalid escape sequence" errors.
+flake8==3.8.4 # flake8 latest version
 pre-commit
 invoke
 twine

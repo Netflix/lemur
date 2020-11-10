@@ -42,24 +42,14 @@ angular.module('lemur')
       PluginService.getByType('notification').then(function (plugins) {
         $scope.plugins = plugins;
         _.each($scope.plugins, function (plugin) {
-          if (plugin.slug === $scope.notification.pluginName) {
-            plugin.pluginOptions = $scope.notification.notificationOptions;
+          if (plugin.slug === $scope.notification.plugin.slug) {
+            plugin.pluginOptions = $scope.notification.plugin.pluginOptions;
             $scope.notification.plugin = plugin;
           }
         });
       });
       NotificationService.getCertificates(notification);
       $scope.page = 1;
-    });
-
-    PluginService.getByType('notification').then(function (plugins) {
-      $scope.plugins = plugins;
-      _.each($scope.plugins, function (plugin) {
-        if (plugin.slug === $scope.notification.pluginName) {
-          plugin.pluginOptions = $scope.notification.notificationOptions;
-          $scope.notification.plugin = plugin;
-        }
-      });
     });
 
     $scope.save = function (notification) {
