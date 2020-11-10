@@ -134,6 +134,81 @@ class SFTPDestinationPlugin(DestinationPlugin):
 
         self.upload_file(dst_path, files, options)
 
+    # this is called from the acme http challenge
+    def delete_acme_token(self, token_path, token, options, **kwargs):
+        dst_path = self.get_option("destinationPath", options)
+
+        _, filename = path.split(token_path)
+
+        # prepare files for upload
+        files = {filename: token}
+
+        self.delete_file(dst_path, files, options)
+
+    # here the file is uploaded for real, this helps to keep this class DRY
+    def delete_file(self, dst_path, files, options):
+
+        host = self.get_option("host", options)
+        port = self.get_option("port", options)
+        user = self.get_option("user", options)
+        password = self.get_option("password", options)
+        ssh_priv_key = self.get_option("privateKeyPath", options)
+        ssh_priv_key_pass = self.get_option("privateKeyPass", options)
+
+        # upload files
+        try:
+            current_app.logger.debug(
+                "Connecting to {0}@{1}:{2}".format(user, host, port)
+            )
+            ssh = paramiko.SSHClient()
+
+            # allow connection to the new unknown host
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+            # open the ssh connection
+            if password:
+                current_app.logger.debug("Using password")
+                ssh.connect(host, username=user, port=port, password=password)
+            elif ssh_priv_key:
+                current_app.logger.debug("Using RSA private key")
+                pkey = paramiko.RSAKey.from_private_key_file(
+                    ssh_priv_key, ssh_priv_key_pass
+                )
+                ssh.connect(host, username=user, port=port, pkey=pkey)
+            else:
+                current_app.logger.error(
+                    "No password or private key provided. Can't proceed"
+                )
+                raise paramiko.ssh_exception.AuthenticationException
+
+            # open the sftp session inside the ssh connection
+            sftp = ssh.open_sftp()
+
+            # upload certificate files to the sftp destination
+            for filename, data in files.items():
+                current_app.logger.debug(
+                    "Deleting {0} from {1}".format(filename, dst_path)
+                )
+                try:
+                    sftp.remove(path.join(dst_path, filename))
+                except PermissionError as permerror:
+                    if permerror.errno == 13:
+                        current_app.logger.debug(
+                            "Deleting {0} from {1} returned Permission Denied Error, making file writable and retrying".format(
+                                filename, dst_path)
+                        )
+                        sftp.chmod(path.join(dst_path, filename), 0o600)
+                        sftp.remove(path.join(dst_path, filename))
+
+            ssh.close()
+
+        except Exception as e:
+            current_app.logger.error("ERROR in {0}: {1}".format(e.__class__, e))
+            try:
+                ssh.close()
+            except BaseException:
+                pass
+
     # here the file is uploaded for real, this helps to keep this class DRY
     def upload_file(self, dst_path, files, options):
 
@@ -200,7 +275,8 @@ class SFTPDestinationPlugin(DestinationPlugin):
                     try:
                         sftp.mkdir(remote_path)
                     except IOError as ioerror:
-                        current_app.logger.debug("Couldn't create {0}, error message: {1}".format(remote_path, ioerror))
+                        current_app.logger.debug(
+                            "Couldn't create {0}, error message: {1}".format(remote_path, ioerror))
 
             # upload certificate files to the sftp destination
             for filename, data in files.items():

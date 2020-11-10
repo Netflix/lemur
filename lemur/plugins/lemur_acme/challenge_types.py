@@ -100,9 +100,10 @@ class AcmeHttpChallenge(AcmeChallenge):
             if validation_target is None:
                 raise Exception('No token_destination configured for this authority. Cant complete HTTP-01 challenge')
 
+        validations = {}
         for challenge in chall:
-            response = self.deploy(challenge, acme_client, validation_target)
-
+            response, validation = self.deploy(challenge, acme_client, validation_target)
+            validations[challenge.chall.path] = validation
             acme_client.answer_challenge(challenge, response)
 
         current_app.logger.info("Uploaded HTTP-01 challenge tokens, trying to poll and finalize the order")
@@ -122,6 +123,9 @@ class AcmeHttpChallenge(AcmeChallenge):
             pem_certificate_chain = current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA")
         else:
             pem_certificate_chain = finalized_orderr.fullchain_pem[len(pem_certificate):].lstrip()
+
+        for token_path, token in validations.items():
+            self.cleanup(token_path, token, validation_target)
 
         # validation is a random string, we use it as external id, to make it possible to implement revoke_certificate
         return pem_certificate, pem_certificate_chain, None
@@ -146,10 +150,19 @@ class AcmeHttpChallenge(AcmeChallenge):
         destination_plugin.upload_acme_token(challenge.chall.path, validation, destination.options)
         current_app.logger.info("Uploaded HTTP-01 challenge token.")
 
-        return response
+        return response, validation
 
-    def cleanup(self, challenge, acme_client, validation_target):
-        pass
+    def cleanup(self, token_path, token, validation_target):
+        destination = destination_service.get(validation_target)
+
+        if destination is None:
+            current_app.logger.info(
+                'Couldn\'t find the destination with name {}, won\'t cleanup the challenge'.format(validation_target))
+
+        destination_plugin = plugins.get(destination.plugin_name)
+
+        destination_plugin.delete_acme_token(token_path, token, destination.options)
+        current_app.logger.info("Cleaned up HTTP-01 challenge token.")
 
 
 class AcmeDnsChallenge(AcmeChallenge):
