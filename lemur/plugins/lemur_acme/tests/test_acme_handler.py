@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import patch, Mock
 
+from flask import Flask
 from cryptography.x509 import DNSName
 from lemur.plugins.lemur_acme import acme_handlers
 
@@ -8,6 +9,16 @@ from lemur.plugins.lemur_acme import acme_handlers
 class TestAcmeHandler(unittest.TestCase):
     def setUp(self):
         self.acme = acme_handlers.AcmeHandler()
+
+        # Creates a new Flask application for a test duration. In python 3.8, manual push of application context is
+        # needed to run tests in dev environment without getting error 'Working outside of application context'.
+        _app = Flask('lemur_test_acme')
+        self.ctx = _app.app_context()
+        assert self.ctx
+        self.ctx.push()
+
+    def tearDown(self):
+        self.ctx.pop()
 
     def test_strip_wildcard(self):
         expected = ("example.com", False)

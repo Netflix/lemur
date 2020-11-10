@@ -309,7 +309,7 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
             "name": "acme_url",
             "type": "str",
             "required": True,
-            "validation": "/^http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+$/",
+            "validation": r"/^http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+$/",
             "helpMessage": "Must be a valid web url starting with http[s]://",
         },
         {
@@ -322,7 +322,7 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
             "name": "email",
             "type": "str",
             "default": "",
-            "validation": "/^?([-a-zA-Z0-9.`?{}]+@\w+\.\w+)$/",
+            "validation": r"/^?([-a-zA-Z0-9.`?{}]+@\w+\.\w+)$/",
             "helpMessage": "Email to use",
         },
         {

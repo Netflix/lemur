@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import patch, Mock
 
+from flask import Flask
 from acme import challenges
 from lemur.plugins.lemur_acme import plugin
 
@@ -10,6 +11,16 @@ class TestAcmeHttp(unittest.TestCase):
     def setUp(self):
         self.ACMEHttpIssuerPlugin = plugin.ACMEHttpIssuerPlugin()
         self.acme = plugin.AcmeHandler()
+
+        # Creates a new Flask application for a test duration. In python 3.8, manual push of application context is
+        # needed to run tests in dev environment without getting error 'Working outside of application context'.
+        _app = Flask('lemur_test_acme')
+        self.ctx = _app.app_context()
+        assert self.ctx
+        self.ctx.push()
+
+    def tearDown(self):
+        self.ctx.pop()
 
     @patch("lemur.plugins.lemur_acme.plugin.current_app")
     def test_create_authority(self, mock_current_app):
