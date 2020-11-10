@@ -6,7 +6,7 @@
 #
 appdirs==1.4.3            # via virtualenv
 bleach==3.1.4             # via readme-renderer
-certifi==2020.6.20        # via requests
+certifi==2020.11.8        # via requests
 cffi==1.14.0              # via cryptography
 cfgv==3.1.0               # via pre-commit
 chardet==3.0.4            # via requests
@@ -15,7 +15,7 @@ cryptography==3.2.1       # via secretstorage
 distlib==0.3.0            # via virtualenv
 docutils==0.16            # via readme-renderer
 filelock==3.0.12          # via virtualenv
-flake8==3.5.0             # via -r requirements-dev.in
+flake8==3.8.4             # via -r requirements-dev.in
 identify==1.4.14          # via pre-commit
 idna==2.9                 # via requests
 invoke==1.4.1             # via -r requirements-dev.in
@@ -25,9 +25,9 @@ mccabe==0.6.1             # via flake8
 nodeenv==1.5.0            # via -r requirements-dev.in, pre-commit
 pkginfo==1.5.0.1          # via twine
 pre-commit==2.8.2         # via -r requirements-dev.in
-pycodestyle==2.3.1        # via flake8
+pycodestyle==2.6.0        # via flake8
 pycparser==2.20           # via cffi
-pyflakes==1.6.0           # via flake8
+pyflakes==2.2.0           # via flake8
 pygments==2.6.1           # via readme-renderer
 pyyaml==5.3.1             # via -r requirements-dev.in, pre-commit
 readme-renderer==25.0     # via twine
