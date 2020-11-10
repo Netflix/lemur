@@ -306,3 +306,7 @@ class SFTPDestinationPlugin(DestinationPlugin):
                 ssh.close()
             except BaseException:
                 pass
+            message = ''
+            for _, error in e.errors.items():
+                message = error.strerror
+            raise Exception('Couldn\'t upload file to {}, error message: {}'.format(host, message))

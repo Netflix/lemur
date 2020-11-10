@@ -12,7 +12,7 @@ import json
 
 import OpenSSL
 from acme import challenges
-from acme.messages import STATUS_VALID
+from acme.messages import errors, STATUS_VALID, ERROR_CODES
 from flask import current_app
 
 from lemur.authorizations import service as authorization_service
@@ -109,13 +109,27 @@ class AcmeHttpChallenge(AcmeChallenge):
                 raise Exception('No token_destination configured for this authority. Cant complete HTTP-01 challenge')
 
             for challenge in chall:
-                response, validation = self.deploy(challenge, acme_client, validation_target)
-                validations[challenge.chall.path] = validation
-                acme_client.answer_challenge(challenge, response)
+                try:
+                    response, validation = self.deploy(challenge, acme_client, validation_target)
+                    validations[challenge.chall.path] = validation
+                    acme_client.answer_challenge(challenge, response)
+                except Exception as e:
+                    current_app.logger.error(e)
+                    raise Exception('Failure while trying to deploy token to configure destination. See logs for more information')
 
             current_app.logger.info("Uploaded HTTP-01 challenge tokens, trying to poll and finalize the order")
 
-        finalized_orderr = acme_client.poll_and_finalize(orderr, datetime.datetime.now() + datetime.timedelta(seconds=90))
+        try:
+            finalized_orderr = acme_client.poll_and_finalize(orderr,
+                                                             datetime.datetime.now() + datetime.timedelta(seconds=90))
+        except errors.ValidationError as validationError:
+            for authz in validationError.failed_authzrs:
+                for chall in authz.body.challenges:
+                    if chall.error:
+                        current_app.logger.error(
+                            "ValidationError occured of type {}, with message {}".format(chall.error.typ,
+                                                                                         ERROR_CODES[chall.error.code]))
+            raise Exception('Validation error occured, can\'t complete challenges. See logs for more information.')
 
         pem_certificate = OpenSSL.crypto.dump_certificate(
             OpenSSL.crypto.FILETYPE_PEM,
