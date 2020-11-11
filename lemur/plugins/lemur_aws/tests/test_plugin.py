@@ -80,3 +80,8 @@ def test_upload_acme_token(app):
 
     # put data, and getting the same data
     assert (response == token_content)
+
+    response = p.delete_acme_token(token_path=token_path,
+                                   options=additional_options,
+                                   account_number=account)
+    assert response
