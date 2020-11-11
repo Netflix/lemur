@@ -82,7 +82,7 @@ class AcmeHttpChallenge(AcmeChallenge):
         orderr = acme_client.new_order(csr)
 
         chall = []
-        validations = {}
+        deployed_challenges = []
         all_pre_validated = True
         for authz in orderr.authorizations:
             # Choosing challenge.
@@ -110,8 +110,8 @@ class AcmeHttpChallenge(AcmeChallenge):
 
             for challenge in chall:
                 try:
-                    response, validation = self.deploy(challenge, acme_client, validation_target)
-                    validations[challenge.chall.path] = validation
+                    response = self.deploy(challenge, acme_client, validation_target)
+                    deployed_challenges.append(challenge.chall.path)
                     acme_client.answer_challenge(challenge, response)
                 except Exception as e:
                     current_app.logger.error(e)
@@ -145,9 +145,9 @@ class AcmeHttpChallenge(AcmeChallenge):
         else:
             pem_certificate_chain = finalized_orderr.fullchain_pem[len(pem_certificate):].lstrip()
 
-        if len(validations) != 0:
-            for token_path, token in validations.items():
-                self.cleanup(token_path, token, validation_target)
+        if len(deployed_challenges) != 0:
+            for token_path in deployed_challenges:
+                self.cleanup(token_path, validation_target)
 
         # validation is a random string, we use it as external id, to make it possible to implement revoke_certificate
         return pem_certificate, pem_certificate_chain, None
@@ -172,9 +172,9 @@ class AcmeHttpChallenge(AcmeChallenge):
         destination_plugin.upload_acme_token(challenge.chall.path, validation, destination.options)
         current_app.logger.info("Uploaded HTTP-01 challenge token.")
 
-        return response, validation
+        return response
 
-    def cleanup(self, token_path, token, validation_target):
+    def cleanup(self, token_path, validation_target):
         destination = destination_service.get(validation_target)
 
         if destination is None:
@@ -183,7 +183,7 @@ class AcmeHttpChallenge(AcmeChallenge):
 
         destination_plugin = plugins.get(destination.plugin_name)
 
-        destination_plugin.delete_acme_token(token_path, token, destination.options)
+        destination_plugin.delete_acme_token(token_path, destination.options)
         current_app.logger.info("Cleaned up HTTP-01 challenge token.")
 
 

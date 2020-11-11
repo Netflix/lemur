@@ -135,13 +135,13 @@ class SFTPDestinationPlugin(DestinationPlugin):
         self.upload_file(dst_path, files, options)
 
     # this is called from the acme http challenge
-    def delete_acme_token(self, token_path, token, options, **kwargs):
+    def delete_acme_token(self, token_path, options, **kwargs):
         dst_path = self.get_option("destinationPath", options)
 
         _, filename = path.split(token_path)
 
         # prepare files for upload
-        files = {filename: token}
+        files = {filename: None}
 
         self.delete_file(dst_path, files, options)
 
