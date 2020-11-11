@@ -10,7 +10,6 @@
 import datetime
 import json
 
-import OpenSSL
 from acme import challenges
 from acme.messages import errors, STATUS_VALID, ERROR_CODES
 from flask import current_app
@@ -131,19 +130,7 @@ class AcmeHttpChallenge(AcmeChallenge):
                                                                                          ERROR_CODES[chall.error.code]))
             raise Exception('Validation error occured, can\'t complete challenges. See logs for more information.')
 
-        pem_certificate = OpenSSL.crypto.dump_certificate(
-            OpenSSL.crypto.FILETYPE_PEM,
-            OpenSSL.crypto.load_certificate(
-                OpenSSL.crypto.FILETYPE_PEM, finalized_orderr.fullchain_pem
-            ),
-        ).decode()
-
-        if current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA", False) \
-                and datetime.datetime.now() < datetime.datetime.strptime(
-                current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA_EXPIRATION_DATE", "17/03/21"), '%d/%m/%y'):
-            pem_certificate_chain = current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA")
-        else:
-            pem_certificate_chain = finalized_orderr.fullchain_pem[len(pem_certificate):].lstrip()
+        pem_certificate, pem_certificate_chain = self.acme.extract_cert_and_chain(finalized_orderr.fullchain_pem)
 
         if len(deployed_challenges) != 0:
             for token_path in deployed_challenges:

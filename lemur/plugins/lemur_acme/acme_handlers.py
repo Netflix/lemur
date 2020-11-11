@@ -111,10 +111,18 @@ class AcmeHandler(object):
             f"Successfully resolved Acme order: {order.uri}", exc_info=True
         )
 
+        pem_certificate, pem_certificate_chain = self.extract_cert_and_chain(orderr.fullchain_pem)
+
+        current_app.logger.debug(
+            "{0} {1}".format(type(pem_certificate), type(pem_certificate_chain))
+        )
+        return pem_certificate, pem_certificate_chain
+
+    def extract_cert_and_chain(self, fullchain_pem):
         pem_certificate = OpenSSL.crypto.dump_certificate(
             OpenSSL.crypto.FILETYPE_PEM,
             OpenSSL.crypto.load_certificate(
-                OpenSSL.crypto.FILETYPE_PEM, orderr.fullchain_pem
+                OpenSSL.crypto.FILETYPE_PEM, fullchain_pem
             ),
         ).decode()
 
@@ -123,11 +131,8 @@ class AcmeHandler(object):
                 current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA_EXPIRATION_DATE", "17/03/21"), '%d/%m/%y'):
             pem_certificate_chain = current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA")
         else:
-            pem_certificate_chain = orderr.fullchain_pem[len(pem_certificate):].lstrip()
+            pem_certificate_chain = fullchain_pem[len(pem_certificate):].lstrip()
 
-        current_app.logger.debug(
-            "{0} {1}".format(type(pem_certificate), type(pem_certificate_chain))
-        )
         return pem_certificate, pem_certificate_chain
 
     @retry(stop_max_attempt_number=5, wait_fixed=5000)
