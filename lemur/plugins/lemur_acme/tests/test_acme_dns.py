@@ -62,7 +62,6 @@ class TestAcmeDns(unittest.TestCase):
         mock_authz = Mock()
         mock_authz.body.resolved_combinations = []
         mock_entry = MagicMock()
-        from acme import challenges
 
         mock_entry.chall = TestAcmeDns.test_complete_dns_challenge_fail
         mock_authz.body.resolved_combinations.append(mock_entry)

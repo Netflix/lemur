@@ -59,11 +59,9 @@ class TestAcmeHandler(unittest.TestCase):
 
         self.assertTrue(self.acme.reuse_account(mock_authority))
 
-    @patch("lemur.plugins.lemur_acme.acme_handlers.current_app")
-    def test_reuse_account_no_configuration(self, mock_current_app):
+    def test_reuse_account_no_configuration(self):
         mock_authority = Mock()
         mock_authority.options = '[{"name": "mock_name", "value": "mock_value"}]'
-        mock_current_app.config = {}
 
         self.assertFalse(self.acme.reuse_account(mock_authority))
 
