@@ -98,7 +98,7 @@ class AcmeHttpChallenge(AcmeChallenge):
                 current_app.logger.info("{} already validated, skipping".format(authz.body.identifier.value))
 
         if len(chall) == 0 and not all_pre_validated:
-            raise Exception('HTTP-01 challenge was not offered by the CA server.')
+            raise Exception('HTTP-01 challenge was not offered by the CA server at {}'.format(orderr.uri))
         elif not all_pre_validated:
             validation_target = None
             for option in json.loads(issuer_options["authority"].options):
