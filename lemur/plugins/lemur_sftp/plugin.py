@@ -145,7 +145,7 @@ class SFTPDestinationPlugin(DestinationPlugin):
 
         self.delete_file(dst_path, files, options)
 
-    # here the file is uploaded for real, this helps to keep this class DRY
+    # here the file is deleted
     def delete_file(self, dst_path, files, options):
 
         host = self.get_option("host", options)
@@ -155,7 +155,7 @@ class SFTPDestinationPlugin(DestinationPlugin):
         ssh_priv_key = self.get_option("privateKeyPath", options)
         ssh_priv_key_pass = self.get_option("privateKeyPass", options)
 
-        # upload files
+        # delete files
         try:
             current_app.logger.debug(
                 "Connecting to {0}@{1}:{2}".format(user, host, port)
@@ -184,8 +184,8 @@ class SFTPDestinationPlugin(DestinationPlugin):
             # open the sftp session inside the ssh connection
             sftp = ssh.open_sftp()
 
-            # upload certificate files to the sftp destination
-            for filename, data in files.items():
+            # delete files
+            for filename, _ in files.items():
                 current_app.logger.debug(
                     "Deleting {0} from {1}".format(filename, dst_path)
                 )
