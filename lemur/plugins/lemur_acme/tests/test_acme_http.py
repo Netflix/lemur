@@ -22,9 +22,7 @@ class TestAcmeHttp(unittest.TestCase):
     def tearDown(self):
         self.ctx.pop()
 
-    @patch("lemur.plugins.lemur_acme.plugin.current_app")
-    def test_create_authority(self, mock_current_app):
-        mock_current_app.config = Mock()
+    def test_create_authority(self):
         options = {
             "plugin": {"plugin_options": [{"name": "certificate", "value": "123"}]}
         }
@@ -36,14 +34,12 @@ class TestAcmeHttp(unittest.TestCase):
     @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.setup_acme_client")
     @patch("lemur.plugins.base.manager.PluginManager.get")
     @patch("lemur.plugins.lemur_acme.challenge_types.destination_service")
-    @patch("lemur.plugins.lemur_acme.challenge_types.current_app")
     @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.request_certificate")
     @patch("lemur.plugins.lemur_acme.plugin.authorization_service")
     def test_create_certificate(
             self,
             mock_authorization_service,
             mock_request_certificate,
-            mock_current_app,
             mock_destination_service,
             mock_plugin_manager_get,
             mock_acme,
@@ -51,8 +47,6 @@ class TestAcmeHttp(unittest.TestCase):
         provider = plugin.ACMEHttpIssuerPlugin()
         mock_authority = Mock()
         mock_authority.options = '[{"name": "tokenDestination", "value": "mock-sftp-destination"}]'
-
-        mock_current_app.config = {}
 
         mock_order_resource = Mock()
         mock_order_resource.authorizations = [Mock()]
@@ -96,14 +90,12 @@ class TestAcmeHttp(unittest.TestCase):
     @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.setup_acme_client")
     @patch("lemur.plugins.base.manager.PluginManager.get")
     @patch("lemur.plugins.lemur_acme.challenge_types.destination_service")
-    @patch("lemur.plugins.lemur_acme.plugin.current_app")
     @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.request_certificate")
     @patch("lemur.plugins.lemur_acme.plugin.authorization_service")
     def test_create_certificate_missing_destination_token(
             self,
             mock_authorization_service,
             mock_request_certificate,
-            mock_current_app,
             mock_destination_service,
             mock_plugin_manager_get,
             mock_acme,
@@ -144,14 +136,12 @@ class TestAcmeHttp(unittest.TestCase):
     @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.setup_acme_client")
     @patch("lemur.plugins.base.manager.PluginManager.get")
     @patch("lemur.plugins.lemur_acme.challenge_types.destination_service")
-    @patch("lemur.plugins.lemur_acme.plugin.current_app")
     @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.request_certificate")
     @patch("lemur.plugins.lemur_acme.plugin.authorization_service")
     def test_create_certificate_missing_http_challenge(
             self,
             mock_authorization_service,
             mock_request_certificate,
-            mock_current_app,
             mock_destination_service,
             mock_plugin_manager_get,
             mock_acme,

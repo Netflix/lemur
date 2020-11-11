@@ -69,8 +69,7 @@ class TestAcmeHandler(unittest.TestCase):
 
     @patch("lemur.plugins.lemur_acme.acme_handlers.authorities_service")
     @patch("lemur.plugins.lemur_acme.acme_handlers.BackwardsCompatibleClientV2")
-    @patch("lemur.plugins.lemur_acme.acme_handlers.current_app")
-    def test_setup_acme_client_success(self, mock_current_app, mock_acme, mock_authorities_service):
+    def test_setup_acme_client_success(self, mock_acme, mock_authorities_service):
         mock_authority = Mock()
         mock_authority.options = '[{"name": "mock_name", "value": "mock_value"}, ' \
                                  '{"name": "store_account", "value": false}]'
@@ -80,20 +79,17 @@ class TestAcmeHandler(unittest.TestCase):
         mock_client.register = mock_registration
         mock_client.agree_to_tos = Mock(return_value=True)
         mock_acme.return_value = mock_client
-        mock_current_app.config = {}
         result_client, result_registration = self.acme.setup_acme_client(mock_authority)
         mock_authorities_service.update_options.assert_not_called()
         assert result_client
         assert result_registration
 
-    @patch('lemur.plugins.lemur_acme.acme_handlers.current_app')
-    def test_get_domains_single(self, mock_current_app):
+    def test_get_domains_single(self):
         options = {"common_name": "test.netflix.net"}
         result = self.acme.get_domains(options)
         self.assertEqual(result, [options["common_name"]])
 
-    @patch("lemur.plugins.lemur_acme.acme_handlers.current_app")
-    def test_get_domains_multiple(self, mock_current_app):
+    def test_get_domains_multiple(self):
         options = {
             "common_name": "test.netflix.net",
             "extensions": {
@@ -105,8 +101,7 @@ class TestAcmeHandler(unittest.TestCase):
             result, [options["common_name"], "test2.netflix.net", "test3.netflix.net"]
         )
 
-    @patch("lemur.plugins.lemur_acme.acme_handlers.current_app")
-    def test_get_domains_san(self, mock_current_app):
+    def test_get_domains_san(self):
         options = {
             "common_name": "test.netflix.net",
             "extensions": {
