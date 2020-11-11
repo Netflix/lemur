@@ -19,7 +19,7 @@
 from os import path
 
 import paramiko
-from paramiko.ssh_exception import AuthenticationException
+from paramiko.ssh_exception import AuthenticationException, NoValidConnectionsError
 
 from flask import current_app
 from lemur.plugins import lemur_sftp
@@ -97,6 +97,50 @@ class SFTPDestinationPlugin(DestinationPlugin):
         },
     ]
 
+    def open_sftp_connection(self, options):
+        host = self.get_option("host", options)
+        port = self.get_option("port", options)
+        user = self.get_option("user", options)
+        password = self.get_option("password", options)
+        ssh_priv_key = self.get_option("privateKeyPath", options)
+        ssh_priv_key_pass = self.get_option("privateKeyPass", options)
+
+        # delete files
+        try:
+            current_app.logger.debug(
+                "Connecting to {0}@{1}:{2}".format(user, host, port)
+            )
+            ssh = paramiko.SSHClient()
+
+            # allow connection to the new unknown host
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+            # open the ssh connection
+            if password:
+                current_app.logger.debug("Using password")
+                ssh.connect(host, username=user, port=port, password=password)
+            elif ssh_priv_key:
+                current_app.logger.debug("Using RSA private key")
+                pkey = paramiko.RSAKey.from_private_key_file(
+                    ssh_priv_key, ssh_priv_key_pass
+                )
+                ssh.connect(host, username=user, port=port, pkey=pkey)
+            else:
+                current_app.logger.error(
+                    "No password or private key provided. Can't proceed"
+                )
+                raise AuthenticationException
+
+            # open the sftp session inside the ssh connection
+            return ssh.open_sftp(), ssh
+
+        except AuthenticationException as e:
+            current_app.logger.error("ERROR in {0}: {1}".format(e.__class__, e))
+            raise AuthenticationException("Couldn't connect to {0}, due to an Authentication exception.")
+        except NoValidConnectionsError as e:
+            current_app.logger.error("ERROR in {0}: {1}".format(e.__class__, e))
+            raise NoValidConnectionsError("Couldn't connect to {0}, possible timeout or invalid hostname")
+
     # this is called when using this as a default destination plugin
     def upload(self, name, body, private_key, cert_chain, options, **kwargs):
 
@@ -149,41 +193,9 @@ class SFTPDestinationPlugin(DestinationPlugin):
     # here the file is deleted
     def delete_file(self, dst_path, files, options):
 
-        host = self.get_option("host", options)
-        port = self.get_option("port", options)
-        user = self.get_option("user", options)
-        password = self.get_option("password", options)
-        ssh_priv_key = self.get_option("privateKeyPath", options)
-        ssh_priv_key_pass = self.get_option("privateKeyPass", options)
-
-        # delete files
         try:
-            current_app.logger.debug(
-                "Connecting to {0}@{1}:{2}".format(user, host, port)
-            )
-            ssh = paramiko.SSHClient()
-
-            # allow connection to the new unknown host
-            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
-            # open the ssh connection
-            if password:
-                current_app.logger.debug("Using password")
-                ssh.connect(host, username=user, port=port, password=password)
-            elif ssh_priv_key:
-                current_app.logger.debug("Using RSA private key")
-                pkey = paramiko.RSAKey.from_private_key_file(
-                    ssh_priv_key, ssh_priv_key_pass
-                )
-                ssh.connect(host, username=user, port=port, pkey=pkey)
-            else:
-                current_app.logger.error(
-                    "No password or private key provided. Can't proceed"
-                )
-                raise AuthenticationException
-
-            # open the sftp session inside the ssh connection
-            sftp = ssh.open_sftp()
+            # open the ssh and sftp sessions
+            sftp, ssh = self.open_sftp_connection(options)
 
             # delete files
             for filename, _ in files.items():
@@ -202,7 +214,8 @@ class SFTPDestinationPlugin(DestinationPlugin):
                         sftp.remove(path.join(dst_path, filename))
 
             ssh.close()
-
+        except (AuthenticationException, NoValidConnectionsError) as e:
+            raise e
         except Exception as e:
             current_app.logger.error("ERROR in {0}: {1}".format(e.__class__, e))
             try:
@@ -213,38 +226,9 @@ class SFTPDestinationPlugin(DestinationPlugin):
     # here the file is uploaded for real, this helps to keep this class DRY
     def upload_file(self, dst_path, files, options):
 
-        host = self.get_option("host", options)
-        port = self.get_option("port", options)
-        user = self.get_option("user", options)
-        password = self.get_option("password", options)
-        ssh_priv_key = self.get_option("privateKeyPath", options)
-        ssh_priv_key_pass = self.get_option("privateKeyPass", options)
-
-        # upload files
         try:
-            current_app.logger.debug(
-                "Connecting to {0}@{1}:{2}".format(user, host, port)
-            )
-            ssh = paramiko.SSHClient()
-
-            # allow connection to the new unknown host
-            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
-            # open the ssh connection
-            if password:
-                current_app.logger.debug("Using password")
-                ssh.connect(host, username=user, port=port, password=password)
-            elif ssh_priv_key:
-                current_app.logger.debug("Using RSA private key")
-                pkey = paramiko.RSAKey.from_private_key_file(
-                    ssh_priv_key, ssh_priv_key_pass
-                )
-                ssh.connect(host, username=user, port=port, pkey=pkey)
-            else:
-                current_app.logger.error(
-                    "No password or private key provided. Can't proceed"
-                )
-                raise AuthenticationException
+            # open the ssh and sftp sessions
+            sftp, ssh = self.open_sftp_connection(options)
 
             # split the path into it's segments, so we can create it recursively
             allparts = []
@@ -260,9 +244,6 @@ class SFTPDestinationPlugin(DestinationPlugin):
                 else:
                     path_copy = parts[0]
                     allparts.insert(0, parts[1])
-
-            # open the sftp session inside the ssh connection
-            sftp = ssh.open_sftp()
 
             # make sure that the destination path exists, recursively
             remote_path = allparts[0]
@@ -301,9 +282,8 @@ class SFTPDestinationPlugin(DestinationPlugin):
 
             ssh.close()
 
-        except AuthenticationException as e:
-            current_app.logger.error("ERROR in {0}: {1}".format(e.__class__, e))
-            raise AuthenticationException("Couldn't connect to {0}, due to an Authentication exception.")
+        except (AuthenticationException, NoValidConnectionsError) as e:
+            raise e
         except Exception as e:
             current_app.logger.error("ERROR in {0}: {1}".format(e.__class__, e))
             try:
@@ -314,4 +294,5 @@ class SFTPDestinationPlugin(DestinationPlugin):
             if hasattr(e, 'errors'):
                 for _, error in e.errors.items():
                     message = error.strerror
-                raise Exception('Couldn\'t upload file to {}, error message: {}'.format(host, message))
+                raise Exception(
+                    'Couldn\'t upload file to {}, error message: {}'.format(self.get_option("host", options), message))
