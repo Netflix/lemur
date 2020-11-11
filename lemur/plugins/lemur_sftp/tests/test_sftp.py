@@ -68,3 +68,27 @@ class TestSftp(unittest.TestCase):
         mock_paramiko.RSAKey.from_private_key_file.assert_called_with('/tmp/id_rsa', 'ssh-key-password')
         mock_ssh.connect.assert_called_with('non-existant', username='test_acme', port='22',
                                             pkey='ssh-rsa test-key')
+
+    @patch("lemur.plugins.lemur_sftp.plugin.paramiko")
+    def test_upload_acme_token(self, mock_paramiko):
+        token_path = './well-known/acme-challenge/some-token-path'
+        token = 'token-data'
+        options = [{'name': 'host', 'value': 'non-existant'}, {'name': 'port', 'value': '22'},
+                   {'name': 'user', 'value': 'test_acme'}, {'name': 'password', 'value': 'test_password'},
+                   {'name': 'destinationPath', 'value': '/tmp/destination-path'}]
+
+        mock_sftp = Mock()
+        mock_sftp.open = mock_open()
+
+        mock_ssh = mock_paramiko.SSHClient.return_value
+        mock_ssh.connect = MagicMock()
+        mock_ssh.open_sftp.return_value = mock_sftp
+
+        self.sftp_destination.upload_acme_token(token_path, token, options)
+
+        mock_sftp.open.assert_called_once()
+        handle = mock_sftp.open()
+        handle.write.assert_called_once_with('token-data')
+        mock_ssh.close.assert_called_once()
+        mock_ssh.connect.assert_called_with('non-existant', username='test_acme', port='22',
+                                            password='test_password')
