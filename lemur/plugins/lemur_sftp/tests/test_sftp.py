@@ -3,6 +3,7 @@ from unittest.mock import patch, Mock, MagicMock, mock_open
 
 from flask import Flask
 from lemur.plugins.lemur_sftp import plugin
+from paramiko.ssh_exception import AuthenticationException
 
 
 class TestSftp(unittest.TestCase):
@@ -17,6 +18,15 @@ class TestSftp(unittest.TestCase):
 
     def tearDown(self):
         self.ctx.pop()
+
+    def test_failing_ssh_connection(self):
+        dst_path = '/var/non-existent'
+        files = {'first-file': 'data'}
+        options = [{'name': 'host', 'value': 'non-existent'}, {'name': 'port', 'value': '22'},
+                   {'name': 'user', 'value': 'test_acme'}]
+
+        with self.assertRaises(AuthenticationException):
+            self.sftp_destination.upload_file(dst_path, files, options)
 
     @patch("lemur.plugins.lemur_sftp.plugin.paramiko")
     def test_upload_file_single_with_password(self, mock_paramiko):

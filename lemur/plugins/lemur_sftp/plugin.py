@@ -19,6 +19,7 @@
 from os import path
 
 import paramiko
+from paramiko.ssh_exception import AuthenticationException
 
 from flask import current_app
 from lemur.plugins import lemur_sftp
@@ -179,7 +180,7 @@ class SFTPDestinationPlugin(DestinationPlugin):
                 current_app.logger.error(
                     "No password or private key provided. Can't proceed"
                 )
-                raise paramiko.ssh_exception.AuthenticationException
+                raise AuthenticationException
 
             # open the sftp session inside the ssh connection
             sftp = ssh.open_sftp()
@@ -243,7 +244,7 @@ class SFTPDestinationPlugin(DestinationPlugin):
                 current_app.logger.error(
                     "No password or private key provided. Can't proceed"
                 )
-                raise paramiko.ssh_exception.AuthenticationException
+                raise AuthenticationException
 
             # split the path into it's segments, so we can create it recursively
             allparts = []
@@ -300,6 +301,9 @@ class SFTPDestinationPlugin(DestinationPlugin):
 
             ssh.close()
 
+        except AuthenticationException as e:
+            current_app.logger.error("ERROR in {0}: {1}".format(e.__class__, e))
+            raise AuthenticationException("Couldn't connect to {0}, due to an Authentication exception.")
         except Exception as e:
             current_app.logger.error("ERROR in {0}: {1}".format(e.__class__, e))
             try:
@@ -307,7 +311,7 @@ class SFTPDestinationPlugin(DestinationPlugin):
             except BaseException:
                 pass
             message = ''
-            if e.errors:
+            if hasattr(e, 'errors'):
                 for _, error in e.errors.items():
                     message = error.strerror
                 raise Exception('Couldn\'t upload file to {}, error message: {}'.format(host, message))
