@@ -1,5 +1,7 @@
 import unittest
 from unittest.mock import patch, Mock
+
+from flask import Flask
 from lemur.plugins.lemur_acme import plugin, powerdns
 
 
@@ -16,6 +18,16 @@ class TestPowerdns(unittest.TestCase):
             "www.test.com": [mock_dns_provider],
             "test.fakedomain.net": [mock_dns_provider],
         }
+
+        # Creates a new Flask application for a test duration. In python 3.8, manual push of application context is
+        # needed to run tests in dev environment without getting error 'Working outside of application context'.
+        _app = Flask('lemur_test_acme')
+        self.ctx = _app.app_context()
+        assert self.ctx
+        self.ctx.push()
+
+    def tearDown(self):
+        self.ctx.pop()
 
     @patch("lemur.plugins.lemur_acme.powerdns.current_app")
     def test_get_zones(self, mock_current_app):

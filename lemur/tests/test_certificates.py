@@ -9,7 +9,6 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from marshmallow import ValidationError
 from freezegun import freeze_time
-# from mock import patch
 from unittest.mock import patch
 
 from lemur.certificates.service import create_csr
@@ -171,8 +170,41 @@ def test_certificate_output_schema(session, certificate, issuer_plugin):
     ) as wrapper:
         data, errors = CertificateOutputSchema().dump(certificate)
         assert data["issuer"] == "LemurTrustUnittestsClass1CA2018"
+        assert data["distinguishedName"] == "L=Earth,ST=N/A,C=EE,OU=Karate Lessons,O=Daniel San & co,CN=san.example.org"
+        # Authority does not have 'cab_compliant', thus subject details should not be returned
+        assert "organization" not in data
 
     assert wrapper.call_count == 1
+
+
+def test_certificate_output_schema_subject_details(session, certificate, issuer_plugin):
+    from lemur.certificates.schemas import CertificateOutputSchema
+    from lemur.authorities.service import update_options
+
+    # Mark authority as non-cab-compliant
+    update_options(certificate.authority.id, '[{"name": "cab_compliant","value":false}]')
+
+    data, errors = CertificateOutputSchema().dump(certificate)
+    assert not errors
+    assert data["issuer"] == "LemurTrustUnittestsClass1CA2018"
+    assert data["distinguishedName"] == "L=Earth,ST=N/A,C=EE,OU=Karate Lessons,O=Daniel San & co,CN=san.example.org"
+
+    # Original subject details should be returned because of cab_compliant option update above
+    assert data["country"] == "EE"
+    assert data["state"] == "N/A"
+    assert data["location"] == "Earth"
+    assert data["organization"] == "Daniel San & co"
+    assert data["organizationalUnit"] == "Karate Lessons"
+
+    # Mark authority as cab-compliant
+    update_options(certificate.authority.id, '[{"name": "cab_compliant","value":true}]')
+    data, errors = CertificateOutputSchema().dump(certificate)
+    assert not errors
+    assert "country" not in data
+    assert "state" not in data
+    assert "location" not in data
+    assert "organization" not in data
+    assert "organizationalUnit" not in data
 
 
 def test_certificate_edit_schema(session):
@@ -180,7 +212,10 @@ def test_certificate_edit_schema(session):
 
     input_data = {"owner": "bob@example.com"}
     data, errors = CertificateEditInputSchema().load(input_data)
+
+    assert not errors
     assert len(data["notifications"]) == 3
+    assert data["roles"][0].name == input_data["owner"]
 
 
 def test_authority_key_identifier_schema():
@@ -397,7 +432,7 @@ def test_certificate_cn_admin(client, authority, logged_in_admin):
     from lemur.certificates.schemas import CertificateInputSchema
 
     input_data = {
-        "commonName": "*.admin-overrides-whitelist.com",
+        "commonName": "*.admin-overrides-allowlist.com",
         "owner": "jim@example.com",
         "authority": {"id": authority.id},
         "description": "testtestest",
@@ -458,7 +493,7 @@ def test_certificate_incative_authority(client, authority, session, logged_in_us
 
 
 def test_certificate_disallowed_names(client, authority, session, logged_in_user):
-    """The CN and SAN are disallowed by LEMUR_WHITELISTED_DOMAINS."""
+    """The CN and SAN are disallowed by LEMUR_ALLOWED_DOMAINS."""
     from lemur.certificates.schemas import CertificateInputSchema
 
     input_data = {
@@ -481,10 +516,10 @@ def test_certificate_disallowed_names(client, authority, session, logged_in_user
 
     data, errors = CertificateInputSchema().load(input_data)
     assert errors["common_name"][0].startswith(
-        "Domain *.example.com does not match whitelisted domain patterns"
+        "Domain *.example.com does not match allowed domain patterns"
     )
     assert errors["extensions"]["sub_alt_names"]["names"][0].startswith(
-        "Domain evilhacker.org does not match whitelisted domain patterns"
+        "Domain evilhacker.org does not match allowed domain patterns"
     )
 
 
@@ -671,7 +706,7 @@ def test_csr_empty_san(client):
 
 
 def test_csr_disallowed_cn(client, logged_in_user):
-    """Domain name CN is disallowed via LEMUR_WHITELISTED_DOMAINS."""
+    """Domain name CN is disallowed via LEMUR_ALLOWED_DOMAINS."""
     from lemur.common import validators
 
     request, pkey = create_csr(
@@ -680,12 +715,12 @@ def test_csr_disallowed_cn(client, logged_in_user):
     with pytest.raises(ValidationError) as err:
         validators.csr(request)
     assert str(err.value).startswith(
-        "Domain evilhacker.org does not match whitelisted domain patterns"
+        "Domain evilhacker.org does not match allowed domain patterns"
     )
 
 
 def test_csr_disallowed_san(client, logged_in_user):
-    """SAN name is disallowed by LEMUR_WHITELISTED_DOMAINS."""
+    """SAN name is disallowed by LEMUR_ALLOWED_DOMAINS."""
     from lemur.common import validators
 
     request, pkey = create_csr(
@@ -701,7 +736,7 @@ def test_csr_disallowed_san(client, logged_in_user):
     with pytest.raises(ValidationError) as err:
         validators.csr(request)
     assert str(err.value).startswith(
-        "Domain evilhacker.org does not match whitelisted domain patterns"
+        "Domain evilhacker.org does not match allowed domain patterns"
     )
 
 
@@ -756,12 +791,23 @@ def test_reissue_certificate(
     issuer_plugin, crypto_authority, certificate, logged_in_user
 ):
     from lemur.certificates.service import reissue_certificate
+    from lemur.authorities.service import update_options
+    from lemur.tests.conf import LEMUR_DEFAULT_ORGANIZATION
 
     # test-authority would return a mismatching private key, so use 'cryptography-issuer' plugin instead.
     certificate.authority = crypto_authority
     new_cert = reissue_certificate(certificate)
     assert new_cert
-    assert (new_cert.key_type == "RSA2048")
+    assert new_cert.key_type == "RSA2048"
+    assert new_cert.organization != certificate.organization
+    # Check for default value since authority does not have cab_compliant option set
+    assert new_cert.organization == LEMUR_DEFAULT_ORGANIZATION
+    assert new_cert.description.startswith(f"Reissued by Lemur for cert ID {certificate.id}")
+
+    # update cab_compliant option to false for crypto_authority to maintain subject details
+    update_options(crypto_authority.id, '[{"name": "cab_compliant","value":false}]')
+    new_cert = reissue_certificate(certificate)
+    assert new_cert.organization == certificate.organization
 
 
 def test_create_csr():
@@ -918,23 +964,37 @@ def test_certificate_get_body(client):
         "CN=LemurTrust Unittests Class 1 CA 2018"
     )
 
+    # No authority details are provided in this test, no information about being cab_compliant is available.
+    # Thus original subject details should be returned.
+    assert response_body["country"] == "EE"
+    assert response_body["state"] == "N/A"
+    assert response_body["location"] == "Earth"
+    assert response_body["organization"] == "LemurTrust Enterprises Ltd"
+    assert response_body["organizationalUnit"] == "Unittesting Operations Center"
+
 
 @pytest.mark.parametrize(
     "token,status",
     [
-        (VALID_USER_HEADER_TOKEN, 405),
-        (VALID_ADMIN_HEADER_TOKEN, 405),
-        (VALID_ADMIN_API_TOKEN, 405),
-        ("", 405),
+        (VALID_USER_HEADER_TOKEN, 403),
+        (VALID_ADMIN_HEADER_TOKEN, 200),
+        (VALID_ADMIN_API_TOKEN, 200),
+        ("", 401),
     ],
 )
-def test_certificate_post(client, token, status):
-    assert (
-        client.post(
-            api.url_for(Certificates, certificate_id=1), data={}, headers=token
-        ).status_code
-        == status
+def test_certificate_post_update_notify(client, certificate, token, status):
+    # negate the current notify flag and pass it to update POST call to flip the notify
+    toggled_notify = not certificate.notify
+
+    response = client.post(
+        api.url_for(Certificates, certificate_id=certificate.id),
+        data=json.dumps({"notify": toggled_notify}),
+        headers=token
     )
+
+    assert response.status_code == status
+    if status == 200:
+        assert response.json.get("notify") == toggled_notify
 
 
 @pytest.mark.parametrize(
@@ -964,6 +1024,9 @@ def test_certificate_put_with_data(client, certificate, issuer_plugin):
         headers=VALID_ADMIN_HEADER_TOKEN,
     )
     assert resp.status_code == 200
+    assert len(certificate.notifications) == 3
+    assert certificate.roles[0].name == "bob@example.com"
+    assert certificate.notify
 
 
 @pytest.mark.parametrize(

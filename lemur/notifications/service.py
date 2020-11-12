@@ -43,7 +43,7 @@ def create_default_expiration_notifications(name, recipients, intervals=None):
             "name": "recipients",
             "type": "str",
             "required": True,
-            "validation": "^([\w+-.%]+@[\w-.]+\.[A-Za-z]{2,4},?)+$",
+            "validation": r"^([\w+-.%]+@[\w-.]+\.[A-Za-z]{2,4},?)+$",
             "helpMessage": "Comma delimited list of email addresses",
             "value": ",".join(recipients),
         },
@@ -63,7 +63,7 @@ def create_default_expiration_notifications(name, recipients, intervals=None):
                     "name": "interval",
                     "type": "int",
                     "required": True,
-                    "validation": "^\d+$",
+                    "validation": r"^\d+$",
                     "helpMessage": "Number of days to be alert before expiration.",
                     "value": i,
                 }
@@ -104,12 +104,13 @@ def create(label, plugin_name, options, description, certificates):
     return database.create(notification)
 
 
-def update(notification_id, label, options, description, active, certificates):
+def update(notification_id, label, plugin_name, options, description, active, certificates):
     """
     Updates an existing notification.
 
     :param notification_id:
     :param label: Notification label
+    :param plugin_name:
     :param options:
     :param description:
     :param active:
@@ -120,6 +121,7 @@ def update(notification_id, label, options, description, active, certificates):
     notification = get(notification_id)
 
     notification.label = label
+    notification.plugin_name = plugin_name
     notification.options = options
     notification.description = description
     notification.active = active

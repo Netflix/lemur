@@ -10,6 +10,7 @@ from lemur.tests.vectors import (
     ECDSA_SECP384r1_CERT,
     ECDSA_SECP384r1_CERT_STR,
     DSA_CERT,
+    CERT_CHAIN_PKCS7_PEM
 )
 
 
@@ -114,3 +115,16 @@ def test_get_key_type_from_certificate():
     from lemur.common.utils import get_key_type_from_certificate
     assert (get_key_type_from_certificate(SAN_CERT_STR) == "RSA2048")
     assert (get_key_type_from_certificate(ECDSA_SECP384r1_CERT_STR) == "ECCSECP384R1")
+
+
+def test_convert_pkcs7_bytes_to_pem():
+    from lemur.common.utils import convert_pkcs7_bytes_to_pem
+    from lemur.common.utils import parse_certificate
+    cert_chain = convert_pkcs7_bytes_to_pem(CERT_CHAIN_PKCS7_PEM)
+    assert(len(cert_chain) == 3)
+
+    leaf = cert_chain[1]
+    root = cert_chain[2]
+
+    assert(parse_certificate("\n".join(str(root).splitlines())) == ROOTCA_CERT)
+    assert (parse_certificate("\n".join(str(leaf).splitlines())) == INTERMEDIATE_CERT)

@@ -24,7 +24,7 @@ LEMUR_TOKEN_SECRET = repr(os.environ.get('LEMUR_TOKEN_SECRET',
 LEMUR_ENCRYPTION_KEYS = repr(os.environ.get('LEMUR_ENCRYPTION_KEYS',
                                             base64.b64encode(get_random_secret(32).encode('utf8'))))
 
-LEMUR_WHITELISTED_DOMAINS = []
+LEMUR_ALLOWED_DOMAINS = []
 
 LEMUR_EMAIL = ''
 LEMUR_SECURITY_TEAM_EMAIL = []

@@ -16,8 +16,10 @@
 
 .. moduleauthor:: Dmitry Zykov https://github.com/DmitryZykov
 """
+from os import path
 
 import paramiko
+from paramiko.ssh_exception import AuthenticationException, NoValidConnectionsError
 
 from flask import current_app
 from lemur.plugins import lemur_sftp
@@ -47,7 +49,7 @@ class SFTPDestinationPlugin(DestinationPlugin):
             "type": "int",
             "required": True,
             "helpMessage": "The SFTP port, default is 22.",
-            "validation": "^(6553[0-5]|655[0-2][0-9]\d|65[0-4](\d){2}|6[0-4](\d){3}|[1-5](\d){4}|[1-9](\d){0,3})",
+            "validation": r"^(6553[0-5]|655[0-2][0-9]\d|65[0-4](\d){2}|6[0-4](\d){3}|[1-5](\d){4}|[1-9](\d){0,3})",
             "default": "22",
         },
         {
@@ -95,33 +97,15 @@ class SFTPDestinationPlugin(DestinationPlugin):
         },
     ]
 
-    def upload(self, name, body, private_key, cert_chain, options, **kwargs):
-
-        current_app.logger.debug("SFTP destination plugin is started")
-
-        cn = common_name(parse_certificate(body))
+    def open_sftp_connection(self, options):
         host = self.get_option("host", options)
         port = self.get_option("port", options)
         user = self.get_option("user", options)
         password = self.get_option("password", options)
         ssh_priv_key = self.get_option("privateKeyPath", options)
         ssh_priv_key_pass = self.get_option("privateKeyPass", options)
-        dst_path = self.get_option("destinationPath", options)
-        export_format = self.get_option("exportFormat", options)
 
-        # prepare files for upload
-        files = {cn + ".key": private_key, cn + ".pem": body}
-
-        if cert_chain:
-            if export_format == "NGINX":
-                # assemble body + chain in the single file
-                files[cn + ".pem"] += "\n" + cert_chain
-
-            elif export_format == "Apache":
-                # store chain in the separate file
-                files[cn + ".ca.bundle.pem"] = cert_chain
-
-        # upload files
+        # delete files
         try:
             current_app.logger.debug(
                 "Connecting to {0}@{1}:{2}".format(user, host, port)
@@ -145,50 +129,170 @@ class SFTPDestinationPlugin(DestinationPlugin):
                 current_app.logger.error(
                     "No password or private key provided. Can't proceed"
                 )
-                raise paramiko.ssh_exception.AuthenticationException
+                raise AuthenticationException
 
             # open the sftp session inside the ssh connection
-            sftp = ssh.open_sftp()
+            return ssh.open_sftp(), ssh
 
-            # make sure that the destination path exist
-            try:
-                current_app.logger.debug("Creating {0}".format(dst_path))
-                sftp.mkdir(dst_path)
-            except IOError:
-                current_app.logger.debug("{0} already exist, resuming".format(dst_path))
-            try:
-                dst_path_cn = dst_path + "/" + cn
-                current_app.logger.debug("Creating {0}".format(dst_path_cn))
-                sftp.mkdir(dst_path_cn)
-            except IOError:
-                current_app.logger.debug(
-                    "{0} already exist, resuming".format(dst_path_cn)
-                )
+        except AuthenticationException as e:
+            current_app.logger.error("ERROR in {0}: {1}".format(e.__class__, e))
+            raise AuthenticationException("Couldn't connect to {0}, due to an Authentication exception.")
+        except NoValidConnectionsError as e:
+            current_app.logger.error("ERROR in {0}: {1}".format(e.__class__, e))
+            raise NoValidConnectionsError("Couldn't connect to {0}, possible timeout or invalid hostname")
 
-            # upload certificate files to the sftp destination
-            for filename, data in files.items():
+    # this is called when using this as a default destination plugin
+    def upload(self, name, body, private_key, cert_chain, options, **kwargs):
+
+        current_app.logger.debug("SFTP destination plugin is started")
+
+        cn = common_name(parse_certificate(body))
+        dst_path = self.get_option("destinationPath", options)
+        dst_path_cn = dst_path + "/" + cn
+        export_format = self.get_option("exportFormat", options)
+
+        # prepare files for upload
+        files = {cn + ".key": private_key, cn + ".pem": body}
+
+        if cert_chain:
+            if export_format == "NGINX":
+                # assemble body + chain in the single file
+                files[cn + ".pem"] += "\n" + cert_chain
+
+            elif export_format == "Apache":
+                # store chain in the separate file
+                files[cn + ".ca.bundle.pem"] = cert_chain
+
+        self.upload_file(dst_path_cn, files, options)
+
+    # this is called from the acme http challenge
+    def upload_acme_token(self, token_path, token, options, **kwargs):
+
+        current_app.logger.debug("SFTP destination plugin is started for HTTP-01 challenge")
+
+        dst_path = self.get_option("destinationPath", options)
+
+        _, filename = path.split(token_path)
+
+        # prepare files for upload
+        files = {filename: token}
+
+        self.upload_file(dst_path, files, options)
+
+    # this is called from the acme http challenge
+    def delete_acme_token(self, token_path, options, **kwargs):
+        dst_path = self.get_option("destinationPath", options)
+
+        _, filename = path.split(token_path)
+
+        # prepare files for upload
+        files = {filename: None}
+
+        self.delete_file(dst_path, files, options)
+
+    # here the file is deleted
+    def delete_file(self, dst_path, files, options):
+
+        try:
+            # open the ssh and sftp sessions
+            sftp, ssh = self.open_sftp_connection(options)
+
+            # delete files
+            for filename, _ in files.items():
                 current_app.logger.debug(
-                    "Uploading {0} to {1}".format(filename, dst_path_cn)
+                    "Deleting {0} from {1}".format(filename, dst_path)
                 )
                 try:
-                    with sftp.open(dst_path_cn + "/" + filename, "w") as f:
-                        f.write(data)
-                except (PermissionError) as permerror:
+                    sftp.remove(path.join(dst_path, filename))
+                except PermissionError as permerror:
                     if permerror.errno == 13:
                         current_app.logger.debug(
-                            "Uploading {0} to {1} returned Permission Denied Error, making file writable and retrying".format(filename, dst_path_cn)
+                            "Deleting {0} from {1} returned Permission Denied Error, making file writable and retrying".format(
+                                filename, dst_path)
                         )
-                        sftp.chmod(dst_path_cn + "/" + filename, 0o600)
-                        with sftp.open(dst_path_cn + "/" + filename, "w") as f:
-                            f.write(data)
-                # read only for owner, -r--------
-                sftp.chmod(dst_path_cn + "/" + filename, 0o400)
+                        sftp.chmod(path.join(dst_path, filename), 0o600)
+                        sftp.remove(path.join(dst_path, filename))
 
             ssh.close()
-
+        except (AuthenticationException, NoValidConnectionsError) as e:
+            raise e
         except Exception as e:
             current_app.logger.error("ERROR in {0}: {1}".format(e.__class__, e))
             try:
                 ssh.close()
             except BaseException:
                 pass
+
+    # here the file is uploaded for real, this helps to keep this class DRY
+    def upload_file(self, dst_path, files, options):
+
+        try:
+            # open the ssh and sftp sessions
+            sftp, ssh = self.open_sftp_connection(options)
+
+            # split the path into it's segments, so we can create it recursively
+            allparts = []
+            path_copy = dst_path
+            while True:
+                parts = path.split(path_copy)
+                if parts[0] == path_copy:  # sentinel for absolute paths
+                    allparts.insert(0, parts[0])
+                    break
+                elif parts[1] == path_copy:  # sentinel for relative paths
+                    allparts.insert(0, parts[1])
+                    break
+                else:
+                    path_copy = parts[0]
+                    allparts.insert(0, parts[1])
+
+            # make sure that the destination path exists, recursively
+            remote_path = allparts[0]
+            for part in allparts:
+                try:
+                    if part != "/" and part != "":
+                        remote_path = path.join(remote_path, part)
+                    sftp.stat(remote_path)
+                except IOError:
+                    current_app.logger.debug("{0} doesn't exist, trying to create it".format(remote_path))
+                    try:
+                        sftp.mkdir(remote_path)
+                    except IOError as ioerror:
+                        current_app.logger.debug(
+                            "Couldn't create {0}, error message: {1}".format(remote_path, ioerror))
+
+            # upload certificate files to the sftp destination
+            for filename, data in files.items():
+                current_app.logger.debug(
+                    "Uploading {0} to {1}".format(filename, dst_path)
+                )
+                try:
+                    with sftp.open(path.join(dst_path, filename), "w") as f:
+                        f.write(data)
+                except PermissionError as permerror:
+                    if permerror.errno == 13:
+                        current_app.logger.debug(
+                            "Uploading {0} to {1} returned Permission Denied Error, making file writable and retrying".format(
+                                filename, dst_path)
+                        )
+                        sftp.chmod(path.join(dst_path, filename), 0o600)
+                        with sftp.open(path.join(dst_path, filename), "w") as f:
+                            f.write(data)
+                # most likely the upload user isn't the webuser, -rw-r--r--
+                sftp.chmod(path.join(dst_path, filename), 0o644)
+
+            ssh.close()
+
+        except (AuthenticationException, NoValidConnectionsError) as e:
+            raise e
+        except Exception as e:
+            current_app.logger.error("ERROR in {0}: {1}".format(e.__class__, e))
+            try:
+                ssh.close()
+            except BaseException:
+                pass
+            message = ''
+            if hasattr(e, 'errors'):
+                for _, error in e.errors.items():
+                    message = error.strerror
+                raise Exception(
+                    'Couldn\'t upload file to {}, error message: {}'.format(self.get_option("host", options), message))

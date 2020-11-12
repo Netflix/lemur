@@ -21,7 +21,7 @@ import requests
 import sys
 from cryptography import x509
 from flask import current_app, g
-from lemur.common.utils import validate_conf
+from lemur.common.utils import validate_conf, convert_pkcs7_bytes_to_pem
 from lemur.extensions import metrics
 from lemur.plugins import lemur_digicert as digicert
 from lemur.plugins.bases import IssuerPlugin, SourcePlugin
@@ -37,7 +37,13 @@ def log_status_code(r, *args, **kwargs):
     :param kwargs:
     :return:
     """
+    log_data = {
+        "reason": (r.reason if r.reason else ""),
+        "status_code": r.status_code,
+        "url": (r.url if r.url else ""),
+    }
     metrics.send("digicert_status_code_{}".format(r.status_code), "counter", 1)
+    current_app.logger.info(log_data)
 
 
 def signature_hash(signing_algorithm):
@@ -171,11 +177,10 @@ def map_cis_fields(options, csr):
         "csr": csr,
         "signature_hash": signature_hash(options.get("signing_algorithm")),
         "validity": {
-            "valid_to": validity_end.format("YYYY-MM-DDTHH:MM") + "Z"
+            "valid_to": validity_end.format("YYYY-MM-DDTHH:mm:ss") + "Z"
         },
         "organization": {
             "name": options["organization"],
-            "units": [options["organizational_unit"]],
         },
     }
     #  possibility to default to a SIGNING_ALGORITHM for a given profile
@@ -205,7 +210,7 @@ def handle_response(response):
     :return:
     """
     if response.status_code > 399:
-        raise Exception(response.json()["errors"][0]["message"])
+        raise Exception("DigiCert rejected request with the error:" + response.json()["errors"][0]["message"])
 
     return response.json()
 
@@ -216,13 +221,20 @@ def handle_cis_response(response):
     :param response:
     :return:
     """
-    if response.status_code > 399:
-        raise Exception(response.text)
+    if response.status_code == 404:
+        raise Exception("DigiCert: order not in issued state")
+    elif response.status_code == 406:
+        raise Exception("DigiCert: wrong header request format")
+    elif response.status_code > 399:
+        raise Exception("DigiCert rejected request with the error:" + response.text)
 
-    return response.json()
+    if response.url.endswith("download"):
+        return response.content
+    else:
+        return response.json()
 
 
-@retry(stop_max_attempt_number=10, wait_fixed=10000)
+@retry(stop_max_attempt_number=10, wait_fixed=1000)
 def get_certificate_id(session, base_url, order_id):
     """Retrieve certificate order id from Digicert API."""
     order_url = "{0}/services/v2/order/certificate/{1}".format(base_url, order_id)
@@ -233,17 +245,18 @@ def get_certificate_id(session, base_url, order_id):
     return response_data["certificate"]["id"]
 
 
-@retry(stop_max_attempt_number=10, wait_fixed=10000)
+@retry(stop_max_attempt_number=10, wait_fixed=1000)
 def get_cis_certificate(session, base_url, order_id):
-    """Retrieve certificate order id from Digicert API."""
-    certificate_url = "{0}/platform/cis/certificate/{1}".format(base_url, order_id)
-    session.headers.update({"Accept": "application/x-pem-file"})
+    """Retrieve certificate order id from Digicert API, including the chain"""
+    certificate_url = "{0}/platform/cis/certificate/{1}/download".format(base_url, order_id)
+    session.headers.update({"Accept": "application/x-pkcs7-certificates"})
     response = session.get(certificate_url)
+    response_content = handle_cis_response(response)
 
-    if response.status_code == 404:
-        raise Exception("Order not in issued state.")
-
-    return response.content
+    cert_chain_pem = convert_pkcs7_bytes_to_pem(response_content)
+    if len(cert_chain_pem) < 3:
+        raise Exception("Missing the certificate chain")
+    return cert_chain_pem
 
 
 class DigiCertSourcePlugin(SourcePlugin):
@@ -447,7 +460,6 @@ class DigiCertCISSourcePlugin(SourcePlugin):
             "DIGICERT_CIS_API_KEY",
             "DIGICERT_CIS_URL",
             "DIGICERT_CIS_ROOTS",
-            "DIGICERT_CIS_INTERMEDIATES",
             "DIGICERT_CIS_PROFILE_NAMES",
         ]
         validate_conf(current_app, required_vars)
@@ -522,7 +534,6 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
             "DIGICERT_CIS_API_KEY",
             "DIGICERT_CIS_URL",
             "DIGICERT_CIS_ROOTS",
-            "DIGICERT_CIS_INTERMEDIATES",
             "DIGICERT_CIS_PROFILE_NAMES",
         ]
 
@@ -552,22 +563,15 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
         data = handle_cis_response(response)
 
         # retrieve certificate
-        certificate_pem = get_cis_certificate(self.session, base_url, data["id"])
+        certificate_chain_pem = get_cis_certificate(self.session, base_url, data["id"])
 
         self.session.headers.pop("Accept")
-        end_entity = pem.parse(certificate_pem)[0]
+        end_entity = certificate_chain_pem[0]
+        intermediate = certificate_chain_pem[1]
 
-        if "ECC" in issuer_options["key_type"]:
-            return (
-                "\n".join(str(end_entity).splitlines()),
-                current_app.config.get("DIGICERT_ECC_CIS_INTERMEDIATES", {}).get(issuer_options['authority'].name),
-                data["id"],
-            )
-
-        # By default return RSA
         return (
             "\n".join(str(end_entity).splitlines()),
-            current_app.config.get("DIGICERT_CIS_INTERMEDIATES", {}).get(issuer_options['authority'].name),
+            "\n".join(str(intermediate).splitlines()),
             data["id"],
         )
 

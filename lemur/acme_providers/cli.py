@@ -1,12 +1,15 @@
 import time
 import json
+import arrow
 
 from flask_script import Manager
 from flask import current_app
 
 from lemur.extensions import sentry
 from lemur.constants import SUCCESS_METRIC_STATUS
+from lemur.plugins import plugins
 from lemur.plugins.lemur_acme.plugin import AcmeHandler
+from lemur.plugins.lemur_aws import s3
 
 manager = Manager(
     usage="Handles all ACME related tasks"
@@ -84,3 +87,105 @@ def dnstest(domain, token):
 
     status = SUCCESS_METRIC_STATUS
     print("[+] Done with ACME Tests.")
+
+
+@manager.option(
+    "-t",
+    "--token",
+    dest="token",
+    default="date: " + arrow.utcnow().format("YYYY-MM-DDTHH-mm-ss"),
+    required=False,
+    help="Value of the Token",
+)
+@manager.option(
+    "-n",
+    "--token_name",
+    dest="token_name",
+    default="Token-" + arrow.utcnow().format("YYYY-MM-DDTHH-mm-ss"),
+    required=False,
+    help="path",
+)
+@manager.option(
+    "-p",
+    "--prefix",
+    dest="prefix",
+    default="test/",
+    required=False,
+    help="S3 bucket prefix",
+)
+@manager.option(
+    "-a",
+    "--account_number",
+    dest="account_number",
+    required=True,
+    help="AWS Account",
+)
+@manager.option(
+    "-b",
+    "--bucket_name",
+    dest="bucket_name",
+    required=True,
+    help="Bucket Name",
+)
+def upload_acme_token_s3(token, token_name, prefix, account_number, bucket_name):
+    """
+    This method serves for testing the upload_acme_token to S3, fetching the token to verify it, and then deleting it.
+    It mainly serves for testing purposes.
+    :param token:
+    :param token_name:
+    :param prefix:
+    :param account_number:
+    :param bucket_name:
+    :return:
+    """
+    additional_options = [
+        {
+            "name": "bucket",
+            "value": bucket_name,
+            "type": "str",
+            "required": True,
+            "validation": r"[0-9a-z.-]{3,63}",
+            "helpMessage": "Must be a valid S3 bucket name!",
+        },
+        {
+            "name": "accountNumber",
+            "type": "str",
+            "value": account_number,
+            "required": True,
+            "validation": r"[0-9]{12}",
+            "helpMessage": "A valid AWS account number with permission to access S3",
+        },
+        {
+            "name": "region",
+            "type": "str",
+            "default": "us-east-1",
+            "required": False,
+            "helpMessage": "Region bucket exists",
+            "available": ["us-east-1", "us-west-2", "eu-west-1"],
+        },
+        {
+            "name": "encrypt",
+            "type": "bool",
+            "value": False,
+            "required": False,
+            "helpMessage": "Enable server side encryption",
+            "default": True,
+        },
+        {
+            "name": "prefix",
+            "type": "str",
+            "value": prefix,
+            "required": False,
+            "helpMessage": "Must be a valid S3 object prefix!",
+        },
+    ]
+
+    p = plugins.get("aws-s3")
+    p.upload_acme_token(token_name, token, additional_options)
+
+    if not prefix.endswith("/"):
+        prefix + "/"
+
+    token_res = s3.get(bucket_name, prefix + token_name, account_number=account_number)
+    assert(token_res == token)
+    s3.delete(bucket_name, prefix + token_name, account_number=account_number)

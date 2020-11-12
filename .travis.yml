@@ -1,5 +1,5 @@
 language: python
-dist: xenial
+dist: bionic
 
 node_js:
   - "6.2.0"
@@ -47,4 +47,7 @@ after_success:
 
 notifications:
   email:
-    ccastrapel@netflix.com
+    recipients:
+      - lemur@netflix.com
+    on_success: never
+    on_failure: always

@@ -28,6 +28,13 @@ Basic Configuration
 
         LOG_FILE = "/logs/lemur/lemur-test.log"
 
+.. data:: LOG_UPGRADE_FILE
+    :noindex:
+
+    ::
+
+        LOG_UPGRADE_FILE = "/logs/lemur/db_upgrade.log"
+
 .. data:: DEBUG
     :noindex:
 
@@ -100,7 +107,7 @@ Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create c
 
         Specifies whether to allow certificates created by Lemur to expire on weekends. Default is True.
 
-.. data:: LEMUR_WHITELISTED_DOMAINS
+.. data:: LEMUR_ALLOWED_DOMAINS
     :noindex:
 
         List of regular expressions for domain restrictions; if the list is not empty, normal users can only issue
@@ -155,17 +162,12 @@ Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create c
 
         LEMUR_ENCRYPTION_KEYS = ['1YeftooSbxCiX2zo8m1lXtpvQjy27smZcUUaGmffhMY=', 'LAfQt6yrkLqOK5lwpvQcT4jf2zdeTQJV1uYeh9coT5s=']
 
-.. data:: PUBLIC_CA_AUTHORITY_NAMES
-    :noindex:
-        A list of public issuers which would be checked against to determine whether limit of max validity of 397 days
-        should be applied to the certificate. Configure public CA authority names in this list to enforce validity check.
-        This is an optional setting. Using this will allow the sanity check as mentioned. The name check is a case-insensitive
-        string comparision.
 
 .. data:: PUBLIC_CA_MAX_VALIDITY_DAYS
     :noindex:
-        Use this config to override the limit of 397 days of validity for certificates issued by public issuers configured
-        using PUBLIC_CA_AUTHORITY_NAMES. Below example overrides the default validity of 397 days and sets it to 365 days.
+        Use this config to override the limit of 397 days of validity for certificates issued by CA/Browser compliant authorities.
+        The authorities with cab_compliant option set to true will use this config. The example below overrides the default validity
+        of 397 days and sets it to 365 days.
 
     ::
 
@@ -175,8 +177,8 @@ Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create c
 .. data:: DEFAULT_VALIDITY_DAYS
     :noindex:
         Use this config to override the default validity of 365 days for certificates offered through Lemur UI. Any CA which
-        is not listed in PUBLIC_CA_AUTHORITY_NAMES will be using this value as default validity to be displayed on UI. Please
-        note that this config is used for cert issuance only through Lemur UI. Below example overrides the default validity
+        is not CA/Browser Forum compliant will be using this value as default validity to be displayed on UI. Please
+        note that this config is used for cert issuance only through Lemur UI. The example below overrides the default validity
         of 365 days and sets it to 1095 days (3 years).
 
     ::
@@ -274,7 +276,7 @@ Certificates marked as inactive will **not** be notified of upcoming expiration.
 silence the expiration. If a certificate is active and is expiring the above will be notified according to the `LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS` or
 30, 15, 2 days before expiration if no intervals are set.
 
-Lemur supports sending certification expiration notifications through SES and SMTP.
+Lemur supports sending certificate expiration notifications through SES and SMTP.
 
 
 .. data:: LEMUR_EMAIL_SENDER
@@ -288,6 +290,25 @@ Lemur supports sending certification expiration notifications through SES and SM
 
         If you are using SES the email specified by the `LEMUR_MAIL` configuration will need to be verified by AWS before
         you can send any mail. See: `Verifying Email Address in Amazon SES <http://docs.aws.amazon.com/ses/latest/DeveloperGuide/verify-email-addresses.html>`_
+
+
+.. data:: LEMUR_SES_SOURCE_ARN
+    :noindex:
+
+    Specifies an ARN to use as the SourceArn when sending emails via SES.
+
+    .. note::
+        This parameter is only required if you're using a sending authorization with SES.
+        See: `Using sending authorization with Amazon SES <https://docs.aws.amazon.com/ses/latest/DeveloperGuide/sending-authorization.html>`_
+
+
+.. data:: LEMUR_SES_REGION
+    :noindex:
+
+    Specifies a region for sending emails via SES.
+
+    .. note::
+        This parameter defaults to us-east-1 and is only required if you wish to use a different region.
 
 
 .. data:: LEMUR_EMAIL
@@ -668,6 +689,20 @@ If you are not using a metric provider you do not need to configure any of these
 
 Plugin Specific Options
 -----------------------
+
+ACME Plugin
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. data:: ACME_DNS_PROVIDER_TYPES
+    :noindex:
+
+        Dictionary of ACME DNS Providers and their requirements.
+
+.. data:: ACME_ENABLE_DELEGATED_CNAME
+    :noindex:
+
+        Enables delegated DNS domain validation using CNAMES.  When enabled, Lemur will attempt to follow CNAME records to authoritative DNS servers when creating DNS-01 challenges.
+
 
 Active Directory Certificate Services Plugin
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1441,7 +1476,7 @@ Slack
     Adds support for slack notifications.
 
 
-AWS
+AWS (Source)
 ----
 
 :Authors:
@@ -1454,7 +1489,7 @@ AWS
     Uses AWS IAM as a source of certificates to manage. Supports a multi-account deployment.
 
 
-AWS
+AWS (Destination)
 ----
 
 :Authors:
@@ -1465,6 +1500,19 @@ AWS
     Destination
 :Description:
     Uses AWS IAM as a destination for Lemur generated certificates. Support a multi-account deployment.
+
+
+AWS (SNS Notification)
+-----
+
+:Authors:
+    Jasmine Schladen <jschladen@netflix.com>
+:Type:
+    Notification
+:Description:
+    Adds support for SNS notifications. SNS notifications (like other notification plugins) are currently only supported
+    for certificate expiration. Configuration requires a region, account number, and SNS topic name; these elements
+    are then combined to build the topic ARN. Lemur must have access to publish messages to the specified SNS topic.
 
 
 Kubernetes

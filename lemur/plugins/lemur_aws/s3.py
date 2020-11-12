@@ -6,12 +6,15 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+from botocore.exceptions import ClientError
 from flask import current_app
+from lemur.extensions import sentry
+
 from .sts import sts_client
 
 
 @sts_client("s3", service_type="resource")
-def put(bucket_name, region, prefix, data, encrypt, **kwargs):
+def put(bucket_name, region_name, prefix, data, encrypt, **kwargs):
     """
     Use STS to write to an S3 bucket
     """
@@ -32,4 +35,41 @@ def put(bucket_name, region, prefix, data, encrypt, **kwargs):
             ServerSideEncryption="AES256",
         )
     else:
-        bucket.put_object(Key=prefix, Body=data, ACL="bucket-owner-full-control")
+        try:
+            bucket.put_object(Key=prefix, Body=data, ACL="bucket-owner-full-control")
+            return True
+        except ClientError:
+            sentry.captureException()
+            return False
+
+
+@sts_client("s3", service_type="client")
+def delete(bucket_name, prefixed_object_name, **kwargs):
+    """
+    Use STS to delete an object
+    """
+    try:
+        response = kwargs["client"].delete_object(Bucket=bucket_name, Key=prefixed_object_name)
+        current_app.logger.debug(f"Delete data from S3."
+                                 f"Bucket: {bucket_name},"
+                                 f"Prefix: {prefixed_object_name},"
+                                 f"Status_code: {response}")
+        return response['ResponseMetadata']['HTTPStatusCode'] < 300
+    except ClientError:
+        sentry.captureException()
+        return False
+
+
+@sts_client("s3", service_type="client")
+def get(bucket_name, prefixed_object_name, **kwargs):
+    """
+    Use STS to get an object
+    """
+    try:
+        response = kwargs["client"].get_object(Bucket=bucket_name, Key=prefixed_object_name)
+        current_app.logger.debug(f"Get data from S3. Bucket: {bucket_name},"
+                                 f"object_name: {prefixed_object_name}")
+        return response['Body'].read().decode("utf-8")
+    except ClientError:
+        sentry.captureException()
+        return None
