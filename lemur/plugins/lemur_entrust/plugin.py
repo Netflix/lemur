@@ -83,6 +83,7 @@ def process_options(options, client_id):
     }
     return data
 
+
 def get_client_id(my_response, organization):
     """
     Helper function for parsing responses from the Entrust API.
@@ -94,19 +95,16 @@ def get_client_id(my_response, organization):
     except ValueError:
         # catch an empty json object here
         d = {'response': 'No detailed message'}
-    s = my_response.status_code
-    if s > 399:
-        raise Exception(f"ENTRUST error: {msg.get(s, s)}\n{d['errors']}")
 
     found = False
     for y in d["organizations"]:
-              if y["name"] == organization:
-                  found = True
-                  client_id = y["clientId"]
+        if y["name"] == organization:
+            found = True
+            client_id = y["clientId"]
     if found:
-       return client_id
+        return client_id
     else:
-       raise Exception(f"Error on Organization - Use on of the List: {d['organizations']}")
+        raise Exception(f"Error on Organization - Use on of the List: {d['organizations']}")
 
 
 def handle_response(my_response):
