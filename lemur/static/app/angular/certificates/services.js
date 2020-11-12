@@ -172,12 +172,12 @@ angular.module('lemur')
           // Minimum end date will be same as selected start date
           this.authority.authorityCertificate.minValidityEnd = value;
 
-          if(!this.authority.authorityCertificate || !this.authority.authorityCertificate.maxIssuanceDays) {
+          if(!this.authority.maxIssuanceDays) {
             this.authority.authorityCertificate.maxValidityEnd = this.authority.authorityCertificate.notAfter;
           } else {
             // Move max end date by maxIssuanceDays
             let endDate = new Date(value);
-            endDate.setDate(endDate.getDate() + this.authority.authorityCertificate.maxIssuanceDays);
+            endDate.setDate(endDate.getDate() + this.authority.maxIssuanceDays);
             this.authority.authorityCertificate.maxValidityEnd = endDate;
           }
         }
@@ -289,6 +289,11 @@ angular.module('lemur')
         if (certificate.dnsProviderId) {
           certificate.dnsProvider = {id: certificate.dnsProviderId};
         }
+
+        if(!certificate.keyType) {
+          certificate.keyType = 'RSA2048'; // default algo to select during clone if backend did not return algo
+        }
+
       });
     };
 

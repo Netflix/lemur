@@ -8,7 +8,7 @@
 from flask import current_app
 from flask_restful import inputs
 from flask_restful.reqparse import RequestParser
-from marshmallow import fields, validate, validates_schema, post_load, pre_load
+from marshmallow import fields, validate, validates_schema, post_load, pre_load, post_dump
 from marshmallow.exceptions import ValidationError
 
 from lemur.authorities.schemas import AuthorityNestedOutputSchema
@@ -23,6 +23,7 @@ from lemur.domains.schemas import DomainNestedOutputSchema
 from lemur.notifications import service as notification_service
 from lemur.notifications.schemas import NotificationNestedOutputSchema
 from lemur.policies.schemas import RotationPolicyNestedOutputSchema
+from lemur.roles import service as roles_service
 from lemur.roles.schemas import RoleNestedOutputSchema
 from lemur.schemas import (
     AssociatedAuthoritySchema,
@@ -184,13 +185,33 @@ class CertificateEditInputSchema(CertificateSchema):
             data["replaces"] = data[
                 "replacements"
             ]  # TODO remove when field is deprecated
+
+        if data.get("owner"):
+            # Check if role already exists. This avoids adding duplicate role.
+            if data.get("roles") and any(r.get("name") == data["owner"] for r in data["roles"]):
+                return data
+
+            # Add required role
+            owner_role = roles_service.get_or_create(
+                data["owner"],
+                description=f"Auto generated role based on owner: {data['owner']}"
+            )
+
+            # Put  role info in correct format using RoleNestedOutputSchema
+            owner_role_dict = RoleNestedOutputSchema().dump(owner_role).data
+            if data.get("roles"):
+                data["roles"].append(owner_role_dict)
+            else:
+                data["roles"] = [owner_role_dict]
+
         return data
 
     @post_load
     def enforce_notifications(self, data):
         """
-        Ensures that when an owner changes, default notifications are added for the new owner.
-        Old owner notifications are retained unless explicitly removed.
+        Add default notification for current owner if none exist.
+        This ensures that the default notifications are added in the event of owner change.
+        Old owner notifications are retained unless explicitly removed later in the code path.
         :param data:
         :return:
         """
@@ -198,11 +219,18 @@ class CertificateEditInputSchema(CertificateSchema):
             notification_name = "DEFAULT_{0}".format(
                 data["owner"].split("@")[0].upper()
             )
+
+            # Even if one default role exists, return
+            # This allows a User to remove unwanted default notification for current owner
+            if any(n.label.startswith(notification_name) for n in data["notifications"]):
+                return data
+
             data[
                 "notifications"
             ] += notification_service.create_default_expiration_notifications(
                 notification_name, [data["owner"]]
             )
+
         return data
 
 
@@ -303,6 +331,31 @@ class CertificateOutputSchema(LemurOutputSchema):
         CertificateNestedOutputSchema, many=True, attribute="replaced"
     )
     rotation_policy = fields.Nested(RotationPolicyNestedOutputSchema)
+
+    country = fields.String()
+    location = fields.String()
+    state = fields.String()
+    organization = fields.String()
+    organizational_unit = fields.String()
+
+    @post_dump
+    def handle_subject_details(self, data):
+        subject_details = ["country", "state", "location", "organization", "organizational_unit"]
+
+        # Remove subject details if authority is CA/Browser Forum compliant. The code will use default set of values in that case.
+        # If CA/Browser Forum compliance of an authority is unknown (None), it is safe to fallback to default values. Thus below
+        # condition checks for 'not False' ==> 'True or None'
+        if data.get("authority"):
+            is_cab_compliant = data.get("authority").get("isCabCompliant")
+
+            if is_cab_compliant is not False:
+                for field in subject_details:
+                    data.pop(field, None)
+
+        # Removing subject fields if None, else it complains in de-serialization
+        for field in subject_details:
+            if field in data and data[field] is None:
+                data.pop(field)
 
 
 class CertificateShortOutputSchema(LemurOutputSchema):

@@ -6,11 +6,13 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import arrow
+import re
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from flask import current_app
 from sqlalchemy import func, or_, not_, cast, Integer
+from sqlalchemy.sql.expression import false, true
 
 from lemur import database
 from lemur.authorities.models import Authority
@@ -105,7 +107,7 @@ def get_all_certs():
 
 def get_all_valid_certs(authority_plugin_name):
     """
-    Retrieves all valid (not expired) certificates within Lemur, for the given authority plugin names
+    Retrieves all valid (not expired & not revoked) certificates within Lemur, for the given authority plugin names
     ignored if no authority_plugin_name provided.
 
     Note that depending on the DB size retrieving all certificates might an expensive operation
@@ -116,11 +118,12 @@ def get_all_valid_certs(authority_plugin_name):
         return (
             Certificate.query.outerjoin(Authority, Authority.id == Certificate.authority_id).filter(
                 Certificate.not_after > arrow.now().format("YYYY-MM-DD")).filter(
-                Authority.plugin_name.in_(authority_plugin_name)).all()
+                Authority.plugin_name.in_(authority_plugin_name)).filter(Certificate.revoked.is_(False)).all()
         )
     else:
         return (
-            Certificate.query.filter(Certificate.not_after > arrow.now().format("YYYY-MM-DD")).all()
+            Certificate.query.filter(Certificate.not_after > arrow.now().format("YYYY-MM-DD")).filter(
+                Certificate.revoked.is_(False)).all()
         )
 
 
@@ -148,7 +151,7 @@ def get_all_certs_attached_to_endpoint_without_autorotate():
         """
     return (
         Certificate.query.filter(Certificate.endpoints.any())
-        .filter(Certificate.rotation == False)
+        .filter(Certificate.rotation == false())
         .filter(Certificate.not_after >= arrow.now())
         .filter(not_(Certificate.replaced.any()))
         .all()  # noqa
@@ -203,9 +206,9 @@ def get_all_pending_reissue():
     :return:
     """
     return (
-        Certificate.query.filter(Certificate.rotation == True)
+        Certificate.query.filter(Certificate.rotation == true())
         .filter(not_(Certificate.replaced.any()))
-        .filter(Certificate.in_rotation_window == True)
+        .filter(Certificate.in_rotation_window == true())
         .all()
     )  # noqa
 
@@ -256,6 +259,12 @@ def update(cert_id, **kwargs):
     return database.update(cert)
 
 
+def cleanup_owner_roles_notification(owner_name, kwargs):
+    kwargs["roles"] = [r for r in kwargs["roles"] if r.name != owner_name]
+    notification_prefix = f"DEFAULT_{owner_name.split('@')[0].upper()}"
+    kwargs["notifications"] = [n for n in kwargs["notifications"] if not n.label.startswith(notification_prefix)]
+
+
 def update_notify(cert, notify_flag):
     """
     Toggle notification value which is a boolean
@@ -268,16 +277,11 @@ def update_notify(cert, notify_flag):
 
 
 def create_certificate_roles(**kwargs):
-    # create an role for the owner and assign it
-    owner_role = role_service.get_by_name(kwargs["owner"])
-
-    if not owner_role:
-        owner_role = role_service.create(
-            kwargs["owner"],
-            description="Auto generated role based on owner: {0}".format(
-                kwargs["owner"]
-            ),
-        )
+    # create a role for the owner and assign it
+    owner_role = role_service.get_or_create(
+        kwargs["owner"],
+        description=f"Auto generated role based on owner: {kwargs['owner']}"
+    )
 
     # ensure that the authority's owner is also associated with the certificate
     if kwargs.get("authority"):
@@ -358,7 +362,12 @@ def create(**kwargs):
     try:
         cert_body, private_key, cert_chain, external_id, csr = mint(**kwargs)
     except Exception:
-        current_app.logger.error("Exception minting certificate", exc_info=True)
+        log_data = {
+            "message": "Exception minting certificate",
+            "issuer": kwargs["authority"].name,
+            "cn": kwargs["common_name"],
+        }
+        current_app.logger.error(log_data, exc_info=True)
         sentry.captureException()
         raise
     kwargs["body"] = cert_body
@@ -517,7 +526,7 @@ def render(args):
         )
 
     if current_app.config.get("ALLOW_CERT_DELETION", False):
-        query = query.filter(Certificate.deleted == False)  # noqa
+        query = query.filter(Certificate.deleted == false())
 
     result = database.sort_and_page(query, Certificate, args)
     return result
@@ -553,20 +562,21 @@ def query_common_name(common_name, args):
     :return:
     """
     owner = args.pop("owner")
-    if not owner:
-        owner = "%"
-
     # only not expired certificates
     current_time = arrow.utcnow()
 
-    result = (
-        Certificate.query.filter(Certificate.cn.ilike(common_name))
-        .filter(Certificate.owner.ilike(owner))
-        .filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))
-        .all()
-    )
+    query = Certificate.query.filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))\
+        .filter(not_(Certificate.revoked))\
+        .filter(not_(Certificate.replaced.any()))  # ignore rotated certificates to avoid duplicates
 
-    return result
+    if owner:
+        query = query.filter(Certificate.owner.ilike(owner))
+
+    if common_name != "%":
+        # if common_name is a wildcard ('%'), no need to include it in the query
+        query = query.filter(Certificate.cn.ilike(common_name))
+
+    return query.all()
 
 
 def create_csr(**csr_config):
@@ -770,6 +780,19 @@ def reissue_certificate(certificate, replace=None, user=None):
 
     if replace:
         primitives["replaces"] = [certificate]
+
+    # Modify description to include the certificate ID being reissued and mention that this is created by Lemur
+    # as part of reissue
+    reissue_message_prefix = "Reissued by Lemur for cert ID "
+    reissue_message = re.compile(f"{reissue_message_prefix}([0-9]+)")
+    if primitives["description"]:
+        match = reissue_message.search(primitives["description"])
+        if match:
+            primitives["description"] = primitives["description"].replace(match.group(1), str(certificate.id))
+        else:
+            primitives["description"] = f"{reissue_message_prefix}{certificate.id}, {primitives['description']}"
+    else:
+        primitives["description"] = f"{reissue_message_prefix}{certificate.id}"
 
     new_cert = create(**primitives)
 

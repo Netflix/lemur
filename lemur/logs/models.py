@@ -7,7 +7,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from sqlalchemy import Column, Integer, ForeignKey, PassiveDefault, func, Enum
+from sqlalchemy import Column, Integer, ForeignKey, DefaultClause, func, Enum
 
 from sqlalchemy_utils.types.arrow import ArrowType
 
@@ -29,5 +29,5 @@ class Log(db.Model):
         ),
         nullable=False,
     )
-    logged_at = Column(ArrowType(), PassiveDefault(func.now()), nullable=False)
+    logged_at = Column(ArrowType(), DefaultClause(func.now()), nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)

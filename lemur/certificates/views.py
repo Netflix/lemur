@@ -884,6 +884,10 @@ class Certificates(AuthenticatedResource):
                         400,
                     )
 
+        # if owner is changed, remove all notifications and roles associated with old owner
+        if cert.owner != data["owner"]:
+            service.cleanup_owner_roles_notification(cert.owner, data)
+
         cert = service.update(certificate_id, **data)
         log_service.create(g.current_user, "update_cert", certificate=cert)
         return cert
@@ -1151,6 +1155,7 @@ class NotificationCertificatesList(AuthenticatedResource):
         )
         parser.add_argument("creator", type=str, location="args")
         parser.add_argument("show", type=str, location="args")
+        parser.add_argument("showExpired", type=int, location="args")
 
         args = parser.parse_args()
         args["notification_id"] = notification_id
