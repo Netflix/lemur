@@ -59,4 +59,5 @@ def test_process_options(mock_current_app, authority):
         }
     }
 
-    assert expected == plugin.process_options(options)
+    client_id = 1
+    assert expected == plugin.process_options(options, client_id)
