@@ -340,6 +340,7 @@ class Notifications(AuthenticatedResource):
         return service.update(
             notification_id,
             data["label"],
+            data["plugin"]["slug"],
             data["plugin"]["plugin_options"],
             data["description"],
             data["active"],

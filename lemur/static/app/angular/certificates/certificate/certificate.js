@@ -190,7 +190,7 @@ angular.module('lemur')
     function populateValidityDateAsPerDefault(certificate) {
       // calculate start and end date as per default validity
       let startDate = new Date(), endDate = new Date();
-      endDate.setDate(startDate.getDate() + certificate.authority.authorityCertificate.defaultValidityDays);
+      endDate.setDate(startDate.getDate() + certificate.authority.defaultValidityDays);
       certificate.validityStart = startDate;
       certificate.validityEnd = endDate;
     }
@@ -255,9 +255,6 @@ angular.module('lemur')
     $scope.certificate.replacedBy = []; // should not clone 'replaced by' info
     $scope.certificate.removeReplaces(); // should not clone 'replacement cert' info
 
-    if(!$scope.certificate.keyType) {
-      $scope.certificate.keyType = 'RSA2048'; // default algo to select during clone if backend did not return algo
-    }
     CertificateService.getDefaults($scope.certificate);
   });
 
@@ -362,7 +359,7 @@ angular.module('lemur')
     function populateValidityDateAsPerDefault(certificate) {
       // calculate start and end date as per default validity
       let startDate = new Date(), endDate = new Date();
-      endDate.setDate(startDate.getDate() + certificate.authority.authorityCertificate.defaultValidityDays);
+      endDate.setDate(startDate.getDate() + certificate.authority.defaultValidityDays);
       certificate.validityStart = startDate;
       certificate.validityEnd = endDate;
     }

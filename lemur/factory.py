@@ -10,7 +10,7 @@
 
 """
 import os
-import imp
+import importlib
 import errno
 import pkg_resources
 import socket
@@ -73,8 +73,9 @@ def from_file(file_path, silent=False):
     :param file_path:
     :param silent:
     """
-    d = imp.new_module("config")
-    d.__file__ = file_path
+    module_spec = importlib.util.spec_from_file_location("config", file_path)
+    d = importlib.util.module_from_spec(module_spec)
+
     try:
         with open(file_path) as config_file:
             exec(  # nosec: config file safe

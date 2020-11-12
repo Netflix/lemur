@@ -16,7 +16,7 @@ from sqlalchemy import (
     Integer,
     ForeignKey,
     String,
-    PassiveDefault,
+    DefaultClause,
     func,
     Column,
     Text,
@@ -138,7 +138,7 @@ class Certificate(db.Model):
     not_after = Column(ArrowType)
     not_after_ix = Index("ix_certificates_not_after", not_after.desc())
 
-    date_created = Column(ArrowType, PassiveDefault(func.now()), nullable=False)
+    date_created = Column(ArrowType, DefaultClause(func.now()), nullable=False)
 
     signing_algorithm = Column(String(128))
     status = Column(String(128))
@@ -184,7 +184,6 @@ class Certificate(db.Model):
         "PendingCertificate",
         secondary=pending_cert_replacement_associations,
         backref="pending_replace",
-        viewonly=True,
     )
 
     logs = relationship("Log", backref="certificate")
@@ -316,20 +315,6 @@ class Certificate(db.Model):
     @property
     def validity_range(self):
         return self.not_after - self.not_before
-
-    @property
-    def max_issuance_days(self):
-        public_CA = current_app.config.get("PUBLIC_CA_AUTHORITY_NAMES", [])
-        if self.name.lower() in [ca.lower() for ca in public_CA]:
-            return current_app.config.get("PUBLIC_CA_MAX_VALIDITY_DAYS", 397)
-
-    @property
-    def default_validity_days(self):
-        public_CA = current_app.config.get("PUBLIC_CA_AUTHORITY_NAMES", [])
-        if self.name.lower() in [ca.lower() for ca in public_CA]:
-            return current_app.config.get("PUBLIC_CA_MAX_VALIDITY_DAYS", 397)
-
-        return current_app.config.get("DEFAULT_VALIDITY_DAYS", 365)   # 1 year default
 
     @property
     def subject(self):

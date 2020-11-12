@@ -36,17 +36,17 @@ LEMUR_ENCRYPTION_KEYS = base64.urlsafe_b64encode(get_random_secret(length=32).en
 
 
 # List of domain regular expressions that non-admin users can issue
-LEMUR_WHITELISTED_DOMAINS = [
-    "^[a-zA-Z0-9-]+\.example\.com$",
-    "^[a-zA-Z0-9-]+\.example\.org$",
-    "^example\d+\.long\.com$",
+LEMUR_ALLOWED_DOMAINS = [
+    r"^[a-zA-Z0-9-]+\.example\.com$",
+    r"^[a-zA-Z0-9-]+\.example\.org$",
+    r"^example\d+\.long\.com$",
 ]
 
 # Mail Server
 
 # Lemur currently only supports SES for sending email, this address
 # needs to be verified
-LEMUR_EMAIL = ""
+LEMUR_EMAIL = "lemur@example.com"
 LEMUR_SECURITY_TEAM_EMAIL = ["security@example.com"]
 
 LEMUR_HOSTNAME = "lemur.example.com"
@@ -99,7 +99,6 @@ DIGICERT_CIS_URL = "mock://www.digicert.com"
 DIGICERT_CIS_PROFILE_NAMES = {"sha2-rsa-ecc-root": "ssl_plus"}
 DIGICERT_CIS_API_KEY = "api-key"
 DIGICERT_CIS_ROOTS = {"root": "ROOT"}
-DIGICERT_CIS_INTERMEDIATES = {"inter": "INTERMEDIATE_CA_CERT"}
 
 VERISIGN_URL = "http://example.com"
 VERISIGN_PEM_PATH = "~/"
