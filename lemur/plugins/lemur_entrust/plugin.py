@@ -105,6 +105,7 @@ def get_client_id(my_response, organization):
     else:
        raise Exception(f"Error on Organization - Use on of the List: {d['organizations']}")
 
+
 def handle_response(my_response):
     """
     Helper function for parsing responses from the Entrust API.
@@ -189,7 +190,7 @@ class EntrustIssuerPlugin(IssuerPlugin):
         }
         current_app.logger.info(log_data)
 
-        #firstly we need the organization ID
+        # firstly we need the organization ID
         url = current_app.config.get("ENTRUST_URL") + "/organizations"
         try:
             response = self.session.get(url, timeout=(15, 40))
@@ -221,7 +222,7 @@ class EntrustIssuerPlugin(IssuerPlugin):
         external_id = response_dict['trackingId']
         cert = response_dict['endEntityCert']
         if len(response_dict['chainCerts']) < 2:
-            # certificate signed by CA directly, no ICA included ini the chain
+            # certificate signed by CA directly, no ICA included in the chain
             chain = None
         else:
             chain = response_dict['chainCerts'][1]
