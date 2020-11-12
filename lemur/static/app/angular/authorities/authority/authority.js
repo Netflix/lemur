@@ -34,7 +34,7 @@ angular.module('lemur')
     };
   })
 
-  .controller('AuthorityCreateController', function ($scope, $uibModalInstance, AuthorityService, AuthorityApi, LemurRestangular, RoleService, PluginService, WizardHandler, toaster)  {
+  .controller('AuthorityCreateController', function ($scope, $uibModalInstance, AuthorityService, AuthorityApi, LemurRestangular, RoleService, PluginService, WizardHandler, toaster, DestinationService)  {
     $scope.authority = LemurRestangular.restangularizeElement(null, {}, 'authorities');
     // set the defaults
     AuthorityService.getDefaults($scope.authority).then(function () {
@@ -51,6 +51,12 @@ angular.module('lemur')
           }
       });
     });
+
+    $scope.getDestinations = function() {
+      return DestinationService.findDestinationsByName('').then(function(destinations) {
+        $scope.destinations = destinations;
+      });
+    };
 
     $scope.getAuthoritiesByName = function (value) {
       return AuthorityService.findAuthorityByName(value).then(function (authorities) {
