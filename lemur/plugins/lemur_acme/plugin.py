@@ -11,465 +11,27 @@
 .. moduleauthor:: Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
 .. moduleauthor:: Curtis Castrapel <ccastrapel@netflix.com>
 """
-import datetime
-import json
-import time
 
-import OpenSSL.crypto
-import dns.resolver
-import josepy as jose
-from acme import challenges, errors, messages
-from acme.client import BackwardsCompatibleClientV2, ClientNetwork
-from acme.errors import PollError, TimeoutError, WildcardUnsupportedError
+from acme.errors import PollError, WildcardUnsupportedError
 from acme.messages import Error as AcmeError
 from botocore.exceptions import ClientError
 from flask import current_app
 from lemur.authorizations import service as authorization_service
-from lemur.common.utils import generate_private_key
 from lemur.dns_providers import service as dns_provider_service
-from lemur.exceptions import InvalidAuthority, InvalidConfiguration, UnknownProvider
+from lemur.exceptions import InvalidConfiguration
 from lemur.extensions import metrics, sentry
+
 from lemur.plugins import lemur_acme as acme
 from lemur.plugins.bases import IssuerPlugin
-from lemur.plugins.lemur_acme import cloudflare, dyn, route53, ultradns, powerdns
-from lemur.authorities import service as authorities_service
-from retrying import retry
-
-
-class AuthorizationRecord(object):
-    def __init__(self, domain, target_domain, authz, dns_challenge, change_id):
-        self.domain = domain
-        self.target_domain = target_domain
-        self.authz = authz
-        self.dns_challenge = dns_challenge
-        self.change_id = change_id
-
-
-class AcmeHandler(object):
-    def __init__(self):
-        self.dns_providers_for_domain = {}
-        try:
-            self.all_dns_providers = dns_provider_service.get_all_dns_providers()
-        except Exception as e:
-            metrics.send("AcmeHandler_init_error", "counter", 1)
-            sentry.captureException()
-            current_app.logger.error(f"Unable to fetch DNS Providers: {e}")
-            self.all_dns_providers = []
-
-    def get_dns_challenges(self, host, authorizations):
-        """Get dns challenges for provided domain"""
-
-        domain_to_validate, is_wildcard = self.strip_wildcard(host)
-        dns_challenges = []
-        for authz in authorizations:
-            if not authz.body.identifier.value.lower() == domain_to_validate.lower():
-                continue
-            if is_wildcard and not authz.body.wildcard:
-                continue
-            if not is_wildcard and authz.body.wildcard:
-                continue
-            for combo in authz.body.challenges:
-                if isinstance(combo.chall, challenges.DNS01):
-                    dns_challenges.append(combo)
-
-        return dns_challenges
-
-    def strip_wildcard(self, host):
-        """Removes the leading *. and returns Host and whether it was removed or not (True/False)"""
-        prefix = "*."
-        if host.startswith(prefix):
-            return host[len(prefix):], True
-        return host, False
-
-    def maybe_add_extension(self, host, dns_provider_options):
-        if dns_provider_options and dns_provider_options.get(
-            "acme_challenge_extension"
-        ):
-            host = host + dns_provider_options.get("acme_challenge_extension")
-        return host
-
-    def start_dns_challenge(
-        self,
-        acme_client,
-        account_number,
-        domain,
-        target_domain,
-        dns_provider,
-        order,
-        dns_provider_options,
-    ):
-        current_app.logger.debug(f"Starting DNS challenge for {domain} using target domain {target_domain}.")
-
-        change_ids = []
-        dns_challenges = self.get_dns_challenges(domain, order.authorizations)
-        host_to_validate, _ = self.strip_wildcard(target_domain)
-        host_to_validate = self.maybe_add_extension(host_to_validate, dns_provider_options)
-
-        if not dns_challenges:
-            sentry.captureException()
-            metrics.send("start_dns_challenge_error_no_dns_challenges", "counter", 1)
-            raise Exception("Unable to determine DNS challenges from authorizations")
-
-        for dns_challenge in dns_challenges:
-
-            # Only prepend '_acme-challenge' if not using CNAME redirection
-            if domain == target_domain:
-                host_to_validate = dns_challenge.validation_domain_name(host_to_validate)
-
-            change_id = dns_provider.create_txt_record(
-                host_to_validate,
-                dns_challenge.validation(acme_client.client.net.key),
-                account_number,
-            )
-            change_ids.append(change_id)
-
-        return AuthorizationRecord(
-            domain, target_domain, order.authorizations, dns_challenges, change_ids
-        )
-
-    def complete_dns_challenge(self, acme_client, authz_record):
-        current_app.logger.debug(
-            "Finalizing DNS challenge for {0}".format(
-                authz_record.authz[0].body.identifier.value
-            )
-        )
-        dns_providers = self.dns_providers_for_domain.get(authz_record.target_domain)
-        if not dns_providers:
-            metrics.send("complete_dns_challenge_error_no_dnsproviders", "counter", 1)
-            raise Exception(
-                "No DNS providers found for domain: {}".format(authz_record.target_domain)
-            )
-
-        for dns_provider in dns_providers:
-            # Grab account number (For Route53)
-            dns_provider_options = json.loads(dns_provider.credentials)
-            account_number = dns_provider_options.get("account_id")
-            dns_provider_plugin = self.get_dns_provider(dns_provider.provider_type)
-            for change_id in authz_record.change_id:
-                try:
-                    dns_provider_plugin.wait_for_dns_change(
-                        change_id, account_number=account_number
-                    )
-                except Exception:
-                    metrics.send("complete_dns_challenge_error", "counter", 1)
-                    sentry.captureException()
-                    current_app.logger.debug(
-                        f"Unable to resolve DNS challenge for change_id: {change_id}, account_id: "
-                        f"{account_number}",
-                        exc_info=True,
-                    )
-                    raise
-
-            for dns_challenge in authz_record.dns_challenge:
-                response = dns_challenge.response(acme_client.client.net.key)
-
-                verified = response.simple_verify(
-                    dns_challenge.chall,
-                    authz_record.target_domain,
-                    acme_client.client.net.key.public_key(),
-                )
-
-            if not verified:
-                metrics.send("complete_dns_challenge_verification_error", "counter", 1)
-                raise ValueError("Failed verification")
-
-            time.sleep(5)
-            res = acme_client.answer_challenge(dns_challenge, response)
-            current_app.logger.debug(f"answer_challenge response: {res}")
-
-    def request_certificate(self, acme_client, authorizations, order):
-        for authorization in authorizations:
-            for authz in authorization.authz:
-                authorization_resource, _ = acme_client.poll(authz)
-
-        deadline = datetime.datetime.now() + datetime.timedelta(seconds=360)
-
-        try:
-            orderr = acme_client.poll_and_finalize(order, deadline)
-
-        except (AcmeError, TimeoutError):
-            sentry.captureException(extra={"order_url": str(order.uri)})
-            metrics.send("request_certificate_error", "counter", 1, metric_tags={"uri": order.uri})
-            current_app.logger.error(
-                f"Unable to resolve Acme order: {order.uri}", exc_info=True
-            )
-            raise
-        except errors.ValidationError:
-            if order.fullchain_pem:
-                orderr = order
-            else:
-                raise
-
-        metrics.send("request_certificate_success", "counter", 1, metric_tags={"uri": order.uri})
-        current_app.logger.info(
-            f"Successfully resolved Acme order: {order.uri}", exc_info=True
-        )
-
-        pem_certificate = OpenSSL.crypto.dump_certificate(
-            OpenSSL.crypto.FILETYPE_PEM,
-            OpenSSL.crypto.load_certificate(
-                OpenSSL.crypto.FILETYPE_PEM, orderr.fullchain_pem
-            ),
-        ).decode()
-
-        if current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA", False) \
-                and datetime.datetime.now() < datetime.datetime.strptime(
-                    current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA_EXPIRATION_DATE", "17/03/21"), '%d/%m/%y'):
-            pem_certificate_chain = current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA")
-        else:
-            pem_certificate_chain = orderr.fullchain_pem[
-                len(pem_certificate) :  # noqa
-            ].lstrip()
-
-        current_app.logger.debug(
-            "{0} {1}".format(type(pem_certificate), type(pem_certificate_chain))
-        )
-        return pem_certificate, pem_certificate_chain
-
-    @retry(stop_max_attempt_number=5, wait_fixed=5000)
-    def setup_acme_client(self, authority):
-        if not authority.options:
-            raise InvalidAuthority("Invalid authority. Options not set")
-        options = {}
-
-        for option in json.loads(authority.options):
-            options[option["name"]] = option.get("value")
-        email = options.get("email", current_app.config.get("ACME_EMAIL"))
-        tel = options.get("telephone", current_app.config.get("ACME_TEL"))
-        directory_url = options.get(
-            "acme_url", current_app.config.get("ACME_DIRECTORY_URL")
-        )
-
-        existing_key = options.get(
-            "acme_private_key", current_app.config.get("ACME_PRIVATE_KEY")
-        )
-        existing_regr = options.get("acme_regr", current_app.config.get("ACME_REGR"))
-
-        if existing_key and existing_regr:
-            current_app.logger.debug("Reusing existing ACME account")
-            # Reuse the same account for each certificate issuance
-            key = jose.JWK.json_loads(existing_key)
-            regr = messages.RegistrationResource.json_loads(existing_regr)
-            current_app.logger.debug(
-                "Connecting with directory at {0}".format(directory_url)
-            )
-            net = ClientNetwork(key, account=regr)
-            client = BackwardsCompatibleClientV2(net, key, directory_url)
-            return client, {}
-        else:
-            # Create an account for each certificate issuance
-            key = jose.JWKRSA(key=generate_private_key("RSA2048"))
-
-            current_app.logger.debug("Creating a new ACME account")
-            current_app.logger.debug(
-                "Connecting with directory at {0}".format(directory_url)
-            )
-
-            net = ClientNetwork(key, account=None, timeout=3600)
-            client = BackwardsCompatibleClientV2(net, key, directory_url)
-            registration = client.new_account_and_tos(
-                messages.NewRegistration.from_data(email=email)
-            )
-
-            # if store_account is checked, add the private_key and registration resources to the options
-            if options['store_account']:
-                new_options = json.loads(authority.options)
-                # the key returned by fields_to_partial_json is missing the key type, so we add it manually
-                key_dict = key.fields_to_partial_json()
-                key_dict["kty"] = "RSA"
-                acme_private_key = {
-                    "name": "acme_private_key",
-                    "value": json.dumps(key_dict)
-                }
-                new_options.append(acme_private_key)
-
-                acme_regr = {
-                    "name": "acme_regr",
-                    "value": json.dumps({"body": {}, "uri": registration.uri})
-                }
-                new_options.append(acme_regr)
-
-                authorities_service.update_options(authority.id, options=json.dumps(new_options))
-
-            current_app.logger.debug("Connected: {0}".format(registration.uri))
-
-        return client, registration
-
-    def get_domains(self, options):
-        """
-        Fetches all domains currently requested
-        :param options:
-        :return:
-        """
-        current_app.logger.debug("Fetching domains")
-
-        domains = [options["common_name"]]
-        if options.get("extensions"):
-            for dns_name in options["extensions"]["sub_alt_names"]["names"]:
-                if dns_name.value not in domains:
-                    domains.append(dns_name.value)
-
-        current_app.logger.debug("Got these domains: {0}".format(domains))
-        return domains
-
-    def get_authorizations(self, acme_client, order, order_info):
-        authorizations = []
-
-        for domain in order_info.domains:
-
-            # If CNAME exists, set host to the target address
-            target_domain = domain
-            if current_app.config.get("ACME_ENABLE_DELEGATED_CNAME", False):
-                cname_result, _ = self.strip_wildcard(domain)
-                cname_result = challenges.DNS01().validation_domain_name(cname_result)
-                cname_result = self.get_cname(cname_result)
-                if cname_result:
-                    target_domain = cname_result
-                    self.autodetect_dns_providers(target_domain)
-
-            if not self.dns_providers_for_domain.get(target_domain):
-                metrics.send(
-                    "get_authorizations_no_dns_provider_for_domain", "counter", 1
-                )
-                raise Exception("No DNS providers found for domain: {}".format(target_domain))
-
-            for dns_provider in self.dns_providers_for_domain[target_domain]:
-                dns_provider_plugin = self.get_dns_provider(dns_provider.provider_type)
-                dns_provider_options = json.loads(dns_provider.credentials)
-                account_number = dns_provider_options.get("account_id")
-                authz_record = self.start_dns_challenge(
-                    acme_client,
-                    account_number,
-                    domain,
-                    target_domain,
-                    dns_provider_plugin,
-                    order,
-                    dns_provider.options,
-                )
-                authorizations.append(authz_record)
-        return authorizations
-
-    def autodetect_dns_providers(self, domain):
-        """
-        Get DNS providers associated with a domain when it has not been provided for certificate creation.
-        :param domain:
-        :return: dns_providers: List of DNS providers that have the correct zone.
-        """
-        self.dns_providers_for_domain[domain] = []
-        match_length = 0
-        for dns_provider in self.all_dns_providers:
-            if not dns_provider.domains:
-                continue
-            for name in dns_provider.domains:
-                if name == domain or domain.endswith("." + name):
-                    if len(name) > match_length:
-                        self.dns_providers_for_domain[domain] = [dns_provider]
-                        match_length = len(name)
-                    elif len(name) == match_length:
-                        self.dns_providers_for_domain[domain].append(dns_provider)
-
-        return self.dns_providers_for_domain
-
-    def finalize_authorizations(self, acme_client, authorizations):
-        for authz_record in authorizations:
-            self.complete_dns_challenge(acme_client, authz_record)
-        for authz_record in authorizations:
-            dns_challenges = authz_record.dns_challenge
-            for dns_challenge in dns_challenges:
-                dns_providers = self.dns_providers_for_domain.get(authz_record.target_domain)
-                for dns_provider in dns_providers:
-                    # Grab account number (For Route53)
-                    dns_provider_plugin = self.get_dns_provider(
-                        dns_provider.provider_type
-                    )
-                    dns_provider_options = json.loads(dns_provider.credentials)
-                    account_number = dns_provider_options.get("account_id")
-                    host_to_validate, _ = self.strip_wildcard(authz_record.target_domain)
-                    host_to_validate = self.maybe_add_extension(host_to_validate, dns_provider_options)
-                    if authz_record.domain == authz_record.target_domain:
-                        host_to_validate = challenges.DNS01().validation_domain_name(host_to_validate)
-                    dns_provider_plugin.delete_txt_record(
-                        authz_record.change_id,
-                        account_number,
-                        host_to_validate,
-                        dns_challenge.validation(acme_client.client.net.key),
-                    )
-
-        return authorizations
-
-    def cleanup_dns_challenges(self, acme_client, authorizations):
-        """
-        Best effort attempt to delete DNS challenges that may not have been deleted previously. This is usually called
-        on an exception
-
-        :param acme_client:
-        :param account_number:
-        :param dns_provider:
-        :param authorizations:
-        :param dns_provider_options:
-        :return:
-        """
-        for authz_record in authorizations:
-            dns_providers = self.dns_providers_for_domain.get(authz_record.target_domain)
-            for dns_provider in dns_providers:
-                # Grab account number (For Route53)
-                dns_provider_options = json.loads(dns_provider.credentials)
-                account_number = dns_provider_options.get("account_id")
-                dns_challenges = authz_record.dns_challenge
-                host_to_validate, _ = self.strip_wildcard(authz_record.target_domain)
-                host_to_validate = self.maybe_add_extension(
-                    host_to_validate, dns_provider_options
-                )
-
-                dns_provider_plugin = self.get_dns_provider(dns_provider.provider_type)
-                for dns_challenge in dns_challenges:
-                    if authz_record.domain == authz_record.target_domain:
-                        host_to_validate = dns_challenge.validation_domain_name(host_to_validate)
-                    try:
-                        dns_provider_plugin.delete_txt_record(
-                            authz_record.change_id,
-                            account_number,
-                            host_to_validate,
-                            dns_challenge.validation(acme_client.client.net.key),
-                        )
-                    except Exception as e:
-                        # If this fails, it's most likely because the record doesn't exist (It was already cleaned up)
-                        # or we're not authorized to modify it.
-                        metrics.send("cleanup_dns_challenges_error", "counter", 1)
-                        sentry.captureException()
-                        pass
-
-    def get_dns_provider(self, type):
-        provider_types = {
-            "cloudflare": cloudflare,
-            "dyn": dyn,
-            "route53": route53,
-            "ultradns": ultradns,
-            "powerdns": powerdns
-        }
-        provider = provider_types.get(type)
-        if not provider:
-            raise UnknownProvider("No such DNS provider: {}".format(type))
-        return provider
-
-    def get_cname(self, domain):
-        """
-        :param domain: Domain name to look up a CNAME for.
-        :return: First CNAME target or False if no CNAME record exists.
-        """
-        try:
-            result = dns.resolver.query(domain, 'CNAME')
-            if len(result) > 0:
-                return str(result[0].target).rstrip('.')
-        except dns.exception.DNSException:
-            return False
+from lemur.plugins.lemur_acme.acme_handlers import AcmeHandler, AcmeDnsHandler
+from lemur.plugins.lemur_acme.challenge_types import AcmeHttpChallenge, AcmeDnsChallenge
 
 
 class ACMEIssuerPlugin(IssuerPlugin):
     title = "Acme"
     slug = "acme-issuer"
     description = (
-        "Enables the creation of certificates via ACME CAs (including Let's Encrypt)"
+        "Enables the creation of certificates via ACME CAs (including Let's Encrypt), using the DNS-01 challenge"
     )
     version = acme.VERSION
 
@@ -516,30 +78,8 @@ class ACMEIssuerPlugin(IssuerPlugin):
     def __init__(self, *args, **kwargs):
         super(ACMEIssuerPlugin, self).__init__(*args, **kwargs)
 
-    def get_dns_provider(self, type):
-        self.acme = AcmeHandler()
-
-        provider_types = {
-            "cloudflare": cloudflare,
-            "dyn": dyn,
-            "route53": route53,
-            "ultradns": ultradns,
-            "powerdns": powerdns
-        }
-        provider = provider_types.get(type)
-        if not provider:
-            raise UnknownProvider("No such DNS provider: {}".format(type))
-        return provider
-
-    def get_all_zones(self, dns_provider):
-        self.acme = AcmeHandler()
-        dns_provider_options = json.loads(dns_provider.credentials)
-        account_number = dns_provider_options.get("account_id")
-        dns_provider_plugin = self.get_dns_provider(dns_provider.provider_type)
-        return dns_provider_plugin.get_zones(account_number=account_number)
-
     def get_ordered_certificate(self, pending_cert):
-        self.acme = AcmeHandler()
+        self.acme = AcmeDnsHandler()
         acme_client, registration = self.acme.setup_acme_client(pending_cert.authority)
         order_info = authorization_service.get(pending_cert.external_id)
         if pending_cert.dns_provider_id:
@@ -585,7 +125,8 @@ class ACMEIssuerPlugin(IssuerPlugin):
         return cert
 
     def get_ordered_certificates(self, pending_certs):
-        self.acme = AcmeHandler()
+        self.acme = AcmeDnsHandler()
+        self.acme_dns_challenge = AcmeDnsChallenge()
         pending = []
         certs = []
         for pending_cert in pending_certs:
@@ -682,76 +223,22 @@ class ACMEIssuerPlugin(IssuerPlugin):
                     }
                 )
                 # Ensure DNS records get deleted
-                self.acme.cleanup_dns_challenges(
-                    entry["acme_client"], entry["authorizations"]
+                self.acme_dns_challenge.cleanup(
+                    entry["authorizations"], entry["acme_client"]
                 )
         return certs
 
     def create_certificate(self, csr, issuer_options):
         """
-        Creates an ACME certificate.
+        Creates an ACME certificate using the DNS-01 challenge.
 
         :param csr:
         :param issuer_options:
         :return: :raise Exception:
         """
-        self.acme = AcmeHandler()
-        authority = issuer_options.get("authority")
-        create_immediately = issuer_options.get("create_immediately", False)
-        acme_client, registration = self.acme.setup_acme_client(authority)
-        dns_provider = issuer_options.get("dns_provider", {})
+        acme_dns_challenge = AcmeDnsChallenge()
 
-        if dns_provider:
-            dns_provider_options = dns_provider.options
-            credentials = json.loads(dns_provider.credentials)
-            current_app.logger.debug(
-                "Using DNS provider: {0}".format(dns_provider.provider_type)
-            )
-            dns_provider_plugin = __import__(
-                dns_provider.provider_type, globals(), locals(), [], 1
-            )
-            account_number = credentials.get("account_id")
-            provider_type = dns_provider.provider_type
-            if provider_type == "route53" and not account_number:
-                error = "Route53 DNS Provider {} does not have an account number configured.".format(
-                    dns_provider.name
-                )
-                current_app.logger.error(error)
-                raise InvalidConfiguration(error)
-        else:
-            dns_provider = {}
-            dns_provider_options = None
-            account_number = None
-            provider_type = None
-
-        domains = self.acme.get_domains(issuer_options)
-        if not create_immediately:
-            # Create pending authorizations that we'll need to do the creation
-            dns_authorization = authorization_service.create(
-                account_number, domains, provider_type
-            )
-            # Return id of the DNS Authorization
-            return None, None, dns_authorization.id
-
-        authorizations = self.acme.get_authorizations(
-            acme_client,
-            account_number,
-            domains,
-            dns_provider_plugin,
-            dns_provider_options,
-        )
-        self.acme.finalize_authorizations(
-            acme_client,
-            account_number,
-            dns_provider_plugin,
-            authorizations,
-            dns_provider_options,
-        )
-        pem_certificate, pem_certificate_chain = self.acme.request_certificate(
-            acme_client, authorizations, csr
-        )
-        # TODO add external ID (if possible)
-        return pem_certificate, pem_certificate_chain, None
+        return acme_dns_challenge.create_certificate(csr, issuer_options)
 
     @staticmethod
     def create_authority(options):
@@ -779,3 +266,108 @@ class ACMEIssuerPlugin(IssuerPlugin):
     def cancel_ordered_certificate(self, pending_cert, **kwargs):
         # Needed to override issuer function.
         pass
+
+    def revoke_certificate(self, certificate, comments):
+        self.acme = AcmeDnsHandler()
+        return self.acme.revoke_certificate(certificate)
+
+
+class ACMEHttpIssuerPlugin(IssuerPlugin):
+    title = "Acme HTTP-01"
+    slug = "acme-http-issuer"
+    description = (
+        "Enables the creation of certificates via ACME CAs (including Let's Encrypt), using the HTTP-01 challenge"
+    )
+    version = acme.VERSION
+
+    author = "Netflix"
+    author_url = "https://github.com/netflix/lemur.git"
+
+    options = [
+        {
+            "name": "acme_url",
+            "type": "str",
+            "required": True,
+            "validation": r"/^http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+$/",
+            "helpMessage": "Must be a valid web url starting with http[s]://",
+        },
+        {
+            "name": "telephone",
+            "type": "str",
+            "default": "",
+            "helpMessage": "Telephone to use",
+        },
+        {
+            "name": "email",
+            "type": "str",
+            "default": "",
+            "validation": r"/^?([-a-zA-Z0-9.`?{}]+@\w+\.\w+)$/",
+            "helpMessage": "Email to use",
+        },
+        {
+            "name": "certificate",
+            "type": "textarea",
+            "default": "",
+            "validation": "/^-----BEGIN CERTIFICATE-----/",
+            "helpMessage": "Certificate to use",
+        },
+        {
+            "name": "store_account",
+            "type": "bool",
+            "required": False,
+            "helpMessage": "Disable to create a new account for each ACME request",
+            "default": False,
+        },
+        {
+            "name": "tokenDestination",
+            "type": "destinationSelect",
+            "required": True,
+            "helpMessage": "The destination to use to deploy the token.",
+        },
+    ]
+
+    def __init__(self, *args, **kwargs):
+        super(ACMEHttpIssuerPlugin, self).__init__(*args, **kwargs)
+
+    def create_certificate(self, csr, issuer_options):
+        """
+        Creates an ACME certificate using the HTTP-01 challenge.
+
+        :param csr:
+        :param issuer_options:
+        :return: :raise Exception:
+        """
+        acme_http_challenge = AcmeHttpChallenge()
+
+        return acme_http_challenge.create_certificate(csr, issuer_options)
+
+    @staticmethod
+    def create_authority(options):
+        """
+        Creates an authority, this authority is then used by Lemur to allow a user
+        to specify which Certificate Authority they want to sign their certificate.
+
+        :param options:
+        :return:
+        """
+        role = {"username": "", "password": "", "name": "acme"}
+        plugin_options = options.get("plugin", {}).get("plugin_options")
+        if not plugin_options:
+            error = "Invalid options for lemur_acme plugin: {}".format(options)
+            current_app.logger.error(error)
+            raise InvalidConfiguration(error)
+        # Define static acme_root based off configuration variable by default. However, if user has passed a
+        # certificate, use this certificate as the root.
+        acme_root = current_app.config.get("ACME_ROOT")
+        for option in plugin_options:
+            if option.get("name") == "certificate":
+                acme_root = option.get("value")
+        return acme_root, "", [role]
+
+    def cancel_ordered_certificate(self, pending_cert, **kwargs):
+        # Needed to override issuer function.
+        pass
+
+    def revoke_certificate(self, certificate, comments):
+        self.acme = AcmeHandler()
+        return self.acme.revoke_certificate(certificate)
