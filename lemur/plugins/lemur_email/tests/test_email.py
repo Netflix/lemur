@@ -21,7 +21,6 @@ def get_options():
 
 
 def test_render_expiration(certificate, endpoint):
-
     new_cert = CertificateFactory()
     new_cert.replaces.append(certificate)
 
@@ -82,16 +81,14 @@ def test_send_pending_failure_notification(user, pending_certificate, async_issu
     assert send_pending_failure_notification(pending_certificate, False, False)
 
 
-def test_filter_recipients(certificate, endpoint):
+def test_get_recipients(certificate, endpoint):
     from lemur.plugins.lemur_email.plugin import EmailNotificationPlugin
 
     options = [{"name": "recipients", "value": "security@example.com,joe@example.com"}]
-    assert sorted(EmailNotificationPlugin.get_recipients(options, [])) == sorted([
-        "security@example.com", "joe@example.com"])
-    assert sorted(EmailNotificationPlugin.get_recipients(options, ["security@example.com"])) == sorted([
-        "security@example.com", "joe@example.com"])
-    assert sorted(EmailNotificationPlugin.get_recipients(options, ["bob@example.com"])) == sorted([
-        "security@example.com", "bob@example.com", "joe@example.com"])
-    assert sorted(EmailNotificationPlugin.get_recipients(options,
-                                                  ["security@example.com", "bob@example.com", "joe@example.com"])) == sorted([
-               "security@example.com", "bob@example.com", "joe@example.com"])
+    two_emails = sorted(["security@example.com", "joe@example.com"])
+    assert sorted(EmailNotificationPlugin.get_recipients(options, [])) == two_emails
+    assert sorted(EmailNotificationPlugin.get_recipients(options, ["security@example.com"])) == two_emails
+    three_emails = sorted(["security@example.com", "bob@example.com", "joe@example.com"])
+    assert sorted(EmailNotificationPlugin.get_recipients(options, ["bob@example.com"])) == three_emails
+    assert sorted(EmailNotificationPlugin.get_recipients(options, ["security@example.com", "bob@example.com",
+                                                                   "joe@example.com"])) == three_emails
