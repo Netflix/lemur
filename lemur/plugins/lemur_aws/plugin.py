@@ -419,7 +419,7 @@ class S3DestinationPlugin(ExportDestinationPlugin):
         :param kwargs:
         :return:
         """
-        current_app.logger.debug("S3 destination plugin is started for HTTP-01 challenge")
+        current_app.logger.debug("S3 destination plugin is started to upload HTTP-01 challenge")
 
         function = f"{__name__}.{sys._getframe().f_code.co_name}"
 
@@ -431,16 +431,16 @@ class S3DestinationPlugin(ExportDestinationPlugin):
         if not prefix.endswith("/"):
             prefix + "/"
 
-        res = s3.put(bucket_name=bucket_name,
-                     region_name=region,
-                     prefix=prefix + filename,
-                     data=token,
-                     encrypt=False,
-                     account_number=account_number)
-        res = "Success" if res else "Failure"
+        response = s3.put(bucket_name=bucket_name,
+                          region_name=region,
+                          prefix=prefix + filename,
+                          data=token,
+                          encrypt=False,
+                          account_number=account_number)
+        res = "Success" if response else "Failure"
         log_data = {
             "function": function,
-            "message": "check if any valid certificate is revoked",
+            "message": "upload acme token challenge",
             "result": res,
             "bucket_name": bucket_name,
             "filename": filename
@@ -449,6 +449,34 @@ class S3DestinationPlugin(ExportDestinationPlugin):
         metrics.send(f"{function}", "counter", 1, metric_tags={"result": res,
                                                                "bucket_name": bucket_name,
                                                                "filename": filename})
+        return response
+
+    def delete_acme_token(self, token_path, options, **kwargs):
+
+        current_app.logger.debug("S3 destination plugin is started to delete HTTP-01 challenge")
+
+        function = f"{__name__}.{sys._getframe().f_code.co_name}"
+
+        account_number = self.get_option("accountNumber", options)
+        bucket_name = self.get_option("bucket", options)
+        prefix = self.get_option("prefix", options)
+        filename = token_path.split("/")[-1]
+        response = s3.delete(bucket_name=bucket_name,
+                             prefixed_object_name=prefix + filename,
+                             account_number=account_number)
+        res = "Success" if response else "Failure"
+        log_data = {
+            "function": function,
+            "message": "delete acme token challenge",
+            "result": res,
+            "bucket_name": bucket_name,
+            "filename": filename
+        }
+        current_app.logger.info(log_data)
+        metrics.send(f"{function}", "counter", 1, metric_tags={"result": res,
+                                                               "bucket_name": bucket_name,
+                                                               "filename": filename})
+        return response
 
 
 class SNSNotificationPlugin(ExpirationNotificationPlugin):
