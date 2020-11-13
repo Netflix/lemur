@@ -57,7 +57,7 @@ def test_process_options(mock_current_app, authority):
             "requesterEmail": mock_current_app.config.get("ENTRUST_EMAIL"),
             "requesterPhone": mock_current_app.config.get("ENTRUST_PHONE")
         },
-        "org":  "Example, Inc.",
+        "org": "Example, Inc.",
         "clientID": 1
     }
 
