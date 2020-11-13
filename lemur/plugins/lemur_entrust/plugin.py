@@ -79,7 +79,9 @@ def process_options(options, client_id):
         "certType": product_type,
         "certExpiryDate": validity_end,
         # "keyType": "RSA", Entrust complaining about this parameter
-        "tracking": tracking_data
+        "tracking": tracking_data,
+        "org": options.get("organization"),
+        "clientId": client_id
     }
     return data
 
