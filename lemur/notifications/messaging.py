@@ -153,29 +153,23 @@ def send_expiration_notifications(exclude):
                 ).data
                 notification_data.append(cert_data)
 
-            email_recipients = security_email + [owner]
-            if notification.plugin.slug == "email-notification":
-                email_recipients = notification.plugin.get_recipients(notification.options, email_recipients)
-                if send_plugin_notification(
-                        "expiration", notification_data, email_recipients, notification
-                ):
-                    success += len(email_recipients)
-                else:
-                    failure += len(email_recipients)
+            email_recipients = notification.plugin.get_recipients(notification.options, security_email + [owner])
+            # Plugin will ONLY use the provided recipients if it's email; any other notification plugin ignores them
+            if send_plugin_notification(
+                    "expiration", notification_data, email_recipients, notification
+            ):
+                success += len(email_recipients)
             else:
+                failure += len(email_recipients)
+            # If we're using an email plugin, we're done;
+            # if not, we also need to send an email notification to the security team and owner
+            if notification.plugin.slug != "email-notification":
                 if send_default_notification(
                         "expiration", notification_data, email_recipients, notification.options
                 ):
-                    success += len(email_recipients)
+                    success = 1 + len(email_recipients)
                 else:
-                    failure += len(email_recipients)
-
-                if send_plugin_notification(
-                        "expiration", notification_data, [], notification
-                ):
-                    success += 1
-                else:
-                    failure += 1
+                    failure = 1 + len(email_recipients)
 
     return success, failure
 
