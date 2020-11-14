@@ -157,7 +157,8 @@ setup(
             'adcs_issuer = lemur.plugins.lemur_adcs.plugin:ADCSIssuerPlugin',
             'adcs_source = lemur.plugins.lemur_adcs.plugin:ADCSSourcePlugin',
             'entrust_issuer = lemur.plugins.lemur_entrust.plugin:EntrustIssuerPlugin',
-            'entrust_source = lemur.plugins.lemur_entrust.plugin:EntrustSourcePlugin'
+            'entrust_source = lemur.plugins.lemur_entrust.plugin:EntrustSourcePlugin',
+            'azure_destination = lemur.plugins.lemur_azure_dest.plugin:AzureDestinationPlugin'
         ],
     },
     classifiers=[

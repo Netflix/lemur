@@ -14,12 +14,14 @@ import re
 from flask import current_app
 
 from lemur.common.defaults import common_name, country, state, location, organizational_unit, organization
-from lemur.common.utils import parse_certificate
+from lemur.common.utils import parse_certificate, parse_private_key
 from lemur.plugins.bases import DestinationPlugin
 from lemur.plugins.bases import SourcePlugin
 
+from cryptography.hazmat.primitives import serialization
 import requests
 import json
+import sys
 import base64
 
 
@@ -163,7 +165,13 @@ class AzureDestinationPlugin(DestinationPlugin):
         post_header = {
             "Authorization" : f"Bearer {access_token}"
         }
-        cert_package = f"{body}\n{private_key}" 
+        key_pkcs8 = parse_private_key(private_key).private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.PKCS8,
+            encryption_algorithm=serialization.NoEncryption(),
+        )
+        key_pkcs8 = key_pkcs8.decode("utf-8").replace('\\n', '\n')
+        cert_package = f"{body}\n{key_pkcs8}" 
         current_app.logger.debug(f"AZURE: encoded certificate: {cert_package}")
 
         post_body = {
