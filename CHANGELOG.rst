@@ -1,6 +1,87 @@
 Changelog
 =========
 
+0.8.0 - `2020-11-13`
+~~~~~~~~~~~~~~
+
+This release comes after more than two years and contains many interesting new features and improvements.
+In addition to multiple new plugins, such as ACME-http01, ADCS, PowerDNS, UltraDNS, Entrust, SNS, many of Lemur's existing
+flows have improved.
+
+In the future, we plan to do frequent releases.
+
+
+Summary of notable changes:
+
+- AWS S3 plugin: added delete, get methods, and support for uploading/deleting acme tokens
+- ACME plugin:
+    - revamp of the plugin
+    - support for http01 domain validation, via S3 and SFTP as destination for the acme token
+    - support for CNAME delegated domain validation
+    - store-acme-account-details
+- PowerDNS plugin
+- UltraDNS plugin
+- ADCS plugin
+- SNS plugin
+- Entrust plugin
+- Rotation:
+    - respecting keyType and extensions
+    - region-by-region rotation option
+    - default to auto-rotate when cert attached to endpoint
+    - default to 1y validity during rotation for multi-year browser-trusted certs
+- Certificate: search_by_name, and important performance improvements
+- UI
+    - reducing the EC curve options to the relevant ones
+    - edit option for notifications, destinations and sources
+    - showing 13 month validity as default
+    - option to hide certs expired since 3month
+    - faster Permalink (no search involved)
+    - commonName Auto Added as DNS in the UI
+    - improved search and cert lookup
+- celery tasks instead of crone, for better logging and monitoring
+- countless bugfixes
+    - group-lookup-fix-referral
+    - url_context_path
+    - duplicate notification
+    - digicert-time-bug-fix
+    - improved-csr-support
+    - fix-cryptography-intermediate-ca
+    - enhanced logging
+    - vault-k8s-auth
+    - cfssl-key-fix
+    - cert-sync-endpoint-find-by-hash
+    - nlb-naming-bug
+    - fix_vault_api_v2_append
+    - aid_openid_roles_provider_integration
+    - rewrite-java-keystore-use-pyjks
+    - vault_kv2
+
+
+To see the full list of changes, you can run
+
+    $ git log --merges --first-parent master         --pretty=format:"%h %<(10,trunc)%aN %C(white)%<(15)%ar%Creset %C(red bold)%<(15)%D%Creset %s" | grep -v "depend"
+
+
+Special thanks to all who contributed to this release, notably:
+
+- `peschmae  <https://github.com/peschmae>`_
+- `sirferl   <https://github.com/sirferl>`_
+- `lukasmrtvy  <https://github.com/lukasmrtvy>`_
+- `intgr  <https://github.com/intgr>`_
+- `kush-bavishi  <https://github.com/kush-bavishi>`_
+- `alwaysjolley  <https://github.com/alwaysjolley>`_
+- `jplana <https://github.com/jplana>`_
+- `explody <https://github.com/explody>`_
+- `titouanc <https://github.com/titouanc>`_
+- `jramosf <https://github.com/jramosf>`_
+
+
+Upgrading
+---------
+
+.. note:: This release will need a migration change. Please follow the `documentation <https://lemur.readthedocs.io/en/latest/administration.html#upgrading-lemur>`_ to upgrade Lemur.
+
+
 
 0.7 - `2018-05-07`
 ~~~~~~~~~~~~~~
