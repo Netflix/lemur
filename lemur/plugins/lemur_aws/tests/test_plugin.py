@@ -68,10 +68,11 @@ def test_upload_acme_token(app):
     s3_client.create_bucket(Bucket=bucket)
     p = plugins.get("aws-s3")
 
-    p.upload_acme_token(token_path=token_path,
-                        token_content=token_content,
-                        token=token_content,
-                        options=additional_options)
+    response = p.upload_acme_token(token_path=token_path,
+                                   token_content=token_content,
+                                   token=token_content,
+                                   options=additional_options)
+    assert response
 
     response = get(bucket_name=bucket,
                    prefixed_object_name=prefix + token_name,
@@ -80,3 +81,8 @@ def test_upload_acme_token(app):
 
     # put data, and getting the same data
     assert (response == token_content)
+
+    response = p.delete_acme_token(token_path=token_path,
+                                   options=additional_options,
+                                   account_number=account)
+    assert response
