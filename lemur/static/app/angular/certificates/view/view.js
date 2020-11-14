@@ -70,6 +70,38 @@ angular.module('lemur')
       });
     };
 
+    $scope.daysBeforeExpirationOptions = [
+      {title: '', value: null},
+      {title: '1 day', value: 1},
+      {title: '7 days', value: 7},
+      {title: '14 days', value: 14},
+      {title: '30 days', value: 30},
+      {title: '60 days', value: 60},
+    ];
+    $scope.daysBeforeExpiration = null;
+
+    $scope.showOnlyExpiring = function() {
+      $scope.certificateTable = new ngTableParams({
+        page: 1,            // show first page
+        count: 10,          // count per page
+        sorting: {
+          id: 'desc'     // initial sorting
+        },
+        short: true,
+        filter: $scope.filter
+      }, {
+        getData: function ($defer, params) {
+
+          $scope.temp = angular.copy(params.url());
+          $scope.temp.daysBeforeExpiration = $scope.daysBeforeExpiration;
+          CertificateApi.getList($scope.temp).then(function(data) {
+            params.total(data.total);
+            $defer.resolve(data);
+          });
+        }
+      });
+    };
+
     $scope.momentService = MomentService;
 
     $scope.remove = function (certificate) {
