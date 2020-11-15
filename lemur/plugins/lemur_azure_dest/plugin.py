@@ -11,7 +11,7 @@
 """
 from flask import current_app
 
-from lemur.common.defaults import common_name
+from lemur.common.defaults import common_name, bitstrength
 from lemur.common.utils import parse_certificate, parse_private_key
 from lemur.plugins.bases import DestinationPlugin
 
@@ -168,20 +168,19 @@ class AzureDestinationPlugin(DestinationPlugin):
         )
         key_pkcs8 = key_pkcs8.decode("utf-8").replace('\\n', '\n')
         cert_package = f"{body}\n{key_pkcs8}"
-        current_app.logger.debug(f"AZURE: encoded certificate: {cert_package}")
 
         post_body = {
             "value": cert_package,
             "policy": {
                 "key_props": {
-                "exportable": True,
-                "kty": "RSA",
-                "key_size": 2048,
-                "reuse_key": True
-                },
-            "secret_props":{
-                "contentType": "application/x-pem-file"
-            }
+                    "exportable": True,
+                    "kty": "RSA",
+                    "key_size": bitstrength(cert),
+                    "reuse_key": True
+                    },
+                "secret_props": {
+                    "contentType": "application/x-pem-file"
+                }
             }
         }
 
@@ -189,4 +188,4 @@ class AzureDestinationPlugin(DestinationPlugin):
             response = self.session.post(cert_url, headers=post_header, json=post_body)
         except requests.exceptions.RequestException as e:
             current_app.logger.exception(f"AZURE: Error for POST {e}")
-        treturn_value = handle_response(response)
+        return_value = handle_response(response)
