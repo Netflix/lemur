@@ -177,7 +177,7 @@ class AzureDestinationPlugin(DestinationPlugin):
                     "kty": "RSA",
                     "key_size": bitstrength(cert),
                     "reuse_key": True
-                    },
+                },
                 "secret_props": {
                     "contentType": "application/x-pem-file"
                 }
