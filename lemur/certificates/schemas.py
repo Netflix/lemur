@@ -367,6 +367,8 @@ class CertificateShortOutputSchema(LemurOutputSchema):
     issuer = fields.String()
     cn = fields.String()
 
+    not_after = fields.DateTime()
+    not_before = fields.DateTime()
 
 class CertificateUploadInputSchema(CertificateCreationSchema):
     name = fields.String()

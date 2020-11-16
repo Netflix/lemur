@@ -22,6 +22,10 @@
             {{ expiredButton }}
           </button>
         </div>
+        <div class="btn-group">
+          <select ng-change="showOnlyExpiring()" class="form-control" ng-model="daysBeforeExpiration"
+                  ng-options="item.value as item.title for item in daysBeforeExpirationOptions"></select>
+        </div>
         <!--<select class="form-control" ng-model="show" ng-options="item.value as item.title for item in fields"></select>-->
         <div class="clearfix"></div>
       </div>
@@ -49,6 +53,12 @@
             </td>
             <td data-title="'Common Name'" filter="{ 'cn': 'text'}">
               {{ certificate.cn }}
+            </td>
+            <td data-title="'Not Before'" sortable="'notBefore'">
+              {{ certificate.notBefore | date:'yyyy-MM-dd HH:mm:ss Z' }}
+            </td>
+            <td data-title="'Not After'" sortable="'notAfter'">
+              {{ certificate.notAfter | date:'yyyy-MM-dd HH:mm:ss Z' }}
             </td>
             <td data-title="''" style="text-align: center; vertical-align: middle;">
                 <div class="btn-group pull-right" role="group" aria-label="...">
