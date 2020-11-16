@@ -11,18 +11,18 @@ software.
 
 * Update the version number in ``lemur/__about__.py``.
 * Set the release date in the :doc:`/changelog`.
-* Do a commit indicating this.
-* Send a pull request with this.
+* Do a commit indicating this, and raise a pull request with this.
 * Wait for it to be merged.
 
 Performing the release
 ----------------------
 
 The commit that merged the version number bump is now the official release
-commit for this release. You will need to have ``gpg`` installed and a ``gpg``
-key in order to do a release. Once this has happened:
+commit for this release. You need an `API key <https://pypi.org/manage/account/#api-tokens>`_,
+which requires permissions to maintain the Lemur `project  <https://pypi.org/project/lemur/>`_.
 
-* Run ``invoke release {version}``.
+    ``python3 -m pip install --user --upgrade twine``
+    ``python3 -m twine upload --repository pypi dist/*``
 
 The release should now be available on PyPI and a tag should be available in
 the repository.
