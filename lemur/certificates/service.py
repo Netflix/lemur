@@ -434,7 +434,6 @@ def render(args):
         query = query.filter(Certificate.not_after > one_month_old)
 
     time_range = args.pop("time_range")
-    days_before_expiration = args.pop("days_before_expiration")
 
     destination_id = args.pop("destination_id")
     notification_id = args.pop("notification_id", None)
@@ -494,6 +493,19 @@ def render(args):
         elif "fixedName" in terms:
             # only what matches the fixed name directly if a fixedname is provided
             query = query.filter(Certificate.name == terms[1])
+
+        elif "notBeforeRange" in terms:
+            dateRange = terms[1].split("to")
+            if not "*" in dateRange[0]:
+                query = query.filter(Certificate.not_before >= dateRange[0])
+            if not "*" in dateRange[1]:
+                query = query.filter(Certificate.not_before <= dateRange[1])
+        elif "notAfterRange" in terms:
+            dateRange = terms[1].split("to")
+            if not "*" in dateRange[0]:
+                query = query.filter(Certificate.not_after >= dateRange[0])
+            if not "*" in dateRange[1]:
+                query = query.filter(Certificate.not_after <= dateRange[1])
         else:
             query = database.filter(query, Certificate, terms)
 
@@ -521,13 +533,6 @@ def render(args):
 
     if time_range:
         to = arrow.now().shift(weeks=+time_range).format("YYYY-MM-DD")
-        now = arrow.now().format("YYYY-MM-DD")
-        query = query.filter(Certificate.not_after <= to).filter(
-            Certificate.not_after >= now
-        )
-
-    if days_before_expiration:
-        to = arrow.now().shift(days=+days_before_expiration).format("YYYY-MM-DD")
         now = arrow.now().format("YYYY-MM-DD")
         query = query.filter(Certificate.not_after <= to).filter(
             Certificate.not_after >= now
