@@ -161,8 +161,10 @@ def send_expiration_notifications(exclude):
                 success += len(email_recipients)
             else:
                 failure += len(email_recipients)
-            # If we're using an email plugin, we're done;
-            # if not, we also need to send an email notification to the security team and owner
+            # If we're using an email plugin, we're done,
+            #   since "security_email + [owner]" were added as email_recipients.
+            # If we're not using an email plugin, we also need to send an email to the security team and owner,
+            #   since the plugin notification didn't send anything to them.
             if notification.plugin.slug != "email-notification":
                 if send_default_notification(
                         "expiration", notification_data, email_recipients, notification.options
