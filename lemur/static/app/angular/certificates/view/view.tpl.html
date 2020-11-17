@@ -54,11 +54,12 @@
             <td data-title="'Common Name'" filter="{ 'cn': 'text'}">
               {{ certificate.cn }}
             </td>
-            <td data-title="'Not Before'" sortable="'notBefore'">
-              {{ certificate.notBefore | date:'yyyy-MM-dd HH:mm:ss Z' }}
+            <td data-title="'Not Before'" sortable="'notBefore'" >
+              <span title="{{ certificate.notBefore }}">{{ momentService.createMoment(certificate.notBefore) }}</span>
             </td>
-            <td data-title="'Not After'" sortable="'notAfter'">
-              {{ certificate.notAfter | date:'yyyy-MM-dd HH:mm:ss Z' }}
+
+            <td data-title="'Not After'" sortable="'notAfter'" >
+              <span title="{{ certificate.notAfter }}">{{ momentService.createMoment(certificate.notAfter) }}</span>
             </td>
             <td data-title="''" style="text-align: center; vertical-align: middle;">
                 <div class="btn-group pull-right" role="group" aria-label="...">
