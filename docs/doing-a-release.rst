@@ -11,21 +11,46 @@ software.
 
 * Update the version number in ``lemur/__about__.py``.
 * Set the release date in the :doc:`/changelog`.
-* Do a commit indicating this.
-* Send a pull request with this.
+* Do a commit indicating this, and raise a pull request with this.
 * Wait for it to be merged.
 
 Performing the release
 ----------------------
 
 The commit that merged the version number bump is now the official release
-commit for this release. You will need to have ``gpg`` installed and a ``gpg``
-key in order to do a release. Once this has happened:
+commit for this release. You need an `API key <https://pypi.org/manage/account/#api-tokens>`_,
+which requires permissions to maintain the Lemur `project  <https://pypi.org/project/lemur/>`_.
 
-* Run ``invoke release {version}``.
+For creating the release, follow these steps (more details `here <https://packaging.python.org/tutorials/packaging-projects/#generating-distribution-archives>`_)
 
-The release should now be available on PyPI and a tag should be available in
+* Make sure you have the latest versions of setuptools and wheel installed:
+
+    ``python3 -m pip install --user --upgrade setuptools wheel``
+
+* Now run this command from the same directory where setup.py is located:
+
+    ``python3 setup.py sdist bdist_wheel``
+
+* Once completed it should generate two files in the dist directory:
+
+.. code-block:: pycon
+
+    $ ls dist/
+    lemur-0.8.0-py2.py3-none-any.whl	lemur-0.8.0.tar.gz
+
+
+* In this step, the distribution will be uploaded. You’ll need to install Twine:
+
+    ``python3 -m pip install --user --upgrade twine``
+
+* Once installed, run Twine to upload all of the archives under dist. Once installed, run Twine to upload all of the archives under dist:
+
+    ``python3 -m twine upload --repository pypi dist/*``
+
+The release should now be available on `PyPI Lemur <https://pypi.org/project/lemur/>`_ and a tag should be available in
 the repository.
+
+Make sure to also make a github `release <https://github.com/Netflix/lemur/releases>`_ which will pick up the latest version.
 
 Verifying the release
 ---------------------
