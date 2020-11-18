@@ -188,3 +188,8 @@ a {
 .multiline {
   white-space: pre-line;
 }
+.radioBtn .btn{margin:0 10px;}
+.radioBtn .notActive{
+    color: #3276b1;
+    background-color: #fff;
+}

@@ -21,6 +21,7 @@ angular.module('lemur')
     $scope.filter = $stateParams;
     $scope.expiredText = ['Show Expired', 'Hide Expired'];
     $scope.expiredValue = 0;
+    $scope.expiresInDays = 0;
     $scope.expiredButton = $scope.expiredText[$scope.expiredValue];
     $scope.certificateTable = new ngTableParams({
       page: 1,            // show first page
@@ -33,7 +34,22 @@ angular.module('lemur')
     }, {
       total: 0,           // length of data
       getData: function ($defer, params) {
-        CertificateApi.getList(params.url())
+        const url = params.url();
+        if (url['filter[Not%20Before%20From]'] || url['filter[Not%20Before%20To]']) {
+            const from = url['filter[Not%20Before%20From]']?url['filter[Not%20Before%20From]'].toISOString().substr(0,10): '*';
+            const to = url['filter[Not%20Before%20To]']?url['filter[Not%20Before%20To]'].toISOString().substr(0,10): '*';
+            delete url['filter[Not%20Before%20From]'];
+            delete url['filter[Not%20Before%20To]'];
+            url['filter[notBeforeRange]'] = from + 'to' + to;
+        }
+        if (url['filter[Not%20After%20From]'] || url['filter[Not%20After%20To]']) {
+            const from = url['filter[Not%20After%20From]']?url['filter[Not%20After%20From]'].toISOString().substr(0,10): '*';
+            const to = url['filter[Not%20After%20To]']?url['filter[Not%20After%20To]'].toISOString().substr(0,10): '*';
+            delete url['filter[Not%20After%20From]'];
+            delete url['filter[Not%20After%20To]'];
+            url['filter[notAfterRange]'] = from + 'to' + to;
+        }
+        CertificateApi.getList(url)
           .then(function (data) {
             params.total(data.total);
             $defer.resolve(data);
@@ -41,14 +57,22 @@ angular.module('lemur')
       }
     });
 
-    $scope.showExpired = function () {
-      if ($scope.expiredValue === 0) {
-        $scope.expiredValue = 1;
-      }
-      else {
+    $scope.showExpired = function (days = 0) {
+      if ($scope.expiresInDays === days) {
+        $scope.expiresInDays = 0;
+      } else {
+        $scope.expiresInDays = days;
         $scope.expiredValue = 0;
       }
-      $scope.expiredButton = $scope.expiredText[$scope.expiredValue];
+      if (days === 0) {
+        if ($scope.expiredValue === 0) {
+          $scope.expiredValue = 1;
+        }
+        else {
+          $scope.expiredValue = 0;
+        }
+        $scope.expiredButton = $scope.expiredText[$scope.expiredValue];
+      }
       $scope.certificateTable = new ngTableParams({
         page: 1,            // show first page
         count: 10,          // count per page
@@ -60,44 +84,38 @@ angular.module('lemur')
       }, {
         getData: function ($defer, params) {
           $scope.temp = angular.copy(params.url());
+          if ($scope.temp['filter[Not%20Before%20From]'] || $scope.temp['filter[Not%20Before%20To]']) {
+              const from = $scope.temp['filter[Not%20Before%20From]']?$scope.temp['filter[Not%20Before%20From]'].toISOString().substr(0,10): '*';
+              const to = $scope.temp['filter[Not%20Before%20To]']?$scope.temp['filter[Not%20Before%20To]'].toISOString().substr(0,10): '*';
+              delete $scope.temp['filter[Not%20Before%20From]'];
+              delete $scope.temp['filter[Not%20Before%20To]'];
+              $scope.temp['filter[notBeforeRange]'] = from + 'to' + to;
+          }
+          if ($scope.temp['filter[Not%20After%20From]'] || $scope.temp['filter[Not%20After%20To]']) {
+              const from = $scope.temp['filter[Not%20After%20From]']?$scope.temp['filter[Not%20After%20From]'].toISOString().substr(0,10): '*';
+              const to = $scope.temp['filter[Not%20After%20To]']?$scope.temp['filter[Not%20After%20To]'].toISOString().substr(0,10): '*';
+              delete $scope.temp['filter[Not%20After%20From]'];
+              delete $scope.temp['filter[Not%20After%20To]'];
+              $scope.temp['filter[notAfterRange]'] = from + 'to' + to;
+          }
           $scope.temp.showExpired = $scope.expiredValue;
+          if ($scope.expiresInDays !== 0) {
+            const now = new Date();
+            const from = now.toISOString().substr(0,10);
+            now.setDate(now.getDate() + $scope.expiresInDays);
+            const to = now.toISOString().substr(0,10);
+            if ($scope.expiresInDays > 0) {
+              $scope.temp['filter[notAfterRange]'] = `${from}to${to}`;
+            } else {
+              $scope.temp['filter[notAfterRange]'] =  `${to}to${from}`;
+              $scope.temp.showExpired = 1;
+            }
+          }
           CertificateApi.getList($scope.temp)
             .then(function (data) {
               params.total(data.total);
               $defer.resolve(data);
             });
-        }
-      });
-    };
-
-    $scope.daysBeforeExpirationOptions = [
-      {title: '', value: null},
-      {title: '1 day', value: 1},
-      {title: '7 days', value: 7},
-      {title: '14 days', value: 14},
-      {title: '30 days', value: 30},
-      {title: '60 days', value: 60},
-    ];
-    $scope.daysBeforeExpiration = null;
-
-    $scope.showOnlyExpiring = function() {
-      $scope.certificateTable = new ngTableParams({
-        page: 1,            // show first page
-        count: 10,          // count per page
-        sorting: {
-          id: 'desc'     // initial sorting
-        },
-        short: true,
-        filter: $scope.filter
-      }, {
-        getData: function ($defer, params) {
-
-          $scope.temp = angular.copy(params.url());
-          $scope.temp.daysBeforeExpiration = $scope.daysBeforeExpiration;
-          CertificateApi.getList($scope.temp).then(function(data) {
-            params.total(data.total);
-            $defer.resolve(data);
-          });
         }
       });
     };

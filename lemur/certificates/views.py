@@ -340,7 +340,6 @@ class CertificatesList(AuthenticatedResource):
         """
         parser = paginated_parser.copy()
         parser.add_argument("timeRange", type=int, dest="time_range", location="args")
-        parser.add_argument("daysBeforeExpiration", type=int, dest="days_before_expiration", location="args")
         parser.add_argument("owner", type=inputs.boolean, location="args")
         parser.add_argument("id", type=str, location="args")
         parser.add_argument("active", type=inputs.boolean, location="args")
