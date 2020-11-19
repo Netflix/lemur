@@ -210,7 +210,7 @@ class EJBCAIssuerPlugin(IssuerPlugin):
 
         session = requests.Session()
         session.mount('https://', HttpsAdapter())
-        session.cert = current_app.config.get("EJBCA_PEM_PATH_{0}".format(authority_const))
+        session.cert = current_app.config.get("EJBCA_PEM_PATH_{0}".format(authority_const), current_app.config.get("EJBCA_PEM_PATH"))
         session.verify = current_app.config.get("EJBCA_TRUSTSTORE")
         session.hooks = dict(response=log_status_code)
 

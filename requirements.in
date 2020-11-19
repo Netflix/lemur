@@ -49,3 +49,4 @@ six
 SQLAlchemy-Utils
 tabulate
 xmltodict
+zeep
