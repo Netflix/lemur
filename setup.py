@@ -157,7 +157,7 @@ setup(
             'adcs_issuer = lemur.plugins.lemur_adcs.plugin:ADCSIssuerPlugin',
             'adcs_source = lemur.plugins.lemur_adcs.plugin:ADCSSourcePlugin',
             'entrust_issuer = lemur.plugins.lemur_entrust.plugin:EntrustIssuerPlugin',
-            'entrust_source = lemur.plugins.lemur_entrust.plugin:EntrustSourcePlugin'
+            'entrust_source = lemur.plugins.lemur_entrust.plugin:EntrustSourcePlugin',
             'ejbca_issuer = lemur.plugins.lemur_ejbca.plugin:EJBCAIssuerPlugin',
             'ejbca_source = lemur.plugins.lemur_ejbca.plugin:EJBCASourcePlugin'
         ],
