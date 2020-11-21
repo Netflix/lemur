@@ -226,6 +226,195 @@ def report_revoked_task(**kwargs):
 
 
 @celery.task(soft_time_limit=600)
+def fetch_ejbca_cert(id):
+    """
+    Attempt to get the full certificate for the EJBCA pending certificate listed.
+
+    Args:
+        id: an id of a PendingCertificate
+    """
+    task_id = None
+    if celery.current_task:
+        task_id = celery.current_task.request.id
+
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    log_data = {
+        "function": function,
+        "message": "Resolving EJBCA pending certificate {}".format(id),
+        "task_id": task_id,
+        "id": id,
+    }
+
+    current_app.logger.debug(log_data)
+
+    if task_id and is_task_active(log_data["function"], task_id, (id,)):
+        log_data["message"] = "Skipping EJBCA task: Task is already active"
+        current_app.logger.debug(log_data)
+        return
+
+    pending_certs = pending_certificate_service.get_pending_certs([id])
+    new = 0
+    failed = 0
+    wrong_issuer = 0
+    ejbca_certs = []
+
+    # We only care about certs using the ejbca-issuer plugin
+    for cert in pending_certs:
+        cert_authority = get_authority(cert.authority_id)
+        if cert_authority.plugin_name == "ejbca-issuer":
+            ejbca_certs.append(cert)
+        else:
+            wrong_issuer += 1
+
+    authority = plugins.get("ejbca-issuer")
+    resolved_certs = authority.get_ordered_certificates(ejbca_certs)
+
+    for cert in resolved_certs:
+        real_cert = cert.get("cert")
+        expired = cert.get("expired")
+        rejected = cert.get("rejected")
+        # It's necessary to reload the pending cert due to detached instance: http://sqlalche.me/e/bhk3
+        pending_cert = pending_certificate_service.get(cert.get("pending_cert").id)
+        if not pending_cert:
+            log_data[
+                "message"
+            ] = "Pending EJBCA certificate doesn't exist anymore. Was it resolved by another process?"
+            current_app.logger.error(log_data)
+            continue
+        if real_cert:
+            # If a real certificate was returned from issuer, then create it in Lemur and mark
+            # the pending certificate as resolved
+            final_cert = pending_certificate_service.create_certificate(
+                pending_cert, real_cert, pending_cert.user
+            )
+            pending_certificate_service.update(
+                cert.get("pending_cert").id, resolved_cert_id=final_cert.id
+            )
+            pending_certificate_service.update(
+                cert.get("pending_cert").id, resolved=True
+            )
+            # add metrics to metrics extension
+            new += 1
+
+        else:
+            failed += 1
+            error_log = copy.deepcopy(log_data)
+            error_log["message"] = "Pending EJBCA certificate creation failure"
+            error_log["pending_cert_id"] = pending_cert.id
+            error_log["last_error"] = cert.get("last_error")
+            error_log["cn"] = pending_cert.cn
+
+            if pending_cert.number_attempts > 400 or expired or rejected:
+                error_log["message"] = "Deleting pending certificate"
+                send_pending_failure_notification(
+                    pending_cert, notify_owner=pending_cert.notify
+                )
+                # Mark the pending cert as resolved
+                pending_certificate_service.update(
+                    cert.get("pending_cert").id, resolved=True
+                )
+            else:
+                pending_certificate_service.increment_attempt(pending_cert)
+                pending_certificate_service.update(
+                    cert.get("pending_cert").id, status=str(cert.get("last_error"))
+                )
+                # Add failed pending cert task back to queue
+                # fetch_ejbca_cert(id).apply_async(countdown=60)
+            current_app.logger.error(error_log)
+
+    log_data["message"] = "Complete"
+    log_data["new"] = new
+    log_data["failed"] = failed
+    log_data["wrong_issuer"] = wrong_issuer
+    current_app.logger.debug(log_data)
+    metrics.send(f"{function}.resolved", "gauge", new)
+    metrics.send(f"{function}.failed", "gauge", failed)
+    metrics.send(f"{function}.wrong_issuer", "gauge", wrong_issuer)
+    print(
+        "[+] Certificates: New: {new} Failed: {failed} Not using EJBCA: {wrong_issuer}".format(
+            new=new, failed=failed, wrong_issuer=wrong_issuer
+        )
+    )
+    return log_data
+
+
+@celery.task()
+def fetch_all_pending_ejbca_certs():
+    """Instantiate celery workers to resolve all pending EJBCA certificates"""
+
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    task_id = None
+    if celery.current_task:
+        task_id = celery.current_task.request.id
+
+    log_data = {
+        "function": function,
+        "message": "Starting job.",
+        "task_id": task_id,
+    }
+
+    if task_id and is_task_active(function, task_id, None):
+        log_data["message"] = "Skipping EJBCA task: Task is already active"
+        current_app.logger.debug(log_data)
+        return
+
+    current_app.logger.debug(log_data)
+    pending_certs = pending_certificate_service.get_unresolved_pending_certs()
+
+    # We only care about certs using the ejbca-issuer plugin
+    for cert in pending_certs:
+        cert_authority = get_authority(cert.authority_id)
+        log_data["message"] = "Processing pending cert: " + cert.name
+
+        current_app.logger.debug(log_data)
+        if cert_authority.plugin_name == "ejbca-issuer":
+            if datetime.now(timezone.utc) - cert.last_updated > timedelta(minutes=5):
+                log_data["message"] = "Triggering job for EJBCA cert {}".format(cert.name)
+                log_data["cert_name"] = cert.name
+                log_data["cert_id"] = cert.id
+                current_app.logger.debug(log_data)
+                fetch_ejbca_cert.delay(cert.id)
+
+    metrics.send(f"{function}.success", "counter", 1)
+    return log_data
+
+
+@celery.task()
+def remove_old_ejbca_certs():
+    """Prune old pending ejbca certificates from the database"""
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    task_id = None
+    if celery.current_task:
+        task_id = celery.current_task.request.id
+
+    log_data = {
+        "function": function,
+        "message": "Starting job.",
+        "task_id": task_id,
+    }
+
+    if task_id and is_task_active(function, task_id, None):
+        log_data["message"] = "Skipping EJBCA task: Task is already active"
+        current_app.logger.debug(log_data)
+        return
+
+    pending_certs = pending_certificate_service.get_pending_certs("all")
+
+    # Delete pending certs more than a week old
+    # Check if it's an EJBCA certificate?
+    for cert in pending_certs:
+        if datetime.now(timezone.utc) - cert.last_updated > timedelta(days=7):
+            log_data["pending_cert_id"] = cert.id
+            log_data["pending_cert_name"] = cert.name
+            log_data["message"] = "Deleting pending EJBCA certificate"
+            current_app.logger.debug(log_data)
+            pending_certificate_service.delete(cert)
+
+    metrics.send(f"{function}.success", "counter", 1)
+    return log_data
+
+
+@celery.task(soft_time_limit=600)
 def fetch_acme_cert(id):
     """
     Attempt to get the full certificate for the pending certificate listed.
