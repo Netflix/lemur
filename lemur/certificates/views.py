@@ -19,6 +19,7 @@ from lemur.auth.permissions import AuthorityPermission, CertificatePermission
 
 from lemur.certificates import service
 from lemur.certificates.models import Certificate
+from lemur.extensions import sentry
 from lemur.plugins.base import plugins
 from lemur.certificates.schemas import (
     certificate_input_schema,
@@ -888,8 +889,24 @@ class Certificates(AuthenticatedResource):
         if cert.owner != data["owner"]:
             service.cleanup_owner_roles_notification(cert.owner, data)
 
+        error_message = ""
+        # if destination is removed, cleanup the certificate from AWS
+        for destination in cert.destinations:
+            if destination not in data["destinations"]:
+                try:
+                    service.remove_from_destination(cert, destination)
+                except Exception as e:
+                    sentry.captureException()
+                    # Add the removed destination back
+                    data["destinations"].append(destination)
+                    error_message = error_message + f"Failed to remove destination: {destination.label}. {str(e)}. "
+
+        # go ahead with DB update
         cert = service.update(certificate_id, **data)
         log_service.create(g.current_user, "update_cert", certificate=cert)
+
+        if error_message:
+            return dict(message=f"Edit Successful except -\n\n {error_message}"), 400
         return cert
 
     @validate_schema(certificate_edit_input_schema, certificate_output_schema)
@@ -1429,20 +1446,28 @@ class CertificateRevoke(AuthenticatedResource):
                     403,
                 )
 
-        if not cert.external_id:
-            return dict(message="Cannot revoke certificate. No external id found."), 400
+        # if not cert.external_id:
+        #    return dict(message="Cannot revoke certificate. No external id found."), 400
 
         if cert.endpoints:
-            return (
-                dict(
-                    message="Cannot revoke certificate. Endpoints are deployed with the given certificate."
-                ),
-                403,
-            )
+            for endpoint in cert.endpoints:
+                if service.is_attached_to_endpoint(cert.name, endpoint.name):
+                    return (
+                        dict(
+                            message="Cannot revoke certificate. Endpoints are deployed with the given certificate."
+                        ),
+                        403,
+                    )
 
         plugin = plugins.get(cert.authority.plugin_name)
         plugin.revoke_certificate(cert, data)
+
         log_service.create(g.current_user, "revoke_cert", certificate=cert)
+
+        # Perform cleanup after revoke
+        error_message = service.cleanup_after_revoke(cert)
+        if error_message:
+            return dict(message=f"Certificate (id:{cert.id}) is revoked - {error_message}"), 400
         return dict(id=cert.id)
 
 
