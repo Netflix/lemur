@@ -10,7 +10,6 @@
 
 .. moduleauthor:: Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
 """
-import base64
 import itertools
 import os
 

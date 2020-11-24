@@ -12,7 +12,7 @@
 from flask import current_app
 
 from lemur.common.defaults import common_name, bitstrength
-from lemur.common.utils import parse_certificate, parse_private_key, base64encode
+from lemur.common.utils import parse_certificate, parse_private_key
 from lemur.plugins.bases import DestinationPlugin
 
 from cryptography.hazmat.primitives import serialization
