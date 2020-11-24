@@ -1446,8 +1446,8 @@ class CertificateRevoke(AuthenticatedResource):
                     403,
                 )
 
-        # if not cert.external_id:
-        #    return dict(message="Cannot revoke certificate. No external id found."), 400
+        if not cert.external_id:
+            return dict(message="Cannot revoke certificate. No external id found."), 400
 
         if cert.endpoints:
             for endpoint in cert.endpoints:
