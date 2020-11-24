@@ -12,20 +12,13 @@
 from flask import current_app
 
 from lemur.common.defaults import common_name, bitstrength
-from lemur.common.utils import parse_certificate, parse_private_key
+from lemur.common.utils import parse_certificate, parse_private_key, base64encode
 from lemur.plugins.bases import DestinationPlugin
 
 from cryptography.hazmat.primitives import serialization
 import requests
 import json
 import sys
-import base64
-
-
-def base64encode(string):
-    # Performs Base64 encoding of string to string using the base64.b64encode() function
-    # which encodes bytes to bytes.
-    return base64.b64encode(string.encode()).decode()
 
 
 def handle_response(my_response):
