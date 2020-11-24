@@ -105,6 +105,8 @@ class EmailNotificationPlugin(ExpirationNotificationPlugin):
 
     @staticmethod
     def send(notification_type, message, targets, options, **kwargs):
+        if not targets:
+            return
 
         subject = "Lemur: {0} Notification".format(notification_type.capitalize())
 
@@ -119,11 +121,9 @@ class EmailNotificationPlugin(ExpirationNotificationPlugin):
             send_via_smtp(subject, body, targets)
 
     @staticmethod
-    def filter_recipients(options, excluded_recipients, **kwargs):
+    def get_recipients(options, additional_recipients, **kwargs):
         notification_recipients = get_plugin_option("recipients", options)
         if notification_recipients:
             notification_recipients = notification_recipients.split(",")
-            # removing owner and security_email from notification_recipient
-            notification_recipients = [i for i in notification_recipients if i not in excluded_recipients]
 
-        return notification_recipients
+        return list(set(notification_recipients + additional_recipients))
