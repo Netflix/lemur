@@ -646,9 +646,9 @@ class EJBCASourcePlugin(SourcePlugin):
         source_max_results = current_app.config.get("EJBCA_SOURCE_MAX_RESULTS", 100000)
 
         request_data = {
-           'arg0':source_expire_days,
-           'arg1':issuer_dn,
-           'arg2':source_max_results,
+           'arg0': source_expire_days,
+           'arg1': issuer_dn,
+           'arg2': source_max_results,
         }
 
         transport = Transport(session=session)
@@ -660,7 +660,7 @@ class EJBCASourcePlugin(SourcePlugin):
         num_certs = len(response)
 
         for x in range(num_certs):
-            encoded_cert=response[x].certificateData
+            encoded_cert = response[x].certificateData
             
             decoded_cert = encoded_cert.decode('utf-8')
             pem = "-----BEGIN CERTIFICATE-----\n"
@@ -675,10 +675,13 @@ class EJBCASourcePlugin(SourcePlugin):
             rand_external_id = random.randrange(10**11, 10**12)
             external_id = str(rand_external_id)
 
+            chain = '{}\n{}'.format(current_app.config.get('EJBCA_INTERMEDIATE', '').strip(),
+                                    current_app.config.get('EJBCA_ROOT', '').strip())
             cert = {
                 "body": "\n".join(str(pem).splitlines()),
                 "serial": serial,
                 "external_id": external_id,
+                "chain": chain,
             }
             certs.append(cert)
 
