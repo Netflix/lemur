@@ -4,16 +4,13 @@
 
 .. moduleauthor:: Selwyn Oh <selwyn.oh@primekey.com>
 """
-import arrow
 import requests
-import xmltodict
 import json
 from cryptography import x509
 from flask import current_app
 from zeep import Client
 from zeep.transports import Transport
 import zeep
-import base64
 import re
 import random
 from cryptography.hazmat.backends import default_backend
@@ -68,6 +65,7 @@ def get_subject_dn_string(dn_list):
 
     return concat_dn
 
+
 def handle_response(response):
         """
         Handle the EJBCA API response and any errors it might have experienced.
@@ -75,11 +73,11 @@ def handle_response(response):
         :return:
         """
 
-
         if response.status_code > 399:
             raise Exception(response.json()["error_message"])
 
         return response.json()
+
 
 def get_subjectaltname_string(csr_pem):
 
@@ -94,13 +92,12 @@ def get_subjectaltname_string(csr_pem):
         san_uri = san.value.get_values_for_type(x509.UniformResourceIdentifier)
         san_rfc822 = san.value.get_values_for_type(x509.RFC822Name)
         san_rid = san.value.get_values_for_type(x509.RegisteredID)
-        print(san_dns_names)
-        print(san_ip_addrs)
-        print(san_uri)
-        print(san_rfc822)
-        print(san_rid)
+        # print(san_dns_names)
+        # print(san_ip_addrs)
+        # print(san_uri)
+        # print(san_rfc822)
+        # print(san_rid)
 
-        
         cnt = 0
 
         for dns_val in san_dns_names:
@@ -131,7 +128,6 @@ def get_subjectaltname_string(csr_pem):
 
     except x509.ExtensionNotFound:
         return None
-
 
     return subject_alt_name
 
@@ -195,7 +191,6 @@ class EJBCAIssuerPlugin(IssuerPlugin):
         :param issuer_options:
         :return: :raise Exception:
         """
-
         authority_obj = issuer_options.get("authority")
 
         authority_options = {}
@@ -224,7 +219,7 @@ class EJBCAIssuerPlugin(IssuerPlugin):
         csr_x509 = load_certificate_request(FILETYPE_PEM, csr)
         # get SubjectDN string from CSR
         subject_dn = get_subject_dn_string(csr_x509.get_subject().get_components())
-        print("*****DN:" + subject_dn)
+        # print("*****DN:" + subject_dn)
 
         subject_alt_names = get_subjectaltname_string(csr)
 
@@ -243,11 +238,11 @@ class EJBCAIssuerPlugin(IssuerPlugin):
             csr_b64 = csr_b64.decode()
 
             request_data = {
-                'arg0':end_entity_username,
-                'arg1':'foo123',
-                'arg2':csr_b64,
-                'arg3':None,
-                'arg4':'CERTIFICATE'
+                'arg0': end_entity_username,
+                'arg1': 'foo123',
+                'arg2': csr_b64,
+                'arg3': None,
+                'arg4': 'CERTIFICATE'
             }
 
             try:
@@ -294,7 +289,6 @@ class EJBCAIssuerPlugin(IssuerPlugin):
 
             else:
                 raise Exception(fault.message)
-
 
     #Resolve Pending EJBCA Certificate
     def get_ordered_certificate(self, pending_cert):
@@ -507,7 +501,6 @@ class EJBCAIssuerPlugin(IssuerPlugin):
                             "authority_id": str(pending_cert.authority_id),
                         }
                         certs.append({"cert": cert, "pending_cert": pending_cert})
-                        
 
                     except zeep.exceptions.Fault as fault:
                         sentry.captureException()
@@ -523,7 +516,6 @@ class EJBCAIssuerPlugin(IssuerPlugin):
                         )
 
             except zeep.exceptions.Fault as fault:
-                
                 strdet = fault.detail[0]
                 m = re.search('^\{.*\}(.*)$', strdet.tag)
                 exceptname = m.group(1)
@@ -535,8 +527,6 @@ class EJBCAIssuerPlugin(IssuerPlugin):
 
         return certs
 
-
-
     def revoke_certificate(self, certificate, comments):
         """Revoke an EJBCA certificate."""
         base_url = current_app.config.get("EJBCA_URL")
@@ -544,14 +534,12 @@ class EJBCAIssuerPlugin(IssuerPlugin):
         authority = get_authority(certificate.authority_id)
         authority_const = authority.name.upper()
 
-        
         cert_body = certificate.body
 
         x509 = load_certificate(FILETYPE_PEM, cert_body)
 
         issuer = x509.get_issuer()
         issuer_dn = get_subject_dn_string(issuer.get_components())
-
 
         # create certificate revocation request
         hex_serial = hex(int(certificate.serial))[2:]
@@ -570,12 +558,10 @@ class EJBCAIssuerPlugin(IssuerPlugin):
         session.verify = current_app.config.get("EJBCA_TRUSTSTORE")
         session.hooks = dict(response=log_status_code)
 
-
         metrics.send("ejbca_revoke_certificate", "counter", 1)
         response = session.put(create_url, params={'reason': 'CERTIFICATE_HOLD'})
         print(response)
         return handle_response(response)
-
 
     @staticmethod
     def create_authority(options):
@@ -649,8 +635,7 @@ class EJBCASourcePlugin(SourcePlugin):
         if source_const is not None:
             source_const = source_const.upper()
 
-        print("SOURCE**** " +str(source_const))
-
+        # print("SOURCE**** " +str(source_const))
         session = requests.Session()
         session.mount('https://', HttpsAdapter())
         session.cert = current_app.config.get("EJBCA_PEM_PATH_{0}".format(source_const), current_app.config.get("EJBCA_PEM_PATH"))
@@ -660,11 +645,10 @@ class EJBCASourcePlugin(SourcePlugin):
         source_expire_days = current_app.config.get("EJBCA_SOURCE_EXPIRE_DAYS", 7300)
         source_max_results = current_app.config.get("EJBCA_SOURCE_MAX_RESULTS", 100000)
 
-
         request_data = {
-           'arg0':source_expire_days,
-           'arg1':issuer_dn,
-           'arg2':source_max_results,
+           'arg0': source_expire_days,
+           'arg1': issuer_dn,
+           'arg2': source_max_results,
         }
 
         transport = Transport(session=session)
@@ -676,8 +660,7 @@ class EJBCASourcePlugin(SourcePlugin):
         num_certs = len(response)
 
         for x in range(num_certs):
-    
-            encoded_cert=response[x].certificateData
+            encoded_cert = response[x].certificateData
             
             decoded_cert = encoded_cert.decode('utf-8')
             pem = "-----BEGIN CERTIFICATE-----\n"
@@ -692,10 +675,13 @@ class EJBCASourcePlugin(SourcePlugin):
             rand_external_id = random.randrange(10**11, 10**12)
             external_id = str(rand_external_id)
 
+            chain = '{}\n{}'.format(current_app.config.get('EJBCA_INTERMEDIATE', '').strip(),
+                                    current_app.config.get('EJBCA_ROOT', '').strip())
             cert = {
                 "body": "\n".join(str(pem).splitlines()),
                 "serial": serial,
                 "external_id": external_id,
+                "chain": chain,
             }
             certs.append(cert)
 
