@@ -156,10 +156,10 @@ setup(
             'vault_desination = lemur.plugins.lemur_vault_dest.plugin:VaultDestinationPlugin',
             'adcs_issuer = lemur.plugins.lemur_adcs.plugin:ADCSIssuerPlugin',
             'adcs_source = lemur.plugins.lemur_adcs.plugin:ADCSSourcePlugin',
-            'entrust_issuer = lemur.plugins.lemur_entrust.plugin:EntrustIssuerPlugin',
-            'entrust_source = lemur.plugins.lemur_entrust.plugin:EntrustSourcePlugin',
             'ejbca_issuer = lemur.plugins.lemur_ejbca.plugin:EJBCAIssuerPlugin',
-            'ejbca_source = lemur.plugins.lemur_ejbca.plugin:EJBCASourcePlugin'
+            'ejbca_source = lemur.plugins.lemur_ejbca.plugin:EJBCASourcePlugin',
+            'entrust_issuer = lemur.plugins.lemur_entrust.plugin:EntrustIssuerPlugin',
+            'entrust_source = lemur.plugins.lemur_entrust.plugin:EntrustSourcePlugin'
         ],
     },
     classifiers=[
