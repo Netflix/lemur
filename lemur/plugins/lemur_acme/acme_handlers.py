@@ -240,6 +240,7 @@ class AcmeHandler(object):
 
         current_app.logger.warning("Certificate succesfully revoked: " + certificate.name)
         metrics.send("acme_revoke_certificate_success", "counter", 1)
+        certificate.status = "revoked"
         return True
 
 
