@@ -159,7 +159,8 @@ setup(
             'ejbca_issuer = lemur.plugins.lemur_ejbca.plugin:EJBCAIssuerPlugin',
             'ejbca_source = lemur.plugins.lemur_ejbca.plugin:EJBCASourcePlugin',
             'entrust_issuer = lemur.plugins.lemur_entrust.plugin:EntrustIssuerPlugin',
-            'entrust_source = lemur.plugins.lemur_entrust.plugin:EntrustSourcePlugin'
+            'entrust_source = lemur.plugins.lemur_entrust.plugin:EntrustSourcePlugin',
+            'azure_destination = lemur.plugins.lemur_azure_dest.plugin:AzureDestinationPlugin'
         ],
     },
     classifiers=[
