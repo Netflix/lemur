@@ -19,7 +19,7 @@ angular.module('lemur')
        {count: 7, label:'In 7 Days'},
        {count: 30, label:'In next Month'},
        {count: 60, label:'In 2 Months'},
-       {count: 900, label:'In 3 Months'}
+       {count: 90, label:'In 3 Months'}
      ];
      $scope.filters = [
        {sortable: 'id', show: false, title:'Id', field:'id'},
