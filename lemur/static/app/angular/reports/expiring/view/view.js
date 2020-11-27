@@ -12,7 +12,7 @@ angular.module('lemur')
 
    .controller('ExpiringReportsViewController', function ($scope, LemurRestangular, ngTableParams, CertificateApi, MomentService) {
      $scope.showFilters = false;
-     $scope.momentService=MomentService;
+     $scope.momentService = MomentService;
      $scope.daysFilters = [
        {count: 1, label:'In 1 Day'},
        {count: 3, label:'In 3 Days'},

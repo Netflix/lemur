@@ -204,3 +204,8 @@ a {
     margin-bottom: 8px;
 }
 .panel-body .title{font-size: 92px;font-weight: bolder;}
+.ellipsis{
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}

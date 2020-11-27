@@ -3,7 +3,49 @@
     <h2 class="featurette-heading">Reports
       <span class="text-muted"><small>All Issued Certificates Report</small></span>
     </h2>
-    <div class="panel panel-default">
+    <div class="col-md-12">
+      <div class="row panel panel-default">
+        <div class="col-md-12 panel-heading">
+          <div class="btn-group">
+            <div class="radioBtn">
+              <button ng-repeat="report in reports" ng-click="updateReport(report)" class="btn btn-info {{selectedReport.value!==report.value?'notActive':''}}">{{report.label}}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-2" ng-repeat="entry in data.labels | limitTo:6 track by $index">
+        <div class="panel {{classes[$index]}}">
+          <div class="panel-heading">
+            <h3 class="panel-title ellipsis" title="{{ entry }}">{{entry}}</h3>
+          </div>
+          <div class="panel-body">
+            <span class="title" >{{ data.values[$index] }}
+              <!-- <div class="badge">+{{ data.values[$index] }} new
+              </div> -->
+            <span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-{{selectedReport.value?6:12}}">
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <span ng-if="data.values.length == 0"> No data </span>
+            <canvas ng-if="data.values.length > 0" class="chart-bar" data="[data.values]" labels="data.labels" ></canvas>
+          </div>
+        </div>
+      </div>
+      <div ng-if="selectedReport.value" class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-body">+-
+            <span ng-if="data.values.length == 0"> No data </span>
+            <canvas ng-if="data.values.length > 0" class="chart-doughnut" data="data.values" labels="data.labels" ></canvas>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
