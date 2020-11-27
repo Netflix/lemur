@@ -193,3 +193,14 @@ a {
     color: #3276b1;
     background-color: #fff;
 }
+.table thead tr th{vertical-align: text-top !important;}
+.radioBtn.border button.btn.btn-info.notActive {
+    border: none;
+}
+.radioBtn.border button.btn.btn-info {
+    background-color: white;
+    color: #3276b1;
+    border: 1px solid #3276b1;
+    margin-bottom: 8px;
+}
+.panel-body .title{font-size: 92px;font-weight: bolder;}

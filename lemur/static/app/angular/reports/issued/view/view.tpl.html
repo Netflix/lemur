@@ -3,7 +3,131 @@
     <h2 class="featurette-heading">Reports
       <span class="text-muted"><small>Issued in days</small></span>
     </h2>
-    <div class="panel panel-default">
+    <div class="col-md-12">
+      <div class="row panel panel-default">
+        <div class="col-md-12 panel-heading">
+          <div class="btn-group pull-right">
+            <button ng-click="showFilterOptions()" class="btn btn-primary">
+              Update Fields
+            </button>
+            <button ng-click="import()" class="btn btn-info">
+              Export
+            </button>
+          </div>
+          <div class="btn-group">
+            <div class="radioBtn">
+              <button ng-repeat="days in daysFilters" ng-click="filterData(days.count)" class="btn btn-info {{expiresInDays!==days.count?'notActive':''}}">{{days.label}}</button>
+              <button ng-click="filterData(0, fromDate, toDate)" class="btn btn-info {{0!==expiresInDays?'notActive':''}}">
+                Custom
+              </button>
+
+            </div>
+          </div>
+          <div ng-if="expiresInDays===0" class="col-md-12 panel-heading">
+            <div class="row">
+              <div class="col-md-3">
+                <span>From:</span>
+                <input ng-change="filterData(0, fromDate, toDate)" type="date" class="form-control"
+                      name="fromDate"
+                      ng-model="fromDate"/>
+              </div>
+              <div class="col-md-3">
+                <span>To:</span>
+                <input ng-change="filterData(0, fromDate, toDate)" type="date" class="form-control"
+                   name="toDate"
+                   ng-model="toDate"/>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+    <div class="col-md-12" ng-if="showFilters">
+      <div class="row panel panel-default">
+        <div class="col-md-12 panel-heading">
+          <div class="btn-group">
+            <div class="radioBtn border">
+              <button ng-click="toggleFilter(filter)" ng-repeat="filter in filters" class="btn btn-info {{filter.show?'':'notActive'}}">{{filter.title}}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+
+      <div class="col-md-12">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">Detailed Data</h3>
+          </div>
+          <div class="panel-body">
+            <div class="table-responsive">
+              <table ng-table="certificateTable" ng-table-dynamic="demo.tableParams with filters"  class="table" template-pagination="angular/pager.html">
+                <tbody ng-if="$data.length > 0" >
+                  <tr ng-class="{'even-row': $even }" ng-repeat="certificate in $data">
+                    <td
+                      ng-repeat="filter in $columns">
+                      <span ng-switch="filter.type">
+                        <div ng-switch-when="boolean" >
+                          <span title="true">
+                            <i class="glyphicon glyphicon-ok" ng-if="certificate[filter.field]"></i>
+                          </span>
+                          <span title="false">
+                            <i class="glyphicon glyphicon-remove" ng-if="!certificate[filter.field]"></i>
+                          </span>
+                        </div>
+                        <div ng-switch-when="Date" >
+                          <span title="{{ certificate[filter.field] }}">{{ momentService.createMoment(certificate[filter.field]) }}</span>
+                        </div>
+                        <div ng-switch-default>
+                          {{ certificate[filter.field] }}
+                        </div>
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-4">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">Issuers</h3>
+          </div>
+          <div class="panel-body">
+            <span ng-if="issuers.values.length == 0"> No data </span>
+            <canvas ng-if="issuers.values.length > 0" class="chart chart-polar-area" data="issuers.values" labels="issuers.labels" ></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">Bit Strength</h3>
+          </div>
+          <div class="panel-body">
+            <span ng-if="issuers.values.length == 0"> No data </span>
+            <canvas ng-if="issuers.values.length > 0" class="chart chart-doughnut" data="bits.values" labels="bits.labels" ></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">Signing Algorithms</h3>
+          </div>
+          <div class="panel-body">
+            <span ng-if="issuers.values.length == 0"> No data </span>
+            <canvas ng-if="issuers.values.length > 0" id="signingPie" class="chart chart-bar" data="[algos.values]" labels="algos.labels" ></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>

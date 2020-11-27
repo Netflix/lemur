@@ -616,6 +616,8 @@ class CertificatesStats(AuthenticatedResource):
 
     def get(self):
         self.reqparse.add_argument("metric", type=str, location="args")
+        self.reqparse.add_argument("notAfterRange", type=str, location="args")
+        self.reqparse.add_argument("notBeforeRange", type=str, location="args")
         self.reqparse.add_argument("range", default=32, type=int, location="args")
         self.reqparse.add_argument(
             "destinationId", dest="destination_id", location="args"
