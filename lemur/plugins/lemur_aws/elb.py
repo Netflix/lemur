@@ -160,8 +160,8 @@ def get_load_balancer_arn_from_endpoint(endpoint_name, **kwargs):
     try:
         client = kwargs.pop("client")
         elbs = client.describe_load_balancers(Names=[endpoint_name])
-        for elb in elbs["LoadBalancers"]:
-            return elb["LoadBalancerArn"]
+        if "LoadBalancers" in elbs and elbs["LoadBalancers"]:
+            return elbs["LoadBalancers"][0]["LoadBalancerArn"]
 
     except Exception as e:  # noqa
         metrics.send(
