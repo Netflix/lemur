@@ -694,9 +694,23 @@ def stats(**kwargs):
 
     else:
         attr = getattr(Certificate, kwargs.get("metric"))
-        query = database.db.session.query(attr, func.count(attr))
 
-        items = query.group_by(attr).all()
+        query = database.db.session.query(attr, func.count(attr)).group_by(attr)
+        if kwargs.get("notAfterRange"):
+            dateRange = kwargs.get("notAfterRange").split("to")
+            if dateRange[0] != "*" :
+                query = query.filter(Certificate.not_after >= dateRange[0].format("YYYY-MM-DD"))
+            if dateRange[1] != "*" :
+                query = query.filter(Certificate.not_after <= dateRange[1].format("YYYY-MM-DD"))
+
+        if kwargs.get("notBeforeRange"):
+            dateRange = kwargs.get("notBeforeRange").split("to")
+            if dateRange[0] != "*":
+                query = query.filter(Certificate.not_before >= dateRange[0].format("YYYY-MM-DD"))
+            if dateRange[1] != "*":
+                query = query.filter(Certificate.not_before <= dateRange[1].format("YYYY-MM-DD"))
+
+        items = query.all()
 
     keys = []
     values = []

@@ -54,7 +54,6 @@
                     <li><a ui-sref="authorities">Authorities</a></li>
                     <li><a ui-sref="endpoints">Endpoints</a></li>
                     <li><a ui-sref="notifications">Notifications</a></li>
-                    <li></li>
                     <li class="dropdown" uib-dropdown on-toggle="toggled(open)">
                         <a href class="dropdown-toggle" uib-dropdown-toggle>Admin <span class="caret"></span></a>
                         <ul class="dropdown-menu">
@@ -68,6 +67,15 @@
                             <li><a ui-sref="dns_providers">DNS Providers</a></li>
                         </ul>
                     </li>
+                    <li class="dropdown" uib-dropdown on-toggle="toggled(open)">
+                        <a href class="dropdown-toggle" uib-dropdown-toggle>Reports <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a ui-sref="reports">All Certificates </a></li>
+                            <li><a ui-sref="expiring_reports">Expiring</a></li>
+                            <li><a ui-sref="issued_reports">Issued</a></li>
+                        </ul>
+                    </li>
+
                 </ul>
                 <ul ng-show="!currentUser.username" class="nav navbar-nav navbar-right">
                   <li><a ui-sref="login">Login</a></li>
