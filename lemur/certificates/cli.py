@@ -623,7 +623,8 @@ def clear_pending():
 @manager.option(
     "-p", "--path", dest="path", help="Absolute file path to a Lemur query csv."
 )
-@manager.option("-r", "--reason", dest="reason", help="Reason to revoke certificate.")
+@manager.option("-r", "--reason", dest="reason", default="unspecified", help="CRL Reason as per RFC 5280 section 5.3.1")
+@manager.option("-m", "--message", dest="message", help="Message explaining reason for revocation")
 @manager.option(
     "-c",
     "--commit",
@@ -632,7 +633,7 @@ def clear_pending():
     default=False,
     help="Persist changes.",
 )
-def revoke(path, reason, commit):
+def revoke(path, reason, message, commit):
     """
     Revokes given certificate.
     """
@@ -640,9 +641,10 @@ def revoke(path, reason, commit):
         print("[!] Running in COMMIT mode.")
 
     print("[+] Starting certificate revocation.")
+    comments = {"comments": message, "crl_reason": reason}
 
     with open(path, "r") as f:
-        args = [[x, commit, reason] for x in f.readlines()[2:]]
+        args = [[x, commit, comments] for x in f.readlines()[2:]]
 
     with multiprocessing.Pool(processes=3) as pool:
         pool.starmap(worker, args)

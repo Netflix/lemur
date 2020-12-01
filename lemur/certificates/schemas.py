@@ -16,7 +16,7 @@ from lemur.certificates import utils as cert_utils
 from lemur.common import missing, utils, validators
 from lemur.common.fields import ArrowDateTime, Hex
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
-from lemur.constants import CERTIFICATE_KEY_TYPES
+from lemur.constants import CERTIFICATE_KEY_TYPES, CRLReason
 from lemur.destinations.schemas import DestinationNestedOutputSchema
 from lemur.dns_providers.schemas import DnsProvidersNestedOutputSchema
 from lemur.domains.schemas import DomainNestedOutputSchema
@@ -455,6 +455,7 @@ class CertificateNotificationOutputSchema(LemurOutputSchema):
 
 class CertificateRevokeSchema(LemurInputSchema):
     comments = fields.String()
+    crl_reason = fields.String(validate=validate.OneOf(CRLReason.__members__), missing="unspecified")
 
 
 certificates_list_request_parser = RequestParser()

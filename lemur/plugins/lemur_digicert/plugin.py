@@ -368,7 +368,7 @@ class DigiCertIssuerPlugin(IssuerPlugin):
             certificate_id,
         )
 
-    def revoke_certificate(self, certificate, comments):
+    def revoke_certificate(self, certificate, reason):
         """Revoke a Digicert certificate."""
         base_url = current_app.config.get("DIGICERT_URL")
 
@@ -376,6 +376,11 @@ class DigiCertIssuerPlugin(IssuerPlugin):
         create_url = "{0}/services/v2/certificate/{1}/revoke".format(
             base_url, certificate.external_id
         )
+
+        comments = reason["comments"] if "comments" in reason else ''
+        if "crl_reason" in reason:
+            comments += '(' + reason["crl_reason"] + ')'
+
         metrics.send("digicert_revoke_certificate", "counter", 1)
         response = self.session.put(create_url, data=json.dumps({"comments": comments}))
         return handle_response(response)
@@ -575,7 +580,7 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
             data["id"],
         )
 
-    def revoke_certificate(self, certificate, comments):
+    def revoke_certificate(self, certificate, reason):
         """Revoke a Digicert certificate."""
         base_url = current_app.config.get("DIGICERT_CIS_URL")
 
@@ -584,6 +589,10 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
             base_url, certificate.external_id
         )
         metrics.send("digicert_revoke_certificate_success", "counter", 1)
+
+        comments = reason["comments"] if "comments" in reason else ''
+        if "crl_reason" in reason:
+            comments += '(' + reason["crl_reason"] + ')'
         response = self.session.put(revoke_url, data=json.dumps({"comments": comments}))
 
         if response.status_code != 204:
