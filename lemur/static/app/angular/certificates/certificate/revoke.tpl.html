@@ -26,9 +26,8 @@
     </div>
   </form>
   <div ng-if="certificate.endpoints.length">
-    <p><strong>Certificate cannot be revoked, it is associated with the following endpoints. Disassociate this
-      certificate
-      before revoking.</strong></p>
+    <p><strong>Certificate might be associated with the following endpoints. Disassociate this
+      certificate before revoking or continue if you've already done so.</strong></p>
     <ul class="list-group">
       <li class="list-group-item" ng-repeat="endpoint in certificate.endpoints">
         <span class="pull-right"><label class="label label-default">{{ endpoint.type }}</label></span>
