@@ -351,17 +351,17 @@ class EntrustSourcePlugin(SourcePlugin):
     def get_certificates(self, options, **kwargs):
         """ Fetch all Entrust certificates """
         base_url = current_app.config.get("ENTRUST_URL")
-        host = base_url.replace('/enterprise/v2','')
+        host = base_url.replace('/enterprise/v2', '')
 
         get_url = f"{base_url}/certificates"
-        certs =[]
+        certs = []
         offset = 0
-        while True: 
-            response = self.session.get(get_url, 
+        while True:
+            response = self.session.get(get_url,
                  params={
-                     "status": "ACTIVE", 
+                     "status": "ACTIVE",
                      "isThirdParty": "false",
-                     "fields": "uri,dn", 
+                     "fields": "uri,dn",
                      "offset": offset
                  }
             )
@@ -372,7 +372,7 @@ class EntrustSourcePlugin(SourcePlugin):
                 data = {'response': 'No detailed message'}
             status_code = response.status_code
             if status_code > 399:
-                raise Exception(f"ENTRUST error: {msg.get(status_code, status_code)}\n{data['errors']}")
+                raise Exception(f"ENTRUST error: {status_code}\n{data['errors']}")
             # current_app.logger.info(f"recevied: {data['summary']}")
             for c in data["certificates"]:
                 download_url = "{0}{1}".format(
@@ -391,11 +391,10 @@ class EntrustSourcePlugin(SourcePlugin):
                 certs.append(cert)
             if data["summary"]["limit"] * offset >= data["summary"]["total"]:
                 break
-            else: 
+            else:
                 offset += 1
         current_app.logger.info(f"Result: {certs}")
         return certs
-        
 
     def get_endpoints(self, options, **kwargs):
         # There are no endpoints in ENTRUST
