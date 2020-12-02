@@ -348,6 +348,15 @@ Lemur supports sending certificate expiration notifications through SES and SMTP
 
           LEMUR_SECURITY_TEAM_EMAIL_INTERVALS = [15, 2]
 
+.. data:: LEMUR_AUTHORITY_CERT_EXPIRATION_EMAIL_INTERVALS
+    :noindex:
+
+       Notification interval set for CA certificate expiration notifications. If unspecified, the value [365, 180] is used (roughly one year and 6 months).
+
+       ::
+
+          LEMUR_AUTHORITY_CERT_EXPIRATION_EMAIL_INTERVALS = [365, 180]
+
 
 Celery Options
 ---------------
