@@ -314,6 +314,31 @@ class EntrustSourcePlugin(SourcePlugin):
     author = "sirferl"
     author_url = "https://github.com/sirferl/lemur"
 
+    def __init__(self, *args, **kwargs):
+        """Initialize the issuer with the appropriate details."""
+        required_vars = [
+            "ENTRUST_API_CERT",
+            "ENTRUST_API_KEY",
+            "ENTRUST_API_USER",
+            "ENTRUST_API_PASS",
+            "ENTRUST_URL",
+            "ENTRUST_ROOT",
+            "ENTRUST_NAME",
+            "ENTRUST_EMAIL",
+            "ENTRUST_PHONE",
+        ]
+        validate_conf(current_app, required_vars)
+
+        self.session = requests.Session()
+        cert_file = current_app.config.get("ENTRUST_API_CERT")
+        key_file = current_app.config.get("ENTRUST_API_KEY")
+        user = current_app.config.get("ENTRUST_API_USER")
+        password = current_app.config.get("ENTRUST_API_PASS")
+        self.session.cert = (cert_file, key_file)
+        self.session.auth = (user, password)
+        self.session.hooks = dict(response=log_status_code)
+        super(EntrustSourcePlugin, self).__init__(*args, **kwargs)
+
     def get_certificates(self, options, **kwargs):
         # Not needed for ENTRUST
         raise NotImplementedError("Not implemented\n", self, options, **kwargs)
