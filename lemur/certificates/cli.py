@@ -5,7 +5,6 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import multiprocessing
 import sys
 from flask import current_app
 from flask_principal import Identity, identity_changed
@@ -26,9 +25,10 @@ from lemur.certificates.service import (
     get_all_valid_certs,
     get,
     get_all_certs_attached_to_endpoint_without_autorotate,
+    revoke as revoke_certificate,
 )
 from lemur.certificates.verify import verify_string
-from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
+from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS, CRLReason
 from lemur.deployment import service as deployment_service
 from lemur.domains.models import Domain
 from lemur.endpoints import service as endpoint_service
@@ -586,11 +586,10 @@ def worker(data, commit, reason):
     parts = [x for x in data.split(" ") if x]
     try:
         cert = get(int(parts[0].strip()))
-        plugin = plugins.get(cert.authority.plugin_name)
 
         print("[+] Revoking certificate. Id: {0} Name: {1}".format(cert.id, cert.name))
         if commit:
-            plugin.revoke_certificate(cert, reason)
+            revoke_certificate(cert, reason)
 
         metrics.send(
             "certificate_revoke",
@@ -641,13 +640,14 @@ def revoke(path, reason, message, commit):
         print("[!] Running in COMMIT mode.")
 
     print("[+] Starting certificate revocation.")
+
+    if reason not in CRLReason.__members__:
+        reason = CRLReason.unspecified.name
     comments = {"comments": message, "crl_reason": reason}
 
     with open(path, "r") as f:
-        args = [[x, commit, comments] for x in f.readlines()[2:]]
-
-    with multiprocessing.Pool(processes=3) as pool:
-        pool.starmap(worker, args)
+        for x in f.readlines()[2:]:
+            worker(x, commit, comments)
 
 
 @manager.command
