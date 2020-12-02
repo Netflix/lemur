@@ -668,6 +668,8 @@ def check_revoked():
         try:
             if cert.chain:
                 status = verify_string(cert.body, cert.chain)
+            elif cert.issuer == '<selfsigned>':
+                status = True
             else:
                 status = verify_string(cert.body, "")
 
