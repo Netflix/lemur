@@ -431,8 +431,8 @@ And the worker can be started with desired options such as the following::
 
 supervisor or systemd configurations should be created for these in production environments as appropriate.
 
-Add support for LetsEncrypt
-===========================
+Add support for LetsEncrypt/ACME
+================================
 
 LetsEncrypt is a free, limited-feature certificate authority that offers publicly trusted certificates that are valid
 for 90 days. LetsEncrypt does not use organizational validation (OV), and instead relies on domain validation (DV).
@@ -440,7 +440,10 @@ LetsEncrypt requires that we prove ownership of a domain before we're able to is
 time we want a certificate.
 
 The most common methods to prove ownership are HTTP validation and DNS validation. Lemur supports DNS validation
-through the creation of DNS TXT records.
+through the creation of DNS TXT records as well as HTTP validation, reusing the destination concept.
+
+ACME DNS Challenge
+------------------
 
 In a nutshell, when we send a certificate request to LetsEncrypt, they generate a random token and ask us to put that
 token in a DNS text record to prove ownership of a domain. If a certificate request has multiple domains, we must
@@ -478,6 +481,24 @@ possible. To enable this functionality, periodically (or through Cron/Celery) ru
 This command will traverse all DNS providers, determine which zones they control, and upload this list of zones to
 Lemur's database (in the dns_providers table). Alternatively, you can manually input this data.
 
+ACME HTTP Challenge
+-------------------
+
+The flow for requesting a certificate using the HTTP challenge is not that different from the one described for the DNS
+challenge. The only difference is, that instead of creating a DNS TXT record, a file is uploaded to a Webserver which
+serves the file at `http://<domain>/.well-known/acme-challenge/<token>`
+
+Currently the HTTP challenge also works without Celery, since it's done while creating the certificate, and doesn't
+rely on celery to create the DNS record. This will change when we implement mix & match of acme challenge types.
+
+To create a HTTP compatible Authority, you first need to create a new destination that will be used to deploy the
+challenge token. Visit `Admin` -> `Destination` and click `Create`. The path you provide for the destination needs to
+be the exact path that is called when the ACME providers calls ``http://<domain>/.well-known/acme-challenge/`. The
+token part will be added dynamically by the acme_upload.
+Currently only the SFTP and S3 Bucket destination support the ACME HTTP challenge.
+
+Afterwards you can create a new certificate authority as described in the DNS challenge, but need to choose
+`Acme HTTP-01` as the plugin type, and then the destination you created beforehand.
 
 LetsEncrypt: pinning to cross-signed ICA
 ----------------------------------------

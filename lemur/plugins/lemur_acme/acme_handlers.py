@@ -224,7 +224,7 @@ class AcmeHandler(object):
     def revoke_certificate(self, certificate):
         if not self.reuse_account(certificate.authority):
             raise InvalidConfiguration("There is no ACME account saved, unable to revoke the certificate.")
-        acme_client, _ = self.acme.setup_acme_client(certificate.authority)
+        acme_client, _ = self.setup_acme_client(certificate.authority)
 
         fullchain_com = jose.ComparableX509(
             OpenSSL.crypto.load_certificate(
