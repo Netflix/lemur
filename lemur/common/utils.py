@@ -10,6 +10,7 @@ import random
 import re
 import string
 import pem
+import base64
 
 import sqlalchemy
 from cryptography import x509
@@ -32,6 +33,12 @@ paginated_parser.add_argument("sortDir", type=str, dest="sort_dir", location="ar
 paginated_parser.add_argument("sortBy", type=str, dest="sort_by", location="args")
 paginated_parser.add_argument("filter", type=str, location="args")
 paginated_parser.add_argument("owner", type=str, location="args")
+
+
+def base64encode(string):
+    # Performs Base64 encoding of string to string using the base64.b64encode() function
+    # which encodes bytes to bytes.
+    return base64.b64encode(string.encode()).decode()
 
 
 def get_psuedo_random_string():
