@@ -21,6 +21,7 @@ from lemur.certificates.schemas import CertificateOutputSchema, CertificateInput
 from lemur.common.utils import generate_private_key, truthiness
 from lemur.destinations.models import Destination
 from lemur.domains.models import Domain
+from lemur.endpoints import service as endpoint_service
 from lemur.extensions import metrics, sentry, signals
 from lemur.models import certificate_associations
 from lemur.notifications.models import Notification
@@ -824,3 +825,61 @@ def reissue_certificate(certificate, replace=None, user=None):
     new_cert = create(**primitives)
 
     return new_cert
+
+
+def is_attached_to_endpoint(certificate_name, endpoint_name):
+    """
+    Find if given certificate is attached to the endpoint. Both, certificate and endpoint, are identified by name.
+    This method talks to elb and finds the real time information.
+    :param certificate_name:
+    :param endpoint_name:
+    :return: True if certificate is attached to the given endpoint, False otherwise
+    """
+    endpoint = endpoint_service.get_by_name(endpoint_name)
+    attached_certificates = endpoint.source.plugin.get_endpoint_certificate_names(endpoint)
+    return certificate_name in attached_certificates
+
+
+def remove_from_destination(certificate, destination):
+    """
+    Remove the certificate from given destination if clean() is implemented
+    :param certificate:
+    :param destination:
+    :return:
+    """
+    plugin = plugins.get(destination.plugin_name)
+    if not hasattr(plugin, "clean"):
+        info_text = f"Cannot clean certificate {certificate.name}, {destination.plugin_name} plugin does not implement 'clean()'"
+        current_app.logger.warning(info_text)
+    else:
+        plugin.clean(certificate=certificate, options=destination.options)
+
+
+def cleanup_after_revoke(certificate):
+    """
+    Perform the needed cleanup for a revoked certificate. This includes -
+    1. Disabling notification
+    2. Disabling auto-rotation
+    3. Update certificate status to 'revoked'
+    4. Remove from AWS
+    :param certificate: Certificate object to modify and update in DB
+    :return: None
+    """
+    certificate.notify = False
+    certificate.rotation = False
+    certificate.status = 'revoked'
+
+    error_message = ""
+
+    for destination in list(certificate.destinations):
+        try:
+            remove_from_destination(certificate, destination)
+            certificate.destinations.remove(destination)
+        except Exception as e:
+            # This cleanup is the best-effort since certificate is already revoked at this point.
+            # We will capture the exception and move on to the next destination
+            sentry.captureException()
+            error_message = error_message + f"Failed to remove destination: {destination.label}. {str(e)}. "
+
+    database.update(certificate)
+    return error_message

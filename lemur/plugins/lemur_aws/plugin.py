@@ -300,6 +300,41 @@ class AWSSourcePlugin(SourcePlugin):
             )
         return None
 
+    def get_endpoint_certificate_names(self, endpoint):
+        options = endpoint.source.options
+        account_number = self.get_option("accountNumber", options)
+        region = get_region_from_dns(endpoint.dnsname)
+        certificate_names = []
+
+        if endpoint.type == "elb":
+            elb_details = elb.get_elbs(account_number=account_number,
+                                    region=region,
+                                    LoadBalancerNames=[endpoint.name],)
+
+            for lb_description in elb_details["LoadBalancerDescriptions"]:
+                for listener_description in lb_description["ListenerDescriptions"]:
+                    listener = listener_description.get("Listener")
+                    if not listener.get("SSLCertificateId"):
+                        continue
+
+                    certificate_names.append(iam.get_name_from_arn(listener.get("SSLCertificateId")))
+        elif endpoint.type == "elbv2":
+            listeners = elb.describe_listeners_v2(
+                account_number=account_number,
+                region=region,
+                LoadBalancerArn=elb.get_load_balancer_arn_from_endpoint(endpoint.name,
+                                                                        account_number=account_number,
+                                                                        region=region),
+            )
+            for listener in listeners["Listeners"]:
+                if not listener.get("Certificates"):
+                    continue
+
+                for certificate in listener["Certificates"]:
+                    certificate_names.append(iam.get_name_from_arn(certificate["CertificateArn"]))
+
+        return certificate_names
+
 
 class AWSDestinationPlugin(DestinationPlugin):
     title = "AWS"
@@ -343,6 +378,10 @@ class AWSDestinationPlugin(DestinationPlugin):
 
     def deploy(self, elb_name, account, region, certificate):
         pass
+
+    def clean(self, certificate, options, **kwargs):
+        account_number = self.get_option("accountNumber", options)
+        iam.delete_cert(certificate.name, account_number=account_number)
 
 
 class S3DestinationPlugin(ExportDestinationPlugin):
