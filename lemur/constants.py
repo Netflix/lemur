@@ -36,6 +36,7 @@ CERTIFICATE_KEY_TYPES = [
 ]
 
 
+# As per RFC 5280 section 5.3.1 (https://tools.ietf.org/html/rfc5280#section-5.3.1)
 class CRLReason(IntEnum):
     unspecified = 0,
     keyCompromise = 1,
