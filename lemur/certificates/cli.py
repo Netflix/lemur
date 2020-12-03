@@ -619,9 +619,8 @@ def clear_pending():
     v.clear_pending_certificates()
 
 
-@manager.option(
-    "-p", "--path", dest="path", help="Absolute file path to a Lemur query csv."
-)
+@manager.option("-p", "--path", dest="path", help="Absolute file path to a Lemur query csv.")
+@manager.option("-id", "--certid", dest="cert_id", help="ID of the certificate to be revoked")
 @manager.option("-r", "--reason", dest="reason", default="unspecified", help="CRL Reason as per RFC 5280 section 5.3.1")
 @manager.option("-m", "--message", dest="message", help="Message explaining reason for revocation")
 @manager.option(
@@ -632,10 +631,17 @@ def clear_pending():
     default=False,
     help="Persist changes.",
 )
-def revoke(path, reason, message, commit):
+def revoke(path, cert_id, reason, message, commit):
     """
     Revokes given certificate.
     """
+    if not path and not cert_id:
+        print("[!] No input certificates mentioned to revoke")
+        return
+    if path and cert_id:
+        print("[!] Please mention single certificate id (-id) or input file (-p)")
+        return
+
     if commit:
         print("[!] Running in COMMIT mode.")
 
@@ -645,9 +651,12 @@ def revoke(path, reason, message, commit):
         reason = CRLReason.unspecified.name
     comments = {"comments": message, "crl_reason": reason}
 
-    with open(path, "r") as f:
-        for x in f.readlines()[2:]:
-            worker(x, commit, comments)
+    if cert_id:
+        worker(cert_id, commit, comments)
+    else:
+        with open(path, "r") as f:
+            for x in f.readlines()[2:]:
+                worker(x, commit, comments)
 
 
 @manager.command
