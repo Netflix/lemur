@@ -37,18 +37,20 @@ Create a New Certificate
 
 .. figure:: create_certificate.png
 
-    Enter an owner, short description and the authority you wish to issue this certificate.
-    Enter a common name into the certificate, if no validity range is selected two years is
-    the default.
+    Enter an owner, common name, short description and certificate authority you wish to issue this certificate.
+    Depending upon the selected CA, the UI displays default validity of the certificate. You can select different
+    validity by entering a custom date, if supported by the CA.
+
+    You can also add `Subject Alternate Names` or SAN for certificates that need to include more than one domains,
+    The first domain is the Common Name and all other domains are added here as DNSName entries.
 
     You can add notification options and upload the created certificate to a destination, both
     of these are editable features and can be changed after the certificate has been created.
 
 .. figure:: certificate_extensions.png
 
-    These options are typically for advanced users, the one exception is the `Subject Alternate Names` or SAN.
-    For certificates that need to include more than one domains, the first domain is the Common Name and all
-    other domains are added here as DNSName entries.
+    These options are typically for advanced users. Lemur creates ECC based certificate (ECCPRIME256V1 in particular)
+    by default. One can change the key type using the dropdown option listed here.
 
 
 Import an Existing Certificate
@@ -58,7 +60,7 @@ Import an Existing Certificate
 
     Enter an owner, short description and public certificate. If there are intermediates and private keys
     Lemur will track them just as it does if the certificate were created through Lemur. Lemur generates
-    a certificate name but you can override that by passing a value to the `Custom Name` field.
+    a certificate name but you can override that by passing a value to the `Custom Certificate Name` field.
 
     You can add notification options and upload the created certificate to a destination, both
     of these are editable features and can be changed after the certificate has been created.
