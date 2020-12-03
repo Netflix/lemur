@@ -355,6 +355,7 @@ class EntrustSourcePlugin(SourcePlugin):
 
         get_url = f"{base_url}/certificates"
         certs = []
+        processed_certs = 0
         offset = 0
         while True:
             response = self.session.get(get_url,
@@ -373,14 +374,12 @@ class EntrustSourcePlugin(SourcePlugin):
             status_code = response.status_code
             if status_code > 399:
                 raise Exception(f"ENTRUST error: {status_code}\n{data['errors']}")
-            # current_app.logger.info(f"recevied: {data['summary']}")
             for c in data["certificates"]:
                 download_url = "{0}{1}".format(
                     host, c["uri"]
                 )
                 cert_response = self.session.get(download_url)
                 certificate = json.loads(cert_response.content)
-                # current_app.logger.info(f"Result: {certificate}")
                 # normalize serial
                 serial = str(int(certificate["serialNumber"], 16))
                 cert = {
@@ -389,11 +388,12 @@ class EntrustSourcePlugin(SourcePlugin):
                     "external_id": str(certificate["trackingId"]),
                 }
                 certs.append(cert)
+                processed_certs += 1
             if data["summary"]["limit"] * offset >= data["summary"]["total"]:
                 break
             else:
                 offset += 1
-        current_app.logger.info(f"Result: {certs}")
+        current_app.logger.info(f"Retrieved {processed_certs} ertificates")
         return certs
 
     def get_endpoints(self, options, **kwargs):
