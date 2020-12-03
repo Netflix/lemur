@@ -17,6 +17,7 @@ from acme.messages import Error as AcmeError
 from botocore.exceptions import ClientError
 from flask import current_app
 from lemur.authorizations import service as authorization_service
+from lemur.constants import CRLReason
 from lemur.dns_providers import service as dns_provider_service
 from lemur.exceptions import InvalidConfiguration
 from lemur.extensions import metrics, sentry
@@ -267,9 +268,13 @@ class ACMEIssuerPlugin(IssuerPlugin):
         # Needed to override issuer function.
         pass
 
-    def revoke_certificate(self, certificate, comments):
+    def revoke_certificate(self, certificate, reason):
         self.acme = AcmeDnsHandler()
-        return self.acme.revoke_certificate(certificate)
+        crl_reason = CRLReason.unspecified
+        if "crl_reason" in reason:
+            crl_reason = CRLReason[reason["crl_reason"]]
+
+        return self.acme.revoke_certificate(certificate, crl_reason.value)
 
 
 class ACMEHttpIssuerPlugin(IssuerPlugin):
@@ -368,6 +373,11 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
         # Needed to override issuer function.
         pass
 
-    def revoke_certificate(self, certificate, comments):
+    def revoke_certificate(self, certificate, reason):
         self.acme = AcmeHandler()
-        return self.acme.revoke_certificate(certificate)
+
+        crl_reason = CRLReason.unspecified
+        if "crl_reason" in reason:
+            crl_reason = CRLReason[reason["crl_reason"]]
+
+        return self.acme.revoke_certificate(certificate, crl_reason.value)

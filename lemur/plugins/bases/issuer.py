@@ -23,7 +23,7 @@ class IssuerPlugin(Plugin):
     def create_authority(self, options):
         raise NotImplementedError
 
-    def revoke_certificate(self, certificate, comments):
+    def revoke_certificate(self, certificate, reason):
         raise NotImplementedError
 
     def get_ordered_certificate(self, certificate):

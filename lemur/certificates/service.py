@@ -828,6 +828,14 @@ def remove_from_destination(certificate, destination):
         plugin.clean(certificate=certificate, options=destination.options)
 
 
+def revoke(certificate, reason):
+    plugin = plugins.get(certificate.authority.plugin_name)
+    plugin.revoke_certificate(certificate, reason)
+
+    # Perform cleanup after revoke
+    return cleanup_after_revoke(certificate)
+
+
 def cleanup_after_revoke(certificate):
     """
     Perform the needed cleanup for a revoked certificate. This includes -

@@ -419,8 +419,8 @@ angular.module('lemur')
     $uibModalInstance.dismiss('cancel');
   };
 
-  $scope.revoke = function (certificate) {
-   CertificateService.revoke(certificate).then(
+  $scope.revoke = function (certificate, crlReason) {
+   CertificateService.revoke(certificate, crlReason).then(
       function () {
         toaster.pop({
           type: 'success',
