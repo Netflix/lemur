@@ -20,13 +20,14 @@ def log_status_code(r, *args, **kwargs):
     :param kwargs:
     :return:
     """
-    log_data = {
-        "reason": (r.reason if r.reason else ""),
-        "status_code": r.status_code,
-        "url": (r.url if r.url else ""),
-    }
-    metrics.send(f"entrust_status_code_{r.status_code}", "counter", 1)
-    current_app.logger.info(log_data)
+    if r.status_code != 200:
+        log_data = {
+            "reason": (r.reason if r.reason else ""),
+            "status_code": r.status_code,
+            "url": (r.url if r.url else ""),
+        }
+        metrics.send(f"entrust_status_code_{r.status_code}", "counter", 1)
+        current_app.logger.info(log_data)
 
 
 def determine_end_date(end_date):
@@ -386,6 +387,9 @@ class EntrustSourcePlugin(SourcePlugin):
                     "body": certificate["endEntityCert"],
                     "serial": serial,
                     "external_id": str(certificate["trackingId"]),
+                    "csr": certificate["csr"],
+                    "owner":  certificate["tracking"]["requesterEmail"],
+                    "description": f"Type: Entrust {certificate['certType']}\nExtended Key Usage: {certificate['eku']}"
                 }
                 certs.append(cert)
                 processed_certs += 1
