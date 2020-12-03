@@ -79,7 +79,6 @@ pyrfc3339==1.1            # via -r requirements.txt, acme
 python-dateutil==2.8.1    # via -r requirements.txt, alembic, arrow, botocore
 python-editor==1.0.4      # via -r requirements.txt, alembic
 python-json-logger==0.1.11  # via -r requirements.txt, logmatic-python
-python-ldap==3.3.1        # via -r requirements.txt
 pytz==2019.3              # via -r requirements.txt, acme, babel, celery, flask-restful, pyrfc3339
 pyyaml==5.3.1             # via -r requirements.txt, cloudflare
 raven[flask]==6.10.0      # via -r requirements.txt

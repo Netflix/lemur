@@ -221,7 +221,7 @@ class AcmeHandler(object):
         current_app.logger.debug("Got these domains: {0}".format(domains))
         return domains
 
-    def revoke_certificate(self, certificate):
+    def revoke_certificate(self, certificate, crl_reason=0):
         if not self.reuse_account(certificate.authority):
             raise InvalidConfiguration("There is no ACME account saved, unable to revoke the certificate.")
         acme_client, _ = self.setup_acme_client(certificate.authority)
@@ -231,7 +231,7 @@ class AcmeHandler(object):
                 OpenSSL.crypto.FILETYPE_PEM, certificate.body))
 
         try:
-            acme_client.revoke(fullchain_com, 0)  # revocation reason = 0
+            acme_client.revoke(fullchain_com, crl_reason)  # revocation reason as int (per RFC 5280 section 5.3.1)
         except (errors.ConflictError, errors.ClientError, errors.Error) as e:
             # Certificate already revoked.
             current_app.logger.error("Certificate revocation failed with message: " + e.detail)

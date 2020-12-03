@@ -104,7 +104,7 @@ The `IssuerPlugin` exposes four functions functions::
 
     def create_certificate(self, csr, issuer_options):
         # requests.get('a third party')
-    def revoke_certificate(self, certificate, comments):
+    def revoke_certificate(self, certificate, reason):
         # requests.put('a third party')
     def get_ordered_certificate(self, order_id):
         # requests.get('already existing certificate')

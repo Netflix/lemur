@@ -20,7 +20,6 @@ from lemur.auth.permissions import AuthorityPermission, CertificatePermission
 from lemur.certificates import service
 from lemur.certificates.models import Certificate
 from lemur.extensions import sentry
-from lemur.plugins.base import plugins
 from lemur.certificates.schemas import (
     certificate_input_schema,
     certificate_output_schema,
@@ -29,6 +28,7 @@ from lemur.certificates.schemas import (
     certificate_export_input_schema,
     certificate_edit_input_schema,
     certificates_list_output_schema_factory,
+    certificate_revoke_schema,
 )
 
 from lemur.roles import service as role_service
@@ -1398,7 +1398,7 @@ class CertificateRevoke(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(CertificateRevoke, self).__init__()
 
-    @validate_schema(None, None)
+    @validate_schema(certificate_revoke_schema, None)
     def put(self, certificate_id, data=None):
         """
         .. http:put:: /certificates/1/revoke
@@ -1413,6 +1413,11 @@ class CertificateRevoke(AuthenticatedResource):
               Host: example.com
               Accept: application/json, text/javascript
 
+              {
+                "crlReason": "affiliationChanged",
+                "comments": "Additional details if any"
+              }
+
            **Example response**:
 
            .. sourcecode:: http
@@ -1422,12 +1427,13 @@ class CertificateRevoke(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                'id': 1
+                "id": 1
               }
 
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
-           :statuscode 403: unauthenticated
+           :statuscode 403: unauthenticated or cert attached to LB
+           :statuscode 400: encountered error, more details in error message
 
         """
         cert = service.get(certificate_id)
@@ -1459,16 +1465,18 @@ class CertificateRevoke(AuthenticatedResource):
                         403,
                     )
 
-        plugin = plugins.get(cert.authority.plugin_name)
-        plugin.revoke_certificate(cert, data)
+        try:
+            error_message = service.revoke(cert, data)
+            log_service.create(g.current_user, "revoke_cert", certificate=cert)
 
-        log_service.create(g.current_user, "revoke_cert", certificate=cert)
-
-        # Perform cleanup after revoke
-        error_message = service.cleanup_after_revoke(cert)
-        if error_message:
-            return dict(message=f"Certificate (id:{cert.id}) is revoked - {error_message}"), 400
-        return dict(id=cert.id)
+            if error_message:
+                return dict(message=f"Certificate (id:{cert.id}) is revoked - {error_message}"), 400
+            return dict(id=cert.id)
+        except NotImplementedError as ne:
+            return dict(message="Revoke is not implemented for issuer of this certificate"), 400
+        except Exception as e:
+            sentry.captureException()
+            return dict(message=f"Failed to revoke: {str(e)}"), 400
 
 
 api.add_resource(
