@@ -1473,10 +1473,11 @@ class CertificateRevoke(AuthenticatedResource):
                 return dict(message=f"Certificate (id:{cert.id}) is revoked - {error_message}"), 400
             return dict(id=cert.id)
         except NotImplementedError as ne:
-            return dict(message=f"Revoke is not implemented for issuer of this certificate"), 400
+            return dict(message="Revoke is not implemented for issuer of this certificate"), 400
         except Exception as e:
             sentry.captureException()
             return dict(message=f"Failed to revoke: {str(e)}"), 400
+
 
 api.add_resource(
     CertificateRevoke,
