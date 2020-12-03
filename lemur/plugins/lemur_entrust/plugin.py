@@ -5,6 +5,7 @@ import sys
 from flask import current_app
 from retrying import retry
 
+from lemur.constants import CRLReason
 from lemur.plugins import lemur_entrust as entrust
 from lemur.plugins.bases import IssuerPlugin, SourcePlugin
 from lemur.extensions import metrics
@@ -257,16 +258,20 @@ class EntrustIssuerPlugin(IssuerPlugin):
         return cert, chain, external_id
 
     @retry(stop_max_attempt_number=3, wait_fixed=1000)
-    def revoke_certificate(self, certificate, comments):
+    def revoke_certificate(self, certificate, reason):
         """Revoke an Entrust certificate."""
         base_url = current_app.config.get("ENTRUST_URL")
 
         # make certificate revoke request
         revoke_url = f"{base_url}/certificates/{certificate.external_id}/revocations"
-        if not comments or comments == '':
+        if "comments" not in reason or reason["comments"] == '':
             comments = "revoked via API"
+        crl_reason = CRLReason.unspecified
+        if "crl_reason" in reason:
+            crl_reason = CRLReason[reason["crl_reason"]]
+
         data = {
-            "crlReason": "superseded",  # enum (keyCompromise, affiliationChanged, superseded, cessationOfOperation)
+            "crlReason": crl_reason,  # per RFC 5280 section 5.3.1
             "revocationComment": comments
         }
         response = self.session.post(revoke_url, json=data)

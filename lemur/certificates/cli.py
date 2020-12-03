@@ -5,7 +5,6 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import multiprocessing
 import sys
 from flask import current_app
 from flask_principal import Identity, identity_changed
@@ -26,9 +25,10 @@ from lemur.certificates.service import (
     get_all_valid_certs,
     get,
     get_all_certs_attached_to_endpoint_without_autorotate,
+    revoke as revoke_certificate,
 )
 from lemur.certificates.verify import verify_string
-from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
+from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS, CRLReason
 from lemur.deployment import service as deployment_service
 from lemur.domains.models import Domain
 from lemur.endpoints import service as endpoint_service
@@ -586,11 +586,10 @@ def worker(data, commit, reason):
     parts = [x for x in data.split(" ") if x]
     try:
         cert = get(int(parts[0].strip()))
-        plugin = plugins.get(cert.authority.plugin_name)
 
         print("[+] Revoking certificate. Id: {0} Name: {1}".format(cert.id, cert.name))
         if commit:
-            plugin.revoke_certificate(cert, reason)
+            revoke_certificate(cert, reason)
 
         metrics.send(
             "certificate_revoke",
@@ -620,10 +619,10 @@ def clear_pending():
     v.clear_pending_certificates()
 
 
-@manager.option(
-    "-p", "--path", dest="path", help="Absolute file path to a Lemur query csv."
-)
-@manager.option("-r", "--reason", dest="reason", help="Reason to revoke certificate.")
+@manager.option("-p", "--path", dest="path", help="Absolute file path to a Lemur query csv.")
+@manager.option("-id", "--certid", dest="cert_id", help="ID of the certificate to be revoked")
+@manager.option("-r", "--reason", dest="reason", default="unspecified", help="CRL Reason as per RFC 5280 section 5.3.1")
+@manager.option("-m", "--message", dest="message", help="Message explaining reason for revocation")
 @manager.option(
     "-c",
     "--commit",
@@ -632,20 +631,32 @@ def clear_pending():
     default=False,
     help="Persist changes.",
 )
-def revoke(path, reason, commit):
+def revoke(path, cert_id, reason, message, commit):
     """
     Revokes given certificate.
     """
+    if not path and not cert_id:
+        print("[!] No input certificates mentioned to revoke")
+        return
+    if path and cert_id:
+        print("[!] Please mention single certificate id (-id) or input file (-p)")
+        return
+
     if commit:
         print("[!] Running in COMMIT mode.")
 
     print("[+] Starting certificate revocation.")
 
-    with open(path, "r") as f:
-        args = [[x, commit, reason] for x in f.readlines()[2:]]
+    if reason not in CRLReason.__members__:
+        reason = CRLReason.unspecified.name
+    comments = {"comments": message, "crl_reason": reason}
 
-    with multiprocessing.Pool(processes=3) as pool:
-        pool.starmap(worker, args)
+    if cert_id:
+        worker(cert_id, commit, comments)
+    else:
+        with open(path, "r") as f:
+            for x in f.readlines()[2:]:
+                worker(x, commit, comments)
 
 
 @manager.command
