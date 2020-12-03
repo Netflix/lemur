@@ -388,7 +388,7 @@ class EntrustSourcePlugin(SourcePlugin):
                     "serial": serial,
                     "external_id": str(certificate["trackingId"]),
                     "csr": certificate["csr"],
-                    "owner":  certificate["tracking"]["requesterEmail"],
+                    "owner": certificate["tracking"]["requesterEmail"],
                     "description": f"Type: Entrust {certificate['certType']}\nExtended Key Usage: {certificate['eku']}"
                 }
                 certs.append(cert)
