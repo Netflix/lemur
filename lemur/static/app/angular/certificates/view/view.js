@@ -274,7 +274,7 @@ angular.module('lemur')
       });
     };
 
-     $scope.revoke = function (certificateId) {
+     $scope.revoke = function (certificate) {
       $uibModal.open({
         animation: true,
         controller: 'CertificateRevokeController',
@@ -282,10 +282,54 @@ angular.module('lemur')
         size: 'lg',
         backdrop: 'static',
         resolve: {
-          revokeId: function () {
-            return certificateId;
+          certificates: function () {
+            return [certificate];
           }
         }
       });
+    };
+    $scope.bulkActionEnabled = false;
+    $scope.showSubMenu = false;
+
+    $scope.revokeBulk = function () {
+      if ($scope.multiList.length === 0) {
+        toaster.pop({
+          type: 'error',
+          title: 'Please Select certificates to revoke using left side checkboxs',
+          body: 'lemur-bad-request',
+          bodyOutputType: 'directive',
+          timeout: 100000
+        });
+      } else {
+        $uibModal.open({
+          animation: true,
+          controller: 'CertificateRevokeController',
+          templateUrl: '/angular/certificates/certificate/revoke.tpl.html',
+          size: 'lg',
+          backdrop: 'static',
+          resolve: {
+            certificates: function () {
+              return $scope.multiList;
+            }
+          }
+        });
+      }
+    };
+    $scope.tiggleBulkAction = function (show) {
+      $scope.multiList=[];
+      if (show) {
+        $scope.showSubMenu = !$scope.showSubMenu;
+        $scope.bulkActionEnabled = true;
+      } else {
+        $scope.bulkActionEnabled = false;
+        $scope.showSubMenu = false;
+      }
+    };
+    $scope.toggleMultiListSelection = function toggleMultiListSelection(certificate) {
+      const multiList = $scope.multiList.filter(cert => cert.id !== certificate.id);
+      if (multiList.length === $scope.multiList.length) {
+        multiList.push(certificate);
+      }
+      $scope.multiList = multiList;
     };
   });

@@ -1,46 +1,63 @@
 <div class="modal-header">
   <button type="button" class="close" ng-click="cancel()" aria-label="Close"><span aria-hidden="true">&times;</span>
   </button>
-  <h3 class="modal-title">Revoke <span class="text-muted"><small>{{ certificate.name }}</small></span></h3>
+  <h3 class="modal-title">Revoke <span class="text-muted"><small>{{ certificates.length == 1? certificates[0].name: certificates.length + ' certificates' }}</small></span></h3>
 </div>
-<div class="modal-body">
-  <form name="revokeForm" ng-if="!certificate.endpoints.length" novalidate>
+<form name="revokeForm" novalidate>
+  <div class="modal-body">
     <p><strong>Certificate revocation is final. Once revoked the certificate is no longer valid.</strong></p>
-    <div class="form-horizontal">
-      <div class="form-group"
-           ng-class="{'has-error': revokeForm.confirm.$invalid, 'has-success': !revokeForm.$invalid&&revokeForm.confirm.$dirty}">
-        <label class="control-label col-sm-2">
-          Confirm Revocation
-        </label>
-        <div class="col-sm-10">
-          <input name="confirm" ng-model="confirm" placeholder='{{ certificate.name }}'
-                 uib-tooltip="Confirm revocation by entering '{{ certificate.name }}'"
-                 class="form-control"
-                 compare-to="certificate.name"
-                 required/>
+    <div ng-repeat="certificate in certificates">
+      <ng-container ng-if="!certificate.endpoints.length" >
+        <div class="form-horizontal">
+          <div class="" ng-if="certificates.length > 1"
+               ng-class="{'has-error': revokeForm.confirm_{{certificate.id}}.$invalid, 'has-success': !revokeForm.confirm_{{certificate.id}}.$invalid&&revokeForm.confirm_{{certificate.id}}.$dirty}">
+               <input ng-if="certificates.length > 1" name="{{'confirm_' + certificate.id}}" ng-model="confirm[certificate.id]"
+                      id="{{'confirm_' + certificate.id}}"
+                      uib-tooltip="Confirm revocation by selecting the checkbox"
+                      type="checkbox"
+                      required/>
+                <label class="control-label" for="{{'confirm_' + certificate.id}}">
+                  Confirm Revocation ({{certificate.name}})
+                </label>
+            </div>
+            <div class="form-group" ng-if="certificates.length === 1"
+                 ng-class="{'has-error': revokeForm.confirm_{{certificate.id}}.$invalid, 'has-success': !revokeForm.confirm_{{certificate.id}}.$invalid&&revokeForm.confirm_{{certificate.id}}.$dirty}">
 
-          <p ng-show="revokeForm.confirm.$invalid && !revokeForm.confirm.$pristine" class="help-block">
-            You must confirm certificate revocation.</p>
+                <label class="control-label col-sm-2">
+                  Confirm Revocation
+                </label>
+                <div class="col-sm-10">
+                  <input name="{{'confirm_' + certificate.id}}" ng-model="confirm[certificate.id]" placeholder='{{ certificate.name }}'
+                         uib-tooltip="Confirm revocation by entering '{{ certificate.name }}'"
+                         class="form-control"
+                         compare-to="certificate.name"
+                         required/>
+
+                  <p ng-show="revokeForm.confirm.$invalid && !revokeForm.confirm.$pristine" class="help-block">
+                    You must confirm certificate revocation.</p>
+            </div>
+          </div>
         </div>
+      </ng-container>
+      <div ng-if="certificate.endpoints.length">
+        <p><strong>Certificate might be associated with the following endpoints. Disassociate this
+          certificate before revoking or continue if you've already done so.</strong></p>
+        <ul class="list-group">
+          <li class="list-group-item" ng-repeat="endpoint in certificate.endpoints">
+            <span class="pull-right"><label class="label label-default">{{ endpoint.type }}</label></span>
+            <ul class="list-unstyled">
+              <li>{{ endpoint.name }}</li>
+              <li><span class="text-muted">{{ endpoint.dnsname }}</span></li>
+            </ul>
+          </li>
+        </ul>
       </div>
     </div>
-  </form>
-  <div ng-if="certificate.endpoints.length">
-    <p><strong>Certificate might be associated with the following endpoints. Disassociate this
-      certificate before revoking or continue if you've already done so.</strong></p>
-    <ul class="list-group">
-      <li class="list-group-item" ng-repeat="endpoint in certificate.endpoints">
-        <span class="pull-right"><label class="label label-default">{{ endpoint.type }}</label></span>
-        <ul class="list-unstyled">
-          <li>{{ endpoint.name }}</li>
-          <li><span class="text-muted">{{ endpoint.dnsname }}</span></li>
-        </ul>
-      </li>
-    </ul>
   </div>
-</div>
+</form>
+
 <div class="modal-footer">
-  <button type="submit" ng-click="revoke(certificate)" ng-disabled="revokeForm.confirm.$invalid"
+  <button type="submit" ng-click="revoke(certificates)" ng-disabled="revokeForm.$invalid"
           class="btn btn-danger">Revoke
   </button>
   <button ng-click="cancel()" class="btn">Cancel</button>

@@ -17,6 +17,17 @@
           <button ng-click="import()" class="btn btn-info">
             Import
           </button>
+          <div class="btn-group btn-default-dropdown" role="group">
+            <button ng-click="tiggleBulkAction(true)" class="btn btn-default">
+              Bulk Action
+              <span ng-if="bulkActionEnabled" class="caret"></span>
+            </button>
+
+            <ul ng-if="showSubMenu" >
+              <li><a href ng-click="tiggleBulkAction(false)">Cancel</a></li>
+              <li><a href ng-click="revokeBulk()">Revoke({{multiList.length}})</a></li>
+            </ul>
+          </div>
         </div>
         <div class="btn-group">
           <button ng-model="showFilter" class="btn btn-default" uib-btn-checkbox
@@ -56,7 +67,16 @@
           <tbody>
           <tr ng-class="{'even-row': $even }" ng-repeat-start="certificate in $data track by $index">
             <td data-title="'Id'" filter="{'id': 'text'}">
-              {{ certificate.id }}
+              <ng-container ng-if="!bulkActionEnabled">
+                {{ certificate.id }}
+              </ng-container>
+              <ng-container ng-if="bulkActionEnabled">
+                <input type="checkbox"
+                name="multiList[]"
+                value="{{ certificate.id }}"
+                ng-checked="multiList.indexOf(certificate.id) > -1"
+                ng-click="toggleMultiListSelection(certificate)"/>
+              </ng-container>
             </td>
             <td data-title="'Name'" sortable="'name'" filter="{ 'name': 'text' }">
               <ul class="list-unstyled">
@@ -98,7 +118,7 @@
                       <li><a href ng-click="edit(certificate.id)">Edit</a></li>
                       <li><a href ng-click="clone(certificate.id)">Clone</a></li>
                       <li><a href ng-click="export(certificate.id)">Export</a></li>
-                      <li><a href ng-click="revoke(certificate.id)">Revoke</a></li>
+                      <li><a href ng-click="revoke(certificate)">Revoke</a></li>
                     </ul>
                   </div>
                 </div>

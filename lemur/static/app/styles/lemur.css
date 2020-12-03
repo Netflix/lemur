@@ -209,3 +209,6 @@ a {
   overflow: hidden;
   white-space: nowrap;
 }
+.btn-default-dropdown ul{background: #393a35;}
+.btn-default-dropdown li:hover{background: #3E3F3A;}
+.btn-default-dropdown li a{color: white;}
