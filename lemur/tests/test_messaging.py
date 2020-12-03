@@ -131,13 +131,13 @@ def test_send_pending_failure_notification(notification_plugin, async_issuer_plu
 def test_get_authority_certificates():
     from lemur.notifications.messaging import get_expiring_authority_certificates
 
-    certificate_1 = create_cert_that_expires_in_days(180)
-    certificate_2 = create_cert_that_expires_in_days(365)
-    create_cert_that_expires_in_days(364)
-    create_cert_that_expires_in_days(366)
-    create_cert_that_expires_in_days(179)
-    create_cert_that_expires_in_days(181)
-    create_cert_that_expires_in_days(1)
+    certificate_1 = create_ca_cert_that_expires_in_days(180)
+    certificate_2 = create_ca_cert_that_expires_in_days(365)
+    create_ca_cert_that_expires_in_days(364)
+    create_ca_cert_that_expires_in_days(366)
+    create_ca_cert_that_expires_in_days(179)
+    create_ca_cert_that_expires_in_days(181)
+    create_ca_cert_that_expires_in_days(1)
 
     assert set(get_expiring_authority_certificates()) == {certificate_1, certificate_2}
 
@@ -147,19 +147,19 @@ def test_send_authority_expiration_notifications():
     from lemur.notifications.messaging import send_authority_expiration_notifications
     verify_sender_email()
 
-    create_cert_that_expires_in_days(180)
-    create_cert_that_expires_in_days(180)  # two on the same day results in a single email
-    create_cert_that_expires_in_days(365)
-    create_cert_that_expires_in_days(364)
-    create_cert_that_expires_in_days(366)
-    create_cert_that_expires_in_days(179)
-    create_cert_that_expires_in_days(181)
-    create_cert_that_expires_in_days(1)
+    create_ca_cert_that_expires_in_days(180)
+    create_ca_cert_that_expires_in_days(180)  # two on the same day results in a single email
+    create_ca_cert_that_expires_in_days(365)
+    create_ca_cert_that_expires_in_days(364)
+    create_ca_cert_that_expires_in_days(366)
+    create_ca_cert_that_expires_in_days(179)
+    create_ca_cert_that_expires_in_days(181)
+    create_ca_cert_that_expires_in_days(1)
 
     assert send_authority_expiration_notifications() == (2, 0)
 
 
-def create_cert_that_expires_in_days(days):
+def create_ca_cert_that_expires_in_days(days):
     now = arrow.utcnow()
     not_after = now + timedelta(days=days, hours=1)  # a bit more than specified since we'll check in the future
 

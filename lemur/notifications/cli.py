@@ -40,9 +40,7 @@ def expirations(exclude):
         print("Starting to notify subscribers about expiring certificates!")
         success, failed = send_expiration_notifications(exclude)
         print(
-            "Finished notifying subscribers about expiring certificates! Sent: {success} Failed: {failed}".format(
-                success=success, failed=failed
-            )
+            f"Finished notifying subscribers about expiring certificates! Sent: {success} Failed: {failed}"
         )
         status = SUCCESS_METRIC_STATUS
     except Exception as e:
@@ -66,9 +64,7 @@ def authority_expirations():
         success, failed = send_authority_expiration_notifications()
         print(
             "Finished notifying subscribers about expiring certificate authority certificates! "
-            "Sent: {success} Failed: {failed}".format(
-                success=success, failed=failed
-            )
+            f"Sent: {success} Failed: {failed}"
         )
         status = SUCCESS_METRIC_STATUS
     except Exception as e:

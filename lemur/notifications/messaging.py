@@ -132,7 +132,7 @@ def get_eligible_authority_certificates():
     for owner, owner_certs in groupby(all_certs, lambda x: x.owner):
         # group by expiration interval
         for interval, interval_certs in groupby(owner_certs, lambda x: (x.not_after - now).days):
-            certificates[owner][interval] = list(interval_certs)  # list(c for c in interval_certs)
+            certificates[owner][interval] = list(interval_certs)
 
     return certificates
 

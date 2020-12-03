@@ -325,7 +325,7 @@ celery tasks or cron jobs that run these commands.
 
 There are currently three commands that could/should be run on a periodic basis:
 
-- `notify expirations` and `notify authority_expirations`
+- `notify expirations` and `notify authority_expirations` (see :ref:`NotificationOptions` for configuration info)
 - `check_revoked`
 - `sync`
 
