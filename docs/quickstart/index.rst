@@ -323,6 +323,12 @@ unlock
 Decrypts sensitive key material - used to decrypt the secrets stored in source during deployment.
 
 
+Automated celery tasks
+~~~~~~~~~~~~~~~~~~~~~~
+
+Please refer to :ref:`Periodic Tasks <PeriodicTasks>` to learn more about task scheduling in Lemur.
+
+
 What's Next?
 ------------
 

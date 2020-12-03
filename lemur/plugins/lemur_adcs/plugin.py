@@ -59,8 +59,8 @@ class ADCSIssuerPlugin(IssuerPlugin):
         )
         return cert, chain, None
 
-    def revoke_certificate(self, certificate, comments):
-        raise NotImplementedError("Not implemented\n", self, certificate, comments)
+    def revoke_certificate(self, certificate, reason):
+        raise NotImplementedError("Not implemented\n", self, certificate, reason)
 
     def get_ordered_certificate(self, order_id):
         raise NotImplementedError("Not implemented\n", self, order_id)
