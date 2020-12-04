@@ -19,9 +19,10 @@ from sqlalchemy import and_
 from sqlalchemy.sql.expression import false, true
 
 from lemur import database
+from lemur.certificates import service as certificates_service
 from lemur.certificates.models import Certificate
 from lemur.certificates.schemas import certificate_notification_output_schema
-from lemur.common.utils import windowed_query
+from lemur.common.utils import windowed_query, is_selfsigned
 from lemur.constants import FAILURE_METRIC_STATUS, SUCCESS_METRIC_STATUS
 from lemur.extensions import metrics, sentry
 from lemur.pending_certificates.schemas import pending_certificate_output_schema
@@ -62,6 +63,34 @@ def get_certificates(exclude=None):
     return certs
 
 
+def get_expiring_authority_certificates():
+    """
+    Finds all certificate authority certificates that are eligible for expiration notifications.
+    :return:
+    """
+    now = arrow.utcnow()
+    authority_expiration_intervals = current_app.config.get("LEMUR_AUTHORITY_CERT_EXPIRATION_EMAIL_INTERVALS",
+                                                            [365, 180])
+    max_not_after = now + timedelta(days=max(authority_expiration_intervals) + 1)
+
+    q = (
+        database.db.session.query(Certificate)
+        .filter(Certificate.not_after < max_not_after)
+        .filter(Certificate.notify == true())
+        .filter(Certificate.expired == false())
+        .filter(Certificate.revoked == false())
+        .filter(Certificate.root_authority_id.isnot(None))
+        .filter(Certificate.authority_id.is_(None))
+    )
+
+    certs = []
+    for c in windowed_query(q, Certificate.id, 10000):
+        days_remaining = (c.not_after - now).days
+        if days_remaining in authority_expiration_intervals:
+            certs.append(c)
+    return certs
+
+
 def get_eligible_certificates(exclude=None):
     """
     Finds all certificates that are eligible for certificate expiration notification.
@@ -86,6 +115,25 @@ def get_eligible_certificates(exclude=None):
         # group by notification
         for notification, items in groupby(notification_groups, lambda x: x[0].label):
             certificates[owner][notification] = list(items)
+
+    return certificates
+
+
+def get_eligible_authority_certificates():
+    """
+    Finds all certificate authority certificates that are eligible for certificate expiration notification.
+    Returns the set of all eligible CA certificates, grouped by owner and interval, with a list of applicable certs.
+    :return:
+    """
+    certificates = defaultdict(dict)
+    all_certs = get_expiring_authority_certificates()
+    now = arrow.utcnow()
+
+    # group by owner
+    for owner, owner_certs in groupby(all_certs, lambda x: x.owner):
+        # group by expiration interval
+        for interval, interval_certs in groupby(owner_certs, lambda x: (x.not_after - now).days):
+            certificates[owner][interval] = list(interval_certs)
 
     return certificates
 
@@ -172,6 +220,40 @@ def send_expiration_notifications(exclude):
                     success = 1 + len(email_recipients)
                 else:
                     failure = 1 + len(email_recipients)
+
+    return success, failure
+
+
+def send_authority_expiration_notifications():
+    """
+    This function will check for upcoming certificate authority certificate expiration,
+    and send out notification emails at configured intervals.
+    """
+    success = failure = 0
+
+    # security team gets all
+    security_email = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
+
+    for owner, owner_cert_groups in get_eligible_authority_certificates().items():
+        for interval, certificates in owner_cert_groups.items():
+            notification_data = []
+
+            for certificate in certificates:
+                cert_data = certificate_notification_output_schema.dump(
+                    certificate
+                ).data
+                cert_data['self_signed'] = is_selfsigned(certificate.parsed_cert)
+                cert_data['issued_cert_count'] = certificates_service.get_issued_cert_count_for_authority(certificate.root_authority)
+                notification_data.append(cert_data)
+
+            email_recipients = security_email + [owner]
+            if send_default_notification(
+                    "authority_expiration", notification_data, email_recipients,
+                    notification_options=[{'name': 'interval', 'value': interval}]
+            ):
+                success = len(email_recipients)
+            else:
+                failure = len(email_recipients)
 
     return success, failure
 

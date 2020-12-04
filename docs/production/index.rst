@@ -325,7 +325,7 @@ celery tasks or cron jobs that run these commands.
 
 There are currently three commands that could/should be run on a periodic basis:
 
-- `notify`
+- `notify expirations` and `notify authority_expirations` (see :ref:`NotificationOptions` for configuration info)
 - `check_revoked`
 - `sync`
 
@@ -334,13 +334,15 @@ If you are using LetsEncrypt, you must also run the following:
 - `fetch_all_pending_acme_certs`
 - `remove_old_acme_certs`
 
-How often you run these commands is largely up to the user. `notify` and `check_revoked` are typically run at least once a day.
+How often you run these commands is largely up to the user. `notify` should be run once a day (more often will result in
+duplicate notifications). `check_revoked` is typically run at least once a day.
 `sync` is typically run every 15 minutes. `fetch_all_pending_acme_certs` should be ran frequently (Every minute is fine).
 `remove_old_acme_certs` can be ran more rarely, such as once every week.
 
 Example cron entries::
 
     0 22 * * * lemuruser export LEMUR_CONF=/Users/me/.lemur/lemur.conf.py; /www/lemur/bin/lemur notify expirations
+    0 22 * * * lemuruser export LEMUR_CONF=/Users/me/.lemur/lemur.conf.py; /www/lemur/bin/lemur notify authority_expirations
     */15 * * * * lemuruser export LEMUR_CONF=/Users/me/.lemur/lemur.conf.py; /www/lemur/bin/lemur source sync -s all
     0 22 * * * lemuruser export LEMUR_CONF=/Users/me/.lemur/lemur.conf.py; /www/lemur/bin/lemur certificate check_revoked
 
@@ -382,6 +384,20 @@ Example Celery configuration (To be placed in your configuration file)::
                 'expires': 180
             },
             'schedule': crontab(hour="*"),
+        },
+        'notify_expirations': {
+            'task': 'lemur.common.celery.notify_expirations',
+            'options': {
+                'expires': 180
+            },
+            'schedule': crontab(hour=22, minute=0),
+        },
+        'notify_authority_expirations': {
+            'task': 'lemur.common.celery.notify_authority_expirations',
+            'options': {
+                'expires': 180
+            },
+            'schedule': crontab(hour=22, minute=0),
         }
     }
 
