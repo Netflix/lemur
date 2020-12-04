@@ -21,13 +21,14 @@ def log_status_code(r, *args, **kwargs):
     :param kwargs:
     :return:
     """
-    log_data = {
-        "reason": (r.reason if r.reason else ""),
-        "status_code": r.status_code,
-        "url": (r.url if r.url else ""),
-    }
-    metrics.send(f"entrust_status_code_{r.status_code}", "counter", 1)
-    current_app.logger.info(log_data)
+    if r.status_code != 200:
+        log_data = {
+            "reason": (r.reason if r.reason else ""),
+            "status_code": r.status_code,
+            "url": (r.url if r.url else ""),
+        }
+        metrics.send(f"entrust_status_code_{r.status_code}", "counter", 1)
+        current_app.logger.info(log_data)
 
 
 def determine_end_date(end_date):
@@ -318,10 +319,91 @@ class EntrustSourcePlugin(SourcePlugin):
 
     author = "sirferl"
     author_url = "https://github.com/sirferl/lemur"
+    options = [
+        {
+            "name": "dummy",
+            "type": "str",
+            "required": False,
+            "validation": "/^[0-9]{12,12}$/",
+            "helpMessage": "Just to prevent error",
+        }
+    ]
+
+    def __init__(self, *args, **kwargs):
+        """Initialize the issuer with the appropriate details."""
+        required_vars = [
+            "ENTRUST_API_CERT",
+            "ENTRUST_API_KEY",
+            "ENTRUST_API_USER",
+            "ENTRUST_API_PASS",
+            "ENTRUST_URL",
+            "ENTRUST_ROOT",
+            "ENTRUST_NAME",
+            "ENTRUST_EMAIL",
+            "ENTRUST_PHONE",
+        ]
+        validate_conf(current_app, required_vars)
+
+        self.session = requests.Session()
+        cert_file = current_app.config.get("ENTRUST_API_CERT")
+        key_file = current_app.config.get("ENTRUST_API_KEY")
+        user = current_app.config.get("ENTRUST_API_USER")
+        password = current_app.config.get("ENTRUST_API_PASS")
+        self.session.cert = (cert_file, key_file)
+        self.session.auth = (user, password)
+        self.session.hooks = dict(response=log_status_code)
+        super(EntrustSourcePlugin, self).__init__(*args, **kwargs)
 
     def get_certificates(self, options, **kwargs):
-        # Not needed for ENTRUST
-        raise NotImplementedError("Not implemented\n", self, options, **kwargs)
+        """ Fetch all Entrust certificates """
+        base_url = current_app.config.get("ENTRUST_URL")
+        host = base_url.replace('/enterprise/v2', '')
+
+        get_url = f"{base_url}/certificates"
+        certs = []
+        processed_certs = 0
+        offset = 0
+        while True:
+            response = self.session.get(get_url,
+                 params={
+                     "status": "ACTIVE",
+                     "isThirdParty": "false",
+                     "fields": "uri,dn",
+                     "offset": offset
+                 }
+            )
+            try:
+                data = json.loads(response.content)
+            except ValueError:
+                # catch an empty jason object here
+                data = {'response': 'No detailed message'}
+            status_code = response.status_code
+            if status_code > 399:
+                raise Exception(f"ENTRUST error: {status_code}\n{data['errors']}")
+            for c in data["certificates"]:
+                download_url = "{0}{1}".format(
+                    host, c["uri"]
+                )
+                cert_response = self.session.get(download_url)
+                certificate = json.loads(cert_response.content)
+                # normalize serial
+                serial = str(int(certificate["serialNumber"], 16))
+                cert = {
+                    "body": certificate["endEntityCert"],
+                    "serial": serial,
+                    "external_id": str(certificate["trackingId"]),
+                    "csr": certificate["csr"],
+                    "owner": certificate["tracking"]["requesterEmail"],
+                    "description": f"Imported by Lemur; Type: Entrust {certificate['certType']}\nExtended Key Usage: {certificate['eku']}"
+                }
+                certs.append(cert)
+                processed_certs += 1
+            if data["summary"]["limit"] * offset >= data["summary"]["total"]:
+                break
+            else:
+                offset += 1
+        current_app.logger.info(f"Retrieved {processed_certs} ertificates")
+        return certs
 
     def get_endpoints(self, options, **kwargs):
         # There are no endpoints in ENTRUST
