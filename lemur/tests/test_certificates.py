@@ -1383,6 +1383,8 @@ def test_issued_cert_count_for_authority(authority):
     from lemur.tests.factories import CertificateFactory
     from lemur.certificates.service import get_issued_cert_count_for_authority
 
+    assert get_issued_cert_count_for_authority(authority) == 0
+
     # create a few certs issued by the authority
     CertificateFactory(authority=authority, name="test_issued_cert_count_for_authority1")
     CertificateFactory(authority=authority, name="test_issued_cert_count_for_authority2")

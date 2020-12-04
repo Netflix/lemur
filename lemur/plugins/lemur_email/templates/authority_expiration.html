@@ -94,7 +94,7 @@
                                                                        {% if certificate.self_signed %}
                                                                            <b>Root</b>
                                                                        {% else %}
-                                                                           Subordinate
+                                                                           Intermediate
                                                                        {% endif %} CA
                                                                         <br>{{ certificate.issued_cert_count }} issued certificates
                                                                         <br>{{ certificate.owner }}
