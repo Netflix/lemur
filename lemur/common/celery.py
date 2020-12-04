@@ -656,11 +656,12 @@ def certificate_rotate(**kwargs):
 
     current_app.logger.debug(log_data)
     try:
+        notify = current_app.config.get("ENABLE_ROTATION_NOTIFICATION", None)
         if region:
             log_data["region"] = region
-            cli_certificate.rotate_region(None, None, None, None, True, region)
+            cli_certificate.rotate_region(None, None, None, notify, True, region)
         else:
-            cli_certificate.rotate(None, None, None, None, True)
+            cli_certificate.rotate(None, None, None, notify, True)
     except SoftTimeLimitExceeded:
         log_data["message"] = "Certificate rotate: Time limit exceeded."
         current_app.logger.error(log_data)

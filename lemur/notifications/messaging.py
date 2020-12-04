@@ -19,9 +19,10 @@ from sqlalchemy import and_
 from sqlalchemy.sql.expression import false, true
 
 from lemur import database
+from lemur.certificates import service as certificates_service
 from lemur.certificates.models import Certificate
 from lemur.certificates.schemas import certificate_notification_output_schema
-from lemur.common.utils import windowed_query
+from lemur.common.utils import windowed_query, is_selfsigned
 from lemur.constants import FAILURE_METRIC_STATUS, SUCCESS_METRIC_STATUS
 from lemur.extensions import metrics, sentry
 from lemur.pending_certificates.schemas import pending_certificate_output_schema
@@ -241,6 +242,8 @@ def send_authority_expiration_notifications():
                 cert_data = certificate_notification_output_schema.dump(
                     certificate
                 ).data
+                cert_data['self_signed'] = is_selfsigned(certificate.parsed_cert)
+                cert_data['issued_cert_count'] = certificates_service.get_issued_cert_count_for_authority(certificate.root_authority)
                 notification_data.append(cert_data)
 
             email_recipients = security_email + [owner]

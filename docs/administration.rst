@@ -286,7 +286,7 @@ Supported types:
 
 * CA certificate expiration
 * Pending ACME certificate failure
-* Certificate rotation (currently disabled in code)
+* Certificate rotation
 
 **Default notifications**
 
@@ -351,6 +351,12 @@ Lemur will send the CA certificate expiration notification via email to the cert
 Whenever a pending ACME certificate fails to be issued, Lemur will send a notification via email to the certificate owner
 and security team (as specified by the ``LEMUR_SECURITY_TEAM_EMAIL`` configuration parameter). This email is not sent if
 the pending certificate had notifications disabled.
+
+**Certificate rotation**
+
+Whenever a cert is rotated, Lemur will send a notification via email to the certificate owner. This notification is
+disabled by default; to enable it, you must set the option ``--notify`` (when using cron) or the configuration parameter
+``ENABLE_ROTATION_NOTIFICATION`` (when using celery).
 
 **Email notifications**
 

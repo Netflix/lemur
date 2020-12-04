@@ -91,7 +91,12 @@
                                                                     <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:20px;color:#202020">{{ certificate.name }}</span>
                                                                     <br>
                                                                     <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#727272">
-                                                                        {{ certificate.endpoints | length }} Endpoints
+                                                                       {% if certificate.self_signed %}
+                                                                           <b>Root</b>
+                                                                       {% else %}
+                                                                           Subordinate
+                                                                       {% endif %} CA
+                                                                        <br>{{ certificate.issued_cert_count }} issued certificates
                                                                         <br>{{ certificate.owner }}
                                                                         <br>{{ certificate.validityEnd | time }}
                                                                         <a href="https://{{ hostname }}/#/certificates/{{ certificate.name }}" target="_blank">Details</a>
