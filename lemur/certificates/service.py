@@ -872,5 +872,4 @@ def get_issued_cert_count_for_authority(authority):
 
     :return:
     """
-    query = database.session_query(Certificate.id).filter(Authority.id == authority.id)
-    return database.get_count(query)
+    return database.db.session.query(Certificate).filter(Certificate.authority_id == authority.id).count()
