@@ -864,3 +864,12 @@ def cleanup_after_revoke(certificate):
 
     database.update(certificate)
     return error_message
+
+
+def get_issued_cert_count_for_authority(authority):
+    """
+    Returns the count of certs issued by the specified authority.
+
+    :return:
+    """
+    return database.db.session.query(Certificate).filter(Certificate.authority_id == authority.id).count()
