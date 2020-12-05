@@ -53,11 +53,11 @@ def sign_certificate(common_name, public_key, authority_private_key, user, exten
         with open(issuer_tmp, 'w') as i:
             i.writelines(authority_private_key)
         if 'extendedKeyUsage' in extensions and extensions['extendedKeyUsage'].get('useClientAuthentication'):
-            valid_interval = current_app.config.get("OPENSSH_VALID_INTERVAL_CLIENT", 1)  # 1 day by default
+            valid_interval = int(current_app.config.get("OPENSSH_VALID_INTERVAL_CLIENT", 0))  # number of day, same a authority by default
             cmd.extend(['-I', user['username'] + ' user key',
                         '-n', user['username']])
         else:
-            valid_interval = current_app.config.get("OPENSSH_VALID_INTERVAL_SERVER", 14)  # 2 weeks by default
+            valid_interval = int(current_app.config.get("OPENSSH_VALID_INTERVAL_SERVER", 0))  # number of day, same a authority by default
             domains = {common_name}
             for name in extensions['subAltNames']['names']:
                 if name['nameType'] == 'DNSName':
@@ -68,8 +68,12 @@ def sign_certificate(common_name, public_key, authority_private_key, user, exten
         # something like 20201024
         ssh_not_before = datetime.fromisoformat(not_before).strftime("%Y%m%d")
         cert_not_after = datetime.fromisoformat(not_after).strftime("%Y%m%d")
-        ssh_not_after = (datetime.now() + timedelta(days=valid_interval)).strftime("%Y%m%d")
-        ssh_not_after = min(ssh_not_after, cert_not_after)
+        if valid_interval == 0:
+            ssh_not_after = cert_not_after
+        else:
+            ssh_not_after = (datetime.now() + timedelta(days=valid_interval)).strftime("%Y%m%d")
+            # certificat not valid after CA expiration
+            ssh_not_after = min(ssh_not_after, cert_not_after)
         cmd.extend(['-V', ssh_not_before + ':' + ssh_not_after])
         with mktempfile() as cert_tmp:
             with open(cert_tmp, 'w') as f:

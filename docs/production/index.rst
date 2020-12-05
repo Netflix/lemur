@@ -638,7 +638,7 @@ You can remove all other `HostKey` lines.
 
 Finally restart OpenSSH.
 
-.. note:: By default the server public certificate is sign for 2 weeks. You must update the `/etc/ssh/ssh_host_key.pub` file before this delay. You can use the config's parameter OPENSSH_VALID_INTERVAL_SERVER to change this behavor (unit is number of day).
+.. note:: By default, the server public certificate is signed until it expires. You can use the config's parameter OPENSSH_VALID_INTERVAL_SERVER to change this behavor (unit is number of day). In this case, you must update the `/etc/ssh/ssh_host_key.pub` file before this delay.
 
 Configure the OpenSSH client
 ----------------------------
@@ -673,4 +673,4 @@ With this configuration you don't have any line like::
 
 And you don't have to enter any password.
 
-.. note:: By default the client public certificate is sign for 1 day. You must update the `.ssh/key.pub` everyday. You can use the config's parameter OPENSSH_VALID_INTERVAL_CLIENT to change this behavor (unit is number of day).
+.. note:: By default, the client public certificate is signed until it expires. You can use the config's parameter OPENSSH_VALID_INTERVAL_CLIENT to change this behavor (unit is number of day). In this case, you must update the `~/.ssh/key.pub` file before this delay.
