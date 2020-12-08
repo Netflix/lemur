@@ -5,7 +5,7 @@ import boto3
 import pytest
 from freezegun import freeze_time
 from moto import mock_ses
-from lemur.tests.factories import AuthorityFactory, CertificateFactory
+from lemur.tests.factories import AuthorityFactory, CertificateFactory, EndpointFactory
 
 
 @mock_ses
@@ -113,6 +113,26 @@ def test_send_expiration_notification_with_no_notifications(
 
 
 @mock_ses
+def test_send_expiration_summary_notification(certificate, notification, notification_plugin):
+    from lemur.notifications.messaging import send_security_expiration_summary
+    verify_sender_email()
+
+    # we don't actually test the email contents, but adding an assortment of certs here is useful for step debugging
+    # to confirm the produced email body looks like we expect
+    create_cert_that_expires_in_days(2)
+    create_cert_that_expires_in_days(2)
+    create_cert_that_expires_in_days(2)
+    create_cert_that_expires_in_days(30)
+    create_cert_that_expires_in_days(30)
+    create_cert_that_expires_in_days(15)
+    create_cert_that_expires_in_days(20)
+    create_cert_that_expires_in_days(1)
+    create_cert_that_expires_in_days(100)
+
+    assert send_security_expiration_summary([])
+
+
+@mock_ses
 def test_send_rotation_notification(notification_plugin, certificate):
     from lemur.notifications.messaging import send_rotation_notification
     verify_sender_email()
@@ -169,4 +189,20 @@ def create_ca_cert_that_expires_in_days(days):
     certificate.notify = True
     certificate.root_authority_id = authority.id
     certificate.authority_id = None
+    return certificate
+
+
+def create_cert_that_expires_in_days(days):
+    from random import randrange
+
+    now = arrow.utcnow()
+    not_after = now + timedelta(days=days, hours=1)  # a bit more than specified since we'll check in the future
+
+    certificate = CertificateFactory()
+    certificate.not_after = not_after
+    certificate.notify = True
+    endpoints = []
+    for i in range(0, randrange(0, 5)):
+        endpoints.append(EndpointFactory())
+    certificate.endpoints = endpoints
     return certificate

@@ -11,6 +11,7 @@ from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
 from lemur.extensions import sentry, metrics
 from lemur.notifications.messaging import send_expiration_notifications
 from lemur.notifications.messaging import send_authority_expiration_notifications
+from lemur.notifications.messaging import send_security_expiration_summary
 
 manager = Manager(usage="Handles notification related tasks.")
 
@@ -72,4 +73,27 @@ def authority_expirations():
 
     metrics.send(
         "authority_expiration_notification_job", "counter", 1, metric_tags={"status": status}
+    )
+
+
+def security_expiration_summary(exclude):
+    """
+    Sends a summary email with info on all expiring certs (that match the configured expiry intervals).
+
+    :return:
+    """
+    status = FAILURE_METRIC_STATUS
+    try:
+        print("Starting to notify security team about expiring certificates!")
+        success, failed = send_security_expiration_summary(exclude)
+        print(
+            "Finished notifying security team about expiring certificates! "
+            f"Sent: {success} Failed: {failed}"
+        )
+        status = SUCCESS_METRIC_STATUS
+    except Exception:
+        sentry.captureException()
+
+    metrics.send(
+        "security_expiration_notification_job", "counter", 1, metric_tags={"status": status}
     )

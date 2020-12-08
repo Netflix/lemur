@@ -858,6 +858,42 @@ def notify_authority_expirations():
 
 
 @celery.task(soft_time_limit=3600)
+def send_security_expiration_summary():
+    """
+    This celery task sends a summary about expiring certificates to the security team. TODO document
+    :return:
+    """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    task_id = None
+    if celery.current_task:
+        task_id = celery.current_task.request.id
+
+    log_data = {
+        "function": function,
+        "message": "send summary for certificate expiration",
+        "task_id": task_id,
+    }
+
+    if task_id and is_task_active(function, task_id, None):
+        log_data["message"] = "Skipping task: Task is already active"
+        current_app.logger.debug(log_data)
+        return
+
+    current_app.logger.debug(log_data)
+    try:
+        cli_notification.send_security_expiration_summary()
+    except SoftTimeLimitExceeded:
+        log_data["message"] = "Send summary for expiring certs Time limit exceeded."
+        current_app.logger.error(log_data)
+        sentry.captureException()
+        metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
+        return
+
+    metrics.send(f"{function}.success", "counter", 1)
+    return log_data
+
+
+@celery.task(soft_time_limit=3600)
 def enable_autorotate_for_certs_attached_to_endpoint():
     """
     This celery task automatically enables autorotation for unexpired certificates that are
