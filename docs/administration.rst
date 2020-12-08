@@ -363,7 +363,7 @@ disabled by default; to enable it, you must set the option ``--notify`` (when us
 
 If you enable the Celery or cron task to send this notification type, Lemur will send a summary of all
 certificates with upcoming expiration date that matches one of the intervals configured in the
-``LEMUR_SECURITY_TEAM_EMAIL_INTERVALS`` configuration parameter (with the same fallbacks as noted above).
+``LEMUR_EXPIRATION_SUMMARY_EMAIL_INTERVALS`` configuration parameter (with a fallback of 14 days).
 Note that certificates will be included in this summary even if they do not have any associated notifications.
 
 This notification type also supports the same ``--exclude`` and ``EXCLUDE_CN_FROM_NOTIFICATION`` options as expiration emails.

@@ -70,12 +70,7 @@ def get_certificates_for_security_summary_email(exclude=None):
     :return:
     """
     now = arrow.utcnow()
-    expiration_summary_intervals = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL_INTERVALS",  # first priority
-                                                          current_app.config.get(  # second priority
-                                                              "LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS",
-                                                              [30, 15, 2]  # third priority
-                                                          )
-                                                          )
+    expiration_summary_intervals = current_app.config.get("LEMUR_EXPIRATION_SUMMARY_EMAIL_INTERVALS", [14])
     max_not_after = now + timedelta(days=max(expiration_summary_intervals) + 1)
 
     q = (
