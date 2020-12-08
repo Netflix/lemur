@@ -262,22 +262,107 @@ and are used when Lemur creates the CSR for your certificates.
         LEMUR_DEFAULT_AUTHORITY = "verisign"
 
 
+.. _NotificationOptions:
+
 Notification Options
 --------------------
 
-Lemur currently has very basic support for notifications. Currently only expiration notifications are supported. Actual notification
-is handled by the notification plugins that you have configured. Lemur ships with the 'Email' notification that allows expiration emails
-to be sent to subscribers.
+Lemur supports a small variety of notification types through a set of notification plugins.
+By default, Lemur configures a standard set of email notifications for all certificates.
 
-Templates for expiration emails are located under `lemur/plugins/lemur_email/templates` and can be modified for your needs.
-Notifications are sent to the certificate creator, owner and security team as specified by the `LEMUR_SECURITY_TEAM_EMAIL` configuration parameter.
+**Plugin-capable notifications**
 
-Certificates marked as inactive will **not** be notified of upcoming expiration. This enables a user to essentially
-silence the expiration. If a certificate is active and is expiring the above will be notified according to the `LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS` or
-30, 15, 2 days before expiration if no intervals are set.
+These notifications can be configured to use all available notification plugins.
 
-Lemur supports sending certificate expiration notifications through SES and SMTP.
+Supported types:
 
+* Certificate expiration
+
+**Email-only notifications**
+
+These notifications can only be sent via email and cannot use other notification plugins.
+
+Supported types:
+
+* CA certificate expiration
+* Pending ACME certificate failure
+* Certificate rotation
+
+**Default notifications**
+
+When a certificate is created, the following email notifications are created for it if they do not exist.
+If these notifications already exist, they will be associated with the new certificate.
+
+* ``DEFAULT_<OWNER>_X_DAY``, where X is the set of values specified in ``LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS`` and defaults to 30, 15, and 2 if not specified. The owner's username will replace ``<OWNER>``.
+* ``DEFAULT_SECURITY_X_DAY``, where X is the set of values specified in ``LEMUR_SECURITY_TEAM_EMAIL_INTERVALS`` and defaults to ``LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS`` if not specified (which also defaults to 30, 15, and 2 if not specified).
+
+These notifications can be disabled if desired. They can also be unassociated with a specific certificate.
+
+**Disabling notifications**
+
+Notifications can be disabled either for an individual certificate (which disables all notifications for that certificate)
+or for an individual notification object (which disables that notification for all associated certificates).
+At present, disabling a notification object will only disable certificate expiration notifications, and not other types,
+since other notification types don't use notification objects.
+
+**Certificate expiration**
+
+Certificate expiration notifications are sent when the scheduled task to send certificate expiration notifications runs
+(see :ref:`PeriodicTasks`). Specific patterns of certificate names may be excluded using ``--exclude`` (when using
+cron; you may specify this multiple times for multiple patterns) or via the config option ``EXCLUDE_CN_FROM_NOTIFICATION``
+(when using celery; this is a list configuration option, meaning you specify multiple values, such as
+``['exclude', 'also exclude']``). The specified exclude pattern will match if found anywhere in the certificate name.
+
+When the periodic task runs, Lemur checks for certificates meeting the following conditions:
+
+* Certificate has notifications enabled
+* Certificate is not expired
+* Certificate is not revoked
+* Certificate name does not match the `exclude` parameter
+* Certificate has at least one associated notification object
+* That notification is active
+* That notification's configured interval and unit match the certificate's remaining lifespan
+
+All eligible certificates are then grouped by owner and applicable notification. For each notification and certificate group,
+Lemur will send the expiration notification using whichever plugin was configured for that notification object.
+In addition, Lemur will send an email to the certificate owner and security team (as specified by the
+``LEMUR_SECURITY_TEAM_EMAIL`` configuration parameter).
+
+**CA certificate expiration**
+
+Certificate authority certificate expiration notifications are sent when the scheduled task to send authority certificate
+expiration notifications runs (see :ref:`PeriodicTasks`). Notifications are sent via the intervals configured in the
+configuration parameter ``LEMUR_AUTHORITY_CERT_EXPIRATION_EMAIL_INTERVALS``, with a default of 365 and 180 days.
+
+When the periodic task runs, Lemur checks for certificates meeting the following conditions:
+
+* Certificate has notifications enabled
+* Certificate is not expired
+* Certificate is not revoked
+* Certificate is associated with a CA
+* Certificate's remaining lifespan matches one of the configured intervals
+
+All eligible certificates are then grouped by owner and expiration interval. For each interval and certificate group,
+Lemur will send the CA certificate expiration notification via email to the certificate owner and security team
+(as specified by the ``LEMUR_SECURITY_TEAM_EMAIL`` configuration parameter).
+
+**Pending ACME certificate failure**
+
+Whenever a pending ACME certificate fails to be issued, Lemur will send a notification via email to the certificate owner
+and security team (as specified by the ``LEMUR_SECURITY_TEAM_EMAIL`` configuration parameter). This email is not sent if
+the pending certificate had notifications disabled.
+
+**Certificate rotation**
+
+Whenever a cert is rotated, Lemur will send a notification via email to the certificate owner. This notification is
+disabled by default; to enable it, you must set the option ``--notify`` (when using cron) or the configuration parameter
+``ENABLE_ROTATION_NOTIFICATION`` (when using celery).
+
+**Email notifications**
+
+Templates for emails are located under `lemur/plugins/lemur_email/templates` and can be modified for your needs.
+
+The following configuration options are supported:
 
 .. data:: LEMUR_EMAIL_SENDER
     :noindex:
@@ -318,7 +403,7 @@ Lemur supports sending certificate expiration notifications through SES and SMTP
 
         ::
 
-            LEMUR_EMAIL = 'lemur.example.com'
+            LEMUR_EMAIL = 'lemur@example.com'
 
 
 .. data:: LEMUR_SECURITY_TEAM_EMAIL
@@ -333,7 +418,7 @@ Lemur supports sending certificate expiration notifications through SES and SMTP
 .. data:: LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS
     :noindex:
 
-        Lemur notification intervals
+        Lemur notification intervals. If unspecified, the value [30, 15, 2] is used.
 
         ::
 
@@ -347,6 +432,15 @@ Lemur supports sending certificate expiration notifications through SES and SMTP
        ::
 
           LEMUR_SECURITY_TEAM_EMAIL_INTERVALS = [15, 2]
+
+.. data:: LEMUR_AUTHORITY_CERT_EXPIRATION_EMAIL_INTERVALS
+    :noindex:
+
+       Notification interval set for CA certificate expiration notifications. If unspecified, the value [365, 180] is used (roughly one year and 6 months).
+
+       ::
+
+          LEMUR_AUTHORITY_CERT_EXPIRATION_EMAIL_INTERVALS = [365, 180]
 
 
 Celery Options
