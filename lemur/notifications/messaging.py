@@ -75,10 +75,10 @@ def get_certificates_for_security_summary_email(exclude=None):
 
     q = (
         database.db.session.query(Certificate)
-            .filter(Certificate.not_after <= max_not_after)
-            .filter(Certificate.notify == true())
-            .filter(Certificate.expired == false())
-            .filter(Certificate.revoked == false())
+        .filter(Certificate.not_after <= max_not_after)
+        .filter(Certificate.notify == true())
+        .filter(Certificate.expired == false())
+        .filter(Certificate.revoked == false())
     )
 
     exclude_conditions = []
@@ -434,7 +434,7 @@ def send_security_expiration_summary(exclude=None):
     notification_type = "expiration_summary"
     log_data = {
         "function": function,
-        "message": f"Sending expiration summary notification for to security team",
+        "message": "Sending expiration summary notification for to security team",
         "notification_type": notification_type,
         "notification_plugin": notification_plugin.slug,
     }
