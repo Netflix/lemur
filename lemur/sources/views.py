@@ -156,7 +156,7 @@ class SourcesList(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
-        if "plugin_options" in data["plugin"]: 
+        if "plugin_options" in data["plugin"]:
             return service.create(
                 data["label"],
                 data["plugin"]["slug"],
