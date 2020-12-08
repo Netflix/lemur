@@ -108,7 +108,8 @@ class EmailNotificationPlugin(ExpirationNotificationPlugin):
         if not targets:
             return
 
-        subject = "Lemur: {0} Notification".format(notification_type.capitalize())
+        readable_notification_type = ' '.join(map(lambda x: x.capitalize(), notification_type.split('_')))
+        subject = f"Lemur: {readable_notification_type} Notification"
 
         body = render_html(notification_type, options, message)
 

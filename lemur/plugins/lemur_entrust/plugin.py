@@ -385,7 +385,7 @@ class EntrustSourcePlugin(SourcePlugin):
                     "external_id": str(certificate["trackingId"]),
                     "csr": certificate["csr"],
                     "owner": certificate["tracking"]["requesterEmail"],
-                    "description": f"Type: Entrust {certificate['certType']}\nExtended Key Usage: {certificate['eku']}"
+                    "description": f"Imported by Lemur; Type: Entrust {certificate['certType']}\nExtended Key Usage: {certificate['eku']}"
                 }
                 certs.append(cert)
                 processed_certs += 1
