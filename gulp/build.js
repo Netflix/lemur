@@ -169,7 +169,7 @@ function injectHtml(isDev) {
   ).pipe(gulp.dest('.tmp/'));
 }
 
-gulp.task('dev:inject', gulp.series(gulp.parallel('dev:styles', 'dev:scripts'), function () {
+gulp.task('dev:inject', gulp.series(['dev:styles', 'dev:scripts'], function () {
   return injectHtml(true);
 }));
 
@@ -184,11 +184,11 @@ gulp.task('build:ngviews', async function () {
     .pipe(size());
 });
 
-gulp.task('build:inject', gulp.series(gulp.parallel('dev:styles', 'dev:scripts', 'build:ngviews'), function () {
+gulp.task('build:inject', gulp.series(['dev:styles', 'dev:scripts', 'build:ngviews'], function () {
   return injectHtml(false);
 }));
 
-gulp.task('build:html', gulp.series(gulp.parallel('dev:styles', 'dev:scripts', 'build:ngviews', 'build:inject'), function () {
+gulp.task('build:html', gulp.series(['dev:styles', 'dev:scripts', 'build:ngviews', 'build:inject'], function () {
   var jsFilter = filter(['**/*.js'], {'restore': true});
   var cssFilter = filter(['**/*.css'], {'restore': true});
 
@@ -259,5 +259,5 @@ gulp.task('addUrlContextPath', gulp.series('addUrlContextPath:revreplace', async
 }));
 
 
-gulp.task('build', gulp.series(gulp.parallel('build:ngviews', 'build:inject', 'build:images', 'build:fonts', 'build:html', 'build:extras')));
-gulp.task('package', gulp.series(gulp.parallel('addUrlContextPath', 'package:strip')));
+gulp.task('build', gulp.series(['build:ngviews', 'build:inject', 'build:images', 'build:fonts', 'build:html', 'build:extras']));
+gulp.task('package', gulp.series(['addUrlContextPath', 'package:strip']));
