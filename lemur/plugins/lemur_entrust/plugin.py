@@ -319,15 +319,6 @@ class EntrustSourcePlugin(SourcePlugin):
 
     author = "sirferl"
     author_url = "https://github.com/sirferl/lemur"
-    options = [
-        {
-            "name": "dummy",
-            "type": "str",
-            "required": False,
-            "validation": "/^[0-9]{12,12}$/",
-            "helpMessage": "Just to prevent error",
-        }
-    ]
 
     def __init__(self, *args, **kwargs):
         """Initialize the issuer with the appropriate details."""
