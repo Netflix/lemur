@@ -119,8 +119,11 @@ def test_send_expiration_summary_notification(certificate, notification, notific
 
     # we don't actually test the email contents, but adding an assortment of certs here is useful for step debugging
     # to confirm the produced email body looks like we expect
-    for i in range(1, 6):
-        create_cert_that_expires_in_days(14)
+    create_cert_that_expires_in_days(14)
+    create_cert_that_expires_in_days(12)
+    create_cert_that_expires_in_days(9)
+    create_cert_that_expires_in_days(7)
+    create_cert_that_expires_in_days(7)
     create_cert_that_expires_in_days(2)
     create_cert_that_expires_in_days(30)
     create_cert_that_expires_in_days(15)

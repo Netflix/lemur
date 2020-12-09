@@ -860,7 +860,7 @@ def notify_authority_expirations():
 @celery.task(soft_time_limit=3600)
 def send_security_expiration_summary():
     """
-    This celery task sends a summary about expiring certificates to the security team. TODO document
+    This celery task sends a summary about expiring certificates to the security team.
     :return:
     """
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
@@ -881,7 +881,7 @@ def send_security_expiration_summary():
 
     current_app.logger.debug(log_data)
     try:
-        cli_notification.send_security_expiration_summary()
+        cli_notification.security_expiration_summary(current_app.config.get("EXCLUDE_CN_FROM_NOTIFICATION", []))
     except SoftTimeLimitExceeded:
         log_data["message"] = "Send summary for expiring certs Time limit exceeded."
         current_app.logger.error(log_data)

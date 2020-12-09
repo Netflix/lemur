@@ -70,8 +70,8 @@ def get_certificates_for_security_summary_email(exclude=None):
     :return:
     """
     now = arrow.utcnow()
-    expiration_summary_intervals = current_app.config.get("LEMUR_EXPIRATION_SUMMARY_EMAIL_INTERVALS", [14])
-    max_not_after = now + timedelta(days=max(expiration_summary_intervals) + 1)
+    threshold_days = current_app.config.get("LEMUR_EXPIRATION_SUMMARY_EMAIL_THRESHOLD_DAYS", 14)
+    max_not_after = now + timedelta(days=threshold_days + 1)
 
     q = (
         database.db.session.query(Certificate)
@@ -91,7 +91,7 @@ def get_certificates_for_security_summary_email(exclude=None):
     certs = []
     for c in windowed_query(q, Certificate.id, 10000):
         days_remaining = (c.not_after - now).days
-        if days_remaining in expiration_summary_intervals:
+        if days_remaining <= threshold_days:
             certs.append(c)
     return certs
 
