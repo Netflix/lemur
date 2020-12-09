@@ -104,7 +104,7 @@ The `IssuerPlugin` exposes four functions functions::
 
     def create_certificate(self, csr, issuer_options):
         # requests.get('a third party')
-    def revoke_certificate(self, certificate, comments):
+    def revoke_certificate(self, certificate, reason):
         # requests.put('a third party')
     def get_ordered_certificate(self, order_id):
         # requests.get('already existing certificate')
@@ -215,12 +215,13 @@ Notification
 ------------
 
 Lemur includes the ability to create Email notifications by **default**. These notifications
-currently come in the form of expiration and rotation notices. Lemur periodically checks certificate expiration dates and
+currently come in the form of expiration and rotation notices for all certificates, expiration notices for CA certificates,
+and ACME certificate creation failure notices. Lemur periodically checks certificate expiration dates and
 determines if a given certificate is eligible for notification. There are currently only two parameters used to
 determine if a certificate is eligible; validity expiration (date the certificate is no longer valid) and the number
 of days the current date (UTC) is from that expiration date.
 
-Expiration notifications can also be configured for Slack or AWS SNS. Rotation notifications are not configurable.
+Certificate expiration notifications can also be configured for Slack or AWS SNS. Other notifications are not configurable.
 Notifications sent to a certificate owner and security team (`LEMUR_SECURITY_TEAM_EMAIL`) can currently only be sent via email.
 
 There are currently two objects that are available for notification plugins. The first is `NotificationPlugin`, which is the base object for

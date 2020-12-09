@@ -149,6 +149,38 @@ def get_listener_arn_from_endpoint(endpoint_name, endpoint_port, **kwargs):
         raise
 
 
+@sts_client("elbv2")
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=5)
+def get_load_balancer_arn_from_endpoint(endpoint_name, **kwargs):
+    """
+    Get a load balancer ARN from an endpoint.
+    :param endpoint_name:
+    :return:
+    """
+    try:
+        client = kwargs.pop("client")
+        elbs = client.describe_load_balancers(Names=[endpoint_name])
+        if "LoadBalancers" in elbs and elbs["LoadBalancers"]:
+            return elbs["LoadBalancers"][0]["LoadBalancerArn"]
+
+    except Exception as e:  # noqa
+        metrics.send(
+            "get_load_balancer_arn_from_endpoint",
+            "counter",
+            1,
+            metric_tags={
+                "error": str(e),
+                "endpoint_name": endpoint_name,
+            },
+        )
+        sentry.captureException(
+            extra={
+                "endpoint_name": str(endpoint_name),
+            }
+        )
+        raise
+
+
 @sts_client("elb")
 @retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
 def get_elbs(**kwargs):

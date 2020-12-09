@@ -103,6 +103,30 @@ def test_delete_cert(session):
     assert not cert_exists
 
 
+def test_cleanup_after_revoke(session, issuer_plugin, crypto_authority):
+    from lemur.certificates.service import cleanup_after_revoke, get
+    from lemur.tests.factories import CertificateFactory
+
+    revoke_this = CertificateFactory(name="REVOKEME")
+    session.commit()
+
+    to_be_revoked = get(revoke_this.id)
+    assert to_be_revoked
+    to_be_revoked.notify = True
+    to_be_revoked.rotation = True
+
+    # Assuming the cert is revoked by corresponding issuer, update the records in lemur
+    cleanup_after_revoke(to_be_revoked)
+    revoked_cert = get(to_be_revoked.id)
+
+    # then not exist after delete
+    assert revoked_cert
+    assert revoked_cert.status == "revoked"
+    assert not revoked_cert.notify
+    assert not revoked_cert.rotation
+    assert not revoked_cert.destinations
+
+
 def test_get_by_attributes(session, certificate):
     from lemur.certificates.service import get_by_attributes
 
@@ -655,6 +679,23 @@ def test_certificate_upload_schema_wrong_chain_2nd(client):
             "Incorrect chain certificate(s) provided: 'LemurTrust Unittests Class 1 CA 2018' is "
             "not signed by 'san.example.org'"
         ]
+    }
+
+
+def test_certificate_revoke_schema():
+    from lemur.certificates.schemas import CertificateRevokeSchema
+
+    input = {
+        "comments": "testing certificate revoke schema",
+        "crl_reason": "cessationOfOperation"
+    }
+    data, errors = CertificateRevokeSchema().load(input)
+    assert not errors
+
+    input["crl_reason"] = "fakeCrlReason"
+    data, errors = CertificateRevokeSchema().load(input)
+    assert errors == {
+        "crl_reason": ['Not a valid choice.']
     }
 
 
@@ -1336,3 +1377,17 @@ def test_boolean_filter(client):
         headers=VALID_ADMIN_HEADER_TOKEN,
     )
     assert resp.status_code == 200
+
+
+def test_issued_cert_count_for_authority(authority):
+    from lemur.tests.factories import CertificateFactory
+    from lemur.certificates.service import get_issued_cert_count_for_authority
+
+    assert get_issued_cert_count_for_authority(authority) == 0
+
+    # create a few certs issued by the authority
+    CertificateFactory(authority=authority, name="test_issued_cert_count_for_authority1")
+    CertificateFactory(authority=authority, name="test_issued_cert_count_for_authority2")
+    CertificateFactory(authority=authority, name="test_issued_cert_count_for_authority3")
+
+    assert get_issued_cert_count_for_authority(authority) == 3

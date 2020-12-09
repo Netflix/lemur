@@ -56,7 +56,10 @@ def test_process_options(mock_current_app, authority):
             "requesterName": mock_current_app.config.get("ENTRUST_NAME"),
             "requesterEmail": mock_current_app.config.get("ENTRUST_EMAIL"),
             "requesterPhone": mock_current_app.config.get("ENTRUST_PHONE")
-        }
+        },
+        "org": "Example, Inc.",
+        "clientId": 1
     }
 
-    assert expected == plugin.process_options(options)
+    client_id = 1
+    assert expected == plugin.process_options(options, client_id)

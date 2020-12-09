@@ -18,6 +18,7 @@ from flask import current_app
 
 from lemur.common.utils import parse_certificate
 from lemur.common.utils import get_authority_key
+from lemur.constants import CRLReason
 from lemur.plugins.bases import IssuerPlugin
 from lemur.plugins import lemur_cfssl as cfssl
 from lemur.extensions import metrics
@@ -102,16 +103,23 @@ class CfsslIssuerPlugin(IssuerPlugin):
         role = {"username": "", "password": "", "name": "cfssl"}
         return current_app.config.get("CFSSL_ROOT"), "", [role]
 
-    def revoke_certificate(self, certificate, comments):
+    def revoke_certificate(self, certificate, reason):
         """Revoke a CFSSL certificate."""
         base_url = current_app.config.get("CFSSL_URL")
         create_url = "{0}/api/v1/cfssl/revoke".format(base_url)
+
+        crl_reason = CRLReason.unspecified
+        if "crl_reason" in reason:
+            crl_reason = CRLReason[reason["crl_reason"]]
+
         data = (
             '{"serial": "'
             + certificate.external_id
             + '","authority_key_id": "'
             + get_authority_key(certificate.body)
-            + '", "reason": "superseded"}'
+            + '", "reason": "'
+            + crl_reason
+            + '"}'
         )
         current_app.logger.debug("Revoking cert: {0}".format(data))
         response = self.session.post(

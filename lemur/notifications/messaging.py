@@ -16,11 +16,13 @@ from itertools import groupby
 import arrow
 from flask import current_app
 from sqlalchemy import and_
+from sqlalchemy.sql.expression import false, true
 
 from lemur import database
+from lemur.certificates import service as certificates_service
 from lemur.certificates.models import Certificate
 from lemur.certificates.schemas import certificate_notification_output_schema
-from lemur.common.utils import windowed_query
+from lemur.common.utils import windowed_query, is_selfsigned
 from lemur.constants import FAILURE_METRIC_STATUS, SUCCESS_METRIC_STATUS
 from lemur.extensions import metrics, sentry
 from lemur.pending_certificates.schemas import pending_certificate_output_schema
@@ -40,10 +42,10 @@ def get_certificates(exclude=None):
     q = (
         database.db.session.query(Certificate)
         .filter(Certificate.not_after <= max)
-        .filter(Certificate.notify == True)
-        .filter(Certificate.expired == False)
-        .filter(Certificate.revoked == False)
-    )  # noqa
+        .filter(Certificate.notify == true())
+        .filter(Certificate.expired == false())
+        .filter(Certificate.revoked == false())
+    )
 
     exclude_conditions = []
     if exclude:
@@ -58,6 +60,34 @@ def get_certificates(exclude=None):
         if needs_notification(c):
             certs.append(c)
 
+    return certs
+
+
+def get_expiring_authority_certificates():
+    """
+    Finds all certificate authority certificates that are eligible for expiration notifications.
+    :return:
+    """
+    now = arrow.utcnow()
+    authority_expiration_intervals = current_app.config.get("LEMUR_AUTHORITY_CERT_EXPIRATION_EMAIL_INTERVALS",
+                                                            [365, 180])
+    max_not_after = now + timedelta(days=max(authority_expiration_intervals) + 1)
+
+    q = (
+        database.db.session.query(Certificate)
+        .filter(Certificate.not_after < max_not_after)
+        .filter(Certificate.notify == true())
+        .filter(Certificate.expired == false())
+        .filter(Certificate.revoked == false())
+        .filter(Certificate.root_authority_id.isnot(None))
+        .filter(Certificate.authority_id.is_(None))
+    )
+
+    certs = []
+    for c in windowed_query(q, Certificate.id, 10000):
+        days_remaining = (c.not_after - now).days
+        if days_remaining in authority_expiration_intervals:
+            certs.append(c)
     return certs
 
 
@@ -89,6 +119,25 @@ def get_eligible_certificates(exclude=None):
     return certificates
 
 
+def get_eligible_authority_certificates():
+    """
+    Finds all certificate authority certificates that are eligible for certificate expiration notification.
+    Returns the set of all eligible CA certificates, grouped by owner and interval, with a list of applicable certs.
+    :return:
+    """
+    certificates = defaultdict(dict)
+    all_certs = get_expiring_authority_certificates()
+    now = arrow.utcnow()
+
+    # group by owner
+    for owner, owner_certs in groupby(all_certs, lambda x: x.owner):
+        # group by expiration interval
+        for interval, interval_certs in groupby(owner_certs, lambda x: (x.not_after - now).days):
+            certificates[owner][interval] = list(interval_certs)
+
+    return certificates
+
+
 def send_plugin_notification(event_type, data, recipients, notification):
     """
     Executes the plugin and handles failure.
@@ -102,8 +151,9 @@ def send_plugin_notification(event_type, data, recipients, notification):
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     log_data = {
         "function": function,
-        "message": f"Sending expiration notification for to recipients {recipients}",
-        "notification_type": "expiration",
+        "message": f"Sending {event_type} notification for to recipients {recipients}",
+        "notification_type": event_type,
+        "notification_plugin": notification.plugin.slug,
         "certificate_targets": recipients,
     }
     status = FAILURE_METRIC_STATUS
@@ -120,7 +170,7 @@ def send_plugin_notification(event_type, data, recipients, notification):
         "notification",
         "counter",
         1,
-        metric_tags={"status": status, "event_type": event_type},
+        metric_tags={"status": status, "event_type": event_type, "plugin": notification.plugin.slug},
     )
 
     if status == SUCCESS_METRIC_STATUS:
@@ -137,7 +187,6 @@ def send_expiration_notifications(exclude):
     # security team gets all
     security_email = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
 
-    security_data = []
     for owner, notification_group in get_eligible_certificates(exclude=exclude).items():
 
         for notification_label, certificates in notification_group.items():
@@ -151,33 +200,60 @@ def send_expiration_notifications(exclude):
                     certificate
                 ).data
                 notification_data.append(cert_data)
-                security_data.append(cert_data)
 
-            if send_default_notification(
-                    "expiration", notification_data, [owner], notification.options
-            ):
-                success += 1
-            else:
-                failure += 1
-
-            recipients = notification.plugin.filter_recipients(notification.options, security_email + [owner])
-
+            email_recipients = notification.plugin.get_recipients(notification.options, security_email + [owner])
+            # Plugin will ONLY use the provided recipients if it's email; any other notification plugin ignores them
             if send_plugin_notification(
-                "expiration",
-                notification_data,
-                recipients,
-                notification,
+                    "expiration", notification_data, email_recipients, notification
             ):
-                success += 1
+                success += len(email_recipients)
             else:
-                failure += 1
+                failure += len(email_recipients)
+            # If we're using an email plugin, we're done,
+            #   since "security_email + [owner]" were added as email_recipients.
+            # If we're not using an email plugin, we also need to send an email to the security team and owner,
+            #   since the plugin notification didn't send anything to them.
+            if notification.plugin.slug != "email-notification":
+                if send_default_notification(
+                        "expiration", notification_data, email_recipients, notification.options
+                ):
+                    success = 1 + len(email_recipients)
+                else:
+                    failure = 1 + len(email_recipients)
 
+    return success, failure
+
+
+def send_authority_expiration_notifications():
+    """
+    This function will check for upcoming certificate authority certificate expiration,
+    and send out notification emails at configured intervals.
+    """
+    success = failure = 0
+
+    # security team gets all
+    security_email = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
+
+    for owner, owner_cert_groups in get_eligible_authority_certificates().items():
+        for interval, certificates in owner_cert_groups.items():
+            notification_data = []
+
+            for certificate in certificates:
+                cert_data = certificate_notification_output_schema.dump(
+                    certificate
+                ).data
+                cert_data['self_signed'] = is_selfsigned(certificate.parsed_cert)
+                cert_data['issued_cert_count'] = certificates_service.get_issued_cert_count_for_authority(certificate.root_authority)
+                notification_data.append(cert_data)
+
+            email_recipients = security_email + [owner]
             if send_default_notification(
-                "expiration", security_data, security_email, notification.options
+                    "authority_expiration", notification_data, email_recipients,
+                    notification_options=[{'name': 'interval', 'value': interval}]
             ):
-                success += 1
+                success = len(email_recipients)
             else:
-                failure += 1
+                failure = len(email_recipients)
 
     return success, failure
 
@@ -194,15 +270,16 @@ def send_default_notification(notification_type, data, targets, notification_opt
     :return:
     """
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
-    log_data = {
-        "function": function,
-        "message": f"Sending notification for certificate data {data}",
-        "notification_type": notification_type,
-    }
     status = FAILURE_METRIC_STATUS
     notification_plugin = plugins.get(
         current_app.config.get("LEMUR_DEFAULT_NOTIFICATION_PLUGIN", "email-notification")
     )
+    log_data = {
+        "function": function,
+        "message": f"Sending {notification_type} notification for certificate data {data} to targets {targets}",
+        "notification_type": notification_type,
+        "notification_plugin": notification_plugin.slug,
+    }
 
     try:
         current_app.logger.debug(log_data)
@@ -211,7 +288,7 @@ def send_default_notification(notification_type, data, targets, notification_opt
         status = SUCCESS_METRIC_STATUS
     except Exception as e:
         log_data["message"] = f"Unable to send {notification_type} notification for certificate data {data} " \
-                              f"to target {targets}"
+                              f"to targets {targets}"
         current_app.logger.error(log_data, exc_info=True)
         sentry.captureException()
 
@@ -219,7 +296,7 @@ def send_default_notification(notification_type, data, targets, notification_opt
         "notification",
         "counter",
         1,
-        metric_tags={"status": status, "event_type": notification_type},
+        metric_tags={"status": status, "event_type": notification_type, "plugin": notification_plugin.slug},
     )
 
     if status == SUCCESS_METRIC_STATUS:
@@ -246,15 +323,14 @@ def send_pending_failure_notification(
     data = pending_certificate_output_schema.dump(pending_cert).data
     data["security_email"] = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
 
-    notify_owner_success = False
+    email_recipients = []
     if notify_owner:
-        notify_owner_success = send_default_notification("failed", data, [data["owner"]], pending_cert)
+        email_recipients = email_recipients + [data["owner"]]
 
-    notify_security_success = False
     if notify_security:
-        notify_security_success = send_default_notification("failed", data, data["security_email"], pending_cert)
+        email_recipients = email_recipients + data["security_email"]
 
-    return notify_owner_success or notify_security_success
+    return send_default_notification("failed", data, email_recipients, pending_cert)
 
 
 def needs_notification(certificate):

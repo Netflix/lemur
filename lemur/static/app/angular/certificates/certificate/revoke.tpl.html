@@ -4,13 +4,13 @@
   <h3 class="modal-title">Revoke <span class="text-muted"><small>{{ certificate.name }}</small></span></h3>
 </div>
 <div class="modal-body">
-  <form name="revokeForm" ng-if="!certificate.endpoints.length" novalidate>
+  <form name="revokeForm" novalidate>
     <p><strong>Certificate revocation is final. Once revoked the certificate is no longer valid.</strong></p>
     <div class="form-horizontal">
       <div class="form-group"
            ng-class="{'has-error': revokeForm.confirm.$invalid, 'has-success': !revokeForm.$invalid&&revokeForm.confirm.$dirty}">
         <label class="control-label col-sm-2">
-          Confirm Revocation
+          Confirm Certificate Name
         </label>
         <div class="col-sm-10">
           <input name="confirm" ng-model="confirm" placeholder='{{ certificate.name }}'
@@ -23,12 +23,32 @@
             You must confirm certificate revocation.</p>
         </div>
       </div>
+      <div class="form-group">
+        <label class="control-label col-sm-2">
+          Reason
+        </label>
+        <div class="col-sm-10">
+          <select class="form-control" ng-model="crlReason"
+                  ng-options="option.value as option.name for option in [
+                      {'name': 'Unspecified', 'value': 'unspecified'},
+                      {'name': 'Key Compromise', 'value': 'keyCompromise'},
+                      {'name': 'CA Compromise', 'value': 'cACompromise'},
+                      {'name': 'Affiliation Changed', 'value': 'affiliationChanged'},
+                      {'name': 'Superseded', 'value': 'superseded'},
+                      {'name': 'Cessation of Operation', 'value': 'cessationOfOperation'},
+                      {'name': 'Certificate Hold', 'value': 'certificateHold'},
+                      {'name': 'Remove from CRL', 'value': 'removeFromCRL'},
+                      {'name': 'Privilege Withdrawn', 'value': 'privilegeWithdrawn'},
+                      {'name': 'Attribute Authority Compromise', 'value': 'aACompromise'}]"
+
+                  ng-init="crlReason = 'unspecified'"></select>
+        </div>
+      </div>
     </div>
   </form>
   <div ng-if="certificate.endpoints.length">
-    <p><strong>Certificate cannot be revoked, it is associated with the following endpoints. Disassociate this
-      certificate
-      before revoking.</strong></p>
+    <p><strong>Certificate might be associated with the following endpoints. Disassociate this
+      certificate before revoking or continue if you've already done so.</strong></p>
     <ul class="list-group">
       <li class="list-group-item" ng-repeat="endpoint in certificate.endpoints">
         <span class="pull-right"><label class="label label-default">{{ endpoint.type }}</label></span>
@@ -41,7 +61,7 @@
   </div>
 </div>
 <div class="modal-footer">
-  <button type="submit" ng-click="revoke(certificate)" ng-disabled="revokeForm.confirm.$invalid"
+  <button type="submit" ng-click="revoke(certificate, crlReason)" ng-disabled="revokeForm.confirm.$invalid"
           class="btn btn-danger">Revoke
   </button>
   <button ng-click="cancel()" class="btn">Cancel</button>

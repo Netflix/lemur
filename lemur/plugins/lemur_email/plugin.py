@@ -91,7 +91,7 @@ class EmailNotificationPlugin(ExpirationNotificationPlugin):
             "name": "recipients",
             "type": "str",
             "required": True,
-            "validation": "^([\w+-.%]+@[\w-.]+\.[A-Za-z]{2,4},?)+$",
+            "validation": r"^([\w+-.%]+@[\w-.]+\.[A-Za-z]{2,4},?)+$",
             "helpMessage": "Comma delimited list of email addresses",
         }
     ]
@@ -105,8 +105,11 @@ class EmailNotificationPlugin(ExpirationNotificationPlugin):
 
     @staticmethod
     def send(notification_type, message, targets, options, **kwargs):
+        if not targets:
+            return
 
-        subject = "Lemur: {0} Notification".format(notification_type.capitalize())
+        readable_notification_type = ' '.join(map(lambda x: x.capitalize(), notification_type.split('_')))
+        subject = f"Lemur: {readable_notification_type} Notification"
 
         body = render_html(notification_type, options, message)
 
@@ -119,11 +122,9 @@ class EmailNotificationPlugin(ExpirationNotificationPlugin):
             send_via_smtp(subject, body, targets)
 
     @staticmethod
-    def filter_recipients(options, excluded_recipients, **kwargs):
+    def get_recipients(options, additional_recipients, **kwargs):
         notification_recipients = get_plugin_option("recipients", options)
         if notification_recipients:
             notification_recipients = notification_recipients.split(",")
-            # removing owner and security_email from notification_recipient
-            notification_recipients = [i for i in notification_recipients if i not in excluded_recipients]
 
-        return notification_recipients
+        return list(set(notification_recipients + additional_recipients))

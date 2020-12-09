@@ -33,6 +33,7 @@
 .. moduleauthor:: Harm Weites <harm@weites.com>
 """
 
+import sys
 from acme.errors import ClientError
 from flask import current_app
 
@@ -299,6 +300,41 @@ class AWSSourcePlugin(SourcePlugin):
             )
         return None
 
+    def get_endpoint_certificate_names(self, endpoint):
+        options = endpoint.source.options
+        account_number = self.get_option("accountNumber", options)
+        region = get_region_from_dns(endpoint.dnsname)
+        certificate_names = []
+
+        if endpoint.type == "elb":
+            elb_details = elb.get_elbs(account_number=account_number,
+                                    region=region,
+                                    LoadBalancerNames=[endpoint.name],)
+
+            for lb_description in elb_details["LoadBalancerDescriptions"]:
+                for listener_description in lb_description["ListenerDescriptions"]:
+                    listener = listener_description.get("Listener")
+                    if not listener.get("SSLCertificateId"):
+                        continue
+
+                    certificate_names.append(iam.get_name_from_arn(listener.get("SSLCertificateId")))
+        elif endpoint.type == "elbv2":
+            listeners = elb.describe_listeners_v2(
+                account_number=account_number,
+                region=region,
+                LoadBalancerArn=elb.get_load_balancer_arn_from_endpoint(endpoint.name,
+                                                                        account_number=account_number,
+                                                                        region=region),
+            )
+            for listener in listeners["Listeners"]:
+                if not listener.get("Certificates"):
+                    continue
+
+                for certificate in listener["Certificates"]:
+                    certificate_names.append(iam.get_name_from_arn(certificate["CertificateArn"]))
+
+        return certificate_names
+
 
 class AWSDestinationPlugin(DestinationPlugin):
     title = "AWS"
@@ -342,6 +378,10 @@ class AWSDestinationPlugin(DestinationPlugin):
 
     def deploy(self, elb_name, account, region, certificate):
         pass
+
+    def clean(self, certificate, options, **kwargs):
+        account_number = self.get_option("accountNumber", options)
+        iam.delete_cert(certificate.name, account_number=account_number)
 
 
 class S3DestinationPlugin(ExportDestinationPlugin):
@@ -407,6 +447,75 @@ class S3DestinationPlugin(ExportDestinationPlugin):
                 self.get_option("encrypt", options),
                 account_number=self.get_option("accountNumber", options),
             )
+
+    def upload_acme_token(self, token_path, token, options, **kwargs):
+        """
+         This is called from the acme http challenge
+        :param self:
+        :param token_path:
+        :param token:
+        :param options:
+        :param kwargs:
+        :return:
+        """
+        current_app.logger.debug("S3 destination plugin is started to upload HTTP-01 challenge")
+
+        function = f"{__name__}.{sys._getframe().f_code.co_name}"
+
+        account_number = self.get_option("accountNumber", options)
+        bucket_name = self.get_option("bucket", options)
+        prefix = self.get_option("prefix", options)
+        region = self.get_option("region", options)
+        filename = token_path.split("/")[-1]
+        if not prefix.endswith("/"):
+            prefix + "/"
+
+        response = s3.put(bucket_name=bucket_name,
+                          region_name=region,
+                          prefix=prefix + filename,
+                          data=token,
+                          encrypt=False,
+                          account_number=account_number)
+        res = "Success" if response else "Failure"
+        log_data = {
+            "function": function,
+            "message": "upload acme token challenge",
+            "result": res,
+            "bucket_name": bucket_name,
+            "filename": filename
+        }
+        current_app.logger.info(log_data)
+        metrics.send(f"{function}", "counter", 1, metric_tags={"result": res,
+                                                               "bucket_name": bucket_name,
+                                                               "filename": filename})
+        return response
+
+    def delete_acme_token(self, token_path, options, **kwargs):
+
+        current_app.logger.debug("S3 destination plugin is started to delete HTTP-01 challenge")
+
+        function = f"{__name__}.{sys._getframe().f_code.co_name}"
+
+        account_number = self.get_option("accountNumber", options)
+        bucket_name = self.get_option("bucket", options)
+        prefix = self.get_option("prefix", options)
+        filename = token_path.split("/")[-1]
+        response = s3.delete(bucket_name=bucket_name,
+                             prefixed_object_name=prefix + filename,
+                             account_number=account_number)
+        res = "Success" if response else "Failure"
+        log_data = {
+            "function": function,
+            "message": "delete acme token challenge",
+            "result": res,
+            "bucket_name": bucket_name,
+            "filename": filename
+        }
+        current_app.logger.info(log_data)
+        metrics.send(f"{function}", "counter", 1, metric_tags={"result": res,
+                                                               "bucket_name": bucket_name,
+                                                               "filename": filename})
+        return response
 
 
 class SNSNotificationPlugin(ExpirationNotificationPlugin):
