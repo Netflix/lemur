@@ -63,6 +63,39 @@ def get_certificates(exclude=None):
     return certs
 
 
+def get_certificates_for_security_summary_email(exclude=None):
+    """
+    Finds all certificates that are eligible for expiration notifications for the security expiration summary.
+    :param exclude:
+    :return:
+    """
+    now = arrow.utcnow()
+    threshold_days = current_app.config.get("LEMUR_EXPIRATION_SUMMARY_EMAIL_THRESHOLD_DAYS", 14)
+    max_not_after = now + timedelta(days=threshold_days + 1)
+
+    q = (
+        database.db.session.query(Certificate)
+        .filter(Certificate.not_after <= max_not_after)
+        .filter(Certificate.notify == true())
+        .filter(Certificate.expired == false())
+        .filter(Certificate.revoked == false())
+    )
+
+    exclude_conditions = []
+    if exclude:
+        for e in exclude:
+            exclude_conditions.append(~Certificate.name.ilike("%{}%".format(e)))
+
+        q = q.filter(and_(*exclude_conditions))
+
+    certs = []
+    for c in windowed_query(q, Certificate.id, 10000):
+        days_remaining = (c.not_after - now).days
+        if days_remaining <= threshold_days:
+            certs.append(c)
+    return certs
+
+
 def get_expiring_authority_certificates():
     """
     Finds all certificate authority certificates that are eligible for expiration notifications.
@@ -115,6 +148,18 @@ def get_eligible_certificates(exclude=None):
         # group by notification
         for notification, items in groupby(notification_groups, lambda x: x[0].label):
             certificates[owner][notification] = list(items)
+
+    return certificates
+
+
+def get_eligible_security_summary_certs(exclude=None):
+    certificates = defaultdict(list)
+    all_certs = get_certificates_for_security_summary_email(exclude=exclude)
+    now = arrow.utcnow()
+
+    # group by expiration interval
+    for interval, interval_certs in groupby(all_certs, lambda x: (x.not_after - now).days):
+        certificates[interval] = list(interval_certs)
 
     return certificates
 
@@ -370,3 +415,59 @@ def needs_notification(certificate):
         if days == interval:
             notifications.append(notification)
     return notifications
+
+
+def send_security_expiration_summary(exclude=None):
+    """
+    Sends a report to the security team with a summary of all expiring certificates.
+    All expiring certificates are included here, regardless of notification configuration.
+    Certificates with notifications disabled are omitted.
+
+    :param exclude:
+    :return:
+    """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    status = FAILURE_METRIC_STATUS
+    notification_plugin = plugins.get(
+        current_app.config.get("LEMUR_DEFAULT_NOTIFICATION_PLUGIN", "email-notification")
+    )
+    notification_type = "expiration_summary"
+    log_data = {
+        "function": function,
+        "message": "Sending expiration summary notification for to security team",
+        "notification_type": notification_type,
+        "notification_plugin": notification_plugin.slug,
+    }
+
+    intervals_and_certs = get_eligible_security_summary_certs(exclude)
+    security_email = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
+
+    try:
+        current_app.logger.debug(log_data)
+
+        message_data = []
+
+        for interval, certs in intervals_and_certs.items():
+            cert_data = []
+            for certificate in certs:
+                cert_data.append(certificate_notification_output_schema.dump(certificate).data)
+            interval_data = {"interval": interval, "certificates": cert_data}
+            message_data.append(interval_data)
+
+        notification_plugin.send(notification_type, message_data, security_email, None)
+        status = SUCCESS_METRIC_STATUS
+    except Exception:
+        log_data["message"] = f"Unable to send {notification_type} notification for certificates " \
+                              f"{intervals_and_certs} to targets {security_email}"
+        current_app.logger.error(log_data, exc_info=True)
+        sentry.captureException()
+
+    metrics.send(
+        "notification",
+        "counter",
+        1,
+        metric_tags={"status": status, "event_type": notification_type, "plugin": notification_plugin.slug},
+    )
+
+    if status == SUCCESS_METRIC_STATUS:
+        return True
