@@ -238,7 +238,7 @@ gulp.task('addUrlContextPath:revision', async function(){
 });
 
 gulp.task('addUrlContextPath:revreplace', gulp.series('addUrlContextPath:revision', function(){
-  var manifest = gulp.src("lemur/static/dist/rev-manifest.json");
+  var manifest = gulp.src("lemur/static/dist/rev-manifest.json", { allowEmpty: true });
   var urlContextPathExists = argv.urlContextPath ? true : false;
   return gulp.src( "lemur/static/dist/index.html")
     .pipe(gulp.dest('lemur/static/dist'));
