@@ -323,9 +323,9 @@ Periodic Tasks
 Lemur contains a few tasks that are run and scheduled basis, currently the recommend way to run these tasks is to create
 celery tasks or cron jobs that run these commands.
 
-There are currently three commands that could/should be run on a periodic basis:
+The following commands that could/should be run on a periodic basis:
 
-- `notify expirations` and `notify authority_expirations` (see :ref:`NotificationOptions` for configuration info)
+- `notify expirations` `notify authority_expirations`, and `notify security_expiration_summary` (see :ref:`NotificationOptions` for configuration info)
 - `check_revoked`
 - `sync`
 
@@ -343,6 +343,7 @@ Example cron entries::
 
     0 22 * * * lemuruser export LEMUR_CONF=/Users/me/.lemur/lemur.conf.py; /www/lemur/bin/lemur notify expirations
     0 22 * * * lemuruser export LEMUR_CONF=/Users/me/.lemur/lemur.conf.py; /www/lemur/bin/lemur notify authority_expirations
+    0 22 * * * lemuruser export LEMUR_CONF=/Users/me/.lemur/lemur.conf.py; /www/lemur/bin/lemur notify security_expiration_summary
     */15 * * * * lemuruser export LEMUR_CONF=/Users/me/.lemur/lemur.conf.py; /www/lemur/bin/lemur source sync -s all
     0 22 * * * lemuruser export LEMUR_CONF=/Users/me/.lemur/lemur.conf.py; /www/lemur/bin/lemur certificate check_revoked
 
@@ -394,6 +395,13 @@ Example Celery configuration (To be placed in your configuration file)::
         },
         'notify_authority_expirations': {
             'task': 'lemur.common.celery.notify_authority_expirations',
+            'options': {
+                'expires': 180
+            },
+            'schedule': crontab(hour=22, minute=0),
+        },
+        'send_security_expiration_summary': {
+            'task': 'lemur.common.celery.send_security_expiration_summary',
             'options': {
                 'expires': 180
             },

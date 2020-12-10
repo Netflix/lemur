@@ -287,6 +287,7 @@ Supported types:
 * CA certificate expiration
 * Pending ACME certificate failure
 * Certificate rotation
+* Security certificate expiration summary
 
 **Default notifications**
 
@@ -357,6 +358,18 @@ the pending certificate had notifications disabled.
 Whenever a cert is rotated, Lemur will send a notification via email to the certificate owner. This notification is
 disabled by default; to enable it, you must set the option ``--notify`` (when using cron) or the configuration parameter
 ``ENABLE_ROTATION_NOTIFICATION`` (when using celery).
+
+**Security certificate expiration summary**
+
+If you enable the Celery or cron task to send this notification type, Lemur will send a summary of all
+certificates with upcoming expiration date that occurs within the number of days specified by the
+``LEMUR_EXPIRATION_SUMMARY_EMAIL_THRESHOLD_DAYS`` configuration parameter (with a fallback of 14 days).
+Note that certificates will be included in this summary even if they do not have any associated notifications.
+
+This notification type also supports the same ``--exclude`` and ``EXCLUDE_CN_FROM_NOTIFICATION`` options as expiration emails.
+
+NOTE: At present, this summary email essentially duplicates the certificate expiration notifications, since all
+certificate expiration notifications are also sent to the security team. This issue will be fixed in the future.
 
 **Email notifications**
 

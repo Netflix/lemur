@@ -54,7 +54,7 @@ of Lemur. You'll want to make sure you have a few things on your local system fi
 * pip
 * virtualenv (ideally virtualenvwrapper)
 * node.js (for npm and building css/javascript)
-+* `PostgreSQL <https://lemur.readthedocs.io/en/latest/quickstart/index.html#setup-postgres>`_
+* `PostgreSQL <https://lemur.readthedocs.io/en/latest/quickstart/index.html#setup-postgres>`_
 
 Once you've got all that, the rest is simple:
 
