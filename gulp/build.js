@@ -188,7 +188,7 @@ gulp.task('build:inject', gulp.series(['dev:styles', 'dev:scripts', 'build:ngvie
   return injectHtml(false);
 }));
 
-gulp.task('build:html', gulp.series('build:inject', function () {
+gulp.task('build:html', gulp.series(['dev:styles', 'dev:scripts', 'build:ngviews', 'build:inject'], function () {
   var jsFilter = filter(['**/*.js'], {'restore': true});
   var cssFilter = filter(['**/*.css'], {'restore': true});
 
@@ -238,8 +238,8 @@ gulp.task('addUrlContextPath:revision', async function(){
 });
 
 gulp.task('addUrlContextPath:revreplace', gulp.series('addUrlContextPath:revision', function(){
-  var manifest = gulp.src("lemur/static/dist/rev-manifest.json");
-  var urlContextPathExists = argv.urlContextPath ? true : false;
+  // var manifest = gulp.src("lemur/static/dist/rev-manifest.json");
+  // var urlContextPathExists = argv.urlContextPath ? true : false;
   return gulp.src( "lemur/static/dist/index.html")
     .pipe(gulp.dest('lemur/static/dist'));
 }));
@@ -259,5 +259,5 @@ gulp.task('addUrlContextPath', gulp.series('addUrlContextPath:revreplace', async
 }));
 
 
-gulp.task('build', gulp.series(['build:images', 'build:fonts', 'build:html', 'build:extras']));
+gulp.task('build', gulp.series(['build:ngviews', 'build:inject', 'build:images', 'build:fonts', 'build:html', 'build:extras']));
 gulp.task('package', gulp.series(['addUrlContextPath', 'package:strip']));

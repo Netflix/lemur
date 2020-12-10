@@ -38,7 +38,7 @@ function browserSyncInit(baseDir, files, browser) {
 
 }
 
-gulp.task('watch', gulp.series(['dev:inject', 'dev:fonts'], function (done) {
+gulp.task('watch', gulp.series(['dev:styles', 'dev:scripts', 'dev:inject', 'dev:fonts'], function (done) {
   gulp.watch('app/styles/**/*.less', gulp.parallel('dev:styles'));
   gulp.watch('app/styles/**/*.css', gulp.parallel('dev:styles'));
   gulp.watch('app/**/*.js', gulp.parallel('dev:scripts'));
