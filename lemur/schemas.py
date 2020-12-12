@@ -242,11 +242,11 @@ class CertificateInfoAccessSchema(BaseExtensionSchema):
 
 
 class CRLDistributionPointsSchema(BaseExtensionSchema):
-    include_crl_dp = fields.String()
+    include_cdp = fields.String()
 
     @post_dump
     def handle_keys(self, data):
-        return {"includeCRLDP": data["include_crl_dp"]}
+        return {"includeCDP": data["include_cdp"]}
 
 
 class SubjectKeyIdentifierSchema(BaseExtensionSchema):
