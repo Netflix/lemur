@@ -395,9 +395,6 @@ class AcmeDnsHandler(AcmeHandler):
                 if cname_result:
                     target_domain = cname_result
                     self.autodetect_dns_providers(target_domain)
-                    metrics.send(
-                        "get_authorizations_cname_delegation_for_domain", "counter", 1, metric_tags={"domain": domain}
-                    )
 
             if not self.dns_providers_for_domain.get(target_domain):
                 metrics.send(
