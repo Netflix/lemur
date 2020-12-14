@@ -30,7 +30,7 @@ class TestAcmeHandler(unittest.TestCase):
         self.assertEqual(expected, result)
 
     def test_authz_record(self):
-        a = acme_handlers.AuthorizationRecord("domain", "host", "authz", "challenge", "id")
+        a = acme_handlers.AuthorizationRecord("domain", "host", "authz", "challenge", "id", "cname_delegation")
         self.assertEqual(type(a), acme_handlers.AuthorizationRecord)
 
     def test_setup_acme_client_fail(self):
