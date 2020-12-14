@@ -24,7 +24,7 @@ decorator==4.4.2          # via networkx
 docker==4.2.0             # via moto
 ecdsa==0.14.1             # via moto, python-jose, sshpubkeys
 factory-boy==3.1.0        # via -r requirements-tests.in
-faker==5.0.0              # via -r requirements-tests.in, factory-boy
+faker==5.0.1              # via -r requirements-tests.in, factory-boy
 fakeredis==1.4.5          # via -r requirements-tests.in
 flask==1.1.2              # via pytest-flask
 freezegun==1.0.0          # via -r requirements-tests.in
