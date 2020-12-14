@@ -27,7 +27,7 @@ click-plugins==1.1.1      # via celery
 click-repl==0.1.6         # via celery
 click==7.1.2              # via celery, click-didyoumean, click-plugins, click-repl, flask
 cloudflare==2.8.14        # via -r requirements.in
-cryptography==3.2.1       # via -r requirements.in, acme, josepy, paramiko, pyopenssl, requests
+cryptography==3.3.1       # via -r requirements.in, acme, josepy, paramiko, pyopenssl, requests
 dnspython3==1.15.0        # via -r requirements.in
 dnspython==1.15.0         # via dnspython3
 dyn==1.8.1                # via -r requirements.in
