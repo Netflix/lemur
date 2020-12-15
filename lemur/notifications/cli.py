@@ -85,15 +85,13 @@ def security_expiration_summary(exclude):
     status = FAILURE_METRIC_STATUS
     try:
         print("Starting to notify security team about expiring certificates!")
-        success, failed = send_security_expiration_summary(exclude)
+        status = send_security_expiration_summary(exclude)
         print(
-            "Finished notifying security team about expiring certificates! "
-            f"Sent: {success} Failed: {failed}"
+            "Finished notifying security team about expiring certificates!"
         )
-        status = SUCCESS_METRIC_STATUS
     except Exception:
         sentry.captureException()
 
     metrics.send(
-        "security_expiration_notification_job", "counter", 1, metric_tags={"status": status}
+        "security_expiration_summary_notification_job", "counter", 1, metric_tags={"status": status}
     )

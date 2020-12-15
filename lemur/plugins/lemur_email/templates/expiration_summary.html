@@ -77,7 +77,6 @@
                                             <tr>
                                                 <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#202020;line-height:1.5">
                                                     <br>This is a summary of all certificates expiring soon.
-                                                    Only certificates matching the configured expiration intervals are included here.
                                                     Certificates with notifications disabled have been omitted.
                                                     <table border="0" cellspacing="0" cellpadding="0" style="margin-top:12px;margin-bottom:48px">
                                                         <tbody>
@@ -87,7 +86,7 @@
                                                                 <td width="16px"></td>
                                                                 <td style="line-height:1.2">
                                                                    <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:24px;color:#202020">
-                                                                         <br>Expiring in {{ interval_and_certs["interval"] }} days<br>
+                                                                         <br>Expiring in {{ interval_and_certs["interval"] + 1 }} days<br>
                                                                     </span>
                                                                 </td>
                                                             </tr>
