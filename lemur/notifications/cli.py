@@ -93,5 +93,5 @@ def security_expiration_summary(exclude):
         sentry.captureException()
 
     metrics.send(
-        "security_expiration_summary_notification_job", "counter", 1, metric_tags={"status": status}
+        "security_expiration_notification_job", "counter", 1, metric_tags={"status": status}
     )
