@@ -130,7 +130,7 @@ Once created, you will need to update the configuration file with information ab
     vi ~/.lemur/lemur.conf.py
 
 .. note:: If you are unfamiliar with the SQLALCHEMY_DATABASE_URI string it can be broken up like so:
-      ``postgresql://userame:password@<database-fqdn>:<database-port>/<database-name>``
+      ``postgresql://username:password@<database-fqdn>:<database-port>/<database-name>``
 
 Before Lemur will run you need to fill in a few required variables in the configuration file:
 
