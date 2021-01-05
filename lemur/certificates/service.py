@@ -13,6 +13,7 @@ from cryptography.hazmat.primitives import hashes, serialization
 from flask import current_app
 from sqlalchemy import func, or_, not_, cast, Integer
 from sqlalchemy.sql.expression import false, true
+from sqlalchemy.dialects.postgresql import array, ARRAY
 
 from lemur import database
 from lemur.authorities.models import Authority
@@ -478,7 +479,7 @@ def render(args):
             query = query.filter(
                 or_(
                     func.lower(Certificate.cn).like(term.lower()),
-                    Certificate.id.in_(like_domain_query(term)),
+                    (Certificate.id == cast(array(like_domain_query(term)), ARRAY(Integer)).any_()),
                 )
             )
         elif "id" in terms:
