@@ -151,13 +151,14 @@ Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create c
         to start. Multiple keys can be provided to facilitate key rotation. The first key in the list is used for
         encryption and all keys are tried for decryption until one works. Each key must be 32 URL safe base-64 encoded bytes.
 
-        Only fields of type `Vault` will be encrypted. At present, only the following fields are encrypted:
-        * `certificates.private_key`
-        * `pending_certificates.private_key`
-        * `dns_providers.credentials`
-        * `roles.password`
+        Only fields of type ``Vault`` will be encrypted. At present, only the following fields are encrypted:
 
-        For implementation details, see `Vault` in `utils.py`.
+        * ``certificates.private_key``
+        * ``pending_certificates.private_key``
+        * ``dns_providers.credentials``
+        * ``roles.password``
+
+        For implementation details, see ``Vault`` in ``utils.py``.
 
         Running lemur create_config will securely generate a key for your configuration file.
         If you would like to generate your own, we recommend the following method:
