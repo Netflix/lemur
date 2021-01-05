@@ -31,7 +31,7 @@ freezegun==1.0.0          # via -r requirements-tests.in
 future==0.18.2            # via aws-xray-sdk
 gitdb==4.0.4              # via gitpython
 gitpython==3.1.1          # via bandit
-idna==2.8                 # via moto, requests
+idna==2.9                 # via moto, requests
 importlib-metadata==1.6.0  # via jsonpickle
 iniconfig==1.0.1          # via pytest
 itsdangerous==1.1.0       # via flask
