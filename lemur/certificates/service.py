@@ -795,6 +795,15 @@ def reissue_certificate(certificate, replace=None, user=None):
     else:
         primitives["description"] = f"{reissue_message_prefix}{certificate.id}"
 
+    # Rotate the certificate to ECCPRIME256V1 if cert owner is present in the configured list
+    # This is a temporary change intending to rotate certificates to ECC, if opted in by certificate owners
+    # Unless identified a use case, this will be removed in mid-Q2 2021
+    ecc_reissue_owner_list = current_app.config.get("ROTATE_TO_ECC_OWNER_LIST", [])
+    ecc_reissue_exclude_cn_list = current_app.config.get("ECC_NON_COMPATIBLE_COMMON_NAMES", [])
+
+    if (certificate.owner in ecc_reissue_owner_list) and (certificate.cn not in ecc_reissue_exclude_cn_list):
+        primitives["key_type"] = "ECCPRIME256V1"
+
     new_cert = create(**primitives)
 
     return new_cert
