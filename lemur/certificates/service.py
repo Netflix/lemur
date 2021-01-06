@@ -563,10 +563,15 @@ def query_common_name(common_name, args):
     :return:
     """
     owner = args.pop("owner")
+    page = args.pop("page")
+    count = args.pop("count")
+
+    paginate = page and count
+    query = database.session_query(Certificate) if paginate else Certificate.query
+
     # only not expired certificates
     current_time = arrow.utcnow()
-
-    query = Certificate.query.filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))\
+    query = query.filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))\
         .filter(not_(Certificate.revoked))\
         .filter(not_(Certificate.replaced.any()))  # ignore rotated certificates to avoid duplicates
 
@@ -576,6 +581,9 @@ def query_common_name(common_name, args):
     if common_name != "%":
         # if common_name is a wildcard ('%'), no need to include it in the query
         query = query.filter(Certificate.cn.ilike(common_name))
+
+    if paginate:
+        return database.paginate(query, page, count)
 
     return query.all()
 
