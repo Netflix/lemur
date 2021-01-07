@@ -408,9 +408,12 @@ def create(**kwargs):
         # We need to refresh the pending certificate to avoid "Instance is not bound to a Session; "
         # "attribute refresh operation cannot proceed"
         pending_cert = database.session_query(PendingCertificate).get(cert.id)
-        from lemur.common.celery import fetch_acme_cert
+        from lemur.common.celery import fetch_acme_cert, fetch_cert
 
-        if not current_app.config.get("ACME_DISABLE_AUTORESOLVE", False):
+        acme = database.get(Authority, cert.authority_id).plugin_name == "acme-issuer"
+        if not acme and not current_app.config.get("DISABLE_AUTORESOLVE_NON_ACME", False):
+            fetch_cert.apply_async((pending_cert.id,), countdown=5)
+        if acme and not current_app.config.get("ACME_DISABLE_AUTORESOLVE", False):
             fetch_acme_cert.apply_async((pending_cert.id,), countdown=5)
 
     return cert

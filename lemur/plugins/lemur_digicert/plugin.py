@@ -353,20 +353,9 @@ class DigiCertIssuerPlugin(IssuerPlugin):
 
         order_id = response.json()["id"]
 
-        certificate_id = get_certificate_id(self.session, base_url, order_id)
+        # returning None makes this a pending certificate
+        return None, None, order_id
 
-        # retrieve certificate
-        certificate_url = "{0}/services/v2/certificate/{1}/download/format/pem_all".format(
-            base_url, certificate_id
-        )
-        end_entity, intermediate, root = pem.parse(
-            self.session.get(certificate_url).content
-        )
-        return (
-            "\n".join(str(end_entity).splitlines()),
-            "\n".join(str(intermediate).splitlines()),
-            certificate_id,
-        )
 
     def revoke_certificate(self, certificate, reason):
         """Revoke a Digicert certificate."""

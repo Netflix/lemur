@@ -224,6 +224,70 @@ def report_revoked_task(**kwargs):
         current_app.logger.error(log_data)
         metrics.send("celery.revoked_task", "TIMER", 1, metric_tags=error_tags)
 
+@celery.task(soft_time_limit=600)
+def fetch_cert(id):
+    """
+    Attempt to get the full certificate for the pending certificate listed.
+
+    Args:
+        id: an id of a PendingCertificate
+    """
+    task_id = None
+    if celery.current_task:
+        task_id = celery.current_task.request.id
+
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    log_data = {
+        "function": function,
+        "message": "Resolving pending certificate {}".format(id),
+        "task_id": task_id,
+        "id": id,
+    }
+
+    current_app.logger.debug(log_data)
+
+    if task_id and is_task_active(log_data["function"], task_id, (id,)):
+        log_data["message"] = "Skipping task: Task is already active"
+        current_app.logger.debug(log_data)
+        return
+
+    pending_certs = pending_certificate_service.get_pending_certs([id])
+    new = 0
+    failed = 0
+    for cert in pending_certs:
+        cert_authority = get_authority(cert.authority_id)
+        if cert_authority.plugin_name == "acme-issuer":
+            current_app.log.warning("Skipping acme cert (use `fetch_acme_cert()` instead).")
+            continue
+        plugin = plugins.get(cert_authority.plugin_name)
+        real_cert = plugin.get_ordered_certificate(cert)
+        if real_cert:
+            # If a real certificate was returned from issuer, then create it in
+            # Lemur and mark the pending certificate as resolved
+            final_cert = pending_certificate_service.create_certificate(
+                cert, real_cert, cert.user
+            )
+            pending_certificate_service.update(cert.id, resolved_cert_id=final_cert.id)
+            pending_certificate_service.update(cert.id, resolved=True)
+            # add metrics to metrics extension
+            new += 1
+        else:
+            # Double check the pending certificate still exists in the database
+            # before updating the failed attempt counter
+            if not pending_certificate_service.get(cert.id):
+                current_app.logger.info(f"Not incrementing failed attempt counter because {cert.name} was cancelled before.")
+            else:
+                pending_certificate_service.increment_attempt(cert)
+                failed += 1
+    log_data["message"] = "Complete"
+    log_data["new"] = new
+    log_data["failed"] = failed
+    current_app.logger.debug(log_data)
+    metrics.send(f"{function}.resolved", "gauge", new)
+    metrics.send(f"{function}.failed", "gauge", failed)
+    print(f"[+] Certificates: New: {new} Failed: {failed}")
+    return log_data
+
 
 @celery.task(soft_time_limit=600)
 def fetch_acme_cert(id):
@@ -401,6 +465,44 @@ def remove_old_acme_certs():
             log_data["message"] = "Deleting pending certificate"
             current_app.logger.debug(log_data)
             pending_certificate_service.delete(cert)
+
+    metrics.send(f"{function}.success", "counter", 1)
+    return log_data
+
+
+@celery.task()
+def fetch_all_pending_certs():
+    """Instantiate celery workers to resolve all  certificates"""
+
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    task_id = None
+    if celery.current_task:
+        task_id = celery.current_task.request.id
+
+    log_data = {
+        "function": function,
+        "message": "Starting fetching all pending certs.",
+        "task_id": task_id,
+    }
+
+    if task_id and is_task_active(function, task_id, None):
+        log_data["message"] = "Skipping task: Task is already active"
+        current_app.logger.debug(log_data)
+        return
+
+    current_app.logger.debug(log_data)
+    pending_certs = pending_certificate_service.get_unresolved_pending_certs()
+
+    for cert in pending_certs:
+        cert_authority = get_authority(cert.authority_id)
+        # handle only certs from non-acme issuers, as acme certs are specially
+        #  taken care of in the `fetach_all_pending_acme_certs` function
+        if cert_authority.plugin_name != "acme-issuer":
+            log_data["message"] = "Triggering job for cert {}".format(cert.name)
+            log_data["cert_name"] = cert.name
+            log_data["cert_id"] = cert.id
+            current_app.logger.debug(log_data)
+            fetch_cert.delay(cert.id)
 
     metrics.send(f"{function}.success", "counter", 1)
     return log_data
