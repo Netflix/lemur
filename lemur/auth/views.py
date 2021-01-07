@@ -472,7 +472,7 @@ class Google(Resource):
 
     def post(self):
         access_token_url = "https://accounts.google.com/o/oauth2/token"
-        people_api_url = "https://www.googleapis.com/plus/v1/people/me/openIdConnect"
+        token_info_url = "https://oauth2.googleapis.com/tokeninfo"
 
         self.reqparse.add_argument("clientId", type=str, required=True, location="json")
         self.reqparse.add_argument(
@@ -495,9 +495,9 @@ class Google(Resource):
         token = r.json()
 
         # Step 2. Retrieve information about the current user
-        headers = {"Authorization": "Bearer {0}".format(token["access_token"])}
+        params = {"access_token": token["access_token"]}
 
-        r = requests.get(people_api_url, headers=headers)
+        r = requests.get(token_info_url, params=params)
         profile = r.json()
 
         user = user_service.get_by_email(profile["email"])
@@ -512,6 +512,12 @@ class Google(Resource):
             metrics.send(
                 "login", "counter", 1, metric_tags={"status": SUCCESS_METRIC_STATUS}
             )
+
+            # Tell Flask-Principal the identity changed
+            identity_changed.send(
+                current_app._get_current_object(), identity=Identity(user.id)
+            )
+
             return dict(token=create_token(user))
 
         metrics.send(
