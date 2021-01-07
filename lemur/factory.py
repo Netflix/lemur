@@ -214,7 +214,11 @@ def install_plugins(app):
     #         'verisign = lemur_verisign.plugin:VerisignPlugin'
     #     ],
     # },
+    plugins_to_install = app.config.get("PLUGINS")
     for ep in pkg_resources.iter_entry_points("lemur.plugins"):
+        if plugins_to_install and not ep.name in plugins_to_install:
+            app.logger.info(f"Skipping loading plugin {ep.name} as it is not listed in PLUGINS config list.")
+            continue
         try:
             plugin = ep.load()
         except Exception:
