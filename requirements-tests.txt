@@ -60,7 +60,7 @@ pyflakes==2.2.0           # via -r requirements-tests.in
 pyparsing==2.4.7          # via packaging
 pyrsistent==0.16.0        # via jsonschema
 pytest-flask==1.1.0       # via -r requirements-tests.in
-pytest-mock==3.5.0        # via -r requirements-tests.in
+pytest-mock==3.5.1        # via -r requirements-tests.in
 pytest==6.2.1             # via -r requirements-tests.in, pytest-flask, pytest-mock
 python-dateutil==2.8.1    # via botocore, faker, freezegun, moto
 python-jose[cryptography]==3.1.0  # via moto
