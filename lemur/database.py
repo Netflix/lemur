@@ -225,7 +225,9 @@ def paginate(query, page, count):
     :param page:
     :param count:
     """
-    return query.paginate(page, count)
+    total = get_count(query)
+    items = query.paginate(page, count).items
+    return dict(items=items, total=total, current=len(items))
 
 
 def update_list(model, model_attr, item_model, items):

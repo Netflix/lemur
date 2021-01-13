@@ -51,3 +51,4 @@ notifications:
       - lemur@netflix.com
     on_success: never
     on_failure: always
+    on_cancel:  never # Dependbot cancels Travis before rebase and triggers too many emails
