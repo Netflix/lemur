@@ -48,7 +48,17 @@ Developing Against HEAD
 -----------------------
 
 We try to make it easy to get up and running in a development environment using a git checkout
-of Lemur. You'll want to make sure you have a few things on your local system first:
+of Lemur. There are two ways to run Lemur locally: directly on your development machine, or
+in a Docker container.
+
+**Running in a Docker container**
+
+Look at the `lemur-docker <https://github.com/Netflix/lemur-docker>`_ project.
+Usage instructions are self-contained in the README for that project.
+
+**Running directly on your development machine**
+
+You'll want to make sure you have a few things on your local system first:
 
 * python-dev (if you're on OS X, you already have this)
 * pip
@@ -99,7 +109,9 @@ You'll likely want to make some changes to the default configuration (we recomme
 Running tests with Docker and docker-compose
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Alternatively you can use Docker and docker-compose for running the tests with ``docker-compose run test``.
+If you just want to run tests in a Docker container, you can use Docker and docker-compose for running the tests with ``docker-compose run test`` directly in the ``lemur`` project.
+
+(For running the Lemur service in Docker, see `lemur-docker <https://github.com/Netflix/lemur-docker>`_.)
 
 
 Coding Standards
@@ -152,7 +164,7 @@ You'll notice that the test suite is structured based on where the code lives, a
 Static Media
 ------------
 
-Lemur uses a library that compiles it's static media assets (LESS and JS files) automatically. If you're developing using
+Lemur uses a library that compiles its static media assets (LESS and JS files) automatically. If you're developing using
 runserver you'll see changes happen not only in the original files, but also the minified or processed versions of the file.
 
 If you've made changes and need to compile them by hand for any reason, you can do so by running:
