@@ -762,7 +762,7 @@ def deactivate_entrust_certificates():
 
     certificates = get_all_valid_certs(['entrust-issuer'])
     entrust_plugin = plugins.get('entrust-issuer')
-    for index, cert in enumerate(certificates, start=1):
+    for index, cert in enumerate(certificates):
         if (index % 10) == 0:
             # Entrust enforces a 10 request per 30s rate limit
             sleep(30)
