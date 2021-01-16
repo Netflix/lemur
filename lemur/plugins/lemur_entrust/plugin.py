@@ -80,7 +80,6 @@ def process_options(options, client_id):
         "eku": "SERVER_AND_CLIENT_AUTH",
         "certType": product_type,
         "certExpiryDate": validity_end,
-        # "keyType": "RSA", Entrust complaining about this parameter
         "tracking": tracking_data,
         "org": options.get("organization"),
         "clientId": client_id
@@ -229,7 +228,11 @@ class EntrustIssuerPlugin(IssuerPlugin):
         except requests.exceptions.RequestException as e:
             raise Exception(f"Error for Getting Organization {e}")
 
-        client_id = get_client_id(response, issuer_options.get("organization"))
+        if current_app.config.get("ENTRUST_USE_DEFAULT_CLIENT_ID"):
+            # The ID of the primary client is 1.
+            client_id = 1
+        else:
+            client_id = get_client_id(response, issuer_options.get("organization"))
         log_data = {
             "function": f"{__name__}.{sys._getframe().f_code.co_name}",
             "message": f"Organization id: {client_id}"
