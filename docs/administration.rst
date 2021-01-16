@@ -941,6 +941,12 @@ The following parameters have to be set in the configuration files.
 
         If there is a config variable ENTRUST_PRODUCT_<upper(authority.name)> take the value as cert product name else default to "STANDARD_SSL". Refer to the API documentation for valid products names.
 
+.. data:: ENTRUST_CROSS_SIGNED_RSA
+    :noindex:
+
+        This is optional. Entrut provides support for cross-signed subCAS. One can set ENTRUST_CROSS_SIGNED_RSA to the respective cross-signed subCA PEM, such as L1K, Lemur will replace the retrieved subCA with ENTRUST_CROSS_SIGNED_RSA.
+
+
 Verisign Issuer Plugin
 ~~~~~~~~~~~~~~~~~~~~~~
 
