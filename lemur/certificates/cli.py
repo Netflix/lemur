@@ -11,6 +11,7 @@ from flask_principal import Identity, identity_changed
 from flask_script import Manager
 from sqlalchemy import or_
 from tabulate import tabulate
+from time import sleep
 
 from lemur import database
 from lemur.authorities.models import Authority
@@ -761,7 +762,10 @@ def deactivate_entrust_certificates():
 
     certificates = get_all_valid_certs(['entrust-issuer'])
     entrust_plugin = plugins.get('entrust-issuer')
-    for cert in certificates:
+    for index, cert in enumerate(certificates, start=1):
+        if (index % 10) == 0:
+            # Entrust enforces a 10 request per 30s rate limit
+            sleep(30)
         try:
             response = entrust_plugin.deactivate_certificate(cert)
             if response == 200:
