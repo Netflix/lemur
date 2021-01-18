@@ -88,14 +88,27 @@ def process_options(options, client_id):
 
 
 @retry(stop_max_attempt_number=5, wait_fixed=1000)
-def get_client_id(my_response, organization):
+def get_client_id(session, organization):
     """
-    Helper function for parsing responses from the Entrust API.
-    :param content:
-    :return: :raise Exception:
+    Helper function for looking up clientID pased on Organization and parsing the response.
+    :param session:
+    :param organization: the validated org with Entrust, for instance "Company, Inc."
+    :return: ClientID
+    :raise Exception:
     """
+
+    # get the organization ID
+    url = current_app.config.get("ENTRUST_URL") + "/organizations"
     try:
-        d = json.loads(my_response.content)
+        response = session.get(url, timeout=(15, 40))
+    except requests.exceptions.Timeout:
+        raise Exception("Timeout for Getting Organizations")
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"Error for Getting Organization {e}")
+
+    # parse the response
+    try:
+        d = json.loads(response.content)
     except ValueError:
         # catch an empty json object here
         d = {'response': 'No detailed message'}
@@ -220,20 +233,11 @@ class EntrustIssuerPlugin(IssuerPlugin):
         }
         current_app.logger.info(log_data)
 
-        # firstly we need the organization ID
-        url = current_app.config.get("ENTRUST_URL") + "/organizations"
-        try:
-            response = self.session.get(url, timeout=(15, 40))
-        except requests.exceptions.Timeout:
-            raise Exception("Timeout for Getting Organizations")
-        except requests.exceptions.RequestException as e:
-            raise Exception(f"Error for Getting Organization {e}")
-
         if current_app.config.get("ENTRUST_USE_DEFAULT_CLIENT_ID"):
             # The ID of the primary client is 1.
             client_id = 1
         else:
-            client_id = get_client_id(response, issuer_options.get("organization"))
+            client_id = get_client_id(self.session, issuer_options.get("organization"))
         log_data = {
             "function": f"{__name__}.{sys._getframe().f_code.co_name}",
             "message": f"Organization id: {client_id}"
