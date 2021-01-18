@@ -87,6 +87,7 @@ def process_options(options, client_id):
     return data
 
 
+@retry(stop_max_attempt_number=5, wait_fixed=1000)
 def get_client_id(my_response, organization):
     """
     Helper function for parsing responses from the Entrust API.
