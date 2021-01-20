@@ -9,7 +9,7 @@ from lemur.constants import CRLReason
 from lemur.plugins import lemur_entrust as entrust
 from lemur.plugins.bases import IssuerPlugin, SourcePlugin
 from lemur.extensions import metrics
-from lemur.common.utils import validate_conf
+from lemur.common.utils import validate_conf, get_key_type_from_certificate
 
 
 def log_status_code(r, *args, **kwargs):
@@ -258,6 +258,9 @@ class EntrustIssuerPlugin(IssuerPlugin):
             chain = None
         else:
             chain = response_dict['chainCerts'][1]
+
+        if current_app.config.get("ENTRUST_CROSS_SIGNED_RSA") and get_key_type_from_certificate(cert) == "RSA2048":
+            chain = current_app.config.get("ENTRUST_CROSS_SIGNED_RSA")
 
         log_data["message"] = "Received Chain"
         log_data["options"] = f"chain: {chain}"
