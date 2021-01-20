@@ -941,6 +941,12 @@ The following parameters have to be set in the configuration files.
 
         If there is a config variable ENTRUST_PRODUCT_<upper(authority.name)> take the value as cert product name else default to "STANDARD_SSL". Refer to the API documentation for valid products names.
 
+.. data:: ENTRUST_USE_DEFAULT_CLIENT_ID
+    :noindex:
+
+        If set to True, Entrust will use the primary client ID of 1, which applies to most use-case.
+        Otherwise, Entrust will first lookup the clientId before ordering the certificate.
+
 Verisign Issuer Plugin
 ~~~~~~~~~~~~~~~~~~~~~~
 
