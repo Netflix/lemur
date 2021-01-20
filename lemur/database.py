@@ -9,6 +9,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+import math
 from inflection import underscore
 from sqlalchemy import exc, func, distinct
 from sqlalchemy.orm import make_transient, lazyload
@@ -219,15 +220,20 @@ def sort(query, model, field, direction):
 
 def paginate(query, page, count):
     """
-    Returns the items given the count and page specified
+    Returns the items given the count and page specified. The items would be an empty list
+    if page number exceeds max page number based on count per page and total number of records.
 
-    :param query:
-    :param page:
-    :param count:
+    :param query: search query
+    :param page: current page number
+    :param count: results per page
     """
     total = get_count(query)
+    # Check if input page is higher than total number of pages based on count per page and total
+    # In such a case Flask-SQLAlchemy pagination call results in 404
+    if math.ceil(total / count) < page:
+        return dict(items=[], total=total)
     items = query.paginate(page, count).items
-    return dict(items=items, total=total, current=len(items))
+    return dict(items=items, total=total)
 
 
 def update_list(model, model_attr, item_model, items):
