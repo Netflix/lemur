@@ -21,7 +21,6 @@ var gulp = require('gulp'),
   useref = require('gulp-useref'),
   filter = require('gulp-filter'),
   rev = require('gulp-rev'),
-  revReplace = require('gulp-rev-replace'),
   imagemin = require('gulp-imagemin'),
   minifyHtml = require('gulp-minify-html'),
   bowerFiles = require('main-bower-files'),
@@ -29,16 +28,19 @@ var gulp = require('gulp'),
   replace = require('gulp-replace'),
   argv = require('yargs').argv;
 
-gulp.task('default', ['clean'], function () {
-  gulp.start('fonts', 'styles');
+
+gulp.task('clean', function (done) {
+  del(['.tmp', 'lemur/static/dist'], done);
+  done();
 });
 
-gulp.task('clean', function (cb) {
-  del(['.tmp', 'lemur/static/dist'], cb);
-});
+gulp.task('default', gulp.series(['clean'], function () {
+  gulp.start('fonts', 'styles');
+}));
 
 gulp.task('test', function (done) {
-  new karma.Server({
+  // returning the promise
+  return new karma.Server({
     configFile: __dirname + '/karma.conf.js',
     singleRun: true
   }, function() {
@@ -47,25 +49,25 @@ gulp.task('test', function (done) {
 });
 
 gulp.task('dev:fonts', function () {
-  var fileList = [
+  let fileList = [
     'bower_components/bootstrap/dist/fonts/*',
     'bower_components/fontawesome/fonts/*'
   ];
 
   return gulp.src(fileList)
-    .pipe(gulp.dest('.tmp/fonts'));
+    .pipe(gulp.dest('.tmp/fonts')); // returns a stream making it async
 });
 
 gulp.task('dev:styles', function () {
-  var baseContent = '@import "bower_components/bootstrap/less/bootstrap.less";@import "bower_components/bootswatch/$theme$/variables.less";@import "bower_components/bootswatch/$theme$/bootswatch.less";@import "bower_components/bootstrap/less/utilities.less";';
-  var isBootswatchFile = function (file) {
+  let baseContent = '@import "bower_components/bootstrap/less/bootstrap.less";@import "bower_components/bootswatch/$theme$/variables.less";@import "bower_components/bootswatch/$theme$/bootswatch.less";@import "bower_components/bootstrap/less/utilities.less";';
+  let isBootswatchFile = function (file) {
 
-    var suffix = 'bootswatch.less';
+    let suffix = 'bootswatch.less';
     return file.path.indexOf(suffix, file.path.length - suffix.length) !== -1;
   };
 
-  var isBootstrapFile = function (file) {
-    var suffix = 'bootstrap-',
+  let isBootstrapFile = function (file) {
+    let suffix = 'bootstrap-',
       fileName = path.basename(file.path);
 
     return fileName.indexOf(suffix) === 0;
@@ -74,7 +76,6 @@ gulp.task('dev:styles', function () {
   var fileList = [
     'bower_components/bootswatch/sandstone/bootswatch.less',
     'bower_components/fontawesome/css/font-awesome.css',
-    'bower_components/angular-spinkit/src/angular-spinkit.css',
     'bower_components/angular-chart.js/dist/angular-chart.css',
     'bower_components/angular-loading-bar/src/loading-bar.css',
     'bower_components/angular-ui-switch/angular-ui-switch.css',
@@ -87,7 +88,7 @@ gulp.task('dev:styles', function () {
 
   return gulp.src(fileList)
     .pipe(gulpif(isBootswatchFile, foreach(function (stream, file) {
-      var themeName = path.basename(path.dirname(file.path)),
+      let themeName = path.basename(path.dirname(file.path)),
         content = replaceAll(baseContent, '$theme$', themeName),
         file2 = string_src('bootstrap-' +  themeName + '.less', content);
 
@@ -95,12 +96,12 @@ gulp.task('dev:styles', function () {
     })))
     .pipe(less())
     .pipe(gulpif(isBootstrapFile, foreach(function (stream, file) {
-      var fileName = path.basename(file.path),
+      let fileName = path.basename(file.path),
         themeName = fileName.substring(fileName.indexOf('-') + 1, fileName.indexOf('.'));
 
       // http://stackoverflow.com/questions/21719833/gulp-how-to-add-src-files-in-the-middle-of-a-pipe
       // https://github.com/gulpjs/gulp/blob/master/docs/recipes/using-multiple-sources-in-one-task.md
-      return merge(stream, gulp.src(['.tmp/styles/font-awesome.css', '.tmp/styles/lemur.css']))
+      return merge(stream, gulp.src(['.tmp/styles/font-awesome.css', '.tmp/styles/lemur.css'], { allowEmpty: true }))
         .pipe(concat('style-' + themeName + '.css'));
     })))
     .pipe(plumber())
@@ -121,7 +122,7 @@ function replaceAll(string, find, replace) {
 }
 
 function string_src(filename, string) {
-  var src = require('stream').Readable({ objectMode: true });
+  let src = require('stream').Readable({ objectMode: true });
   src._read = function () {
     this.push(new gutil.File({ cwd: '', base: '', path: filename, contents: new Buffer(string) }));
     this.push(null);
@@ -162,7 +163,7 @@ function injectHtml(isDev) {
     }))
     .pipe(
     gulpif(!isDev,
-      inject(gulp.src('lemur/static/dist/ngviews/ngviews.min.js'), {
+      inject(gulp.src('lemur/static/dist/ngviews/ngviews.min.js', { allowEmpty: true }), {
         starttag: '<!-- inject:ngviews -->',
         addRootSlash: false
       })
@@ -170,13 +171,9 @@ function injectHtml(isDev) {
   ).pipe(gulp.dest('.tmp/'));
 }
 
-gulp.task('dev:inject', ['dev:styles', 'dev:scripts'], function () {
+gulp.task('dev:inject', gulp.series(['dev:styles', 'dev:scripts'], function () {
   return injectHtml(true);
-});
-
-gulp.task('build:inject', ['dev:styles', 'dev:scripts', 'build:ngviews'], function () {
-  return injectHtml(false);
-});
+}));
 
 gulp.task('build:ngviews', function () {
   return gulp.src(['lemur/static/app/angular/**/*.html'])
@@ -189,9 +186,13 @@ gulp.task('build:ngviews', function () {
     .pipe(size());
 });
 
-gulp.task('build:html', ['dev:styles', 'dev:scripts', 'build:ngviews', 'build:inject'], function () {
-  var jsFilter = filter(['**/*.js'], {'restore': true});
-  var cssFilter = filter(['**/*.css'], {'restore': true});
+gulp.task('build:inject', gulp.series(['dev:styles', 'dev:scripts', 'build:ngviews'], function () {
+  return injectHtml(false);
+}));
+
+gulp.task('build:html', gulp.series(['build:inject'], function () {
+  let jsFilter = filter(['**/*.js'], {'restore': true});
+  let cssFilter = filter(['**/*.css'], {'restore': true});
 
   return gulp.src('.tmp/index.html')
     .pipe(jsFilter)
@@ -203,12 +204,12 @@ gulp.task('build:html', ['dev:styles', 'dev:scripts', 'build:ngviews', 'build:in
     .pipe(useref())
     .pipe(gulp.dest('lemur/static/dist'))
     .pipe(size());
-});
+}));
 
-gulp.task('build:fonts', ['dev:fonts'], function () {
+gulp.task('build:fonts', gulp.series(['dev:fonts'], function () {
   return gulp.src('.tmp/fonts/**/*')
     .pipe(gulp.dest('lemur/static/dist/fonts'));
-});
+}));
 
 gulp.task('build:images', function () {
   return gulp.src('lemur/static/app/images/**/*')
@@ -230,35 +231,28 @@ gulp.task('package:strip', function () {
     .pipe(size());
 });
 
-gulp.task('addUrlContextPath',['addUrlContextPath:revreplace'], function(){
-  var urlContextPathExists = argv.urlContextPath ? true : false;
-  ['lemur/static/dist/scripts/main*.js',
-  'lemur/static/dist/angular/**/*.html']
-  .forEach(function(file){
-    return gulp.src(file)
-      .pipe(gulpif(urlContextPathExists, replace('api/', argv.urlContextPath + '/api/')))
-      .pipe(gulpif(urlContextPathExists, replace('/angular/', '/' + argv.urlContextPath + '/angular/')))
-      .pipe(gulp.dest(function(file){
-        return file.base;
-      }))
-  })
-});
-
 gulp.task('addUrlContextPath:revision', function(){
   return gulp.src(['lemur/static/dist/**/*.css','lemur/static/dist/**/*.js'])
     .pipe(rev())
     .pipe(gulp.dest('lemur/static/dist'))
     .pipe(rev.manifest())
     .pipe(gulp.dest('lemur/static/dist'))
-})
+});
 
-gulp.task('addUrlContextPath:revreplace', ['addUrlContextPath:revision'], function(){
-  var manifest = gulp.src("lemur/static/dist/rev-manifest.json");
-  var urlContextPathExists = argv.urlContextPath ? true : false;
+gulp.task('addUrlContextPath:revreplace', gulp.series(['addUrlContextPath:revision'], function(){
   return gulp.src( "lemur/static/dist/index.html")
     .pipe(gulp.dest('lemur/static/dist'));
-})
+}));
 
+gulp.task('addUrlContextPath', gulp.series(['addUrlContextPath:revreplace'], function(){
+  let urlContextPathExists = argv.urlContextPath ? true : false;
+  return gulp.src(['lemur/static/dist/scripts/main*.js', 'lemur/static/dist/angular/**/*.html'])
+      .pipe(gulpif(urlContextPathExists, replace('api/', argv.urlContextPath + '/api/')))
+      .pipe(gulpif(urlContextPathExists, replace('/angular/', '/' + argv.urlContextPath + '/angular/')))
+      .pipe(gulp.dest(function(file){
+        return file.base;
+      }))
+}));
 
-gulp.task('build', ['build:ngviews', 'build:inject', 'build:images', 'build:fonts', 'build:html', 'build:extras']);
-gulp.task('package', ['addUrlContextPath', 'package:strip']);
+gulp.task('build', gulp.series(['build:images', 'build:fonts', 'build:html', 'build:extras']));
+gulp.task('package', gulp.series(['addUrlContextPath', 'package:strip']));
