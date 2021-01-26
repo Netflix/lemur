@@ -60,7 +60,7 @@ ecdsa==0.14.1
     #   sshpubkeys
 factory-boy==3.2.0
     # via -r requirements-tests.in
-faker==5.6.1
+faker==5.8.0
     # via
     #   -r requirements-tests.in
     #   factory-boy
