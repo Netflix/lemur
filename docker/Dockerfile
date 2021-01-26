@@ -1,4 +1,4 @@
-FROM alpine:3.8
+FROM python:3.7.9-alpine3.12
 
 ARG VERSION
 ENV VERSION master
@@ -12,7 +12,7 @@ ENV group lemur
 
 RUN addgroup -S ${group} -g ${gid} && \
     adduser -D -S ${user} -G ${group} -u ${uid} && \
-    apk --update add python3 libldap postgresql-client nginx supervisor curl tzdata openssl bash && \
+    apk add --no-cache --update python3 py-pip libldap postgresql-client nginx supervisor curl tzdata openssl bash && \
     apk --update add --virtual build-dependencies \
                 git \
                 tar \
@@ -39,10 +39,12 @@ RUN addgroup -S ${group} -g ${gid} && \
     pip3 install --upgrade setuptools && \
     mkdir -p /run/nginx/ /etc/nginx/ssl/ && \
     chown -R $user:$group /opt/lemur/ /home/lemur/.lemur/
-    
+
 WORKDIR /opt/lemur
 
-RUN npm install --unsafe-perm && \
+RUN echo "Running with python:" && python -c 'import platform; print(platform.python_version())' && \
+    echo "Running with nodejs:" && node -v && \
+    npm install --unsafe-perm && \
     pip3 install -e . && \
     node_modules/.bin/gulp build && \
     node_modules/.bin/gulp package --urlContextPath=${URLCONTEXT} && \
