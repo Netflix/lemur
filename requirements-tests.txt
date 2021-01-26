@@ -68,7 +68,7 @@ fakeredis==1.4.5
     # via -r requirements-tests.in
 flask==1.1.2
     # via pytest-flask
-freezegun==1.0.0
+freezegun==1.1.0
     # via -r requirements-tests.in
 future==0.18.2
     # via aws-xray-sdk
