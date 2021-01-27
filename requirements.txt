@@ -151,7 +151,7 @@ ndg-httpsclient==0.5.1
     # via -r requirements.in
 paramiko==2.7.2
     # via -r requirements.in
-pem==20.1.0
+pem==21.1.0
     # via -r requirements.in
 psycopg2==2.8.6
     # via -r requirements.in
