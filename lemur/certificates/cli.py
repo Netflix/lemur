@@ -374,6 +374,7 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
     :param message: Send a rotation notification to the certificates owner.
     :param commit: Persist changes.
     :param region: Region in which to rotate the endpoint.
+    #todo: merge this method with rotate()
     """
     if commit:
         print("[!] Running in COMMIT mode.")
