@@ -212,12 +212,16 @@ def update_user(user, profile, roles):
 
     else:
         # we add 'lemur' specific roles, so they do not get marked as removed
+        removed_roles = []
         for ur in user.roles:
             if not ur.third_party:
                 roles.append(ur)
-            else:
-                log_service.audit_log("unassign_role", ur.name, f"Un-assigning the role for {user.name}")
+            elif ur not in roles:
+                # This is a role assigned in lemur, but not returned by sso during current login
+                removed_roles.append(ur.name)
 
+        if removed_roles:
+            log_service.audit_log("unassign_role", user.name, f"Un-assigning roles {removed_roles}")
         # update any changes to the user
         user_service.update(
             user.id,

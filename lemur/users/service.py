@@ -68,21 +68,29 @@ def update_roles(user, roles):
     :param user:
     :param roles:
     """
+    removed_roles = []
     for ur in user.roles:
         for r in roles:
             if r.id == ur.id:
                 break
         else:
             user.roles.remove(ur)
-            log_service.audit_log("unassign_role", ur.name, f"Un-assigning the role for user {user.username}")
+            removed_roles.append(ur.name)
 
+    if removed_roles:
+        log_service.audit_log("unassign_role", user.username, f"Un-assigning roles {removed_roles}")
+
+    added_roles = []
     for r in roles:
         for ur in user.roles:
             if r.id == ur.id:
                 break
         else:
             user.roles.append(r)
-            log_service.audit_log("assign_role", r.name, f"Assigning the role to user {user.username}")
+            added_roles.append(r.name)
+
+    if added_roles:
+        log_service.audit_log("assign_role", user.username, f"Assigning roles {added_roles}")
 
 
 def get(user_id):
