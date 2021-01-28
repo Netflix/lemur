@@ -131,7 +131,7 @@ def request_rotation(endpoint, certificate, message, commit):
             )
 
     metrics.send("endpoint_rotation", "counter", 1, metric_tags={"status": status,
-                                                                 "certificate_name":  str(certificate.name),
+                                                                 "certificate_name": str(certificate.name),
                                                                  "endpoint": str(endpoint.dnsname)})
 
 
