@@ -32,7 +32,7 @@ def create(username, password, email, active, profile_picture, roles):
         profile_picture=profile_picture,
     )
     user.roles = roles
-    log_service.audit_log("create_user", username, f"Creating new user")
+    log_service.audit_log("create_user", username, "Creating new user")
     return database.create(user)
 
 
