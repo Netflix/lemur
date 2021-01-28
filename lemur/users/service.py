@@ -82,7 +82,7 @@ def update_roles(user, roles):
                 break
         else:
             user.roles.append(r)
-            log_service.audit_log("assign_role", ur.name, f"Assigning the role to user {user.username}")
+            log_service.audit_log("assign_role", r.name, f"Assigning the role to user {user.username}")
 
 
 def get(user_id):

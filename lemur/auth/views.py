@@ -197,7 +197,6 @@ def update_user(user, profile, roles):
     :param profile:
     :param roles:
     """
-    log_service.audit_log("TEST", user.name, "Edit role")
     # if we get an sso user create them an account
     if not user:
         user = user_service.create(
