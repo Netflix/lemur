@@ -250,7 +250,6 @@ def rotate(endpoint_name, new_certificate_name, old_certificate_name, message, c
 
         else:
             print("[+] Rotating all endpoints that have new certificates available")
-            log_data["message"] = "Rotating all endpoints that have new certificates available"
             for endpoint in endpoint_service.get_all_pending_rotation():
                 log_data["endpoint"] = endpoint.dnsname
                 if len(endpoint.certificate.replaced) == 1:
@@ -284,6 +283,7 @@ def rotate(endpoint_name, new_certificate_name, old_certificate_name, message, c
                         f"[!] Failed to rotate endpoint {endpoint.name} reason: "
                         "Multiple replacement certificates found."
                     )
+                log_data["message"] = "Rotating endpoint from old to new cert"
 
         status = SUCCESS_METRIC_STATUS
         print("[+] Done!")
