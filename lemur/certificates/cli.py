@@ -119,6 +119,11 @@ def request_rotation(endpoint, certificate, message, commit):
             status = SUCCESS_METRIC_STATUS
 
         except Exception as e:
+            sentry.captureException(extra={"certificate_name": str(certificate.name),
+                                           "endpoint": str(endpoint.dnsname)})
+            current_app.logger.exception(
+                f"Error rotating certificate: {certificate.name}", exc_info=True
+            )
             print(
                 "[!] Failed to rotate endpoint {0} to certificate {1} reason: {2}".format(
                     endpoint.name, certificate.name, e
