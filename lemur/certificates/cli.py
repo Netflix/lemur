@@ -253,39 +253,20 @@ def rotate(endpoint_name, new_certificate_name, old_certificate_name, message, c
             # which have are attached to a certificate that has been replaced
             print("[+] Rotating all endpoints that have new certificates available")
             for endpoint in endpoint_service.get_all_pending_rotation():
-                log_data["endpoint"] = endpoint.dnsname
-                if len(endpoint.certificate.replaced) == 1:
-                    print(
-                        f"[+] Rotating {endpoint.name} to {endpoint.certificate.replaced[0].name}"
-                    )
-                    log_data["certificate"] = endpoint.certificate.replaced[0].name
-                    request_rotation(
-                        endpoint, endpoint.certificate.replaced[0], message, commit
-                    )
-                    current_app.logger.info(log_data)
 
-                else:
-                    log_data["message"] = "Failed to rotate endpoint due to Multiple replacement certificates found"
-                    print(log_data)
-                    metrics.send(
-                        "endpoint_rotation",
-                        "counter",
-                        1,
-                        metric_tags={
-                            "status": FAILURE_METRIC_STATUS,
-                            "old_certificate_name": str(old_cert),
-                            "new_certificate_name": str(
-                                endpoint.certificate.replaced[0].name
-                            ),
-                            "endpoint_name": str(endpoint.name),
-                            "message": str(message),
-                        },
-                    )
-                    print(
-                        f"[!] Failed to rotate endpoint {endpoint.name} reason: "
-                        "Multiple replacement certificates found."
-                    )
                 log_data["message"] = "Rotating endpoint from old to new cert"
+                if len(endpoint.certificate.replaced) > 1:
+                    log_data["message"] = f"Multiple replacement certificates found, going with the first one out of " \
+                                          f"{len(endpoint.certificate.replaced)}"
+
+                log_data["endpoint"] = endpoint.dnsname
+                log_data["certificate"] = endpoint.certificate.replaced[0].name
+                request_rotation(endpoint, endpoint.certificate.replaced[0], message, commit)
+                print(log_data)
+                print(
+                    f"[+] Rotating {endpoint.name} to {endpoint.certificate.replaced[0].name}"
+                )
+                current_app.logger.info(log_data)
 
         status = SUCCESS_METRIC_STATUS
         print("[+] Done!")
