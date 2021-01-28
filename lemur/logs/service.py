@@ -7,7 +7,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from flask import current_app
+from flask import current_app, g
 
 from lemur import database
 from lemur.logs.models import Log
@@ -32,6 +32,19 @@ def create(user, type, certificate=None):
     view = Log(user_id=user.id, log_type=type, certificate_id=certificate.id)
     database.add(view)
     database.commit()
+
+
+def audit_log(action, entity, message):
+    """
+    Logs given action
+    :param action: The action being logged e.g. assign_role, create_role etc
+    :param entity: The entity undergoing the action e.g. name of the role
+    :param message: Additional info e.g. Role being assigned to user X
+    :return:
+    """
+    current_app.logger.info(
+        f"[lemur-audit] action: {action}, user: {g.current_user.email}, entity: {entity} [{message}]"
+    )
 
 
 def get_all():
