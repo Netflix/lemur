@@ -231,7 +231,7 @@ def rotate(endpoint_name, new_certificate_name, old_certificate_name, message, c
             print(
                 f"[+] Rotating endpoint: {endpoint.name} to certificate {new_cert.name}"
             )
-            log_data["message"] = "Rotating endpoint"
+            log_data["message"] = "Rotating one endpoint"
             log_data["endpoint"] = endpoint.dnsname
             log_data["certificate"] = new_cert.name
             request_rotation(endpoint, new_cert, message, commit)
@@ -425,7 +425,6 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
                         1,
                         metric_tags={
                             "region": region,
-                            "old_certificate_name": str(old_cert),
                             "new_certificate_name": str(endpoint.certificate.replaced[0].name),
                             "endpoint_name": str(endpoint.dnsname),
                         },
@@ -450,7 +449,6 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
                     1,
                     metric_tags={
                         "status": FAILURE_METRIC_STATUS,
-                        "old_certificate_name": str(old_cert),
                         "new_certificate_name": str(endpoint.certificate.replaced[0].name),
                         "endpoint_name": str(endpoint.dnsname),
                         "message": str(message),
