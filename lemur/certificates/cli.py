@@ -428,6 +428,7 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
                             "endpoint_name": str(endpoint.dnsname),
                         },
                     )
+                    continue
 
                 if len(endpoint.certificate.replaced) == 1:
                     log_data["certificate"] = endpoint.certificate.replaced[0].name
