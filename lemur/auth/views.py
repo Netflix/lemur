@@ -185,6 +185,8 @@ def create_user_roles(profile):
                 current_app.config["LEMUR_DEFAULT_ROLE"],
                 description="This is the default Lemur role.",
             )
+        if not default.third_party:
+            role_service.set_third_party(default.id, third_party_status=True)
         roles.append(default)
 
     return roles
