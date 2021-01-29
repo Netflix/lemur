@@ -30,7 +30,7 @@ If installing Lemur on a bare Ubuntu OS you will need to grab the following pack
 .. code-block:: bash
 
     sudo apt-get update
-    sudo apt-get install nodejs nodejs-legacy python-pip python-dev python3-dev libpq-dev build-essential libssl-dev libffi-dev libsasl2-dev libldap2-dev nginx git supervisor npm postgresql
+    sudo apt-get install nodejs npm python-pip python-dev python3-dev libpq-dev build-essential libssl-dev libffi-dev libsasl2-dev libldap2-dev nginx git supervisor postgresql
 
 .. note:: PostgreSQL is only required if your database is going to be on the same host as the webserver.  npm is needed if you're installing Lemur from the source (e.g., from git).
 
