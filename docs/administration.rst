@@ -362,6 +362,9 @@ Whenever a pending ACME certificate fails to be issued, Lemur will send a notifi
 and security team (as specified by the ``LEMUR_SECURITY_TEAM_EMAIL`` configuration parameter). This email is not sent if
 the pending certificate had notifications disabled.
 
+Lemur will attempt 3x times to resolve a pending certificate.
+This can at times result into 3 duplicate certificates, if all certificate attempts get resolved.
+
 **Certificate rotation**
 
 Whenever a cert is rotated, Lemur will send a notification via email to the certificate owner. This notification is
