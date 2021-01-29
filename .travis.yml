@@ -1,16 +1,43 @@
-language: python
-dist: bionic
-
 node_js:
-  - "6.2.0"
+  - "10"
 
-addons:
-  postgresql: "9.4"
-
-matrix:
+jobs:
   include:
-    - python: "3.7"
+    - name: "python3.7-postgresql-9.4-bionic"
+      dist: bionic
+      language: python
+      python: "3.7"
       env: TOXENV=py37
+      addons:
+        postgresql: "9.4"
+    - name: "python3.7-postgresql-10-bionic"
+      dist: bionic
+      language: python
+      python: "3.7"
+      env: TOXENV=py37
+      addons:
+        postgresql: '10'
+        apt:
+          packages:
+            - postgresql-10
+            - postgresql-client-10
+            - postgresql-server-dev-10
+      services:
+        - postgresql
+    - name: "python3.8-postgresql-12-focal"
+      dist: focal
+      language: python
+      python: "3.8"
+      env: TOXENV=py38
+      addons:
+        postgresql: '12'
+        apt:
+          packages:
+            - postgresql-12
+            - postgresql-client-12
+            - postgresql-server-dev-12
+      services:
+        - postgresql
 
 cache:
   directories:
@@ -27,6 +54,12 @@ env:
     - BOTO_CONFIG=/doesnotexist
 
 before_script:
+  - sudo systemctl stop postgresql
+  # the port may have been auto-configured to use 5433 if it thought 5422 was already in use,
+  # for some reason it happens very often
+  # https://github.com/travis-ci/travis-build/blob/master/lib/travis/build/bash/travis_setup_postgresql.bash#L52
+  - sudo sed -i -e 's/5433/5432/' /etc/postgresql/*/main/postgresql.conf
+  - sudo systemctl restart postgresql
   - psql -c "create database lemur;" -U postgres
   - psql -c "create user lemur with password 'lemur;'" -U postgres
   - psql lemur -c "create extension IF NOT EXISTS pg_trgm;" -U postgres
@@ -40,6 +73,7 @@ install:
 
 script:
   - make test
+  - make test-build-js
   - bandit -r . -ll -ii -x lemur/tests/,docs
 
 after_success:
@@ -51,4 +85,4 @@ notifications:
       - lemur@netflix.com
     on_success: never
     on_failure: always
-    on_cancel:  never # Dependbot cancels Travis before rebase and triggers too many emails
+    on_cancel: never # Dependbot cancels Travis before rebase and triggers too many emails

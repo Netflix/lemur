@@ -101,6 +101,12 @@ lint-js:
 	npm run lint
 	@echo ""
 
+test-build-js:
+	@echo "--> Running JavaScript build"
+	npm install gulp
+	./node_modules/.bin/gulp build && node_modules/.bin/gulp package
+	@echo ""
+
 coverage: develop
 	coverage run --source=lemur -m py.test
 	coverage html
@@ -132,4 +138,4 @@ checkout-pr:
 	git fetch upstream pull/$(pr)/head:pr-$(pr)
 
 
-.PHONY: develop dev-postgres dev-docs setup-git build clean update-submodules test testloop test-cli test-js test-python lint lint-python lint-js coverage publish release
+.PHONY: develop dev-postgres dev-docs setup-git build clean update-submodules test testloop test-cli test-js test-python lint lint-python lint-js test-build-js coverage publish release
