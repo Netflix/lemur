@@ -249,8 +249,8 @@ def rotate(endpoint_name, new_certificate_name, old_certificate_name, message, c
                 current_app.logger.info(log_data)
 
         else:
-            # no certificate name or endpoint was provided, so we will now fetch all endpoints,
-            # which have are attached to a certificate that has been replaced
+            # No certificate name or endpoint is provided. We will now fetch all endpoints,
+            # which are associated with a certificate that has been replaced
             print("[+] Rotating all endpoints that have new certificates available")
             for endpoint in endpoint_service.get_all_pending_rotation():
 
