@@ -20,6 +20,7 @@ from flask import current_app
 from lemur.authorities.service import get as get_authority
 from lemur.certificates import cli as cli_certificate
 from lemur.common.redis import RedisHandler
+from lemur.constants import ACME_ADDITIONAL_ATTEMPTS
 from lemur.destinations import service as destinations_service
 from lemur.dns_providers import cli as cli_dns_providers
 from lemur.endpoints import cli as cli_endpoints
@@ -301,7 +302,7 @@ def fetch_acme_cert(id):
             error_log["last_error"] = cert.get("last_error")
             error_log["cn"] = pending_cert.cn
 
-            if pending_cert.number_attempts > 4:
+            if pending_cert.number_attempts > ACME_ADDITIONAL_ATTEMPTS:
                 error_log["message"] = "Deleting pending certificate"
                 send_pending_failure_notification(
                     pending_cert, notify_owner=pending_cert.notify

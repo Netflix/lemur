@@ -12,6 +12,9 @@ NONSTANDARD_NAMING_TEMPLATE = "{issuer}-{not_before}-{not_after}"
 SUCCESS_METRIC_STATUS = "success"
 FAILURE_METRIC_STATUS = "failure"
 
+# when ACME attempts to resolve a certificate try in total 3 times
+ACME_ADDITIONAL_ATTEMPTS = 2
+
 CERTIFICATE_KEY_TYPES = [
     "RSA2048",
     "RSA4096",
