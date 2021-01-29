@@ -1,7 +1,8 @@
 Quickstart
 **********
 
-This guide will step you through setting up a Python-based virtualenv, installing the required packages, and configuring the basic web service.  This guide assumes a clean Ubuntu 14.04 instance, commands may differ based on the OS and configuration being used.
+This guide will step you through setting up a Python-based virtualenv, installing the required packages, and configuring the basic web service.
+This guide assumes a clean Ubuntu 18.04/20.04 instance, commands may differ based on the OS and configuration being used.
 
 For a quicker alternative, see the Lemur docker file on `Github <https://github.com/Netflix/lemur-docker>`_.
 
@@ -11,11 +12,13 @@ Dependencies
 
 Some basic prerequisites which you'll need in order to run Lemur:
 
-* A UNIX-based operating system (we test on Ubuntu, develop on OS X)
+* A UNIX-based operating system (we test on Ubuntu, develop on macOS)
 * Python 3.7 or greater
 * PostgreSQL 9.4 or greater
 * Nginx
+* Node v10.x (LTS) or greater
 
+.. note:: Ubuntu 18.04 supported by default Python 3.6.x and Node v8.x
 .. note:: Lemur was built with AWS in mind. This means that things such as databases (RDS), mail (SES), and TLS (ELB), are largely handled for us.  Lemur does **not** require AWS to function. Our guides and documentation try to be as generic as possible and are not intended to document every step of launching Lemur into a given environment.
 
 
