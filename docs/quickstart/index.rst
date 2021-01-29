@@ -16,9 +16,9 @@ Some basic prerequisites which you'll need in order to run Lemur:
 * Python 3.7 or greater
 * PostgreSQL 9.4 or greater
 * Nginx
-* Node v10.x (LTS) or greater
+* Node v10.x (LTS)
 
-.. note:: Ubuntu 18.04 supported by default Python 3.6.x and Node v8.x
+.. note:: Ubuntu 18.04 supports by default Python 3.6.x and Node v8.x
 .. note:: Lemur was built with AWS in mind. This means that things such as databases (RDS), mail (SES), and TLS (ELB), are largely handled for us.  Lemur does **not** require AWS to function. Our guides and documentation try to be as generic as possible and are not intended to document every step of launching Lemur into a given environment.
 
 
