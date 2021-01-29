@@ -274,7 +274,8 @@ def fetch_acme_cert(id):
         real_cert = cert.get("cert")
         # It's necessary to reload the pending cert due to detached instance: http://sqlalche.me/e/bhk3
         pending_cert = pending_certificate_service.get(cert.get("pending_cert").id)
-        if not pending_cert:
+        if not pending_cert or pending_cert.resolved:
+            # pending_cert is cleared or it was resolved by another process
             log_data[
                 "message"
             ] = "Pending certificate doesn't exist anymore. Was it resolved by another process?"
