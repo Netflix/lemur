@@ -7,6 +7,7 @@
 """
 from lemur import database
 from lemur.api_keys.models import ApiKey
+from lemur.logs import service as log_service
 
 
 def get(aid):
@@ -24,6 +25,7 @@ def delete(access_key):
     :param access_key:
     :return:
     """
+    log_service.audit_log("delete_api_key", access_key.name, "Deleting the API key")
     database.delete(access_key)
 
 
@@ -34,8 +36,9 @@ def revoke(aid):
     :return:
     """
     api_key = get(aid)
-    setattr(api_key, "revoked", False)
+    setattr(api_key, "revoked", True)
 
+    log_service.audit_log("revoke_api_key", api_key.name, "Revoking API key")
     return database.update(api_key)
 
 
@@ -55,6 +58,9 @@ def create(**kwargs):
     :return:
     """
     api_key = ApiKey(**kwargs)
+    # this logs only metadata about the api key
+    log_service.audit_log("create_api_key", api_key.name, f"Creating the API key {api_key}")
+
     database.create(api_key)
     return api_key
 
@@ -69,6 +75,7 @@ def update(api_key, **kwargs):
     for key, value in kwargs.items():
         setattr(api_key, key, value)
 
+    log_service.audit_log("update_api_key", api_key.name, f"Update summary - {kwargs}")
     return database.update(api_key)
 
 

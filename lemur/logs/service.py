@@ -42,8 +42,9 @@ def audit_log(action, entity, message):
     :param message: Additional info e.g. Role being assigned to user X
     :return:
     """
+    user = g.current_user.email if hasattr(g, 'current_user') else "LEMUR"
     current_app.logger.info(
-        f"[lemur-audit] action: {action}, user: {g.current_user.email}, entity: {entity} [{message}]"
+        f"[lemur-audit] action: {action}, user: {user}, entity: {entity}, details:{message}"
     )
 
 
