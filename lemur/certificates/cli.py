@@ -262,7 +262,6 @@ def rotate(endpoint_name, new_certificate_name, old_certificate_name, message, c
                 log_data["endpoint"] = endpoint.dnsname
                 log_data["certificate"] = endpoint.certificate.replaced[0].name
                 request_rotation(endpoint, endpoint.certificate.replaced[0], message, commit)
-                print(log_data)
                 print(
                     f"[+] Rotating {endpoint.name} to {endpoint.certificate.replaced[0].name}"
                 )
@@ -420,7 +419,6 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
                                           f"{len(endpoint.certificate.replaced)}"
 
                 request_rotation(endpoint, endpoint.certificate.replaced[0], message, commit)
-                print(log_data)
                 current_app.logger.info(log_data)
 
                 metrics.send(
