@@ -73,7 +73,6 @@ install:
 
 script:
   - make test
-  - make test-build-js
   - bandit -r . -ll -ii -x lemur/tests/,docs
 
 after_success:
