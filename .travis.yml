@@ -10,6 +10,9 @@ jobs:
       env: TOXENV=py37
       addons:
         postgresql: "9.4"
+        chrome: stable
+      services:
+        - xvfb
     - name: "python3.7-postgresql-10-bionic"
       dist: bionic
       language: python
@@ -17,6 +20,7 @@ jobs:
       env: TOXENV=py37
       addons:
         postgresql: '10'
+        chrome: stable
         apt:
           packages:
             - postgresql-10
@@ -24,6 +28,7 @@ jobs:
             - postgresql-server-dev-10
       services:
         - postgresql
+        - xvfb
     - name: "python3.8-postgresql-12-focal"
       dist: focal
       language: python
@@ -31,6 +36,7 @@ jobs:
       env: TOXENV=py38
       addons:
         postgresql: '12'
+        chrome: stable
         apt:
           packages:
             - postgresql-12
@@ -38,6 +44,7 @@ jobs:
             - postgresql-server-dev-12
       services:
         - postgresql
+        - xvfb
 
 cache:
   directories:
@@ -53,6 +60,9 @@ env:
     # https://github.com/travis-ci/travis-ci/issues/5246#issuecomment-166460882
     - BOTO_CONFIG=/doesnotexist
 
+before_install:
+  - export CHROME_BIN=/usr/bin/google-chrome
+
 before_script:
   - sudo systemctl stop postgresql
   # the port may have been auto-configured to use 5433 if it thought 5422 was already in use,
@@ -64,8 +74,9 @@ before_script:
   - psql -c "create user lemur with password 'lemur;'" -U postgres
   - psql lemur -c "create extension IF NOT EXISTS pg_trgm;" -U postgres
   - npm config set registry https://registry.npmjs.org
-  - npm install -g bower
+  - npm install -g npm@latest bower
   - pip install --upgrade setuptools
+  - export DISPLAY=:99.0
 
 install:
   - pip install coveralls
@@ -74,6 +85,7 @@ install:
 script:
   - make test
   - bandit -r . -ll -ii -x lemur/tests/,docs
+  - make test-js
 
 after_success:
   - coveralls
