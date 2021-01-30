@@ -8,6 +8,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from lemur import database
+from lemur.logs import service as log_service
 from lemur.users.models import User
 
 
@@ -31,6 +32,7 @@ def create(username, password, email, active, profile_picture, roles):
         profile_picture=profile_picture,
     )
     user.roles = roles
+    log_service.audit_log("create_user", username, "Creating new user")
     return database.create(user)
 
 
@@ -52,6 +54,8 @@ def update(user_id, username, email, active, profile_picture, roles):
     user.active = active
     user.profile_picture = profile_picture
     update_roles(user, roles)
+
+    log_service.audit_log("update_user", username, f"Updating user with id {user_id}")
     return database.update(user)
 
 
@@ -64,19 +68,29 @@ def update_roles(user, roles):
     :param user:
     :param roles:
     """
+    removed_roles = []
     for ur in user.roles:
         for r in roles:
             if r.id == ur.id:
                 break
         else:
             user.roles.remove(ur)
+            removed_roles.append(ur.name)
 
+    if removed_roles:
+        log_service.audit_log("unassign_role", user.username, f"Un-assigning roles {removed_roles}")
+
+    added_roles = []
     for r in roles:
         for ur in user.roles:
             if r.id == ur.id:
                 break
         else:
             user.roles.append(r)
+            added_roles.append(r.name)
+
+    if added_roles:
+        log_service.audit_log("assign_role", user.username, f"Assigning roles {added_roles}")
 
 
 def get(user_id):
