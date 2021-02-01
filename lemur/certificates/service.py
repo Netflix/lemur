@@ -388,6 +388,7 @@ def create(**kwargs):
         cert = Certificate(**kwargs)
         kwargs["creator"].certificates.append(cert)
     else:
+        # ACME path
         cert = PendingCertificate(**kwargs)
         kwargs["creator"].pending_certificates.append(cert)
 
