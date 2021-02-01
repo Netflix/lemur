@@ -362,6 +362,9 @@ Whenever a pending ACME certificate fails to be issued, Lemur will send a notifi
 and security team (as specified by the ``LEMUR_SECURITY_TEAM_EMAIL`` configuration parameter). This email is not sent if
 the pending certificate had notifications disabled.
 
+Lemur will attempt 3x times to resolve a pending certificate.
+This can at times result into 3 duplicate certificates, if all certificate attempts get resolved.
+
 **Certificate rotation**
 
 Whenever a cert is rotated, Lemur will send a notification via email to the certificate owner. This notification is
@@ -819,6 +822,20 @@ ACME Plugin
 
         Enables delegated DNS domain validation using CNAMES.  When enabled, Lemur will attempt to follow CNAME records to authoritative DNS servers when creating DNS-01 challenges.
 
+
+The following configration properties are optional for the ACME plugin to use. They allow reusing an existing ACME
+account. See :ref:`Using a pre-existing ACME account <AcmeAccountReuse>` for more details.
+
+
+.. data:: ACME_PRIVATE_KEY
+    :noindex:
+
+            This is the private key, the account was registered with (in JWK format)
+
+.. data:: ACME_REGR
+    :noindex:
+
+            This is the registration for the ACME account, the most important part is the uri attribute (in JSON)
 
 Active Directory Certificate Services Plugin
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1335,23 +1352,6 @@ The following configuration properties are required to use the PowerDNS ACME Plu
             False: Disables certificate validation (Not Recommended)
 
             File/Dir path to CA Bundle: Verifies the TLS certificate was issued by a Certificate Authority in the provided CA bundle.
-
-ACME Plugin
-~~~~~~~~~~~~
-
-The following configration properties are optional for the ACME plugin to use. They allow reusing an existing ACME
-account. See :ref:`Using a pre-existing ACME account <AcmeAccountReuse>` for more details.
-
-
-.. data:: ACME_PRIVATE_KEY
-    :noindex:
-
-            This is the private key, the account was registered with (in JWK format)
-
-.. data:: ACME_REGR
-    :noindex:
-
-            This is the registration for the ACME account, the most important part is the uri attribute (in JSON)
 
 .. _CommandLineInterface:
 
