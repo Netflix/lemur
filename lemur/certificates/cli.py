@@ -261,10 +261,10 @@ def rotate(endpoint_name, new_certificate_name, old_certificate_name, message, c
 
                 log_data["endpoint"] = endpoint.dnsname
                 log_data["certificate"] = endpoint.certificate.replaced[0].name
-                request_rotation(endpoint, endpoint.certificate.replaced[0], message, commit)
                 print(
                     f"[+] Rotating {endpoint.name} to {endpoint.certificate.replaced[0].name}"
                 )
+                request_rotation(endpoint, endpoint.certificate.replaced[0], message, commit)
                 current_app.logger.info(log_data)
 
         status = SUCCESS_METRIC_STATUS
@@ -427,7 +427,7 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
                     1,
                     metric_tags={
                         "status": FAILURE_METRIC_STATUS,
-                        "new_certificate_name": str(endpoint.certificate.replaced[0].name),
+                        "new_certificate_name": str(log_data["certificate"]),
                         "endpoint_name": str(endpoint.dnsname),
                         "message": str(message),
                         "region": str(region),
