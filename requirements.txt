@@ -33,7 +33,7 @@ blinker==1.4
     #   raven
 boto3==1.16.60
     # via -r requirements.in
-botocore==1.19.60
+botocore==1.19.63
     # via
     #   -r requirements.in
     #   boto3
