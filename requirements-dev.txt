@@ -6,7 +6,7 @@
 #
 appdirs==1.4.3
     # via virtualenv
-bleach==3.1.4
+bleach==3.3.0
     # via readme-renderer
 certifi==2020.12.5
     # via requests
@@ -46,6 +46,8 @@ nodeenv==1.5.0
     # via
     #   -r requirements-dev.in
     #   pre-commit
+packaging==20.9
+    # via bleach
 pkginfo==1.5.0.1
     # via twine
 pre-commit==2.10.0
@@ -58,6 +60,8 @@ pyflakes==2.2.0
     # via flake8
 pygments==2.6.1
     # via readme-renderer
+pyparsing==2.4.7
+    # via packaging
 pyyaml==5.4.1
     # via
     #   -r requirements-dev.in
