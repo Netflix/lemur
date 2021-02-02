@@ -1,16 +1,50 @@
-language: python
-dist: bionic
-
 node_js:
-  - "6.2.0"
+  - "10"
 
-addons:
-  postgresql: "9.4"
-
-matrix:
+jobs:
   include:
-    - python: "3.7"
+    - name: "python3.7-postgresql-9.4-bionic"
+      dist: bionic
+      language: python
+      python: "3.7"
       env: TOXENV=py37
+      addons:
+        postgresql: "9.4"
+        chrome: stable
+      services:
+        - xvfb
+    - name: "python3.7-postgresql-10-bionic"
+      dist: bionic
+      language: python
+      python: "3.7"
+      env: TOXENV=py37
+      addons:
+        postgresql: '10'
+        chrome: stable
+        apt:
+          packages:
+            - postgresql-10
+            - postgresql-client-10
+            - postgresql-server-dev-10
+      services:
+        - postgresql
+        - xvfb
+    - name: "python3.8-postgresql-12-focal"
+      dist: focal
+      language: python
+      python: "3.8"
+      env: TOXENV=py38
+      addons:
+        postgresql: '12'
+        chrome: stable
+        apt:
+          packages:
+            - postgresql-12
+            - postgresql-client-12
+            - postgresql-server-dev-12
+      services:
+        - postgresql
+        - xvfb
 
 cache:
   directories:
@@ -26,13 +60,23 @@ env:
     # https://github.com/travis-ci/travis-ci/issues/5246#issuecomment-166460882
     - BOTO_CONFIG=/doesnotexist
 
+before_install:
+  - export CHROME_BIN=/usr/bin/google-chrome
+
 before_script:
+  - sudo systemctl stop postgresql
+  # the port may have been auto-configured to use 5433 if it thought 5422 was already in use,
+  # for some reason it happens very often
+  # https://github.com/travis-ci/travis-build/blob/master/lib/travis/build/bash/travis_setup_postgresql.bash#L52
+  - sudo sed -i -e 's/5433/5432/' /etc/postgresql/*/main/postgresql.conf
+  - sudo systemctl restart postgresql
   - psql -c "create database lemur;" -U postgres
   - psql -c "create user lemur with password 'lemur;'" -U postgres
   - psql lemur -c "create extension IF NOT EXISTS pg_trgm;" -U postgres
   - npm config set registry https://registry.npmjs.org
-  - npm install -g bower
+  - npm install -g npm@latest bower
   - pip install --upgrade setuptools
+  - export DISPLAY=:99.0
 
 install:
   - pip install coveralls
@@ -41,6 +85,7 @@ install:
 script:
   - make test
   - bandit -r . -ll -ii -x lemur/tests/,docs
+  - make test-js
 
 after_success:
   - coveralls
@@ -51,4 +96,4 @@ notifications:
       - lemur@netflix.com
     on_success: never
     on_failure: always
-    on_cancel:  never # Dependbot cancels Travis before rebase and triggers too many emails
+    on_cancel: never # Dependbot cancels Travis before rebase and triggers too many emails
