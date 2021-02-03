@@ -51,8 +51,8 @@
 <div class="modal-body" ng-show="jwt">
   <h4>Pass the following token on every Lemur API request:</h4>
   <pre><code>{{ jwt }}</code></pre>
-  <h4>Example usuage:</h4>
-  <pre><code>curl -i {{ origin }}/certificates -H "Authorization: Bearer {{ jwt }}</code></pre>
+  <h4>Example usage:</h4>
+  <pre><code>curl -i {{ origin }}/api/1/certificates -H "Authorization: Bearer {{ jwt }}"</code></pre>
 </div>
 <div class="modal-footer" ng-show="!jwt">
   <button ng-click="save(apiKey)" type="submit" ng-disabled="createForm.$invalid" class="btn btn-primary">Save</button>
