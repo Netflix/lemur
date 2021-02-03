@@ -221,7 +221,7 @@ def update_user(user, profile, roles):
                 removed_roles.append(ur.name)
 
         if removed_roles:
-            log_service.audit_log("unassign_role", user.name, f"Un-assigning roles {removed_roles}")
+            log_service.audit_log("unassign_role", user.username, f"Un-assigning roles {removed_roles}")
         # update any changes to the user
         user_service.update(
             user.id,
