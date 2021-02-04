@@ -21,6 +21,8 @@ def test_format(certificate, endpoint):
             "notification_type": "expiration",
             "certificate_name": certificate["name"],
             "expires": arrow.get(certificate["validityEnd"]).format("YYYY-MM-DDTHH:mm:ss"),
+            "issuer": certificate["issuer"],
+            "id": certificate["id"],
             "endpoints_detected": 0,
             "owner": certificate["owner"],
             "details": "https://lemur.example.com/#/certificates/{name}".format(name=certificate["name"])
