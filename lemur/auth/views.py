@@ -268,6 +268,7 @@ class Login(Resource):
               POST /auth/login HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                 "username": "test",
