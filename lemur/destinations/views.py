@@ -113,6 +113,7 @@ class DestinationsList(AuthenticatedResource):
               POST /destinations HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                 "description": "test33",
@@ -264,6 +265,7 @@ class Destinations(AuthenticatedResource):
               POST /destinations/1 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
 
               {
