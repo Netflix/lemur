@@ -259,8 +259,10 @@ class EntrustIssuerPlugin(IssuerPlugin):
         else:
             chain = response_dict['chainCerts'][1]
 
-        if current_app.config.get("ENTRUST_CROSS_SIGNED_RSA") and get_key_type_from_certificate(cert) == "RSA2048":
-            chain = current_app.config.get("ENTRUST_CROSS_SIGNED_RSA")
+        if current_app.config.get("ENTRUST_CROSS_SIGNED_RSA_L1K") and get_key_type_from_certificate(cert) == "RSA2048":
+            chain = current_app.config.get("ENTRUST_CROSS_SIGNED_RSA_L1K")
+        if current_app.config.get("ENTRUST_CROSS_SIGNED_ECC_L1F") and get_key_type_from_certificate(cert) == "ECCPRIME256V1":
+            chain = current_app.config.get("ENTRUST_CROSS_SIGNED_ECC_L1F")
 
         log_data["message"] = "Received Chain"
         log_data["options"] = f"chain: {chain}"
