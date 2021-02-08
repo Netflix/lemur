@@ -44,7 +44,7 @@ click==7.1.2
     #   flask
 coverage==5.4
     # via -r requirements-tests.in
-cryptography==3.3.1
+cryptography==3.4.2
     # via
     #   moto
     #   python-jose
@@ -192,7 +192,6 @@ six==1.15.0
     #   aws-sam-translator
     #   bandit
     #   cfn-lint
-    #   cryptography
     #   docker
     #   ecdsa
     #   fakeredis

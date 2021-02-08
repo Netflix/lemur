@@ -18,7 +18,7 @@ chardet==3.0.4
     # via requests
 colorama==0.4.3
     # via twine
-cryptography==3.3.1
+cryptography==3.4.2
     # via secretstorage
 distlib==0.3.0
     # via virtualenv
@@ -81,7 +81,6 @@ secretstorage==3.1.2
 six==1.15.0
     # via
     #   bleach
-    #   cryptography
     #   readme-renderer
     #   virtualenv
 toml==0.10.0
