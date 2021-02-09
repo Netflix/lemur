@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-index --output-file=requirements.txt requirements.in
 #
-acme==1.11.0
+acme==1.12.0
     # via -r requirements.in
 alembic-autogenerate-enums==0.0.2
     # via -r requirements.in
@@ -31,9 +31,9 @@ blinker==1.4
     #   flask-mail
     #   flask-principal
     #   raven
-boto3==1.16.63
+boto3==1.17.3
     # via -r requirements.in
-botocore==1.19.63
+botocore==1.20.3
     # via
     #   -r requirements.in
     #   boto3
@@ -57,7 +57,7 @@ click==7.1.2
     # via flask
 cloudflare==2.8.15
     # via -r requirements.in
-cryptography==3.3.1
+cryptography==3.4.2
     # via
     #   -r requirements.in
     #   acme
@@ -107,7 +107,7 @@ future==0.18.2
     # via -r requirements.in
 gunicorn==20.0.4
     # via -r requirements.in
-hvac==0.10.6
+hvac==0.10.8
     # via -r requirements.in
 idna==2.9
     # via requests
@@ -230,7 +230,6 @@ six==1.15.0
     #   -r requirements.in
     #   acme
     #   bcrypt
-    #   cryptography
     #   flask-cors
     #   flask-restful
     #   hvac
