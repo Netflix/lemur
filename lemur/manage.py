@@ -430,6 +430,10 @@ class LemurServer(Command):
             current_app.config.get("CONFIG_PATH")
         )
 
+        log_config_dict = current_app.config.get("LOG_CONFIG_DICT")
+        if log_config_dict:
+            app.cfg.set("logconfig_dict", log_config_dict)
+
         return app.run()
 
 
