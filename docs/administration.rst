@@ -712,6 +712,33 @@ For more information about how to use social logins, see: `Satellizer <https://g
 
             PING_AUTH_ENDPOINT = "https://<yourpingserver>/oauth2/authorize"
 
+.. data:: PING_USER_MEMBERSHIP_URL
+    :noindex:
+
+        An optional additional endpoint to learn membership details post the user validation.
+
+        ::
+
+            PING_USER_MEMBERSHIP_URL = "https://<yourmembershipendpoint>"
+
+.. data:: PING_USER_MEMBERSHIP_TLS_PROVIDER
+    :noindex:
+
+        A custom TLS session provider plugin name
+
+        ::
+
+            PING_USER_MEMBERSHIP_TLS_PROVIDER = "slug-name"
+
+.. data:: PING_USER_MEMBERSHIP_SERVICE
+    :noindex:
+
+        Membership service name used by PING_USER_MEMBERSHIP_TLS_PROVIDER to create a session
+
+        ::
+
+            PING_USER_MEMBERSHIP_SERVICE = "yourmembershipservice"
+
 .. data:: OAUTH2_SECRET
     :noindex:
 

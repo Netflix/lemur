@@ -5,6 +5,8 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+import json
+
 import jwt
 import base64
 import requests
@@ -23,7 +25,7 @@ from lemur.roles import service as role_service
 from lemur.logs import service as log_service
 from lemur.auth.service import create_token, fetch_token_header, get_rsa_public_key
 from lemur.auth import ldap
-
+from lemur.plugins.base import plugins
 
 mod = Blueprint("auth", __name__)
 api = Api(mod)
@@ -136,6 +138,44 @@ def retrieve_user(user_api_url, access_token):
 
     user = user_service.get_by_email(profile["email"])
     return user, profile
+
+
+def retrieve_user_memberships(user_api_url, user_membership_api_url, access_token):
+    user, profile = retrieve_user(user_api_url, access_token)
+
+    if user_membership_api_url is None:
+        return user, profile
+    """
+    Potentially, below code can be made more generic i.e., plugin driven. Unaware of the usage of this
+    code across the community, current implementation is config driven. Without user_membership_api_url
+    configured, it is backward compatible.
+    """
+
+    # put user id in url
+    user_membership_api_url = user_membership_api_url.replace("%user_id%", profile["userId"])
+
+    headers = {"Content-Type": "application/json"}
+    data = {"relation": "DIRECT_ONLY", "groupFilter": {"type": "GOOGLE"}, "size": 500}
+
+    tls_provider = plugins.get(current_app.config.get("PING_USER_MEMBERSHIP_TLS_PROVIDER"))
+
+    # retrieve information about the current user
+    session = tls_provider.session(current_app.config.get("PING_USER_MEMBERSHIP_SERVICE"))
+    r = session.post(user_membership_api_url, data=json.dumps(data), headers=headers)
+
+    user_membership = {"email": profile["email"],
+                       "thumbnailPhotoUrl": profile["thumbnailPhotoUrl"],
+                       "googleGroups": []}
+
+    if r.status_code == 200:
+        response = r.json()
+        membership_details = response["data"]
+        for membership in membership_details:
+            user_membership["googleGroups"].append(membership["membership"]["name"])
+
+        return user, user_membership
+
+    current_app.logger.error(f"Response Code:{r.status_code} {r.text}")
 
 
 def create_user_roles(profile):
@@ -375,7 +415,6 @@ class Ping(Resource):
 
         # you can either discover these dynamically or simply configure them
         access_token_url = current_app.config.get("PING_ACCESS_TOKEN_URL")
-        user_api_url = current_app.config.get("PING_USER_API_URL")
 
         secret = current_app.config.get("PING_SECRET")
 
@@ -391,7 +430,12 @@ class Ping(Resource):
         error_code = validate_id_token(id_token, args["clientId"], jwks_url)
         if error_code:
             return error_code
-        user, profile = retrieve_user(user_api_url, access_token)
+
+        user, profile = retrieve_user_memberships(
+            current_app.config.get("PING_USER_API_URL"),
+            current_app.config.get("PING_USER_MEMBERSHIP_URL"),
+            access_token
+        )
         roles = create_user_roles(profile)
         update_user(user, profile, roles)
 

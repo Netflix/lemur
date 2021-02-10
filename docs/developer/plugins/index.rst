@@ -285,6 +285,17 @@ The `ExportPlugin` object requires the implementation of one function::
     Support of various formats sometimes relies on external tools system calls. Always be mindful of sanitizing any input to these calls.
 
 
+Custom TLS Provider
+------
+
+Managing TLS at the enterprise scale could be hard and often organizations offer custom wrapper implementations. It could
+be ideal to use those while making calls to internal services. The `TLSPlugin` would help to achieve this. It requires the
+implementation of one function which creates a TLS session::
+
+     def session(self, server_application):
+        # return active session
+
+
 Testing
 =======
 
