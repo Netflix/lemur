@@ -150,32 +150,35 @@ def retrieve_user_memberships(user_api_url, user_membership_api_url, access_toke
     code across the community, current implementation is config driven. Without user_membership_api_url
     configured, it is backward compatible.
     """
+    tls_provider = plugins.get(current_app.config.get("PING_USER_MEMBERSHIP_TLS_PROVIDER"))
 
     # put user id in url
     user_membership_api_url = user_membership_api_url.replace("%user_id%", profile["userId"])
 
+    session = tls_provider.session(current_app.config.get("PING_USER_MEMBERSHIP_SERVICE"))
     headers = {"Content-Type": "application/json"}
     data = {"relation": "DIRECT_ONLY", "groupFilter": {"type": "GOOGLE"}, "size": 500}
-
-    tls_provider = plugins.get(current_app.config.get("PING_USER_MEMBERSHIP_TLS_PROVIDER"))
-
-    # retrieve information about the current user
-    session = tls_provider.session(current_app.config.get("PING_USER_MEMBERSHIP_SERVICE"))
-    r = session.post(user_membership_api_url, data=json.dumps(data), headers=headers)
-
     user_membership = {"email": profile["email"],
                        "thumbnailPhotoUrl": profile["thumbnailPhotoUrl"],
                        "googleGroups": []}
+    while True:
+        # retrieve information about the current user memberships
+        r = session.post(user_membership_api_url, data=json.dumps(data), headers=headers)
 
-    if r.status_code == 200:
-        response = r.json()
-        membership_details = response["data"]
-        for membership in membership_details:
-            user_membership["googleGroups"].append(membership["membership"]["name"])
+        if r.status_code == 200:
+            response = r.json()
+            membership_details = response["data"]
+            for membership in membership_details:
+                user_membership["googleGroups"].append(membership["membership"]["name"])
 
-        return user, user_membership
-
-    current_app.logger.error(f"Response Code:{r.status_code} {r.text}")
+            if "nextPageToken" in response and response["nextPageToken"]:
+                data["nextPageToken"] = response["nextPageToken"]
+            else:
+                break
+        else:
+            current_app.logger.error(f"Response Code:{r.status_code} {r.text}")
+            break
+    return user, user_membership
 
 
 def create_user_roles(profile):
