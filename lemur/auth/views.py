@@ -196,7 +196,7 @@ def create_user_roles(profile):
                     description="This is a google group based role created by Lemur",
                     third_party=True,
                 )
-            if not role.third_party:
+            if (group != 'admin') and (not role.third_party):
                 role = role_service.set_third_party(role.id, third_party_status=True)
             roles.append(role)
     else:
