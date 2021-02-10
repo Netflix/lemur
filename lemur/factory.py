@@ -16,6 +16,7 @@ import pkg_resources
 import socket
 
 from logging import Formatter, StreamHandler
+from logging.config import dictConfig
 from logging.handlers import RotatingFileHandler
 
 from flask import Flask
@@ -172,6 +173,12 @@ def configure_logging(app):
 
     :param app:
     """
+
+    log_config_dict = app.config.get("LOG_CONFIG_DICT")
+    if log_config_dict:
+        dictConfig(log_config_dict)
+        return
+
     handler = RotatingFileHandler(
         app.config.get("LOG_FILE", "lemur.log"), maxBytes=10000000, backupCount=100
     )
