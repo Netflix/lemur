@@ -77,7 +77,7 @@ def create_token(user, aid=None, ttl=None):
         else:
             payload["exp"] = ttl
     token = jwt.encode(payload, current_app.config["LEMUR_TOKEN_SECRET"])
-    return token.decode("unicode_escape")
+    return token
 
 
 def login_required(f):
