@@ -325,6 +325,7 @@ def test_certificate_input_schema(client, authority):
     # make sure the defaults got set
     assert data["common_name"] == "test.example.com"
     assert data["country"] == "US"
+    assert data["key_type"] == "ECCPRIME256V1"
 
     assert len(data.keys()) == 19
 
@@ -349,10 +350,12 @@ def test_certificate_input_with_extensions(client, authority):
             },
         },
         "dnsProvider": None,
+        "keyType": "RSA2048"
     }
 
     data, errors = CertificateInputSchema().load(input_data)
     assert not errors
+    assert data["key_type"] == "RSA2048"
 
 
 def test_certificate_input_schema_parse_csr(authority):
@@ -387,9 +390,11 @@ def test_certificate_input_schema_parse_csr(authority):
 
     data, errors = CertificateInputSchema().load(input_data)
 
+    assert not errors
     for san in data["extensions"]["sub_alt_names"]["names"]:
         assert san.value == test_san_dns
-    assert not errors
+
+    assert data["key_type"] == "RSA2048"
 
 
 def test_certificate_out_of_range_date(client, authority):
