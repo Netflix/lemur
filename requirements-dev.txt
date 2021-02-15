@@ -18,7 +18,7 @@ chardet==3.0.4
     # via requests
 colorama==0.4.3
     # via twine
-cryptography==3.4.2
+cryptography==3.4.5
     # via secretstorage
 distlib==0.3.0
     # via virtualenv
