@@ -44,7 +44,7 @@ click==7.1.2
     #   flask
 coverage==5.4
     # via -r requirements-tests.in
-cryptography==3.4.2
+cryptography==3.4.5
     # via
     #   moto
     #   python-jose
