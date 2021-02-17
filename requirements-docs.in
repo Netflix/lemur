@@ -7,9 +7,11 @@ arrow
 cryptography
 Flask
 Flask-Bcrypt
+Flask-Mail
 Flask-Migrate
 Flask-Principal
 Flask-RESTful
+Flask-Script
 Flask-SQLAlchemy
 flask_replicated
 inflection
