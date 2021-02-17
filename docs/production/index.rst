@@ -501,7 +501,7 @@ rely on celery to create the DNS record. This will change when we implement mix 
 
 To create a HTTP compatible Authority, you first need to create a new destination that will be used to deploy the
 challenge token. Visit `Admin` -> `Destination` and click `Create`. The path you provide for the destination needs to
-be the exact path that is called when the ACME providers calls ``http://<domain>/.well-known/acme-challenge/`. The
+be the exact path that is called when the ACME providers calls `http://<domain>/.well-known/acme-challenge/`. The
 token part will be added dynamically by the acme_upload.
 Currently only the SFTP and S3 Bucket destination support the ACME HTTP challenge.
 

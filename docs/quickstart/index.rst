@@ -148,7 +148,7 @@ Before Lemur will run you need to fill in a few required variables in the config
     LEMUR_DEFAULT_ORGANIZATIONAL_UNIT
 
 Set Up Postgres
---------------
+---------------
 
 For production, a dedicated database is recommended, for this guide we will assume postgres has been installed and is on the same machine that Lemur is installed on.
 
@@ -186,11 +186,12 @@ In addition to creating a new user, Lemur also creates a few default email notif
 Your database installation requires the pg_trgm extension. If you do not have this installed already, you can allow the script to install this for you by adding the SUPERUSER permission to the lemur database user.
 
 .. code-block:: bash
+
     sudo -u postgres -i
     psql
     postgres=# ALTER USER lemur WITH SUPERUSER
 
-Additional notifications can be created through the UI or API.  See :ref:`Creating Notifications <CreatingNotifications>` and :ref:`Command Line Interface <CommandLineInterface>` for details.
+Additional notifications can be created through the UI or API.  See :ref:`Notification Options <NotificationOptions>` and :ref:`Command Line Interface <CommandLineInterface>` for details.
 
 **Make note of the password used as this will be used during first login to the Lemur UI.**
 
@@ -202,15 +203,16 @@ Additional notifications can be created through the UI or API.  See :ref:`Creati
 .. note:: If you added the SUPERUSER permission to the lemur database user above, it is recommended you revoke that permission now.
 
 .. code-block:: bash
+
     sudo -u postgres -i
     psql
     postgres=# ALTER USER lemur WITH NOSUPERUSER
 
 
-.. note:: It is recommended that once the ``lemur`` user is created that you create individual users for every day access.  There is currently no way for a user to self enroll for Lemur access, they must have an administrator create an account for them or be enrolled automatically through SSO.  This can be done through the CLI or UI.  See :ref:`Creating Users <CreatingUsers>` and :ref:`Command Line Interface <CommandLineInterface>` for details.
+.. note:: It is recommended that once the ``lemur`` user is created that you create individual users for every day access.  There is currently no way for a user to self enroll for Lemur access, they must have an administrator create an account for them or be enrolled automatically through SSO.  This can be done through the CLI or UI.  See :ref:`Creating a New User <CreateANewUser>` and :ref:`Command Line Interface <CommandLineInterface>` for details.
 
 Set Up a Reverse Proxy
----------------------
+----------------------
 
 By default, Lemur runs on port 8000.  Even if you change this, under normal conditions you won't be able to bind to port 80. To get around this (and to avoid running Lemur as a privileged user, which you shouldn't), we need to set up a simple web proxy. There are many different web servers you can use for this, we like and recommend Nginx.
 

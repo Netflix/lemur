@@ -59,6 +59,7 @@ class CertificatesListValid(AuthenticatedResource):
            **Example request**:
 
            .. sourcecode:: http
+
               GET /certificates/valid?filter=cn;*.test.example.net&owner=joe@example.com&page=1&count=20
               HTTP/1.1
               Host: example.com

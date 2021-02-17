@@ -78,13 +78,13 @@ Basic Configuration
             The default connection pool size is 5 for sqlalchemy managed connections.   Depending on the number of Lemur instances,
             please specify per instance connection pool size.  Below is an example to set connection pool size to 10.
 
-        ::
+    ::
 
         SQLALCHEMY_POOL_SIZE = 10
 
 
     .. warning::
-This is an optional setting but important to review and set for optimal database connection usage and for overall database performance.
+        This is an optional setting but important to review and set for optimal database connection usage and for overall database performance.
 
 .. data:: SQLALCHEMY_MAX_OVERFLOW
     :noindex:
@@ -99,7 +99,7 @@ This is an optional setting but important to review and set for optimal database
 
 
     .. note::
-Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create connections above specified pool size.
+        Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create connections above specified pool size.
 
 
 .. data:: LEMUR_ALLOW_WEEKEND_EXPIRATION
@@ -174,6 +174,7 @@ Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create c
 
 .. data:: PUBLIC_CA_MAX_VALIDITY_DAYS
     :noindex:
+
         Use this config to override the limit of 397 days of validity for certificates issued by CA/Browser compliant authorities.
         The authorities with cab_compliant option set to true will use this config. The example below overrides the default validity
         of 397 days and sets it to 365 days.
@@ -185,6 +186,7 @@ Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create c
 
 .. data:: DEFAULT_VALIDITY_DAYS
     :noindex:
+
         Use this config to override the default validity of 365 days for certificates offered through Lemur UI. Any CA which
         is not CA/Browser Forum compliant will be using this value as default validity to be displayed on UI. Please
         note that this config is used for cert issuance only through Lemur UI. The example below overrides the default validity
@@ -904,10 +906,12 @@ Active Directory Certificate Services Plugin
 
 .. data:: ADCS_START
     :noindex:
+
         Used in ADCS-Sourceplugin. Minimum id of the first certificate to be returned. ID is increased by one until ADCS_STOP. Missing cert-IDs are ignored
 
 .. data:: ADCS_STOP
     :noindex:
+
         Used for ADCS-Sourceplugin. Maximum id of the certificates returned. 
         
 
@@ -1640,7 +1644,7 @@ Slack
 
 
 AWS (Source)
-----
+------------
 
 :Authors:
     Kevin Glisson <kglisson@netflix.com>,
@@ -1653,7 +1657,7 @@ AWS (Source)
 
 
 AWS (Destination)
-----
+-----------------
 
 :Authors:
     Kevin Glisson <kglisson@netflix.com>,
@@ -1666,7 +1670,7 @@ AWS (Destination)
 
 
 AWS (SNS Notification)
------
+----------------------
 
 :Authors:
     Jasmine Schladen <jschladen@netflix.com>

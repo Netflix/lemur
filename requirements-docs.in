@@ -3,8 +3,38 @@
 # from requirements-docs.txt
 # However, dependabot doesn't use `make up-reqs`, so we have to replicate the necessary dependencies here
 # Without including these dependencies, the docs are unable to include generated autodocs
+acme
+arrow
+boto3
+botocore
+CloudFlare
+cryptography
+dnspython3
+dyn
 Flask
+Flask-Bcrypt
+Flask-Cors
+Flask-Mail
+Flask-Migrate
+Flask-Principal
+Flask-RESTful
+Flask-Script
+Flask-SQLAlchemy
 flask_replicated
+gunicorn
+inflection
+josepy
+logmatic-python
+marshmallow-sqlalchemy
+marshmallow<2.20.5 #schema duplicate issues https://github.com/marshmallow-code/marshmallow-sqlalchemy/issues/121
+pem
+pyjwt
+pyOpenSSL
+raven[flask]
+retrying
+SQLAlchemy-Utils
+tabulate
+xmltodict
 
 # docs specific
 sphinx
