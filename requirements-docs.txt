@@ -60,6 +60,8 @@ pem==21.1.0
     # manual debug
 pygments==2.6.1
     # via sphinx
+pyjwt==2.0.1
+    # manual debug
 pyparsing==2.4.7
     # via packaging
 pytz==2019.3
