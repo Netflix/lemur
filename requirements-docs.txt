@@ -89,6 +89,8 @@ sphinxcontrib-qthelp==1.0.3
     # via sphinx
 sphinxcontrib-serializinghtml==1.1.4
     # via sphinx
+sqlalchemy-utils==0.36.8
+    # manual debug
 urllib3==1.25.8
     # via requests
 

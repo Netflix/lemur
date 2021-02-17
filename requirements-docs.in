@@ -18,6 +18,7 @@ flask_replicated
 inflection
 logmatic-python
 raven[flask]
+SQLAlchemy-Utils
 
 # docs specific
 sphinx
