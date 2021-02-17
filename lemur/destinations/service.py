@@ -21,7 +21,7 @@ def create(label, plugin_name, options, description=None):
 
     :param label: Destination common name
     :param description:
-    :rtype : Destination
+    :rtype: Destination
     :return: New destination
     """
     # remove any sub-plugin objects before try to save the json options
@@ -50,7 +50,7 @@ def update(destination_id, label, plugin_name, options, description):
     :param plugin_name:
     :param options:
     :param description:
-    :rtype : Destination
+    :rtype: Destination
     :return:
     """
     destination = get(destination_id)
@@ -81,7 +81,7 @@ def get(destination_id):
     Retrieves an destination by its lemur assigned ID.
 
     :param destination_id: Lemur assigned ID
-    :rtype : Destination
+    :rtype: Destination
     :return:
     """
     return database.get(Destination, destination_id)
