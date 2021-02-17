@@ -121,8 +121,7 @@ Happy Holidays! This is a big release with lots of bug fixes and features. Below
 
 Features:
 
-* Per-certificate rotation policies, requires a database migration. The default rotation policy for all certificates.
-is 30 days. Every certificate will gain a policy regardless of if auto-rotation is used.
+* Per-certificate rotation policies, requires a database migration. The default rotation policy for all certificates is 30 days. Every certificate will gain a policy regardless of if auto-rotation is used.
 * Adds per-user API Keys, allows users to issue multiple long-lived API tokens with the same permission as the user creating them.
 * Adds the ability to revoke certificates from the Lemur UI/API, this is currently only supported for the digicert CIS and cfssl plugins.
 * Allow destinations to support an export function. Useful for file system destinations e.g. S3 to specify the export plugin you wish to run before being sent to the destination.
@@ -166,13 +165,9 @@ Big thanks to neilschelly for quite a lot of improvements to the `lemur-cryptogr
 
 Other Highlights:
 
-* Closed `#501 <https://github.com/Netflix/lemur/issues/501>`_ - Endpoint resource as now kept in sync via an
-expiration mechanism. Such that non-existant endpoints gracefully fall out of Lemur. Certificates are never
-removed from Lemur.
-* Closed `#551 <https://github.com/Netflix/lemur/pull/551>`_ - Added the ability to create a 4096 bit key during certificate
-creation. Closed `#528 <https://github.com/Netflix/lemur/pull/528>`_ to ensure that issuer plugins supported the new 4096 bit keys.
-* Closed `#566 <https://github.com/Netflix/lemur/issues/566>`_ - Fixed an issue changing the notification status for  certificates
-without private keys.
+* Closed `#501 <https://github.com/Netflix/lemur/issues/501>`_ - Endpoint resource as now kept in sync via an expiration mechanism. Such that non-existant endpoints gracefully fall out of Lemur. Certificates are never removed from Lemur.
+* Closed `#551 <https://github.com/Netflix/lemur/pull/551>`_ - Added the ability to create a 4096 bit key during certificate creation. Closed `#528 <https://github.com/Netflix/lemur/pull/528>`_ to ensure that issuer plugins supported the new 4096 bit keys.
+* Closed `#566 <https://github.com/Netflix/lemur/issues/566>`_ - Fixed an issue changing the notification status for  certificates without private keys.
 * Closed `#594 <https://github.com/Netflix/lemur/issues/594>`_ - Added `replaced` field indicating if a certificate has been superseded.
 * Closed `#602 <https://github.com/Netflix/lemur/issues/602>`_ - AWS plugin added support for ALBs for endpoint tracking.
 
@@ -196,12 +191,8 @@ Upgrading
 
 There have been quite a few issues closed in this release. Some notables:
 
-* Closed `#284 <https://github.com/Netflix/lemur/issues/284>`_ - Created new models for `Endpoints` created associated
-AWS ELB endpoint tracking code. This was the major stated goal of this milestone and should serve as the basis for
-future enhancements of Lemur's certificate 'deployment' capabilities.
-
-* Closed `#334 <https://github.com/Netflix/lemur/issues/334>`_ - Lemur not has the ability
-to restrict certificate expiration dates to weekdays.
+* Closed `#284 <https://github.com/Netflix/lemur/issues/284>`_ - Created new models for `Endpoints` created associated AWS ELB endpoint tracking code. This was the major stated goal of this milestone and should serve as the basis for future enhancements of Lemur's certificate 'deployment' capabilities.
+* Closed `#334 <https://github.com/Netflix/lemur/issues/334>`_ - Lemur not has the ability to restrict certificate expiration dates to weekdays.
 
 Several fixes/tweaks to Lemurs python3 support (thanks chadhendrie!)
 

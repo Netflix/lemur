@@ -17,6 +17,7 @@ Flask-SQLAlchemy
 flask_replicated
 gunicorn
 inflection
+josepy
 logmatic-python
 marshmallow-sqlalchemy
 marshmallow<2.20.5 #schema duplicate issues https://github.com/marshmallow-code/marshmallow-sqlalchemy/issues/121
