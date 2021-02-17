@@ -145,8 +145,7 @@ The `IssuerPlugin` doesn't have any options like Destination, Source, and Notifi
 any fields you might need to submit a request to a third party. If there are additional options you need
 in your plugin feel free to open an issue, or look into adding additional options to issuers yourself.
 
-Asynchronous Certificates
-^^^^^^^^^^^^^^^^^^^^^^^^^
+**Asynchronous Certificates**
 An issuer may take some time to actually issue a certificate for an order.  In this case, a `PendingCertificate` is returned, which holds information to recreate a `Certificate` object at a later time.  Then, `get_ordered_certificate()` should be run periodically via `python manage.py pending_certs fetch -i all` to attempt to retrieve an ordered certificate::
 
     def get_ordered_ceriticate(self, order_id):

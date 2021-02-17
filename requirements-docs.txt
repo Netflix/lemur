@@ -30,6 +30,8 @@ dnspython==1.15.0
     # manual debug
 docutils==0.15.2
     # via sphinx
+dyn==1.8.1
+    # manual debug
 idna==2.9
     # via requests
 imagesize==1.2.0
