@@ -75,7 +75,7 @@ def create_token(user, aid=None, ttl=None):
         if ttl == -1:
             del payload["exp"]
         else:
-            payload["exp"] = ttl
+            payload["exp"] = datetime.utcnow() + timedelta(days=ttl)
     token = jwt.encode(payload, current_app.config["LEMUR_TOKEN_SECRET"])
     return token
 
@@ -116,9 +116,8 @@ def login_required(f):
                 return dict(message="Token has been revoked"), 403
             if access_key.ttl != -1:
                 current_time = datetime.utcnow()
-                expired_time = datetime.fromtimestamp(
-                    access_key.issued_at + access_key.ttl
-                )
+                # API key uses days
+                expired_time = datetime.fromtimestamp(access_key.issued_at) + timedelta(days=access_key.ttl)
                 if current_time >= expired_time:
                     return dict(message="Token has expired"), 403
 
