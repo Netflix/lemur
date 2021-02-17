@@ -2,7 +2,7 @@ Changelog
 =========
 
 0.8.0 - `2020-11-13`
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 
 This release comes after more than two years and contains many interesting new features and improvements.
 In addition to multiple new plugins, such as ACME-http01, ADCS, PowerDNS, UltraDNS, Entrust, SNS, many of Lemur's existing
@@ -84,7 +84,7 @@ Upgrading
 
 
 0.7 - `2018-05-07`
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 This release adds LetsEncrypt support with DNS providers Dyn, Route53, and Cloudflare, and expands on the pending certificate functionality.
 The linux_dst plugin will also be deprecated and removed.

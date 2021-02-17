@@ -1640,7 +1640,7 @@ Slack
 
 
 AWS (Source)
-----
+------------
 
 :Authors:
     Kevin Glisson <kglisson@netflix.com>,
@@ -1653,7 +1653,7 @@ AWS (Source)
 
 
 AWS (Destination)
-----
+-----------------
 
 :Authors:
     Kevin Glisson <kglisson@netflix.com>,
@@ -1666,7 +1666,7 @@ AWS (Destination)
 
 
 AWS (SNS Notification)
------
+----------------------
 
 :Authors:
     Jasmine Schladen <jschladen@netflix.com>
