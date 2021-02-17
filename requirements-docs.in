@@ -7,6 +7,7 @@ acme
 arrow
 boto3
 botocore
+CloudFlare
 cryptography
 dnspython3
 Flask
@@ -29,6 +30,7 @@ pem
 pyjwt
 pyOpenSSL
 raven[flask]
+retrying
 SQLAlchemy-Utils
 xmltodict
 

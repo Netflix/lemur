@@ -191,7 +191,7 @@ Your database installation requires the pg_trgm extension. If you do not have th
     psql
     postgres=# ALTER USER lemur WITH SUPERUSER
 
-Additional notifications can be created through the UI or API.  See :ref:`Creating Notifications <CreatingNotifications>` and :ref:`Command Line Interface <CommandLineInterface>` for details.
+Additional notifications can be created through the UI or API.  See :ref:`Notification Options <NotificationOptions>` and :ref:`Command Line Interface <CommandLineInterface>` for details.
 
 **Make note of the password used as this will be used during first login to the Lemur UI.**
 
@@ -209,7 +209,7 @@ Additional notifications can be created through the UI or API.  See :ref:`Creati
     postgres=# ALTER USER lemur WITH NOSUPERUSER
 
 
-.. note:: It is recommended that once the ``lemur`` user is created that you create individual users for every day access.  There is currently no way for a user to self enroll for Lemur access, they must have an administrator create an account for them or be enrolled automatically through SSO.  This can be done through the CLI or UI.  See :ref:`Creating Users <CreatingUsers>` and :ref:`Command Line Interface <CommandLineInterface>` for details.
+.. note:: It is recommended that once the ``lemur`` user is created that you create individual users for every day access.  There is currently no way for a user to self enroll for Lemur access, they must have an administrator create an account for them or be enrolled automatically through SSO.  This can be done through the CLI or UI.  See :ref:`Creating a New User <CreateANewUser>` and :ref:`Command Line Interface <CommandLineInterface>` for details.
 
 Set Up a Reverse Proxy
 ----------------------
