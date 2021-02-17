@@ -132,31 +132,31 @@ class AuthoritiesList(AuthenticatedResource):
               Accept: application/json, text/javascript
               Content-Type: application/json;charset=UTF-8
 
-             {
-                "country": "US",
-                "state": "California",
-                "location": "Los Gatos",
-                "organization": "Netflix",
-                "organizationalUnit": "Operations",
-                "type": "root",
-                "signingAlgorithm": "sha256WithRSA",
-                "sensitivity": "medium",
-                "keyType": "RSA2048",
-                "plugin": {
-                    "slug": "cloudca-issuer"
-                },
-                "name": "TimeTestAuthority5",
-                "owner": "secure@example.com",
-                "description": "test",
-                "commonName": "AcommonName",
-                "validityYears": "20",
-                "extensions": {
-                    "subAltNames": {
-                        "names": []
-                    },
-                    "custom": []
-                }
-             }
+              {
+                 "country": "US",
+                 "state": "California",
+                 "location": "Los Gatos",
+                 "organization": "Netflix",
+                 "organizationalUnit": "Operations",
+                 "type": "root",
+                 "signingAlgorithm": "sha256WithRSA",
+                 "sensitivity": "medium",
+                 "keyType": "RSA2048",
+                 "plugin": {
+                     "slug": "cloudca-issuer"
+                 },
+                 "name": "TimeTestAuthority5",
+                 "owner": "secure@example.com",
+                 "description": "test",
+                 "commonName": "AcommonName",
+                 "validityYears": "20",
+                 "extensions": {
+                     "subAltNames": {
+                         "names": []
+                     },
+                     "custom": []
+                 }
+              }
 
            **Example response**:
 

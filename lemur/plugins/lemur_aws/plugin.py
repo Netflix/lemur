@@ -450,7 +450,8 @@ class S3DestinationPlugin(ExportDestinationPlugin):
 
     def upload_acme_token(self, token_path, token, options, **kwargs):
         """
-         This is called from the acme http challenge
+        This is called from the acme http challenge
+
         :param self:
         :param token_path:
         :param token:
