@@ -7,6 +7,7 @@ arrow
 cryptography
 Flask
 Flask-Bcrypt
+Flask-Cors
 Flask-Mail
 Flask-Migrate
 Flask-Principal
