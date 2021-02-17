@@ -218,8 +218,7 @@ class AuthoritiesList(AuthenticatedResource):
            :arg parent: the parent authority if this is to be a subca
            :arg signingAlgorithm: algorithm used to sign the authority
            :arg keyType: key type
-           :arg sensitivity: the sensitivity of the root key, for CloudCA this determines if the root keys are stored
-           in an HSM
+           :arg sensitivity: the sensitivity of the root key, for CloudCA this determines if the root keys are stored in an HSM
            :arg keyName: name of the key to store in the HSM (CloudCA)
            :arg serialNumber: serial number of the authority
            :arg firstSerial: specifies the starting serial number for certificates issued off of this authority
