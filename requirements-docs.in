@@ -33,6 +33,7 @@ pyOpenSSL
 raven[flask]
 retrying
 SQLAlchemy-Utils
+tabulate
 xmltodict
 
 # docs specific

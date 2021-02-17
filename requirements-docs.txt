@@ -121,6 +121,8 @@ sphinxcontrib-serializinghtml==1.1.4
     # via sphinx
 sqlalchemy-utils==0.36.8
     # manual debug
+tabulate==0.8.7
+    # manual debug
 urllib3==1.25.8
     # via requests
 xmltodict==0.12.0
