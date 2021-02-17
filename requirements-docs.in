@@ -1,7 +1,11 @@
 # Note: python-ldap from requirements breaks due to readthedocs.io not having the correct header files
 # The `make up-reqs` will update all requirement text files, and forcibly remove python-ldap
 # from requirements-docs.txt
-# However, dependabot doesn't use `make up-reqs`, so `-r requirements.txt` has been removed completely.
+# However, dependabot doesn't use `make up-reqs`, so we have to replicate the necessary dependencies here
+# Without including these dependencies, the docs are unable to include generated autodocs
+Flask
+
+# docs specific
 sphinx
 sphinxcontrib-httpdomain
 sphinx-rtd-theme

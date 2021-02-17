@@ -18,6 +18,8 @@ idna==2.9
     # via requests
 imagesize==1.2.0
     # via sphinx
+flask==1.1.2
+    # manual debug
 jinja2==2.11.3
     # via sphinx
 markupsafe==1.1.1
