@@ -174,6 +174,7 @@ Basic Configuration
 
 .. data:: PUBLIC_CA_MAX_VALIDITY_DAYS
     :noindex:
+
         Use this config to override the limit of 397 days of validity for certificates issued by CA/Browser compliant authorities.
         The authorities with cab_compliant option set to true will use this config. The example below overrides the default validity
         of 397 days and sets it to 365 days.
@@ -185,6 +186,7 @@ Basic Configuration
 
 .. data:: DEFAULT_VALIDITY_DAYS
     :noindex:
+
         Use this config to override the default validity of 365 days for certificates offered through Lemur UI. Any CA which
         is not CA/Browser Forum compliant will be using this value as default validity to be displayed on UI. Please
         note that this config is used for cert issuance only through Lemur UI. The example below overrides the default validity
@@ -904,10 +906,12 @@ Active Directory Certificate Services Plugin
 
 .. data:: ADCS_START
     :noindex:
+
         Used in ADCS-Sourceplugin. Minimum id of the first certificate to be returned. ID is increased by one until ADCS_STOP. Missing cert-IDs are ignored
 
 .. data:: ADCS_STOP
     :noindex:
+
         Used for ADCS-Sourceplugin. Maximum id of the certificates returned. 
         
 

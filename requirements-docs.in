@@ -5,6 +5,7 @@
 # Without including these dependencies, the docs are unable to include generated autodocs
 arrow
 cryptography
+dnspython3
 Flask
 Flask-Bcrypt
 Flask-Cors

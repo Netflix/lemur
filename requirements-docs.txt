@@ -16,6 +16,10 @@ chardet==3.0.4
     # via requests
 cryptography==3.4.5
     # manual debug
+dnspython3==1.15.0
+    # manual debug
+dnspython==1.15.0
+    # manual debug
 docutils==0.15.2
     # via sphinx
 idna==2.9
