@@ -24,6 +24,8 @@ imagesize==1.2.0
     # via sphinx
 flask==1.1.2
     # manual debug
+flask-migrate==2.6.0
+    # manual debug
 flask-replicated==1.4
     # manual debug
 flask-sqlalchemy==2.4.4
