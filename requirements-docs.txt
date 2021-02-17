@@ -50,6 +50,10 @@ logmatic-python==0.1.7
     # manual debug
 markupsafe==1.1.1
     # via jinja2
+marshmallow-sqlalchemy==0.23.1
+    # manual debug
+marshmallow==2.20.4
+    # manual debug
 packaging==20.3
     # via sphinx
 pem==21.1.0
