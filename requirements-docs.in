@@ -4,6 +4,7 @@
 # However, dependabot doesn't use `make up-reqs`, so we have to replicate the necessary dependencies here
 # Without including these dependencies, the docs are unable to include generated autodocs
 arrow
+cryptography
 Flask
 flask_replicated
 logmatic-python
