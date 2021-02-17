@@ -28,6 +28,8 @@ flask-migrate==2.6.0
     # manual debug
 flask-replicated==1.4
     # manual debug
+flask-restful==0.3.8
+    # manual debug
 flask-sqlalchemy==2.4.4
     # manual debug
 inflection==0.5.1

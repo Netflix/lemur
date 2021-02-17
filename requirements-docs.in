@@ -7,6 +7,7 @@ arrow
 cryptography
 Flask
 Flask-Migrate
+Flask-RESTful
 Flask-SQLAlchemy
 flask_replicated
 inflection
