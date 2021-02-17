@@ -493,23 +493,48 @@ class CertificateAuthority(AuthenticatedResource):
 class AuthorityVisualizations(AuthenticatedResource):
     def get(self, authority_id):
         """
-        {"name": "flare",
-        "children": [
-            {
-                "name": "analytics",
-                "children": [
-                    {
-                        "name": "cluster",
-                        "children": [
-                            {"name": "AgglomerativeCluster", "size": 3938},
-                            {"name": "CommunityStructure", "size": 3812},
-                            {"name": "HierarchicalCluster", "size": 6714},
-                            {"name": "MergeEdge", "size": 743}
-                        ]
-                    }
-                ]
-            }
-        ]}
+        .. http:get:: /authorities/1/visualize
+
+           Authority visualization
+
+           **Example request**:
+
+           .. sourcecode:: http
+
+              GET /certificates/1/visualize HTTP/1.1
+              Host: example.com
+              Accept: application/json, text/javascript
+
+           **Example response**:
+
+           .. sourcecode:: http
+
+              HTTP/1.1 200 OK
+              Vary: Accept
+              Content-Type: text/javascript
+
+                {"name": "flare",
+                    "children": [
+                        {
+                            "name": "analytics",
+                            "children": [
+                                {
+                                    "name": "cluster",
+                                    "children": [
+                                        {"name": "AgglomerativeCluster", "size": 3938},
+                                        {"name": "CommunityStructure", "size": 3812},
+                                        {"name": "HierarchicalCluster", "size": 6714},
+                                        {"name": "MergeEdge", "size": 743}
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+
+           :reqheader Authorization: OAuth token to authenticate
+           :statuscode 200: no error
+           :statuscode 403: unauthenticated
         """
         authority = service.get(authority_id)
         return dict(
