@@ -6,6 +6,7 @@
 arrow
 cryptography
 Flask
+Flask-Bcrypt
 Flask-Migrate
 Flask-RESTful
 Flask-SQLAlchemy
