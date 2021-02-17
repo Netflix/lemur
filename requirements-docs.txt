@@ -56,6 +56,8 @@ pyparsing==2.4.7
     # via packaging
 pytz==2019.3
     # via babel
+raven[flask]==6.10.0
+    # manual debug
 requests==2.25.1
     # via sphinx
 six==1.15.0
