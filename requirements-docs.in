@@ -8,6 +8,7 @@ cryptography
 Flask
 Flask-Bcrypt
 Flask-Migrate
+Flask-Principal
 Flask-RESTful
 Flask-SQLAlchemy
 flask_replicated

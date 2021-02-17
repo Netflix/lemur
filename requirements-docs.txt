@@ -28,6 +28,8 @@ flask-bcrypt==0.7.1
     # manual debug
 flask-migrate==2.6.0
     # manual debug
+flask-principal==0.4.0
+    # manual debug
 flask-replicated==1.4
     # manual debug
 flask-restful==0.3.8
