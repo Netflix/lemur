@@ -5,6 +5,7 @@
 # Without including these dependencies, the docs are unable to include generated autodocs
 Flask
 flask_replicated
+logmatic-python
 
 # docs specific
 sphinx
