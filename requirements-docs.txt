@@ -6,6 +6,8 @@
 #
 alabaster==0.7.12
     # via sphinx
+arrow==0.17.0
+    # manual debug
 babel==2.8.0
     # via sphinx
 certifi==2020.12.5
