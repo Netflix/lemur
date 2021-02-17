@@ -8,6 +8,7 @@ cryptography
 Flask
 Flask-SQLAlchemy
 flask_replicated
+inflection
 logmatic-python
 
 # docs specific
