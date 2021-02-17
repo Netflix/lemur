@@ -3,7 +3,10 @@
 # from requirements-docs.txt
 # However, dependabot doesn't use `make up-reqs`, so we have to replicate the necessary dependencies here
 # Without including these dependencies, the docs are unable to include generated autodocs
+acme
 arrow
+boto3
+botocore
 cryptography
 dnspython3
 Flask
@@ -27,6 +30,7 @@ pyjwt
 pyOpenSSL
 raven[flask]
 SQLAlchemy-Utils
+xmltodict
 
 # docs specific
 sphinx
