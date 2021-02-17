@@ -15,6 +15,7 @@ Flask-RESTful
 Flask-Script
 Flask-SQLAlchemy
 flask_replicated
+gunicorn
 inflection
 logmatic-python
 marshmallow-sqlalchemy

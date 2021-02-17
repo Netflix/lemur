@@ -42,6 +42,8 @@ flask-script==2.0.6
     # manual debug
 flask-sqlalchemy==2.4.4
     # manual debug
+gunicorn==20.0.4
+    # manual debug
 inflection==0.5.1
     # manual debug
 jinja2==2.11.3
