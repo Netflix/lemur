@@ -3,10 +3,10 @@
 # from requirements-docs.txt
 # However, dependabot doesn't use `make up-reqs`, so we have to replicate the necessary dependencies here
 # Without including these dependencies, the docs are unable to include generated autodocs
--r requirements.txt
 arrow
 cryptography
 Flask
+Flask-SQLAlchemy
 flask_replicated
 logmatic-python
 
