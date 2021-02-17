@@ -17,6 +17,7 @@ Flask-SQLAlchemy
 flask_replicated
 inflection
 logmatic-python
+pem
 raven[flask]
 SQLAlchemy-Utils
 
