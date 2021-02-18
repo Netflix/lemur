@@ -42,7 +42,7 @@ angular.module('lemur')
     NotificationService.loadMoreCertificates = function (notification, page) {
       notification.getList('certificates', {page: page, showExpired: 0}).then(function (certificates) {
         _.each(certificates, function (certificate) {
-          notification.roles.push(certificate);
+          notification.certificates.push(certificate);
         });
       });
     };
