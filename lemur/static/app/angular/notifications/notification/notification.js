@@ -49,6 +49,7 @@ angular.module('lemur')
         });
       });
       NotificationService.getCertificates(notification);
+      $scope.page = 1;
     });
 
     $scope.save = function (notification) {
@@ -74,6 +75,11 @@ angular.module('lemur')
 
     $scope.cancel = function () {
       $uibModalInstance.dismiss('cancel');
+    };
+
+    $scope.loadMoreCertificates = function () {
+      $scope.page++;
+      NotificationService.loadMoreCertificates($scope.notification, $scope.page);
     };
 
     $scope.certificateService = CertificateService;
