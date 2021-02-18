@@ -5,6 +5,8 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+import json
+
 import jwt
 import base64
 import requests
@@ -20,9 +22,10 @@ from lemur.common.utils import get_psuedo_random_string
 
 from lemur.users import service as user_service
 from lemur.roles import service as role_service
+from lemur.logs import service as log_service
 from lemur.auth.service import create_token, fetch_token_header, get_rsa_public_key
 from lemur.auth import ldap
-
+from lemur.plugins.base import plugins
 
 mod = Blueprint("auth", __name__)
 api = Api(mod)
@@ -137,6 +140,47 @@ def retrieve_user(user_api_url, access_token):
     return user, profile
 
 
+def retrieve_user_memberships(user_api_url, user_membership_api_url, access_token):
+    user, profile = retrieve_user(user_api_url, access_token)
+
+    if user_membership_api_url is None:
+        return user, profile
+    """
+    Potentially, below code can be made more generic i.e., plugin driven. Unaware of the usage of this
+    code across the community, current implementation is config driven. Without user_membership_api_url
+    configured, it is backward compatible.
+    """
+    tls_provider = plugins.get(current_app.config.get("PING_USER_MEMBERSHIP_TLS_PROVIDER"))
+
+    # put user id in url
+    user_membership_api_url = user_membership_api_url.replace("%user_id%", profile["userId"])
+
+    session = tls_provider.session(current_app.config.get("PING_USER_MEMBERSHIP_SERVICE"))
+    headers = {"Content-Type": "application/json"}
+    data = {"relation": "DIRECT_ONLY", "groupFilter": {"type": "GOOGLE"}, "size": 500}
+    user_membership = {"email": profile["email"],
+                       "thumbnailPhotoUrl": profile["thumbnailPhotoUrl"],
+                       "googleGroups": []}
+    while True:
+        # retrieve information about the current user memberships
+        r = session.post(user_membership_api_url, data=json.dumps(data), headers=headers)
+
+        if r.status_code == 200:
+            response = r.json()
+            membership_details = response["data"]
+            for membership in membership_details:
+                user_membership["googleGroups"].append(membership["membership"]["name"])
+
+            if "nextPageToken" in response and response["nextPageToken"]:
+                data["nextPageToken"] = response["nextPageToken"]
+            else:
+                break
+        else:
+            current_app.logger.error(f"Response Code:{r.status_code} {r.text}")
+            break
+    return user, user_membership
+
+
 def create_user_roles(profile):
     """Creates new roles based on profile information.
 
@@ -155,7 +199,7 @@ def create_user_roles(profile):
                     description="This is a google group based role created by Lemur",
                     third_party=True,
                 )
-            if not role.third_party:
+            if (group != 'admin') and (not role.third_party):
                 role = role_service.set_third_party(role.id, third_party_status=True)
             roles.append(role)
     else:
@@ -198,7 +242,6 @@ def update_user(user, profile, roles):
     :param profile:
     :param roles:
     """
-
     # if we get an sso user create them an account
     if not user:
         user = user_service.create(
@@ -212,10 +255,16 @@ def update_user(user, profile, roles):
 
     else:
         # we add 'lemur' specific roles, so they do not get marked as removed
+        removed_roles = []
         for ur in user.roles:
             if not ur.third_party:
                 roles.append(ur)
+            elif ur not in roles:
+                # This is a role assigned in lemur, but not returned by sso during current login
+                removed_roles.append(ur.name)
 
+        if removed_roles:
+            log_service.audit_log("unassign_role", user.username, f"Un-assigning roles {removed_roles}")
         # update any changes to the user
         user_service.update(
             user.id,
@@ -262,6 +311,7 @@ class Login(Resource):
               POST /auth/login HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                 "username": "test",
@@ -368,7 +418,6 @@ class Ping(Resource):
 
         # you can either discover these dynamically or simply configure them
         access_token_url = current_app.config.get("PING_ACCESS_TOKEN_URL")
-        user_api_url = current_app.config.get("PING_USER_API_URL")
 
         secret = current_app.config.get("PING_SECRET")
 
@@ -384,7 +433,12 @@ class Ping(Resource):
         error_code = validate_id_token(id_token, args["clientId"], jwks_url)
         if error_code:
             return error_code
-        user, profile = retrieve_user(user_api_url, access_token)
+
+        user, profile = retrieve_user_memberships(
+            current_app.config.get("PING_USER_API_URL"),
+            current_app.config.get("PING_USER_MEMBERSHIP_URL"),
+            access_token
+        )
         roles = create_user_roles(profile)
         update_user(user, profile, roles)
 

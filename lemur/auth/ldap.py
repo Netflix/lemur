@@ -211,7 +211,7 @@ class LdapPrincipal:
             for group in lgroups:
                 (dn, values) = group
                 if type(values) == dict:
-                    self.ldap_groups.append(values["cn"][0].decode("ascii"))
+                    self.ldap_groups.append(values["cn"][0].decode("utf-8"))
         else:
             lgroups = self.ldap_client.search_s(
                 self.ldap_base_dn, ldap.SCOPE_SUBTREE, ldap_filter, self.ldap_attrs

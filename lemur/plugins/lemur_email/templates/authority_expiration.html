@@ -1,0 +1,179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="initial-scale=1.0">    <!-- So that mobile webkit will display zoomed in -->
+    <meta name="format-detection" content="telephone=no"> <!-- disable auto telephone linking in iOS -->
+
+    <title>Lemur</title>
+</head>
+
+<div style="margin:0;padding:0" bgcolor="#FFFFFF">
+    <table width="100%" height="100%" style="min-width:348px" border="0" cellspacing="0" cellpadding="0">
+        <tbody>
+        <tr height="32px"></tr>
+        <tr align="center">
+            <td width="32px"></td>
+            <td>
+                <table border="0" cellspacing="0" cellpadding="0" style="max-width:600px">
+                    <tbody>
+                    <tr>
+                        <td>
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                <tbody>
+                                <tr>
+                                    <td align="left" style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:35px;color:#727272; line-height:1.5">
+                                        Lemur
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr height="16"></tr>
+                    <tr>
+                        <td>
+                            <table bgcolor="#F44336" width="100%" border="0" cellspacing="0" cellpadding="0"
+                                   style="min-width:332px;max-width:600px;border:1px solid #e0e0e0;border-bottom:0;border-top-left-radius:3px;border-top-right-radius:3px">
+                                <tbody>
+                                <tr>
+                                    <td height="72px" colspan="3"></td>
+                                </tr>
+                                <tr>
+                                    <td width="32px"></td>
+                                    <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:24px;color:#ffffff;line-height:1.25">
+                                       Your CA certificate(s) are expiring in {{ message.options | interval }} days!
+                                    </td>
+                                    <td width="32px"></td>
+                                </tr>
+                                <tr>
+                                    <td height="18px" colspan="3"></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <table bgcolor="#FAFAFA" width="100%" border="0" cellspacing="0" cellpadding="0"
+                                   style="min-width:332px;max-width:600px;border:1px solid #f0f0f0;border-bottom:1px solid #c0c0c0;border-top:0;border-bottom-left-radius:3px;border-bottom-right-radius:3px">
+                                <tbody>
+                                <tr height="16px">
+                                    <td width="32px" rowspan="3"></td>
+                                    <td></td>
+                                    <td width="32px" rowspan="3"></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <table style="min-width:300px" border="0" cellspacing="0" cellpadding="0">
+                                            <tbody>
+                                            <tr>
+                                                <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#202020;line-height:1.5">
+                                                    Hi,
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#202020;line-height:1.5">
+                                                    <br>This is a Lemur CA certificate expiration notice. The following CA certificates are expiring soon;
+                                                    please take manual action to renew them if necessary. Note that rotating a root CA requires
+                                                    advanced planing and the respective trustStores need to be updated. A sub-CA, on the other hand,
+                                                    does not require any changes to the trustStore. You may also disable notifications via the
+                                                    Notify toggle in Lemur if they are no longer in use.
+                                                    <table border="0" cellspacing="0" cellpadding="0"
+                                                           style="margin-top:48px;margin-bottom:48px">
+                                                        <tbody>
+                                                        {%  for certificate in message.certificates %}
+                                                            <tr valign="middle">
+                                                                <td width="32px"></td>
+                                                                <td width="16px"></td>
+                                                                <td style="line-height:1.2">
+                                                                    <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:20px;color:#202020">{{ certificate.name }}</span>
+                                                                    <br>
+                                                                    <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#727272">
+                                                                       {% if certificate.self_signed %}
+                                                                           <b>Root</b>
+                                                                       {% else %}
+                                                                           Intermediate
+                                                                       {% endif %} CA
+                                                                        <br>{{ certificate.issued_cert_count }} issued certificates
+                                                                        <br>{{ certificate.owner }}
+                                                                        <br>{{ certificate.validityEnd | time }}
+                                                                        <a href="https://{{ hostname }}/#/certificates/{{ certificate.name }}" target="_blank">Details</a>
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
+                                                                {%  if not loop.last %}
+                                                                <tr valign="middle">
+                                                                    <td width="32px" height="24px"></td>
+                                                                </tr>
+                                                                {% endif %}
+                                                        {%  endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#202020;line-height:1.5">
+                                                    Your action is required if the above CA certificates are still needed.
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#202020;line-height:1.5">
+                                                    <br>Best,<br><span class="il">Lemur</span>
+                                                </td>
+                                            </tr>
+                                            <tr height="16px"></tr>
+                                            <tr>
+                                                <td>
+                                                    <table style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:12px;color:#b9b9b9;line-height:1.5">
+                                                        <tbody>
+                                                        <tr>
+                                                            <td>*All expiration times are in UTC<br></td>
+                                                        </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr height="32px"></tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr height="16"></tr>
+                    <tr>
+                        <td style="max-width:600px;font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:10px;color:#bcbcbc;line-height:1.5"></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <table style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:10px;color:#666666;line-height:18px;padding-bottom:10px">
+                                <tbody>
+                                <tr>
+                                    <td>You received this mandatory email announcement to update you about
+                                        important changes to your <span class="il">TLS certificate</span>.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div style="direction:ltr;text-align:left">© 2020 <span class="il">Lemur</span></div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </td>
+            <td width="32px"></td>
+        </tr>
+        <tr height="32px"></tr>
+        </tbody>
+    </table>
+</div>

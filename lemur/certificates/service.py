@@ -21,6 +21,7 @@ from lemur.certificates.schemas import CertificateOutputSchema, CertificateInput
 from lemur.common.utils import generate_private_key, truthiness
 from lemur.destinations.models import Destination
 from lemur.domains.models import Domain
+from lemur.endpoints import service as endpoint_service
 from lemur.extensions import metrics, sentry, signals
 from lemur.models import certificate_associations
 from lemur.notifications.models import Notification
@@ -387,6 +388,7 @@ def create(**kwargs):
         cert = Certificate(**kwargs)
         kwargs["creator"].certificates.append(cert)
     else:
+        # ACME path
         cert = PendingCertificate(**kwargs)
         kwargs["creator"].pending_certificates.append(cert)
 
@@ -562,10 +564,15 @@ def query_common_name(common_name, args):
     :return:
     """
     owner = args.pop("owner")
+    page = args.pop("page")
+    count = args.pop("count")
+
+    paginate = page and count
+    query = database.session_query(Certificate) if paginate else Certificate.query
+
     # only not expired certificates
     current_time = arrow.utcnow()
-
-    query = Certificate.query.filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))\
+    query = query.filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))\
         .filter(not_(Certificate.revoked))\
         .filter(not_(Certificate.replaced.any()))  # ignore rotated certificates to avoid duplicates
 
@@ -575,6 +582,9 @@ def query_common_name(common_name, args):
     if common_name != "%":
         # if common_name is a wildcard ('%'), no need to include it in the query
         query = query.filter(Certificate.cn.ilike(common_name))
+
+    if paginate:
+        return database.paginate(query, page, count)
 
     return query.all()
 
@@ -794,6 +804,90 @@ def reissue_certificate(certificate, replace=None, user=None):
     else:
         primitives["description"] = f"{reissue_message_prefix}{certificate.id}"
 
+    # Rotate the certificate to ECCPRIME256V1 if cert owner is present in the configured list
+    # This is a temporary change intending to rotate certificates to ECC, if opted in by certificate owners
+    # Unless identified a use case, this will be removed in mid-Q2 2021
+    ecc_reissue_owner_list = current_app.config.get("ROTATE_TO_ECC_OWNER_LIST", [])
+    ecc_reissue_exclude_cn_list = current_app.config.get("ECC_NON_COMPATIBLE_COMMON_NAMES", [])
+
+    if (certificate.owner in ecc_reissue_owner_list) and (certificate.cn not in ecc_reissue_exclude_cn_list):
+        primitives["key_type"] = "ECCPRIME256V1"
+
     new_cert = create(**primitives)
 
     return new_cert
+
+
+def is_attached_to_endpoint(certificate_name, endpoint_name):
+    """
+    Find if given certificate is attached to the endpoint. Both, certificate and endpoint, are identified by name.
+    This method talks to elb and finds the real time information.
+    :param certificate_name:
+    :param endpoint_name:
+    :return: True if certificate is attached to the given endpoint, False otherwise
+    """
+    endpoint = endpoint_service.get_by_name(endpoint_name)
+    attached_certificates = endpoint.source.plugin.get_endpoint_certificate_names(endpoint)
+    return certificate_name in attached_certificates
+
+
+def remove_from_destination(certificate, destination):
+    """
+    Remove the certificate from given destination if clean() is implemented
+    :param certificate:
+    :param destination:
+    :return:
+    """
+    plugin = plugins.get(destination.plugin_name)
+    if not hasattr(plugin, "clean"):
+        info_text = f"Cannot clean certificate {certificate.name}, {destination.plugin_name} plugin does not implement 'clean()'"
+        current_app.logger.warning(info_text)
+    else:
+        plugin.clean(certificate=certificate, options=destination.options)
+
+
+def revoke(certificate, reason):
+    plugin = plugins.get(certificate.authority.plugin_name)
+    plugin.revoke_certificate(certificate, reason)
+
+    # Perform cleanup after revoke
+    return cleanup_after_revoke(certificate)
+
+
+def cleanup_after_revoke(certificate):
+    """
+    Perform the needed cleanup for a revoked certificate. This includes -
+    1. Disabling notification
+    2. Disabling auto-rotation
+    3. Update certificate status to 'revoked'
+    4. Remove from AWS
+    :param certificate: Certificate object to modify and update in DB
+    :return: None
+    """
+    certificate.notify = False
+    certificate.rotation = False
+    certificate.status = 'revoked'
+
+    error_message = ""
+
+    for destination in list(certificate.destinations):
+        try:
+            remove_from_destination(certificate, destination)
+            certificate.destinations.remove(destination)
+        except Exception as e:
+            # This cleanup is the best-effort since certificate is already revoked at this point.
+            # We will capture the exception and move on to the next destination
+            sentry.captureException()
+            error_message = error_message + f"Failed to remove destination: {destination.label}. {str(e)}. "
+
+    database.update(certificate)
+    return error_message
+
+
+def get_issued_cert_count_for_authority(authority):
+    """
+    Returns the count of certs issued by the specified authority.
+
+    :return:
+    """
+    return database.db.session.query(Certificate).filter(Certificate.authority_id == authority.id).count()

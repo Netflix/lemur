@@ -56,7 +56,7 @@ def pytest_runtest_makereport(item, call):
             parent._previousfailed = item
 
 
-@pytest.yield_fixture(scope="session")
+@pytest.fixture(scope="session")
 def app(request):
     """
     Creates a new Flask application for a test duration.
@@ -73,7 +73,7 @@ def app(request):
     ctx.pop()
 
 
-@pytest.yield_fixture(scope="session")
+@pytest.fixture(scope="session")
 def db(app, request):
     _db.drop_all()
     _db.engine.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
@@ -92,7 +92,7 @@ def db(app, request):
     _db.drop_all()
 
 
-@pytest.yield_fixture(scope="function")
+@pytest.fixture(scope="function")
 def session(db, request):
     """
     Creates a new database session with (with working transaction)
@@ -103,7 +103,7 @@ def session(db, request):
     db.session.rollback()
 
 
-@pytest.yield_fixture(scope="function")
+@pytest.fixture(scope="function")
 def client(app, session, client):
     yield client
 
@@ -276,14 +276,14 @@ def source_plugin():
     return TestSourcePlugin
 
 
-@pytest.yield_fixture(scope="function")
+@pytest.fixture(scope="function")
 def logged_in_user(session, app):
     with app.test_request_context():
         identity_changed.send(current_app._get_current_object(), identity=Identity(1))
         yield
 
 
-@pytest.yield_fixture(scope="function")
+@pytest.fixture(scope="function")
 def logged_in_admin(session, app):
     with app.test_request_context():
         identity_changed.send(current_app._get_current_object(), identity=Identity(2))

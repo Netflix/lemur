@@ -20,6 +20,7 @@ from flask import current_app
 from lemur.authorities.service import get as get_authority
 from lemur.certificates import cli as cli_certificate
 from lemur.common.redis import RedisHandler
+from lemur.constants import ACME_ADDITIONAL_ATTEMPTS
 from lemur.destinations import service as destinations_service
 from lemur.dns_providers import cli as cli_dns_providers
 from lemur.endpoints import cli as cli_endpoints
@@ -273,7 +274,8 @@ def fetch_acme_cert(id):
         real_cert = cert.get("cert")
         # It's necessary to reload the pending cert due to detached instance: http://sqlalche.me/e/bhk3
         pending_cert = pending_certificate_service.get(cert.get("pending_cert").id)
-        if not pending_cert:
+        if not pending_cert or pending_cert.resolved:
+            # pending_cert is cleared or it was resolved by another process
             log_data[
                 "message"
             ] = "Pending certificate doesn't exist anymore. Was it resolved by another process?"
@@ -301,7 +303,7 @@ def fetch_acme_cert(id):
             error_log["last_error"] = cert.get("last_error")
             error_log["cn"] = pending_cert.cn
 
-            if pending_cert.number_attempts > 4:
+            if pending_cert.number_attempts > ACME_ADDITIONAL_ATTEMPTS:
                 error_log["message"] = "Deleting pending certificate"
                 send_pending_failure_notification(
                     pending_cert, notify_owner=pending_cert.notify
@@ -656,11 +658,12 @@ def certificate_rotate(**kwargs):
 
     current_app.logger.debug(log_data)
     try:
+        notify = current_app.config.get("ENABLE_ROTATION_NOTIFICATION", None)
         if region:
             log_data["region"] = region
-            cli_certificate.rotate_region(None, None, None, None, True, region)
+            cli_certificate.rotate_region(None, None, None, notify, True, region)
         else:
-            cli_certificate.rotate(None, None, None, None, True)
+            cli_certificate.rotate(None, None, None, notify, True)
     except SoftTimeLimitExceeded:
         log_data["message"] = "Certificate rotate: Time limit exceeded."
         current_app.logger.error(log_data)
@@ -811,6 +814,78 @@ def notify_expirations():
         )
     except SoftTimeLimitExceeded:
         log_data["message"] = "Notify expiring Time limit exceeded."
+        current_app.logger.error(log_data)
+        sentry.captureException()
+        metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
+        return
+
+    metrics.send(f"{function}.success", "counter", 1)
+    return log_data
+
+
+@celery.task(soft_time_limit=3600)
+def notify_authority_expirations():
+    """
+    This celery task notifies about expiring certificate authority certs
+    :return:
+    """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    task_id = None
+    if celery.current_task:
+        task_id = celery.current_task.request.id
+
+    log_data = {
+        "function": function,
+        "message": "notify for certificate authority cert expiration",
+        "task_id": task_id,
+    }
+
+    if task_id and is_task_active(function, task_id, None):
+        log_data["message"] = "Skipping task: Task is already active"
+        current_app.logger.debug(log_data)
+        return
+
+    current_app.logger.debug(log_data)
+    try:
+        cli_notification.authority_expirations()
+    except SoftTimeLimitExceeded:
+        log_data["message"] = "Notify expiring CA Time limit exceeded."
+        current_app.logger.error(log_data)
+        sentry.captureException()
+        metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
+        return
+
+    metrics.send(f"{function}.success", "counter", 1)
+    return log_data
+
+
+@celery.task(soft_time_limit=3600)
+def send_security_expiration_summary():
+    """
+    This celery task sends a summary about expiring certificates to the security team.
+    :return:
+    """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    task_id = None
+    if celery.current_task:
+        task_id = celery.current_task.request.id
+
+    log_data = {
+        "function": function,
+        "message": "send summary for certificate expiration",
+        "task_id": task_id,
+    }
+
+    if task_id and is_task_active(function, task_id, None):
+        log_data["message"] = "Skipping task: Task is already active"
+        current_app.logger.debug(log_data)
+        return
+
+    current_app.logger.debug(log_data)
+    try:
+        cli_notification.security_expiration_summary(current_app.config.get("EXCLUDE_CN_FROM_NOTIFICATION", []))
+    except SoftTimeLimitExceeded:
+        log_data["message"] = "Send summary for expiring certs Time limit exceeded."
         current_app.logger.error(log_data)
         sentry.captureException()
         metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})

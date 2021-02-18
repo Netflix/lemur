@@ -50,6 +50,8 @@ def format_message(certificate, notification_type):
     json_message = {
         "notification_type": notification_type,
         "certificate_name": certificate["name"],
+        "issuer": certificate["issuer"],
+        "id": certificate["id"],
         "expires": arrow.get(certificate["validityEnd"]).format("YYYY-MM-DDTHH:mm:ss"),  # 2047-12-31T22:00:00
         "endpoints_detected": len(certificate["endpoints"]),
         "owner": certificate["owner"],

@@ -1,9 +1,90 @@
 Changelog
 =========
 
+0.8.0 - `2020-11-13`
+~~~~~~~~~~~~~~~~~~~~
+
+This release comes after more than two years and contains many interesting new features and improvements.
+In addition to multiple new plugins, such as ACME-http01, ADCS, PowerDNS, UltraDNS, Entrust, SNS, many of Lemur's existing
+flows have improved.
+
+In the future, we plan to do frequent releases.
+
+
+Summary of notable changes:
+
+- AWS S3 plugin: added delete, get methods, and support for uploading/deleting acme tokens
+- ACME plugin:
+    - revamp of the plugin
+    - support for http01 domain validation, via S3 and SFTP as destination for the acme token
+    - support for CNAME delegated domain validation
+    - store-acme-account-details
+- PowerDNS plugin
+- UltraDNS plugin
+- ADCS plugin
+- SNS plugin
+- Entrust plugin
+- Rotation:
+    - respecting keyType and extensions
+    - region-by-region rotation option
+    - default to auto-rotate when cert attached to endpoint
+    - default to 1y validity during rotation for multi-year browser-trusted certs
+- Certificate: search_by_name, and important performance improvements
+- UI
+    - reducing the EC curve options to the relevant ones
+    - edit option for notifications, destinations and sources
+    - showing 13 month validity as default
+    - option to hide certs expired since 3month
+    - faster Permalink (no search involved)
+    - commonName Auto Added as DNS in the UI
+    - improved search and cert lookup
+- celery tasks instead of crone, for better logging and monitoring
+- countless bugfixes
+    - group-lookup-fix-referral
+    - url_context_path
+    - duplicate notification
+    - digicert-time-bug-fix
+    - improved-csr-support
+    - fix-cryptography-intermediate-ca
+    - enhanced logging
+    - vault-k8s-auth
+    - cfssl-key-fix
+    - cert-sync-endpoint-find-by-hash
+    - nlb-naming-bug
+    - fix_vault_api_v2_append
+    - aid_openid_roles_provider_integration
+    - rewrite-java-keystore-use-pyjks
+    - vault_kv2
+
+
+To see the full list of changes, you can run
+
+    $ git log --merges --first-parent master         --pretty=format:"%h %<(10,trunc)%aN %C(white)%<(15)%ar%Creset %C(red bold)%<(15)%D%Creset %s" | grep -v "depend"
+
+
+Special thanks to all who contributed to this release, notably:
+
+- `peschmae  <https://github.com/peschmae>`_
+- `sirferl   <https://github.com/sirferl>`_
+- `lukasmrtvy  <https://github.com/lukasmrtvy>`_
+- `intgr  <https://github.com/intgr>`_
+- `kush-bavishi  <https://github.com/kush-bavishi>`_
+- `alwaysjolley  <https://github.com/alwaysjolley>`_
+- `jplana <https://github.com/jplana>`_
+- `explody <https://github.com/explody>`_
+- `titouanc <https://github.com/titouanc>`_
+- `jramosf <https://github.com/jramosf>`_
+
+
+Upgrading
+---------
+
+.. note:: This release will need a migration change. Please follow the `documentation <https://lemur.readthedocs.io/en/latest/administration.html#upgrading-lemur>`_ to upgrade Lemur.
+
+
 
 0.7 - `2018-05-07`
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 This release adds LetsEncrypt support with DNS providers Dyn, Route53, and Cloudflare, and expands on the pending certificate functionality.
 The linux_dst plugin will also be deprecated and removed.
@@ -40,8 +121,7 @@ Happy Holidays! This is a big release with lots of bug fixes and features. Below
 
 Features:
 
-* Per-certificate rotation policies, requires a database migration. The default rotation policy for all certificates.
-is 30 days. Every certificate will gain a policy regardless of if auto-rotation is used.
+* Per-certificate rotation policies, requires a database migration. The default rotation policy for all certificates is 30 days. Every certificate will gain a policy regardless of if auto-rotation is used.
 * Adds per-user API Keys, allows users to issue multiple long-lived API tokens with the same permission as the user creating them.
 * Adds the ability to revoke certificates from the Lemur UI/API, this is currently only supported for the digicert CIS and cfssl plugins.
 * Allow destinations to support an export function. Useful for file system destinations e.g. S3 to specify the export plugin you wish to run before being sent to the destination.
@@ -85,13 +165,9 @@ Big thanks to neilschelly for quite a lot of improvements to the `lemur-cryptogr
 
 Other Highlights:
 
-* Closed `#501 <https://github.com/Netflix/lemur/issues/501>`_ - Endpoint resource as now kept in sync via an
-expiration mechanism. Such that non-existant endpoints gracefully fall out of Lemur. Certificates are never
-removed from Lemur.
-* Closed `#551 <https://github.com/Netflix/lemur/pull/551>`_ - Added the ability to create a 4096 bit key during certificate
-creation. Closed `#528 <https://github.com/Netflix/lemur/pull/528>`_ to ensure that issuer plugins supported the new 4096 bit keys.
-* Closed `#566 <https://github.com/Netflix/lemur/issues/566>`_ - Fixed an issue changing the notification status for  certificates
-without private keys.
+* Closed `#501 <https://github.com/Netflix/lemur/issues/501>`_ - Endpoint resource as now kept in sync via an expiration mechanism. Such that non-existant endpoints gracefully fall out of Lemur. Certificates are never removed from Lemur.
+* Closed `#551 <https://github.com/Netflix/lemur/pull/551>`_ - Added the ability to create a 4096 bit key during certificate creation. Closed `#528 <https://github.com/Netflix/lemur/pull/528>`_ to ensure that issuer plugins supported the new 4096 bit keys.
+* Closed `#566 <https://github.com/Netflix/lemur/issues/566>`_ - Fixed an issue changing the notification status for  certificates without private keys.
 * Closed `#594 <https://github.com/Netflix/lemur/issues/594>`_ - Added `replaced` field indicating if a certificate has been superseded.
 * Closed `#602 <https://github.com/Netflix/lemur/issues/602>`_ - AWS plugin added support for ALBs for endpoint tracking.
 
@@ -115,12 +191,8 @@ Upgrading
 
 There have been quite a few issues closed in this release. Some notables:
 
-* Closed `#284 <https://github.com/Netflix/lemur/issues/284>`_ - Created new models for `Endpoints` created associated
-AWS ELB endpoint tracking code. This was the major stated goal of this milestone and should serve as the basis for
-future enhancements of Lemur's certificate 'deployment' capabilities.
-
-* Closed `#334 <https://github.com/Netflix/lemur/issues/334>`_ - Lemur not has the ability
-to restrict certificate expiration dates to weekdays.
+* Closed `#284 <https://github.com/Netflix/lemur/issues/284>`_ - Created new models for `Endpoints` created associated AWS ELB endpoint tracking code. This was the major stated goal of this milestone and should serve as the basis for future enhancements of Lemur's certificate 'deployment' capabilities.
+* Closed `#334 <https://github.com/Netflix/lemur/issues/334>`_ - Lemur not has the ability to restrict certificate expiration dates to weekdays.
 
 Several fixes/tweaks to Lemurs python3 support (thanks chadhendrie!)
 

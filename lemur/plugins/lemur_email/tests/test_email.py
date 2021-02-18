@@ -21,7 +21,6 @@ def get_options():
 
 
 def test_render_expiration(certificate, endpoint):
-
     new_cert = CertificateFactory()
     new_cert.replaces.append(certificate)
 
@@ -54,7 +53,7 @@ def test_send_expiration_notification():
     certificate.notifications[0].options = get_options()
 
     verify_sender_email()
-    assert send_expiration_notifications([]) == (3, 0)  # owner, recipients (only counted as 1), and security
+    assert send_expiration_notifications([]) == (4, 0)  # owner (1), recipients (2), and security (1)
 
 
 @mock_ses
@@ -76,15 +75,20 @@ def test_send_pending_failure_notification(user, pending_certificate, async_issu
 
     verify_sender_email()
     assert send_pending_failure_notification(pending_certificate)
+    assert send_pending_failure_notification(pending_certificate, True, True)
+    assert send_pending_failure_notification(pending_certificate, True, False)
+    assert send_pending_failure_notification(pending_certificate, False, True)
+    assert send_pending_failure_notification(pending_certificate, False, False)
 
 
-def test_filter_recipients(certificate, endpoint):
+def test_get_recipients(certificate, endpoint):
     from lemur.plugins.lemur_email.plugin import EmailNotificationPlugin
 
-    options = [{"name": "recipients", "value": "security@example.com,bob@example.com,joe@example.com"}]
-    assert EmailNotificationPlugin.filter_recipients(options, []) == ["security@example.com", "bob@example.com",
-                                                                      "joe@example.com"]
-    assert EmailNotificationPlugin.filter_recipients(options, ["security@example.com"]) == ["bob@example.com",
-                                                                                            "joe@example.com"]
-    assert EmailNotificationPlugin.filter_recipients(options, ["security@example.com", "bob@example.com",
-                                                               "joe@example.com"]) == []
+    options = [{"name": "recipients", "value": "security@example.com,joe@example.com"}]
+    two_emails = sorted(["security@example.com", "joe@example.com"])
+    assert sorted(EmailNotificationPlugin.get_recipients(options, [])) == two_emails
+    assert sorted(EmailNotificationPlugin.get_recipients(options, ["security@example.com"])) == two_emails
+    three_emails = sorted(["security@example.com", "bob@example.com", "joe@example.com"])
+    assert sorted(EmailNotificationPlugin.get_recipients(options, ["bob@example.com"])) == three_emails
+    assert sorted(EmailNotificationPlugin.get_recipients(options, ["security@example.com", "bob@example.com",
+                                                                   "joe@example.com"])) == three_emails

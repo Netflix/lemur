@@ -105,6 +105,7 @@ class ApiKeyList(AuthenticatedResource):
               POST /keys HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                 "name": "my custom name",
@@ -225,6 +226,7 @@ class ApiKeyUserList(AuthenticatedResource):
               POST /users/1/keys HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                 "name": "my custom name"
@@ -332,6 +334,7 @@ class ApiKeys(AuthenticatedResource):
               PUT /keys/1 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                   "name": "new_name",
@@ -474,6 +477,7 @@ class UserApiKeys(AuthenticatedResource):
               PUT /users/1/keys/1 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                   "name": "new_name",

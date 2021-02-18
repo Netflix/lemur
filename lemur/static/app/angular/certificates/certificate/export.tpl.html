@@ -25,6 +25,7 @@
                         <input name="sub" ng-if="item.type == 'int'" type="number" ng-pattern="/^[0-9]{12,12}$/"
                                class="form-control" ng-model="item.value"/>
                         <select name="sub" ng-if="item.type == 'select'" class="form-control"
+                                ng-init="item.value = item.available[0]"
                                 ng-options="i for i in item.available" ng-model="item.value"></select>
                         <input name="sub" ng-if="item.type == 'bool'" class="form-control" type="checkbox"
                                ng-model="item.value">
