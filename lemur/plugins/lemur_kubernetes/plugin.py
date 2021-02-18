@@ -10,7 +10,6 @@
 
 .. moduleauthor:: Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
 """
-import base64
 import itertools
 import os
 
@@ -18,7 +17,7 @@ import requests
 from flask import current_app
 
 from lemur.common.defaults import common_name
-from lemur.common.utils import parse_certificate
+from lemur.common.utils import parse_certificate, base64encode
 from lemur.plugins.bases import DestinationPlugin
 
 DEFAULT_API_VERSION = "v1"
@@ -73,12 +72,6 @@ def _resolve_uri(k8s_base_uri, namespace, kind, name=None, api_ver=DEFAULT_API_V
     )
 
 
-# Performs Base64 encoding of string to string using the base64.b64encode() function
-# which encodes bytes to bytes.
-def base64encode(string):
-    return base64.b64encode(string.encode()).decode()
-
-
 def build_secret(secret_format, secret_name, body, private_key, cert_chain):
     secret = {
         "apiVersion": "v1",
@@ -96,7 +89,7 @@ def build_secret(secret_format, secret_name, body, private_key, cert_chain):
     if secret_format == "TLS":
         secret["type"] = "kubernetes.io/tls"
         secret["data"] = {
-            "tls.crt": base64encode(body),
+            "tls.crt": base64encode("%s\n%s" % (body, cert_chain)),
             "tls.key": base64encode(private_key),
         }
     if secret_format == "Certificate":

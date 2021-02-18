@@ -19,7 +19,7 @@ from lemur.auth.permissions import AuthorityPermission, CertificatePermission
 
 from lemur.certificates import service
 from lemur.certificates.models import Certificate
-from lemur.plugins.base import plugins
+from lemur.extensions import sentry
 from lemur.certificates.schemas import (
     certificate_input_schema,
     certificate_output_schema,
@@ -28,6 +28,7 @@ from lemur.certificates.schemas import (
     certificate_export_input_schema,
     certificate_edit_input_schema,
     certificates_list_output_schema_factory,
+    certificate_revoke_schema,
 )
 
 from lemur.roles import service as role_service
@@ -50,17 +51,21 @@ class CertificatesListValid(AuthenticatedResource):
         """
         .. http:get:: /certificates/valid/<query>
 
-           The current list of not-expired certificates for a given common name, and owner
+           The current list of not-expired certificates for a given common name, and owner. The API offers
+           optional pagination. One can send page number(>=1) and desired count per page. The returned data
+           contains total number of certificates which can help in determining the last page. Pagination
+           will not be offered if page or count info is not sent or if it is zero.
 
            **Example request**:
 
            .. sourcecode:: http
-              GET /certificates/valid?filter=cn;*.test.example.net&owner=joe@example.com
+
+              GET /certificates/valid?filter=cn;*.test.example.net&owner=joe@example.com&page=1&count=20
               HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
 
-           **Example response**:
+           **Example response (with single cert to be concise)**:
 
            .. sourcecode:: http
 
@@ -127,10 +132,15 @@ class CertificatesListValid(AuthenticatedResource):
            :statuscode 403: unauthenticated
 
         """
-        parser = paginated_parser.copy()
-        args = parser.parse_args()
+        # using non-paginated parser to ensure backward compatibility
+        self.reqparse.add_argument("filter", type=str, location="args")
+        self.reqparse.add_argument("owner", type=str, location="args")
+        self.reqparse.add_argument("count", type=int, location="args")
+        self.reqparse.add_argument("page", type=int, location="args")
+
+        args = self.reqparse.parse_args()
         args["user"] = g.user
-        common_name = args["filter"].split(";")[1]
+        common_name = args.pop("filter").split(";")[1]
         return service.query_common_name(common_name, args)
 
 
@@ -368,6 +378,7 @@ class CertificatesList(AuthenticatedResource):
               POST /certificates HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                   "owner": "secure@example.net",
@@ -517,6 +528,7 @@ class CertificatesUpload(AuthenticatedResource):
               POST /certificates/upload HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                  "owner": "joe@example.com",
@@ -783,6 +795,7 @@ class Certificates(AuthenticatedResource):
               PUT /certificates/1 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                  "owner": "jimbob@example.com",
@@ -888,8 +901,24 @@ class Certificates(AuthenticatedResource):
         if cert.owner != data["owner"]:
             service.cleanup_owner_roles_notification(cert.owner, data)
 
+        error_message = ""
+        # if destination is removed, cleanup the certificate from AWS
+        for destination in cert.destinations:
+            if destination not in data["destinations"]:
+                try:
+                    service.remove_from_destination(cert, destination)
+                except Exception as e:
+                    sentry.captureException()
+                    # Add the removed destination back
+                    data["destinations"].append(destination)
+                    error_message = error_message + f"Failed to remove destination: {destination.label}. {str(e)}. "
+
+        # go ahead with DB update
         cert = service.update(certificate_id, **data)
         log_service.create(g.current_user, "update_cert", certificate=cert)
+
+        if error_message:
+            return dict(message=f"Edit Successful except -\n\n {error_message}"), 400
         return cert
 
     @validate_schema(certificate_edit_input_schema, certificate_output_schema)
@@ -906,6 +935,7 @@ class Certificates(AuthenticatedResource):
               POST /certificates/1/update/notify HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                  "notify": false
@@ -1274,6 +1304,7 @@ class CertificateExport(AuthenticatedResource):
               PUT /certificates/1/export HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                 "export": {
@@ -1381,7 +1412,7 @@ class CertificateRevoke(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(CertificateRevoke, self).__init__()
 
-    @validate_schema(None, None)
+    @validate_schema(certificate_revoke_schema, None)
     def put(self, certificate_id, data=None):
         """
         .. http:put:: /certificates/1/revoke
@@ -1395,6 +1426,12 @@ class CertificateRevoke(AuthenticatedResource):
               POST /certificates/1/revoke HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
+
+              {
+                "crlReason": "affiliationChanged",
+                "comments": "Additional details if any"
+              }
 
            **Example response**:
 
@@ -1405,12 +1442,13 @@ class CertificateRevoke(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                'id': 1
+                "id": 1
               }
 
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
-           :statuscode 403: unauthenticated
+           :statuscode 403: unauthenticated or cert attached to LB
+           :statuscode 400: encountered error, more details in error message
 
         """
         cert = service.get(certificate_id)
@@ -1433,17 +1471,27 @@ class CertificateRevoke(AuthenticatedResource):
             return dict(message="Cannot revoke certificate. No external id found."), 400
 
         if cert.endpoints:
-            return (
-                dict(
-                    message="Cannot revoke certificate. Endpoints are deployed with the given certificate."
-                ),
-                403,
-            )
+            for endpoint in cert.endpoints:
+                if service.is_attached_to_endpoint(cert.name, endpoint.name):
+                    return (
+                        dict(
+                            message="Cannot revoke certificate. Endpoints are deployed with the given certificate."
+                        ),
+                        403,
+                    )
 
-        plugin = plugins.get(cert.authority.plugin_name)
-        plugin.revoke_certificate(cert, data)
-        log_service.create(g.current_user, "revoke_cert", certificate=cert)
-        return dict(id=cert.id)
+        try:
+            error_message = service.revoke(cert, data)
+            log_service.create(g.current_user, "revoke_cert", certificate=cert)
+
+            if error_message:
+                return dict(message=f"Certificate (id:{cert.id}) is revoked - {error_message}"), 400
+            return dict(id=cert.id)
+        except NotImplementedError as ne:
+            return dict(message="Revoke is not implemented for issuer of this certificate"), 400
+        except Exception as e:
+            sentry.captureException()
+            return dict(message=f"Failed to revoke: {str(e)}"), 400
 
 
 api.add_resource(

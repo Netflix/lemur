@@ -108,6 +108,7 @@ class UsersList(AuthenticatedResource):
               POST /users HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                  "username": "user3",
@@ -208,6 +209,7 @@ class Users(AuthenticatedResource):
               PUT /users/1 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                  "username": "user1",

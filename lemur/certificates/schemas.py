@@ -16,7 +16,7 @@ from lemur.certificates import utils as cert_utils
 from lemur.common import missing, utils, validators
 from lemur.common.fields import ArrowDateTime, Hex
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
-from lemur.constants import CERTIFICATE_KEY_TYPES
+from lemur.constants import CERTIFICATE_KEY_TYPES, CRLReason
 from lemur.destinations.schemas import DestinationNestedOutputSchema
 from lemur.dns_providers.schemas import DnsProvidersNestedOutputSchema
 from lemur.domains.schemas import DomainNestedOutputSchema
@@ -89,7 +89,7 @@ class CertificateInputSchema(CertificateCreationSchema):
     csr = fields.String(allow_none=True, validate=validators.csr)
 
     key_type = fields.String(
-        validate=validate.OneOf(CERTIFICATE_KEY_TYPES), missing="RSA2048"
+        validate=validate.OneOf(CERTIFICATE_KEY_TYPES), missing="ECCPRIME256V1"
     )
 
     notify = fields.Boolean(default=True)
@@ -160,7 +160,7 @@ class CertificateInputSchema(CertificateCreationSchema):
             if data.get("body"):
                 data["key_type"] = utils.get_key_type_from_certificate(data["body"])
             else:
-                data["key_type"] = "RSA2048"  # default value
+                data["key_type"] = "ECCPRIME256V1"  # default value
 
         return missing.convert_validity_years(data)
 
@@ -441,6 +441,7 @@ class CertificateExportInputSchema(LemurInputSchema):
 
 
 class CertificateNotificationOutputSchema(LemurOutputSchema):
+    id = fields.Integer()
     description = fields.String()
     issuer = fields.String()
     name = fields.String()
@@ -455,6 +456,7 @@ class CertificateNotificationOutputSchema(LemurOutputSchema):
 
 class CertificateRevokeSchema(LemurInputSchema):
     comments = fields.String()
+    crl_reason = fields.String(validate=validate.OneOf(CRLReason.__members__), missing="unspecified")
 
 
 certificates_list_request_parser = RequestParser()

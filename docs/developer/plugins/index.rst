@@ -104,7 +104,7 @@ The `IssuerPlugin` exposes four functions functions::
 
     def create_certificate(self, csr, issuer_options):
         # requests.get('a third party')
-    def revoke_certificate(self, certificate, comments):
+    def revoke_certificate(self, certificate, reason):
         # requests.put('a third party')
     def get_ordered_certificate(self, order_id):
         # requests.get('already existing certificate')
@@ -145,8 +145,7 @@ The `IssuerPlugin` doesn't have any options like Destination, Source, and Notifi
 any fields you might need to submit a request to a third party. If there are additional options you need
 in your plugin feel free to open an issue, or look into adding additional options to issuers yourself.
 
-Asynchronous Certificates
-^^^^^^^^^^^^^^^^^^^^^^^^^
+**Asynchronous Certificates**
 An issuer may take some time to actually issue a certificate for an order.  In this case, a `PendingCertificate` is returned, which holds information to recreate a `Certificate` object at a later time.  Then, `get_ordered_certificate()` should be run periodically via `python manage.py pending_certs fetch -i all` to attempt to retrieve an ordered certificate::
 
     def get_ordered_ceriticate(self, order_id):
@@ -154,9 +153,10 @@ An issuer may take some time to actually issue a certificate for an order.  In t
         # retrieve an order, and check if there is an issued certificate attached to it
 
 `cancel_ordered_certificate()` should be implemented to allow an ordered certificate to be canceled before it is issued::
-    def cancel_ordered_certificate(self, pending_cert, **kwargs):
-        # pending_cert should contain the necessary information to match an order
-        # kwargs can be given to provide information to the issuer for canceling
+
+        def cancel_ordered_certificate(self, pending_cert, **kwargs):
+            # pending_cert should contain the necessary information to match an order
+            # kwargs can be given to provide information to the issuer for canceling
 
 Destination
 -----------
@@ -215,12 +215,13 @@ Notification
 ------------
 
 Lemur includes the ability to create Email notifications by **default**. These notifications
-currently come in the form of expiration and rotation notices. Lemur periodically checks certificate expiration dates and
+currently come in the form of expiration and rotation notices for all certificates, expiration notices for CA certificates,
+and ACME certificate creation failure notices. Lemur periodically checks certificate expiration dates and
 determines if a given certificate is eligible for notification. There are currently only two parameters used to
 determine if a certificate is eligible; validity expiration (date the certificate is no longer valid) and the number
 of days the current date (UTC) is from that expiration date.
 
-Expiration notifications can also be configured for Slack or AWS SNS. Rotation notifications are not configurable.
+Certificate expiration notifications can also be configured for Slack or AWS SNS. Other notifications are not configurable.
 Notifications sent to a certificate owner and security team (`LEMUR_SECURITY_TEAM_EMAIL`) can currently only be sent via email.
 
 There are currently two objects that are available for notification plugins. The first is `NotificationPlugin`, which is the base object for
@@ -282,6 +283,17 @@ The `ExportPlugin` object requires the implementation of one function::
 
 .. note::
     Support of various formats sometimes relies on external tools system calls. Always be mindful of sanitizing any input to these calls.
+
+
+Custom TLS Provider
+-------------------
+
+Managing TLS at the enterprise scale could be hard and often organizations offer custom wrapper implementations. It could
+be ideal to use those while making calls to internal services. The `TLSPlugin` would help to achieve this. It requires the
+implementation of one function which creates a TLS session::
+
+     def session(self, server_application):
+        # return active session
 
 
 Testing

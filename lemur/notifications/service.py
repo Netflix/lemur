@@ -94,7 +94,7 @@ def create(label, plugin_name, options, description, certificates):
     :param options:
     :param description:
     :param certificates:
-    :rtype : Notification
+    :rtype: Notification
     :return:
     """
     notification = Notification(
@@ -117,7 +117,7 @@ def update(notification_id, label, plugin_name, options, description, active, ce
     :param certificates:
     :param added_certificates:
     :param removed_certificates:
-    :rtype : Notification
+    :rtype: Notification
     :return:
     """
     notification = get(notification_id)
@@ -150,7 +150,7 @@ def get(notification_id):
     Retrieves an notification by its lemur assigned ID.
 
     :param notification_id: Lemur assigned ID
-    :rtype : Notification
+    :rtype: Notification
     :return:
     """
     return database.get(Notification, notification_id)

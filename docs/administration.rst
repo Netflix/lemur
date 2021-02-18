@@ -78,13 +78,13 @@ Basic Configuration
             The default connection pool size is 5 for sqlalchemy managed connections.   Depending on the number of Lemur instances,
             please specify per instance connection pool size.  Below is an example to set connection pool size to 10.
 
-        ::
+    ::
 
         SQLALCHEMY_POOL_SIZE = 10
 
 
     .. warning::
-This is an optional setting but important to review and set for optimal database connection usage and for overall database performance.
+        This is an optional setting but important to review and set for optimal database connection usage and for overall database performance.
 
 .. data:: SQLALCHEMY_MAX_OVERFLOW
     :noindex:
@@ -99,7 +99,7 @@ This is an optional setting but important to review and set for optimal database
 
 
     .. note::
-Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create connections above specified pool size.
+        Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create connections above specified pool size.
 
 
 .. data:: LEMUR_ALLOW_WEEKEND_EXPIRATION
@@ -151,6 +151,15 @@ Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create c
         to start. Multiple keys can be provided to facilitate key rotation. The first key in the list is used for
         encryption and all keys are tried for decryption until one works. Each key must be 32 URL safe base-64 encoded bytes.
 
+        Only fields of type ``Vault`` will be encrypted. At present, only the following fields are encrypted:
+
+        * ``certificates.private_key``
+        * ``pending_certificates.private_key``
+        * ``dns_providers.credentials``
+        * ``roles.password``
+
+        For implementation details, see ``Vault`` in ``utils.py``.
+
         Running lemur create_config will securely generate a key for your configuration file.
         If you would like to generate your own, we recommend the following method:
 
@@ -165,6 +174,7 @@ Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create c
 
 .. data:: PUBLIC_CA_MAX_VALIDITY_DAYS
     :noindex:
+
         Use this config to override the limit of 397 days of validity for certificates issued by CA/Browser compliant authorities.
         The authorities with cab_compliant option set to true will use this config. The example below overrides the default validity
         of 397 days and sets it to 365 days.
@@ -176,6 +186,7 @@ Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create c
 
 .. data:: DEFAULT_VALIDITY_DAYS
     :noindex:
+
         Use this config to override the default validity of 365 days for certificates offered through Lemur UI. Any CA which
         is not CA/Browser Forum compliant will be using this value as default validity to be displayed on UI. Please
         note that this config is used for cert issuance only through Lemur UI. The example below overrides the default validity
@@ -262,22 +273,123 @@ and are used when Lemur creates the CSR for your certificates.
         LEMUR_DEFAULT_AUTHORITY = "verisign"
 
 
+.. _NotificationOptions:
+
 Notification Options
 --------------------
 
-Lemur currently has very basic support for notifications. Currently only expiration notifications are supported. Actual notification
-is handled by the notification plugins that you have configured. Lemur ships with the 'Email' notification that allows expiration emails
-to be sent to subscribers.
+Lemur supports a small variety of notification types through a set of notification plugins.
+By default, Lemur configures a standard set of email notifications for all certificates.
 
-Templates for expiration emails are located under `lemur/plugins/lemur_email/templates` and can be modified for your needs.
-Notifications are sent to the certificate creator, owner and security team as specified by the `LEMUR_SECURITY_TEAM_EMAIL` configuration parameter.
+**Plugin-capable notifications**
 
-Certificates marked as inactive will **not** be notified of upcoming expiration. This enables a user to essentially
-silence the expiration. If a certificate is active and is expiring the above will be notified according to the `LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS` or
-30, 15, 2 days before expiration if no intervals are set.
+These notifications can be configured to use all available notification plugins.
 
-Lemur supports sending certificate expiration notifications through SES and SMTP.
+Supported types:
 
+* Certificate expiration
+
+**Email-only notifications**
+
+These notifications can only be sent via email and cannot use other notification plugins.
+
+Supported types:
+
+* CA certificate expiration
+* Pending ACME certificate failure
+* Certificate rotation
+* Security certificate expiration summary
+
+**Default notifications**
+
+When a certificate is created, the following email notifications are created for it if they do not exist.
+If these notifications already exist, they will be associated with the new certificate.
+
+* ``DEFAULT_<OWNER>_X_DAY``, where X is the set of values specified in ``LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS`` and defaults to 30, 15, and 2 if not specified. The owner's username will replace ``<OWNER>``.
+* ``DEFAULT_SECURITY_X_DAY``, where X is the set of values specified in ``LEMUR_SECURITY_TEAM_EMAIL_INTERVALS`` and defaults to ``LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS`` if not specified (which also defaults to 30, 15, and 2 if not specified).
+
+These notifications can be disabled if desired. They can also be unassociated with a specific certificate.
+
+**Disabling notifications**
+
+Notifications can be disabled either for an individual certificate (which disables all notifications for that certificate)
+or for an individual notification object (which disables that notification for all associated certificates).
+At present, disabling a notification object will only disable certificate expiration notifications, and not other types,
+since other notification types don't use notification objects.
+
+**Certificate expiration**
+
+Certificate expiration notifications are sent when the scheduled task to send certificate expiration notifications runs
+(see :ref:`PeriodicTasks`). Specific patterns of certificate names may be excluded using ``--exclude`` (when using
+cron; you may specify this multiple times for multiple patterns) or via the config option ``EXCLUDE_CN_FROM_NOTIFICATION``
+(when using celery; this is a list configuration option, meaning you specify multiple values, such as
+``['exclude', 'also exclude']``). The specified exclude pattern will match if found anywhere in the certificate name.
+
+When the periodic task runs, Lemur checks for certificates meeting the following conditions:
+
+* Certificate has notifications enabled
+* Certificate is not expired
+* Certificate is not revoked
+* Certificate name does not match the `exclude` parameter
+* Certificate has at least one associated notification object
+* That notification is active
+* That notification's configured interval and unit match the certificate's remaining lifespan
+
+All eligible certificates are then grouped by owner and applicable notification. For each notification and certificate group,
+Lemur will send the expiration notification using whichever plugin was configured for that notification object.
+In addition, Lemur will send an email to the certificate owner and security team (as specified by the
+``LEMUR_SECURITY_TEAM_EMAIL`` configuration parameter).
+
+**CA certificate expiration**
+
+Certificate authority certificate expiration notifications are sent when the scheduled task to send authority certificate
+expiration notifications runs (see :ref:`PeriodicTasks`). Notifications are sent via the intervals configured in the
+configuration parameter ``LEMUR_AUTHORITY_CERT_EXPIRATION_EMAIL_INTERVALS``, with a default of 365 and 180 days.
+
+When the periodic task runs, Lemur checks for certificates meeting the following conditions:
+
+* Certificate has notifications enabled
+* Certificate is not expired
+* Certificate is not revoked
+* Certificate is associated with a CA
+* Certificate's remaining lifespan matches one of the configured intervals
+
+All eligible certificates are then grouped by owner and expiration interval. For each interval and certificate group,
+Lemur will send the CA certificate expiration notification via email to the certificate owner and security team
+(as specified by the ``LEMUR_SECURITY_TEAM_EMAIL`` configuration parameter).
+
+**Pending ACME certificate failure**
+
+Whenever a pending ACME certificate fails to be issued, Lemur will send a notification via email to the certificate owner
+and security team (as specified by the ``LEMUR_SECURITY_TEAM_EMAIL`` configuration parameter). This email is not sent if
+the pending certificate had notifications disabled.
+
+Lemur will attempt 3x times to resolve a pending certificate.
+This can at times result into 3 duplicate certificates, if all certificate attempts get resolved.
+
+**Certificate rotation**
+
+Whenever a cert is rotated, Lemur will send a notification via email to the certificate owner. This notification is
+disabled by default; to enable it, you must set the option ``--notify`` (when using cron) or the configuration parameter
+``ENABLE_ROTATION_NOTIFICATION`` (when using celery).
+
+**Security certificate expiration summary**
+
+If you enable the Celery or cron task to send this notification type, Lemur will send a summary of all
+certificates with upcoming expiration date that occurs within the number of days specified by the
+``LEMUR_EXPIRATION_SUMMARY_EMAIL_THRESHOLD_DAYS`` configuration parameter (with a fallback of 14 days).
+Note that certificates will be included in this summary even if they do not have any associated notifications.
+
+This notification type also supports the same ``--exclude`` and ``EXCLUDE_CN_FROM_NOTIFICATION`` options as expiration emails.
+
+NOTE: At present, this summary email essentially duplicates the certificate expiration notifications, since all
+certificate expiration notifications are also sent to the security team. This issue will be fixed in the future.
+
+**Email notifications**
+
+Templates for emails are located under `lemur/plugins/lemur_email/templates` and can be modified for your needs.
+
+The following configuration options are supported:
 
 .. data:: LEMUR_EMAIL_SENDER
     :noindex:
@@ -318,7 +430,7 @@ Lemur supports sending certificate expiration notifications through SES and SMTP
 
         ::
 
-            LEMUR_EMAIL = 'lemur.example.com'
+            LEMUR_EMAIL = 'lemur@example.com'
 
 
 .. data:: LEMUR_SECURITY_TEAM_EMAIL
@@ -333,7 +445,7 @@ Lemur supports sending certificate expiration notifications through SES and SMTP
 .. data:: LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS
     :noindex:
 
-        Lemur notification intervals
+        Lemur notification intervals. If unspecified, the value [30, 15, 2] is used.
 
         ::
 
@@ -347,6 +459,15 @@ Lemur supports sending certificate expiration notifications through SES and SMTP
        ::
 
           LEMUR_SECURITY_TEAM_EMAIL_INTERVALS = [15, 2]
+
+.. data:: LEMUR_AUTHORITY_CERT_EXPIRATION_EMAIL_INTERVALS
+    :noindex:
+
+       Notification interval set for CA certificate expiration notifications. If unspecified, the value [365, 180] is used (roughly one year and 6 months).
+
+       ::
+
+          LEMUR_AUTHORITY_CERT_EXPIRATION_EMAIL_INTERVALS = [365, 180]
 
 
 Celery Options
@@ -593,6 +714,33 @@ For more information about how to use social logins, see: `Satellizer <https://g
 
             PING_AUTH_ENDPOINT = "https://<yourpingserver>/oauth2/authorize"
 
+.. data:: PING_USER_MEMBERSHIP_URL
+    :noindex:
+
+        An optional additional endpoint to learn membership details post the user validation.
+
+        ::
+
+            PING_USER_MEMBERSHIP_URL = "https://<yourmembershipendpoint>"
+
+.. data:: PING_USER_MEMBERSHIP_TLS_PROVIDER
+    :noindex:
+
+        A custom TLS session provider plugin name
+
+        ::
+
+            PING_USER_MEMBERSHIP_TLS_PROVIDER = "slug-name"
+
+.. data:: PING_USER_MEMBERSHIP_SERVICE
+    :noindex:
+
+        Membership service name used by PING_USER_MEMBERSHIP_TLS_PROVIDER to create a session
+
+        ::
+
+            PING_USER_MEMBERSHIP_SERVICE = "yourmembershipservice"
+
 .. data:: OAUTH2_SECRET
     :noindex:
 
@@ -704,6 +852,20 @@ ACME Plugin
         Enables delegated DNS domain validation using CNAMES.  When enabled, Lemur will attempt to follow CNAME records to authoritative DNS servers when creating DNS-01 challenges.
 
 
+The following configration properties are optional for the ACME plugin to use. They allow reusing an existing ACME
+account. See :ref:`Using a pre-existing ACME account <AcmeAccountReuse>` for more details.
+
+
+.. data:: ACME_PRIVATE_KEY
+    :noindex:
+
+            This is the private key, the account was registered with (in JWK format)
+
+.. data:: ACME_REGR
+    :noindex:
+
+            This is the registration for the ACME account, the most important part is the uri attribute (in JSON)
+
 Active Directory Certificate Services Plugin
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -744,10 +906,12 @@ Active Directory Certificate Services Plugin
 
 .. data:: ADCS_START
     :noindex:
+
         Used in ADCS-Sourceplugin. Minimum id of the first certificate to be returned. ID is increased by one until ADCS_STOP. Missing cert-IDs are ignored
 
 .. data:: ADCS_STOP
     :noindex:
+
         Used for ADCS-Sourceplugin. Maximum id of the certificates returned. 
         
 
@@ -824,6 +988,26 @@ The following parameters have to be set in the configuration files.
     :noindex:
 
         If there is a config variable ENTRUST_PRODUCT_<upper(authority.name)> take the value as cert product name else default to "STANDARD_SSL". Refer to the API documentation for valid products names.
+
+
+.. data:: ENTRUST_CROSS_SIGNED_RSA_L1K
+    :noindex:
+
+        This is optional. Entrust provides support for cross-signed subCAS. One can set ENTRUST_CROSS_SIGNED_RSA_L1K to the respective cross-signed RSA-based subCA PEM and Lemur will replace the retrieved subCA with ENTRUST_CROSS_SIGNED_RSA_L1K.
+
+
+.. data:: ENTRUST_CROSS_SIGNED_ECC_L1F
+    :noindex:
+
+        This is optional. Entrust provides support for cross-signed subCAS. One can set ENTRUST_CROSS_SIGNED_ECC_L1F to the respective cross-signed EC-based subCA PEM and Lemur will replace the retrieved subCA with ENTRUST_CROSS_SIGNED_ECC_L1F.
+
+
+.. data:: ENTRUST_USE_DEFAULT_CLIENT_ID
+    :noindex:
+
+        If set to True, Entrust will use the primary client ID of 1, which applies to most use-case.
+        Otherwise, Entrust will first lookup the clientId before ordering the certificate.
+
 
 Verisign Issuer Plugin
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -1206,23 +1390,6 @@ The following configuration properties are required to use the PowerDNS ACME Plu
 
             File/Dir path to CA Bundle: Verifies the TLS certificate was issued by a Certificate Authority in the provided CA bundle.
 
-ACME Plugin
-~~~~~~~~~~~~
-
-The following configration properties are optional for the ACME plugin to use. They allow reusing an existing ACME
-account. See :ref:`Using a pre-existing ACME account <AcmeAccountReuse>` for more details.
-
-
-.. data:: ACME_PRIVATE_KEY
-    :noindex:
-
-            This is the private key, the account was registered with (in JWK format)
-
-.. data:: ACME_REGR
-    :noindex:
-
-            This is the registration for the ACME account, the most important part is the uri attribute (in JSON)
-
 .. _CommandLineInterface:
 
 Command Line Interface
@@ -1477,7 +1644,7 @@ Slack
 
 
 AWS (Source)
-----
+------------
 
 :Authors:
     Kevin Glisson <kglisson@netflix.com>,
@@ -1490,7 +1657,7 @@ AWS (Source)
 
 
 AWS (Destination)
-----
+-----------------
 
 :Authors:
     Kevin Glisson <kglisson@netflix.com>,
@@ -1503,7 +1670,7 @@ AWS (Destination)
 
 
 AWS (SNS Notification)
------
+----------------------
 
 :Authors:
     Jasmine Schladen <jschladen@netflix.com>
