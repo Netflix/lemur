@@ -71,7 +71,7 @@ class AcmeHandler(object):
             return False
 
     def strip_wildcard(self, host):
-        """Removes the leading \\*. and returns Host and whether it was removed or not (True/False)"""
+        """Removes the leading wildcard and returns Host and whether it was removed or not (True/False)"""
         prefix = "*."
         if host.startswith(prefix):
             return host[len(prefix):], True
