@@ -28,15 +28,6 @@ lemur Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`decorators` Module
-------------------------
-
-.. automodule:: lemur.decorators
-    :noindex:
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`exceptions` Module
 ------------------------
 
@@ -108,7 +99,7 @@ Subpackages
     lemur.plugins.lemur_atlas
     lemur.plugins.lemur_cryptography
     lemur.plugins.lemur_digicert
-    lemur.plugins.lemur_java
+    lemur.plugins.lemur_jks
     lemur.plugins.lemur_kubernetes
     lemur.plugins.lemur_openssl
     lemur.plugins.lemur_slack

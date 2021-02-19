@@ -43,6 +43,13 @@ Building Documentation
 Inside the ``docs`` directory, you can run ``make`` to build the documentation.
 See ``make help`` for available options and the `Sphinx Documentation <http://sphinx-doc.org/contents.html>`_ for more information.
 
+Adding New Modules to Documentation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When a new module is added, it will need to be added to the documentation.
+Ideally, we might rely on `sphinx-apidoc <https://www.sphinx-doc.org/en/master/man/sphinx-apidoc.html>`_ to autogenerate our documentation.
+Unfortunately, this causes some build problems.
+Instead, you'll need to add new modules by hand.
 
 Developing Against HEAD
 -----------------------
