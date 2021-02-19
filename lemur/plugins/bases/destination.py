@@ -48,3 +48,7 @@ class ExportDestinationPlugin(DestinationPlugin):
 
     def upload(self, name, body, private_key, cert_chain, options, **kwargs):
         raise NotImplementedError
+
+    def verify(self, name):
+        raise NotImplementedError
+
