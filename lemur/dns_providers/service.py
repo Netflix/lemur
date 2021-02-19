@@ -36,7 +36,7 @@ def get_friendly(dns_provider_id):
     Retrieves a dns provider by its lemur assigned ID.
 
     :param dns_provider_id: Lemur assigned ID
-    :rtype : DnsProvider
+    :rtype: DnsProvider
     :return:
     """
     dns_provider = get(dns_provider_id)

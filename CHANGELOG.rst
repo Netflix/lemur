@@ -247,7 +247,7 @@ these keys should be fairly trivial, additionally pull requests have been submit
     should be easier to determine what authorities are available and when an authority has actually been selected.
 * Closed `#254 <https://github.com/Netflix/lemur/issues/254>`_ - Forces certificate names to be generally unique. If a certificate name
     (generated or otherwise) is found to be a duplicate we increment by appending a counter.
-* Closed `#254 <https://github.com/Netflix/lemur/issues/275>`_ - Switched to using Fernet generated passphrases for exported items.
+* Closed `#275 <https://github.com/Netflix/lemur/issues/275>`_ - Switched to using Fernet generated passphrases for exported items.
     These are more sounds that pseudo random passphrases generated before and have the nice property of being in base64.
 * Closed `#278 <https://github.com/Netflix/lemur/issues/278>`_ - Added ability to specify a custom name to certificate creation, previously
     this was only available in the certificate import wizard.

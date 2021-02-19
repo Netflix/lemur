@@ -31,6 +31,11 @@ class ExportDestinationPlugin(DestinationPlugin):
 
     @property
     def options(self):
+        """
+        Gets/sets options for the plugin.
+
+        :return:
+        """
         return self.default_options + self.additional_options
 
     def export(self, body, private_key, cert_chain, options):

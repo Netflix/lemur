@@ -71,7 +71,7 @@ class AcmeHandler(object):
             return False
 
     def strip_wildcard(self, host):
-        """Removes the leading *. and returns Host and whether it was removed or not (True/False)"""
+        """Removes the leading \\*. and returns Host and whether it was removed or not (True/False)"""
         prefix = "*."
         if host.startswith(prefix):
             return host[len(prefix):], True
@@ -129,7 +129,7 @@ class AcmeHandler(object):
 
         if current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA", False) \
                 and datetime.datetime.now() < datetime.datetime.strptime(
-                current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA_EXPIRATION_DATE", "17/03/21"), '%d/%m/%y'):
+            current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA_EXPIRATION_DATE", "17/03/21"), '%d/%m/%y'):
             pem_certificate_chain = current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA")
         else:
             pem_certificate_chain = fullchain_pem[len(pem_certificate):].lstrip()
