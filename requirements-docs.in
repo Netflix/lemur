@@ -7,6 +7,7 @@ acme
 arrow
 boto3
 botocore
+certsrv
 CloudFlare
 cryptography
 dnspython3
@@ -22,19 +23,26 @@ Flask-Script
 Flask-SQLAlchemy
 flask_replicated
 gunicorn
+hvac # required for the vault destination plugin
 inflection
 josepy
 logmatic-python
 marshmallow-sqlalchemy
 marshmallow<2.20.5 #schema duplicate issues https://github.com/marshmallow-code/marshmallow-sqlalchemy/issues/121
+paramiko  # required for the SFTP destination plugin
 pem
+pyjks >= 19 # pyjks < 19 depends on pycryptodome, which conflicts with dyn's usage of pycrypto
 pyjwt
 pyOpenSSL
 raven[flask]
+redis
 retrying
 SQLAlchemy-Utils
 tabulate
+vine
 xmltodict
+# Test requirements are needed to allow test docs to build
+-r requirements-tests.txt
 
 # docs specific
 sphinx

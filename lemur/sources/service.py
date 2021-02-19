@@ -255,7 +255,7 @@ def create(label, plugin_name, options, description=None):
     :param plugin_name:
     :param options:
     :param description:
-    :rtype : Source
+    :rtype: Source
     :return: New source
     """
     source = Source(
@@ -273,7 +273,7 @@ def update(source_id, label, plugin_name, options, description):
     :param options:
     :param plugin_name:
     :param description:
-    :rtype : Source
+    :rtype: Source
     :return:
     """
     source = get(source_id)
@@ -300,7 +300,7 @@ def get(source_id):
     Retrieves an source by its lemur assigned ID.
 
     :param source_id: Lemur assigned ID
-    :rtype : Source
+    :rtype: Source
     :return:
     """
     return database.get(Source, source_id)

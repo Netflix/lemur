@@ -114,7 +114,7 @@ class RolesList(AuthenticatedResource):
                  "username": null,
                  "password": null,
                  "users": [
-                    {'id': 1}
+                    {"id": 1}
                  ]
               }
 
@@ -177,7 +177,7 @@ class RoleViewCredentials(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                  "username: "ausername",
+                  "username": "ausername",
                   "password": "apassword"
               }
 
