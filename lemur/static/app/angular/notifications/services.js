@@ -77,9 +77,6 @@ angular.module('lemur')
     };
 
     NotificationService.update = function (notification) {
-    //  this.certificates = [];
-    //  this.removedCertificates = [];
-    //  this.addedCertificates = [];
       return notification.put();
     };
 
