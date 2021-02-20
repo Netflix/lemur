@@ -11,26 +11,31 @@ angular.module('lemur')
           if (this.addedCertificates === undefined) {
             this.addedCertificates = [];
           }
+          if (_.some(this.addedCertificates, function (cert) {
+            return cert.id === certificate.id;
+          })) {
+            return;
+          }
           this.certificates.push(certificate);
           this.addedCertificates.push(certificate);
           if (this.removedCertificates !== undefined) {
-            const removedIndex = this.removedCertificates.indexOf(certificate);
-            if (removedIndex > -1) {
-              this.removedCertificates.splice(removedIndex, 1);
-            }
+            const indexInRemovedList = _.findIndex(this.removedCertificates, function (cert) {
+              return cert.id === certificate.id;
+            });
+            this.removedCertificates.splice(indexInRemovedList, 1);
           }
         },
         removeCertificate: function (index) {
           if (this.removedCertificates === undefined) {
             this.removedCertificates = [];
           }
-          const removedCert = this.certificates.splice(index, 1);
+          const removedCert = this.certificates.splice(index, 1)[0];
           this.removedCertificates.push(removedCert);
           if (this.addedCertificates !== undefined) {
-            const addedIndex = this.addedCertificates.indexOf(removedCert);
-            if (addedIndex > -1) {
-              this.addedCertificates.splice(addedIndex, 1);
-            }
+            const indexInAddedList = _.findIndex(this.addedCertificates, function (cert) {
+              return cert.id === removedCert.id;
+            });
+            this.addedCertificates.splice(indexInAddedList, 1);
           }
         }
       });
@@ -72,7 +77,9 @@ angular.module('lemur')
     };
 
     NotificationService.update = function (notification) {
-      this.certificates = [];
+    //  this.certificates = [];
+    //  this.removedCertificates = [];
+    //  this.addedCertificates = [];
       return notification.put();
     };
 

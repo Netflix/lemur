@@ -242,7 +242,7 @@ class Notifications(AuthenticatedResource):
         """
         .. http:get:: /notifications/1
 
-           Get a specific account
+           Get a specific notification
 
            **Example request**:
 
