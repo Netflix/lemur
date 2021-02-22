@@ -1056,7 +1056,7 @@ def deactivate_entrust_test_certificates():
     return log_data
 
 
-@celery.task(soft_time_limit=3600)
+@celery.task(soft_time_limit=60)
 def certificate_check_destination(cert_id, dest_id):
     """
     This celery task checks a certificate, destination pair
@@ -1080,35 +1080,36 @@ def certificate_check_destination(cert_id, dest_id):
 
     cert = certificate_service.get(cert_id)
     dest = destinations_service.get(dest_id)
-    logger.debug(f"verifying certificate {cert.name} for destination {str(dest)}", extra=log_data)
 
-    try:
-        uploaded = dest.plugin.verify(cert.name, dest.options)
-        if not uploaded:
-            logger.info(f"uploading certificate {cert.name} to destination {str(dest)}", extra=log_data)
-            dest.plugin.upload(cert.name,
-                            cert.body,
-                            cert.private_key,
-                            cert.chain,
-                            dest.options)
-    except NotImplementedError as e:
-        logging.error(f"method not implemented for plugin {dest.plugin.slug}: {str(e)}", extra=log_data)
-        return log_data
+    # populate log data
+    log_data["certificate"] = cert.name
+    log_data["destination"] = str(dest)
 
-    except SoftTimeLimitExceeded:
-        logger.error("Certificate destination check: Time limit exceeded.", extra=log_data)
-        metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
-        return log_data
+    logger.debug("verifying certificate/destination pair", extra=log_data)
+    uploaded = dest.plugin.verify(cert.name, dest.options)
+    if not uploaded:
+        logger.info("uploading certificate to destination", extra=log_data)
+        dest.plugin.upload(cert.name,
+                        cert.body,
+                        cert.private_key,
+                        cert.chain,
+                        dest.options)
+        logger.warning("certificate uploaded to destination", extra=log_data)
+        metrics.send(f"{function}.destination_missing_cert_resolved", "counter", 1)
 
-    metrics.send(f"{function}.success", "counter", 1)
+    # at this point, the certificate MUST exist on the destination
+    logger.debug("certificate/destination pair valid", extra=log_data)
+    metrics.send(f"{function}.destination_certificate_valid", "counter", 1)
+
     return log_data
 
 
-@celery.task(soft_time_limit=3600)
-def certificate_destination_check():
+@celery.task(soft_time_limit=60)
+def create_certificate_check_destination_tasks():
     """
-    This celery task checks all destinations if the certificate
-    has been uploaded, otherwise it tries to upload it.
+    This celery task fetches all (certificate, destination) pairs
+    from Lemur and creates subtasks to verify that the certificate has
+    been uploaded.
     :return:
     """
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
@@ -1125,22 +1126,20 @@ def certificate_destination_check():
         logger.debug("Skipping task: Task is already active", extra=log_data)
         return log_data
 
-    try:
-        certs = certificate_service.get_all_valid_certs([])
-        for cert in certs:
-            if cert.replaced or len(cert.destinations) == 0:
-                continue
+    certs = certificate_service.get_all_valid_certs([])
+    num_subtasks_created = 0
+    for cert in certs:
+        if cert.replaced or len(cert.destinations) == 0:
+            continue
 
-            logger.debug(f"creating sub tasks to verify certificate {cert.name} for {len(cert.destinations)} destinations", extra=log_data)
+        for dest in cert.destinations:
+            logger.debug("creating sub task to check certificate/destination pair", extra={
+                "certificate": cert.name,
+                "destination": str(dest),
+            })
+            certificate_check_destination.delay(cert.id, dest.id)
+            num_subtasks_created += 1
 
-            for dest in cert.destinations:
-                certificate_check_destination.delay(cert.id, dest.id)
-
-    except SoftTimeLimitExceeded:
-        logger.error("Certificate destination check: Time limit exceeded.", extra=log_data)
-        metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
-        return log_data
-
-    logger.debug("destination check completed", extra=log_data)
-    metrics.send(f"{function}.success", "counter", 1)
+    logger.debug("task creation completed",
+                 extra={**log_data, "num_subtasks_created": num_subtasks_created})
     return log_data
