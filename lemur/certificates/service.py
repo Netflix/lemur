@@ -678,7 +678,16 @@ def stats(**kwargs):
     :param kwargs:
     :return:
     """
-    if kwargs.get("metric") == "not_after":
+
+    # Verify requested metric
+    allow_list = ["bits", "issuer", "not_after", "signing_algorithm"]
+    req_metric = kwargs.get("metric")
+    if req_metric not in allow_list:
+        raise Exception(
+            f"Stats not available for requested metric: {req_metric}"
+        )
+
+    if req_metric == "not_after":
         start = arrow.utcnow()
         end = start.shift(weeks=+32)
         items = (
@@ -690,7 +699,7 @@ def stats(**kwargs):
         )
 
     else:
-        attr = getattr(Certificate, kwargs.get("metric"))
+        attr = getattr(Certificate, req_metric)
         query = database.db.session.query(attr, func.count(attr))
 
         items = query.group_by(attr).all()

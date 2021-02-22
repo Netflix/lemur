@@ -635,7 +635,12 @@ class CertificatesStats(AuthenticatedResource):
 
         args = self.reqparse.parse_args()
 
-        items = service.stats(**args)
+        try:
+            items = service.stats(**args)
+        except Exception as e:
+            sentry.captureException()
+            return dict(message=f"Failed to retrieve stats: {str(e)}"), 400
+
         return dict(items=items, total=len(items))
 
 
