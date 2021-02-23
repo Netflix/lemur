@@ -104,7 +104,7 @@ def create(label, plugin_name, options, description, certificates):
     return database.create(notification)
 
 
-def update(notification_id, label, plugin_name, options, description, active, certificates):
+def update(notification_id, label, plugin_name, options, description, active, added_certificates, removed_certificates):
     """
     Updates an existing notification.
 
@@ -114,7 +114,8 @@ def update(notification_id, label, plugin_name, options, description, active, ce
     :param options:
     :param description:
     :param active:
-    :param certificates:
+    :param added_certificates:
+    :param removed_certificates:
     :rtype: Notification
     :return:
     """
@@ -125,7 +126,8 @@ def update(notification_id, label, plugin_name, options, description, active, ce
     notification.options = options
     notification.description = description
     notification.active = active
-    notification.certificates = certificates
+    notification.certificates = notification.certificates + added_certificates
+    notification.certificates = [c for c in notification.certificates if c not in removed_certificates]
 
     return database.update(notification)
 

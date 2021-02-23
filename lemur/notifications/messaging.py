@@ -200,6 +200,7 @@ def send_plugin_notification(event_type, data, recipients, notification):
         "notification_type": event_type,
         "notification_plugin": notification.plugin.slug,
         "certificate_targets": recipients,
+        "plugin": notification.plugin.slug,
     }
     status = FAILURE_METRIC_STATUS
     try:
