@@ -479,7 +479,7 @@ soupsieve==2.0.1
     # via beautifulsoup4
 sphinx-rtd-theme==0.5.1
     # via -r requirements-docs.in
-sphinx==3.5.0
+sphinx==3.5.1
     # via
     #   -r requirements-docs.in
     #   sphinx-rtd-theme
