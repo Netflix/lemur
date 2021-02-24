@@ -125,7 +125,7 @@ jmespath==0.9.5
     # via
     #   boto3
     #   botocore
-josepy==1.3.0
+josepy==1.7.0
     # via acme
 jsonlines==1.2.0
     # via cloudflare
