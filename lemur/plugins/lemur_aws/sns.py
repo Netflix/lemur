@@ -11,6 +11,8 @@ import arrow
 import boto3
 from flask import current_app
 
+from lemur.plugins.lemur_aws.plugin import SNSNotificationPlugin
+
 
 def publish(topic_arn, certificates, notification_type, options, **kwargs):
     sns_client = boto3.client("sns", **kwargs)
@@ -64,8 +66,8 @@ def format_message(certificate, notification_type, options):
 
 
 def calculate_expiration_days(options):
-    unit = get_option(options, "unit")
-    interval = get_option(options, "interval")
+    unit = SNSNotificationPlugin.get_option("unit", options)
+    interval = SNSNotificationPlugin.get_option("interval", options)
     if unit == "weeks":
         return interval * 7
 
@@ -74,9 +76,3 @@ def calculate_expiration_days(options):
 
     elif unit == "days":
         return interval
-
-
-def get_option(options, option_name):
-    for o in options:
-        if o.get("name") == option_name:
-            return o.get("value", o.get("default"))
