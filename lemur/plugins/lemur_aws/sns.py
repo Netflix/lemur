@@ -11,21 +11,24 @@ import arrow
 import boto3
 from flask import current_app
 
+from lemur.plugins.lemur_aws.plugin import SNSNotificationPlugin
 
-def publish(topic_arn, certificates, notification_type, **kwargs):
+
+def publish(topic_arn, certificates, notification_type, options, **kwargs):
     sns_client = boto3.client("sns", **kwargs)
     message_ids = {}
     subject = "Lemur: {0} Notification".format(notification_type.capitalize())
     for certificate in certificates:
-        message_ids[certificate["name"]] = publish_single(sns_client, topic_arn, certificate, notification_type, subject)
+        message_ids[certificate["name"]] = publish_single(sns_client, topic_arn, certificate, notification_type,
+                                                          subject, options)
 
     return message_ids
 
 
-def publish_single(sns_client, topic_arn, certificate, notification_type, subject):
+def publish_single(sns_client, topic_arn, certificate, notification_type, subject, options):
     response = sns_client.publish(
         TopicArn=topic_arn,
-        Message=format_message(certificate, notification_type),
+        Message=format_message(certificate, notification_type, options),
         Subject=subject,
     )
 
@@ -46,7 +49,7 @@ def create_certificate_url(name):
     )
 
 
-def format_message(certificate, notification_type):
+def format_message(certificate, notification_type, options):
     json_message = {
         "notification_type": notification_type,
         "certificate_name": certificate["name"],
@@ -57,4 +60,19 @@ def format_message(certificate, notification_type):
         "owner": certificate["owner"],
         "details": create_certificate_url(certificate["name"])
     }
+    if notification_type == "expiration":
+        json_message["notification_interval_days"] = calculate_expiration_days(options)
     return json.dumps(json_message)
+
+
+def calculate_expiration_days(options):
+    unit = SNSNotificationPlugin.get_option("unit", options)
+    interval = SNSNotificationPlugin.get_option("interval", options)
+    if unit == "weeks":
+        return interval * 7
+
+    elif unit == "months":
+        return interval * 30
+
+    elif unit == "days":
+        return interval
