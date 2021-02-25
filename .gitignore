@@ -39,3 +39,4 @@ lemur/tests/tmp
 
 /lemur/plugins/lemur_email/tests/expiration-rendered.html
 /lemur/plugins/lemur_email/tests/rotation-rendered.html
+.celerybeat-schedule
