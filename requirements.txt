@@ -57,7 +57,7 @@ click==7.1.2
     # via flask
 cloudflare==2.8.15
     # via -r requirements.in
-cryptography==3.4.5
+cryptography==3.4.6
     # via
     #   -r requirements.in
     #   acme
