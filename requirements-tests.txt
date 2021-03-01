@@ -144,7 +144,7 @@ pyparsing==2.4.7
     # via packaging
 pyrsistent==0.16.0
     # via jsonschema
-pytest-flask==1.1.0
+pytest-flask==1.2.0
     # via -r requirements-tests.in
 pytest-mock==3.5.1
     # via -r requirements-tests.in
