@@ -210,7 +210,7 @@ class Certificate(db.Model):
         else:
             self.name = get_or_increase_name(
                 defaults.certificate_name(
-                    self.cn, self.issuer, self.not_before, self.not_after, self.san
+                    self.cn, self.issuer, self.not_before, self.not_after, self.san, self.serial
                 ),
                 self.serial,
             )

@@ -93,6 +93,13 @@ def db(app, request):
 
 
 @pytest.fixture(scope="function")
+def use_gcp_certificate_names(app):
+    app.config["USE_GCP_CERTIFICATE_NAMES"] = True
+    yield
+    del app.config["USE_GCP_CERTIFICATE_NAMES"]
+
+
+@pytest.fixture(scope="function")
 def session(db, request):
     """
     Creates a new database session with (with working transaction)
