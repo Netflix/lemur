@@ -36,13 +36,14 @@ def generate_gcp_certificate_name(common_name, not_after, serial):
     """
     short_name = common_name.replace('*.', '').replace('.','-').lower()[:46]
     not_after = not_after.strftime("%Y%m%d")
+    short_serial = hex(int(serial))[2:].upper()[-6:] if serial else ""
 
-    certificate_name = f"{short_name}-{not_after}-{serial[-6:]}".rstrip("-")
+    certificate_name = f"{short_name}-{not_after}-{short_serial}".rstrip("-")
     
     return certificate_name
 
 
-def certificate_name(common_name, issuer, not_before, not_after, san, serial=""):
+def certificate_name(common_name, issuer, not_before, not_after, san, serial=None):
     """
     Create a name for our certificate. A naming standard
     is based on a series of templates. The name includes
