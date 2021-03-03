@@ -209,6 +209,11 @@ Basic Configuration
         in the UI. When set to False (the default), the certificate delete API will always return "405 method not allowed"
         and deleted certificates will always be visible in the UI. (default: `False`)
 
+.. data:: LEMUR_AWS_REGION
+    :noindex:
+
+        This is an optional config applicable for settings where Lemur is deployed in AWS. For accessing regionalized
+        STS endpoints, LEMUR_AWS_REGION defines the region where Lemur is deployed.
 
 Certificate Default Options
 ---------------------------
