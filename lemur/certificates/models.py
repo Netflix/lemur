@@ -463,7 +463,7 @@ def update_destinations(target, value, initiator):
 
         # need to import it here due to cyclic dependencies
         from lemur.common.celery import certificate_check_destination
-        certificate_check_destination.apply_async((target.id, value.id))
+        certificate_check_destination.apply_async((target.id, value.id), countdown=5)
         return
 
     try:

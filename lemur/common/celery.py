@@ -1081,6 +1081,9 @@ def certificate_check_destination(cert_id, dest_id):
     cert = certificate_service.get(cert_id)
     dest = destinations_service.get(dest_id)
 
+    if not cert:
+        raise RuntimeError(f"certificate (id={cert_id}) does not exist in database")
+
     # populate log data
     log_data["certificate"] = cert.name
     log_data["destination"] = str(dest)
