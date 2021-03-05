@@ -153,6 +153,7 @@ def get_all_certs_attached_to_endpoint_without_autorotate():
     return (
         Certificate.query.filter(Certificate.endpoints.any())
         .filter(Certificate.rotation == false())
+        .filter(Certificate.revoked == false())
         .filter(Certificate.not_after >= arrow.now())
         .filter(not_(Certificate.replaced.any()))
         .all()  # noqa
