@@ -90,16 +90,14 @@ def test_get_all_certs_attached_to_endpoint_without_autorotate(session):
     from lemur.tests.factories import EndpointFactory, CertificateFactory
 
     # add a certificate with endpoint
-    s = EndpointFactory()
-    CertificateFactory(endpoint=s)
-    session.commit()
+    EndpointFactory()
 
     list_before = get_all_certs_attached_to_endpoint_without_autorotate()
     len_list_before = len(list_before)
     assert len_list_before > 0
     # revoked the first certificate
-    first_cert_with_endpoitn = list_before[0]
-    cleanup_after_revoke(first_cert_with_endpoitn)
+    first_cert_with_endpoint = list_before[0]
+    cleanup_after_revoke(first_cert_with_endpoint)
 
     list_after = get_all_certs_attached_to_endpoint_without_autorotate()
     assert len(list_after) + 1 == len_list_before
