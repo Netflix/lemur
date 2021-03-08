@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-index --output-file=requirements-docs.txt requirements-docs.in
 #
-acme==1.12.0
+acme==1.13.0
     # via -r requirements-docs.in
 alabaster==0.7.12
     # via sphinx
@@ -105,7 +105,6 @@ cryptography==3.4.6
     #   paramiko
     #   pyopenssl
     #   python-jose
-    #   requests
     #   sshpubkeys
 decorator==4.4.2
     # via
@@ -341,7 +340,6 @@ pyopenssl==20.0.1
     #   -r requirements-docs.in
     #   acme
     #   josepy
-    #   requests
 pyparsing==2.4.7
     # via
     #   -r requirements-tests.txt
@@ -408,7 +406,7 @@ requests-mock==1.8.0
     # via -r requirements-tests.txt
 requests-toolbelt==0.9.1
     # via acme
-requests[security]==2.25.1
+requests==2.25.1
     # via
     #   -r requirements-tests.txt
     #   acme
@@ -438,7 +436,6 @@ s3transfer==0.3.3
 six==1.15.0
     # via
     #   -r requirements-tests.txt
-    #   acme
     #   aws-sam-translator
     #   bandit
     #   bcrypt
