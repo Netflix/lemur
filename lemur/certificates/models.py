@@ -23,6 +23,7 @@ from sqlalchemy import (
     Boolean,
     Index,
 )
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import case, extract
@@ -38,7 +39,7 @@ from lemur.extensions import sentry
 from lemur.models import (
     certificate_associations,
     certificate_source_associations,
-    certificate_destination_associations,
+    CertificateDestination,
     certificate_notification_associations,
     certificate_replacement_associations,
     roles_certificates,
@@ -159,11 +160,9 @@ class Certificate(db.Model):
         secondary=certificate_notification_associations,
         backref="certificate",
     )
-    destinations = relationship(
-        "Destination",
-        secondary=certificate_destination_associations,
-        backref="certificate",
-    )
+    destinations = association_proxy("certificate_destinations", "destination",
+                                     creator=lambda destination: CertificateDestination(destination=destination))
+
     sources = relationship(
         "Source", secondary=certificate_source_associations, backref="certificate"
     )
@@ -439,41 +438,45 @@ class Certificate(db.Model):
         return "Certificate(name={name})".format(name=self.name)
 
 
-@event.listens_for(Certificate.destinations, "append")
-def update_destinations(target, value, initiator):
+@event.listens_for(CertificateDestination, "after_insert")
+def update_destinations(mapper, connection, certificate_destination):
     """
     Attempt to upload certificate to the new destination
 
-    :param target:
-    :param value:
-    :param initiator:
+    :param mapper:
+    :param connection:
+    :param certificate_destination:
     :return:
     """
-    destination_plugin = plugins.get(value.plugin_name)
+
+    cert = certificate_destination.certificate
+    dest = certificate_destination.destination
+
+    destination_plugin = plugins.get(dest.plugin_name)
     status = FAILURE_METRIC_STATUS
 
-    if target.expired:
+    if cert.expired:
         return
 
     if current_app.config.get("USE_ASYNCHRONOUS_DESTINATION_UPLOAD", False):
         current_app.logger.debug("Creating celery task to upload certificate to destination", extra={
-            "certificate_id": target.id,
-            "destination_id": value.id,
+            "certificate_id": cert.id,
+            "destination_id": dest.id,
         })
 
         # need to import it here due to cyclic dependencies
         from lemur.common.celery import certificate_check_destination
-        certificate_check_destination.apply_async((target.id, value.id), countdown=5)
+        certificate_check_destination.apply_async((cert.id, dest.id), countdown=5)
         return
 
     try:
-        if target.private_key or not destination_plugin.requires_key:
+        if cert.private_key or not destination_plugin.requires_key:
             destination_plugin.upload(
-                target.name,
-                target.body,
-                target.private_key,
-                target.chain,
-                value.options,
+                cert.name,
+                cert.body,
+                cert.private_key,
+                cert.chain,
+                dest.options,
             )
             status = SUCCESS_METRIC_STATUS
     except Exception as e:
@@ -486,8 +489,8 @@ def update_destinations(target, value, initiator):
         1,
         metric_tags={
             "status": status,
-            "certificate": target.name,
-            "destination": value.label,
+            "certificate": cert.name,
+            "destination": dest.label,
         },
     )
 

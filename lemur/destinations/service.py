@@ -9,7 +9,7 @@ from sqlalchemy import func
 from flask import current_app
 
 from lemur import database
-from lemur.models import certificate_destination_associations
+from lemur.models import CertificateDestination
 from lemur.destinations.models import Destination
 from lemur.certificates.models import Certificate
 from lemur.sources.service import add_aws_destination_to_sources
@@ -136,9 +136,9 @@ def stats(**kwargs):
     items = (
         database.db.session.query(
             Destination.label,
-            func.count(certificate_destination_associations.c.certificate_id),
+            func.count(CertificateDestination.certificate_id),
         )
-        .join(certificate_destination_associations)
+        .join(CertificateDestination)
         .group_by(Destination.label)
         .all()
     )
