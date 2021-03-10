@@ -47,7 +47,6 @@ class Policy(db.Model):
 class Endpoint(db.Model):
     __tablename__ = "endpoints"
     id = Column(Integer, primary_key=True)
-    external_id = Column(String(128))
     owner = Column(String(128))
     name = Column(String(128))
     dnsname = Column(String(256))
