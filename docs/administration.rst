@@ -874,9 +874,11 @@ account. See :ref:`Using a pre-existing ACME account <AcmeAccountReuse>` for mor
 .. data:: ACME_PREFERRED_ISSUER
     :noindex:
 
-            This is an optional parameter to indicate the preferred chain to retrieve from ACME.
-            This is applicable to Let's Encrypts recent `migration https://letsencrypt.org/certificates/`_ to their own root where they provide two distinct certificate chains;
-            the main chain will be the long chain that is rooted in the expiring DTS root, whereas the alternative chain is rooted in X1 root CA.
+            This is an optional parameter to indicate the preferred chain to retrieve from ACME when finalizing the order.
+            This is applicable to Let's Encrypts recent `migration https://letsencrypt.org/certificates/`_ to their
+            own root, where they provide two distinct certificate chains (fullchain_pem vs. alternative_fullchains_pem);
+            the main chain will be the long chain that is rooted in the expiring DTS root, whereas the alternative chain
+            is rooted in X1 root CA.
             Select "X1" to get the shorter chain (currently alternative), leave blank or "DST Root CA X3" for the longer chain.
 
 
