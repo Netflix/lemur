@@ -3,6 +3,7 @@
 bandit
 black
 coverage
+certbot
 factory-boy
 Faker
 fakeredis
