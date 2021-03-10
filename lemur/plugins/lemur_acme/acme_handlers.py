@@ -23,6 +23,7 @@ from acme import challenges, errors, messages
 from acme.client import BackwardsCompatibleClientV2, ClientNetwork
 from acme.errors import TimeoutError
 from acme.messages import Error as AcmeError
+from certbot import crypto_util as acme_crypto_util
 from flask import current_app
 
 from lemur.common.utils import generate_private_key
@@ -92,7 +93,8 @@ class AcmeHandler(object):
         deadline = datetime.datetime.now() + datetime.timedelta(seconds=360)
 
         try:
-            orderr = acme_client.poll_and_finalize(order, deadline)
+            orderr = acme_client.poll_authorizations(order, deadline)
+            orderr = acme_client.finalize_order(orderr, deadline, fetch_alternative_chains=True)
 
         except (AcmeError, TimeoutError):
             sentry.captureException(extra={"order_url": str(order.uri)})
@@ -112,14 +114,23 @@ class AcmeHandler(object):
             f"Successfully resolved Acme order: {order.uri}", exc_info=True
         )
 
-        pem_certificate, pem_certificate_chain = self.extract_cert_and_chain(orderr.fullchain_pem)
+        pem_certificate, pem_certificate_chain = self.extract_cert_and_chain(orderr.fullchain_pem,
+                                                                             orderr.alternative_fullchains_pem)
 
         current_app.logger.debug(
             "{0} {1}".format(type(pem_certificate), type(pem_certificate_chain))
         )
         return pem_certificate, pem_certificate_chain
 
-    def extract_cert_and_chain(self, fullchain_pem):
+    def extract_cert_and_chain(self, fullchain_pem, alternative_fullchains_pem, preferred_issuer=None):
+
+        if not preferred_issuer:
+            preferred_issuer = current_app.config.get("ACME_PREFERRED_ISSUER", None)
+        if preferred_issuer:
+            # returns first chain if not match
+            fullchain_pem = acme_crypto_util.find_chain_with_issuer([fullchain_pem] + alternative_fullchains_pem,
+                                                                    preferred_issuer)
+
         pem_certificate = OpenSSL.crypto.dump_certificate(
             OpenSSL.crypto.FILETYPE_PEM,
             OpenSSL.crypto.load_certificate(
@@ -127,12 +138,7 @@ class AcmeHandler(object):
             ),
         ).decode()
 
-        if current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA", False) \
-                and datetime.datetime.now() < datetime.datetime.strptime(
-                current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA_EXPIRATION_DATE", "17/03/21"), '%d/%m/%y'):
-            pem_certificate_chain = current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA")
-        else:
-            pem_certificate_chain = fullchain_pem[len(pem_certificate):].lstrip()
+        pem_certificate_chain = fullchain_pem[len(pem_certificate):].lstrip()
 
         return pem_certificate, pem_certificate_chain
 

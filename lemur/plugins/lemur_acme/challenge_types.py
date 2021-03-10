@@ -119,8 +119,10 @@ class AcmeHttpChallenge(AcmeChallenge):
             current_app.logger.info("Uploaded HTTP-01 challenge tokens, trying to poll and finalize the order")
 
         try:
-            finalized_orderr = acme_client.poll_and_finalize(orderr,
-                                                             datetime.datetime.now() + datetime.timedelta(seconds=90))
+            deadline = datetime.datetime.now() + datetime.timedelta(seconds=90)
+            orderr = acme_client.poll_authorizations(orderr, deadline)
+            finalized_orderr = acme_client.finalize_order(orderr, deadline, fetch_alternative_chains=True)
+
         except errors.ValidationError as validationError:
             for authz in validationError.failed_authzrs:
                 for chall in authz.body.challenges:
@@ -130,7 +132,8 @@ class AcmeHttpChallenge(AcmeChallenge):
                                                                                          ERROR_CODES[chall.error.code]))
             raise Exception('Validation error occured, can\'t complete challenges. See logs for more information.')
 
-        pem_certificate, pem_certificate_chain = self.acme.extract_cert_and_chain(finalized_orderr.fullchain_pem)
+        pem_certificate, pem_certificate_chain = self.acme.extract_cert_and_chain(finalized_orderr.fullchain_pem,
+                                                                                  finalized_orderr.alternative_fullchains_pem)
 
         if len(deployed_challenges) != 0:
             for token_path in deployed_challenges:
