@@ -97,8 +97,10 @@ def sync(source_strings):
                 )
             )
             print(
-                "[+] Endpoints: New: {new} Updated: {updated}".format(
-                    new=data["endpoints"][0], updated=data["endpoints"][1]
+                "[+] Endpoints: New: {new} Updated: {updated} Removed: {removed}".format(
+                    new=data["endpoints"][0],
+                    updated=data["endpoints"][1],
+                    removed=data["endpoints"][2],
                 )
             )
             print(

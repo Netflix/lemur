@@ -66,9 +66,11 @@ def sync_update_destination(certificate, source):
 
 
 def sync_endpoints(source):
-    new, updated, updated_by_hash = 0, 0, 0
+    new, updated, updated_by_hash, removed = 0, 0, 0, 0
     current_app.logger.debug("Retrieving endpoints from {0}".format(source.label))
     s = plugins.get(source.plugin_name)
+
+    seen_endpoints = set()
 
     try:
         endpoints = s.get_endpoints(source.options)
@@ -152,15 +154,21 @@ def sync_endpoints(source):
             current_app.logger.debug(
                 "Endpoint Created: Name: {name}".format(name=endpoint["name"])
             )
-            endpoint_service.create(**endpoint)
+            seen_endpoints.add(endpoint_service.create(**endpoint).id)
             new += 1
-
         else:
             current_app.logger.debug("Endpoint Updated: {}".format(endpoint))
-            endpoint_service.update(exists.id, **endpoint)
+            seen_endpoints.add(endpoint_service.update(exists.id, **endpoint).id)
             updated += 1
 
-    return new, updated, updated_by_hash
+    # remove
+    for endpoint in source.endpoints:
+        if endpoint.id not in seen_endpoints:
+            current_app.logger.info(f"removing endpoint {endpoint.name} from database")
+            database.delete(endpoint)
+            removed += 1
+
+    return new, updated, updated_by_hash, removed
 
 
 def find_cert(certificate):
@@ -228,7 +236,7 @@ def sync_certificates(source, user):
 
 def sync(source, user):
     new_certs, updated_certs, updated_certs_by_hash = sync_certificates(source, user)
-    new_endpoints, updated_endpoints, updated_endpoints_by_hash = sync_endpoints(source)
+    new_endpoints, updated_endpoints, updated_endpoints_by_hash, removed = sync_endpoints(source)
 
     metrics.send("sync.updated_certs_by_hash",
                  "gauge", updated_certs_by_hash,
@@ -242,7 +250,7 @@ def sync(source, user):
     database.update(source)
 
     return {
-        "endpoints": (new_endpoints, updated_endpoints),
+        "endpoints": (new_endpoints, updated_endpoints, removed),
         "certificates": (new_certs, updated_certs),
     }
 
