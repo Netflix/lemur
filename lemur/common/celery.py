@@ -11,7 +11,8 @@ import copy
 import sys
 import time
 import logging
-from celery import Celery
+from collections import defaultdict
+from celery import Celery, group
 from celery.app.task import Context
 from celery.exceptions import SoftTimeLimitExceeded
 from celery.signals import task_failure, task_received, task_revoked, task_success
@@ -1175,7 +1176,6 @@ def rotate_endpoint(endpoint_id):
 
     old_certificate_id = endpoint.certificate.id
 
-    # schedule a task to remove it
     remove_cert_args = (endpoint_id, old_certificate_id)
     delay_before_removal = 60
     if is_task_scheduled(rotate_endpoint_remove_cert.name, remove_cert_args):
@@ -1183,7 +1183,8 @@ def rotate_endpoint(endpoint_id):
         logger.info(f"{rotate_endpoint_remove_cert.name}{str(remove_cert_args)} already scheduled.")
         return
 
-    new_cert_name = endpoint.certificate.replaced[0].name
+    new_cert = endpoint.certificate.replaced[0]
+    new_cert_name = new_cert.name
 
     # send notification
     send_notifications(
@@ -1199,6 +1200,7 @@ def rotate_endpoint(endpoint_id):
         endpoint,
         new_cert_name)
 
+    # schedule a task to remove the old certificate
     logger.info(f"Scheduling {rotate_endpoint_remove_cert.name}{str(remove_cert_args)} to execute in {delay_before_removal} seconds.")
     rotate_endpoint_remove_cert.apply_async(
         remove_cert_args,
@@ -1251,8 +1253,20 @@ def rotate_all_pending_endpoints():
         logger.debug("Skipping task: Task is already active", extra=log_data)
         return
 
+    # create a map of certificate -> [endpoints]
+    pending_map = defaultdict(list)
     for endpoint in endpoint_service.get_all_pending_rotation():
-        logger.info(f"Creating task to rotate {endpoint.name} to {endpoint.certificate.replaced[0].name}")
+        new_cert = endpoint.certificate.replaced[0]
+        pending_map[new_cert].append(endpoint)
 
-        # TODO: stagger per certificate or source?
-        rotate_endpoint.delay(endpoint.id)
+    for cert, endpoints in pending_map.items():
+        # verify that the certificate has been uploaded before rotating the endpoints
+        if not all([dest.plugin.verify(cert.name, dest.options) for dest in cert.destinations]):
+            logger.debug("Certificate has not been uploaded to all destinations, skipping rotate")
+            continue
+
+        logger.info(f"Creating tasks to attach certificate {cert.name} to its endpoints")
+
+        # create task group and skew execution
+        g = group([rotate_endpoint.s(endpoint.id) for endpoint in endpoints]).skew(start=0, step=10)
+        g.apply_async()
