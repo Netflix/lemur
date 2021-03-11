@@ -1175,6 +1175,16 @@ def rotate_endpoint(endpoint_id):
 
     old_certificate_id = endpoint.certificate.id
 
+    # schedule a task to remove it
+    remove_cert_args = (endpoint_id, old_certificate_id)
+    delay_before_removal = 60
+    if is_task_scheduled(rotate_endpoint_remove_cert.name, remove_cert_args):
+        # the remove task has already been scheduled so we skip this turn
+        logger.info(f"{rotate_endpoint_remove_cert.name}{str(remove_cert_args)} already scheduled.")
+        return
+
+    new_cert_name = endpoint.certificate.replaced[0].name
+
     # send notification
     send_notifications(
         endpoint.certificate.notifications,
@@ -1182,21 +1192,17 @@ def rotate_endpoint(endpoint_id):
         f"Rotating endpoint {endpoint.name}",
         endpoint=endpoint)
 
+    logger.info(f"Attaching {new_cert_name} to {endpoint.name}")
+
     # update
     endpoint.source.plugin.update_endpoint(
         endpoint,
-        endpoint.certificate.replaced[0].name)
+        new_cert_name)
 
-    # schedule a task to remove it
-    remove_cert_args = (endpoint_id, old_certificate_id)
-    delay_before_removal = 60
-    if not is_task_scheduled(rotate_endpoint_remove_cert.name, remove_cert_args):
-        logger.info(f"Scheduling {rotate_endpoint_remove_cert.name}{str(remove_cert_args)} to execute in {delay_before_removal} seconds.")
-        rotate_endpoint_remove_cert.apply_async(
-            remove_cert_args,
-            countdown=delay_before_removal)
-    else:
-        logger.info(f"{rotate_endpoint_remove_cert.name}{str(remove_cert_args)} already scheduled.")
+    logger.info(f"Scheduling {rotate_endpoint_remove_cert.name}{str(remove_cert_args)} to execute in {delay_before_removal} seconds.")
+    rotate_endpoint_remove_cert.apply_async(
+        remove_cert_args,
+        countdown=delay_before_removal)
 
     # sync source
     if not is_task_scheduled(sync_source, (endpoint.source.label,)):
