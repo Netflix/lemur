@@ -1153,18 +1153,20 @@ def create_certificate_check_destination_tasks():
     return log_data
 
 
+def send_notifications(notifications, notification_type, message, **kwargs):
+    for notification in notifications:
+        notification.plugin.send(
+            notification_type,
+            message,
+            None,
+            notification.options,
+            **kwargs)
+
+
 @celery.task(soft_time_limit=60)
 def rotate_endpoint(endpoint_id):
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     logger = logging.getLogger(function)
-    task_id = None
-    if celery.current_task:
-        task_id = celery.current_task.request.id
-
-    log_data = {
-        "task_id": task_id,
-        "endpoint_id": endpoint_id,
-    }
 
     endpoint = endpoint_service.get(endpoint_id)
 
@@ -1173,6 +1175,14 @@ def rotate_endpoint(endpoint_id):
 
     old_certificate_id = endpoint.certificate.id
 
+    # send notification
+    send_notifications(
+        endpoint.certificate.notifications,
+        "rotation",
+        f"Rotating endpoint {endpoint.name}",
+        endpoint=endpoint)
+
+    # update
     endpoint.source.plugin.update_endpoint(
         endpoint,
         endpoint.certificate.replaced[0].name)
