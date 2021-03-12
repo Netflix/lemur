@@ -8,6 +8,8 @@ our philosophy, the test suite, and issue tracking.
 Documentation
 -------------
 
+Don't merge this PR, this is just a test of ReadTheDocs.
+
 If you're looking to help document Lemur, you can get set up with Sphinx, our documentation tool,
 but first you will want to make sure you have a few things on your local system:
 
