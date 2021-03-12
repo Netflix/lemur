@@ -1,9 +1,17 @@
 Doing a release
 ===============
 
-Doing a release of ``lemur`` requires a few steps.
+Doing a release of ``lemur`` is now mostly automated and consists of the following steps:
 
-Bumping the version number
+* Raise a PR to add the release date and summary in the :doc:`/changelog`.
+* Merge above PR and create a new `Github release <https://github.com/Netflix/lemur/releaes>`_: set the tag starting with v, e.g., v0.9.0
+
+The `publish workflow <https://github.com/Netflix/lemur/actions/workflows/lemur-publish-release-pypi.yml>`_ uses the git
+tag to set the release version.
+
+The following describes the manual release steps, which is now obsolete:
+
+Manually Bumping the version number
 --------------------------
 
 The next step in doing a release is bumping the version number in the
@@ -14,7 +22,7 @@ software.
 * Do a commit indicating this, and raise a pull request with this.
 * Wait for it to be merged.
 
-Performing the release
+Manually Performing the release
 ----------------------
 
 The commit that merged the version number bump is now the official release
