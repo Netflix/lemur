@@ -12,7 +12,7 @@ tag to set the release version.
 The following describes the manual release steps, which is now obsolete:
 
 Manually Bumping the version number
---------------------------
+-----------------------------------
 
 The next step in doing a release is bumping the version number in the
 software.
@@ -23,7 +23,7 @@ software.
 * Wait for it to be merged.
 
 Manually Performing the release
-----------------------
+-------------------------------
 
 The commit that merged the version number bump is now the official release
 commit for this release. You need an `API key <https://pypi.org/manage/account/#api-tokens>`_,
