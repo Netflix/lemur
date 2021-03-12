@@ -875,7 +875,7 @@ account. See :ref:`Using a pre-existing ACME account <AcmeAccountReuse>` for mor
     :noindex:
 
             This is an optional parameter to indicate the preferred chain to retrieve from ACME when finalizing the order.
-            This is applicable to Let's Encrypts recent `migration https://letsencrypt.org/certificates/`_ to their
+            This is applicable to Let's Encrypts recent `migration <https://letsencrypt.org/certificates/>`_ to their
             own root, where they provide two distinct certificate chains (fullchain_pem vs. alternative_fullchains_pem);
             the main chain will be the long chain that is rooted in the expiring DTS root, whereas the alternative chain
             is rooted in X1 root CA.
