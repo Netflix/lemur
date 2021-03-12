@@ -1,6 +1,36 @@
 Changelog
 =========
 
+0.8.1 - `2021-03-12`
+~~~~~~~~~~~~~~~~~~~~
+
+This release includes improvements on many fronts, such as:
+
+- Notifications:
+    - Enhanced SNS flow
+    - Expiration Summary
+    - CA expiration email
+- EC algorithm as the default
+- Improved revocation flow
+- Localized AWS STS option
+- Improved Lemur doc building
+- ACME:
+    - reduced failed attempts to 3x trials
+    - support for selecting the chain (Let's Encrypt X1 transition)
+    - revocation
+    - http01 documentation
+- Entrust:
+    - Support for cross-signed intermediate CA
+- Dependency updates and conflict resolutions
+
+Special thanks to all who contributed to this release, notably:
+
+- `peschmae  <https://github.com/peschmae>`_
+- `atugushev  <https://github.com/atugushev>`_
+- `sirferl   <https://github.com/sirferl>`_
+
+
+
 0.8.0 - `2020-11-13`
 ~~~~~~~~~~~~~~~~~~~~
 
