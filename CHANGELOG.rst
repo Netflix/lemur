@@ -21,6 +21,7 @@ This release includes improvements on many fronts, such as:
     - http01 documentation
 - Entrust:
     - Support for cross-signed intermediate CA
+- Revised disclosure process
 - Dependency updates and conflict resolutions
 
 Special thanks to all who contributed to this release, notably:
