@@ -5,7 +5,9 @@
 #    pip-compile --no-index --output-file=requirements.txt requirements.in
 #
 acme==1.13.0
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   certbot
 alembic-autogenerate-enums==0.0.2
     # via -r requirements.in
 alembic==1.4.2
@@ -33,7 +35,7 @@ blinker==1.4
     #   raven
 boto3==1.17.22
     # via -r requirements.in
-botocore==1.20.22
+botocore==1.20.27
     # via
     #   -r requirements.in
     #   boto3
@@ -41,6 +43,7 @@ botocore==1.20.22
 celery[redis]==4.4.2
     # via -r requirements.in
 certbot==1.13.0
+    # via -r requirements.in
 certifi==2020.12.5
     # via
     #   -r requirements.in
@@ -58,13 +61,20 @@ click==7.1.2
     # via flask
 cloudflare==2.8.15
     # via -r requirements.in
+configargparse==1.4
+    # via certbot
+configobj==5.0.6
+    # via certbot
 cryptography==3.4.6
     # via
     #   -r requirements.in
     #   acme
+    #   certbot
     #   josepy
     #   paramiko
     #   pyopenssl
+distro==1.5.0
+    # via certbot
 dnspython3==1.15.0
     # via -r requirements.in
 dnspython==1.15.0
@@ -126,7 +136,9 @@ jmespath==0.9.5
     #   boto3
     #   botocore
 josepy==1.7.0
-    # via acme
+    # via
+    #   acme
+    #   certbot
 jsonlines==1.2.0
     # via cloudflare
 kombu==4.6.8
@@ -151,6 +163,8 @@ ndg-httpsclient==0.5.1
     # via -r requirements.in
 paramiko==2.7.2
     # via -r requirements.in
+parsedatetime==2.6
+    # via certbot
 pem==21.1.0
     # via -r requirements.in
 psycopg2==2.8.6
@@ -182,7 +196,9 @@ pyopenssl==20.0.1
     #   josepy
     #   ndg-httpsclient
 pyrfc3339==1.1
-    # via acme
+    # via
+    #   acme
+    #   certbot
 python-dateutil==2.8.1
     # via
     #   alembic
@@ -198,6 +214,7 @@ pytz==2019.3
     # via
     #   acme
     #   celery
+    #   certbot
     #   flask-restful
     #   pyrfc3339
 pyyaml==5.4.1
@@ -228,6 +245,7 @@ six==1.15.0
     # via
     #   -r requirements.in
     #   bcrypt
+    #   configobj
     #   flask-cors
     #   flask-restful
     #   hvac
@@ -264,6 +282,22 @@ werkzeug==1.0.1
     # via flask
 xmltodict==0.12.0
     # via -r requirements.in
+zope.component==4.6.2
+    # via certbot
+zope.deferredimport==4.3.1
+    # via zope.component
+zope.deprecation==4.4.0
+    # via zope.component
+zope.event==4.5.0
+    # via zope.component
+zope.hookable==5.0.1
+    # via zope.component
+zope.interface==5.2.0
+    # via
+    #   certbot
+    #   zope.component
+zope.proxy==4.3.5
+    # via zope.deferredimport
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
