@@ -10,9 +10,9 @@ class DnsProvidersNestedOutputSchema(LemurOutputSchema):
     name = fields.String()
     provider_type = fields.String()
     description = fields.String()
-    credentials = fields.String()
     api_endpoint = fields.String()
     date_created = ArrowDateTime()
+    # credentials are intentionally omitted (they are input-only)
 
 
 class DnsProvidersNestedInputSchema(LemurInputSchema):
