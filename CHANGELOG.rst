@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.9.0 - `2021-03-17`
+~~~~~~~~~~~~~~~~~~~~
+
+This release fixes three critical vulnerabilities where an authenticated user could retrieve/access
+unauthorized information. (Issue `#3463 <https://github.com/Netflix/lemur/issues/3463>`_)
+
+
 0.8.1 - `2021-03-12`
 ~~~~~~~~~~~~~~~~~~~~
 
