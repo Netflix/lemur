@@ -425,7 +425,7 @@ class CertificateDestinations(AuthenticatedResource):
 
 
 class DestinationsStats(AuthenticatedResource):
-    """ Defines the 'certificates' stats endpoint """
+    """ Defines the 'destinations' stats endpoint """
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
