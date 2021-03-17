@@ -5,6 +5,12 @@ from flask import Flask
 from cryptography.x509 import DNSName
 from lemur.plugins.lemur_acme import acme_handlers
 
+from lemur.tests.vectors import (
+    ACME_CHAIN_SHORT_STR,
+    ACME_CHAIN_LONG_STR,
+    SAN_CERT_STR,
+)
+
 
 class TestAcmeHandler(unittest.TestCase):
     def setUp(self):
@@ -110,3 +116,18 @@ class TestAcmeHandler(unittest.TestCase):
         self.assertEqual(
             result, [options["common_name"], "test2.netflix.net"]
         )
+
+    def test_extract_cert_and_chain(self):
+        # expecting the short chain
+        leaf_pem, chain_pem = self.acme.extract_cert_and_chain(ACME_CHAIN_SHORT_STR,
+                                                               [ACME_CHAIN_LONG_STR],
+                                                               "(STAGING) Artificial Apricot R3")
+        self.assertEqual(leaf_pem, SAN_CERT_STR)
+        self.assertEqual(chain_pem, ACME_CHAIN_SHORT_STR[len(leaf_pem):].lstrip())
+
+        # expecting the long chain
+        leaf_pem, chain_pem = self.acme.extract_cert_and_chain(ACME_CHAIN_SHORT_STR,
+                                                               [ACME_CHAIN_LONG_STR],
+                                                               "(STAGING) Doctored Durian Root CA X3")
+        self.assertEqual(leaf_pem, SAN_CERT_STR)
+        self.assertEqual(chain_pem, ACME_CHAIN_LONG_STR[len(leaf_pem):].lstrip())

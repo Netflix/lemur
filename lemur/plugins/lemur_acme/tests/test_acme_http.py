@@ -146,7 +146,8 @@ Q9ePRFBCiXOQ6wPLoUhrrbZ8LpFUFYDXHMtYM7P9sc9IAWoONXREJaO08zgFtMp4
 idWw1VrejtwclobqNMVtG3EiPUIpJGpbMcJgbiLSmKkrvQtGng==
 -----END CERTIFICATE-----
 """
-        mock_client.poll_and_finalize.return_value = mock_finalized_order
+        mock_finalized_order.alternative_fullchains_pem = [mock_finalized_order.fullchain_pem]
+        mock_client.finalize_order.return_value = mock_finalized_order
 
         mock_acme.return_value = (mock_client, "")
 

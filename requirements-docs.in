@@ -1,7 +1,51 @@
 # Note: python-ldap from requirements breaks due to readthedocs.io not having the correct header files
 # The `make up-reqs` will update all requirement text files, and forcibly remove python-ldap
 # from requirements-docs.txt
-# However, dependabot doesn't use `make up-reqs`, so `-r requirements.txt` has been removed completely.
+# However, dependabot doesn't use `make up-reqs`, so we have to replicate the necessary dependencies here
+# Without including these dependencies, the docs are unable to include generated autodocs
+acme
+arrow
+boto3
+botocore
+certbot
+certsrv
+CloudFlare
+cryptography
+dnspython3
+dyn
+Flask
+Flask-Bcrypt
+Flask-Cors
+Flask-Mail
+Flask-Migrate
+Flask-Principal
+Flask-RESTful
+Flask-Script
+Flask-SQLAlchemy
+flask_replicated
+gunicorn
+hvac # required for the vault destination plugin
+inflection
+josepy
+logmatic-python
+marshmallow-sqlalchemy
+marshmallow<2.20.5 #schema duplicate issues https://github.com/marshmallow-code/marshmallow-sqlalchemy/issues/121
+paramiko  # required for the SFTP destination plugin
+pem
+pyjks >= 19 # pyjks < 19 depends on pycryptodome, which conflicts with dyn's usage of pycrypto
+pyjwt
+pyOpenSSL
+raven[flask]
+redis
+retrying
+SQLAlchemy-Utils
+tabulate
+vine
+xmltodict
+# Test requirements are needed to allow test docs to build
+-r requirements-tests.txt
+
+# docs specific
 sphinx
 sphinxcontrib-httpdomain
 sphinx-rtd-theme

@@ -18,7 +18,7 @@ chardet==3.0.4
     # via requests
 colorama==0.4.3
     # via twine
-cryptography==3.4.5
+cryptography==3.4.6
     # via secretstorage
 distlib==0.3.0
     # via virtualenv
@@ -50,7 +50,7 @@ packaging==20.9
     # via bleach
 pkginfo==1.5.0.1
     # via twine
-pre-commit==2.10.1
+pre-commit==2.11.1
     # via -r requirements-dev.in
 pycodestyle==2.6.0
     # via flake8

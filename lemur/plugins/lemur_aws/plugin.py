@@ -450,7 +450,8 @@ class S3DestinationPlugin(ExportDestinationPlugin):
 
     def upload_acme_token(self, token_path, token, options, **kwargs):
         """
-         This is called from the acme http challenge
+        This is called from the acme http challenge
+
         :param self:
         :param token_path:
         :param token:
@@ -563,4 +564,4 @@ class SNSNotificationPlugin(ExpirationNotificationPlugin):
                     f"{self.get_option('topicName', options)}"
 
         current_app.logger.info(f"Publishing {notification_type} notification to topic {topic_arn}")
-        sns.publish(topic_arn, message, notification_type, region_name=self.get_option("region", options))
+        sns.publish(topic_arn, message, notification_type, options, region_name=self.get_option("region", options))

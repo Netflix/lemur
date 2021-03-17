@@ -57,6 +57,11 @@ class ExpirationNotificationPlugin(NotificationPlugin):
 
     @property
     def options(self):
+        """
+        Gets/sets options for the plugin.
+
+        :return:
+        """
         return self.default_options + self.additional_options
 
     def send(self, notification_type, message, excluded_targets, options, **kwargs):
