@@ -38,7 +38,7 @@ jobs:
       uses: actions/checkout@v2
     
     # Install prerequisites for python-ldap. See: https://www.python-ldap.org/en/python-ldap-3.3.0/installing.html#build-prerequisites
-    - name: Install libldap2-dev
+    - name: Install python-ldap prerequisites
       run: sudo apt-get install libldap2-dev libsasl2-dev
     
     # Initializes the CodeQL tools for scanning.
