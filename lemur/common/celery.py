@@ -810,7 +810,8 @@ def notify_expirations():
     current_app.logger.debug(log_data)
     try:
         cli_notification.expirations(
-            current_app.config.get("EXCLUDE_CN_FROM_NOTIFICATION", [])
+            current_app.config.get("EXCLUDE_CN_FROM_NOTIFICATION", []),
+            current_app.config.get("DISABLE_NOTIFICATION_PLUGINS", [])
         )
     except SoftTimeLimitExceeded:
         log_data["message"] = "Notify expiring Time limit exceeded."
