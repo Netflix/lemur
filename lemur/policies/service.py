@@ -7,6 +7,7 @@
 """
 from lemur import database
 from lemur.policies.models import RotationPolicy
+from sqlalchemy import cast, Integer
 
 
 def get(policy_id):
@@ -47,7 +48,6 @@ def get_all_policies():
 def create(**kwargs):
     """
     Creates a new rotation policy.
-
     :param kwargs:
     :return:
     """
@@ -69,3 +69,28 @@ def update(policy_id, **kwargs):
         setattr(policy, key, value)
 
     return database.update(policy)
+
+
+def render(args):
+    """
+    Helper to parse REST Api requests
+    :param args:
+    :return:
+    """
+    query = database.session_query(RotationPolicy)
+    filt = args.pop("filter")
+
+    if filt:
+        terms = filt.split(";")
+        term = "%{0}%".format(terms[1])
+        print('123!!!',terms, term)
+        if "name" in terms:
+            query = query.filter(RotationPolicy.name.ilike(term))
+
+        if "days" in terms:
+            if terms[1] == 'null':
+                pass
+            else:
+                query = query.filter(RotationPolicy.days == cast(terms[1], Integer))
+
+    return database.sort_and_page(query, RotationPolicy, args)

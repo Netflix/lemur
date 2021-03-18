@@ -42,10 +42,24 @@
 
     <div class="form-group">
       <label class="control-label col-sm-2">Auto Rotate</label>
-      <div class="col-sm-10">
+      <div class="col-sm-1" style="bottom: -7px;">
         <switch ng-model="certificate.rotation" id="active" name="active" class="green small"
                 uib-tooltip="If selected, new certificates will be automatically re-issued and re-deployed onto known endpoints."></switch>
       </div>
+      <label class="control-label col-sm-2">Polices</label>
+      <div class="col-sm-7">
+          <ui-select class="input-md" ng-model="certificate.rotationPolicy" theme="bootstrap" title="choose an rotation police">
+            <ui-select-match style="text-transform: capitalize" placeholder="select an rotation police..." >
+              <span style="text-transform: capitalize; font-size: 14px">{{$select.selected.name}}  (Days: {{$select.selected.days}})</span>
+            </ui-select-match>
+            <ui-select-choices class="form-control" repeat="rotation_policy in rotation_policies"
+                               refresh="getRotationPoliceByName($select.search)"
+                               refresh-delay="300">
+              <div>Name: {{rotation_policy.name}}</div>
+              <div>Days: {{rotation_policy.days}}</div>
+            </ui-select-choices>
+          </ui-select>
+        </div>
     </div>
     <div ng-include="'angular/certificates/certificate/destinations.tpl.html'"></div>
   </form>

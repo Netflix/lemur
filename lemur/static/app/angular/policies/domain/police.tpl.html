@@ -1,0 +1,30 @@
+<div class="modal-header">
+    <button type="button" class="close" ng-click="cancel()" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <h3><span ng-show="!polices.fromServer">Create</span><span ng-show="polices.fromServer">Edit</span> Polices <span class="text-muted"><small>oh the places you will go!</small></span></h3>
+</div>
+<div class="modal-body">
+  <form name="createForm" class="form-horizontal" role="form" novalidate>
+    <div class="form-group"
+         ng-class="{'has-error': createForm.label.$invalid, 'has-success': !createForm.label.$invalid&&createForm.label.$dirty}">
+      <label class="control-label col-sm-2">
+        Name
+      </label>
+      <div class="col-sm-10">
+        <input name="label" ng-model="polices.name" placeholder="Label" class="form-control" required/>
+        <p ng-show="createForm.label.$invalid && !createForm.label.$pristine" class="help-block">You must enter an domain name</p>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="control-label col-sm-2">
+        Days
+      </label>
+      <div class="col-sm-10">
+        <input name="days" ng-model="polices.days" placeholder="Label" class="form-control" required/>
+      </div>
+    </div>
+  </form>
+</div>
+<div class="modal-footer">
+  <button ng-click="save(polices)" type="submit" ng-disabled="createForm.$invalid" class="btn btn-primary">Save</button>
+  <button ng-click="cancel()" class="btn btn-danger">Cancel</button>
+</div>

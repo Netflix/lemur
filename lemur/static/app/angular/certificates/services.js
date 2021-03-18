@@ -18,6 +18,9 @@ angular.module('lemur')
           this.authority = authority;
           this.authority.maxDate = moment(this.authority.notAfter).subtract(1, 'days').format('YYYY/MM/DD');
         },
+        attachRotationPolice: function(rotation_policy) {
+          this.rotation_policy = rotation_policy;
+        },
         attachCommonName: function () {
           if (this.extensions === undefined) {
             this.extensions = {};
@@ -214,6 +217,12 @@ angular.module('lemur')
     CertificateService.getAuthority = function (certificate) {
       return certificate.customGET('authority').then(function (authority) {
         certificate.authority = authority;
+      });
+    };
+
+    CertificateService.getRotationPolice = function (certificate) {
+      return certificate.customGET('rotation_policy').then(function (rotation_policy) {
+        certificate.rotation_policy = rotation_policy;
       });
     };
 

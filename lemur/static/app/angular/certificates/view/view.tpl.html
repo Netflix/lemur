@@ -92,6 +92,9 @@
                       <dd>{{ certificate.distinguishedName }}</dd>
                       <dt>Certificate Authority</dt>
                       <dd>{{ certificate.authority ? certificate.authority.name : "Imported" }} <span class="text-muted">({{ certificate.issuer }})</span></dd>
+                      <dt>Rotation Police</dt>
+                      <dd>Name: {{ certificate.rotationPolicy.name }}</dd>
+                      <dd>Days: {{ certificate.rotationPolicy.days}}</dd>
                       <dt>Serial</dt>
                       <dd>
                         <div>Hex: <a href="https://crt.sh/?serial={{ certificate.serialHex }}" rel="noreferrer" target="_blank" title="View on crt.sh">{{ certificate.serialHex }}</a></div>

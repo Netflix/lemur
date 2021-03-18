@@ -179,3 +179,14 @@ def validate_schema(input_schema, output_schema):
         return decorated_function
 
     return decorator
+
+
+def decorator_error_handling(fn):
+    @wraps(fn)
+    def wrapped(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except:
+            error = 'Deletion error (ForeignKey)'
+            return dict(message=error), 400
+    return wrapped

@@ -16,8 +16,8 @@ services:
     # image: "netlix-lemur:latest"
     restart: on-failure
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ../
+      dockerfile: docker/Dockerfile-src
     depends_on:
       - postgres
       - redis

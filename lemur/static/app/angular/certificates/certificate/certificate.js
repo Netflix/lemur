@@ -49,13 +49,19 @@ angular.module('lemur')
         });
     };
   })
-  .controller('CertificateEditController', function ($scope, $uibModalInstance, CertificateApi, CertificateService, DestinationService, NotificationService, toaster, editId) {
+  .controller('CertificateEditController', function ($scope, $uibModalInstance, CertificateApi, CertificateService, DestinationService, NotificationService, toaster, editId, PolicesService) {
     CertificateApi.get(editId).then(function (certificate) {
       $scope.certificate = certificate;
     });
 
     $scope.cancel = function () {
       $uibModalInstance.dismiss('cancel');
+    };
+
+    $scope.getRotationPoliceByName = function (value) {
+      return PolicesService.findPoliceByName(value).then(function (rotation_policies) {
+        $scope.rotation_policies = rotation_policies;
+      });
     };
 
     $scope.save = function (certificate) {
@@ -83,9 +89,10 @@ angular.module('lemur')
     $scope.certificateService = CertificateService;
     $scope.destinationService = DestinationService;
     $scope.notificationService = NotificationService;
+    $scope.policesService = PolicesService;
   })
 
-  .controller('CertificateCreateController', function ($scope, $uibModalInstance, CertificateApi, CertificateService, DestinationService, AuthorityService, AuthorityApi, PluginService, MomentService, WizardHandler, LemurRestangular, NotificationService, toaster) {
+  .controller('CertificateCreateController', function ($scope, $uibModalInstance, CertificateApi, CertificateService, DestinationService, AuthorityService, AuthorityApi, PluginService, MomentService, WizardHandler, LemurRestangular, NotificationService, toaster, PolicesService) {
     $scope.certificate = LemurRestangular.restangularizeElement(null, {}, 'certificates');
     // set the defaults
     CertificateService.getDefaults($scope.certificate);
@@ -97,6 +104,12 @@ angular.module('lemur')
     $scope.getAuthoritiesByName = function (value) {
       return AuthorityService.findActiveAuthorityByName(value).then(function (authorities) {
         $scope.authorities = authorities;
+      });
+    };
+
+    $scope.getRotationPoliceByName = function (value) {
+      return PolicesService.findPoliceByName(value).then(function (rotation_policies) {
+        $scope.rotation_policies = rotation_policies;
       });
     };
 
@@ -240,9 +253,10 @@ angular.module('lemur')
     $scope.authorityService = AuthorityService;
     $scope.destinationService = DestinationService;
     $scope.notificationService = NotificationService;
+    $scope.policesService = PolicesService;
   })
 
-.controller('CertificateCloneController', function ($scope, $uibModalInstance, CertificateApi, CertificateService, DestinationService, AuthorityService, AuthorityApi, PluginService, MomentService, WizardHandler, LemurRestangular, NotificationService, toaster, editId) {
+.controller('CertificateCloneController', function ($scope, $uibModalInstance, CertificateApi, CertificateService, DestinationService, AuthorityService, AuthorityApi, PluginService, MomentService, WizardHandler, LemurRestangular, NotificationService, toaster, editId, PolicesService) {
   $scope.certificate = LemurRestangular.restangularizeElement(null, {}, 'certificates');
   CertificateApi.get(editId).then(function (certificate) {
     $scope.certificate = certificate;
@@ -265,6 +279,12 @@ angular.module('lemur')
   $scope.getAuthoritiesByName = function (value) {
     return AuthorityService.findAuthorityByName(value).then(function (authorities) {
       $scope.authorities = authorities;
+    });
+  };
+
+  $scope.getRotationPoliceByName = function (value) {
+    return PolicesService.findPoliceByName(value).then(function (rotation_policies) {
+      $scope.rotation_policies = rotation_policies;
     });
   };
 
@@ -408,6 +428,7 @@ angular.module('lemur')
   $scope.authorityService = AuthorityService;
   $scope.destinationService = DestinationService;
   $scope.notificationService = NotificationService;
+  $scope.policesService = PolicesService;
 })
 
 .controller('CertificateRevokeController', function ($scope, $uibModalInstance, CertificateApi, CertificateService, LemurRestangular, NotificationService, toaster, revokeId) {
