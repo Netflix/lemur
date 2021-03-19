@@ -404,13 +404,14 @@ The following configuration options are supported:
 
        ::
 
-          DISABLE_NOTIFICATION_PLUGINS = ['exclude', 'also exclude']
+          EXCLUDE_CN_FROM_NOTIFICATION = ['exclude', 'also exclude']
 
 
 .. data:: DISABLE_NOTIFICATION_PLUGINS
     :noindex:
 
     Specifies a set of notification plugins to disable. Notifications will not be sent using these plugins. Currently only applies to expiration notifications, since they are the only type that utilize plugins.
+    This option may be particularly useful in a test environment, where you might wish to enable the notification job without actually sending notifications of a certain type (or all types).
 
     .. note::
         This is only used for celery. The equivalent for cron is '-d' or '--disabled-notification-plugins'.
