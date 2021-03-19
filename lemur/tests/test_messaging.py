@@ -98,7 +98,24 @@ def test_send_expiration_notification(certificate, notification, notification_pl
     with freeze_time(delta.datetime):
         # this will only send owner and security emails (no additional recipients),
         # but it executes 3 successful send attempts
-        assert send_expiration_notifications([]) == (3, 0)
+        assert send_expiration_notifications([], []) == (3, 0)
+
+
+@mock_ses
+def test_send_expiration_notification_email_disabled(certificate, notification, notification_plugin):
+    from lemur.notifications.messaging import send_expiration_notifications
+    verify_sender_email()
+
+    certificate.notifications.append(notification)
+    certificate.notifications[0].options = [
+        {"name": "interval", "value": 10},
+        {"name": "unit", "value": "days"},
+    ]
+
+    delta = certificate.not_after - timedelta(days=10)
+    with freeze_time(delta.datetime):
+        # no notifications sent since the "test-notification" plugin is disabled
+        assert send_expiration_notifications([], ['test-notification']) == (0, 0)
 
 
 @mock_ses
@@ -109,7 +126,7 @@ def test_send_expiration_notification_with_no_notifications(
 
     delta = certificate.not_after - timedelta(days=10)
     with freeze_time(delta.datetime):
-        assert send_expiration_notifications([]) == (0, 0)
+        assert send_expiration_notifications([], []) == (0, 0)
 
 
 @mock_ses

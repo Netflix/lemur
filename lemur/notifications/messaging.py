@@ -224,7 +224,7 @@ def send_plugin_notification(event_type, data, recipients, notification):
         return True
 
 
-def send_expiration_notifications(exclude):
+def send_expiration_notifications(exclude, disabled_notification_plugins):
     """
     This function will check for upcoming certificate expiration,
     and send out notification emails at given intervals.
@@ -241,32 +241,43 @@ def send_expiration_notifications(exclude):
 
             notification = certificates[0][0]
 
-            for data in certificates:
-                n, certificate = data
-                cert_data = certificate_notification_output_schema.dump(
-                    certificate
-                ).data
-                notification_data.append(cert_data)
+            # skip sending the notification if the plugin is marked as disabled
+            if notification.plugin.slug not in disabled_notification_plugins:
 
-            email_recipients = notification.plugin.get_recipients(notification.options, security_email + [owner])
-            # Plugin will ONLY use the provided recipients if it's email; any other notification plugin ignores them
-            if send_plugin_notification(
-                    "expiration", notification_data, email_recipients, notification
-            ):
-                success += len(email_recipients)
-            else:
-                failure += len(email_recipients)
-            # If we're using an email plugin, we're done,
-            #   since "security_email + [owner]" were added as email_recipients.
-            # If we're not using an email plugin, we also need to send an email to the security team and owner,
-            #   since the plugin notification didn't send anything to them.
-            if notification.plugin.slug != "email-notification":
-                if send_default_notification(
-                        "expiration", notification_data, email_recipients, notification.options
+                for data in certificates:
+                    n, certificate = data
+                    cert_data = certificate_notification_output_schema.dump(
+                        certificate
+                    ).data
+                    notification_data.append(cert_data)
+
+                email_recipients = notification.plugin.get_recipients(notification.options, security_email + [owner])
+                # Plugin will ONLY use the provided recipients if it's email; any other notification plugin ignores them
+                if send_plugin_notification(
+                        "expiration", notification_data, email_recipients, notification
                 ):
-                    success = 1 + len(email_recipients)
+                    success += len(email_recipients)
                 else:
-                    failure = 1 + len(email_recipients)
+                    failure += len(email_recipients)
+                # If we're using an email plugin, we're done,
+                #   since "security_email + [owner]" were added as email_recipients.
+                # If we're not using an email plugin, we also need to send an email to the security team and owner,
+                #   since the plugin notification didn't send anything to them.
+                if notification.plugin.slug != "email-notification":
+                    # If the plugin wasn't email, it only sent one notification, so set the success/failure
+                    # to the correct value (1) at this point
+                    if success:
+                        success, failure = 1, 0
+                    else:
+                        success, failure = 0, 1
+                    # If email-notification plugin is disabled, we won't sent these extra notifications.
+                    if "email-notification" not in disabled_notification_plugins:
+                        if send_default_notification(
+                                "expiration", notification_data, email_recipients, notification.options
+                        ):
+                            success += len(email_recipients)
+                        else:
+                            failure += len(email_recipients)
 
     return success, failure
 

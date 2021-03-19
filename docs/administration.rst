@@ -390,6 +390,37 @@ This notification type also supports the same ``--exclude`` and ``EXCLUDE_CN_FRO
 NOTE: At present, this summary email essentially duplicates the certificate expiration notifications, since all
 certificate expiration notifications are also sent to the security team. This issue will be fixed in the future.
 
+**Notification configuration**
+
+The following configuration options are supported:
+
+.. data:: EXCLUDE_CN_FROM_NOTIFICATION
+    :noindex:
+
+    Specifies CNs to exclude from notifications. This includes both single notifications as well as the notification summary. The specified exclude pattern will match if found anywhere in the certificate name.
+
+    .. note::
+        This is only used for celery. The equivalent for cron is '-e' or '--exclude'.
+
+       ::
+
+          EXCLUDE_CN_FROM_NOTIFICATION = ['exclude', 'also exclude']
+
+
+.. data:: DISABLE_NOTIFICATION_PLUGINS
+    :noindex:
+
+    Specifies a set of notification plugins to disable. Notifications will not be sent using these plugins. Currently only applies to expiration notifications, since they are the only type that utilize plugins.
+    This option may be particularly useful in a test environment, where you might wish to enable the notification job without actually sending notifications of a certain type (or all types).
+
+    .. note::
+        This is only used for celery. The equivalent for cron is '-d' or '--disabled-notification-plugins'.
+
+       ::
+
+          DISABLE_NOTIFICATION_PLUGINS = ['email-notification']
+
+
 **Email notifications**
 
 Templates for emails are located under `lemur/plugins/lemur_email/templates` and can be modified for your needs.

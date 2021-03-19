@@ -24,7 +24,15 @@ manager = Manager(usage="Handles notification related tasks.")
     default=[],
     help="Common name matching of certificates that should be excluded from notification",
 )
-def expirations(exclude):
+@manager.option(
+    "-d",
+    "--disabled-notification-plugins",
+    dest="disabled_notification_plugins",
+    action="append",
+    default=[],
+    help="List of notification plugins for which notifications should NOT be sent",
+)
+def expirations(exclude, disabled_notification_plugins):
     """
     Runs Lemur's notification engine, that looks for expiring certificates and sends
     notifications out to those that have subscribed to them.
@@ -39,7 +47,7 @@ def expirations(exclude):
     status = FAILURE_METRIC_STATUS
     try:
         print("Starting to notify subscribers about expiring certificates!")
-        success, failed = send_expiration_notifications(exclude)
+        success, failed = send_expiration_notifications(exclude, disabled_notification_plugins)
         print(
             f"Finished notifying subscribers about expiring certificates! Sent: {success} Failed: {failed}"
         )

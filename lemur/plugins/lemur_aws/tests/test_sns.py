@@ -5,6 +5,7 @@ import arrow
 import boto3
 from moto import mock_sns, mock_sqs, mock_ses
 
+from lemur.notifications import service
 from lemur.certificates.schemas import certificate_notification_output_schema
 from lemur.plugins.lemur_aws.sns import format_message
 from lemur.plugins.lemur_aws.sns import publish
@@ -117,7 +118,7 @@ def test_send_expiration_notification():
     certificate.not_after = in_ten_days
     certificate.notifications.append(notification)
 
-    assert send_expiration_notifications([]) == (3, 0)  # owner, SNS, and security
+    assert send_expiration_notifications([], []) == (3, 0)  # owner, SNS, and security
 
     received_messages = sqs_client.receive_message(QueueUrl=queue_url)["Messages"]
     assert len(received_messages) == 1
@@ -125,6 +126,78 @@ def test_send_expiration_notification():
                                       notification.options)
     actual_message = json.loads(received_messages[0]["Body"])["Message"]
     assert actual_message == expected_message
+
+
+@mock_sns()
+@mock_sqs()
+@mock_ses()
+def test_send_expiration_notification_sns_disabled():
+    from lemur.notifications.messaging import send_expiration_notifications
+
+    topic_arn, sqs_client, queue_url = create_and_subscribe_to_topic()
+    prepare_test()
+
+    # though email is not disabled, we don't send the owner/security notifications via email if
+    # the main notification's plugin is disabled
+    assert send_expiration_notifications([], ['aws-sns']) == (0, 0)
+
+    received_messages = sqs_client.receive_message(QueueUrl=queue_url)
+    assert "Messages" not in received_messages
+
+
+@mock_sns()
+@mock_sqs()
+@mock_ses()
+def test_send_expiration_notification_email_disabled():
+    from lemur.notifications.messaging import send_expiration_notifications
+
+    topic_arn, sqs_client, queue_url = create_and_subscribe_to_topic()
+    notification, certificate = prepare_test()
+
+    assert send_expiration_notifications([], ['email-notification']) == (1, 0)  # SNS only
+
+    received_messages = sqs_client.receive_message(QueueUrl=queue_url)["Messages"]
+    assert len(received_messages) == 1
+    expected_message = format_message(certificate_notification_output_schema.dump(certificate).data, "expiration",
+                                      notification.options)
+    actual_message = json.loads(received_messages[0]["Body"])["Message"]
+    assert actual_message == expected_message
+
+
+@mock_sns()
+@mock_sqs()
+@mock_ses()
+def test_send_expiration_notification_both_disabled():
+    from lemur.notifications.messaging import send_expiration_notifications
+
+    topic_arn, sqs_client, queue_url = create_and_subscribe_to_topic()
+    prepare_test()
+
+    assert send_expiration_notifications([], ['aws-sns', 'email-notification']) == (0, 0)
+
+    received_messages = sqs_client.receive_message(QueueUrl=queue_url)
+    assert "Messages" not in received_messages
+
+
+def prepare_test():
+    verify_sender_email()  # emails are sent to owner and security; SNS only used for configured notification
+
+    # set all existing notifications to disabled so we don't have multiple conflicting in the tests
+    for prior_notification in service.get_all():
+        service.update(prior_notification.id, prior_notification.label, prior_notification.plugin_name,
+                       prior_notification.options, prior_notification.description, False, [], [])
+
+    notification = NotificationFactory(plugin_name="aws-sns")
+    notification.options = get_options()
+
+    now = arrow.utcnow()
+    in_ten_days = now + timedelta(days=10, hours=1)  # a bit more than 10 days since we'll check in the future
+
+    certificate = CertificateFactory()
+    certificate.not_after = in_ten_days
+    certificate.notifications.append(notification)
+
+    return notification, certificate
 
 
 # Currently disabled as the SNS plugin doesn't support this type of notification
