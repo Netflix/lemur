@@ -135,7 +135,7 @@ jmespath==0.9.5
     # via
     #   boto3
     #   botocore
-josepy==1.7.0
+josepy==1.8.0
     # via
     #   acme
     #   certbot
@@ -249,7 +249,6 @@ six==1.15.0
     #   flask-cors
     #   flask-restful
     #   hvac
-    #   josepy
     #   jsonlines
     #   pynacl
     #   pyopenssl
