@@ -32,6 +32,8 @@ identify==1.4.14
     # via pre-commit
 idna==2.9
     # via requests
+importlib-metadata==3.7.3
+    # via twine
 invoke==1.5.0
     # via -r requirements-dev.in
 jeepney==0.4.3
@@ -87,7 +89,7 @@ toml==0.10.0
     # via pre-commit
 tqdm==4.45.0
     # via twine
-twine==3.3.0
+twine==3.4.1
     # via -r requirements-dev.in
 urllib3==1.25.8
     # via requests
@@ -95,6 +97,5 @@ virtualenv==20.0.17
     # via pre-commit
 webencodings==0.5.1
     # via bleach
-
-# The following packages are considered to be unsafe in a requirements file:
-# setuptools
+zipp==3.4.1
+    # via importlib-metadata
