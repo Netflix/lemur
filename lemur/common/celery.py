@@ -21,7 +21,9 @@ from flask import current_app
 
 from lemur.authorities.service import get as get_authority
 from lemur.certificates import cli as cli_certificate, service as certificate_service
+from lemur.certificates.schemas import CertificateOutputSchema
 from lemur.common.redis import RedisHandler
+from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
 from lemur.destinations import service as destinations_service
 from lemur.dns_providers import cli as cli_dns_providers
 from lemur.endpoints import cli as cli_endpoints
@@ -87,6 +89,7 @@ def is_task_active(fun, task_id, args):
 
 def is_task_scheduled(fun, args):
     from celery.task.control import inspect
+
     i = inspect()
     for _, tasks in i.scheduled().items():
         for task in tasks:
@@ -240,6 +243,7 @@ def report_revoked_task(**kwargs):
         current_app.logger.error(log_data)
         metrics.send("celery.revoked_task", "TIMER", 1, metric_tags=error_tags)
 
+
 @celery.task(soft_time_limit=600)
 def fetch_cert(id):
     """
@@ -273,7 +277,9 @@ def fetch_cert(id):
     for cert in pending_certs:
         cert_authority = get_authority(cert.authority_id)
         if cert_authority.plugin_name == "acme-issuer":
-            current_app.log.warning("Skipping acme cert (use `fetch_acme_cert()` instead).")
+            current_app.log.warning(
+                "Skipping acme cert (use `fetch_acme_cert()` instead)."
+            )
             continue
         plugin = plugins.get(cert_authority.plugin_name)
         real_cert = plugin.get_ordered_certificate(cert)
@@ -291,7 +297,9 @@ def fetch_cert(id):
             # Double check the pending certificate still exists in the database
             # before updating the failed attempt counter
             if not pending_certificate_service.get(cert.id):
-                current_app.logger.info(f"Not incrementing failed attempt counter because {cert.name} was cancelled before.")
+                current_app.logger.info(
+                    f"Not incrementing failed attempt counter because {cert.name} was cancelled before."
+                )
             else:
                 pending_certificate_service.increment_attempt(cert)
                 failed += 1
@@ -614,7 +622,7 @@ def sync_all_sources():
         current_app.logger.debug(log_data)
         return
 
-    sources = validate_sources("all")
+    sources = source_service.get_all()
     for source in sources:
         log_data["source"] = source.label
         current_app.logger.debug(log_data)
@@ -724,17 +732,31 @@ def certificate_reissue():
         return
 
     current_app.logger.debug(log_data)
-    try:
-        cli_certificate.reissue(None, True)
-    except SoftTimeLimitExceeded:
-        log_data["message"] = "Certificate reissue: Time limit exceeded."
-        current_app.logger.error(log_data)
-        sentry.captureException()
-        metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
-        return
+    for certificate in certificate_service.get_all_pending_reissue():
+        log_data["message"] = f"{certificate.name} is eligible for re-issuance"
+        current_app.logger.info(log_data)
+
+        details = certificate_service.get_certificate_primitives(certificate)
+        details, errors = CertificateOutputSchema().dump(details)
+        current_app.logger.info(
+            "Re-issuing certificate",
+            extra={
+                "common_name": details["commonName"],
+                "sans": ",".join(
+                    x["value"] for x in details["extensions"]["subAltNames"]["names"]
+                ),
+                "authority_name": details["authority"]["name"],
+                "validity_start": details["validityStart"],
+                "validity_end": details["validityEnd"],
+            },
+        )
+
+        new_cert = certificate_service.reissue_certificate(certificate, replace=True)
+        log_data["message"] = f"New certificate named:{new_cert.name}"
+        current_app.logger.info(log_data)
 
     log_data["message"] = "reissuance completed"
-    current_app.logger.debug(log_data)
+    current_app.logger.info(log_data)
     metrics.send(f"{function}.success", "counter", 1)
     return log_data
 
@@ -990,7 +1012,9 @@ def send_security_expiration_summary():
 
     current_app.logger.debug(log_data)
     try:
-        cli_notification.security_expiration_summary(current_app.config.get("EXCLUDE_CN_FROM_NOTIFICATION", []))
+        cli_notification.security_expiration_summary(
+            current_app.config.get("EXCLUDE_CN_FROM_NOTIFICATION", [])
+        )
     except SoftTimeLimitExceeded:
         log_data["message"] = "Send summary for expiring certs Time limit exceeded."
         current_app.logger.error(log_data)
@@ -1098,11 +1122,9 @@ def certificate_check_destination(cert_id, dest_id):
     uploaded = dest.plugin.verify(cert.name, dest.options)
     if not uploaded:
         logger.info("uploading certificate to destination", extra=log_data)
-        dest.plugin.upload(cert.name,
-                        cert.body,
-                        cert.private_key,
-                        cert.chain,
-                        dest.options)
+        dest.plugin.upload(
+            cert.name, cert.body, cert.private_key, cert.chain, dest.options
+        )
         logger.info("certificate uploaded to destination", extra=log_data)
         metrics.send(f"{function}.destination_missing_cert_resolved", "counter", 1)
 
@@ -1142,26 +1164,28 @@ def create_certificate_check_destination_tasks():
             continue
 
         for dest in cert.destinations:
-            logger.debug("creating sub task to check certificate/destination pair", extra={
-                "certificate": cert.name,
-                "destination": str(dest),
-            })
+            logger.debug(
+                "creating sub task to check certificate/destination pair",
+                extra={
+                    "certificate": cert.name,
+                    "destination": str(dest),
+                },
+            )
             certificate_check_destination.delay(cert.id, dest.id)
             num_subtasks_created += 1
 
-    logger.debug("task creation completed",
-                 extra={**log_data, "num_subtasks_created": num_subtasks_created})
+    logger.debug(
+        "task creation completed",
+        extra={**log_data, "num_subtasks_created": num_subtasks_created},
+    )
     return log_data
 
 
 def send_notifications(notifications, notification_type, message, **kwargs):
     for notification in notifications:
         notification.plugin.send(
-            notification_type,
-            message,
-            None,
-            notification.options,
-            **kwargs)
+            notification_type, message, None, notification.options, **kwargs
+        )
 
 
 @celery.task(soft_time_limit=60)
@@ -1180,7 +1204,9 @@ def rotate_endpoint(endpoint_id):
     delay_before_removal = 60
     if is_task_scheduled(rotate_endpoint_remove_cert.name, remove_cert_args):
         # the remove task has already been scheduled so we skip this turn
-        logger.info(f"{rotate_endpoint_remove_cert.name}{str(remove_cert_args)} already scheduled.")
+        logger.info(
+            f"{rotate_endpoint_remove_cert.name}{str(remove_cert_args)} already scheduled."
+        )
         return
 
     new_cert = endpoint.certificate.replaced[0]
@@ -1191,20 +1217,21 @@ def rotate_endpoint(endpoint_id):
         endpoint.certificate.notifications,
         "rotation",
         f"Rotating endpoint {endpoint.name}",
-        endpoint=endpoint)
+        endpoint=endpoint,
+    )
 
     logger.info(f"Attaching {new_cert_name} to {endpoint.name}")
 
     # update
-    endpoint.source.plugin.update_endpoint(
-        endpoint,
-        new_cert_name)
+    endpoint.source.plugin.update_endpoint(endpoint, new_cert_name)
 
     # schedule a task to remove the old certificate
-    logger.info(f"Scheduling {rotate_endpoint_remove_cert.name}{str(remove_cert_args)} to execute in {delay_before_removal} seconds.")
+    logger.info(
+        f"Scheduling {rotate_endpoint_remove_cert.name}{str(remove_cert_args)} to execute in {delay_before_removal} seconds."
+    )
     rotate_endpoint_remove_cert.apply_async(
-        remove_cert_args,
-        countdown=delay_before_removal)
+        remove_cert_args, countdown=delay_before_removal
+    )
 
     # sync source
     if not is_task_scheduled(sync_source, (endpoint.source.label,)):
@@ -1226,9 +1253,7 @@ def rotate_endpoint_remove_cert(endpoint_id, certificate_id):
     if not certificate:
         raise RuntimeError("certificate does not exist")
 
-    endpoint.source.plugin.remove_certificate(
-        endpoint,
-        certificate.name)
+    endpoint.source.plugin.remove_certificate(endpoint, certificate.name)
 
     # sync source
     if not is_task_scheduled(sync_source, (endpoint.source.label,)):
@@ -1237,8 +1262,7 @@ def rotate_endpoint_remove_cert(endpoint_id, certificate_id):
 
 @celery.task(soft_time_limit=60)
 def rotate_all_pending_endpoints():
-    """
-    """
+    """"""
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     logger = logging.getLogger(function)
     task_id = None
@@ -1261,12 +1285,20 @@ def rotate_all_pending_endpoints():
 
     for cert, endpoints in pending_map.items():
         # verify that the certificate has been uploaded before rotating the endpoints
-        if not all([dest.plugin.verify(cert.name, dest.options) for dest in cert.destinations]):
-            logger.debug("Certificate has not been uploaded to all destinations, skipping rotate")
+        if not all(
+            [dest.plugin.verify(cert.name, dest.options) for dest in cert.destinations]
+        ):
+            logger.debug(
+                "Certificate has not been uploaded to all destinations, skipping rotate"
+            )
             continue
 
-        logger.info(f"Creating tasks to attach certificate {cert.name} to its endpoints")
+        logger.info(
+            f"Creating tasks to attach certificate {cert.name} to its endpoints"
+        )
 
         # create task group and skew execution
-        g = group([rotate_endpoint.s(endpoint.id) for endpoint in endpoints]).skew(start=0, step=10)
+        g = group([rotate_endpoint.s(endpoint.id) for endpoint in endpoints]).skew(
+            start=0, step=10
+        )
         g.apply_async()
