@@ -86,7 +86,7 @@ iniconfig==1.0.1
     # via pytest
 itsdangerous==1.1.0
     # via flask
-jinja2==2.11.2
+jinja2==2.11.3
     # via
     #   flask
     #   moto
