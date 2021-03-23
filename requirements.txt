@@ -33,9 +33,9 @@ blinker==1.4
     #   flask-mail
     #   flask-principal
     #   raven
-boto3==1.17.27
+boto3==1.17.33
     # via -r requirements.in
-botocore==1.20.27
+botocore==1.20.33
     # via
     #   -r requirements.in
     #   boto3
@@ -135,7 +135,7 @@ jmespath==0.9.5
     # via
     #   boto3
     #   botocore
-josepy==1.7.0
+josepy==1.8.0
     # via
     #   acme
     #   certbot
@@ -249,7 +249,6 @@ six==1.15.0
     #   flask-cors
     #   flask-restful
     #   hvac
-    #   josepy
     #   jsonlines
     #   pynacl
     #   pyopenssl
