@@ -18,6 +18,7 @@ from celery.exceptions import SoftTimeLimitExceeded
 from celery.signals import task_failure, task_received, task_revoked, task_success
 from datetime import datetime, timezone, timedelta
 from flask import current_app
+from flask_principal import Identity, identity_changed
 
 from lemur.authorities.service import get as get_authority
 from lemur.certificates import cli as cli_certificate, service as certificate_service
@@ -732,6 +733,10 @@ def certificate_reissue():
         return
 
     current_app.logger.debug(log_data)
+
+    # set the lemur identity
+    identity_changed.send(current_app._get_current_object(), identity=Identity(1))
+
     for certificate in certificate_service.get_all_pending_reissue():
         log_data["message"] = f"{certificate.name} is eligible for re-issuance"
         current_app.logger.info(log_data)
