@@ -183,7 +183,7 @@ requests==2.25.1
     #   responses
 responses==0.10.12
     # via moto
-rsa==4.0
+rsa==4.1
     # via python-jose
 s3transfer==0.3.3
     # via boto3
