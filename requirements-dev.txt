@@ -62,7 +62,7 @@ pygments==2.6.1
     # via readme-renderer
 pyparsing==2.4.7
     # via packaging
-pyyaml==5.3.1
+pyyaml==5.4
     # via
     #   -r requirements-dev.in
     #   pre-commit
