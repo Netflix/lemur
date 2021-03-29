@@ -60,7 +60,7 @@ pycparser==2.20
     # via cffi
 pyflakes==2.2.0
     # via flake8
-pygments==2.6.1
+pygments==2.8.1
     # via readme-renderer
 pyparsing==2.4.7
     # via packaging
@@ -99,6 +99,3 @@ webencodings==0.5.1
     # via bleach
 zipp==3.4.1
     # via importlib-metadata
-
-# The following packages are considered to be unsafe in a requirements file:
-# setuptools

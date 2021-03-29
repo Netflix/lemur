@@ -353,7 +353,7 @@ pycryptodomex==3.10.1
     # via pyjks
 pyflakes==2.2.0
     # via -r requirements-tests.txt
-pygments==2.6.1
+pygments==2.8.1
     # via sphinx
 pyjks==20.0.0
     # via -r requirements-docs.in
