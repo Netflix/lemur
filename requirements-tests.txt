@@ -26,7 +26,7 @@ boto3==1.17.33
     #   moto
 boto==2.49.0
     # via moto
-botocore==1.20.33
+botocore==1.20.39
     # via
     #   aws-xray-sdk
     #   boto3
