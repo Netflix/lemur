@@ -202,6 +202,8 @@ ACME_TEL = "4088675309"
 ACME_DIRECTORY_URL = "https://acme-v01.api.letsencrypt.org"
 ACME_DISABLE_AUTORESOLVE = True
 
+DISABLE_AUTORESOLVE_NON_ACME = True
+
 LDAP_AUTH = True
 LDAP_BIND_URI = "ldap://localhost"
 LDAP_BASE_DN = "dc=example,dc=com"

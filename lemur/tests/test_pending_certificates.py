@@ -56,6 +56,7 @@ def test_create_pending(pending_certificate, user, session):
     assert real_cert.private_key == pending_certificate.private_key
     assert real_cert.external_id == "54321"
     assert real_cert.key_type == "RSA2048"
+    assert real_cert.authority_id == pending_certificate.authority_id
 
 
 @pytest.mark.parametrize(

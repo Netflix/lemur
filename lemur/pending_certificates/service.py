@@ -114,6 +114,7 @@ def create_certificate(pending_certificate, certificate, user):
     data["roles"] = list(pending_certificate.roles)
     data["replaces"] = list(pending_certificate.replaces)
     data["rotation_policy"] = pending_certificate.rotation_policy
+    data["authority"] = pending_certificate.authority
 
     # Replace external id and chain with the one fetched from source
     data["external_id"] = certificate["external_id"]
