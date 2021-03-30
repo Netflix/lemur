@@ -201,6 +201,7 @@ ACME_EMAIL = "jim@example.com"
 ACME_TEL = "4088675309"
 ACME_DIRECTORY_URL = "https://acme-v01.api.letsencrypt.org"
 ACME_DISABLE_AUTORESOLVE = True
+ACME_PREFERRED_ISSUER = "R3"
 
 LDAP_AUTH = True
 LDAP_BIND_URI = "ldap://localhost"

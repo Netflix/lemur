@@ -32,6 +32,9 @@ if on_rtd:
     MOCK_MODULES = ["ldap"]
     sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
+autodoc_mock_imports = ["python-ldap", "acme", "certsrv", "dnspython3", "dyn", "factory-boy", "flask_replicated",
+                        "josepy", "logmatic", "pem"]
+
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -146,7 +149,7 @@ if not on_rtd:  # only import and set the theme if we're building docs locally
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["_static"]
+# html_static_path = ["_static"]
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied

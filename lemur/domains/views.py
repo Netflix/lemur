@@ -96,7 +96,7 @@ class DomainsList(AuthenticatedResource):
 
            .. sourcecode:: http
 
-              GET /domains HTTP/1.1
+              POST /domains HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
 

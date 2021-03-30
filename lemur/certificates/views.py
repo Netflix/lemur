@@ -51,17 +51,20 @@ class CertificatesListValid(AuthenticatedResource):
         """
         .. http:get:: /certificates/valid/<query>
 
-           The current list of not-expired certificates for a given common name, and owner
+           The current list of not-expired certificates for a given common name, and owner. The API offers
+           optional pagination. One can send page number(>=1) and desired count per page. The returned data
+           contains total number of certificates which can help in determining the last page. Pagination
+           will not be offered if page or count info is not sent or if it is zero.
 
            **Example request**:
 
            .. sourcecode:: http
-              GET /certificates/valid?filter=cn;*.test.example.net&owner=joe@example.com
-              HTTP/1.1
+
+              GET /certificates/valid?filter=cn;*.test.example.net&owner=joe@example.com&page=1&count=20 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
 
-           **Example response**:
+           **Example response (with single cert to be concise)**:
 
            .. sourcecode:: http
 
@@ -128,10 +131,15 @@ class CertificatesListValid(AuthenticatedResource):
            :statuscode 403: unauthenticated
 
         """
-        parser = paginated_parser.copy()
-        args = parser.parse_args()
+        # using non-paginated parser to ensure backward compatibility
+        self.reqparse.add_argument("filter", type=str, location="args")
+        self.reqparse.add_argument("owner", type=str, location="args")
+        self.reqparse.add_argument("count", type=int, location="args")
+        self.reqparse.add_argument("page", type=int, location="args")
+
+        args = self.reqparse.parse_args()
         args["user"] = g.user
-        common_name = args["filter"].split(";")[1]
+        common_name = args.pop("filter").split(";")[1]
         return service.query_common_name(common_name, args)
 
 
@@ -369,6 +377,7 @@ class CertificatesList(AuthenticatedResource):
               POST /certificates HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                   "owner": "secure@example.net",
@@ -518,6 +527,7 @@ class CertificatesUpload(AuthenticatedResource):
               POST /certificates/upload HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                  "owner": "joe@example.com",
@@ -625,7 +635,12 @@ class CertificatesStats(AuthenticatedResource):
 
         args = self.reqparse.parse_args()
 
-        items = service.stats(**args)
+        try:
+            items = service.stats(**args)
+        except Exception as e:
+            sentry.captureException()
+            return dict(message=f"Failed to retrieve stats: {str(e)}"), 400
+
         return dict(items=items, total=len(items))
 
 
@@ -794,6 +809,7 @@ class Certificates(AuthenticatedResource):
               PUT /certificates/1 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                  "owner": "jimbob@example.com",
@@ -933,6 +949,7 @@ class Certificates(AuthenticatedResource):
               POST /certificates/1/update/notify HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                  "notify": false
@@ -1301,6 +1318,7 @@ class CertificateExport(AuthenticatedResource):
               PUT /certificates/1/export HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                 "export": {
@@ -1422,6 +1440,7 @@ class CertificateRevoke(AuthenticatedResource):
               POST /certificates/1/revoke HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                 "crlReason": "affiliationChanged",

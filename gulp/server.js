@@ -1,6 +1,7 @@
 'use strict';
 
 var gulp = require('gulp');
+const watch = require('./watch')
 
 var browserSync = require('browser-sync');
 var httpProxy = require('http-proxy');
@@ -38,16 +39,7 @@ function browserSyncInit(baseDir, files, browser) {
 
 }
 
-gulp.task('watch', gulp.series(['dev:styles', 'dev:scripts', 'dev:inject', 'dev:fonts'], function (done) {
-  gulp.watch('app/styles/**/*.less', gulp.parallel('dev:styles'));
-  gulp.watch('app/styles/**/*.css', gulp.parallel('dev:styles'));
-  gulp.watch('app/**/*.js', gulp.parallel('dev:scripts'));
-  gulp.watch('app/images/**/*', gulp.parallel('build:images'));
-  gulp.watch('bower.json', gulp.parallel('dev:inject'));
-  done();
-}));
-
-gulp.task('serve', gulp.series('watch', function () {
+gulp.task('serve', gulp.series(['watch'], function (done) {
   browserSyncInit([
     '.tmp',
     'lemur/static/app'
@@ -60,9 +52,12 @@ gulp.task('serve', gulp.series('watch', function () {
     'lemur/static/app/angular/**/*',
     'lemur/static/app/index.html'
   ]);
+
+  done();
 }));
 
 
-gulp.task('serve:dist', gulp.series('build', function () {
+gulp.task('serve:dist', gulp.series(['build'], function (done) {
   browserSyncInit('lemur/static/dist');
+  done();
 }));

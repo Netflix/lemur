@@ -6,7 +6,8 @@ arrow
 asyncpool
 boto3
 botocore
-celery[redis]
+celery[redis]==4.4.2 # need to first resolve the module not found error https://github.com/celery/celery/issues/6406
+certbot
 certifi
 certsrv
 CloudFlare

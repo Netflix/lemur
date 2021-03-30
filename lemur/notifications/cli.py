@@ -11,6 +11,7 @@ from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
 from lemur.extensions import sentry, metrics
 from lemur.notifications.messaging import send_expiration_notifications
 from lemur.notifications.messaging import send_authority_expiration_notifications
+from lemur.notifications.messaging import send_security_expiration_summary
 
 manager = Manager(usage="Handles notification related tasks.")
 
@@ -23,7 +24,15 @@ manager = Manager(usage="Handles notification related tasks.")
     default=[],
     help="Common name matching of certificates that should be excluded from notification",
 )
-def expirations(exclude):
+@manager.option(
+    "-d",
+    "--disabled-notification-plugins",
+    dest="disabled_notification_plugins",
+    action="append",
+    default=[],
+    help="List of notification plugins for which notifications should NOT be sent",
+)
+def expirations(exclude, disabled_notification_plugins):
     """
     Runs Lemur's notification engine, that looks for expiring certificates and sends
     notifications out to those that have subscribed to them.
@@ -38,7 +47,7 @@ def expirations(exclude):
     status = FAILURE_METRIC_STATUS
     try:
         print("Starting to notify subscribers about expiring certificates!")
-        success, failed = send_expiration_notifications(exclude)
+        success, failed = send_expiration_notifications(exclude, disabled_notification_plugins)
         print(
             f"Finished notifying subscribers about expiring certificates! Sent: {success} Failed: {failed}"
         )
@@ -72,4 +81,27 @@ def authority_expirations():
 
     metrics.send(
         "authority_expiration_notification_job", "counter", 1, metric_tags={"status": status}
+    )
+
+
+def security_expiration_summary(exclude):
+    """
+    Sends a summary email with info on all expiring certs (that match the configured expiry intervals).
+
+    :return:
+    """
+    status = FAILURE_METRIC_STATUS
+    try:
+        print("Starting to notify security team about expiring certificates!")
+        success = send_security_expiration_summary(exclude)
+        print(
+            f"Finished notifying security team about expiring certificates! Success: {success}"
+        )
+        if success:
+            status = SUCCESS_METRIC_STATUS
+    except Exception:
+        sentry.captureException()
+
+    metrics.send(
+        "security_expiration_notification_job", "counter", 1, metric_tags={"status": status}
     )

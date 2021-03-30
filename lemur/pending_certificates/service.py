@@ -93,11 +93,10 @@ def get_pending_certs(pending_ids):
 def create_certificate(pending_certificate, certificate, user):
     """
     Create and store a certificate with pending certificate's info
-    Args:
-        pending_certificate: PendingCertificate which will populate the certificate
-        certificate: dict from Authority, which contains the body, chain and external id
-        user: User that called this function, used as 'creator' of the certificate if it does
-              not have an owner
+
+    :arg pending_certificate: PendingCertificate which will populate the certificate
+    :arg certificate: dict from Authority, which contains the body, chain and external id
+    :arg user: User that called this function, used as 'creator' of the certificate if it does not have an owner
     """
     certificate["owner"] = pending_certificate.owner
     data, errors = CertificateUploadInputSchema().load(certificate)
@@ -158,9 +157,9 @@ def cancel(pending_certificate, **kwargs):
     """
     Cancel a pending certificate.  A check should be done prior to this function to decide to
     revoke the certificate or just abort cancelling.
-    Args:
-        pending_certificate: PendingCertificate to be cancelled
-    Returns: the pending certificate if successful, raises Exception if there was an issue
+
+    :arg pending_certificate: PendingCertificate to be cancelled
+    :return: the pending certificate if successful, raises Exception if there was an issue
     """
     plugin = plugins.get(pending_certificate.authority.plugin_name)
     plugin.cancel_ordered_certificate(pending_certificate, **kwargs)

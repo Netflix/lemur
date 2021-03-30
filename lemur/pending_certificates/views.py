@@ -221,9 +221,10 @@ class PendingCertificates(AuthenticatedResource):
 
            .. sourcecode:: http
 
-              PUT /pending certificates/1 HTTP/1.1
+              PUT /pending_certificates/1 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                  "owner": "jimbob@example.com",
@@ -337,7 +338,7 @@ class PendingCertificates(AuthenticatedResource):
 
            .. sourcecode:: http
 
-              DELETE /pending certificates/1 HTTP/1.1
+              DELETE /pending_certificates/1 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
 
@@ -465,6 +466,7 @@ class PendingCertificatesUpload(AuthenticatedResource):
               POST /certificates/1/upload HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                  "body": "-----BEGIN CERTIFICATE-----...",

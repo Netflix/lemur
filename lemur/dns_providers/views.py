@@ -86,62 +86,79 @@ class DnsProvidersList(AuthenticatedResource):
     @admin_permission.require(http_exception=403)
     def post(self, data=None):
         """
-        Creates a DNS Provider
+        .. http:post:: /dns_providers
 
-        **Example request**:
-        {
-          "providerType": {
-            "name": "route53",
-            "requirements": [
-              {
-                "name": "account_id",
-                "type": "int",
-                "required": true,
-                "helpMessage": "AWS Account number",
-                "value": 12345
-              }
-            ],
-            "route": "dns_provider_options",
-            "reqParams": null,
-            "restangularized": true,
-            "fromServer": true,
-            "parentResource": null,
-            "restangularCollection": false
-          },
-          "name": "provider_name",
-          "description": "provider_description"
-        }
+           Creates a DNS Provider
 
-        **Example request 2**
-        {
-          "providerType": {
-            "name": "cloudflare",
-            "requirements": [
-              {
-                "name": "email",
-                "type": "str",
-                "required": true,
-                "helpMessage": "Cloudflare Email",
-                "value": "test@example.com"
-              },
-              {
-                "name": "key",
-                "type": "str",
-                "required": true,
-                "helpMessage": "Cloudflare Key",
-                "value": "secretkey"
-              }
-            ],
-            "route": "dns_provider_options",
-            "reqParams": null,
-            "restangularized": true,
-            "fromServer": true,
-            "parentResource": null,
-            "restangularCollection": false
-          },
-          "name": "provider_name",
-          "description": "provider_description"
-        }
+           **Example request**:
+
+           .. sourcecode:: http
+
+              POST /dns_providers HTTP/1.1
+              Host: example.com
+              Accept: application/json, text/javascript
+
+                {
+                  "providerType": {
+                    "name": "route53",
+                    "requirements": [
+                      {
+                        "name": "account_id",
+                        "type": "int",
+                        "required": true,
+                        "helpMessage": "AWS Account number",
+                        "value": 12345
+                      }
+                    ],
+                    "route": "dns_provider_options",
+                    "reqParams": null,
+                    "restangularized": true,
+                    "fromServer": true,
+                    "parentResource": null,
+                    "restangularCollection": false
+                  },
+                  "name": "provider_name",
+                  "description": "provider_description"
+                }
+
+        **Example request 2**:
+
+           .. sourcecode:: http
+
+              HTTP/1.1 200 OK
+              Vary: Accept
+              Content-Type: text/javascript
+
+                {
+                  "providerType": {
+                    "name": "cloudflare",
+                    "requirements": [
+                      {
+                        "name": "email",
+                        "type": "str",
+                        "required": true,
+                        "helpMessage": "Cloudflare Email",
+                        "value": "test@example.com"
+                      },
+                      {
+                        "name": "key",
+                        "type": "str",
+                        "required": true,
+                        "helpMessage": "Cloudflare Key",
+                        "value": "secretkey"
+                      }
+                    ],
+                    "route": "dns_provider_options",
+                    "reqParams": null,
+                    "restangularized": true,
+                    "fromServer": true,
+                    "parentResource": null,
+                    "restangularCollection": false
+                  },
+                  "name": "provider_name",
+                  "description": "provider_description"
+                }
+
         :return:
         """
         return service.create(data)

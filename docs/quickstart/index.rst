@@ -1,9 +1,10 @@
 Quickstart
 **********
 
-This guide will step you through setting up a Python-based virtualenv, installing the required packages, and configuring the basic web service.  This guide assumes a clean Ubuntu 14.04 instance, commands may differ based on the OS and configuration being used.
+This guide will step you through setting up a Python-based virtualenv, installing the required packages, and configuring the basic web service.
+This guide assumes a clean Ubuntu 18.04/20.04 instance, commands may differ based on the OS and configuration being used.
 
-Pressed for time? See the Lemur docker file on `Github <https://github.com/Netflix/lemur-docker>`_.
+For a quicker alternative, see the Lemur docker file on `Github <https://github.com/Netflix/lemur-docker>`_.
 
 
 Dependencies
@@ -11,12 +12,14 @@ Dependencies
 
 Some basic prerequisites which you'll need in order to run Lemur:
 
-* A UNIX-based operating system (we test on Ubuntu, develop on OS X)
+* A UNIX-based operating system (we test on Ubuntu, develop on macOS)
 * Python 3.7 or greater
 * PostgreSQL 9.4 or greater
 * Nginx
+* Node v10.x (LTS)
 
-.. note:: Lemur was built with in AWS in mind. This means that things such as databases (RDS), mail (SES), and TLS (ELB), are largely handled for us.  Lemur does **not** require AWS to function. Our guides and documentation try to be as generic as possible and are not intended to document every step of launching Lemur into a given environment.
+.. note:: Ubuntu 18.04 supports by default Python 3.6.x and Node v8.x
+.. note:: Lemur was built with AWS in mind. This means that things such as databases (RDS), mail (SES), and TLS (ELB), are largely handled for us.  Lemur does **not** require AWS to function. Our guides and documentation try to be as generic as possible and are not intended to document every step of launching Lemur into a given environment.
 
 
 Installing Build Dependencies
@@ -27,7 +30,7 @@ If installing Lemur on a bare Ubuntu OS you will need to grab the following pack
 .. code-block:: bash
 
     sudo apt-get update
-    sudo apt-get install nodejs nodejs-legacy python-pip python-dev python3-dev libpq-dev build-essential libssl-dev libffi-dev libsasl2-dev libldap2-dev nginx git supervisor npm postgresql
+    sudo apt-get install nodejs npm python-pip python-dev python3-dev libpq-dev build-essential libssl-dev libffi-dev libsasl2-dev libldap2-dev nginx git supervisor postgresql
 
 .. note:: PostgreSQL is only required if your database is going to be on the same host as the webserver.  npm is needed if you're installing Lemur from the source (e.g., from git).
 
@@ -130,7 +133,7 @@ Once created, you will need to update the configuration file with information ab
     vi ~/.lemur/lemur.conf.py
 
 .. note:: If you are unfamiliar with the SQLALCHEMY_DATABASE_URI string it can be broken up like so:
-      ``postgresql://userame:password@<database-fqdn>:<database-port>/<database-name>``
+      ``postgresql://username:password@<database-fqdn>:<database-port>/<database-name>``
 
 Before Lemur will run you need to fill in a few required variables in the configuration file:
 
@@ -145,7 +148,7 @@ Before Lemur will run you need to fill in a few required variables in the config
     LEMUR_DEFAULT_ORGANIZATIONAL_UNIT
 
 Set Up Postgres
---------------
+---------------
 
 For production, a dedicated database is recommended, for this guide we will assume postgres has been installed and is on the same machine that Lemur is installed on.
 
@@ -183,11 +186,12 @@ In addition to creating a new user, Lemur also creates a few default email notif
 Your database installation requires the pg_trgm extension. If you do not have this installed already, you can allow the script to install this for you by adding the SUPERUSER permission to the lemur database user.
 
 .. code-block:: bash
+
     sudo -u postgres -i
     psql
     postgres=# ALTER USER lemur WITH SUPERUSER
 
-Additional notifications can be created through the UI or API.  See :ref:`Creating Notifications <CreatingNotifications>` and :ref:`Command Line Interface <CommandLineInterface>` for details.
+Additional notifications can be created through the UI or API.  See :ref:`Notification Options <NotificationOptions>` and :ref:`Command Line Interface <CommandLineInterface>` for details.
 
 **Make note of the password used as this will be used during first login to the Lemur UI.**
 
@@ -199,15 +203,16 @@ Additional notifications can be created through the UI or API.  See :ref:`Creati
 .. note:: If you added the SUPERUSER permission to the lemur database user above, it is recommended you revoke that permission now.
 
 .. code-block:: bash
+
     sudo -u postgres -i
     psql
     postgres=# ALTER USER lemur WITH NOSUPERUSER
 
 
-.. note:: It is recommended that once the ``lemur`` user is created that you create individual users for every day access.  There is currently no way for a user to self enroll for Lemur access, they must have an administrator create an account for them or be enrolled automatically through SSO.  This can be done through the CLI or UI.  See :ref:`Creating Users <CreatingUsers>` and :ref:`Command Line Interface <CommandLineInterface>` for details.
+.. note:: It is recommended that once the ``lemur`` user is created that you create individual users for every day access.  There is currently no way for a user to self enroll for Lemur access, they must have an administrator create an account for them or be enrolled automatically through SSO.  This can be done through the CLI or UI.  See :ref:`Creating a New User <CreateANewUser>` and :ref:`Command Line Interface <CommandLineInterface>` for details.
 
 Set Up a Reverse Proxy
----------------------
+----------------------
 
 By default, Lemur runs on port 8000.  Even if you change this, under normal conditions you won't be able to bind to port 80. To get around this (and to avoid running Lemur as a privileged user, which you shouldn't), we need to set up a simple web proxy. There are many different web servers you can use for this, we like and recommend Nginx.
 

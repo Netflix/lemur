@@ -32,7 +32,7 @@ def test_rotate_certificate(client, source_plugin):
 )
 def test_endpoint_get(client, token, status):
     assert (
-        client.get(api.url_for(Endpoints, endpoint_id=1), headers=token).status_code
+        client.get(api.url_for(Endpoints, endpoint_id=2), headers=token).status_code
         == status
     )
 

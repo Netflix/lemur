@@ -65,6 +65,7 @@ Import an Existing Certificate
     You can add notification options and upload the created certificate to a destination, both
     of these are editable features and can be changed after the certificate has been created.
 
+.. _CreateANewUser:
 
 Create a New User
 ~~~~~~~~~~~~~~~~~

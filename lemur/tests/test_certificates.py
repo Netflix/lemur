@@ -84,6 +84,25 @@ def test_get_by_serial(session, certificate):
     assert found
 
 
+def test_get_all_certs_attached_to_endpoint_without_autorotate(session):
+    from lemur.certificates.service import get_all_certs_attached_to_endpoint_without_autorotate, \
+        cleanup_after_revoke
+    from lemur.tests.factories import EndpointFactory
+
+    # add a certificate with endpoint
+    EndpointFactory()
+
+    list_before = get_all_certs_attached_to_endpoint_without_autorotate()
+    len_list_before = len(list_before)
+    assert len_list_before > 0
+    # revoked the first certificate
+    first_cert_with_endpoint = list_before[0]
+    cleanup_after_revoke(first_cert_with_endpoint)
+
+    list_after = get_all_certs_attached_to_endpoint_without_autorotate()
+    assert len(list_after) + 1 == len_list_before
+
+
 def test_delete_cert(session):
     from lemur.certificates.service import delete, get
     from lemur.tests.factories import CertificateFactory
@@ -325,6 +344,7 @@ def test_certificate_input_schema(client, authority):
     # make sure the defaults got set
     assert data["common_name"] == "test.example.com"
     assert data["country"] == "US"
+    assert data["key_type"] == "ECCPRIME256V1"
 
     assert len(data.keys()) == 19
 
@@ -349,10 +369,12 @@ def test_certificate_input_with_extensions(client, authority):
             },
         },
         "dnsProvider": None,
+        "keyType": "RSA2048"
     }
 
     data, errors = CertificateInputSchema().load(input_data)
     assert not errors
+    assert data["key_type"] == "RSA2048"
 
 
 def test_certificate_input_schema_parse_csr(authority):
@@ -387,9 +409,11 @@ def test_certificate_input_schema_parse_csr(authority):
 
     data, errors = CertificateInputSchema().load(input_data)
 
+    assert not errors
     for san in data["extensions"]["sub_alt_names"]["names"]:
         assert san.value == test_san_dns
-    assert not errors
+
+    assert data["key_type"] == "RSA2048"
 
 
 def test_certificate_out_of_range_date(client, authority):

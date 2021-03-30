@@ -1,8 +1,46 @@
 Changelog
 =========
 
+0.9.0 - `2021-03-17`
+~~~~~~~~~~~~~~~~~~~~
+
+This release fixes three critical vulnerabilities where an authenticated user could retrieve/access
+unauthorized information. (Issue `#3463 <https://github.com/Netflix/lemur/issues/3463>`_)
+
+
+0.8.1 - `2021-03-12`
+~~~~~~~~~~~~~~~~~~~~
+
+This release includes improvements on many fronts, such as:
+
+- Notifications:
+    - Enhanced SNS flow
+    - Expiration Summary
+    - CA expiration email
+- EC algorithm as the default
+- Improved revocation flow
+- Localized AWS STS option
+- Improved Lemur doc building
+- ACME:
+    - reduced failed attempts to 3x trials
+    - support for selecting the chain (Let's Encrypt X1 transition)
+    - revocation
+    - http01 documentation
+- Entrust:
+    - Support for cross-signed intermediate CA
+- Revised disclosure process
+- Dependency updates and conflict resolutions
+
+Special thanks to all who contributed to this release, notably:
+
+- `peschmae  <https://github.com/peschmae>`_
+- `atugushev  <https://github.com/atugushev>`_
+- `sirferl   <https://github.com/sirferl>`_
+
+
+
 0.8.0 - `2020-11-13`
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 
 This release comes after more than two years and contains many interesting new features and improvements.
 In addition to multiple new plugins, such as ACME-http01, ADCS, PowerDNS, UltraDNS, Entrust, SNS, many of Lemur's existing
@@ -84,7 +122,7 @@ Upgrading
 
 
 0.7 - `2018-05-07`
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 This release adds LetsEncrypt support with DNS providers Dyn, Route53, and Cloudflare, and expands on the pending certificate functionality.
 The linux_dst plugin will also be deprecated and removed.
@@ -121,8 +159,7 @@ Happy Holidays! This is a big release with lots of bug fixes and features. Below
 
 Features:
 
-* Per-certificate rotation policies, requires a database migration. The default rotation policy for all certificates.
-is 30 days. Every certificate will gain a policy regardless of if auto-rotation is used.
+* Per-certificate rotation policies, requires a database migration. The default rotation policy for all certificates is 30 days. Every certificate will gain a policy regardless of if auto-rotation is used.
 * Adds per-user API Keys, allows users to issue multiple long-lived API tokens with the same permission as the user creating them.
 * Adds the ability to revoke certificates from the Lemur UI/API, this is currently only supported for the digicert CIS and cfssl plugins.
 * Allow destinations to support an export function. Useful for file system destinations e.g. S3 to specify the export plugin you wish to run before being sent to the destination.
@@ -166,13 +203,9 @@ Big thanks to neilschelly for quite a lot of improvements to the `lemur-cryptogr
 
 Other Highlights:
 
-* Closed `#501 <https://github.com/Netflix/lemur/issues/501>`_ - Endpoint resource as now kept in sync via an
-expiration mechanism. Such that non-existant endpoints gracefully fall out of Lemur. Certificates are never
-removed from Lemur.
-* Closed `#551 <https://github.com/Netflix/lemur/pull/551>`_ - Added the ability to create a 4096 bit key during certificate
-creation. Closed `#528 <https://github.com/Netflix/lemur/pull/528>`_ to ensure that issuer plugins supported the new 4096 bit keys.
-* Closed `#566 <https://github.com/Netflix/lemur/issues/566>`_ - Fixed an issue changing the notification status for  certificates
-without private keys.
+* Closed `#501 <https://github.com/Netflix/lemur/issues/501>`_ - Endpoint resource as now kept in sync via an expiration mechanism. Such that non-existant endpoints gracefully fall out of Lemur. Certificates are never removed from Lemur.
+* Closed `#551 <https://github.com/Netflix/lemur/pull/551>`_ - Added the ability to create a 4096 bit key during certificate creation. Closed `#528 <https://github.com/Netflix/lemur/pull/528>`_ to ensure that issuer plugins supported the new 4096 bit keys.
+* Closed `#566 <https://github.com/Netflix/lemur/issues/566>`_ - Fixed an issue changing the notification status for  certificates without private keys.
 * Closed `#594 <https://github.com/Netflix/lemur/issues/594>`_ - Added `replaced` field indicating if a certificate has been superseded.
 * Closed `#602 <https://github.com/Netflix/lemur/issues/602>`_ - AWS plugin added support for ALBs for endpoint tracking.
 
@@ -196,12 +229,8 @@ Upgrading
 
 There have been quite a few issues closed in this release. Some notables:
 
-* Closed `#284 <https://github.com/Netflix/lemur/issues/284>`_ - Created new models for `Endpoints` created associated
-AWS ELB endpoint tracking code. This was the major stated goal of this milestone and should serve as the basis for
-future enhancements of Lemur's certificate 'deployment' capabilities.
-
-* Closed `#334 <https://github.com/Netflix/lemur/issues/334>`_ - Lemur not has the ability
-to restrict certificate expiration dates to weekdays.
+* Closed `#284 <https://github.com/Netflix/lemur/issues/284>`_ - Created new models for `Endpoints` created associated AWS ELB endpoint tracking code. This was the major stated goal of this milestone and should serve as the basis for future enhancements of Lemur's certificate 'deployment' capabilities.
+* Closed `#334 <https://github.com/Netflix/lemur/issues/334>`_ - Lemur not has the ability to restrict certificate expiration dates to weekdays.
 
 Several fixes/tweaks to Lemurs python3 support (thanks chadhendrie!)
 
@@ -256,7 +285,7 @@ these keys should be fairly trivial, additionally pull requests have been submit
     should be easier to determine what authorities are available and when an authority has actually been selected.
 * Closed `#254 <https://github.com/Netflix/lemur/issues/254>`_ - Forces certificate names to be generally unique. If a certificate name
     (generated or otherwise) is found to be a duplicate we increment by appending a counter.
-* Closed `#254 <https://github.com/Netflix/lemur/issues/275>`_ - Switched to using Fernet generated passphrases for exported items.
+* Closed `#275 <https://github.com/Netflix/lemur/issues/275>`_ - Switched to using Fernet generated passphrases for exported items.
     These are more sounds that pseudo random passphrases generated before and have the nice property of being in base64.
 * Closed `#278 <https://github.com/Netflix/lemur/issues/278>`_ - Added ability to specify a custom name to certificate creation, previously
     this was only available in the certificate import wizard.

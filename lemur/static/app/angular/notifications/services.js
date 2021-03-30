@@ -8,10 +8,35 @@ angular.module('lemur')
           if (this.certificates === undefined) {
             this.certificates = [];
           }
+          if (this.addedCertificates === undefined) {
+            this.addedCertificates = [];
+          }
+          if (_.some(this.addedCertificates, function (cert) {
+            return cert.id === certificate.id;
+          })) {
+            return;
+          }
           this.certificates.push(certificate);
+          this.addedCertificates.push(certificate);
+          if (this.removedCertificates !== undefined) {
+            const indexInRemovedList = _.findIndex(this.removedCertificates, function (cert) {
+              return cert.id === certificate.id;
+            });
+            this.removedCertificates.splice(indexInRemovedList, 1);
+          }
         },
         removeCertificate: function (index) {
-          this.certificates.splice(index, 1);
+          if (this.removedCertificates === undefined) {
+            this.removedCertificates = [];
+          }
+          const removedCert = this.certificates.splice(index, 1)[0];
+          this.removedCertificates.push(removedCert);
+          if (this.addedCertificates !== undefined) {
+            const indexInAddedList = _.findIndex(this.addedCertificates, function (cert) {
+              return cert.id === removedCert.id;
+            });
+            this.addedCertificates.splice(indexInAddedList, 1);
+          }
         }
       });
     });

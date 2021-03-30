@@ -4,44 +4,98 @@
 #
 #    pip-compile --no-index --output-file=requirements-dev.txt requirements-dev.in
 #
-appdirs==1.4.3            # via virtualenv
-bleach==3.1.4             # via readme-renderer
-certifi==2020.12.5        # via requests
-cffi==1.14.0              # via cryptography
-cfgv==3.1.0               # via pre-commit
-chardet==3.0.4            # via requests
-colorama==0.4.3           # via twine
-cryptography==3.2.1       # via secretstorage
-distlib==0.3.0            # via virtualenv
-docutils==0.16            # via readme-renderer
-filelock==3.0.12          # via virtualenv
-flake8==3.8.4             # via -r requirements-dev.in
-identify==1.4.14          # via pre-commit
-idna==2.9                 # via requests
-invoke==1.4.1             # via -r requirements-dev.in
-jeepney==0.4.3            # via keyring, secretstorage
-keyring==21.2.0           # via twine
-mccabe==0.6.1             # via flake8
-nodeenv==1.5.0            # via -r requirements-dev.in, pre-commit
-pkginfo==1.5.0.1          # via twine
-pre-commit==2.9.2         # via -r requirements-dev.in
-pycodestyle==2.6.0        # via flake8
-pycparser==2.20           # via cffi
-pyflakes==2.2.0           # via flake8
-pygments==2.6.1           # via readme-renderer
-pyyaml==5.3.1             # via -r requirements-dev.in, pre-commit
-readme-renderer==25.0     # via twine
-requests-toolbelt==0.9.1  # via twine
-requests==2.25.0          # via requests-toolbelt, twine
-rfc3986==1.4.0            # via twine
-secretstorage==3.1.2      # via keyring
-six==1.15.0               # via bleach, cryptography, readme-renderer, virtualenv
-toml==0.10.0              # via pre-commit
-tqdm==4.45.0              # via twine
-twine==3.2.0              # via -r requirements-dev.in
-urllib3==1.25.8           # via requests
-virtualenv==20.0.17       # via pre-commit
-webencodings==0.5.1       # via bleach
-
-# The following packages are considered to be unsafe in a requirements file:
-# setuptools
+appdirs==1.4.3
+    # via virtualenv
+bleach==3.3.0
+    # via readme-renderer
+certifi==2020.12.5
+    # via requests
+cffi==1.14.0
+    # via cryptography
+cfgv==3.1.0
+    # via pre-commit
+chardet==3.0.4
+    # via requests
+colorama==0.4.3
+    # via twine
+cryptography==3.4.6
+    # via secretstorage
+distlib==0.3.1
+    # via virtualenv
+docutils==0.16
+    # via readme-renderer
+filelock==3.0.12
+    # via virtualenv
+flake8==3.8.4
+    # via -r requirements-dev.in
+identify==1.4.14
+    # via pre-commit
+idna==2.9
+    # via requests
+importlib-metadata==3.7.3
+    # via twine
+invoke==1.5.0
+    # via -r requirements-dev.in
+jeepney==0.4.3
+    # via
+    #   keyring
+    #   secretstorage
+keyring==21.2.0
+    # via twine
+mccabe==0.6.1
+    # via flake8
+nodeenv==1.5.0
+    # via
+    #   -r requirements-dev.in
+    #   pre-commit
+packaging==20.9
+    # via bleach
+pkginfo==1.5.0.1
+    # via twine
+pre-commit==2.11.1
+    # via -r requirements-dev.in
+pycodestyle==2.6.0
+    # via flake8
+pycparser==2.20
+    # via cffi
+pyflakes==2.2.0
+    # via flake8
+pygments==2.8.1
+    # via readme-renderer
+pyparsing==2.4.7
+    # via packaging
+pyyaml==5.4.1
+    # via
+    #   -r requirements-dev.in
+    #   pre-commit
+readme-renderer==25.0
+    # via twine
+requests-toolbelt==0.9.1
+    # via twine
+requests==2.25.1
+    # via
+    #   requests-toolbelt
+    #   twine
+rfc3986==1.4.0
+    # via twine
+secretstorage==3.1.2
+    # via keyring
+six==1.15.0
+    # via
+    #   bleach
+    #   readme-renderer
+    #   virtualenv
+toml==0.10.0
+    # via pre-commit
+tqdm==4.45.0
+    # via twine
+twine==3.4.1
+    # via -r requirements-dev.in
+urllib3==1.25.8
+    # via requests
+virtualenv==20.4.3
+    # via pre-commit
+webencodings==0.5.1
+    # via bleach
+zipp==3.4.1
+    # via importlib-metadata

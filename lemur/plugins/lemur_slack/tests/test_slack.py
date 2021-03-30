@@ -43,7 +43,38 @@ def get_options():
 @mock_ses()  # because email notifications are also sent
 def test_send_expiration_notification():
     from lemur.notifications.messaging import send_expiration_notifications
+    prepare_test()
 
+    assert send_expiration_notifications([], []) == (3, 0)  # owner, Slack, and security
+
+
+@mock_ses()
+def test_send_expiration_notification_slack_disabled():
+    from lemur.notifications.messaging import send_expiration_notifications
+    prepare_test()
+
+    # though email is not disabled, we don't send the owner/security notifications via email if
+    # the main notification's plugin is disabled
+    assert send_expiration_notifications([], ['slack-notification']) == (0, 0)
+
+
+@mock_ses()
+def test_send_expiration_notification_email_disabled():
+    from lemur.notifications.messaging import send_expiration_notifications
+    prepare_test()
+
+    assert send_expiration_notifications([], ['email-notification']) == (1, 0)  # Slack only
+
+
+@mock_ses()
+def test_send_expiration_notification_both_disabled():
+    from lemur.notifications.messaging import send_expiration_notifications
+    prepare_test()
+
+    assert send_expiration_notifications([], ['slack-notification', 'email-notification']) == (0, 0)
+
+
+def prepare_test():
     verify_sender_email()  # emails are sent to owner and security; Slack only used for configured notification
 
     notification = NotificationFactory(plugin_name="slack-notification")
@@ -55,9 +86,6 @@ def test_send_expiration_notification():
     certificate = CertificateFactory()
     certificate.not_after = in_ten_days
     certificate.notifications.append(notification)
-
-    assert send_expiration_notifications([]) == (3, 0)  # owner, Slack, and security
-
 
 # Currently disabled as the Slack plugin doesn't support this type of notification
 # def test_send_rotation_notification(endpoint, source_plugin):

@@ -163,6 +163,7 @@ def get_all_certs_attached_to_endpoint_without_autorotate():
     return (
         Certificate.query.filter(Certificate.endpoints.any())
         .filter(Certificate.rotation == false())
+        .filter(Certificate.revoked == false())
         .filter(Certificate.not_after >= arrow.now())
         .filter(not_(Certificate.replaced.any()))
         .all()  # noqa
@@ -398,6 +399,7 @@ def create(**kwargs):
         cert = Certificate(**kwargs)
         kwargs["creator"].certificates.append(cert)
     else:
+        # ACME path
         cert = PendingCertificate(**kwargs)
         kwargs["creator"].pending_certificates.append(cert)
 
@@ -573,10 +575,15 @@ def query_common_name(common_name, args):
     :return:
     """
     owner = args.pop("owner")
+    page = args.pop("page")
+    count = args.pop("count")
+
+    paginate = page and count
+    query = database.session_query(Certificate) if paginate else Certificate.query
+
     # only not expired certificates
     current_time = arrow.utcnow()
-
-    query = Certificate.query.filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))\
+    query = query.filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))\
         .filter(not_(Certificate.revoked))\
         .filter(not_(Certificate.replaced.any()))  # ignore rotated certificates to avoid duplicates
 
@@ -586,6 +593,9 @@ def query_common_name(common_name, args):
     if common_name != "%":
         # if common_name is a wildcard ('%'), no need to include it in the query
         query = query.filter(Certificate.cn.ilike(common_name))
+
+    if paginate:
+        return database.paginate(query, page, count)
 
     return query.all()
 
@@ -679,7 +689,16 @@ def stats(**kwargs):
     :param kwargs:
     :return:
     """
-    if kwargs.get("metric") == "not_after":
+
+    # Verify requested metric
+    allow_list = ["bits", "issuer", "not_after", "signing_algorithm"]
+    req_metric = kwargs.get("metric")
+    if req_metric not in allow_list:
+        raise Exception(
+            f"Stats not available for requested metric: {req_metric}"
+        )
+
+    if req_metric == "not_after":
         start = arrow.utcnow()
         end = start.shift(weeks=+32)
         items = (
@@ -691,7 +710,7 @@ def stats(**kwargs):
         )
 
     else:
-        attr = getattr(Certificate, kwargs.get("metric"))
+        attr = getattr(Certificate, req_metric)
         query = database.db.session.query(attr, func.count(attr))
 
         items = query.group_by(attr).all()
@@ -804,6 +823,15 @@ def reissue_certificate(certificate, replace=None, user=None):
             primitives["description"] = f"{reissue_message_prefix}{certificate.id}, {primitives['description']}"
     else:
         primitives["description"] = f"{reissue_message_prefix}{certificate.id}"
+
+    # Rotate the certificate to ECCPRIME256V1 if cert owner is present in the configured list
+    # This is a temporary change intending to rotate certificates to ECC, if opted in by certificate owners
+    # Unless identified a use case, this will be removed in mid-Q2 2021
+    ecc_reissue_owner_list = current_app.config.get("ROTATE_TO_ECC_OWNER_LIST", [])
+    ecc_reissue_exclude_cn_list = current_app.config.get("ECC_NON_COMPATIBLE_COMMON_NAMES", [])
+
+    if (certificate.owner in ecc_reissue_owner_list) and (certificate.cn not in ecc_reissue_exclude_cn_list):
+        primitives["key_type"] = "ECCPRIME256V1"
 
     new_cert = create(**primitives)
 

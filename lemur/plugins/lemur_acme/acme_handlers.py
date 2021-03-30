@@ -23,6 +23,7 @@ from acme import challenges, errors, messages
 from acme.client import BackwardsCompatibleClientV2, ClientNetwork
 from acme.errors import TimeoutError
 from acme.messages import Error as AcmeError
+from certbot import crypto_util as acme_crypto_util
 from flask import current_app
 
 from lemur.common.utils import generate_private_key
@@ -36,12 +37,13 @@ from retrying import retry
 
 
 class AuthorizationRecord(object):
-    def __init__(self, domain, target_domain, authz, dns_challenge, change_id):
+    def __init__(self, domain, target_domain, authz, dns_challenge, change_id, cname_delegation):
         self.domain = domain
         self.target_domain = target_domain
         self.authz = authz
         self.dns_challenge = dns_challenge
         self.change_id = change_id
+        self.cname_delegation = cname_delegation
 
 
 class AcmeHandler(object):
@@ -70,7 +72,7 @@ class AcmeHandler(object):
             return False
 
     def strip_wildcard(self, host):
-        """Removes the leading *. and returns Host and whether it was removed or not (True/False)"""
+        """Removes the leading wildcard and returns Host and whether it was removed or not (True/False)"""
         prefix = "*."
         if host.startswith(prefix):
             return host[len(prefix):], True
@@ -91,7 +93,8 @@ class AcmeHandler(object):
         deadline = datetime.datetime.now() + datetime.timedelta(seconds=360)
 
         try:
-            orderr = acme_client.poll_and_finalize(order, deadline)
+            orderr = acme_client.poll_authorizations(order, deadline)
+            orderr = acme_client.finalize_order(orderr, deadline, fetch_alternative_chains=True)
 
         except (AcmeError, TimeoutError):
             sentry.captureException(extra={"order_url": str(order.uri)})
@@ -111,14 +114,23 @@ class AcmeHandler(object):
             f"Successfully resolved Acme order: {order.uri}", exc_info=True
         )
 
-        pem_certificate, pem_certificate_chain = self.extract_cert_and_chain(orderr.fullchain_pem)
+        pem_certificate, pem_certificate_chain = self.extract_cert_and_chain(orderr.fullchain_pem,
+                                                                             orderr.alternative_fullchains_pem)
 
         current_app.logger.debug(
             "{0} {1}".format(type(pem_certificate), type(pem_certificate_chain))
         )
         return pem_certificate, pem_certificate_chain
 
-    def extract_cert_and_chain(self, fullchain_pem):
+    def extract_cert_and_chain(self, fullchain_pem, alternative_fullchains_pem, preferred_issuer=None):
+
+        if not preferred_issuer:
+            preferred_issuer = current_app.config.get("ACME_PREFERRED_ISSUER", None)
+        if preferred_issuer:
+            # returns first chain if not match
+            fullchain_pem = acme_crypto_util.find_chain_with_issuer([fullchain_pem] + alternative_fullchains_pem,
+                                                                    preferred_issuer)
+
         pem_certificate = OpenSSL.crypto.dump_certificate(
             OpenSSL.crypto.FILETYPE_PEM,
             OpenSSL.crypto.load_certificate(
@@ -126,12 +138,7 @@ class AcmeHandler(object):
             ),
         ).decode()
 
-        if current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA", False) \
-                and datetime.datetime.now() < datetime.datetime.strptime(
-                current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA_EXPIRATION_DATE", "17/03/21"), '%d/%m/%y'):
-            pem_certificate_chain = current_app.config.get("IDENTRUST_CROSS_SIGNED_LE_ICA")
-        else:
-            pem_certificate_chain = fullchain_pem[len(pem_certificate):].lstrip()
+        pem_certificate_chain = fullchain_pem[len(pem_certificate):].lstrip()
 
         return pem_certificate, pem_certificate_chain
 
@@ -305,6 +312,7 @@ class AcmeDnsHandler(AcmeHandler):
         current_app.logger.debug(f"Starting DNS challenge for {domain} using target domain {target_domain}.")
 
         change_ids = []
+        cname_delegation = domain != target_domain
         dns_challenges = self.get_dns_challenges(domain, order.authorizations)
         host_to_validate, _ = self.strip_wildcard(target_domain)
         host_to_validate = self.maybe_add_extension(host_to_validate, dns_provider_options)
@@ -315,9 +323,7 @@ class AcmeDnsHandler(AcmeHandler):
             raise Exception("Unable to determine DNS challenges from authorizations")
 
         for dns_challenge in dns_challenges:
-
-            # Only prepend '_acme-challenge' if not using CNAME redirection
-            if domain == target_domain:
+            if not cname_delegation:
                 host_to_validate = dns_challenge.validation_domain_name(host_to_validate)
 
             change_id = dns_provider.create_txt_record(
@@ -328,7 +334,7 @@ class AcmeDnsHandler(AcmeHandler):
             change_ids.append(change_id)
 
         return AuthorizationRecord(
-            domain, target_domain, order.authorizations, dns_challenges, change_ids
+            domain, target_domain, order.authorizations, dns_challenges, change_ids, cname_delegation
         )
 
     def complete_dns_challenge(self, acme_client, authz_record):
@@ -395,6 +401,9 @@ class AcmeDnsHandler(AcmeHandler):
                 if cname_result:
                     target_domain = cname_result
                     self.autodetect_dns_providers(target_domain)
+                    metrics.send(
+                        "get_authorizations_cname_delegation_for_domain", "counter", 1, metric_tags={"domain": domain}
+                    )
 
             if not self.dns_providers_for_domain.get(target_domain):
                 metrics.send(
@@ -455,7 +464,7 @@ class AcmeDnsHandler(AcmeHandler):
                     account_number = dns_provider_options.get("account_id")
                     host_to_validate, _ = self.strip_wildcard(authz_record.target_domain)
                     host_to_validate = self.maybe_add_extension(host_to_validate, dns_provider_options)
-                    if authz_record.domain == authz_record.target_domain:
+                    if not authz_record.cname_delegation:
                         host_to_validate = challenges.DNS01().validation_domain_name(host_to_validate)
                     dns_provider_plugin.delete_txt_record(
                         authz_record.change_id,
@@ -492,7 +501,7 @@ class AcmeDnsHandler(AcmeHandler):
 
                 dns_provider_plugin = self.get_dns_provider(dns_provider.provider_type)
                 for dns_challenge in dns_challenges:
-                    if authz_record.domain == authz_record.target_domain:
+                    if not authz_record.cname_delegation:
                         host_to_validate = dns_challenge.validation_domain_name(host_to_validate)
                     try:
                         dns_provider_plugin.delete_txt_record(

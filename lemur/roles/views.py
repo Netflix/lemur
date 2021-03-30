@@ -106,6 +106,7 @@ class RolesList(AuthenticatedResource):
               POST /roles HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                  "name": "role3",
@@ -113,7 +114,7 @@ class RolesList(AuthenticatedResource):
                  "username": null,
                  "password": null,
                  "users": [
-                    {'id': 1}
+                    {"id": 1}
                  ]
               }
 
@@ -176,7 +177,7 @@ class RoleViewCredentials(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                  "username: "ausername",
+                  "username": "ausername",
                   "password": "apassword"
               }
 
@@ -265,6 +266,7 @@ class Roles(AuthenticatedResource):
               PUT /roles/1 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                  "name": "role1",

@@ -90,7 +90,7 @@ class CertificateInputSchema(CertificateCreationSchema):
     csr = fields.String(allow_none=True, validate=validators.csr)
 
     key_type = fields.String(
-        validate=validate.OneOf(CERTIFICATE_KEY_TYPES), missing="RSA2048"
+        validate=validate.OneOf(CERTIFICATE_KEY_TYPES), missing="ECCPRIME256V1"
     )
 
     notify = fields.Boolean(default=True)
@@ -161,7 +161,7 @@ class CertificateInputSchema(CertificateCreationSchema):
             if data.get("body"):
                 data["key_type"] = utils.get_key_type_from_certificate(data["body"])
             else:
-                data["key_type"] = "RSA2048"  # default value
+                data["key_type"] = "ECCPRIME256V1"  # default value
 
         return missing.convert_validity_years(data)
 
@@ -454,6 +454,7 @@ class CertificateExportInputSchema(LemurInputSchema):
 
 
 class CertificateNotificationOutputSchema(LemurOutputSchema):
+    id = fields.Integer()
     description = fields.String()
     issuer = fields.String()
     name = fields.String()

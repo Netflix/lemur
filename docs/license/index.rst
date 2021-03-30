@@ -18,3 +18,4 @@ Lemur License
 -------------
 
 .. include:: ../../LICENSE
+    :literal:

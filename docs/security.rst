@@ -22,7 +22,7 @@ Supported Versions
 ------------------
 
 At any given time, we will provide security support for the `master`_ branch
-as well as the 2 most recent releases.
+as well as the most recent release.
 
 Disclosure Process
 ------------------
@@ -30,20 +30,15 @@ Disclosure Process
 Our process for taking a security issue from private discussion to public
 disclosure involves multiple steps.
 
-Approximately one week before full public disclosure, we will send advance
-notification of the issue to a list of people and organizations, primarily
-composed of operating-system vendors and other distributors of
-``lemur``.  This notification will consist of an email message
-containing:
+Approximately one week before full public disclosure, we will provide advanced notification that a security issue exists. Depending on the severity of the issue, we may choose to either send a targeted email to known Lemur users and contributors or post an issue to the Lemur repository.  In either case, the notification should contain the following.
 
-* A full description of the issue and the affected versions of
-  ``lemur``.
+* A description of the potential impact
+* The affected versions of ``lemur``.
 * The steps we will be taking to remedy the issue.
-* The patches, if any, that will be applied to ``lemur``.
 * The date on which the ``lemur`` team will apply these patches, issue
   new releases, and publicly disclose the issue.
 
-Simultaneously, the reporter of the issue will receive notification of the date
+If the issue was disclosed to us, the reporter will receive notification of the date
 on which we plan to make the issue public.
 
 On the day of disclosure, we will take the following steps:
@@ -52,7 +47,7 @@ On the day of disclosure, we will take the following steps:
   messages for these patches will indicate that they are for security issues,
   but will not describe the issue in any detail; instead, they will warn of
   upcoming disclosure.
-* Issue the relevant releases.
+* Issue an updated release.
 
 If a reported issue is believed to be particularly time-sensitive – due to a
 known exploit in the wild, for example – the time between advance notification
