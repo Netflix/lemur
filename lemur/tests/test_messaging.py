@@ -83,7 +83,6 @@ def test_get_eligible_certificates(app, certificate, notification):
         }
 
 
-
 def test_get_eligible_certificates_multiple(app, notification):
     from lemur.notifications.messaging import get_eligible_certificates
 
