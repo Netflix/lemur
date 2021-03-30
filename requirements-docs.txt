@@ -51,7 +51,7 @@ blinker==1.4
     #   flask-mail
     #   flask-principal
     #   raven
-boto3==1.17.27
+boto3==1.17.39
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -61,7 +61,7 @@ boto==2.49.0
     # via
     #   -r requirements-tests.txt
     #   moto
-botocore==1.20.27
+botocore==1.20.39
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -150,11 +150,11 @@ ecdsa==0.14.1
     #   sshpubkeys
 factory-boy==3.2.0
     # via -r requirements-tests.txt
-faker==6.5.0
+faker==7.0.0
     # via
     #   -r requirements-tests.txt
     #   factory-boy
-fakeredis==1.4.5
+fakeredis==1.5.0
     # via -r requirements-tests.txt
 flask-bcrypt==0.7.1
     # via -r requirements-docs.in
@@ -242,7 +242,7 @@ jmespath==0.9.5
     #   -r requirements-tests.txt
     #   boto3
     #   botocore
-josepy==1.7.0
+josepy==1.8.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -353,7 +353,7 @@ pycryptodomex==3.10.1
     # via pyjks
 pyflakes==2.2.0
     # via -r requirements-tests.txt
-pygments==2.6.1
+pygments==2.8.1
     # via sphinx
 pyjks==20.0.0
     # via -r requirements-docs.in
@@ -458,7 +458,7 @@ responses==0.10.12
     #   moto
 retrying==1.3.3
     # via -r requirements-docs.in
-rsa==4.0
+rsa==4.7.2
     # via
     #   -r requirements-tests.txt
     #   python-jose
@@ -480,7 +480,6 @@ six==1.15.0
     #   flask-cors
     #   flask-restful
     #   hvac
-    #   josepy
     #   jsonschema
     #   moto
     #   packaging
@@ -510,7 +509,7 @@ soupsieve==2.0.1
     # via beautifulsoup4
 sphinx-rtd-theme==0.5.1
     # via -r requirements-docs.in
-sphinx==3.5.2
+sphinx==3.5.3
     # via
     #   -r requirements-docs.in
     #   sphinx-rtd-theme
