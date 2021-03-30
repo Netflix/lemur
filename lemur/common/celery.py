@@ -1201,7 +1201,8 @@ def rotate_endpoint(endpoint_id):
     endpoint = endpoint_service.get(endpoint_id)
 
     if not endpoint:
-        raise RuntimeError("endpoint did not exist")
+        logger.info(f"Skipping rotation,due to {endpoint_id} did not exist")
+        return
 
     old_certificate_id = endpoint.certificate.id
 
