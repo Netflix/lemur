@@ -745,7 +745,7 @@ def certificate_reissue():
         details, errors = CertificateOutputSchema().dump(details)
         current_app.logger.info(
             "Re-issuing certificate",
-            extra={
+            extra=dict(certificate={
                 "common_name": details["commonName"],
                 "sans": ",".join(
                     x["value"] for x in details["extensions"]["subAltNames"]["names"]
@@ -753,7 +753,7 @@ def certificate_reissue():
                 "authority_name": details["authority"]["name"],
                 "validity_start": details["validityStart"],
                 "validity_end": details["validityEnd"],
-            },
+            }),
         )
 
         new_cert = certificate_service.reissue_certificate(certificate, replace=True)
