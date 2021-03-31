@@ -217,19 +217,32 @@ class AWSSourcePlugin(SourcePlugin):
             regions = "".join(regions.split()).split(",")
 
         for region in regions:
-            elbs = elb.get_all_elbs(account_number=account_number, region=region)
-            current_app.logger.info({
-                "message": "Describing classic load balancers",
-                "account_number": account_number,
-                "region": region,
-                "number_of_load_balancers": len(elbs)
-            })
+            try:
+                elbs = elb.get_all_elbs(account_number=account_number, region=region)
+                current_app.logger.info({
+                    "message": "Describing classic load balancers",
+                    "account_number": account_number,
+                    "region": region,
+                    "number_of_load_balancers": len(elbs)
+                })
+            except Exception as e:  # noqa
+                sentry.captureException()
+                continue
 
             for e in elbs:
-                endpoints.extend(get_elb_endpoints(account_number, region, e))
+                try:
+                    endpoints.extend(get_elb_endpoints(account_number, region, e))
+                except Exception as e:  # noqa
+                    sentry.captureException()
+                    continue
 
             # fetch advanced ELBs
-            elbs_v2 = elb.get_all_elbs_v2(account_number=account_number, region=region)
+            try:
+                elbs_v2 = elb.get_all_elbs_v2(account_number=account_number, region=region)
+            except Exception as e:  # noqa
+                sentry.captureException()
+                continue
+
             current_app.logger.info({
                 "message": "Describing advanced load balancers",
                 "account_number": account_number,
@@ -238,7 +251,11 @@ class AWSSourcePlugin(SourcePlugin):
             })
 
             for e in elbs_v2:
-                endpoints.extend(get_elb_endpoints_v2(account_number, region, e))
+                try:
+                    endpoints.extend(get_elb_endpoints_v2(account_number, region, e))
+                except Exception as e:  # noqa
+                    sentry.captureException()
+                    continue
 
         return endpoints
 
