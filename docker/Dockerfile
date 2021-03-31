@@ -21,6 +21,7 @@ RUN addgroup -S ${group} -g ${gid} && \
                 npm \
                 bash \
                 musl-dev \
+                cargo \
                 gcc \
                 autoconf \
                 automake \
