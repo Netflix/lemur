@@ -93,7 +93,7 @@ def test_generate_gcp_certificate_name(client, use_gcp_certificate_names):
         False,
         123456789,
     )
-    assert cert_name == "www-example-com-20150512-5BCD15"
+    assert cert_name == "www-example-com-20150512-5bcd15"
     assert matcher.match(cert_name)
 
     cert_name = certificate_name(
@@ -105,7 +105,7 @@ def test_generate_gcp_certificate_name(client, use_gcp_certificate_names):
         123456789,
     )
 
-    assert cert_name == "example-com-20150512-5BCD15"
+    assert cert_name == "example-com-20150512-5bcd15"
     assert matcher.match(cert_name)
 
     cert_name = certificate_name(
@@ -116,7 +116,7 @@ def test_generate_gcp_certificate_name(client, use_gcp_certificate_names):
         False,
         123456,
     )
-    assert cert_name == "subdomain-subdomain-subdomain-subdomain-subdom-21210512-1E240"
+    assert cert_name == "subdomain-subdomain-subdomain-subdomain-subdom-21210512-1e240"
     assert matcher.match(cert_name)
 
 

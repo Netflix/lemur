@@ -356,7 +356,6 @@ class DigiCertIssuerPlugin(IssuerPlugin):
         # returning None makes this a pending certificate
         return None, None, order_id
 
-
     def revoke_certificate(self, certificate, reason):
         """Revoke a Digicert certificate."""
         base_url = current_app.config.get("DIGICERT_URL")

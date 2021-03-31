@@ -24,7 +24,6 @@ from lemur.authorities.service import get as get_authority
 from lemur.certificates import cli as cli_certificate, service as certificate_service
 from lemur.certificates.schemas import CertificateOutputSchema
 from lemur.common.redis import RedisHandler
-from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
 from lemur.destinations import service as destinations_service
 from lemur.dns_providers import cli as cli_dns_providers
 from lemur.endpoints import cli as cli_endpoints
@@ -35,7 +34,7 @@ from lemur.notifications import cli as cli_notification
 from lemur.notifications.messaging import send_pending_failure_notification
 from lemur.pending_certificates import service as pending_certificate_service
 from lemur.plugins.base import plugins
-from lemur.sources.cli import clean, sync, validate_sources
+from lemur.sources.cli import clean, validate_sources
 from lemur.sources.service import add_aws_destination_to_sources
 from lemur.sources import service as source_service
 from lemur.users import service as user_service

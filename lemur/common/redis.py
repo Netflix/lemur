@@ -36,7 +36,7 @@ class RedisHandler:
                 password=self.password,
                 encoding="utf-8",
                 decode_responses=True
-                )
+            )
             red.set("test", 0)
         except redis.ConnectionError:
             log_data = {

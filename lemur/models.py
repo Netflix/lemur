@@ -25,6 +25,7 @@ Index(
     certificate_associations.c.certificate_id,
 )
 
+
 class CertificateDestination(db.Model):
     __tablename__ = "certificate_destination_associations"
     destination_id = Column(Integer, ForeignKey("destinations.id", ondelete="cascade"), primary_key=True)

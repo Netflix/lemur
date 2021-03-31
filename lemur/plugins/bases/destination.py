@@ -51,4 +51,3 @@ class ExportDestinationPlugin(DestinationPlugin):
 
     def verify(self, name):
         raise NotImplementedError
-
