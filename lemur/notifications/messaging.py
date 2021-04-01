@@ -135,7 +135,7 @@ def get_eligible_certificates(exclude=None):
     certs = get_certificates(exclude=exclude)
 
     # group by owner
-    for owner, items in groupby(certs, lambda x: x.owner):
+    for owner, items in groupby(sorted(certs, key=lambda x: x.owner), lambda x: x.owner):
         notification_groups = []
 
         for certificate in items:
@@ -146,22 +146,27 @@ def get_eligible_certificates(exclude=None):
                     notification_groups.append((notification, certificate))
 
         # group by notification
-        for notification, items in groupby(notification_groups, lambda x: x[0].label):
+        for notification, items in groupby(sorted(notification_groups, key=lambda x: x[0].label), lambda x: x[0].label):
             certificates[owner][notification] = list(items)
 
     return certificates
 
 
 def get_eligible_security_summary_certs(exclude=None):
-    certificates = defaultdict(list)
+    message_data = []
     all_certs = get_certificates_for_security_summary_email(exclude=exclude)
     now = arrow.utcnow()
 
     # group by expiration interval
-    for interval, interval_certs in groupby(all_certs, lambda x: (x.not_after - now).days):
-        certificates[interval] = list(interval_certs)
+    for interval, interval_certs in groupby(sorted(all_certs, key=lambda x: (x.not_after - now).days),
+                                            lambda x: (x.not_after - now).days):
+        cert_data = []
+        for certificate in interval_certs:
+            cert_data.append(certificate_notification_output_schema.dump(certificate).data)
+        interval_data = {"interval": interval, "certificates": cert_data}
+        message_data.append(interval_data)
 
-    return certificates
+    return message_data
 
 
 def get_eligible_authority_certificates():
@@ -175,9 +180,10 @@ def get_eligible_authority_certificates():
     now = arrow.utcnow()
 
     # group by owner
-    for owner, owner_certs in groupby(all_certs, lambda x: x.owner):
+    for owner, owner_certs in groupby(sorted(all_certs, key=lambda x: x.owner), lambda x: x.owner):
         # group by expiration interval
-        for interval, interval_certs in groupby(owner_certs, lambda x: (x.not_after - now).days):
+        for interval, interval_certs in groupby(sorted(owner_certs, key=lambda x: x.owner),
+                                                lambda x: (x.not_after - now).days):
             certificates[owner][interval] = list(interval_certs)
 
     return certificates
@@ -224,7 +230,7 @@ def send_plugin_notification(event_type, data, recipients, notification):
         return True
 
 
-def send_expiration_notifications(exclude):
+def send_expiration_notifications(exclude, disabled_notification_plugins):
     """
     This function will check for upcoming certificate expiration,
     and send out notification emails at given intervals.
@@ -241,32 +247,43 @@ def send_expiration_notifications(exclude):
 
             notification = certificates[0][0]
 
-            for data in certificates:
-                n, certificate = data
-                cert_data = certificate_notification_output_schema.dump(
-                    certificate
-                ).data
-                notification_data.append(cert_data)
+            # skip sending the notification if the plugin is marked as disabled
+            if notification.plugin.slug not in disabled_notification_plugins:
 
-            email_recipients = notification.plugin.get_recipients(notification.options, security_email + [owner])
-            # Plugin will ONLY use the provided recipients if it's email; any other notification plugin ignores them
-            if send_plugin_notification(
-                    "expiration", notification_data, email_recipients, notification
-            ):
-                success += len(email_recipients)
-            else:
-                failure += len(email_recipients)
-            # If we're using an email plugin, we're done,
-            #   since "security_email + [owner]" were added as email_recipients.
-            # If we're not using an email plugin, we also need to send an email to the security team and owner,
-            #   since the plugin notification didn't send anything to them.
-            if notification.plugin.slug != "email-notification":
-                if send_default_notification(
-                        "expiration", notification_data, email_recipients, notification.options
+                for data in certificates:
+                    n, certificate = data
+                    cert_data = certificate_notification_output_schema.dump(
+                        certificate
+                    ).data
+                    notification_data.append(cert_data)
+
+                email_recipients = notification.plugin.get_recipients(notification.options, security_email + [owner])
+                # Plugin will ONLY use the provided recipients if it's email; any other notification plugin ignores them
+                if send_plugin_notification(
+                        "expiration", notification_data, email_recipients, notification
                 ):
-                    success = 1 + len(email_recipients)
+                    success += len(email_recipients)
                 else:
-                    failure = 1 + len(email_recipients)
+                    failure += len(email_recipients)
+                # If we're using an email plugin, we're done,
+                #   since "security_email + [owner]" were added as email_recipients.
+                # If we're not using an email plugin, we also need to send an email to the security team and owner,
+                #   since the plugin notification didn't send anything to them.
+                if notification.plugin.slug != "email-notification":
+                    # If the plugin wasn't email, it only sent one notification, so set the success/failure
+                    # to the correct value (1) at this point
+                    if success:
+                        success, failure = 1, 0
+                    else:
+                        success, failure = 0, 1
+                    # If email-notification plugin is disabled, we won't sent these extra notifications.
+                    if "email-notification" not in disabled_notification_plugins:
+                        if send_default_notification(
+                                "expiration", notification_data, email_recipients, notification.options
+                        ):
+                            success += len(email_recipients)
+                        else:
+                            failure += len(email_recipients)
 
     return success, failure
 
@@ -441,26 +458,16 @@ def send_security_expiration_summary(exclude=None):
         "notification_plugin": notification_plugin.slug,
     }
 
-    intervals_and_certs = get_eligible_security_summary_certs(exclude)
+    message_data = get_eligible_security_summary_certs(exclude)
     security_email = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
 
     try:
         current_app.logger.debug(log_data)
-
-        message_data = []
-
-        for interval, certs in intervals_and_certs.items():
-            cert_data = []
-            for certificate in certs:
-                cert_data.append(certificate_notification_output_schema.dump(certificate).data)
-            interval_data = {"interval": interval, "certificates": cert_data}
-            message_data.append(interval_data)
-
         notification_plugin.send(notification_type, message_data, security_email, None)
         status = SUCCESS_METRIC_STATUS
     except Exception:
         log_data["message"] = f"Unable to send {notification_type} notification for certificates " \
-                              f"{intervals_and_certs} to targets {security_email}"
+                              f"{message_data} to targets {security_email}"
         current_app.logger.error(log_data, exc_info=True)
         sentry.captureException()
 
