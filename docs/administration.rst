@@ -506,6 +506,12 @@ need to configure celery. See :ref:`Periodic Tasks <PeriodicTasks>` for more in 
 
         This defines the schedule, with which the celery beat makes the worker run the specified tasks.
 
+.. data:: CELERY_ENDPOINTS_EXPIRE_TIME_IN_HOURS
+    :noindex:
+
+        This is an optional parameter that defines the expiration time for endpoints when the endpoint expiration celery task is running. Default value is set to 2h.
+
+
 Since the celery module, relies on the RedisHandler, the following options also need to be set.
 
 .. data:: REDIS_HOST
