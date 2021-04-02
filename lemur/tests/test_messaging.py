@@ -83,6 +83,33 @@ def test_get_eligible_certificates(app, certificate, notification):
         }
 
 
+def test_get_eligible_certificates_multiple(app, notification):
+    from lemur.notifications.messaging import get_eligible_certificates
+
+    options = [
+        {"name": "interval", "value": 10},
+        {"name": "unit", "value": "days"},
+    ]
+    cert_1 = create_cert_that_expires_in_days(10)
+    cert_1.notifications.append(notification)
+    cert_1.notifications[0].options = options
+    cert_2 = create_cert_that_expires_in_days(10)
+    # cert 2 has a different owner
+    cert_2.notifications.append(notification)
+    cert_2.notifications[0].options = options
+    cert_3 = create_cert_that_expires_in_days(10)
+    cert_3.owner = cert_1.owner
+    cert_3.notifications.append(notification)
+    cert_3.notifications[0].options = options
+
+    delta = cert_1.not_after - timedelta(days=10)
+    with freeze_time(delta.datetime):
+        assert get_eligible_certificates() == {
+            cert_1.owner: {notification.label: [(notification, cert_1), (notification, cert_3)]},
+            cert_2.owner: {notification.label: [(notification, cert_2)]}
+        }
+
+
 @mock_ses
 def test_send_expiration_notification(certificate, notification, notification_plugin):
     from lemur.notifications.messaging import send_expiration_notifications
@@ -98,7 +125,24 @@ def test_send_expiration_notification(certificate, notification, notification_pl
     with freeze_time(delta.datetime):
         # this will only send owner and security emails (no additional recipients),
         # but it executes 3 successful send attempts
-        assert send_expiration_notifications([]) == (3, 0)
+        assert send_expiration_notifications([], []) == (3, 0)
+
+
+@mock_ses
+def test_send_expiration_notification_email_disabled(certificate, notification, notification_plugin):
+    from lemur.notifications.messaging import send_expiration_notifications
+    verify_sender_email()
+
+    certificate.notifications.append(notification)
+    certificate.notifications[0].options = [
+        {"name": "interval", "value": 10},
+        {"name": "unit", "value": "days"},
+    ]
+
+    delta = certificate.not_after - timedelta(days=10)
+    with freeze_time(delta.datetime):
+        # no notifications sent since the "test-notification" plugin is disabled
+        assert send_expiration_notifications([], ['test-notification']) == (0, 0)
 
 
 @mock_ses
@@ -109,7 +153,7 @@ def test_send_expiration_notification_with_no_notifications(
 
     delta = certificate.not_after - timedelta(days=10)
     with freeze_time(delta.datetime):
-        assert send_expiration_notifications([]) == (0, 0)
+        assert send_expiration_notifications([], []) == (0, 0)
 
 
 @mock_ses
@@ -123,8 +167,8 @@ def test_send_expiration_summary_notification(certificate, notification, notific
     create_cert_that_expires_in_days(12)
     create_cert_that_expires_in_days(9)
     create_cert_that_expires_in_days(7)
-    create_cert_that_expires_in_days(7)
     create_cert_that_expires_in_days(2)
+    create_cert_that_expires_in_days(7)
     create_cert_that_expires_in_days(30)
     create_cert_that_expires_in_days(15)
     create_cert_that_expires_in_days(20)
@@ -195,7 +239,9 @@ def create_ca_cert_that_expires_in_days(days):
 
 
 def create_cert_that_expires_in_days(days):
+    import random
     from random import randrange
+    from string import ascii_lowercase
 
     now = arrow.utcnow()
     not_after = now + timedelta(days=days, hours=1)  # a bit more than specified since we'll check in the future
@@ -203,6 +249,7 @@ def create_cert_that_expires_in_days(days):
     certificate = CertificateFactory()
     certificate.not_after = not_after
     certificate.notify = True
+    certificate.owner = ''.join(random.choice(ascii_lowercase) for _ in range(10)) + '@example.com'
     endpoints = []
     for i in range(0, randrange(0, 5)):
         endpoints.append(EndpointFactory())

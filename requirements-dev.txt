@@ -20,7 +20,7 @@ colorama==0.4.3
     # via twine
 cryptography==3.4.6
     # via secretstorage
-distlib==0.3.0
+distlib==0.3.1
     # via virtualenv
 docutils==0.16
     # via readme-renderer
@@ -32,6 +32,8 @@ identify==1.4.14
     # via pre-commit
 idna==2.9
     # via requests
+importlib-metadata==3.7.3
+    # via twine
 invoke==1.5.0
     # via -r requirements-dev.in
 jeepney==0.4.3
@@ -50,7 +52,7 @@ packaging==20.9
     # via bleach
 pkginfo==1.5.0.1
     # via twine
-pre-commit==2.11.0
+pre-commit==2.11.1
     # via -r requirements-dev.in
 pycodestyle==2.6.0
     # via flake8
@@ -58,7 +60,7 @@ pycparser==2.20
     # via cffi
 pyflakes==2.2.0
     # via flake8
-pygments==2.6.1
+pygments==2.8.1
     # via readme-renderer
 pyparsing==2.4.7
     # via packaging
@@ -87,14 +89,13 @@ toml==0.10.0
     # via pre-commit
 tqdm==4.45.0
     # via twine
-twine==3.3.0
+twine==3.4.1
     # via -r requirements-dev.in
 urllib3==1.25.8
     # via requests
-virtualenv==20.0.17
+virtualenv==20.4.3
     # via pre-commit
 webencodings==0.5.1
     # via bleach
-
-# The following packages are considered to be unsafe in a requirements file:
-# setuptools
+zipp==3.4.1
+    # via importlib-metadata

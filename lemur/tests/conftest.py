@@ -36,6 +36,7 @@ from .factories import (
     InvalidCertificateFactory,
     CryptoAuthorityFactory,
     CACertificateFactory,
+    DnsProviderFactory,
 )
 
 
@@ -181,6 +182,13 @@ def user(session):
     user_token = create_token(u)
     token = {"Authorization": "Basic " + user_token}
     return {"user": u, "token": token}
+
+
+@pytest.fixture
+def dns_provider(session):
+    d = DnsProviderFactory()
+    session.commit()
+    return d
 
 
 @pytest.fixture

@@ -117,6 +117,12 @@ def create(**kwargs):
     """
     Creates a new authority.
     """
+    ca_name = kwargs.get("name")
+    if get_by_name(ca_name):
+        raise Exception(f"Authority with name {ca_name} already exists")
+    if role_service.get_by_name(f"{ca_name}_admin") or role_service.get_by_name(f"{ca_name}_operator"):
+        raise Exception(f"Admin and/or operator roles for authority {ca_name} already exist")
+
     body, private_key, chain, roles = mint(**kwargs)
 
     kwargs["creator"].roles = list(set(list(kwargs["creator"].roles) + roles))
