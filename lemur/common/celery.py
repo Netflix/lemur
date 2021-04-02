@@ -701,7 +701,7 @@ def endpoints_expire():
 
     current_app.logger.debug(log_data)
     try:
-        cli_endpoints.expire(2)  # Time in hours
+        cli_endpoints.expire(current_app.config.get("CELERY_ENDPOINTS_EXPIRE_TIME_IN_HOURS", 2))
     except SoftTimeLimitExceeded:
         log_data["message"] = "endpoint expire: Time limit exceeded."
         current_app.logger.error(log_data)
