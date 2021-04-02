@@ -1,4 +1,5 @@
 import os
+from collections import defaultdict
 from datetime import timedelta
 
 import arrow
@@ -7,7 +8,7 @@ from moto import mock_ses
 from lemur.certificates.schemas import certificate_notification_output_schema
 from lemur.plugins.lemur_email.plugin import render_html
 from lemur.tests.factories import CertificateFactory
-from lemur.tests.test_messaging import verify_sender_email
+from lemur.tests.test_messaging import verify_sender_email, create_cert_that_expires_in_days
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -37,6 +38,40 @@ def test_render_rotation_failure(pending_certificate):
     assert render_html("failed", get_options(), certificate_notification_output_schema.dump(pending_certificate).data)
 
 
+def test_render_expiration_summary(certificate, notification, notification_plugin):
+    from lemur.notifications.messaging import get_eligible_security_summary_certs
+    verify_sender_email()
+
+    expected_certs = defaultdict(list)
+    # weird order to ensure they're not all sequential in the DB
+    expected_certs["14"].append(create_cert_that_expires_in_days(14))
+    expected_certs["12"].append(create_cert_that_expires_in_days(12))
+    expected_certs["1"].append(create_cert_that_expires_in_days(1))
+    expected_certs["3"].append(create_cert_that_expires_in_days(3))
+    expected_certs["2"].append(create_cert_that_expires_in_days(2))
+    expected_certs["9"].append(create_cert_that_expires_in_days(9))
+    expected_certs["7"].append(create_cert_that_expires_in_days(7))
+    expected_certs["12"].append(create_cert_that_expires_in_days(12))
+    expected_certs["7"].append(create_cert_that_expires_in_days(7))
+    expected_certs["2"].append(create_cert_that_expires_in_days(2))
+    expected_certs["2"].append(create_cert_that_expires_in_days(2))
+    expected_certs["3"].append(create_cert_that_expires_in_days(3))
+    expected_certs["2"].append(create_cert_that_expires_in_days(2))
+    create_cert_that_expires_in_days(15)  # over the limit, won't be included
+    expected_certs["1"].append(create_cert_that_expires_in_days(1))
+
+    message_data = get_eligible_security_summary_certs(None)
+    assert len(message_data) == len(expected_certs)  # verify the expected number of intervals
+    for interval in expected_certs:
+        message_data_for_interval = [x for x in message_data if x['interval'] == int(interval)]
+        assert len(message_data_for_interval) > 0  # verify the interval is present in the message data
+        message_data_for_interval = message_data_for_interval[0]
+        assert message_data_for_interval['certificates']  # verify the interval in the message data has a certs field
+        for cert in expected_certs[interval]:
+            message_data_for_cert = [x for x in message_data_for_interval['certificates'] if x['name'] == cert.name]
+            assert message_data_for_cert  # verify the expected cert is present for the expected interval
+
+
 @mock_ses
 def test_send_expiration_notification():
     from lemur.notifications.messaging import send_expiration_notifications
@@ -53,7 +88,26 @@ def test_send_expiration_notification():
     certificate.notifications[0].options = get_options()
 
     verify_sender_email()
-    assert send_expiration_notifications([]) == (4, 0)  # owner (1), recipients (2), and security (1)
+    assert send_expiration_notifications([], []) == (4, 0)  # owner (1), recipients (2), and security (1)
+
+
+@mock_ses
+def test_send_expiration_notification_disabled():
+    from lemur.notifications.messaging import send_expiration_notifications
+    from lemur.tests.factories import CertificateFactory
+    from lemur.tests.factories import NotificationFactory
+
+    now = arrow.utcnow()
+    in_ten_days = now + timedelta(days=10, hours=1)  # a bit more than 10 days since we'll check in the future
+    certificate = CertificateFactory()
+    notification = NotificationFactory(plugin_name="email-notification")
+
+    certificate.not_after = in_ten_days
+    certificate.notifications.append(notification)
+    certificate.notifications[0].options = get_options()
+
+    verify_sender_email()
+    assert send_expiration_notifications([], ['email-notification']) == (0, 0)
 
 
 @mock_ses

@@ -1,4 +1,4 @@
-FROM alpine:3.8
+FROM python:3.7.9-alpine3.12
 
 ARG VERSION
 ENV VERSION master
@@ -21,6 +21,7 @@ RUN addgroup -S ${group} -g ${gid} && \
                 npm \
                 bash \
                 musl-dev \
+                cargo \
                 gcc \
                 autoconf \
                 automake \

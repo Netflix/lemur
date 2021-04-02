@@ -113,7 +113,7 @@ class SFTPDestinationPlugin(DestinationPlugin):
             ssh = paramiko.SSHClient()
 
             # allow connection to the new unknown host
-            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            ssh.set_missing_host_key_policy(paramiko.RejectPolicy())
 
             # open the ssh connection
             if password:
