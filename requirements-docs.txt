@@ -172,7 +172,7 @@ flask-restful==0.3.8
     # via -r requirements-docs.in
 flask-script==2.0.6
     # via -r requirements-docs.in
-flask-sqlalchemy==2.4.4
+flask-sqlalchemy==2.5.1
     # via
     #   -r requirements-docs.in
     #   flask-migrate
