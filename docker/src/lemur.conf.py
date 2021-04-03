@@ -161,7 +161,6 @@ SQLALCHEMY_ECHO = True
 SQLALCHEMY_ENGINE_OPTIONS = {
     'pool_recycle': 499,
     'pool_timeout': 20,
-    'pool_pre_ping': True,  # This option makes sure that DB connections from the pool are still valid.
 }
 
 LEMUR_EMAIL = 'lemur@example.com'
