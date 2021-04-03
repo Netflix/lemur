@@ -157,8 +157,12 @@ SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI', 'postgresql:
 
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 SQLALCHEMY_ECHO = True
-SQLALCHEMY_POOL_RECYCLE = 499
-SQLALCHEMY_POOL_TIMEOUT = 20
+
+SQLALCHEMY_ENGINE_OPTIONS = {
+    'pool_recycle': 499,
+    'pool_timeout': 20,
+    'pool_pre_ping': True,  # This option makes sure that DB connections from the pool are still valid.
+}
 
 LEMUR_EMAIL = 'lemur@example.com'
 LEMUR_SECURITY_TEAM_EMAIL = ['security@example.com']

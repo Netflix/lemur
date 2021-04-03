@@ -29,6 +29,8 @@ TESTING = True
 # this is the secret key used by flask session management (utf8 encoded)
 SECRET_KEY = get_random_secret(length=32).encode('utf8')
 
+SQLALCHEMY_POOL_RECYCLE = {}  # flaks 2.5.1 expects this to be set
+
 
 # You should consider storing these separately from your config (should be URL-safe)
 LEMUR_TOKEN_SECRET = "test"
