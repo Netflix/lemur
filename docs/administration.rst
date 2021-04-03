@@ -75,18 +75,15 @@ Basic Configuration
 .. data:: SQLALCHEMY_ENGINE_OPTIONS
     :noindex:
 
-        This config handles all engine_options to SQLAlchemy. You can leave it empty, if default values are preferred.
+        This is an optional config that handles all engine_options to SQLAlchemy.
 
         The default connection pool size is 5 for sqlalchemy managed connections.
-        Depending on the number of Lemur instances, please specify per instance connection `pool_size`.
+        Depending on the number of Lemur instances, please specify the per instance connection `pool_size`.
         Below is an example to set connection `pool_size` to 10.
 
         `max_overflow` allows to create connections in addition to specified number of connections in pool size.
         By default, sqlalchemy allows 10 connections to create in addition to the pool size.
-        This is also an optional setting.
         If `pool_size` and `max_overflow` are not specified then each Lemur instance may create maximum of 15 connections.
-
-        `pool_pre_ping` makes sure that DB connections from the pool are still valid.
 
         `pool_recycle` defines number of seconds after which a connection is automatically recycled.
 
@@ -96,14 +93,13 @@ Basic Configuration
             'pool_size': 10,
             'pool_recycle': 600,
             'pool_timeout': 20,
-            'pool_pre_ping': True,
             'max_overflow': 10,
         }
 
 
     .. warning::
         Specifying `pool_size` is an optional setting but important to review and set for optimal database connection usage and for overall database performance.
-        `SQLALCHEMY_POOL_SIZE`, `SQLALCHEMY_MAX_OVERFLOW`, `SQLALCHEMY_POOL_TIMEOUT` are deprecated.
+        Note that `SQLALCHEMY_POOL_SIZE`, `SQLALCHEMY_MAX_OVERFLOW`, `SQLALCHEMY_POOL_TIMEOUT` are deprecated.
 
     .. note::
         Specifying `max_overflow` to 0 will enforce limit to not create connections above specified pool size.
