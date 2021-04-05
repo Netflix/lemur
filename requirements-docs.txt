@@ -384,7 +384,7 @@ pytest-flask==1.2.0
     # via -r requirements-tests.txt
 pytest-mock==3.5.1
     # via -r requirements-tests.txt
-pytest==6.2.2
+pytest==6.2.3
     # via
     #   -r requirements-tests.txt
     #   pytest-flask
