@@ -99,7 +99,7 @@ Basic Configuration
 
     .. warning::
         Specifying `pool_size` is an optional setting but important to review and set for optimal database connection usage and for overall database performance.
-        Note that `SQLALCHEMY_POOL_SIZE`, `SQLALCHEMY_MAX_OVERFLOW`, `SQLALCHEMY_POOL_TIMEOUT` are deprecated.
+        Note that `SQLALCHEMY_POOL_SIZE`, `SQLALCHEMY_MAX_OVERFLOW`, `SQLALCHEMY_POOL_TIMEOUT` are deprecated since sqlalchemy v2.4.
 
     .. note::
         Specifying `max_overflow` to 0 will enforce limit to not create connections above specified pool size.
