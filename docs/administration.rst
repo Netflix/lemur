@@ -75,7 +75,9 @@ Basic Configuration
 .. data:: SQLALCHEMY_ENGINE_OPTIONS
     :noindex:
 
-        This is an optional config that handles all engine_options to SQLAlchemy.
+        This is an optional config that handles all engine_options to SQLAlchemy. 
+        Please refer to the `flask-sqlalchemy website <https://flask-sqlalchemy.palletsprojects.com/en/2.x/config/>`_ for 
+        more details about the individual configs.
 
         The default connection pool size is 5 for sqlalchemy managed connections.
         Depending on the number of Lemur instances, please specify the per instance connection `pool_size`.
