@@ -51,7 +51,7 @@ blinker==1.4
     #   flask-mail
     #   flask-principal
     #   raven
-boto3==1.17.39
+boto3==1.17.45
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -61,7 +61,7 @@ boto==2.49.0
     # via
     #   -r requirements-tests.txt
     #   moto
-botocore==1.20.39
+botocore==1.20.46
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -110,7 +110,7 @@ configobj==5.0.6
     #   certbot
 coverage==5.5
     # via -r requirements-tests.txt
-cryptography==3.4.6
+cryptography==3.4.7
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -139,7 +139,9 @@ docker==4.2.0
     #   -r requirements-tests.txt
     #   moto
 docutils==0.15.2
-    # via sphinx
+    # via
+    #   sphinx
+    #   sphinx-rtd-theme
 dyn==1.8.1
     # via -r requirements-docs.in
 ecdsa==0.14.1
@@ -150,7 +152,7 @@ ecdsa==0.14.1
     #   sshpubkeys
 factory-boy==3.2.0
     # via -r requirements-tests.txt
-faker==7.0.0
+faker==8.0.0
     # via
     #   -r requirements-tests.txt
     #   factory-boy
@@ -206,7 +208,7 @@ gitpython==3.1.1
     #   bandit
 gunicorn==20.0.4
     # via -r requirements-docs.in
-hvac==0.10.8
+hvac==0.10.9
     # via -r requirements-docs.in
 idna==2.9
     # via
@@ -384,7 +386,7 @@ pytest-flask==1.2.0
     # via -r requirements-tests.txt
 pytest-mock==3.5.1
     # via -r requirements-tests.txt
-pytest==6.2.2
+pytest==6.2.3
     # via
     #   -r requirements-tests.txt
     #   pytest-flask
@@ -507,7 +509,7 @@ sortedcontainers==2.1.0
     #   fakeredis
 soupsieve==2.0.1
     # via beautifulsoup4
-sphinx-rtd-theme==0.5.1
+sphinx-rtd-theme==0.5.2
     # via -r requirements-docs.in
 sphinx==3.5.3
     # via
