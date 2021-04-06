@@ -33,6 +33,7 @@ from lemur.certificates.schemas import (
 
 from lemur.roles import service as role_service
 from lemur.logs import service as log_service
+from lemur.plugins.base import plugins
 
 
 mod = Blueprint("certificates", __name__)
