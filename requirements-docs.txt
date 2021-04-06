@@ -139,7 +139,9 @@ docker==4.2.0
     #   -r requirements-tests.txt
     #   moto
 docutils==0.15.2
-    # via sphinx
+    # via
+    #   sphinx
+    #   sphinx-rtd-theme
 dyn==1.8.1
     # via -r requirements-docs.in
 ecdsa==0.14.1
@@ -507,7 +509,7 @@ sortedcontainers==2.1.0
     #   fakeredis
 soupsieve==2.0.1
     # via beautifulsoup4
-sphinx-rtd-theme==0.5.1
+sphinx-rtd-theme==0.5.2
     # via -r requirements-docs.in
 sphinx==3.5.3
     # via
