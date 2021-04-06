@@ -744,15 +744,18 @@ def certificate_reissue():
         details, errors = CertificateOutputSchema().dump(details)
         current_app.logger.info(
             "Re-issuing certificate",
-            extra=dict(certificate={
-                "common_name": details["commonName"],
-                "sans": ",".join(
-                    x["value"] for x in details["extensions"]["subAltNames"]["names"]
-                ),
-                "authority_name": details["authority"]["name"],
-                "validity_start": details["validityStart"],
-                "validity_end": details["validityEnd"],
-            }),
+            extra=dict(
+                certificate={
+                    "common_name": details["commonName"],
+                    "sans": ",".join(
+                        x["value"]
+                        for x in details["extensions"]["subAltNames"]["names"]
+                    ),
+                    "authority_name": details["authority"]["name"],
+                    "validity_start": details["validityStart"],
+                    "validity_end": details["validityEnd"],
+                }
+            ),
         )
 
         new_cert = certificate_service.reissue_certificate(certificate, replace=True)
@@ -1206,7 +1209,9 @@ def rotate_endpoint(endpoint_id):
     old_certificate_id = endpoint.certificate.id
 
     remove_cert_args = (endpoint_id, old_certificate_id)
-    delay_before_removal = 60
+    delay_before_removal = current_app.config.get(
+        "CELERY_ROTATE_ENDPOINT_DELAY_BEFORE_DETACH", 60
+    )
     if is_task_scheduled(rotate_endpoint_remove_cert.name, remove_cert_args):
         # the remove task has already been scheduled so we skip this turn
         logger.info(
@@ -1303,7 +1308,18 @@ def rotate_all_pending_endpoints():
         )
 
         # create task group and skew execution
+        skew_config = current_app.config.get("CELERY_ROTATE_ENDPOINT_SKEW", {})
+        start = skew_config.get("start", 0)  # seconds until execution of first task
+        stop = skew_config.get(
+            "stop", None
+        )  # maximum number of seconds to wait for a task
+        step = skew_config.get(
+            "step", 10
+        )  # number of seconds to wait until next task is executed (stop might override this)
+        logger.debug(
+            f"Scheduling endpoint rotations (start={start}, stop={stop}, step={step})"
+        )
         g = group([rotate_endpoint.s(endpoint.id) for endpoint in endpoints]).skew(
-            start=0, step=10
+            start, stop, step
         )
         g.apply_async()
