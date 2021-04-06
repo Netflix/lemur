@@ -20,13 +20,13 @@ bandit==1.7.0
     # via -r requirements-tests.in
 black==20.8b1
     # via -r requirements-tests.in
-boto3==1.17.39
+boto3==1.17.45
     # via
     #   aws-sam-translator
     #   moto
 boto==2.49.0
     # via moto
-botocore==1.20.39
+botocore==1.20.46
     # via
     #   aws-xray-sdk
     #   boto3
@@ -52,7 +52,7 @@ configobj==5.0.6
     # via certbot
 coverage==5.5
     # via -r requirements-tests.in
-cryptography==3.4.6
+cryptography==3.4.7
     # via
     #   acme
     #   certbot
@@ -74,7 +74,7 @@ ecdsa==0.14.1
     #   sshpubkeys
 factory-boy==3.2.0
     # via -r requirements-tests.in
-faker==7.0.0
+faker==8.0.0
     # via
     #   -r requirements-tests.in
     #   factory-boy
@@ -176,7 +176,7 @@ pytest-flask==1.2.0
     # via -r requirements-tests.in
 pytest-mock==3.5.1
     # via -r requirements-tests.in
-pytest==6.2.2
+pytest==6.2.3
     # via
     #   -r requirements-tests.in
     #   pytest-flask

@@ -72,34 +72,40 @@ Basic Configuration
         SQLALCHEMY_DATABASE_URI = 'postgresql://<user>:<password>@<hostname>:5432/lemur'
 
 
-.. data:: SQLALCHEMY_POOL_SIZE
+.. data:: SQLALCHEMY_ENGINE_OPTIONS
     :noindex:
 
-            The default connection pool size is 5 for sqlalchemy managed connections.   Depending on the number of Lemur instances,
-            please specify per instance connection pool size.  Below is an example to set connection pool size to 10.
+        This is an optional config that handles all engine_options to SQLAlchemy. 
+        Please refer to the `flask-sqlalchemy website <https://flask-sqlalchemy.palletsprojects.com/en/2.x/config/>`_ for 
+        more details about the individual configs.
+
+        The default connection pool size is 5 for sqlalchemy managed connections.
+        Depending on the number of Lemur instances, please specify the per instance connection `pool_size`.
+        Below is an example to set connection `pool_size` to 10.
+
+        `max_overflow` allows to create connections in addition to specified number of connections in pool size.
+        By default, sqlalchemy allows 10 connections to create in addition to the pool size.
+        If `pool_size` and `max_overflow` are not specified then each Lemur instance may create maximum of 15 connections.
+
+        `pool_recycle` defines number of seconds after which a connection is automatically recycled.
 
     ::
 
-        SQLALCHEMY_POOL_SIZE = 10
+        SQLALCHEMY_ENGINE_OPTIONS = {
+            'pool_size': 10,
+            'pool_recycle': 600,
+            'pool_timeout': 20,
+            'max_overflow': 10,
+        }
 
 
     .. warning::
-        This is an optional setting but important to review and set for optimal database connection usage and for overall database performance.
-
-.. data:: SQLALCHEMY_MAX_OVERFLOW
-    :noindex:
-
-        This setting allows to create connections in addition to specified number of connections in pool size.   By default, sqlalchemy
-        allows 10 connections to create in addition to the pool size.  This is also an optional setting.  If `SQLALCHEMY_POOL_SIZE` and
-        `SQLALCHEMY_MAX_OVERFLOW` are not speficied then each Lemur instance may create maximum of 15 connections.
-
-    ::
-
-        SQLALCHECK_MAX_OVERFLOW = 0
-
+        Specifying `pool_size` is an optional setting but important to review and set for optimal database connection usage and for overall database performance.
+        Note that `SQLALCHEMY_POOL_SIZE`, `SQLALCHEMY_MAX_OVERFLOW`, `SQLALCHEMY_POOL_TIMEOUT` are deprecated since sqlalchemy v2.4.
 
     .. note::
-        Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create connections above specified pool size.
+        Specifying `max_overflow` to 0 will enforce limit to not create connections above specified pool size.
+
 
 
 .. data:: LEMUR_ALLOW_WEEKEND_EXPIRATION
