@@ -15,6 +15,7 @@ from lemur.common.utils import truthiness, parse_cert_chain, parse_certificate
 from lemur.common import validators
 from lemur.destinations.models import Destination
 from lemur.domains.models import Domain
+from lemur.extensions import metrics
 from lemur.notifications.models import Notification
 from lemur.pending_certificates.models import PendingCertificate
 from lemur.plugins.base import plugins
@@ -130,6 +131,8 @@ def create_certificate(pending_certificate, certificate, user):
 
     cert = certificate_service.import_certificate(**data)
     database.update(cert)
+
+    metrics.send("certificate_issued", "counter", 1, metric_tags=dict(owner=cert.owner, issuer=cert.issuer))
     return cert
 
 
