@@ -196,8 +196,8 @@ def test_get_certificate_primitives(certificate):
 
     with freeze_time(datetime.date(year=2016, month=10, day=30)):
         primitives = get_certificate_primitives(certificate)
-        assert len(primitives) == 25
-        assert (primitives["key_type"] == "RSA2048")
+        assert len(primitives) == 26
+        assert primitives["key_type"] == "RSA2048"
 
 
 def test_certificate_output_schema(session, certificate, issuer_plugin):
@@ -347,6 +347,32 @@ def test_certificate_input_schema(client, authority):
     assert data["key_type"] == "ECCPRIME256V1"
 
     assert len(data.keys()) == 19
+
+
+def test_certificate_input_schema_empty_location(client, authority):
+    from lemur.certificates.schemas import CertificateInputSchema
+
+    input_data = {
+        "commonName": "test.example.com",
+        "owner": "jim@example.com",
+        "authority": {"id": authority.id},
+        "description": "testtestest",
+        "validityStart": arrow.get(2018, 11, 9).isoformat(),
+        "validityEnd": arrow.get(2019, 11, 9).isoformat(),
+        "dnsProvider": None,
+        "location": ""
+    }
+
+    data, errors = CertificateInputSchema().load(input_data)
+
+    assert not errors
+    assert len(data.keys()) == 19
+    assert data["location"] == ""
+
+    # make sure the defaults got set
+    assert data["common_name"] == "test.example.com"
+    assert data["country"] == "US"
+    assert data["key_type"] == "ECCPRIME256V1"
 
 
 def test_certificate_input_with_extensions(client, authority):
