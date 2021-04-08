@@ -635,7 +635,12 @@ class CertificatesStats(AuthenticatedResource):
 
         args = self.reqparse.parse_args()
 
-        items = service.stats(**args)
+        try:
+            items = service.stats(**args)
+        except Exception as e:
+            sentry.captureException()
+            return dict(message=f"Failed to retrieve stats: {str(e)}"), 400
+
         return dict(items=items, total=len(items))
 
 
@@ -1465,9 +1470,6 @@ class CertificateRevoke(AuthenticatedResource):
                     dict(message="You are not authorized to revoke this certificate."),
                     403,
                 )
-
-        if not cert.external_id:
-            return dict(message="Cannot revoke certificate. No external id found."), 400
 
         if cert.endpoints:
             for endpoint in cert.endpoints:
