@@ -220,7 +220,7 @@ def generate_private_key(key_type):
         )
     elif "ECC" in key_type:
         return ec.generate_private_key(
-            curve=_CURVE_TYPES[key_type], backend=default_backend()
+            _CURVE_TYPES[key_type], backend=default_backend()
         )
 
 
