@@ -11,6 +11,7 @@ import copy
 import sys
 import time
 import logging
+import arrow
 from collections import defaultdict
 from celery import Celery, group
 from celery.app.task import Context
@@ -1323,3 +1324,36 @@ def rotate_all_pending_endpoints():
             start, stop, step
         )
         g.apply_async()
+
+
+@celery.task(soft_time_limit=60)
+def report_unresolved_pending_certificates_age():
+    """Celery task that for each unresolved pending certificate emits a metric
+    with the current time since creation (seconds)."""
+    pending_certs = pending_certificate_service.get_unresolved_pending_certs()
+    now = arrow.now()
+    for cert in pending_certs:
+        value = int((cert.date_created - now).total_seconds())
+        metrics.send(
+            "unresolved_pending_certificate_age",
+            "counter",
+            value,
+            metric_tags={"certificate": cert.name})
+
+
+@celery.task(soft_time_limit=60)
+def report_endpoint_time_to_expiration():
+    """Celery task that for each endpoint emits a metric with
+    the current time to expiration (seconds)."""
+    endpoints = endpoint_service.get_all()
+    now = arrow.now()
+    for endpoint in endpoints:
+        value = int((endpoint.certificate.not_after - now).total_seconds())
+        metrics.send(
+            "endpoint_certificate_time_to_expiration",
+            "counter",
+            value,
+            metric_tags={
+                "endpoint": endpoint.name,
+                "certificate": endpoint.certificate.name,
+            })
