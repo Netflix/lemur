@@ -24,7 +24,7 @@ filelock==3.0.12
     # via virtualenv
 flake8==3.8.4
     # via -r requirements-dev.in
-identify==2.2.2
+identify==2.2.3
     # via pre-commit
 idna==2.10
     # via requests
@@ -41,7 +41,7 @@ keyring==23.0.1
     # via twine
 mccabe==0.6.1
     # via flake8
-nodeenv==1.5.0
+nodeenv==1.6.0
     # via
     #   -r requirements-dev.in
     #   pre-commit

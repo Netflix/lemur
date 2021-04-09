@@ -202,8 +202,6 @@ gitpython==3.1.14
     # via
     #   -r requirements-tests.txt
     #   bandit
-greenlet==1.0.0
-    # via sqlalchemy
 gunicorn==20.1.0
     # via -r requirements-docs.in
 hvac==0.10.9
@@ -221,7 +219,6 @@ importlib-metadata==3.10.0
     #   jsonschema
     #   pluggy
     #   pytest
-    #   sqlalchemy
     #   stevedore
 inflection==0.5.1
     # via -r requirements-docs.in
@@ -531,8 +528,9 @@ sphinxcontrib-serializinghtml==1.1.4
     # via sphinx
 sqlalchemy-utils==0.36.8
     # via -r requirements-docs.in
-sqlalchemy==1.4.6
+sqlalchemy==1.3.24
     # via
+    #   -r requirements-docs.in
     #   alembic
     #   flask-sqlalchemy
     #   marshmallow-sqlalchemy
