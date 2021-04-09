@@ -28,7 +28,7 @@ hvac # required for the vault destination plugin
 inflection
 josepy
 logmatic-python
-marshmallow-sqlalchemy
+marshmallow-sqlalchemy == 0.23.1 #related to the marshmallow issue (to avoid conflicts, as newer versions require marshmallow>=3.0.0)
 marshmallow<2.20.5 #schema duplicate issues https://github.com/marshmallow-code/marshmallow-sqlalchemy/issues/121
 paramiko  # required for the SFTP destination plugin
 pem
