@@ -701,7 +701,7 @@ def endpoints_expire():
 
     current_app.logger.debug(log_data)
     try:
-        cli_endpoints.expire(2)  # Time in hours
+        cli_endpoints.expire(current_app.config.get("CELERY_ENDPOINTS_EXPIRE_TIME_IN_HOURS", 2))
     except SoftTimeLimitExceeded:
         log_data["message"] = "endpoint expire: Time limit exceeded."
         current_app.logger.error(log_data)
@@ -810,7 +810,8 @@ def notify_expirations():
     current_app.logger.debug(log_data)
     try:
         cli_notification.expirations(
-            current_app.config.get("EXCLUDE_CN_FROM_NOTIFICATION", [])
+            current_app.config.get("EXCLUDE_CN_FROM_NOTIFICATION", []),
+            current_app.config.get("DISABLE_NOTIFICATION_PLUGINS", [])
         )
     except SoftTimeLimitExceeded:
         log_data["message"] = "Notify expiring Time limit exceeded."
