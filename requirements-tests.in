@@ -8,7 +8,7 @@ factory-boy
 Faker
 fakeredis
 freezegun
-moto[sts,ec2,elb,elbv2,iam,s3,sns,sqs,ses]
+moto[all]
 nose
 pyflakes
 pytest
