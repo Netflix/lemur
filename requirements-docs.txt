@@ -51,13 +51,13 @@ blinker==1.4
     #   flask-mail
     #   flask-principal
     #   raven
-boto3==1.17.48
+boto3==1.17.49
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
-botocore==1.20.48
+botocore==1.20.49
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -214,12 +214,7 @@ idna==2.10
 imagesize==1.2.0
     # via sphinx
 importlib-metadata==3.10.0
-    # via
-    #   -r requirements-tests.txt
-    #   jsonschema
-    #   pluggy
-    #   pytest
-    #   stevedore
+    # via -r requirements-tests.txt
 inflection==0.5.1
     # via -r requirements-docs.in
 iniconfig==1.1.1
@@ -526,7 +521,7 @@ sphinxcontrib-qthelp==1.0.3
     # via sphinx
 sphinxcontrib-serializinghtml==1.1.4
     # via sphinx
-sqlalchemy-utils==0.36.8
+sqlalchemy-utils==0.37.0
     # via -r requirements-docs.in
 sqlalchemy==1.3.24
     # via
@@ -563,9 +558,7 @@ typed-ast==1.4.2
 typing-extensions==3.7.4.3
     # via
     #   -r requirements-tests.txt
-    #   arrow
     #   black
-    #   importlib-metadata
 urllib3==1.26.4
     # via
     #   -r requirements-tests.txt
