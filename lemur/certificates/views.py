@@ -694,6 +694,9 @@ class CertificatePrivateKey(AuthenticatedResource):
         response = make_response(jsonify(key=cert.private_key), 200)
         response.headers["cache-control"] = "private, max-age=0, no-cache, no-store"
         response.headers["pragma"] = "no-cache"
+
+        log_service.audit_log("export_private_key", cert.name,
+                              "Private key exported the certificate")
         return response
 
 
