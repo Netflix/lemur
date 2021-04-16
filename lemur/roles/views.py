@@ -15,6 +15,7 @@ from lemur.roles import service
 from lemur.auth.service import AuthenticatedResource
 from lemur.auth.permissions import RoleMemberPermission, admin_permission
 from lemur.common.utils import paginated_parser
+from lemur.logs import service as log_service
 
 from lemur.common.schema import validate_schema
 from lemur.roles.schemas import (
@@ -193,6 +194,9 @@ class RoleViewCredentials(AuthenticatedResource):
             )
             response.headers["cache-control"] = "private, max-age=0, no-cache, no-store"
             response.headers["pragma"] = "no-cache"
+
+            log_service.audit_log("view_role_credentials", role.name, "View role username and password")
+
             return response
         return (
             dict(
