@@ -696,7 +696,7 @@ class CertificatePrivateKey(AuthenticatedResource):
         response.headers["pragma"] = "no-cache"
 
         log_service.audit_log("export_private_key", cert.name,
-                              "Private key exported the certificate")
+                              "Private key exported for the certificate")
         return response
 
 
