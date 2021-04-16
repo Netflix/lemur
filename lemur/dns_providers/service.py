@@ -4,6 +4,7 @@ from flask import current_app
 
 from lemur import database
 from lemur.dns_providers.models import DnsProvider
+from lemur.logs import service as log_service
 
 
 def render(args):
@@ -61,7 +62,9 @@ def delete(dns_provider_id):
 
     :param dns_provider_id: Lemur assigned ID
     """
-    database.delete(get(dns_provider_id))
+    dns_provider = get(dns_provider_id)
+    log_service.audit_log("delete_dns_provider", dns_provider.name, "Deleting the DNS provider")
+    database.delete(dns_provider)
 
 
 def get_types():
@@ -131,4 +134,6 @@ def create(data):
         credentials=json.dumps(credentials),
     )
     created = database.create(dns_provider)
+
+    log_service.audit_log("create_dns_provider", provider_name, "Created new DNS provider")
     return created.id

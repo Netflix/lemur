@@ -12,6 +12,7 @@ from lemur import database
 from lemur.models import certificate_destination_associations
 from lemur.destinations.models import Destination
 from lemur.certificates.models import Certificate
+from lemur.logs import service as log_service
 from lemur.sources.service import add_aws_destination_to_sources
 
 
@@ -38,6 +39,7 @@ def create(label, plugin_name, options, description=None):
     if add_aws_destination_to_sources(destination):
         current_app.logger.info("Source: %s created", label)
 
+    log_service.audit_log("create_destination", destination.label, "Creating new destination")
     return database.create(destination)
 
 
@@ -64,6 +66,7 @@ def update(destination_id, label, plugin_name, options, description):
     destination.options = options
     destination.description = description
 
+    log_service.audit_log("update_destination", destination.label, "Updating destination")
     return database.update(destination)
 
 
@@ -73,7 +76,9 @@ def delete(destination_id):
 
     :param destination_id: Lemur assigned ID
     """
-    database.delete(get(destination_id))
+    destination = get(destination_id)
+    log_service.audit_log("delete_destination", destination.label, "Deleting destination")
+    database.delete(destination)
 
 
 def get(destination_id):

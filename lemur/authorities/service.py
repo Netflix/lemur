@@ -17,6 +17,7 @@ from lemur.extensions import metrics
 from lemur.authorities.models import Authority
 from lemur.certificates.models import Certificate
 from lemur.roles import service as role_service
+from lemur.logs import service as log_service
 
 from lemur.certificates.service import upload
 
@@ -36,6 +37,7 @@ def update(authority_id, description, owner, active, roles):
     authority.description = description
     authority.owner = owner
 
+    log_service.audit_log("update_authority", authority.name, "Updating authority")  # check ui what can be updated
     return database.update(authority)
 
 
@@ -75,6 +77,9 @@ def mint(**kwargs):
         kwargs["plugin"]["plugin_object"].title,
         kwargs["creator"],
     )
+
+    log_service.audit_log("create_authority", kwargs["name"],
+                          f"Created new authority for issuer {issuer.title}")
     return body, private_key, chain, roles
 
 
@@ -145,6 +150,7 @@ def create(**kwargs):
     authority = database.create(authority)
     kwargs["creator"].authorities.append(authority)
 
+    log_service.audit_log("create_authority", ca_name, "Created new authority")
     metrics.send(
         "authority_created", "counter", 1, metric_tags=dict(owner=authority.owner)
     )
