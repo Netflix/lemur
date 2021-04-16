@@ -78,8 +78,7 @@ def mint(**kwargs):
         kwargs["creator"],
     )
 
-    log_service.audit_log("create_authority", kwargs["name"],
-                          f"Created new authority for issuer {issuer.title}")
+    log_service.audit_log("create_authority_with_issuer", issuer.title, "Created new authority")
     return body, private_key, chain, roles
 
 
