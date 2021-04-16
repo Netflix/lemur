@@ -77,7 +77,8 @@ def delete(destination_id):
     :param destination_id: Lemur assigned ID
     """
     destination = get(destination_id)
-    log_service.audit_log("delete_destination", destination.label, "Deleting destination")
+    if destination:
+        log_service.audit_log("delete_destination", destination.label, "Deleting destination")
     database.delete(destination)
 
 

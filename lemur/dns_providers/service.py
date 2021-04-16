@@ -63,7 +63,8 @@ def delete(dns_provider_id):
     :param dns_provider_id: Lemur assigned ID
     """
     dns_provider = get(dns_provider_id)
-    log_service.audit_log("delete_dns_provider", dns_provider.name, "Deleting the DNS provider")
+    if dns_provider:
+        log_service.audit_log("delete_dns_provider", dns_provider.name, "Deleting the DNS provider")
     database.delete(dns_provider)
 
 

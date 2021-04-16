@@ -140,7 +140,8 @@ def delete(notification_id):
     :param notification_id: Lemur assigned ID
     """
     notification = get(notification_id)
-    log_service.audit_log("delete_notification", notification.label, "Deleting notification")
+    if notification:
+        log_service.audit_log("delete_notification", notification.label, "Deleting notification")
     database.delete(notification)
 
 

@@ -295,7 +295,8 @@ def delete(source_id):
     :param source_id: Lemur assigned ID
     """
     source = get(source_id)
-    log_service.audit_log("delete_source", source.label, "Deleting source")
+    if source:
+        log_service.audit_log("delete_source", source.label, "Deleting source")
     database.delete(source)
 
 
