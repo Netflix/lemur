@@ -35,7 +35,9 @@
                 <button uib-tooltip="Edit Source" ng-click="edit(source.id)" class="btn btn-sm btn-info">
                   Edit
                 </button>
-                <button uib-tooltip="Delete Source" ng-click="remove(source)" type="button" class="btn btn-sm btn-danger pull-left">
+                <button uib-tooltip="Delete Source" ng-click="remove(source)"
+                        confirm-click="Proceed to remove the source {{ source.label }}?"
+                        type="button" class="btn btn-sm btn-danger pull-left">
                   Remove
                 </button>
               </div>
