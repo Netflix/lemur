@@ -142,7 +142,7 @@ def delete(notification_id):
     notification = get(notification_id)
     if notification:
         log_service.audit_log("delete_notification", notification.label, "Deleting notification")
-    database.delete(notification)
+        database.delete(notification)
 
 
 def get(notification_id):

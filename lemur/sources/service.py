@@ -297,7 +297,7 @@ def delete(source_id):
     source = get(source_id)
     if source:
         log_service.audit_log("delete_source", source.label, "Deleting source")
-    database.delete(source)
+        database.delete(source)
 
 
 def get(source_id):

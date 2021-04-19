@@ -65,7 +65,7 @@ def delete(dns_provider_id):
     dns_provider = get(dns_provider_id)
     if dns_provider:
         log_service.audit_log("delete_dns_provider", dns_provider.name, "Deleting the DNS provider")
-    database.delete(dns_provider)
+        database.delete(dns_provider)
 
 
 def get_types():

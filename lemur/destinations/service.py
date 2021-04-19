@@ -79,7 +79,7 @@ def delete(destination_id):
     destination = get(destination_id)
     if destination:
         log_service.audit_log("delete_destination", destination.label, "Deleting destination")
-    database.delete(destination)
+        database.delete(destination)
 
 
 def get(destination_id):
