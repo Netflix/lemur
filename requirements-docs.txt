@@ -51,13 +51,13 @@ blinker==1.4
     #   flask-mail
     #   flask-principal
     #   raven
-boto3==1.17.49
+boto3==1.17.53
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
-botocore==1.20.49
+botocore==1.20.53
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -148,7 +148,7 @@ ecdsa==0.14.1
     #   sshpubkeys
 factory-boy==3.2.0
     # via -r requirements-tests.txt
-faker==8.0.0
+faker==8.1.0
     # via
     #   -r requirements-tests.txt
     #   factory-boy
@@ -213,8 +213,6 @@ idna==2.10
     #   requests
 imagesize==1.2.0
     # via sphinx
-importlib-metadata==3.10.0
-    # via -r requirements-tests.txt
 inflection==0.5.1
     # via -r requirements-docs.in
 iniconfig==1.1.1
@@ -589,7 +587,6 @@ xmltodict==0.12.0
 zipp==3.4.1
     # via
     #   -r requirements-tests.txt
-    #   importlib-metadata
     #   moto
 zope.component==5.0.0
     # via
