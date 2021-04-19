@@ -444,7 +444,7 @@ class PendingCertificatePrivateKey(AuthenticatedResource):
         response.headers["pragma"] = "no-cache"
 
         log_service.audit_log("export_private_key_pending_certificate", cert.name,
-                              "Private key exported for the pending certificate")
+                              "Exported Private key for the pending certificate")
         return response
 
 
