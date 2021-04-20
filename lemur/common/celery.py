@@ -980,7 +980,7 @@ def notify_expiring_deployed_certificates():
 
     current_app.logger.debug(log_data)
     try:
-        cli_notification.notify_expiring_deployed_certificates(
+        cli_notification.expiring_deployed_certificates(
             current_app.config.get("EXCLUDE_CN_FROM_NOTIFICATION", [])
         )
     except SoftTimeLimitExceeded:

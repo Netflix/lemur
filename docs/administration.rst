@@ -298,7 +298,7 @@ These notifications can be configured to use all available notification plugins.
 
 Supported types:
 
-* Certificate expiration
+* Certificate expiration (Celery: `notify_expirations`, cron: `notify expirations`)
 
 **Email-only notifications**
 
@@ -306,10 +306,11 @@ These notifications can only be sent via email and cannot use other notification
 
 Supported types:
 
-* CA certificate expiration
+* CA certificate expiration (Celery: `notify_authority_expirations`, cron: `notify authority_expirations`)
 * Pending ACME certificate failure
 * Certificate rotation
-* Security certificate expiration summary
+* Security certificate expiration summary (Celery: `send_security_expiration_summary`, cron: `notify security_expiration_summary`)
+* Certificate expiration where certificates are still detected as deployed at any associated domain (Celery: `notify_expiring_deployed_certificates`, cron: `notify expiring_deployed_certificates`)
 
 **Default notifications**
 

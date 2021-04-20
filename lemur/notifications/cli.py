@@ -108,7 +108,7 @@ def security_expiration_summary(exclude):
     )
 
 
-def notify_expiring_deployed_certificates(exclude):
+def expiring_deployed_certificates(exclude):
     """
     Attempt to find any certificates that are expiring soon but are still deployed,
     and notify the certificate owner.
