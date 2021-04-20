@@ -21,7 +21,7 @@ from lemur.destinations import service as destination_service
 from lemur.certificates.schemas import CertificateUploadInputSchema
 from lemur.common.utils import find_matching_certificates_by_hash, parse_certificate
 from lemur.common.defaults import serial
-
+from lemur.logs import service as log_service
 from lemur.plugins.base import plugins
 from lemur.plugins.utils import get_plugin_option, set_plugin_option
 
@@ -261,6 +261,7 @@ def create(label, plugin_name, options, description=None):
     source = Source(
         label=label, options=options, plugin_name=plugin_name, description=description
     )
+    log_service.audit_log("create_source", source.label, "Creating new source")
     return database.create(source)
 
 
@@ -283,6 +284,7 @@ def update(source_id, label, plugin_name, options, description):
     source.options = options
     source.description = description
 
+    log_service.audit_log("update_source", source.label, "Updating source")
     return database.update(source)
 
 
@@ -292,7 +294,10 @@ def delete(source_id):
 
     :param source_id: Lemur assigned ID
     """
-    database.delete(get(source_id))
+    source = get(source_id)
+    if source:
+        log_service.audit_log("delete_source", source.label, "Deleting source")
+        database.delete(source)
 
 
 def get(source_id):
@@ -345,7 +350,7 @@ def render(args):
 
 def add_aws_destination_to_sources(dst):
     """
-    Given a destination check, if it can be added as sources, and included it if not already a source
+    Given a destination, check if it can be added as sources, and include it if not already a source
     We identify qualified destinations based on the sync_as_source attributed of the plugin.
     The destination sync_as_source_name reveals the name of the suitable source-plugin.
     We rely on account numbers to avoid duplicates.

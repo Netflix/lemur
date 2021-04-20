@@ -36,7 +36,9 @@
                   <button uib-tooltip="Edit Key" ng-click="edit(apiKey.id)" class="btn btn-sm btn-info">
                     Edit
                   </button>
-                  <button uib-tooltip="Delete Key" ng-click="remove(apiKey)" type="button" class="btn btn-sm btn-danger pull-left">
+                  <button uib-tooltip="Delete Key" ng-click="remove(apiKey)"
+                          confirm-click="Proceed to remove the API Key {{ apiKey.name || 'Unnamed Api Key' }} (ID {{ apiKey.id }})?"
+                          type="button" class="btn btn-sm btn-danger pull-left">
                     Remove
                   </button>
                 </div>

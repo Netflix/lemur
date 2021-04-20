@@ -77,6 +77,22 @@
     };
   });
 
+  lemur.directive('confirmClick', function(){
+    return {
+      priority: -1,
+      restrict: 'A',
+      link: function(scope, element, attrs){
+        element.bind('click', function(e){
+          const message = attrs.confirmClick || 'Are you sure?';
+          if(!window.confirm(message)){
+            e.stopImmediatePropagation();
+            e.preventDefault();
+          }
+        });
+      }
+    };
+  });
+
   lemur.service('MomentService', function () {
     this.diffMoment = function (start, end) {
       if (end !== 'None') {
