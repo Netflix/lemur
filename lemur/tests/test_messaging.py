@@ -225,6 +225,30 @@ def test_send_authority_expiration_notifications():
     assert send_authority_expiration_notifications() == (2, 0)
 
 
+@mock_ses
+def test_send_expiring_deployed_certificate_notifications():
+    from lemur.domains.models import Domain
+    from lemur.notifications.messaging import get_certificate, parse_serial, \
+        send_expiring_deployed_certificate_notifications
+    verify_sender_email()
+
+    domain_1 = Domain(name="google.com")
+    domain_2 = Domain(name="mail.google.com")
+    domain_3 = Domain(name="drive.google.com")
+    domain_4 = Domain(name="*.google.com")
+    all_domains = [domain_1, domain_2, domain_3, domain_4]
+    first_serial = parse_serial(get_certificate('google.com', 443, 1000))
+    second_serial = parse_serial(get_certificate('drive.google.com', 443, 1000))
+
+    # one non-expiring cert, two expiring certs, and one cert with a non-matching serial number
+    create_cert_that_expires_in_days(180, str(first_serial), all_domains, 'testowner@example.com')
+    create_cert_that_expires_in_days(10, str(first_serial), all_domains, 'testowner@example.com')
+    create_cert_that_expires_in_days(10, str(second_serial), all_domains, 'testowner@example.com')
+    create_cert_that_expires_in_days(10, '12345', all_domains, 'testowner@example.com')
+
+    assert send_expiring_deployed_certificate_notifications(None) == (1, 0)
+
+
 def create_ca_cert_that_expires_in_days(days):
     now = arrow.utcnow()
     not_after = now + timedelta(days=days, hours=1)  # a bit more than specified since we'll check in the future
@@ -238,7 +262,7 @@ def create_ca_cert_that_expires_in_days(days):
     return certificate
 
 
-def create_cert_that_expires_in_days(days):
+def create_cert_that_expires_in_days(days, serial=None, domains=None, owner=None):
     import random
     from random import randrange
     from string import ascii_lowercase
@@ -254,4 +278,10 @@ def create_cert_that_expires_in_days(days):
     for i in range(0, randrange(0, 5)):
         endpoints.append(EndpointFactory())
     certificate.endpoints = endpoints
+    if serial:
+        certificate.serial = serial
+    if owner:
+        certificate.owner = owner
+    if domains:
+        certificate.domains = domains
     return certificate

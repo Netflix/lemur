@@ -9,7 +9,8 @@ from flask_script import Manager
 
 from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
 from lemur.extensions import sentry, metrics
-from lemur.notifications.messaging import send_expiration_notifications
+from lemur.notifications.messaging import send_expiration_notifications, \
+    send_expiring_deployed_certificate_notifications
 from lemur.notifications.messaging import send_authority_expiration_notifications
 from lemur.notifications.messaging import send_security_expiration_summary
 
@@ -104,4 +105,26 @@ def security_expiration_summary(exclude):
 
     metrics.send(
         "security_expiration_notification_job", "counter", 1, metric_tags={"status": status}
+    )
+
+
+def notify_expiring_deployed_certificates(exclude):
+    """
+    Attempt to find any certificates that are expiring soon but are still deployed,
+    and notify the certificate owner.
+    """
+    status = FAILURE_METRIC_STATUS
+    try:
+        print("Starting to notify owners about certificates that are expiring but still deployed!")
+        success = send_expiring_deployed_certificate_notifications(exclude)
+        print(
+            f"Finished notifying owners about certificates that are expiring but still deployed! Success: {success}"
+        )
+        if success:
+            status = SUCCESS_METRIC_STATUS
+    except Exception:
+        sentry.captureException()
+
+    metrics.send(
+        "notify_expiring_deployed_certificates_job", "counter", 1, metric_tags={"status": status}
     )

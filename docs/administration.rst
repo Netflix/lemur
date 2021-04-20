@@ -442,7 +442,7 @@ The following configuration options are supported:
         If using SMTP as your provider you will need to define additional configuration options as specified by Flask-Mail.
         See: `Flask-Mail <https://pythonhosted.org/Flask-Mail>`_
 
-        If you are using SES the email specified by the `LEMUR_MAIL` configuration will need to be verified by AWS before
+        If you are using SES the email specified by the `LEMUR_EMAIL` configuration will need to be verified by AWS before
         you can send any mail. See: `Verifying Email Address in Amazon SES <http://docs.aws.amazon.com/ses/latest/DeveloperGuide/verify-email-addresses.html>`_
 
 
@@ -510,6 +510,15 @@ The following configuration options are supported:
        ::
 
           LEMUR_AUTHORITY_CERT_EXPIRATION_EMAIL_INTERVALS = [365, 180]
+
+.. data:: LEMUR_PORTS_FOR_DEPLOYED_CERTIFICATE_CHECK
+    :noindex:
+
+       Specifies the set of ports to use when checking if a certificate is still deployed at a given domain. This is utilized for the alert that is sent when an expiring certificate is detected to still be deployed.
+
+       ::
+
+          LEMUR_PORTS_FOR_DEPLOYED_CERTIFICATE_CHECK = [443]
 
 
 Celery Options
@@ -1395,7 +1404,7 @@ in Amazon's documentation `Setting up Amazon SES <http://docs.aws.amazon.com/ses
 
 The configuration::
 
-    LEMUR_MAIL = 'lemur.example.com'
+    LEMUR_EMAIL = 'lemur@example.com'
 
 Will be the sender of all notifications, so ensure that it is verified with AWS.
 
