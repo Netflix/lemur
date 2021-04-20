@@ -1223,9 +1223,9 @@ def rotate_endpoint(endpoint_id):
     new_cert = endpoint.certificate.replaced[0]
     new_cert_name = new_cert.name
 
-    # send notification
+    # send notification taking notifications from both new and old certificate
     send_notifications(
-        endpoint.certificate.notifications,
+        list(set(endpoint.certificate.notifications + new_cert.notifications)),
         "rotation",
         f"Rotating endpoint {endpoint.name}",
         endpoint=endpoint,
