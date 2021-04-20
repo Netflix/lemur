@@ -35,7 +35,9 @@
                 <button uib-tooltip="Edit Destination" ng-click="edit(destination.id)" class="btn btn-sm btn-info">
                   Edit
                 </button>
-                <button uib-tooltip="Delete Destination" ng-click="remove(destination)" type="button" class="btn btn-sm btn-danger pull-left">
+                <button uib-tooltip="Delete Destination" ng-click="remove(destination)"
+                        confirm-click="Proceed to remove the destination {{ destination.label }}?"
+                        type="button" class="btn btn-sm btn-danger pull-left">
                   Remove
                 </button>
               </div>
