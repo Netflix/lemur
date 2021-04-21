@@ -1197,7 +1197,7 @@ def send_notifications(notifications, notification_type, message, **kwargs):
 
 
 @celery.task(soft_time_limit=60)
-def rotate_endpoint(endpoint_id):
+def rotate_endpoint(endpoint_id, **kwargs):
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     logger = logging.getLogger(function)
 
@@ -1299,14 +1299,10 @@ def rotate_all_pending_endpoints():
         if not all(
             [dest.plugin.verify(cert.name, dest.options) for dest in cert.destinations]
         ):
-            logger.debug(
+            logger.warning(
                 "Certificate has not been uploaded to all destinations, skipping rotate"
             )
             continue
-
-        logger.info(
-            f"Creating tasks to attach certificate {cert.name} to its endpoints"
-        )
 
         # create task group and skew execution
         skew_config = current_app.config.get("CELERY_ROTATE_ENDPOINT_SKEW", {})
@@ -1320,9 +1316,26 @@ def rotate_all_pending_endpoints():
         logger.debug(
             f"Scheduling endpoint rotations (start={start}, stop={stop}, step={step})"
         )
-        g = group([rotate_endpoint.s(endpoint.id) for endpoint in endpoints]).skew(
-            start, stop, step
+
+        rotate_endpoint_tasks = []
+        for endpoint in endpoints:
+            project, lb, old_cert = endpoint.name.split("/")
+            new_cert = cert.name
+            task = rotate_endpoint.s(
+                endpoint.id,
+                lb=lb,
+                project=project,
+                new_cert=new_cert,
+                old_cert=old_cert,
+            )
+            rotate_endpoint_tasks.append(task)
+
+        logger.info(
+            f"Creating tasks to attach certificate {cert.name} \
+                to the endpoints {str([e.name for e in endpoints])}"
         )
+
+        g = group(rotate_endpoint_tasks).skew(start, stop, step)
         g.apply_async()
 
 
@@ -1338,7 +1351,8 @@ def report_unresolved_pending_certificates_age():
             "unresolved_pending_certificate_age",
             "counter",
             value,
-            metric_tags={"certificate": cert.name})
+            metric_tags={"certificate": cert.name},
+        )
 
 
 @celery.task(soft_time_limit=60)
@@ -1356,4 +1370,5 @@ def report_endpoint_time_to_expiration():
             metric_tags={
                 "endpoint": endpoint.name,
                 "certificate": endpoint.certificate.name,
-            })
+            },
+        )
