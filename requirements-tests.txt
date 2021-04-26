@@ -18,7 +18,7 @@ aws-xray-sdk==2.7.0
     # via moto
 bandit==1.7.0
     # via -r requirements-tests.in
-black==20.8b1
+black==21.4b0
     # via -r requirements-tests.in
 boto3==1.17.53
     # via
@@ -250,10 +250,6 @@ toml==0.10.2
     # via
     #   black
     #   pytest
-typed-ast==1.4.2
-    # via black
-typing-extensions==3.7.4.3
-    # via black
 urllib3==1.26.4
     # via
     #   botocore

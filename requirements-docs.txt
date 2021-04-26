@@ -44,7 +44,7 @@ bcrypt==3.2.0
     #   paramiko
 beautifulsoup4==4.9.3
     # via cloudflare
-black==20.8b1
+black==21.4b0
     # via -r requirements-tests.txt
 blinker==1.4
     # via
@@ -549,14 +549,6 @@ toml==0.10.2
     #   pytest
 twofish==0.3.0
     # via pyjks
-typed-ast==1.4.2
-    # via
-    #   -r requirements-tests.txt
-    #   black
-typing-extensions==3.7.4.3
-    # via
-    #   -r requirements-tests.txt
-    #   black
 urllib3==1.26.4
     # via
     #   -r requirements-tests.txt
