@@ -185,7 +185,7 @@ def find_cert(certificate):
     cert = parse_certificate(certificate["body"])
     exists = find_matching_certificates_by_hash(cert, [matched_cert])
     if not exists:
-        raise Exception("A certificate with the same name already exists with a different hash")
+        raise Exception(f"A certificate with the same name {certificate['name']} already exists with a different hash")
 
     return exists, len(exists)
 
