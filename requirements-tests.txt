@@ -20,7 +20,7 @@ bandit==1.7.0
     # via -r requirements-tests.in
 black==21.4b0
     # via -r requirements-tests.in
-boto3==1.17.53
+boto3==1.17.57
     # via
     #   aws-sam-translator
     #   moto
@@ -217,7 +217,7 @@ responses==0.13.2
     # via moto
 rsa==4.7.2
     # via python-jose
-s3transfer==0.3.6
+s3transfer==0.4.2
     # via boto3
 six==1.15.0
     # via
