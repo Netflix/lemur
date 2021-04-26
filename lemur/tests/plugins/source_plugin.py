@@ -12,8 +12,10 @@ class TestSourcePlugin(SourcePlugin):
     def __init__(self, *args, **kwargs):
         super(TestSourcePlugin, self).__init__(*args, **kwargs)
 
-    def get_certificates(self):
-        return
+        self.certificates = []
+
+    def get_certificates(self, *args, **kwargs):
+        return self.certificates
 
     def update_endpoint(self, endpoint, certificate):
         return

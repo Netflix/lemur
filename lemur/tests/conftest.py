@@ -284,6 +284,16 @@ def source_plugin():
 
 
 @pytest.fixture(scope="function")
+def sync_source_plugin():
+    from lemur.plugins.base import register, unregister
+    from .plugins.source_plugin import TestSourcePlugin
+
+    register(TestSourcePlugin)
+    yield TestSourcePlugin
+    unregister(TestSourcePlugin)
+
+
+@pytest.fixture(scope="function")
 def logged_in_user(session, app):
     with app.test_request_context():
         identity_changed.send(current_app._get_current_object(), identity=Identity(1))
