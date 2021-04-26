@@ -51,7 +51,7 @@ blinker==1.4
     #   flask-mail
     #   flask-principal
     #   raven
-boto3==1.17.53
+boto3==1.17.57
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -456,7 +456,7 @@ rsa==4.7.2
     # via
     #   -r requirements-tests.txt
     #   python-jose
-s3transfer==0.3.6
+s3transfer==0.4.2
     # via
     #   -r requirements-tests.txt
     #   boto3
