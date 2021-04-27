@@ -779,12 +779,16 @@ def deactivate_entrust_certificates():
             current_app.logger.exception(e)
 
 
-@manager.command
-def disable_rotation_of_duplicate_certificates():
+@manager.option("-c", "--commit", dest="commit", action="store_true", default=False, help="Persist changes.")
+def disable_rotation_of_duplicate_certificates(commit):
     log_data = {
         "function": f"{__name__}.{sys._getframe().f_code.co_name}",
         "message": "Disabling auto-rotate for duplicate certificates"
     }
+
+    if commit:
+        print("[!] Running in COMMIT mode.")
+
     authority_names = current_app.config.get("AUTHORITY_TO_DISABLE_ROTATE_OF_DUPLICATE_CERTIFICATES")
     if not authority_names:
         log_data["message"] = "Skipping task: No authorities configured"
@@ -808,7 +812,8 @@ def disable_rotation_of_duplicate_certificates():
         success, duplicates = process_duplicates(duplicate_candidate_cert,
                                                  continue_with_auto_rotate,
                                                  disable_auto_rotate,
-                                                 unique_prefix)
+                                                 unique_prefix,
+                                                 commit)
         if not success:
             for cert in duplicates:
                 skipped_certs.append(cert.name)
@@ -826,7 +831,7 @@ def disable_rotation_of_duplicate_certificates():
     for name in skipped_certs:
         print(name)
 
-def process_duplicates(duplicate_candidate_cert, continue_with_auto_rotate, disable_auto_rotate, unique_prefix):
+def process_duplicates(duplicate_candidate_cert, continue_with_auto_rotate, disable_auto_rotate, unique_prefix, commit):
     """
     Process duplicates with same prefix as duplicate_candidate_cert
 
@@ -892,7 +897,8 @@ def process_duplicates(duplicate_candidate_cert, continue_with_auto_rotate, disa
         else:
             # disable rotation and update DB
             # matching_cert.rotation = False
-            # database.update(matching_cert)
+            # if commit:
+                # database.update(matching_cert)
             disable_auto_rotate.append(matching_cert.name)
             metrics.send("disable_rotation_duplicates", "counter", 1,
                          metric_tags={"status": "success", "certificate": matching_cert.name}
