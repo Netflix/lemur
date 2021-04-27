@@ -12,6 +12,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from flask import current_app
 from sqlalchemy import func, or_, not_, cast, Integer
+from sqlalchemy.sql import text
 from sqlalchemy.sql.expression import false, true
 
 from lemur import database
@@ -230,6 +231,33 @@ def find_duplicates(cert):
         ).all()
     else:
         return Certificate.query.filter_by(body=cert["body"].strip(), chain=None).all()
+
+
+def list_duplicate_certs_by_authority(authortiy_ids):
+    """
+    Find duplicate certificates issued by given authorities that are still valid, have auto-rotation ON and have names
+    that are forced to be unique using serial number like 'some.name.prefix-YYYYMMDD-YYYYMMDD-serialnumber', thus the
+    pattern "%-[0-9]{8}-[0-9]{8}-%"
+    :param authortiy_ids:
+    :return: List of certificates matching criteria
+    """
+
+    now = arrow.now().format("YYYY-MM-DD")
+    return (
+        Certificate.query.filter(Certificate.authority_id.in_(authortiy_ids))
+        .filter(Certificate.not_after >= now)
+        .filter(Certificate.rotation == true())
+        .filter(text("name ~ '.*-[0-9]{8}-[0-9]{8}-.*'"))
+        .all()
+    )
+
+
+def get_certificates_with_same_prefix_with_rotate_on(prefix):
+    return (
+        Certificate.query.filter(Certificate.name.like(prefix))
+        .filter(Certificate.rotation == true())
+        .all()
+    )
 
 
 def export(cert, export_plugin):
