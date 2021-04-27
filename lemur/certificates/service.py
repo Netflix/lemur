@@ -247,6 +247,7 @@ def list_duplicate_certs_by_authority(authortiy_ids):
         Certificate.query.filter(Certificate.authority_id.in_(authortiy_ids))
         .filter(Certificate.not_after >= now)
         .filter(Certificate.rotation == true())
+        .filter(not_(Certificate.replaced.any()))
         .filter(text("name ~ '.*-[0-9]{8}-[0-9]{8}-.*'"))
         .all()
     )
