@@ -43,10 +43,7 @@ jobs:
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
             - sourceline: 'ppa:ubuntu-toolchain-r/test'
           packages:
-            - llvm-10
-            - llvm-10-dev
             - clang-10
-            - libclang-common-10-dev
             - postgresql-12
             - postgresql-client-12
             - postgresql-server-dev-12
