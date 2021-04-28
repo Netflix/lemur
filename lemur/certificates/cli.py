@@ -836,8 +836,8 @@ def process_duplicates(duplicate_candidate_cert, skipped_certs, rotation_disable
     Process duplicates with same prefix as duplicate_candidate_cert
 
     :param duplicate_candidate_cert: Name of the certificate which has duplicates
-    :param continue_with_auto_rotate: List of certificates which will continue to have rotation on (no change)
-    :param disable_auto_rotate: List of certificates for which rotation got disabled as part of this job
+    :param skipped_certs: List of certificates which will continue to have rotation on (no change)
+    :param rotation_disabled_certs: List of certificates for which rotation got disabled as part of this job
     :param unique_prefix: List of uniq prefixes to avoid rework
     :return: Success - True or False; If False, set of duplicates which were not processed
     """
