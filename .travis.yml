@@ -42,6 +42,9 @@ jobs:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-focal-10
           packages:
+            - lib32gcc-s1
+            - lib32stdc++6
+            - libc6-i386
             - clang-10
             - libclang-common-10-dev
             - postgresql-12
