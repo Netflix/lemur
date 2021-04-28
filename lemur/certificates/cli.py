@@ -800,38 +800,38 @@ def disable_rotation_of_duplicate_certificates(commit):
     authority_ids = [a.id for a in Authority.query.filter(Authority.name.in_(authority_names)).all()]
     duplicate_candidate_certs = list_duplicate_certs_by_authority(authority_ids)
 
-    log_data["duplicate_candidate_cert_count"] = len(duplicate_candidate_certs)
+    log_data["certs_with_serial_number_count"] = len(duplicate_candidate_certs)
     current_app.logger.info(log_data)
 
-    continue_with_auto_rotate = []
-    disable_auto_rotate = []
-    unique_prefix = []
     skipped_certs = []
+    rotation_disabled_certs = []
+    unique_prefix = []
+    failed_certs = []
 
     for duplicate_candidate_cert in duplicate_candidate_certs:
         success, duplicates = process_duplicates(duplicate_candidate_cert,
-                                                 continue_with_auto_rotate,
-                                                 disable_auto_rotate,
+                                                 skipped_certs,
+                                                 rotation_disabled_certs,
                                                  unique_prefix,
-                                                 commit)
+                                                 commit
+                                                 )
         if not success:
             for cert in duplicates:
-                skipped_certs.append(cert.name)
+                failed_certs.append(cert.name)
                 metrics.send("disable_rotation_duplicates", "counter", 1,
-                             metric_tags={"status": "skipped", "certificate": cert.name}
+                             metric_tags={"status": "failed", "certificate": cert.name}
                              )
 
-    print("### NO-OP ###")
-    for name in continue_with_auto_rotate:
-        print(name)
-    print("### DISABLE AUTO-ROTATE ###")
-    for name in disable_auto_rotate:
-        print(name)
-    print("### SKIPPED ###")
-    for name in skipped_certs:
-        print(name)
+    log_data["message"] = "Summary of task run"
+    log_data["unique_cert_prefix_count"] = len(unique_prefix)
+    log_data["rotation_disabled_cert_count"] = len(rotation_disabled_certs)
+    log_data["certificate_with_no_change_count"] = len(skipped_certs)
+    log_data["failed_to_determine_if_duplicate_count"] = len(failed_certs)
 
-def process_duplicates(duplicate_candidate_cert, continue_with_auto_rotate, disable_auto_rotate, unique_prefix, commit):
+    current_app.logger.info(log_data)
+
+
+def process_duplicates(duplicate_candidate_cert, skipped_certs, rotation_disabled_certs, unique_prefix, commit):
     """
     Process duplicates with same prefix as duplicate_candidate_cert
 
@@ -852,9 +852,9 @@ def process_duplicates(duplicate_candidate_cert, continue_with_auto_rotate, disa
 
     if len(certs_with_same_prefix) == 1:
         # this is the only cert with rotation ON, no further action needed
-        continue_with_auto_rotate.append(certs_with_same_prefix[0].name)
+        skipped_certs.append(certs_with_same_prefix[0].name)
         metrics.send("disable_rotation_duplicates", "counter", 1,
-                     metric_tags={"status": "no-op", "certificate": certs_with_same_prefix[0].name}
+                     metric_tags={"status": "skipped", "certificate": certs_with_same_prefix[0].name}
                      )
         return True, None
 
@@ -890,16 +890,16 @@ def process_duplicates(duplicate_candidate_cert, continue_with_auto_rotate, disa
 
     for matching_cert in certs_with_same_prefix:
         if matching_cert.name in certs_with_endpoint:
-            continue_with_auto_rotate.append(matching_cert.name)
+            skipped_certs.append(matching_cert.name)
             metrics.send("disable_rotation_duplicates", "counter", 1,
-                         metric_tags={"status": "no-op", "certificate": matching_cert.name}
+                         metric_tags={"status": "skipped", "certificate": matching_cert.name}
                          )
         else:
             # disable rotation and update DB
             # matching_cert.rotation = False
             # if commit:
                 # database.update(matching_cert)
-            disable_auto_rotate.append(matching_cert.name)
+            rotation_disabled_certs.append(matching_cert.name)
             metrics.send("disable_rotation_duplicates", "counter", 1,
                          metric_tags={"status": "success", "certificate": matching_cert.name}
                          )
@@ -910,8 +910,8 @@ def is_duplicate(matching_cert, compare_to):
     if (
         matching_cert.owner != compare_to.owner
         or matching_cert.san != compare_to.san
-        or matching_cert.not_before != compare_to.not_before
-        or matching_cert.not_after != compare_to.not_after
+        or matching_cert.not_before.date() != compare_to.not_before.date()
+        or matching_cert.not_after.date() != compare_to.not_after.date()
     ):
         return False
 
