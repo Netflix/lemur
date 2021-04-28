@@ -38,7 +38,11 @@ jobs:
         postgresql: '12'
         chrome: stable
         apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-focal-10
           packages:
+            - clang-10
             - postgresql-12
             - postgresql-client-12
             - postgresql-server-dev-12
