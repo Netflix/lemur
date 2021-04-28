@@ -896,9 +896,9 @@ def process_duplicates(duplicate_candidate_cert, skipped_certs, rotation_disable
                          )
         else:
             # disable rotation and update DB
-            # matching_cert.rotation = False
-            # if commit:
-                # database.update(matching_cert)
+            matching_cert.rotation = False
+            if commit:
+                database.update(matching_cert)
             rotation_disabled_certs.append(matching_cert.name)
             metrics.send("disable_rotation_duplicates", "counter", 1,
                          metric_tags={"status": "success", "certificate": matching_cert.name}

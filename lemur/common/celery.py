@@ -987,7 +987,7 @@ def disable_rotation_of_duplicate_certificates():
 
     current_app.logger.debug(log_data)
     try:
-        cli_certificate.disable_rotation_of_duplicate_certificates()
+        cli_certificate.disable_rotation_of_duplicate_certificates(True)
     except SoftTimeLimitExceeded:
         log_data["message"] = "Time limit exceeded."
         current_app.logger.error(log_data)
