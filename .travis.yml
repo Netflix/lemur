@@ -46,7 +46,7 @@ jobs:
             - llvm-10
             - llvm-10-dev
             - clang-10
-            - libclang-10-dev
+            - libclang-common-10-dev
             - postgresql-12
             - postgresql-client-12
             - postgresql-server-dev-12
