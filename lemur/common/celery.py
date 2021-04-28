@@ -710,7 +710,7 @@ def sync_source_destination():
     return log_data
 
 
-@celery.task(soft_time_limit=3600)
+@celery.task(soft_time_limit=3600, autoretry_for=(Exception,), default_retry_delay=10*60, max_retries=6)
 def certificate_reissue():
     """
     This celery task reissues certificates which are pending reissue
@@ -1196,8 +1196,8 @@ def send_notifications(notifications, notification_type, message, **kwargs):
         )
 
 
-@celery.task(soft_time_limit=60)
-def rotate_endpoint(endpoint_id, **kwargs):
+@celery.task(bind=True, soft_time_limit=60, autoretry_for=(Exception,), default_retry_delay=10*60, max_retries=6)
+def rotate_endpoint(self, endpoint_id, **kwargs):
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     logger = logging.getLogger(function)
 
@@ -1223,11 +1223,16 @@ def rotate_endpoint(endpoint_id, **kwargs):
     new_cert = endpoint.certificate.replaced[0]
     new_cert_name = new_cert.name
 
+    if self.request.retries > 0:
+        extra_message = f"retry {self.request.retries} of {self.max_retries}"
+    else:
+        extra_message = None
+
     # send notification taking notifications from both new and old certificate
     send_notifications(
         list(set(endpoint.certificate.notifications + new_cert.notifications)),
         "rotation",
-        f"Rotating endpoint {endpoint.name}",
+        extra_message,
         endpoint=endpoint,
     )
 
@@ -1249,20 +1254,25 @@ def rotate_endpoint(endpoint_id, **kwargs):
         sync_source.delay(endpoint.source.label)
 
 
-@celery.task(soft_time_limit=60)
-def rotate_endpoint_remove_cert(endpoint_id, certificate_id):
+@celery.task(bind=True, soft_time_limit=60, autoretry_for=(Exception,), default_retry_delay=10*60, max_retries=6)
+def rotate_endpoint_remove_cert(self, endpoint_id, certificate_id):
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     logger = logging.getLogger(function)
+
+    if self.request.retries > 0:
+        logger.warning(f"Retrying rotate_endpoint_remove_cert task as it failed before (retry {self.request.retries} of {self.max_retries})")
 
     endpoint = endpoint_service.get(endpoint_id)
     certificate = certificate_service.get(certificate_id)
 
     if not endpoint:
         # note: this can happen if this is scheduled twice
-        raise RuntimeError("endpoint does not exist")
+        logger.warning("Could not detach cert because endpoint does not exist - maybe this task was scheduled twice.")
+        return
 
     if not certificate:
-        raise RuntimeError("certificate does not exist")
+        logger.warning("Could not detach cert because certificate does not exist - maybe this task was scheduled twice.")
+        return
 
     endpoint.source.plugin.remove_certificate(endpoint, certificate.name)
 
