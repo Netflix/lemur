@@ -49,6 +49,7 @@ jobs:
             - postgresql-client-common
             - libgc1c2
             - libobjc4
+            - libc6-i386
             - lib32gcc-s1
             - lib32gcc-s1
             - lib32stdc++6
