@@ -278,7 +278,7 @@ def fetch_cert(id):
     for cert in pending_certs:
         cert_authority = get_authority(cert.authority_id)
         if cert_authority.plugin_name == "acme-issuer":
-            current_app.log.warning(
+            current_app.logger.warning(
                 "Skipping acme cert (use `fetch_acme_cert()` instead)."
             )
             continue
@@ -287,6 +287,8 @@ def fetch_cert(id):
         if real_cert:
             # If a real certificate was returned from issuer, then create it in
             # Lemur and mark the pending certificate as resolved
+            # Ideally, this should be a db transaction that would check resolved status
+            # before creating a new one
             final_cert = pending_certificate_service.create_certificate(
                 cert, real_cert, cert.user
             )
@@ -497,7 +499,7 @@ def remove_old_acme_certs():
 
 @celery.task()
 def fetch_all_pending_certs():
-    """Instantiate celery workers to resolve all  certificates"""
+    """Instantiate celery workers to resolve all certificates"""
 
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     task_id = None
@@ -1283,7 +1285,7 @@ def rotate_endpoint_remove_cert(self, endpoint_id, certificate_id):
 
 @celery.task(soft_time_limit=60)
 def rotate_all_pending_endpoints():
-    """"""
+    """."""
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     logger = logging.getLogger(function)
     task_id = None

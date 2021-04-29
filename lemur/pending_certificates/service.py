@@ -6,6 +6,8 @@
 import arrow
 from sqlalchemy import or_, cast, Integer
 
+from flask import current_app
+
 from lemur import database
 from lemur.authorities.models import Authority
 from lemur.authorities import service as authorities_service
@@ -99,6 +101,13 @@ def create_certificate(pending_certificate, certificate, user):
         user: User that called this function, used as 'creator' of the certificate if it does
               not have an owner
     """
+    # check if the pending_certificate already has been resolved, in that case return
+    # existing certificate
+    maybe_resolved_cert = get(pending_certificate.id)
+    if maybe_resolved_cert and maybe_resolved_cert.resolved and maybe_resolved_cert.resolved_cert_id:
+        current_app.logger.warning("Trying to resolve an already resolved certificate, returning existing resolved certificate")
+        return certificate_service.get(maybe_resolved_cert.resolved_cert_id)
+
     certificate["owner"] = pending_certificate.owner
     data, errors = CertificateUploadInputSchema().load(certificate)
     if errors:

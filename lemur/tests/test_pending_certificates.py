@@ -59,6 +59,27 @@ def test_create_pending(pending_certificate, user, session):
     assert real_cert.authority_id == pending_certificate.authority_id
 
 
+def test_create_pending_already_resolved(pending_certificate, user, session):
+    import copy
+    from lemur.pending_certificates.service import create_certificate, get, update
+
+    cert = {
+        "body": WILDCARD_CERT_STR,
+        "chain": INTERMEDIATE_CERT_STR,
+        "external_id": "54321",
+    }
+
+    pending_certificate = copy.copy(get(pending_certificate.id))
+    first_cert = create_certificate(pending_certificate, cert, user["user"])
+
+    # mark resolved on pending_certificate
+    update(pending_certificate.id, resolved_cert_id=first_cert.id)
+    update(pending_certificate.id, resolved=True)
+    second_cert = create_certificate(pending_certificate, cert, user["user"])
+
+    assert first_cert.id == second_cert.id
+
+
 @pytest.mark.parametrize(
     "token,status",
     [
