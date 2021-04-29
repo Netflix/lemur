@@ -187,6 +187,16 @@ def get_by_name(authority_name):
     return database.get(Authority, authority_name, field="name")
 
 
+def get_authorities_by_name(authority_names):
+    """
+    Retrieves an authority given it's name.
+
+    :param authority_names: list with authority names to match
+    :return:
+    """
+    return Authority.query.filter(Authority.name.in_(authority_names)).all()
+
+
 def get_authority_role(ca_name, creator=None):
     """
     Attempts to get the authority role for a given ca uses current_user

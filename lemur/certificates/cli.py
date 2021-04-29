@@ -16,6 +16,7 @@ from time import sleep
 from lemur import database
 from lemur.authorities.models import Authority
 from lemur.authorities.service import get as authorities_get_by_id
+from lemur.authorities.service import get_authorities_by_name
 from lemur.certificates.models import Certificate
 from lemur.certificates.schemas import CertificateOutputSchema
 from lemur.certificates.service import (
@@ -797,7 +798,7 @@ def disable_rotation_of_duplicate_certificates(commit):
 
     log_data["authorities"] = authority_names
 
-    authority_ids = [a.id for a in Authority.query.filter(Authority.name.in_(authority_names)).all()]
+    authority_ids = [a.id for a in get_authorities_by_name(authority_names)]
     duplicate_candidate_certs = list_duplicate_certs_by_authority(authority_ids)
 
     log_data["certs_with_serial_number_count"] = len(duplicate_candidate_certs)
