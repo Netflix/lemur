@@ -822,6 +822,8 @@ def disable_rotation_of_duplicate_certificates(commit):
                              metric_tags={"status": "failed", "certificate": cert.name}
                              )
 
+    # certs_with_serial_number_count + unique_cert_prefix_count should be equal to
+    # rotation_disabled_cert_count + rotation_disabled_cert_count + failed_to_determine_if_duplicate_count
     log_data["message"] = "Summary of task run"
     log_data["unique_cert_prefix_count"] = len(unique_prefix)
     log_data["rotation_disabled_cert_count"] = len(rotation_disabled_certs)
@@ -831,21 +833,21 @@ def disable_rotation_of_duplicate_certificates(commit):
     current_app.logger.info(log_data)
 
 
-def process_duplicates(duplicate_candidate_cert, skipped_certs, rotation_disabled_certs, unique_prefix, commit):
+def process_duplicates(duplicate_candidate_cert, skipped_certs, rotation_disabled_certs, processed_unique_prefix, commit):
     """
     Process duplicates with same prefix as duplicate_candidate_cert
 
     :param duplicate_candidate_cert: Name of the certificate which has duplicates
     :param skipped_certs: List of certificates which will continue to have rotation on (no change)
     :param rotation_disabled_certs: List of certificates for which rotation got disabled as part of this job
-    :param unique_prefix: List of uniq prefixes to avoid rework
+    :param processed_unique_prefix: List of unique prefixes to avoid rework
     :return: Success - True or False; If False, set of duplicates which were not processed
     """
     name_without_serial_num = duplicate_candidate_cert.name[:duplicate_candidate_cert.name.rindex("-")]
-    if name_without_serial_num in unique_prefix:
+    if name_without_serial_num in processed_unique_prefix:
         return True, None
 
-    unique_prefix.append(name_without_serial_num)
+    processed_unique_prefix.append(name_without_serial_num)
 
     prefix_to_match = name_without_serial_num + '%'
     certs_with_same_prefix = get_certificates_with_same_prefix_with_rotate_on(prefix_to_match)
@@ -859,6 +861,7 @@ def process_duplicates(duplicate_candidate_cert, skipped_certs, rotation_disable
         return True, None
 
     skip_cert = False
+    certs_to_stay_on_autorotate = []
 
     for matching_cert in certs_with_same_prefix:
         if matching_cert.name == name_without_serial_num:
@@ -874,22 +877,21 @@ def process_duplicates(duplicate_candidate_cert, skipped_certs, rotation_disable
         # it's safe to do so and this logic can be revisited
         if not is_duplicate(matching_cert, duplicate_candidate_cert):
             skip_cert = True
+            break
+
+        # Find certs with endpoint, auto-rotate needs to be on for these
+        if matching_cert.endpoints:
+            certs_to_stay_on_autorotate.append(matching_cert.name)
 
     if skip_cert:
         return False, certs_with_same_prefix
 
-    # Find certs with endpoint, auto-rotate needs to be on for these
-    certs_with_endpoint = []
-    for matching_cert in certs_with_same_prefix:
-        if matching_cert.endpoints:
-            certs_with_endpoint.append(matching_cert.name)
-
-    # If no cert has endpoint
-    if not certs_with_endpoint:
-        certs_with_endpoint.append(fallback_cert_to_rotate if fallback_cert_to_rotate else certs_with_same_prefix[0])
+    # If no certificate has endpoint, pick fallback_cert_to_rotate or any one to allow one certificate to auto-rotate.
+    if not certs_to_stay_on_autorotate:
+        certs_to_stay_on_autorotate.append(fallback_cert_to_rotate if fallback_cert_to_rotate else certs_with_same_prefix[0])
 
     for matching_cert in certs_with_same_prefix:
-        if matching_cert.name in certs_with_endpoint:
+        if matching_cert.name in certs_to_stay_on_autorotate:
             skipped_certs.append(matching_cert.name)
             metrics.send("disable_rotation_duplicates", "counter", 1,
                          metric_tags={"status": "skipped", "certificate": matching_cert.name}

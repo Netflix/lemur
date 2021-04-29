@@ -235,9 +235,9 @@ def find_duplicates(cert):
 
 def list_duplicate_certs_by_authority(authortiy_ids):
     """
-    Find duplicate certificates issued by given authorities that are still valid, have auto-rotation ON and have names
-    that are forced to be unique using serial number like 'some.name.prefix-YYYYMMDD-YYYYMMDD-serialnumber', thus the
-    pattern "%-[0-9]{8}-[0-9]{8}-%"
+    Find duplicate certificates issued by given authorities that are still valid, not replaced, have auto-rotation ON,
+    with names that are forced to be unique using serial number like 'some.name.prefix-YYYYMMDD-YYYYMMDD-serialnumber',
+    thus the pattern "%-[0-9]{8}-[0-9]{8}-%"
     :param authortiy_ids:
     :return: List of certificates matching criteria
     """
@@ -254,9 +254,18 @@ def list_duplicate_certs_by_authority(authortiy_ids):
 
 
 def get_certificates_with_same_prefix_with_rotate_on(prefix):
+    """
+    Find certificates with given prefix that are still valid, not replaced and marked for auto-rotate
+
+    :param prefix: prefix to match
+    :return:
+    """
+    now = arrow.now().format("YYYY-MM-DD")
     return (
         Certificate.query.filter(Certificate.name.like(prefix))
         .filter(Certificate.rotation == true())
+        .filter(Certificate.not_after >= now)
+        .filter(not_(Certificate.replaced.any()))
         .all()
     )
 
