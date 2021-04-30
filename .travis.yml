@@ -84,6 +84,7 @@ before_install:
 before_script:
   - sudo systemctl stop postgresql
   - sudo apt-get install --allow-downgrades libpq5=12.6-0ubuntu0.20.04.1
+  - sudo apt-get install -yq --allow-downgrades libc6=2.31-0ubuntu9.2 libc6-dev=2.31-0ubuntu9.2
   # the port may have been auto-configured to use 5433 if it thought 5422 was already in use,
   # for some reason it happens very often
   # https://github.com/travis-ci/travis-build/blob/master/lib/travis/build/bash/travis_setup_postgresql.bash#L52
