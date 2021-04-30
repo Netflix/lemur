@@ -35,7 +35,7 @@ jobs:
       python: "3.8"
       env: TOXENV=py38
       addons:
-        postgresql: '12'
+        postgresql: '10'
         chrome: stable
         apt:
           packages:
