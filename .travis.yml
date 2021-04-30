@@ -29,7 +29,7 @@ jobs:
       services:
         - postgresql
         - xvfb
-    - name: "python3.8-postgresql-12-focal"
+    - name: "python3.8-postgresql-10-focal"
       dist: focal
       language: python
       python: "3.8"
@@ -39,27 +39,9 @@ jobs:
         chrome: stable
         apt:
           packages:
-            - libclang-cpp10
-            - libpq-dev
-            - pgdg-keyring
-            - postgresql-client-common
-            - libgc1c2
-            - libobjc4
-            - libc6-i386
-            - lib32gcc-s1
-            - lib32gcc-s1
-            - lib32stdc++6
-            - libclang-common-10-dev
-            - libclang1-10
-            - clang-10
-            - postgresql-common
-            - python3-pygments
-            - libz3-4
-            - libz3-dev
-            - ssl-cert
-            - postgresql-12
-            - postgresql-client-12
-            - postgresql-server-dev-12
+            - postgresql-10
+            - postgresql-client-10
+            - postgresql-server-dev-10
       services:
         - postgresql
         - xvfb
@@ -83,8 +65,6 @@ before_install:
 
 before_script:
   - sudo systemctl stop postgresql
-  - sudo apt-get install --allow-downgrades libpq5=12.6-0ubuntu0.20.04.1
-  - sudo apt-get install -yq --allow-downgrades libc6=2.31-0ubuntu9.2 libc6-dev=2.31-0ubuntu9.2
   # the port may have been auto-configured to use 5433 if it thought 5422 was already in use,
   # for some reason it happens very often
   # https://github.com/travis-ci/travis-build/blob/master/lib/travis/build/bash/travis_setup_postgresql.bash#L52
