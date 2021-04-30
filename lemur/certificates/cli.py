@@ -16,7 +16,7 @@ from time import sleep
 from lemur import database
 from lemur.authorities.models import Authority
 from lemur.authorities.service import get as authorities_get_by_id
-from lemur.authorities.service import get_authorities_by_name
+from lemur.authorities.service import get_by_name as get_authority_by_name
 from lemur.certificates.models import Certificate
 from lemur.certificates.schemas import CertificateOutputSchema
 from lemur.certificates.service import (
@@ -798,7 +798,22 @@ def disable_rotation_of_duplicate_certificates(commit):
 
     log_data["authorities"] = authority_names
 
-    authority_ids = [a.id for a in get_authorities_by_name(authority_names)]
+    authority_ids = []
+    invalid_authorities = []
+    for authority_name in authority_names:
+        authority = get_authority_by_name(authority_name)
+        if authority:
+            authority_ids.append(authority.id)
+        else:
+            invalid_authorities.append(authority_name)
+
+    if invalid_authorities:
+        log_data["warning"] = f"Non-existing authorities: {invalid_authorities}"
+    if not authority_ids:
+        log_data["message"] = "Skipping task: No valid authorities configured"
+        current_app.logger.error(log_data)
+        return
+
     duplicate_candidate_certs = list_duplicate_certs_by_authority(authority_ids)
 
     log_data["certs_with_serial_number_count"] = len(duplicate_candidate_certs)
