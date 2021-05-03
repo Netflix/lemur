@@ -14,8 +14,9 @@ from dyn.tm.errors import (
 from dyn.tm.session import DynectSession
 from dyn.tm.zones import Node, Zone, get_all_zones
 from flask import current_app
+from sentry_sdk import capture_exception
 
-from lemur.extensions import metrics, sentry
+from lemur.extensions import metrics
 
 
 def get_dynect_session():
@@ -26,7 +27,7 @@ def get_dynect_session():
             current_app.config.get("ACME_DYN_PASSWORD", ""),
         )
     except Exception as e:
-        sentry.captureException()
+        capture_exception()
         metrics.send("get_dynect_session_fail", "counter", 1)
         current_app.logger.debug("Unable to establish connection to Dyn", exc_info=True)
         raise
@@ -67,7 +68,7 @@ def wait_for_dns_change(change_id, account_number=None):
     if not status:
         # TODO: Delete associated DNS text record here
         metrics.send("wait_for_dns_change_fail", "counter", 1, metric_tags={"dns": fqdn})
-        sentry.captureException(extra={"fqdn": str(fqdn), "txt_record": str(token)})
+        capture_exception(extra={"fqdn": str(fqdn), "txt_record": str(token)})
         metrics.send(
             "wait_for_dns_change_error",
             "counter",
@@ -129,7 +130,7 @@ def create_txt_record(domain, token, account_number):
             )
         else:
             metrics.send("create_txt_record_error", "counter", 1)
-            sentry.captureException()
+            capture_exception()
             raise
 
     change_id = (fqdn, token)
@@ -162,7 +163,7 @@ def delete_txt_record(change_id, account_number, domain, token):
             try:
                 txt_record.delete()
             except DynectDeleteError:
-                sentry.captureException(
+                capture_exception(
                     extra={
                         "fqdn": str(fqdn),
                         "zone_name": str(zone_name),
@@ -180,7 +181,7 @@ def delete_txt_record(change_id, account_number, domain, token):
     try:
         zone.publish()
     except DynectUpdateError:
-        sentry.captureException(
+        capture_exception(
             extra={
                 "fqdn": str(fqdn),
                 "zone_name": str(zone_name),
@@ -225,7 +226,7 @@ def delete_acme_txt_records(domain):
         try:
             txt_record.delete()
         except DynectDeleteError:
-            sentry.captureException(
+            capture_exception(
                 extra={
                     "fqdn": str(fqdn),
                     "zone_name": str(zone_name),

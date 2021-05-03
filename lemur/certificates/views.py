@@ -10,6 +10,7 @@ from builtins import str
 
 from flask import Blueprint, make_response, jsonify, g, current_app
 from flask_restful import reqparse, Api, inputs
+from sentry_sdk import capture_exception
 
 from lemur.common.schema import validate_schema
 from lemur.common.utils import paginated_parser
@@ -19,7 +20,6 @@ from lemur.auth.permissions import AuthorityPermission, CertificatePermission
 
 from lemur.certificates import service
 from lemur.certificates.models import Certificate
-from lemur.extensions import sentry
 from lemur.certificates.schemas import (
     certificate_input_schema,
     certificate_output_schema,
@@ -638,7 +638,7 @@ class CertificatesStats(AuthenticatedResource):
         try:
             items = service.stats(**args)
         except Exception as e:
-            sentry.captureException()
+            capture_exception()
             return dict(message=f"Failed to retrieve stats: {str(e)}"), 400
 
         return dict(items=items, total=len(items))
@@ -915,7 +915,7 @@ class Certificates(AuthenticatedResource):
                 try:
                     service.remove_from_destination(cert, destination)
                 except Exception as e:
-                    sentry.captureException()
+                    capture_exception()
                     # Add the removed destination back
                     data["destinations"].append(destination)
                     error_message = error_message + f"Failed to remove destination: {destination.label}. {str(e)}. "
@@ -1494,7 +1494,7 @@ class CertificateRevoke(AuthenticatedResource):
         except NotImplementedError as ne:
             return dict(message="Revoke is not implemented for issuer of this certificate"), 400
         except Exception as e:
-            sentry.captureException()
+            capture_exception()
             return dict(message=f"Failed to revoke: {str(e)}"), 400
 
 

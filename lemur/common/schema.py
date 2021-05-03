@@ -9,13 +9,11 @@
 """
 from functools import wraps
 from flask import request, current_app
-
+from sentry_sdk import capture_exception
 from sqlalchemy.orm.collections import InstrumentedList
 
 from inflection import camelize, underscore
 from marshmallow import Schema, post_dump, pre_load
-
-from lemur.extensions import sentry
 
 
 class LemurSchema(Schema):
@@ -159,7 +157,7 @@ def validate_schema(input_schema, output_schema):
             try:
                 resp = f(*args, **kwargs)
             except Exception as e:
-                sentry.captureException()
+                capture_exception()
                 current_app.logger.exception(e)
                 return dict(message=str(e)), 500
 

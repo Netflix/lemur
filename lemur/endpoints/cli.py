@@ -12,9 +12,10 @@ from datetime import timedelta
 
 from sqlalchemy import cast
 from sqlalchemy_utils import ArrowType
+from sentry_sdk import capture_exception
 
 from lemur import database
-from lemur.extensions import metrics, sentry
+from lemur.extensions import metrics
 from lemur.endpoints.models import Endpoint
 
 
@@ -53,4 +54,4 @@ def expire(ttl):
 
         print("[+] Finished expiration.")
     except Exception as e:
-        sentry.captureException()
+        capture_exception()
