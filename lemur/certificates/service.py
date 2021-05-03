@@ -20,6 +20,7 @@ from lemur.authorities.models import Authority
 from lemur.certificates.models import Certificate
 from lemur.certificates.schemas import CertificateOutputSchema, CertificateInputSchema
 from lemur.common.utils import generate_private_key, truthiness
+from lemur.constants import SUCCESS_METRIC_STATUS
 from lemur.destinations.models import Destination
 from lemur.domains.models import Domain
 from lemur.endpoints import service as endpoint_service
@@ -939,3 +940,64 @@ def get_issued_cert_count_for_authority(authority):
     :return:
     """
     return database.db.session.query(Certificate).filter(Certificate.authority_id == authority.id).count()
+
+
+def get_all_valid_certificates_with_source(source_id):
+    """
+    Return list of certificates
+    :param source_id:
+    :return:
+    """
+    return (
+        Certificate.query.filter(Certificate.sources.any(id=source_id))
+        .filter(Certificate.revoked == false())
+        .filter(Certificate.not_after >= arrow.now())
+        .filter(not_(Certificate.replaced.any()))
+        .all()
+    )
+
+
+def get_all_valid_certificates_with_destination(destination_id):
+    """
+    Return list of certificates
+    :param destination_id:
+    :return:
+    """
+    return (
+        Certificate.query.filter(Certificate.destinations.any(id=destination_id))
+        .filter(Certificate.revoked == false())
+        .filter(Certificate.not_after >= arrow.now())
+        .filter(not_(Certificate.replaced.any()))
+        .all()
+    )
+
+
+def remove_source_and_destination_association(certificate, label):
+    for source in certificate.sources:
+        if source.label == label:
+            certificate.sources.remove(source)
+            break
+
+    # If we want to remove the source from the certificate, we also need to clear any equivalent destinations to
+    # prevent Lemur from re-uploading the certificate.
+    for destination in certificate.destinations:
+        if destination.label == label:
+            certificate.destinations.remove(destination)
+            try:
+                remove_from_destination(certificate, destination)
+            except Exception as e:
+                # This cleanup is the best-effort, it will capture the exception and log
+                sentry.captureException()
+                current_app.logger.warning(f"Failed to remove destination: {destination.label}. {str(e)}")
+            break
+
+    database.update(certificate)
+
+    metrics.send(
+        "delete_certificate_source_destination",
+        "counter",
+        1,
+        metric_tags={"status": SUCCESS_METRIC_STATUS,
+                     "source_or_destination_label": source.label,
+                     "certificate": certificate.name}
+    )
