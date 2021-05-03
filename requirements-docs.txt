@@ -19,7 +19,7 @@ appdirs==1.4.4
     # via
     #   -r requirements-tests.txt
     #   black
-arrow==1.0.3
+arrow==1.1.0
     # via -r requirements-docs.in
 attrs==20.3.0
     # via
