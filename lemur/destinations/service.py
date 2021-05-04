@@ -82,7 +82,7 @@ def delete(destination_id):
         # remove association of this source from all valid certificates
         certificates = certificate_service.get_all_valid_certificates_with_destination(destination_id)
         for certificate in certificates:
-            certificate_service.remove_source_and_destination_association(certificate, destination.label)
+            certificate_service.remove_destination_association(certificate, destination)
             current_app.logger.warning(
                 f"Removed destination {destination.label} for {certificate.name} during destination delete")
 

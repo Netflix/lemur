@@ -972,32 +972,36 @@ def get_all_valid_certificates_with_destination(destination_id):
     )
 
 
-def remove_source_and_destination_association(certificate, label):
-    for source in certificate.sources:
-        if source.label == label:
-            certificate.sources.remove(source)
-            break
-
-    # If we want to remove the source from the certificate, we also need to clear any equivalent destinations to
-    # prevent Lemur from re-uploading the certificate.
-    for destination in certificate.destinations:
-        if destination.label == label:
-            certificate.destinations.remove(destination)
-            try:
-                remove_from_destination(certificate, destination)
-            except Exception as e:
-                # This cleanup is the best-effort, it will capture the exception and log
-                sentry.captureException()
-                current_app.logger.warning(f"Failed to remove destination: {destination.label}. {str(e)}")
-            break
-
+def remove_source_association(certificate, source):
+    certificate.sources.remove(source)
     database.update(certificate)
 
     metrics.send(
-        "delete_certificate_source_destination",
+        "delete_certificate_source_association",
         "counter",
         1,
         metric_tags={"status": SUCCESS_METRIC_STATUS,
-                     "source_or_destination_label": source.label,
+                     "source": source.label,
+                     "certificate": certificate.name}
+    )
+
+
+def remove_destination_association(certificate, destination):
+    certificate.destinations.remove(destination)
+    database.update(certificate)
+
+    try:
+        remove_from_destination(certificate, destination)
+    except Exception as e:
+        # This cleanup is the best-effort, it will capture the exception and log
+        sentry.captureException()
+        current_app.logger.warning(f"Failed to remove destination: {destination.label}. {str(e)}")
+
+    metrics.send(
+        "delete_certificate_destination_association",
+        "counter",
+        1,
+        metric_tags={"status": SUCCESS_METRIC_STATUS,
+                     "destination": destination.label,
                      "certificate": certificate.name}
     )
