@@ -50,7 +50,6 @@ blinker==1.4
     # via
     #   flask-mail
     #   flask-principal
-    #   raven
 boto3==1.17.57
     # via
     #   -r requirements-docs.in
@@ -73,6 +72,7 @@ certifi==2020.12.5
     # via
     #   -r requirements-tests.txt
     #   requests
+    #   sentry-sdk
 certsrv==2.1.1
     # via -r requirements-docs.in
 cffi==1.14.5
@@ -187,7 +187,6 @@ flask==1.1.2
     #   flask-script
     #   flask-sqlalchemy
     #   pytest-flask
-    #   raven
 freezegun==1.1.0
     # via -r requirements-tests.txt
 future==0.18.2
@@ -416,8 +415,6 @@ pyyaml==5.4.1
     #   cfn-lint
     #   cloudflare
     #   moto
-raven[flask]==6.10.0
-    # via -r requirements-docs.in
 redis==3.5.3
     # via
     #   -r requirements-docs.in
@@ -460,6 +457,8 @@ s3transfer==0.4.2
     # via
     #   -r requirements-tests.txt
     #   boto3
+sentry-sdk==1.0.0
+    # via -r requirements-docs.in
 six==1.15.0
     # via
     #   -r requirements-tests.txt
@@ -555,6 +554,7 @@ urllib3==1.26.4
     #   botocore
     #   requests
     #   responses
+    #   sentry-sdk
 vine==5.0.0
     # via -r requirements-docs.in
 websocket-client==0.58.0
