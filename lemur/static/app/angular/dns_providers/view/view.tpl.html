@@ -34,7 +34,9 @@
                 <button uib-tooltip="Edit DNS Provider" ng-click="edit(dns_provider.id)" class="btn btn-sm btn-info">
                   Edit
                 </button>
-                <button uib-tooltip="Delete DNS Provider" ng-click="remove(dns_provider)" type="button" class="btn btn-sm btn-danger pull-left">
+                <button uib-tooltip="Delete DNS Provider" ng-click="remove(dns_provider)"
+                        confirm-click="Proceed to remove the DNS Provider {{ dns_provider.name }}?"
+                        type="button" class="btn btn-sm btn-danger pull-left">
                   Remove
                 </button>
               </div>

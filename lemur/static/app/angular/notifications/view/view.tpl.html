@@ -40,7 +40,9 @@
                                 <button uib-tooltip="Edit Notification" ng-click="edit(notification.id)" class="btn btn-sm btn-info">
                                     Edit
                                 </button>
-                                <button uib-tooltip="Delete Notification" ng-click="remove(notification)" type="button" class="btn btn-sm btn-danger pull-left">
+                                <button uib-tooltip="Delete Notification" ng-click="remove(notification)"
+                                        confirm-click="Proceed to remove the notification {{ notification.label }}?"
+                                        type="button" class="btn btn-sm btn-danger pull-left">
                                     Remove
                                 </button>
                             </div>

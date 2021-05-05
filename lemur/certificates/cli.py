@@ -16,6 +16,7 @@ from time import sleep
 from lemur import database
 from lemur.authorities.models import Authority
 from lemur.authorities.service import get as authorities_get_by_id
+from lemur.authorities.service import get_by_name as get_authority_by_name
 from lemur.certificates.models import Certificate
 from lemur.certificates.schemas import CertificateOutputSchema
 from lemur.certificates.service import (
@@ -27,6 +28,8 @@ from lemur.certificates.service import (
     get,
     get_all_certs_attached_to_endpoint_without_autorotate,
     revoke as revoke_certificate,
+    list_duplicate_certs_by_authority,
+    get_certificates_with_same_prefix_with_rotate_on
 )
 from lemur.certificates.verify import verify_string
 from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS, CRLReason
@@ -775,3 +778,163 @@ def deactivate_entrust_certificates():
             current_app.logger.info(log_data)
             sentry.captureException()
             current_app.logger.exception(e)
+
+
+@manager.option("-c", "--commit", dest="commit", action="store_true", default=False, help="Persist changes.")
+def disable_rotation_of_duplicate_certificates(commit):
+    log_data = {
+        "function": f"{__name__}.{sys._getframe().f_code.co_name}",
+        "message": "Disabling auto-rotate for duplicate certificates"
+    }
+
+    if commit:
+        print("[!] Running in COMMIT mode.")
+
+    authority_names = current_app.config.get("AUTHORITY_TO_DISABLE_ROTATE_OF_DUPLICATE_CERTIFICATES")
+    if not authority_names:
+        log_data["message"] = "Skipping task: No authorities configured"
+        current_app.logger.debug(log_data)
+        return
+
+    log_data["authorities"] = authority_names
+
+    authority_ids = []
+    invalid_authorities = []
+    for authority_name in authority_names:
+        authority = get_authority_by_name(authority_name)
+        if authority:
+            authority_ids.append(authority.id)
+        else:
+            invalid_authorities.append(authority_name)
+
+    if invalid_authorities:
+        log_data["warning"] = f"Non-existing authorities: {invalid_authorities}"
+    if not authority_ids:
+        log_data["message"] = "Skipping task: No valid authorities configured"
+        current_app.logger.error(log_data)
+        return
+
+    duplicate_candidate_certs = list_duplicate_certs_by_authority(authority_ids)
+
+    log_data["certs_with_serial_number_count"] = len(duplicate_candidate_certs)
+    current_app.logger.info(log_data)
+
+    skipped_certs = []
+    rotation_disabled_certs = []
+    unique_prefix = []
+    failed_certs = []
+
+    for duplicate_candidate_cert in duplicate_candidate_certs:
+        success, duplicates = process_duplicates(duplicate_candidate_cert,
+                                                 skipped_certs,
+                                                 rotation_disabled_certs,
+                                                 unique_prefix,
+                                                 commit
+                                                 )
+        if not success:
+            for cert in duplicates:
+                failed_certs.append(cert.name)
+                metrics.send("disable_rotation_duplicates", "counter", 1,
+                             metric_tags={"status": "failed", "certificate": cert.name}
+                             )
+
+    # certs_with_serial_number_count + unique_cert_prefix_count should be equal to
+    # rotation_disabled_cert_count + rotation_disabled_cert_count + failed_to_determine_if_duplicate_count
+    log_data["message"] = "Summary of task run"
+    log_data["unique_cert_prefix_count"] = len(unique_prefix)
+    log_data["rotation_disabled_cert_count"] = len(rotation_disabled_certs)
+    log_data["certificate_with_no_change_count"] = len(skipped_certs)
+    log_data["failed_to_determine_if_duplicate_count"] = len(failed_certs)
+
+    current_app.logger.info(log_data)
+
+
+def process_duplicates(duplicate_candidate_cert, skipped_certs, rotation_disabled_certs, processed_unique_prefix, commit):
+    """
+    Process duplicates with same prefix as duplicate_candidate_cert
+
+    :param duplicate_candidate_cert: Name of the certificate which has duplicates
+    :param skipped_certs: List of certificates which will continue to have rotation on (no change)
+    :param rotation_disabled_certs: List of certificates for which rotation got disabled as part of this job
+    :param processed_unique_prefix: List of unique prefixes to avoid rework
+    :return: Success - True or False; If False, set of duplicates which were not processed
+    """
+    name_without_serial_num = duplicate_candidate_cert.name[:duplicate_candidate_cert.name.rindex("-")]
+    if name_without_serial_num in processed_unique_prefix:
+        return True, None
+
+    processed_unique_prefix.append(name_without_serial_num)
+
+    prefix_to_match = name_without_serial_num + '%'
+    certs_with_same_prefix = get_certificates_with_same_prefix_with_rotate_on(prefix_to_match)
+
+    if len(certs_with_same_prefix) == 1:
+        # this is the only cert with rotation ON, no further action needed
+        skipped_certs.append(certs_with_same_prefix[0].name)
+        metrics.send("disable_rotation_duplicates", "counter", 1,
+                     metric_tags={"status": "skipped", "certificate": certs_with_same_prefix[0].name}
+                     )
+        return True, None
+
+    skip_cert = False
+    certs_to_stay_on_autorotate = []
+
+    for matching_cert in certs_with_same_prefix:
+        if matching_cert.name == name_without_serial_num:
+            # There exists a cert with name same as the prefix (most likely there will always be one)
+            # Keep auto rotate on for this one if no cert has endpoint associated
+            fallback_cert_to_rotate = name_without_serial_num
+
+        if matching_cert.name == duplicate_candidate_cert.name:
+            # Same cert, no need to compare
+            continue
+
+        # Even if one of the cert with same prefix has different details, skip this set of certs
+        # it's safe to do so and this logic can be revisited
+        if not is_duplicate(matching_cert, duplicate_candidate_cert):
+            skip_cert = True
+            break
+
+        # Find certs with endpoint, auto-rotate needs to be on for these
+        if matching_cert.endpoints:
+            certs_to_stay_on_autorotate.append(matching_cert.name)
+
+    if skip_cert:
+        return False, certs_with_same_prefix
+
+    # If no certificate has endpoint, pick fallback_cert_to_rotate or any one to allow one certificate to auto-rotate.
+    if not certs_to_stay_on_autorotate:
+        certs_to_stay_on_autorotate.append(fallback_cert_to_rotate if fallback_cert_to_rotate else certs_with_same_prefix[0])
+
+    for matching_cert in certs_with_same_prefix:
+        if matching_cert.name in certs_to_stay_on_autorotate:
+            skipped_certs.append(matching_cert.name)
+            metrics.send("disable_rotation_duplicates", "counter", 1,
+                         metric_tags={"status": "skipped", "certificate": matching_cert.name}
+                         )
+        else:
+            # disable rotation and update DB
+            matching_cert.rotation = False
+            if commit:
+                database.update(matching_cert)
+            rotation_disabled_certs.append(matching_cert.name)
+            metrics.send("disable_rotation_duplicates", "counter", 1,
+                         metric_tags={"status": "success", "certificate": matching_cert.name}
+                         )
+    return True, None
+
+
+def is_duplicate(matching_cert, compare_to):
+    if (
+        matching_cert.owner != compare_to.owner
+        or matching_cert.san != compare_to.san
+        or matching_cert.not_before.date() != compare_to.not_before.date()
+        or matching_cert.not_after.date() != compare_to.not_after.date()
+    ):
+        return False
+
+    matching_destinations = [destination.label for destination in matching_cert.destinations]
+    compare_to_destinations = [destination.label for destination in compare_to.destinations]
+
+    return (len(matching_destinations) == len(compare_to_destinations)
+            and set(matching_destinations) == set(compare_to_destinations))

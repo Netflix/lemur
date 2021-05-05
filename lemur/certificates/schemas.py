@@ -109,7 +109,9 @@ class CertificateInputSchema(CertificateCreationSchema):
     organization = fields.String(
         missing=lambda: current_app.config.get("LEMUR_DEFAULT_ORGANIZATION")
     )
-    location = fields.String()
+    location = fields.String(
+        missing=lambda: current_app.config.get("LEMUR_DEFAULT_LOCATION")
+    )
     country = fields.String(
         missing=lambda: current_app.config.get("LEMUR_DEFAULT_COUNTRY")
     )

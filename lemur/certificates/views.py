@@ -705,6 +705,9 @@ class CertificatePrivateKey(AuthenticatedResource):
         response = make_response(jsonify(key=cert.private_key), 200)
         response.headers["cache-control"] = "private, max-age=0, no-cache, no-store"
         response.headers["pragma"] = "no-cache"
+
+        log_service.audit_log("export_private_key", cert.name,
+                              "Exported Private key for the certificate")
         return response
 
 
@@ -1481,9 +1484,6 @@ class CertificateRevoke(AuthenticatedResource):
                     dict(message="You are not authorized to revoke this certificate."),
                     403,
                 )
-
-        if not cert.external_id:
-            return dict(message="Cannot revoke certificate. No external id found."), 400
 
         if cert.endpoints:
             for endpoint in cert.endpoints:
