@@ -124,7 +124,7 @@ def request_rotation(endpoint, certificate, message, commit):
 
         except Exception as e:
             capture_exception(extra={"certificate_name": str(certificate.name),
-                                           "endpoint": str(endpoint.dnsname)})
+                                     "endpoint": str(endpoint.dnsname)})
             current_app.logger.exception(
                 f"Error rotating certificate: {certificate.name}", exc_info=True
             )
