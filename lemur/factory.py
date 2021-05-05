@@ -156,7 +156,7 @@ def configure_extensions(app):
             # associating users to errors
             send_default_pii=True,
             shutdown_timeout=60,
-            environment=app.config.get("LEMUR_ENV", 'test'),
+            environment=app.config.get("LEMUR_ENV", ''),
         )
 
     if app.config["CORS"]:
