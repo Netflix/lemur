@@ -683,8 +683,6 @@ You can remove all other `HostKey` lines.
 
 Finally restart OpenSSH.
 
-.. note:: By default, the server public certificate is signed until it expires. You can use the config's parameter OPENSSH_VALID_INTERVAL_SERVER to change this behavor (unit is number of day). In this case, you must update the `/etc/ssh/ssh_host_key.pub` file before this delay.
-
 Configure the OpenSSH client
 ----------------------------
 
@@ -717,5 +715,3 @@ With this configuration you don't have any line like::
     Warning: Permanently added 'server.example.net,192.168.0.1' (RSA) to the list of known hosts.
 
 And you don't have to enter any password.
-
-.. note:: By default, the client public certificate is signed until it expires. You can use the config's parameter OPENSSH_VALID_INTERVAL_CLIENT to change this behavor (unit is number of day). In this case, you must update the `~/.ssh/key.pub` file before this delay.
