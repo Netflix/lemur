@@ -73,7 +73,7 @@ requests==2.25.1
     #   twine
 rfc3986==1.4.0
     # via twine
-six==1.15.0
+six==1.16.0
     # via
     #   bleach
     #   readme-renderer
@@ -88,7 +88,7 @@ typing-extensions==3.10.0.0
     # via importlib-metadata
 urllib3==1.26.4
     # via requests
-virtualenv==20.4.4
+virtualenv==20.4.6
     # via pre-commit
 webencodings==0.5.1
     # via bleach
