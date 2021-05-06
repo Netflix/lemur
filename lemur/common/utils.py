@@ -390,10 +390,12 @@ def get_certificate_via_tls(host, port, timeout=10):
     """
     Makes a TLS network connection to retrieve the current certificate for the specified host and port.
 
+    Note that if the host is valid but the port is not, we'll wait for the timeout for the connection to fail,
+    so this should remain low when doing bulk operations.
+
     :param host: Host to get certificate for
     :param port: Port to get certificate for
-    :param timeout: Timeout in seconds. Note that if the host is valid but the port is not, we'll wait for the timeout
-    for the connection to fail, so this should remain low when doing bulk operations.
+    :param timeout: Timeout in seconds
     """
     context = ssl.create_default_context()
     context.check_hostname = False  # we don't care about validating the cert

@@ -947,17 +947,19 @@ def get_issued_cert_count_for_authority(authority):
 
 def get_deployed_expiring_certificates(exclude=None, timeout_seconds_per_network_call=1):
     """
-    Finds all certificates that are eligible for deployed expiring cert notifications.
+    Finds all certificates that are eligible for deployed expiring cert notifications. Returns the set of domain/port
+    pairs at which each certificate was identified as in use (deployed).
 
     Note that this makes actual TLS network calls in order to establish the "deployed" part of this check.
 
-    :return: A dictionary with owner as key, and a list of certificates associated with domains/ports on which
-    those certificates are still deployed. Sample response:
+    Sample response:
         defaultdict(<class 'list'>,
             {'testowner2@example.com': [(Certificate(name=certificate100),
                                         defaultdict(<class 'list'>, {'localhost': [65521, 65522, 65523]}))],
             'testowner3@example.com': [(Certificate(name=certificate101),
                                         defaultdict(<class 'list'>, {'localhost': [65521, 65522, 65523]}))]})
+
+    :return: A dictionary with owner as key, and a list of certificates associated with domains/ports.
     """
     now = arrow.utcnow()
     threshold_days = current_app.config.get("LEMUR_DEPLOYED_EXPIRING_CERT_THRESHOLD_DAYS", 14)
@@ -1003,7 +1005,7 @@ def find_domains_where_cert_is_deployed(certificate, timeout_seconds_per_network
     for all the domains in the cert. If the domain is valid but the port is not, we have to wait for the connection
     to time out, which means this can be quite slow.
 
-    Returns a dictionary of the form {'domain1': [ports], 'domain2': [ports]}
+    :return: A dictionary of the form {'domain1': [ports], 'domain2': [ports]}
     """
     matched_domains = defaultdict(list)
     for domain in [d for d in certificate.domains if '*' not in d.name]:  # filter out wildcards, we can't check them
