@@ -146,9 +146,9 @@ def configure_extensions(app):
     # the legacy Raven[flask] relied on SENTRY_CONFIG
     if app.config.get("SENTRY_DSN", None) or app.config.get("SENTRY_CONFIG", None):
         # priority given to SENTRY_DSN
-        sentry_dns = app.config.get("SENTRY_DSN", None) or app.config["SENTRY_CONFIG"]['dsn']
+        sentry_dsn = app.config.get("SENTRY_DSN", None) or app.config["SENTRY_CONFIG"]['dsn']
         sentry_sdk.init(
-            dsn=sentry_dns,
+            dsn=sentry_dsn,
             integrations=[SqlalchemyIntegration(),
                           CeleryIntegration(),
                           RedisIntegration(),
