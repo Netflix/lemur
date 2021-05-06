@@ -17,6 +17,7 @@ from lemur.extensions import metrics
 from lemur.authorities.models import Authority
 from lemur.certificates.models import Certificate
 from lemur.roles import service as role_service
+from lemur.logs import service as log_service
 
 from lemur.certificates.service import upload
 
@@ -36,6 +37,7 @@ def update(authority_id, description, owner, active, roles):
     authority.description = description
     authority.owner = owner
 
+    log_service.audit_log("update_authority", authority.name, "Updating authority")  # check ui what can be updated
     return database.update(authority)
 
 
@@ -75,6 +77,8 @@ def mint(**kwargs):
         kwargs["plugin"]["plugin_object"].title,
         kwargs["creator"],
     )
+
+    log_service.audit_log("create_authority_with_issuer", issuer.title, "Created new authority")
     return body, private_key, chain, roles
 
 
@@ -145,6 +149,7 @@ def create(**kwargs):
     authority = database.create(authority)
     kwargs["creator"].authorities.append(authority)
 
+    log_service.audit_log("create_authority", ca_name, "Created new authority")
     metrics.send(
         "authority_created", "counter", 1, metric_tags=dict(owner=authority.owner)
     )
@@ -180,6 +185,16 @@ def get_by_name(authority_name):
     :return:
     """
     return database.get(Authority, authority_name, field="name")
+
+
+def get_authorities_by_name(authority_names):
+    """
+    Retrieves an authority given it's name.
+
+    :param authority_names: list with authority names to match
+    :return:
+    """
+    return Authority.query.filter(Authority.name.in_(authority_names)).all()
 
 
 def get_authority_role(ca_name, creator=None):

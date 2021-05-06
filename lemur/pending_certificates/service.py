@@ -21,6 +21,7 @@ from lemur.pending_certificates.models import PendingCertificate
 from lemur.plugins.base import plugins
 from lemur.roles.models import Role
 from lemur.users import service as user_service
+from lemur.logs import service as log_service
 
 
 def get(pending_cert_id):
@@ -56,11 +57,12 @@ def get_by_name(pending_cert_name):
 
 
 def delete(pending_certificate):
+    log_service.audit_log("delete_pending_certificate", pending_certificate.name, "Deleting the pending certificate")
     database.delete(pending_certificate)
 
 
 def delete_by_id(id):
-    database.delete(get(id))
+    delete(get(id))
 
 
 def get_unresolved_pending_certs():
@@ -133,6 +135,8 @@ def create_certificate(pending_certificate, certificate, user):
     database.update(cert)
 
     metrics.send("certificate_issued", "counter", 1, metric_tags=dict(owner=cert.owner, issuer=cert.issuer))
+    log_service.audit_log("certificate_from_pending_certificate", cert.name,
+                          f"Created from the pending certificate {pending_certificate.name}")
     return cert
 
 
@@ -142,6 +146,9 @@ def increment_attempt(pending_certificate):
     """
     pending_certificate.number_attempts += 1
     database.update(pending_certificate)
+
+    log_service.audit_log("increment_attempt_pending_certificate", pending_certificate.name,
+                          "Incremented attempts for the pending certificate")
     return pending_certificate.number_attempts
 
 
@@ -153,6 +160,8 @@ def update(pending_cert_id, **kwargs):
     pending_cert = get(pending_cert_id)
     for key, value in kwargs.items():
         setattr(pending_cert, key, value)
+
+    log_service.audit_log("update_pending_certificate", pending_cert.name, f"Update summary - {kwargs}")
     return database.update(pending_cert)
 
 
@@ -168,6 +177,8 @@ def cancel(pending_certificate, **kwargs):
     plugin.cancel_ordered_certificate(pending_certificate, **kwargs)
     pending_certificate.status = "Cancelled"
     database.update(pending_certificate)
+
+    log_service.audit_log("cancel_pending_certificate", pending_certificate.name, "Cancelled the pending certificate")
     return pending_certificate
 
 
@@ -259,9 +270,9 @@ def render(args):
 
 def upload(pending_certificate_id, **kwargs):
     """
-    Uploads a (signed) pending certificate.  The allowed fields are validated by
+    Uploads a (signed) pending certificate. The allowed fields are validated by
     PendingCertificateUploadInputSchema. The certificate is also validated to be
-    signed by the correct authoritity.
+    signed by the correct authority.
     """
     pending_cert = get(pending_certificate_id)
     partial_cert = kwargs
@@ -286,5 +297,7 @@ def upload(pending_certificate_id, **kwargs):
 
     pending_cert_final_result = update(pending_cert.id, resolved_cert_id=final_cert.id)
     update(pending_cert.id, resolved=True)
+
+    log_service.audit_log("resolve_pending_certificate", pending_cert.name, "Resolved the pending certificate")
 
     return pending_cert_final_result

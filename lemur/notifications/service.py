@@ -14,6 +14,7 @@ from lemur import database
 from lemur.certificates.models import Certificate
 from lemur.common.utils import truthiness
 from lemur.notifications.models import Notification
+from lemur.logs import service as log_service
 
 
 def create_default_expiration_notifications(name, recipients, intervals=None):
@@ -138,7 +139,10 @@ def delete(notification_id):
 
     :param notification_id: Lemur assigned ID
     """
-    database.delete(get(notification_id))
+    notification = get(notification_id)
+    if notification:
+        log_service.audit_log("delete_notification", notification.label, "Deleting notification")
+        database.delete(notification)
 
 
 def get(notification_id):
