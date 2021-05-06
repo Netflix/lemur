@@ -9,8 +9,9 @@
 import botocore
 
 from retrying import retry
+from sentry_sdk import capture_exception
 
-from lemur.extensions import metrics, sentry
+from lemur.extensions import metrics
 from lemur.plugins.lemur_aws.sts import sts_client
 
 
@@ -131,7 +132,7 @@ def get_certificate(name, **kwargs):
     try:
         return client.get_server_certificate(ServerCertificateName=name)["ServerCertificate"]
     except client.exceptions.NoSuchEntityException:
-        sentry.captureException()
+        capture_exception()
         return None
 
 

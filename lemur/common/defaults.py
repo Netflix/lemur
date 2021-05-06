@@ -4,9 +4,9 @@ import unicodedata
 from cryptography import x509
 from cryptography.hazmat.primitives.serialization import Encoding
 from flask import current_app
+from sentry_sdk import capture_exception
 
 from lemur.common.utils import is_selfsigned
-from lemur.extensions import sentry
 from lemur.constants import SAN_NAMING_TEMPLATE, DEFAULT_NAMING_TEMPLATE
 
 
@@ -77,7 +77,7 @@ def common_name(cert):
             return subject_oid[0].value.strip()
         return None
     except Exception as e:
-        sentry.captureException()
+        capture_exception()
         current_app.logger.error(
             {
                 "message": "Unable to get common name",
@@ -101,7 +101,7 @@ def organization(cert):
 
         return o[0].value.strip()
     except Exception as e:
-        sentry.captureException()
+        capture_exception()
         current_app.logger.error("Unable to get organization! {0}".format(e))
 
 
@@ -118,7 +118,7 @@ def organizational_unit(cert):
 
         return ou[0].value.strip()
     except Exception as e:
-        sentry.captureException()
+        capture_exception()
         current_app.logger.error("Unable to get organizational unit! {0}".format(e))
 
 
@@ -135,7 +135,7 @@ def country(cert):
 
         return c[0].value.strip()
     except Exception as e:
-        sentry.captureException()
+        capture_exception()
         current_app.logger.error("Unable to get country! {0}".format(e))
 
 
@@ -152,7 +152,7 @@ def state(cert):
 
         return s[0].value.strip()
     except Exception as e:
-        sentry.captureException()
+        capture_exception()
         current_app.logger.error("Unable to get state! {0}".format(e))
 
 
@@ -169,7 +169,7 @@ def location(cert):
 
         return loc[0].value.strip()
     except Exception as e:
-        sentry.captureException()
+        capture_exception()
         current_app.logger.error("Unable to get location! {0}".format(e))
 
 
@@ -190,9 +190,9 @@ def domains(cert):
             domains.append(entry)
     except x509.ExtensionNotFound:
         if current_app.config.get("LOG_SSL_SUBJ_ALT_NAME_ERRORS", True):
-            sentry.captureException()
+            capture_exception()
     except Exception as e:
-        sentry.captureException()
+        capture_exception()
 
     return domains
 
@@ -244,7 +244,7 @@ def bitstrength(cert):
     try:
         return cert.public_key().key_size
     except AttributeError:
-        sentry.captureException()
+        capture_exception()
         current_app.logger.debug("Unable to get bitstrength.")
 
 

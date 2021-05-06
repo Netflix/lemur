@@ -1,11 +1,12 @@
 from flask_script import Manager
 
 import sys
+from sentry_sdk import capture_exception
 
 from lemur.constants import SUCCESS_METRIC_STATUS
 from lemur.plugins.lemur_acme.acme_handlers import AcmeDnsHandler
 from lemur.dns_providers.service import get_all_dns_providers, set_domains
-from lemur.extensions import metrics, sentry
+from lemur.extensions import metrics
 
 manager = Manager(
     usage="Iterates through all DNS providers and sets DNS zones in the database."
@@ -34,7 +35,7 @@ def get_all_zones():
         except Exception as e:
             print("[+] Error with DNS Provider {}: {}".format(dns_provider.name, e))
             log_data["message"] = f"get all zones failed for {dns_provider} {e}."
-            sentry.captureException(extra=log_data)
+            capture_exception(extra=log_data)
 
     status = SUCCESS_METRIC_STATUS
 

@@ -12,6 +12,7 @@ from flask_script import Manager
 from sqlalchemy import or_
 from tabulate import tabulate
 from time import sleep
+from sentry_sdk import capture_exception
 
 from lemur import database
 from lemur.authorities.models import Authority
@@ -36,7 +37,7 @@ from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS, CRLRea
 from lemur.deployment import service as deployment_service
 from lemur.domains.models import Domain
 from lemur.endpoints import service as endpoint_service
-from lemur.extensions import sentry, metrics
+from lemur.extensions import metrics
 from lemur.notifications.messaging import send_rotation_notification
 from lemur.plugins.base import plugins
 
@@ -122,8 +123,8 @@ def request_rotation(endpoint, certificate, message, commit):
             status = SUCCESS_METRIC_STATUS
 
         except Exception as e:
-            sentry.captureException(extra={"certificate_name": str(certificate.name),
-                                           "endpoint": str(endpoint.dnsname)})
+            capture_exception(extra={"certificate_name": str(certificate.name),
+                                     "endpoint": str(endpoint.dnsname)})
             current_app.logger.exception(
                 f"Error rotating certificate: {certificate.name}", exc_info=True
             )
@@ -162,7 +163,7 @@ def request_reissue(certificate, commit):
         status = SUCCESS_METRIC_STATUS
 
     except Exception as e:
-        sentry.captureException(extra={"certificate_name": str(certificate.name)})
+        capture_exception(extra={"certificate_name": str(certificate.name)})
         current_app.logger.exception(
             f"Error reissuing certificate: {certificate.name}", exc_info=True
         )
@@ -274,7 +275,7 @@ def rotate(endpoint_name, new_certificate_name, old_certificate_name, message, c
         print("[+] Done!")
 
     except Exception as e:
-        sentry.captureException(
+        capture_exception(
             extra={
                 "old_certificate_name": str(old_certificate_name),
                 "new_certificate_name": str(new_certificate_name),
@@ -440,7 +441,7 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
         print("[+] Done!")
 
     except Exception as e:
-        sentry.captureException(
+        capture_exception(
             extra={
                 "old_certificate_name": str(old_certificate_name),
                 "new_certificate_name": str(new_certificate_name),
@@ -505,7 +506,7 @@ def reissue(old_certificate_name, commit):
         status = SUCCESS_METRIC_STATUS
         print("[+] Done!")
     except Exception as e:
-        sentry.captureException()
+        capture_exception()
         current_app.logger.exception("Error reissuing certificate.", exc_info=True)
         print("[!] Failed to reissue certificates. Reason: {}".format(e))
 
@@ -586,7 +587,7 @@ def worker(data, commit, reason):
         )
 
     except Exception as e:
-        sentry.captureException()
+        capture_exception()
         metrics.send(
             "certificate_revoke",
             "counter",
@@ -686,7 +687,7 @@ def check_revoked():
                 current_app.logger.info(log_data)
 
         except Exception as e:
-            sentry.captureException()
+            capture_exception()
             current_app.logger.exception(e)
             cert.status = "unknown"
 
@@ -776,7 +777,7 @@ def deactivate_entrust_certificates():
 
         except Exception as e:
             current_app.logger.info(log_data)
-            sentry.captureException()
+            capture_exception()
             current_app.logger.exception(e)
 
 

@@ -5,8 +5,8 @@ import dns.name
 import dns.query
 import dns.resolver
 import re
+from sentry_sdk import capture_exception
 
-from lemur.extensions import sentry
 from lemur.extensions import metrics
 
 
@@ -95,7 +95,7 @@ def get_dns_records(domain, rdtype, nameserver):
             for record in rdata.strings:
                 records.append(record.decode("utf-8"))
     except dns.exception.DNSException:
-        sentry.captureException()
+        capture_exception()
         function = sys._getframe().f_code.co_name
         metrics.send(f"{function}.fail", "counter", 1)
     return records

@@ -10,7 +10,9 @@ import dns.query
 import dns.resolver
 
 from flask import current_app
-from lemur.extensions import metrics, sentry
+from sentry_sdk import capture_exception
+
+from lemur.extensions import metrics
 
 
 class Record:
@@ -221,7 +223,7 @@ def wait_for_dns_change(change_id, account_number=None):
             time.sleep(10)
     if not status:
         metrics.send(f"{function}.fail", "counter", 1, metric_tags={"fqdn": fqdn, "txt_record": token})
-        sentry.captureException(extra={"fqdn": str(fqdn), "txt_record": str(token)})
+        capture_exception(extra={"fqdn": str(fqdn), "txt_record": str(token)})
     return
 
 

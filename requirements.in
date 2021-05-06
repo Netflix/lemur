@@ -42,10 +42,10 @@ pyjwt
 pyOpenSSL
 pyyaml>=4.2b1 #high severity alert
 python_ldap
-raven[flask]
 redis
 requests
 retrying
+sentry-sdk
 six
 SQLAlchemy-Utils
 sqlalchemy < 1.4.0 # ImportError: cannot import name '_ColumnEntity' https://github.com/sqlalchemy/sqlalchemy/issues/6226

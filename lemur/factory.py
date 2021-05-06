@@ -11,6 +11,7 @@
 """
 import os
 import importlib
+import logmatic
 import errno
 import pkg_resources
 import socket
@@ -20,11 +21,16 @@ from logging.handlers import RotatingFileHandler
 
 from flask import Flask
 from flask_replicated import FlaskReplicated
-import logmatic
+
+import sentry_sdk
+from sentry_sdk.integrations.celery import CeleryIntegration
+from sentry_sdk.integrations.redis import RedisIntegration
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+from sentry_sdk.integrations.flask import FlaskIntegration
 
 from lemur.certificates.hooks import activate_debug_dump
 from lemur.common.health import mod as health
-from lemur.extensions import db, migrate, principal, smtp_mail, metrics, sentry, cors
+from lemur.extensions import db, migrate, principal, smtp_mail, metrics, cors
 
 
 DEFAULT_BLUEPRINTS = (health,)
@@ -136,7 +142,22 @@ def configure_extensions(app):
     principal.init_app(app)
     smtp_mail.init_app(app)
     metrics.init_app(app)
-    sentry.init_app(app)
+
+    # the legacy Raven[flask] relied on SENTRY_CONFIG
+    if app.config.get("SENTRY_DSN", None) or app.config.get("SENTRY_CONFIG", None):
+        # priority given to SENTRY_DSN
+        sentry_dsn = app.config.get("SENTRY_DSN", None) or app.config["SENTRY_CONFIG"]['dsn']
+        sentry_sdk.init(
+            dsn=sentry_dsn,
+            integrations=[SqlalchemyIntegration(),
+                          CeleryIntegration(),
+                          RedisIntegration(),
+                          FlaskIntegration()],
+            # associating users to errors
+            send_default_pii=True,
+            shutdown_timeout=60,
+            environment=app.config.get("LEMUR_ENV", ''),
+        )
 
     if app.config["CORS"]:
         app.config["CORS_HEADERS"] = "Content-Type"
