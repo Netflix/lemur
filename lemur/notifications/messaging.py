@@ -8,23 +8,21 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
-import socket
-import ssl
 import sys
 from collections import defaultdict
 from datetime import timedelta
 from itertools import groupby
 
-import OpenSSL
 import arrow
 from flask import current_app
-from sqlalchemy import and_, not_
+from sqlalchemy import and_
 from sqlalchemy.sql.expression import false, true
 
 from lemur import database
 from lemur.certificates import service as certificates_service
 from lemur.certificates.models import Certificate
 from lemur.certificates.schemas import certificate_notification_output_schema
+from lemur.certificates.service import get_deployed_expiring_certificates
 from lemur.common.utils import windowed_query, is_selfsigned
 from lemur.constants import FAILURE_METRIC_STATUS, SUCCESS_METRIC_STATUS
 from lemur.extensions import metrics, sentry
@@ -97,96 +95,6 @@ def get_certificates_for_security_summary_email(exclude=None):
         if days_remaining <= threshold_days:
             certs.append(c)
     return certs
-
-
-def get_deployed_expiring_certificates(exclude=None):
-    """
-    Finds all certificates that are eligible for deployed expiring cert notifications.
-    :return:
-    """
-    now = arrow.utcnow()
-    threshold_days = current_app.config.get("LEMUR_DEPLOYED_EXPIRING_CERT_NOTIFY_THRESHOLD_DAYS", 14)
-    max_not_after = now + timedelta(days=threshold_days)
-
-    # TODO how can we confirm it's not going to be rotated in the future? Is the threshold sufficient?
-    q = (
-        database.db.session.query(Certificate)
-        .filter(Certificate.not_after <= max_not_after)
-        .filter(Certificate.expired == false())
-        .filter(Certificate.revoked == false())
-        .filter(not_(Certificate.replaced.any()))
-    )
-
-    exclude_conditions = []
-    if exclude:
-        for e in exclude:
-            exclude_conditions.append(~Certificate.name.ilike("%{}%".format(e)))
-
-        q = q.filter(and_(*exclude_conditions))
-
-    all_certs = defaultdict(dict)
-    for c in windowed_query(q, Certificate.id, 10000):
-        domains_for_cert = domains_where_cert_is_deployed(c)
-        if len(domains_for_cert) > 0:
-            all_certs[c] = domains_for_cert
-
-    certificates = defaultdict(list)
-    # group by owner
-    for owner, owner_certs in groupby(sorted(all_certs.items(), key=lambda x: x[0].owner), lambda x: x[0].owner):
-        current_app.logger.info(f"Found certs for owner {owner}: {owner_certs}")  # TODO remove
-        certificates[owner] = list(owner_certs)
-
-    return certificates
-
-
-def get_certificate(host, port, timeout=10):
-    context = ssl.create_default_context()
-    conn = socket.create_connection((host, port))
-    sock = context.wrap_socket(conn, server_hostname=host)
-    sock.settimeout(timeout)
-    try:
-        der_cert = sock.getpeercert(True)
-    finally:
-        sock.close()
-    return ssl.DER_cert_to_PEM_cert(der_cert)
-
-
-def parse_serial(certificate_for_domain):
-    x509 = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, certificate_for_domain)
-    x509.get_notAfter()
-    parsed_certificate = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, certificate_for_domain)
-    return parsed_certificate.get_serial_number()
-
-
-def domains_where_cert_is_deployed(certificate):
-    """
-    Checks if the specified cert is still deployed. Returns a list of domains to which it's deployed.
-
-    We use the serial number to identify that a certificate is identical. If there were multiple certificates
-    issued for the same domain with identical serial numbers, this could return a false positive.
-
-    Returns a dictionary of the form {'domain1': [ports], 'domain2': [ports]}
-    """
-    matched_domains = defaultdict(list)
-    for domain in [d for d in certificate.domains if '*' not in d.name]:  # filter out wildcards, we can't check them
-        matched_ports_for_domain = []
-        for port in current_app.config.get("LEMUR_PORTS_FOR_DEPLOYED_CERTIFICATE_CHECK", [443]):
-            try:
-                parsed_serial = parse_serial(get_certificate(domain.name, port))
-                if parsed_serial == int(certificate.serial):
-                    matched_ports_for_domain.append(port)
-                    # TODO remove, just for testing
-                    current_app.logger.info(f'Domain {domain} WAS a match on port {port}; found serial '
-                                            f'{parsed_serial} but existing serial was {certificate.serial}')
-                else:  # TODO remove, just for testing
-                    current_app.logger.info(f'Domain {domain} was not a match on port {port}; found serial '
-                                            f'{parsed_serial} but existing serial was {certificate.serial}')
-            except Exception:
-                current_app.logger.info(f'Unable to check certificate for domain {domain}', exc_info=True)
-        if len(matched_ports_for_domain) > 0:
-            matched_domains[domain.name] = matched_ports_for_domain
-
-    return matched_domains
 
 
 def get_expiring_authority_certificates():
@@ -585,9 +493,6 @@ def send_expiring_deployed_certificate_notifications(exclude):
     security_email = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
 
     for owner, owner_certs in get_deployed_expiring_certificates(exclude).items():
-        # format of owner_certs:
-        # [(Certificate(name=certificate89), defaultdict(<class 'list'>, {'google.com': [443]})),
-        #  (Certificate(name=certificate91), defaultdict(<class 'list'>, {'drive.google.com': [443]}))]
         notification_data = []
         # eventually we also want to use the options configured on the cert's notification(s) to notify the owner
         # for now, we'll just email the security team

@@ -5,13 +5,17 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import arrow
 import re
+from collections import defaultdict
+from datetime import timedelta
+from itertools import groupby
+
+import arrow
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from flask import current_app
-from sqlalchemy import func, or_, not_, cast, Integer
+from sqlalchemy import and_, func, or_, not_, cast, Integer
 from sqlalchemy.sql import text
 from sqlalchemy.sql.expression import false, true
 
@@ -19,7 +23,7 @@ from lemur import database
 from lemur.authorities.models import Authority
 from lemur.certificates.models import Certificate
 from lemur.certificates.schemas import CertificateOutputSchema, CertificateInputSchema
-from lemur.common.utils import generate_private_key, truthiness
+from lemur.common.utils import generate_private_key, truthiness, parse_serial, get_certificate_via_tls, windowed_query
 from lemur.destinations.models import Destination
 from lemur.domains.models import Domain
 from lemur.endpoints import service as endpoint_service
@@ -939,3 +943,81 @@ def get_issued_cert_count_for_authority(authority):
     :return:
     """
     return database.db.session.query(Certificate).filter(Certificate.authority_id == authority.id).count()
+
+
+def get_deployed_expiring_certificates(exclude=None, timeout_seconds_per_network_call=1):
+    """
+    Finds all certificates that are eligible for deployed expiring cert notifications.
+
+    Note that this makes actual TLS network calls in order to establish the "deployed" part of this check.
+
+    :return: A dictionary with owner as key, and a list of certificates associated with domains/ports on which
+    those certificates are still deployed. Sample response:
+        defaultdict(<class 'list'>,
+            {'testowner2@example.com': [(Certificate(name=certificate100),
+                                        defaultdict(<class 'list'>, {'localhost': [65521, 65522, 65523]}))],
+            'testowner3@example.com': [(Certificate(name=certificate101),
+                                        defaultdict(<class 'list'>, {'localhost': [65521, 65522, 65523]}))]})
+    """
+    now = arrow.utcnow()
+    threshold_days = current_app.config.get("LEMUR_DEPLOYED_EXPIRING_CERT_THRESHOLD_DAYS", 14)
+    max_not_after = now + timedelta(days=threshold_days)
+
+    q = (
+        database.db.session.query(Certificate)
+        .filter(Certificate.not_after <= max_not_after)
+        .filter(Certificate.expired == false())
+        .filter(Certificate.revoked == false())
+        .filter(Certificate.in_rotation_window == true())
+    )
+
+    exclude_conditions = []
+    if exclude:
+        for e in exclude:
+            exclude_conditions.append(~Certificate.name.ilike("%{}%".format(e)))
+
+        q = q.filter(and_(*exclude_conditions))
+
+    all_certs = defaultdict(dict)
+    for c in windowed_query(q, Certificate.id, 10000):
+        domains_for_cert = find_domains_where_cert_is_deployed(c, timeout_seconds_per_network_call)  # network call!
+        if len(domains_for_cert) > 0:
+            all_certs[c] = domains_for_cert
+
+    certificates = defaultdict(list)
+    # group by owner
+    for owner, owner_certs in groupby(sorted(all_certs.items(), key=lambda x: x[0].owner), lambda x: x[0].owner):
+        certificates[owner] = list(owner_certs)
+
+    return certificates
+
+
+def find_domains_where_cert_is_deployed(certificate, timeout_seconds_per_network_call):
+    """
+    Checks if the specified cert is still deployed. Returns a list of domains to which it's deployed.
+
+    We use the serial number to identify that a certificate is identical. If there were multiple certificates
+    issued for the same domain with identical serial numbers, this could return a false positive.
+
+    Note that this checks *all* configured ports (specified in config LEMUR_PORTS_FOR_DEPLOYED_CERTIFICATE_CHECK)
+    for all the domains in the cert. If the domain is valid but the port is not, we have to wait for the connection
+    to time out, which means this can be quite slow.
+
+    Returns a dictionary of the form {'domain1': [ports], 'domain2': [ports]}
+    """
+    matched_domains = defaultdict(list)
+    for domain in [d for d in certificate.domains if '*' not in d.name]:  # filter out wildcards, we can't check them
+        matched_ports_for_domain = []
+        for port in current_app.config.get("LEMUR_PORTS_FOR_DEPLOYED_CERTIFICATE_CHECK", [443]):
+            try:
+                parsed_serial = parse_serial(get_certificate_via_tls(domain.name, port,
+                                                                     timeout_seconds_per_network_call))
+                if parsed_serial == int(certificate.serial):
+                    matched_ports_for_domain.append(port)
+            except Exception:
+                current_app.logger.info(f'Unable to check certificate for domain {domain} on port {port}',
+                                        exc_info=True)
+        if len(matched_ports_for_domain) > 0:
+            matched_domains[domain.name] = matched_ports_for_domain
+
+    return matched_domains

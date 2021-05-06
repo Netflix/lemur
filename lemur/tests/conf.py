@@ -64,6 +64,9 @@ LEMUR_DEFAULT_ORGANIZATIONAL_UNIT = "Example"
 
 LEMUR_ALLOW_WEEKEND_EXPIRATION = False
 
+# needed for test_messaging
+LEMUR_PORTS_FOR_DEPLOYED_CERTIFICATE_CHECK = [443, 65521, 65522, 65523, 65524]
+
 # Database
 
 # modify this if you are not using a local database. Do not use any development or production DBs,

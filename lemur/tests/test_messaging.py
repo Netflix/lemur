@@ -1,11 +1,18 @@
+import ssl
+import threading
 from datetime import timedelta
+from http.server import SimpleHTTPRequestHandler, HTTPServer
+from tempfile import NamedTemporaryFile
 
 import arrow
 import boto3
 import pytest
 from freezegun import freeze_time
 from moto import mock_ses
+from pytest import fail
+
 from lemur.tests.factories import AuthorityFactory, CertificateFactory, EndpointFactory
+from lemur.tests.vectors import INTERMEDIATE_CERT_STR, SAN_CERT_KEY, SAN_CERT_STR, ROOTCA_CERT_STR
 
 
 @mock_ses
@@ -228,25 +235,40 @@ def test_send_authority_expiration_notifications():
 @mock_ses
 def test_send_expiring_deployed_certificate_notifications():
     from lemur.domains.models import Domain
-    from lemur.notifications.messaging import get_certificate, parse_serial, \
-        send_expiring_deployed_certificate_notifications
+    from lemur.notifications.messaging import send_expiring_deployed_certificate_notifications
+
+    """
+    This test spins up three local servers, each serving the same default test cert with a non-matching CN/SANs.
+    The logic to check if a cert is still deployed ignores certificate validity; all it needs to know is whether
+    the certificate currently deployed at the cert's associated domain has the same serial number as the one in
+    Lemur's DB. The expiration check is done using the date in Lemur's DB, and is not parsed from the actual deployed
+    certificate - so we can get away with using a totally unrelated cert, as long as the serial number matches.
+    In this test, the serial number is always the same, since it's parsed from the hardcoded test cert.
+    """
+
     verify_sender_email()
 
-    domain_1 = Domain(name="google.com")
-    domain_2 = Domain(name="mail.google.com")
-    domain_3 = Domain(name="drive.google.com")
-    domain_4 = Domain(name="*.google.com")
-    all_domains = [domain_1, domain_2, domain_3, domain_4]
-    first_serial = parse_serial(get_certificate('google.com', 443, 1000))
-    second_serial = parse_serial(get_certificate('drive.google.com', 443, 1000))
+    # one non-expiring cert, two expiring certs, and one cert that doesn't match a running server
+    create_cert_that_expires_in_days(180, domains=[Domain(name='localhost')], owner='testowner1@example.com')
+    create_cert_that_expires_in_days(10, domains=[Domain(name='localhost')], owner='testowner2@example.com')
+    create_cert_that_expires_in_days(10, domains=[Domain(name='localhost')], owner='testowner3@example.com')
+    create_cert_that_expires_in_days(10, domains=[Domain(name='not-localhost')], owner='testowner4@example.com')
+    create_cert_that_expires_in_days(10, domains=[Domain(name='google.com')], owner='testowner4@example.com')
 
-    # one non-expiring cert, two expiring certs, and one cert with a non-matching serial number
-    create_cert_that_expires_in_days(180, str(first_serial), all_domains, 'testowner@example.com')
-    create_cert_that_expires_in_days(10, str(first_serial), all_domains, 'testowner@example.com')
-    create_cert_that_expires_in_days(10, str(second_serial), all_domains, 'testowner@example.com')
-    create_cert_that_expires_in_days(10, '12345', all_domains, 'testowner@example.com')
+    # test certs are all hardcoded with the same body/chain so we don't need to use the created cert here
+    cert_file_data = SAN_CERT_STR + INTERMEDIATE_CERT_STR + ROOTCA_CERT_STR + SAN_CERT_KEY
+    f = NamedTemporaryFile(suffix='.pem', delete=True)
+    try:
+        f.write(cert_file_data.encode('utf-8'))
+        server_1 = run_server(65521, f.name)
+        server_2 = run_server(65522, f.name)
+        server_3 = run_server(65523, f.name)
+        if not (server_1.is_alive() and server_2.is_alive() and server_3.is_alive()):
+            fail('Servers not alive, test cannot proceed')
 
-    assert send_expiring_deployed_certificate_notifications(None) == (1, 0)
+        assert send_expiring_deployed_certificate_notifications(None) == (2, 0)  # 2 expiring certs with matching domain
+    finally:
+        f.close()  # close file (which also deletes it)
 
 
 def create_ca_cert_that_expires_in_days(days):
@@ -285,3 +307,22 @@ def create_cert_that_expires_in_days(days, serial=None, domains=None, owner=None
     if domains:
         certificate.domains = domains
     return certificate
+
+
+"""Utility methods to create a mock server that serves a specific certificate"""
+
+
+def run_server(port, cert_file_name):
+    def start_server():
+        server = HTTPServer(('localhost', port), SimpleHTTPRequestHandler)
+        server.socket = ssl.wrap_socket(server.socket,
+                                        server_side=True,
+                                        certfile=cert_file_name,
+                                        ssl_version=ssl.PROTOCOL_TLS)
+        server.serve_forever()
+        print(f"Started https server on port {port} using cert file {cert_file_name}")
+
+    daemon = threading.Thread(name=f'server_{cert_file_name}', target=start_server)
+    daemon.setDaemon(True)  # Set as a daemon so it will be killed once the main thread is dead.
+    daemon.start()
+    return daemon
