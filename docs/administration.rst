@@ -232,6 +232,13 @@ Basic Configuration
         using the legacy `SENTRY_CONFIG`, which Lemur attempts to respect, in case `SENTRY_DSN` is missing,
         with environment set to empty.
 
+        Example for using Senty to capture exceptions:
+
+            >>>  from sentry_sdk import capture_exception
+            >>>  ..
+            >>>  capture_exception()
+            >>>  # supplying extra information
+            >>>  capture_exception(extra={"certificate_name": str(certificate.name)})
 
 
 Certificate Default Options
