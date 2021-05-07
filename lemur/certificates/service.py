@@ -21,6 +21,7 @@ from lemur.authorities.models import Authority
 from lemur.certificates.models import Certificate
 from lemur.certificates.schemas import CertificateOutputSchema, CertificateInputSchema
 from lemur.common.utils import generate_private_key, truthiness
+from lemur.constants import SUCCESS_METRIC_STATUS
 from lemur.destinations.models import Destination
 from lemur.domains.models import Domain
 from lemur.endpoints import service as endpoint_service
@@ -940,3 +941,68 @@ def get_issued_cert_count_for_authority(authority):
     :return:
     """
     return database.db.session.query(Certificate).filter(Certificate.authority_id == authority.id).count()
+
+
+def get_all_valid_certificates_with_source(source_id):
+    """
+    Return list of certificates
+    :param source_id:
+    :return:
+    """
+    return (
+        Certificate.query.filter(Certificate.sources.any(id=source_id))
+        .filter(Certificate.revoked == false())
+        .filter(Certificate.not_after >= arrow.now())
+        .filter(not_(Certificate.replaced.any()))
+        .all()
+    )
+
+
+def get_all_valid_certificates_with_destination(destination_id):
+    """
+    Return list of certificates
+    :param destination_id:
+    :return:
+    """
+    return (
+        Certificate.query.filter(Certificate.destinations.any(id=destination_id))
+        .filter(Certificate.revoked == false())
+        .filter(Certificate.not_after >= arrow.now())
+        .filter(not_(Certificate.replaced.any()))
+        .all()
+    )
+
+
+def remove_source_association(certificate, source):
+    certificate.sources.remove(source)
+    database.update(certificate)
+
+    metrics.send(
+        "delete_certificate_source_association",
+        "counter",
+        1,
+        metric_tags={"status": SUCCESS_METRIC_STATUS,
+                     "source": source.label,
+                     "certificate": certificate.name}
+    )
+
+
+def remove_destination_association(certificate, destination):
+    certificate.destinations.remove(destination)
+    database.update(certificate)
+
+    try:
+        remove_from_destination(certificate, destination)
+    except Exception as e:
+        # This cleanup is the best-effort, it will capture the exception and log
+        capture_exception()
+        current_app.logger.warning(f"Failed to remove destination: {destination.label}. {str(e)}")
+
+    metrics.send(
+        "delete_certificate_destination_association",
+        "counter",
+        1,
+        metric_tags={"status": SUCCESS_METRIC_STATUS,
+                     "destination": destination.label,
+                     "certificate": certificate.name}
+    )

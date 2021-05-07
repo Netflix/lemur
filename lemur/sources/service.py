@@ -297,6 +297,13 @@ def delete(source_id):
     """
     source = get(source_id)
     if source:
+        # remove association of this source from all valid certificates
+        certificates = certificate_service.get_all_valid_certificates_with_source(source_id)
+        for certificate in certificates:
+            certificate_service.remove_source_association(certificate, source)
+            current_app.logger.warning(f"Removed source {source.label} for {certificate.name} during source delete")
+
+        # proceed with source delete
         log_service.audit_log("delete_source", source.label, "Deleting source")
         database.delete(source)
 
