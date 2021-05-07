@@ -995,7 +995,7 @@ def remove_destination_association(certificate, destination):
         remove_from_destination(certificate, destination)
     except Exception as e:
         # This cleanup is the best-effort, it will capture the exception and log
-        sentry.captureException()
+        capture_exception()
         current_app.logger.warning(f"Failed to remove destination: {destination.label}. {str(e)}")
 
     metrics.send(
