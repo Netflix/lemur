@@ -8,10 +8,10 @@
 import requests
 import subprocess
 from flask import current_app
-from lemur.extensions import sentry
 from requests.exceptions import ConnectionError, InvalidSchema
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
+from sentry_sdk import capture_exception
 
 from lemur.utils import mktempfile
 from lemur.common.utils import parse_certificate
@@ -157,14 +157,14 @@ def verify(cert_path, issuer_chain_path):
     try:
         verify_result = ocsp_verify(cert, cert_path, issuer_chain_path)
     except Exception as e:
-        sentry.captureException()
+        capture_exception()
         current_app.logger.exception(e)
 
     if verify_result is None:
         try:
             verify_result = crl_verify(cert, cert_path)
         except Exception as e:
-            sentry.captureException()
+            capture_exception()
             current_app.logger.exception(e)
 
     if verify_result is None:

@@ -5,7 +5,7 @@ import arrow
 from flask_script import Manager
 from flask import current_app
 
-from lemur.extensions import sentry
+from sentry_sdk import capture_exception
 from lemur.constants import SUCCESS_METRIC_STATUS
 from lemur.plugins import plugins
 from lemur.plugins.lemur_acme.plugin import AcmeHandler
@@ -65,7 +65,7 @@ def dnstest(domain, token):
             dns_provider_plugin.wait_for_dns_change(change_id, account_number)
             print(f"[+] Verified TXT Record in `{dns_provider.name}` provider")
         except Exception:
-            sentry.captureException()
+            capture_exception()
             current_app.logger.debug(
                 f"Unable to resolve DNS challenge for change_id: {change_id}, account_id: "
                 f"{account_number}",

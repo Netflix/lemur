@@ -9,8 +9,9 @@ import botocore
 from flask import current_app
 
 from retrying import retry
+from sentry_sdk import capture_exception
 
-from lemur.extensions import metrics, sentry
+from lemur.extensions import metrics
 from lemur.exceptions import InvalidListener
 from lemur.plugins.lemur_aws.sts import sts_client
 
@@ -28,7 +29,7 @@ def retry_throttled(exception):
     except Exception as e:
         current_app.logger.error("ELB retry_throttled triggered", exc_info=True)
         metrics.send("elb_retry", "counter", 1, metric_tags={"exception": str(e)})
-        sentry.captureException()
+        capture_exception()
 
     if isinstance(exception, botocore.exceptions.ClientError):
         if exception.response["Error"]["Code"] == "LoadBalancerNotFound":
@@ -82,7 +83,7 @@ def get_all_elbs(**kwargs):
                 kwargs.update(dict(Marker=response["NextMarker"]))
     except Exception as e:  # noqa
         metrics.send("get_all_elbs_error", "counter", 1)
-        sentry.captureException()
+        capture_exception()
         raise
 
 
@@ -106,7 +107,7 @@ def get_all_elbs_v2(**kwargs):
                 kwargs.update(dict(Marker=response["NextMarker"]))
     except Exception as e:  # noqa
         metrics.send("get_all_elbs_v2_error", "counter", 1)
-        sentry.captureException()
+        capture_exception()
         raise
 
 
@@ -140,7 +141,7 @@ def get_listener_arn_from_endpoint(endpoint_name, endpoint_port, **kwargs):
                 "endpoint_port": endpoint_port,
             },
         )
-        sentry.captureException(
+        capture_exception(
             extra={
                 "endpoint_name": str(endpoint_name),
                 "endpoint_port": str(endpoint_port),
@@ -173,7 +174,7 @@ def get_load_balancer_arn_from_endpoint(endpoint_name, **kwargs):
                 "endpoint_name": endpoint_name,
             },
         )
-        sentry.captureException(
+        capture_exception(
             extra={
                 "endpoint_name": str(endpoint_name),
             }
@@ -192,7 +193,7 @@ def get_elbs(**kwargs):
         return client.describe_load_balancers(**kwargs)
     except Exception as e:  # noqa
         metrics.send("get_elbs_error", "counter", 1, metric_tags={"error": str(e)})
-        sentry.captureException()
+        capture_exception()
         raise
 
 
@@ -210,7 +211,7 @@ def get_elbs_v2(**kwargs):
         return client.describe_load_balancers(**kwargs)
     except Exception as e:  # noqa
         metrics.send("get_elbs_v2_error", "counter", 1, metric_tags={"error": str(e)})
-        sentry.captureException()
+        capture_exception()
         raise
 
 
@@ -230,7 +231,7 @@ def describe_listeners_v2(**kwargs):
         metrics.send(
             "describe_listeners_v2_error", "counter", 1, metric_tags={"error": str(e)}
         )
-        sentry.captureException()
+        capture_exception()
         raise
 
 
@@ -259,7 +260,7 @@ def describe_load_balancer_policies(load_balancer_name, policy_names, **kwargs):
                 "error": str(e),
             },
         )
-        sentry.captureException(
+        capture_exception(
             extra={
                 "load_balancer_name": str(load_balancer_name),
                 "policy_names": str(policy_names),
@@ -286,7 +287,7 @@ def describe_ssl_policies_v2(policy_names, **kwargs):
             1,
             metric_tags={"policy_names": policy_names, "error": str(e)},
         )
-        sentry.captureException(extra={"policy_names": str(policy_names)})
+        capture_exception(extra={"policy_names": str(policy_names)})
         raise
 
 

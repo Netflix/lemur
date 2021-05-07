@@ -9,13 +9,14 @@ import arrow
 import copy
 
 from flask import current_app
+from sentry_sdk import capture_exception
 
 from lemur import database
 from lemur.sources.models import Source
 from lemur.certificates.models import Certificate
 from lemur.certificates import service as certificate_service
 from lemur.endpoints import service as endpoint_service
-from lemur.extensions import metrics, sentry
+from lemur.extensions import metrics
 from lemur.destinations import service as destination_service
 
 from lemur.certificates.schemas import CertificateUploadInputSchema
@@ -102,7 +103,7 @@ def sync_endpoints(source):
                         source.label
                     )
                 )
-                sentry.captureException()
+                capture_exception()
 
             if certificate_attached_to_endpoint:
                 lemur_matching_cert, updated_by_hash_tmp = find_cert(certificate_attached_to_endpoint)

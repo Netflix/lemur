@@ -11,6 +11,7 @@ import arrow
 from cryptography import x509
 from flask import current_app
 from idna.core import InvalidCodepoint
+from sentry_sdk import capture_exception
 from sqlalchemy import (
     event,
     Integer,
@@ -29,12 +30,12 @@ from sqlalchemy.sql.expression import case, extract
 from sqlalchemy_utils.types.arrow import ArrowType
 from werkzeug.utils import cached_property
 
+
 from lemur.common import defaults, utils, validators
 from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
 from lemur.database import db
 from lemur.domains.models import Domain
 from lemur.extensions import metrics
-from lemur.extensions import sentry
 from lemur.models import (
     certificate_associations,
     certificate_source_associations,
@@ -424,12 +425,12 @@ class Certificate(db.Model):
                         "Custom OIDs not yet supported for clone operation."
                     )
         except InvalidCodepoint as e:
-            sentry.captureException()
+            capture_exception()
             current_app.logger.warning(
                 "Unable to parse extensions due to underscore in dns name"
             )
         except ValueError as e:
-            sentry.captureException()
+            capture_exception()
             current_app.logger.warning("Unable to parse")
             current_app.logger.exception(e)
 
@@ -465,7 +466,7 @@ def update_destinations(target, value, initiator):
             )
             status = SUCCESS_METRIC_STATUS
     except Exception as e:
-        sentry.captureException()
+        capture_exception()
         raise
 
     metrics.send(

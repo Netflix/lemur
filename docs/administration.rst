@@ -221,6 +221,26 @@ Basic Configuration
         This is an optional config applicable for settings where Lemur is deployed in AWS. For accessing regionalized
         STS endpoints, LEMUR_AWS_REGION defines the region where Lemur is deployed.
 
+.. data:: SENTRY_DSN
+    :noindex:
+
+        To initialize the Sentry integration to capture errors and exceptions, the `SENTRY_DSN` is required to be set to
+        the respective URL. `LEMUR_ENV` is also a related variable to define the environment for sentry events, e.g.,
+        'test' or 'prod'.
+
+        Note that previously Lemur relied on Raven[flask] before migrating to `sentry_sdk`. In this case, you might be
+        using the legacy `SENTRY_CONFIG`, which Lemur attempts to respect, in case `SENTRY_DSN` is missing,
+        with environment set to empty.
+
+        Example for using Senty to capture exceptions:
+
+            >>>  from sentry_sdk import capture_exception
+            >>>  ..
+            >>>  capture_exception()
+            >>>  # supplying extra information
+            >>>  capture_exception(extra={"certificate_name": str(certificate.name)})
+
+
 Certificate Default Options
 ---------------------------
 
