@@ -109,8 +109,12 @@ class OpenSSHIssuerPlugin(CryptographyIssuerPlugin):
         ).decode()
         public_key += ' ' + cert['user']['email']
         # sign it with authority private key
-        authority = get_by_root_authority(cert['authority']['id'])
-        authority_private_key = authority.private_key
+        if 'root_authority' in cert and cert['root_authority']:
+            authority = cert['root_authority']
+        else:
+            authority = cert['authority']
+        root_authority = get_by_root_authority(authority['id'])
+        authority_private_key = root_authority.private_key
         cert['body'] = sign_certificate(
             cert['common_name'],
             public_key,
@@ -122,7 +126,7 @@ class OpenSSHIssuerPlugin(CryptographyIssuerPlugin):
         )
         # convert chain in OpenSSH format
         if cert['chain']:
-            chain_cert = {'body': cert['chain'], 'cn': authority.cn}
+            chain_cert = {'body': cert['chain'], 'cn': root_authority.cn}
             self.wrap_auth_certificate(chain_cert)
             cert['chain'] = chain_cert['body']
         # OpenSSH do not support csr

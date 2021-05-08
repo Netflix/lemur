@@ -365,12 +365,17 @@ class CertificateOutputSchema(LemurOutputSchema):
     @post_dump
     def handle_certificate(self, cert):
         # Plugins may need to modify the cert object before returning it to the user
-        if cert['root_authority'] and cert['authority'] is None:
-            # this certificate is an authority
-            cert['authority'] = cert['root_authority']
+        if cert['authority'] is None:
+            if cert['root_authority'] is None:
+                plugin = None
+            else:
+                # this certificate is an authority
+                plugin = plugins.get(cert['root_authority']['plugin']['slug'])
+        else:
+            plugin = plugins.get(cert['authority']['plugin']['slug'])
+        if plugin:
+            plugin.wrap_certificate(cert)
         del cert['root_authority']
-        plugin = plugins.get(cert['authority']['plugin']['slug'])
-        plugin.wrap_certificate(cert)
 
 
 class CertificateShortOutputSchema(LemurOutputSchema):
