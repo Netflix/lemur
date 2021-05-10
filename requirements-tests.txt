@@ -92,12 +92,6 @@ idna==2.10
     # via
     #   moto
     #   requests
-importlib-metadata==4.0.1
-    # via
-    #   jsonschema
-    #   pluggy
-    #   pytest
-    #   stevedore
 iniconfig==1.1.1
     # via pytest
 itsdangerous==1.1.0
@@ -254,12 +248,6 @@ toml==0.10.2
     # via
     #   black
     #   pytest
-typed-ast==1.4.3
-    # via black
-typing-extensions==3.10.0.0
-    # via
-    #   black
-    #   importlib-metadata
 urllib3==1.26.4
     # via
     #   botocore
@@ -277,9 +265,7 @@ wrapt==1.12.1
 xmltodict==0.12.0
     # via moto
 zipp==3.4.1
-    # via
-    #   importlib-metadata
-    #   moto
+    # via moto
 zope.component==5.0.0
     # via certbot
 zope.event==4.5.0
