@@ -292,6 +292,7 @@ markupsafe==1.1.1
     #   jinja2
     #   mako
     #   moto
+    #   sphinx
 marshmallow-sqlalchemy==0.23.1
     # via -r requirements-docs.in
 marshmallow==2.20.4
@@ -517,7 +518,7 @@ soupsieve==2.2.1
     # via beautifulsoup4
 sphinx-rtd-theme==0.5.2
     # via -r requirements-docs.in
-sphinx==3.5.4
+sphinx==4.0.0
     # via
     #   -r requirements-docs.in
     #   sphinx-rtd-theme
