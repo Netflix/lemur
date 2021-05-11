@@ -188,19 +188,51 @@ class PluginInputSchema(LemurInputSchema):
     def get_object(self, data, many=False):
         try:
             data["plugin_object"] = plugins.get(data["slug"])
-
-            # parse any sub-plugins
-            for option in data.get("plugin_options", []):
-                if "plugin" in option.get("type", []):
-                    sub_data, errors = PluginInputSchema().load(option["value"])
-                    option["value"] = sub_data
-
-            return data
-        except Exception as e:
+        except KeyError as e:
             raise ValidationError(
                 "Unable to find plugin. Slug: {0} Reason: {1}".format(data["slug"], e)
             )
 
+        plugin_options_validated = []
+
+        # parse any sub-plugins
+        for option in data.get("plugin_options", []):
+            server_options_user_value = None
+            if not option:
+                continue # Angular sometimes generates empty option objects.
+            try:
+                option_name = option["name"]
+                option_value = option.get("value", "")
+            except KeyError as e:
+                raise ValidationError(
+                    f"Unable to get plugin options. Slug: {data['slug']} Option: {option!r}"
+                )
+            if "plugin" in option.get("type", []):
+                sub_data, errors = PluginInputSchema().load(option_value)
+                if errors:
+                    raise ValidationError(
+                        f"Unable to load plugin options. Slug: {data['slug']} Option {option_name}"
+                    )
+                option["value"] = sub_data
+
+            # validate user inputs for sub-plugin options and only accept "value" field from user
+            if data["plugin_object"]:
+                try:
+                    # Run regex validation rule on user input
+                    data["plugin_object"].validate_option_value(option_name, option_value)
+
+                    # Only accept the "value" field from the user - keep server default options for all other fields
+                    server_options_with_user_value = data["plugin_object"].get_server_options(option_name)
+                    server_options_with_user_value["value"] = option_value
+                    plugin_options_validated.append(server_options_with_user_value)
+
+                except (ValueError, ValidationError) as e:
+                    raise ValidationError(
+                        f"Unable to validate plugin options. Slug: {data['slug']} Option {option_name}: {e}"
+                    )
+
+        data["plugin_options"] = plugin_options_validated
+        return data
 
 class PluginOutputSchema(LemurOutputSchema):
     id = fields.Integer()

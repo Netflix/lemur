@@ -66,7 +66,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
             "name": "certificate",
             "type": "textarea",
             "default": "",
-            "validation": "/^-----BEGIN CERTIFICATE-----/",
+            "validation": "^-----BEGIN CERTIFICATE-----",
             "helpMessage": "Certificate to use",
         },
         {
@@ -315,7 +315,7 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
             "name": "certificate",
             "type": "textarea",
             "default": "",
-            "validation": "/^-----BEGIN CERTIFICATE-----/",
+            "validation": "^-----BEGIN CERTIFICATE-----",
             "helpMessage": "Certificate to use",
         },
         {

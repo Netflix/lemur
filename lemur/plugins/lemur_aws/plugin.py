@@ -184,7 +184,7 @@ class AWSSourcePlugin(SourcePlugin):
             "name": "accountNumber",
             "type": "str",
             "required": True,
-            "validation": "/^[0-9]{12,12}$/",
+            "validation": "^[0-9]{12,12}$",
             "helpMessage": "Must be a valid AWS account number!",
         },
         {
