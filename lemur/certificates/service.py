@@ -1051,6 +1051,7 @@ def get_deployed_expiring_certificates(exclude=None, timeout_seconds_per_network
         domains_for_cert = find_domains_where_cert_is_deployed(c, timeout_seconds_per_network_call)  # network call!
         if len(domains_for_cert) > 0:
             all_certs[c] = domains_for_cert
+    database.commit()
 
     certificates = defaultdict(list)
     # group by owner
@@ -1074,7 +1075,9 @@ def find_domains_where_cert_is_deployed(certificate, timeout_seconds_per_network
     :return: A dictionary of the form {'domain1': [ports], 'domain2': [ports]}
     """
     matched_domains = defaultdict(list)
-    for domain in [d for d in certificate.domains if '*' not in d.name]:  # filter out wildcards, we can't check them
+    # filter out wildcards, we can't check them
+    for cert_association in [ca for ca in certificate.certificate_associations if '*' not in ca.domain.name]:
+        domain = cert_association.domain
         matched_ports_for_domain = []
         for port in current_app.config.get("LEMUR_PORTS_FOR_DEPLOYED_CERTIFICATE_CHECK", [443]):
             try:
@@ -1087,5 +1090,6 @@ def find_domains_where_cert_is_deployed(certificate, timeout_seconds_per_network
                                         exc_info=True)
         if len(matched_ports_for_domain) > 0:
             matched_domains[domain.name] = matched_ports_for_domain
-
+            # Update the DB
+            cert_association.ports = matched_ports_for_domain
     return matched_domains

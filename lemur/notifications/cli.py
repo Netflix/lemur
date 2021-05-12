@@ -124,7 +124,7 @@ def expiring_deployed_certificates(exclude):
         if success:
             status = SUCCESS_METRIC_STATUS
     except Exception:
-        sentry.captureException()
+        capture_exception()
 
     metrics.send(
         "notify_expiring_deployed_certificates_job", "counter", 1, metric_tags={"status": status}

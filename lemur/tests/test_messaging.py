@@ -249,11 +249,10 @@ def test_send_expiring_deployed_certificate_notifications():
     verify_sender_email()
 
     # one non-expiring cert, two expiring certs, and one cert that doesn't match a running server
-    create_cert_that_expires_in_days(180, domains=[Domain(name='localhost')], owner='testowner1@example.com')
-    create_cert_that_expires_in_days(10, domains=[Domain(name='localhost')], owner='testowner2@example.com')
-    create_cert_that_expires_in_days(10, domains=[Domain(name='localhost')], owner='testowner3@example.com')
-    create_cert_that_expires_in_days(10, domains=[Domain(name='not-localhost')], owner='testowner4@example.com')
-    create_cert_that_expires_in_days(10, domains=[Domain(name='google.com')], owner='testowner4@example.com')
+    cert_1 = create_cert_that_expires_in_days(180, domains=[Domain(name='localhost')], owner='testowner1@example.com')
+    cert_2 = create_cert_that_expires_in_days(10, domains=[Domain(name='localhost')], owner='testowner2@example.com')
+    cert_3 = create_cert_that_expires_in_days(10, domains=[Domain(name='localhost')], owner='testowner3@example.com')
+    cert_4 = create_cert_that_expires_in_days(10, domains=[Domain(name='not-localhost')], owner='testowner4@example.com')
 
     # test certs are all hardcoded with the same body/chain so we don't need to use the created cert here
     cert_file_data = SAN_CERT_STR + INTERMEDIATE_CERT_STR + ROOTCA_CERT_STR + SAN_CERT_KEY
@@ -267,6 +266,12 @@ def test_send_expiring_deployed_certificate_notifications():
             fail('Servers not alive, test cannot proceed')
 
         assert send_expiring_deployed_certificate_notifications(None) == (2, 0)  # 2 expiring certs with matching domain
+        for c in [cert_1, cert_4]:
+            for ca in c.certificate_associations:
+                assert ca.ports is None
+        for c in [cert_2, cert_3]:
+            for ca in c.certificate_associations:
+                assert ca.ports == [65521, 65522, 65523]
     finally:
         f.close()  # close file (which also deletes it)
 
