@@ -8,7 +8,7 @@
 """
 from botocore.exceptions import ClientError
 from flask import current_app
-from lemur.extensions import sentry
+from sentry_sdk import capture_exception
 
 from .sts import sts_client
 
@@ -39,7 +39,7 @@ def put(bucket_name, region_name, prefix, data, encrypt, **kwargs):
             bucket.put_object(Key=prefix, Body=data, ACL="bucket-owner-full-control")
             return True
         except ClientError:
-            sentry.captureException()
+            capture_exception()
             return False
 
 
@@ -56,7 +56,7 @@ def delete(bucket_name, prefixed_object_name, **kwargs):
                                  f"Status_code: {response}")
         return response['ResponseMetadata']['HTTPStatusCode'] < 300
     except ClientError:
-        sentry.captureException()
+        capture_exception()
         return False
 
 
@@ -71,5 +71,5 @@ def get(bucket_name, prefixed_object_name, **kwargs):
                                  f"object_name: {prefixed_object_name}")
         return response['Body'].read().decode("utf-8")
     except ClientError:
-        sentry.captureException()
+        capture_exception()
         return None

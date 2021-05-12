@@ -16,6 +16,7 @@ from celery.exceptions import SoftTimeLimitExceeded
 from celery.signals import task_failure, task_received, task_revoked, task_success
 from datetime import datetime, timezone, timedelta
 from flask import current_app
+from sentry_sdk import capture_exception
 
 from lemur.authorities.service import get as get_authority
 from lemur.certificates import cli as cli_certificate
@@ -24,7 +25,7 @@ from lemur.constants import ACME_ADDITIONAL_ATTEMPTS
 from lemur.destinations import service as destinations_service
 from lemur.dns_providers import cli as cli_dns_providers
 from lemur.endpoints import cli as cli_endpoints
-from lemur.extensions import metrics, sentry
+from lemur.extensions import metrics
 from lemur.factory import create_app
 from lemur.notifications import cli as cli_notification
 from lemur.notifications.messaging import send_pending_failure_notification
@@ -472,7 +473,7 @@ def clean_source(source):
     except SoftTimeLimitExceeded:
         log_data["message"] = "Clean source: Time limit exceeded."
         current_app.logger.error(log_data)
-        sentry.captureException()
+        capture_exception()
         metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
     return log_data
 
@@ -543,7 +544,7 @@ def sync_source(source):
     except SoftTimeLimitExceeded:
         log_data["message"] = "Error syncing source: Time limit exceeded."
         current_app.logger.error(log_data)
-        sentry.captureException()
+        capture_exception()
         metrics.send(
             "sync_source_timeout", "counter", 1, metric_tags={"source": source}
         )
@@ -622,7 +623,7 @@ def certificate_reissue():
     except SoftTimeLimitExceeded:
         log_data["message"] = "Certificate reissue: Time limit exceeded."
         current_app.logger.error(log_data)
-        sentry.captureException()
+        capture_exception()
         metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
         return
 
@@ -667,7 +668,7 @@ def certificate_rotate(**kwargs):
     except SoftTimeLimitExceeded:
         log_data["message"] = "Certificate rotate: Time limit exceeded."
         current_app.logger.error(log_data)
-        sentry.captureException()
+        capture_exception()
         metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
         return
 
@@ -705,7 +706,7 @@ def endpoints_expire():
     except SoftTimeLimitExceeded:
         log_data["message"] = "endpoint expire: Time limit exceeded."
         current_app.logger.error(log_data)
-        sentry.captureException()
+        capture_exception()
         metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
         return
 
@@ -741,7 +742,7 @@ def get_all_zones():
     except SoftTimeLimitExceeded:
         log_data["message"] = "get all zones: Time limit exceeded."
         current_app.logger.error(log_data)
-        sentry.captureException()
+        capture_exception()
         metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
         return
 
@@ -777,7 +778,7 @@ def check_revoked():
     except SoftTimeLimitExceeded:
         log_data["message"] = "Checking revoked: Time limit exceeded."
         current_app.logger.error(log_data)
-        sentry.captureException()
+        capture_exception()
         metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
         return
 
@@ -816,7 +817,7 @@ def notify_expirations():
     except SoftTimeLimitExceeded:
         log_data["message"] = "Notify expiring Time limit exceeded."
         current_app.logger.error(log_data)
-        sentry.captureException()
+        capture_exception()
         metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
         return
 
@@ -852,7 +853,7 @@ def notify_authority_expirations():
     except SoftTimeLimitExceeded:
         log_data["message"] = "Notify expiring CA Time limit exceeded."
         current_app.logger.error(log_data)
-        sentry.captureException()
+        capture_exception()
         metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
         return
 
@@ -888,7 +889,7 @@ def send_security_expiration_summary():
     except SoftTimeLimitExceeded:
         log_data["message"] = "Send summary for expiring certs Time limit exceeded."
         current_app.logger.error(log_data)
-        sentry.captureException()
+        capture_exception()
         metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
         return
 
@@ -948,7 +949,7 @@ def deactivate_entrust_test_certificates():
     except SoftTimeLimitExceeded:
         log_data["message"] = "Time limit exceeded."
         current_app.logger.error(log_data)
-        sentry.captureException()
+        capture_exception()
         metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
         return
 
@@ -991,12 +992,12 @@ def disable_rotation_of_duplicate_certificates():
     except SoftTimeLimitExceeded:
         log_data["message"] = "Time limit exceeded."
         current_app.logger.error(log_data)
-        sentry.captureException()
+        capture_exception()
         metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
         return
     except Exception as e:
         current_app.logger.info(log_data)
-        sentry.captureException()
+        capture_exception()
         current_app.logger.exception(e)
         return
 

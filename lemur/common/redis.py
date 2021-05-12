@@ -5,7 +5,8 @@ Helper Class for Redis
 import redis
 import sys
 from flask import current_app
-from lemur.extensions import sentry
+from sentry_sdk import capture_exception
+
 from lemur.factory import create_app
 
 if current_app:
@@ -37,7 +38,7 @@ class RedisHandler:
                 "port": self.port
             }
             current_app.logger.error(log_data)
-            sentry.captureException()
+            capture_exception()
         return red
 
 

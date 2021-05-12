@@ -6,9 +6,10 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from flask_script import Manager
+from sentry_sdk import capture_exception
 
 from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
-from lemur.extensions import sentry, metrics
+from lemur.extensions import metrics
 from lemur.notifications.messaging import send_expiration_notifications, \
     send_expiring_deployed_certificate_notifications
 from lemur.notifications.messaging import send_authority_expiration_notifications
@@ -54,7 +55,7 @@ def expirations(exclude, disabled_notification_plugins):
         )
         status = SUCCESS_METRIC_STATUS
     except Exception as e:
-        sentry.captureException()
+        capture_exception()
 
     metrics.send(
         "expiration_notification_job", "counter", 1, metric_tags={"status": status}
@@ -78,7 +79,7 @@ def authority_expirations():
         )
         status = SUCCESS_METRIC_STATUS
     except Exception as e:
-        sentry.captureException()
+        capture_exception()
 
     metrics.send(
         "authority_expiration_notification_job", "counter", 1, metric_tags={"status": status}
@@ -101,7 +102,7 @@ def security_expiration_summary(exclude):
         if success:
             status = SUCCESS_METRIC_STATUS
     except Exception:
-        sentry.captureException()
+        capture_exception()
 
     metrics.send(
         "security_expiration_notification_job", "counter", 1, metric_tags={"status": status}

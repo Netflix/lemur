@@ -12,9 +12,10 @@ import requests
 import xmltodict
 from cryptography import x509
 from flask import current_app
+from sentry_sdk import capture_exception
 
 from lemur.common.utils import get_psuedo_random_string
-from lemur.extensions import metrics, sentry
+from lemur.extensions import metrics
 from lemur.plugins import lemur_verisign as verisign
 from lemur.plugins.bases import IssuerPlugin, SourcePlugin
 
@@ -217,7 +218,7 @@ class VerisignIssuerPlugin(IssuerPlugin):
                 1,
                 metric_tags={"common_name": issuer_options.get("common_name", "")},
             )
-            sentry.captureException(
+            capture_exception(
                 extra={"common_name": issuer_options.get("common_name", "")}
             )
             raise Exception(f"Error with Verisign: {response.content}")

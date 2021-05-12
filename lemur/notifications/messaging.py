@@ -15,6 +15,7 @@ from itertools import groupby
 
 import arrow
 from flask import current_app
+from sentry_sdk import capture_exception
 from sqlalchemy import and_
 from sqlalchemy.sql.expression import false, true
 
@@ -25,7 +26,7 @@ from lemur.certificates.schemas import certificate_notification_output_schema
 from lemur.certificates.service import get_deployed_expiring_certificates
 from lemur.common.utils import windowed_query, is_selfsigned
 from lemur.constants import FAILURE_METRIC_STATUS, SUCCESS_METRIC_STATUS
-from lemur.extensions import metrics, sentry
+from lemur.extensions import metrics
 from lemur.pending_certificates.schemas import pending_certificate_output_schema
 from lemur.plugins import plugins
 from lemur.plugins.utils import get_plugin_option
@@ -218,7 +219,7 @@ def send_plugin_notification(event_type, data, recipients, notification):
     except Exception as e:
         log_data["message"] = f"Unable to send {event_type} notification to recipients {recipients}"
         current_app.logger.error(log_data, exc_info=True)
-        sentry.captureException()
+        capture_exception()
 
     metrics.send(
         "notification",
@@ -355,7 +356,7 @@ def send_default_notification(notification_type, data, targets, notification_opt
         log_data["message"] = f"Unable to send {notification_type} notification for certificate data {data} " \
                               f"to targets {targets}"
         current_app.logger.error(log_data, exc_info=True)
-        sentry.captureException()
+        capture_exception()
 
     metrics.send(
         "notification",
@@ -470,7 +471,7 @@ def send_security_expiration_summary(exclude=None):
         log_data["message"] = f"Unable to send {notification_type} notification for certificates " \
                               f"{message_data} to targets {security_email}"
         current_app.logger.error(log_data, exc_info=True)
-        sentry.captureException()
+        capture_exception()
 
     metrics.send(
         "notification",

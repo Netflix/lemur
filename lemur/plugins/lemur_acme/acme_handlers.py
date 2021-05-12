@@ -25,11 +25,12 @@ from acme.errors import TimeoutError
 from acme.messages import Error as AcmeError
 from certbot import crypto_util as acme_crypto_util
 from flask import current_app
+from sentry_sdk import capture_exception
 
 from lemur.common.utils import generate_private_key
 from lemur.dns_providers import service as dns_provider_service
 from lemur.exceptions import InvalidAuthority, UnknownProvider, InvalidConfiguration
-from lemur.extensions import metrics, sentry
+from lemur.extensions import metrics
 
 from lemur.plugins.lemur_acme import cloudflare, dyn, route53, ultradns, powerdns
 from lemur.authorities import service as authorities_service
@@ -97,7 +98,7 @@ class AcmeHandler(object):
             orderr = acme_client.finalize_order(orderr, deadline, fetch_alternative_chains=True)
 
         except (AcmeError, TimeoutError):
-            sentry.captureException(extra={"order_url": str(order.uri)})
+            capture_exception(extra={"order_url": str(order.uri)})
             metrics.send("request_certificate_error", "counter", 1, metric_tags={"uri": order.uri})
             current_app.logger.error(
                 f"Unable to resolve Acme order: {order.uri}", exc_info=True
@@ -258,7 +259,7 @@ class AcmeDnsHandler(AcmeHandler):
             self.all_dns_providers = dns_provider_service.get_all_dns_providers()
         except Exception as e:
             metrics.send("AcmeHandler_init_error", "counter", 1)
-            sentry.captureException()
+            capture_exception()
             current_app.logger.error(f"Unable to fetch DNS Providers: {e}")
             self.all_dns_providers = []
 
@@ -318,7 +319,7 @@ class AcmeDnsHandler(AcmeHandler):
         host_to_validate = self.maybe_add_extension(host_to_validate, dns_provider_options)
 
         if not dns_challenges:
-            sentry.captureException()
+            capture_exception()
             metrics.send("start_dns_challenge_error_no_dns_challenges", "counter", 1)
             raise Exception("Unable to determine DNS challenges from authorizations")
 
@@ -362,7 +363,7 @@ class AcmeDnsHandler(AcmeHandler):
                     )
                 except Exception:
                     metrics.send("complete_dns_challenge_error", "counter", 1)
-                    sentry.captureException()
+                    capture_exception()
                     current_app.logger.debug(
                         f"Unable to resolve DNS challenge for change_id: {change_id}, account_id: "
                         f"{account_number}",
@@ -514,7 +515,7 @@ class AcmeDnsHandler(AcmeHandler):
                         # If this fails, it's most likely because the record doesn't exist (It was already cleaned up)
                         # or we're not authorized to modify it.
                         metrics.send("cleanup_dns_challenges_error", "counter", 1)
-                        sentry.captureException()
+                        capture_exception()
                         pass
 
     def get_cname(self, domain):
