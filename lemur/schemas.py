@@ -199,7 +199,7 @@ class PluginInputSchema(LemurInputSchema):
         for option in data.get("plugin_options", []):
             server_options_user_value = None
             if not option:
-                continue # Angular sometimes generates empty option objects.
+                continue  # Angular sometimes generates empty option objects.
             try:
                 option_name = option["name"]
                 option_value = option.get("value", "")
@@ -223,6 +223,9 @@ class PluginInputSchema(LemurInputSchema):
 
                     # Only accept the "value" field from the user - keep server default options for all other fields
                     server_options_with_user_value = data["plugin_object"].get_server_options(option_name)
+                    if server_options_with_user_value is None:  # no server options discovered
+                        plugin_options_validated.append(option)
+                        continue
                     server_options_with_user_value["value"] = option_value
                     plugin_options_validated.append(server_options_with_user_value)
 
@@ -233,6 +236,7 @@ class PluginInputSchema(LemurInputSchema):
 
         data["plugin_options"] = plugin_options_validated
         return data
+
 
 class PluginOutputSchema(LemurOutputSchema):
     id = fields.Integer()

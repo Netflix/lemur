@@ -36,7 +36,7 @@ def get_options():
     return [
         {"name": "interval", "value": 10},
         {"name": "unit", "value": "days"},
-        {"name": "webhook", "value": "https://slack.com/api/api.test"},
+        {"name": "webhook", "value": "https://hooks.slack.com/services/api.test"},
     ]
 
 

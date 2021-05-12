@@ -113,9 +113,13 @@ class IPlugin(local):
 
     def get_option(self, name, options):
         user_opt = self.get_user_option(name, options)
+        if user_opt is None:
+            return None
+
         value = user_opt.get("value", user_opt.get("default"))
         if value is None:
             return None
+
         return self.validate_option_value(name, value)
 
     def validate_option_value(self, option_name, value):
@@ -128,7 +132,7 @@ class IPlugin(local):
             validation = class_opt.get("validation")
             if not validation:
                 return value
-            if not re.match(validation, value): # NOTE: please review that plugin validation regexes fit re
+            if not re.match(validation, value):
                 raise ValueError(f"Option '{option_name}' cannot be validated")
         elif opt_type == "select":
             available = class_opt.get("available")
