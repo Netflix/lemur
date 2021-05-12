@@ -18,7 +18,7 @@ from sqlalchemy.sql.expression import false, true
 
 from lemur import database
 from lemur.authorities.models import Authority
-from lemur.certificates.models import Certificate
+from lemur.certificates.models import Certificate, CertificateAssociation
 from lemur.certificates.schemas import CertificateOutputSchema, CertificateInputSchema
 from lemur.common.utils import generate_private_key, truthiness
 from lemur.constants import SUCCESS_METRIC_STATUS
@@ -26,7 +26,6 @@ from lemur.destinations.models import Destination
 from lemur.domains.models import Domain
 from lemur.endpoints import service as endpoint_service
 from lemur.extensions import metrics, signals
-from lemur.models import certificate_associations
 from lemur.notifications.models import Notification
 from lemur.pending_certificates.models import PendingCertificate
 from lemur.plugins.base import plugins
@@ -578,8 +577,8 @@ def render(args):
 def like_domain_query(term):
     domain_query = database.session_query(Domain.id)
     domain_query = domain_query.filter(func.lower(Domain.name).like(term.lower()))
-    assoc_query = database.session_query(certificate_associations.c.certificate_id)
-    assoc_query = assoc_query.filter(certificate_associations.c.domain_id.in_(domain_query))
+    assoc_query = database.session_query(CertificateAssociation.certificate_id)
+    assoc_query = assoc_query.filter(CertificateAssociation.domain_id.in_(domain_query))
     return assoc_query
 
 
