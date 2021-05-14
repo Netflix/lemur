@@ -281,6 +281,7 @@ def update_user(user, profile, roles):
 
     return user
 
+
 def generate_state_token():
     key = current_app.config.get('OAUTH_STATE_TOKEN_SECRET', OAUTH_STATE_TOKEN_SECRET_FALLBACK)
     t = int(time.time())
@@ -290,6 +291,7 @@ def generate_state_token():
     digest = base64.b64encode(h.finalize())
     state = ts + b':' + digest
     return state.decode('utf-8')
+
 
 def verify_state_token(token):
     try:
@@ -305,6 +307,7 @@ def verify_state_token(token):
     except Exception as e:
         current_app.logger.info(f'Error while parsing OAuth State token: {e}')
         return False
+
 
 class Login(Resource):
     """
