@@ -20,7 +20,7 @@ from flask import Blueprint, current_app
 from flask_restful import reqparse, Resource, Api
 from flask_principal import Identity, identity_changed
 
-from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
+from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS, OAUTH_STATE_TOKEN_SECRET_FALLBACK
 from lemur.extensions import metrics
 from lemur.common.utils import get_psuedo_random_string
 
@@ -282,7 +282,7 @@ def update_user(user, profile, roles):
     return user
 
 def generate_state_token():
-    key = current_app.config.get('OAUTH_STATE_TOKEN_SECRET', '0auth')
+    key = current_app.config.get('OAUTH_STATE_TOKEN_SECRET', OAUTH_STATE_TOKEN_SECRET_FALLBACK)
     t = int(time.time())
     ts = hex(t)[2:].encode('ascii')
     h = hmac.HMAC(key, hashes.SHA256(), backend=default_backend())
@@ -293,7 +293,7 @@ def generate_state_token():
 
 def verify_state_token(token):
     try:
-        key = current_app.config.get('OAUTH_STATE_TOKEN_SECRET', '0auth')
+        key = current_app.config.get('OAUTH_STATE_TOKEN_SECRET', OAUTH_STATE_TOKEN_SECRET_FALLBACK)
         state = token.encode('utf-8')
         ts, digest = state.split(b':')
         timestamp = int(ts, 16)  # todo: check timestamp vs current time?
@@ -445,8 +445,6 @@ class Ping(Resource):
         self.reqparse.add_argument("code", type=str, required=True, location="json")
 
         args = self.reqparse.parse_args()
-        if not verify_state_token(args["state"]):
-            return dict(message="The supplied credentials are invalid"), 403
 
         # you can either discover these dynamically or simply configure them
         access_token_url = current_app.config.get("PING_ACCESS_TOKEN_URL")
