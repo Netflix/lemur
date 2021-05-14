@@ -11,6 +11,7 @@
 from flask import current_app
 
 from lemur import database
+from lemur.constants import EMAIL_RE, EMAIL_RE_HELP
 from lemur.certificates.models import Certificate
 from lemur.common.utils import truthiness
 from lemur.notifications.models import Notification
@@ -44,8 +45,8 @@ def create_default_expiration_notifications(name, recipients, intervals=None):
             "name": "recipients",
             "type": "str",
             "required": True,
-            "validation": r"^([\w+-.%]+@[\w-.]+\.[A-Za-z]{2,4},?)+$",
-            "helpMessage": "Comma delimited list of email addresses",
+            "validation": EMAIL_RE.pattern,
+            "helpMessage": EMAIL_RE_HELP,
             "value": ",".join(recipients),
         },
     ]
