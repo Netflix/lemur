@@ -10,6 +10,10 @@ import json
 import jwt
 import base64
 import requests
+import time
+
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes, hmac
 
 from flask import Blueprint, current_app
 
@@ -277,6 +281,30 @@ def update_user(user, profile, roles):
 
     return user
 
+def generate_state_token():
+    key = current_app.config.get('OAUTH_STATE_TOKEN_SECRET', '0auth')
+    t = int(time.time())
+    ts = hex(t)[2:].encode('ascii')
+    h = hmac.HMAC(key, hashes.SHA256(), backend=default_backend())
+    h.update(ts)
+    digest = base64.b64encode(h.finalize())
+    state = ts + b':' + digest
+    return state.decode('utf-8')
+
+def verify_state_token(token):
+    try:
+        key = current_app.config.get('OAUTH_STATE_TOKEN_SECRET', '0auth')
+        state = token.encode('utf-8')
+        ts, digest = state.split(b':')
+        timestamp = int(ts, 16)  # todo: check timestamp vs current time?
+        digest = base64.b64decode(digest)
+        h = hmac.HMAC(key, hashes.SHA256(), backend=default_backend())
+        h.update(ts)
+        h.verify(digest)
+        return True
+    except Exception as e:
+        current_app.logger.info(f'Error while parsing OAuth State token: {e}')
+        return False
 
 class Login(Resource):
     """
@@ -417,6 +445,8 @@ class Ping(Resource):
         self.reqparse.add_argument("code", type=str, required=True, location="json")
 
         args = self.reqparse.parse_args()
+        if not verify_state_token(args["state"]):
+            return dict(message="The supplied credentials are invalid"), 403
 
         # you can either discover these dynamically or simply configure them
         access_token_url = current_app.config.get("PING_ACCESS_TOKEN_URL")
@@ -477,6 +507,8 @@ class OAuth2(Resource):
         self.reqparse.add_argument("code", type=str, required=True, location="json")
 
         args = self.reqparse.parse_args()
+        if not verify_state_token(args["state"]):
+            return dict(message="The supplied credentials are invalid"), 403
 
         # you can either discover these dynamically or simply configure them
         access_token_url = current_app.config.get("OAUTH2_ACCESS_TOKEN_URL")
@@ -623,7 +655,7 @@ class Providers(Resource):
                             "OAUTH2_AUTH_ENDPOINT"
                         ),
                         "requiredUrlParams": ["scope", "state", "nonce"],
-                        "state": "STATE",
+                        "state": generate_state_token(),
                         "nonce": get_psuedo_random_string(),
                         "type": "2.0",
                     }
