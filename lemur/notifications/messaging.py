@@ -23,7 +23,7 @@ from lemur import database
 from lemur.certificates import service as certificates_service
 from lemur.certificates.models import Certificate
 from lemur.certificates.schemas import certificate_notification_output_schema
-from lemur.certificates.service import get_deployed_expiring_certificates
+from lemur.certificates.service import get_expiring_deployed_certificates
 from lemur.common.utils import windowed_query, is_selfsigned
 from lemur.constants import FAILURE_METRIC_STATUS, SUCCESS_METRIC_STATUS
 from lemur.extensions import metrics
@@ -486,14 +486,15 @@ def send_security_expiration_summary(exclude=None):
 
 def send_expiring_deployed_certificate_notifications(exclude):
     """
-    This function will check for certs that are expiring soon and are still deployed.
+    This function will check for certs that are expiring soon and are still deployed. This information is retrieved
+    from the database, and is based on the previous run of identity_expiring_deployed_certificates.
     It will send an email to the owner of any matching certificates.
     """
     success = failure = 0
     notification_type = "expiring_deployed_certificate"
     security_email = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
 
-    for owner, owner_certs in get_deployed_expiring_certificates(exclude).items():
+    for owner, owner_certs in get_expiring_deployed_certificates(exclude).items():
         notification_data = []
         # eventually we also want to use the options configured on the cert's notification(s) to notify the owner
         # for now, we'll just email the security team

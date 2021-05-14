@@ -1011,24 +1011,24 @@ def remove_destination_association(certificate, destination):
     )
 
 
-def get_deployed_expiring_certificates(exclude=None, timeout_seconds_per_network_call=1):
+def identify_and_persist_expiring_deployed_certificates(exclude=None, timeout_seconds_per_network_call=1):
     """
-    Finds all certificates that are eligible for deployed expiring cert notifications. Returns the set of domain/port
-    pairs at which each certificate was identified as in use (deployed).
+    Finds all certificates expiring soon but are still being used for TLS at any domain with which they are associated.
+    Identified ports will then be persisted on the certificate_associations row for the given cert/domain combo.
 
     Note that this makes actual TLS network calls in order to establish the "deployed" part of this check.
-
-    Sample response:
-        defaultdict(<class 'list'>,
-            {'testowner2@example.com': [(Certificate(name=certificate100),
-                                        defaultdict(<class 'list'>, {'localhost': [65521, 65522, 65523]}))],
-            'testowner3@example.com': [(Certificate(name=certificate101),
-                                        defaultdict(<class 'list'>, {'localhost': [65521, 65522, 65523]}))]})
-
-    :return: A dictionary with owner as key, and a list of certificates associated with domains/ports.
     """
+    all_certs = defaultdict(dict)
+    for c in get_certs_for_expiring_deployed_cert_check(exclude):
+        domains_for_cert = find_and_persist_domains_where_cert_is_deployed(c, timeout_seconds_per_network_call)
+        if len(domains_for_cert) > 0:
+            all_certs[c] = domains_for_cert
+    database.commit()
+
+
+def get_certs_for_expiring_deployed_cert_check(exclude):
     now = arrow.utcnow()
-    threshold_days = current_app.config.get("LEMUR_DEPLOYED_EXPIRING_CERT_THRESHOLD_DAYS", 14)
+    threshold_days = current_app.config.get("LEMUR_EXPIRING_DEPLOYED_CERT_THRESHOLD_DAYS", 14)
     max_not_after = now + timedelta(days=threshold_days)
 
     q = (
@@ -1046,22 +1046,10 @@ def get_deployed_expiring_certificates(exclude=None, timeout_seconds_per_network
 
         q = q.filter(and_(*exclude_conditions))
 
-    all_certs = defaultdict(dict)
-    for c in windowed_query(q, Certificate.id, 10000):
-        domains_for_cert = find_domains_where_cert_is_deployed(c, timeout_seconds_per_network_call)  # network call!
-        if len(domains_for_cert) > 0:
-            all_certs[c] = domains_for_cert
-    database.commit()
-
-    certificates = defaultdict(list)
-    # group by owner
-    for owner, owner_certs in groupby(sorted(all_certs.items(), key=lambda x: x[0].owner), lambda x: x[0].owner):
-        certificates[owner] = list(owner_certs)
-
-    return certificates
+    return windowed_query(q, Certificate.id, 10000)
 
 
-def find_domains_where_cert_is_deployed(certificate, timeout_seconds_per_network_call):
+def find_and_persist_domains_where_cert_is_deployed(certificate, timeout_seconds_per_network_call):
     """
     Checks if the specified cert is still deployed. Returns a list of domains to which it's deployed.
 
@@ -1076,7 +1064,7 @@ def find_domains_where_cert_is_deployed(certificate, timeout_seconds_per_network
     """
     matched_domains = defaultdict(list)
     # filter out wildcards, we can't check them
-    for cert_association in [ca for ca in certificate.certificate_associations if '*' not in ca.domain.name]:
+    for cert_association in [assoc for assoc in certificate.certificate_associations if '*' not in assoc.domain.name]:
         domain = cert_association.domain
         matched_ports_for_domain = []
         for port in current_app.config.get("LEMUR_PORTS_FOR_DEPLOYED_CERTIFICATE_CHECK", [443]):
@@ -1093,3 +1081,33 @@ def find_domains_where_cert_is_deployed(certificate, timeout_seconds_per_network
             # Update the DB
             cert_association.ports = matched_ports_for_domain
     return matched_domains
+
+
+def get_expiring_deployed_certificates(exclude=None):
+    """
+    Finds all certificates that are eligible for deployed expiring cert notifications. Returns the set of domain/port
+    pairs at which each certificate was identified as in use (deployed).
+
+    Sample response:
+        defaultdict(<class 'list'>,
+            {'testowner2@example.com': [(Certificate(name=certificate100),
+                                        defaultdict(<class 'list'>, {'localhost': [65521, 65522, 65523]}))],
+            'testowner3@example.com': [(Certificate(name=certificate101),
+                                        defaultdict(<class 'list'>, {'localhost': [65521, 65522, 65523]}))]})
+
+    :return: A dictionary with owner as key, and a list of certificates associated with domains/ports.
+    """
+    certs_domains_and_ports = defaultdict(dict)
+    for certificate in get_certs_for_expiring_deployed_cert_check(exclude):
+        matched_domains = defaultdict(list)
+        for cert_association in [assoc for assoc in certificate.certificate_associations if assoc.ports]:
+            matched_domains[cert_association.domain.name] = cert_association.ports
+        if len(matched_domains) > 0:
+            certs_domains_and_ports[certificate] = matched_domains
+
+    certs_domains_and_ports_by_owner = defaultdict(list)
+    # group by owner
+    for owner, owner_certs in groupby(sorted(certs_domains_and_ports.items(),
+                                             key=lambda x: x[0].owner), lambda x: x[0].owner):
+        certs_domains_and_ports_by_owner[owner] = list(owner_certs)
+    return certs_domains_and_ports_by_owner

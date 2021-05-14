@@ -30,7 +30,8 @@ from lemur.certificates.service import (
     get_all_certs_attached_to_endpoint_without_autorotate,
     revoke as revoke_certificate,
     list_duplicate_certs_by_authority,
-    get_certificates_with_same_prefix_with_rotate_on
+    get_certificates_with_same_prefix_with_rotate_on,
+    identify_and_persist_expiring_deployed_certificates
 )
 from lemur.certificates.verify import verify_string
 from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS, CRLReason
@@ -939,3 +940,15 @@ def is_duplicate(matching_cert, compare_to):
 
     return (len(matching_destinations) == len(compare_to_destinations)
             and set(matching_destinations) == set(compare_to_destinations))
+
+
+def identify_expiring_deployed_certificates():
+    status = FAILURE_METRIC_STATUS
+    try:
+        identify_and_persist_expiring_deployed_certificates()
+        status = SUCCESS_METRIC_STATUS
+    except Exception:
+        capture_exception()
+        current_app.logger.exception("Error identifying expiring deployed certificates", exc_info=True)
+
+    metrics.send("identify_expiring_deployed_certificates", "counter", 1, metric_tags={"status": status})
