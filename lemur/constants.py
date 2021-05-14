@@ -40,8 +40,9 @@ CERTIFICATE_KEY_TYPES = [
 ]
 
 # For commonly reused regexes used by plugins
-EMAIL_RE = re.compile('^([\w+-.%]+@[-\w.]+\.[A-Za-z]{2,4},?)+$')
+EMAIL_RE = re.compile('^([\w+-.%]+@[-\w.]+\.[A-Za-z]{2,4},?)+$')  # noqa: W605
 EMAIL_RE_HELP = "Comma delimited list of email addresses"
+
 
 # As per RFC 5280 section 5.3.1 (https://tools.ietf.org/html/rfc5280#section-5.3.1)
 class CRLReason(IntEnum):
