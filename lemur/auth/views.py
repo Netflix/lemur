@@ -275,6 +275,8 @@ def update_user(user, profile, roles):
             roles,
         )
 
+    return user
+
 
 class Login(Resource):
     """
@@ -440,7 +442,7 @@ class Ping(Resource):
             access_token
         )
         roles = create_user_roles(profile)
-        update_user(user, profile, roles)
+        user = update_user(user, profile, roles)
 
         if not user or not user.active:
             metrics.send(
@@ -499,7 +501,7 @@ class OAuth2(Resource):
 
         user, profile = retrieve_user(user_api_url, access_token)
         roles = create_user_roles(profile)
-        update_user(user, profile, roles)
+        user = update_user(user, profile, roles)
 
         if not user.active:
             metrics.send(
