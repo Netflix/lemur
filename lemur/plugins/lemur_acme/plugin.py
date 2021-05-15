@@ -308,7 +308,7 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
             "name": "email",
             "type": "str",
             "default": "",
-            "validation": EMAIL_RE,
+            "validation": EMAIL_RE.pattern,
             "helpMessage": "Email to use",
         },
         {
