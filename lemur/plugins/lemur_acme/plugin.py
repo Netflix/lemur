@@ -308,7 +308,7 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
             "name": "email",
             "type": "str",
             "default": "",
-            "validation": r"/^?([-a-zA-Z0-9.`?{}]+@\w+\.\w+)$/",
+            "validation": EMAIL_RE,
             "helpMessage": "Email to use",
         },
         {

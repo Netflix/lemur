@@ -106,14 +106,14 @@ class AzureDestinationPlugin(DestinationPlugin):
             "name": "azureTenant",
             "type": "str",
             "required": True,
-            "validation": "^([a-zA-Z0-9/-/?)+$",
+            "validation": "^([a-zA-Z0-9/-/?])+$",
             "helpMessage": "Tenant for the Azure Key Vault",
         },
         {
             "name": "appID",
             "type": "str",
             "required": True,
-            "validation": "^([a-zA-Z0-9/-/?)+$",
+            "validation": "^([a-zA-Z0-9/-/?])+$",
             "helpMessage": "AppID for the Azure Key Vault",
         },
         {
