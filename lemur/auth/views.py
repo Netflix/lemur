@@ -282,11 +282,15 @@ def update_user(user, profile, roles):
     return user
 
 
-def generate_state_token():
+def build_hmac():
     key = current_app.config.get('OAUTH_STATE_TOKEN_SECRET', OAUTH_STATE_TOKEN_SECRET_FALLBACK)
+    return hmac.HMAC(key.encode('ascii'), hashes.SHA256(), backend=default_backend())
+
+
+def generate_state_token():
     t = int(time.time())
     ts = hex(t)[2:].encode('ascii')
-    h = hmac.HMAC(key, hashes.SHA256(), backend=default_backend())
+    h = build_hmac()
     h.update(ts)
     digest = base64.b64encode(h.finalize())
     state = ts + b':' + digest
@@ -295,17 +299,16 @@ def generate_state_token():
 
 def verify_state_token(token):
     try:
-        key = current_app.config.get('OAUTH_STATE_TOKEN_SECRET', OAUTH_STATE_TOKEN_SECRET_FALLBACK)
         state = token.encode('utf-8')
         ts, digest = state.split(b':')
-        timestamp = int(ts, 16)  # todo: check timestamp vs current time?
+        timestamp = int(ts, 16)  # todo: check freshness of timestamp vs. current time?
         digest = base64.b64decode(digest)
-        h = hmac.HMAC(key, hashes.SHA256(), backend=default_backend())
+        h = build_hmac()
         h.update(ts)
-        h.verify(digest)
+        h.verify(digest)  # should verification fail for any reason, an exception is thrown
         return True
     except Exception as e:
-        current_app.logger.info(f'Error while parsing OAuth State token: {e}')
+        current_app.logger.warning(f'Error while parsing OAuth State token: {e}')
         return False
 
 
@@ -506,6 +509,7 @@ class OAuth2(Resource):
             "redirectUri", type=str, required=True, location="json"
         )
         self.reqparse.add_argument("code", type=str, required=True, location="json")
+        self.reqparse.add_argument("state", type=str, required=True, location="json")
 
         args = self.reqparse.parse_args()
         if not verify_state_token(args["state"]):
