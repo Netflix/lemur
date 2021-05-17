@@ -929,6 +929,7 @@ def is_duplicate(matching_cert, compare_to):
     if (
         matching_cert.owner != compare_to.owner
         or matching_cert.san != compare_to.san
+        or matching_cert.key_type != compare_to.key_type
         or matching_cert.not_before.date() != compare_to.not_before.date()
         or matching_cert.not_after.date() != compare_to.not_after.date()
     ):
