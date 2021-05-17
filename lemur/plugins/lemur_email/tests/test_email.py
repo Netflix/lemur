@@ -76,8 +76,8 @@ def test_render_expiring_deployed_certificate(certificate):
     verify_sender_email()
 
     cert_data = certificate_notification_output_schema.dump(certificate).data
-    cert_data['domains_and_ports'] = [{'domain': 'drive.google.com', 'ports': [443]},
-                                      {'domain': 'google.com', 'ports': [443, 444]}]
+    cert_data['domains_and_ports'] = [{'domain': 'subdomain.example.com', 'ports': [443]},
+                                      {'domain': 'example.com', 'ports': [443, 444]}]
 
     assert render_html("expiring_deployed_certificate", get_options(), [cert_data])
 

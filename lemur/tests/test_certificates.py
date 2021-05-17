@@ -1503,7 +1503,7 @@ def run_server(port, cert_file_name):
         server.socket = ssl.wrap_socket(server.socket,
                                         server_side=True,
                                         certfile=cert_file_name,
-                                        ssl_version=ssl.PROTOCOL_TLS)
+                                        ssl_version=ssl.PROTOCOL_TLSv1_2)
         server.serve_forever()
         print(f"Started https server on port {port} using cert file {cert_file_name}")
 
