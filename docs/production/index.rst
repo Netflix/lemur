@@ -418,6 +418,13 @@ Example Celery configuration (To be placed in your configuration file)::
                 'expires': 180
             },
             'schedule': crontab(hour=22, minute=0),
+        },
+        'disable_rotation_of_duplicate_certificates': {
+            'task': 'lemur.common.celery.disable_rotation_of_duplicate_certificates',
+            'options': {
+                'expires': 180
+            },
+            'schedule': crontab(hour=22, minute=0, day_of_week=2),
         }
     }
 
