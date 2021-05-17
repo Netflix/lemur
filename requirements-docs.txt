@@ -240,7 +240,7 @@ itsdangerous==1.1.0
     #   flask
 javaobj-py3==0.4.2
     # via pyjks
-jinja2==2.11.3
+jinja2==3.0.0
     # via
     #   -r requirements-tests.txt
     #   flask
@@ -286,7 +286,7 @@ logmatic-python==0.1.7
     # via -r requirements-docs.in
 mako==1.1.4
     # via alembic
-markupsafe==1.1.1
+markupsafe==2.0.0
     # via
     #   -r requirements-tests.txt
     #   jinja2
