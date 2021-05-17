@@ -190,7 +190,7 @@ flask-sqlalchemy==2.5.1
     # via
     #   -r requirements-docs.in
     #   flask-migrate
-flask==1.1.2
+flask==2.0.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -234,13 +234,13 @@ iniconfig==1.1.1
     # via
     #   -r requirements-tests.txt
     #   pytest
-itsdangerous==1.1.0
+itsdangerous==2.0.0
     # via
     #   -r requirements-tests.txt
     #   flask
 javaobj-py3==0.4.2
     # via pyjks
-jinja2==2.11.3
+jinja2==3.0.0
     # via
     #   -r requirements-tests.txt
     #   flask
@@ -286,7 +286,7 @@ logmatic-python==0.1.7
     # via -r requirements-docs.in
 mako==1.1.4
     # via alembic
-markupsafe==1.1.1
+markupsafe==2.0.0
     # via
     #   -r requirements-tests.txt
     #   jinja2
@@ -584,7 +584,7 @@ websocket-client==0.59.0
     # via
     #   -r requirements-tests.txt
     #   docker
-werkzeug==1.0.1
+werkzeug==2.0.0
     # via
     #   -r requirements-tests.txt
     #   flask

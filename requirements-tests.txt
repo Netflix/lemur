@@ -78,7 +78,7 @@ faker==8.1.4
     #   factory-boy
 fakeredis==1.5.0
     # via -r requirements-tests.in
-flask==1.1.2
+flask==2.0.0
     # via pytest-flask
 freezegun==1.1.0
     # via -r requirements-tests.in
@@ -94,9 +94,9 @@ idna==2.10
     #   requests
 iniconfig==1.1.1
     # via pytest
-itsdangerous==1.1.0
+itsdangerous==2.0.0
     # via flask
-jinja2==2.11.3
+jinja2==3.0.0
     # via
     #   flask
     #   moto
@@ -120,7 +120,7 @@ jsonschema==3.2.0
     #   cfn-lint
 junit-xml==1.9
     # via cfn-lint
-markupsafe==1.1.1
+markupsafe==2.0.0
     # via
     #   jinja2
     #   moto
@@ -255,7 +255,7 @@ urllib3==1.26.4
     #   responses
 websocket-client==0.59.0
     # via docker
-werkzeug==1.0.1
+werkzeug==2.0.0
     # via
     #   flask
     #   moto
