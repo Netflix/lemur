@@ -798,8 +798,8 @@ def disable_rotation_of_duplicate_certificates(commit):
         return
 
     log_data["authorities"] = authority_names
-    days_since_issuance = current_app.config.get("DAYS_SINCE_ISSUANCE_DISABLE_ROTATE_OF_DUPLICATE_CERTIFICATES", -1)
-    log_data["days_since_issuance"] = f"{days_since_issuance} (Ignored if -1)"
+    days_since_issuance = current_app.config.get("DAYS_SINCE_ISSUANCE_DISABLE_ROTATE_OF_DUPLICATE_CERTIFICATES", None)
+    log_data["days_since_issuance"] = f"{days_since_issuance} (Ignored if none)"
 
     authority_ids = []
     invalid_authorities = []

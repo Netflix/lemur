@@ -240,7 +240,7 @@ def list_duplicate_certs_by_authority(authority_ids, days_since_issuance):
     with names that are forced to be unique using serial number like 'some.name.prefix-YYYYMMDD-YYYYMMDD-serialnumber',
     thus the pattern "%-[0-9]{8}-[0-9]{8}-%"
     :param authority_ids:
-    :param days_since_issuance: If not -1, include certificates issued in only last days_since_issuance days
+    :param days_since_issuance: If not none, include certificates issued in only last days_since_issuance days
     :return: List of certificates matching criteria
     """
 
@@ -252,7 +252,7 @@ def list_duplicate_certs_by_authority(authority_ids, days_since_issuance):
         .filter(not_(Certificate.replaced.any()))\
         .filter(text("name ~ '.*-[0-9]{8}-[0-9]{8}-.*'"))
 
-    if days_since_issuance != -1:
+    if days_since_issuance:
         issuance_window = (
             arrow.now().shift(days=-days_since_issuance).format("YYYY-MM-DD")
         )
