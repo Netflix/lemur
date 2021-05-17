@@ -329,19 +329,6 @@ The following commands that could/should be run on a periodic basis:
 - `check_revoked`
 - `sync`
 
-If you are using LetsEncrypt, you must also run the following:
-
-- `fetch_all_pending_acme_certs`
-- `remove_old_acme_certs`
-
-Rarely, lemur may see duplicate certificates issue with LetsEncrypt. This is because of the retry logic during
-resolution of pending certificates. To deduplicate these certificates, please consider running celery task
-`disable_rotation_of_duplicate_certificates`. This task will identify duplicate certificates and disable auto
-rotate if it's confident that the certificate is not being used. If certificate is in use, no change is done
-(operation status = skipped). If unused, auto-rotation will be disabled (operation status = success). If it's
-not able to confidently determine that certificates are duplicates, operation status will result in `failed` for
-that specific set of certificates. You may want to manually check these certs to determine if you want to keep them all.
-The task will always keep auto-rotate on for at least one certificate.
 
 How often you run these commands is largely up to the user. `notify` should be run once a day (more often will result in
 duplicate notifications). `check_revoked` is typically run at least once a day.
@@ -356,6 +343,22 @@ Example cron entries::
     */15 * * * * lemuruser export LEMUR_CONF=/Users/me/.lemur/lemur.conf.py; /www/lemur/bin/lemur source sync -s all
     0 22 * * * lemuruser export LEMUR_CONF=/Users/me/.lemur/lemur.conf.py; /www/lemur/bin/lemur certificate check_revoked
 
+
+If you are using LetsEncrypt, you must also run the following:
+
+- `fetch_all_pending_acme_certs`
+- `remove_old_acme_certs`
+
+Rarely, lemur may see duplicate certificates issue with LetsEncrypt. This is because of the retry logic during
+resolution of pending certificates. To deduplicate these certificates, please consider running the celery task
+`disable_rotation_of_duplicate_certificates`. This task will identify duplicate certificates and disable auto
+rotate if it's confident that the certificate is not being used. If  certificate is in use, no change is done
+(operation status = skipped). If unused, auto-rotation will be disabled (operation status = success). If it's
+not able to confidently determine that certificates are duplicates, operation status will result in `failed` for
+that specific set of certificates. You may want to manually check these certs to determine if you want to keep them all.
+The task will always keep auto-rotate on for at least one certificate.
+
+For better metrics around job completion, we recommend using celery to schedule recurring jobs in Lemur.
 
 Example Celery configuration (To be placed in your configuration file)::
 
