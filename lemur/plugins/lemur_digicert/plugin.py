@@ -259,6 +259,19 @@ def get_cis_certificate(session, base_url, order_id):
     return cert_chain_pem
 
 
+@retry(stop_max_attempt_number=3, wait_fixed=1000)
+def get_order_id(session, base_url, digicert_cert_id):
+    """Look up the digicert order id for a certificate."""
+    url = f"{base_url}/services/v2/order/certificate?filters[certificate_id]={digicert_cert_id}"
+    response_data = handle_response(session.get(url))
+
+    orders = response_data["orders"]
+    if len(orders) != 1:
+        raise ValueError(f"Got {len(orders)} orders but expected one.")
+    
+    return response_data["orders"][0]["id"]
+
+
 class DigiCertSourcePlugin(SourcePlugin):
     """Wrap the Digicert Certifcate API."""
 
@@ -338,14 +351,38 @@ class DigiCertIssuerPlugin(IssuerPlugin):
         :param issuer_options:
         :return: :raise Exception:
         """
+        # prepare certificate request
         base_url = current_app.config.get("DIGICERT_URL")
         cert_type = current_app.config.get("DIGICERT_ORDER_TYPE")
 
-        # make certificate request
         determinator_url = "{0}/services/v2/order/certificate/{1}".format(
             base_url, cert_type
         )
         data = map_fields(issuer_options, csr)
+
+        # propagate renewal information
+        if issuer_options.get("replaces"):
+            old_cert_id = None
+
+            # grab the first external id we can find in the case when one cert
+            # replaces multiple certs (this isn't a guarantee that it's an
+            # digicert external id).
+            for old_cert in issuer_options["replaces"]:
+                if old_cert.external_id:
+                    old_cert_id = old_cert.external_id
+                    break
+
+            if old_cert_id:
+                try:
+                    current_app.logger.debug(f"Looking up the order id for certificate {old_cert_id}")
+                    old_order_id = get_order_id(session=self.session, base_url=base_url, digicert_cert_id=old_cert_id)
+                    data["renewal_of_order_id"] = old_order_id
+                except Exception:
+                    current_app.logger.warning(f"Exception when trying to get the id of the old order that replaces this one.")
+            else:
+                 current_app.logger.info("The replaced certificates did not have external_id - will not mark order as renewed")
+
+        # make certificate request
         response = self.session.post(determinator_url, data=json.dumps(data))
 
         if response.status_code > 399:
