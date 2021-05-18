@@ -370,7 +370,20 @@ def send_default_notification(notification_type, data, targets, notification_opt
 
 def send_rotation_notification(certificate):
     data = certificate_notification_output_schema.dump(certificate).data
+    data["security_email"] = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
     return send_default_notification("rotation", data, [data["owner"]])
+
+
+def send_reissue_no_endpoints_notification(new_cert):
+    data = certificate_notification_output_schema.dump(new_cert).data
+    data["security_email"] = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
+    return send_default_notification("reissued_with_no_endpoints", data, [data["owner"]])
+
+
+def send_reissue_failed_notification(certificate):
+    data = certificate_notification_output_schema.dump(certificate).data
+    data["security_email"] = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
+    return send_default_notification("reissue_failed", data, [data["owner"]])
 
 
 def send_pending_failure_notification(

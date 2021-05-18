@@ -38,7 +38,8 @@ from lemur.deployment import service as deployment_service
 from lemur.domains.models import Domain
 from lemur.endpoints import service as endpoint_service
 from lemur.extensions import metrics
-from lemur.notifications.messaging import send_rotation_notification
+from lemur.notifications.messaging import send_rotation_notification, send_reissue_no_endpoints_notification, \
+    send_reissue_failed_notification
 from lemur.plugins.base import plugins
 
 manager = Manager(usage="Handles all certificate related tasks.")
@@ -139,14 +140,16 @@ def request_rotation(endpoint, certificate, message, commit):
                                                                  "endpoint": str(endpoint.dnsname)})
 
 
-def request_reissue(certificate, commit):
+def request_reissue(certificate, notify, commit):
     """
     Reissuing certificate and handles any exceptions.
     :param certificate:
+    :param notify:
     :param commit:
     :return:
     """
     status = FAILURE_METRIC_STATUS
+    notify = certificate.notify
     try:
         print("[+] {0} is eligible for re-issuance".format(certificate.name))
 
@@ -159,6 +162,8 @@ def request_reissue(certificate, commit):
         if commit:
             new_cert = reissue_certificate(certificate, replace=True)
             print("[+] New certificate named: {0}".format(new_cert.name))
+            if notify and not new_cert.endpoints:
+                send_reissue_no_endpoints_notification(new_cert)
 
         status = SUCCESS_METRIC_STATUS
 
@@ -168,6 +173,8 @@ def request_reissue(certificate, commit):
             f"Error reissuing certificate: {certificate.name}", exc_info=True
         )
         print(f"[!] Failed to reissue certificate: {certificate.name}. Reason: {e}")
+        if notify:
+            send_reissue_failed_notification(certificate)
 
     metrics.send(
         "certificate_reissue",
@@ -474,6 +481,13 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
     help="Name of the certificate you wish to reissue.",
 )
 @manager.option(
+    "-a",
+    "--notify",
+    dest="message",
+    action="store_true",
+    help="Send a re-issue failed notification to the certificates owner (if re-isuance fails).",
+)
+@manager.option(
     "-c",
     "--commit",
     dest="commit",
@@ -481,7 +495,7 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
     default=False,
     help="Persist changes.",
 )
-def reissue(old_certificate_name, commit):
+def reissue(old_certificate_name, notify, commit):
     """
     Reissues certificate with the same parameters as it was originally issued with.
     If not time period is provided, reissues certificate as valid from today to
@@ -499,9 +513,9 @@ def reissue(old_certificate_name, commit):
 
         if not old_cert:
             for certificate in get_all_pending_reissue():
-                request_reissue(certificate, commit)
+                request_reissue(certificate, notify, commit)
         else:
-            request_reissue(old_cert, commit)
+            request_reissue(old_cert, notify, commit)
 
         status = SUCCESS_METRIC_STATUS
         print("[+] Done!")

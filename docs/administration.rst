@@ -329,6 +329,8 @@ Supported types:
 * CA certificate expiration
 * Pending ACME certificate failure
 * Certificate rotation
+* Certificate reissued with no endpoints
+* Certificate reissue failed
 * Security certificate expiration summary
 
 **Default notifications**
@@ -397,6 +399,14 @@ the pending certificate had notifications disabled.
 
 Lemur will attempt 3x times to resolve a pending certificate.
 This can at times result into 3 duplicate certificates, if all certificate attempts get resolved.
+
+**Certificate re-issuance**
+
+When a cert is reissued (i.e. a new certificate is minted to replace it), *and* the re-issuance either fails or
+succeeds but the certificate has no associated endpoints (meaning the subsequent rotation step will not occur),
+Lemur will send a notification via email to the certificate owner. This notification is disabled by default;
+to enable it, you must set the option ``--notify`` (when using cron) or the configuration parameter
+``ENABLE_REISSUE_NOTIFICATION`` (when using celery).
 
 **Certificate rotation**
 
