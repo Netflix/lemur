@@ -23,6 +23,7 @@ from lemur import database
 from lemur.certificates import service as certificates_service
 from lemur.certificates.models import Certificate
 from lemur.certificates.schemas import certificate_notification_output_schema
+from lemur.certificates.service import get_expiring_deployed_certificates
 from lemur.common.utils import windowed_query, is_selfsigned
 from lemur.constants import FAILURE_METRIC_STATUS, SUCCESS_METRIC_STATUS
 from lemur.extensions import metrics
@@ -183,7 +184,7 @@ def get_eligible_authority_certificates():
     # group by owner
     for owner, owner_certs in groupby(sorted(all_certs, key=lambda x: x.owner), lambda x: x.owner):
         # group by expiration interval
-        for interval, interval_certs in groupby(sorted(owner_certs, key=lambda x: x.owner),
+        for interval, interval_certs in groupby(sorted(owner_certs, key=lambda x: (x.not_after - now).days),
                                                 lambda x: (x.not_after - now).days):
             certificates[owner][interval] = list(interval_certs)
 
@@ -496,3 +497,34 @@ def send_security_expiration_summary(exclude=None):
 
     if status == SUCCESS_METRIC_STATUS:
         return True
+
+
+def send_expiring_deployed_certificate_notifications(exclude):
+    """
+    This function will check for certs that are expiring soon and are still deployed. This information is retrieved
+    from the database, and is based on the previous run of identity_expiring_deployed_certificates.
+    It will send an email to the owner of any matching certificates.
+    """
+    success = failure = 0
+    notification_type = "expiring_deployed_certificate"
+    security_email = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
+
+    for owner, owner_certs in get_expiring_deployed_certificates(exclude).items():
+        notification_data = []
+        # eventually we also want to use the options configured on the cert's notification(s) to notify the owner
+        # for now, we'll just email the security team
+        email_recipients = security_email
+        for certificate, domains_and_ports in owner_certs:
+            cert_data = certificate_notification_output_schema.dump(certificate).data
+            # we add the domain info into the cert dump in order to reuse existing common email formatting logic
+            domain_and_port_data = []
+            for domain, ports in domains_and_ports.items():
+                domain_and_port_data.append({"domain": domain, "ports": ports})
+            cert_data["domains_and_ports"] = domain_and_port_data
+            notification_data.append(cert_data)
+        if send_default_notification(notification_type, notification_data, email_recipients):
+            success += 1
+        else:
+            failure += 1
+
+    return success, failure
