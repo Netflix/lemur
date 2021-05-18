@@ -7,7 +7,6 @@
 """
 import re
 from collections import defaultdict
-from datetime import timedelta
 from itertools import groupby
 
 import arrow
