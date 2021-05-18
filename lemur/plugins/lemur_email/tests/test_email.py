@@ -86,6 +86,16 @@ def test_render_expiration_summary(certificate, notification, notification_plugi
             assert message_data_for_cert  # verify the expected cert is present for the expected interval
 
 
+def test_render_expiring_deployed_certificate(certificate):
+    verify_sender_email()
+
+    cert_data = certificate_notification_output_schema.dump(certificate).data
+    cert_data['domains_and_ports'] = [{'domain': 'subdomain.example.com', 'ports': [443]},
+                                      {'domain': 'example.com', 'ports': [443, 444]}]
+
+    assert render_html("expiring_deployed_certificate", get_options(), [cert_data])
+
+
 @mock_ses
 def test_send_expiration_notification():
     from lemur.notifications.messaging import send_expiration_notifications

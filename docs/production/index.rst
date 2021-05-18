@@ -325,7 +325,8 @@ celery tasks or cron jobs that run these commands.
 
 The following commands that could/should be run on a periodic basis:
 
-- `notify expirations` `notify authority_expirations`, and `notify security_expiration_summary` (see :ref:`NotificationOptions` for configuration info)
+- `notify expirations`, `notify authority_expirations`, `notify security_expiration_summary`, and `notify expiring_deployed_certificates` (see :ref:`NotificationOptions` for configuration info)
+- `certificate identity_expiring_deployed_certificates`
 - `check_revoked`
 - `sync`
 
@@ -425,6 +426,20 @@ Example Celery configuration (To be placed in your configuration file)::
                 'expires': 180
             },
             'schedule': crontab(hour=22, minute=0, day_of_week=2),
+        },
+        'notify_expiring_deployed_certificates': {
+            'task': 'lemur.common.celery.notify_expiring_deployed_certificates',
+            'options': {
+                'expires': 180
+            },
+            'schedule': crontab(hour=22, minute=0),
+        },
+        'identity_expiring_deployed_certificates': {
+            'task': 'lemur.common.celery.identity_expiring_deployed_certificates',
+            'options': {
+                'expires': 180
+            },
+            'schedule': crontab(hour=20, minute=0),
         }
     }
 
