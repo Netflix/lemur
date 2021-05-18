@@ -1034,9 +1034,8 @@ def identify_and_persist_expiring_deployed_certificates(exclude=None, timeout_se
 
 
 def get_certs_for_expiring_deployed_cert_check(exclude):
-    now = arrow.utcnow()
     threshold_days = current_app.config.get("LEMUR_EXPIRING_DEPLOYED_CERT_THRESHOLD_DAYS", 14)
-    max_not_after = now + timedelta(days=threshold_days)
+    max_not_after = arrow.utcnow().shift(days=+threshold_days).format("YYYY-MM-DD")
 
     q = (
         database.db.session.query(Certificate)
