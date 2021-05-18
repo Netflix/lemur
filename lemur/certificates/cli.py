@@ -149,7 +149,7 @@ def request_reissue(certificate, notify, commit):
     :return:
     """
     status = FAILURE_METRIC_STATUS
-    notify = certificate.notify
+    notify = notify and certificate.notify
     try:
         print("[+] {0} is eligible for re-issuance".format(certificate.name))
 
