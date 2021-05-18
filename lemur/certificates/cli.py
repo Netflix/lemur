@@ -812,6 +812,8 @@ def disable_rotation_of_duplicate_certificates(commit):
         return
 
     log_data["authorities"] = authority_names
+    days_since_issuance = current_app.config.get("DAYS_SINCE_ISSUANCE_DISABLE_ROTATE_OF_DUPLICATE_CERTIFICATES", None)
+    log_data["days_since_issuance"] = f"{days_since_issuance} (Ignored if none)"
 
     authority_ids = []
     invalid_authorities = []
@@ -829,7 +831,7 @@ def disable_rotation_of_duplicate_certificates(commit):
         current_app.logger.error(log_data)
         return
 
-    duplicate_candidate_certs = list_duplicate_certs_by_authority(authority_ids)
+    duplicate_candidate_certs = list_duplicate_certs_by_authority(authority_ids, days_since_issuance)
 
     log_data["certs_with_serial_number_count"] = len(duplicate_candidate_certs)
     current_app.logger.info(log_data)
@@ -943,6 +945,7 @@ def is_duplicate(matching_cert, compare_to):
     if (
         matching_cert.owner != compare_to.owner
         or matching_cert.san != compare_to.san
+        or matching_cert.key_type != compare_to.key_type
         or matching_cert.not_before.date() != compare_to.not_before.date()
         or matching_cert.not_after.date() != compare_to.not_after.date()
     ):
