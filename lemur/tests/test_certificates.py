@@ -2,6 +2,10 @@ from __future__ import unicode_literals  # at top of module
 
 import datetime
 import json
+import ssl
+import threading
+from http.server import HTTPServer, SimpleHTTPRequestHandler
+from tempfile import NamedTemporaryFile
 
 import arrow
 import pytest
@@ -11,11 +15,13 @@ from marshmallow import ValidationError
 from freezegun import freeze_time
 from unittest.mock import patch
 
-from lemur.certificates.service import create_csr
+from sqlalchemy.testing import fail
+
+from lemur.certificates.service import create_csr, identify_and_persist_expiring_deployed_certificates
 from lemur.certificates.views import *  # noqa
 from lemur.common import utils
 from lemur.domains.models import Domain
-
+from lemur.tests.test_messaging import create_cert_that_expires_in_days
 
 from lemur.tests.vectors import (
     VALID_ADMIN_API_TOKEN,
@@ -1441,3 +1447,67 @@ def test_issued_cert_count_for_authority(authority):
     CertificateFactory(authority=authority, name="test_issued_cert_count_for_authority3")
 
     assert get_issued_cert_count_for_authority(authority) == 3
+
+
+def test_identify_and_persist_expiring_deployed_certificates():
+    from lemur.domains.models import Domain
+
+    """
+    This test spins up three local servers, each serving the same default test cert with a non-matching CN/SANs.
+    The logic to check if a cert is still deployed ignores certificate validity; all it needs to know is whether
+    the certificate currently deployed at the cert's associated domain has the same serial number as the one in
+    Lemur's DB. The expiration check is done using the date in Lemur's DB, and is not parsed from the actual deployed
+    certificate - so we can get away with using a totally unrelated cert, as long as the serial number matches.
+    In this test, the serial number is always the same, since it's parsed from the hardcoded test cert.
+    """
+
+    # one non-expiring cert, two expiring certs, and one cert that doesn't match a running server
+    cert_1 = create_cert_that_expires_in_days(180, domains=[Domain(name='localhost')], owner='testowner1@example.com')
+    cert_2 = create_cert_that_expires_in_days(10, domains=[Domain(name='localhost')], owner='testowner2@example.com')
+    cert_3 = create_cert_that_expires_in_days(10, domains=[Domain(name='localhost')], owner='testowner3@example.com')
+    cert_4 = create_cert_that_expires_in_days(10, domains=[Domain(name='not-localhost')], owner='testowner4@example.com')
+
+    # test certs are all hardcoded with the same body/chain so we don't need to use the created cert here
+    cert_file_data = SAN_CERT_STR + INTERMEDIATE_CERT_STR + ROOTCA_CERT_STR + SAN_CERT_KEY
+    f = NamedTemporaryFile(suffix='.pem', delete=True)
+    try:
+        f.write(cert_file_data.encode('utf-8'))
+        server_1 = run_server(65521, f.name)
+        server_2 = run_server(65522, f.name)
+        server_3 = run_server(65523, f.name)
+        if not (server_1.is_alive() and server_2.is_alive() and server_3.is_alive()):
+            fail('Servers not alive, test cannot proceed')
+
+        for c in [cert_1, cert_2, cert_3, cert_4]:
+            assert len(c.certificate_associations) == 1
+            for ca in c.certificate_associations:
+                assert ca.ports is None
+        identify_and_persist_expiring_deployed_certificates()
+        for c in [cert_1, cert_4]:
+            assert len(c.certificate_associations) == 1
+            for ca in c.certificate_associations:
+                assert ca.ports is None
+        for c in [cert_2, cert_3]:
+            assert len(c.certificate_associations) == 1
+            for ca in c.certificate_associations:
+                assert ca.ports == [65521, 65522, 65523]
+    finally:
+        f.close()  # close file (which also deletes it)
+
+
+def run_server(port, cert_file_name):
+    """Utility method to create a mock server that serves a specific certificate"""
+
+    def start_server():
+        server = HTTPServer(('localhost', port), SimpleHTTPRequestHandler)
+        server.socket = ssl.wrap_socket(server.socket,
+                                        server_side=True,
+                                        certfile=cert_file_name,
+                                        ssl_version=ssl.PROTOCOL_TLSv1_2)
+        server.serve_forever()
+        print(f"Started https server on port {port} using cert file {cert_file_name}")
+
+    daemon = threading.Thread(name=f'server_{cert_file_name}', target=start_server)
+    daemon.setDaemon(True)  # Set as a daemon so it will be killed once the main thread is dead.
+    daemon.start()
+    return daemon
