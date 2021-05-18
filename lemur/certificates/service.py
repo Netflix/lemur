@@ -234,24 +234,31 @@ def find_duplicates(cert):
         return Certificate.query.filter_by(body=cert["body"].strip(), chain=None).all()
 
 
-def list_duplicate_certs_by_authority(authortiy_ids):
+def list_duplicate_certs_by_authority(authority_ids, days_since_issuance):
     """
     Find duplicate certificates issued by given authorities that are still valid, not replaced, have auto-rotation ON,
     with names that are forced to be unique using serial number like 'some.name.prefix-YYYYMMDD-YYYYMMDD-serialnumber',
     thus the pattern "%-[0-9]{8}-[0-9]{8}-%"
-    :param authortiy_ids:
+    :param authority_ids:
+    :param days_since_issuance: If not none, include certificates issued in only last days_since_issuance days
     :return: List of certificates matching criteria
     """
 
     now = arrow.now().format("YYYY-MM-DD")
-    return (
-        Certificate.query.filter(Certificate.authority_id.in_(authortiy_ids))
-        .filter(Certificate.not_after >= now)
-        .filter(Certificate.rotation == true())
-        .filter(not_(Certificate.replaced.any()))
+    query = database.session_query(Certificate)\
+        .filter(Certificate.authority_id.in_(authority_ids))\
+        .filter(Certificate.not_after >= now)\
+        .filter(Certificate.rotation == true())\
+        .filter(not_(Certificate.replaced.any()))\
         .filter(text("name ~ '.*-[0-9]{8}-[0-9]{8}-.*'"))
-        .all()
-    )
+
+    if days_since_issuance:
+        issuance_window = (
+            arrow.now().shift(days=-days_since_issuance).format("YYYY-MM-DD")
+        )
+        query = query.filter(Certificate.date_created >= issuance_window)
+
+    return query.all()
 
 
 def get_certificates_with_same_prefix_with_rotate_on(prefix):
