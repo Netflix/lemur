@@ -179,6 +179,15 @@ def test_send_expiration_summary_notification(certificate, notification, notific
 
 
 @mock_ses
+def test_send_evocation_notification(notification_plugin, certificate):
+    from lemur.notifications.messaging import send_revocation_notification
+    verify_sender_email()
+
+    certificate.endpoints = [EndpointFactory()]
+    assert send_revocation_notification(certificate)
+
+
+@mock_ses
 def test_send_rotation_notification(notification_plugin, certificate):
     from lemur.notifications.messaging import send_rotation_notification
     verify_sender_email()

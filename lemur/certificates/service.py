@@ -26,6 +26,7 @@ from lemur.destinations.models import Destination
 from lemur.domains.models import Domain
 from lemur.endpoints import service as endpoint_service
 from lemur.extensions import metrics, signals
+from lemur.notifications.messaging import send_revocation_notification
 from lemur.notifications.models import Notification
 from lemur.pending_certificates.models import PendingCertificate
 from lemur.plugins.base import plugins
@@ -913,13 +914,17 @@ def revoke(certificate, reason):
 def cleanup_after_revoke(certificate):
     """
     Perform the needed cleanup for a revoked certificate. This includes -
-    1. Disabling notification
-    2. Disabling auto-rotation
-    3. Update certificate status to 'revoked'
-    4. Remove from AWS
+    1. Notify (if enabled)
+    2. Disabling notification
+    3. Disabling auto-rotation
+    4. Update certificate status to 'revoked'
+    5. Remove from AWS
     :param certificate: Certificate object to modify and update in DB
     :return: None
     """
+    if certificate.notify:
+        send_revocation_notification(certificate)
+
     certificate.notify = False
     certificate.rotation = False
     certificate.status = 'revoked'

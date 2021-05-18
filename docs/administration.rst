@@ -331,6 +331,7 @@ Supported types:
 * Certificate rotation
 * Certificate reissued with no endpoints
 * Certificate reissue failed
+* Certificate revocation
 * Security certificate expiration summary
 
 **Default notifications**
@@ -440,6 +441,11 @@ to enable it, you must set the option ``--notify`` (when using cron) or the conf
 Whenever a cert is rotated, Lemur will send a notification via email to the certificate owner. This notification is
 disabled by default; to enable it, you must set the option ``--notify`` (when using cron) or the configuration parameter
 ``ENABLE_ROTATION_NOTIFICATION`` (when using celery).
+
+**Certificate revocation**
+
+Whenever a cert is revoked, Lemur will send a notification via email to the certificate owner. This notification will
+only be sent if the certificate's "notify" option is enabled.
 
 **Security certificate expiration summary**
 

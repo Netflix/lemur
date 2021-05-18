@@ -28,6 +28,12 @@ def test_render_expiration(certificate, endpoint):
     assert render_html("expiration", get_options(), [certificate_notification_output_schema.dump(certificate).data])
 
 
+def test_render_revocation(certificate, endpoint):
+    certificate.endpoints.append(endpoint)
+
+    assert render_html("revocation", get_options(), certificate_notification_output_schema.dump(certificate).data)
+
+
 def test_render_rotation(certificate, endpoint):
     new_cert = CertificateFactory()
     new_cert.replaces.append(certificate)
@@ -122,6 +128,15 @@ def test_send_expiration_notification_disabled():
 
     verify_sender_email()
     assert send_expiration_notifications([], ['email-notification']) == (0, 0)
+
+
+@mock_ses
+def test_send_revocation_notification(certificate, endpoint):
+    from lemur.notifications.messaging import send_revocation_notification
+
+    verify_sender_email()
+    certificate.endpoints = [endpoint]
+    assert send_revocation_notification(certificate)
 
 
 @mock_ses

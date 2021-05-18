@@ -368,6 +368,12 @@ def send_default_notification(notification_type, data, targets, notification_opt
         return True
 
 
+def send_revocation_notification(certificate):
+    data = certificate_notification_output_schema.dump(certificate).data
+    data["security_email"] = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
+    return send_default_notification("revocation", data, [data["owner"]])
+
+
 def send_rotation_notification(certificate):
     data = certificate_notification_output_schema.dump(certificate).data
     data["security_email"] = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
