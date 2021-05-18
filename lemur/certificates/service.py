@@ -1030,7 +1030,6 @@ def identify_and_persist_expiring_deployed_certificates(exclude=None, timeout_se
         domains_for_cert = find_and_persist_domains_where_cert_is_deployed(c, timeout_seconds_per_network_call)
         if len(domains_for_cert) > 0:
             all_certs[c] = domains_for_cert
-    database.commit()
 
 
 def get_certs_for_expiring_deployed_cert_check(exclude):
@@ -1086,6 +1085,7 @@ def find_and_persist_domains_where_cert_is_deployed(certificate, timeout_seconds
             matched_domains[domain.name] = matched_ports_for_domain
             # Update the DB
             cert_association.ports = matched_ports_for_domain
+            database.commit()
     return matched_domains
 
 
