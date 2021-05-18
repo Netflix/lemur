@@ -329,6 +329,8 @@ Supported types:
 * CA certificate expiration (Celery: `notify_authority_expirations`, cron: `notify authority_expirations`)
 * Pending ACME certificate failure
 * Certificate rotation
+* Certificate reissued with no endpoints
+* Certificate reissue failed
 * Security certificate expiration summary (Celery: `send_security_expiration_summary`, cron: `notify security_expiration_summary`)
 * Certificate expiration where certificates are still detected as deployed at any associated domain (Celery: `notify_expiring_deployed_certificates`, cron: `notify expiring_deployed_certificates`)
 
@@ -397,7 +399,42 @@ and security team (as specified by the ``LEMUR_SECURITY_TEAM_EMAIL`` configurati
 the pending certificate had notifications disabled.
 
 Lemur will attempt 3x times to resolve a pending certificate.
-This can at times result into 3 duplicate certificates, if all certificate attempts get resolved.
+This can at times result into 3 duplicate certificates, if all certificate attempts get resolved. There is a way to
+deduplicate these certificates periodically using a celery task ``disable_rotation_of_duplicate_certificates``.
+
+This needs 2 configurations
+
+.. data:: AUTHORITY_TO_DISABLE_ROTATE_OF_DUPLICATE_CERTIFICATES
+    :noindex:
+
+        List names of the authorities for which `disable_rotation_of_duplicate_certificates` should run. The task will
+        consider certificates issued by authorities configured here.
+
+    ::
+
+        AUTHORITY_TO_DISABLE_ROTATE_OF_DUPLICATE_CERTIFICATES = ["LetsEncrypt"]
+
+
+.. data:: DAYS_SINCE_ISSUANCE_DISABLE_ROTATE_OF_DUPLICATE_CERTIFICATES
+    :noindex:
+
+        Use this config (optional) to configure the number of days. The task `disable_rotation_of_duplicate_certificates`
+        will then consider valid certificates issued only in last those many number of days for deduplication. If not configured,
+        the task considers all the valid certificates. Ideally set this config to a value which is same as the number of
+        days between the two runs of `disable_rotation_of_duplicate_certificates`
+
+    ::
+
+        DAYS_SINCE_ISSUANCE_DISABLE_ROTATE_OF_DUPLICATE_CERTIFICATES = 7
+
+
+**Certificate re-issuance**
+
+When a cert is reissued (i.e. a new certificate is minted to replace it), *and* the re-issuance either fails or
+succeeds but the certificate has no associated endpoints (meaning the subsequent rotation step will not occur),
+Lemur will send a notification via email to the certificate owner. This notification is disabled by default;
+to enable it, you must set the option ``--notify`` (when using cron) or the configuration parameter
+``ENABLE_REISSUE_NOTIFICATION`` (when using celery).
 
 **Certificate rotation**
 

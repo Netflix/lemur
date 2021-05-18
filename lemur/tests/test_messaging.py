@@ -184,7 +184,29 @@ def test_send_rotation_notification(notification_plugin, certificate):
     from lemur.notifications.messaging import send_rotation_notification
     verify_sender_email()
 
-    assert send_rotation_notification(certificate)
+    new_cert = CertificateFactory()
+    new_cert.replaces.append(certificate)
+    assert send_rotation_notification(new_cert)
+    new_cert.endpoints = [EndpointFactory()]
+    assert send_rotation_notification(new_cert)
+
+
+@mock_ses
+def test_send_reissue_no_endpoints_notification(notification_plugin, certificate):
+    from lemur.notifications.messaging import send_reissue_no_endpoints_notification
+    verify_sender_email()
+
+    new_cert = CertificateFactory()
+    new_cert.replaces.append(certificate)
+    assert send_reissue_no_endpoints_notification(new_cert)
+
+
+@mock_ses
+def test_send_reissue_failed_notification(notification_plugin, certificate):
+    from lemur.notifications.messaging import send_reissue_failed_notification
+    verify_sender_email()
+
+    assert send_reissue_failed_notification(certificate)
 
 
 @mock_ses
