@@ -19,6 +19,7 @@ from flask import current_app
 from sentry_sdk import capture_exception
 
 from lemur.authorizations import service as authorization_service
+from lemur.common.utils import check_validation
 from lemur.constants import CRLReason, EMAIL_RE
 from lemur.dns_providers import service as dns_provider_service
 from lemur.exceptions import InvalidConfiguration
@@ -46,7 +47,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
             "name": "acme_url",
             "type": "str",
             "required": True,
-            "validation": r"^http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+$",
+            "validation": check_validation(r"^http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+$"),
             "helpMessage": "Must be a valid web url starting with http[s]://",
         },
         {
@@ -66,7 +67,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
             "name": "certificate",
             "type": "textarea",
             "default": "",
-            "validation": "^-----BEGIN CERTIFICATE-----",
+            "validation": check_validation("^-----BEGIN CERTIFICATE-----"),
             "helpMessage": "Certificate to use",
         },
         {
@@ -295,7 +296,7 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
             "name": "acme_url",
             "type": "str",
             "required": True,
-            "validation": r"/^http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+$/",
+            "validation": check_validation(r"/^http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+$/"),
             "helpMessage": "Must be a valid web url starting with http[s]://",
         },
         {
@@ -315,7 +316,7 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
             "name": "certificate",
             "type": "textarea",
             "default": "",
-            "validation": "^-----BEGIN CERTIFICATE-----",
+            "validation": check_validation("^-----BEGIN CERTIFICATE-----"),
             "helpMessage": "Certificate to use",
         },
         {

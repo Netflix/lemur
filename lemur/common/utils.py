@@ -299,6 +299,21 @@ def validate_conf(app, required_vars):
                 "Required variable '{var}' is not set in Lemur's conf.".format(var=var)
             )
 
+def check_validation(validation):
+    """
+    Checks that the given validation string compiles successfully.
+
+    :param validation:
+    :return str: The validation pattern, if compilation succeeds
+    """
+    
+    try:
+        compiled = re.compile(validation)
+    except re.error as e:
+        raise InvalidConfiguration(f"Validation {validation} couldn't compile. Reason: {e}")
+
+    return compiled.pattern
+
 
 # https://bitbucket.org/zzzeek/sqlalchemy/wiki/UsageRecipes/WindowedRangeQuery
 def column_windows(session, column, windowsize):

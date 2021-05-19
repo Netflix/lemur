@@ -6,6 +6,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+from lemur.common.utils import check_validation
 from lemur.plugins.base import Plugin
 
 
@@ -42,14 +43,14 @@ class ExpirationNotificationPlugin(NotificationPlugin):
             "name": "interval",
             "type": "int",
             "required": True,
-            "validation": r"^\d+$",
+            "validation": check_validation(r"^\d+$"),
             "helpMessage": "Number of days to be alert before expiration.",
         },
         {
             "name": "unit",
             "type": "select",
             "required": True,
-            "validation": "",
+            "validation": check_validation(""),
             "available": ["days", "weeks", "months"],
             "helpMessage": "Interval unit",
         },

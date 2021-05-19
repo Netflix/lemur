@@ -12,7 +12,7 @@
 from flask import current_app
 
 from lemur.common.defaults import common_name, bitstrength
-from lemur.common.utils import parse_certificate, parse_private_key
+from lemur.common.utils import parse_certificate, parse_private_key, check_validation
 from lemur.plugins.bases import DestinationPlugin
 
 from cryptography.hazmat.primitives import serialization
@@ -99,28 +99,28 @@ class AzureDestinationPlugin(DestinationPlugin):
             "name": "vaultUrl",
             "type": "str",
             "required": True,
-            "validation": "^https?://[a-zA-Z0-9.:-]+$",
+            "validation": check_validation("^https?://[a-zA-Z0-9.:-]+$"),
             "helpMessage": "Valid URL to Azure key vault instance",
         },
         {
             "name": "azureTenant",
             "type": "str",
             "required": True,
-            "validation": "^([a-zA-Z0-9/-/?])+$",
+            "validation": check_validation("^([a-zA-Z0-9/-/?])+$"),
             "helpMessage": "Tenant for the Azure Key Vault",
         },
         {
             "name": "appID",
             "type": "str",
             "required": True,
-            "validation": "^([a-zA-Z0-9/-/?])+$",
+            "validation": check_validation("^([a-zA-Z0-9/-/?])+$"),
             "helpMessage": "AppID for the Azure Key Vault",
         },
         {
             "name": "azurePassword",
             "type": "str",
             "required": True,
-            "validation": "[0-9a-zA-Z.:_-~]+",
+            "validation": check_validation("[0-9a-zA-Z.:_-~]+"),
             "helpMessage": "Tenant password for the Azure Key Vault",
         }
     ]

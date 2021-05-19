@@ -15,7 +15,7 @@ import hvac
 from flask import current_app
 
 from lemur.common.defaults import common_name, country, state, location, organizational_unit, organization
-from lemur.common.utils import parse_certificate
+from lemur.common.utils import parse_certificate, check_validation
 from lemur.plugins.bases import DestinationPlugin
 from lemur.plugins.bases import SourcePlugin
 
@@ -38,7 +38,7 @@ class VaultSourcePlugin(SourcePlugin):
             "name": "vaultUrl",
             "type": "str",
             "required": True,
-            "validation": "^https?://[a-zA-Z0-9.:-]+$",
+            "validation": check_validation("^https?://[a-zA-Z0-9.:-]+$"),
             "helpMessage": "Valid URL to Hashi Vault instance",
         },
         {
@@ -61,28 +61,28 @@ class VaultSourcePlugin(SourcePlugin):
             "name": "tokenFileOrVaultRole",
             "type": "str",
             "required": True,
-            "validation": "^([a-zA-Z0-9/._-]+/?)+$",
+            "validation": check_validation("^([a-zA-Z0-9/._-]+/?)+$"),
             "helpMessage": "Must be vaild file path for token based auth and valid role if k8s based auth",
         },
         {
             "name": "vaultMount",
             "type": "str",
             "required": True,
-            "validation": r"^\S+$",
+            "validation": check_validation(r"^\S+$"),
             "helpMessage": "Must be a valid Vault secrets mount name!",
         },
         {
             "name": "vaultPath",
             "type": "str",
             "required": True,
-            "validation": "^([a-zA-Z0-9._-]+/?)+$",
+            "validation": check_validation("^([a-zA-Z0-9._-]+/?)+$"),
             "helpMessage": "Must be a valid Vault secrets path",
         },
         {
             "name": "objectName",
             "type": "str",
             "required": True,
-            "validation": "[0-9a-zA-Z.:_-]+",
+            "validation": check_validation("[0-9a-zA-Z.:_-]+"),
             "helpMessage": "Object Name to search",
         },
     ]
@@ -165,7 +165,7 @@ class VaultDestinationPlugin(DestinationPlugin):
             "name": "vaultUrl",
             "type": "str",
             "required": True,
-            "validation": "^https?://[a-zA-Z0-9.:-]+$",
+            "validation": check_validation("^https?://[a-zA-Z0-9.:-]+$"),
             "helpMessage": "Valid URL to Hashi Vault instance",
         },
         {
@@ -188,28 +188,28 @@ class VaultDestinationPlugin(DestinationPlugin):
             "name": "tokenFileOrVaultRole",
             "type": "str",
             "required": True,
-            "validation": "^([a-zA-Z0-9/._-]+/?)+$",
+            "validation": check_validation("^([a-zA-Z0-9/._-]+/?)+$"),
             "helpMessage": "Must be vaild file path for token based auth and valid role if k8s based auth",
         },
         {
             "name": "vaultMount",
             "type": "str",
             "required": True,
-            "validation": r"^\S+$",
+            "validation": check_validation(r"^\S+$"),
             "helpMessage": "Must be a valid Vault secrets mount name!",
         },
         {
             "name": "vaultPath",
             "type": "str",
             "required": True,
-            "validation": "^(([a-zA-Z0-9._-]+|{(CN|OU|O|L|S|C)})+/?)+$",
+            "validation": check_validation("^(([a-zA-Z0-9._-]+|{(CN|OU|O|L|S|C)})+/?)+$"),
             "helpMessage": "Must be a valid Vault secrets path. Support vars: {CN|OU|O|L|S|C}",
         },
         {
             "name": "objectName",
             "type": "str",
             "required": False,
-            "validation": "^([0-9a-zA-Z.:_-]+|{(CN|OU|O|L|S|C)})+$",
+            "validation": check_validation("^([0-9a-zA-Z.:_-]+|{(CN|OU|O|L|S|C)})+$"),
             "helpMessage": "Name to bundle certs under, if blank use {CN}. Support vars: {CN|OU|O|L|S|C}",
         },
         {
@@ -225,7 +225,7 @@ class VaultDestinationPlugin(DestinationPlugin):
             "type": "str",
             "value": ".*",
             "required": False,
-            "validation": ".*",
+            "validation": check_validation(".*"),
             "helpMessage": "Valid regex filter",
         },
     ]
