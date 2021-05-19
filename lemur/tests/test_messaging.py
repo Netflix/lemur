@@ -6,6 +6,7 @@ import pytest
 from freezegun import freeze_time
 from moto import mock_ses
 
+from lemur.certificates.service import get_expiring_deployed_certificates
 from lemur.tests.factories import AuthorityFactory, CertificateFactory, EndpointFactory
 
 
@@ -180,6 +181,15 @@ def test_send_expiration_summary_notification(certificate, notification, notific
 
 
 @mock_ses
+def test_send_evocation_notification(notification_plugin, certificate):
+    from lemur.notifications.messaging import send_revocation_notification
+    verify_sender_email()
+
+    certificate.endpoints = [EndpointFactory()]
+    assert send_revocation_notification(certificate)
+
+
+@mock_ses
 def test_send_rotation_notification(notification_plugin, certificate):
     from lemur.notifications.messaging import send_rotation_notification
     verify_sender_email()
@@ -264,7 +274,8 @@ def test_send_expiring_deployed_certificate_notifications():
     cert_4 = create_cert_that_expires_in_days(10, domains=[Domain(name='domain1.com')], owner='testowner3@example.com')
     cert_4.certificate_associations[0].ports = []
 
-    assert send_expiring_deployed_certificate_notifications(None) == (3, 0)  # 3 certs with ports
+    certificates = get_expiring_deployed_certificates([]).items()
+    assert send_expiring_deployed_certificate_notifications(certificates) == (3, 0)  # 3 certs with ports
 
 
 def create_ca_cert_that_expires_in_days(days):
