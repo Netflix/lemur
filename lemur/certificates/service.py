@@ -5,14 +5,17 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import arrow
 import re
+from collections import defaultdict
+from itertools import groupby
+
+import arrow
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from flask import current_app
 from sentry_sdk import capture_exception
-from sqlalchemy import func, or_, not_, cast, Integer
+from sqlalchemy import and_, func, or_, not_, cast, Integer
 from sqlalchemy.sql import text
 from sqlalchemy.sql.expression import false, true
 
@@ -20,12 +23,13 @@ from lemur import database
 from lemur.authorities.models import Authority
 from lemur.certificates.models import Certificate, CertificateAssociation
 from lemur.certificates.schemas import CertificateOutputSchema, CertificateInputSchema
-from lemur.common.utils import generate_private_key, truthiness
+from lemur.common.utils import generate_private_key, truthiness, parse_serial, get_certificate_via_tls, windowed_query
 from lemur.constants import SUCCESS_METRIC_STATUS
 from lemur.destinations.models import Destination
 from lemur.domains.models import Domain
 from lemur.endpoints import service as endpoint_service
 from lemur.extensions import metrics, signals
+from lemur.notifications.messaging import send_revocation_notification
 from lemur.notifications.models import Notification
 from lemur.pending_certificates.models import PendingCertificate
 from lemur.plugins.base import plugins
@@ -234,24 +238,31 @@ def find_duplicates(cert):
         return Certificate.query.filter_by(body=cert["body"].strip(), chain=None).all()
 
 
-def list_duplicate_certs_by_authority(authortiy_ids):
+def list_duplicate_certs_by_authority(authority_ids, days_since_issuance):
     """
     Find duplicate certificates issued by given authorities that are still valid, not replaced, have auto-rotation ON,
     with names that are forced to be unique using serial number like 'some.name.prefix-YYYYMMDD-YYYYMMDD-serialnumber',
     thus the pattern "%-[0-9]{8}-[0-9]{8}-%"
-    :param authortiy_ids:
+    :param authority_ids:
+    :param days_since_issuance: If not none, include certificates issued in only last days_since_issuance days
     :return: List of certificates matching criteria
     """
 
     now = arrow.now().format("YYYY-MM-DD")
-    return (
-        Certificate.query.filter(Certificate.authority_id.in_(authortiy_ids))
-        .filter(Certificate.not_after >= now)
-        .filter(Certificate.rotation == true())
-        .filter(not_(Certificate.replaced.any()))
+    query = database.session_query(Certificate)\
+        .filter(Certificate.authority_id.in_(authority_ids))\
+        .filter(Certificate.not_after >= now)\
+        .filter(Certificate.rotation == true())\
+        .filter(not_(Certificate.replaced.any()))\
         .filter(text("name ~ '.*-[0-9]{8}-[0-9]{8}-.*'"))
-        .all()
-    )
+
+    if days_since_issuance:
+        issuance_window = (
+            arrow.now().shift(days=-days_since_issuance).format("YYYY-MM-DD")
+        )
+        query = query.filter(Certificate.date_created >= issuance_window)
+
+    return query.all()
 
 
 def get_certificates_with_same_prefix_with_rotate_on(prefix):
@@ -906,13 +917,17 @@ def revoke(certificate, reason):
 def cleanup_after_revoke(certificate):
     """
     Perform the needed cleanup for a revoked certificate. This includes -
-    1. Disabling notification
-    2. Disabling auto-rotation
-    3. Update certificate status to 'revoked'
-    4. Remove from AWS
+    1. Notify (if enabled)
+    2. Disabling notification
+    3. Disabling auto-rotation
+    4. Update certificate status to 'revoked'
+    5. Remove from AWS
     :param certificate: Certificate object to modify and update in DB
     :return: None
     """
+    if certificate.notify:
+        send_revocation_notification(certificate)
+
     certificate.notify = False
     certificate.rotation = False
     certificate.status = 'revoked'
@@ -1005,3 +1020,104 @@ def remove_destination_association(certificate, destination):
                      "destination": destination.label,
                      "certificate": certificate.name}
     )
+
+
+def identify_and_persist_expiring_deployed_certificates(exclude=None, timeout_seconds_per_network_call=1):
+    """
+    Finds all certificates expiring soon but are still being used for TLS at any domain with which they are associated.
+    Identified ports will then be persisted on the certificate_associations row for the given cert/domain combo.
+
+    Note that this makes actual TLS network calls in order to establish the "deployed" part of this check.
+    """
+    all_certs = defaultdict(dict)
+    for c in get_certs_for_expiring_deployed_cert_check(exclude):
+        domains_for_cert = find_and_persist_domains_where_cert_is_deployed(c, timeout_seconds_per_network_call)
+        if len(domains_for_cert) > 0:
+            all_certs[c] = domains_for_cert
+
+
+def get_certs_for_expiring_deployed_cert_check(exclude):
+    threshold_days = current_app.config.get("LEMUR_EXPIRING_DEPLOYED_CERT_THRESHOLD_DAYS", 14)
+    max_not_after = arrow.utcnow().shift(days=+threshold_days).format("YYYY-MM-DD")
+
+    q = (
+        database.db.session.query(Certificate)
+        .filter(Certificate.not_after <= max_not_after)
+        .filter(Certificate.expired == false())
+        .filter(Certificate.revoked == false())
+        .filter(Certificate.in_rotation_window == true())
+    )
+
+    exclude_conditions = []
+    if exclude:
+        for e in exclude:
+            exclude_conditions.append(~Certificate.name.ilike("%{}%".format(e)))
+
+        q = q.filter(and_(*exclude_conditions))
+
+    return windowed_query(q, Certificate.id, 10000)
+
+
+def find_and_persist_domains_where_cert_is_deployed(certificate, timeout_seconds_per_network_call):
+    """
+    Checks if the specified cert is still deployed. Returns a list of domains to which it's deployed.
+
+    We use the serial number to identify that a certificate is identical. If there were multiple certificates
+    issued for the same domain with identical serial numbers, this could return a false positive.
+
+    Note that this checks *all* configured ports (specified in config LEMUR_PORTS_FOR_DEPLOYED_CERTIFICATE_CHECK)
+    for all the domains in the cert. If the domain is valid but the port is not, we have to wait for the connection
+    to time out, which means this can be quite slow.
+
+    :return: A dictionary of the form {'domain1': [ports], 'domain2': [ports]}
+    """
+    matched_domains = defaultdict(list)
+    # filter out wildcards, we can't check them
+    for cert_association in [assoc for assoc in certificate.certificate_associations if '*' not in assoc.domain.name]:
+        domain = cert_association.domain
+        matched_ports_for_domain = []
+        for port in current_app.config.get("LEMUR_PORTS_FOR_DEPLOYED_CERTIFICATE_CHECK", [443]):
+            try:
+                parsed_serial = parse_serial(get_certificate_via_tls(domain.name, port,
+                                                                     timeout_seconds_per_network_call))
+                if parsed_serial == int(certificate.serial):
+                    matched_ports_for_domain.append(port)
+            except Exception:
+                current_app.logger.info(f'Unable to check certificate for domain {domain} on port {port}',
+                                        exc_info=True)
+        if len(matched_ports_for_domain) > 0:
+            matched_domains[domain.name] = matched_ports_for_domain
+            # Update the DB
+            cert_association.ports = matched_ports_for_domain
+            database.commit()
+    return matched_domains
+
+
+def get_expiring_deployed_certificates(exclude=None):
+    """
+    Finds all certificates that are eligible for deployed expiring cert notifications. Returns the set of domain/port
+    pairs at which each certificate was identified as in use (deployed).
+
+    Sample response:
+        defaultdict(<class 'list'>,
+            {'testowner2@example.com': [(Certificate(name=certificate100),
+                                        defaultdict(<class 'list'>, {'localhost': [65521, 65522, 65523]}))],
+            'testowner3@example.com': [(Certificate(name=certificate101),
+                                        defaultdict(<class 'list'>, {'localhost': [65521, 65522, 65523]}))]})
+
+    :return: A dictionary with owner as key, and a list of certificates associated with domains/ports.
+    """
+    certs_domains_and_ports = defaultdict(dict)
+    for certificate in get_certs_for_expiring_deployed_cert_check(exclude):
+        matched_domains = defaultdict(list)
+        for cert_association in [assoc for assoc in certificate.certificate_associations if assoc.ports]:
+            matched_domains[cert_association.domain.name] = cert_association.ports
+        if len(matched_domains) > 0:
+            certs_domains_and_ports[certificate] = matched_domains
+
+    certs_domains_and_ports_by_owner = defaultdict(list)
+    # group by owner
+    for owner, owner_certs in groupby(sorted(certs_domains_and_ports.items(),
+                                             key=lambda x: x[0].owner), lambda x: x[0].owner):
+        certs_domains_and_ports_by_owner[owner] = list(owner_certs)
+    return certs_domains_and_ports_by_owner
