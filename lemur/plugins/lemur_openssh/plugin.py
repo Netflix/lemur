@@ -48,10 +48,15 @@ def split_cert(body):
 
 
 def sign_certificate(common_name, public_key, authority_private_key, user, extensions, not_before, not_after):
+    private_key = parse_private_key(authority_private_key).private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.OpenSSH,
+        encryption_algorithm=serialization.NoEncryption(),
+    ).decode()
     with mktempfile() as issuer_tmp:
         cmd = ['ssh-keygen', '-s', issuer_tmp]
         with open(issuer_tmp, 'w') as i:
-            i.writelines(authority_private_key)
+            i.writelines(private_key)
         if 'extendedKeyUsage' in extensions and extensions['extendedKeyUsage'].get('useClientAuthentication'):
             cmd.extend(['-I', user['username'] + ' user key',
                         '-n', user['username']])
