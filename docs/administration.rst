@@ -931,9 +931,9 @@ For more information about how to use social logins, see: `Satellizer <https://g
 
         The OAUTH_STATE_TOKEN_SECRET is used to sign state tokens to guard against CSRF attacks. Without a secret configured, Lemur will use
         a fallback secret: ``b'0auth'``. The secret must be `bytes-like <https://cryptography.io/en/latest/glossary/#term-bytes-like>`;
-        it will be used to instantiate `HMAC <https://cryptography.io/en/latest/hazmat/primitives/mac/hmac/#cryptography.hazmat.primitives.hmac.HMAC>`.
+        it will be used to instantiate the key parameter of `HMAC <https://cryptography.io/en/latest/hazmat/primitives/mac/hmac/#cryptography.hazmat.primitives.hmac.HMAC>`.
 
-        For implementation details, see ``generate_state_token()`` and ``verify_state_token() in ``lemur/auth/views.py``.
+        For implementation details, see ``generate_state_token()`` and ``verify_state_token()`` in ``lemur/auth/views.py``.
 
         Running lemur create_config will securely generate a key for your configuration file.
         If you would like to generate your own, we recommend the following method:
