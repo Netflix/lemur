@@ -86,7 +86,7 @@ class NotificationsList(AuthenticatedResource):
                                 "required": true,
                                 "value": "kglisson@netflix.com,example@netflix.com",
                                 "helpMessage": "Comma delimited list of email addresses",
-                                "validation": "^([\\w+-.%]+@[\\w-.]+\\.[A-Za-z]{2,4},?)+$",
+                                "validation": "^([\\w+-.%]+@[-\\w.]+\\.[A-Za-z]{2,4},?)+$",
                                 "type": "str"
                             }
                         ],
@@ -157,7 +157,7 @@ class NotificationsList(AuthenticatedResource):
                         "required": true,
                         "value": "kglisson@netflix.com,example@netflix.com",
                         "helpMessage": "Comma delimited list of email addresses",
-                        "validation": "^([\\w+-.%]+@[\\w-.]+\\.[A-Za-z]{2,4},?)+$",
+                        "validation": "^([\\w+-.%]+@[-\\w.]+\\.[A-Za-z]{2,4},?)+$",
                         "type": "str"
                     }
                 ],
@@ -204,7 +204,7 @@ class NotificationsList(AuthenticatedResource):
                         "required": true,
                         "value": "kglisson@netflix.com,example@netflix.com",
                         "helpMessage": "Comma delimited list of email addresses",
-                        "validation": "^([\\w+-.%]+@[\\w-.]+\\.[A-Za-z]{2,4},?)+$",
+                        "validation": "^([\\w+-.%]+@[-\\w.]+\\.[A-Za-z]{2,4},?)+$",
                         "type": "str"
                     }
                 ],
@@ -289,7 +289,7 @@ class Notifications(AuthenticatedResource):
                         "required": true,
                         "value": "kglisson@netflix.com,example@netflix.com",
                         "helpMessage": "Comma delimited list of email addresses",
-                        "validation": "^([\\w+-.%]+@[\\w-.]+\\.[A-Za-z]{2,4},?)+$",
+                        "validation": "^([\\w+-.%]+@[-\\w.]+\\.[A-Za-z]{2,4},?)+$",
                         "type": "str"
                     }
                 ],
@@ -440,7 +440,7 @@ class CertificateNotifications(AuthenticatedResource):
                                 "required": true,
                                 "value": "kglisson@netflix.com,example@netflix.com",
                                 "helpMessage": "Comma delimited list of email addresses",
-                                "validation": "^([\\w+-.%]+@[\\w-.]+\\.[A-Za-z]{2,4},?)+$",
+                                "validation": "^([\\w+-.%]+@[-\\w.]+\\.[A-Za-z]{2,4},?)+$",
                                 "type": "str"
                             }
                         ],

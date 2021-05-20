@@ -14,7 +14,7 @@ from flask import current_app
 from lemur.utils import mktempfile, mktemppath
 from lemur.plugins.bases import ExportPlugin
 from lemur.plugins import lemur_openssl as openssl
-from lemur.common.utils import get_psuedo_random_string, parse_certificate
+from lemur.common.utils import get_psuedo_random_string, parse_certificate, check_validation
 from lemur.common.defaults import common_name
 
 
@@ -102,7 +102,7 @@ class OpenSSLExportPlugin(ExportPlugin):
             "type": "str",
             "required": False,
             "helpMessage": "If no passphrase is given one will be generated for you, we highly recommend this.",
-            "validation": "",
+            "validation": check_validation(""),
         },
         {
             "name": "alias",

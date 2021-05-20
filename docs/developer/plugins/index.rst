@@ -180,12 +180,14 @@ that can be used to help define sub-destinations.
 
 For example, if we look at the aws-destination plugin we can see that it defines an `accountNumber` option::
 
+    from lemur.common.utils import check_validation
+
     options = [
         {
             'name': 'accountNumber',
             'type': 'int',
             'required': True,
-            'validation': '/^[0-9]{12,12}$/',
+            'validation': check_validation('/^[0-9]{12,12}$/'),
             'helpMessage': 'Must be a valid AWS account number!',
         }
     ]
@@ -203,7 +205,7 @@ The schema for defining plugin options are pretty straightforward:
       - **Select** creates a select box that gives the user a list of options
           - When used a `available` key must be provided with a list of selectable options
   - **Required** determines if this option is required, this **must be a boolean value**
-  - **Validation** simple JavaScript regular expression used to give the user an indication if the input value is valid
+  - **Validation** simple Python (re) and JavaScript regular expression used to give the user an indication if the input value is valid. Use `check_validation()` from `lemur.common.utils` to ensure your expression will compile successfully prior to use.
   - **HelpMessage** simple string that provides more detail about the option
 
 .. Note::

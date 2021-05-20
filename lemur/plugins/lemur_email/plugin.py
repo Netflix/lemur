@@ -10,6 +10,7 @@ import boto3
 from flask import current_app
 from flask_mail import Message
 
+from lemur.constants import EMAIL_RE, EMAIL_RE_HELP
 from lemur.extensions import smtp_mail
 from lemur.exceptions import InvalidConfiguration
 
@@ -91,8 +92,8 @@ class EmailNotificationPlugin(ExpirationNotificationPlugin):
             "name": "recipients",
             "type": "str",
             "required": True,
-            "validation": r"^([\w+-.%]+@[\w-.]+\.[A-Za-z]{2,4},?)+$",
-            "helpMessage": "Comma delimited list of email addresses",
+            "validation": EMAIL_RE.pattern,
+            "helpMessage": EMAIL_RE_HELP,
         }
     ]
 
