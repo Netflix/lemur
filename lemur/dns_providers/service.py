@@ -41,6 +41,8 @@ def get_friendly(dns_provider_id):
     :return:
     """
     dns_provider = get(dns_provider_id)
+    if not dns_provider:
+        return None
     dns_provider_friendly = {
         "name": dns_provider.name,
         "description": dns_provider.description,

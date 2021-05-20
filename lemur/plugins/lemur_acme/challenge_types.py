@@ -249,7 +249,7 @@ class AcmeDnsChallenge(AcmeChallenge):
     def deploy(self, challenge, acme_client, validation_target):
         pass
 
-    def cleanup(self, authorizations, acme_client, validation_target):
+    def cleanup(self, authorizations, acme_client, validation_target=None):
         """
         Best effort attempt to delete DNS challenges that may not have been deleted previously. This is usually called
         on an exception

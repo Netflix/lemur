@@ -12,6 +12,7 @@ from flask_script import Manager
 from sqlalchemy import or_
 from tabulate import tabulate
 from time import sleep
+from sentry_sdk import capture_exception
 
 from lemur import database
 from lemur.authorities.models import Authority
@@ -29,15 +30,17 @@ from lemur.certificates.service import (
     get_all_certs_attached_to_endpoint_without_autorotate,
     revoke as revoke_certificate,
     list_duplicate_certs_by_authority,
-    get_certificates_with_same_prefix_with_rotate_on
+    get_certificates_with_same_prefix_with_rotate_on,
+    identify_and_persist_expiring_deployed_certificates
 )
 from lemur.certificates.verify import verify_string
 from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS, CRLReason
 from lemur.deployment import service as deployment_service
 from lemur.domains.models import Domain
 from lemur.endpoints import service as endpoint_service
-from lemur.extensions import sentry, metrics
-from lemur.notifications.messaging import send_rotation_notification
+from lemur.extensions import metrics
+from lemur.notifications.messaging import send_rotation_notification, send_reissue_no_endpoints_notification, \
+    send_reissue_failed_notification
 from lemur.plugins.base import plugins
 
 manager = Manager(usage="Handles all certificate related tasks.")
@@ -122,8 +125,8 @@ def request_rotation(endpoint, certificate, message, commit):
             status = SUCCESS_METRIC_STATUS
 
         except Exception as e:
-            sentry.captureException(extra={"certificate_name": str(certificate.name),
-                                           "endpoint": str(endpoint.dnsname)})
+            capture_exception(extra={"certificate_name": str(certificate.name),
+                                     "endpoint": str(endpoint.dnsname)})
             current_app.logger.exception(
                 f"Error rotating certificate: {certificate.name}", exc_info=True
             )
@@ -138,14 +141,16 @@ def request_rotation(endpoint, certificate, message, commit):
                                                                  "endpoint": str(endpoint.dnsname)})
 
 
-def request_reissue(certificate, commit):
+def request_reissue(certificate, notify, commit):
     """
     Reissuing certificate and handles any exceptions.
     :param certificate:
+    :param notify:
     :param commit:
     :return:
     """
     status = FAILURE_METRIC_STATUS
+    notify = notify and certificate.notify
     try:
         print("[+] {0} is eligible for re-issuance".format(certificate.name))
 
@@ -158,15 +163,30 @@ def request_reissue(certificate, commit):
         if commit:
             new_cert = reissue_certificate(certificate, replace=True)
             print("[+] New certificate named: {0}".format(new_cert.name))
+            try:
+                # the notifications should not be able to cause this to fail, so surround with a try
+                if isinstance(new_cert, Certificate) and notify and not new_cert.endpoints:
+                    send_reissue_no_endpoints_notification(new_cert)
+            except Exception:
+                current_app.logger.warn(
+                    f"Error sending reissue notification for certificate: {certificate.name}", exc_info=True
+                )
 
         status = SUCCESS_METRIC_STATUS
 
     except Exception as e:
-        sentry.captureException(extra={"certificate_name": str(certificate.name)})
+        capture_exception(extra={"certificate_name": str(certificate.name)})
         current_app.logger.exception(
             f"Error reissuing certificate: {certificate.name}", exc_info=True
         )
         print(f"[!] Failed to reissue certificate: {certificate.name}. Reason: {e}")
+        if notify:
+            try:
+                send_reissue_failed_notification(certificate)
+            except Exception:
+                current_app.logger.warn(
+                    f"Error sending reissue failed notification for certificate: {certificate.name}", exc_info=True
+                )
 
     metrics.send(
         "certificate_reissue",
@@ -274,7 +294,7 @@ def rotate(endpoint_name, new_certificate_name, old_certificate_name, message, c
         print("[+] Done!")
 
     except Exception as e:
-        sentry.captureException(
+        capture_exception(
             extra={
                 "old_certificate_name": str(old_certificate_name),
                 "new_certificate_name": str(new_certificate_name),
@@ -440,7 +460,7 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
         print("[+] Done!")
 
     except Exception as e:
-        sentry.captureException(
+        capture_exception(
             extra={
                 "old_certificate_name": str(old_certificate_name),
                 "new_certificate_name": str(new_certificate_name),
@@ -473,6 +493,13 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
     help="Name of the certificate you wish to reissue.",
 )
 @manager.option(
+    "-a",
+    "--notify",
+    dest="message",
+    action="store_true",
+    help="Send a re-issue failed notification to the certificates owner (if re-isuance fails).",
+)
+@manager.option(
     "-c",
     "--commit",
     dest="commit",
@@ -480,7 +507,7 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
     default=False,
     help="Persist changes.",
 )
-def reissue(old_certificate_name, commit):
+def reissue(old_certificate_name, notify, commit):
     """
     Reissues certificate with the same parameters as it was originally issued with.
     If not time period is provided, reissues certificate as valid from today to
@@ -498,14 +525,14 @@ def reissue(old_certificate_name, commit):
 
         if not old_cert:
             for certificate in get_all_pending_reissue():
-                request_reissue(certificate, commit)
+                request_reissue(certificate, notify, commit)
         else:
-            request_reissue(old_cert, commit)
+            request_reissue(old_cert, notify, commit)
 
         status = SUCCESS_METRIC_STATUS
         print("[+] Done!")
     except Exception as e:
-        sentry.captureException()
+        capture_exception()
         current_app.logger.exception("Error reissuing certificate.", exc_info=True)
         print("[!] Failed to reissue certificates. Reason: {}".format(e))
 
@@ -586,7 +613,7 @@ def worker(data, commit, reason):
         )
 
     except Exception as e:
-        sentry.captureException()
+        capture_exception()
         metrics.send(
             "certificate_revoke",
             "counter",
@@ -686,7 +713,7 @@ def check_revoked():
                 current_app.logger.info(log_data)
 
         except Exception as e:
-            sentry.captureException()
+            capture_exception()
             current_app.logger.exception(e)
             cert.status = "unknown"
 
@@ -776,7 +803,7 @@ def deactivate_entrust_certificates():
 
         except Exception as e:
             current_app.logger.info(log_data)
-            sentry.captureException()
+            capture_exception()
             current_app.logger.exception(e)
 
 
@@ -797,6 +824,8 @@ def disable_rotation_of_duplicate_certificates(commit):
         return
 
     log_data["authorities"] = authority_names
+    days_since_issuance = current_app.config.get("DAYS_SINCE_ISSUANCE_DISABLE_ROTATE_OF_DUPLICATE_CERTIFICATES", None)
+    log_data["days_since_issuance"] = f"{days_since_issuance} (Ignored if none)"
 
     authority_ids = []
     invalid_authorities = []
@@ -814,7 +843,7 @@ def disable_rotation_of_duplicate_certificates(commit):
         current_app.logger.error(log_data)
         return
 
-    duplicate_candidate_certs = list_duplicate_certs_by_authority(authority_ids)
+    duplicate_candidate_certs = list_duplicate_certs_by_authority(authority_ids, days_since_issuance)
 
     log_data["certs_with_serial_number_count"] = len(duplicate_candidate_certs)
     current_app.logger.info(log_data)
@@ -928,6 +957,7 @@ def is_duplicate(matching_cert, compare_to):
     if (
         matching_cert.owner != compare_to.owner
         or matching_cert.san != compare_to.san
+        or matching_cert.key_type != compare_to.key_type
         or matching_cert.not_before.date() != compare_to.not_before.date()
         or matching_cert.not_after.date() != compare_to.not_after.date()
     ):
@@ -938,3 +968,15 @@ def is_duplicate(matching_cert, compare_to):
 
     return (len(matching_destinations) == len(compare_to_destinations)
             and set(matching_destinations) == set(compare_to_destinations))
+
+
+def identify_expiring_deployed_certificates():
+    status = FAILURE_METRIC_STATUS
+    try:
+        identify_and_persist_expiring_deployed_certificates()
+        status = SUCCESS_METRIC_STATUS
+    except Exception:
+        capture_exception()
+        current_app.logger.exception("Error identifying expiring deployed certificates", exc_info=True)
+
+    metrics.send("identify_expiring_deployed_certificates", "counter", 1, metric_tags={"status": status})

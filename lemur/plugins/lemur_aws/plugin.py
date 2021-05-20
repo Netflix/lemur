@@ -36,8 +36,9 @@
 import sys
 from acme.errors import ClientError
 from flask import current_app
+from sentry_sdk import capture_exception
 
-from lemur.extensions import sentry, metrics
+from lemur.extensions import metrics
 from lemur.plugins import lemur_aws as aws, ExpirationNotificationPlugin
 from lemur.plugins.bases import DestinationPlugin, ExportDestinationPlugin, SourcePlugin
 from lemur.plugins.lemur_aws import iam, s3, elb, ec2, sns
@@ -226,21 +227,21 @@ class AWSSourcePlugin(SourcePlugin):
                     "number_of_load_balancers": len(elbs)
                 })
             except Exception as e:  # noqa
-                sentry.captureException()
+                capture_exception()
                 continue
 
             for e in elbs:
                 try:
                     endpoints.extend(get_elb_endpoints(account_number, region, e))
                 except Exception as e:  # noqa
-                    sentry.captureException()
+                    capture_exception()
                     continue
 
             # fetch advanced ELBs
             try:
                 elbs_v2 = elb.get_all_elbs_v2(account_number=account_number, region=region)
             except Exception as e:  # noqa
-                sentry.captureException()
+                capture_exception()
                 continue
 
             current_app.logger.info({
@@ -254,7 +255,7 @@ class AWSSourcePlugin(SourcePlugin):
                 try:
                     endpoints.extend(get_elb_endpoints_v2(account_number, region, e))
                 except Exception as e:  # noqa
-                    sentry.captureException()
+                    capture_exception()
                     continue
 
         return endpoints
@@ -310,7 +311,7 @@ class AWSSourcePlugin(SourcePlugin):
         except ClientError:
             current_app.logger.warning(
                 "get_elb_certificate_failed: Unable to get certificate for {0}".format(certificate_name))
-            sentry.captureException()
+            capture_exception()
             metrics.send(
                 "get_elb_certificate_failed", "counter", 1,
                 metric_tags={"certificate_name": certificate_name, "account_number": account_number}
@@ -391,7 +392,7 @@ class AWSDestinationPlugin(DestinationPlugin):
                 account_number=self.get_option("accountNumber", options),
             )
         except ClientError:
-            sentry.captureException()
+            capture_exception()
 
     def deploy(self, elb_name, account, region, certificate):
         pass

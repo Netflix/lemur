@@ -7,7 +7,7 @@ from moto import mock_ses
 
 from lemur.certificates.schemas import certificate_notification_output_schema
 from lemur.plugins.lemur_email.plugin import render_html
-from lemur.tests.factories import CertificateFactory
+from lemur.tests.factories import CertificateFactory, EndpointFactory
 from lemur.tests.test_messaging import verify_sender_email, create_cert_that_expires_in_days
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -28,10 +28,30 @@ def test_render_expiration(certificate, endpoint):
     assert render_html("expiration", get_options(), [certificate_notification_output_schema.dump(certificate).data])
 
 
-def test_render_rotation(certificate, endpoint):
+def test_render_revocation(certificate, endpoint):
     certificate.endpoints.append(endpoint)
 
-    assert render_html("rotation", get_options(), certificate_notification_output_schema.dump(certificate).data)
+    assert render_html("revocation", get_options(), certificate_notification_output_schema.dump(certificate).data)
+
+
+def test_render_rotation(certificate, endpoint):
+    new_cert = CertificateFactory()
+    new_cert.replaces.append(certificate)
+    new_cert.endpoints.append(endpoint)
+
+    assert render_html("rotation", get_options(), certificate_notification_output_schema.dump(new_cert).data)
+
+
+def test_render_reissue_failed(certificate):
+    assert render_html("reissue_failed", get_options(), certificate_notification_output_schema.dump(certificate).data)
+
+
+def test_render_reissued_with_no_endpoints(certificate):
+    new_cert = CertificateFactory()
+    new_cert.replaces.append(certificate)
+
+    assert render_html("reissued_with_no_endpoints", get_options(),
+                       certificate_notification_output_schema.dump(new_cert).data)
 
 
 def test_render_rotation_failure(pending_certificate):
@@ -70,6 +90,16 @@ def test_render_expiration_summary(certificate, notification, notification_plugi
         for cert in expected_certs[interval]:
             message_data_for_cert = [x for x in message_data_for_interval['certificates'] if x['name'] == cert.name]
             assert message_data_for_cert  # verify the expected cert is present for the expected interval
+
+
+def test_render_expiring_deployed_certificate(certificate):
+    verify_sender_email()
+
+    cert_data = certificate_notification_output_schema.dump(certificate).data
+    cert_data['domains_and_ports'] = [{'domain': 'subdomain.example.com', 'ports': [443]},
+                                      {'domain': 'example.com', 'ports': [443, 444]}]
+
+    assert render_html("expiring_deployed_certificate", get_options(), [cert_data])
 
 
 @mock_ses
@@ -111,16 +141,48 @@ def test_send_expiration_notification_disabled():
 
 
 @mock_ses
-def test_send_rotation_notification(endpoint, source_plugin):
+def test_send_revocation_notification(certificate, endpoint):
+    from lemur.notifications.messaging import send_revocation_notification
+
+    verify_sender_email()
+    certificate.endpoints = [endpoint]
+    assert send_revocation_notification(certificate)
+
+
+@mock_ses
+def test_send_rotation_notification(certificate, endpoint, source_plugin):
     from lemur.notifications.messaging import send_rotation_notification
     from lemur.deployment.service import rotate_certificate
 
     new_certificate = CertificateFactory()
     rotate_certificate(endpoint, new_certificate)
+    new_certificate.replaces.append(certificate)
     assert endpoint.certificate == new_certificate
 
     verify_sender_email()
     assert send_rotation_notification(new_certificate)
+    new_certificate.endpoints = [EndpointFactory()]
+    assert send_rotation_notification(new_certificate)
+
+
+@mock_ses
+def test_send_reissue_failed_notification(certificate):
+    from lemur.notifications.messaging import send_reissue_failed_notification
+
+    verify_sender_email()
+    certificate.endpoints = [EndpointFactory()]
+    assert send_reissue_failed_notification(certificate)
+
+
+@mock_ses
+def test_send_reissue_no_endpoints_notification(certificate):
+    from lemur.notifications.messaging import send_reissue_no_endpoints_notification
+
+    verify_sender_email()
+    new_certificate = CertificateFactory()
+    new_certificate.replaces.append(certificate)
+    verify_sender_email()
+    assert send_reissue_no_endpoints_notification(new_certificate)
 
 
 @mock_ses

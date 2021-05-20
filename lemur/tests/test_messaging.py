@@ -5,6 +5,8 @@ import boto3
 import pytest
 from freezegun import freeze_time
 from moto import mock_ses
+
+from lemur.certificates.service import get_expiring_deployed_certificates
 from lemur.tests.factories import AuthorityFactory, CertificateFactory, EndpointFactory
 
 
@@ -179,11 +181,42 @@ def test_send_expiration_summary_notification(certificate, notification, notific
 
 
 @mock_ses
+def test_send_evocation_notification(notification_plugin, certificate):
+    from lemur.notifications.messaging import send_revocation_notification
+    verify_sender_email()
+
+    certificate.endpoints = [EndpointFactory()]
+    assert send_revocation_notification(certificate)
+
+
+@mock_ses
 def test_send_rotation_notification(notification_plugin, certificate):
     from lemur.notifications.messaging import send_rotation_notification
     verify_sender_email()
 
-    assert send_rotation_notification(certificate)
+    new_cert = CertificateFactory()
+    new_cert.replaces.append(certificate)
+    assert send_rotation_notification(new_cert)
+    new_cert.endpoints = [EndpointFactory()]
+    assert send_rotation_notification(new_cert)
+
+
+@mock_ses
+def test_send_reissue_no_endpoints_notification(notification_plugin, certificate):
+    from lemur.notifications.messaging import send_reissue_no_endpoints_notification
+    verify_sender_email()
+
+    new_cert = CertificateFactory()
+    new_cert.replaces.append(certificate)
+    assert send_reissue_no_endpoints_notification(new_cert)
+
+
+@mock_ses
+def test_send_reissue_failed_notification(notification_plugin, certificate):
+    from lemur.notifications.messaging import send_reissue_failed_notification
+    verify_sender_email()
+
+    assert send_reissue_failed_notification(certificate)
 
 
 @mock_ses
@@ -225,6 +258,26 @@ def test_send_authority_expiration_notifications():
     assert send_authority_expiration_notifications() == (2, 0)
 
 
+@mock_ses
+def test_send_expiring_deployed_certificate_notifications():
+    from lemur.domains.models import Domain
+    from lemur.notifications.messaging import send_expiring_deployed_certificate_notifications
+    verify_sender_email()
+
+    # three certs with ports, one cert with no ports
+    cert_1 = create_cert_that_expires_in_days(10, domains=[Domain(name='domain1.com')], owner='testowner1@example.com')
+    cert_1.certificate_associations[0].ports = [1234]
+    cert_2 = create_cert_that_expires_in_days(10, domains=[Domain(name='domain1.com')], owner='testowner2@example.com')
+    cert_2.certificate_associations[0].ports = [1234, 12345]
+    cert_3 = create_cert_that_expires_in_days(10, domains=[Domain(name='domain1.com')], owner='testowner3@example.com')
+    cert_3.certificate_associations[0].ports = [1234, 12345, 12456]
+    cert_4 = create_cert_that_expires_in_days(10, domains=[Domain(name='domain1.com')], owner='testowner3@example.com')
+    cert_4.certificate_associations[0].ports = []
+
+    certificates = get_expiring_deployed_certificates([]).items()
+    assert send_expiring_deployed_certificate_notifications(certificates) == (3, 0)  # 3 certs with ports
+
+
 def create_ca_cert_that_expires_in_days(days):
     now = arrow.utcnow()
     not_after = now + timedelta(days=days, hours=1)  # a bit more than specified since we'll check in the future
@@ -238,7 +291,7 @@ def create_ca_cert_that_expires_in_days(days):
     return certificate
 
 
-def create_cert_that_expires_in_days(days):
+def create_cert_that_expires_in_days(days, serial=None, domains=None, owner=None):
     import random
     from random import randrange
     from string import ascii_lowercase
@@ -254,4 +307,10 @@ def create_cert_that_expires_in_days(days):
     for i in range(0, randrange(0, 5)):
         endpoints.append(EndpointFactory())
     certificate.endpoints = endpoints
+    if serial:
+        certificate.serial = serial
+    if owner:
+        certificate.owner = owner
+    if domains:
+        certificate.domains = domains
     return certificate

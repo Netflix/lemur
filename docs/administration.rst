@@ -221,6 +221,26 @@ Basic Configuration
         This is an optional config applicable for settings where Lemur is deployed in AWS. For accessing regionalized
         STS endpoints, LEMUR_AWS_REGION defines the region where Lemur is deployed.
 
+.. data:: SENTRY_DSN
+    :noindex:
+
+        To initialize the Sentry integration to capture errors and exceptions, the `SENTRY_DSN` is required to be set to
+        the respective URL. `LEMUR_ENV` is also a related variable to define the environment for sentry events, e.g.,
+        'test' or 'prod'.
+
+        Note that previously Lemur relied on Raven[flask] before migrating to `sentry_sdk`. In this case, you might be
+        using the legacy `SENTRY_CONFIG`, which Lemur attempts to respect, in case `SENTRY_DSN` is missing,
+        with environment set to empty.
+
+        Example for using Senty to capture exceptions:
+
+            >>>  from sentry_sdk import capture_exception
+            >>>  ..
+            >>>  capture_exception()
+            >>>  # supplying extra information
+            >>>  capture_exception(extra={"certificate_name": str(certificate.name)})
+
+
 Certificate Default Options
 ---------------------------
 
@@ -298,7 +318,7 @@ These notifications can be configured to use all available notification plugins.
 
 Supported types:
 
-* Certificate expiration
+* Certificate expiration (Celery: `notify_expirations`, cron: `notify expirations`)
 
 **Email-only notifications**
 
@@ -306,10 +326,14 @@ These notifications can only be sent via email and cannot use other notification
 
 Supported types:
 
-* CA certificate expiration
+* CA certificate expiration (Celery: `notify_authority_expirations`, cron: `notify authority_expirations`)
 * Pending ACME certificate failure
 * Certificate rotation
-* Security certificate expiration summary
+* Certificate reissued with no endpoints
+* Certificate reissue failed
+* Certificate revocation
+* Security certificate expiration summary (Celery: `send_security_expiration_summary`, cron: `notify security_expiration_summary`)
+* Certificate expiration where certificates are still detected as deployed at any associated domain (Celery: `notify_expiring_deployed_certificates`, cron: `notify expiring_deployed_certificates`)
 
 **Default notifications**
 
@@ -376,13 +400,53 @@ and security team (as specified by the ``LEMUR_SECURITY_TEAM_EMAIL`` configurati
 the pending certificate had notifications disabled.
 
 Lemur will attempt 3x times to resolve a pending certificate.
-This can at times result into 3 duplicate certificates, if all certificate attempts get resolved.
+This can at times result into 3 duplicate certificates, if all certificate attempts get resolved. There is a way to
+deduplicate these certificates periodically using a celery task ``disable_rotation_of_duplicate_certificates``.
+
+This needs 2 configurations
+
+.. data:: AUTHORITY_TO_DISABLE_ROTATE_OF_DUPLICATE_CERTIFICATES
+    :noindex:
+
+        List names of the authorities for which `disable_rotation_of_duplicate_certificates` should run. The task will
+        consider certificates issued by authorities configured here.
+
+    ::
+
+        AUTHORITY_TO_DISABLE_ROTATE_OF_DUPLICATE_CERTIFICATES = ["LetsEncrypt"]
+
+
+.. data:: DAYS_SINCE_ISSUANCE_DISABLE_ROTATE_OF_DUPLICATE_CERTIFICATES
+    :noindex:
+
+        Use this config (optional) to configure the number of days. The task `disable_rotation_of_duplicate_certificates`
+        will then consider valid certificates issued only in last those many number of days for deduplication. If not configured,
+        the task considers all the valid certificates. Ideally set this config to a value which is same as the number of
+        days between the two runs of `disable_rotation_of_duplicate_certificates`
+
+    ::
+
+        DAYS_SINCE_ISSUANCE_DISABLE_ROTATE_OF_DUPLICATE_CERTIFICATES = 7
+
+
+**Certificate re-issuance**
+
+When a cert is reissued (i.e. a new certificate is minted to replace it), *and* the re-issuance either fails or
+succeeds but the certificate has no associated endpoints (meaning the subsequent rotation step will not occur),
+Lemur will send a notification via email to the certificate owner. This notification is disabled by default;
+to enable it, you must set the option ``--notify`` (when using cron) or the configuration parameter
+``ENABLE_REISSUE_NOTIFICATION`` (when using celery).
 
 **Certificate rotation**
 
 Whenever a cert is rotated, Lemur will send a notification via email to the certificate owner. This notification is
 disabled by default; to enable it, you must set the option ``--notify`` (when using cron) or the configuration parameter
 ``ENABLE_ROTATION_NOTIFICATION`` (when using celery).
+
+**Certificate revocation**
+
+Whenever a cert is revoked, Lemur will send a notification via email to the certificate owner. This notification will
+only be sent if the certificate's "notify" option is enabled.
 
 **Security certificate expiration summary**
 
@@ -442,7 +506,7 @@ The following configuration options are supported:
         If using SMTP as your provider you will need to define additional configuration options as specified by Flask-Mail.
         See: `Flask-Mail <https://pythonhosted.org/Flask-Mail>`_
 
-        If you are using SES the email specified by the `LEMUR_MAIL` configuration will need to be verified by AWS before
+        If you are using SES the email specified by the `LEMUR_EMAIL` configuration will need to be verified by AWS before
         you can send any mail. See: `Verifying Email Address in Amazon SES <http://docs.aws.amazon.com/ses/latest/DeveloperGuide/verify-email-addresses.html>`_
 
 
@@ -510,6 +574,15 @@ The following configuration options are supported:
        ::
 
           LEMUR_AUTHORITY_CERT_EXPIRATION_EMAIL_INTERVALS = [365, 180]
+
+.. data:: LEMUR_PORTS_FOR_DEPLOYED_CERTIFICATE_CHECK
+    :noindex:
+
+       Specifies the set of ports to use when checking if a certificate is still deployed at a given domain. This is utilized for the alert that is sent when an expiring certificate is detected to still be deployed.
+
+       ::
+
+          LEMUR_PORTS_FOR_DEPLOYED_CERTIFICATE_CHECK = [443]
 
 
 Celery Options
@@ -1395,7 +1468,7 @@ in Amazon's documentation `Setting up Amazon SES <http://docs.aws.amazon.com/ses
 
 The configuration::
 
-    LEMUR_MAIL = 'lemur.example.com'
+    LEMUR_EMAIL = 'lemur@example.com'
 
 Will be the sender of all notifications, so ensure that it is verified with AWS.
 

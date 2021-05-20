@@ -16,6 +16,7 @@ from celery.exceptions import SoftTimeLimitExceeded
 from celery.signals import task_failure, task_received, task_revoked, task_success
 from datetime import datetime, timezone, timedelta
 from flask import current_app
+from sentry_sdk import capture_exception
 
 from lemur.authorities.service import get as get_authority
 from lemur.certificates import cli as cli_certificate
@@ -24,7 +25,7 @@ from lemur.constants import ACME_ADDITIONAL_ATTEMPTS
 from lemur.destinations import service as destinations_service
 from lemur.dns_providers import cli as cli_dns_providers
 from lemur.endpoints import cli as cli_endpoints
-from lemur.extensions import metrics, sentry
+from lemur.extensions import metrics
 from lemur.factory import create_app
 from lemur.notifications import cli as cli_notification
 from lemur.notifications.messaging import send_pending_failure_notification
@@ -472,7 +473,7 @@ def clean_source(source):
     except SoftTimeLimitExceeded:
         log_data["message"] = "Clean source: Time limit exceeded."
         current_app.logger.error(log_data)
-        sentry.captureException()
+        capture_exception()
         metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
     return log_data
 
@@ -543,7 +544,7 @@ def sync_source(source):
     except SoftTimeLimitExceeded:
         log_data["message"] = "Error syncing source: Time limit exceeded."
         current_app.logger.error(log_data)
-        sentry.captureException()
+        capture_exception()
         metrics.send(
             "sync_source_timeout", "counter", 1, metric_tags={"source": source}
         )
@@ -618,11 +619,12 @@ def certificate_reissue():
 
     current_app.logger.debug(log_data)
     try:
-        cli_certificate.reissue(None, True)
+        notify = current_app.config.get("ENABLE_REISSUE_NOTIFICATION", None)
+        cli_certificate.reissue(None, notify, True)
     except SoftTimeLimitExceeded:
         log_data["message"] = "Certificate reissue: Time limit exceeded."
         current_app.logger.error(log_data)
-        sentry.captureException()
+        capture_exception()
         metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
         return
 
@@ -667,7 +669,7 @@ def certificate_rotate(**kwargs):
     except SoftTimeLimitExceeded:
         log_data["message"] = "Certificate rotate: Time limit exceeded."
         current_app.logger.error(log_data)
-        sentry.captureException()
+        capture_exception()
         metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
         return
 
@@ -705,7 +707,7 @@ def endpoints_expire():
     except SoftTimeLimitExceeded:
         log_data["message"] = "endpoint expire: Time limit exceeded."
         current_app.logger.error(log_data)
-        sentry.captureException()
+        capture_exception()
         metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
         return
 
@@ -741,7 +743,7 @@ def get_all_zones():
     except SoftTimeLimitExceeded:
         log_data["message"] = "get all zones: Time limit exceeded."
         current_app.logger.error(log_data)
-        sentry.captureException()
+        capture_exception()
         metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
         return
 
@@ -777,7 +779,7 @@ def check_revoked():
     except SoftTimeLimitExceeded:
         log_data["message"] = "Checking revoked: Time limit exceeded."
         current_app.logger.error(log_data)
-        sentry.captureException()
+        capture_exception()
         metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
         return
 
@@ -816,7 +818,7 @@ def notify_expirations():
     except SoftTimeLimitExceeded:
         log_data["message"] = "Notify expiring Time limit exceeded."
         current_app.logger.error(log_data)
-        sentry.captureException()
+        capture_exception()
         metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
         return
 
@@ -852,7 +854,7 @@ def notify_authority_expirations():
     except SoftTimeLimitExceeded:
         log_data["message"] = "Notify expiring CA Time limit exceeded."
         current_app.logger.error(log_data)
-        sentry.captureException()
+        capture_exception()
         metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
         return
 
@@ -888,7 +890,7 @@ def send_security_expiration_summary():
     except SoftTimeLimitExceeded:
         log_data["message"] = "Send summary for expiring certs Time limit exceeded."
         current_app.logger.error(log_data)
-        sentry.captureException()
+        capture_exception()
         metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
         return
 
@@ -948,7 +950,7 @@ def deactivate_entrust_test_certificates():
     except SoftTimeLimitExceeded:
         log_data["message"] = "Time limit exceeded."
         current_app.logger.error(log_data)
-        sentry.captureException()
+        capture_exception()
         metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
         return
 
@@ -991,13 +993,87 @@ def disable_rotation_of_duplicate_certificates():
     except SoftTimeLimitExceeded:
         log_data["message"] = "Time limit exceeded."
         current_app.logger.error(log_data)
-        sentry.captureException()
+        capture_exception()
         metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
         return
     except Exception as e:
         current_app.logger.info(log_data)
-        sentry.captureException()
+        capture_exception()
         current_app.logger.exception(e)
         return
 
     metrics.send(f"{function}.success", "counter", 1)
+
+
+@celery.task(soft_time_limit=3600)
+def notify_expiring_deployed_certificates():
+    """
+    This celery task attempts to find any certificates that are expiring soon but are still deployed,
+    and notifies the security team.
+    """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    task_id = None
+    if celery.current_task:
+        task_id = celery.current_task.request.id
+
+    log_data = {
+        "function": function,
+        "message": "notify expiring deployed certificates",
+        "task_id": task_id,
+    }
+
+    if task_id and is_task_active(function, task_id, None):
+        log_data["message"] = "Skipping task: Task is already active"
+        current_app.logger.debug(log_data)
+        return
+
+    current_app.logger.debug(log_data)
+    try:
+        cli_notification.notify_expiring_deployed_certificates(
+            current_app.config.get("EXCLUDE_CN_FROM_NOTIFICATION", [])
+        )
+    except SoftTimeLimitExceeded:
+        log_data["message"] = "Time limit exceeded."
+        current_app.logger.error(log_data)
+        capture_exception()
+        metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
+        return
+
+    metrics.send(f"{function}.success", "counter", 1)
+    return log_data
+
+
+@celery.task(soft_time_limit=3600)
+def identity_expiring_deployed_certificates():
+    """
+    This celery task attempts to find any certificates that are expiring soon but are still deployed,
+    and stores information on which port(s) the certificate is currently being used for TLS.
+    """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    task_id = None
+    if celery.current_task:
+        task_id = celery.current_task.request.id
+
+    log_data = {
+        "function": function,
+        "message": "identify expiring deployed certificates",
+        "task_id": task_id,
+    }
+
+    if task_id and is_task_active(function, task_id, None):
+        log_data["message"] = "Skipping task: Task is already active"
+        current_app.logger.debug(log_data)
+        return
+
+    current_app.logger.debug(log_data)
+    try:
+        cli_certificate.identify_expiring_deployed_certificates()
+    except SoftTimeLimitExceeded:
+        log_data["message"] = "Time limit exceeded."
+        current_app.logger.error(log_data)
+        capture_exception()
+        metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
+        return
+
+    metrics.send(f"{function}.success", "counter", 1)
+    return log_data

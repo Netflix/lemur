@@ -38,10 +38,6 @@ from lemur.metrics import Metrics
 
 metrics = Metrics()
 
-from raven.contrib.flask import Sentry
-
-sentry = Sentry()
-
 from blinker import Namespace
 
 signals = Namespace()

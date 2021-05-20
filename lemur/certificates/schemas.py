@@ -472,6 +472,9 @@ class CertificateNotificationOutputSchema(LemurOutputSchema):
     replaced_by = fields.Nested(
         CertificateNestedOutputSchema, many=True, attribute="replaced"
     )
+    replaces = fields.Nested(
+        CertificateNestedOutputSchema, many=True, attribute="replaces"
+    )
     endpoints = fields.Nested(EndpointNestedOutputSchema, many=True, missing=[])
 
 

@@ -9,14 +9,13 @@ import sys
 import time
 
 from tabulate import tabulate
-
 from flask_script import Manager
-
 from flask import current_app
+from sentry_sdk import capture_exception
 
 from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
 
-from lemur.extensions import metrics, sentry
+from lemur.extensions import metrics
 from lemur.plugins.base import plugins
 
 from lemur.sources import service as source_service
@@ -69,7 +68,7 @@ def execute_clean(plugin, certificate, source):
         return SUCCESS_METRIC_STATUS
     except Exception as e:
         current_app.logger.exception(e)
-        sentry.captureException()
+        capture_exception()
 
 
 @manager.option(
@@ -113,7 +112,7 @@ def sync(source_strings):
 
             print("[X] Failed syncing source {label}!\n".format(label=source.label))
 
-            sentry.captureException()
+            capture_exception()
             metrics.send(
                 "source_sync_fail",
                 "counter",

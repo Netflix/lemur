@@ -16,11 +16,13 @@ from acme.errors import PollError, WildcardUnsupportedError
 from acme.messages import Error as AcmeError
 from botocore.exceptions import ClientError
 from flask import current_app
+from sentry_sdk import capture_exception
+
 from lemur.authorizations import service as authorization_service
 from lemur.constants import CRLReason
 from lemur.dns_providers import service as dns_provider_service
 from lemur.exceptions import InvalidConfiguration
-from lemur.extensions import metrics, sentry
+from lemur.extensions import metrics
 
 from lemur.plugins import lemur_acme as acme
 from lemur.plugins.bases import IssuerPlugin
@@ -107,7 +109,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
                 acme_client, order, order_info
             )
         except ClientError:
-            sentry.captureException()
+            capture_exception()
             metrics.send("get_ordered_certificate_error", "counter", 1)
             current_app.logger.error(
                 f"Unable to resolve pending cert: {pending_cert.name}", exc_info=True
@@ -152,7 +154,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
                 try:
                     order = acme_client.new_order(pending_cert.csr)
                 except WildcardUnsupportedError:
-                    sentry.captureException()
+                    capture_exception()
                     metrics.send(
                         "get_ordered_certificates_wildcard_unsupported_error",
                         "counter",
@@ -176,7 +178,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
                     }
                 )
             except (ClientError, ValueError, Exception) as e:
-                sentry.captureException()
+                capture_exception()
                 metrics.send(
                     "get_ordered_certificates_pending_creation_error", "counter", 1
                 )
@@ -207,7 +209,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
                 }
                 certs.append({"cert": cert, "pending_cert": entry["pending_cert"]})
             except (PollError, AcmeError, Exception) as e:
-                sentry.captureException()
+                capture_exception()
                 metrics.send("get_ordered_certificates_resolution_error", "counter", 1)
                 order_url = order.uri
                 error = f"{e}. Order URI: {order_url}"
