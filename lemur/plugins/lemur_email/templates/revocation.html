@@ -34,7 +34,7 @@
                     <tr height="16"></tr>
                     <tr>
                         <td>
-                            <table bgcolor="#3681E4" width="100%" border="0" cellspacing="0" cellpadding="0"
+                            <table bgcolor="#F44336" width="100%" border="0" cellspacing="0" cellpadding="0"
                                    style="min-width:332px;max-width:600px;border:1px solid #e0e0e0;border-bottom:0;border-top-left-radius:3px;border-top-right-radius:3px">
                                 <tbody>
                                 <tr>
@@ -43,7 +43,7 @@
                                 <tr>
                                     <td width="32px"></td>
                                     <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:24px;color:#ffffff;line-height:1.25">
-                                       Your certificate has been rotated!
+                                       Your certificate has been revoked!
                                     </td>
                                     <td width="32px"></td>
                                 </tr>
@@ -71,7 +71,7 @@
                                             <tr>
                                                 <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#202020;line-height:1.5">
                                                     Hi,
-                                                    <br>This is a Lemur certificate rotation notice. Your certificate has been re-issued and re-provisioned.
+                                                    <br>The following Lemur certificate has been revoked.
                                                 </td>
                                             </tr>
                                             <tr>
@@ -84,11 +84,12 @@
                                                                 <td width="16px"></td>
                                                                 <td style="line-height:1.2">
                                                                     <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:20px;color:#202020">{{ message.certificates.name }}</span>
-                                                                    <br>
                                                                     <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#727272">
+                                                                        <br>{{ message.certificates.endpoints | length }} Endpoints
                                                                         <br>{{ message.certificates.owner }}
                                                                         <br>{{ message.certificates.validityEnd | time }}
-                                                                        <a href="https://{{ hostname }}/#/certificates/{{ message.certificates.name }}" target="_blank">Details</a>
+                                                                        <br>{{ message.certificates.status }}
+                                                                        <br><a href="https://{{ hostname }}/#/certificates/{{ message.certificates.name }}" target="_blank">Details</a>
                                                                     </span>
                                                                 </td>
                                                             </tr>
@@ -97,81 +98,8 @@
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:15px;color:#202020;line-height:1.5">
-                                                    Replaces:
-                                                </td>
-                                            </tr>
-                                            <tr>
                                                 <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#202020;line-height:1.5">
-                                                    <table border="0" cellspacing="0" cellpadding="0"
-                                                           style="margin-top:48px;margin-bottom:48px">
-                                                        <tbody>
-                                                        <tr valign="middle">
-                                                            <td width="32px"></td>
-                                                            <td width="16px"></td>
-                                                            <td style="line-height:1.2">
-                                                                <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:20px;color:#202020">{{ message.certificates.replaces[0].name }}</span>
-                                                                <br>
-                                                                <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#727272">
-                                                                        <br>{{ message.certificates.replaces[0].owner }}
-                                                                        <br>{{ message.certificates.replaces[0].validityEnd | time }}
-                                                                        <a href="https://{{ hostname }}/#/certificates/{{ message.certificates.replaces[0].name }}" target="_blank">Details</a>
-                                                                    </span>
-                                                            </td>
-                                                        </tr>
-                                                        </tbody>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:15px;color:#202020;line-height:1.5">
-                                                    Endpoints Rotated:
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#202020;line-height:1.5">
-                                                    <table border="0" cellspacing="0" cellpadding="0"
-                                                           style="margin-top:48px;margin-bottom:48px">
-                                                        <tbody>
-                                                        {% if message.certificates.endpoints | length > 0 %}
-                                                            {% for endpoint in message.certificates.endpoints %}
-                                                                <tr valign="middle">
-                                                                    <td width="32px"></td>
-                                                                    <td width="16px"></td>
-                                                                    <td style="line-height:1.2">
-                                                                        <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:20px;color:#202020">{{ endpoint.name }}</span>
-                                                                        <br>
-                                                                        <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#727272">
-                                                                            <br>{{ endpoint.dnsname }} | {{ endpoint.port }}
-                                                                            <a href="https://{{ hostname }}/#/endpoints/{{ endpoint.name }}"
-                                                                               target="_blank">Details</a>
-                                                                        </span>
-                                                                    </td>
-                                                                </tr>
-                                                                {% if not loop.last %}
-                                                                    <tr valign="middle">
-                                                                        <td width="32px" height="24px"></td>
-                                                                    </tr>
-                                                                {% endif %}
-                                                            {% endfor %}
-                                                        {% else %}
-                                                            <tr valign="middle">
-                                                                <td width="32px"></td>
-                                                                <td width="16px"></td>
-                                                                <td style="line-height:1.2">
-                                                                        <span style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#727272">
-                                                                            No associated endpoints
-                                                                        </span>
-                                                                </td>
-                                                            </tr>
-                                                        {% endif %}
-                                                        </tbody>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:13px;color:#202020;line-height:1.5">
-                                                    If any of the above information looks incorrect, or if the endpoints mentioned are no longer in use please reach out to {{ ", ".join(message.certificates.security_email) }}.</span>
+                                                    If this revocation was unexpected, please reach out to {{ ", ".join(message.certificates.security_email) }}.
                                                 </td>
                                             </tr>
                                             <tr>

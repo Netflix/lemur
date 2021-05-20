@@ -6,12 +6,15 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+import base64
 import random
 import re
+import socket
+import ssl
 import string
-import pem
-import base64
 
+import OpenSSL
+import pem
 import sqlalchemy
 from cryptography import x509
 from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
@@ -381,3 +384,37 @@ def convert_pkcs7_bytes_to_pem(certs_pkcs7):
         certificates_pem.append(pem.parse(cert.public_bytes(encoding=Encoding.PEM))[0])
 
     return certificates_pem
+
+
+def get_certificate_via_tls(host, port, timeout=10):
+    """
+    Makes a TLS network connection to retrieve the current certificate for the specified host and port.
+
+    Note that if the host is valid but the port is not, we'll wait for the timeout for the connection to fail,
+    so this should remain low when doing bulk operations.
+
+    :param host: Host to get certificate for
+    :param port: Port to get certificate for
+    :param timeout: Timeout in seconds
+    """
+    context = ssl.create_default_context()
+    context.check_hostname = False  # we don't care about validating the cert
+    context.verify_mode = ssl.CERT_NONE  # we don't care about validating the cert; it may be self-signed
+    conn = socket.create_connection((host, port), timeout=timeout)
+    sock = context.wrap_socket(conn, server_hostname=host)
+    sock.settimeout(timeout)
+    try:
+        der_cert = sock.getpeercert(True)
+    finally:
+        sock.close()
+    return ssl.DER_cert_to_PEM_cert(der_cert)
+
+
+def parse_serial(pem_certificate):
+    """
+    Parses a serial number from a PEM-encoded certificate.
+    """
+    x509_cert = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, pem_certificate)
+    x509_cert.get_notAfter()
+    parsed_certificate = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, pem_certificate)
+    return parsed_certificate.get_serial_number()
