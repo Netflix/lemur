@@ -1,7 +1,5 @@
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes, hmac
-
 from lemur.auth.views import *  # noqa
+
 
 def test_build_hmac(client):
     from lemur.auth.views import build_hmac

@@ -305,7 +305,7 @@ def verify_state_token(token):
         ts, digest = state.split(b':')
         timestamp = int(ts, 16)  # todo: check freshness of timestamp vs. current time?
         if float(time.time() - timestamp) > stale_seconds:
-            current_app.logger.warning(f'OAuth State token is too stale.')
+            current_app.logger.warning('OAuth State token is too stale.')
             return False
         digest = base64.b64decode(digest)
         h = build_hmac()
@@ -313,7 +313,7 @@ def verify_state_token(token):
         h.verify(digest)  # should verification fail for any reason, an exception is thrown
         return True
     except InvalidSignature:
-        current_app.logger.warning(f'OAuth State token is invalid.')
+        current_app.logger.warning('OAuth State token is invalid.')
         return False
     except Exception as e:
         current_app.logger.warning(f'Error while parsing OAuth State token: {e}')
