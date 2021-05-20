@@ -302,6 +302,7 @@ def validate_conf(app, required_vars):
                 "Required variable '{var}' is not set in Lemur's conf.".format(var=var)
             )
 
+
 def check_validation(validation):
     """
     Checks that the given validation string compiles successfully.
@@ -309,7 +310,7 @@ def check_validation(validation):
     :param validation:
     :return str: The validation pattern, if compilation succeeds
     """
-    
+
     try:
         compiled = re.compile(validation)
     except re.error as e:
