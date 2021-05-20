@@ -107,6 +107,8 @@ class OpenSSHIssuerPlugin(CryptographyIssuerPlugin):
         return cert_pem, private_key, chain_cert_pem, roles
 
     def wrap_certificate(self, cert):
+        if 'body' not in cert:
+            return
         # get public_key in OpenSSH format
         public_key = parse_certificate(cert['body']).public_key().public_bytes(
             encoding=serialization.Encoding.OpenSSH,

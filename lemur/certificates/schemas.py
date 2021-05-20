@@ -375,7 +375,8 @@ class CertificateOutputSchema(LemurOutputSchema):
             plugin = plugins.get(cert['authority']['plugin']['slug'])
         if plugin:
             plugin.wrap_certificate(cert)
-        del cert['root_authority']
+        if 'root_authority' in cert:
+            del cert['root_authority']
 
 
 class CertificateShortOutputSchema(LemurOutputSchema):
