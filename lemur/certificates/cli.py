@@ -165,12 +165,11 @@ def request_reissue(certificate, notify, commit):
             print("[+] New certificate named: {0}".format(new_cert.name))
             try:
                 # the notifications should not be able to cause this to fail, so surround with a try
-                if notify and not new_cert.endpoints:
+                if isinstance(new_cert, Certificate) and notify and not new_cert.endpoints:
                     send_reissue_no_endpoints_notification(new_cert)
             except Exception:
                 current_app.logger.warn(
-                    f"Error sending reissue notification for certificate: {certificate.name}. This is not a problem if"
-                    f"this is a PendingCertificate, as PendingCertificates have no endpoints.", exc_info=True
+                    f"Error sending reissue notification for certificate: {certificate.name}", exc_info=True
                 )
 
         status = SUCCESS_METRIC_STATUS
