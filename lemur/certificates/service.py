@@ -925,8 +925,14 @@ def cleanup_after_revoke(certificate):
     :param certificate: Certificate object to modify and update in DB
     :return: None
     """
-    if certificate.notify:
-        send_revocation_notification(certificate)
+    try:
+        if certificate.notify:
+            send_revocation_notification(certificate)
+    except Exception:
+        capture_exception()
+        current_app.logger.warn(
+            f"Error sending revocation notification for certificate: {certificate.name}", exc_info=True
+        )
 
     certificate.notify = False
     certificate.rotation = False

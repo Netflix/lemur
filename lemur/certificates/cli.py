@@ -163,8 +163,14 @@ def request_reissue(certificate, notify, commit):
         if commit:
             new_cert = reissue_certificate(certificate, replace=True)
             print("[+] New certificate named: {0}".format(new_cert.name))
-            if notify and not new_cert.endpoints:
-                send_reissue_no_endpoints_notification(new_cert)
+            try:
+                # the notifications should not be able to cause this to fail, so surround with a try
+                if isinstance(new_cert, Certificate) and notify and not new_cert.endpoints:
+                    send_reissue_no_endpoints_notification(new_cert)
+            except Exception:
+                current_app.logger.warn(
+                    f"Error sending reissue notification for certificate: {certificate.name}", exc_info=True
+                )
 
         status = SUCCESS_METRIC_STATUS
 
@@ -175,7 +181,12 @@ def request_reissue(certificate, notify, commit):
         )
         print(f"[!] Failed to reissue certificate: {certificate.name}. Reason: {e}")
         if notify:
-            send_reissue_failed_notification(certificate)
+            try:
+                send_reissue_failed_notification(certificate)
+            except Exception:
+                current_app.logger.warn(
+                    f"Error sending reissue failed notification for certificate: {certificate.name}", exc_info=True
+                )
 
     metrics.send(
         "certificate_reissue",
