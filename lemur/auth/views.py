@@ -12,6 +12,7 @@ import base64
 import requests
 import time
 
+from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, hmac
 
@@ -284,7 +285,7 @@ def update_user(user, profile, roles):
 
 def build_hmac():
     key = current_app.config.get('OAUTH_STATE_TOKEN_SECRET', OAUTH_STATE_TOKEN_SECRET_FALLBACK)
-    return hmac.HMAC(key.encode('ascii'), hashes.SHA256(), backend=default_backend())
+    return hmac.HMAC(key, hashes.SHA256(), backend=default_backend())
 
 
 def generate_state_token():
@@ -298,15 +299,22 @@ def generate_state_token():
 
 
 def verify_state_token(token):
+    stale_seconds = current_app.config.get('OAUTH_STATE_TOKEN_STALE_TOLERANCE_SECONDS', 15)
     try:
         state = token.encode('utf-8')
         ts, digest = state.split(b':')
         timestamp = int(ts, 16)  # todo: check freshness of timestamp vs. current time?
+        if float(time.time() - timestamp) > stale_seconds:
+            current_app.logger.warning(f'OAuth State token is too stale.')
+            return False
         digest = base64.b64decode(digest)
         h = build_hmac()
         h.update(ts)
         h.verify(digest)  # should verification fail for any reason, an exception is thrown
         return True
+    except InvalidSignature:
+        current_app.logger.warning(f'OAuth State token is invalid.')
+        return False
     except Exception as e:
         current_app.logger.warning(f'Error while parsing OAuth State token: {e}')
         return False

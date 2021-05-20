@@ -35,7 +35,7 @@ LEMUR_ENCRYPTION_KEYS = repr(os.environ.get('LEMUR_ENCRYPTION_KEYS',
                                             base64.b64encode(get_random_secret(32).encode('utf8')).decode('utf8')))
 
 # this is the secret used to generate oauth state tokens
-OAUTH_STATE_TOKEN_SECRET = repr(os.environ.get('OAUTH_STATE_TOKEN_SECRET', base64.b64encode(get_random_secret(32).encode('utf8')).decode('utf8')))
+OAUTH_STATE_TOKEN_SECRET = repr(os.environ.get('OAUTH_STATE_TOKEN_SECRET', base64.b64encode(get_random_secret(32).encode('utf8'))))
 
 REDIS_HOST = 'redis'
 REDIS_PORT = 6379

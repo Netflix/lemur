@@ -873,6 +873,36 @@ For more information about how to use social logins, see: `Satellizer <https://g
 
             OAUTH2_VERIFY_CERT = True
 
+.. data:: OAUTH_STATE_TOKEN_SECRET
+    :noindex:
+
+        The OAUTH_STATE_TOKEN_SECRET is used to sign state tokens to guard against CSRF attacks. Without a secret configured, Lemur will use
+        a fallback secret: ``b'0auth'``. The secret must be `bytes-like <https://cryptography.io/en/latest/glossary/#term-bytes-like>`;
+        it will be used to instantiate `HMAC <https://cryptography.io/en/latest/hazmat/primitives/mac/hmac/#cryptography.hazmat.primitives.hmac.HMAC>`.
+
+        For implementation details, see ``generate_state_token()`` and ``verify_state_token() in ``lemur/auth/views.py``.
+
+        Running lemur create_config will securely generate a key for your configuration file.
+        If you would like to generate your own, we recommend the following method:
+
+            >>> import os
+            >>> import base64
+            >>> KEY_LENGTH = 32  # tweak as needed
+            >>> base64.b64encode(os.urandom(KEY_LENGTH))
+
+    ::
+
+        OAUTH_STATE_TOKEN_SECRET = b'RVdUVEZFQU4oISFAK18oJGZka2lmZmFsMjI0NTkxMjg='
+
+.. data:: OAUTH_STATE_TOKEN_STALE_TOLERANCE_SECONDS
+    :noindex:
+
+        Defaults to 15 seconds if configuration is not discovered.
+
+        ::
+
+            OAUTH_STATE_TOKEN_STALE_TOLERANCE_SECONDS = 15
+
 .. data:: GOOGLE_CLIENT_ID
     :noindex:
 
