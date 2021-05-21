@@ -1,7 +1,5 @@
 from datetime import datetime, timedelta
 from freezegun import freeze_time
-import time
-from unittest.mock import patch
 
 from lemur.auth.views import *  # noqa
 from lemur.tests.conf import OAUTH_STATE_TOKEN_STALE_TOLERANCE_SECONDS
@@ -26,10 +24,10 @@ def test_verify_state_token(client):
     token = generate_state_token()
     assert verify_state_token(token)
 
-    # get stale faster
     with freeze_time(datetime.now() - timedelta(seconds=OAUTH_STATE_TOKEN_STALE_TOLERANCE_SECONDS), tick=True):
         stale_token = generate_state_token()
     assert not verify_state_token(stale_token)
+
     assert not verify_state_token('123456:f4k8')
     assert not verify_state_token('123456::f4k8')
     assert not verify_state_token('123456f4k8')
