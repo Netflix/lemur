@@ -33,17 +33,17 @@ with open(os.path.join(ROOT, 'lemur', '__about__.py')) as f:
     exec(f.read(), about)  # nosec: about file is benign
 
 # Parse requirements files
-with open('requirements.txt') as f:
-    install_requirements = f.read().splitlines()
-
-with open('requirements-tests.txt') as f:
-    tests_requirements = f.read().splitlines()
-
-with open('requirements-docs.txt') as f:
-    docs_requirements = f.read().splitlines()
-
-with open('requirements-dev.txt') as f:
-    dev_requirements = f.read().splitlines()
+# with open('requirements.txt') as f:
+#     install_requirements = f.read().splitlines()
+#
+# with open('requirements-tests.txt') as f:
+#     tests_requirements = f.read().splitlines()
+#
+# with open('requirements-docs.txt') as f:
+#     docs_requirements = f.read().splitlines()
+#
+# with open('requirements-dev.txt') as f:
+#     dev_requirements = f.read().splitlines()
 
 
 class SmartInstall(install):
@@ -114,12 +114,12 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
-    install_requires=install_requirements,
-    extras_require={
-        'tests': tests_requirements,
-        'docs': docs_requirements,
-        'dev': dev_requirements,
-    },
+    # install_requires=install_requirements,
+    # extras_require={
+    #     'tests': tests_requirements,
+    #     'docs': docs_requirements,
+    #     'dev': dev_requirements,
+    # },
     cmdclass={
         'build_static': BuildStatic,
         'sdist': SdistWithBuildStatic,

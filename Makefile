@@ -11,11 +11,12 @@ ifeq ($(USER), root)
 else
 	npm install
 endif
-	pip install "setuptools>=0.9.8"
+	pip install --require-hashes "setuptools>=0.9.8"
 	# order matters here, base package must install first
 	pip install -e .
-	pip install "file://`pwd`#egg=lemur[dev]"
-	pip install "file://`pwd`#egg=lemur[tests]"
+	pip install --require-hashes -r requirements.txt
+	pip install --require-hashes -r requirements-dev.txt
+	pip install --require-hashes -r requirements-tests.txt
 	node_modules/.bin/gulp build
 	node_modules/.bin/gulp package --urlContextPath=$(urlContextPath)
 	@echo ""
@@ -28,15 +29,16 @@ ifeq ($(USER), root)
 else
 	npm install
 endif
-	pip install "setuptools>=0.9.8"
+	pip install --require-hashes "setuptools>=0.9.8"
 	# order matters here, base package must install first
 	pip install -e .
+	pip install --require-hashes -r requirements.txt
 	node_modules/.bin/gulp build
 	node_modules/.bin/gulp package --urlContextPath=$(urlContextPath)
 	@echo ""
 
 dev-docs:
-	pip install -r requirements-docs.txt
+	pip install --require-hashes -r requirements-docs.txt
 
 reset-db:
 	@echo "--> Dropping existing 'lemur' database"
