@@ -12,8 +12,6 @@ NONSTANDARD_NAMING_TEMPLATE = "{issuer}-{not_before}-{not_after}"
 SUCCESS_METRIC_STATUS = "success"
 FAILURE_METRIC_STATUS = "failure"
 
-# fallback if we don't have an oauth state token secret configured
-OAUTH_STATE_TOKEN_SECRET_FALLBACK = b'0auth'
 
 # when ACME attempts to resolve a certificate try in total 3 times
 ACME_ADDITIONAL_ATTEMPTS = 2

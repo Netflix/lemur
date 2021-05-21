@@ -38,6 +38,7 @@ LEMUR_ENCRYPTION_KEYS = base64.urlsafe_b64encode(get_random_secret(length=32).en
 # this is the secret used to generate oauth state tokens
 OAUTH_STATE_TOKEN_SECRET = base64.b64encode(get_random_secret(32).encode('utf8'))
 
+OAUTH_STATE_TOKEN_STALE_TOLERANCE_SECONDS = 15
 
 # List of domain regular expressions that non-admin users can issue
 LEMUR_ALLOWED_DOMAINS = [

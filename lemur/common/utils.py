@@ -9,6 +9,7 @@
 import base64
 import random
 import re
+import os
 import socket
 import ssl
 import string
@@ -54,6 +55,15 @@ def get_psuedo_random_string():
     challenge += "".join(random.choice(string.digits) for x in range(6))  # noqa
     return challenge
 
+def get_random_secret(length):
+    """ Similar to get_pseudo_random_string, but accepts a length parameter. """
+    secret_key = ''.join(random.choice(string.ascii_uppercase) for x in range(round(length / 4)))
+    secret_key = secret_key + ''.join(random.choice("~!@#$%^&*()_+") for x in range(round(length / 4)))
+    secret_key = secret_key + ''.join(random.choice(string.ascii_lowercase) for x in range(round(length / 4)))
+    return secret_key + ''.join(random.choice(string.digits) for x in range(round(length / 4)))
+
+def get_state_token_secret():
+    return base64.b64encode(get_random_secret(32).encode('utf8'))
 
 def parse_certificate(body):
     """

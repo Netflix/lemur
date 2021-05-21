@@ -21,9 +21,9 @@ from flask import Blueprint, current_app
 from flask_restful import reqparse, Resource, Api
 from flask_principal import Identity, identity_changed
 
-from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS, OAUTH_STATE_TOKEN_SECRET_FALLBACK
+from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
 from lemur.extensions import metrics
-from lemur.common.utils import get_psuedo_random_string
+from lemur.common.utils import get_psuedo_random_string, get_state_token_secret
 
 from lemur.users import service as user_service
 from lemur.roles import service as role_service
@@ -284,7 +284,7 @@ def update_user(user, profile, roles):
 
 
 def build_hmac():
-    key = current_app.config.get('OAUTH_STATE_TOKEN_SECRET', OAUTH_STATE_TOKEN_SECRET_FALLBACK)
+    key = current_app.config.get('OAUTH_STATE_TOKEN_SECRET', get_state_token_secret())
     return hmac.HMAC(key, hashes.SHA256(), backend=default_backend())
 
 
@@ -308,6 +308,11 @@ def verify_state_token(token):
             current_app.logger.warning('OAuth State token is too stale.')
             return False
         digest = base64.b64decode(digest)
+    except ValueError as e:
+        current_app.logger.warning(f'Error while parsing OAuth State token: {e}')
+        return False
+
+    try:
         h = build_hmac()
         h.update(ts)
         h.verify(digest)
