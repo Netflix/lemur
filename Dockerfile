@@ -10,5 +10,5 @@ RUN pip install coveralls bandit
 WORKDIR /app
 COPY . /app/
 RUN pip install -e .
-RUN pip install "file://`pwd`#egg=lemur[dev]"
-RUN pip install "file://`pwd`#egg=lemur[tests]"
+RUN pip install --require-hashes -r requirements-dev.txt
+RUN pip install --require-hashes -r requirements-tests.txt

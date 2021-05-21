@@ -126,6 +126,7 @@ endif
 	grep -v "python-ldap" requirements-docs.txt > tempreqs && mv tempreqs requirements-docs.txt
 	@echo "--> Installing new dependencies"
 	pip install -e .
+	pip install --require-hashes -r requirements.txt
 	@echo "--> Done installing new dependencies"
 	@echo ""
 
