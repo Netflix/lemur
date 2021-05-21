@@ -10,6 +10,7 @@
 import json
 import arrow
 from flask import current_app
+from lemur.common.utils import check_validation
 from lemur.plugins.bases import ExpirationNotificationPlugin
 from lemur.plugins import lemur_slack as slack
 
@@ -89,13 +90,13 @@ class SlackNotificationPlugin(ExpirationNotificationPlugin):
             "name": "webhook",
             "type": "str",
             "required": True,
-            "validation": r"^https:\/\/hooks\.slack\.com\/services\/.+$",
+            "validation": check_validation(r"^https:\/\/hooks\.slack\.com\/services\/.+$"),
             "helpMessage": "The url Slack told you to use for this integration",
         },
         {
             "name": "username",
             "type": "str",
-            "validation": "^.+$",
+            "validation": check_validation("^.+$"),
             "helpMessage": "The great storyteller",
             "default": "Lemur",
         },
@@ -103,7 +104,7 @@ class SlackNotificationPlugin(ExpirationNotificationPlugin):
             "name": "recipients",
             "type": "str",
             "required": True,
-            "validation": "^(@|#).+$",
+            "validation": check_validation("^(@|#).+$"),
             "helpMessage": "Where to send to, either @username or #channel",
         },
     ]

@@ -4,6 +4,7 @@
     :license: Apache, see LICENSE for more details.
 """
 from enum import IntEnum
+import re
 
 SAN_NAMING_TEMPLATE = "SAN-{subject}-{issuer}-{not_before}-{not_after}"
 DEFAULT_NAMING_TEMPLATE = "{subject}-{issuer}-{not_before}-{not_after}"
@@ -38,6 +39,10 @@ CERTIFICATE_KEY_TYPES = [
     "ECCSECT409R1",
     "ECCSECT571R2",
 ]
+
+# For commonly reused regexes used by plugins
+EMAIL_RE = re.compile('^([\w+-.%]+@[-\w.]+\.[A-Za-z]{2,4},?)+$')  # noqa: W605
+EMAIL_RE_HELP = "Comma delimited list of email addresses"
 
 
 # As per RFC 5280 section 5.3.1 (https://tools.ietf.org/html/rfc5280#section-5.3.1)

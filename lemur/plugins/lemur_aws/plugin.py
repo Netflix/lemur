@@ -38,6 +38,7 @@ from acme.errors import ClientError
 from flask import current_app
 from sentry_sdk import capture_exception
 
+from lemur.common.utils import check_validation
 from lemur.extensions import metrics
 from lemur.plugins import lemur_aws as aws, ExpirationNotificationPlugin
 from lemur.plugins.bases import DestinationPlugin, ExportDestinationPlugin, SourcePlugin
@@ -184,7 +185,7 @@ class AWSSourcePlugin(SourcePlugin):
             "name": "accountNumber",
             "type": "str",
             "required": True,
-            "validation": "/^[0-9]{12,12}$/",
+            "validation": check_validation("^[0-9]{12,12}$"),
             "helpMessage": "Must be a valid AWS account number!",
         },
         {
@@ -370,7 +371,7 @@ class AWSDestinationPlugin(DestinationPlugin):
             "name": "accountNumber",
             "type": "str",
             "required": True,
-            "validation": "[0-9]{12}",
+            "validation": check_validation("[0-9]{12}"),
             "helpMessage": "Must be a valid AWS account number!",
         },
         {
@@ -415,14 +416,14 @@ class S3DestinationPlugin(ExportDestinationPlugin):
             "name": "bucket",
             "type": "str",
             "required": True,
-            "validation": "[0-9a-z.-]{3,63}",
+            "validation": check_validation("[0-9a-z.-]{3,63}"),
             "helpMessage": "Must be a valid S3 bucket name!",
         },
         {
             "name": "accountNumber",
             "type": "str",
             "required": True,
-            "validation": "[0-9]{12}",
+            "validation": check_validation("[0-9]{12}"),
             "helpMessage": "A valid AWS account number with permission to access S3",
         },
         {
@@ -551,14 +552,14 @@ class SNSNotificationPlugin(ExpirationNotificationPlugin):
             "name": "accountNumber",
             "type": "str",
             "required": True,
-            "validation": "[0-9]{12}",
+            "validation": check_validation("[0-9]{12}"),
             "helpMessage": "A valid AWS account number with permission to access the SNS topic",
         },
         {
             "name": "region",
             "type": "str",
             "required": True,
-            "validation": "[0-9a-z\\-]{1,25}",
+            "validation": check_validation("[0-9a-z\\-]{1,25}"),
             "helpMessage": "Region in which the SNS topic is located, e.g. \"us-east-1\"",
         },
         {
@@ -566,7 +567,7 @@ class SNSNotificationPlugin(ExpirationNotificationPlugin):
             "type": "str",
             "required": True,
             # base topic name is 1-256 characters (alphanumeric plus underscore and hyphen)
-            "validation": "^[a-zA-Z0-9_\\-]{1,256}$",
+            "validation": check_validation("^[a-zA-Z0-9_\\-]{1,256}$"),
             "helpMessage": "The name of the topic to use for expiration notifications",
         }
     ]
