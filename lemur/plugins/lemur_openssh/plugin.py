@@ -68,9 +68,9 @@ def sign_certificate(common_name, public_key, authority_private_key, user, exten
             cmd.extend(['-I', common_name + ' host key',
                         '-n', ','.join(domains),
                         '-h'])
-        # something like 20201024
-        ssh_not_before = datetime.fromisoformat(not_before).strftime("%Y%m%d")
-        ssh_not_after = datetime.fromisoformat(not_after).strftime("%Y%m%d")
+        # something like 20201024102030
+        ssh_not_before = datetime.fromisoformat(not_before).strftime("%Y%m%d%H%M%S")
+        ssh_not_after = datetime.fromisoformat(not_after).strftime("%Y%m%d%H%M%S")
         cmd.extend(['-V', ssh_not_before + ':' + ssh_not_after])
         with mktempfile() as cert_tmp:
             with open(cert_tmp, 'w') as f:
