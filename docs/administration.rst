@@ -945,7 +945,7 @@ For more information about how to use social logins, see: `Satellizer <https://g
 
     ::
 
-        OAUTH_STATE_TOKEN_SECRET = base64.b64encode(lemur.common.utils.get_random_secret(32).encode('utf8'))
+        OAUTH_STATE_TOKEN_SECRET = lemur.common.utils.get_state_token_secret()
 
 .. data:: OAUTH_STATE_TOKEN_STALE_TOLERANCE_SECONDS
     :noindex:
