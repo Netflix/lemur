@@ -65,7 +65,7 @@ class SourcesList(AuthenticatedResource):
                                 "required": true,
                                 "value": 111111111112,
                                 "helpMessage": "Must be a valid AWS account number!",
-                                "validation": "/^[0-9]{12,12}$/",
+                                "validation": "^[0-9]{12,12}$",
                                 "type": "int"
                             }
                         ],
@@ -115,7 +115,7 @@ class SourcesList(AuthenticatedResource):
                         "required": true,
                         "value": 111111111112,
                         "helpMessage": "Must be a valid AWS account number!",
-                        "validation": "/^[0-9]{12,12}$/",
+                        "validation": "^[0-9]{12,12}$",
                         "type": "int"
                     }
                 ],
@@ -141,7 +141,7 @@ class SourcesList(AuthenticatedResource):
                         "required": true,
                         "value": 111111111112,
                         "helpMessage": "Must be a valid AWS account number!",
-                        "validation": "/^[0-9]{12,12}$/",
+                        "validation": "^[0-9]{12,12}$",
                         "type": "int"
                     }
                 ],
@@ -207,7 +207,7 @@ class Sources(AuthenticatedResource):
                         "required": true,
                         "value": 111111111112,
                         "helpMessage": "Must be a valid AWS account number!",
-                        "validation": "/^[0-9]{12,12}$/",
+                        "validation": "^[0-9]{12,12}$",
                         "type": "int"
                     }
                 ],
@@ -247,7 +247,7 @@ class Sources(AuthenticatedResource):
                         "required": true,
                         "value": 111111111112,
                         "helpMessage": "Must be a valid AWS account number!",
-                        "validation": "/^[0-9]{12,12}$/",
+                        "validation": "^[0-9]{12,12}$",
                         "type": "int"
                     }
                 ],
@@ -273,7 +273,7 @@ class Sources(AuthenticatedResource):
                         "required": true,
                         "value": 111111111112,
                         "helpMessage": "Must be a valid AWS account number!",
-                        "validation": "/^[0-9]{12,12}$/",
+                        "validation": "^[0-9]{12,12}$",
                         "type": "int"
                     }
                 ],
@@ -342,7 +342,7 @@ class CertificateSources(AuthenticatedResource):
                                 "required": true,
                                 "value": 111111111112,
                                 "helpMessage": "Must be a valid AWS account number!",
-                                "validation": "/^[0-9]{12,12}$/",
+                                "validation": "^[0-9]{12,12}$",
                                 "type": "int"
                             }
                         ],

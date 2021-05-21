@@ -11,8 +11,9 @@
 from flask import current_app
 
 from lemur import database
+from lemur.constants import EMAIL_RE, EMAIL_RE_HELP
 from lemur.certificates.models import Certificate
-from lemur.common.utils import truthiness
+from lemur.common.utils import truthiness, check_validation
 from lemur.notifications.models import Notification
 from lemur.logs import service as log_service
 
@@ -35,7 +36,7 @@ def create_default_expiration_notifications(name, recipients, intervals=None):
             "name": "unit",
             "type": "select",
             "required": True,
-            "validation": "",
+            "validation": check_validation(""),
             "available": ["days", "weeks", "months"],
             "helpMessage": "Interval unit",
             "value": "days",
@@ -44,8 +45,8 @@ def create_default_expiration_notifications(name, recipients, intervals=None):
             "name": "recipients",
             "type": "str",
             "required": True,
-            "validation": r"^([\w+-.%]+@[\w-.]+\.[A-Za-z]{2,4},?)+$",
-            "helpMessage": "Comma delimited list of email addresses",
+            "validation": EMAIL_RE.pattern,
+            "helpMessage": EMAIL_RE_HELP,
             "value": ",".join(recipients),
         },
     ]
@@ -64,7 +65,7 @@ def create_default_expiration_notifications(name, recipients, intervals=None):
                     "name": "interval",
                     "type": "int",
                     "required": True,
-                    "validation": r"^\d+$",
+                    "validation": check_validation(r"^\d+$"),
                     "helpMessage": "Number of days to be alert before expiration.",
                     "value": i,
                 }
