@@ -3,7 +3,7 @@ STATIC_DIR = src/lemur/static/app
 SHELL=/bin/bash
 USER := $(shell whoami)
 
-develop: update-submodules setup-git
+develop: setup-git
 	@echo "--> Installing dependencies"
 ifeq ($(USER), root)
 	@echo "WARNING: It looks like you are installing Lemur as root. This is not generally advised."
