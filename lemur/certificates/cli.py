@@ -697,7 +697,7 @@ def check_revoked():
             # this must be tha last page
             there_are_still_certs = False
         else:
-            page =+ 1
+            page = page + 1
 
 
         for cert in certs:
