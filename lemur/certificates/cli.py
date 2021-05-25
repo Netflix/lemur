@@ -699,8 +699,13 @@ def check_revoked():
             # this must be tha last page
             there_are_still_certs = False
         else:
-            page = page + 1
-
+            metrics.send(
+                "certificate_revoked_progress",
+                "counter",
+                1,
+                metric_tags={"page":page}
+            )
+            page += 1
 
         for cert in certs:
             try:
