@@ -170,11 +170,14 @@ def verify(cert_path, issuer_chain_path):
     # OCSP is our main source of truth, in a lot of cases CRLs
     # have been deprecated and are no longer updated
     verify_result = None
+    ocsp_err = 0
+    crl_err = 0
     try:
         verify_result = ocsp_verify(cert, cert_path, issuer_chain_path)
     except Exception as e:
         capture_exception()
         current_app.logger.warning(e)
+        ocsp_err = 1
 
     if verify_result is None:
         try:
@@ -182,11 +185,12 @@ def verify(cert_path, issuer_chain_path):
         except Exception as e:
             capture_exception()
             current_app.logger.warning(e)
+            crl_err = 1
 
     if verify_result is None:
         current_app.logger.debug("Failed to verify {}".format(cert.serial_number))
 
-    return verify_result
+    return verify_result, ocsp_err, crl_err
 
 
 def verify_string(cert_string, issuer_string):
@@ -203,5 +207,5 @@ def verify_string(cert_string, issuer_string):
         with mktempfile() as issuer_tmp:
             with open(issuer_tmp, "w") as f:
                 f.write(issuer_string)
-            status = verify(cert_tmp, issuer_tmp)
-    return status
+            status, ocsp_err, crl_err = verify(cert_tmp, issuer_tmp)
+    return status, ocsp_err, crl_err
