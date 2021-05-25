@@ -6,6 +6,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import re
+import time
 from collections import defaultdict
 from itertools import groupby
 
@@ -24,7 +25,7 @@ from lemur.authorities.models import Authority
 from lemur.certificates.models import Certificate, CertificateAssociation
 from lemur.certificates.schemas import CertificateOutputSchema, CertificateInputSchema
 from lemur.common.utils import generate_private_key, truthiness, parse_serial, get_certificate_via_tls, windowed_query
-from lemur.constants import SUCCESS_METRIC_STATUS
+from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
 from lemur.destinations.models import Destination
 from lemur.domains.models import Domain
 from lemur.endpoints import service as endpoint_service
@@ -1077,25 +1078,38 @@ def find_and_persist_domains_where_cert_is_deployed(certificate, timeout_seconds
 
     :return: A dictionary of the form {'domain1': [ports], 'domain2': [ports]}
     """
+    excluded_domains = current_app.config.get("LEMUR_DEPLOYED_CERTIFICATE_CHECK_EXCLUDED_DOMAINS", [])
     matched_domains = defaultdict(list)
     # filter out wildcards, we can't check them
     for cert_association in [assoc for assoc in certificate.certificate_associations if '*' not in assoc.domain.name]:
-        domain = cert_association.domain
-        matched_ports_for_domain = []
-        for port in current_app.config.get("LEMUR_PORTS_FOR_DEPLOYED_CERTIFICATE_CHECK", [443]):
-            try:
-                parsed_serial = parse_serial(get_certificate_via_tls(domain.name, port,
-                                                                     timeout_seconds_per_network_call))
-                if parsed_serial == int(certificate.serial):
-                    matched_ports_for_domain.append(port)
-            except Exception:
-                current_app.logger.info(f'Unable to check certificate for domain {domain} on port {port}',
-                                        exc_info=True)
-        if len(matched_ports_for_domain) > 0:
-            matched_domains[domain.name] = matched_ports_for_domain
-            # Update the DB
-            cert_association.ports = matched_ports_for_domain
-            database.commit()
+        domain_name = cert_association.domain.name
+        # skip this domain if excluded
+        if not any(excluded in domain_name for excluded in excluded_domains):
+            matched_ports_for_domain = []
+            for port in current_app.config.get("LEMUR_PORTS_FOR_DEPLOYED_CERTIFICATE_CHECK", [443]):
+                start_time = time.time()
+                status = FAILURE_METRIC_STATUS
+                try:
+                    parsed_serial = parse_serial(get_certificate_via_tls(domain_name, port,
+                                                                         timeout_seconds_per_network_call))
+                    if parsed_serial == int(certificate.serial):
+                        matched_ports_for_domain.append(port)
+                    status = SUCCESS_METRIC_STATUS
+                except Exception:
+                    current_app.logger.info(f'Unable to check certificate for domain {domain_name} on port {port}',
+                                            exc_info=True)
+                elapsed = int(round(1000 * (time.time() - start_time)))
+                metrics.send("deployed_certificate_check", "TIMER", elapsed,
+                             metric_tags={"certificate": certificate.name,
+                                          "domain": domain_name,
+                                          "port": port,
+                                          "status": status})
+            if len(matched_ports_for_domain) > 0:
+                matched_domains[domain_name] = matched_ports_for_domain
+                if current_app.config.get("LEMUR_DEPLOYED_CERTIFICATE_CHECK_UPDATE_MODE", False):
+                    # Update the DB
+                    cert_association.ports = matched_ports_for_domain
+                    database.commit()
     return matched_domains
 
 
