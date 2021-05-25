@@ -93,7 +93,7 @@ flask-principal==0.4.0
     # via -r requirements.in
 flask-replicated==1.4
     # via -r requirements.in
-flask-restful==0.3.8
+flask-restful==0.3.9
     # via -r requirements.in
 flask-script==2.0.6
     # via -r requirements.in
