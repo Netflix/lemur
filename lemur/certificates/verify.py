@@ -61,16 +61,14 @@ def ocsp_verify(cert, cert_path, issuer_chain_path):
         message, err = p2.communicate(timeout=15)
     except TimeoutExpired:
         p2.kill()
-        outs, errs = proc.communicate()
+        p2.communicate()
         return False
-
-
 
     p_message = message.decode("utf-8")
 
     if "error" in p_message or "Error" in p_message:
         metrics.send("check_revocation_ocsp_verify", "counter", 1, metric_tags={"status": "error", "url": url})
-        raise Exception(f"Got error when parsing OCSP url:{url}")
+        raise Exception(f"Got error when parsing OCSP url: {url}")
 
     elif "revoked" in p_message:
         current_app.logger.debug(
@@ -80,12 +78,12 @@ def ocsp_verify(cert, cert_path, issuer_chain_path):
 
     elif "unauthorized" in p_message:
         # indicates the OCSP server does no longer no this certificate
-        metrics.send("check_revocation_ocsp_verify", "counter", 1, metric_tags={"status":"unauthorized", "url": url})
+        metrics.send("check_revocation_ocsp_verify", "counter", 1, metric_tags={"status": "unauthorized", "url": url})
         current_app.logger.warning(f"OCSP unauthorized error:{url}")
-        raise Exception(f"OCSP unauthorized error:{url}")
+        raise Exception(f"OCSP unauthorized error: {url}")
 
     elif "good" not in p_message:
-        raise Exception(f"Did not receive a valid OCSP response from url:{url}")
+        raise Exception(f"Did not receive a valid OCSP response from url: {url}")
 
     return True
 

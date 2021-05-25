@@ -688,8 +688,8 @@ def check_revoked():
         "message": "Checking for revoked Certificates"
     }
     there_are_still_certs = True
-    page=1
-    count=1000
+    page = 1
+    count = 1000
     ocsp_err_count = 0
     crl_err_count = 0
     while there_are_still_certs:
@@ -703,7 +703,7 @@ def check_revoked():
                 "certificate_revoked_progress",
                 "counter",
                 1,
-                metric_tags={"page":page}
+                metric_tags={"page": page}
             )
             page += 1
 
