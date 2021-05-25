@@ -167,8 +167,8 @@ def request_reissue(certificate, notify, commit):
                 # The notifications should not be able to cause this to fail, so surround with a try.
                 # Endpoints get moved from old to new cert during rotation, so the new cert won't have endpoints yet;
                 # instead, we have to check the old cert for endpoints.
-                if isinstance(certificate, Certificate) and notify and not certificate.endpoints:
-                    send_reissue_no_endpoints_notification(certificate)
+                if notify and not certificate.endpoints:
+                    send_reissue_no_endpoints_notification(new_cert)
             except Exception:
                 current_app.logger.warn(
                     f"Error sending reissue notification for certificate: {certificate.name}", exc_info=True
