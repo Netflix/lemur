@@ -8,7 +8,7 @@
 import requests
 import subprocess
 from flask import current_app
-from requests.exceptions import ConnectionError, InvalidSchema
+from requests.exceptions import ConnectionError, InvalidSchema, Timeout
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from sentry_sdk import capture_exception
@@ -99,14 +99,14 @@ def crl_verify(cert, cert_path):
         if point not in crl_cache:
             current_app.logger.debug("Retrieving CRL: {}".format(point))
             try:
-                response = requests.get(point)
+                response = requests.get(point, timeout=(3.05, 15))
 
                 if response.status_code != 200:
                     raise Exception("Unable to retrieve CRL: {0}".format(point))
             except InvalidSchema:
                 # Unhandled URI scheme (like ldap://); skip this distribution point.
                 continue
-            except ConnectionError:
+            except ConnectionError or Timeout:
                 raise Exception("Unable to retrieve CRL: {0}".format(point))
 
             crl_cache[point] = x509.load_der_x509_crl(
