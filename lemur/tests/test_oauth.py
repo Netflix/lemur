@@ -19,6 +19,7 @@ def test_build_hmac(client):
     # put back a good key, for remaining tests
     current_app.config["OAUTH_STATE_TOKEN_SECRET"] = OAUTH_STATE_TOKEN_SECRET
 
+
 def test_generate_state_token(client):
     from lemur.auth.views import generate_state_token
 
