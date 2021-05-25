@@ -84,7 +84,10 @@ before_script:
   # the port may have been auto-configured to use 5433 if it thought 5422 was already in use,
   # for some reason it happens very often
   # https://github.com/travis-ci/travis-build/blob/master/lib/travis/build/bash/travis_setup_postgresql.bash#L52
+  # Addressing (psql: error: FATAL:  Peer authentication failed for user "postgres") with trusted auth mode
+  # https://github.com/travis-ci/travis-ci/issues/9624#issuecomment-389537036
   - sudo sed -i -e 's/5433/5432/' /etc/postgresql/*/main/postgresql.conf
+  - sudo sed -i -e '/local.*peer/s/postgres/all/' -e 's/peer\|md5/trust/g' /etc/postgresql/*/main/pg_hba.conf
   - sudo systemctl restart postgresql
   - psql -c "create database lemur;" -U postgres
   - psql -c "create user lemur with password 'lemur;'" -U postgres
