@@ -284,8 +284,18 @@ def update_user(user, profile, roles):
 
 
 def build_hmac():
-    key = current_app.config.get('OAUTH_STATE_TOKEN_SECRET', get_state_token_secret())
-    return hmac.HMAC(key, hashes.SHA256(), backend=default_backend())
+    key = current_app.config.get('OAUTH_STATE_TOKEN_SECRET', None)
+    if not key:
+        current_app.logger.warning("OAuth State Token Secret not discovered in config. Generating one.")
+        key = get_state_token_secret()
+        current_app.config['OAUTH_STATE_TOKEN_SECRET'] = key  # store for remainder of Flask session
+
+    try:
+        h = hmac.HMAC(key, hashes.SHA256(), backend=default_backend())
+    except TypeError:
+        current_app.logger.error("OAuth State Token Secret must be bytes-like.")
+        return None
+    return h
 
 
 def generate_state_token():
