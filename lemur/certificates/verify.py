@@ -174,14 +174,14 @@ def verify(cert_path, issuer_chain_path):
         verify_result = ocsp_verify(cert, cert_path, issuer_chain_path)
     except Exception as e:
         capture_exception()
-        current_app.logger.exception(e)
+        current_app.logger.warning(e)
 
     if verify_result is None:
         try:
             verify_result = crl_verify(cert, cert_path)
         except Exception as e:
             capture_exception()
-            current_app.logger.exception(e)
+            current_app.logger.warning(e)
 
     if verify_result is None:
         current_app.logger.debug("Failed to verify {}".format(cert.serial_number))
