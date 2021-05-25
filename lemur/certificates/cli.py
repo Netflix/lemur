@@ -690,6 +690,8 @@ def check_revoked():
     there_are_still_certs = True
     page=1
     count=1000
+    ocsp_err_count = 0
+    crl_err_count = 0
     while there_are_still_certs:
         certs = get_all_valid_certs(current_app.config.get("SUPPORTED_REVOCATION_AUTHORITY_PLUGINS", []),
                                     paginate=True, page=page, count=count)
@@ -703,9 +705,12 @@ def check_revoked():
         for cert in certs:
             try:
                 if cert.chain:
-                    status = verify_string(cert.body, cert.chain)
+                    status, ocsp_err, crl_err = verify_string(cert.body, cert.chain)
                 else:
-                    status = verify_string(cert.body, "")
+                    status, ocsp_err, crl_err = verify_string(cert.body, "")
+
+                ocsp_err_count += ocsp_err
+                crl_err_count += crl_err
 
                 cert.status = "valid" if status else "revoked"
 
@@ -729,6 +734,22 @@ def check_revoked():
                 cert.status = "unknown"
 
             database.update(cert)
+
+    metrics.send(
+        "certificate_revoked_ocsp_error",
+        "gauge",
+        ocsp_err_count,
+    )
+    metrics.send(
+        "certificate_revoked_crl_error",
+        "gauge",
+        crl_err_count,
+    )
+    metrics.send(
+        "certificate_revoked_checked",
+        "gauge",
+        page * count + len(certs),
+    )
 
 
 @manager.command
