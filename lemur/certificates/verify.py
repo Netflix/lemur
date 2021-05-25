@@ -12,6 +12,7 @@ from requests.exceptions import ConnectionError, InvalidSchema, Timeout
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from sentry_sdk import capture_exception
+from subprocess import TimeoutExpired
 
 from lemur.utils import mktempfile
 from lemur.common.utils import parse_certificate
@@ -56,7 +57,14 @@ def ocsp_verify(cert, cert_path, issuer_chain_path):
         stderr=subprocess.PIPE,
     )
 
-    message, err = p2.communicate()
+    try:
+        message, err = p2.communicate(timeout=15)
+    except TimeoutExpired:
+        p2.kill()
+        outs, errs = proc.communicate()
+        return False
+
+
 
     p_message = message.decode("utf-8")
 
