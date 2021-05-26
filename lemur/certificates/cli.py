@@ -164,8 +164,10 @@ def request_reissue(certificate, notify, commit):
             new_cert = reissue_certificate(certificate, replace=True)
             print("[+] New certificate named: {0}".format(new_cert.name))
             try:
-                # the notifications should not be able to cause this to fail, so surround with a try
-                if isinstance(new_cert, Certificate) and notify and not new_cert.endpoints:
+                # The notifications should not be able to cause this to fail, so surround with a try.
+                # Endpoints get moved from old to new cert during rotation, so the new cert won't have endpoints yet;
+                # instead, we have to check the old cert for endpoints.
+                if notify and not certificate.endpoints:
                     send_reissue_no_endpoints_notification(new_cert)
             except Exception:
                 current_app.logger.warn(
@@ -1007,10 +1009,26 @@ def is_duplicate(matching_cert, compare_to):
             and set(matching_destinations) == set(compare_to_destinations))
 
 
-def identify_expiring_deployed_certificates():
+@manager.option(
+    "-e",
+    "--exclude",
+    dest="exclude",
+    action="append",
+    default=[],
+    help="Domains that should be excluded from check.",
+)
+@manager.option(
+    "-c",
+    "--commit",
+    dest="commit",
+    action="store_true",
+    default=False,
+    help="Persist changes.",
+)
+def identify_expiring_deployed_certificates(exclude, commit):
     status = FAILURE_METRIC_STATUS
     try:
-        identify_and_persist_expiring_deployed_certificates()
+        identify_and_persist_expiring_deployed_certificates(exclude, commit)
         status = SUCCESS_METRIC_STATUS
     except Exception:
         capture_exception()
