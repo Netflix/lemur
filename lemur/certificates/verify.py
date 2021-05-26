@@ -60,12 +60,14 @@ def ocsp_verify(cert, cert_path, issuer_chain_path):
     try:
         message, err = p2.communicate(timeout=15)
     except TimeoutExpired:
-        p2.kill()
-        p2.communicate()
-        return False
+        try:
+            p2.kill()
+        except OSError:
+            # Ignore 'no such process' error
+            pass
+        raise Exception(f"OCSP lookup timed out: {url}")
 
     p_message = message.decode("utf-8")
-
     if "error" in p_message or "Error" in p_message:
         metrics.send("check_revocation_ocsp_verify", "counter", 1, metric_tags={"status": "error", "url": url})
         raise Exception(f"Got error when parsing OCSP url: {url}")
