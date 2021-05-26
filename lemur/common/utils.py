@@ -428,7 +428,9 @@ def get_certificate_via_tls(host, port, timeout=10):
     context = ssl.create_default_context()
     context.check_hostname = False  # we don't care about validating the cert
     context.verify_mode = ssl.CERT_NONE  # we don't care about validating the cert; it may be self-signed
-    conn = socket.create_connection((host, port), timeout=timeout)
+    conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    conn.settimeout(timeout)
+    conn.connect((host, port))
     sock = context.wrap_socket(conn, server_hostname=host)
     sock.settimeout(timeout)
     try:
