@@ -6,6 +6,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import re
+import time
 from collections import defaultdict
 from itertools import groupby
 
@@ -24,7 +25,7 @@ from lemur.authorities.models import Authority
 from lemur.certificates.models import Certificate, CertificateAssociation
 from lemur.certificates.schemas import CertificateOutputSchema, CertificateInputSchema
 from lemur.common.utils import generate_private_key, truthiness, parse_serial, get_certificate_via_tls, windowed_query
-from lemur.constants import SUCCESS_METRIC_STATUS
+from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
 from lemur.destinations.models import Destination
 from lemur.domains.models import Domain
 from lemur.endpoints import service as endpoint_service
@@ -1028,7 +1029,7 @@ def remove_destination_association(certificate, destination):
     )
 
 
-def identify_and_persist_expiring_deployed_certificates(exclude=None, timeout_seconds_per_network_call=1):
+def identify_and_persist_expiring_deployed_certificates(exclude, commit, timeout_seconds_per_network_call=1):
     """
     Finds all certificates expiring soon but are still being used for TLS at any domain with which they are associated.
     Identified ports will then be persisted on the certificate_associations row for the given cert/domain combo.
@@ -1037,7 +1038,8 @@ def identify_and_persist_expiring_deployed_certificates(exclude=None, timeout_se
     """
     all_certs = defaultdict(dict)
     for c in get_certs_for_expiring_deployed_cert_check(exclude):
-        domains_for_cert = find_and_persist_domains_where_cert_is_deployed(c, timeout_seconds_per_network_call)
+        domains_for_cert = find_and_persist_domains_where_cert_is_deployed(c, exclude, commit,
+                                                                           timeout_seconds_per_network_call)
         if len(domains_for_cert) > 0:
             all_certs[c] = domains_for_cert
 
@@ -1064,7 +1066,8 @@ def get_certs_for_expiring_deployed_cert_check(exclude):
     return windowed_query(q, Certificate.id, 10000)
 
 
-def find_and_persist_domains_where_cert_is_deployed(certificate, timeout_seconds_per_network_call):
+def find_and_persist_domains_where_cert_is_deployed(certificate, excluded_domains, commit,
+                                                    timeout_seconds_per_network_call):
     """
     Checks if the specified cert is still deployed. Returns a list of domains to which it's deployed.
 
@@ -1080,22 +1083,33 @@ def find_and_persist_domains_where_cert_is_deployed(certificate, timeout_seconds
     matched_domains = defaultdict(list)
     # filter out wildcards, we can't check them
     for cert_association in [assoc for assoc in certificate.certificate_associations if '*' not in assoc.domain.name]:
-        domain = cert_association.domain
-        matched_ports_for_domain = []
-        for port in current_app.config.get("LEMUR_PORTS_FOR_DEPLOYED_CERTIFICATE_CHECK", [443]):
-            try:
-                parsed_serial = parse_serial(get_certificate_via_tls(domain.name, port,
-                                                                     timeout_seconds_per_network_call))
-                if parsed_serial == int(certificate.serial):
-                    matched_ports_for_domain.append(port)
-            except Exception:
-                current_app.logger.info(f'Unable to check certificate for domain {domain} on port {port}',
-                                        exc_info=True)
-        if len(matched_ports_for_domain) > 0:
-            matched_domains[domain.name] = matched_ports_for_domain
-            # Update the DB
-            cert_association.ports = matched_ports_for_domain
-            database.commit()
+        domain_name = cert_association.domain.name
+        # skip this domain if excluded
+        if not any(excluded in domain_name for excluded in excluded_domains):
+            matched_ports_for_domain = []
+            for port in current_app.config.get("LEMUR_PORTS_FOR_DEPLOYED_CERTIFICATE_CHECK", [443]):
+                start_time = time.time()
+                status = FAILURE_METRIC_STATUS
+                try:
+                    parsed_serial = parse_serial(get_certificate_via_tls(domain_name, port,
+                                                                         timeout_seconds_per_network_call))
+                    if parsed_serial == int(certificate.serial):
+                        matched_ports_for_domain.append(port)
+                    status = SUCCESS_METRIC_STATUS
+                except Exception:
+                    current_app.logger.info(f'Unable to check certificate for domain {domain_name} on port {port}',
+                                            exc_info=True)
+                elapsed = int(round(1000 * (time.time() - start_time)))
+                metrics.send("deployed_certificate_check", "TIMER", elapsed,
+                             metric_tags={"certificate": certificate.name,
+                                          "domain": domain_name,
+                                          "port": port,
+                                          "status": status})
+            matched_domains[domain_name] = matched_ports_for_domain
+            if commit:
+                # Update the DB
+                cert_association.ports = matched_ports_for_domain
+                database.commit()
     return matched_domains
 
 

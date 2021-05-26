@@ -972,10 +972,26 @@ def is_duplicate(matching_cert, compare_to):
             and set(matching_destinations) == set(compare_to_destinations))
 
 
-def identify_expiring_deployed_certificates():
+@manager.option(
+    "-e",
+    "--exclude",
+    dest="exclude",
+    action="append",
+    default=[],
+    help="Domains that should be excluded from check.",
+)
+@manager.option(
+    "-c",
+    "--commit",
+    dest="commit",
+    action="store_true",
+    default=False,
+    help="Persist changes.",
+)
+def identify_expiring_deployed_certificates(exclude, commit):
     status = FAILURE_METRIC_STATUS
     try:
-        identify_and_persist_expiring_deployed_certificates()
+        identify_and_persist_expiring_deployed_certificates(exclude, commit)
         status = SUCCESS_METRIC_STATUS
     except Exception:
         capture_exception()

@@ -584,6 +584,24 @@ The following configuration options are supported:
 
           LEMUR_PORTS_FOR_DEPLOYED_CERTIFICATE_CHECK = [443]
 
+.. data:: LEMUR_DEPLOYED_CERTIFICATE_CHECK_COMMIT_MODE
+    :noindex:
+
+       Specifies whether or not to commit changes when running the deployed certificate check. If False, the DB will not be updated; network calls will still be made and logs/metrics will be emitted.
+
+       ::
+
+          LEMUR_DEPLOYED_CERTIFICATE_CHECK_COMMIT_MODE = True
+
+.. data:: LEMUR_DEPLOYED_CERTIFICATE_CHECK_EXCLUDED_DOMAINS
+    :noindex:
+
+       Specifies a set of domains to exclude from the deployed certificate checks. Anything specified here is treated as a substring; in other words, if you set this to ['excluded.com'], then 'abc.excluded.com' and 'unexcluded.com' will both be excluded; 'ex-cluded.com' will not be excluded.
+
+       ::
+
+          LEMUR_DEPLOYED_CERTIFICATE_CHECK_EXCLUDED_DOMAINS = ['excluded.com']
+
 
 Celery Options
 ---------------
