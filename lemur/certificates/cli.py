@@ -755,7 +755,7 @@ def check_revoked():
     metrics.send(
         "certificate_revoked_checked",
         "gauge",
-        page * count + len(certs),
+        (page - 1) * count + len(certs),
     )
 
 
