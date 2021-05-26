@@ -113,26 +113,35 @@ def get_all_certs():
     return Certificate.query.all()
 
 
-def get_all_valid_certs(authority_plugin_name):
+def get_all_valid_certs(authority_plugin_name, paginate=False, page=1, count=1000):
     """
     Retrieves all valid (not expired & not revoked) certificates within Lemur, for the given authority plugin names
     ignored if no authority_plugin_name provided.
 
     Note that depending on the DB size retrieving all certificates might an expensive operation
+    :param paginate: option to use pagination, for large number of certicicates. default to false
+    :param page: the page to turn. default to 1
+    :param count: number of return certificates per page. default 1000
 
-    :return:
+    :return: list of certificates to check for revocation
     """
+    assert (page > 0)
+    query = database.session_query(Certificate) if paginate else Certificate.query
+
     if authority_plugin_name:
-        return (
-            Certificate.query.outerjoin(Authority, Authority.id == Certificate.authority_id).filter(
-                Certificate.not_after > arrow.now().format("YYYY-MM-DD")).filter(
-                Authority.plugin_name.in_(authority_plugin_name)).filter(Certificate.revoked.is_(False)).all()
-        )
+        query = query.outerjoin(Authority, Authority.id == Certificate.authority_id).filter(
+            Certificate.not_after > arrow.now().format("YYYY-MM-DD")).filter(
+            Authority.plugin_name.in_(authority_plugin_name)).filter(Certificate.revoked.is_(False))
+
     else:
-        return (
-            Certificate.query.filter(Certificate.not_after > arrow.now().format("YYYY-MM-DD")).filter(
-                Certificate.revoked.is_(False)).all()
-        )
+        query = query.filter(Certificate.not_after > arrow.now().format("YYYY-MM-DD")).filter(
+            Certificate.revoked.is_(False))
+
+    if paginate:
+        items = database.paginate(query, page, count)
+        return items['items']
+
+    return query.all()
 
 
 def get_all_pending_cleaning_expired(source):
