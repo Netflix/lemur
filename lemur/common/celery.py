@@ -1068,7 +1068,7 @@ def identity_expiring_deployed_certificates():
     current_app.logger.debug(log_data)
     try:
         exclude = current_app.config.get("LEMUR_DEPLOYED_CERTIFICATE_CHECK_EXCLUDED_DOMAINS", [])
-        commit = current_app.config.get("LEMUR_DEPLOYED_CERTIFICATE_CHECK_UPDATE_MODE", False)
+        commit = current_app.config.get("LEMUR_DEPLOYED_CERTIFICATE_CHECK_COMMIT_MODE", False)
         cli_certificate.identify_expiring_deployed_certificates(exclude, commit)
     except SoftTimeLimitExceeded:
         log_data["message"] = "Time limit exceeded."

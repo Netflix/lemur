@@ -584,14 +584,14 @@ The following configuration options are supported:
 
           LEMUR_PORTS_FOR_DEPLOYED_CERTIFICATE_CHECK = [443]
 
-.. data:: LEMUR_DEPLOYED_CERTIFICATE_CHECK_UPDATE_MODE
+.. data:: LEMUR_DEPLOYED_CERTIFICATE_CHECK_COMMIT_MODE
     :noindex:
 
-       Specifies whether or not to use update mode when running the deployed certificate check. If False, the DB will not be updated; network calls will still be made and logs/metrics will be emitted.
+       Specifies whether or not to commit changes when running the deployed certificate check. If False, the DB will not be updated; network calls will still be made and logs/metrics will be emitted.
 
        ::
 
-          LEMUR_DEPLOYED_CERTIFICATE_CHECK_UPDATE_MODE = True
+          LEMUR_DEPLOYED_CERTIFICATE_CHECK_COMMIT_MODE = True
 
 .. data:: LEMUR_DEPLOYED_CERTIFICATE_CHECK_EXCLUDED_DOMAINS
     :noindex:
