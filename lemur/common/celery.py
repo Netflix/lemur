@@ -751,7 +751,7 @@ def get_all_zones():
     return log_data
 
 
-@celery.task(soft_time_limit=3600)
+@celery.task(soft_time_limit=7200)
 def check_revoked():
     """
     This celery task attempts to check if any certs are expired
