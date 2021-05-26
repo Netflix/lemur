@@ -1029,7 +1029,7 @@ def remove_destination_association(certificate, destination):
     )
 
 
-def identify_and_persist_expiring_deployed_certificates(exclude=None, timeout_seconds_per_network_call=1):
+def identify_and_persist_expiring_deployed_certificates(exclude=None, commit=False, timeout_seconds_per_network_call=1):
     """
     Finds all certificates expiring soon but are still being used for TLS at any domain with which they are associated.
     Identified ports will then be persisted on the certificate_associations row for the given cert/domain combo.
@@ -1038,7 +1038,8 @@ def identify_and_persist_expiring_deployed_certificates(exclude=None, timeout_se
     """
     all_certs = defaultdict(dict)
     for c in get_certs_for_expiring_deployed_cert_check(exclude):
-        domains_for_cert = find_and_persist_domains_where_cert_is_deployed(c, timeout_seconds_per_network_call)
+        domains_for_cert = find_and_persist_domains_where_cert_is_deployed(c, exclude, commit,
+                                                                           timeout_seconds_per_network_call)
         if len(domains_for_cert) > 0:
             all_certs[c] = domains_for_cert
 
@@ -1065,7 +1066,8 @@ def get_certs_for_expiring_deployed_cert_check(exclude):
     return windowed_query(q, Certificate.id, 10000)
 
 
-def find_and_persist_domains_where_cert_is_deployed(certificate, timeout_seconds_per_network_call):
+def find_and_persist_domains_where_cert_is_deployed(certificate, excluded_domains, commit,
+                                                    timeout_seconds_per_network_call):
     """
     Checks if the specified cert is still deployed. Returns a list of domains to which it's deployed.
 
@@ -1078,7 +1080,6 @@ def find_and_persist_domains_where_cert_is_deployed(certificate, timeout_seconds
 
     :return: A dictionary of the form {'domain1': [ports], 'domain2': [ports]}
     """
-    excluded_domains = current_app.config.get("LEMUR_DEPLOYED_CERTIFICATE_CHECK_EXCLUDED_DOMAINS", [])
     matched_domains = defaultdict(list)
     # filter out wildcards, we can't check them
     for cert_association in [assoc for assoc in certificate.certificate_associations if '*' not in assoc.domain.name]:
@@ -1104,12 +1105,11 @@ def find_and_persist_domains_where_cert_is_deployed(certificate, timeout_seconds
                                           "domain": domain_name,
                                           "port": port,
                                           "status": status})
-            if len(matched_ports_for_domain) > 0:
-                matched_domains[domain_name] = matched_ports_for_domain
-                if current_app.config.get("LEMUR_DEPLOYED_CERTIFICATE_CHECK_UPDATE_MODE", False):
-                    # Update the DB
-                    cert_association.ports = matched_ports_for_domain
-                    database.commit()
+            matched_domains[domain_name] = matched_ports_for_domain
+            if commit:
+                # Update the DB
+                cert_association.ports = matched_ports_for_domain
+                database.commit()
     return matched_domains
 
 
