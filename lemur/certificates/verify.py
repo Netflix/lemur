@@ -79,7 +79,7 @@ def ocsp_verify(cert, cert_path, issuer_chain_path):
         return False
 
     elif "unauthorized" in p_message:
-        # indicates the OCSP server does no longer no this certificate
+        # indicates the OCSP server does not know this certificate
         metrics.send("check_revocation_ocsp_verify", "counter", 1, metric_tags={"status": "unauthorized", "url": url})
         current_app.logger.warning(f"OCSP unauthorized error:{url}")
         raise Exception(f"OCSP unauthorized error: {url}")
