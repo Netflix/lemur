@@ -58,7 +58,7 @@ def ocsp_verify(cert, cert_path, issuer_chain_path):
     )
 
     try:
-        message, err = p2.communicate(timeout=15)
+        message, err = p2.communicate(timeout=6)
     except TimeoutExpired:
         try:
             p2.kill()
@@ -115,7 +115,7 @@ def crl_verify(cert, cert_path):
         if point not in crl_cache:
             current_app.logger.debug("Retrieving CRL: {}".format(point))
             try:
-                response = requests.get(point, timeout=(3.05, 15))
+                response = requests.get(point, timeout=(3.05, 6))
 
                 if response.status_code != 200:
                     raise Exception("Unable to retrieve CRL: {0}".format(point))
