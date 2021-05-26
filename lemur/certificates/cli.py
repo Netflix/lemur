@@ -689,37 +689,74 @@ def check_revoked():
         "function": f"{__name__}.{sys._getframe().f_code.co_name}",
         "message": "Checking for revoked Certificates"
     }
+    there_are_still_certs = True
+    page = 1
+    count = 1000
+    ocsp_err_count = 0
+    crl_err_count = 0
+    while there_are_still_certs:
+        certs = get_all_valid_certs(current_app.config.get("SUPPORTED_REVOCATION_AUTHORITY_PLUGINS", []),
+                                    paginate=True, page=page, count=count)
+        if len(certs) < count:
+            # this must be tha last page
+            there_are_still_certs = False
+        else:
+            metrics.send(
+                "certificate_revoked_progress",
+                "counter",
+                1,
+                metric_tags={"page": page}
+            )
+            page += 1
 
-    certs = get_all_valid_certs(current_app.config.get("SUPPORTED_REVOCATION_AUTHORITY_PLUGINS", []))
-    for cert in certs:
-        try:
-            if cert.chain:
-                status = verify_string(cert.body, cert.chain)
-            else:
-                status = verify_string(cert.body, "")
+        for cert in certs:
+            try:
+                if cert.chain:
+                    status, ocsp_err, crl_err = verify_string(cert.body, cert.chain)
+                else:
+                    status, ocsp_err, crl_err = verify_string(cert.body, "")
 
-            cert.status = "valid" if status else "revoked"
+                ocsp_err_count += ocsp_err
+                crl_err_count += crl_err
 
-            if cert.status == "revoked":
-                log_data["valid"] = cert.status
-                log_data["certificate_name"] = cert.name
-                log_data["certificate_id"] = cert.id
-                metrics.send(
-                    "certificate_revoked",
-                    "counter",
-                    1,
-                    metric_tags={"status": log_data["valid"],
+                cert.status = "valid" if status else "revoked"
+
+                if cert.status == "revoked":
+                    log_data["valid"] = cert.status
+                    log_data["certificate_name"] = cert.name
+                    log_data["certificate_id"] = cert.id
+                    metrics.send(
+                        "certificate_revoked",
+                        "counter",
+                        1,
+                        metric_tags={"status": log_data["valid"],
                                  "certificate_name": log_data["certificate_name"],
                                  "certificate_id": log_data["certificate_id"]},
-                )
-                current_app.logger.info(log_data)
+                    )
+                    current_app.logger.info(log_data)
 
-        except Exception as e:
-            capture_exception()
-            current_app.logger.exception(e)
-            cert.status = "unknown"
+            except Exception as e:
+                capture_exception()
+                current_app.logger.exception(e)
+                cert.status = "unknown"
 
-        database.update(cert)
+            database.update(cert)
+
+    metrics.send(
+        "certificate_revoked_ocsp_error",
+        "gauge",
+        ocsp_err_count,
+    )
+    metrics.send(
+        "certificate_revoked_crl_error",
+        "gauge",
+        crl_err_count,
+    )
+    metrics.send(
+        "certificate_revoked_checked",
+        "gauge",
+        (page - 1) * count + len(certs),
+    )
 
 
 @manager.command
