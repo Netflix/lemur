@@ -28,6 +28,8 @@ from sqlalchemy import and_, func
 
 from lemur.constants import CERTIFICATE_KEY_TYPES
 from lemur.exceptions import InvalidConfiguration
+from lemur.utils import Vault
+from sqlalchemy.dialects.postgresql import TEXT
 
 paginated_parser = RequestParser()
 
@@ -457,6 +459,33 @@ def parse_serial(pem_certificate):
     return parsed_certificate.get_serial_number()
 
 
+def string_encrypt(data):
+    """
+    takes a string input and returns a base64 encoded encryption
+    reusing the Vault DB encryption module
+    :param data: string
+    :return: base64 ciphertext
+    """
+    if not isinstance(data, str):
+        data = str(data)
+    print(data)
+    ciphertext = base64encode(Vault().process_result_value(data, TEXT()))
+    print(ciphertext)
+    return ciphertext
+
+
+def string_decrypt(ciphertext):
+    """
+    takes a base64 encoded ciphertext and returns the respective string
+    reusing the Vault DB encryption module
+    :param ciphertext: base64 ciphertext
+    :return: plaintext string
+    """
+    print(ciphertext)
+    print(base64decode(ciphertext))
+    return Vault().process_result_value(base64decode(ciphertext), TEXT())
+
+
 def is_json(json_input):
     """
     Test if input is json
@@ -464,7 +493,7 @@ def is_json(json_input):
     :return: True or False
     """
     try:
-        json_object = json.loads(json_input)
-    except ValueError as e:
+        json.loads(json_input)
+    except ValueError:
         return False
     return True
