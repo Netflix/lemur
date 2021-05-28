@@ -455,3 +455,16 @@ def parse_serial(pem_certificate):
     x509_cert.get_notAfter()
     parsed_certificate = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, pem_certificate)
     return parsed_certificate.get_serial_number()
+
+
+def is_json(json_input):
+    """
+    Test if input is json
+    :param json_input:
+    :return: True or False
+    """
+    try:
+        json_object = json.loads(json_input)
+    except ValueError as e:
+        return False
+    return True
