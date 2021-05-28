@@ -128,3 +128,14 @@ def test_convert_pkcs7_bytes_to_pem():
 
     assert(parse_certificate("\n".join(str(root).splitlines())) == ROOTCA_CERT)
     assert (parse_certificate("\n".join(str(leaf).splitlines())) == INTERMEDIATE_CERT)
+
+
+def test_is_json():
+    from lemur.common.utils import is_json
+    assert is_json("{}") is True
+    assert is_json("{some text}") is False
+    assert is_json("{'value':100 }") is False
+    assert is_json('{ "value":100}') is True
+    assert is_json("{\"value\":100 }") is True
+    assert is_json('{"range":[5,6.8],"name":"something"}') is True
+
