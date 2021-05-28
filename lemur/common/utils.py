@@ -45,6 +45,12 @@ def base64encode(string):
     return base64.b64encode(string.encode()).decode()
 
 
+def base64decode(base64_input):
+    # Performs Base64 decoging of a b64 string to string using the base64.b64encode() function
+    # which encodes bytes to bytes.
+    return base64.b64decode(base64_input.encode()).decode()
+
+
 def get_psuedo_random_string():
     """
     Create a random and strongish challenge.
