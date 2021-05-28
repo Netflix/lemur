@@ -265,7 +265,11 @@ class ACMEIssuerPlugin(IssuerPlugin):
         :param options:
         :return:
         """
-        role = {"username": "", "password": "", "name": "acme"}
+        name = "acme"
+        if options.get("authority"):
+            name += "_" + '_'.join(options['name'].split(" "))
+        role = {"username": "", "password": "", "name": name}
+
         plugin_options = options.get("plugin", {}).get("plugin_options")
         if not plugin_options:
             error = "Invalid options for lemur_acme plugin: {}".format(options)
@@ -370,7 +374,12 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
         :param options:
         :return:
         """
-        role = {"username": "", "password": "", "name": "acme"}
+        name = "acme"
+        print(options)
+        if options['name']:
+            name += "_" + '_'.join(options['name'].split(" "))
+        role = {"username": "", "password": "", "name": name}
+
         plugin_options = options.get("plugin", {}).get("plugin_options")
         if not plugin_options:
             error = "Invalid options for lemur_acme plugin: {}".format(options)
