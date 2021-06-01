@@ -388,7 +388,7 @@ def send_reissue_no_endpoints_notification(old_cert, new_cert):
         if not old_cert.endpoints:
             excluded_destinations = current_app.config.get("LEMUR_REISSUE_NOTIFICATION_EXCLUDED_DESTINATIONS", [])
             has_excluded_destination = excluded_destinations and old_cert.destinations and \
-                                       [d for d in old_cert.destinations if d.label in excluded_destinations]
+                [d for d in old_cert.destinations if d.label in excluded_destinations]
             if not has_excluded_destination:
                 data = certificate_notification_output_schema.dump(new_cert).data
                 data["security_email"] = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
