@@ -182,7 +182,7 @@ def test_send_reissue_no_endpoints_notification(certificate):
     new_certificate = CertificateFactory()
     new_certificate.replaces.append(certificate)
     verify_sender_email()
-    assert send_reissue_no_endpoints_notification(new_certificate)
+    assert send_reissue_no_endpoints_notification(certificate, new_certificate)
 
 
 @mock_ses
