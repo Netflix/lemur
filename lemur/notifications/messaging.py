@@ -380,18 +380,36 @@ def send_rotation_notification(certificate):
     return send_default_notification("rotation", data, [data["owner"]])
 
 
-def send_reissue_no_endpoints_notification(new_cert):
-    data = certificate_notification_output_schema.dump(new_cert).data
-    data["security_email"] = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
-    email_recipients = [data["owner"]] + data["security_email"]
-    return send_default_notification("reissued_with_no_endpoints", data, email_recipients)
+def send_reissue_no_endpoints_notification(old_cert, new_cert):
+    # The notifications should not be able to cause a reissue failure, so surround with a try.
+    try:
+        # Endpoints get moved from old to new cert during rotation, so the new cert won't have endpoints yet;
+        # instead, we have to check the old cert for endpoints.
+        if not old_cert.endpoints:
+            excluded_destinations = current_app.config.get("LEMUR_REISSUE_NOTIFICATION_EXCLUDED_DESTINATIONS", [])
+            has_excluded_destination = excluded_destinations and old_cert.destinations and \
+                                       [d for d in old_cert.destinations if d.label in excluded_destinations]
+            if not has_excluded_destination:
+                data = certificate_notification_output_schema.dump(new_cert).data
+                data["security_email"] = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
+                email_recipients = [data["owner"]] + data["security_email"]
+                return send_default_notification("reissued_with_no_endpoints", data, email_recipients)
+    except Exception:
+        current_app.logger.warn(
+            f"Error sending reissue notification for certificate: {old_cert.name}", exc_info=True
+        )
 
 
 def send_reissue_failed_notification(certificate):
-    data = certificate_notification_output_schema.dump(certificate).data
-    data["security_email"] = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
-    email_recipients = [data["owner"]] + data["security_email"]
-    return send_default_notification("reissue_failed", data, email_recipients)
+    try:
+        data = certificate_notification_output_schema.dump(certificate).data
+        data["security_email"] = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
+        email_recipients = [data["owner"]] + data["security_email"]
+        return send_default_notification("reissue_failed", data, email_recipients)
+    except Exception:
+        current_app.logger.warn(
+            f"Error sending reissue failed notification for certificate: {certificate.name}", exc_info=True
+        )
 
 
 def send_pending_failure_notification(
