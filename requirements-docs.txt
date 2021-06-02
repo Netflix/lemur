@@ -566,7 +566,7 @@ toml==0.10.2
     #   pytest
 twofish==0.3.0
     # via pyjks
-urllib3==1.26.4
+urllib3==1.26.5
     # via
     #   -r requirements-tests.txt
     #   botocore

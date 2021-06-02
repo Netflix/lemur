@@ -248,7 +248,7 @@ toml==0.10.2
     # via
     #   black
     #   pytest
-urllib3==1.26.4
+urllib3==1.26.5
     # via
     #   botocore
     #   requests
