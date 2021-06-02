@@ -164,6 +164,9 @@ class AcmeHandler(object):
         )
         existing_regr = options.get("acme_regr", current_app.config.get("ACME_REGR"))
 
+        eab_kid = options.get("eab_kid", None)
+        eab_hmac_key = options.get("eab_kid", None)
+
         if existing_key and existing_regr:
             current_app.logger.debug("Reusing existing ACME account")
             # Reuse the same account for each certificate issuance
@@ -192,9 +195,22 @@ class AcmeHandler(object):
 
             net = ClientNetwork(key, account=None, timeout=3600)
             client = BackwardsCompatibleClientV2(net, key, directory_url)
-            registration = client.new_account_and_tos(
-                messages.NewRegistration.from_data(email=email)
-            )
+            if eab_kid and eab_hmac_key:
+                # external account binding (eab_kid and eab_hmac_key could be potentially single use to establish
+                # long-term credentials)
+                external_account_binding = \
+                    messages.ExternalAccountBinding.from_data(account_public_key=key,
+                                                              kid=eab_kid,
+                                                              hmac_key=eab_hmac_key,
+                                                              directory={"newAccount": directory_url})
+                registration = client.new_account_and_tos(
+                    messages.NewRegistration.from_data(email=email,
+                                                       external_account_binding=external_account_binding)
+                )
+            else:
+                registration = client.new_account_and_tos(
+                    messages.NewRegistration.from_data(email=email)
+                )
 
             # if store_account is checked, add the private_key and registration resources to the options
             if options['store_account']:
