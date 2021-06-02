@@ -36,6 +36,8 @@ from lemur.plugins.lemur_acme import cloudflare, dyn, route53, ultradns, powerdn
 from lemur.authorities import service as authorities_service
 from retrying import retry
 
+from lemur.common.utils import data_encrypt, data_decrypt, is_json
+
 
 class AuthorizationRecord(object):
     def __init__(self, domain, target_domain, authz, dns_challenge, change_id, cname_delegation):
@@ -165,6 +167,12 @@ class AcmeHandler(object):
         if existing_key and existing_regr:
             current_app.logger.debug("Reusing existing ACME account")
             # Reuse the same account for each certificate issuance
+
+            # existing_key might be encrypted
+            if not is_json(existing_key):
+                # decrypt the private key, if not already in plaintext (json format)
+                existing_key = data_decrypt(existing_key)
+
             key = jose.JWK.json_loads(existing_key)
             regr = messages.RegistrationResource.json_loads(existing_regr)
             current_app.logger.debug(
@@ -196,7 +204,7 @@ class AcmeHandler(object):
                 key_dict["kty"] = "RSA"
                 acme_private_key = {
                     "name": "acme_private_key",
-                    "value": json.dumps(key_dict)
+                    "value": data_encrypt(json.dumps(key_dict))
                 }
                 new_options.append(acme_private_key)
 
