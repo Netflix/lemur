@@ -47,7 +47,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
             "name": "acme_url",
             "type": "str",
             "required": True,
-            "validation": check_validation(r"^http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+$"),
+            "validation": check_validation(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"),
             "helpMessage": "ACME resource URI. Must be a valid web url starting with http[s]://",
         },
         {
@@ -312,7 +312,7 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
             "name": "acme_url",
             "type": "str",
             "required": True,
-            "validation": check_validation(r"/^http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+$/"),
+            "validation": check_validation(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"),
             "helpMessage": "Must be a valid web url starting with http[s]://",
         },
         {
@@ -333,7 +333,7 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
             "type": "textarea",
             "default": "",
             "validation": check_validation("^-----BEGIN CERTIFICATE-----"),
-            "helpMessage": "Certificate to use",
+            "helpMessage": "ACME root Certificate",
         },
         {
             "name": "store_account",
@@ -341,6 +341,18 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
             "required": False,
             "helpMessage": "Disable to create a new account for each ACME request",
             "default": False,
+        },
+        {
+            "name": "eab_kid",
+            "type": "str",
+            "required": False,
+            "helpMessage": "Key identifier for the external account.",
+        },
+        {
+            "name": "eab_hmac_key",
+            "type": "str",
+            "required": False,
+            "helpMessage": "HMAC key for the external account.",
         },
         {
             "name": "tokenDestination",
