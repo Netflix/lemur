@@ -459,31 +459,27 @@ def parse_serial(pem_certificate):
     return parsed_certificate.get_serial_number()
 
 
-def string_encrypt(data):
+def data_encrypt(data):
     """
-    takes a string input and returns a base64 encoded encryption
+    takes an input and returns a base64 encoded encryption
     reusing the Vault DB encryption module
     :param data: string
     :return: base64 ciphertext
     """
     if not isinstance(data, str):
         data = str(data)
-    print(data)
-    ciphertext = base64encode(Vault().process_result_value(data, TEXT()))
-    print(ciphertext)
-    return ciphertext
+    ciphertext = Vault().process_bind_param(data, TEXT())
+    return ciphertext.decode("utf8")
 
 
-def string_decrypt(ciphertext):
+def data_decrypt(ciphertext):
     """
-    takes a base64 encoded ciphertext and returns the respective string
+    takes a ciphertext and returns the respective string
     reusing the Vault DB encryption module
     :param ciphertext: base64 ciphertext
     :return: plaintext string
     """
-    print(ciphertext)
-    print(base64decode(ciphertext))
-    return Vault().process_result_value(base64decode(ciphertext), TEXT())
+    return Vault().process_result_value(ciphertext.encode("utf8"), TEXT())
 
 
 def is_json(json_input):

@@ -130,13 +130,16 @@ def test_convert_pkcs7_bytes_to_pem():
     assert (parse_certificate("\n".join(str(leaf).splitlines())) == INTERMEDIATE_CERT)
 
 
-def test_encryption():
-    from lemur.common.utils import string_encrypt, string_decrypt
+def test_encryption(client):
+    from lemur.common.utils import data_encrypt, data_decrypt
     plaintext = "encrypt this string"
-    assert (string_decrypt(string_encrypt(plaintext)) == plaintext)
+    assert (data_decrypt(data_encrypt(plaintext)) == plaintext)
 
     plaintext = 123
-    assert (string_decrypt(string_encrypt(plaintext)) == int(plaintext))
+    assert (data_decrypt(data_encrypt(plaintext)) == str(plaintext))
+
+    plaintext = {"this": "is a test"}
+    assert (data_decrypt(data_encrypt(plaintext)) == str(plaintext))
 
 
 def test_is_json():
