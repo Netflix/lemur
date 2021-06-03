@@ -202,13 +202,31 @@ def test_send_rotation_notification(notification_plugin, certificate):
 
 
 @mock_ses
-def test_send_reissue_no_endpoints_notification(notification_plugin, certificate):
+def test_send_reissue_no_endpoints_notification(notification_plugin, endpoint, certificate):
     from lemur.notifications.messaging import send_reissue_no_endpoints_notification
     verify_sender_email()
 
     new_cert = CertificateFactory()
     new_cert.replaces.append(certificate)
-    assert send_reissue_no_endpoints_notification(new_cert)
+    assert send_reissue_no_endpoints_notification(certificate, new_cert)
+    certificate.endpoints.append(endpoint)
+    assert not send_reissue_no_endpoints_notification(certificate, new_cert)
+
+
+@mock_ses
+def test_send_reissue_no_endpoints_notification_excluded_destination(destination_plugin, notification_plugin,
+                                                                     certificate, destination):
+    from lemur.notifications.messaging import send_reissue_no_endpoints_notification
+    verify_sender_email()
+
+    new_cert = CertificateFactory()
+    new_cert.replaces.append(certificate)
+    destination.label = 'not-excluded-destination'
+    certificate.destinations.append(destination)
+    assert send_reissue_no_endpoints_notification(certificate, new_cert)
+    # specified in tests/conf.py
+    destination.label = 'excluded-destination'
+    assert not send_reissue_no_endpoints_notification(certificate, new_cert)
 
 
 @mock_ses

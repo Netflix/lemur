@@ -603,6 +603,16 @@ The following configuration options are supported:
           LEMUR_DEPLOYED_CERTIFICATE_CHECK_EXCLUDED_DOMAINS = ['excluded.com']
 
 
+.. data:: LEMUR_REISSUE_NOTIFICATION_EXCLUDED_DESTINATIONS
+    :noindex:
+
+       Specifies a set of destination labels to exclude from the reissued with endpoint notification checks. If a certificate is reissued without endpoints, but any of its destination labels are specified in this list, no "reissued without endpoints" notification will be sent.
+
+       ::
+
+          LEMUR_REISSUE_NOTIFICATION_EXCLUDED_DESTINATIONS = ['excluded-destination']
+
+
 Celery Options
 ---------------
 To make use of automated tasks within lemur (e.g. syncing source/destinations, or reissuing ACME certificates), you

@@ -93,7 +93,7 @@ tqdm==4.60.0
     # via twine
 twine==3.4.1
     # via -r requirements-dev.in
-urllib3==1.26.4
+urllib3==1.26.5
     # via requests
 virtualenv==20.4.6
     # via pre-commit
