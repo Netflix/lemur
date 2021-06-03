@@ -198,14 +198,12 @@ class AcmeHandler(object):
             if eab_kid and eab_hmac_key:
                 # external account binding (eab_kid and eab_hmac_key could be potentially single use to establish
                 # long-term credentials)
-                external_account_binding = \
-                    messages.ExternalAccountBinding.from_data(account_public_key=key,
-                                                              kid=eab_kid,
-                                                              hmac_key=eab_hmac_key,
-                                                              directory={"newAccount": directory_url})
+                eab = messages.ExternalAccountBinding.from_data(account_public_key=key.public_key(),
+                                                                kid=eab_kid,
+                                                                hmac_key=eab_hmac_key,
+                                                                directory={'newAccount': directory_url})
                 registration = client.new_account_and_tos(
-                    messages.NewRegistration.from_data(email=email,
-                                                       external_account_binding=external_account_binding)
+                    messages.NewRegistration.from_data(email=email, external_account_binding=eab)
                 )
             else:
                 registration = client.new_account_and_tos(
