@@ -165,7 +165,7 @@ class AcmeHandler(object):
         existing_regr = options.get("acme_regr", current_app.config.get("ACME_REGR"))
 
         eab_kid = options.get("eab_kid", None)
-        eab_hmac_key = options.get("eab_kid", None)
+        eab_hmac_key = options.get("eab_hmac_key", None)
 
         if existing_key and existing_regr:
             current_app.logger.debug("Reusing existing ACME account")
