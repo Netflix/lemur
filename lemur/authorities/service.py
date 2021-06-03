@@ -12,7 +12,7 @@
 import json
 
 from lemur import database
-from lemur.common.utils import truthiness
+from lemur.common.utils import truthiness, data_encrypt
 from lemur.extensions import metrics
 from lemur.authorities.models import Authority
 from lemur.certificates.models import Certificate
@@ -143,6 +143,10 @@ def create(**kwargs):
     cert = upload(**kwargs)
     kwargs["authority_certificate"] = cert
     if kwargs.get("plugin", {}).get("plugin_options", []):
+        # encrypt the private key before persisting in DB
+        for option in kwargs.get("plugin").get("plugin_options"):
+            if option["name"] == "acme_private_key" and option["value"]:
+                option["value"] = data_encrypt(option["value"])
         kwargs["options"] = json.dumps(kwargs["plugin"]["plugin_options"])
 
     authority = Authority(**kwargs)
