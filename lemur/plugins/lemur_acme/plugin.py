@@ -88,6 +88,20 @@ class ACMEIssuerPlugin(IssuerPlugin):
             "type": "str",
             "required": False,
             "helpMessage": "HMAC key for the external account.",
+        },
+        {
+            "name": "acme_private_key",
+            "type": "textarea",
+            "default": "",
+            "required": False,
+            "helpMessage": "Account Private Key. Will be encrypted.",
+        },
+        {
+            "name": "acme_regr",
+            "type": "textarea",
+            "default": "",
+            "required": False,
+            "helpMessage": "Account Registration",
         }
     ]
 
@@ -345,21 +359,37 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
         {
             "name": "eab_kid",
             "type": "str",
+            "default": "",
             "required": False,
             "helpMessage": "Key identifier for the external account.",
         },
         {
             "name": "eab_hmac_key",
             "type": "str",
+            "default": "",
             "required": False,
             "helpMessage": "HMAC key for the external account.",
+        },
+        {
+            "name": "acme_private_key",
+            "type": "textarea",
+            "default": "",
+            "required": False,
+            "helpMessage": "Account Private Key. Will be encrypted.",
+        },
+        {
+            "name": "acme_regr",
+            "type": "textarea",
+            "default": "",
+            "required": False,
+            "helpMessage": "Account Registration",
         },
         {
             "name": "tokenDestination",
             "type": "destinationSelect",
             "required": True,
             "helpMessage": "The destination to use to deploy the token.",
-        },
+        }
     ]
 
     def __init__(self, *args, **kwargs):
