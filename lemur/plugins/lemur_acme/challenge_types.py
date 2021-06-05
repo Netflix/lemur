@@ -15,6 +15,7 @@ from acme.messages import errors, STATUS_VALID, ERROR_CODES
 from flask import current_app
 
 from lemur.authorizations import service as authorization_service
+from lemur.constants import ACME_ADDITIONAL_ATTEMPTS
 from lemur.exceptions import LemurException, InvalidConfiguration
 from lemur.plugins.base import plugins
 from lemur.destinations import service as destination_service
@@ -238,7 +239,7 @@ class AcmeDnsChallenge(AcmeChallenge):
         # TODO add external ID (if possible)
         return pem_certificate, pem_certificate_chain, None
 
-    @retry(stop_max_attempt_number=5, wait_fixed=5000)
+    @retry(stop_max_attempt_number=ACME_ADDITIONAL_ATTEMPTS, wait_fixed=5000)
     def create_immediately(self, acme_client, order_info, csr):
         order = acme_client.new_order(csr)
 
