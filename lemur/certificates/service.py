@@ -1099,11 +1099,13 @@ def find_and_persist_domains_where_cert_is_deployed(certificate, excluded_domain
             for port in current_app.config.get("LEMUR_PORTS_FOR_DEPLOYED_CERTIFICATE_CHECK", [443]):
                 start_time = time.time()
                 status = FAILURE_METRIC_STATUS
+                match = False
                 try:
                     parsed_serial = parse_serial(get_certificate_via_tls(domain_name, port,
                                                                          timeout_seconds_per_network_call))
                     if parsed_serial == int(certificate.serial):
                         matched_ports_for_domain.append(port)
+                        match = True
                     status = SUCCESS_METRIC_STATUS
                 except Exception:
                     current_app.logger.info(f'Unable to check certificate for domain {domain_name} on port {port}',
@@ -1113,7 +1115,8 @@ def find_and_persist_domains_where_cert_is_deployed(certificate, excluded_domain
                              metric_tags={"certificate": certificate.name,
                                           "domain": domain_name,
                                           "port": port,
-                                          "status": status})
+                                          "status": status,
+                                          "match": match})
             matched_domains[domain_name] = matched_ports_for_domain
             if commit:
                 # Update the DB
