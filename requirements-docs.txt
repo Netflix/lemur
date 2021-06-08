@@ -168,7 +168,7 @@ faker==8.6.0
     # via
     #   -r requirements-tests.txt
     #   factory-boy
-fakeredis==1.5.0
+fakeredis==1.5.2
     # via -r requirements-tests.txt
 flask-bcrypt==0.7.1
     # via -r requirements-docs.in
