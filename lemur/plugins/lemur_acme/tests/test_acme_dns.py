@@ -7,7 +7,7 @@ from flask import Flask
 from lemur.plugins.lemur_acme import plugin
 from lemur.plugins.lemur_acme.acme_handlers import AuthorizationRecord
 from lemur.common.utils import generate_private_key
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 
 class TestAcmeDns(unittest.TestCase):

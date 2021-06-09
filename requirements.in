@@ -16,12 +16,12 @@ dnspython3
 dyn
 Flask-Bcrypt
 Flask-Mail
-Flask-Migrate
+Flask-Migrate <= 2.7.0 #mirgration to Flask CLI required, https://github.com/miguelgrinberg/Flask-Migrate/issues/407
 Flask-Principal
 Flask-RESTful
 Flask-Script
 Flask-SQLAlchemy
-Flask
+Flask <= 1.1.2 # similar to Flask-Migrate
 Flask-Cors
 flask_replicated
 future
