@@ -12,6 +12,7 @@ from lemur import database
 from lemur.models import certificate_destination_associations
 from lemur.destinations.models import Destination
 from lemur.certificates.models import Certificate
+from lemur.certificates import service as certificate_service
 from lemur.logs import service as log_service
 from lemur.sources.service import add_aws_destination_to_sources
 
@@ -78,6 +79,14 @@ def delete(destination_id):
     """
     destination = get(destination_id)
     if destination:
+        # remove association of this source from all valid certificates
+        certificates = certificate_service.get_all_valid_certificates_with_destination(destination_id)
+        for certificate in certificates:
+            certificate_service.remove_destination_association(certificate, destination)
+            current_app.logger.warning(
+                f"Removed destination {destination.label} for {certificate.name} during destination delete")
+
+        # proceed with destination delete
         log_service.audit_log("delete_destination", destination.label, "Deleting destination")
         database.delete(destination)
 

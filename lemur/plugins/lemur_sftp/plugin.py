@@ -24,7 +24,7 @@ from paramiko.ssh_exception import AuthenticationException, NoValidConnectionsEr
 from flask import current_app
 from lemur.plugins import lemur_sftp
 from lemur.common.defaults import common_name
-from lemur.common.utils import parse_certificate
+from lemur.common.utils import parse_certificate, check_validation
 from lemur.plugins.bases import DestinationPlugin
 
 
@@ -49,7 +49,7 @@ class SFTPDestinationPlugin(DestinationPlugin):
             "type": "int",
             "required": True,
             "helpMessage": "The SFTP port, default is 22.",
-            "validation": r"^(6553[0-5]|655[0-2][0-9]\d|65[0-4](\d){2}|6[0-4](\d){3}|[1-5](\d){4}|[1-9](\d){0,3})",
+            "validation": check_validation(r"^(6553[0-5]|655[0-2][0-9]\d|65[0-4](\d){2}|6[0-4](\d){3}|[1-5](\d){4}|[1-9](\d){0,3})"),
             "default": "22",
         },
         {

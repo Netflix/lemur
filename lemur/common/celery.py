@@ -619,7 +619,8 @@ def certificate_reissue():
 
     current_app.logger.debug(log_data)
     try:
-        cli_certificate.reissue(None, True)
+        notify = current_app.config.get("ENABLE_REISSUE_NOTIFICATION", None)
+        cli_certificate.reissue(None, notify, True)
     except SoftTimeLimitExceeded:
         log_data["message"] = "Certificate reissue: Time limit exceeded."
         current_app.logger.error(log_data)
@@ -750,7 +751,7 @@ def get_all_zones():
     return log_data
 
 
-@celery.task(soft_time_limit=3600)
+@celery.task(soft_time_limit=7200)
 def check_revoked():
     """
     This celery task attempts to check if any certs are expired
@@ -1002,3 +1003,79 @@ def disable_rotation_of_duplicate_certificates():
         return
 
     metrics.send(f"{function}.success", "counter", 1)
+
+
+@celery.task(soft_time_limit=3600)
+def notify_expiring_deployed_certificates():
+    """
+    This celery task attempts to find any certificates that are expiring soon but are still deployed,
+    and notifies the security team.
+    """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    task_id = None
+    if celery.current_task:
+        task_id = celery.current_task.request.id
+
+    log_data = {
+        "function": function,
+        "message": "notify expiring deployed certificates",
+        "task_id": task_id,
+    }
+
+    if task_id and is_task_active(function, task_id, None):
+        log_data["message"] = "Skipping task: Task is already active"
+        current_app.logger.debug(log_data)
+        return
+
+    current_app.logger.debug(log_data)
+    try:
+        cli_notification.notify_expiring_deployed_certificates(
+            current_app.config.get("EXCLUDE_CN_FROM_NOTIFICATION", [])
+        )
+    except SoftTimeLimitExceeded:
+        log_data["message"] = "Time limit exceeded."
+        current_app.logger.error(log_data)
+        capture_exception()
+        metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
+        return
+
+    metrics.send(f"{function}.success", "counter", 1)
+    return log_data
+
+
+@celery.task(soft_time_limit=3600)
+def identity_expiring_deployed_certificates():
+    """
+    This celery task attempts to find any certificates that are expiring soon but are still deployed,
+    and stores information on which port(s) the certificate is currently being used for TLS.
+    """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    task_id = None
+    if celery.current_task:
+        task_id = celery.current_task.request.id
+
+    log_data = {
+        "function": function,
+        "message": "identify expiring deployed certificates",
+        "task_id": task_id,
+    }
+
+    if task_id and is_task_active(function, task_id, None):
+        log_data["message"] = "Skipping task: Task is already active"
+        current_app.logger.debug(log_data)
+        return
+
+    current_app.logger.debug(log_data)
+    try:
+        exclude = current_app.config.get("LEMUR_DEPLOYED_CERTIFICATE_CHECK_EXCLUDED_DOMAINS", [])
+        commit = current_app.config.get("LEMUR_DEPLOYED_CERTIFICATE_CHECK_COMMIT_MODE", False)
+        cli_certificate.identify_expiring_deployed_certificates(exclude, commit)
+    except SoftTimeLimitExceeded:
+        log_data["message"] = "Time limit exceeded."
+        current_app.logger.error(log_data)
+        capture_exception()
+        metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
+        return
+
+    metrics.send(f"{function}.success", "counter", 1)
+    return log_data

@@ -12,6 +12,7 @@ def test_get_certificates(app):
 @mock_sts()
 @mock_s3()
 def test_upload_acme_token(app):
+    from lemur.common.utils import check_validation
     from lemur.plugins.base import plugins
     from lemur.plugins.lemur_aws.s3 import get
 
@@ -28,7 +29,7 @@ def test_upload_acme_token(app):
             "value": bucket,
             "type": "str",
             "required": True,
-            "validation": r"[0-9a-z.-]{3,63}",
+            "validation": check_validation(r"[0-9a-z.-]{3,63}"),
             "helpMessage": "Must be a valid S3 bucket name!",
         },
         {
@@ -36,7 +37,7 @@ def test_upload_acme_token(app):
             "type": "str",
             "value": account,
             "required": True,
-            "validation": r"[0-9]{12}",
+            "validation": check_validation(r"[0-9]{12}"),
             "helpMessage": "A valid AWS account number with permission to access S3",
         },
         {

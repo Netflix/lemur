@@ -6,12 +6,15 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+import base64
 import random
 import re
+import socket
+import ssl
 import string
-import pem
-import base64
 
+import OpenSSL
+import pem
 import sqlalchemy
 from cryptography import x509
 from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
@@ -50,6 +53,18 @@ def get_psuedo_random_string():
     challenge += "".join(random.choice(string.ascii_lowercase) for x in range(6))
     challenge += "".join(random.choice(string.digits) for x in range(6))  # noqa
     return challenge
+
+
+def get_random_secret(length):
+    """ Similar to get_pseudo_random_string, but accepts a length parameter. """
+    secret_key = ''.join(random.choice(string.ascii_uppercase) for x in range(round(length / 4)))
+    secret_key = secret_key + ''.join(random.choice("~!@#$%^&*()_+") for x in range(round(length / 4)))
+    secret_key = secret_key + ''.join(random.choice(string.ascii_lowercase) for x in range(round(length / 4)))
+    return secret_key + ''.join(random.choice(string.digits) for x in range(round(length / 4)))
+
+
+def get_state_token_secret():
+    return base64.b64encode(get_random_secret(32).encode('utf8'))
 
 
 def parse_certificate(body):
@@ -300,6 +315,22 @@ def validate_conf(app, required_vars):
             )
 
 
+def check_validation(validation):
+    """
+    Checks that the given validation string compiles successfully.
+
+    :param validation:
+    :return str: The validation pattern, if compilation succeeds
+    """
+
+    try:
+        compiled = re.compile(validation)
+    except re.error as e:
+        raise InvalidConfiguration(f"Validation {validation} couldn't compile. Reason: {e}")
+
+    return compiled.pattern
+
+
 # https://bitbucket.org/zzzeek/sqlalchemy/wiki/UsageRecipes/WindowedRangeQuery
 def column_windows(session, column, windowsize):
     """Return a series of WHERE clauses against
@@ -381,3 +412,39 @@ def convert_pkcs7_bytes_to_pem(certs_pkcs7):
         certificates_pem.append(pem.parse(cert.public_bytes(encoding=Encoding.PEM))[0])
 
     return certificates_pem
+
+
+def get_certificate_via_tls(host, port, timeout=10):
+    """
+    Makes a TLS network connection to retrieve the current certificate for the specified host and port.
+
+    Note that if the host is valid but the port is not, we'll wait for the timeout for the connection to fail,
+    so this should remain low when doing bulk operations.
+
+    :param host: Host to get certificate for
+    :param port: Port to get certificate for
+    :param timeout: Timeout in seconds
+    """
+    context = ssl.create_default_context()
+    context.check_hostname = False  # we don't care about validating the cert
+    context.verify_mode = ssl.CERT_NONE  # we don't care about validating the cert; it may be self-signed
+    conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    conn.settimeout(timeout)
+    conn.connect((host, port))
+    sock = context.wrap_socket(conn, server_hostname=host)
+    sock.settimeout(timeout)
+    try:
+        der_cert = sock.getpeercert(True)
+    finally:
+        sock.close()
+    return ssl.DER_cert_to_PEM_cert(der_cert)
+
+
+def parse_serial(pem_certificate):
+    """
+    Parses a serial number from a PEM-encoded certificate.
+    """
+    x509_cert = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, pem_certificate)
+    x509_cert.get_notAfter()
+    parsed_certificate = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, pem_certificate)
+    return parsed_certificate.get_serial_number()

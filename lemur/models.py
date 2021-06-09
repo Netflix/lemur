@@ -12,18 +12,6 @@ from sqlalchemy import Column, Integer, ForeignKey, Index, UniqueConstraint
 
 from lemur.database import db
 
-certificate_associations = db.Table(
-    "certificate_associations",
-    Column("domain_id", Integer, ForeignKey("domains.id")),
-    Column("certificate_id", Integer, ForeignKey("certificates.id")),
-)
-
-Index(
-    "certificate_associations_ix",
-    certificate_associations.c.domain_id,
-    certificate_associations.c.certificate_id,
-)
-
 certificate_destination_associations = db.Table(
     "certificate_destination_associations",
     Column(

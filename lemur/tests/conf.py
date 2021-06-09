@@ -35,6 +35,11 @@ LEMUR_TOKEN_SECRET = "test"
 LEMUR_ENCRYPTION_KEYS = base64.urlsafe_b64encode(get_random_secret(length=32).encode('utf8'))
 
 
+# this is the secret used to generate oauth state tokens
+OAUTH_STATE_TOKEN_SECRET = base64.b64encode(get_random_secret(32).encode('utf8'))
+
+OAUTH_STATE_TOKEN_STALE_TOLERANCE_SECONDS = 15
+
 # List of domain regular expressions that non-admin users can issue
 LEMUR_ALLOWED_DOMAINS = [
     r"^[a-zA-Z0-9-]+\.example\.com$",
@@ -63,6 +68,12 @@ LEMUR_DEFAULT_ORGANIZATION = "Example, Inc."
 LEMUR_DEFAULT_ORGANIZATIONAL_UNIT = "Example"
 
 LEMUR_ALLOW_WEEKEND_EXPIRATION = False
+
+# needed for test_certificates
+LEMUR_PORTS_FOR_DEPLOYED_CERTIFICATE_CHECK = [443, 65521, 65522, 65523, 65524]
+
+# needed for test_messaging
+LEMUR_REISSUE_NOTIFICATION_EXCLUDED_DESTINATIONS = ['excluded-destination']
 
 # Database
 

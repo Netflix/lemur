@@ -30,7 +30,8 @@ from lemur.certificates.service import (
     get_all_certs_attached_to_endpoint_without_autorotate,
     revoke as revoke_certificate,
     list_duplicate_certs_by_authority,
-    get_certificates_with_same_prefix_with_rotate_on
+    get_certificates_with_same_prefix_with_rotate_on,
+    identify_and_persist_expiring_deployed_certificates
 )
 from lemur.certificates.verify import verify_string
 from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS, CRLReason
@@ -38,7 +39,8 @@ from lemur.deployment import service as deployment_service
 from lemur.domains.models import Domain
 from lemur.endpoints import service as endpoint_service
 from lemur.extensions import metrics
-from lemur.notifications.messaging import send_rotation_notification
+from lemur.notifications.messaging import send_rotation_notification, send_reissue_no_endpoints_notification, \
+    send_reissue_failed_notification
 from lemur.plugins.base import plugins
 
 manager = Manager(usage="Handles all certificate related tasks.")
@@ -139,14 +141,16 @@ def request_rotation(endpoint, certificate, message, commit):
                                                                  "endpoint": str(endpoint.dnsname)})
 
 
-def request_reissue(certificate, commit):
+def request_reissue(certificate, notify, commit):
     """
     Reissuing certificate and handles any exceptions.
     :param certificate:
+    :param notify:
     :param commit:
     :return:
     """
     status = FAILURE_METRIC_STATUS
+    notify = notify and certificate.notify
     try:
         print("[+] {0} is eligible for re-issuance".format(certificate.name))
 
@@ -159,6 +163,8 @@ def request_reissue(certificate, commit):
         if commit:
             new_cert = reissue_certificate(certificate, replace=True)
             print("[+] New certificate named: {0}".format(new_cert.name))
+            if notify:
+                send_reissue_no_endpoints_notification(certificate, new_cert)
 
         status = SUCCESS_METRIC_STATUS
 
@@ -168,6 +174,8 @@ def request_reissue(certificate, commit):
             f"Error reissuing certificate: {certificate.name}", exc_info=True
         )
         print(f"[!] Failed to reissue certificate: {certificate.name}. Reason: {e}")
+        if notify:
+            send_reissue_failed_notification(certificate)
 
     metrics.send(
         "certificate_reissue",
@@ -474,6 +482,13 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
     help="Name of the certificate you wish to reissue.",
 )
 @manager.option(
+    "-a",
+    "--notify",
+    dest="message",
+    action="store_true",
+    help="Send a re-issue failed notification to the certificates owner (if re-isuance fails).",
+)
+@manager.option(
     "-c",
     "--commit",
     dest="commit",
@@ -481,7 +496,7 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
     default=False,
     help="Persist changes.",
 )
-def reissue(old_certificate_name, commit):
+def reissue(old_certificate_name, notify, commit):
     """
     Reissues certificate with the same parameters as it was originally issued with.
     If not time period is provided, reissues certificate as valid from today to
@@ -499,9 +514,9 @@ def reissue(old_certificate_name, commit):
 
         if not old_cert:
             for certificate in get_all_pending_reissue():
-                request_reissue(certificate, commit)
+                request_reissue(certificate, notify, commit)
         else:
-            request_reissue(old_cert, commit)
+            request_reissue(old_cert, notify, commit)
 
         status = SUCCESS_METRIC_STATUS
         print("[+] Done!")
@@ -661,37 +676,74 @@ def check_revoked():
         "function": f"{__name__}.{sys._getframe().f_code.co_name}",
         "message": "Checking for revoked Certificates"
     }
+    there_are_still_certs = True
+    page = 1
+    count = 1000
+    ocsp_err_count = 0
+    crl_err_count = 0
+    while there_are_still_certs:
+        certs = get_all_valid_certs(current_app.config.get("SUPPORTED_REVOCATION_AUTHORITY_PLUGINS", []),
+                                    paginate=True, page=page, count=count)
+        if len(certs) < count:
+            # this must be tha last page
+            there_are_still_certs = False
+        else:
+            metrics.send(
+                "certificate_revoked_progress",
+                "counter",
+                1,
+                metric_tags={"page": page}
+            )
+            page += 1
 
-    certs = get_all_valid_certs(current_app.config.get("SUPPORTED_REVOCATION_AUTHORITY_PLUGINS", []))
-    for cert in certs:
-        try:
-            if cert.chain:
-                status = verify_string(cert.body, cert.chain)
-            else:
-                status = verify_string(cert.body, "")
+        for cert in certs:
+            try:
+                if cert.chain:
+                    status, ocsp_err, crl_err = verify_string(cert.body, cert.chain)
+                else:
+                    status, ocsp_err, crl_err = verify_string(cert.body, "")
 
-            cert.status = "valid" if status else "revoked"
+                ocsp_err_count += ocsp_err
+                crl_err_count += crl_err
 
-            if cert.status == "revoked":
-                log_data["valid"] = cert.status
-                log_data["certificate_name"] = cert.name
-                log_data["certificate_id"] = cert.id
-                metrics.send(
-                    "certificate_revoked",
-                    "counter",
-                    1,
-                    metric_tags={"status": log_data["valid"],
+                cert.status = "valid" if status else "revoked"
+
+                if cert.status == "revoked":
+                    log_data["valid"] = cert.status
+                    log_data["certificate_name"] = cert.name
+                    log_data["certificate_id"] = cert.id
+                    metrics.send(
+                        "certificate_revoked",
+                        "counter",
+                        1,
+                        metric_tags={"status": log_data["valid"],
                                  "certificate_name": log_data["certificate_name"],
                                  "certificate_id": log_data["certificate_id"]},
-                )
-                current_app.logger.info(log_data)
+                    )
+                    current_app.logger.info(log_data)
 
-        except Exception as e:
-            capture_exception()
-            current_app.logger.exception(e)
-            cert.status = "unknown"
+            except Exception as e:
+                capture_exception()
+                current_app.logger.exception(e)
+                cert.status = "unknown"
 
-        database.update(cert)
+            database.update(cert)
+
+    metrics.send(
+        "certificate_revoked_ocsp_error",
+        "gauge",
+        ocsp_err_count,
+    )
+    metrics.send(
+        "certificate_revoked_crl_error",
+        "gauge",
+        crl_err_count,
+    )
+    metrics.send(
+        "certificate_revoked_checked",
+        "gauge",
+        (page - 1) * count + len(certs),
+    )
 
 
 @manager.command
@@ -798,6 +850,8 @@ def disable_rotation_of_duplicate_certificates(commit):
         return
 
     log_data["authorities"] = authority_names
+    days_since_issuance = current_app.config.get("DAYS_SINCE_ISSUANCE_DISABLE_ROTATE_OF_DUPLICATE_CERTIFICATES", None)
+    log_data["days_since_issuance"] = f"{days_since_issuance} (Ignored if none)"
 
     authority_ids = []
     invalid_authorities = []
@@ -815,7 +869,7 @@ def disable_rotation_of_duplicate_certificates(commit):
         current_app.logger.error(log_data)
         return
 
-    duplicate_candidate_certs = list_duplicate_certs_by_authority(authority_ids)
+    duplicate_candidate_certs = list_duplicate_certs_by_authority(authority_ids, days_since_issuance)
 
     log_data["certs_with_serial_number_count"] = len(duplicate_candidate_certs)
     current_app.logger.info(log_data)
@@ -929,6 +983,7 @@ def is_duplicate(matching_cert, compare_to):
     if (
         matching_cert.owner != compare_to.owner
         or matching_cert.san != compare_to.san
+        or matching_cert.key_type != compare_to.key_type
         or matching_cert.not_before.date() != compare_to.not_before.date()
         or matching_cert.not_after.date() != compare_to.not_after.date()
     ):
@@ -939,3 +994,31 @@ def is_duplicate(matching_cert, compare_to):
 
     return (len(matching_destinations) == len(compare_to_destinations)
             and set(matching_destinations) == set(compare_to_destinations))
+
+
+@manager.option(
+    "-e",
+    "--exclude",
+    dest="exclude",
+    action="append",
+    default=[],
+    help="Domains that should be excluded from check.",
+)
+@manager.option(
+    "-c",
+    "--commit",
+    dest="commit",
+    action="store_true",
+    default=False,
+    help="Persist changes.",
+)
+def identify_expiring_deployed_certificates(exclude, commit):
+    status = FAILURE_METRIC_STATUS
+    try:
+        identify_and_persist_expiring_deployed_certificates(exclude, commit)
+        status = SUCCESS_METRIC_STATUS
+    except Exception:
+        capture_exception()
+        current_app.logger.exception("Error identifying expiring deployed certificates", exc_info=True)
+
+    metrics.send("identify_expiring_deployed_certificates", "counter", 1, metric_tags={"status": status})

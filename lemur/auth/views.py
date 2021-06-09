@@ -10,6 +10,11 @@ import json
 import jwt
 import base64
 import requests
+import time
+
+from cryptography.exceptions import InvalidSignature
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes, hmac
 
 from flask import Blueprint, current_app
 
@@ -18,7 +23,7 @@ from flask_principal import Identity, identity_changed
 
 from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
 from lemur.extensions import metrics
-from lemur.common.utils import get_psuedo_random_string
+from lemur.common.utils import get_psuedo_random_string, get_state_token_secret
 
 from lemur.users import service as user_service
 from lemur.roles import service as role_service
@@ -275,6 +280,60 @@ def update_user(user, profile, roles):
             roles,
         )
 
+    return user
+
+
+def build_hmac():
+    key = current_app.config.get('OAUTH_STATE_TOKEN_SECRET', None)
+    if not key:
+        current_app.logger.warning("OAuth State Token Secret not discovered in config. Generating one.")
+        key = get_state_token_secret()
+        current_app.config['OAUTH_STATE_TOKEN_SECRET'] = key  # store for remainder of Flask session
+
+    try:
+        h = hmac.HMAC(key, hashes.SHA256(), backend=default_backend())
+    except TypeError:
+        current_app.logger.error("OAuth State Token Secret must be bytes-like.")
+        return None
+    return h
+
+
+def generate_state_token():
+    t = int(time.time())
+    ts = hex(t)[2:].encode('ascii')
+    h = build_hmac()
+    h.update(ts)
+    digest = base64.b64encode(h.finalize())
+    state = ts + b':' + digest
+    return state.decode('utf-8')
+
+
+def verify_state_token(token):
+    stale_seconds = current_app.config.get('OAUTH_STATE_TOKEN_STALE_TOLERANCE_SECONDS', 15)
+    try:
+        state = token.encode('utf-8')
+        ts, digest = state.split(b':')
+        timestamp = int(ts, 16)
+        if float(time.time() - timestamp) > stale_seconds:
+            current_app.logger.warning('OAuth State token is too stale.')
+            return False
+        digest = base64.b64decode(digest)
+    except ValueError as e:
+        current_app.logger.warning(f'Error while parsing OAuth State token: {e}')
+        return False
+
+    try:
+        h = build_hmac()
+        h.update(ts)
+        h.verify(digest)
+        return True
+    except InvalidSignature:
+        current_app.logger.warning('OAuth State token is invalid.')
+        return False
+    except Exception as e:
+        current_app.logger.warning(f'Error while parsing OAuth State token: {e}')
+        return False
+
 
 class Login(Resource):
     """
@@ -440,7 +499,7 @@ class Ping(Resource):
             access_token
         )
         roles = create_user_roles(profile)
-        update_user(user, profile, roles)
+        user = update_user(user, profile, roles)
 
         if not user or not user.active:
             metrics.send(
@@ -473,8 +532,11 @@ class OAuth2(Resource):
             "redirectUri", type=str, required=True, location="json"
         )
         self.reqparse.add_argument("code", type=str, required=True, location="json")
+        self.reqparse.add_argument("state", type=str, required=True, location="json")
 
         args = self.reqparse.parse_args()
+        if not verify_state_token(args["state"]):
+            return dict(message="The supplied credentials are invalid"), 403
 
         # you can either discover these dynamically or simply configure them
         access_token_url = current_app.config.get("OAUTH2_ACCESS_TOKEN_URL")
@@ -499,7 +561,7 @@ class OAuth2(Resource):
 
         user, profile = retrieve_user(user_api_url, access_token)
         roles = create_user_roles(profile)
-        update_user(user, profile, roles)
+        user = update_user(user, profile, roles)
 
         if not user.active:
             metrics.send(
@@ -621,7 +683,7 @@ class Providers(Resource):
                             "OAUTH2_AUTH_ENDPOINT"
                         ),
                         "requiredUrlParams": ["scope", "state", "nonce"],
-                        "state": "STATE",
+                        "state": generate_state_token(),
                         "nonce": get_psuedo_random_string(),
                         "type": "2.0",
                     }

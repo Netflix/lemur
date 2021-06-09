@@ -12,7 +12,7 @@ from cryptography.hazmat.primitives import serialization
 from jks import PrivateKeyEntry, KeyStore, TrustedCertEntry
 
 from lemur.common.defaults import common_name
-from lemur.common.utils import parse_certificate, parse_cert_chain, parse_private_key
+from lemur.common.utils import parse_certificate, parse_cert_chain, parse_private_key, check_validation
 from lemur.plugins import lemur_jks as jks
 from lemur.plugins.bases import ExportPlugin
 
@@ -71,7 +71,7 @@ class JavaTruststoreExportPlugin(ExportPlugin):
             "type": "str",
             "required": False,
             "helpMessage": "If no passphrase is given one will be generated for you, we highly recommend this.",
-            "validation": "",
+            "validation": check_validation(""),
         },
     ]
 
@@ -110,7 +110,7 @@ class JavaKeystoreExportPlugin(ExportPlugin):
             "type": "str",
             "required": False,
             "helpMessage": "If no passphrase is given one will be generated for you, we highly recommend this.",
-            "validation": "",
+            "validation": check_validation(""),
         },
         {
             "name": "alias",
