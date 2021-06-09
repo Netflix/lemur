@@ -1,6 +1,6 @@
 import pytest
 from lemur.auth.ldap import *  # noqa
-from mock import patch, MagicMock
+from unittest.mock import patch, MagicMock
 
 
 class LdapPrincipalTester(LdapPrincipal):
