@@ -34,7 +34,7 @@ blinker==1.4
     #   flask-principal
 boto3==1.17.90
     # via -r requirements.in
-botocore==1.20.90
+botocore==1.20.93
     # via
     #   -r requirements.in
     #   boto3
@@ -120,10 +120,6 @@ hvac==0.10.14
     # via -r requirements.in
 idna==2.10
     # via requests
-importlib-metadata==4.5.0
-    # via
-    #   click
-    #   kombu
 inflection==0.5.1
     # via -r requirements.in
 itsdangerous==2.0.1
@@ -272,10 +268,6 @@ tabulate==0.8.9
     # via -r requirements.in
 twofish==0.3.0
     # via pyjks
-typing-extensions==3.10.0.0
-    # via
-    #   arrow
-    #   importlib-metadata
 urllib3==1.26.5
     # via
     #   botocore
@@ -289,8 +281,6 @@ werkzeug==2.0.1
     # via flask
 xmltodict==0.12.0
     # via -r requirements.in
-zipp==3.4.1
-    # via importlib-metadata
 zope.component==5.0.0
     # via certbot
 zope.event==4.5.0
