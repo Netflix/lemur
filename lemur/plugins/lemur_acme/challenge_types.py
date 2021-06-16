@@ -11,8 +11,11 @@ import datetime
 import json
 
 from acme import challenges
+from acme.errors import WildcardUnsupportedError
 from acme.messages import errors, STATUS_VALID, ERROR_CODES
+from botocore.exceptions import ClientError
 from flask import current_app
+from sentry_sdk import capture_exception
 
 from lemur.authorizations import service as authorization_service
 from lemur.constants import ACME_ADDITIONAL_ATTEMPTS
@@ -233,19 +236,36 @@ class AcmeDnsChallenge(AcmeChallenge):
             # Return id of the DNS Authorization
             return None, None, dns_authorization.id
 
-        pem_certificate, pem_certificate_chain = self.create_immediately(
+        pem_certificate, pem_certificate_chain = self.create_certificate_immediately(
             acme_client, dns_authorization, csr
         )
         # TODO add external ID (if possible)
         return pem_certificate, pem_certificate_chain, None
 
     @retry(stop_max_attempt_number=ACME_ADDITIONAL_ATTEMPTS, wait_fixed=5000)
-    def create_immediately(self, acme_client, order_info, csr):
-        order = acme_client.new_order(csr)
+    def create_certificate_immediately(self, acme_client, order_info, csr):
+        try:
+            order = acme_client.new_order(csr)
+        except WildcardUnsupportedError:
+            metrics.send("create_certificte_immediately_wildcard_unsupported", "counter", 1)
+            raise Exception(
+                "The currently selected ACME CA endpoint does"
+                " not support issuing wildcard certificates."
+            )
 
-        authorizations = self.acme.get_authorizations(
-            acme_client, order, order_info
-        )
+        try:
+            authorizations = self.acme.get_authorizations(
+                acme_client, order, order_info
+            )
+        except ClientError:
+            capture_exception()
+            metrics.send("create_certificate_immediately_error", "counter", 1)
+
+            current_app.logger.error(
+                f"Unable to resolve cert for domains: {', '.join(order_info.domains)}", exc_info=True
+            )
+            return False
+
         authorizations = self.acme.finalize_authorizations(acme_client, authorizations)
 
         return self.acme.request_certificate(
