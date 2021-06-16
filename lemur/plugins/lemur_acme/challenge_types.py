@@ -20,6 +20,7 @@ from sentry_sdk import capture_exception
 from lemur.authorizations import service as authorization_service
 from lemur.constants import ACME_ADDITIONAL_ATTEMPTS
 from lemur.exceptions import LemurException, InvalidConfiguration
+from lemur.extensions import metrics
 from lemur.plugins.base import plugins
 from lemur.destinations import service as destination_service
 from lemur.plugins.lemur_acme.acme_handlers import AcmeHandler, AcmeDnsHandler
