@@ -13,3 +13,4 @@
         - "charhate"
         - "jtschladen"
       versioning-strategy: lockfile-only
+      open-pull-requests-limit: 20
