@@ -176,6 +176,22 @@ def get_all_certs_attached_to_endpoint_without_autorotate():
     )
 
 
+def get_all_certs_attached_to_destination_without_autorotate():
+    """
+        Retrieves all certificates that are attached to a destination, but that do not have autorotate enabled.
+
+        :return: list of certificates attached to a destination without autorotate
+        """
+    return (
+        Certificate.query.filter(Certificate.destinations.any())
+        .filter(Certificate.rotation == false())
+        .filter(Certificate.revoked == false())
+        .filter(Certificate.not_after >= arrow.now())
+        .filter(not_(Certificate.replaced.any()))
+        .all()  # noqa
+    )
+
+
 def get_all_pending_cleaning_expiring_in_days(source, days_to_expire):
     """
     Retrieves all certificates that are available for cleaning, not attached to endpoint,
