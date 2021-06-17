@@ -777,7 +777,7 @@ def automatically_enable_autorotate_with_endpoint():
         else:
             log_data["destination_names"] = "NONE"
         current_app.logger.info(log_data)
-        metrics.send("automatically_enable_autorotate_with_endpoints",
+        metrics.send("automatically_enable_autorotate_with_endpoint",
                      "counter", 1,
                      metric_tags={"certificate": log_data["certificate"],
                                   "certificate_id": log_data["certificate_id"],
@@ -803,8 +803,9 @@ def automatically_enable_autorotate_with_destination():
     }
 
     permitted_authorities = current_app.config.get("ENABLE_AUTO_ROTATE_AUTHORITY", [])
+    destination_plugin_name = current_app.config.get("ENABLE_AUTO_ROTATE_DESTINATION_TYPE", None)
 
-    eligible_certs = get_all_certs_attached_to_destination_without_autorotate()
+    eligible_certs = get_all_certs_attached_to_destination_without_autorotate(plugin_name=destination_plugin_name)
     for cert in eligible_certs:
 
         if cert.authority_id not in permitted_authorities:
@@ -819,7 +820,7 @@ def automatically_enable_autorotate_with_destination():
         else:
             log_data["destination_names"] = "NONE"
         current_app.logger.info(log_data)
-        metrics.send("automatically_enable_autorotate_with_destinations",
+        metrics.send("automatically_enable_autorotate_with_destination",
                      "counter", 1,
                      metric_tags={"certificate": log_data["certificate"],
                                   "certificate_id": log_data["certificate_id"],

@@ -124,6 +124,13 @@ CELERYBEAT_SCHEDULE = {
     #     },
     #     'schedule': crontab(hour=10, minute=0),
     # }
+    # 'enable_autorotate_for_certs_attached_to_destination': {
+    #     'task': 'lemur.common.celery.enable_autorotate_for_certs_attached_to_destination',
+    #     'options': {
+    #         'expires': 180
+    #     },
+    #     'schedule': crontab(hour=10, minute=0),
+    # }
     # 'enable_autorotate_for_certs_attached_to_endpoint': {
     #     'task': 'lemur.common.celery.enable_autorotate_for_certs_attached_to_endpoint',
     #     'options': {
