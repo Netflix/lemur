@@ -193,7 +193,6 @@ def get_all_certs_attached_to_destination_without_autorotate(plugin_name=None):
             .all()  # noqa
         )
 
-
     return (
         Certificate.query.filter(Certificate.destinations.any())
         .filter(Certificate.rotation == false())
