@@ -20,13 +20,13 @@ aws-xray-sdk==2.8.0
     # via moto
 bandit==1.7.0
     # via -r requirements-tests.in
-black==21.5b2
+black==21.6b0
     # via -r requirements-tests.in
-boto3==1.17.90
+boto3==1.17.93
     # via
     #   aws-sam-translator
     #   moto
-botocore==1.20.90
+botocore==1.20.93
     # via
     #   aws-xray-sdk
     #   boto3
@@ -74,7 +74,7 @@ ecdsa==0.14.1
     #   sshpubkeys
 factory-boy==3.2.0
     # via -r requirements-tests.in
-faker==8.6.0
+faker==8.8.0
     # via
     #   -r requirements-tests.in
     #   factory-boy
@@ -102,13 +102,6 @@ idna==2.10
     # via
     #   moto
     #   requests
-importlib-metadata==4.5.0
-    # via
-    #   click
-    #   jsonschema
-    #   pluggy
-    #   pytest
-    #   stevedore
 iniconfig==1.1.1
     # via pytest
 itsdangerous==2.0.1
@@ -281,13 +274,6 @@ toml==0.10.2
     # via
     #   black
     #   pytest
-typed-ast==1.4.3
-    # via black
-typing-extensions==3.10.0.0
-    # via
-    #   black
-    #   gitpython
-    #   importlib-metadata
 urllib3==1.26.5
     # via
     #   botocore
@@ -304,8 +290,6 @@ wrapt==1.12.1
     # via aws-xray-sdk
 xmltodict==0.12.0
     # via moto
-zipp==3.4.1
-    # via importlib-metadata
 zope.component==5.0.0
     # via certbot
 zope.event==4.5.0
