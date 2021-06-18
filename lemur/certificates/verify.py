@@ -56,7 +56,8 @@ def ocsp_verify(cert, cert_path, issuer_chain_path):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
-
+    if not isinstance(url, str):
+        url = url.decode("utf-8")
     try:
         message, err = p2.communicate(timeout=6)
     except TimeoutExpired:
@@ -65,12 +66,12 @@ def ocsp_verify(cert, cert_path, issuer_chain_path):
         except OSError:
             # Ignore 'no such process' error
             pass
-        raise Exception(f"OCSP lookup timed out: {url}")
+        raise Exception(f"OCSP lookup timed out: {url}, certificate serial number {cert.serial_number:02X}")
 
     p_message = message.decode("utf-8")
     if "error" in p_message or "Error" in p_message:
         metrics.send("check_revocation_ocsp_verify", "counter", 1, metric_tags={"status": "error", "url": url})
-        raise Exception(f"Got error when parsing OCSP url: {url}")
+        raise Exception(f"Got error when parsing OCSP url: {url}, certificate serial number {cert.serial_number:02X}")
 
     elif "revoked" in p_message:
         current_app.logger.debug(
@@ -82,10 +83,11 @@ def ocsp_verify(cert, cert_path, issuer_chain_path):
         # indicates the OCSP server does not know this certificate
         metrics.send("check_revocation_ocsp_verify", "counter", 1, metric_tags={"status": "unauthorized", "url": url})
         current_app.logger.warning(f"OCSP unauthorized error:{url}")
-        raise Exception(f"OCSP unauthorized error: {url}")
+        raise Exception(f"OCSP unauthorized error: {url}, certificate serial number {cert.serial_number:02X}")
 
     elif "good" not in p_message:
-        raise Exception(f"Did not receive a valid OCSP response from url: {url}")
+        raise Exception(f"Did not receive a valid OCSP response from url: {url}, "
+                        f"certificate serial number {cert.serial_number:02X}")
 
     return True
 
@@ -113,17 +115,17 @@ def crl_verify(cert, cert_path):
         point = p.full_name[0].value
 
         if point not in crl_cache:
-            current_app.logger.debug("Retrieving CRL: {}".format(point))
+            current_app.logger.debug(f"Retrieving CRL: {point}, serial {cert.serial_number:02X}")
             try:
                 response = requests.get(point, timeout=(3.05, 6))
 
                 if response.status_code != 200:
-                    raise Exception("Unable to retrieve CRL: {0}".format(point))
+                    raise Exception(f"Unable to retrieve CRL: {point}, serial {cert.serial_number:02X}")
             except InvalidSchema:
                 # Unhandled URI scheme (like ldap://); skip this distribution point.
                 continue
             except ConnectionError or Timeout:
-                raise Exception("Unable to retrieve CRL: {0}".format(point))
+                raise Exception(f"Unable to retrieve CRL: {point}, serial {cert.serial_number:02X}")
 
             crl_cache[point] = x509.load_der_x509_crl(
                 response.content, backend=default_backend()
