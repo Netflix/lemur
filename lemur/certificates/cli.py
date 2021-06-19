@@ -724,10 +724,14 @@ def check_revoked():
 
             except Exception as e:
                 capture_exception()
-                current_app.logger.exception(e)
+                current_app.logger.warning(e)
                 cert.status = "unknown"
 
-            database.update(cert)
+            try:
+                database.update(cert)
+            except Exception as e:
+                capture_exception()
+                current_app.logger.warning(e)
 
     metrics.send(
         "certificate_revoked_ocsp_error",
