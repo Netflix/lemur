@@ -495,9 +495,11 @@ before requesting that LetsEncrypt finalize the certificate request and send us 
 
 .. figure:: letsencrypt_flow.png
 
-To start issuing certificates through LetsEncrypt, you must enable Celery support within Lemur first. After doing so,
+To start issuing certificates through LetsEncrypt, you must enable Celery support within Lemur first[*]_. After doing so,
 you need to create a LetsEncrypt authority. To do this, visit
 Authorities -> Create. Set the applicable attributes and click "More Options".
+
+.. [*] It is possible to use synchronous certificate creation without Celery by supplying the ``create_immediately`` parameter in your certificate creation requests, but this is only recommended for testing and development purposes, given the inherent `limitations of DNS record propagation <https://letsencrypt.org/docs/challenge-types/#dns-01-challenge>`.
 
 .. figure:: letsencrypt_authority_1.png
 

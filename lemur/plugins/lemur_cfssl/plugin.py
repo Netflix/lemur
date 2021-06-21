@@ -118,7 +118,7 @@ class CfsslIssuerPlugin(IssuerPlugin):
             + '","authority_key_id": "'
             + get_authority_key(certificate.body)
             + '", "reason": "'
-            + crl_reason
+            + crl_reason.name
             + '"}'
         )
         current_app.logger.debug("Revoking cert: {0}".format(data))

@@ -50,19 +50,19 @@ beautifulsoup4==4.9.3
     # via cloudflare
 billiard==3.6.4.0
     # via celery
-black==21.5b2
+black==21.6b0
     # via -r requirements-tests.txt
 blinker==1.4
     # via
     #   flask-mail
     #   flask-principal
-boto3==1.17.90
+boto3==1.17.93
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
-botocore==1.20.90
+botocore==1.20.93
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -156,7 +156,7 @@ ecdsa==0.14.1
     #   sshpubkeys
 factory-boy==3.2.0
     # via -r requirements-tests.txt
-faker==8.6.0
+faker==8.8.0
     # via
     #   -r requirements-tests.txt
     #   factory-boy
@@ -223,15 +223,6 @@ idna==2.10
     #   requests
 imagesize==1.2.0
     # via sphinx
-importlib-metadata==4.5.0
-    # via
-    #   -r requirements-tests.txt
-    #   click
-    #   jsonschema
-    #   kombu
-    #   pluggy
-    #   pytest
-    #   stevedore
 inflection==0.5.1
     # via -r requirements-docs.in
 iniconfig==1.1.1
@@ -574,17 +565,6 @@ toml==0.10.2
     #   pytest
 twofish==0.3.0
     # via pyjks
-typed-ast==1.4.3
-    # via
-    #   -r requirements-tests.txt
-    #   black
-typing-extensions==3.10.0.0
-    # via
-    #   -r requirements-tests.txt
-    #   arrow
-    #   black
-    #   gitpython
-    #   importlib-metadata
 urllib3==1.26.5
     # via
     #   -r requirements-tests.txt
@@ -616,10 +596,6 @@ xmltodict==0.12.0
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   moto
-zipp==3.4.1
-    # via
-    #   -r requirements-tests.txt
-    #   importlib-metadata
 zope.component==5.0.0
     # via
     #   -r requirements-tests.txt
