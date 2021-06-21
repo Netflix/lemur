@@ -36,6 +36,8 @@ from lemur.plugins.lemur_acme import cloudflare, dyn, route53, ultradns, powerdn
 from lemur.authorities import service as authorities_service
 from retrying import retry
 
+from lemur.common.utils import data_encrypt, data_decrypt, is_json
+
 
 class AuthorizationRecord(object):
     def __init__(self, domain, target_domain, authz, dns_challenge, change_id, cname_delegation):
@@ -162,9 +164,18 @@ class AcmeHandler(object):
         )
         existing_regr = options.get("acme_regr", current_app.config.get("ACME_REGR"))
 
+        eab_kid = options.get("eab_kid", None)
+        eab_hmac_key = options.get("eab_hmac_key", None)
+
         if existing_key and existing_regr:
             current_app.logger.debug("Reusing existing ACME account")
             # Reuse the same account for each certificate issuance
+
+            # existing_key might be encrypted
+            if not is_json(existing_key):
+                # decrypt the private key, if not already in plaintext (json format)
+                existing_key = data_decrypt(existing_key)
+
             key = jose.JWK.json_loads(existing_key)
             regr = messages.RegistrationResource.json_loads(existing_regr)
             current_app.logger.debug(
@@ -184,9 +195,20 @@ class AcmeHandler(object):
 
             net = ClientNetwork(key, account=None, timeout=3600)
             client = BackwardsCompatibleClientV2(net, key, directory_url)
-            registration = client.new_account_and_tos(
-                messages.NewRegistration.from_data(email=email)
-            )
+            if eab_kid and eab_hmac_key:
+                # external account binding (eab_kid and eab_hmac_key could be potentially single use to establish
+                # long-term credentials)
+                eab = messages.ExternalAccountBinding.from_data(account_public_key=key.public_key(),
+                                                                kid=eab_kid,
+                                                                hmac_key=eab_hmac_key,
+                                                                directory={'newAccount': directory_url})
+                registration = client.new_account_and_tos(
+                    messages.NewRegistration.from_data(email=email, external_account_binding=eab)
+                )
+            else:
+                registration = client.new_account_and_tos(
+                    messages.NewRegistration.from_data(email=email)
+                )
 
             # if store_account is checked, add the private_key and registration resources to the options
             if options['store_account']:
@@ -196,7 +218,7 @@ class AcmeHandler(object):
                 key_dict["kty"] = "RSA"
                 acme_private_key = {
                     "name": "acme_private_key",
-                    "value": json.dumps(key_dict)
+                    "value": data_encrypt(json.dumps(key_dict))
                 }
                 new_options.append(acme_private_key)
 
