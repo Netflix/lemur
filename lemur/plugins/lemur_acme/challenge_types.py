@@ -11,14 +11,21 @@ import datetime
 import json
 
 from acme import challenges
+from acme.errors import WildcardUnsupportedError
 from acme.messages import errors, STATUS_VALID, ERROR_CODES
+from botocore.exceptions import ClientError
 from flask import current_app
+from sentry_sdk import capture_exception
 
 from lemur.authorizations import service as authorization_service
+from lemur.constants import ACME_ADDITIONAL_ATTEMPTS
 from lemur.exceptions import LemurException, InvalidConfiguration
+from lemur.extensions import metrics
 from lemur.plugins.base import plugins
 from lemur.destinations import service as destination_service
 from lemur.plugins.lemur_acme.acme_handlers import AcmeHandler, AcmeDnsHandler
+
+from retrying import retry
 
 
 class AcmeChallengeMissmatchError(LemurException):
@@ -192,16 +199,18 @@ class AcmeDnsChallenge(AcmeChallenge):
         authority = issuer_options.get("authority")
         create_immediately = issuer_options.get("create_immediately", False)
         acme_client, registration = self.acme.setup_acme_client(authority)
+        domains = self.acme.get_domains(issuer_options)
         dns_provider = issuer_options.get("dns_provider", {})
 
         if dns_provider:
-            dns_provider_options = dns_provider.options
+            for domain in domains:
+                # Currently, we only support specifying one DNS provider per certificate, even if that
+                # certificate has multiple SANs that may belong to different provid
+                self.acme.dns_providers_for_domain[domain] = [dns_provider]
+
             credentials = json.loads(dns_provider.credentials)
             current_app.logger.debug(
                 "Using DNS provider: {0}".format(dns_provider.provider_type)
-            )
-            dns_provider_plugin = __import__(
-                dns_provider.provider_type, globals(), locals(), [], 1
             )
             account_number = credentials.get("account_id")
             provider_type = dns_provider.provider_type
@@ -213,38 +222,56 @@ class AcmeDnsChallenge(AcmeChallenge):
                 raise InvalidConfiguration(error)
         else:
             dns_provider = {}
-            dns_provider_options = None
             account_number = None
             provider_type = None
 
-        domains = self.acme.get_domains(issuer_options)
+            for domain in domains:
+                self.acme.autodetect_dns_providers(domain)
+
+        # Create pending authorizations that we'll need to do the creation
+        dns_authorization = authorization_service.create(
+            account_number, domains, provider_type
+        )
+
         if not create_immediately:
-            # Create pending authorizations that we'll need to do the creation
-            dns_authorization = authorization_service.create(
-                account_number, domains, provider_type
-            )
             # Return id of the DNS Authorization
             return None, None, dns_authorization.id
 
-        authorizations = self.acme.get_authorizations(
-            acme_client,
-            account_number,
-            domains,
-            dns_provider_plugin,
-            dns_provider_options,
-        )
-        self.acme.finalize_authorizations(
-            acme_client,
-            account_number,
-            dns_provider_plugin,
-            authorizations,
-            dns_provider_options,
-        )
-        pem_certificate, pem_certificate_chain = self.acme.request_certificate(
-            acme_client, authorizations, csr
+        pem_certificate, pem_certificate_chain = self.create_certificate_immediately(
+            acme_client, dns_authorization, csr
         )
         # TODO add external ID (if possible)
         return pem_certificate, pem_certificate_chain, None
+
+    @retry(stop_max_attempt_number=ACME_ADDITIONAL_ATTEMPTS, wait_fixed=5000)
+    def create_certificate_immediately(self, acme_client, order_info, csr):
+        try:
+            order = acme_client.new_order(csr)
+        except WildcardUnsupportedError:
+            metrics.send("create_certificte_immediately_wildcard_unsupported", "counter", 1)
+            raise Exception(
+                "The currently selected ACME CA endpoint does"
+                " not support issuing wildcard certificates."
+            )
+
+        try:
+            authorizations = self.acme.get_authorizations(
+                acme_client, order, order_info
+            )
+        except ClientError:
+            capture_exception()
+            metrics.send("create_certificate_immediately_error", "counter", 1)
+
+            current_app.logger.error(
+                f"Unable to resolve cert for domains: {', '.join(order_info.domains)}", exc_info=True
+            )
+            return False
+
+        authorizations = self.acme.finalize_authorizations(acme_client, authorizations)
+
+        return self.acme.request_certificate(
+            acme_client, authorizations, order
+        )
 
     def deploy(self, challenge, acme_client, validation_target):
         pass
