@@ -308,6 +308,10 @@ class TestAcmeDns(unittest.TestCase):
         result = provider.create_certificate(csr, issuer_options)
         assert result
 
+        issuer_options["create_immediately"] = True
+        immediate_result = provider.create_certificate(csr, issuer_options)
+        assert immediate_result
+
     @patch("lemur.plugins.lemur_acme.plugin.AcmeDnsHandler.start_dns_challenge", return_value="test")
     def test_get_authorizations(self, mock_start_dns_challenge):
         mock_order = Mock()
