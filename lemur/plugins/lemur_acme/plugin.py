@@ -417,7 +417,6 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
         :return:
         """
         name = "acme"
-        print(options)
         if options['name']:
             name += "_" + '_'.join(options['name'].split(" "))
         role = {"username": "", "password": "", "name": name}
