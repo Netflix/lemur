@@ -242,7 +242,16 @@ class Certificate(db.Model):
         self.dns_provider_id = kwargs.get("dns_provider_id")
 
         for domain in defaults.domains(cert):
-            self.domains.append(Domain(name=domain))
+
+            # If Domain already exists, link to existing one
+            # if not, create a new one
+            if True: # Domain already in DB
+                existing_domains = database.get_by_name(domain)
+                # Create link to existing one
+                pass
+            else:
+                # Create a new one
+                self.domains.append(Domain(name=domain))
 
         # Check integrity before saving anything into the database.
         # For user-facing API calls, validation should also be done in schema validators.
