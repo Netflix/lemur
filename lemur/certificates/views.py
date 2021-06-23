@@ -934,20 +934,20 @@ class Certificates(AuthenticatedResource):
         """
         .. http:post:: /certificates/1/update/switches
 
-           Update certificate notification
+           Update certificate boolean switches for notification or rotation
 
            **Example request**:
 
            .. sourcecode:: http
 
-              POST /certificates/1/update/notify HTTP/1.1
+              POST /certificates/1/update/switches HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
               Content-Type: application/json;charset=UTF-8
 
               {
-                 "notify": false,   <!-- Optional -->
-                 "rotation": false  <!-- Optional -->
+                 "notify": false,
+                 "rotation": false
               }
 
            **Example response**:
