@@ -365,6 +365,7 @@ class CertificateShortOutputSchema(LemurOutputSchema):
     name = fields.String()
     owner = fields.Email()
     notify = fields.Boolean()
+    rotation = fields.Boolean()
     authority = fields.Nested(AuthorityNestedOutputSchema)
     issuer = fields.String()
     cn = fields.String()
