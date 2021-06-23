@@ -946,8 +946,8 @@ class Certificates(AuthenticatedResource):
               Content-Type: application/json;charset=UTF-8
 
               {
-                 "notify": false,  # Optional
-                 "rotation": false  # Optional
+                 "notify": false,   <!-- Optional -->
+                 "rotation": false  <!-- Optional -->
               }
 
            **Example response**:
