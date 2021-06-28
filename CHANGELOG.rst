@@ -1,6 +1,51 @@
 Changelog
 =========
 
+0.9.1 - `2021-06-28`
+~~~~~~~~~~~~~~~~~~~~
+
+This release introduces a breaking change (PR `#3646 <https://github.com/Netflix/lemur/pull/3646>`_) to the following API endpoint: 
+
+- `POST /certificates/1/update/notify <https://lemur.readthedocs.io/en/latest/developer/index.html#lemur.certificates.views.Certificates.post>`_
+
+The endpoint is now:
+
+- `POST /certificates/1/update/switches <https://lemur.readthedocs.io/en/latest/developer/index.html#lemur.certificates.views.Certificates.post>`_
+
+The new endpoint honors the existing `notify` request parameter, and additionally accepts a new `rotation` parameter. 
+As a result of this change, the certificate table view now includes rotation switches and filtering by rotation status.
+
+
+Other notable changes in this release:
+
+- ACME:
+    - New celery task to prevent duplicate certificates from being autorotated
+    - ACME DNS-01 Challenges are supported in synchronous mode
+    - DNS provider check fails gracefully if not found
+- Authentication:
+    - SSO auth now returns a newly created user during initial login
+    - CSRF protection is added to OAuth2.0
+- Notifications:
+    - New reissue failed notification
+    - New reissue with no endpoints notification
+    - New revocation notification
+- Plugins:
+    - Plugin option values are validated server-side
+    - Some plugin option validations updated to compile successfully server-side
+- Database:
+  - Source and Destination deletions remove certificate associations with new confirmation dialog
+- Dependency updates and conflict resolutions
+- Expanded audit logs
+
+And several smaller bugfixes and improvements.
+
+Special thanks to all who contributed to this release, notably:
+
+- `havron <https://github.com/havron>`_
+- `tho <https://github.com/tho>`_
+- `mizzy <https://github.com/mizzy>`_
+
+
 0.9.0 - `2021-03-17`
 ~~~~~~~~~~~~~~~~~~~~
 
