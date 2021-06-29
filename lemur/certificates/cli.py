@@ -162,9 +162,9 @@ def request_reissue(certificate, notify, commit):
         print_certificate_details(details)
 
         if commit:
-            new_cert = reissue_certificate(certificate, replace=True)
+            new_cert = reissue_certificate(certificate, notify=notify, replace=True)
             print("[+] New certificate named: {0}".format(new_cert.name))
-            if notify:
+            if notify and isinstance(new_cert, Certificate):  # let celery handle PendingCertificates
                 send_reissue_no_endpoints_notification(certificate, new_cert)
 
         status = SUCCESS_METRIC_STATUS
