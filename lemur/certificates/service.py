@@ -354,14 +354,18 @@ def cleanup_owner_roles_notification(owner_name, kwargs):
     kwargs["notifications"] = [n for n in kwargs["notifications"] if not n.label.startswith(notification_prefix)]
 
 
-def update_notify(cert, notify_flag):
+def update_switches(cert, notify_flag=None, rotation_flag=None):
     """
-    Toggle notification value which is a boolean
+    Toggle notification and/or rotation values which are boolean
     :param notify_flag: new notify value
+    :param rotation_flag: new rotation value
     :param cert: Certificate object to be updated
     :return:
     """
-    cert.notify = notify_flag
+    if notify_flag is not None:  # check for None allows value of False to continue
+        cert.notify = notify_flag
+    if rotation_flag is not None:
+        cert.rotation = rotation_flag
     return database.update(cert)
 
 
@@ -561,6 +565,8 @@ def render(args):
             )
         elif "notify" in filt:
             query = query.filter(Certificate.notify == truthiness(terms[1]))
+        elif "rotation" in filt:
+            query = query.filter(Certificate.rotation == truthiness(terms[1]))
         elif "active" in filt:
             query = query.filter(Certificate.active == truthiness(terms[1]))
         elif "cn" in terms:
