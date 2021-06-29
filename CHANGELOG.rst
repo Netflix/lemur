@@ -2,7 +2,7 @@ Changelog
 =========
 
 0.10.0 - `2021-06-28`
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
 
 This release introduces a breaking change (PR `#3646 <https://github.com/Netflix/lemur/pull/3646>`_) to the following API endpoint: 
 
