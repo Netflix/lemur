@@ -232,13 +232,13 @@ def report_revoked_task(**kwargs):
 
 
 @celery.task(soft_time_limit=600)
-def fetch_acme_cert(id, notify_reissue=False):
+def fetch_acme_cert(id, notify_reissue_cert=None):
     """
     Attempt to get the full certificate for the pending certificate listed.
 
     Args:
         id: an id of a PendingCertificate
-        notify_reissue: whether to send reissue notifications for the PendingCertificate
+        notify_reissue_cert: existing Certificate to use for reissue notifications, if supplied
     """
     task_id = None
     if celery.current_task:
@@ -299,8 +299,8 @@ def fetch_acme_cert(id, notify_reissue=False):
             pending_certificate_service.update(
                 cert.get("pending_cert").id, resolved=True
             )
-            if notify_reissue:
-                send_reissue_no_endpoints_notification(final_cert)
+            if notify_reissue_cert is not None:
+                send_reissue_no_endpoints_notification(notify_reissue_cert, final_cert)
             # add metrics to metrics extension
             new += 1
         else:
@@ -316,7 +316,7 @@ def fetch_acme_cert(id, notify_reissue=False):
                 send_pending_failure_notification(
                     pending_cert, notify_owner=pending_cert.notify
                 )
-                if notify_reissue:
+                if notify_reissue_cert is not None:
                     send_reissue_failed_notification(pending_cert)
                 # Mark the pending cert as resolved
                 pending_certificate_service.update(
@@ -328,7 +328,7 @@ def fetch_acme_cert(id, notify_reissue=False):
                     cert.get("pending_cert").id, status=str(cert.get("last_error"))
                 )
                 # Add failed pending cert task back to queue
-                fetch_acme_cert.delay(id, notify_reissue)
+                fetch_acme_cert.delay(id, notify_reissue_cert)
             current_app.logger.error(error_log)
     log_data["message"] = "Complete"
     log_data["new"] = new
