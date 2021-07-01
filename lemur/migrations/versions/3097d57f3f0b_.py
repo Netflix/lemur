@@ -26,6 +26,11 @@ def upgrade():
         'certificate_associations',
         ['certificate_id'],
         unique=False)
+    op.create_index(
+        'ix_certificates_serial',
+        'certificates',
+        ['serial'],
+        unique=False)
 
 def downgrade():
     op.drop_index(
@@ -34,3 +39,6 @@ def downgrade():
     op.drop_index(
         'certificate_associations_certificate_id_idx',
         table_name='certificate_associations')
+    op.drop_index(
+        'ix_certificates_serial',
+        table_name='certificates')
