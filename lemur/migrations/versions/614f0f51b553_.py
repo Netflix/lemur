@@ -1,4 +1,4 @@
-"""This Database upgrade will make the domains table unique and is required fro future versions of Lemur.
+"""This Database upgrade will make the domains table unique and is required for future versions of Lemur.
 
 Revision ID: 614f0f51b553
 Revises: 4fe230f7a26e

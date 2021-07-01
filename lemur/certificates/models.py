@@ -169,7 +169,10 @@ class Certificate(db.Model):
     sources = relationship(
         "Source", secondary=certificate_source_associations, backref="certificate"
     )
+
+    # This is set by default, do we need to update it?
     domains = association_proxy('certificate_associations', 'domain')
+
     roles = relationship("Role", secondary=roles_certificates, backref="certificate")
     replaces = relationship(
         "Certificate",
@@ -242,7 +245,11 @@ class Certificate(db.Model):
         self.dns_provider_id = kwargs.get("dns_provider_id")
 
         for domain in defaults.domains(cert):
+            # Currently, this creates a new Domain object for each domain, and a new association for each.
             self.domains.append(Domain(name=domain))
+
+            # New Logic
+            # Create a new association with existing Domain if it exists, otherwise, create a new Domain.
 
         # Check integrity before saving anything into the database.
         # For user-facing API calls, validation should also be done in schema validators.
