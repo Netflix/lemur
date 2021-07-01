@@ -495,9 +495,11 @@ before requesting that LetsEncrypt finalize the certificate request and send us 
 
 .. figure:: letsencrypt_flow.png
 
-To start issuing certificates through LetsEncrypt, you must enable Celery support within Lemur first. After doing so,
+To start issuing certificates through LetsEncrypt, you must enable Celery support within Lemur first[*]_. After doing so,
 you need to create a LetsEncrypt authority. To do this, visit
 Authorities -> Create. Set the applicable attributes and click "More Options".
+
+.. [*] It is possible to use synchronous certificate creation without Celery by supplying the ``create_immediately`` parameter in your certificate creation requests, but this is only recommended for testing and development purposes, given the inherent `limitations of DNS record propagation <https://letsencrypt.org/docs/challenge-types/#dns-01-challenge>`.
 
 .. figure:: letsencrypt_authority_1.png
 
@@ -598,11 +600,12 @@ LetsEncrypt: Using a pre-existing ACME account
 -----------------------------------------------
 
 Let's Encrypt allows reusing an existing ACME account, to create and especially revoke certificates. The current
-implementation in the acme plugin, only allows for a single account for all ACME authorities, which might be an issue,
-when you try to use Let's Encrypt together with another certificate authority that uses the ACME protocol.
-
-To use an existing account, you need to configure the `ACME_PRIVATE_KEY` and `ACME_REGR` variables in the lemur
+implementation in the acme plugin, allows for a primary account for all ACME authorities.
+To use an existing account as the primary ACME account, you need to configure the `ACME_PRIVATE_KEY` and `ACME_REGR` variables in the lemur
 configuration.
+
+Alternatively, you can set `acme_regr` and `acme_private_key` as options during setup of a new issuer in Lemur.
+Lemur will use the `LEMUR_ENCRYPTION_KEYS` to encrypt the `acme_private_key` before storing it in the database.
 
 `ACME_PRIVATE_KEY` needs to be in the JWK format::
 
@@ -634,3 +637,21 @@ Using `python-jwt` converting an existing private key in PEM format is quite eas
     {"body": {}, "uri": "https://acme-staging-v02.api.letsencrypt.org/acme/acct/<ACCOUNT_NUMBER>"}
 
 The URI can be retrieved from the ACME create account endpoint when creating a new account, using the existing key.
+
+
+LetsEncrypt: Setting up a new ACME account
+------------------------------------------
+
+In case, you are not using the `ACME_PRIVATE_KEY` and `ACME_REGR` variables in the Lemur
+configuration to set up a pre-existing primary, Lemur will create a new account on the fly for you.
+Additionally, you can select the `store_account` while setting a new ACME-based issuer in Lemur,
+to avoid hitting rate limits for creating new accounts for each request.
+
+External Account Binding (EAB):
+-------------------------------
+
+The ACME protocol enables setting up a new ACME account linked to an existing external account.
+For this, your CA needs to issue you an hmac_key and kid, which you need while setting up a new ACME issuer in Lemur.
+hmac_key and kid are usually short-lived and are used to create a new account.
+When `store_account` is set in the options of a new issuer, Lemur will use the EAB credentials to set up a new account.
+

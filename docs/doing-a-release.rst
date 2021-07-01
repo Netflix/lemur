@@ -4,7 +4,7 @@ Doing a release
 Doing a release of ``lemur`` is now mostly automated and consists of the following steps:
 
 * Raise a PR to add the release date and summary in the :doc:`/changelog`.
-* Merge above PR and create a new `Github release <https://github.com/Netflix/lemur/releaes>`_: set the tag starting with v, e.g., v0.9.0
+* Merge above PR and create a new `Github release <https://github.com/Netflix/lemur/releases>`_: set the tag starting with v, e.g., v0.9.0
 
 The `publish workflow <https://github.com/Netflix/lemur/actions/workflows/lemur-publish-release-pypi.yml>`_ uses the git
 tag to set the release version.

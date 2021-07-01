@@ -22,11 +22,11 @@ bandit==1.7.0
     # via -r requirements-tests.in
 black==21.6b0
     # via -r requirements-tests.in
-boto3==1.17.93
+boto3==1.17.101
     # via
     #   aws-sam-translator
     #   moto
-botocore==1.20.93
+botocore==1.20.101
     # via
     #   aws-xray-sdk
     #   boto3
@@ -74,22 +74,22 @@ ecdsa==0.14.1
     #   sshpubkeys
 factory-boy==3.2.0
     # via -r requirements-tests.in
-faker==8.8.0
+faker==8.8.2
     # via
     #   -r requirements-tests.in
     #   factory-boy
 fakeredis==1.5.2
     # via -r requirements-tests.in
-flask-migrate==2.7.0
-    # via -r requirements-tests.in
-flask-sqlalchemy==2.5.1
-    # via flask-migrate
 flask==1.1.2
     # via
     #   -r requirements-tests.in
     #   flask-migrate
     #   flask-sqlalchemy
     #   pytest-flask
+flask-migrate==2.7.0
+    # via -r requirements-tests.in
+flask-sqlalchemy==2.5.1
+    # via flask-migrate
 freezegun==1.1.0
     # via -r requirements-tests.in
 future==0.18.2
@@ -137,12 +137,12 @@ markupsafe==2.0.1
     #   jinja2
     #   mako
     #   moto
-marshmallow-sqlalchemy==0.23.1
-    # via -r requirements-tests.in
 marshmallow==2.20.4
     # via
     #   -r requirements-tests.in
     #   marshmallow-sqlalchemy
+marshmallow-sqlalchemy==0.23.1
+    # via -r requirements-tests.in
 more-itertools==8.8.0
     # via moto
 moto[all]==2.0.8
@@ -185,15 +185,15 @@ pyrfc3339==1.1
     #   certbot
 pyrsistent==0.17.3
     # via jsonschema
-pytest-flask==1.2.0
-    # via -r requirements-tests.in
-pytest-mock==3.6.1
-    # via -r requirements-tests.in
 pytest==6.2.4
     # via
     #   -r requirements-tests.in
     #   pytest-flask
     #   pytest-mock
+pytest-flask==1.2.0
+    # via -r requirements-tests.in
+pytest-mock==3.6.1
+    # via -r requirements-tests.in
 python-dateutil==2.8.1
     # via
     #   alembic
@@ -221,10 +221,6 @@ redis==3.5.3
     # via fakeredis
 regex==2021.4.4
     # via black
-requests-mock==1.9.3
-    # via -r requirements-tests.in
-requests-toolbelt==0.9.1
-    # via acme
 requests==2.25.1
     # via
     #   acme
@@ -233,6 +229,10 @@ requests==2.25.1
     #   requests-mock
     #   requests-toolbelt
     #   responses
+requests-mock==1.9.3
+    # via -r requirements-tests.in
+requests-toolbelt==0.9.1
+    # via acme
 responses==0.13.3
     # via moto
 rsa==4.7.2

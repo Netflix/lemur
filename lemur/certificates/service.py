@@ -162,12 +162,39 @@ def get_all_pending_cleaning_expired(source):
 
 def get_all_certs_attached_to_endpoint_without_autorotate():
     """
-        Retrieves all certificates that are attached to an endpoint, but that do not have autorotate enabled.
+    Retrieves all certificates that are attached to an endpoint, but that do not have autorotate enabled.
 
-        :return: list of certificates attached to an endpoint without autorotate
-        """
+    :return: list of certificates attached to an endpoint without autorotate
+    """
     return (
         Certificate.query.filter(Certificate.endpoints.any())
+        .filter(Certificate.rotation == false())
+        .filter(Certificate.revoked == false())
+        .filter(Certificate.not_after >= arrow.now())
+        .filter(not_(Certificate.replaced.any()))
+        .all()  # noqa
+    )
+
+
+def get_all_certs_attached_to_destination_without_autorotate(plugin_name=None):
+    """
+    Retrieves all certificates that are attached to a destination, but that do not have autorotate enabled.
+
+    :param plugin_name: Optional destination plugin name to query. Queries certificates attached to any destination if not provided.
+    :return: list of certificates attached to a destination without autorotate
+    """
+    if plugin_name:
+        return (
+            Certificate.query.filter(Certificate.destinations.any(plugin_name=plugin_name))
+            .filter(Certificate.rotation == false())
+            .filter(Certificate.revoked == false())
+            .filter(Certificate.not_after >= arrow.now())
+            .filter(not_(Certificate.replaced.any()))
+            .all()  # noqa
+        )
+
+    return (
+        Certificate.query.filter(Certificate.destinations.any())
         .filter(Certificate.rotation == false())
         .filter(Certificate.revoked == false())
         .filter(Certificate.not_after >= arrow.now())
@@ -327,14 +354,18 @@ def cleanup_owner_roles_notification(owner_name, kwargs):
     kwargs["notifications"] = [n for n in kwargs["notifications"] if not n.label.startswith(notification_prefix)]
 
 
-def update_notify(cert, notify_flag):
+def update_switches(cert, notify_flag=None, rotation_flag=None):
     """
-    Toggle notification value which is a boolean
+    Toggle notification and/or rotation values which are boolean
     :param notify_flag: new notify value
+    :param rotation_flag: new rotation value
     :param cert: Certificate object to be updated
     :return:
     """
-    cert.notify = notify_flag
+    if notify_flag is not None:  # check for None allows value of False to continue
+        cert.notify = notify_flag
+    if rotation_flag is not None:
+        cert.rotation = rotation_flag
     return database.update(cert)
 
 
@@ -473,7 +504,7 @@ def create(**kwargs):
         from lemur.common.celery import fetch_acme_cert
 
         if not current_app.config.get("ACME_DISABLE_AUTORESOLVE", False):
-            fetch_acme_cert.apply_async((pending_cert.id,), countdown=5)
+            fetch_acme_cert.apply_async((pending_cert.id, kwargs.get("async_reissue_notification_cert", None)), countdown=5)
 
     return cert
 
@@ -534,6 +565,8 @@ def render(args):
             )
         elif "notify" in filt:
             query = query.filter(Certificate.notify == truthiness(terms[1]))
+        elif "rotation" in filt:
+            query = query.filter(Certificate.rotation == truthiness(terms[1]))
         elif "active" in filt:
             query = query.filter(Certificate.active == truthiness(terms[1]))
         elif "cn" in terms:
@@ -839,10 +872,11 @@ def get_certificate_primitives(certificate):
     return data
 
 
-def reissue_certificate(certificate, replace=None, user=None):
+def reissue_certificate(certificate, notify=None, replace=None, user=None):
     """
     Reissue certificate with the same properties of the given certificate.
     :param certificate:
+    :param notify:
     :param replace:
     :param user:
     :return:
@@ -882,6 +916,10 @@ def reissue_certificate(certificate, replace=None, user=None):
 
     if (certificate.owner in ecc_reissue_owner_list) and (certificate.cn not in ecc_reissue_exclude_cn_list):
         primitives["key_type"] = "ECCPRIME256V1"
+
+    # allow celery to send notifications for PendingCertificates using the old cert
+    if notify:
+        primitives["async_reissue_notification_cert"] = certificate
 
     new_cert = create(**primitives)
 

@@ -28,7 +28,11 @@ from lemur.endpoints import cli as cli_endpoints
 from lemur.extensions import metrics
 from lemur.factory import create_app
 from lemur.notifications import cli as cli_notification
-from lemur.notifications.messaging import send_pending_failure_notification
+from lemur.notifications.messaging import (
+    send_pending_failure_notification,
+    send_reissue_no_endpoints_notification,
+    send_reissue_failed_notification
+)
 from lemur.pending_certificates import service as pending_certificate_service
 from lemur.plugins.base import plugins
 from lemur.sources.cli import clean, sync, validate_sources
@@ -228,12 +232,13 @@ def report_revoked_task(**kwargs):
 
 
 @celery.task(soft_time_limit=600)
-def fetch_acme_cert(id):
+def fetch_acme_cert(id, notify_reissue_cert=None):
     """
     Attempt to get the full certificate for the pending certificate listed.
 
     Args:
         id: an id of a PendingCertificate
+        notify_reissue_cert: existing Certificate to use for reissue notifications, if supplied
     """
     task_id = None
     if celery.current_task:
@@ -294,6 +299,8 @@ def fetch_acme_cert(id):
             pending_certificate_service.update(
                 cert.get("pending_cert").id, resolved=True
             )
+            if notify_reissue_cert is not None:
+                send_reissue_no_endpoints_notification(notify_reissue_cert, final_cert)
             # add metrics to metrics extension
             new += 1
         else:
@@ -309,6 +316,8 @@ def fetch_acme_cert(id):
                 send_pending_failure_notification(
                     pending_cert, notify_owner=pending_cert.notify
                 )
+                if notify_reissue_cert is not None:
+                    send_reissue_failed_notification(pending_cert)
                 # Mark the pending cert as resolved
                 pending_certificate_service.update(
                     cert.get("pending_cert").id, resolved=True
@@ -319,7 +328,7 @@ def fetch_acme_cert(id):
                     cert.get("pending_cert").id, status=str(cert.get("last_error"))
                 )
                 # Add failed pending cert task back to queue
-                fetch_acme_cert.delay(id)
+                fetch_acme_cert.delay(id, notify_reissue_cert)
             current_app.logger.error(error_log)
     log_data["message"] = "Complete"
     log_data["new"] = new
@@ -917,7 +926,31 @@ def enable_autorotate_for_certs_attached_to_endpoint():
     }
     current_app.logger.debug(log_data)
 
-    cli_certificate.automatically_enable_autorotate()
+    cli_certificate.automatically_enable_autorotate_with_endpoint()
+    metrics.send(f"{function}.success", "counter", 1)
+    return log_data
+
+
+@celery.task(soft_time_limit=3600)
+def enable_autorotate_for_certs_attached_to_destination():
+    """
+    This celery task automatically enables autorotation for unexpired certificates that are
+    attached to at least one destination but do not have autorotate enabled.
+    :return:
+    """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    task_id = None
+    if celery.current_task:
+        task_id = celery.current_task.request.id
+
+    log_data = {
+        "function": function,
+        "task_id": task_id,
+        "message": "Enabling autorotate to eligible certificates",
+    }
+    current_app.logger.debug(log_data)
+
+    cli_certificate.automatically_enable_autorotate_with_destination()
     metrics.send(f"{function}.success", "counter", 1)
     return log_data
 

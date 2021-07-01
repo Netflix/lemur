@@ -7,6 +7,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import base64
+import json
 import random
 import re
 import socket
@@ -27,6 +28,8 @@ from sqlalchemy import and_, func
 
 from lemur.constants import CERTIFICATE_KEY_TYPES
 from lemur.exceptions import InvalidConfiguration
+from lemur.utils import Vault
+from sqlalchemy.dialects.postgresql import TEXT
 
 paginated_parser = RequestParser()
 
@@ -42,6 +45,12 @@ def base64encode(string):
     # Performs Base64 encoding of string to string using the base64.b64encode() function
     # which encodes bytes to bytes.
     return base64.b64encode(string.encode()).decode()
+
+
+def base64decode(base64_input):
+    # Performs Base64 decoging of a b64 string to string using the base64.b64encode() function
+    # which encodes bytes to bytes.
+    return base64.b64decode(base64_input.encode()).decode()
 
 
 def get_psuedo_random_string():
@@ -448,3 +457,39 @@ def parse_serial(pem_certificate):
     x509_cert.get_notAfter()
     parsed_certificate = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, pem_certificate)
     return parsed_certificate.get_serial_number()
+
+
+def data_encrypt(data):
+    """
+    takes an input and returns a base64 encoded encryption
+    reusing the Vault DB encryption module
+    :param data: string
+    :return: base64 ciphertext
+    """
+    if not isinstance(data, str):
+        data = str(data)
+    ciphertext = Vault().process_bind_param(data, TEXT())
+    return ciphertext.decode("utf8")
+
+
+def data_decrypt(ciphertext):
+    """
+    takes a ciphertext and returns the respective string
+    reusing the Vault DB encryption module
+    :param ciphertext: base64 ciphertext
+    :return: plaintext string
+    """
+    return Vault().process_result_value(ciphertext.encode("utf8"), TEXT())
+
+
+def is_json(json_input):
+    """
+    Test if input is json
+    :param json_input:
+    :return: True or False
+    """
+    try:
+        json.loads(json_input)
+    except ValueError:
+        return False
+    return True

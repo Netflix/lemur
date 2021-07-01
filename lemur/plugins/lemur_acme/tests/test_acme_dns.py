@@ -3,10 +3,11 @@ from unittest.mock import patch, Mock
 
 import josepy as jose
 from cryptography.x509 import DNSName
-from flask import Flask
+from flask import Flask, current_app
 from lemur.plugins.lemur_acme import plugin
 from lemur.plugins.lemur_acme.acme_handlers import AuthorizationRecord
 from lemur.common.utils import generate_private_key
+from lemur.tests.conf import LEMUR_ENCRYPTION_KEYS
 from unittest.mock import MagicMock
 
 
@@ -184,6 +185,7 @@ class TestAcmeDns(unittest.TestCase):
     @patch("lemur.plugins.lemur_acme.acme_handlers.BackwardsCompatibleClientV2")
     def test_setup_acme_client_success_store_new_account(self, mock_acme, mock_authorities_service,
                                                          mock_key_generation):
+        current_app.config["LEMUR_ENCRYPTION_KEYS"] = LEMUR_ENCRYPTION_KEYS
         mock_authority = Mock()
         mock_authority.id = 2
         mock_authority.options = '[{"name": "mock_name", "value": "mock_value"}, ' \
@@ -202,10 +204,8 @@ class TestAcmeDns(unittest.TestCase):
 
         self.acme.setup_acme_client(mock_authority)
 
-        mock_authorities_service.update_options.assert_called_with(2, options='[{"name": "mock_name", "value": "mock_value"}, '
-        '{"name": "store_account", "value": true}, '
-        '{"name": "acme_private_key", "value": "{\\"n\\": \\"PwIOkViO\\", \\"kty\\": \\"RSA\\"}"}, '
-        '{"name": "acme_regr", "value": "{\\"body\\": {}, \\"uri\\": \\"http://test.com\\"}"}]')
+        mock_authorities_service.update_options.assert_called_once()
+        assert "acme_private_key" in mock_authorities_service.update_options.call_args[1]['options']
 
     @patch("lemur.plugins.lemur_acme.acme_handlers.authorities_service")
     @patch("lemur.plugins.lemur_acme.acme_handlers.BackwardsCompatibleClientV2")
@@ -307,6 +307,10 @@ class TestAcmeDns(unittest.TestCase):
         mock_request_certificate.return_value = ("pem_certificate", "chain")
         result = provider.create_certificate(csr, issuer_options)
         assert result
+
+        issuer_options["create_immediately"] = True
+        immediate_result = provider.create_certificate(csr, issuer_options)
+        assert immediate_result
 
     @patch("lemur.plugins.lemur_acme.plugin.AcmeDnsHandler.start_dns_challenge", return_value="test")
     def test_get_authorizations(self, mock_start_dns_challenge):

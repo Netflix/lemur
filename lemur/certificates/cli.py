@@ -28,6 +28,7 @@ from lemur.certificates.service import (
     get_all_valid_certs,
     get,
     get_all_certs_attached_to_endpoint_without_autorotate,
+    get_all_certs_attached_to_destination_without_autorotate,
     revoke as revoke_certificate,
     list_duplicate_certs_by_authority,
     get_certificates_with_same_prefix_with_rotate_on,
@@ -161,9 +162,9 @@ def request_reissue(certificate, notify, commit):
         print_certificate_details(details)
 
         if commit:
-            new_cert = reissue_certificate(certificate, replace=True)
+            new_cert = reissue_certificate(certificate, notify=notify, replace=True)
             print("[+] New certificate named: {0}".format(new_cert.name))
-            if notify:
+            if notify and isinstance(new_cert, Certificate):  # let celery handle PendingCertificates
                 send_reissue_no_endpoints_notification(certificate, new_cert)
 
         status = SUCCESS_METRIC_STATUS
@@ -751,7 +752,7 @@ def check_revoked():
 
 
 @manager.command
-def automatically_enable_autorotate():
+def automatically_enable_autorotate_with_endpoint():
     """
     This function automatically enables auto-rotation for unexpired certificates that are
     attached to an endpoint but do not have autorotate enabled.
@@ -780,7 +781,50 @@ def automatically_enable_autorotate():
         else:
             log_data["destination_names"] = "NONE"
         current_app.logger.info(log_data)
-        metrics.send("automatically_enable_autorotate",
+        metrics.send("automatically_enable_autorotate_with_endpoint",
+                     "counter", 1,
+                     metric_tags={"certificate": log_data["certificate"],
+                                  "certificate_id": log_data["certificate_id"],
+                                  "authority_id": log_data["authority_id"],
+                                  "authority_name": log_data["authority_name"],
+                                  "destination_names": log_data["destination_names"]
+                                  })
+        cert.rotation = True
+        database.update(cert)
+
+
+@manager.command
+def automatically_enable_autorotate_with_destination():
+    """
+    This function automatically enables auto-rotation for unexpired certificates that are
+    attached to a destination but do not have autorotate enabled.
+
+    WARNING: This will overwrite the Auto-rotate toggle!
+    """
+    log_data = {
+        "function": f"{__name__}.{sys._getframe().f_code.co_name}",
+        "message": "Enabling auto-rotate for certificate"
+    }
+
+    permitted_authorities = current_app.config.get("ENABLE_AUTO_ROTATE_AUTHORITY", [])
+    destination_plugin_name = current_app.config.get("ENABLE_AUTO_ROTATE_DESTINATION_TYPE", None)
+
+    eligible_certs = get_all_certs_attached_to_destination_without_autorotate(plugin_name=destination_plugin_name)
+    for cert in eligible_certs:
+
+        if cert.authority_id not in permitted_authorities:
+            continue
+
+        log_data["certificate"] = cert.name
+        log_data["certificate_id"] = cert.id
+        log_data["authority_id"] = cert.authority_id
+        log_data["authority_name"] = authorities_get_by_id(cert.authority_id).name
+        if cert.destinations:
+            log_data["destination_names"] = ', '.join([d.label for d in cert.destinations])
+        else:
+            log_data["destination_names"] = "NONE"
+        current_app.logger.info(log_data)
+        metrics.send("automatically_enable_autorotate_with_destination",
                      "counter", 1,
                      metric_tags={"certificate": log_data["certificate"],
                                   "certificate_id": log_data["certificate_id"],

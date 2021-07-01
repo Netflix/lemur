@@ -47,8 +47,8 @@ class ACMEIssuerPlugin(IssuerPlugin):
             "name": "acme_url",
             "type": "str",
             "required": True,
-            "validation": check_validation(r"^http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+$"),
-            "helpMessage": "Must be a valid web url starting with http[s]://",
+            "validation": check_validation(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"),
+            "helpMessage": "ACME resource URI. Must be a valid web url starting with http[s]://",
         },
         {
             "name": "telephone",
@@ -68,7 +68,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
             "type": "textarea",
             "default": "",
             "validation": check_validation("^-----BEGIN CERTIFICATE-----"),
-            "helpMessage": "Certificate to use",
+            "helpMessage": "ACME root certificate",
         },
         {
             "name": "store_account",
@@ -76,6 +76,32 @@ class ACMEIssuerPlugin(IssuerPlugin):
             "required": False,
             "helpMessage": "Disable to create a new account for each ACME request",
             "default": False,
+        },
+        {
+            "name": "eab_kid",
+            "type": "str",
+            "required": False,
+            "helpMessage": "Key identifier for the external account.",
+        },
+        {
+            "name": "eab_hmac_key",
+            "type": "str",
+            "required": False,
+            "helpMessage": "HMAC key for the external account.",
+        },
+        {
+            "name": "acme_private_key",
+            "type": "textarea",
+            "default": "",
+            "required": False,
+            "helpMessage": "Account Private Key. Will be encrypted.",
+        },
+        {
+            "name": "acme_regr",
+            "type": "textarea",
+            "default": "",
+            "required": False,
+            "helpMessage": "Account Registration",
         }
     ]
 
@@ -253,7 +279,11 @@ class ACMEIssuerPlugin(IssuerPlugin):
         :param options:
         :return:
         """
-        role = {"username": "", "password": "", "name": "acme"}
+        name = "acme"
+        if options.get("authority"):
+            name += "_" + '_'.join(options['name'].split(" "))
+        role = {"username": "", "password": "", "name": name}
+
         plugin_options = options.get("plugin", {}).get("plugin_options")
         if not plugin_options:
             error = "Invalid options for lemur_acme plugin: {}".format(options)
@@ -296,7 +326,7 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
             "name": "acme_url",
             "type": "str",
             "required": True,
-            "validation": check_validation(r"/^http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+$/"),
+            "validation": check_validation(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"),
             "helpMessage": "Must be a valid web url starting with http[s]://",
         },
         {
@@ -317,7 +347,7 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
             "type": "textarea",
             "default": "",
             "validation": check_validation("^-----BEGIN CERTIFICATE-----"),
-            "helpMessage": "Certificate to use",
+            "helpMessage": "ACME root Certificate",
         },
         {
             "name": "store_account",
@@ -327,11 +357,39 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
             "default": False,
         },
         {
+            "name": "eab_kid",
+            "type": "str",
+            "default": "",
+            "required": False,
+            "helpMessage": "Key identifier for the external account.",
+        },
+        {
+            "name": "eab_hmac_key",
+            "type": "str",
+            "default": "",
+            "required": False,
+            "helpMessage": "HMAC key for the external account.",
+        },
+        {
+            "name": "acme_private_key",
+            "type": "textarea",
+            "default": "",
+            "required": False,
+            "helpMessage": "Account Private Key. Will be encrypted.",
+        },
+        {
+            "name": "acme_regr",
+            "type": "textarea",
+            "default": "",
+            "required": False,
+            "helpMessage": "Account Registration",
+        },
+        {
             "name": "tokenDestination",
             "type": "destinationSelect",
             "required": True,
             "helpMessage": "The destination to use to deploy the token.",
-        },
+        }
     ]
 
     def __init__(self, *args, **kwargs):
@@ -358,7 +416,11 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
         :param options:
         :return:
         """
-        role = {"username": "", "password": "", "name": "acme"}
+        name = "acme"
+        if options['name']:
+            name += "_" + '_'.join(options['name'].split(" "))
+        role = {"username": "", "password": "", "name": name}
+
         plugin_options = options.get("plugin", {}).get("plugin_options")
         if not plugin_options:
             error = "Invalid options for lemur_acme plugin: {}".format(options)

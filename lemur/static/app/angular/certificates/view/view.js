@@ -115,7 +115,7 @@ angular.module('lemur')
     };
 
     $scope.updateNotify = function (certificate) {
-      CertificateService.updateNotify(certificate).then(
+      CertificateService.updateSwitches(certificate).then(
         function () {
           toaster.pop({
             type: 'success',
@@ -131,6 +131,25 @@ angular.module('lemur')
             timeout: 100000
           });
           certificate.notify = false;
+        });
+    };
+    $scope.updateRotation = function (certificate) {
+      CertificateService.updateSwitches(certificate).then(
+        function () {
+          toaster.pop({
+            type: 'success',
+            title: certificate.name,
+            body: 'Updated!'
+          });
+        },
+        function (response) {
+          toaster.pop({
+            type: 'error',
+            title: certificate.name,
+            body: 'Unable to update! ' + response.data.message,
+            timeout: 100000
+          });
+          certificate.rotation = false;
         });
     };
     $scope.getCertificateStatus = function () {

@@ -24,12 +24,13 @@ class TestAcmeHttp(unittest.TestCase):
 
     def test_create_authority(self):
         options = {
-            "plugin": {"plugin_options": [{"name": "certificate", "value": "123"}]}
+            "plugin": {"plugin_options": [{"name": "certificate", "value": "123"}]},
+            "name": "mock_authority"
         }
         acme_root, b, role = self.ACMEHttpIssuerPlugin.create_authority(options)
         self.assertEqual(acme_root, "123")
         self.assertEqual(b, "")
-        self.assertEqual(role, [{"username": "", "password": "", "name": "acme"}])
+        self.assertEqual(role, [{"username": "", "password": "", "name": "acme_mock_authority"}])
 
     @patch("lemur.plugins.lemur_acme.plugin.AcmeHandler.setup_acme_client")
     @patch("lemur.plugins.base.manager.PluginManager.get")

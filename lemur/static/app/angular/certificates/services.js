@@ -305,7 +305,7 @@ angular.module('lemur')
       return certificate.customGET('key');
     };
 
-    CertificateService.updateNotify = function (certificate) {
+    CertificateService.updateSwitches = function (certificate) {
       return certificate.post();
     };
 
