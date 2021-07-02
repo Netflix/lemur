@@ -42,6 +42,7 @@ def get_by_name(name):
     """
     return database.get_all(Domain, name, field="name").all()
 
+
 def get_by_name_sorted_by_id(name, sort_dir="asc"):
     """
     Fetches domain by its name

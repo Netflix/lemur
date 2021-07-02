@@ -150,7 +150,8 @@ def get_all(model, value, field="id"):
     query = session_query(model)
     return query.filter(get_model_column(model, field) == value)
 
-def get_all_sorted(model, value, field="id", sort_by="id", sort_dir="asc" ):
+
+def get_all_sorted(model, value, field="id", sort_by="id", sort_dir="asc"):
     """
     Returns query object with the fields and value filtered and sorted
 
