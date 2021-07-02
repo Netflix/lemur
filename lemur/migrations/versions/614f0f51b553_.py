@@ -51,12 +51,12 @@ def dedup_domains_table():
 
     # Loop through all domains and get a list of them by count
     for name, count in conn.execute(text(
-            "SELECT name,count(*) FROM domains GROUP BY name HAVING COUNT(*) > 1 ORDER BY count(*) DESC")):
+            "SELECT name,count(*) FROM domains GROUP BY name HAVING COUNT(*) > 1 ORDER BY count(*) ASC")):
 
         # Find all duplicates for each domain.
         domain_id = False
         sensitive = False
-        stmt = text("SELECT domain_id, name, sensitive FROM domains WHERE name=:name ORDER BY domain_id ASC")
+        stmt = text("SELECT id, name, sensitive FROM domains WHERE name=:name ORDER BY id ASC")
         stmt = stmt.bindparams(name=name)
         for cur_id, _, cur_sensitive in conn.execute(stmt):
 
@@ -80,12 +80,12 @@ def dedup_domains_table():
                 # Delete current domain entry
                 conn.execute(
                     text(
-                        "DELETE FROM domains WHERE domain_id=:cur_id"
+                        "DELETE FROM domains WHERE id=:cur_id"
                     ).bindparams(cur_id=cur_id)
                 )
-    # Update the Schema so the domains table has unique names
-    conn.execute(
-        text(
-            "ALTER TABLE domains ADD UNIQUE(name)"
-        )
-    )
+                commit()
+
+
+def commit():
+    stmt = text("commit")
+    op.execute(stmt)
