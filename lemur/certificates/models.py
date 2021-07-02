@@ -245,11 +245,15 @@ class Certificate(db.Model):
         self.dns_provider_id = kwargs.get("dns_provider_id")
 
         for domain in defaults.domains(cert):
-            # Currently, this creates a new Domain object for each domain, and a new association for each.
-            self.domains.append(Domain(name=domain))
+            # Avoid circular import.
+            from lemur.domains import service as domain_service
 
-            # New Logic
-            # Create a new association with existing Domain if it exists, otherwise, create a new Domain.
+            # Create an association with an existing Domain, otherwise, create a new Domain.
+            existing_domain = domain_service.get_by_name_sorted_by_id(domain, "asc")
+            if existing_domain:
+                self.domains.append(existing_domain[0])
+            else:
+                self.domains.append(Domain(name=domain))
 
         # Check integrity before saving anything into the database.
         # For user-facing API calls, validation should also be done in schema validators.

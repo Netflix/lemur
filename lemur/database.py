@@ -150,6 +150,23 @@ def get_all(model, value, field="id"):
     query = session_query(model)
     return query.filter(get_model_column(model, field) == value)
 
+def get_all_sorted(model, value, field="id", sort_by="id", sort_dir="asc" ):
+    """
+    Returns query object with the fields and value filtered and sorted
+
+    :param model:
+    :param value:
+    :param field:
+    :param sort_by:
+    :param sort_dir:
+    :return:
+    """
+    query = session_query(model)
+    column = get_model_column(model, field) == value
+    query = query.filter(column)
+    query = sort(query, model, sort_by, sort_dir)
+    return query
+
 
 def create(model):
     """

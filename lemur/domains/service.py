@@ -42,6 +42,16 @@ def get_by_name(name):
     """
     return database.get_all(Domain, name, field="name").all()
 
+def get_by_name_sorted_by_id(name, sort_dir="asc"):
+    """
+    Fetches domain by its name
+
+    :param name:
+    :param sort_dir:
+    :return:
+    """
+    return database.get_all_sorted(Domain, name, field="name", sort_by="id", sort_dir=sort_dir).all()
+
 
 def is_domain_sensitive(name):
     """
@@ -65,6 +75,10 @@ def create(name, sensitive):
     :param sensitive:
     :return:
     """
+    domain = get_by_name(name)
+    if domain:
+        return domain
+
     domain = Domain(name=name, sensitive=sensitive)
     return database.create(domain)
 
