@@ -54,32 +54,34 @@ def dedup_domains_table():
             "SELECT name,count(*) FROM domains GROUP BY name HAVING COUNT(*) > 1 ORDER BY count(*) DESC")):
 
         # Find all duplicates for each domain.
-        id = False
+        domain_id = False
         sensitive = False
-        for cur_id, _, cur_sensitive in conn.execute(text(
-                f"SELECT id, name, sensitive FROM domains WHERE name = {name} ORDER BY id ASC")):
+        stmt = text("SELECT domain_id, name, sensitive FROM domains WHERE name=:name ORDER BY domain_id ASC")
+        stmt = stmt.bindparams(name=name)
+        for cur_id, _, cur_sensitive in conn.execute(stmt):
 
-            #  Keep only the first one (lowest id number), and update the rest
-            if id == False:
-                id = cur_id
+            #  Keep only the first one (lowest domain_id number), and update the rest
+            if not domain_id:
+                domain_id = cur_id
                 sensitive = cur_sensitive
             else:
                 if sensitive != cur_sensitive:
                     log.error(
-                        f"Error in domain deduplication. {name} has conflicting sensitivities in domains table.  Fix these and run again.")
+                        f"Error in domain deduplication. {name} has conflicting sensitivities in domains table."
+                        f"Fix the sensitivity conflicts and run again.")
                     return
 
                 # Update association to point to single domain entry
                 conn.execute(
                     text(
-                        f"UPDATE certificate_associations SET domain_id = {id} WHERE domain_id = {cur_id}"
-                    )
+                        "UPDATE certificate_associations SET domain_id=:domain_id WHERE domain_id=:cur_id"
+                    ).bindparams(domain_id=domain_id, cur_id=cur_id)
                 )
                 # Delete current domain entry
                 conn.execute(
                     text(
-                        f"DELETE FROM domains WHERE id = {cur_id}"
-                    )
+                        "DELETE FROM domains WHERE domain_id=:cur_id"
+                    ).bindparams(cur_id=cur_id)
                 )
     # Update the Schema so the domains table has unique names
     conn.execute(
