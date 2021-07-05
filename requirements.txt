@@ -32,7 +32,7 @@ blinker==1.4
     # via
     #   flask-mail
     #   flask-principal
-boto3==1.17.101
+boto3==1.17.105
     # via -r requirements.in
 botocore==1.20.105
     # via
