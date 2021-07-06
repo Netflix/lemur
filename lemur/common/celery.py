@@ -1076,7 +1076,7 @@ def notify_expiring_deployed_certificates():
     return log_data
 
 
-@celery.task(soft_time_limit=3600)
+@celery.task(soft_time_limit=10800)  # 3 hours
 def identity_expiring_deployed_certificates():
     """
     This celery task attempts to find any certificates that are expiring soon but are still deployed,
