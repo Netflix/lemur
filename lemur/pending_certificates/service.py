@@ -5,6 +5,7 @@
 """
 import arrow
 from sqlalchemy import or_, cast, Integer
+from flask import current_app
 
 from lemur import database
 from lemur.authorities.models import Authority
