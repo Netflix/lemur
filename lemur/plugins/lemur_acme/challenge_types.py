@@ -92,11 +92,6 @@ class AcmeHttpChallenge(AcmeChallenge):
         all_pre_validated = True
         for authz in orderr.authorizations:
             # Choosing challenge.
-            # check if authorizations is already in a valid state
-            # authz.body.identifier.value the domain we are validating
-            # if authz.body.wildcard:
-            #   no wildcard support, we shall validate this via the dnsName
-            #   continue
             if authz.body.status != STATUS_VALID:
                 all_pre_validated = False
                 # authz.body.challenges is a set of ChallengeBody objects.
@@ -104,8 +99,6 @@ class AcmeHttpChallenge(AcmeChallenge):
                     # Find the supported challenge.
                     if isinstance(i.chall, challenges.HTTP01):
                         chall.append(i)
-#                    if isinstance(i.chall, challenges.DNS01) and wildcard.Identifier:
-#                        dns_challenges.append(i)
             else:
                 current_app.logger.info("{} already validated, skipping".format(authz.body.identifier.value))
 
