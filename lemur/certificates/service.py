@@ -496,6 +496,17 @@ def create(**kwargs):
             1,
             metric_tags=dict(owner=cert.owner, issuer=cert.issuer),
         )
+        log_data = {
+            "function": "lemur.certificates.service.create",
+            "owner": cert.owner,
+            "name": cert.name,
+            "serial": cert.serial,
+            "issuer": cert.issuer,
+            "not_after": cert.not_after.format('YYYY-MM-DD HH:mm:ss'),
+            "not_before": cert.not_before.format('YYYY-MM-DD HH:mm:ss'),
+            "sans": str(', '.join([domain.name for domain in cert.domains])),
+        }
+        current_app.logger.info(log_data)
 
     if isinstance(cert, PendingCertificate):
         # We need to refresh the pending certificate to avoid "Instance is not bound to a Session; "
