@@ -64,7 +64,7 @@ class TestAcmeDns(unittest.TestCase):
         host = "example.com"
         c = challenges.DNS01()
 
-        mock_authz = MagicMock
+        mock_authz = MagicMock()
         mock_authz.body = STATUS_VALID
         mock_authz.body.resolved_combinations = []
         mock_entry = Mock()
