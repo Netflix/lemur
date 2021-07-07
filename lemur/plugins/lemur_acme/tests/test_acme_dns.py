@@ -2,6 +2,8 @@ import unittest
 from unittest.mock import patch, Mock
 
 import josepy as jose
+
+from acme.messages import STATUS_PENDING, STATUS_VALID
 from cryptography.x509 import DNSName
 from flask import Flask, current_app
 from lemur.plugins.lemur_acme import plugin
@@ -99,7 +101,8 @@ class TestAcmeDns(unittest.TestCase):
         mock_authz.change_id = []
         mock_authz.change_id.append("123")
         mock_authz.dns_challenge = []
-        dns_challenge = Mock()
+        dns_challenge = MagicMock()
+        dns_challenge["status"] == STATUS_PENDING
         mock_authz.dns_challenge.append(dns_challenge)
         self.acme.complete_dns_challenge(mock_acme, mock_authz)
 
@@ -111,10 +114,11 @@ class TestAcmeDns(unittest.TestCase):
         mock_dns_provider = Mock()
         mock_dns_provider.wait_for_dns_change = Mock(return_value=True)
 
-        mock_dns_challenge = Mock()
+        mock_dns_challenge = MagicMock()
         response = Mock()
         response.simple_verify = Mock(return_value=False)
         mock_dns_challenge.response = Mock(return_value=response)
+        mock_dns_challenge["status"] == STATUS_PENDING
 
         mock_authz = Mock()
         mock_authz.dns_challenge = []
