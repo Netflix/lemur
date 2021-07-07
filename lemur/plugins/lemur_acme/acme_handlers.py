@@ -405,7 +405,7 @@ class AcmeDnsHandler(AcmeHandler):
 
             for dns_challenge in authz_record.dns_challenge:
                 # abort if the status is already valid, no DNS challenge to complete
-                if dns_challenge["status"] == STATUS_VALID:
+                if "status" in dns_challenge and dns_challenge["status"] == STATUS_VALID:
                     metrics.send("acme_challenge_already_valid", "counter", 1)
                     return
 
