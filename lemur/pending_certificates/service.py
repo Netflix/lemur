@@ -5,6 +5,7 @@
 """
 import arrow
 from sqlalchemy import or_, cast, Integer
+from flask import current_app
 
 from lemur import database
 from lemur.authorities.models import Authority
@@ -137,6 +138,17 @@ def create_certificate(pending_certificate, certificate, user):
     metrics.send("certificate_issued", "counter", 1, metric_tags=dict(owner=cert.owner, issuer=cert.issuer))
     log_service.audit_log("certificate_from_pending_certificate", cert.name,
                           f"Created from the pending certificate {pending_certificate.name}")
+    log_data = {
+        "function": "lemur.certificates.service.create",
+        "owner": cert.owner,
+        "name": cert.name,
+        "serial": cert.serial,
+        "issuer": cert.issuer,
+        "not_after": cert.not_after.format('YYYY-MM-DD HH:mm:ss'),
+        "not_before": cert.not_before.format('YYYY-MM-DD HH:mm:ss'),
+        "sans": cert.san,
+    }
+    current_app.logger.info(log_data)
     return cert
 
 
