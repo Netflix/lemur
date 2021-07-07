@@ -343,11 +343,11 @@ class AcmeDnsHandler(AcmeHandler):
         change_ids = []
         cname_delegation = domain != target_domain
         # This method will consider and skip valid HTTP01 challenges
-        dns_challenges, hostname_still_validatd = self.get_dns_challenges(domain, order.authorizations)
+        dns_challenges, hostname_still_validated = self.get_dns_challenges(domain, order.authorizations)
         host_to_validate, _ = self.strip_wildcard(target_domain)
         host_to_validate = self.maybe_add_extension(host_to_validate, dns_provider_options)
 
-        if hostname_still_validatd:
+        if hostname_still_validated:
             return
 
         if not dns_challenges:
