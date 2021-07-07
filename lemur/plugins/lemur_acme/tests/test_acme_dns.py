@@ -51,8 +51,9 @@ class TestAcmeDns(unittest.TestCase):
         mock_entry = Mock()
         mock_entry.chall = c
         mock_authz.body.resolved_combinations.append(mock_entry)
-        result = yield self.acme.get_dns_challenges(host, mock_authz)
+        result, hostname_still_validated = yield self.acme.get_dns_challenges(host, mock_authz)
         self.assertEqual(result, mock_entry)
+        self.assertFalse(hostname_still_validated)
 
     @patch("acme.client.Client")
     @patch("lemur.plugins.lemur_acme.plugin.len", return_value=1)
