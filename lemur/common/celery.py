@@ -28,7 +28,11 @@ from lemur.endpoints import cli as cli_endpoints
 from lemur.extensions import metrics
 from lemur.factory import create_app
 from lemur.notifications import cli as cli_notification
-from lemur.notifications.messaging import send_pending_failure_notification
+from lemur.notifications.messaging import (
+    send_pending_failure_notification,
+    send_reissue_no_endpoints_notification,
+    send_reissue_failed_notification
+)
 from lemur.pending_certificates import service as pending_certificate_service
 from lemur.plugins.base import plugins
 from lemur.sources.cli import clean, sync, validate_sources
@@ -228,12 +232,13 @@ def report_revoked_task(**kwargs):
 
 
 @celery.task(soft_time_limit=600)
-def fetch_acme_cert(id):
+def fetch_acme_cert(id, notify_reissue_cert=None):
     """
     Attempt to get the full certificate for the pending certificate listed.
 
     Args:
         id: an id of a PendingCertificate
+        notify_reissue_cert: existing Certificate to use for reissue notifications, if supplied
     """
     task_id = None
     if celery.current_task:
@@ -294,6 +299,8 @@ def fetch_acme_cert(id):
             pending_certificate_service.update(
                 cert.get("pending_cert").id, resolved=True
             )
+            if notify_reissue_cert is not None:
+                send_reissue_no_endpoints_notification(notify_reissue_cert, final_cert)
             # add metrics to metrics extension
             new += 1
         else:
@@ -309,6 +316,8 @@ def fetch_acme_cert(id):
                 send_pending_failure_notification(
                     pending_cert, notify_owner=pending_cert.notify
                 )
+                if notify_reissue_cert is not None:
+                    send_reissue_failed_notification(pending_cert)
                 # Mark the pending cert as resolved
                 pending_certificate_service.update(
                     cert.get("pending_cert").id, resolved=True
@@ -319,7 +328,7 @@ def fetch_acme_cert(id):
                     cert.get("pending_cert").id, status=str(cert.get("last_error"))
                 )
                 # Add failed pending cert task back to queue
-                fetch_acme_cert.delay(id)
+                fetch_acme_cert.delay(id, notify_reissue_cert)
             current_app.logger.error(error_log)
     log_data["message"] = "Complete"
     log_data["new"] = new
@@ -1067,7 +1076,7 @@ def notify_expiring_deployed_certificates():
     return log_data
 
 
-@celery.task(soft_time_limit=3600)
+@celery.task(soft_time_limit=10800)  # 3 hours
 def identity_expiring_deployed_certificates():
     """
     This celery task attempts to find any certificates that are expiring soon but are still deployed,
