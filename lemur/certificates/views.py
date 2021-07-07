@@ -1427,13 +1427,16 @@ class CertificateRevoke(AuthenticatedResource):
         """
         .. http:put:: /certificates/1/revoke
 
-           Revoke a certificate
+           Revoke a certificate. One can mention the reason of revocation using crlReason (optional) as per
+           `RFC 5280 section 5.3.1 <https://tools.ietf.org/html/rfc5280#section-5.3.1>`_
+           The allowed values for crlReason can also be found in Lemur in `constants.py/CRLReason <https://github.com/Netflix/lemur/blob/master/lemur/constants.py#L49>`_
+           Additional information can be captured using comments (optional).
 
            **Example request**:
 
            .. sourcecode:: http
 
-              POST /certificates/1/revoke HTTP/1.1
+              PUT /certificates/1/revoke HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
               Content-Type: application/json;charset=UTF-8
