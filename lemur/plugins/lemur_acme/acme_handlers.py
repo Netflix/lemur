@@ -22,7 +22,7 @@ import dns.resolver
 from acme import challenges, errors, messages
 from acme.client import BackwardsCompatibleClientV2, ClientNetwork
 from acme.errors import TimeoutError
-from acme.messages import Error as AcmeError
+from acme.messages import Error as AcmeError, STATUS_VALID
 from certbot import crypto_util as acme_crypto_util
 from flask import current_app
 from sentry_sdk import capture_exception
@@ -292,11 +292,17 @@ class AcmeDnsHandler(AcmeHandler):
         return dns_provider_plugin.get_zones(account_number=account_number)
 
     def get_dns_challenges(self, host, authorizations):
-        """Get dns challenges for provided domain"""
+        """Get dns challenges for provided domain
+            Also indicate if the hostname is already validated
+        """
 
         domain_to_validate, is_wildcard = self.strip_wildcard(host)
         dns_challenges = []
         for authz in authorizations:
+            # skip valid domain
+            if authz.body.status == STATUS_VALID:
+                metrics.send("get_acme_challenges_already_valid", "counter", 1)
+                return [], True
             if not authz.body.identifier.value.lower() == domain_to_validate.lower():
                 continue
             if is_wildcard and not authz.body.wildcard:
@@ -307,7 +313,7 @@ class AcmeDnsHandler(AcmeHandler):
                 if isinstance(combo.chall, challenges.DNS01):
                     dns_challenges.append(combo)
 
-        return dns_challenges
+        return dns_challenges, False
 
     def get_dns_provider(self, type):
         provider_types = {
@@ -336,9 +342,13 @@ class AcmeDnsHandler(AcmeHandler):
 
         change_ids = []
         cname_delegation = domain != target_domain
-        dns_challenges = self.get_dns_challenges(domain, order.authorizations)
+        # This method will consider and skip valid HTTP01 challenges
+        dns_challenges, hostname_still_validated = self.get_dns_challenges(domain, order.authorizations)
         host_to_validate, _ = self.strip_wildcard(target_domain)
         host_to_validate = self.maybe_add_extension(host_to_validate, dns_provider_options)
+
+        if hostname_still_validated:
+            return
 
         if not dns_challenges:
             capture_exception()
@@ -394,6 +404,11 @@ class AcmeDnsHandler(AcmeHandler):
                     raise
 
             for dns_challenge in authz_record.dns_challenge:
+                # abort if the status is already valid, no DNS challenge to complete
+                if "status" in dns_challenge and dns_challenge["status"] == STATUS_VALID:
+                    metrics.send("acme_challenge_already_valid", "counter", 1)
+                    return
+
                 response = dns_challenge.response(acme_client.client.net.key)
 
                 verified = response.simple_verify(
@@ -411,6 +426,7 @@ class AcmeDnsHandler(AcmeHandler):
             current_app.logger.debug(f"answer_challenge response: {res}")
 
     def get_authorizations(self, acme_client, order, order_info):
+        """ The list can be empty if all hostname validations are still valid"""
         authorizations = []
 
         for domain in order_info.domains:
@@ -447,7 +463,9 @@ class AcmeDnsHandler(AcmeHandler):
                     order,
                     dns_provider.options,
                 )
-                authorizations.append(authz_record)
+                # it can be null, if hostname is still valid
+                if authz_record:
+                    authorizations.append(authz_record)
         return authorizations
 
     def autodetect_dns_providers(self, domain):

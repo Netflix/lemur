@@ -2,6 +2,8 @@ import unittest
 from unittest.mock import patch, Mock
 
 import josepy as jose
+
+from acme.messages import STATUS_PENDING, STATUS_VALID
 from cryptography.x509 import DNSName
 from flask import Flask, current_app
 from lemur.plugins.lemur_acme import plugin
@@ -49,8 +51,28 @@ class TestAcmeDns(unittest.TestCase):
         mock_entry = Mock()
         mock_entry.chall = c
         mock_authz.body.resolved_combinations.append(mock_entry)
-        result = yield self.acme.get_dns_challenges(host, mock_authz)
+        result, hostname_still_validated = yield self.acme.get_dns_challenges(host, mock_authz)
         self.assertEqual(result, mock_entry)
+        self.assertFalse(hostname_still_validated)
+
+    @patch("lemur.plugins.lemur_acme.plugin.len", return_value=1)
+    def test_get_dns_challenges_already_valid(self, mock_len):
+        assert mock_len
+
+        from acme import challenges
+
+        host = "example.com"
+        c = challenges.DNS01()
+
+        mock_authz = MagicMock()
+        mock_authz.body = STATUS_VALID
+        mock_authz.body.resolved_combinations = []
+        mock_entry = Mock()
+        mock_entry.chall = c
+        mock_authz.body.resolved_combinations.append(mock_entry)
+        result, hostname_still_validatd = yield self.acme.get_dns_challenges(host, mock_authz)
+        self.assertEqual(result, mock_entry)
+        self.assertTrue(hostname_still_validatd)
 
     @patch("acme.client.Client")
     @patch("lemur.plugins.lemur_acme.plugin.len", return_value=1)
@@ -70,7 +92,8 @@ class TestAcmeDns(unittest.TestCase):
         mock_dns_provider = Mock()
         mock_dns_provider.create_txt_record = Mock(return_value=1)
 
-        values = [mock_entry]
+        hostname_still_validated = False
+        values = [mock_entry, hostname_still_validated]
         iterable = mock_get_dns_challenges.return_value
         iterator = iter(values)
         iterable.__iter__.return_value = iterator
@@ -99,7 +122,8 @@ class TestAcmeDns(unittest.TestCase):
         mock_authz.change_id = []
         mock_authz.change_id.append("123")
         mock_authz.dns_challenge = []
-        dns_challenge = Mock()
+        dns_challenge = MagicMock()
+        dns_challenge["status"] == STATUS_PENDING
         mock_authz.dns_challenge.append(dns_challenge)
         self.acme.complete_dns_challenge(mock_acme, mock_authz)
 
@@ -111,10 +135,11 @@ class TestAcmeDns(unittest.TestCase):
         mock_dns_provider = Mock()
         mock_dns_provider.wait_for_dns_change = Mock(return_value=True)
 
-        mock_dns_challenge = Mock()
+        mock_dns_challenge = MagicMock()
         response = Mock()
         response.simple_verify = Mock(return_value=False)
         mock_dns_challenge.response = Mock(return_value=response)
+        mock_dns_challenge["status"] == STATUS_PENDING
 
         mock_authz = Mock()
         mock_authz.dns_challenge = []
