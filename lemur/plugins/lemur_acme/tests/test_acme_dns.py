@@ -73,7 +73,8 @@ class TestAcmeDns(unittest.TestCase):
         mock_dns_provider = Mock()
         mock_dns_provider.create_txt_record = Mock(return_value=1)
 
-        values = [mock_entry]
+        hostname_still_validated = False
+        values = [mock_entry, hostname_still_validated]
         iterable = mock_get_dns_challenges.return_value
         iterator = iter(values)
         iterable.__iter__.return_value = iterator
