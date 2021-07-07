@@ -201,7 +201,7 @@ class AcmeHandler(object):
                 eab = messages.ExternalAccountBinding.from_data(account_public_key=key.public_key(),
                                                                 kid=eab_kid,
                                                                 hmac_key=eab_hmac_key,
-                                                                directory={'newAccount': directory_url})
+                                                                directory=client.directory)
                 registration = client.new_account_and_tos(
                     messages.NewRegistration.from_data(email=email, external_account_binding=eab)
                 )
