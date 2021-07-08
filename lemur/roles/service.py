@@ -9,10 +9,22 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+from flask import current_app
+
 from lemur import database
 from lemur.roles.models import Role
 from lemur.users.models import User
 from lemur.logs import service as log_service
+
+
+def warn_user_updates(role_name, current_users, new_users):
+    removed_users = list(u.username for u in set(current_users) - set(new_users))
+    if removed_users:
+        current_app.logger.warning(f"Removed {role_name} role for {removed_users}")
+
+    added_users = list(u.username for u in set(new_users) - set(current_users))
+    if added_users:
+        current_app.logger.warning(f"Added {role_name} role for {removed_users}")
 
 
 def update(role_id, name, description, users):
@@ -26,6 +38,9 @@ def update(role_id, name, description, users):
     :return:
     """
     role = get(role_id)
+
+    if name == 'admin':
+        warn_user_updates(name, role.users, users)
     role.name = name
     role.description = description
     role.users = users
