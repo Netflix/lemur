@@ -299,16 +299,16 @@ class AcmeDnsHandler(AcmeHandler):
         domain_to_validate, is_wildcard = self.strip_wildcard(host)
         dns_challenges = []
         for authz in authorizations:
-            # skip valid domain
-            if authz.body.status == STATUS_VALID:
-                metrics.send("get_acme_challenges_already_valid", "counter", 1)
-                return [], True
             if not authz.body.identifier.value.lower() == domain_to_validate.lower():
                 continue
             if is_wildcard and not authz.body.wildcard:
                 continue
             if not is_wildcard and authz.body.wildcard:
                 continue
+            # skip valid domain, as long this challenge is for the domain_to_validates
+            if authz.body.status == STATUS_VALID:
+                metrics.send("get_acme_challenges_already_valid", "counter", 1)
+                return [], True
             for combo in authz.body.challenges:
                 if isinstance(combo.chall, challenges.DNS01):
                     dns_challenges.append(combo)
