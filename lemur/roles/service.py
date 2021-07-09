@@ -24,7 +24,7 @@ def warn_user_updates(role_name, current_users, new_users):
 
     added_users = list(u.username for u in set(new_users) - set(current_users))
     if added_users:
-        current_app.logger.warning(f"Added {role_name} role for {removed_users}")
+        current_app.logger.warning(f"Added {role_name} role for {added_users}")
 
 
 def update(role_id, name, description, users):
