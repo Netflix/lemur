@@ -305,7 +305,7 @@ class AcmeDnsHandler(AcmeHandler):
                 continue
             if not is_wildcard and authz.body.wildcard:
                 continue
-            # skip valid domain, as long this challenge is for the domain_to_validates
+            # skip valid challenge, as long as this challenge is for the domain_to_validate
             if authz.body.status == STATUS_VALID:
                 metrics.send("get_acme_challenges_already_valid", "counter", 1)
                 return [], True
