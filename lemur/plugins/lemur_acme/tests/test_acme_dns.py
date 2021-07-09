@@ -74,6 +74,37 @@ class TestAcmeDns(unittest.TestCase):
         self.assertEqual(result, mock_entry)
         self.assertTrue(hostname_still_validatd)
 
+    @patch("lemur.plugins.lemur_acme.plugin.len", return_value=1)
+    def test_get_dns_challenges_mixed_valid(self, mock_len):
+        assert mock_len
+
+        from acme import challenges
+
+        host = "example.com"
+        c = challenges.DNS01()
+
+        host2 = "www.example.com"
+        c2 = challenges.DNS01()
+
+        mock_authz = MagicMock()
+        mock_authz.body = STATUS_VALID
+        mock_authz.body.resolved_combinations = []
+        mock_entry = Mock()
+        mock_entry.chall = c
+        mock_authz.body.resolved_combinations.append(mock_entry)
+
+        mock_authz2 = MagicMock()
+        mock_authz2.body = STATUS_PENDING
+        mock_authz2.body.resolved_combinations = []
+        mock_entry2 = Mock()
+        mock_entry.chall = c2
+        mock_authz.body.resolved_combinations.append(mock_entry2)
+
+        # a pending status, mixed with valid
+        result, hostname_still_validatd = yield self.acme.get_dns_challenges(host2, [mock_authz, mock_authz2])
+        self.assertEqual(result, mock_entry)
+        self.assertFalse(hostname_still_validatd)
+
     @patch("acme.client.Client")
     @patch("lemur.plugins.lemur_acme.plugin.len", return_value=1)
     @patch("lemur.plugins.lemur_acme.plugin.AcmeDnsHandler.get_dns_challenges")
