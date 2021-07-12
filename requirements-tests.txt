@@ -22,7 +22,7 @@ bandit==1.7.0
     # via -r requirements-tests.in
 black==21.6b0
     # via -r requirements-tests.in
-boto3==1.17.105
+boto3==1.17.109
     # via
     #   aws-sam-translator
     #   moto
