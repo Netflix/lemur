@@ -11,6 +11,8 @@
 
 import json
 
+from flask import current_app
+
 from lemur import database
 from lemur.common.utils import truthiness, data_encrypt
 from lemur.extensions import metrics
@@ -154,6 +156,10 @@ def create(**kwargs):
     kwargs["creator"].authorities.append(authority)
 
     log_service.audit_log("create_authority", ca_name, "Created new authority")
+
+    issuer = kwargs["plugin"]["plugin_object"]
+    current_app.logger.warning(f"Created new authority {ca_name} with issuer {issuer.title}")
+
     metrics.send(
         "authority_created", "counter", 1, metric_tags=dict(owner=authority.owner)
     )

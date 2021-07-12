@@ -38,6 +38,12 @@
                 <li><span class="text-muted">{{ certificate.owner }}</span></li>
               </ul>
             </td>
+             <td data-title="'Autorotate'" filter="{ 'rotation': 'select' }" filter-data="getCertificateStatus()">
+              <form>
+                <switch ng-change="updateRotation(certificate)" id="rotation" name="rotation"
+                  ng-model="certificate.rotation" class="green small"></switch>
+              </form>
+            </td>
             <td data-title="'Notify'" filter="{ 'notify': 'select' }" filter-data="getCertificateStatus()">
               <form>
                 <switch ng-change="updateNotify(certificate)" id="status" name="status"

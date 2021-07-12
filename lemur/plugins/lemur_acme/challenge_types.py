@@ -92,7 +92,6 @@ class AcmeHttpChallenge(AcmeChallenge):
         all_pre_validated = True
         for authz in orderr.authorizations:
             # Choosing challenge.
-            # check if authorizations is already in a valid state
             if authz.body.status != STATUS_VALID:
                 all_pre_validated = False
                 # authz.body.challenges is a set of ChallengeBody objects.

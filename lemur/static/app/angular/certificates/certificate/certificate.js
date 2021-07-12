@@ -127,6 +127,11 @@ angular.module('lemur')
       opened: false
     };
 
+    $scope.clearDatesAndDefaultValidity = function () {
+      $scope.clearDates();
+      $scope.certificate.validityType = 'defaultDays';
+    };
+
     $scope.clearDates = function () {
       $scope.certificate.validityStart = null;
       $scope.certificate.validityEnd = null;

@@ -354,14 +354,18 @@ def cleanup_owner_roles_notification(owner_name, kwargs):
     kwargs["notifications"] = [n for n in kwargs["notifications"] if not n.label.startswith(notification_prefix)]
 
 
-def update_notify(cert, notify_flag):
+def update_switches(cert, notify_flag=None, rotation_flag=None):
     """
-    Toggle notification value which is a boolean
+    Toggle notification and/or rotation values which are boolean
     :param notify_flag: new notify value
+    :param rotation_flag: new rotation value
     :param cert: Certificate object to be updated
     :return:
     """
-    cert.notify = notify_flag
+    if notify_flag is not None:  # check for None allows value of False to continue
+        cert.notify = notify_flag
+    if rotation_flag is not None:
+        cert.rotation = rotation_flag
     return database.update(cert)
 
 
@@ -492,6 +496,17 @@ def create(**kwargs):
             1,
             metric_tags=dict(owner=cert.owner, issuer=cert.issuer),
         )
+        log_data = {
+            "function": "lemur.certificates.service.create",
+            "owner": cert.owner,
+            "name": cert.name,
+            "serial": cert.serial,
+            "issuer": cert.issuer,
+            "not_after": cert.not_after.format('YYYY-MM-DD HH:mm:ss'),
+            "not_before": cert.not_before.format('YYYY-MM-DD HH:mm:ss'),
+            "sans": str(', '.join([domain.name for domain in cert.domains])),
+        }
+        current_app.logger.info(log_data)
 
     if isinstance(cert, PendingCertificate):
         # We need to refresh the pending certificate to avoid "Instance is not bound to a Session; "
@@ -500,7 +515,7 @@ def create(**kwargs):
         from lemur.common.celery import fetch_acme_cert
 
         if not current_app.config.get("ACME_DISABLE_AUTORESOLVE", False):
-            fetch_acme_cert.apply_async((pending_cert.id,), countdown=5)
+            fetch_acme_cert.apply_async((pending_cert.id, kwargs.get("async_reissue_notification_cert", None)), countdown=5)
 
     return cert
 
@@ -561,6 +576,8 @@ def render(args):
             )
         elif "notify" in filt:
             query = query.filter(Certificate.notify == truthiness(terms[1]))
+        elif "rotation" in filt:
+            query = query.filter(Certificate.rotation == truthiness(terms[1]))
         elif "active" in filt:
             query = query.filter(Certificate.active == truthiness(terms[1]))
         elif "cn" in terms:
@@ -866,10 +883,11 @@ def get_certificate_primitives(certificate):
     return data
 
 
-def reissue_certificate(certificate, replace=None, user=None):
+def reissue_certificate(certificate, notify=None, replace=None, user=None):
     """
     Reissue certificate with the same properties of the given certificate.
     :param certificate:
+    :param notify:
     :param replace:
     :param user:
     :return:
@@ -909,6 +927,10 @@ def reissue_certificate(certificate, replace=None, user=None):
 
     if (certificate.owner in ecc_reissue_owner_list) and (certificate.cn not in ecc_reissue_exclude_cn_list):
         primitives["key_type"] = "ECCPRIME256V1"
+
+    # allow celery to send notifications for PendingCertificates using the old cert
+    if notify:
+        primitives["async_reissue_notification_cert"] = certificate
 
     new_cert = create(**primitives)
 

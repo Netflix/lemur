@@ -111,7 +111,9 @@ class Certificate(db.Model):
             "name",
             postgresql_ops={"name": "gin_trgm_ops"},
             postgresql_using="gin",
-        ),
+        )
+        # Index for ix_root_authority_id canot be created here, and is only created in the migration file
+        # since conditional indexes are not supported
     )
     id = Column(Integer, primary_key=True)
     ix = Index(
@@ -130,6 +132,8 @@ class Certificate(db.Model):
 
     issuer = Column(String(128))
     serial = Column(String(128))
+    serial_ix = Index("ix_certificates_serial", "serial")
+
     cn = Column(String(128))
     deleted = Column(Boolean, index=True, default=False)
     dns_provider_id = Column(
@@ -456,6 +460,10 @@ class CertificateAssociation(db.Model):
         Index(
             "certificate_associations_ix",
             "domain_id",
+            "certificate_id",
+        ),
+        Index(
+            "certificate_associations_certificate_id_idx",
             "certificate_id",
         ),
     )
