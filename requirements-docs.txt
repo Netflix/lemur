@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-docs.txt requirements-docs.in
 #
-acme==1.16.0
+acme==1.17.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -72,7 +72,7 @@ botocore==1.20.109
     #   s3transfer
 celery[redis]==4.4.2
     # via -r requirements-docs.in
-certbot==1.16.0
+certbot==1.17.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -156,7 +156,7 @@ ecdsa==0.14.1
     #   sshpubkeys
 factory-boy==3.2.0
     # via -r requirements-tests.txt
-faker==8.9.1
+faker==8.10.1
     # via
     #   -r requirements-tests.txt
     #   factory-boy
