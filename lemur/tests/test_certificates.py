@@ -1461,12 +1461,14 @@ def test_identify_and_persist_expiring_deployed_certificates():
     In this test, the serial number is always the same, since it's parsed from the hardcoded test cert.
     """
 
-    # one non-expiring cert, two expiring certs, one cert that doesn't match a running server, and one cert using an excluded domain
+    # one non-expiring cert, two expiring certs, one cert that doesn't match a running server,
+    # one cert using an excluded domain, and one cert belonging to an excluded owner.
     cert_1 = create_cert_that_expires_in_days(180, domains=[Domain(name='localhost')], owner='testowner1@example.com')
     cert_2 = create_cert_that_expires_in_days(10, domains=[Domain(name='localhost')], owner='testowner2@example.com')
     cert_3 = create_cert_that_expires_in_days(10, domains=[Domain(name='localhost')], owner='testowner3@example.com')
     cert_4 = create_cert_that_expires_in_days(10, domains=[Domain(name='not-localhost')], owner='testowner4@example.com')
     cert_5 = create_cert_that_expires_in_days(10, domains=[Domain(name='abc.excluded.com')], owner='testowner5@example.com')
+    cert_6 = create_cert_that_expires_in_days(10, domains=[Domain(name='localhost')], owner='excludedowner@example.com')
 
     # test certs are all hardcoded with the same body/chain so we don't need to use the created cert here
     cert_file_data = SAN_CERT_STR + INTERMEDIATE_CERT_STR + ROOTCA_CERT_STR + SAN_CERT_KEY
@@ -1483,11 +1485,12 @@ def test_identify_and_persist_expiring_deployed_certificates():
             assert len(c.certificate_associations) == 1
             for ca in c.certificate_associations:
                 assert ca.ports is None
-        identify_and_persist_expiring_deployed_certificates(['excluded.com'], True)
-        for c in [cert_1, cert_5]:
+        identify_and_persist_expiring_deployed_certificates(['excluded.com'], ['excludedowner@example.com'], True)
+        for c in [cert_1, cert_5, cert_6]:
             assert len(c.certificate_associations) == 1
             for ca in c.certificate_associations:
-                assert ca.ports is None  # cert_1 is not expiring, cert_5 is excluded, so neither should be update
+                assert ca.ports is None  # cert_1 is not expiring, cert_5 is excluded by domain,
+                # and cert_6 is excluded by owner, so none of them should be updated
         for c in [cert_4]:
             assert len(c.certificate_associations) == 1
             for ca in c.certificate_associations:
