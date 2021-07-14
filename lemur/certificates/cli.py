@@ -1047,10 +1047,18 @@ def is_duplicate(matching_cert, compare_to):
 @manager.option(
     "-e",
     "--exclude",
-    dest="exclude",
+    dest="exclude_domains",
     action="append",
     default=[],
     help="Domains that should be excluded from check.",
+)
+@manager.option(
+    "-eo",
+    "--exclude-owners",
+    dest="exclude_owners",
+    action="append",
+    default=[],
+    help="Owners that should be excluded from check.",
 )
 @manager.option(
     "-c",
@@ -1060,10 +1068,10 @@ def is_duplicate(matching_cert, compare_to):
     default=False,
     help="Persist changes.",
 )
-def identify_expiring_deployed_certificates(exclude, commit):
+def identify_expiring_deployed_certificates(exclude_domains, exclude_owners, commit):
     status = FAILURE_METRIC_STATUS
     try:
-        identify_and_persist_expiring_deployed_certificates(exclude, commit)
+        identify_and_persist_expiring_deployed_certificates(exclude_domains, exclude_owners, commit)
         status = SUCCESS_METRIC_STATUS
     except Exception:
         capture_exception()
