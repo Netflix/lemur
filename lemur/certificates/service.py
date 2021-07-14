@@ -1087,7 +1087,8 @@ def remove_destination_association(certificate, destination):
     )
 
 
-def identify_and_persist_expiring_deployed_certificates(exclude_domains, exclude_owners, commit, timeout_seconds_per_network_call=1):
+def identify_and_persist_expiring_deployed_certificates(exclude_domains, exclude_owners, commit,
+                                                        timeout_seconds_per_network_call=1):
     """
     Finds all certificates expiring soon but are still being used for TLS at any domain with which they are associated.
     Identified ports will then be persisted on the certificate_associations row for the given cert/domain combo.
