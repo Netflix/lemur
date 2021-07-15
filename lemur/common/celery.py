@@ -298,7 +298,7 @@ def fetch_acme_cert(id):
             pending_certificate_service.update(
                 cert.get("pending_cert").id, resolved=True
             )
-            if real_cert.replaces is not None:
+            if real_cert.notify and real_cert.replaces is not None:
                 send_reissue_no_endpoints_notification(real_cert.replaces, final_cert)
             # add metrics to metrics extension
             new += 1
@@ -315,7 +315,7 @@ def fetch_acme_cert(id):
                 send_pending_failure_notification(
                     pending_cert, notify_owner=pending_cert.notify
                 )
-                if pending_cert.replaces is not None:
+                if pending_cert.notify and pending_cert.replaces is not None:
                     send_reissue_failed_notification(pending_cert)
                 # Mark the pending cert as resolved
                 pending_certificate_service.update(
