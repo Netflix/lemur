@@ -109,7 +109,7 @@ gulp.task('dev:styles', function () {
     'lemur/static/app/styles/lemur.css'
   ];
 
-  return gulp.src(fileList)
+  return gulp.src(fileList, { allowEmpty: true })
     .pipe(gulpif(isBootswatchFile, foreach(function (stream, file) {
       let themeName = path.basename(path.dirname(file.path)),
         content = replaceAll(baseContent, '$theme$', themeName);
