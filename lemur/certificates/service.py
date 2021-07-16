@@ -515,7 +515,7 @@ def create(**kwargs):
         from lemur.common.celery import fetch_acme_cert
 
         if not current_app.config.get("ACME_DISABLE_AUTORESOLVE", False):
-            fetch_acme_cert.apply_async(pending_cert.id, countdown=5)
+            fetch_acme_cert.apply_async((pending_cert.id, None), countdown=5)
 
     return cert
 
