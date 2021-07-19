@@ -485,9 +485,9 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
 @manager.option(
     "-a",
     "--notify",
-    dest="message",
+    dest="notify",
     action="store_true",
-    help="Send a re-issue failed notification to the certificates owner (if re-isuance fails).",
+    help="Send a re-issue failed notification to the certificates owner (if re-issuance fails).",
 )
 @manager.option(
     "-c",
