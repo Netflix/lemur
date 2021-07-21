@@ -20,6 +20,7 @@ from sentry_sdk import capture_exception
 
 from lemur.authorities.service import get as get_authority
 from lemur.certificates import cli as cli_certificate
+from lemur.certificates import service as certificate_service
 from lemur.common.redis import RedisHandler
 from lemur.constants import ACME_ADDITIONAL_ATTEMPTS
 from lemur.destinations import service as destinations_service
@@ -232,12 +233,13 @@ def report_revoked_task(**kwargs):
 
 
 @celery.task(soft_time_limit=600)
-def fetch_acme_cert(id):
+def fetch_acme_cert(id, notify_reissue_cert_id=None):
     """
     Attempt to get the full certificate for the pending certificate listed.
 
     Args:
         id: an id of a PendingCertificate
+        notify_reissue_cert_id: ID of existing Certificate to use for reissue notifications, if supplied
     """
     task_id = None
     if celery.current_task:
@@ -298,8 +300,9 @@ def fetch_acme_cert(id):
             pending_certificate_service.update(
                 cert.get("pending_cert").id, resolved=True
             )
-            if final_cert.notify and final_cert.replaces is not None:
-                send_reissue_no_endpoints_notification(final_cert.replaces, final_cert)
+            if notify_reissue_cert_id is not None:
+                notify_reissue_cert = certificate_service.get(notify_reissue_cert_id)
+                send_reissue_no_endpoints_notification(notify_reissue_cert, final_cert)
             # add metrics to metrics extension
             new += 1
         else:
@@ -315,7 +318,7 @@ def fetch_acme_cert(id):
                 send_pending_failure_notification(
                     pending_cert, notify_owner=pending_cert.notify
                 )
-                if pending_cert.notify and pending_cert.replaces is not None:
+                if notify_reissue_cert_id is not None:
                     send_reissue_failed_notification(pending_cert)
                 # Mark the pending cert as resolved
                 pending_certificate_service.update(
@@ -327,7 +330,7 @@ def fetch_acme_cert(id):
                     cert.get("pending_cert").id, status=str(cert.get("last_error"))
                 )
                 # Add failed pending cert task back to queue
-                fetch_acme_cert.delay(id)
+                fetch_acme_cert.delay(id, notify_reissue_cert_id)
             current_app.logger.error(error_log)
     log_data["message"] = "Complete"
     log_data["new"] = new

@@ -515,7 +515,7 @@ def create(**kwargs):
         from lemur.common.celery import fetch_acme_cert
 
         if not current_app.config.get("ACME_DISABLE_AUTORESOLVE", False):
-            fetch_acme_cert.apply_async((pending_cert.id,), countdown=5)
+            fetch_acme_cert.apply_async((pending_cert.id, kwargs.get("async_reissue_notification_cert_id", None)), countdown=5)
 
     return cert
 
@@ -927,6 +927,10 @@ def reissue_certificate(certificate, notify=None, replace=None, user=None):
 
     if (certificate.owner in ecc_reissue_owner_list) and (certificate.cn not in ecc_reissue_exclude_cn_list):
         primitives["key_type"] = "ECCPRIME256V1"
+
+    # allow celery to send notifications for PendingCertificates using the old cert
+    if notify:
+        primitives["async_reissue_notification_cert_id"] = certificate.id
 
     new_cert = create(**primitives)
 
