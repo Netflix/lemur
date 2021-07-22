@@ -15,7 +15,8 @@ from lemur.common.defaults import common_name, bitstrength
 from lemur.common.utils import parse_certificate, parse_private_key, check_validation
 from lemur.plugins.bases import DestinationPlugin
 
-from cryptography.hazmat.primitives.serialization import pkcs12
+from cryptography.hazmat.primitives import serialization
+# from cryptography.hazmat.primitives.serialization import pkcs12
 import requests
 import json
 import sys
@@ -159,7 +160,7 @@ class AzureDestinationPlugin(DestinationPlugin):
         # Azure keyvault accepts PEM and PKCS12-Format Certificates
         # only the latter is usable for Azure Application Gateway
         # therefore we upload in PKCS12 format
-        cert_p12=serialization.pkcs12.serialize_key_and_certificates(
+        cert_p12 = serialization.pkcs12.serialize_key_and_certificates(
             name=certificate_name.encode(),
             key=parse_private_key(private_key),
             cert=cert,
