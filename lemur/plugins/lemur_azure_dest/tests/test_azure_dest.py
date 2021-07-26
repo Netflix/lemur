@@ -79,6 +79,8 @@ X4OJSL6Q/vqLehA8MOjORj3EprM4dv/SixqdTi4hVbkIv+M8vgZTd04O8S98oghl
 Q1eMutMqf45yvSgVIr7SHkh2a+S4E7RjkH9pDE+8MQVTiSSPH5ZgEp7FveK4GkfW
 Qils0nQFsH1VujvoF9Y04MAgZw==
 -----END CERTIFICATE-----'''
+
+
 class TestAzureDestination(unittest.TestCase):
     def setUp(self):
         self.azure_dest = plugin.AzureDestinationPlugin()
@@ -133,5 +135,3 @@ class TestAzureDestination(unittest.TestCase):
         plugin.get_access_token = Mock(return_value='valid_test_token')
 
         iferl = subject.upload(name, body, private_key, cert_chain, options)
-
-        
