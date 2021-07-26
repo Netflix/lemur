@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch, Mock, MagicMock, mock_open
+from unittest.mock import patch, Mock
 
 from flask import Flask
 from lemur.plugins.lemur_azure_dest import plugin
@@ -92,14 +92,14 @@ class TestAzureDestination(unittest.TestCase):
     def tearDown(self):
         self.ctx.pop()
 
+    # commented patch: another unsuccessful try
     # @patch("requests.post", side_effect=mocked_requests_post)
-    #@patch("requests.post")
+    # @patch("requests.post")
     @patch("lemur.plugins.lemur_azure_dest.plugin.current_app")
     def test_upload(self, patched_app):
 
         from lemur.plugins.lemur_azure_dest.plugin import AzureDestinationPlugin
         import requests_mock
-
 
         subject = AzureDestinationPlugin()
         adapter = requests_mock.Adapter()
@@ -107,13 +107,13 @@ class TestAzureDestination(unittest.TestCase):
             "POST",
             "mock://login.microsoftonline.com/mockedTenant/oauth2/token",
             text=json.dumps({"access_token": "id123"}),
-            status_code = 200,
+            status_code=200,
         )
         adapter.register_uri(
             "POST",
             "mock://couldbeanyvalue.com/certificates/localhost/import",
             text=json.dumps({"id": "id123"}),
-            status_code = 200,
+            status_code=200,
         )
 
         subject.session.mount("mock", adapter)
@@ -122,18 +122,16 @@ class TestAzureDestination(unittest.TestCase):
         body = test_server_cert
         private_key = test_server_key
         cert_chain = test_ca_cert
-        options = [{'name' : 'vaultUrl', 'value' : 'https://couldbeanyvalue.com'}, {'name' : 'azureTenant', 'value' : 'mockedTenant'},
-                {'name' : 'appID', 'value' : 'mockedAPPid'}, {'name' : 'azurePassword', 'value' : 'norealPW'}]
+        options = [{'name': 'vaultUrl', 'value': 'https://couldbeanyvalue.com'}, {'name': 'azureTenant', 'value': 'mockedTenant'},
+                {'name': 'appID', 'value': 'mockedAPPid'}, {'name': 'azurePassword', 'value': 'norealPW'}]
 
+        # commented lines: another unsuccessful try
         # return value for HTTP post - we won't access Azure
         # mock_post = Mock()
         # mock_post.open = mock_open()
         # mock_post.return_value =  "['message': 'Response', 'status': 200, 'response': {'id': 'someID'}]"
         plugin.get_access_token = Mock(return_value='valid_test_token')
 
-        #mock_post.post.assert_called_with('non-existent', username='test_acme', port='22',
-        #                                    password='test_password')
         iferl = subject.upload(name, body, private_key, cert_chain, options)
 
-        mock_current_app.call_args_list
-        mocked_post.call_args_list
+        
