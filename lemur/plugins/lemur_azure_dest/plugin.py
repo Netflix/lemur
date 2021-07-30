@@ -16,7 +16,7 @@ from lemur.common.utils import parse_certificate, parse_private_key, check_valid
 from lemur.plugins.bases import DestinationPlugin
 
 from cryptography.hazmat.primitives import serialization
-# from cryptography.hazmat.primitives.serialization import pkcs12
+from cryptography.hazmat.primitives.serialization import pkcs12
 import requests
 import json
 import sys
