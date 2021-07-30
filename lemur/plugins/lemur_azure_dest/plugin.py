@@ -160,7 +160,7 @@ class AzureDestinationPlugin(DestinationPlugin):
         # Azure keyvault accepts PEM and PKCS12-Format Certificates
         # only the latter is usable for Azure Application Gateway
         # therefore we upload in PKCS12 format
-        cert_p12 = serialization.pkcs12.serialize_key_and_certificates(
+        cert_p12 = pkcs12.serialize_key_and_certificates(
             name=certificate_name.encode(),
             key=parse_private_key(private_key),
             cert=cert,
