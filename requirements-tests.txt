@@ -36,7 +36,7 @@ certbot==1.16.0
     # via -r requirements-tests.in
 certifi==2021.5.30
     # via requests
-cffi==1.14.5
+cffi==1.14.6
     # via cryptography
 cfn-lint==0.50.0
     # via moto
