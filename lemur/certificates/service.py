@@ -515,7 +515,7 @@ def create(**kwargs):
         from lemur.common.celery import fetch_acme_cert
 
         if not current_app.config.get("ACME_DISABLE_AUTORESOLVE", False):
-            fetch_acme_cert.apply_async((pending_cert.id, kwargs.get("async_reissue_notification_cert", None)), countdown=5)
+            fetch_acme_cert.apply_async((pending_cert.id, kwargs.get("async_reissue_notification_cert_id", None)), countdown=5)
 
     return cert
 
@@ -930,7 +930,7 @@ def reissue_certificate(certificate, notify=None, replace=None, user=None):
 
     # allow celery to send notifications for PendingCertificates using the old cert
     if notify:
-        primitives["async_reissue_notification_cert"] = certificate
+        primitives["async_reissue_notification_cert_id"] = certificate.id
 
     new_cert = create(**primitives)
 
@@ -1087,7 +1087,8 @@ def remove_destination_association(certificate, destination):
     )
 
 
-def identify_and_persist_expiring_deployed_certificates(exclude, commit, timeout_seconds_per_network_call=1):
+def identify_and_persist_expiring_deployed_certificates(exclude_domains, exclude_owners, commit,
+                                                        timeout_seconds_per_network_call=1):
     """
     Finds all certificates expiring soon but are still being used for TLS at any domain with which they are associated.
     Identified ports will then be persisted on the certificate_associations row for the given cert/domain combo.
@@ -1095,14 +1096,14 @@ def identify_and_persist_expiring_deployed_certificates(exclude, commit, timeout
     Note that this makes actual TLS network calls in order to establish the "deployed" part of this check.
     """
     all_certs = defaultdict(dict)
-    for c in get_certs_for_expiring_deployed_cert_check(exclude):
-        domains_for_cert = find_and_persist_domains_where_cert_is_deployed(c, exclude, commit,
+    for c in get_certs_for_expiring_deployed_cert_check(exclude_domains, exclude_owners):
+        domains_for_cert = find_and_persist_domains_where_cert_is_deployed(c, exclude_domains, commit,
                                                                            timeout_seconds_per_network_call)
         if len(domains_for_cert) > 0:
             all_certs[c] = domains_for_cert
 
 
-def get_certs_for_expiring_deployed_cert_check(exclude):
+def get_certs_for_expiring_deployed_cert_check(exclude_domains, exclude_owners):
     threshold_days = current_app.config.get("LEMUR_EXPIRING_DEPLOYED_CERT_THRESHOLD_DAYS", 14)
     max_not_after = arrow.utcnow().shift(days=+threshold_days).format("YYYY-MM-DD")
 
@@ -1115,9 +1116,15 @@ def get_certs_for_expiring_deployed_cert_check(exclude):
     )
 
     exclude_conditions = []
-    if exclude:
-        for e in exclude:
+    if exclude_domains:
+        for e in exclude_domains:
             exclude_conditions.append(~Certificate.name.ilike("%{}%".format(e)))
+
+        q = q.filter(and_(*exclude_conditions))
+
+    if exclude_owners:
+        for e in exclude_owners:
+            exclude_conditions.append(~Certificate.owner.ilike("{}".format(e)))
 
         q = q.filter(and_(*exclude_conditions))
 
@@ -1189,7 +1196,7 @@ def get_expiring_deployed_certificates(exclude=None):
     :return: A dictionary with owner as key, and a list of certificates associated with domains/ports.
     """
     certs_domains_and_ports = defaultdict(dict)
-    for certificate in get_certs_for_expiring_deployed_cert_check(exclude):
+    for certificate in get_certs_for_expiring_deployed_cert_check(exclude, None):
         matched_domains = defaultdict(list)
         for cert_association in [assoc for assoc in certificate.certificate_associations if assoc.ports]:
             matched_domains[cert_association.domain.name] = cert_association.ports

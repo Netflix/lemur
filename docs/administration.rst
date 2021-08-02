@@ -602,6 +602,15 @@ The following configuration options are supported:
 
           LEMUR_DEPLOYED_CERTIFICATE_CHECK_EXCLUDED_DOMAINS = ['excluded.com']
 
+.. data:: LEMUR_DEPLOYED_CERTIFICATE_CHECK_EXCLUDED_OWNERS
+    :noindex:
+
+       Specifies a set of owners to exclude from the deployed certificate checks. Anything specified here is treated as an exact match, NOT as a substring.
+
+       ::
+
+          LEMUR_DEPLOYED_CERTIFICATE_CHECK_EXCLUDED_OWNERS = ['excludedowner@example.com']
+
 
 .. data:: LEMUR_REISSUE_NOTIFICATION_EXCLUDED_DESTINATIONS
     :noindex:

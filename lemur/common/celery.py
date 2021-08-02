@@ -20,6 +20,7 @@ from sentry_sdk import capture_exception
 
 from lemur.authorities.service import get as get_authority
 from lemur.certificates import cli as cli_certificate
+from lemur.certificates import service as certificate_service
 from lemur.common.redis import RedisHandler
 from lemur.constants import ACME_ADDITIONAL_ATTEMPTS
 from lemur.destinations import service as destinations_service
@@ -232,13 +233,13 @@ def report_revoked_task(**kwargs):
 
 
 @celery.task(soft_time_limit=600)
-def fetch_acme_cert(id, notify_reissue_cert=None):
+def fetch_acme_cert(id, notify_reissue_cert_id=None):
     """
     Attempt to get the full certificate for the pending certificate listed.
 
     Args:
         id: an id of a PendingCertificate
-        notify_reissue_cert: existing Certificate to use for reissue notifications, if supplied
+        notify_reissue_cert_id: ID of existing Certificate to use for reissue notifications, if supplied
     """
     task_id = None
     if celery.current_task:
@@ -299,7 +300,8 @@ def fetch_acme_cert(id, notify_reissue_cert=None):
             pending_certificate_service.update(
                 cert.get("pending_cert").id, resolved=True
             )
-            if notify_reissue_cert is not None:
+            if notify_reissue_cert_id is not None:
+                notify_reissue_cert = certificate_service.get(notify_reissue_cert_id)
                 send_reissue_no_endpoints_notification(notify_reissue_cert, final_cert)
             # add metrics to metrics extension
             new += 1
@@ -316,7 +318,7 @@ def fetch_acme_cert(id, notify_reissue_cert=None):
                 send_pending_failure_notification(
                     pending_cert, notify_owner=pending_cert.notify
                 )
-                if notify_reissue_cert is not None:
+                if notify_reissue_cert_id is not None:
                     send_reissue_failed_notification(pending_cert)
                 # Mark the pending cert as resolved
                 pending_certificate_service.update(
@@ -328,7 +330,7 @@ def fetch_acme_cert(id, notify_reissue_cert=None):
                     cert.get("pending_cert").id, status=str(cert.get("last_error"))
                 )
                 # Add failed pending cert task back to queue
-                fetch_acme_cert.delay(id, notify_reissue_cert)
+                fetch_acme_cert.delay(id, notify_reissue_cert_id)
             current_app.logger.error(error_log)
     log_data["message"] = "Complete"
     log_data["new"] = new
@@ -1100,9 +1102,10 @@ def identity_expiring_deployed_certificates():
 
     current_app.logger.debug(log_data)
     try:
-        exclude = current_app.config.get("LEMUR_DEPLOYED_CERTIFICATE_CHECK_EXCLUDED_DOMAINS", [])
+        exclude_domains = current_app.config.get("LEMUR_DEPLOYED_CERTIFICATE_CHECK_EXCLUDED_DOMAINS", [])
+        exclude_owners = current_app.config.get("LEMUR_DEPLOYED_CERTIFICATE_CHECK_EXCLUDED_OWNERS", [])
         commit = current_app.config.get("LEMUR_DEPLOYED_CERTIFICATE_CHECK_COMMIT_MODE", False)
-        cli_certificate.identify_expiring_deployed_certificates(exclude, commit)
+        cli_certificate.identify_expiring_deployed_certificates(exclude_domains, exclude_owners, commit)
     except SoftTimeLimitExceeded:
         log_data["message"] = "Time limit exceeded."
         current_app.logger.error(log_data)
