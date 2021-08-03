@@ -185,6 +185,6 @@ class AzureDestinationPlugin(DestinationPlugin):
 
         try:
             response = self.session.post(cert_url, headers=post_header, json=post_body)
+            return_value = handle_response(response)
         except requests.exceptions.RequestException as e:
             current_app.logger.exception(f"AZURE: Error for POST {e}")
-        return_value = handle_response(response)
