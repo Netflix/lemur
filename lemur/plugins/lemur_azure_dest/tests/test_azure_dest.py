@@ -102,23 +102,25 @@ class TestAzureDestination(unittest.TestCase):
 
         from lemur.plugins.lemur_azure_dest.plugin import AzureDestinationPlugin
         import requests_mock
+        import requests
 
         subject = AzureDestinationPlugin()
+        subject.session = requests.Session()
         adapter = requests_mock.Adapter()
         adapter.register_uri(
             "POST",
-            "mock://login.microsoftonline.com/mockedTenant/oauth2/token",
+            "https://login.microsoftonline.com/mockedTenant/oauth2/token",
             text=json.dumps({"access_token": "id123"}),
             status_code=200,
         )
         adapter.register_uri(
             "POST",
-            "mock://couldbeanyvalue.com/certificates/localhost/import",
+            "https://couldbeanyvalue.com/certificates/localhost/import",
             text=json.dumps({"id": "id123"}),
             status_code=200,
         )
 
-        subject.session.mount("mock", adapter)
+        subject.session.mount("https://", adapter)
 
         name = 'Test_Certificate'
         body = test_server_cert
