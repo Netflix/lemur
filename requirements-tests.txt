@@ -22,11 +22,11 @@ bandit==1.7.0
     # via -r requirements-tests.in
 black==21.7b0
     # via -r requirements-tests.in
-boto3==1.18.1
+boto3==1.18.11
     # via
     #   aws-sam-translator
     #   moto
-botocore==1.21.1
+botocore==1.21.11
     # via
     #   aws-xray-sdk
     #   boto3
@@ -36,11 +36,11 @@ certbot==1.17.0
     # via -r requirements-tests.in
 certifi==2021.5.30
     # via requests
-cffi==1.14.5
+cffi==1.14.6
     # via cryptography
 cfn-lint==0.50.0
     # via moto
-chardet==4.0.0
+charset-normalizer==2.0.4
     # via requests
 click==8.0.1
     # via
@@ -74,7 +74,7 @@ ecdsa==0.14.1
     #   sshpubkeys
 factory-boy==3.2.0
     # via -r requirements-tests.in
-faker==8.10.1
+faker==8.10.3
     # via
     #   -r requirements-tests.in
     #   factory-boy
@@ -221,7 +221,7 @@ redis==3.5.3
     # via fakeredis
 regex==2021.4.4
     # via black
-requests==2.25.1
+requests==2.26.0
     # via
     #   acme
     #   docker
