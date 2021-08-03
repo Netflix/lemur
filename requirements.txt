@@ -55,7 +55,7 @@ cffi==1.14.6
     #   bcrypt
     #   cryptography
     #   pynacl
-chardet==4.0.0
+charset-normalizer==2.0.4
     # via requests
 click==8.0.1
     # via flask
@@ -224,7 +224,7 @@ redis==3.5.3
     # via
     #   -r requirements.in
     #   celery
-requests==2.25.1
+requests==2.26.0
     # via
     #   -r requirements.in
     #   acme

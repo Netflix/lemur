@@ -93,7 +93,7 @@ cfn-lint==0.50.0
     # via
     #   -r requirements-tests.txt
     #   moto
-chardet==4.0.0
+charset-normalizer==2.0.4
     # via
     #   -r requirements-tests.txt
     #   requests
@@ -442,7 +442,7 @@ regex==2021.4.4
     # via
     #   -r requirements-tests.txt
     #   black
-requests==2.25.1
+requests==2.26.0
     # via
     #   -r requirements-tests.txt
     #   acme
