@@ -50,7 +50,7 @@ certifi==2021.5.30
     #   sentry-sdk
 certsrv==2.1.1
     # via -r requirements.in
-cffi==1.14.5
+cffi==1.14.6
     # via
     #   bcrypt
     #   cryptography
