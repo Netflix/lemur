@@ -26,6 +26,7 @@ from lemur.extensions import metrics
 from lemur.plugins import lemur_digicert as digicert
 from lemur.plugins.bases import IssuerPlugin, SourcePlugin
 from retrying import retry
+from requests.packages.urllib3.util.retry import Retry
 
 
 def log_status_code(r, *args, **kwargs):
