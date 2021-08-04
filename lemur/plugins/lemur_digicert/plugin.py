@@ -216,7 +216,23 @@ def handle_response(response):
     return response.json()
 
 
-def handle_cis_response(response):
+def reset_cis_session(session):
+    """
+    The current session might be in a bad state with wrong headers. Let's attempt to update the session back the initial
+    state.
+    :param session:
+    :return:
+    """
+    session.headers.clear()
+    session.headers.update(
+        {
+            "X-DC-DEVKEY": current_app.config["DIGICERT_CIS_API_KEY"],
+            "Content-Type": "application/json",
+        }
+    )
+
+
+def handle_cis_response(session, response):
     """
     Handle the DigiCert CIS API response and any errors it might have experienced.
     :param response:
@@ -225,10 +241,12 @@ def handle_cis_response(response):
     if response.status_code == 404:
         raise Exception("DigiCert: order not in issued state")
     elif response.status_code == 406:
-        raise Exception("DigiCert: wrong header request format")
+        log_header = session.headers
+        log_header.pop("X-DC-DEVKEY")
+        reset_cis_session(session)
+        raise Exception("DigiCert: wrong header request format: " + str(log_header))
     elif response.status_code > 399:
-        raise Exception("DigiCert rejected request with the error:" + response.text)
-
+        raise Exception("DigiCert rejected request with the error: " + response.text)
     if response.url.endswith("download"):
         return response.content
     else:
@@ -252,7 +270,7 @@ def get_cis_certificate(session, base_url, order_id):
     certificate_url = "{0}/platform/cis/certificate/{1}/download".format(base_url, order_id)
     session.headers.update({"Accept": "application/x-pkcs7-certificates"})
     response = session.get(certificate_url)
-    response_content = handle_cis_response(response)
+    response_content = handle_cis_response(session, response)
 
     cert_chain_pem = convert_pkcs7_bytes_to_pem(response_content)
     if len(cert_chain_pem) < 3:
@@ -503,7 +521,7 @@ class DigiCertCISSourcePlugin(SourcePlugin):
             response = self.session.get(
                 search_url, params={"status": ["issued"], "page": page}
             )
-            data = handle_cis_response(response)
+            data = handle_cis_response(self.session, response)
 
             for c in data["certificates"]:
                 download_url = "{0}/platform/cis/certificate/{1}".format(
@@ -570,7 +588,7 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
 
         data = map_cis_fields(issuer_options, csr)
         response = self.session.post(create_url, data=json.dumps(data))
-        data = handle_cis_response(response)
+        data = handle_cis_response(self.session, response)
 
         # retrieve certificate
         certificate_chain_pem = get_cis_certificate(self.session, base_url, data["id"])
