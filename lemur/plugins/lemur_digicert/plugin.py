@@ -270,6 +270,7 @@ def get_cis_certificate(session, base_url, order_id):
     certificate_url = "{0}/platform/cis/certificate/{1}/download".format(base_url, order_id)
     session.headers.update({"Accept": "application/x-pkcs7-certificates"})
     response = session.get(certificate_url)
+    session.headers.pop("Accept")
     response_content = handle_cis_response(session, response)
 
     cert_chain_pem = convert_pkcs7_bytes_to_pem(response_content)
@@ -593,7 +594,6 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
         # retrieve certificate
         certificate_chain_pem = get_cis_certificate(self.session, base_url, data["id"])
 
-        self.session.headers.pop("Accept")
         end_entity = certificate_chain_pem[0]
         intermediate = certificate_chain_pem[1]
 
