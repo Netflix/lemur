@@ -479,8 +479,12 @@ class DigiCertCISSourcePlugin(SourcePlugin):
 
         self.session.hooks = dict(response=log_status_code)
 
-        a = requests.adapters.HTTPAdapter(max_retries=3)
-        self.session.mount("https://", a)
+        # max_retries applies only to failed DNS lookups, socket connections and connection timeouts,
+        # never to requests where data has made it to the server.
+        # we Retry we also covers HTTP status code 500, 502, 503, 504
+        retry_strategy = Retry(total=3, backoff_factor=0.1, status_forcelist=[400, 406, 500, 502, 503, 504])
+        adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
+        self.session.mount("https://", adapter)
 
         super(DigiCertCISSourcePlugin, self).__init__(*args, **kwargs)
 
