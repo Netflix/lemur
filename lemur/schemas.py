@@ -214,25 +214,26 @@ class PluginInputSchema(LemurInputSchema):
                         f"Unable to load plugin options. Slug: {data['slug']} Option {option_name}"
                     )
                 option["value"] = sub_data
+                plugin_options_validated.append(option)
+            else:
+                # validate user inputs for sub-plugin options and only accept "value" field from user
+                if data["plugin_object"]:
+                    try:
+                        # Run regex validation rule on user input
+                        data["plugin_object"].validate_option_value(option_name, option_value)
 
-            # validate user inputs for sub-plugin options and only accept "value" field from user
-            if data["plugin_object"]:
-                try:
-                    # Run regex validation rule on user input
-                    data["plugin_object"].validate_option_value(option_name, option_value)
+                        # Only accept the "value" field from the user - keep server default options for all other fields
+                        server_options_with_user_value = data["plugin_object"].get_server_options(option_name)
+                        if server_options_with_user_value is None:  # no server options discovered
+                            plugin_options_validated.append(option)
+                            continue
+                        server_options_with_user_value["value"] = option_value
+                        plugin_options_validated.append(server_options_with_user_value)
 
-                    # Only accept the "value" field from the user - keep server default options for all other fields
-                    server_options_with_user_value = data["plugin_object"].get_server_options(option_name)
-                    if server_options_with_user_value is None:  # no server options discovered
-                        plugin_options_validated.append(option)
-                        continue
-                    server_options_with_user_value["value"] = option_value
-                    plugin_options_validated.append(server_options_with_user_value)
-
-                except (ValueError, ValidationError) as e:
-                    raise ValidationError(
-                        f"Unable to validate plugin options. Slug: {data['slug']} Option {option_name}: {e}"
-                    )
+                    except (ValueError, ValidationError) as e:
+                        raise ValidationError(
+                            f"Unable to validate plugin options. Slug: {data['slug']} Option {option_name}: {e}"
+                        )
 
         data["plugin_options"] = plugin_options_validated
         return data
