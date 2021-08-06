@@ -218,8 +218,8 @@ def handle_response(response):
 
 def reset_cis_session(session):
     """
-    The current session might be in a bad state with wrong headers. Let's attempt to update the session back the initial
-    state.
+    The current session might be in a bad state with wrong headers.
+    Let's attempt to update the session back to the initial state.
     :param session:
     :return:
     """
@@ -349,8 +349,8 @@ class DigiCertIssuerPlugin(IssuerPlugin):
 
         # max_retries applies only to failed DNS lookups, socket connections and connection timeouts,
         # never to requests where data has made it to the server.
-        # we Retry we also covers HTTP status code 400, 406, 500, 502, 503, 504
-        retry_strategy = Retry(total=3, backoff_factor=0.1, status_forcelist=[400, 406, 500, 502, 503, 504])
+        # we Retry we also covers HTTP status code 406, 500, 502, 503, 504
+        retry_strategy = Retry(total=3, backoff_factor=0.1, status_forcelist=[406, 500, 502, 503, 504])
         adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("https://", adapter)
 
@@ -508,8 +508,8 @@ class DigiCertCISSourcePlugin(SourcePlugin):
 
         # max_retries applies only to failed DNS lookups, socket connections and connection timeouts,
         # never to requests where data has made it to the server.
-        # we Retry we also covers HTTP status code 400, 406, 500, 502, 503, 504
-        retry_strategy = Retry(total=3, backoff_factor=0.1, status_forcelist=[400, 406, 500, 502, 503, 504])
+        # we Retry we also covers HTTP status code 406, 500, 502, 503, 504
+        retry_strategy = Retry(total=3, backoff_factor=0.1, status_forcelist=[406, 500, 502, 503, 504])
         adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("https://", adapter)
 
@@ -587,8 +587,8 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
 
         # max_retries applies only to failed DNS lookups, socket connections and connection timeouts,
         # never to requests where data has made it to the server.
-        # we Retry we also covers HTTP status code 400, 406, 500, 502, 503, 504
-        retry_strategy = Retry(total=3, backoff_factor=0.1, status_forcelist=[400, 406, 500, 502, 503, 504])
+        # we Retry we also covers HTTP status code 406, 500, 502, 503, 504
+        retry_strategy = Retry(total=3, backoff_factor=0.1, status_forcelist=[406, 500, 502, 503, 504])
         adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("https://", adapter)
 
