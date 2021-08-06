@@ -16,9 +16,11 @@ from lemur.common.utils import parse_certificate, parse_private_key, check_valid
 from lemur.plugins.bases import DestinationPlugin
 
 from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.serialization import pkcs12
 import requests
 import json
 import sys
+import base64
 
 
 def handle_response(my_response):
@@ -141,6 +143,7 @@ class AzureDestinationPlugin(DestinationPlugin):
         # we use the common name to identify the certificate
         # Azure does not allow "." in the certificate name we replace them with "-"
         cert = parse_certificate(body)
+        ca_certs = parse_certificate(cert_chain)
         certificate_name = common_name(cert).replace(".", "-")
 
         vault_URI = self.get_option("vaultUrl", options)
@@ -154,16 +157,19 @@ class AzureDestinationPlugin(DestinationPlugin):
         post_header = {
             "Authorization": f"Bearer {access_token}"
         }
-        key_pkcs8 = parse_private_key(private_key).private_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PrivateFormat.PKCS8,
-            encryption_algorithm=serialization.NoEncryption(),
+        # Azure keyvault accepts PEM and PKCS12-Format Certificates
+        # only the latter is usable for Azure Application Gateway
+        # therefore we upload in PKCS12 format
+        cert_p12 = pkcs12.serialize_key_and_certificates(
+            name=certificate_name.encode(),
+            key=parse_private_key(private_key),
+            cert=cert,
+            cas=[ca_certs],
+            encryption_algorithm=serialization.NoEncryption()
         )
-        key_pkcs8 = key_pkcs8.decode("utf-8").replace('\\n', '\n')
-        cert_package = f"{body}\n{key_pkcs8}"
-
+        # encode the p12 string with b64 and encode is at utf-8 again to get string for JSON
         post_body = {
-            "value": cert_package,
+            "value": base64.b64encode(cert_p12).decode('utf-8'),
             "policy": {
                 "key_props": {
                     "exportable": True,
@@ -172,13 +178,13 @@ class AzureDestinationPlugin(DestinationPlugin):
                     "reuse_key": True
                 },
                 "secret_props": {
-                    "contentType": "application/x-pem-file"
+                    "contentType": "application/x-pkcs12"
                 }
             }
         }
 
         try:
             response = self.session.post(cert_url, headers=post_header, json=post_body)
+            return_value = handle_response(response)
         except requests.exceptions.RequestException as e:
             current_app.logger.exception(f"AZURE: Error for POST {e}")
-        return_value = handle_response(response)
