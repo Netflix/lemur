@@ -480,6 +480,9 @@ class CertificatesList(AuthenticatedResource):
            :statuscode 403: unauthenticated
 
         """
+        if not service.is_valid_owner(data["owner"]):
+            return dict(message=f"Invalid owner: check if email {data['owner']} exists as a Team DL"), 412
+
         role = role_service.get_by_name(data["authority"].owner)
 
         # all the authority role members should be allowed

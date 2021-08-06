@@ -4,3 +4,4 @@ from .source import SourcePlugin  # noqa
 from .notification import NotificationPlugin, ExpirationNotificationPlugin  # noqa
 from .export import ExportPlugin  # noqa
 from .tls import TLSPlugin  # noqa
+from .membership import MembershipPlugin # noqa
