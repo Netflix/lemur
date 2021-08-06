@@ -20,7 +20,7 @@ def upgrade():
         'certificates',
         ['root_authority_id'],
         unique=False,
-        postgresql_where=sqlalchemy.text("root_authority_id IS NOT NULL"))
+        postgresql_where=sa.text("root_authority_id IS NOT NULL"))
     op.create_index(
         'certificate_associations_certificate_id_idx',
         'certificate_associations',
