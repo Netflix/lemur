@@ -481,7 +481,7 @@ class CertificatesList(AuthenticatedResource):
 
         """
         if not service.is_valid_owner(data["owner"]):
-            return dict(message=f"Invalid owner: check if email {data['owner']} exists as a Team DL"), 412
+            return dict(message=f"Invalid owner: check if {data['owner']} is a valid group email. Individuals cannot be certificate owners."), 412
 
         role = role_service.get_by_name(data["authority"].owner)
 
