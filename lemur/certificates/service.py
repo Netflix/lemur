@@ -1209,3 +1209,13 @@ def get_expiring_deployed_certificates(exclude=None):
                                              key=lambda x: x[0].owner), lambda x: x[0].owner):
         certs_domains_and_ports_by_owner[owner] = list(owner_certs)
     return certs_domains_and_ports_by_owner
+
+
+def is_valid_owner(email):
+    user_membership_provider = plugins.get(current_app.config.get("USER_MEMBERSHIP_PROVIDER"))
+    if user_membership_provider is None:
+        # nothing to check since USER_MEMBERSHIP_PROVIDER is not configured
+        return true
+
+    # expecting owner to be an existing team DL
+    return user_membership_provider.does_group_exist(email)

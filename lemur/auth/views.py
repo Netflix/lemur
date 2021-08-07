@@ -5,7 +5,6 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import json
 
 import jwt
 import base64
@@ -145,44 +144,21 @@ def retrieve_user(user_api_url, access_token):
     return user, profile
 
 
-def retrieve_user_memberships(user_api_url, user_membership_api_url, access_token):
+def retrieve_user_memberships(user_api_url, user_membership_provider, access_token):
     user, profile = retrieve_user(user_api_url, access_token)
 
-    if user_membership_api_url is None:
+    if user_membership_provider is None:
         return user, profile
     """
-    Potentially, below code can be made more generic i.e., plugin driven. Unaware of the usage of this
-    code across the community, current implementation is config driven. Without user_membership_api_url
-    configured, it is backward compatible.
+    Unaware of the usage of this code across the community, current implementation is config driven.
+    Without USER_MEMBERSHIP_PROVIDER configured, it is backward compatible. Please define a plugin
+    for custom implementation.
     """
-    tls_provider = plugins.get(current_app.config.get("PING_USER_MEMBERSHIP_TLS_PROVIDER"))
-
-    # put user id in url
-    user_membership_api_url = user_membership_api_url.replace("%user_id%", profile["userId"])
-
-    session = tls_provider.session(current_app.config.get("PING_USER_MEMBERSHIP_SERVICE"))
-    headers = {"Content-Type": "application/json"}
-    data = {"relation": "DIRECT_ONLY", "groupFilter": {"type": "GOOGLE"}, "size": 500}
+    membership_provider = plugins.get(user_membership_provider)
     user_membership = {"email": profile["email"],
                        "thumbnailPhotoUrl": profile["thumbnailPhotoUrl"],
-                       "googleGroups": []}
-    while True:
-        # retrieve information about the current user memberships
-        r = session.post(user_membership_api_url, data=json.dumps(data), headers=headers)
+                       "googleGroups": membership_provider.retrieve_user_memberships(profile["userId"])}
 
-        if r.status_code == 200:
-            response = r.json()
-            membership_details = response["data"]
-            for membership in membership_details:
-                user_membership["googleGroups"].append(membership["membership"]["name"])
-
-            if "nextPageToken" in response and response["nextPageToken"]:
-                data["nextPageToken"] = response["nextPageToken"]
-            else:
-                break
-        else:
-            current_app.logger.error(f"Response Code:{r.status_code} {r.text}")
-            break
     return user, user_membership
 
 
@@ -495,7 +471,7 @@ class Ping(Resource):
 
         user, profile = retrieve_user_memberships(
             current_app.config.get("PING_USER_API_URL"),
-            current_app.config.get("PING_USER_MEMBERSHIP_URL"),
+            current_app.config.get("USER_MEMBERSHIP_PROVIDER"),
             access_token
         )
         roles = create_user_roles(profile)

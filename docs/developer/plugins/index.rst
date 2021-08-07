@@ -287,6 +287,21 @@ The `ExportPlugin` object requires the implementation of one function::
     Support of various formats sometimes relies on external tools system calls. Always be mindful of sanitizing any input to these calls.
 
 
+Membership
+----------
+Membership plugin allows Lemur to learn and validate membership details from an external service. Currently the plugin is configured to
+support 3 APIs::
+
+    def does_principal_exist(self, principal_email):
+        raise NotImplementedError
+
+    def does_group_exist(self, group_email):
+        # check if a group (Team DL) exists
+
+    def retrieve_user_memberships(self, user_id):
+        # get a list of groups a user belongs to
+
+
 Custom TLS Provider
 -------------------
 
