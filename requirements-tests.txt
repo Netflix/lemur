@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-tests.txt requirements-tests.in
 #
-acme==1.17.0
+acme==1.18.0
     # via certbot
 alembic==1.6.5
     # via flask-migrate
@@ -40,6 +40,8 @@ cffi==1.14.6
     # via cryptography
 cfn-lint==0.50.0
     # via moto
+chardet==4.0.0
+    # via acme
 charset-normalizer==2.0.4
     # via requests
 click==8.0.1
