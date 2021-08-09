@@ -306,7 +306,7 @@ class EntrustIssuerPlugin(IssuerPlugin):
 
         try:
             data = handle_response(response)
-        except:
+        except (ValueError, Exception):
             # if the certificate cannot be found, there is no need to deactivate it
             log_data['message'] = "No certificate found for the ID"
             current_app.logger.info(log_data)
