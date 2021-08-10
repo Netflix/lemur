@@ -301,8 +301,8 @@ class EntrustIssuerPlugin(IssuerPlugin):
 
         # Let's first check the status of the certificate
         base_url = current_app.config.get("ENTRUST_URL")
-        deactivate_url = f"{base_url}/certificates/{certificate.external_id}"
-        response = self.session.get(deactivate_url)
+        status_url = f"{base_url}/certificates/{certificate.external_id}"
+        response = self.session.get(status_url)
 
         try:
             data = handle_response(response)
