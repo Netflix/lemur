@@ -4,6 +4,7 @@ import json
 import sys
 from flask import current_app
 from retrying import retry
+from requests.packages.urllib3.util.retry import Retry
 
 from lemur.constants import CRLReason
 from lemur.plugins import lemur_entrust as entrust
@@ -216,6 +217,14 @@ class EntrustIssuerPlugin(IssuerPlugin):
         self.session.auth = (user, password)
         self.session.hooks = dict(response=log_status_code)
         # self.session.config['keep_alive'] = False
+
+        # max_retries applies only to failed DNS lookups, socket connections and connection timeouts,
+        # never to requests where data has made it to the server.
+        # we Retry we also covers HTTP status code 500, 502, 503, 504
+        retry_strategy = Retry(total=3, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504])
+        adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
+        self.session.mount("https://", adapter)
+
         super(EntrustIssuerPlugin, self).__init__(*args, **kwargs)
 
     def create_certificate(self, csr, issuer_options):
@@ -377,6 +386,14 @@ class EntrustSourcePlugin(SourcePlugin):
         self.session.cert = (cert_file, key_file)
         self.session.auth = (user, password)
         self.session.hooks = dict(response=log_status_code)
+
+        # max_retries applies only to failed DNS lookups, socket connections and connection timeouts,
+        # never to requests where data has made it to the server.
+        # we Retry we also covers HTTP status code 500, 502, 503, 504
+        retry_strategy = Retry(total=3, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504])
+        adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
+        self.session.mount("https://", adapter)
+
         super(EntrustSourcePlugin, self).__init__(*args, **kwargs)
 
     def get_certificates(self, options, **kwargs):
