@@ -581,6 +581,7 @@ class Google(Resource):
             "redirect_uri": args["redirectUri"],
             "code": args["code"],
             "client_secret": current_app.config.get("GOOGLE_SECRET"),
+            "scope": "email",
         }
 
         r = requests.post(access_token_url, data=payload)
