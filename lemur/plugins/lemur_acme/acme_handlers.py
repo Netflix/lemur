@@ -289,6 +289,7 @@ class AcmeHandler(object):
                 log_data['message'] = "already validated, skipping."
                 current_app.logger.info(log_data)
 
+
 class AcmeDnsHandler(AcmeHandler):
 
     def __init__(self):

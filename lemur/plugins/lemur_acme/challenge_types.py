@@ -7,7 +7,7 @@
 
 .. moduleauthor:: Mathias Petermann <mathias.petermann@projektfokus.ch>
 """
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
 import json
 
 from acme import challenges
