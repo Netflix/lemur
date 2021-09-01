@@ -71,7 +71,8 @@ def ocsp_verify(cert, cert_path, issuer_chain_path):
     p_message = message.decode("utf-8")
     if "error" in p_message or "Error" in p_message:
         metrics.send("check_revocation_ocsp_verify", "counter", 1, metric_tags={"status": "error", "url": url})
-        raise Exception(f"Got error when parsing OCSP url: {url}, certificate serial number {cert.serial_number:02X}")
+        raise Exception(f"Got error when parsing response from OCSP url: {url}, certificate serial number "
+                        f"{cert.serial_number:02X}. Response: {p_message}")
 
     elif "revoked" in p_message:
         current_app.logger.debug(
