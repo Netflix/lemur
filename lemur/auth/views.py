@@ -564,7 +564,7 @@ class Google(Resource):
 
     def post(self):
         access_token_url = "https://accounts.google.com/o/oauth2/token"
-        people_api_url = "https://www.googleapis.com/plus/v1/people/me/openIdConnect"
+        user_info_url = "https://www.googleapis.com/oauth2/v1/userinfo"
 
         self.reqparse.add_argument("clientId", type=str, required=True, location="json")
         self.reqparse.add_argument(
@@ -581,6 +581,7 @@ class Google(Resource):
             "redirect_uri": args["redirectUri"],
             "code": args["code"],
             "client_secret": current_app.config.get("GOOGLE_SECRET"),
+            "scope": "email",
         }
 
         r = requests.post(access_token_url, data=payload)
@@ -589,7 +590,7 @@ class Google(Resource):
         # Step 2. Retrieve information about the current user
         headers = {"Authorization": "Bearer {0}".format(token["access_token"])}
 
-        r = requests.get(people_api_url, headers=headers)
+        r = requests.get(user_info_url, headers=headers)
         profile = r.json()
 
         user = user_service.get_by_email(profile["email"])
