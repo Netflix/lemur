@@ -321,7 +321,7 @@ class EntrustIssuerPlugin(IssuerPlugin):
             current_app.logger.info(log_data)
             return 200
 
-        if data and data['status'] == 'Active':
+        if data and data['status'].lower() == 'active':
             deactivate_url = f"{base_url}/certificates/{certificate.external_id}/deactivations"
             response = self.session.post(deactivate_url)
             metrics.send("entrust_deactivate_certificate", "counter", 1)
