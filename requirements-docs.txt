@@ -52,13 +52,13 @@ blinker==1.4
     # via
     #   flask-mail
     #   flask-principal
-boto3==1.18.21
+boto3==1.18.36
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
-botocore==1.21.31
+botocore==1.21.36
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -114,7 +114,7 @@ configobj==5.0.6
     #   certbot
 coverage==5.5
     # via -r requirements-tests.txt
-cryptography==3.4.7
+cryptography==3.4.8
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -391,7 +391,7 @@ pyrsistent==0.17.3
     # via
     #   -r requirements-tests.txt
     #   jsonschema
-pytest==6.2.4
+pytest==6.2.5
     # via
     #   -r requirements-tests.txt
     #   pytest-flask

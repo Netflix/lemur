@@ -32,9 +32,9 @@ blinker==1.4
     # via
     #   flask-mail
     #   flask-principal
-boto3==1.18.21
+boto3==1.18.36
     # via -r requirements.in
-botocore==1.21.31
+botocore==1.21.36
     # via
     #   -r requirements.in
     #   boto3
@@ -67,7 +67,7 @@ configargparse==1.4.1
     # via certbot
 configobj==5.0.6
     # via certbot
-cryptography==3.4.7
+cryptography==3.4.8
     # via
     #   -r requirements.in
     #   acme

@@ -18,7 +18,7 @@ charset-normalizer==2.0.4
     # via requests
 colorama==0.4.4
     # via twine
-cryptography==3.4.7
+cryptography==3.4.8
     # via secretstorage
 distlib==0.3.2
     # via virtualenv
@@ -60,7 +60,7 @@ packaging==20.9
     # via bleach
 pkginfo==1.7.0
     # via twine
-pre-commit==2.14.0
+pre-commit==2.15.0
     # via -r requirements-dev.in
 pycodestyle==2.7.0
     # via flake8

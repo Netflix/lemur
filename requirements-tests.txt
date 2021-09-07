@@ -20,11 +20,11 @@ bandit==1.7.0
     # via -r requirements-tests.in
 black==21.8b0
     # via -r requirements-tests.in
-boto3==1.18.21
+boto3==1.18.36
     # via
     #   aws-sam-translator
     #   moto
-botocore==1.21.31
+botocore==1.21.36
     # via
     #   aws-xray-sdk
     #   boto3
@@ -52,7 +52,7 @@ configobj==5.0.6
     # via certbot
 coverage==5.5
     # via -r requirements-tests.in
-cryptography==3.4.7
+cryptography==3.4.8
     # via
     #   acme
     #   certbot
@@ -187,7 +187,7 @@ pyrfc3339==1.1
     #   certbot
 pyrsistent==0.17.3
     # via jsonschema
-pytest==6.2.4
+pytest==6.2.5
     # via
     #   -r requirements-tests.in
     #   pytest-flask
