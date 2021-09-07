@@ -7,7 +7,7 @@
 
 .. moduleauthor:: Mathias Petermann <mathias.petermann@projektfokus.ch>
 """
-import datetime
+from datetime import datetime, timedelta
 import json
 
 from acme import challenges
@@ -100,7 +100,9 @@ class AcmeHttpChallenge(AcmeChallenge):
                     if isinstance(i.chall, challenges.HTTP01):
                         chall.append(i)
             else:
-                current_app.logger.info("{} already validated, skipping".format(authz.body.identifier.value))
+                metrics.send("get_acme_challenges_already_valid", "counter", 1)
+                log_data = {"message": "already validated, skipping", "hostname": authz.body.identifier.value}
+                current_app.logger.info(log_data)
 
         if len(chall) == 0 and not all_pre_validated:
             raise Exception('HTTP-01 challenge was not offered by the CA server at {}'.format(orderr.uri))
@@ -125,7 +127,7 @@ class AcmeHttpChallenge(AcmeChallenge):
             current_app.logger.info("Uploaded HTTP-01 challenge tokens, trying to poll and finalize the order")
 
         try:
-            deadline = datetime.datetime.now() + datetime.timedelta(seconds=90)
+            deadline = datetime.now() + timedelta(seconds=90)
             orderr = acme_client.poll_authorizations(orderr, deadline)
             finalized_orderr = acme_client.finalize_order(orderr, deadline, fetch_alternative_chains=True)
 
@@ -140,6 +142,8 @@ class AcmeHttpChallenge(AcmeChallenge):
 
         pem_certificate, pem_certificate_chain = self.acme.extract_cert_and_chain(finalized_orderr.fullchain_pem,
                                                                                   finalized_orderr.alternative_fullchains_pem)
+        acme_uri = acme_client.client.net.account.uri.replace('https://', '')
+        self.acme.log_remaining_validation(finalized_orderr.authorizations, acme_uri)
 
         if len(deployed_challenges) != 0:
             for token_path in deployed_challenges:

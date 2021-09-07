@@ -12,7 +12,7 @@
 .. moduleauthor:: Curtis Castrapel <ccastrapel@netflix.com>
 .. moduleauthor:: Mathias Petermann <mathias.petermann@projektfokus.ch>
 """
-import datetime
+from datetime import datetime, timezone, timedelta
 import json
 import time
 
@@ -93,7 +93,7 @@ class AcmeHandler(object):
             for authz in authorization.authz:
                 authorization_resource, _ = acme_client.poll(authz)
 
-        deadline = datetime.datetime.now() + datetime.timedelta(seconds=360)
+        deadline = datetime.now() + timedelta(seconds=360)
 
         try:
             orderr = acme_client.poll_authorizations(order, deadline)
@@ -119,6 +119,8 @@ class AcmeHandler(object):
 
         pem_certificate, pem_certificate_chain = self.extract_cert_and_chain(orderr.fullchain_pem,
                                                                              orderr.alternative_fullchains_pem)
+        acme_uri = acme_client.client.net.account.uri.replace('https://', '')
+        self.log_remaining_validation(orderr.authorizations, acme_uri)
 
         current_app.logger.debug(
             "{0} {1}".format(type(pem_certificate), type(pem_certificate_chain))
@@ -272,6 +274,21 @@ class AcmeHandler(object):
         metrics.send("acme_revoke_certificate_success", "counter", 1)
         return True
 
+    def log_remaining_validation(self, authorizations, acme_account):
+        for authz in authorizations:
+            if authz.body.status == STATUS_VALID:
+                log_data = {'type': authz.body.identifier.typ.name,
+                            'valid_hours':
+                                int((authz.body.expires - datetime.now(timezone.utc)).total_seconds() / 3600),
+                            'san': authz.body.identifier.value,
+                            'account': acme_account}
+                metrics.send("acme_authz_validation_status",
+                             "gauge",
+                             log_data['valid_hours'],
+                             metric_tags=log_data)
+                log_data['message'] = "already validated, skipping."
+                current_app.logger.info(log_data)
+
 
 class AcmeDnsHandler(AcmeHandler):
 
@@ -308,7 +325,10 @@ class AcmeDnsHandler(AcmeHandler):
             # skip valid challenge, as long as this challenge is for the domain_to_validate
             if authz.body.status == STATUS_VALID:
                 metrics.send("get_acme_challenges_already_valid", "counter", 1)
+                log_data = {"message": "already validated, skipping", "hostname": authz.body.identifier.value}
+                current_app.logger.info(log_data)
                 return [], True
+
             for combo in authz.body.challenges:
                 if isinstance(combo.chall, challenges.DNS01):
                     dns_challenges.append(combo)
