@@ -69,7 +69,14 @@ def ocsp_verify(cert, cert_path, issuer_chain_path):
         raise Exception(f"OCSP lookup timed out: {url}, certificate serial number {cert.serial_number:02X}")
 
     p_message = message.decode("utf-8")
-    if "error" in p_message or "Error" in p_message:
+
+    if "unauthorized" in p_message:
+        # indicates the OCSP server does not know this certificate
+        metrics.send("check_revocation_ocsp_verify", "counter", 1, metric_tags={"status": "unauthorized", "url": url})
+        current_app.logger.warning(f"OCSP unauthorized error:{url}")
+        raise Exception(f"OCSP unauthorized error: {url}, certificate serial number {cert.serial_number:02X}")
+
+    elif "error" in p_message or "Error" in p_message:
         metrics.send("check_revocation_ocsp_verify", "counter", 1, metric_tags={"status": "error", "url": url})
         raise Exception(f"Got error when parsing response from OCSP url: {url}, certificate serial number "
                         f"{cert.serial_number:02X}. Response: {p_message}")
@@ -79,12 +86,6 @@ def ocsp_verify(cert, cert_path, issuer_chain_path):
             "OCSP reports certificate revoked: {}".format(cert.serial_number)
         )
         return False
-
-    elif "unauthorized" in p_message:
-        # indicates the OCSP server does not know this certificate
-        metrics.send("check_revocation_ocsp_verify", "counter", 1, metric_tags={"status": "unauthorized", "url": url})
-        current_app.logger.warning(f"OCSP unauthorized error:{url}")
-        raise Exception(f"OCSP unauthorized error: {url}, certificate serial number {cert.serial_number:02X}")
 
     elif "good" not in p_message:
         raise Exception(f"Did not receive a valid OCSP response from url: {url}, "
