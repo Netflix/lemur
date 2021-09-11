@@ -707,7 +707,10 @@ def check_revoked():
                 ocsp_err_count += ocsp_err
                 crl_err_count += crl_err
 
-                cert.status = "valid" if status else "revoked"
+                if status is None:
+                    cert.status = "unknown"
+                else:
+                    cert.status = "valid" if status else "revoked"
 
                 if cert.status == "revoked":
                     log_data["valid"] = cert.status
