@@ -1,1 +1,1 @@
-datadog==0.14.0
+datadog==0.42.0
