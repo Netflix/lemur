@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements.txt requirements.in
 #
-acme==1.18.0
+acme==1.19.0
     # via
     #   -r requirements.in
     #   certbot
@@ -41,7 +41,7 @@ botocore==1.21.36
     #   s3transfer
 celery[redis]==4.4.2
     # via -r requirements.in
-certbot==1.18.0
+certbot==1.19.0
     # via -r requirements.in
 certifi==2021.5.30
     # via
@@ -55,8 +55,6 @@ cffi==1.14.6
     #   bcrypt
     #   cryptography
     #   pynacl
-chardet==4.0.0
-    # via acme
 charset-normalizer==2.0.4
     # via requests
 click==8.0.1

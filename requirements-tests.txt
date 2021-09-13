@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-tests.txt requirements-tests.in
 #
-acme==1.18.0
+acme==1.19.0
     # via certbot
 alembic==1.6.5
     # via flask-migrate
@@ -30,7 +30,7 @@ botocore==1.21.36
     #   boto3
     #   moto
     #   s3transfer
-certbot==1.18.0
+certbot==1.19.0
     # via -r requirements-tests.in
 certifi==2021.5.30
     # via requests
@@ -38,8 +38,6 @@ cffi==1.14.6
     # via cryptography
 cfn-lint==0.50.0
     # via moto
-chardet==4.0.0
-    # via acme
 charset-normalizer==2.0.4
     # via requests
 click==8.0.1
