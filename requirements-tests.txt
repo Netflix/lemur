@@ -76,7 +76,7 @@ faker==8.12.1
     # via
     #   -r requirements-tests.in
     #   factory-boy
-fakeredis==1.6.0
+fakeredis==1.6.1
     # via -r requirements-tests.in
 flask==1.1.2
     # via
@@ -152,7 +152,9 @@ networkx==2.5.1
 nose==1.3.7
     # via -r requirements-tests.in
 packaging==20.9
-    # via pytest
+    # via
+    #   fakeredis
+    #   pytest
 parsedatetime==2.6
     # via certbot
 pathspec==0.9.0
