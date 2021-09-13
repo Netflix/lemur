@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements.txt requirements.in
 #
-acme==1.18.0
+acme==1.19.0
     # via
     #   -r requirements.in
     #   certbot
@@ -55,8 +55,6 @@ cffi==1.14.6
     #   bcrypt
     #   cryptography
     #   pynacl
-chardet==4.0.0
-    # via acme
 charset-normalizer==2.0.4
     # via requests
 click==8.0.1

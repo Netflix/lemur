@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-docs.txt requirements-docs.in
 #
-acme==1.18.0
+acme==1.19.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -89,10 +89,6 @@ cfn-lint==0.50.0
     # via
     #   -r requirements-tests.txt
     #   moto
-chardet==4.0.0
-    # via
-    #   -r requirements-tests.txt
-    #   acme
 charset-normalizer==2.0.4
     # via
     #   -r requirements-tests.txt
