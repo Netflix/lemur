@@ -38,11 +38,16 @@ def retry_throttled(exception):
 def get_name_from_arn(arn):
     """
     Extract the certificate name from an arn.
+    examples:
+    'arn:aws:iam::123456789012:server-certificate/example.com'
+    'arn:aws:iam::123456789012:server-certificate/cloudfront/example.com-cloudfront'
+    'arn:aws:acm:us-west-2:123456789012:certificate/example.com'
+
 
     :param arn: IAM SSL arn
     :return: name of the certificate as uploaded to AWS
     """
-    return arn.split("/", 1)[1]
+    return arn.split("/")[-1]
 
 
 def create_arn_from_cert(account_number, region, certificate_name):
