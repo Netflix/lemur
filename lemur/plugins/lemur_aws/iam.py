@@ -69,7 +69,6 @@ def get_path_from_arn(arn):
 
 
 
-def create_arn_from_cert(account_number, region, certificate_name):
 def get_registery_type_from_arn(arn):
     """
         examples:
@@ -88,6 +87,7 @@ def get_registery_type_from_arn(arn):
         return 'unkown'
 
 
+def create_arn_from_cert(account_number, region, certificate_name, path=""):
     """
     Create an ARN from a certificate.
     :param account_number:
@@ -95,9 +95,10 @@ def get_registery_type_from_arn(arn):
     :param certificate_name:
     :return:
     """
-    return "arn:aws:iam::{account_number}:server-certificate/{certificate_name}".format(
-        account_number=account_number, certificate_name=certificate_name
-    )
+    if path=="":
+        return f"arn:aws:iam::{account_number}:server-certificate/{certificate_name}"
+    else:
+        return f"arn:aws:iam::{account_number}:server-certificate/{path}/{certificate_name}"
 
 
 @sts_client("iam")
