@@ -49,6 +49,25 @@ def get_name_from_arn(arn):
     """
     return arn.split("/")[-1]
 
+def get_path_from_arn(arn):
+    """
+        examples:
+    'arn:aws:iam::123456789012:server-certificate/example.com'
+    'arn:aws:iam::123456789012:server-certificate/cloudfront/example.com-cloudfront'
+    'arn:aws:acm:us-west-2:123456789012:certificate/example.com'
+
+    :param arn:
+    :return: iam or acm or unkown
+    """
+    # cloudfront/example.com-cloudfront
+    file_path = arn.split("/", 1)[1]
+    if '/' in file_path:
+        # remove the filename, and return the path
+        return '/'.join(file_path.split("/")[:-1])
+    else:
+        return ''
+
+
 
 def create_arn_from_cert(account_number, region, certificate_name):
     """
