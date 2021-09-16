@@ -49,6 +49,7 @@ def get_name_from_arn(arn):
     """
     return arn.split("/")[-1]
 
+
 def get_path_from_arn(arn):
     """
         examples:
@@ -68,8 +69,7 @@ def get_path_from_arn(arn):
         return ''
 
 
-
-def get_registery_type_from_arn(arn):
+def get_registry_type_from_arn(arn):
     """
         examples:
     'arn:aws:iam::123456789000:server-certificate/example.com'
@@ -84,18 +84,19 @@ def get_registery_type_from_arn(arn):
     elif arn.startswith("arn:aws:acm"):
         return 'acm'
     else:
-        return 'unkown'
+        return 'unknown'
 
 
-def create_arn_from_cert(account_number, region, certificate_name, path=""):
+def create_arn_from_cert(account_number, region, certificate_name, path=''):
     """
     Create an ARN from a certificate.
+    :param path:
     :param account_number:
     :param region:
     :param certificate_name:
     :return:
     """
-    if path=="":
+    if path == '':
         return f"arn:aws:iam::{account_number}:server-certificate/{certificate_name}"
     else:
         return f"arn:aws:iam::{account_number}:server-certificate/{path}/{certificate_name}"
