@@ -77,7 +77,7 @@ def test_get_registery_type_from_arn():
 
     arn = "arn:aws:new:us-west-2:123456789012:server-certificate/tttt2.netflixtest.net-NetflixInc-20150624-20150625"
     assert (
-        get_registry_type_from_arn(arn) == "unkown"
+        get_registry_type_from_arn(arn) == "unknown"
     )
 
 
