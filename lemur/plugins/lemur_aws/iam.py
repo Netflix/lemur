@@ -38,13 +38,13 @@ def retry_throttled(exception):
 def get_name_from_arn(arn):
     """
     Extract the certificate name from an arn.
+
     examples:
     'arn:aws:iam::123456789012:server-certificate/example.com'
     'arn:aws:iam::123456789012:server-certificate/cloudfront/example.com-cloudfront'
     'arn:aws:acm:us-west-2:123456789012:certificate/example.com'
 
-
-    :param arn: IAM SSL arn
+    :param arn: IAM TLS certificate arn
     :return: name of the certificate as uploaded to AWS
     """
     return arn.split("/")[-1]
@@ -52,13 +52,15 @@ def get_name_from_arn(arn):
 
 def get_path_from_arn(arn):
     """
-        examples:
+    Get the certificate path from the certificate arn.
+
+    examples:
     'arn:aws:iam::123456789012:server-certificate/example.com'
     'arn:aws:iam::123456789012:server-certificate/cloudfront/example.com-cloudfront'
     'arn:aws:acm:us-west-2:123456789012:certificate/example.com'
 
-    :param arn:
-    :return: iam or acm or unkown
+    :param arn: IAM TLS certificate arn
+    :return: empty or the certificate path without the certificate name
     """
     # cloudfront/example.com-cloudfront
     file_path = arn.split("/", 1)[1]
@@ -71,12 +73,14 @@ def get_path_from_arn(arn):
 
 def get_registry_type_from_arn(arn):
     """
-        examples:
+    Get the registery type based on the arn.
+
+    examples:
     'arn:aws:iam::123456789000:server-certificate/example.com'
     'arn:aws:iam::123456789000:server-certificate/cloudfront/example.com-cloudfront'
     'arn:aws:acm:us-west-2:123456789000:certificate/example.com'
 
-    :param arn:
+    :param arn: IAM TLS certificate arn
     :return: iam or acm or unkown
     """
     if arn.startswith("arn:aws:iam"):
