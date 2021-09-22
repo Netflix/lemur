@@ -858,6 +858,13 @@ For more information about how to use social logins, see: `Satellizer <https://g
 
             PING_CLIENT_ID = "client-id"
 
+.. data:: PING_URL
+    :noindex:
+
+        ::
+
+            PING_URL = "https://<yourlemurserver>"
+
 .. data:: PING_REDIRECT_URI
     :noindex:
 
@@ -914,6 +921,13 @@ For more information about how to use social logins, see: `Satellizer <https://g
         ::
 
             OAUTH2_CLIENT_ID = "client-id"
+
+.. data:: OAUTH2_URL
+    :noindex:
+
+        ::
+
+            OAUTH2_URL = "https://<yourlemurserver>"
 
 .. data:: OAUTH2_REDIRECT_URI
     :noindex:
