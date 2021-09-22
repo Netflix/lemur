@@ -65,7 +65,7 @@ def exchange_for_access_token(
     basic = base64.b64encode(bytes(token, "utf-8"))
     headers = {
         "Content-Type": "application/x-www-form-urlencoded",
-        "authorization": "basic {0}".format(basic.decode("utf-8")),
+        "Authorization": "Basic {0}".format(basic.decode("utf-8")),
     }
 
     # exchange authorization code for access token.
