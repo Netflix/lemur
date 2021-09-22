@@ -1,5 +1,5 @@
-"""Adding two new columns to the Endpoint table to capture more information around the certificate that is attached to
-the endpoint. registry_type indicates the certificate registry type (e,g., IAM, ACM), and certificate_path indicates the
+"""Adding two new columns to the Endpoint table to capture more information around the certificate attached to
+the endpoint. registry_type indicates the certificate registry type (e.g., IAM, ACM), and certificate_path shows the
 path of the certificate in the registry.
 
 Revision ID: 2201c548a5a1
