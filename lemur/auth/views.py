@@ -632,7 +632,7 @@ class Providers(Resource):
                 active_providers.append(
                     {
                         "name": current_app.config.get("PING_NAME"),
-                        "url": current_app.config.get("PING_REDIRECT_URI"),
+                        "url": current_app.config.get("PING_URL", current_app.config.get("PING_REDIRECT_URI")),
                         "redirectUri": current_app.config.get("PING_REDIRECT_URI"),
                         "clientId": current_app.config.get("PING_CLIENT_ID"),
                         "responseType": "code",
@@ -650,7 +650,7 @@ class Providers(Resource):
                 active_providers.append(
                     {
                         "name": current_app.config.get("OAUTH2_NAME"),
-                        "url": current_app.config.get("OAUTH2_REDIRECT_URI"),
+                        "url": current_app.config.get("OAUTH2_URL", current_app.config.get("OAUTH2_REDIRECT_URI")),
                         "redirectUri": current_app.config.get("OAUTH2_REDIRECT_URI"),
                         "clientId": current_app.config.get("OAUTH2_CLIENT_ID"),
                         "responseType": "code",
