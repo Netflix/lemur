@@ -22,6 +22,8 @@ from lemur.plugins.bases import SourcePlugin
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 
+from validators.url import regex as url_regex
+
 
 class VaultSourcePlugin(SourcePlugin):
     """ Class for importing certificates from Hashicorp Vault"""
@@ -38,7 +40,7 @@ class VaultSourcePlugin(SourcePlugin):
             "name": "vaultUrl",
             "type": "str",
             "required": True,
-            "validation": check_validation("^https?://[a-zA-Z0-9.:-]+$"),
+            "validation": url_regex.pattern,
             "helpMessage": "Valid URL to Hashi Vault instance",
         },
         {
@@ -165,7 +167,7 @@ class VaultDestinationPlugin(DestinationPlugin):
             "name": "vaultUrl",
             "type": "str",
             "required": True,
-            "validation": check_validation("^https?://[a-zA-Z0-9.:-]+$"),
+            "validation": url_regex.pattern,
             "helpMessage": "Valid URL to Hashi Vault instance",
         },
         {
