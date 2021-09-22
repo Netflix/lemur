@@ -159,7 +159,7 @@ def get_elb_endpoints_v2(account_number, region, elb_dict):
                 port=listener["Port"],
                 certificate_name=iam.get_name_from_arn(certificate["CertificateArn"]),
                 certificate_path=iam.get_path_from_arn(certificate["CertificateArn"]),
-                registryy_type=iam.get_registry_type_from_arn(certificate["CertificateArn"]),
+                registry_type=iam.get_registry_type_from_arn(certificate["CertificateArn"]),
             )
 
         if listener["SslPolicy"]:
@@ -269,10 +269,10 @@ class AWSSourcePlugin(SourcePlugin):
 
         # relies on the fact that region is included in DNS name
         region = get_region_from_dns(endpoint.dnsname)
-        if endpoint.registery_typ == 'iam':
+        if endpoint.registry_type == 'iam':
             arn = iam.create_arn_from_cert(account_number, region, certificate.name, endpoint.certificate_path)
         else:
-            raise Exception(f"Lemur doesn't support rotating certificates on {endpoint.registery_typ} registry")
+            raise Exception(f"Lemur doesn't support rotating certificates on {endpoint.registry_type} registry")
             return
 
         if endpoint.type == "elbv2":

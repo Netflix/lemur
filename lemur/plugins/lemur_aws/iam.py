@@ -100,7 +100,7 @@ def create_arn_from_cert(account_number, region, certificate_name, path=''):
     :param certificate_name:
     :return:
     """
-    if path == '':
+    if path == None or path == '':
         return f"arn:aws:iam::{account_number}:server-certificate/{certificate_name}"
     else:
         return f"arn:aws:iam::{account_number}:server-certificate/{path}/{certificate_name}"
