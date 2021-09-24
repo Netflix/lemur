@@ -994,6 +994,16 @@ For more information about how to use social logins, see: `Satellizer <https://g
 
             GOOGLE_SECRET = "somethingsecret"
 
+.. data:: TOKEN_AUTH_HEADER_CASE_SENSITIVE
+    :noindex:
+
+        This is an optional parameter to change the case sensitivity of the access token request authorization header.
+        This is required if the oauth provider has implemented the access token request authorization header in a case-sensitive way
+
+        ::
+
+            TOKEN_AUTH_HEADER_CASE_SENSITIVE = True
+
 .. data:: USER_MEMBERSHIP_PROVIDER
     :noindex:
 
