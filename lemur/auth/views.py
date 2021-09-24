@@ -64,9 +64,13 @@ def exchange_for_access_token(
 
     basic = base64.b64encode(bytes(token, "utf-8"))
     headers = {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Authorization": "Basic {0}".format(basic.decode("utf-8")),
+        "Content-Type": "application/x-www-form-urlencoded"
     }
+
+    if current_app.config.get("TOKEN_AUTH_HEADER_CASE_SENSITIVE"):
+        headers["Authorization"] = "Basic {0}".format(basic.decode("utf-8"))
+    else:
+        headers["authorization"] = "basic {0}".format(basic.decode("utf-8"))
 
     # exchange authorization code for access token.
     r = requests.post(
