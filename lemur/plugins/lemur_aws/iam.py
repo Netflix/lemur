@@ -39,23 +39,72 @@ def get_name_from_arn(arn):
     """
     Extract the certificate name from an arn.
 
-    :param arn: IAM SSL arn
+    examples:
+    'arn:aws:iam::123456789012:server-certificate/example.com'  -->  'example.com'
+    'arn:aws:iam::123456789012:server-certificate/cloudfront/example.com-cloudfront' --> 'example.com-cloudfront'
+    'arn:aws:acm:us-west-2:123456789012:certificate/example.com' --> 'example.com'
+
+    :param arn: IAM TLS certificate arn
     :return: name of the certificate as uploaded to AWS
     """
-    return arn.split("/", 1)[1]
+    return arn.split("/")[-1]
 
 
-def create_arn_from_cert(account_number, region, certificate_name):
+def get_path_from_arn(arn):
+    """
+    Get the certificate path from the certificate arn.
+
+    examples:
+    'arn:aws:iam::123456789012:server-certificate/example.com'   -->  ''
+    'arn:aws:iam::123456789012:server-certificate/cloudfront/example.com-cloudfront'  -->  'cloudfront'
+    'arn:aws:iam::123456789012:server-certificate/cloudfront/2/example.com-cloudfront'  -->  'cloudfront/2'
+    'arn:aws:acm:us-west-2:123456789012:certificate/example.com'  -->  ''
+
+    :param arn: IAM TLS certificate arn
+    :return: empty or the certificate path without the certificate name
+    """
+    # cloudfront/example.com-cloudfront
+    file_path = arn.split("/", 1)[1]
+    if '/' in file_path:
+        # remove the filename, and return the path
+        return '/'.join(file_path.split("/")[:-1])
+    else:
+        return ''
+
+
+def get_registry_type_from_arn(arn):
+    """
+    Get the registery type based on the arn.
+
+    examples:
+    'arn:aws:iam::123456789000:server-certificate/example.com'  -->  'iam'
+    'arn:aws:iam::123456789000:server-certificate/cloudfront/example.com-cloudfront'  --> 'iam'
+    'arn:aws:acm:us-west-2:123456789000:certificate/example.com'  -->  'acm'
+
+    :param arn: IAM TLS certificate arn
+    :return: iam or acm or unkown
+    """
+    if arn.startswith("arn:aws:iam"):
+        return 'iam'
+    elif arn.startswith("arn:aws:acm"):
+        return 'acm'
+    else:
+        return 'unknown'
+
+
+def create_arn_from_cert(account_number, region, certificate_name, path=''):
     """
     Create an ARN from a certificate.
+    :param path:
     :param account_number:
     :param region:
     :param certificate_name:
     :return:
     """
-    return "arn:aws:iam::{account_number}:server-certificate/{certificate_name}".format(
-        account_number=account_number, certificate_name=certificate_name
-    )
+    if path is None or path == '':
+        return f"arn:aws:iam::{account_number}:server-certificate/{certificate_name}"
+    else:
+        return f"arn:aws:iam::{account_number}:server-certificate/{path}/{certificate_name}"
 
 
 @sts_client("iam")
