@@ -35,6 +35,8 @@ class EndpointOutputSchema(LemurOutputSchema):
     port = fields.Integer()
     active = fields.Boolean()
     certificate = fields.Nested(CertificateNestedOutputSchema)
+    certificate_path = fields.String()
+    registry_type = fields.String()
     policy = fields.Nested(PolicyNestedOutputSchema)
 
     issues = fields.List(fields.Dict())
