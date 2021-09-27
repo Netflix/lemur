@@ -52,13 +52,13 @@ blinker==1.4
     # via
     #   flask-mail
     #   flask-principal
-boto3==1.18.36
+boto3==1.18.48
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
-botocore==1.21.36
+botocore==1.21.48
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -152,7 +152,7 @@ ecdsa==0.14.1
     #   sshpubkeys
 factory-boy==3.2.0
     # via -r requirements-tests.txt
-faker==8.12.1
+faker==8.14.0
     # via
     #   -r requirements-tests.txt
     #   factory-boy
@@ -210,7 +210,7 @@ gitpython==3.1.17
     #   bandit
 gunicorn==20.1.0
     # via -r requirements-docs.in
-hvac==0.11.0
+hvac==0.11.2
     # via -r requirements-docs.in
 idna==2.10
     # via
@@ -519,7 +519,7 @@ sphinx==3.5.4
     #   -r requirements-docs.in
     #   sphinx-rtd-theme
     #   sphinxcontrib-httpdomain
-sphinx-rtd-theme==0.5.2
+sphinx-rtd-theme==1.0.0
     # via -r requirements-docs.in
 sphinxcontrib-applehelp==1.0.2
     # via sphinx
@@ -527,7 +527,7 @@ sphinxcontrib-devhelp==1.0.2
     # via sphinx
 sphinxcontrib-htmlhelp==2.0.0
     # via sphinx
-sphinxcontrib-httpdomain==1.7.0
+sphinxcontrib-httpdomain==1.8.0
     # via -r requirements-docs.in
 sphinxcontrib-jsmath==1.0.1
     # via sphinx

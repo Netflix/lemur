@@ -32,9 +32,9 @@ blinker==1.4
     # via
     #   flask-mail
     #   flask-principal
-boto3==1.18.36
+boto3==1.18.48
     # via -r requirements.in
-botocore==1.21.36
+botocore==1.21.48
     # via
     #   -r requirements.in
     #   boto3
@@ -116,7 +116,7 @@ future==0.18.2
     # via -r requirements.in
 gunicorn==20.1.0
     # via -r requirements.in
-hvac==0.11.0
+hvac==0.11.2
     # via -r requirements.in
 idna==2.10
     # via requests
