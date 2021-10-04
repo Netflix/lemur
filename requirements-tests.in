@@ -4,7 +4,7 @@ bandit
 black
 coverage
 certbot
-decorator >= 5.1.0
+decorator < 5.0.0
 factory-boy
 Faker
 fakeredis
