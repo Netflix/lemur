@@ -59,7 +59,7 @@ cryptography==3.4.8
     #   pyopenssl
     #   python-jose
     #   sshpubkeys
-decorator==4.4.2
+decorator==5.1.0
     # via networkx
 distro==1.5.0
     # via certbot
