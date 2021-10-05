@@ -16,7 +16,7 @@ amqp==2.6.1
     # via kombu
 aniso8601==9.0.1
     # via flask-restful
-arrow==1.1.1
+arrow==1.2.0
     # via -r requirements.in
 asyncpool==1.0
     # via -r requirements.in
@@ -255,6 +255,7 @@ six==1.16.0
     #   python-dateutil
     #   retrying
     #   sqlalchemy-utils
+    #   validators
 soupsieve==2.2.1
     # via beautifulsoup4
 sqlalchemy==1.3.24
