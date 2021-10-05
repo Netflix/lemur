@@ -73,6 +73,8 @@ cryptography==3.4.8
     #   josepy
     #   paramiko
     #   pyopenssl
+decorator==5.1.0
+    # via validators
 distro==1.5.0
     # via certbot
 dnspython==1.15.0
