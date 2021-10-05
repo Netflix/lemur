@@ -122,8 +122,6 @@ cryptography==3.4.8
     #   pyopenssl
     #   python-jose
     #   sshpubkeys
-decorator==5.1.0
-    # via -r requirements-tests.txt
 distro==1.5.0
     # via
     #   -r requirements-tests.txt
@@ -240,7 +238,7 @@ jmespath==0.10.0
     #   -r requirements-tests.txt
     #   boto3
     #   botocore
-josepy==1.9.0
+josepy==1.10.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
