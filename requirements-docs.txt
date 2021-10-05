@@ -19,7 +19,7 @@ amqp==2.6.1
     # via kombu
 aniso8601==9.0.1
     # via flask-restful
-arrow==1.1.1
+arrow==1.2.0
     # via -r requirements-docs.in
 attrs==21.2.0
     # via
@@ -123,9 +123,7 @@ cryptography==3.4.8
     #   python-jose
     #   sshpubkeys
 decorator==5.1.0
-    # via
-    #   -r requirements-tests.txt
-    #   networkx
+    # via -r requirements-tests.txt
 distro==1.5.0
     # via
     #   -r requirements-tests.txt
