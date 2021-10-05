@@ -365,7 +365,7 @@ pyjwt==2.1.0
     # via -r requirements-docs.in
 pynacl==1.4.0
     # via paramiko
-pyopenssl==20.0.1
+pyopenssl==21.0.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
