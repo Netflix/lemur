@@ -147,7 +147,7 @@ moto[all]==2.0.8
     # via -r requirements-tests.in
 mypy-extensions==0.4.3
     # via black
-networkx==2.5.1
+networkx==2.6.2
     # via cfn-lint
 nose==1.3.7
     # via -r requirements-tests.in
