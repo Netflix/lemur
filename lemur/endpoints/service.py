@@ -131,6 +131,8 @@ def update(endpoint_id, **kwargs):
     endpoint.policy = kwargs["policy"]
     endpoint.certificate = kwargs["certificate"]
     endpoint.source = kwargs["source"]
+    endpoint.certificate_path = kwargs["certificate_path"]
+    endpoint.registry_type = kwargs["registry_type"]
     endpoint.last_updated = arrow.utcnow()
     metrics.send(
         "endpoint_updated", "counter", 1, metric_tags={"source": endpoint.source.label}

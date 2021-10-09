@@ -56,6 +56,8 @@ class Endpoint(db.Model):
     policy_id = Column(Integer, ForeignKey("policy.id"))
     policy = relationship("Policy", backref="endpoint")
     certificate_id = Column(Integer, ForeignKey("certificates.id"))
+    certificate_path = Column(String(256))
+    registry_type = Column(String(128))
     source_id = Column(Integer, ForeignKey("sources.id"))
     sensitive = Column(Boolean, default=False)
     source = relationship("Source", back_populates="endpoints")

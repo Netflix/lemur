@@ -50,4 +50,5 @@ six
 SQLAlchemy-Utils
 sqlalchemy < 1.4.0 # ImportError: cannot import name '_ColumnEntity' https://github.com/sqlalchemy/sqlalchemy/issues/6226
 tabulate
+validators
 xmltodict
