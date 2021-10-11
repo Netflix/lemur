@@ -8,7 +8,7 @@ appdirs==1.4.4
     # via virtualenv
 bleach==3.3.0
     # via readme-renderer
-certifi==2021.5.30
+certifi==2021.10.8
     # via requests
 cffi==1.14.6
     # via cryptography
