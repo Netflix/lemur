@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-docs.txt requirements-docs.in
 #
-acme==1.19.0
+acme==1.20.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -68,7 +68,7 @@ botocore==1.21.54
     #   s3transfer
 celery[redis]==4.4.2
     # via -r requirements-docs.in
-certbot==1.19.0
+certbot==1.20.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -179,7 +179,7 @@ flask-migrate==2.7.0
     #   -r requirements-tests.txt
 flask-principal==0.4.0
     # via -r requirements-docs.in
-flask_replicated==2.1
+flask-replicated==2.1
     # via -r requirements-docs.in
 flask-restful==0.3.9
     # via -r requirements-docs.in
