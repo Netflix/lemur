@@ -103,6 +103,26 @@ def test_render_expiring_deployed_certificate(certificate):
 
 
 @mock_ses
+def test_send_expiration_notification_no_security_team():
+    from flask import current_app
+    from lemur.notifications.messaging import send_expiration_notifications
+    from lemur.tests.factories import CertificateFactory
+    from lemur.tests.factories import NotificationFactory
+
+    now = arrow.utcnow()
+    in_ten_days = now + timedelta(days=10, hours=1)  # a bit more than 10 days since we'll check in the future
+    certificate = CertificateFactory(name="TEST1")
+    notification = NotificationFactory(plugin_name="email-notification")
+
+    certificate.not_after = in_ten_days
+    certificate.notifications.append(notification)
+    certificate.notifications[0].options = get_options()
+
+    verify_sender_email()
+    assert send_expiration_notifications([], [], True) == (3, 0)  # owner (1) and recipients (2)
+
+
+@mock_ses
 def test_send_expiration_notification():
     from lemur.notifications.messaging import send_expiration_notifications
     from lemur.tests.factories import CertificateFactory
@@ -118,7 +138,8 @@ def test_send_expiration_notification():
     certificate.notifications[0].options = get_options()
 
     verify_sender_email()
-    assert send_expiration_notifications([], []) == (4, 0)  # owner (1), recipients (2), and security (1)
+    # exclude "TEST1" certs so we don't pick up certs from the last test tests
+    assert send_expiration_notifications(["TEST1"], []) == (4, 0)  # owner (1), recipients (2), and security (1)
 
 
 @mock_ses

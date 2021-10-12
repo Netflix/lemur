@@ -54,7 +54,7 @@ def send_via_smtp(subject, body, targets):
     smtp_mail.send(msg)
 
 
-def send_via_ses(subject, body, targets):
+def send_via_ses(subject, body, targets, raw_message):
     """
     Attempts to deliver email notification via SES service.
     :param subject:
@@ -75,7 +75,16 @@ def send_via_ses(subject, body, targets):
     }
     if source_arn:
         args["SourceArn"] = source_arn
-    client.send_email(**args)
+    response = client.send_email(**args)
+    # logging information about the email (particularly the message ID) allow reconcilitation with SES bounce notifications
+    log_data = {
+        "message": f"Sent SES email",
+        "subject": subject,
+        "data": raw_message,
+        "targets": targets,
+        "ses_message_id": response["MessageId"],
+    }
+    current_app.logger.info(log_data)
 
 
 class EmailNotificationPlugin(ExpirationNotificationPlugin):
@@ -117,7 +126,7 @@ class EmailNotificationPlugin(ExpirationNotificationPlugin):
         s_type = current_app.config.get("LEMUR_EMAIL_SENDER", "ses").lower()
 
         if s_type == "ses":
-            send_via_ses(subject, body, targets)
+            send_via_ses(subject, body, targets, message)
 
         elif s_type == "smtp":
             send_via_smtp(subject, body, targets)

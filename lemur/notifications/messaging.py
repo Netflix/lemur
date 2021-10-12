@@ -231,15 +231,19 @@ def send_plugin_notification(event_type, data, recipients, notification):
         return True
 
 
-def send_expiration_notifications(exclude, disabled_notification_plugins):
+def send_expiration_notifications(exclude, disabled_notification_plugins, disable_security_team_emails=False):
     """
     This function will check for upcoming certificate expiration,
     and send out notification emails at given intervals.
     """
     success = failure = 0
 
-    # security team gets all
+    # security team gets all expiration emails (if enabled)
     security_email = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
+    # if disabled, don't explicitly include the security team here
+    # note that you will ALSO need to disable the DEFAULT_SECURITY_X_DAY notifications to truly turn these off
+    if disable_security_team_emails:
+        security_email = []
 
     for owner, notification_group in get_eligible_certificates(exclude=exclude).items():
 
