@@ -84,7 +84,7 @@ def sync(source_strings):
         status = FAILURE_METRIC_STATUS
 
         start_time = time.time()
-        print("[+] Staring to sync source: {label}!\n".format(label=source.label))
+        print("[+] Starting to sync source: {label}!\n".format(label=source.label))
 
         user = user_service.get_by_username("lemur")
 
@@ -156,7 +156,7 @@ def clean(source_strings, commit):
 
         start_time = time.time()
 
-        print("[+] Staring to clean source: {label}!\n".format(label=source.label))
+        print("[+] Starting to clean source: {label}!\n".format(label=source.label))
 
         cleaned = 0
         certificates = certificate_service.get_all_pending_cleaning_expired(source)
@@ -218,7 +218,7 @@ def clean_unused_and_expiring_within_days(source_strings, days_to_expire, commit
 
         start_time = time.time()
 
-        print("[+] Staring to clean source: {label}!\n".format(label=source.label))
+        print("[+] Starting to clean source: {label}!\n".format(label=source.label))
 
         cleaned = 0
         certificates = certificate_service.get_all_pending_cleaning_expiring_in_days(source, days_to_expire)
@@ -280,7 +280,7 @@ def clean_unused_and_issued_since_days(source_strings, days_since_issuance, comm
 
         start_time = time.time()
 
-        print("[+] Staring to clean source: {label}!\n".format(label=source.label))
+        print("[+] Starting to clean source: {label}!\n".format(label=source.label))
 
         cleaned = 0
         certificates = certificate_service.get_all_pending_cleaning_issued_since_days(source, days_since_issuance)

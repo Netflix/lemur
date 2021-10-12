@@ -34,7 +34,7 @@ def expire(ttl):
     """
     Removed all endpoints that have not been recently updated.
     """
-    print("[+] Staring expiration of old endpoints.")
+    print("[+] Starting expiration of old endpoints.")
 
     try:
         now = arrow.utcnow()

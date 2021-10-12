@@ -42,7 +42,7 @@ from lemur.common.utils import check_validation
 from lemur.extensions import metrics
 from lemur.plugins import lemur_aws as aws, ExpirationNotificationPlugin
 from lemur.plugins.bases import DestinationPlugin, ExportDestinationPlugin, SourcePlugin
-from lemur.plugins.lemur_aws import iam, s3, elb, ec2, sns
+from lemur.plugins.lemur_aws import iam, s3, elb, ec2, sns, cloudfront
 
 
 def get_region_from_dns(dns):
@@ -171,6 +171,71 @@ def get_elb_endpoints_v2(account_number, region, elb_dict):
     return endpoints
 
 
+def get_distribution_dns(distrib_dict):
+    """
+    Build a DNS name for a CloudFront distribution.  Use the default name if no aliases are given,
+    else return the comma-separated aliases.
+    :param distrib_dict:
+    :return:
+    """
+    dns = distrib_dict.get("DomainName")
+    aliases = distrib_dict.get("Aliases")
+    if not aliases or "Items" not in aliases:
+        return dns
+    return ','.join(aliases["Items"])
+
+
+def get_distribution_endpoint(account_number, cert_id_to_name, distrib_dict):
+    """
+    Constructs endpoint data from a distribution response, or None if it does
+    not represent a distribution Lemur cares about.
+    :param account_number:
+    :param cert_id_to_name: map of IAM certificate IDs to names
+    :param distrib_dict:
+    :return: a list of endpoint dictionaries
+    """
+
+    cert = distrib_dict["ViewerCertificate"]
+    if not cert:
+        return None
+    # Ignore distributions using the default cert for the cloudfront.net domain
+    if cert.get("CloudFrontDefaultCertificate"):
+        return None
+    # Ignore ACM certificates, since these are auto-rotated
+    if cert.get("ACMCertificateArn"):
+        return None
+
+    iam_cert_id = cert.get("IAMCertificateId")
+    if not iam_cert_id:
+        return None
+
+    cert_name = cert_id_to_name.get(iam_cert_id)
+    if not cert_name:
+        current_app.logger.warning(
+            "get_distribution_endpoints: no IAM certificate with id {0}".format(iam_cert_id))
+        return None
+
+    policy = dict(
+        name='cloudfront-none',
+        ciphers=[]
+    )
+    minimum_version = cert.get("MinimumProtocolVersion")
+    if minimum_version:
+        policy = dict(
+            name='cloudfront-%s' % minimum_version,
+            ciphers=[minimum_version]
+        )
+
+    return dict(
+        name=distrib_dict["Id"],
+        dnsname=get_distribution_dns(distrib_dict),
+        type="cloudfront",
+        port=443,
+        certificate_name=cert_name,
+        policy=policy,
+    )
+
+
 class AWSSourcePlugin(SourcePlugin):
     title = "AWS"
     slug = "aws-source"
@@ -193,10 +258,26 @@ class AWSSourcePlugin(SourcePlugin):
             "type": "str",
             "helpMessage": "Comma separated list of regions to search in, if no region is specified we look in all regions.",
         },
+        {
+            "name": "path",
+            "type": "str",
+            "helpMessage": "Only discover certificates with this path.",
+        },
+        {
+            "name": "endpointType",
+            "type": "select",
+            "available": [
+                "elb",
+                "cloudfront",
+            ],
+            "default": "elb",
+            "helpMessage": "Type of AWS endpoint to discover. Defaults to elb if not set.",
+        },
     ]
 
     def get_certificates(self, options, **kwargs):
         cert_data = iam.get_all_certificates(
+            restrict_path=self.get_option("path", options),
             account_number=self.get_option("accountNumber", options)
         )
         return [
@@ -209,6 +290,12 @@ class AWSSourcePlugin(SourcePlugin):
         ]
 
     def get_endpoints(self, options, **kwargs):
+        if self.get_option("endpointType", options) == "cloudfront":
+            return self.get_distributions(options, **kwargs)
+        else:
+            return self.get_load_balancers(options, **kwargs)
+
+    def get_load_balancers(self, options, **kwargs):
         endpoints = []
         account_number = self.get_option("accountNumber", options)
         regions = self.get_option("regions", options)
@@ -258,12 +345,53 @@ class AWSSourcePlugin(SourcePlugin):
                 except Exception as e:  # noqa
                     capture_exception()
                     continue
+        return endpoints
 
+    def get_distributions(self, options, **kwargs):
+        endpoints = []
+        account_number = self.get_option("accountNumber", options)
+        try:
+            iam_cert_dict = iam.get_certificate_id_to_name(account_number=account_number)
+            distributions = cloudfront.get_all_distributions(account_number=account_number)
+        except Exception as e:  # noqa
+            capture_exception()
+            return endpoints
+
+        current_app.logger.info({
+            "message": "Describing CloudFront distributions",
+            "account_number": account_number,
+            "number_of_distributions": len(distributions)
+        })
+
+        for d in distributions:
+            try:
+                endpoint = get_distribution_endpoint(account_number, iam_cert_dict, d)
+                if endpoint:
+                    endpoints.append(endpoint)
+            except Exception as e:  # noqa
+                capture_exception()
+                continue
         return endpoints
 
     def update_endpoint(self, endpoint, certificate):
         options = endpoint.source.options
         account_number = self.get_option("accountNumber", options)
+
+        if endpoint.type == "cloudfront":
+            cert = iam.get_certificate(certificate.name,
+                                       account_number=account_number)
+            if not cert:
+                return None
+            cert_id = cert["ServerCertificateMetadata"]["ServerCertificateId"]
+            cloudfront.attach_certificate(
+                endpoint.name,
+                cert_id,
+                account_number=account_number
+            )
+            return
+
+        if endpoint.type not in ["elb", "elbv2"]:
+            raise NotImplementedError()
 
         # relies on the fact that region is included in DNS name
         region = get_region_from_dns(endpoint.dnsname)
@@ -283,7 +411,7 @@ class AWSSourcePlugin(SourcePlugin):
                 account_number=account_number,
                 region=region,
             )
-        else:
+        elif endpoint.type == "elb":
             elb.attach_certificate(
                 endpoint.name,
                 endpoint.port,
@@ -351,6 +479,12 @@ class AWSSourcePlugin(SourcePlugin):
 
                 for certificate in listener["Certificates"]:
                     certificate_names.append(iam.get_name_from_arn(certificate["CertificateArn"]))
+        elif endpoint.type == "cloudfront":
+            cert_id_to_name = iam.get_certificate_id_to_name(account_number=account_number)
+            dist = cloudfront.get_distribution(account_number=account_number, distribution_id=endpoint.name)
+            loaded = get_distribution_endpoint(account_number, cert_id_to_name, dist["DistributionConfig"])
+            if loaded:
+                certificate_names.append(loaded["certificate_name"])
 
         return certificate_names
 
