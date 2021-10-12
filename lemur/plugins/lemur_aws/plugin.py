@@ -488,11 +488,17 @@ class AWSSourcePlugin(SourcePlugin):
         elif endpoint.type == "cloudfront":
             cert_id_to_name = iam.get_certificate_id_to_name(account_number=account_number)
             dist = cloudfront.get_distribution(account_number=account_number, distribution_id=endpoint.name)
+<<<<<<< HEAD
             loaded = get_distribution_endpoint(account_number, cert_id_to_name, dist)
             if loaded:
                 certificate_names.append(loaded["certificate_name"])
         else:
             raise NotImplementedError()
+=======
+            loaded = get_distribution_endpoint(account_number, cert_id_to_name, dist["DistributionConfig"])
+            if loaded:
+                certificate_names.append(loaded["certificate_name"])
+>>>>>>> CloudFront support draft proof of concept.
 
         return certificate_names
 
