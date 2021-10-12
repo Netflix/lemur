@@ -50,7 +50,7 @@ def expirations(exclude, disabled_notification_plugins):
     status = FAILURE_METRIC_STATUS
     try:
         print("Starting to notify subscribers about expiring certificates!")
-        disable_security_team_emails = current_app.config.get("DISABLE_SECURITY_TEAM_EXPIRATION_EMAILS")
+        disable_security_team_emails = current_app.config.get("DISABLE_SECURITY_TEAM_EXPIRATION_EMAILS", False)
         success, failed = send_expiration_notifications(exclude, disabled_notification_plugins, disable_security_team_emails)
         print(
             f"Finished notifying subscribers about expiring certificates! Sent: {success} Failed: {failed}"

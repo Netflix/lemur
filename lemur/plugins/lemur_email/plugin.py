@@ -76,7 +76,7 @@ def send_via_ses(subject, body, targets, raw_message):
     if source_arn:
         args["SourceArn"] = source_arn
     response = client.send_email(**args)
-    # logging information about the email (particularly the message ID) allow reconcilitation with SES bounce notifications
+    # logging information about the email (particularly the message ID) allows reconcilitation with SES bounce notifications
     log_data = {
         "message": f"Sent SES email",
         "subject": subject,
