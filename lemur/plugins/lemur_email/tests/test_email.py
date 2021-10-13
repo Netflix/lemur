@@ -104,7 +104,6 @@ def test_render_expiring_deployed_certificate(certificate):
 
 @mock_ses
 def test_send_expiration_notification_no_security_team():
-    from flask import current_app
     from lemur.notifications.messaging import send_expiration_notifications
     from lemur.tests.factories import CertificateFactory
     from lemur.tests.factories import NotificationFactory
