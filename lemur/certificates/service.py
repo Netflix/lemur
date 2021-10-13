@@ -940,7 +940,7 @@ def reissue_certificate(certificate, notify=None, replace=None, user=None):
 def is_attached_to_endpoint(certificate_name, endpoint_name):
     """
     Find if given certificate is attached to the endpoint. Both, certificate and endpoint, are identified by name.
-    This method talks to elb and finds the real time information.
+    This method talks to AWS and finds the real time information.
     :param certificate_name:
     :param endpoint_name:
     :return: True if certificate is attached to the given endpoint, False otherwise

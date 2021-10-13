@@ -182,6 +182,7 @@ def get_distribution_dns(distrib_dict):
     aliases = distrib_dict.get("Aliases")
     if not aliases or "Items" not in aliases:
         return dns
+    aliases["Items"].sort()
     return ','.join(aliases["Items"])
 
 
@@ -455,8 +456,8 @@ class AWSSourcePlugin(SourcePlugin):
 
         if endpoint.type == "elb":
             elb_details = elb.get_elbs(account_number=account_number,
-                                    region=region,
-                                    LoadBalancerNames=[endpoint.name],)
+                                       region=region,
+                                       LoadBalancerNames=[endpoint.name],)
 
             for lb_description in elb_details["LoadBalancerDescriptions"]:
                 for listener_description in lb_description["ListenerDescriptions"]:
@@ -482,7 +483,7 @@ class AWSSourcePlugin(SourcePlugin):
         elif endpoint.type == "cloudfront":
             cert_id_to_name = iam.get_certificate_id_to_name(account_number=account_number)
             dist = cloudfront.get_distribution(account_number=account_number, distribution_id=endpoint.name)
-            loaded = get_distribution_endpoint(account_number, cert_id_to_name, dist["DistributionConfig"])
+            loaded = get_distribution_endpoint(account_number, cert_id_to_name, dist)
             if loaded:
                 certificate_names.append(loaded["certificate_name"])
 

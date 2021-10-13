@@ -69,7 +69,7 @@ def get_distribution(distribution_id, **kwargs):
     """
     distributions = []
     try:
-        dist_and_config = kwargs["client"].get_distribution(Id=distribution_id)
+        dist_and_config = kwargs["client"].get_distribution(Id=distribution_id)["Distribution"]
         # Compose a similar dictionary to get_all_distributions
         dist = {
             "Id": dist_and_config["Id"],
