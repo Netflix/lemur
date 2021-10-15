@@ -402,7 +402,6 @@ class AWSSourcePlugin(SourcePlugin):
             arn = iam.create_arn_from_cert(account_number, region, certificate.name, endpoint.certificate_path)
         else:
             raise Exception(f"Lemur doesn't support rotating certificates on {endpoint.registry_type} registry")
-            return
 
         if endpoint.type == "elbv2":
             listener_arn = elb.get_listener_arn_from_endpoint(
@@ -489,13 +488,11 @@ class AWSSourcePlugin(SourcePlugin):
         elif endpoint.type == "cloudfront":
             cert_id_to_name = iam.get_certificate_id_to_name(account_number=account_number)
             dist = cloudfront.get_distribution(account_number=account_number, distribution_id=endpoint.name)
-<<<<<<< HEAD
             loaded = get_distribution_endpoint(account_number, cert_id_to_name, dist)
-=======
-            loaded = get_distribution_endpoint(account_number, cert_id_to_name, dist["DistributionConfig"])
->>>>>>> CloudFront support draft proof of concept.
             if loaded:
                 certificate_names.append(loaded["certificate_name"])
+        else:
+            raise NotImplementedError()
 
         return certificate_names
 

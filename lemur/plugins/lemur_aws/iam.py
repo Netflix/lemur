@@ -207,6 +207,7 @@ def _get_certificates(**kwargs):
 def get_all_certificates(restrict_path=None, **kwargs):
     """
     Use STS to fetch all of the SSL certificates from a given account
+    :param restrict_path: If provided, only return certificates with a matching Path value.
     """
     certificates = []
     account_number = kwargs.get("account_number")

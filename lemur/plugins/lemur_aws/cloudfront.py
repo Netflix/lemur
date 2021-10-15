@@ -2,7 +2,7 @@
 .. module: lemur.plugins.lemur_aws.cloudfront
     :synopsis: Helper code for discovering CloudFront endpoints
 
-.. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
+.. moduleauthor:: <lemur@netflix.com>
 """
 
 from flask import current_app
@@ -67,7 +67,6 @@ def get_distribution(distribution_id, **kwargs):
         account_number: AWS account number
     :return:
     """
-    distributions = []
     try:
         dist_and_config = kwargs["client"].get_distribution(Id=distribution_id)["Distribution"]
         # Compose a similar dictionary to get_all_distributions
