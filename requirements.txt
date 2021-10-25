@@ -218,7 +218,7 @@ pytz==2021.1
     #   certbot
     #   flask-restful
     #   pyrfc3339
-pyyaml==5.4.1
+pyyaml==6.0
     # via
     #   -r requirements.in
     #   cloudflare
