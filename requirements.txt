@@ -16,7 +16,7 @@ amqp==2.6.1
     # via kombu
 aniso8601==9.0.1
     # via flask-restful
-arrow==1.2.0
+arrow==1.2.1
     # via -r requirements.in
 asyncpool==1.0
     # via -r requirements.in
@@ -32,9 +32,9 @@ blinker==1.4
     # via
     #   flask-mail
     #   flask-principal
-boto3==1.18.59
+boto3==1.19.3
     # via -r requirements.in
-botocore==1.21.59
+botocore==1.22.3
     # via
     #   -r requirements.in
     #   boto3
@@ -186,7 +186,7 @@ pycryptodomex==3.10.1
     # via pyjks
 pyjks==20.0.0
     # via -r requirements.in
-pyjwt==2.2.0
+pyjwt==2.3.0
     # via -r requirements.in
 pynacl==1.4.0
     # via paramiko
@@ -218,7 +218,7 @@ pytz==2021.1
     #   certbot
     #   flask-restful
     #   pyrfc3339
-pyyaml==5.4.1
+pyyaml==6.0
     # via
     #   -r requirements.in
     #   cloudflare
@@ -265,7 +265,7 @@ sqlalchemy==1.3.24
     #   flask-sqlalchemy
     #   marshmallow-sqlalchemy
     #   sqlalchemy-utils
-sqlalchemy-utils==0.37.8
+sqlalchemy-utils==0.37.9
     # via -r requirements.in
 tabulate==0.8.9
     # via -r requirements.in

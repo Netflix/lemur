@@ -20,11 +20,11 @@ bandit==1.7.0
     # via -r requirements-tests.in
 black==21.9b0
     # via -r requirements-tests.in
-boto3==1.18.59
+boto3==1.19.3
     # via
     #   aws-sam-translator
     #   moto
-botocore==1.21.59
+botocore==1.22.3
     # via
     #   aws-xray-sdk
     #   boto3
@@ -70,7 +70,7 @@ ecdsa==0.14.1
     #   sshpubkeys
 factory-boy==3.2.0
     # via -r requirements-tests.in
-faker==9.3.0
+faker==9.6.0
     # via
     #   -r requirements-tests.in
     #   factory-boy
@@ -211,7 +211,7 @@ pytz==2021.1
     #   certbot
     #   moto
     #   pyrfc3339
-pyyaml==5.4.1
+pyyaml==6.0
     # via
     #   -r requirements-tests.in
     #   bandit
