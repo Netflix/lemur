@@ -57,7 +57,7 @@ def send_via_smtp(subject, body, targets):
     smtp_mail.send(msg)
 
 
-def send_via_ses(subject, body, targets, raw_message):
+def send_via_ses(subject, body, targets, **kwargs):
     """
     Attempts to deliver email notification via SES service.
     :param subject:
@@ -65,11 +65,14 @@ def send_via_ses(subject, body, targets, raw_message):
     :param targets:
     :return:
     """
+    email_tags = kwargs.get("email_tags")
+    if not email_tags:
+        email_tags = {}
     log_data = {
         "function": f"{__name__}.{sys._getframe().f_code.co_name}",
         "subject": subject,
-        "data": raw_message,
         "targets": targets,
+        "additional_tags": email_tags,
     }
 
     ses_region = current_app.config.get("LEMUR_SES_REGION", "us-east-1")
@@ -136,7 +139,7 @@ class EmailNotificationPlugin(ExpirationNotificationPlugin):
         s_type = current_app.config.get("LEMUR_EMAIL_SENDER", "ses").lower()
 
         if s_type == "ses":
-            send_via_ses(subject, body, targets, message)
+            send_via_ses(subject, body, targets, **kwargs)
 
         elif s_type == "smtp":
             send_via_smtp(subject, body, targets)
