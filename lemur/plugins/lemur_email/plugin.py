@@ -6,8 +6,6 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import sys
-
 import boto3
 from flask import current_app
 from flask_mail import Message
@@ -68,12 +66,8 @@ def send_via_ses(subject, body, targets, **kwargs):
     email_tags = kwargs.get("email_tags")
     if not email_tags:
         email_tags = {}
-    log_data = {
-        "function": f"{__name__}.{sys._getframe().f_code.co_name}",
-        "subject": subject,
-        "targets": targets,
-        "additional_tags": email_tags,
-    }
+    email_tags["subject"] = subject
+    email_tags["targets"] = targets
 
     ses_region = current_app.config.get("LEMUR_SES_REGION", "us-east-1")
     client = boto3.client("ses", region_name=ses_region)
@@ -91,12 +85,11 @@ def send_via_ses(subject, body, targets, **kwargs):
     response = client.send_email(**args)
     try:
         # logging information about the email (particularly the message ID) allows reconcilitation with SES bounce notifications
-        log_data["message"] = "Sent SES email"
-        log_data["ses_message_id"] = response["MessageId"]
-        current_app.logger.info(log_data)
-    except Exception as e:
-        log_data["message"] = "Unable to log message ID of sent SES email"
-        current_app.logger.error(log_data, exc_info=True)
+        email_tags["ses_message_id"] = response["MessageId"]
+        current_app.logger.info("Sent SES email", extra={"SES-Email": email_tags})
+    except Exception:
+        current_app.logger.error("Unable to log message ID of sent SES email", extra={"SES-Email": email_tags},
+                                 exc_info=True)
         capture_exception()
 
 
