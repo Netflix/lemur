@@ -85,8 +85,9 @@ def send_via_ses(subject, body, targets, **kwargs):
     response = client.send_email(**args)
     try:
         # logging information about the email (particularly the message ID) allows reconcilitation with SES bounce notifications
-        email_tags["ses_message_id"] = response["MessageId"]
-        current_app.logger.info("Sent SES email", extra={"SES-Email": email_tags})
+        message_id = response["MessageId"]
+        email_tags["ses_message_id"] = message_id
+        current_app.logger.info(f"Sent SES email: {message_id}", extra={"SES-Email": email_tags})
     except Exception:
         current_app.logger.error("Unable to log message ID of sent SES email", extra={"SES-Email": email_tags},
                                  exc_info=True)
