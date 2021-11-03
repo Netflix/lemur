@@ -1,4 +1,4 @@
-"""empty message
+"""Adds the endpoint_dnsalias table to store CloudFront distribution aliases.
 
 Revision ID: 189e5fda5bf8
 Revises: 2201c548a5a1

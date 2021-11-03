@@ -256,7 +256,7 @@ class AWSSourcePlugin(SourcePlugin):
             "type": "str",
             "validation": r"^(?:|/|/\S+/)$",
             "default": "/",
-            "helpMessage": "Only discover certificates with this path prefix. Must begin and end with slash. " +
+            "helpMessage": "Only discover certificates with this path prefix. Must begin and end with slash. "
                            "For CloudFront sources, use '/cloudfront/'.",
         },
         {

@@ -177,7 +177,7 @@ def render(args):
 
         if terms[0] == "name":
             alias_query = Endpoint.query.filter(
-                Endpoint.aliases.any(EndpointDnsAlias.alias.ilike("%{}%".format(terms[1]))))
+                Endpoint.aliases.any(EndpointDnsAlias.alias.ilike(f"%{terms[1]}%")))
             query = query.union(alias_query)
 
     return database.sort_and_page(query, Endpoint, args)
