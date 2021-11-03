@@ -173,21 +173,6 @@ def get_elb_endpoints_v2(account_number, region, elb_dict):
     return endpoints
 
 
-def get_distribution_dns(distrib_dict):
-    """
-    Build a DNS name for a CloudFront distribution.  Use the default name if no aliases are given,
-    else return the comma-separated aliases.
-    :param distrib_dict:
-    :return:
-    """
-    dns = distrib_dict.get("DomainName")
-    aliases = distrib_dict.get("Aliases")
-    if not aliases or "Items" not in aliases:
-        return dns
-    aliases["Items"].sort()
-    return ','.join(aliases["Items"])
-
-
 def get_distribution_endpoint(account_number, cert_id_to_name, distrib_dict):
     """
     Constructs endpoint data from a distribution response, or None if it does
@@ -215,7 +200,7 @@ def get_distribution_endpoint(account_number, cert_id_to_name, distrib_dict):
     cert_name = cert_id_to_name.get(iam_cert_id)
     if not cert_name:
         current_app.logger.warning(
-            "get_distribution_endpoints: no IAM certificate with id {0}".format(iam_cert_id))
+            f"get_distribution_endpoints: no IAM certificate with id {iam_cert_id}")
         return None
 
     policy = dict(
@@ -225,7 +210,7 @@ def get_distribution_endpoint(account_number, cert_id_to_name, distrib_dict):
     minimum_version = cert.get("MinimumProtocolVersion")
     if minimum_version:
         policy = dict(
-            name='cloudfront-%s' % minimum_version,
+            name=f"cloudfront-%{minimum_version}",
             ciphers=[minimum_version]
         )
 
@@ -269,7 +254,10 @@ class AWSSourcePlugin(SourcePlugin):
         {
             "name": "path",
             "type": "str",
-            "helpMessage": "Only discover certificates with this path.",
+            "validation": r"^(?:|/|/\S+/)$",
+            "default": "/",
+            "helpMessage": "Only discover certificates with this path prefix. Must begin and end with slash. " +
+                           "For CloudFront sources, use '/cloudfront/'.",
         },
         {
             "name": "endpointType",
@@ -524,8 +512,9 @@ class AWSDestinationPlugin(DestinationPlugin):
         {
             "name": "path",
             "type": "str",
+            "validation": r"^(?:|/|/\S+/)$",
             "default": "/",
-            "helpMessage": "Path to upload certificate.",
+            "helpMessage": "Path prefix for uploaded certificates.",
         },
     ]
 
