@@ -1469,6 +1469,10 @@ IAM-ServerCertificate
         "Statement": [
                     {
                          "Action": [
+                              "cloudfront:GetDistribution",
+                              "cloudfront:GetDistributionConfig",
+                              "cloudfront:ListDistributions",
+                              "cloudfront:UpdateDistribution",
                               "elasticloadbalancing:DescribeInstanceHealth",
                               "elasticloadbalancing:DescribeLoadBalancerAttributes",
                               "elasticloadbalancing:DescribeLoadBalancerPolicyTypes",
