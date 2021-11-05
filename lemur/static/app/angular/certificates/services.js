@@ -38,7 +38,7 @@ angular.module('lemur')
             }
           }
         },
-        attachSubAltName: function () {
+        attachSubAltName: function (form) {
           if (this.extensions === undefined) {
             this.extensions = {};
           }
@@ -53,15 +53,32 @@ angular.module('lemur')
 
           if (angular.isString(this.subAltValue) && angular.isString(this.subAltType)) {
             this.extensions.subAltNames.names.push({'nameType': this.subAltType, 'value': this.subAltValue});
-            //this.findDuplicates();
+          }
+
+          if (angular.isDefined(form)) {
+            // adding SAN makes CN optional
+            form.commonName.$setValidity('required', null);
           }
 
           this.subAltType = null;
           this.subAltValue = null;
         },
-        removeSubAltName: function (index) {
+        removeSubAltName: function (form, index) {
           this.extensions.subAltNames.names.splice(index, 1);
-          //this.findDuplicates();
+
+          let isSanPresent = this.extensions.subAltNames.names.length > 0;
+          if (!isSanPresent) {
+            let commonName = form.commonName.$viewValue;
+            form.commonName.$setValidity('required', angular.isDefined(commonName) && commonName !== '');
+          }
+        },
+        checkCommonNameOptional: function (form) {
+           if (angular.isDefined(this.extensions) && angular.isDefined(this.extensions.subAltNames)) {
+             let isSanPresent = this.extensions.subAltNames.names.length > 0;
+             if (isSanPresent) {
+                form.commonName.$setValidity('required', true);
+              }
+           }
         },
         attachCustom: function () {
           if (this.extensions === undefined) {

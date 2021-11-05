@@ -551,7 +551,7 @@ def test_certificate_allowed_names(client, authority, session, logged_in_user):
     assert not errors
 
 
-def test_certificate_incative_authority(client, authority, session, logged_in_user):
+def test_certificate_inactive_authority(client, authority, session, logged_in_user):
     """Cannot issue certificates with an inactive authority."""
     from lemur.certificates.schemas import CertificateInputSchema
 

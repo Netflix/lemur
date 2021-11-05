@@ -704,10 +704,14 @@ def create_csr(**csr_config):
     private_key = generate_private_key(csr_config.get("key_type"))
 
     builder = x509.CertificateSigningRequestBuilder()
-    name_list = [x509.NameAttribute(x509.OID_COMMON_NAME, csr_config["common_name"])]
+    name_list = []
     if current_app.config.get("LEMUR_OWNER_EMAIL_IN_SUBJECT", True):
         name_list.append(
             x509.NameAttribute(x509.OID_EMAIL_ADDRESS, csr_config["owner"])
+        )
+    if "common_name" in csr_config and csr_config["common_name"].strip():
+        name_list.append(
+            x509.NameAttribute(x509.OID_COMMON_NAME, csr_config["common_name"])
         )
     if "organization" in csr_config and csr_config["organization"].strip():
         name_list.append(

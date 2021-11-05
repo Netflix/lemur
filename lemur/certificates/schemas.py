@@ -68,7 +68,7 @@ class CertificateCreationSchema(CertificateSchema):
 
 class CertificateInputSchema(CertificateCreationSchema):
     name = fields.String()
-    common_name = fields.String(required=True, validate=validators.common_name)
+    common_name = fields.String(validate=validators.common_name, missing="")
     authority = fields.Nested(AssociatedAuthoritySchema, required=True)
 
     validity_start = ArrowDateTime(allow_none=True)
@@ -116,7 +116,7 @@ class CertificateInputSchema(CertificateCreationSchema):
     )
     state = fields.String(missing=lambda: current_app.config.get("LEMUR_DEFAULT_STATE"))
 
-    extensions = fields.Nested(ExtensionSchema)
+    extensions = fields.Nested(ExtensionSchema, missing={})
 
     @validates_schema
     def validate_authority(self, data):
@@ -132,6 +132,14 @@ class CertificateInputSchema(CertificateCreationSchema):
     @validates_schema
     def validate_dates(self, data):
         validators.dates(data)
+
+    @validates_schema
+    def validate_common_name(self, data):
+        if data["authority"].name not in current_app.config.get("OPTIONAL_COMMON_NAME_AUTHORITIES", []) and data["common_name"] == "":
+            raise ValidationError("Missing common_name")
+
+        if len(data["extensions"]["sub_alt_names"]["names"]) == 0 and data["common_name"] == "":
+            raise ValidationError("Missing common_name, either CN or SAN must be present")
 
     @pre_load
     def load_data(self, data):
