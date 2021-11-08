@@ -34,7 +34,7 @@ blinker==1.4
     #   flask-principal
 boto3==1.19.8
     # via -r requirements.in
-botocore==1.22.8
+botocore==1.22.12
     # via
     #   -r requirements.in
     #   boto3
