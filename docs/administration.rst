@@ -207,6 +207,7 @@ Basic Configuration
     :noindex:
 
         Use this config to list names of the authorities treating common name (CN) as optional field.
+
     ::
 
         OPTIONAL_COMMON_NAME_AUTHORITIES = ['test-optional-cn-issuer']
