@@ -203,7 +203,7 @@ Basic Configuration
         DEFAULT_VALIDITY_DAYS = 1095
 
 
-..data:: OPTIONAL_COMMON_NAME_AUTHORITIES
+.. data:: OPTIONAL_COMMON_NAME_AUTHORITIES
     :noindex:
 
         Use this config to list names of the authorities treating common name (CN) as optional field.
