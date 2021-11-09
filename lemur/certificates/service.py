@@ -458,7 +458,7 @@ def create(**kwargs):
         log_data = {
             "message": "Exception minting certificate",
             "issuer": kwargs["authority"].name,
-            "cn": kwargs["common_name"],
+            "cn": kwargs["common_name"] if "common_name" in kwargs else None,
         }
         current_app.logger.error(log_data, exc_info=True)
         capture_exception()

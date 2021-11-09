@@ -75,6 +75,9 @@ LEMUR_PORTS_FOR_DEPLOYED_CERTIFICATE_CHECK = [443, 65521, 65522, 65523, 65524]
 # needed for test_messaging
 LEMUR_REISSUE_NOTIFICATION_EXCLUDED_DESTINATIONS = ['excluded-destination']
 
+# to test optional CN
+OPTIONAL_COMMON_NAME_AUTHORITIES = ['test-optional-cn-issuer']
+
 # Database
 
 # modify this if you are not using a local database. Do not use any development or production DBs,

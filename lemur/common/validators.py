@@ -16,7 +16,8 @@ def common_name(value):
     # Common name could be a domain name, or a human-readable name of the subject (often used in CA names or client
     # certificates). As a simple heuristic, we assume that human-readable names always include a space.
     # However, to avoid confusion for humans, we also don't count spaces at the beginning or end of the string.
-    if " " not in value.strip():
+    value = value.strip()
+    if value and " " not in value:
         return sensitive_domain(value)
 
 
