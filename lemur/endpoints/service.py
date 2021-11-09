@@ -97,10 +97,9 @@ def create(**kwargs):
     :param kwargs:
     :return:
     """
-    alias_names = kwargs.pop("aliases")
     endpoint = Endpoint(**kwargs)
-    if alias_names:
-        endpoint.aliases = [EndpointDnsAlias(alias=name) for name in alias_names]
+    if "aliases" in kwargs:
+        endpoint.aliases = [EndpointDnsAlias(alias=name) for name in kwargs.pop("aliases")]
     database.create(endpoint)
     metrics.send(
         "endpoint_added", "counter", 1, metric_tags={"source": endpoint.source.label}
