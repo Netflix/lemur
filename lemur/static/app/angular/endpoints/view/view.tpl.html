@@ -50,9 +50,9 @@
                                     <ul class="list-group">
                                         <li class="list-group-item">
                                             <strong>Name</strong>
-                                        <span class="pull-right">
-                                          {{ endpoint.certificate.name }}
-                                        </span>
+                                            <span class="pull-right">
+                                                {{ endpoint.certificate.name }}
+                                            </span>
                                         </li>
                                         <li class="list-group-item">
                                             <strong>Not Before</strong>
@@ -94,6 +94,16 @@
                                     <ul class="list-group">
                                         <li class="list-group-item" ng-repeat="cipher in endpoint.policy.ciphers">
                                             <strong>{{ cipher.name }}</strong>
+                                        </li>
+                                    </ul>
+                                </uib-tab>
+                                <uib-tab>
+                                    <uib-tab-heading>
+                                        DNS Alias(es)
+                                    </uib-tab-heading>
+                                    <ul class="list-group">
+                                        <li class="list-group-item" ng-repeat="alias in endpoint.dnsAliases">
+                                            {{ alias }}
                                         </li>
                                     </ul>
                                 </uib-tab>

@@ -125,8 +125,6 @@ def upload_cert(name, body, private_key, path, cert_chain=None, **kwargs):
 
     if not path or path == "/":
         path = "/"
-    else:
-        name = name + "-" + path.strip("/")
 
     metrics.send("upload_cert", "counter", 1, metric_tags={"name": name, "path": path})
     try:
@@ -169,15 +167,19 @@ def delete_cert(cert_name, **kwargs):
 
 
 @sts_client("iam")
-@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=25)
 def get_certificate(name, **kwargs):
     """
     Retrieves an SSL certificate.
 
     :return:
     """
-    client = kwargs.pop("client")
+    return _get_certificate(name, **kwargs)
+
+
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=25)
+def _get_certificate(name, **kwargs):
     metrics.send("get_certificate", "counter", 1, metric_tags={"name": name})
+    client = kwargs.pop("client")
     try:
         return client.get_server_certificate(ServerCertificateName=name)["ServerCertificate"]
     except client.exceptions.NoSuchEntityException:
@@ -186,21 +188,26 @@ def get_certificate(name, **kwargs):
 
 
 @sts_client("iam")
-@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=25)
 def get_certificates(**kwargs):
     """
     Fetches one page of certificate objects for a given account.
     :param kwargs:
     :return:
     """
-    client = kwargs.pop("client")
+    return _get_certificates(**kwargs)
+
+
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=25)
+def _get_certificates(**kwargs):
     metrics.send("get_certificates", "counter", 1)
-    return client.list_server_certificates(**kwargs)
+    return kwargs.pop("client").list_server_certificates(**kwargs)
 
 
-def get_all_certificates(**kwargs):
+@sts_client("iam")
+def get_all_certificates(restrict_path=None, **kwargs):
     """
     Use STS to fetch all of the SSL certificates from a given account
+    :param restrict_path: If provided, only return certificates with a matching Path value.
     """
     certificates = []
     account_number = kwargs.get("account_number")
@@ -212,17 +219,46 @@ def get_all_certificates(**kwargs):
     )
 
     while True:
-        response = get_certificates(**kwargs)
+        response = _get_certificates(**kwargs)
         metadata = response["ServerCertificateMetadataList"]
 
         for m in metadata:
+            if restrict_path and m["Path"] != restrict_path:
+                continue
             certificates.append(
-                get_certificate(
-                    m["ServerCertificateName"], account_number=account_number
+                _get_certificate(
+                    m["ServerCertificateName"],
+                    client=kwargs["client"]
                 )
             )
 
         if not response.get("Marker"):
             return certificates
+        else:
+            kwargs.update(dict(Marker=response["Marker"]))
+
+
+def get_certificate_id_to_name(**kwargs):
+    """
+    Use STS to fetch a map of IAM certificate IDs to names
+    """
+    id_to_name = {}
+    account_number = kwargs.get("account_number")
+    metrics.send(
+        "get_certificate_id_to_name",
+        "counter",
+        1,
+        metric_tags={"account_number": account_number},
+    )
+
+    while True:
+        response = get_certificates(**kwargs)
+        metadata = response["ServerCertificateMetadataList"]
+
+        for m in metadata:
+            id_to_name[m["ServerCertificateId"]] = m["ServerCertificateName"]
+
+        if not response.get("Marker"):
+            return id_to_name
         else:
             kwargs.update(dict(Marker=response["Marker"]))

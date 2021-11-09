@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-tests.txt requirements-tests.in
 #
-acme==1.19.0
+acme==1.21.0
     # via certbot
 alembic==1.6.5
     # via flask-migrate
@@ -18,21 +18,21 @@ aws-xray-sdk==2.8.0
     # via moto
 bandit==1.7.0
     # via -r requirements-tests.in
-black==21.9b0
+black==21.10b0
     # via -r requirements-tests.in
-boto3==1.18.54
+boto3==1.19.12
     # via
     #   aws-sam-translator
     #   moto
-botocore==1.21.54
+botocore==1.22.12
     # via
     #   aws-xray-sdk
     #   boto3
     #   moto
     #   s3transfer
-certbot==1.19.0
+certbot==1.21.0
     # via -r requirements-tests.in
-certifi==2021.5.30
+certifi==2021.10.8
     # via requests
 cffi==1.14.6
     # via cryptography
@@ -68,9 +68,9 @@ ecdsa==0.14.1
     #   moto
     #   python-jose
     #   sshpubkeys
-factory-boy==3.2.0
+factory-boy==3.2.1
     # via -r requirements-tests.in
-faker==8.14.2
+faker==9.8.0
     # via
     #   -r requirements-tests.in
     #   factory-boy
@@ -102,7 +102,7 @@ iniconfig==1.1.1
     # via pytest
 itsdangerous==2.0.1
     # via flask
-jinja2==3.0.1
+jinja2==3.0.2
     # via
     #   flask
     #   moto
@@ -211,7 +211,7 @@ pytz==2021.1
     #   certbot
     #   moto
     #   pyrfc3339
-pyyaml==5.4.1
+pyyaml==6.0
     # via
     #   -r requirements-tests.in
     #   bandit

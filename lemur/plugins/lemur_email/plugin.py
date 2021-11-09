@@ -9,6 +9,7 @@
 import boto3
 from flask import current_app
 from flask_mail import Message
+from sentry_sdk import capture_exception
 
 from lemur.constants import EMAIL_RE, EMAIL_RE_HELP
 from lemur.extensions import smtp_mail
@@ -54,7 +55,7 @@ def send_via_smtp(subject, body, targets):
     smtp_mail.send(msg)
 
 
-def send_via_ses(subject, body, targets):
+def send_via_ses(subject, body, targets, **kwargs):
     """
     Attempts to deliver email notification via SES service.
     :param subject:
@@ -62,6 +63,12 @@ def send_via_ses(subject, body, targets):
     :param targets:
     :return:
     """
+    email_tags = kwargs.get("email_tags")
+    if not email_tags:
+        email_tags = {}
+    email_tags["subject"] = subject
+    email_tags["targets"] = targets
+
     ses_region = current_app.config.get("LEMUR_SES_REGION", "us-east-1")
     client = boto3.client("ses", region_name=ses_region)
     source_arn = current_app.config.get("LEMUR_SES_SOURCE_ARN")
@@ -75,7 +82,16 @@ def send_via_ses(subject, body, targets):
     }
     if source_arn:
         args["SourceArn"] = source_arn
-    client.send_email(**args)
+    response = client.send_email(**args)
+    try:
+        # logging information about the email (particularly the message ID) allows reconcilitation with SES bounce notifications
+        message_id = response["MessageId"]
+        email_tags["ses_message_id"] = message_id
+        current_app.logger.info(f"Sent SES email: {message_id}", extra={"SES-Email": email_tags})
+    except Exception:
+        current_app.logger.error("Unable to log message ID of sent SES email", extra={"SES-Email": email_tags},
+                                 exc_info=True)
+        capture_exception()
 
 
 class EmailNotificationPlugin(ExpirationNotificationPlugin):
@@ -117,7 +133,7 @@ class EmailNotificationPlugin(ExpirationNotificationPlugin):
         s_type = current_app.config.get("LEMUR_EMAIL_SENDER", "ses").lower()
 
         if s_type == "ses":
-            send_via_ses(subject, body, targets)
+            send_via_ses(subject, body, targets, **kwargs)
 
         elif s_type == "smtp":
             send_via_smtp(subject, body, targets)
