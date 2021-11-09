@@ -12,5 +12,6 @@
         - "csine-nflx"
         - "charhate"
         - "jtschladen"
+        - "douglasc-nflx"
       versioning-strategy: lockfile-only
       open-pull-requests-limit: 20
