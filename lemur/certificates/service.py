@@ -639,6 +639,9 @@ def render(args):
     if serial_number:
         if serial_number.lower().startswith('0x'):
             serial_number = str(int(serial_number[2:], 16))
+        elif ":" in serial_number:
+            serial_number = str(int(serial_number.replace(':', ''), 16))
+            
         query = query.filter(Certificate.serial == serial_number)
 
     result = database.sort_and_page(query, Certificate, args)
