@@ -35,11 +35,11 @@
                ng-maxlength="64"
                ng-blur="certificate.attachCommonName()"
                ng-focus="certificate.removeCommonName()"
+               ng-change="certificate.checkCommonNameOptional(trackingForm)"
                required/>
 
         <p ng-show="trackingForm.commonName.$invalid && !trackingForm.commonName.$pristine" class="help-block">
-          You must
-          enter a common name and it must be less than 64 characters</p>
+          Either common name or subject alternate name(s) are required, and they must be less than 64 characters</p>
       </div>
     </div>
     <div class="form-group">
@@ -56,7 +56,7 @@
                  uib-tooltip="String or Base64-encoded DER ASN.1 structure for the value" class="form-control"
                  name="value" ng-model="certificate.subAltValue" placeholder="Value" class="form-control" required/>
           <span class="input-group-btn">
-          <button ng-click="certificate.attachSubAltName()" class="btn btn-info">Add</button>
+          <button ng-click="certificate.attachSubAltName(trackingForm)" class="btn btn-info">Add</button>
         </span>
         </div>
       </div>
@@ -68,7 +68,7 @@
             <td>{{ alt.nameType }}</td>
             <td>{{ alt.value }}</td>
             <td>
-              <button type="button" ng-click="certificate.removeSubAltName($index)"
+              <button type="button" ng-click="certificate.removeSubAltName(trackingForm, $index)"
                       class="btn btn-danger btn-sm pull-right">Remove
               </button>
             </td>
