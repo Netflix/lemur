@@ -244,7 +244,9 @@ class AcmeHandler(object):
         """
         current_app.logger.debug("Fetching domains")
 
-        domains = [options["common_name"]]
+        domains = []
+        if "common_name" in options and options["common_name"].strip():
+            domains.append(options["common_name"])
         if options.get("extensions"):
             for dns_name in options["extensions"]["sub_alt_names"]["names"]:
                 if dns_name.value not in domains:

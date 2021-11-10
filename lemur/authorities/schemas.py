@@ -142,6 +142,7 @@ class AuthorityNestedOutputSchema(LemurOutputSchema):
     active = fields.Boolean()
     authority_certificate = fields.Nested(RootAuthorityCertificateOutputSchema, only=["not_after", "not_before"])
     is_cab_compliant = fields.Boolean()
+    is_cn_optional = fields.Boolean()
     max_issuance_days = fields.Integer()
     default_validity_days = fields.Integer()
 

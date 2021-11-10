@@ -206,19 +206,6 @@ class Certificate(db.Model):
         self.not_after = defaults.not_after(cert)
         self.serial = defaults.serial(cert)
 
-        # when destinations are appended they require a valid name.
-        if kwargs.get("name"):
-            self.name = get_or_increase_name(
-                defaults.text_to_slug(kwargs["name"]), self.serial
-            )
-        else:
-            self.name = get_or_increase_name(
-                defaults.certificate_name(
-                    self.cn, self.issuer, self.not_before, self.not_after, self.san
-                ),
-                self.serial,
-            )
-
         self.owner = kwargs["owner"]
 
         if kwargs.get("private_key"):
@@ -247,6 +234,19 @@ class Certificate(db.Model):
 
         for domain in defaults.domains(cert):
             self.domains.append(Domain(name=domain))
+
+        # when destinations are appended they require a valid name.
+        if kwargs.get("name"):
+            self.name = get_or_increase_name(
+                defaults.text_to_slug(kwargs["name"]), self.serial
+            )
+        else:
+            self.name = get_or_increase_name(
+                defaults.certificate_name(
+                    self.cn, self.issuer, self.not_before, self.not_after, self.san, self.domains
+                ),
+                self.serial,
+            )
 
         # Check integrity before saving anything into the database.
         # For user-facing API calls, validation should also be done in schema validators.
