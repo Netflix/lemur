@@ -135,7 +135,7 @@ class CertificateInputSchema(CertificateCreationSchema):
 
     @post_load
     def validate_common_name(self, data):
-        if data["authority"].name not in current_app.config.get("OPTIONAL_COMMON_NAME_AUTHORITIES", []) and data["common_name"] == "":
+        if data["authority"] and (not data["authority"].is_cn_optional) and data["common_name"] == "":
             raise ValidationError("Missing common_name")
 
         if len(data["extensions"]["sub_alt_names"]["names"]) == 0 and data["common_name"] == "":

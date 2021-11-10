@@ -626,7 +626,7 @@ def test_certificate_sensitive_name(client, authority, session, logged_in_user):
 
 
 def test_certificate_missing_common_name(client, authority, session, logged_in_user):
-    """CN is mandatory unless authority name is configured in OPTIONAL_COMMON_NAME_AUTHORITIES"""
+    """CN is mandatory unless authority has option cn_optional set to true"""
     from lemur.certificates.schemas import CertificateInputSchema
 
     input_data = {
@@ -641,17 +641,14 @@ def test_certificate_missing_common_name(client, authority, session, logged_in_u
     )
 
 
-def test_certificate_only_san_no_cn(session, issuer_plugin, authority, logged_in_user, user):
-    """Only SAN is okay with the authority configured as OPTIONAL_COMMON_NAME_AUTHORITIES. Checks new naming with SAN"""
+def test_certificate_only_san_no_cn(session, issuer_plugin, optional_cn_authority, logged_in_user, user):
+    """Only SAN is okay with the authority having option cn_optional set to true. Checks new naming with SAN"""
     from lemur.certificates.schemas import CertificateInputSchema
     from lemur.certificates.service import create
 
-    authority.name = "test-optional-cn-issuer"
-    session.add(authority)
-
     input_data = {
         "owner": "joe@example.com",
-        "authority": {"id": authority.id},
+        "authority": {"id": optional_cn_authority.id},
         "description": "testtestest",
         "extensions": {
             "subAltNames": {
