@@ -263,7 +263,7 @@ class CertificatesList(AuthenticatedResource):
     @validate_schema(None, certificates_list_output_schema_factory)
     def get(self):
         """
-        .. http:get:: /certificates
+        .. http:get:: /certificates?serial=82311058732025924142789179368889309156
 
            The current list of certificates
 
@@ -359,6 +359,7 @@ class CertificatesList(AuthenticatedResource):
         parser.add_argument("creator", type=str, location="args")
         parser.add_argument("show", type=str, location="args")
         parser.add_argument("showExpired", type=int, location="args")
+        parser.add_argument("serial", type=str, location="args")
 
         args = parser.parse_args()
         args["user"] = g.user
