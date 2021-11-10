@@ -227,7 +227,7 @@ itsdangerous==2.0.1
     #   flask
 javaobj-py3==0.4.3
     # via pyjks
-jinja2==3.0.2
+jinja2==3.0.3
     # via
     #   -r requirements-tests.txt
     #   flask
