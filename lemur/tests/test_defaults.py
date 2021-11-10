@@ -71,6 +71,7 @@ def test_text_to_slug(client):
 def test_create_name(client):
     from lemur.common.defaults import certificate_name
     from datetime import datetime
+    from lemur.domains.models import Domain
 
     assert (
         certificate_name(
@@ -111,6 +112,39 @@ def test_create_name(client):
             False,
         )
         == "selfie.example.org-selfsigned-20150507-20250512"
+    )
+    assert (
+        certificate_name(
+            "selfie.example.org",
+            "<selfsigned>",
+            datetime(2015, 5, 7, 0, 0, 0),
+            datetime(2025, 5, 12, 13, 37, 0),
+            False,
+            domains=[Domain(name='san-example')],
+        )
+        == "selfie.example.org-selfsigned-20150507-20250512"
+    )
+    assert (
+        certificate_name(
+            "",
+            "<selfsigned>",
+            datetime(2015, 5, 7, 0, 0, 0),
+            datetime(2025, 5, 12, 13, 37, 0),
+            False,
+            domains=[Domain(name='san-example')],
+        )
+        == "san-example-selfsigned-20150507-20250512"
+    )
+    assert (
+        certificate_name(
+            "",
+            "<selfsigned>",
+            datetime(2015, 5, 7, 0, 0, 0),
+            datetime(2025, 5, 12, 13, 37, 0),
+            True,
+            domains=[Domain(name='san1'), Domain(name='san2')],
+        )
+        == "SAN-san1-selfsigned-20150507-20250512"
     )
 
 
