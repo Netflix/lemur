@@ -68,6 +68,8 @@ class CertificateCreationSchema(CertificateSchema):
 
 class CertificateInputSchema(CertificateCreationSchema):
     name = fields.String()
+    # Earlier common_name was a required field and thus in most places there is no None check for it. Adding missing=""
+    # as it is not a required field anymore.
     common_name = fields.String(validate=validators.common_name, missing="")
     authority = fields.Nested(AssociatedAuthoritySchema, required=True)
 
