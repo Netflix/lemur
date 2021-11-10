@@ -23,7 +23,6 @@ from lemur.certificates import cli as cli_certificate
 from lemur.certificates import service as certificate_service
 from lemur.common.redis import RedisHandler
 from lemur.constants import ACME_ADDITIONAL_ATTEMPTS
-from lemur.destinations import service as destinations_service
 from lemur.dns_providers import cli as cli_dns_providers
 from lemur.endpoints import cli as cli_endpoints
 from lemur.extensions import metrics
@@ -37,7 +36,6 @@ from lemur.notifications.messaging import (
 from lemur.pending_certificates import service as pending_certificate_service
 from lemur.plugins.base import plugins
 from lemur.sources.cli import clean, sync, validate_sources
-from lemur.sources.service import add_aws_destination_to_sources
 
 if current_app:
     flask_app = current_app
@@ -565,44 +563,6 @@ def sync_source(source):
     log_data["message"] = "Done syncing source"
     current_app.logger.debug(log_data)
     metrics.send(f"{function}.success", "counter", 1, metric_tags={"source": source})
-    return log_data
-
-
-@celery.task()
-def sync_source_destination():
-    """
-    This celery task will sync destination and source, to make sure all new destinations are also present as source.
-    Some destinations do not qualify as sources, and hence should be excluded from being added as sources
-    We identify qualified destinations based on the sync_as_source attributed of the plugin.
-    The destination sync_as_source_name reveals the name of the suitable source-plugin.
-    We rely on account numbers to avoid duplicates.
-    """
-    function = f"{__name__}.{sys._getframe().f_code.co_name}"
-    task_id = None
-    if celery.current_task:
-        task_id = celery.current_task.request.id
-
-    log_data = {
-        "function": function,
-        "message": "syncing AWS destinations and sources",
-        "task_id": task_id,
-    }
-
-    if task_id and is_task_active(function, task_id, None):
-        log_data["message"] = "Skipping task: Task is already active"
-        current_app.logger.debug(log_data)
-        return
-
-    current_app.logger.debug(log_data)
-    for dst in destinations_service.get_all():
-        if add_aws_destination_to_sources(dst):
-            log_data["message"] = "new source added"
-            log_data["source"] = dst.label
-            current_app.logger.debug(log_data)
-
-    log_data["message"] = "completed Syncing AWS destinations and sources"
-    current_app.logger.debug(log_data)
-    metrics.send(f"{function}.success", "counter", 1)
     return log_data
 
 
