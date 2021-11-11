@@ -196,6 +196,13 @@ class CryptoAuthorityFactory(AuthorityFactory):
     plugin = {"slug": "cryptography-issuer"}
 
 
+class OptionalCNAuthorityFactory(AuthorityFactory):
+    """Optional CN Authority factory."""
+
+    name = Sequence(lambda n: "authority{0}".format(n))
+    options = '[{"name": "cn_optional", "type": "boolean", "value":true, "helpMessage": "Define if CN is an optional input when issuing certificates"}]'
+
+
 class DestinationFactory(BaseFactory):
     """Destination factory."""
 
