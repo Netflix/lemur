@@ -18,6 +18,7 @@ from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
 from lemur.extensions import metrics
 from lemur.plugins.base import plugins
 
+from lemur.destinations import service as dest_service
 from lemur.sources import service as source_service
 from lemur.users import service as user_service
 from lemur.certificates import service as certificate_service
@@ -51,6 +52,33 @@ def validate_sources(source_strings):
 
             sources.append(source)
     return sources
+
+
+def validate_destinations(destination_strings):
+    if not destination_strings:
+        table = []
+        for dest in dest_service.get_all():
+            table.append([dest.label, dest.description])
+
+        print("No destination specified choose from below:")
+        print(tabulate(table, headers=["Label", "Description"]))
+        sys.exit(1)
+
+    if "all" in destination_strings:
+        return dest_service.get_all()
+
+    destinations = []
+    for label in destination_strings:
+        dest = dest_service.get_by_label(label)
+
+        if not dest:
+            print(
+                "Unable to find specified destination with label: {0}".format(label)
+            )
+            sys.exit(1)
+
+        destinations.append(dest)
+    return destinations
 
 
 def execute_clean(plugin, certificate, source):
@@ -303,3 +331,28 @@ def clean_unused_and_issued_since_days(source_strings, days_since_issuance, comm
                     f"Run Time: {(time.time() - start_time)}\n"
         print(info_text)
         current_app.logger.warning(info_text)
+
+
+@manager.option(
+    "-d",
+    "--destinations",
+    dest="labels",
+    action="append",
+    help="Destinations to operate on.",
+)
+def sync_source_destination(labels):
+    """
+    This command will sync destination and source, to make sure eligible destinations are also present as source.
+    Destination eligibility is determined on the sync_as_source attribute of the plugin.
+    The destination sync_as_source_name provides the name of the suitable source-plugin.
+    We use (account number, IAM path) tuple uniqueness to avoid duplicate sources.
+
+    Lemur now does this automatically during destination create and update, so this command is primarily useful
+    for migrating legacy destinations.  Set "-d all" to sync all destinations.
+    """
+    destinations = validate_destinations(labels)
+    for destination in destinations:
+        if source_service.add_aws_destination_to_sources(destination):
+            info_text = f"[+] New source added: {destination.label}.\n"
+            print(info_text)
+            current_app.logger.warning(info_text)

@@ -68,7 +68,11 @@ def update(destination_id, label, plugin_name, options, description):
     destination.description = description
 
     log_service.audit_log("update_destination", destination.label, "Updating destination")
-    return database.update(destination)
+    updated = database.update(destination)
+    # add the destination as source, to avoid new destinations that are not in source, as long as an AWS destination
+    if add_aws_destination_to_sources(updated):
+        current_app.logger.info("Source: %s created", label)
+    return updated
 
 
 def delete(destination_id):

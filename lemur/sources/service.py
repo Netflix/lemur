@@ -363,25 +363,34 @@ def add_aws_destination_to_sources(dst):
     We rely on account numbers to avoid duplicates.
     :return: true for success and false for not adding the destination as source
     """
-    # a set of all accounts numbers available as sources
-    src_accounts = set()
+    # check that destination can be synced to a source
+    destination_plugin = plugins.get(dst.plugin_name)
+    if destination_plugin.sync_as_source is None or not destination_plugin.sync_as_source:
+        return False
+    account_number = get_plugin_option("accountNumber", dst.options)
+    if account_number is None:
+        return False
+    path = get_plugin_option("path", dst.options)
+    if path is None:
+        return False
+
+    # a set of all (account number, path) available as sources
+    src_account_paths = set()
     sources = get_all()
     for src in sources:
-        src_accounts.add(get_plugin_option("accountNumber", src.options))
+        src_account_paths.add(
+            (get_plugin_option("accountNumber", src.options), get_plugin_option("path", src.options))
+        )
 
-    # check
-    destination_plugin = plugins.get(dst.plugin_name)
-    account_number = get_plugin_option("accountNumber", dst.options)
-    if (
-        account_number is not None
-        and destination_plugin.sync_as_source is not None
-        and destination_plugin.sync_as_source
-        and (account_number not in src_accounts)
-    ):
+    if (account_number, path) not in src_account_paths:
         src_options = copy.deepcopy(
             plugins.get(destination_plugin.sync_as_source_name).options
         )
         set_plugin_option("accountNumber", account_number, src_options)
+        set_plugin_option("path", path, src_options)
+        # Set the right endpointType for cloudfront sources.
+        if get_plugin_option("endpointType", src_options) is not None and path == "/cloudfront/":
+            set_plugin_option("endpointType", "cloudfront", src_options)
         create(
             label=dst.label,
             plugin_name=destination_plugin.sync_as_source_name,
