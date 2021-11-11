@@ -542,6 +542,7 @@ def render(args):
 
     destination_id = args.pop("destination_id")
     notification_id = args.pop("notification_id", None)
+    serial_number = args.pop("serial", None)
     show = args.pop("show")
     # owner = args.pop('owner')
     # creator = args.pop('creator')  # TODO we should enabling filtering by owner
@@ -634,6 +635,14 @@ def render(args):
 
     if current_app.config.get("ALLOW_CERT_DELETION", False):
         query = query.filter(Certificate.deleted == false())
+
+    if serial_number:
+        if serial_number.lower().startswith('0x'):
+            serial_number = str(int(serial_number[2:], 16))
+        elif ":" in serial_number:
+            serial_number = str(int(serial_number.replace(':', ''), 16))
+
+        query = query.filter(Certificate.serial == serial_number)
 
     result = database.sort_and_page(query, Certificate, args)
     return result
