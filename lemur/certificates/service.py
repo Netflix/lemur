@@ -1079,16 +1079,17 @@ def remove_source_association(certificate, source):
     )
 
 
-def remove_destination_association(certificate, destination):
+def remove_destination_association(certificate, destination, clean=True):
     certificate.destinations.remove(destination)
     database.update(certificate)
 
-    try:
-        remove_from_destination(certificate, destination)
-    except Exception as e:
-        # This cleanup is the best-effort, it will capture the exception and log
-        capture_exception()
-        current_app.logger.warning(f"Failed to remove destination: {destination.label}. {str(e)}")
+    if clean:
+        try:
+            remove_from_destination(certificate, destination)
+        except Exception as e:
+            # This cleanup is the best-effort, it will capture the exception and log
+            capture_exception()
+            current_app.logger.warning(f"Failed to remove destination: {destination.label}. {str(e)}")
 
     metrics.send(
         "delete_certificate_destination_association",
