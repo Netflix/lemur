@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+from copy import deepcopy
 import sys
 import time
 
@@ -17,6 +18,7 @@ from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
 
 from lemur.extensions import metrics
 from lemur.plugins.base import plugins
+from lemur.plugins.utils import get_plugin_option, set_plugin_option
 
 from lemur.destinations import service as dest_service
 from lemur.sources import service as source_service
@@ -356,3 +358,54 @@ def sync_source_destination(labels):
             info_text = f"[+] New source added: {destination.label}.\n"
             print(info_text)
             current_app.logger.warning(info_text)
+
+
+@manager.option("-s", "--source", dest="source_label")
+def enable_cloudfront(source_label):
+    """
+    Given the label of a legacy AWS source (without path or endpointType options), set up the source for CloudFront:
+    1. Update the source options to the newest template, inheriting the existing values.
+    2. Set path="/" and endpointType="elb" to restrict the source to discovering ELBs and related certs only.
+    3. Create a new source (and destination) for the same accountNumber with path="/cloudfront/"
+       and endpointType="cloudfront"
+    :param source_strings:
+    :return:
+    """
+    class ValidationError(Exception):
+        pass
+    try:
+        source = source_service.get_by_label(source_label)
+        if not source:
+            raise ValidationError(f"Unable to find source with label: {source_label}")
+        if source.plugin_name != "aws-source":
+            raise ValidationError(f"Source '{source_label}' is not an AWS source")
+        for opt_name in ["endpointType", "path"]:
+            if get_plugin_option(opt_name, source.options) is not None:
+                raise ValidationError(f"Source '{source_label}' already sets option '{opt_name}'")
+        cloudfront_label = f"{source_label}-cloudfront"
+        cloudfront_source = source_service.get_by_label(cloudfront_label)
+        if cloudfront_source:
+            raise ValidationError(f"A source named '{cloudfront_label}' already exists")
+
+        p = plugins.get(source.plugin_name)
+        new_options = deepcopy(p.options)
+        for old_opt in source.options:
+            name = old_opt["name"]
+            value = get_plugin_option(name, source.options)
+            set_plugin_option(name, value, new_options)
+        set_plugin_option("path", "/", new_options)
+        set_plugin_option("endpointType", "elb", new_options)
+        source_service.update(source.id, source.label, source.plugin_name, new_options, source.description)
+
+        cloudfront_options = deepcopy(new_options)
+        set_plugin_option("path", "/cloudfront/", cloudfront_options)
+        set_plugin_option("endpointType", "cloudfront", cloudfront_options)
+        source_service.create(cloudfront_label, source.plugin_name, cloudfront_options,
+                              f"CloudFront certificates and distributions for {source_label}")
+
+        print(f"[+] Limited source {source_label} to discover ELBs and ELB certificates.\n")
+        print(f"[+] Created source {cloudfront_label} to discover CloudFront distributions and certificates.\n")
+
+    except ValidationError as e:
+        print(f"[+] Error: {str(e)}")
+        sys.exit(1)
