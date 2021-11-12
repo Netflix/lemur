@@ -218,7 +218,6 @@ class Certificate(db.Model):
             self.csr = kwargs["csr"].strip()
 
         self.notify = kwargs.get("notify", True)
-        self.destinations = kwargs.get("destinations", [])
         self.notifications = kwargs.get("notifications", [])
         self.description = kwargs.get("description")
         self.roles = list(set(kwargs.get("roles", [])))
@@ -235,7 +234,8 @@ class Certificate(db.Model):
         for domain in defaults.domains(cert):
             self.domains.append(Domain(name=domain))
 
-        # when destinations are appended they require a valid name.
+        # when destinations are appended they require a valid name
+        # do not attempt to modify self.destinations before this step
         if kwargs.get("name"):
             self.name = get_or_increase_name(
                 defaults.text_to_slug(kwargs["name"]), self.serial
@@ -247,6 +247,8 @@ class Certificate(db.Model):
                 ),
                 self.serial,
             )
+
+        self.destinations = kwargs.get("destinations", [])
 
         # Check integrity before saving anything into the database.
         # For user-facing API calls, validation should also be done in schema validators.
