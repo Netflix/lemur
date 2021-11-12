@@ -192,7 +192,7 @@ def find_cert(certificate):
 
 # TODO this is very slow as we don't batch update certificates
 def sync_certificates(source, user):
-    new, updated, updated_by_hash = 0, 0, 0
+    new, updated, updated_by_hash, unlinked = 0, 0, 0, 0
 
     current_app.logger.debug("Retrieving certificates from {0}".format(source.label))
     s = plugins.get(source.plugin_name)
@@ -202,6 +202,10 @@ def sync_certificates(source, user):
     metrics.send("sync_certificates_count",
                  "gauge", len(certificates),
                  metric_tags={"source": source.label})
+
+    existing_certificates_with_source_by_id = {}
+    for e in certificate_service.get_all_valid_certificates_with_source(source.id):
+        existing_certificates_with_source_by_id[e.id] = e
 
     for certificate in certificates:
         exists, updated_by_hash = find_cert(certificate)
@@ -222,7 +226,24 @@ def sync_certificates(source, user):
                 if certificate.get("authority_id"):
                     e.authority_id = certificate["authority_id"]
                 certificate_update(e, source)
+                if e.id in existing_certificates_with_source_by_id:
+                    del existing_certificates_with_source_by_id[e.id]
                 updated += 1
+
+    # remove source from any certificates no longer being reported by it
+    destination = destination_service.get_by_label(source.label)
+    for certificate in existing_certificates_with_source_by_id.values():
+        certificate_service.remove_source_association(certificate, source)
+        current_app.logger.warning(f"Removed source {source.label} for {certificate.name} during source sync")
+        if destination in certificate.destinations:
+            certificate_service.remove_destination_association(certificate, destination, clean=False)
+            current_app.logger.warning(f"Removed destination {source.label} for {certificate.name} during source sync")
+        updated += 1
+        unlinked += 1
+
+    metrics.send("sync_certificates_unlinked",
+                 "gauge", unlinked,
+                 metric_tags={"source": source.label})
 
     return new, updated, updated_by_hash
 
