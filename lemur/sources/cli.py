@@ -366,8 +366,7 @@ def enable_cloudfront(source_label):
     Given the label of a legacy AWS source (without path or endpointType options), set up the source for CloudFront:
     1. Update the source options to the newest template, inheriting the existing values.
     2. Set path="/" and endpointType="elb" to restrict the source to discovering ELBs and related certs only.
-    3. Create a new source (and destination) for the same accountNumber with path="/cloudfront/"
-       and endpointType="cloudfront"
+    3. Create a new source (and destination) for the same accountNumber with path="/cloudfront/" and endpointType="cloudfront"
     :param source_strings:
     :return:
     """
