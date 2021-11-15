@@ -101,7 +101,7 @@ toml==0.10.2
     # via pre-commit
 tqdm==4.61.0
     # via twine
-twine==3.5.0
+twine==3.6.0
     # via -r requirements-dev.in
 urllib3==1.26.5
     # via requests
