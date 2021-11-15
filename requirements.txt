@@ -168,7 +168,7 @@ parsedatetime==2.6
     # via certbot
 pem==21.2.0
     # via -r requirements.in
-psycopg2==2.9.1
+psycopg2==2.9.2
     # via -r requirements.in
 pyasn1==0.4.8
     # via
