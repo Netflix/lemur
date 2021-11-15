@@ -58,7 +58,7 @@ boto3==1.20.2
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
-botocore==1.23.2
+botocore==1.23.5
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
