@@ -16,7 +16,7 @@ aws-sam-translator==1.36.0
     # via cfn-lint
 aws-xray-sdk==2.8.0
     # via moto
-bandit==1.7.0
+bandit==1.7.1
     # via -r requirements-tests.in
 black==21.10b0
     # via -r requirements-tests.in
@@ -242,7 +242,6 @@ s3transfer==0.5.0
 six==1.16.0
     # via
     #   aws-sam-translator
-    #   bandit
     #   cfn-lint
     #   configobj
     #   ecdsa
