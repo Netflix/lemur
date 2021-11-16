@@ -232,7 +232,7 @@ def get_distribution_endpoint(account_number, cert_id_to_name, distrib_dict):
 class AWSSourcePlugin(SourcePlugin):
     title = "AWS"
     slug = "aws-source"
-    description = "Discovers all SSL certificates and ELB endpoints in an AWS account"
+    description = "Discovers all SSL certificates and ELB or Cloudfront endpoints in an AWS account"
     version = aws.VERSION
 
     author = "Kevin Glisson"
