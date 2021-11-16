@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+import arrow
 import sys
 from flask import current_app
 from flask_principal import Identity, identity_changed
@@ -683,8 +684,10 @@ def check_revoked():
     ocsp_err_count = 0
     crl_err_count = 0
     while there_are_still_certs:
+        # get all valid certs issued until day before. This is to avoid OCSP not knowing about a newly created cert.
         certs = get_all_valid_certs(current_app.config.get("SUPPORTED_REVOCATION_AUTHORITY_PLUGINS", []),
-                                    paginate=True, page=page, count=count)
+                                    paginate=True, page=page, count=count,
+                                    created_on_or_before=arrow.now().shift(days=-1))
         if len(certs) < count:
             # this must be tha last page
             there_are_still_certs = False
