@@ -88,18 +88,33 @@ def get_all_elbs(**kwargs):
 
 
 def _filter_ignored_elbsv1(elbs, **kwargs):
+    """
+    Filter load balancers using the elb.describe_tags method.
+    :param elbs: List of ELBs from elb.describe_load_balancers
+    :param kwargs: must contain a 'client' from @sts_client
+    :return:
+    """
     return _filter_ignored_elbs(elbs, "LoadBalancerName", "LoadBalancerNames", "LoadBalancerName", **kwargs)
 
 
 def _filter_ignored_elbsv2(elbs, **kwargs):
+    """
+    Filter load balancers using the elbv2.describe_tags method.
+    :param elbs: List of ELBs from elbv2.describe_load_balancers
+    :param kwargs: must contain a 'client' from @sts_client
+    :return:
+    """
     return _filter_ignored_elbs(elbs, "LoadBalancerArn", "ResourceArns", "ResourceArn", **kwargs)
 
 
 def _filter_ignored_elbs(elbs, key_field, arg_name, response_key_field, **kwargs):
     """
     Look up tags and remove any ELBs that should be ignored.
-    :param elbs:
-    :param kwargs:
+    :param elbs: List of dictionaries keyed by the field key_field
+    :param key_field: Field value pass in call to describe_tags
+    :param arg_name: Name of the argument to describe_tags
+    :param response_key_field: Name of the field in response list with the object key.
+    :param kwargs: must contain a 'client' from @sts_client
     :return:
     """
     if not elbs:
@@ -110,6 +125,7 @@ def _filter_ignored_elbs(elbs, key_field, arg_name, response_key_field, **kwargs
     try:
         keys = [elb[key_field] for elb in elbs]
         client = kwargs.pop("client")
+        # {'TagDescriptions': [{'ResourceArn': 'string','Tags': [{'Key': 'string','Value': 'string'},]}]}
         tags_list = client.describe_tags(**{arg_name: keys})["TagDescriptions"]
         ignored_keys = {}
         for tags in tags_list:
