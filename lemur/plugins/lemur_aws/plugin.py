@@ -263,8 +263,9 @@ class AWSSourcePlugin(SourcePlugin):
             "name": "endpointType",
             "type": "select",
             "available": [
-                "elb",
-                "cloudfront",
+                "elb",          # Discover IAM certs, elb and elbv2 in this account and regions
+                "cloudfront",   # Discover IAM certs, CloudFront distributions in this account and regions
+                "none",         # Discover IAM certs only in this account and regions
             ],
             "default": "elb",
             "helpMessage": "Type of AWS endpoint to discover. Defaults to elb if not set.",
@@ -286,8 +287,11 @@ class AWSSourcePlugin(SourcePlugin):
         ]
 
     def get_endpoints(self, options, **kwargs):
-        if self.get_option("endpointType", options) == "cloudfront":
+        endpoint_type = self.get_option("endpointType", options)
+        if endpoint_type == "cloudfront":
             return self.get_distributions(options, **kwargs)
+        elif endpoint_type == "none":
+            return []
         else:
             return self.get_load_balancers(options, **kwargs)
 

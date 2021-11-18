@@ -28,6 +28,79 @@ def test_get_all_elbs(app, aws_credentials):
     elbs = get_all_elbs(account_number="123456789012", region="us-east-1")
     assert elbs
 
+    client.create_load_balancer(
+        LoadBalancerName="example-lb-ignored",
+        Listeners=[
+            {
+                "Protocol": "string",
+                "LoadBalancerPort": 443,
+                "InstanceProtocol": "tcp",
+                "InstancePort": 5443,
+                "SSLCertificateId": "tcp",
+            }
+        ],
+        Tags=[
+            {
+                "Key": "lemur-test-ignore",
+                "Value": "",
+            }
+        ]
+    )
+
+    elbs = get_all_elbs(account_number="123456789012", region="us-east-1")
+    names = [elb["LoadBalancerName"] for elb in elbs]
+    assert "example-lb" in names
+    assert "example-lb-ignored" not in names
+
+
+@mock_sts()
+@mock_ec2()
+@mock_elbv2()
+def test_get_all_elbs_v2():
+    from lemur.plugins.lemur_aws.elb import get_all_elbs_v2
+
+    ec2 = boto3.resource("ec2", region_name="us-east-1")
+    elbv2 = boto3.client("elbv2", region_name="us-east-1")
+
+    elbs = get_all_elbs_v2(account_number="123456789012",
+                           region="us-east-1")
+    assert not elbs
+
+    vpc = ec2.create_vpc(CidrBlock="10.0.1.0/24")
+    subnet1 = ec2.create_subnet(
+        VpcId=vpc.id,
+        CidrBlock="10.0.1.128/25",
+        AvailabilityZone="us-east-1b"
+    )
+    elbv2.create_load_balancer(
+        Name="test-lbv2",
+        Subnets=[
+            subnet1.id,
+        ],
+    )
+
+    elbs = get_all_elbs_v2(account_number="123456789012",
+                           region="us-east-1")
+    assert "test-lbv2" in [elb["LoadBalancerName"] for elb in elbs]
+
+    elbv2.create_load_balancer(
+        Name="test-lbv2-ignored",
+        Subnets=[
+            subnet1.id,
+        ],
+        Tags=[
+            {
+                "Key": "lemur-test-ignore",
+                "Value": "",
+            }
+        ]
+    )
+    elbs = get_all_elbs_v2(account_number="123456789012",
+                           region="us-east-1")
+
+    assert "test-lbv2" in [elb["LoadBalancerName"] for elb in elbs]
+    assert "test-lbv2-ignored" not in [elb["LoadBalancerName"] for elb in elbs]
+
 
 @mock_sts()
 @mock_ec2
@@ -96,16 +169,6 @@ def test_create_elb_with_https_listener_miscellaneous(app, aws_credentials):
         account_number=account_number,
         region=region_ue1,
     )
-
-
-@mock_sts()
-@mock_elb()
-def test_get_all_elbs_v2():
-    from lemur.plugins.lemur_aws.elb import get_all_elbs_v2
-
-    elbs = get_all_elbs_v2(account_number="123456789012",
-                           region="us-east-1")
-    assert elbs
 
 
 def create_load_balancer(client, ec2, vpc_id, endpoint_name):
