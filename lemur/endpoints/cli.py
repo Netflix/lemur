@@ -49,8 +49,9 @@ def expire(ttl):
                     name=endpoint.name, last_updated=endpoint.last_updated
                 )
             )
+            tags = {"source": endpoint.source.label, "type": endpoint.type}
             database.delete(endpoint)
-            metrics.send("endpoint_expired", "counter", 1)
+            metrics.send("endpoint_expired", "counter", 1, metric_tags=tags)
 
         print("[+] Finished expiration.")
     except Exception as e:

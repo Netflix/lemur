@@ -104,7 +104,8 @@ def create(**kwargs):
     endpoint.aliases = aliases
     database.create(endpoint)
     metrics.send(
-        "endpoint_added", "counter", 1, metric_tags={"source": endpoint.source.label}
+        "endpoint_added", "counter", 1,
+        metric_tags={"source": endpoint.source.label, "type": endpoint.type}
     )
     return endpoint
 
@@ -149,7 +150,8 @@ def update(endpoint_id, **kwargs):
                 endpoint.aliases.append(EndpointDnsAlias(alias=name))
     endpoint.last_updated = arrow.utcnow()
     metrics.send(
-        "endpoint_updated", "counter", 1, metric_tags={"source": endpoint.source.label}
+        "endpoint_updated", "counter", 1,
+        metric_tags={"source": endpoint.source.label, "type": endpoint.type}
     )
     database.update(endpoint)
     return endpoint
