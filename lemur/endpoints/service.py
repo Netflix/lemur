@@ -11,6 +11,7 @@
 import arrow
 
 from sqlalchemy import func
+from sqlalchemy.orm import joinedload
 
 from lemur import database
 from lemur.common.utils import truthiness
@@ -163,7 +164,11 @@ def render(args):
     :param args:
     :return:
     """
-    query = database.session_query(Endpoint)
+    query = database.session_query(Endpoint)\
+        .options(joinedload(Endpoint.certificate))\
+        .options(joinedload(Endpoint.policy).joinedload(Policy.ciphers))\
+        .options(joinedload(Endpoint.source))\
+        .options(joinedload(Endpoint.aliases))
     filt = args.pop("filter")
 
     if filt:

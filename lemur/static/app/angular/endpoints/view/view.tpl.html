@@ -28,6 +28,9 @@
                         <td data-title="'Port'" sortable="'port'" filter="{ 'port': 'number' }" class="centered-cell">
                             {{ endpoint.port }}
                         </td>
+                        <td data-title="'Source'" class="centered-cell">
+                            {{ endpoint.sourceLabel }}
+                        </td>
                         <td data-title="'Type'" sortable="'type'" filter="{ 'type': 'text'}" class="centered-cell">
                             <ul class="list-unstyled">
                                 <li><label class="label label-default text-uppercase">{{ endpoint.type }}</label></li>
