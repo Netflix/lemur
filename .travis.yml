@@ -1,5 +1,5 @@
 node_js:
-  - "10"
+  - "16"
 
 jobs:
   include:
