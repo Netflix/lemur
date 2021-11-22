@@ -15,6 +15,7 @@ from lemur.roles import service
 from lemur.auth.service import AuthenticatedResource
 from lemur.auth.permissions import RoleMemberPermission, admin_permission
 from lemur.common.utils import paginated_parser
+from lemur.logs import service as log_service
 
 from lemur.common.schema import validate_schema
 from lemur.roles.schemas import (
@@ -106,6 +107,7 @@ class RolesList(AuthenticatedResource):
               POST /roles HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                  "name": "role3",
@@ -113,7 +115,7 @@ class RolesList(AuthenticatedResource):
                  "username": null,
                  "password": null,
                  "users": [
-                    {'id': 1}
+                    {"id": 1}
                  ]
               }
 
@@ -176,7 +178,7 @@ class RoleViewCredentials(AuthenticatedResource):
               Content-Type: text/javascript
 
               {
-                  "username: "ausername",
+                  "username": "ausername",
                   "password": "apassword"
               }
 
@@ -192,6 +194,9 @@ class RoleViewCredentials(AuthenticatedResource):
             )
             response.headers["cache-control"] = "private, max-age=0, no-cache, no-store"
             response.headers["pragma"] = "no-cache"
+
+            log_service.audit_log("view_role_credentials", role.name, "View role username and password")
+
             return response
         return (
             dict(
@@ -265,6 +270,7 @@ class Roles(AuthenticatedResource):
               PUT /roles/1 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                  "name": "role1",

@@ -5,6 +5,7 @@
 """
 import arrow
 from sqlalchemy import or_, cast, Integer
+from flask import current_app
 
 from lemur import database
 from lemur.authorities.models import Authority
@@ -15,11 +16,13 @@ from lemur.common.utils import truthiness, parse_cert_chain, parse_certificate
 from lemur.common import validators
 from lemur.destinations.models import Destination
 from lemur.domains.models import Domain
+from lemur.extensions import metrics
 from lemur.notifications.models import Notification
 from lemur.pending_certificates.models import PendingCertificate
 from lemur.plugins.base import plugins
 from lemur.roles.models import Role
 from lemur.users import service as user_service
+from lemur.logs import service as log_service
 
 
 def get(pending_cert_id):
@@ -55,11 +58,12 @@ def get_by_name(pending_cert_name):
 
 
 def delete(pending_certificate):
+    log_service.audit_log("delete_pending_certificate", pending_certificate.name, "Deleting the pending certificate")
     database.delete(pending_certificate)
 
 
 def delete_by_id(id):
-    database.delete(get(id))
+    delete(get(id))
 
 
 def get_unresolved_pending_certs():
@@ -93,11 +97,10 @@ def get_pending_certs(pending_ids):
 def create_certificate(pending_certificate, certificate, user):
     """
     Create and store a certificate with pending certificate's info
-    Args:
-        pending_certificate: PendingCertificate which will populate the certificate
-        certificate: dict from Authority, which contains the body, chain and external id
-        user: User that called this function, used as 'creator' of the certificate if it does
-              not have an owner
+
+    :arg pending_certificate: PendingCertificate which will populate the certificate
+    :arg certificate: dict from Authority, which contains the body, chain and external id
+    :arg user: User that called this function, used as 'creator' of the certificate if it does not have an owner
     """
     certificate["owner"] = pending_certificate.owner
     data, errors = CertificateUploadInputSchema().load(certificate)
@@ -131,6 +134,21 @@ def create_certificate(pending_certificate, certificate, user):
 
     cert = certificate_service.import_certificate(**data)
     database.update(cert)
+
+    metrics.send("certificate_issued", "counter", 1, metric_tags=dict(owner=cert.owner, issuer=cert.issuer))
+    log_service.audit_log("certificate_from_pending_certificate", cert.name,
+                          f"Created from the pending certificate {pending_certificate.name}")
+    log_data = {
+        "function": "lemur.certificates.service.create",
+        "owner": cert.owner,
+        "name": cert.name,
+        "serial": cert.serial,
+        "issuer": cert.issuer,
+        "not_after": cert.not_after.format('YYYY-MM-DD HH:mm:ss'),
+        "not_before": cert.not_before.format('YYYY-MM-DD HH:mm:ss'),
+        "sans": cert.san,
+    }
+    current_app.logger.info(log_data)
     return cert
 
 
@@ -140,6 +158,9 @@ def increment_attempt(pending_certificate):
     """
     pending_certificate.number_attempts += 1
     database.update(pending_certificate)
+
+    log_service.audit_log("increment_attempt_pending_certificate", pending_certificate.name,
+                          "Incremented attempts for the pending certificate")
     return pending_certificate.number_attempts
 
 
@@ -151,6 +172,8 @@ def update(pending_cert_id, **kwargs):
     pending_cert = get(pending_cert_id)
     for key, value in kwargs.items():
         setattr(pending_cert, key, value)
+
+    log_service.audit_log("update_pending_certificate", pending_cert.name, f"Update summary - {kwargs}")
     return database.update(pending_cert)
 
 
@@ -158,14 +181,16 @@ def cancel(pending_certificate, **kwargs):
     """
     Cancel a pending certificate.  A check should be done prior to this function to decide to
     revoke the certificate or just abort cancelling.
-    Args:
-        pending_certificate: PendingCertificate to be cancelled
-    Returns: the pending certificate if successful, raises Exception if there was an issue
+
+    :arg pending_certificate: PendingCertificate to be cancelled
+    :return: the pending certificate if successful, raises Exception if there was an issue
     """
     plugin = plugins.get(pending_certificate.authority.plugin_name)
     plugin.cancel_ordered_certificate(pending_certificate, **kwargs)
     pending_certificate.status = "Cancelled"
     database.update(pending_certificate)
+
+    log_service.audit_log("cancel_pending_certificate", pending_certificate.name, "Cancelled the pending certificate")
     return pending_certificate
 
 
@@ -257,9 +282,9 @@ def render(args):
 
 def upload(pending_certificate_id, **kwargs):
     """
-    Uploads a (signed) pending certificate.  The allowed fields are validated by
+    Uploads a (signed) pending certificate. The allowed fields are validated by
     PendingCertificateUploadInputSchema. The certificate is also validated to be
-    signed by the correct authoritity.
+    signed by the correct authority.
     """
     pending_cert = get(pending_certificate_id)
     partial_cert = kwargs
@@ -284,5 +309,7 @@ def upload(pending_certificate_id, **kwargs):
 
     pending_cert_final_result = update(pending_cert.id, resolved_cert_id=final_cert.id)
     update(pending_cert.id, resolved=True)
+
+    log_service.audit_log("resolve_pending_certificate", pending_cert.name, "Resolved the pending certificate")
 
     return pending_cert_final_result

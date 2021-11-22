@@ -1,14 +1,16 @@
-
 import arrow
 import requests
 import json
 import sys
 from flask import current_app
+from retrying import retry
+from requests.packages.urllib3.util.retry import Retry
 
+from lemur.constants import CRLReason
 from lemur.plugins import lemur_entrust as entrust
 from lemur.plugins.bases import IssuerPlugin, SourcePlugin
 from lemur.extensions import metrics
-from lemur.common.utils import validate_conf
+from lemur.common.utils import validate_conf, get_key_type_from_certificate
 
 
 def log_status_code(r, *args, **kwargs):
@@ -20,7 +22,14 @@ def log_status_code(r, *args, **kwargs):
     :param kwargs:
     :return:
     """
-    metrics.send(f"entrust_status_code_{r.status_code}", "counter", 1)
+    if r.status_code != 200:
+        log_data = {
+            "reason": (r.reason if r.reason else ""),
+            "status_code": r.status_code,
+            "url": (r.url if r.url else ""),
+        }
+        metrics.send(f"entrust_status_code_{r.status_code}", "counter", 1)
+        current_app.logger.info(log_data)
 
 
 def determine_end_date(end_date):
@@ -34,13 +43,12 @@ def determine_end_date(end_date):
 
     if not end_date:
         end_date = max_validity_end
-
-    if end_date > max_validity_end:
+    elif end_date > max_validity_end:
         end_date = max_validity_end
     return end_date.format('YYYY-MM-DD')
 
 
-def process_options(options):
+def process_options(options, client_id):
     """
     Processes and maps the incoming issuer options to fields/options that
     Entrust understands
@@ -73,16 +81,54 @@ def process_options(options):
         "eku": "SERVER_AND_CLIENT_AUTH",
         "certType": product_type,
         "certExpiryDate": validity_end,
-        # "keyType": "RSA", Entrust complaining about this parameter
-        "tracking": tracking_data
+        "tracking": tracking_data,
+        "org": options.get("organization"),
+        "clientId": client_id
     }
     return data
+
+
+@retry(stop_max_attempt_number=5, wait_fixed=1000)
+def get_client_id(session, organization):
+    """
+    Helper function for looking up clientID pased on Organization and parsing the response.
+    :param session:
+    :param organization: the validated org with Entrust, for instance "Company, Inc."
+    :return: ClientID
+    :raise Exception:
+    """
+
+    # get the organization ID
+    url = current_app.config.get("ENTRUST_URL") + "/organizations"
+    try:
+        response = session.get(url, timeout=(15, 40))
+    except requests.exceptions.Timeout:
+        raise Exception("Timeout for Getting Organizations")
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"Error for Getting Organization {e}")
+
+    # parse the response
+    try:
+        d = json.loads(response.content)
+    except ValueError:
+        # catch an empty json object here
+        d = {'response': 'No detailed message'}
+
+    found = False
+    for y in d["organizations"]:
+        if y["name"] == organization:
+            found = True
+            client_id = y["clientId"]
+    if found:
+        return client_id
+    else:
+        raise Exception(f"Error on Organization - Use on of the List: {d['organizations']}")
 
 
 def handle_response(my_response):
     """
     Helper function for parsing responses from the Entrust API.
-    :param content:
+    :param my_response:
     :return: :raise Exception:
     """
     msg = {
@@ -95,22 +141,47 @@ def handle_response(my_response):
     }
 
     try:
-        d = json.loads(my_response.content)
+        data = json.loads(my_response.content)
     except ValueError:
         # catch an empty jason object here
-        d = {'response': 'No detailed message'}
-    s = my_response.status_code
-    if s > 399:
-        raise Exception(f"ENTRUST error: {msg.get(s, s)}\n{d['errors']}")
+        data = {'response': 'No detailed message'}
+    status_code = my_response.status_code
+    if status_code > 399:
+        raise Exception(f"ENTRUST error: {msg.get(status_code, status_code)}\n{data['errors']}")
 
     log_data = {
         "function": f"{__name__}.{sys._getframe().f_code.co_name}",
         "message": "Response",
-        "status": s,
-        "response": d
+        "status": status_code,
+        "response": data
     }
     current_app.logger.info(log_data)
-    return d
+    if data == {'response': 'No detailed message'}:
+        # status if no data
+        return status_code
+    else:
+        #  return data from the response
+        return data
+
+
+@retry(stop_max_attempt_number=3, wait_fixed=5000)
+def order_and_download_certificate(session, url, data):
+    """
+    Helper function to place a certificacte order and download it
+    :param session:
+    :param url: Entrust endpoint url
+    :param data: CSR, and the required order details, such as validity length
+    :return: the cert chain
+    :raise Exception:
+    """
+    try:
+        response = session.post(url, json=data, timeout=(15, 40))
+    except requests.exceptions.Timeout:
+        raise Exception("Timeout for POST")
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"Error for POST {e}")
+
+    return handle_response(response)
 
 
 class EntrustIssuerPlugin(IssuerPlugin):
@@ -146,6 +217,14 @@ class EntrustIssuerPlugin(IssuerPlugin):
         self.session.auth = (user, password)
         self.session.hooks = dict(response=log_status_code)
         # self.session.config['keep_alive'] = False
+
+        # max_retries applies only to failed DNS lookups, socket connections and connection timeouts,
+        # never to requests where data has made it to the server.
+        # we Retry we also covers HTTP status code 500, 502, 503, 504
+        retry_strategy = Retry(total=3, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504])
+        adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
+        self.session.mount("https://", adapter)
+
         super(EntrustIssuerPlugin, self).__init__(*args, **kwargs)
 
     def create_certificate(self, csr, issuer_options):
@@ -163,26 +242,36 @@ class EntrustIssuerPlugin(IssuerPlugin):
         }
         current_app.logger.info(log_data)
 
+        if current_app.config.get("ENTRUST_USE_DEFAULT_CLIENT_ID"):
+            # The ID of the primary client is 1.
+            client_id = 1
+        else:
+            client_id = get_client_id(self.session, issuer_options.get("organization"))
+        log_data = {
+            "function": f"{__name__}.{sys._getframe().f_code.co_name}",
+            "message": f"Organization id: {client_id}"
+        }
+        current_app.logger.info(log_data)
+
         url = current_app.config.get("ENTRUST_URL") + "/certificates"
 
-        data = process_options(issuer_options)
+        data = process_options(issuer_options, client_id)
         data["csr"] = csr
 
-        try:
-            response = self.session.post(url, json=data, timeout=(15, 40))
-        except requests.exceptions.Timeout:
-            raise Exception("Timeout for POST")
-        except requests.exceptions.RequestException as e:
-            raise Exception(f"Error for POST {e}")
+        response_dict = order_and_download_certificate(self.session, url, data)
 
-        response_dict = handle_response(response)
         external_id = response_dict['trackingId']
         cert = response_dict['endEntityCert']
         if len(response_dict['chainCerts']) < 2:
-            # certificate signed by CA directly, no ICA included ini the chain
+            # certificate signed by CA directly, no ICA included in the chain
             chain = None
         else:
             chain = response_dict['chainCerts'][1]
+
+        if current_app.config.get("ENTRUST_CROSS_SIGNED_RSA_L1K") and get_key_type_from_certificate(cert) == "RSA2048":
+            chain = current_app.config.get("ENTRUST_CROSS_SIGNED_RSA_L1K")
+        if current_app.config.get("ENTRUST_CROSS_SIGNED_ECC_L1F") and get_key_type_from_certificate(cert) == "ECCPRIME256V1":
+            chain = current_app.config.get("ENTRUST_CROSS_SIGNED_ECC_L1F")
 
         log_data["message"] = "Received Chain"
         log_data["options"] = f"chain: {chain}"
@@ -190,29 +279,56 @@ class EntrustIssuerPlugin(IssuerPlugin):
 
         return cert, chain, external_id
 
-    def revoke_certificate(self, certificate, comments):
+    @retry(stop_max_attempt_number=3, wait_fixed=1000)
+    def revoke_certificate(self, certificate, reason):
         """Revoke an Entrust certificate."""
         base_url = current_app.config.get("ENTRUST_URL")
 
         # make certificate revoke request
         revoke_url = f"{base_url}/certificates/{certificate.external_id}/revocations"
-        if not comments or comments == '':
+        if "comments" not in reason or reason["comments"] == '':
             comments = "revoked via API"
+        crl_reason = CRLReason.unspecified
+        if "crl_reason" in reason:
+            crl_reason = CRLReason[reason["crl_reason"]]
+
         data = {
-            "crlReason": "superseded",  # enum (keyCompromise, affiliationChanged, superseded, cessationOfOperation)
+            "crlReason": crl_reason,  # per RFC 5280 section 5.3.1
             "revocationComment": comments
         }
         response = self.session.post(revoke_url, json=data)
         metrics.send("entrust_revoke_certificate", "counter", 1)
         return handle_response(response)
 
+    @retry(stop_max_attempt_number=3, wait_fixed=1000)
     def deactivate_certificate(self, certificate):
-        """Deactivates an Entrust certificate."""
+        """Deactivates an Entrust certificate, as long as it is still active, and not already deactivcated. """
+        log_data = {
+            "function": f"{__name__}.{sys._getframe().f_code.co_name}",
+            "external_id": f"{certificate.external_id}"
+        }
+
+        # Let's first check the status of the certificate
         base_url = current_app.config.get("ENTRUST_URL")
-        deactivate_url = f"{base_url}/certificates/{certificate.external_id}/deactivations"
-        response = self.session.post(deactivate_url)
-        metrics.send("entrust_deactivate_certificate", "counter", 1)
-        return handle_response(response)
+        status_url = f"{base_url}/certificates/{certificate.external_id}"
+        response = self.session.get(status_url)
+
+        try:
+            data = handle_response(response)
+        except (ValueError, Exception):
+            # if the certificate cannot be found, there is no need to deactivate it
+            log_data['message'] = "No certificate found for the ID"
+            current_app.logger.info(log_data)
+            return 200
+
+        if data and data['status'].lower() == 'active':
+            deactivate_url = f"{base_url}/certificates/{certificate.external_id}/deactivations"
+            response = self.session.post(deactivate_url)
+            metrics.send("entrust_deactivate_certificate", "counter", 1)
+            return handle_response(response)
+        else:
+            # the certificate is no longer valid, or doesn't exist and cannot be deacticated
+            return 200
 
     @staticmethod
     def create_authority(options):
@@ -234,7 +350,7 @@ class EntrustIssuerPlugin(IssuerPlugin):
     def get_ordered_certificate(self, order_id):
         raise NotImplementedError("Not implemented\n", self, order_id)
 
-    def canceled_ordered_certificate(self, pending_cert, **kwargs):
+    def cancel_ordered_certificate(self, pending_cert, **kwargs):
         raise NotImplementedError("Not implemented\n", self, pending_cert, **kwargs)
 
 
@@ -247,9 +363,89 @@ class EntrustSourcePlugin(SourcePlugin):
     author = "sirferl"
     author_url = "https://github.com/sirferl/lemur"
 
+    def __init__(self, *args, **kwargs):
+        """Initialize the issuer with the appropriate details."""
+        required_vars = [
+            "ENTRUST_API_CERT",
+            "ENTRUST_API_KEY",
+            "ENTRUST_API_USER",
+            "ENTRUST_API_PASS",
+            "ENTRUST_URL",
+            "ENTRUST_ROOT",
+            "ENTRUST_NAME",
+            "ENTRUST_EMAIL",
+            "ENTRUST_PHONE",
+        ]
+        validate_conf(current_app, required_vars)
+
+        self.session = requests.Session()
+        cert_file = current_app.config.get("ENTRUST_API_CERT")
+        key_file = current_app.config.get("ENTRUST_API_KEY")
+        user = current_app.config.get("ENTRUST_API_USER")
+        password = current_app.config.get("ENTRUST_API_PASS")
+        self.session.cert = (cert_file, key_file)
+        self.session.auth = (user, password)
+        self.session.hooks = dict(response=log_status_code)
+
+        # max_retries applies only to failed DNS lookups, socket connections and connection timeouts,
+        # never to requests where data has made it to the server.
+        # we Retry we also covers HTTP status code 500, 502, 503, 504
+        retry_strategy = Retry(total=3, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504])
+        adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
+        self.session.mount("https://", adapter)
+
+        super(EntrustSourcePlugin, self).__init__(*args, **kwargs)
+
     def get_certificates(self, options, **kwargs):
-        # Not needed for ENTRUST
-        raise NotImplementedError("Not implemented\n", self, options, **kwargs)
+        """ Fetch all Entrust certificates """
+        base_url = current_app.config.get("ENTRUST_URL")
+        host = base_url.replace('/enterprise/v2', '')
+
+        get_url = f"{base_url}/certificates"
+        certs = []
+        processed_certs = 0
+        offset = 0
+        while True:
+            response = self.session.get(get_url,
+                 params={
+                     "status": "ACTIVE",
+                     "isThirdParty": "false",
+                     "fields": "uri,dn",
+                     "offset": offset
+                 }
+            )
+            try:
+                data = json.loads(response.content)
+            except ValueError:
+                # catch an empty jason object here
+                data = {'response': 'No detailed message'}
+            status_code = response.status_code
+            if status_code > 399:
+                raise Exception(f"ENTRUST error: {status_code}\n{data['errors']}")
+            for c in data["certificates"]:
+                download_url = "{0}{1}".format(
+                    host, c["uri"]
+                )
+                cert_response = self.session.get(download_url)
+                certificate = json.loads(cert_response.content)
+                # normalize serial
+                serial = str(int(certificate["serialNumber"], 16))
+                cert = {
+                    "body": certificate["endEntityCert"],
+                    "serial": serial,
+                    "external_id": str(certificate["trackingId"]),
+                    "csr": certificate["csr"],
+                    "owner": certificate["tracking"]["requesterEmail"],
+                    "description": f"Imported by Lemur; Type: Entrust {certificate['certType']}\nExtended Key Usage: {certificate['eku']}"
+                }
+                certs.append(cert)
+                processed_certs += 1
+            if data["summary"]["limit"] * offset >= data["summary"]["total"]:
+                break
+            else:
+                offset += 1
+        current_app.logger.info(f"Retrieved {processed_certs} ertificates")
+        return certs
 
     def get_endpoints(self, options, **kwargs):
         # There are no endpoints in ENTRUST

@@ -35,18 +35,23 @@ LEMUR_TOKEN_SECRET = "test"
 LEMUR_ENCRYPTION_KEYS = base64.urlsafe_b64encode(get_random_secret(length=32).encode('utf8'))
 
 
+# this is the secret used to generate oauth state tokens
+OAUTH_STATE_TOKEN_SECRET = base64.b64encode(get_random_secret(32).encode('utf8'))
+
+OAUTH_STATE_TOKEN_STALE_TOLERANCE_SECONDS = 15
+
 # List of domain regular expressions that non-admin users can issue
-LEMUR_WHITELISTED_DOMAINS = [
-    "^[a-zA-Z0-9-]+\.example\.com$",
-    "^[a-zA-Z0-9-]+\.example\.org$",
-    "^example\d+\.long\.com$",
+LEMUR_ALLOWED_DOMAINS = [
+    r"^[a-zA-Z0-9-]+\.example\.com$",
+    r"^[a-zA-Z0-9-]+\.example\.org$",
+    r"^example\d+\.long\.com$",
 ]
 
 # Mail Server
 
 # Lemur currently only supports SES for sending email, this address
 # needs to be verified
-LEMUR_EMAIL = ""
+LEMUR_EMAIL = "lemur@example.com"
 LEMUR_SECURITY_TEAM_EMAIL = ["security@example.com"]
 
 LEMUR_HOSTNAME = "lemur.example.com"
@@ -63,6 +68,12 @@ LEMUR_DEFAULT_ORGANIZATION = "Example, Inc."
 LEMUR_DEFAULT_ORGANIZATIONAL_UNIT = "Example"
 
 LEMUR_ALLOW_WEEKEND_EXPIRATION = False
+
+# needed for test_certificates
+LEMUR_PORTS_FOR_DEPLOYED_CERTIFICATE_CHECK = [443, 65521, 65522, 65523, 65524]
+
+# needed for test_messaging
+LEMUR_REISSUE_NOTIFICATION_EXCLUDED_DESTINATIONS = ['excluded-destination']
 
 # Database
 
@@ -99,7 +110,6 @@ DIGICERT_CIS_URL = "mock://www.digicert.com"
 DIGICERT_CIS_PROFILE_NAMES = {"sha2-rsa-ecc-root": "ssl_plus"}
 DIGICERT_CIS_API_KEY = "api-key"
 DIGICERT_CIS_ROOTS = {"root": "ROOT"}
-DIGICERT_CIS_INTERMEDIATES = {"inter": "INTERMEDIATE_CA_CERT"}
 
 VERISIGN_URL = "http://example.com"
 VERISIGN_PEM_PATH = "~/"
@@ -202,6 +212,7 @@ ACME_EMAIL = "jim@example.com"
 ACME_TEL = "4088675309"
 ACME_DIRECTORY_URL = "https://acme-v01.api.letsencrypt.org"
 ACME_DISABLE_AUTORESOLVE = True
+ACME_PREFERRED_ISSUER = "R3"
 
 LDAP_AUTH = True
 LDAP_BIND_URI = "ldap://localhost"
@@ -249,3 +260,5 @@ ENTRUST_EMAIL = "lemur@example.com"
 ENTRUST_PHONE = "123456"
 ENTRUST_ISSUING = ""
 ENTRUST_PRODUCT_ENTRUST = "ADVANTAGE_SSL"
+
+AWS_ELB_IGNORE_TAG = "lemur-test-ignore"

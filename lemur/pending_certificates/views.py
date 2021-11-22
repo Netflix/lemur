@@ -15,6 +15,8 @@ from lemur.common.utils import paginated_parser
 
 from lemur.pending_certificates import service
 from lemur.roles import service as role_service
+from lemur.logs import service as log_service
+
 
 from lemur.pending_certificates.schemas import (
     pending_certificate_output_schema,
@@ -221,9 +223,10 @@ class PendingCertificates(AuthenticatedResource):
 
            .. sourcecode:: http
 
-              PUT /pending certificates/1 HTTP/1.1
+              PUT /pending_certificates/1 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                  "owner": "jimbob@example.com",
@@ -337,7 +340,7 @@ class PendingCertificates(AuthenticatedResource):
 
            .. sourcecode:: http
 
-              DELETE /pending certificates/1 HTTP/1.1
+              DELETE /pending_certificates/1 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
 
@@ -439,6 +442,9 @@ class PendingCertificatePrivateKey(AuthenticatedResource):
         response = make_response(jsonify(key=cert.private_key), 200)
         response.headers["cache-control"] = "private, max-age=0, no-cache, no-store"
         response.headers["pragma"] = "no-cache"
+
+        log_service.audit_log("export_private_key_pending_certificate", cert.name,
+                              "Exported Private key for the pending certificate")
         return response
 
 
@@ -465,6 +471,7 @@ class PendingCertificatesUpload(AuthenticatedResource):
               POST /certificates/1/upload HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                  "body": "-----BEGIN CERTIFICATE-----...",

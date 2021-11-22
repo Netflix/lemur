@@ -2,21 +2,27 @@ from __future__ import unicode_literals  # at top of module
 
 import datetime
 import json
+import ssl
+import threading
+from http.server import HTTPServer, SimpleHTTPRequestHandler
+from tempfile import NamedTemporaryFile
 
 import arrow
 import pytest
 from cryptography import x509
+from cryptography.x509.oid import ExtensionOID
 from cryptography.hazmat.backends import default_backend
 from marshmallow import ValidationError
 from freezegun import freeze_time
-# from mock import patch
 from unittest.mock import patch
 
-from lemur.certificates.service import create_csr
+from sqlalchemy.testing import fail
+
+from lemur.certificates.service import create_csr, identify_and_persist_expiring_deployed_certificates
 from lemur.certificates.views import *  # noqa
 from lemur.common import utils
 from lemur.domains.models import Domain
-
+from lemur.tests.test_messaging import create_cert_that_expires_in_days
 
 from lemur.tests.vectors import (
     VALID_ADMIN_API_TOKEN,
@@ -85,6 +91,25 @@ def test_get_by_serial(session, certificate):
     assert found
 
 
+def test_get_all_certs_attached_to_endpoint_without_autorotate(session):
+    from lemur.certificates.service import get_all_certs_attached_to_endpoint_without_autorotate, \
+        cleanup_after_revoke
+    from lemur.tests.factories import EndpointFactory
+
+    # add a certificate with endpoint
+    EndpointFactory()
+
+    list_before = get_all_certs_attached_to_endpoint_without_autorotate()
+    len_list_before = len(list_before)
+    assert len_list_before > 0
+    # revoked the first certificate
+    first_cert_with_endpoint = list_before[0]
+    cleanup_after_revoke(first_cert_with_endpoint)
+
+    list_after = get_all_certs_attached_to_endpoint_without_autorotate()
+    assert len(list_after) + 1 == len_list_before
+
+
 def test_delete_cert(session):
     from lemur.certificates.service import delete, get
     from lemur.tests.factories import CertificateFactory
@@ -102,6 +127,30 @@ def test_delete_cert(session):
 
     # then not exist after delete
     assert not cert_exists
+
+
+def test_cleanup_after_revoke(session, issuer_plugin, crypto_authority):
+    from lemur.certificates.service import cleanup_after_revoke, get
+    from lemur.tests.factories import CertificateFactory
+
+    revoke_this = CertificateFactory(name="REVOKEME")
+    session.commit()
+
+    to_be_revoked = get(revoke_this.id)
+    assert to_be_revoked
+    to_be_revoked.notify = True
+    to_be_revoked.rotation = True
+
+    # Assuming the cert is revoked by corresponding issuer, update the records in lemur
+    cleanup_after_revoke(to_be_revoked)
+    revoked_cert = get(to_be_revoked.id)
+
+    # then not exist after delete
+    assert revoked_cert
+    assert revoked_cert.status == "revoked"
+    assert not revoked_cert.notify
+    assert not revoked_cert.rotation
+    assert not revoked_cert.destinations
 
 
 def test_get_by_attributes(session, certificate):
@@ -155,7 +204,7 @@ def test_get_certificate_primitives(certificate):
     with freeze_time(datetime.date(year=2016, month=10, day=30)):
         primitives = get_certificate_primitives(certificate)
         assert len(primitives) == 26
-        assert (primitives["key_type"] == "RSA2048")
+        assert primitives["key_type"] == "RSA2048"
 
 
 def test_certificate_output_schema(session, certificate, issuer_plugin):
@@ -171,8 +220,41 @@ def test_certificate_output_schema(session, certificate, issuer_plugin):
     ) as wrapper:
         data, errors = CertificateOutputSchema().dump(certificate)
         assert data["issuer"] == "LemurTrustUnittestsClass1CA2018"
+        assert data["distinguishedName"] == "L=Earth,ST=N/A,C=EE,OU=Karate Lessons,O=Daniel San & co,CN=san.example.org"
+        # Authority does not have 'cab_compliant', thus subject details should not be returned
+        assert "organization" not in data
 
     assert wrapper.call_count == 1
+
+
+def test_certificate_output_schema_subject_details(session, certificate, issuer_plugin):
+    from lemur.certificates.schemas import CertificateOutputSchema
+    from lemur.authorities.service import update_options
+
+    # Mark authority as non-cab-compliant
+    update_options(certificate.authority.id, '[{"name": "cab_compliant","value":false}]')
+
+    data, errors = CertificateOutputSchema().dump(certificate)
+    assert not errors
+    assert data["issuer"] == "LemurTrustUnittestsClass1CA2018"
+    assert data["distinguishedName"] == "L=Earth,ST=N/A,C=EE,OU=Karate Lessons,O=Daniel San & co,CN=san.example.org"
+
+    # Original subject details should be returned because of cab_compliant option update above
+    assert data["country"] == "EE"
+    assert data["state"] == "N/A"
+    assert data["location"] == "Earth"
+    assert data["organization"] == "Daniel San & co"
+    assert data["organizationalUnit"] == "Karate Lessons"
+
+    # Mark authority as cab-compliant
+    update_options(certificate.authority.id, '[{"name": "cab_compliant","value":true}]')
+    data, errors = CertificateOutputSchema().dump(certificate)
+    assert not errors
+    assert "country" not in data
+    assert "state" not in data
+    assert "location" not in data
+    assert "organization" not in data
+    assert "organizationalUnit" not in data
 
 
 def test_certificate_edit_schema(session):
@@ -180,7 +262,10 @@ def test_certificate_edit_schema(session):
 
     input_data = {"owner": "bob@example.com"}
     data, errors = CertificateEditInputSchema().load(input_data)
+
+    assert not errors
     assert len(data["notifications"]) == 3
+    assert data["roles"][0].name == input_data["owner"]
 
 
 def test_authority_key_identifier_schema():
@@ -254,19 +339,47 @@ def test_certificate_input_schema(client, authority):
         "validityStart": arrow.get(2018, 11, 9).isoformat(),
         "validityEnd": arrow.get(2019, 11, 9).isoformat(),
         "dnsProvider": None,
+        "location": "A Place"
     }
 
     data, errors = CertificateInputSchema().load(input_data)
 
     assert not errors
     assert data["authority"].id == authority.id
+    assert data["location"] == "A Place"
 
     # make sure the defaults got set
     assert data["common_name"] == "test.example.com"
     assert data["country"] == "US"
-    assert data["location"] == "Los Gatos"
+    assert data["key_type"] == "ECCPRIME256V1"
 
-    assert len(data.keys()) == 19
+    assert len(data.keys()) == 20
+
+
+def test_certificate_input_schema_empty_location(client, authority):
+    from lemur.certificates.schemas import CertificateInputSchema
+
+    input_data = {
+        "commonName": "test.example.com",
+        "owner": "jim@example.com",
+        "authority": {"id": authority.id},
+        "description": "testtestest",
+        "validityStart": arrow.get(2018, 11, 9).isoformat(),
+        "validityEnd": arrow.get(2019, 11, 9).isoformat(),
+        "dnsProvider": None,
+        "location": ""
+    }
+
+    data, errors = CertificateInputSchema().load(input_data)
+
+    assert not errors
+    assert len(data.keys()) == 20
+    assert data["location"] == ""
+
+    # make sure the defaults got set
+    assert data["common_name"] == "test.example.com"
+    assert data["country"] == "US"
+    assert data["key_type"] == "ECCPRIME256V1"
 
 
 def test_certificate_input_with_extensions(client, authority):
@@ -289,10 +402,12 @@ def test_certificate_input_with_extensions(client, authority):
             },
         },
         "dnsProvider": None,
+        "keyType": "RSA2048"
     }
 
     data, errors = CertificateInputSchema().load(input_data)
     assert not errors
+    assert data["key_type"] == "RSA2048"
 
 
 def test_certificate_input_schema_parse_csr(authority):
@@ -327,9 +442,11 @@ def test_certificate_input_schema_parse_csr(authority):
 
     data, errors = CertificateInputSchema().load(input_data)
 
+    assert not errors
     for san in data["extensions"]["sub_alt_names"]["names"]:
         assert san.value == test_san_dns
-    assert not errors
+
+    assert data["key_type"] == "RSA2048"
 
 
 def test_certificate_out_of_range_date(client, authority):
@@ -396,7 +513,7 @@ def test_certificate_cn_admin(client, authority, logged_in_admin):
     from lemur.certificates.schemas import CertificateInputSchema
 
     input_data = {
-        "commonName": "*.admin-overrides-whitelist.com",
+        "commonName": "*.admin-overrides-allowlist.com",
         "owner": "jim@example.com",
         "authority": {"id": authority.id},
         "description": "testtestest",
@@ -435,7 +552,7 @@ def test_certificate_allowed_names(client, authority, session, logged_in_user):
     assert not errors
 
 
-def test_certificate_incative_authority(client, authority, session, logged_in_user):
+def test_certificate_inactive_authority(client, authority, session, logged_in_user):
     """Cannot issue certificates with an inactive authority."""
     from lemur.certificates.schemas import CertificateInputSchema
 
@@ -457,7 +574,7 @@ def test_certificate_incative_authority(client, authority, session, logged_in_us
 
 
 def test_certificate_disallowed_names(client, authority, session, logged_in_user):
-    """The CN and SAN are disallowed by LEMUR_WHITELISTED_DOMAINS."""
+    """The CN and SAN are disallowed by LEMUR_ALLOWED_DOMAINS."""
     from lemur.certificates.schemas import CertificateInputSchema
 
     input_data = {
@@ -480,10 +597,10 @@ def test_certificate_disallowed_names(client, authority, session, logged_in_user
 
     data, errors = CertificateInputSchema().load(input_data)
     assert errors["common_name"][0].startswith(
-        "Domain *.example.com does not match whitelisted domain patterns"
+        "Domain *.example.com does not match allowed domain patterns"
     )
     assert errors["extensions"]["sub_alt_names"]["names"][0].startswith(
-        "Domain evilhacker.org does not match whitelisted domain patterns"
+        "Domain evilhacker.org does not match allowed domain patterns"
     )
 
 
@@ -506,6 +623,64 @@ def test_certificate_sensitive_name(client, authority, session, logged_in_user):
     assert errors["common_name"][0].startswith(
         "Domain sensitive.example.com has been marked as sensitive"
     )
+
+
+def test_certificate_missing_common_name(client, authority, session, logged_in_user):
+    """CN is mandatory unless authority has option cn_optional set to true"""
+    from lemur.certificates.schemas import CertificateInputSchema
+
+    input_data = {
+        "owner": "jim@example.com",
+        "authority": {"id": authority.id},
+        "description": "testtestest"
+    }
+
+    data, errors = CertificateInputSchema().load(input_data)
+    assert errors["_schema"][0].startswith(
+        "Missing common_name"
+    )
+
+
+def test_certificate_only_san_no_cn(session, issuer_plugin, optional_cn_authority, logged_in_user, user):
+    """Only SAN is okay with the authority having option cn_optional set to true. Checks new naming with SAN"""
+    from lemur.certificates.schemas import CertificateInputSchema
+    from lemur.certificates.service import create
+
+    input_data = {
+        "owner": "joe@example.com",
+        "authority": {"id": optional_cn_authority.id},
+        "description": "testtestest",
+        "extensions": {
+            "subAltNames": {
+                "names": [
+                    {"nameType": "IPAddress", "value": "192.168.7.1"},
+                ]
+            }
+        }
+    }
+
+    data, errors = CertificateInputSchema().load(input_data)
+    assert not errors
+
+    csr_text, pkey = create_csr(
+        owner=data["owner"],
+        key_type=data["key_type"],
+        extensions=data["extensions"]
+    )
+    assert csr_text
+
+    parsed_csr = utils.parse_csr(csr_text)
+    san = parsed_csr.extensions.get_extension_for_oid(ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
+    assert san
+    assert san.value.get_values_for_type(x509.IPAddress)
+    assert "192.168.7.1" == str(san.value.get_values_for_type(x509.IPAddress)[0])
+
+    cert = create(
+        authority=data["authority"], csr=csr_text, owner=data["owner"], creator=user["user"]
+    )
+
+    assert cert
+    assert cert.name == "192.168.7.1-LemurTrustUnittestsClass1CA2018-20211108-20211109"
 
 
 def test_certificate_upload_schema_ok(client):
@@ -622,6 +797,23 @@ def test_certificate_upload_schema_wrong_chain_2nd(client):
     }
 
 
+def test_certificate_revoke_schema():
+    from lemur.certificates.schemas import CertificateRevokeSchema
+
+    input = {
+        "comments": "testing certificate revoke schema",
+        "crl_reason": "cessationOfOperation"
+    }
+    data, errors = CertificateRevokeSchema().load(input)
+    assert not errors
+
+    input["crl_reason"] = "fakeCrlReason"
+    data, errors = CertificateRevokeSchema().load(input)
+    assert errors == {
+        "crl_reason": ['Not a valid choice.']
+    }
+
+
 def test_create_basic_csr(client):
     csr_config = dict(
         common_name="example.com",
@@ -670,7 +862,7 @@ def test_csr_empty_san(client):
 
 
 def test_csr_disallowed_cn(client, logged_in_user):
-    """Domain name CN is disallowed via LEMUR_WHITELISTED_DOMAINS."""
+    """Domain name CN is disallowed via LEMUR_ALLOWED_DOMAINS."""
     from lemur.common import validators
 
     request, pkey = create_csr(
@@ -679,12 +871,12 @@ def test_csr_disallowed_cn(client, logged_in_user):
     with pytest.raises(ValidationError) as err:
         validators.csr(request)
     assert str(err.value).startswith(
-        "Domain evilhacker.org does not match whitelisted domain patterns"
+        "Domain evilhacker.org does not match allowed domain patterns"
     )
 
 
 def test_csr_disallowed_san(client, logged_in_user):
-    """SAN name is disallowed by LEMUR_WHITELISTED_DOMAINS."""
+    """SAN name is disallowed by LEMUR_ALLOWED_DOMAINS."""
     from lemur.common import validators
 
     request, pkey = create_csr(
@@ -700,7 +892,7 @@ def test_csr_disallowed_san(client, logged_in_user):
     with pytest.raises(ValidationError) as err:
         validators.csr(request)
     assert str(err.value).startswith(
-        "Domain evilhacker.org does not match whitelisted domain patterns"
+        "Domain evilhacker.org does not match allowed domain patterns"
     )
 
 
@@ -755,12 +947,23 @@ def test_reissue_certificate(
     issuer_plugin, crypto_authority, certificate, logged_in_user
 ):
     from lemur.certificates.service import reissue_certificate
+    from lemur.authorities.service import update_options
+    from lemur.tests.conf import LEMUR_DEFAULT_ORGANIZATION
 
     # test-authority would return a mismatching private key, so use 'cryptography-issuer' plugin instead.
     certificate.authority = crypto_authority
     new_cert = reissue_certificate(certificate)
     assert new_cert
-    assert (new_cert.key_type == "RSA2048")
+    assert new_cert.key_type == "RSA2048"
+    assert new_cert.organization != certificate.organization
+    # Check for default value since authority does not have cab_compliant option set
+    assert new_cert.organization == LEMUR_DEFAULT_ORGANIZATION
+    assert new_cert.description.startswith(f"Reissued by Lemur for cert ID {certificate.id}")
+
+    # update cab_compliant option to false for crypto_authority to maintain subject details
+    update_options(crypto_authority.id, '[{"name": "cab_compliant","value":false}]')
+    new_cert = reissue_certificate(certificate)
+    assert new_cert.organization == certificate.organization
 
 
 def test_create_csr():
@@ -917,23 +1120,37 @@ def test_certificate_get_body(client):
         "CN=LemurTrust Unittests Class 1 CA 2018"
     )
 
+    # No authority details are provided in this test, no information about being cab_compliant is available.
+    # Thus original subject details should be returned.
+    assert response_body["country"] == "EE"
+    assert response_body["state"] == "N/A"
+    assert response_body["location"] == "Earth"
+    assert response_body["organization"] == "LemurTrust Enterprises Ltd"
+    assert response_body["organizationalUnit"] == "Unittesting Operations Center"
+
 
 @pytest.mark.parametrize(
     "token,status",
     [
-        (VALID_USER_HEADER_TOKEN, 405),
-        (VALID_ADMIN_HEADER_TOKEN, 405),
-        (VALID_ADMIN_API_TOKEN, 405),
-        ("", 405),
+        (VALID_USER_HEADER_TOKEN, 403),
+        (VALID_ADMIN_HEADER_TOKEN, 200),
+        (VALID_ADMIN_API_TOKEN, 200),
+        ("", 401),
     ],
 )
-def test_certificate_post(client, token, status):
-    assert (
-        client.post(
-            api.url_for(Certificates, certificate_id=1), data={}, headers=token
-        ).status_code
-        == status
+def test_certificate_post_update_notify(client, certificate, token, status):
+    # negate the current notify flag and pass it to update POST call to flip the notify
+    toggled_notify = not certificate.notify
+
+    response = client.post(
+        api.url_for(Certificates, certificate_id=certificate.id),
+        data=json.dumps({"notify": toggled_notify}),
+        headers=token
     )
+
+    assert response.status_code == status
+    if status == 200:
+        assert response.json.get("notify") == toggled_notify
 
 
 @pytest.mark.parametrize(
@@ -963,6 +1180,9 @@ def test_certificate_put_with_data(client, certificate, issuer_plugin):
         headers=VALID_ADMIN_HEADER_TOKEN,
     )
     assert resp.status_code == 200
+    assert len(certificate.notifications) == 3
+    assert certificate.roles[0].name == "bob@example.com"
+    assert certificate.notify
 
 
 @pytest.mark.parametrize(
@@ -1272,3 +1492,89 @@ def test_boolean_filter(client):
         headers=VALID_ADMIN_HEADER_TOKEN,
     )
     assert resp.status_code == 200
+
+
+def test_issued_cert_count_for_authority(authority):
+    from lemur.tests.factories import CertificateFactory
+    from lemur.certificates.service import get_issued_cert_count_for_authority
+
+    assert get_issued_cert_count_for_authority(authority) == 0
+
+    # create a few certs issued by the authority
+    CertificateFactory(authority=authority, name="test_issued_cert_count_for_authority1")
+    CertificateFactory(authority=authority, name="test_issued_cert_count_for_authority2")
+    CertificateFactory(authority=authority, name="test_issued_cert_count_for_authority3")
+
+    assert get_issued_cert_count_for_authority(authority) == 3
+
+
+def test_identify_and_persist_expiring_deployed_certificates():
+    from lemur.domains.models import Domain
+
+    """
+    This test spins up three local servers, each serving the same default test cert with a non-matching CN/SANs.
+    The logic to check if a cert is still deployed ignores certificate validity; all it needs to know is whether
+    the certificate currently deployed at the cert's associated domain has the same serial number as the one in
+    Lemur's DB. The expiration check is done using the date in Lemur's DB, and is not parsed from the actual deployed
+    certificate - so we can get away with using a totally unrelated cert, as long as the serial number matches.
+    In this test, the serial number is always the same, since it's parsed from the hardcoded test cert.
+    """
+
+    # one non-expiring cert, two expiring certs, one cert that doesn't match a running server,
+    # one cert using an excluded domain, and one cert belonging to an excluded owner.
+    cert_1 = create_cert_that_expires_in_days(180, domains=[Domain(name='localhost')], owner='testowner1@example.com')
+    cert_2 = create_cert_that_expires_in_days(10, domains=[Domain(name='localhost')], owner='testowner2@example.com')
+    cert_3 = create_cert_that_expires_in_days(10, domains=[Domain(name='localhost')], owner='testowner3@example.com')
+    cert_4 = create_cert_that_expires_in_days(10, domains=[Domain(name='not-localhost')], owner='testowner4@example.com')
+    cert_5 = create_cert_that_expires_in_days(10, domains=[Domain(name='abc.excluded.com')], owner='testowner5@example.com')
+    cert_6 = create_cert_that_expires_in_days(10, domains=[Domain(name='localhost')], owner='excludedowner@example.com')
+
+    # test certs are all hardcoded with the same body/chain so we don't need to use the created cert here
+    cert_file_data = SAN_CERT_STR + INTERMEDIATE_CERT_STR + ROOTCA_CERT_STR + SAN_CERT_KEY
+    f = NamedTemporaryFile(suffix='.pem', delete=True)
+    try:
+        f.write(cert_file_data.encode('utf-8'))
+        server_1 = run_server(65521, f.name)
+        server_2 = run_server(65522, f.name)
+        server_3 = run_server(65523, f.name)
+        if not (server_1.is_alive() and server_2.is_alive() and server_3.is_alive()):
+            fail('Servers not alive, test cannot proceed')
+
+        for c in [cert_1, cert_2, cert_3, cert_4]:
+            assert len(c.certificate_associations) == 1
+            for ca in c.certificate_associations:
+                assert ca.ports is None
+        identify_and_persist_expiring_deployed_certificates(['excluded.com'], ['excludedowner@example.com'], True)
+        for c in [cert_1, cert_5, cert_6]:
+            assert len(c.certificate_associations) == 1
+            for ca in c.certificate_associations:
+                assert ca.ports is None  # cert_1 is not expiring, cert_5 is excluded by domain,
+                # and cert_6 is excluded by owner, so none of them should be updated
+        for c in [cert_4]:
+            assert len(c.certificate_associations) == 1
+            for ca in c.certificate_associations:
+                assert ca.ports == []  # cert_4 is valid but doesn't match so the request runs but the cert isn't found
+        for c in [cert_2, cert_3]:
+            assert len(c.certificate_associations) == 1
+            for ca in c.certificate_associations:
+                assert ca.ports == [65521, 65522, 65523]
+    finally:
+        f.close()  # close file (which also deletes it)
+
+
+def run_server(port, cert_file_name):
+    """Utility method to create a mock server that serves a specific certificate"""
+
+    def start_server():
+        server = HTTPServer(('localhost', port), SimpleHTTPRequestHandler)
+        server.socket = ssl.wrap_socket(server.socket,
+                                        server_side=True,
+                                        certfile=cert_file_name,
+                                        ssl_version=ssl.PROTOCOL_TLSv1_2)
+        server.serve_forever()
+        print(f"Started https server on port {port} using cert file {cert_file_name}")
+
+    daemon = threading.Thread(name=f'server_{cert_file_name}', target=start_server)
+    daemon.setDaemon(True)  # Set as a daemon so it will be killed once the main thread is dead.
+    daemon.start()
+    return daemon

@@ -130,32 +130,33 @@ class AuthoritiesList(AuthenticatedResource):
               POST /authorities HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
-             {
-                "country": "US",
-                "state": "California",
-                "location": "Los Gatos",
-                "organization": "Netflix",
-                "organizationalUnit": "Operations",
-                "type": "root",
-                "signingAlgorithm": "sha256WithRSA",
-                "sensitivity": "medium",
-                "keyType": "RSA2048",
-                "plugin": {
-                    "slug": "cloudca-issuer"
-                },
-                "name": "TimeTestAuthority5",
-                "owner": "secure@example.com",
-                "description": "test",
-                "commonName": "AcommonName",
-                "validityYears": "20",
-                "extensions": {
-                    "subAltNames": {
-                        "names": []
-                    },
-                    "custom": []
-                }
-             }
+              {
+                 "country": "US",
+                 "state": "California",
+                 "location": "Los Gatos",
+                 "organization": "Netflix",
+                 "organizationalUnit": "Operations",
+                 "type": "root",
+                 "signingAlgorithm": "sha256WithRSA",
+                 "sensitivity": "medium",
+                 "keyType": "RSA2048",
+                 "plugin": {
+                     "slug": "cloudca-issuer"
+                 },
+                 "name": "TimeTestAuthority5",
+                 "owner": "secure@example.com",
+                 "description": "test",
+                 "commonName": "AcommonName",
+                 "validityYears": "20",
+                 "extensions": {
+                     "subAltNames": {
+                         "names": []
+                     },
+                     "custom": []
+                 }
+              }
 
            **Example response**:
 
@@ -217,8 +218,7 @@ class AuthoritiesList(AuthenticatedResource):
            :arg parent: the parent authority if this is to be a subca
            :arg signingAlgorithm: algorithm used to sign the authority
            :arg keyType: key type
-           :arg sensitivity: the sensitivity of the root key, for CloudCA this determines if the root keys are stored
-           in an HSM
+           :arg sensitivity: the sensitivity of the root key, for CloudCA this determines if the root keys are stored in an HSM
            :arg keyName: name of the key to store in the HSM (CloudCA)
            :arg serialNumber: serial number of the authority
            :arg firstSerial: specifies the starting serial number for certificates issued off of this authority
@@ -301,6 +301,7 @@ class Authorities(AuthenticatedResource):
               PUT /authorities/1 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                 "name": "TestAuthority5",
@@ -492,23 +493,48 @@ class CertificateAuthority(AuthenticatedResource):
 class AuthorityVisualizations(AuthenticatedResource):
     def get(self, authority_id):
         """
-        {"name": "flare",
-        "children": [
-            {
-                "name": "analytics",
-                "children": [
-                    {
-                        "name": "cluster",
-                        "children": [
-                            {"name": "AgglomerativeCluster", "size": 3938},
-                            {"name": "CommunityStructure", "size": 3812},
-                            {"name": "HierarchicalCluster", "size": 6714},
-                            {"name": "MergeEdge", "size": 743}
-                        ]
-                    }
-                ]
-            }
-        ]}
+        .. http:get:: /authorities/1/visualize
+
+           Authority visualization
+
+           **Example request**:
+
+           .. sourcecode:: http
+
+              GET /certificates/1/visualize HTTP/1.1
+              Host: example.com
+              Accept: application/json, text/javascript
+
+           **Example response**:
+
+           .. sourcecode:: http
+
+              HTTP/1.1 200 OK
+              Vary: Accept
+              Content-Type: text/javascript
+
+                {"name": "flare",
+                    "children": [
+                        {
+                            "name": "analytics",
+                            "children": [
+                                {
+                                    "name": "cluster",
+                                    "children": [
+                                        {"name": "AgglomerativeCluster", "size": 3938},
+                                        {"name": "CommunityStructure", "size": 3812},
+                                        {"name": "HierarchicalCluster", "size": 6714},
+                                        {"name": "MergeEdge", "size": 743}
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+
+           :reqheader Authorization: OAuth token to authenticate
+           :statuscode 200: no error
+           :statuscode 403: unauthenticated
         """
         authority = service.get(authority_id)
         return dict(

@@ -1,7 +1,7 @@
 <div class="row">
     <div class="col-md-12">
         <h2 class="featurette-heading">Notifications
-            <span class="text-muted"><small>you have to speak up son!</small></span></h2>
+            <span class="text-muted"><small>you have to speak up!</small></span></h2>
         <div class="panel panel-default">
             <div class="panel-heading">
                 <div class="btn-group pull-right">
@@ -40,7 +40,9 @@
                                 <button uib-tooltip="Edit Notification" ng-click="edit(notification.id)" class="btn btn-sm btn-info">
                                     Edit
                                 </button>
-                                <button uib-tooltip="Delete Notification" ng-click="remove(notification)" type="button" class="btn btn-sm btn-danger pull-left">
+                                <button uib-tooltip="Delete Notification" ng-click="remove(notification)"
+                                        confirm-click="Proceed to remove the notification {{ notification.label }}?"
+                                        type="button" class="btn btn-sm btn-danger pull-left">
                                     Remove
                                 </button>
                             </div>

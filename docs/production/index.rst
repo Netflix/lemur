@@ -323,27 +323,43 @@ Periodic Tasks
 Lemur contains a few tasks that are run and scheduled basis, currently the recommend way to run these tasks is to create
 celery tasks or cron jobs that run these commands.
 
-There are currently three commands that could/should be run on a periodic basis:
+The following commands that could/should be run on a periodic basis:
 
-- `notify`
+- `notify expirations`, `notify authority_expirations`, `notify security_expiration_summary`, and `notify expiring_deployed_certificates` (see :ref:`NotificationOptions` for configuration info)
+- `certificate identity_expiring_deployed_certificates`
 - `check_revoked`
 - `sync`
 
-If you are using LetsEncrypt, you must also run the following:
 
-- `fetch_all_pending_acme_certs`
-- `remove_old_acme_certs`
-
-How often you run these commands is largely up to the user. `notify` and `check_revoked` are typically run at least once a day.
+How often you run these commands is largely up to the user. `notify` should be run once a day (more often will result in
+duplicate notifications). `check_revoked` is typically run at least once a day.
 `sync` is typically run every 15 minutes. `fetch_all_pending_acme_certs` should be ran frequently (Every minute is fine).
 `remove_old_acme_certs` can be ran more rarely, such as once every week.
 
 Example cron entries::
 
     0 22 * * * lemuruser export LEMUR_CONF=/Users/me/.lemur/lemur.conf.py; /www/lemur/bin/lemur notify expirations
+    0 22 * * * lemuruser export LEMUR_CONF=/Users/me/.lemur/lemur.conf.py; /www/lemur/bin/lemur notify authority_expirations
+    0 22 * * * lemuruser export LEMUR_CONF=/Users/me/.lemur/lemur.conf.py; /www/lemur/bin/lemur notify security_expiration_summary
     */15 * * * * lemuruser export LEMUR_CONF=/Users/me/.lemur/lemur.conf.py; /www/lemur/bin/lemur source sync -s all
     0 22 * * * lemuruser export LEMUR_CONF=/Users/me/.lemur/lemur.conf.py; /www/lemur/bin/lemur certificate check_revoked
 
+
+If you are using LetsEncrypt, you must also run the following:
+
+- `fetch_all_pending_acme_certs`
+- `remove_old_acme_certs`
+
+Rarely, lemur may see duplicate certificates issue with LetsEncrypt. This is because of the retry logic during
+resolution of pending certificates. To deduplicate these certificates, please consider running the celery task
+`disable_rotation_of_duplicate_certificates`. This task will identify duplicate certificates and disable auto
+rotate if it's confident that the certificate is not being used. If  certificate is in use, no change is done
+(operation status = skipped). If unused, auto-rotation will be disabled (operation status = success). If it's
+not able to confidently determine that certificates are duplicates, operation status will result in `failed` for
+that specific set of certificates. You may want to manually check these certs to determine if you want to keep them all.
+The task will always keep auto-rotate on for at least one certificate.
+
+For better metrics around job completion, we recommend using celery to schedule recurring jobs in Lemur.
 
 Example Celery configuration (To be placed in your configuration file)::
 
@@ -376,12 +392,47 @@ Example Celery configuration (To be placed in your configuration file)::
             },
             'schedule': crontab(hour="*/3", minute=5),
         },
-        'sync_source_destination': {
-            'task': 'lemur.common.celery.sync_source_destination',
+        'notify_expirations': {
+            'task': 'lemur.common.celery.notify_expirations',
             'options': {
                 'expires': 180
             },
-            'schedule': crontab(hour="*"),
+            'schedule': crontab(hour=22, minute=0),
+        },
+        'notify_authority_expirations': {
+            'task': 'lemur.common.celery.notify_authority_expirations',
+            'options': {
+                'expires': 180
+            },
+            'schedule': crontab(hour=22, minute=0),
+        },
+        'send_security_expiration_summary': {
+            'task': 'lemur.common.celery.send_security_expiration_summary',
+            'options': {
+                'expires': 180
+            },
+            'schedule': crontab(hour=22, minute=0),
+        },
+        'disable_rotation_of_duplicate_certificates': {
+            'task': 'lemur.common.celery.disable_rotation_of_duplicate_certificates',
+            'options': {
+                'expires': 180
+            },
+            'schedule': crontab(hour=22, minute=0, day_of_week=2),
+        },
+        'notify_expiring_deployed_certificates': {
+            'task': 'lemur.common.celery.notify_expiring_deployed_certificates',
+            'options': {
+                'expires': 180
+            },
+            'schedule': crontab(hour=22, minute=0),
+        },
+        'identity_expiring_deployed_certificates': {
+            'task': 'lemur.common.celery.identity_expiring_deployed_certificates',
+            'options': {
+                'expires': 180
+            },
+            'schedule': crontab(hour=20, minute=0),
         }
     }
 
@@ -415,8 +466,8 @@ And the worker can be started with desired options such as the following::
 
 supervisor or systemd configurations should be created for these in production environments as appropriate.
 
-Add support for LetsEncrypt
-===========================
+Add support for LetsEncrypt/ACME
+================================
 
 LetsEncrypt is a free, limited-feature certificate authority that offers publicly trusted certificates that are valid
 for 90 days. LetsEncrypt does not use organizational validation (OV), and instead relies on domain validation (DV).
@@ -424,7 +475,10 @@ LetsEncrypt requires that we prove ownership of a domain before we're able to is
 time we want a certificate.
 
 The most common methods to prove ownership are HTTP validation and DNS validation. Lemur supports DNS validation
-through the creation of DNS TXT records.
+through the creation of DNS TXT records as well as HTTP validation, reusing the destination concept.
+
+ACME DNS Challenge
+------------------
 
 In a nutshell, when we send a certificate request to LetsEncrypt, they generate a random token and ask us to put that
 token in a DNS text record to prove ownership of a domain. If a certificate request has multiple domains, we must
@@ -434,9 +488,11 @@ before requesting that LetsEncrypt finalize the certificate request and send us 
 
 .. figure:: letsencrypt_flow.png
 
-To start issuing certificates through LetsEncrypt, you must enable Celery support within Lemur first. After doing so,
+To start issuing certificates through LetsEncrypt, you must enable Celery support within Lemur first[*]_. After doing so,
 you need to create a LetsEncrypt authority. To do this, visit
 Authorities -> Create. Set the applicable attributes and click "More Options".
+
+.. [*] It is possible to use synchronous certificate creation without Celery by supplying the ``create_immediately`` parameter in your certificate creation requests, but this is only recommended for testing and development purposes, given the inherent `limitations of DNS record propagation <https://letsencrypt.org/docs/challenge-types/#dns-01-challenge>`.
 
 .. figure:: letsencrypt_authority_1.png
 
@@ -462,6 +518,24 @@ possible. To enable this functionality, periodically (or through Cron/Celery) ru
 This command will traverse all DNS providers, determine which zones they control, and upload this list of zones to
 Lemur's database (in the dns_providers table). Alternatively, you can manually input this data.
 
+ACME HTTP Challenge
+-------------------
+
+The flow for requesting a certificate using the HTTP challenge is not that different from the one described for the DNS
+challenge. The only difference is, that instead of creating a DNS TXT record, a file is uploaded to a Webserver which
+serves the file at `http://<domain>/.well-known/acme-challenge/<token>`
+
+Currently the HTTP challenge also works without Celery, since it's done while creating the certificate, and doesn't
+rely on celery to create the DNS record. This will change when we implement mix & match of acme challenge types.
+
+To create a HTTP compatible Authority, you first need to create a new destination that will be used to deploy the
+challenge token. Visit `Admin` -> `Destination` and click `Create`. The path you provide for the destination needs to
+be the exact path that is called when the ACME providers calls `http://<domain>/.well-known/acme-challenge/`. The
+token part will be added dynamically by the acme_upload.
+Currently only the SFTP and S3 Bucket destination support the ACME HTTP challenge.
+
+Afterwards you can create a new certificate authority as described in the DNS challenge, but need to choose
+`Acme HTTP-01` as the plugin type, and then the destination you created beforehand.
 
 LetsEncrypt: pinning to cross-signed ICA
 ----------------------------------------
@@ -519,11 +593,12 @@ LetsEncrypt: Using a pre-existing ACME account
 -----------------------------------------------
 
 Let's Encrypt allows reusing an existing ACME account, to create and especially revoke certificates. The current
-implementation in the acme plugin, only allows for a single account for all ACME authorities, which might be an issue,
-when you try to use Let's Encrypt together with another certificate authority that uses the ACME protocol.
-
-To use an existing account, you need to configure the `ACME_PRIVATE_KEY` and `ACME_REGR` variables in the lemur
+implementation in the acme plugin, allows for a primary account for all ACME authorities.
+To use an existing account as the primary ACME account, you need to configure the `ACME_PRIVATE_KEY` and `ACME_REGR` variables in the lemur
 configuration.
+
+Alternatively, you can set `acme_regr` and `acme_private_key` as options during setup of a new issuer in Lemur.
+Lemur will use the `LEMUR_ENCRYPTION_KEYS` to encrypt the `acme_private_key` before storing it in the database.
 
 `ACME_PRIVATE_KEY` needs to be in the JWK format::
 
@@ -555,3 +630,21 @@ Using `python-jwt` converting an existing private key in PEM format is quite eas
     {"body": {}, "uri": "https://acme-staging-v02.api.letsencrypt.org/acme/acct/<ACCOUNT_NUMBER>"}
 
 The URI can be retrieved from the ACME create account endpoint when creating a new account, using the existing key.
+
+
+LetsEncrypt: Setting up a new ACME account
+------------------------------------------
+
+In case, you are not using the `ACME_PRIVATE_KEY` and `ACME_REGR` variables in the Lemur
+configuration to set up a pre-existing primary, Lemur will create a new account on the fly for you.
+Additionally, you can select the `store_account` while setting a new ACME-based issuer in Lemur,
+to avoid hitting rate limits for creating new accounts for each request.
+
+External Account Binding (EAB):
+-------------------------------
+
+The ACME protocol enables setting up a new ACME account linked to an existing external account.
+For this, your CA needs to issue you an hmac_key and kid, which you need while setting up a new ACME issuer in Lemur.
+hmac_key and kid are usually short-lived and are used to create a new account.
+When `store_account` is set in the options of a new issuer, Lemur will use the EAB credentials to set up a new account.
+

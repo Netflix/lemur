@@ -94,8 +94,11 @@ SECRET_KEY = '{flask_secret_key}'
 LEMUR_TOKEN_SECRET = '{secret_token}'
 LEMUR_ENCRYPTION_KEYS = '{encryption_key}'
 
+# this is the secret used to generate oauth state tokens
+OAUTH_STATE_TOKEN_SECRET = {oauth_state_token_secret}
+
 # List of domain regular expressions that non-admin users can issue
-LEMUR_WHITELISTED_DOMAINS = []
+LEMUR_ALLOWED_DOMAINS = []
 
 # Mail Server
 
@@ -120,6 +123,7 @@ METRIC_PROVIDERS = []
 
 LOG_LEVEL = "DEBUG"
 LOG_FILE = "lemur.log"
+LOG_UPGRADE_FILE = "db_upgrade.log"
 
 
 # Database
@@ -179,6 +183,7 @@ def generate_settings():
         encryption_key=Fernet.generate_key().decode("utf-8"),
         secret_token=base64.b64encode(os.urandom(KEY_LENGTH)).decode("utf-8"),
         flask_secret_key=base64.b64encode(os.urandom(KEY_LENGTH)).decode("utf-8"),
+        oauth_state_token_secret=base64.b64encode(os.urandom(KEY_LENGTH)),
     )
 
     return output

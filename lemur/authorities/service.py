@@ -11,12 +11,15 @@
 
 import json
 
+from flask import current_app
+
 from lemur import database
-from lemur.common.utils import truthiness
+from lemur.common.utils import truthiness, data_encrypt
 from lemur.extensions import metrics
 from lemur.authorities.models import Authority
 from lemur.certificates.models import Certificate
 from lemur.roles import service as role_service
+from lemur.logs import service as log_service
 
 from lemur.certificates.service import upload
 
@@ -35,6 +38,23 @@ def update(authority_id, description, owner, active, roles):
     authority.active = active
     authority.description = description
     authority.owner = owner
+
+    log_service.audit_log("update_authority", authority.name, "Updating authority")  # check ui what can be updated
+    return database.update(authority)
+
+
+def update_options(authority_id, options):
+    """
+    Update an authority with new options.
+
+    :param authority_id:
+    :param options: the new options to be saved into the authority
+    :return:
+    """
+
+    authority = get(authority_id)
+
+    authority.options = options
 
     return database.update(authority)
 
@@ -59,6 +79,8 @@ def mint(**kwargs):
         kwargs["plugin"]["plugin_object"].title,
         kwargs["creator"],
     )
+
+    log_service.audit_log("create_authority_with_issuer", issuer.title, "Created new authority")
     return body, private_key, chain, roles
 
 
@@ -101,6 +123,12 @@ def create(**kwargs):
     """
     Creates a new authority.
     """
+    ca_name = kwargs.get("name")
+    if get_by_name(ca_name):
+        raise Exception(f"Authority with name {ca_name} already exists")
+    if role_service.get_by_name(f"{ca_name}_admin") or role_service.get_by_name(f"{ca_name}_operator"):
+        raise Exception(f"Admin and/or operator roles for authority {ca_name} already exist")
+
     body, private_key, chain, roles = mint(**kwargs)
 
     kwargs["creator"].roles = list(set(list(kwargs["creator"].roles) + roles))
@@ -117,11 +145,20 @@ def create(**kwargs):
     cert = upload(**kwargs)
     kwargs["authority_certificate"] = cert
     if kwargs.get("plugin", {}).get("plugin_options", []):
+        # encrypt the private key before persisting in DB
+        for option in kwargs.get("plugin").get("plugin_options"):
+            if option["name"] == "acme_private_key" and option["value"]:
+                option["value"] = data_encrypt(option["value"])
         kwargs["options"] = json.dumps(kwargs["plugin"]["plugin_options"])
 
     authority = Authority(**kwargs)
     authority = database.create(authority)
     kwargs["creator"].authorities.append(authority)
+
+    log_service.audit_log("create_authority", ca_name, "Created new authority")
+
+    issuer = kwargs["plugin"]["plugin_object"]
+    current_app.logger.warning(f"Created new authority {ca_name} with issuer {issuer.title}")
 
     metrics.send(
         "authority_created", "counter", 1, metric_tags=dict(owner=authority.owner)
@@ -158,6 +195,16 @@ def get_by_name(authority_name):
     :return:
     """
     return database.get(Authority, authority_name, field="name")
+
+
+def get_authorities_by_name(authority_names):
+    """
+    Retrieves an authority given it's name.
+
+    :param authority_names: list with authority names to match
+    :return:
+    """
+    return Authority.query.filter(Authority.name.in_(authority_names)).all()
 
 
 def get_authority_role(ca_name, creator=None):

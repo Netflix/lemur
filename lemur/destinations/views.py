@@ -64,7 +64,7 @@ class DestinationsList(AuthenticatedResource):
                         "required": true,
                         "value": "111111111111111",
                         "helpMessage": "Must be a valid AWS account number!",
-                        "validation": "/^[0-9]{12,12}$/",
+                        "validation": "^[0-9]{12,12}$",
                         "type": "str"
                     }],
                     "id": 4,
@@ -74,7 +74,7 @@ class DestinationsList(AuthenticatedResource):
                             "required": true,
                             "value": "111111111111111",
                             "helpMessage": "Must be a valid AWS account number!",
-                            "validation": "/^[0-9]{12,12}$/",
+                            "validation": "^[0-9]{12,12}$",
                             "type": "str"
                         }],
                         "description": "Allow the uploading of certificates to AWS IAM",
@@ -113,6 +113,7 @@ class DestinationsList(AuthenticatedResource):
               POST /destinations HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                 "description": "test33",
@@ -121,7 +122,7 @@ class DestinationsList(AuthenticatedResource):
                     "required": true,
                     "value": "34324324",
                     "helpMessage": "Must be a valid AWS account number!",
-                    "validation": "/^[0-9]{12,12}$/",
+                    "validation": "^[0-9]{12,12}$",
                     "type": "str"
                 }],
                 "id": 4,
@@ -131,7 +132,7 @@ class DestinationsList(AuthenticatedResource):
                         "required": true,
                         "value": "34324324",
                         "helpMessage": "Must be a valid AWS account number!",
-                        "validation": "/^[0-9]{12,12}$/",
+                        "validation": "^[0-9]{12,12}$",
                         "type": "str"
                     }],
                     "description": "Allow the uploading of certificates to AWS IAM",
@@ -156,7 +157,7 @@ class DestinationsList(AuthenticatedResource):
                     "required": true,
                     "value": "34324324",
                     "helpMessage": "Must be a valid AWS account number!",
-                    "validation": "/^[0-9]{12,12}$/",
+                    "validation": "^[0-9]{12,12}$",
                     "type": "str"
                 }],
                 "id": 4,
@@ -166,7 +167,7 @@ class DestinationsList(AuthenticatedResource):
                         "required": true,
                         "value": "111111111111111",
                         "helpMessage": "Must be a valid AWS account number!",
-                        "validation": "/^[0-9]{12,12}$/",
+                        "validation": "^[0-9]{12,12}$",
                         "type": "str"
                     }],
                     "description": "Allow the uploading of certificates to AWS IAM",
@@ -224,7 +225,7 @@ class Destinations(AuthenticatedResource):
                     "required": true,
                     "value": "111111111111111",
                     "helpMessage": "Must be a valid AWS account number!",
-                    "validation": "/^[0-9]{12,12}$/",
+                    "validation": "^[0-9]{12,12}$",
                     "type": "str"
                 }],
                 "id": 4,
@@ -234,7 +235,7 @@ class Destinations(AuthenticatedResource):
                         "required": true,
                         "value": "111111111111111",
                         "helpMessage": "Must be a valid AWS account number!",
-                        "validation": "/^[0-9]{12,12}$/",
+                        "validation": "^[0-9]{12,12}$",
                         "type": "str"
                     }],
                     "description": "Allow the uploading of certificates to AWS IAM",
@@ -264,6 +265,7 @@ class Destinations(AuthenticatedResource):
               POST /destinations/1 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
 
               {
@@ -273,7 +275,7 @@ class Destinations(AuthenticatedResource):
                     "required": true,
                     "value": "34324324",
                     "helpMessage": "Must be a valid AWS account number!",
-                    "validation": "/^[0-9]{12,12}$/",
+                    "validation": "^[0-9]{12,12}$",
                     "type": "str"
                 }],
                 "id": 4,
@@ -283,7 +285,7 @@ class Destinations(AuthenticatedResource):
                         "required": true,
                         "value": "34324324",
                         "helpMessage": "Must be a valid AWS account number!",
-                        "validation": "/^[0-9]{12,12}$/",
+                        "validation": "^[0-9]{12,12}$",
                         "type": "str"
                     }],
                     "description": "Allow the uploading of certificates to AWS IAM",
@@ -309,7 +311,7 @@ class Destinations(AuthenticatedResource):
                     "required": true,
                     "value": "111111111111111",
                     "helpMessage": "Must be a valid AWS account number!",
-                    "validation": "/^[0-9]{12,12}$/",
+                    "validation": "^[0-9]{12,12}$",
                     "type": "str"
                 }],
                 "id": 4,
@@ -319,7 +321,7 @@ class Destinations(AuthenticatedResource):
                         "required": true,
                         "value": "111111111111111",
                         "helpMessage": "Must be a valid AWS account number!",
-                        "validation": "/^[0-9]{12,12}$/",
+                        "validation": "^[0-9]{12,12}$",
                         "type": "str"
                     }],
                     "description": "Allow the uploading of certificates to AWS IAM",
@@ -338,6 +340,7 @@ class Destinations(AuthenticatedResource):
         return service.update(
             destination_id,
             data["label"],
+            data["plugin"]["slug"],
             data["plugin"]["plugin_options"],
             data["description"],
         )
@@ -385,7 +388,7 @@ class CertificateDestinations(AuthenticatedResource):
                         "required": true,
                         "value": "111111111111111",
                         "helpMessage": "Must be a valid AWS account number!",
-                        "validation": "/^[0-9]{12,12}$/",
+                        "validation": "^[0-9]{12,12}$",
                         "type": "str"
                     }],
                     "id": 4,
@@ -395,7 +398,7 @@ class CertificateDestinations(AuthenticatedResource):
                             "required": true,
                             "value": "111111111111111",
                             "helpMessage": "Must be a valid AWS account number!",
-                            "validation": "/^[0-9]{12,12}$/",
+                            "validation": "^[0-9]{12,12}$",
                             "type": "str"
                         }],
                         "description": "Allow the uploading of certificates to AWS IAM",
@@ -422,7 +425,7 @@ class CertificateDestinations(AuthenticatedResource):
 
 
 class DestinationsStats(AuthenticatedResource):
-    """ Defines the 'certificates' stats endpoint """
+    """ Defines the 'destinations' stats endpoint """
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()

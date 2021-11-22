@@ -104,7 +104,7 @@ The `IssuerPlugin` exposes four functions functions::
 
     def create_certificate(self, csr, issuer_options):
         # requests.get('a third party')
-    def revoke_certificate(self, certificate, comments):
+    def revoke_certificate(self, certificate, reason):
         # requests.put('a third party')
     def get_ordered_certificate(self, order_id):
         # requests.get('already existing certificate')
@@ -145,8 +145,7 @@ The `IssuerPlugin` doesn't have any options like Destination, Source, and Notifi
 any fields you might need to submit a request to a third party. If there are additional options you need
 in your plugin feel free to open an issue, or look into adding additional options to issuers yourself.
 
-Asynchronous Certificates
-^^^^^^^^^^^^^^^^^^^^^^^^^
+**Asynchronous Certificates**
 An issuer may take some time to actually issue a certificate for an order.  In this case, a `PendingCertificate` is returned, which holds information to recreate a `Certificate` object at a later time.  Then, `get_ordered_certificate()` should be run periodically via `python manage.py pending_certs fetch -i all` to attempt to retrieve an ordered certificate::
 
     def get_ordered_ceriticate(self, order_id):
@@ -154,9 +153,10 @@ An issuer may take some time to actually issue a certificate for an order.  In t
         # retrieve an order, and check if there is an issued certificate attached to it
 
 `cancel_ordered_certificate()` should be implemented to allow an ordered certificate to be canceled before it is issued::
-    def cancel_ordered_certificate(self, pending_cert, **kwargs):
-        # pending_cert should contain the necessary information to match an order
-        # kwargs can be given to provide information to the issuer for canceling
+
+        def cancel_ordered_certificate(self, pending_cert, **kwargs):
+            # pending_cert should contain the necessary information to match an order
+            # kwargs can be given to provide information to the issuer for canceling
 
 Destination
 -----------
@@ -180,12 +180,14 @@ that can be used to help define sub-destinations.
 
 For example, if we look at the aws-destination plugin we can see that it defines an `accountNumber` option::
 
+    from lemur.common.utils import check_validation
+
     options = [
         {
             'name': 'accountNumber',
             'type': 'int',
             'required': True,
-            'validation': '/^[0-9]{12,12}$/',
+            'validation': check_validation('/^[0-9]{12,12}$/'),
             'helpMessage': 'Must be a valid AWS account number!',
         }
     ]
@@ -203,7 +205,7 @@ The schema for defining plugin options are pretty straightforward:
       - **Select** creates a select box that gives the user a list of options
           - When used a `available` key must be provided with a list of selectable options
   - **Required** determines if this option is required, this **must be a boolean value**
-  - **Validation** simple JavaScript regular expression used to give the user an indication if the input value is valid
+  - **Validation** simple Python (re) and JavaScript regular expression used to give the user an indication if the input value is valid. Use `check_validation()` from `lemur.common.utils` to ensure your expression will compile successfully prior to use.
   - **HelpMessage** simple string that provides more detail about the option
 
 .. Note::
@@ -215,18 +217,22 @@ Notification
 ------------
 
 Lemur includes the ability to create Email notifications by **default**. These notifications
-currently come in the form of expiration notices. Lemur periodically checks certifications expiration dates and
+currently come in the form of expiration and rotation notices for all certificates, expiration notices for CA certificates,
+and ACME certificate creation failure notices. Lemur periodically checks certificate expiration dates and
 determines if a given certificate is eligible for notification. There are currently only two parameters used to
 determine if a certificate is eligible; validity expiration (date the certificate is no longer valid) and the number
 of days the current date (UTC) is from that expiration date.
 
-There are currently two objects that available for notification plugins the first is `NotficationPlugin`. This is the base object for
-any notification within Lemur. Currently the only support notification type is an certificate expiration notification. If you
+Certificate expiration notifications can also be configured for Slack or AWS SNS. Other notifications are not configurable.
+Notifications sent to a certificate owner and security team (`LEMUR_SECURITY_TEAM_EMAIL`) can currently only be sent via email.
+
+There are currently two objects that are available for notification plugins. The first is `NotificationPlugin`, which is the base object for
+any notification within Lemur. Currently the only supported notification type is a certificate expiration notification. If you
 are trying to create a new notification type (audit, failed logins, etc.) this would be the object to base your plugin on.
 You would also then need to build additional code to trigger the new notification type.
 
-The second is `ExpirationNotificationPlugin`, this object inherits from `NotificationPlugin` object.
-You will most likely want to base your plugin on, if you want to add new channels for expiration notices (Slack, HipChat, Jira, etc.). It adds default options that are required by
+The second is `ExpirationNotificationPlugin`, which inherits from the `NotificationPlugin` object.
+You will most likely want to base your plugin on this object if you want to add new channels for expiration notices (HipChat, Jira, etc.). It adds default options that are required by
 all expiration notifications (interval, unit). This interface expects for the child to define the following function::
 
     def send(self, notification_type, message, targets, options, **kwargs):
@@ -279,6 +285,32 @@ The `ExportPlugin` object requires the implementation of one function::
 
 .. note::
     Support of various formats sometimes relies on external tools system calls. Always be mindful of sanitizing any input to these calls.
+
+
+Membership
+----------
+Membership plugin allows Lemur to learn and validate membership details from an external service. Currently the plugin is configured to
+support 3 APIs::
+
+    def does_principal_exist(self, principal_email):
+        raise NotImplementedError
+
+    def does_group_exist(self, group_email):
+        # check if a group (Team DL) exists
+
+    def retrieve_user_memberships(self, user_id):
+        # get a list of groups a user belongs to
+
+
+Custom TLS Provider
+-------------------
+
+Managing TLS at the enterprise scale could be hard and often organizations offer custom wrapper implementations. It could
+be ideal to use those while making calls to internal services. The `TLSPlugin` would help to achieve this. It requires the
+implementation of one function which creates a TLS session::
+
+     def session(self, server_application):
+        # return active session
 
 
 Testing

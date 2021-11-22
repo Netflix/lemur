@@ -4,7 +4,10 @@
       Signing Algorithm
     </label>
     <div class="col-sm-10">
-      <select class="form-control" ng-model="authority.signingAlgorithm" ng-options="option for option in ['sha1WithRSA', 'sha256WithRSA', 'sha256WithECDSA', 'SHA384withECDSA', 'SHA512withECDSA']" ng-init="authority.signingAlgorithm = 'sha256WithRSA'"></select>
+      <select class="form-control" ng-model="authority.signingAlgorithm"
+              ng-options="option for option in ['sha1WithRSA', 'sha256WithRSA', 'sha256WithECDSA', 'SHA384withECDSA', 'SHA512withECDSA']"
+              ng-init="authority.signingAlgorithm = 'sha256WithECDSA'">
+      </select>
     </div>
   </div>
   <div class="form-group">
@@ -12,7 +15,10 @@
       Sensitivity
     </label>
     <div class="col-sm-10">
-      <select class="form-control" ng-model="authority.sensitivity" ng-options="option for option in ['medium', 'high']" ng-init="authority.sensitivity = 'medium'"></select>
+      <select class="form-control" ng-model="authority.sensitivity"
+              ng-options="option for option in ['medium', 'high']"
+              ng-init="authority.sensitivity = 'medium'">
+      </select>
     </div>
   </div>
   <div class="form-group">
@@ -20,8 +26,10 @@
       Key Type
     </label>
     <div class="col-sm-10">
-      <select class="form-control" ng-model="authority.keyType" ng-options="option for option in ['RSA2048', 'RSA4096', 'ECCPRIME192V1', 'ECCPRIME256V1', 'ECCSECP192R1', 'ECCSECP224R1', 'ECCSECP256R1', 'ECCSECP384R1', 'ECCSECP521R1', 'ECCSECP256K1',
-      'ECCSECT163K1', 'ECCSECT233K1', 'ECCSECT283K1', 'ECCSECT409K1', 'ECCSECT571K1', 'ECCSECT163R2', 'ECCSECT233R1', 'ECCSECT283R1', 'ECCSECT409R1', 'ECCSECT571R2']" ng-init="authority.keyType = 'RSA2048'"></select>
+      <select class="form-control" ng-model="authority.keyType"
+              ng-options="option for option in ['RSA2048', 'RSA4096', 'ECCPRIME256V1', 'ECCSECP384R1', 'ECCSECP521R1']"
+              ng-init="authority.keyType = 'ECCPRIME256V1'">
+      </select>
     </div>
   </div>
   <div ng-show="authority.sensitivity == 'high'" class="form-group">
@@ -64,11 +72,28 @@
           <div class="col-sm-10">
             <input name="sub" ng-if="item.type == 'int'" type="number" ng-pattern="item.validation?item.validation:'^[0-9]+$'"
                    class="form-control" ng-model="item.value"/>
+
             <select name="sub" ng-if="item.type == 'select'" class="form-control" ng-options="i for i in item.available"
                     ng-model="item.value"></select>
+
+            <!-- DestSelect options -->
+            <ui-select class="input-md" ng-model="item.value" theme="bootstrap" title="choose a destination" ng-if="item.type == 'destinationSelect'">
+                <ui-select-match placeholder="select an destination...">{{$select.selected.label}}</ui-select-match>
+                <ui-select-choices class="form-control"
+                             refresh="getDestinations()"
+                             refresh-delay="300"
+                             repeat="destination.id as destination in destinations | filter: $select.search">
+                    <div ng-bind-html="destination.label | highlight: $select.search"></div>
+                    <small>
+                        <span ng-bind-html="''+destination.description | highlight: $select.search"></span>
+                    </small>
+                </ui-select-choices>
+            </ui-select>
+
             <input name="sub" ng-if="item.type == 'bool'" class="form-control" type="checkbox" ng-model="item.value">
             <input name="sub" ng-if="item.type == 'str'" type="text" class="form-control" ng-model="item.value"/>
               <textarea name="sub" ng-if="item.type == 'textarea'" class="form-control" ng-model="item.value"></textarea>
+
             <div ng-if="item.type == 'export-plugin'">
               <form name="exportForm" class="form-horizontal" role="form" novalidate>
                 <select class="form-control" ng-model="item.value"

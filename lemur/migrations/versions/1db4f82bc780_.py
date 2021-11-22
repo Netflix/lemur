@@ -10,11 +10,21 @@ Create Date: 2018-08-03 12:56:44.565230
 revision = "1db4f82bc780"
 down_revision = "3adfdd6598df"
 
-import logging
-
 from alembic import op
 
-log = logging.getLogger(__name__)
+from flask import current_app
+from logging import Formatter, FileHandler, getLogger
+
+log = getLogger(__name__)
+handler = FileHandler(current_app.config.get("LOG_UPGRADE_FILE", "db_upgrade.log"))
+handler.setFormatter(
+    Formatter(
+        "%(asctime)s %(levelname)s: %(message)s " "[in %(pathname)s:%(lineno)d]"
+    )
+)
+handler.setLevel(current_app.config.get("LOG_LEVEL", "DEBUG"))
+log.setLevel(current_app.config.get("LOG_LEVEL", "DEBUG"))
+log.addHandler(handler)
 
 
 def upgrade():

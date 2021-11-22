@@ -16,13 +16,14 @@ def common_name(value):
     # Common name could be a domain name, or a human-readable name of the subject (often used in CA names or client
     # certificates). As a simple heuristic, we assume that human-readable names always include a space.
     # However, to avoid confusion for humans, we also don't count spaces at the beginning or end of the string.
-    if " " not in value.strip():
+    value = value.strip()
+    if value and " " not in value:
         return sensitive_domain(value)
 
 
 def sensitive_domain(domain):
     """
-    Checks if user has the admin role, the domain does not match sensitive domains and whitelisted domain patterns.
+    Checks if user has the admin role, the domain does not match sensitive domains and allowed domain patterns.
     :param domain: domain name (str)
     :return:
     """
@@ -30,10 +31,10 @@ def sensitive_domain(domain):
         # User has permission, no need to check anything
         return
 
-    whitelist = current_app.config.get("LEMUR_WHITELISTED_DOMAINS", [])
-    if whitelist and not any(re.match(pattern, domain) for pattern in whitelist):
+    allowlist = current_app.config.get("LEMUR_ALLOWED_DOMAINS", [])
+    if allowlist and not any(re.match(pattern, domain) for pattern in allowlist):
         raise ValidationError(
-            "Domain {0} does not match whitelisted domain patterns. "
+            "Domain {0} does not match allowed domain patterns. "
             "Contact an administrator to issue the certificate.".format(domain)
         )
 

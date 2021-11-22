@@ -7,8 +7,10 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from flask import Blueprint
+from sentry_sdk import capture_exception
+
 from lemur.database import db
-from lemur.extensions import sentry
+
 
 mod = Blueprint("healthCheck", __name__)
 
@@ -19,7 +21,7 @@ def health():
         if healthcheck(db):
             return "ok"
     except Exception:
-        sentry.captureException()
+        capture_exception()
         return "db check failed"
 
 

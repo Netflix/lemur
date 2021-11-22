@@ -10,7 +10,6 @@
 
 .. moduleauthor:: Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
 """
-import base64
 import itertools
 import os
 
@@ -18,7 +17,7 @@ import requests
 from flask import current_app
 
 from lemur.common.defaults import common_name
-from lemur.common.utils import parse_certificate
+from lemur.common.utils import parse_certificate, base64encode, check_validation
 from lemur.plugins.bases import DestinationPlugin
 
 DEFAULT_API_VERSION = "v1"
@@ -73,12 +72,6 @@ def _resolve_uri(k8s_base_uri, namespace, kind, name=None, api_ver=DEFAULT_API_V
     )
 
 
-# Performs Base64 encoding of string to string using the base64.b64encode() function
-# which encodes bytes to bytes.
-def base64encode(string):
-    return base64.b64encode(string.encode()).decode()
-
-
 def build_secret(secret_format, secret_name, body, private_key, cert_chain):
     secret = {
         "apiVersion": "v1",
@@ -96,7 +89,7 @@ def build_secret(secret_format, secret_name, body, private_key, cert_chain):
     if secret_format == "TLS":
         secret["type"] = "kubernetes.io/tls"
         secret["data"] = {
-            "tls.crt": base64encode(body),
+            "tls.crt": base64encode("%s\n%s" % (body, cert_chain)),
             "tls.key": base64encode(private_key),
         }
     if secret_format == "Certificate":
@@ -123,7 +116,7 @@ class KubernetesDestinationPlugin(DestinationPlugin):
             # at any point in the string proved very challenging and had a tendency to
             # cause my browser to hang. The specified expression will allow any valid string
             # but will also accept many invalid strings.
-            "validation": "(?:[a-z0-9.-]|\\{common_name\\})+",
+            "validation": check_validation("(?:[a-z0-9.-]|\\{common_name\\})+"),
             "helpMessage": 'Must be a valid secret name, possibly including "{common_name}"',
             "default": "{common_name}",
         },
@@ -131,7 +124,7 @@ class KubernetesDestinationPlugin(DestinationPlugin):
             "name": "kubernetesURL",
             "type": "str",
             "required": False,
-            "validation": "https?://[a-zA-Z0-9.-]+(?::[0-9]+)?",
+            "validation": check_validation("https?://[a-zA-Z0-9.-]+(?::[0-9]+)?"),
             "helpMessage": "Must be a valid Kubernetes server URL!",
             "default": "https://kubernetes.default",
         },
@@ -139,14 +132,14 @@ class KubernetesDestinationPlugin(DestinationPlugin):
             "name": "kubernetesAuthToken",
             "type": "str",
             "required": False,
-            "validation": "[0-9a-zA-Z-_.]+",
+            "validation": check_validation("[0-9a-zA-Z-_.]+"),
             "helpMessage": "Must be a valid Kubernetes server Token!",
         },
         {
             "name": "kubernetesAuthTokenFile",
             "type": "str",
             "required": False,
-            "validation": "(/[^/]+)+",
+            "validation": check_validation("(/[^/]+)+"),
             "helpMessage": "Must be a valid file path!",
             "default": "/var/run/secrets/kubernetes.io/serviceaccount/token",
         },
@@ -154,14 +147,14 @@ class KubernetesDestinationPlugin(DestinationPlugin):
             "name": "kubernetesServerCertificate",
             "type": "textarea",
             "required": False,
-            "validation": "-----BEGIN CERTIFICATE-----[a-zA-Z0-9/+\\s\\r\\n]+-----END CERTIFICATE-----",
+            "validation": check_validation("-----BEGIN CERTIFICATE-----[a-zA-Z0-9/+\\s\\r\\n]+-----END CERTIFICATE-----"),
             "helpMessage": "Must be a valid Kubernetes server Certificate!",
         },
         {
             "name": "kubernetesServerCertificateFile",
             "type": "str",
             "required": False,
-            "validation": "(/[^/]+)+",
+            "validation": check_validation("(/[^/]+)+"),
             "helpMessage": "Must be a valid file path!",
             "default": "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt",
         },
@@ -169,14 +162,14 @@ class KubernetesDestinationPlugin(DestinationPlugin):
             "name": "kubernetesNamespace",
             "type": "str",
             "required": False,
-            "validation": "[a-z0-9]([-a-z0-9]*[a-z0-9])?",
+            "validation": check_validation("[a-z0-9]([-a-z0-9]*[a-z0-9])?"),
             "helpMessage": "Must be a valid Kubernetes Namespace!",
         },
         {
             "name": "kubernetesNamespaceFile",
             "type": "str",
             "required": False,
-            "validation": "(/[^/]+)+",
+            "validation": check_validation("(/[^/]+)+"),
             "helpMessage": "Must be a valid file path!",
             "default": "/var/run/secrets/kubernetes.io/serviceaccount/namespace",
         },

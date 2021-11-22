@@ -11,32 +11,34 @@ import arrow
 from cryptography import x509
 from flask import current_app
 from idna.core import InvalidCodepoint
+from sentry_sdk import capture_exception
 from sqlalchemy import (
     event,
     Integer,
     ForeignKey,
     String,
-    PassiveDefault,
+    DefaultClause,
     func,
     Column,
     Text,
     Boolean,
     Index,
 )
+from sqlalchemy.dialects import postgresql
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy.sql.expression import case, extract
 from sqlalchemy_utils.types.arrow import ArrowType
 from werkzeug.utils import cached_property
+
 
 from lemur.common import defaults, utils, validators
 from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
 from lemur.database import db
 from lemur.domains.models import Domain
 from lemur.extensions import metrics
-from lemur.extensions import sentry
 from lemur.models import (
-    certificate_associations,
     certificate_source_associations,
     certificate_destination_associations,
     certificate_notification_associations,
@@ -109,7 +111,9 @@ class Certificate(db.Model):
             "name",
             postgresql_ops={"name": "gin_trgm_ops"},
             postgresql_using="gin",
-        ),
+        )
+        # Index for ix_root_authority_id canot be created here, and is only created in the migration file
+        # since conditional indexes are not supported
     )
     id = Column(Integer, primary_key=True)
     ix = Index(
@@ -128,6 +132,8 @@ class Certificate(db.Model):
 
     issuer = Column(String(128))
     serial = Column(String(128))
+    serial_ix = Index("ix_certificates_serial", "serial")
+
     cn = Column(String(128))
     deleted = Column(Boolean, index=True, default=False)
     dns_provider_id = Column(
@@ -138,7 +144,7 @@ class Certificate(db.Model):
     not_after = Column(ArrowType)
     not_after_ix = Index("ix_certificates_not_after", not_after.desc())
 
-    date_created = Column(ArrowType, PassiveDefault(func.now()), nullable=False)
+    date_created = Column(ArrowType, DefaultClause(func.now()), nullable=False)
 
     signing_algorithm = Column(String(128))
     status = Column(String(128))
@@ -167,9 +173,7 @@ class Certificate(db.Model):
     sources = relationship(
         "Source", secondary=certificate_source_associations, backref="certificate"
     )
-    domains = relationship(
-        "Domain", secondary=certificate_associations, backref="certificate"
-    )
+    domains = association_proxy('certificate_associations', 'domain')
     roles = relationship("Role", secondary=roles_certificates, backref="certificate")
     replaces = relationship(
         "Certificate",
@@ -184,7 +188,6 @@ class Certificate(db.Model):
         "PendingCertificate",
         secondary=pending_cert_replacement_associations,
         backref="pending_replace",
-        viewonly=True,
     )
 
     logs = relationship("Log", backref="certificate")
@@ -203,19 +206,6 @@ class Certificate(db.Model):
         self.not_after = defaults.not_after(cert)
         self.serial = defaults.serial(cert)
 
-        # when destinations are appended they require a valid name.
-        if kwargs.get("name"):
-            self.name = get_or_increase_name(
-                defaults.text_to_slug(kwargs["name"]), self.serial
-            )
-        else:
-            self.name = get_or_increase_name(
-                defaults.certificate_name(
-                    self.cn, self.issuer, self.not_before, self.not_after, self.san
-                ),
-                self.serial,
-            )
-
         self.owner = kwargs["owner"]
 
         if kwargs.get("private_key"):
@@ -228,7 +218,6 @@ class Certificate(db.Model):
             self.csr = kwargs["csr"].strip()
 
         self.notify = kwargs.get("notify", True)
-        self.destinations = kwargs.get("destinations", [])
         self.notifications = kwargs.get("notifications", [])
         self.description = kwargs.get("description")
         self.roles = list(set(kwargs.get("roles", [])))
@@ -244,6 +233,22 @@ class Certificate(db.Model):
 
         for domain in defaults.domains(cert):
             self.domains.append(Domain(name=domain))
+
+        # when destinations are appended they require a valid name
+        # do not attempt to modify self.destinations before this step
+        if kwargs.get("name"):
+            self.name = get_or_increase_name(
+                defaults.text_to_slug(kwargs["name"]), self.serial
+            )
+        else:
+            self.name = get_or_increase_name(
+                defaults.certificate_name(
+                    self.cn, self.issuer, self.not_before, self.not_after, self.san, self.domains
+                ),
+                self.serial,
+            )
+
+        self.destinations = kwargs.get("destinations", [])
 
         # Check integrity before saving anything into the database.
         # For user-facing API calls, validation should also be done in schema validators.
@@ -316,20 +321,6 @@ class Certificate(db.Model):
     @property
     def validity_range(self):
         return self.not_after - self.not_before
-
-    @property
-    def max_issuance_days(self):
-        public_CA = current_app.config.get("PUBLIC_CA_AUTHORITY_NAMES", [])
-        if self.name.lower() in [ca.lower() for ca in public_CA]:
-            return current_app.config.get("PUBLIC_CA_MAX_VALIDITY_DAYS", 397)
-
-    @property
-    def default_validity_days(self):
-        public_CA = current_app.config.get("PUBLIC_CA_AUTHORITY_NAMES", [])
-        if self.name.lower() in [ca.lower() for ca in public_CA]:
-            return current_app.config.get("PUBLIC_CA_MAX_VALIDITY_DAYS", 397)
-
-        return current_app.config.get("DEFAULT_VALIDITY_DAYS", 365)   # 1 year default
 
     @property
     def subject(self):
@@ -439,12 +430,12 @@ class Certificate(db.Model):
                         "Custom OIDs not yet supported for clone operation."
                     )
         except InvalidCodepoint as e:
-            sentry.captureException()
+            capture_exception()
             current_app.logger.warning(
                 "Unable to parse extensions due to underscore in dns name"
             )
         except ValueError as e:
-            sentry.captureException()
+            capture_exception()
             current_app.logger.warning("Unable to parse")
             current_app.logger.exception(e)
 
@@ -452,6 +443,34 @@ class Certificate(db.Model):
 
     def __repr__(self):
         return "Certificate(name={name})".format(name=self.name)
+
+
+class CertificateAssociation(db.Model):
+    __tablename__ = 'certificate_associations'
+    __table_args__ = (
+        Index(
+            "certificate_associations_ix",
+            "domain_id",
+            "certificate_id",
+        ),
+        Index(
+            "certificate_associations_certificate_id_idx",
+            "certificate_id",
+        ),
+    )
+    domain_id = Column(Integer, ForeignKey("domains.id"), primary_key=True)
+    certificate_id = Column(Integer, ForeignKey("certificates.id"), primary_key=True)
+    ports = Column(postgresql.ARRAY(Integer))
+    certificate = relationship(Certificate,
+                               backref=backref("certificate_associations",
+                                               cascade="all, delete-orphan")
+                               )
+    domain = relationship("Domain")
+
+    def __init__(self, domain=None, certificate=None, ports=None):
+        self.certificate = certificate
+        self.domain = domain
+        self.ports = ports
 
 
 @event.listens_for(Certificate.destinations, "append")
@@ -480,7 +499,7 @@ def update_destinations(target, value, initiator):
             )
             status = SUCCESS_METRIC_STATUS
     except Exception as e:
-        sentry.captureException()
+        capture_exception()
         raise
 
     metrics.send(

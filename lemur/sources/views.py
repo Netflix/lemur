@@ -65,7 +65,7 @@ class SourcesList(AuthenticatedResource):
                                 "required": true,
                                 "value": 111111111112,
                                 "helpMessage": "Must be a valid AWS account number!",
-                                "validation": "/^[0-9]{12,12}$/",
+                                "validation": "^[0-9]{12,12}$",
                                 "type": "int"
                             }
                         ],
@@ -106,6 +106,7 @@ class SourcesList(AuthenticatedResource):
               POST /sources HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                 "options": [
@@ -114,7 +115,7 @@ class SourcesList(AuthenticatedResource):
                         "required": true,
                         "value": 111111111112,
                         "helpMessage": "Must be a valid AWS account number!",
-                        "validation": "/^[0-9]{12,12}$/",
+                        "validation": "^[0-9]{12,12}$",
                         "type": "int"
                     }
                 ],
@@ -140,7 +141,7 @@ class SourcesList(AuthenticatedResource):
                         "required": true,
                         "value": 111111111112,
                         "helpMessage": "Must be a valid AWS account number!",
-                        "validation": "/^[0-9]{12,12}$/",
+                        "validation": "^[0-9]{12,12}$",
                         "type": "int"
                     }
                 ],
@@ -156,12 +157,19 @@ class SourcesList(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
-        return service.create(
-            data["label"],
-            data["plugin"]["slug"],
-            data["plugin"]["plugin_options"],
-            data["description"],
-        )
+        if "plugin_options" in data["plugin"]:
+            return service.create(
+                data["label"],
+                data["plugin"]["slug"],
+                data["plugin"]["plugin_options"],
+                data["description"],
+            )
+        else:
+            return service.create(
+                data["label"],
+                data["plugin"]["slug"],
+                data["description"],
+            )
 
 
 class Sources(AuthenticatedResource):
@@ -199,7 +207,7 @@ class Sources(AuthenticatedResource):
                         "required": true,
                         "value": 111111111112,
                         "helpMessage": "Must be a valid AWS account number!",
-                        "validation": "/^[0-9]{12,12}$/",
+                        "validation": "^[0-9]{12,12}$",
                         "type": "int"
                     }
                 ],
@@ -230,6 +238,7 @@ class Sources(AuthenticatedResource):
               POST /sources/1 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                 "options": [
@@ -238,7 +247,7 @@ class Sources(AuthenticatedResource):
                         "required": true,
                         "value": 111111111112,
                         "helpMessage": "Must be a valid AWS account number!",
-                        "validation": "/^[0-9]{12,12}$/",
+                        "validation": "^[0-9]{12,12}$",
                         "type": "int"
                     }
                 ],
@@ -264,7 +273,7 @@ class Sources(AuthenticatedResource):
                         "required": true,
                         "value": 111111111112,
                         "helpMessage": "Must be a valid AWS account number!",
-                        "validation": "/^[0-9]{12,12}$/",
+                        "validation": "^[0-9]{12,12}$",
                         "type": "int"
                     }
                 ],
@@ -284,6 +293,7 @@ class Sources(AuthenticatedResource):
         return service.update(
             source_id,
             data["label"],
+            data["plugin"]["slug"],
             data["plugin"]["plugin_options"],
             data["description"],
         )
@@ -332,7 +342,7 @@ class CertificateSources(AuthenticatedResource):
                                 "required": true,
                                 "value": 111111111112,
                                 "helpMessage": "Must be a valid AWS account number!",
-                                "validation": "/^[0-9]{12,12}$/",
+                                "validation": "^[0-9]{12,12}$",
                                 "type": "int"
                             }
                         ],

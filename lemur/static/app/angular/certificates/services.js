@@ -38,7 +38,7 @@ angular.module('lemur')
             }
           }
         },
-        attachSubAltName: function () {
+        attachSubAltName: function (form) {
           if (this.extensions === undefined) {
             this.extensions = {};
           }
@@ -53,15 +53,32 @@ angular.module('lemur')
 
           if (angular.isString(this.subAltValue) && angular.isString(this.subAltType)) {
             this.extensions.subAltNames.names.push({'nameType': this.subAltType, 'value': this.subAltValue});
-            //this.findDuplicates();
+          }
+
+          if (angular.isDefined(form)) {
+            // adding SAN makes CN optional
+            form.commonName.$setValidity('required', null);
           }
 
           this.subAltType = null;
           this.subAltValue = null;
         },
-        removeSubAltName: function (index) {
+        removeSubAltName: function (form, index) {
           this.extensions.subAltNames.names.splice(index, 1);
-          //this.findDuplicates();
+
+          let isSanPresent = this.extensions.subAltNames.names.length > 0;
+          if (!isSanPresent) {
+            let commonName = form.commonName.$viewValue;
+            form.commonName.$setValidity('required', angular.isDefined(commonName) && commonName !== '');
+          }
+        },
+        checkCommonNameOptional: function (form) {
+           if (angular.isDefined(this.extensions) && angular.isDefined(this.extensions.subAltNames)) {
+             let isSanPresent = this.extensions.subAltNames.names.length > 0;
+             if (isSanPresent) {
+                form.commonName.$setValidity('required', true);
+              }
+           }
         },
         attachCustom: function () {
           if (this.extensions === undefined) {
@@ -172,12 +189,12 @@ angular.module('lemur')
           // Minimum end date will be same as selected start date
           this.authority.authorityCertificate.minValidityEnd = value;
 
-          if(!this.authority.authorityCertificate || !this.authority.authorityCertificate.maxIssuanceDays) {
+          if(!this.authority.maxIssuanceDays) {
             this.authority.authorityCertificate.maxValidityEnd = this.authority.authorityCertificate.notAfter;
           } else {
             // Move max end date by maxIssuanceDays
             let endDate = new Date(value);
-            endDate.setDate(endDate.getDate() + this.authority.authorityCertificate.maxIssuanceDays);
+            endDate.setDate(endDate.getDate() + this.authority.maxIssuanceDays);
             this.authority.authorityCertificate.maxValidityEnd = endDate;
           }
         }
@@ -289,6 +306,11 @@ angular.module('lemur')
         if (certificate.dnsProviderId) {
           certificate.dnsProvider = {id: certificate.dnsProviderId};
         }
+
+        if(!certificate.keyType) {
+          certificate.keyType = 'RSA2048'; // default algo to select during clone if backend did not return algo
+        }
+
       });
     };
 
@@ -300,16 +322,16 @@ angular.module('lemur')
       return certificate.customGET('key');
     };
 
-    CertificateService.updateNotify = function (certificate) {
-      return certificate.put();
+    CertificateService.updateSwitches = function (certificate) {
+      return certificate.post();
     };
 
     CertificateService.export = function (certificate) {
       return certificate.customPOST(certificate.exportOptions, 'export');
     };
 
-    CertificateService.revoke = function (certificate) {
-      return certificate.customPUT({}, 'revoke');
+    CertificateService.revoke = function (certificate, crlReason) {
+      return certificate.customPUT({'crlReason':crlReason}, 'revoke');
     };
 
     return CertificateService;

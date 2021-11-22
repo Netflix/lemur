@@ -9,8 +9,9 @@ import botocore
 from flask import current_app
 
 from retrying import retry
+from sentry_sdk import capture_exception
 
-from lemur.extensions import metrics, sentry
+from lemur.extensions import metrics
 from lemur.exceptions import InvalidListener
 from lemur.plugins.lemur_aws.sts import sts_client
 
@@ -28,7 +29,7 @@ def retry_throttled(exception):
     except Exception as e:
         current_app.logger.error("ELB retry_throttled triggered", exc_info=True)
         metrics.send("elb_retry", "counter", 1, metric_tags={"exception": str(e)})
-        sentry.captureException()
+        capture_exception()
 
     if isinstance(exception, botocore.exceptions.ClientError):
         if exception.response["Error"]["Code"] == "LoadBalancerNotFound":
@@ -62,6 +63,7 @@ def is_valid(listener_tuple):
     return listener_tuple
 
 
+@sts_client("elb")
 def get_all_elbs(**kwargs):
     """
     Fetches all elbs for a given account/region
@@ -72,9 +74,8 @@ def get_all_elbs(**kwargs):
     elbs = []
     try:
         while True:
-            response = get_elbs(**kwargs)
-
-            elbs += response["LoadBalancerDescriptions"]
+            response = _get_elbs(**kwargs)
+            elbs += _filter_ignored_elbsv1(response["LoadBalancerDescriptions"], **kwargs)
 
             if not response.get("NextMarker"):
                 return elbs
@@ -82,10 +83,68 @@ def get_all_elbs(**kwargs):
                 kwargs.update(dict(Marker=response["NextMarker"]))
     except Exception as e:  # noqa
         metrics.send("get_all_elbs_error", "counter", 1)
-        sentry.captureException()
+        capture_exception()
         raise
 
 
+def _filter_ignored_elbsv1(elbs, **kwargs):
+    """
+    Filter load balancers using the elb.describe_tags method.
+    :param elbs: List of ELBs from elb.describe_load_balancers
+    :param kwargs: must contain a 'client' from @sts_client
+    :return:
+    """
+    return _filter_ignored_elbs(elbs, "LoadBalancerName", "LoadBalancerNames", "LoadBalancerName", **kwargs)
+
+
+def _filter_ignored_elbsv2(elbs, **kwargs):
+    """
+    Filter load balancers using the elbv2.describe_tags method.
+    :param elbs: List of ELBs from elbv2.describe_load_balancers
+    :param kwargs: must contain a 'client' from @sts_client
+    :return:
+    """
+    return _filter_ignored_elbs(elbs, "LoadBalancerArn", "ResourceArns", "ResourceArn", **kwargs)
+
+
+def _filter_ignored_elbs(elbs, key_field, arg_name, response_key_field, **kwargs):
+    """
+    Look up tags and remove any ELBs that should be ignored.
+    :param elbs: List of dictionaries keyed by the field key_field
+    :param key_field: Field value pass in call to describe_tags
+    :param arg_name: Name of the argument to describe_tags
+    :param response_key_field: Name of the field in response list with the object key.
+    :param kwargs: must contain a 'client' from @sts_client
+    :return:
+    """
+    if not elbs:
+        return elbs
+    ignore_tag = current_app.config.get("AWS_ELB_IGNORE_TAG")
+    if not ignore_tag:
+        return elbs
+    try:
+        keys = [elb[key_field] for elb in elbs]
+        client = kwargs.pop("client")
+        # {'TagDescriptions': [{'ResourceArn': 'string','Tags': [{'Key': 'string','Value': 'string'},]}]}
+        tags_list = client.describe_tags(**{arg_name: keys})["TagDescriptions"]
+        ignored_keys = {}
+        for tags in tags_list:
+            key = tags[response_key_field]
+            tags = tags["Tags"]
+            for tag in tags:
+                if tag["Key"] == ignore_tag:
+                    current_app.logger.info(f"Ignoring ELB due to ignore tag: {key}")
+                    ignored_keys[key] = True
+
+        return [elb for elb in elbs if not elb[key_field] in ignored_keys]
+
+    except Exception as e:  # noqa
+        metrics.send("describe_tags_error", "counter", 1)
+        capture_exception()
+        raise
+
+
+@sts_client("elbv2")
 def get_all_elbs_v2(**kwargs):
     """
     Fetches all elbs for a given account/region
@@ -97,8 +156,8 @@ def get_all_elbs_v2(**kwargs):
 
     try:
         while True:
-            response = get_elbs_v2(**kwargs)
-            elbs += response["LoadBalancers"]
+            response = _get_elbs_v2(**kwargs)
+            elbs += _filter_ignored_elbsv2(response["LoadBalancers"], **kwargs)
 
             if not response.get("NextMarker"):
                 return elbs
@@ -106,7 +165,7 @@ def get_all_elbs_v2(**kwargs):
                 kwargs.update(dict(Marker=response["NextMarker"]))
     except Exception as e:  # noqa
         metrics.send("get_all_elbs_v2_error", "counter", 1)
-        sentry.captureException()
+        capture_exception()
         raise
 
 
@@ -140,7 +199,7 @@ def get_listener_arn_from_endpoint(endpoint_name, endpoint_port, **kwargs):
                 "endpoint_port": endpoint_port,
             },
         )
-        sentry.captureException(
+        capture_exception(
             extra={
                 "endpoint_name": str(endpoint_name),
                 "endpoint_port": str(endpoint_port),
@@ -149,9 +208,48 @@ def get_listener_arn_from_endpoint(endpoint_name, endpoint_port, **kwargs):
         raise
 
 
+@sts_client("elbv2")
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=5)
+def get_load_balancer_arn_from_endpoint(endpoint_name, **kwargs):
+    """
+    Get a load balancer ARN from an endpoint.
+    :param endpoint_name:
+    :return:
+    """
+    try:
+        client = kwargs.pop("client")
+        elbs = client.describe_load_balancers(Names=[endpoint_name])
+        if "LoadBalancers" in elbs and elbs["LoadBalancers"]:
+            return elbs["LoadBalancers"][0]["LoadBalancerArn"]
+
+    except Exception as e:  # noqa
+        metrics.send(
+            "get_load_balancer_arn_from_endpoint",
+            "counter",
+            1,
+            metric_tags={
+                "error": str(e),
+                "endpoint_name": endpoint_name,
+            },
+        )
+        capture_exception(
+            extra={
+                "endpoint_name": str(endpoint_name),
+            }
+        )
+        raise
+
+
 @sts_client("elb")
-@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
 def get_elbs(**kwargs):
+    """
+    Fetches one page elb objects for a given account and region.
+    """
+    return _get_elbs(**kwargs)
+
+
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
+def _get_elbs(**kwargs):
     """
     Fetches one page elb objects for a given account and region.
     """
@@ -160,13 +258,23 @@ def get_elbs(**kwargs):
         return client.describe_load_balancers(**kwargs)
     except Exception as e:  # noqa
         metrics.send("get_elbs_error", "counter", 1, metric_tags={"error": str(e)})
-        sentry.captureException()
+        capture_exception()
         raise
 
 
 @sts_client("elbv2")
-@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
 def get_elbs_v2(**kwargs):
+    """
+    Fetches one page of elb objects for a given account and region.
+
+    :param kwargs:
+    :return:
+    """
+    return _get_elbs_v2(**kwargs)
+
+
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
+def _get_elbs_v2(**kwargs):
     """
     Fetches one page of elb objects for a given account and region.
 
@@ -178,7 +286,7 @@ def get_elbs_v2(**kwargs):
         return client.describe_load_balancers(**kwargs)
     except Exception as e:  # noqa
         metrics.send("get_elbs_v2_error", "counter", 1, metric_tags={"error": str(e)})
-        sentry.captureException()
+        capture_exception()
         raise
 
 
@@ -198,7 +306,7 @@ def describe_listeners_v2(**kwargs):
         metrics.send(
             "describe_listeners_v2_error", "counter", 1, metric_tags={"error": str(e)}
         )
-        sentry.captureException()
+        capture_exception()
         raise
 
 
@@ -227,7 +335,7 @@ def describe_load_balancer_policies(load_balancer_name, policy_names, **kwargs):
                 "error": str(e),
             },
         )
-        sentry.captureException(
+        capture_exception(
             extra={
                 "load_balancer_name": str(load_balancer_name),
                 "policy_names": str(policy_names),
@@ -254,7 +362,7 @@ def describe_ssl_policies_v2(policy_names, **kwargs):
             1,
             metric_tags={"policy_names": policy_names, "error": str(e)},
         )
-        sentry.captureException(extra={"policy_names": str(policy_names)})
+        capture_exception(extra={"policy_names": str(policy_names)})
         raise
 
 

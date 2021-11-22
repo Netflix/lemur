@@ -8,13 +8,15 @@
 import requests
 import subprocess
 from flask import current_app
-from lemur.extensions import sentry
-from requests.exceptions import ConnectionError, InvalidSchema
+from requests.exceptions import ConnectionError, InvalidSchema, Timeout
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
+from sentry_sdk import capture_exception
+from subprocess import TimeoutExpired
 
 from lemur.utils import mktempfile
 from lemur.common.utils import parse_certificate
+from lemur.extensions import metrics
 
 crl_cache = {}
 
@@ -54,22 +56,40 @@ def ocsp_verify(cert, cert_path, issuer_chain_path):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
-
-    message, err = p2.communicate()
+    if not isinstance(url, str):
+        url = url.decode("utf-8")
+    try:
+        message, err = p2.communicate(timeout=6)
+    except TimeoutExpired:
+        try:
+            p2.kill()
+        except OSError:
+            # Ignore 'no such process' error
+            pass
+        raise Exception(f"OCSP lookup timed out: {url}, certificate serial number {cert.serial_number:02X}")
 
     p_message = message.decode("utf-8")
 
-    if "error" in p_message or "Error" in p_message:
-        raise Exception("Got error when parsing OCSP url")
+    if "unauthorized" in p_message:
+        # indicates the OCSP server does not know this certificate
+        metrics.send("check_revocation_ocsp_verify", "counter", 1, metric_tags={"status": "unauthorized", "url": url})
+        raise Exception(f"OCSP unauthorized error: {url}, certificate serial number {cert.serial_number:02X}. Response:"
+                        f" {p_message}")
+
+    elif "error" in p_message or "Error" in p_message:
+        metrics.send("check_revocation_ocsp_verify", "counter", 1, metric_tags={"status": "error", "url": url})
+        raise Exception(f"Got error when parsing response from OCSP url: {url}, certificate serial number "
+                        f"{cert.serial_number:02X}. Response: {p_message}")
 
     elif "revoked" in p_message:
         current_app.logger.debug(
-            "OCSP reports certificate revoked: {}".format(cert.serial_number)
+            f"OCSP reports certificate revoked, serial number: {cert.serial_number:02X}"
         )
         return False
 
     elif "good" not in p_message:
-        raise Exception("Did not receive a valid response")
+        raise Exception(f"Did not receive a valid OCSP response from url: {url}, "
+                        f"certificate serial number {cert.serial_number:02X}")
 
     return True
 
@@ -97,17 +117,17 @@ def crl_verify(cert, cert_path):
         point = p.full_name[0].value
 
         if point not in crl_cache:
-            current_app.logger.debug("Retrieving CRL: {}".format(point))
+            current_app.logger.debug(f"Retrieving CRL: {point}, serial {cert.serial_number:02X}")
             try:
-                response = requests.get(point)
+                response = requests.get(point, timeout=(3.05, 6))
 
                 if response.status_code != 200:
-                    raise Exception("Unable to retrieve CRL: {0}".format(point))
+                    raise Exception(f"Unable to retrieve CRL: {point}, serial {cert.serial_number:02X}")
             except InvalidSchema:
                 # Unhandled URI scheme (like ldap://); skip this distribution point.
                 continue
-            except ConnectionError:
-                raise Exception("Unable to retrieve CRL: {0}".format(point))
+            except ConnectionError or Timeout:
+                raise Exception(f"Unable to retrieve CRL: {point}, serial {cert.serial_number:02X}")
 
             crl_cache[point] = x509.load_der_x509_crl(
                 response.content, backend=default_backend()
@@ -154,23 +174,27 @@ def verify(cert_path, issuer_chain_path):
     # OCSP is our main source of truth, in a lot of cases CRLs
     # have been deprecated and are no longer updated
     verify_result = None
+    ocsp_err = 0
+    crl_err = 0
     try:
         verify_result = ocsp_verify(cert, cert_path, issuer_chain_path)
     except Exception as e:
-        sentry.captureException()
-        current_app.logger.exception(e)
+        capture_exception()
+        current_app.logger.warning(e)
+        ocsp_err = 1
 
     if verify_result is None:
         try:
             verify_result = crl_verify(cert, cert_path)
         except Exception as e:
-            sentry.captureException()
-            current_app.logger.exception(e)
+            capture_exception()
+            current_app.logger.warning(e)
+            crl_err = 1
 
     if verify_result is None:
         current_app.logger.debug("Failed to verify {}".format(cert.serial_number))
 
-    return verify_result
+    return verify_result, ocsp_err, crl_err
 
 
 def verify_string(cert_string, issuer_string):
@@ -187,5 +211,5 @@ def verify_string(cert_string, issuer_string):
         with mktempfile() as issuer_tmp:
             with open(issuer_tmp, "w") as f:
                 f.write(issuer_string)
-            status = verify(cert_tmp, issuer_tmp)
-    return status
+            status, ocsp_err, crl_err = verify(cert_tmp, issuer_tmp)
+    return status, ocsp_err, crl_err

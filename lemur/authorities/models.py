@@ -6,6 +6,9 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+import json
+
+from flask import current_app
 from sqlalchemy.orm import relationship
 from sqlalchemy import (
     Column,
@@ -15,7 +18,7 @@ from sqlalchemy import (
     func,
     ForeignKey,
     DateTime,
-    PassiveDefault,
+    DefaultClause,
     Boolean,
 )
 from sqlalchemy.dialects.postgresql import JSON
@@ -36,7 +39,7 @@ class Authority(db.Model):
     plugin_name = Column(String(64))
     description = Column(Text)
     options = Column(JSON)
-    date_created = Column(DateTime, PassiveDefault(func.now()), nullable=False)
+    date_created = Column(DateTime, DefaultClause(func.now()), nullable=False)
     roles = relationship(
         "Role",
         secondary=roles_authorities,
@@ -80,5 +83,52 @@ class Authority(db.Model):
     def plugin(self):
         return plugins.get(self.plugin_name)
 
+    @property
+    def is_cab_compliant(self):
+        """
+        Parse the options to find whether authority is CAB Forum Compliant,
+        i.e., adhering to the CA/Browser Forum Baseline Requirements.
+        Returns None if option is not available
+        """
+        if not self.options:
+            return None
+
+        options_array = json.loads(self.options)
+        if isinstance(options_array, list):
+            for option in options_array:
+                if "name" in option and option["name"] == 'cab_compliant':
+                    return option["value"]
+
+        return None
+
+    @property
+    def max_issuance_days(self):
+        if self.is_cab_compliant:
+            return current_app.config.get("PUBLIC_CA_MAX_VALIDITY_DAYS", 397)
+
+    @property
+    def default_validity_days(self):
+        if self.is_cab_compliant:
+            return current_app.config.get("PUBLIC_CA_MAX_VALIDITY_DAYS", 397)
+
+        return current_app.config.get("DEFAULT_VALIDITY_DAYS", 365)  # 1 year default
+
     def __repr__(self):
         return "Authority(name={name})".format(name=self.name)
+
+    @property
+    def is_cn_optional(self):
+        """
+        Parse the options to find whether common name is treated as an optional field.
+        Returns False if option is not available
+        """
+        if not self.options:
+            return False
+
+        options_array = json.loads(self.options)
+        if isinstance(options_array, list):
+            for option in options_array:
+                if "name" in option and option["name"] == 'cn_optional':
+                    return option["value"]
+
+        return False

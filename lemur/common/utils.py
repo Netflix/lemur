@@ -6,22 +6,30 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+import base64
+import json
 import random
 import re
+import socket
+import ssl
 import string
 
+import OpenSSL
+import pem
 import sqlalchemy
 from cryptography import x509
 from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, ec, padding
-from cryptography.hazmat.primitives.serialization import load_pem_private_key
+from cryptography.hazmat.primitives.serialization import load_pem_private_key, Encoding, pkcs7
 from flask_restful.reqparse import RequestParser
 from sqlalchemy import and_, func
 
 from lemur.constants import CERTIFICATE_KEY_TYPES
 from lemur.exceptions import InvalidConfiguration
+from lemur.utils import Vault
+from sqlalchemy.dialects.postgresql import TEXT
 
 paginated_parser = RequestParser()
 
@@ -33,6 +41,18 @@ paginated_parser.add_argument("filter", type=str, location="args")
 paginated_parser.add_argument("owner", type=str, location="args")
 
 
+def base64encode(string):
+    # Performs Base64 encoding of string to string using the base64.b64encode() function
+    # which encodes bytes to bytes.
+    return base64.b64encode(string.encode()).decode()
+
+
+def base64decode(base64_input):
+    # Performs Base64 decoging of a b64 string to string using the base64.b64encode() function
+    # which encodes bytes to bytes.
+    return base64.b64decode(base64_input.encode()).decode()
+
+
 def get_psuedo_random_string():
     """
     Create a random and strongish challenge.
@@ -42,6 +62,18 @@ def get_psuedo_random_string():
     challenge += "".join(random.choice(string.ascii_lowercase) for x in range(6))
     challenge += "".join(random.choice(string.digits) for x in range(6))  # noqa
     return challenge
+
+
+def get_random_secret(length):
+    """ Similar to get_pseudo_random_string, but accepts a length parameter. """
+    secret_key = ''.join(random.choice(string.ascii_uppercase) for x in range(round(length / 4)))
+    secret_key = secret_key + ''.join(random.choice("~!@#$%^&*()_+") for x in range(round(length / 4)))
+    secret_key = secret_key + ''.join(random.choice(string.ascii_lowercase) for x in range(round(length / 4)))
+    return secret_key + ''.join(random.choice(string.digits) for x in range(round(length / 4)))
+
+
+def get_state_token_secret():
+    return base64.b64encode(get_random_secret(32).encode('utf8'))
 
 
 def parse_certificate(body):
@@ -212,7 +244,7 @@ def generate_private_key(key_type):
         )
     elif "ECC" in key_type:
         return ec.generate_private_key(
-            curve=_CURVE_TYPES[key_type], backend=default_backend()
+            _CURVE_TYPES[key_type], backend=default_backend()
         )
 
 
@@ -292,6 +324,22 @@ def validate_conf(app, required_vars):
             )
 
 
+def check_validation(validation):
+    """
+    Checks that the given validation string compiles successfully.
+
+    :param validation:
+    :return str: The validation pattern, if compilation succeeds
+    """
+
+    try:
+        compiled = re.compile(validation)
+    except re.error as e:
+        raise InvalidConfiguration(f"Validation {validation} couldn't compile. Reason: {e}")
+
+    return compiled.pattern
+
+
 # https://bitbucket.org/zzzeek/sqlalchemy/wiki/UsageRecipes/WindowedRangeQuery
 def column_windows(session, column, windowsize):
     """Return a series of WHERE clauses against
@@ -357,3 +405,91 @@ def find_matching_certificates_by_hash(cert, matching_certs):
         ):
             matching.append(c)
     return matching
+
+
+def convert_pkcs7_bytes_to_pem(certs_pkcs7):
+    """
+    Given a list of certificates in pkcs7 encoding (bytes), covert them into a list of PEM encoded files
+    :raises ValueError or ValidationError
+    :param certs_pkcs7:
+    :return: list of certs in PEM format
+    """
+
+    certificates = pkcs7.load_pem_pkcs7_certificates(certs_pkcs7)
+    certificates_pem = []
+    for cert in certificates:
+        certificates_pem.append(pem.parse(cert.public_bytes(encoding=Encoding.PEM))[0])
+
+    return certificates_pem
+
+
+def get_certificate_via_tls(host, port, timeout=10):
+    """
+    Makes a TLS network connection to retrieve the current certificate for the specified host and port.
+
+    Note that if the host is valid but the port is not, we'll wait for the timeout for the connection to fail,
+    so this should remain low when doing bulk operations.
+
+    :param host: Host to get certificate for
+    :param port: Port to get certificate for
+    :param timeout: Timeout in seconds
+    """
+    context = ssl.create_default_context()
+    context.check_hostname = False  # we don't care about validating the cert
+    context.verify_mode = ssl.CERT_NONE  # we don't care about validating the cert; it may be self-signed
+    conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    conn.settimeout(timeout)
+    conn.connect((host, port))
+    sock = context.wrap_socket(conn, server_hostname=host)
+    sock.settimeout(timeout)
+    try:
+        der_cert = sock.getpeercert(True)
+    finally:
+        sock.close()
+    return ssl.DER_cert_to_PEM_cert(der_cert)
+
+
+def parse_serial(pem_certificate):
+    """
+    Parses a serial number from a PEM-encoded certificate.
+    """
+    x509_cert = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, pem_certificate)
+    x509_cert.get_notAfter()
+    parsed_certificate = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, pem_certificate)
+    return parsed_certificate.get_serial_number()
+
+
+def data_encrypt(data):
+    """
+    takes an input and returns a base64 encoded encryption
+    reusing the Vault DB encryption module
+    :param data: string
+    :return: base64 ciphertext
+    """
+    if not isinstance(data, str):
+        data = str(data)
+    ciphertext = Vault().process_bind_param(data, TEXT())
+    return ciphertext.decode("utf8")
+
+
+def data_decrypt(ciphertext):
+    """
+    takes a ciphertext and returns the respective string
+    reusing the Vault DB encryption module
+    :param ciphertext: base64 ciphertext
+    :return: plaintext string
+    """
+    return Vault().process_result_value(ciphertext.encode("utf8"), TEXT())
+
+
+def is_json(json_input):
+    """
+    Test if input is json
+    :param json_input:
+    :return: True or False
+    """
+    try:
+        json.loads(json_input)
+    except ValueError:
+        return False
+    return True

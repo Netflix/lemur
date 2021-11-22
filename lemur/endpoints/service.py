@@ -14,7 +14,7 @@ from sqlalchemy import func
 
 from lemur import database
 from lemur.common.utils import truthiness
-from lemur.endpoints.models import Endpoint, Policy, Cipher
+from lemur.endpoints.models import Endpoint, EndpointDnsAlias, Policy, Cipher
 from lemur.extensions import metrics
 
 
@@ -97,7 +97,11 @@ def create(**kwargs):
     :param kwargs:
     :return:
     """
+    aliases = []
+    if "aliases" in kwargs:
+        aliases = [EndpointDnsAlias(alias=name) for name in kwargs.pop("aliases")]
     endpoint = Endpoint(**kwargs)
+    endpoint.aliases = aliases
     database.create(endpoint)
     metrics.send(
         "endpoint_added", "counter", 1, metric_tags={"source": endpoint.source.label}
@@ -131,6 +135,18 @@ def update(endpoint_id, **kwargs):
     endpoint.policy = kwargs["policy"]
     endpoint.certificate = kwargs["certificate"]
     endpoint.source = kwargs["source"]
+    endpoint.certificate_path = kwargs.get("certificate_path")
+    endpoint.registry_type = kwargs.get("registry_type")
+    existing_alias = {}
+    for e in endpoint.aliases:
+        existing_alias[e.alias] = e
+    endpoint.aliases = []
+    if "aliases" in kwargs:
+        for name in kwargs["aliases"]:
+            if name in existing_alias:
+                endpoint.aliases.append(existing_alias[name])
+            else:
+                endpoint.aliases.append(EndpointDnsAlias(alias=name))
     endpoint.last_updated = arrow.utcnow()
     metrics.send(
         "endpoint_updated", "counter", 1, metric_tags={"source": endpoint.source.label}
@@ -159,6 +175,11 @@ def render(args):
             query = query.filter(Cipher.name == terms[1])
         else:
             query = database.filter(query, Endpoint, terms)
+
+        if terms[0] == "name":
+            alias_query = Endpoint.query.filter(
+                Endpoint.aliases.any(EndpointDnsAlias.alias.ilike(f"%{terms[1]}%")))
+            query = query.union(alias_query)
 
     return database.sort_and_page(query, Endpoint, args)
 

@@ -5,9 +5,15 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 import jwt
 import base64
 import requests
+import time
+
+from cryptography.exceptions import InvalidSignature
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes, hmac
 
 from flask import Blueprint, current_app
 
@@ -16,13 +22,14 @@ from flask_principal import Identity, identity_changed
 
 from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
 from lemur.extensions import metrics
-from lemur.common.utils import get_psuedo_random_string
+from lemur.common.utils import get_psuedo_random_string, get_state_token_secret
 
 from lemur.users import service as user_service
 from lemur.roles import service as role_service
+from lemur.logs import service as log_service
 from lemur.auth.service import create_token, fetch_token_header, get_rsa_public_key
 from lemur.auth import ldap
-
+from lemur.plugins.base import plugins
 
 mod = Blueprint("auth", __name__)
 api = Api(mod)
@@ -57,9 +64,13 @@ def exchange_for_access_token(
 
     basic = base64.b64encode(bytes(token, "utf-8"))
     headers = {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "authorization": "basic {0}".format(basic.decode("utf-8")),
+        "Content-Type": "application/x-www-form-urlencoded"
     }
+
+    if current_app.config.get("TOKEN_AUTH_HEADER_CASE_SENSITIVE"):
+        headers["Authorization"] = "Basic {0}".format(basic.decode("utf-8"))
+    else:
+        headers["authorization"] = "basic {0}".format(basic.decode("utf-8"))
 
     # exchange authorization code for access token.
     r = requests.post(
@@ -137,6 +148,24 @@ def retrieve_user(user_api_url, access_token):
     return user, profile
 
 
+def retrieve_user_memberships(user_api_url, user_membership_provider, access_token):
+    user, profile = retrieve_user(user_api_url, access_token)
+
+    if user_membership_provider is None:
+        return user, profile
+    """
+    Unaware of the usage of this code across the community, current implementation is config driven.
+    Without USER_MEMBERSHIP_PROVIDER configured, it is backward compatible. Please define a plugin
+    for custom implementation.
+    """
+    membership_provider = plugins.get(user_membership_provider)
+    user_membership = {"email": profile["email"],
+                       "thumbnailPhotoUrl": profile["thumbnailPhotoUrl"],
+                       "googleGroups": membership_provider.retrieve_user_memberships(profile["userId"])}
+
+    return user, user_membership
+
+
 def create_user_roles(profile):
     """Creates new roles based on profile information.
 
@@ -155,7 +184,7 @@ def create_user_roles(profile):
                     description="This is a google group based role created by Lemur",
                     third_party=True,
                 )
-            if not role.third_party:
+            if (group != 'admin') and (not role.third_party):
                 role = role_service.set_third_party(role.id, third_party_status=True)
             roles.append(role)
     else:
@@ -198,7 +227,6 @@ def update_user(user, profile, roles):
     :param profile:
     :param roles:
     """
-
     # if we get an sso user create them an account
     if not user:
         user = user_service.create(
@@ -212,10 +240,16 @@ def update_user(user, profile, roles):
 
     else:
         # we add 'lemur' specific roles, so they do not get marked as removed
+        removed_roles = []
         for ur in user.roles:
             if not ur.third_party:
                 roles.append(ur)
+            elif ur not in roles:
+                # This is a role assigned in lemur, but not returned by sso during current login
+                removed_roles.append(ur.name)
 
+        if removed_roles:
+            log_service.audit_log("unassign_role", user.username, f"Un-assigning roles {removed_roles}")
         # update any changes to the user
         user_service.update(
             user.id,
@@ -225,6 +259,60 @@ def update_user(user, profile, roles):
             profile.get("thumbnailPhotoUrl"),  # profile isn't google+ enabled
             roles,
         )
+
+    return user
+
+
+def build_hmac():
+    key = current_app.config.get('OAUTH_STATE_TOKEN_SECRET', None)
+    if not key:
+        current_app.logger.warning("OAuth State Token Secret not discovered in config. Generating one.")
+        key = get_state_token_secret()
+        current_app.config['OAUTH_STATE_TOKEN_SECRET'] = key  # store for remainder of Flask session
+
+    try:
+        h = hmac.HMAC(key, hashes.SHA256(), backend=default_backend())
+    except TypeError:
+        current_app.logger.error("OAuth State Token Secret must be bytes-like.")
+        return None
+    return h
+
+
+def generate_state_token():
+    t = int(time.time())
+    ts = hex(t)[2:].encode('ascii')
+    h = build_hmac()
+    h.update(ts)
+    digest = base64.b64encode(h.finalize())
+    state = ts + b':' + digest
+    return state.decode('utf-8')
+
+
+def verify_state_token(token):
+    stale_seconds = current_app.config.get('OAUTH_STATE_TOKEN_STALE_TOLERANCE_SECONDS', 15)
+    try:
+        state = token.encode('utf-8')
+        ts, digest = state.split(b':')
+        timestamp = int(ts, 16)
+        if float(time.time() - timestamp) > stale_seconds:
+            current_app.logger.warning('OAuth State token is too stale.')
+            return False
+        digest = base64.b64decode(digest)
+    except ValueError as e:
+        current_app.logger.warning(f'Error while parsing OAuth State token: {e}')
+        return False
+
+    try:
+        h = build_hmac()
+        h.update(ts)
+        h.verify(digest)
+        return True
+    except InvalidSignature:
+        current_app.logger.warning('OAuth State token is invalid.')
+        return False
+    except Exception as e:
+        current_app.logger.warning(f'Error while parsing OAuth State token: {e}')
+        return False
 
 
 class Login(Resource):
@@ -262,6 +350,7 @@ class Login(Resource):
               POST /auth/login HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                 "username": "test",
@@ -368,7 +457,6 @@ class Ping(Resource):
 
         # you can either discover these dynamically or simply configure them
         access_token_url = current_app.config.get("PING_ACCESS_TOKEN_URL")
-        user_api_url = current_app.config.get("PING_USER_API_URL")
 
         secret = current_app.config.get("PING_SECRET")
 
@@ -384,9 +472,14 @@ class Ping(Resource):
         error_code = validate_id_token(id_token, args["clientId"], jwks_url)
         if error_code:
             return error_code
-        user, profile = retrieve_user(user_api_url, access_token)
+
+        user, profile = retrieve_user_memberships(
+            current_app.config.get("PING_USER_API_URL"),
+            current_app.config.get("USER_MEMBERSHIP_PROVIDER"),
+            access_token
+        )
         roles = create_user_roles(profile)
-        update_user(user, profile, roles)
+        user = update_user(user, profile, roles)
 
         if not user or not user.active:
             metrics.send(
@@ -419,8 +512,11 @@ class OAuth2(Resource):
             "redirectUri", type=str, required=True, location="json"
         )
         self.reqparse.add_argument("code", type=str, required=True, location="json")
+        self.reqparse.add_argument("state", type=str, required=True, location="json")
 
         args = self.reqparse.parse_args()
+        if not verify_state_token(args["state"]):
+            return dict(message="The supplied credentials are invalid"), 403
 
         # you can either discover these dynamically or simply configure them
         access_token_url = current_app.config.get("OAUTH2_ACCESS_TOKEN_URL")
@@ -445,7 +541,7 @@ class OAuth2(Resource):
 
         user, profile = retrieve_user(user_api_url, access_token)
         roles = create_user_roles(profile)
-        update_user(user, profile, roles)
+        user = update_user(user, profile, roles)
 
         if not user.active:
             metrics.send(
@@ -472,7 +568,7 @@ class Google(Resource):
 
     def post(self):
         access_token_url = "https://accounts.google.com/o/oauth2/token"
-        people_api_url = "https://www.googleapis.com/plus/v1/people/me/openIdConnect"
+        user_info_url = "https://www.googleapis.com/oauth2/v1/userinfo"
 
         self.reqparse.add_argument("clientId", type=str, required=True, location="json")
         self.reqparse.add_argument(
@@ -489,6 +585,7 @@ class Google(Resource):
             "redirect_uri": args["redirectUri"],
             "code": args["code"],
             "client_secret": current_app.config.get("GOOGLE_SECRET"),
+            "scope": "email",
         }
 
         r = requests.post(access_token_url, data=payload)
@@ -497,7 +594,7 @@ class Google(Resource):
         # Step 2. Retrieve information about the current user
         headers = {"Authorization": "Bearer {0}".format(token["access_token"])}
 
-        r = requests.get(people_api_url, headers=headers)
+        r = requests.get(user_info_url, headers=headers)
         profile = r.json()
 
         user = user_service.get_by_email(profile["email"])
@@ -539,7 +636,7 @@ class Providers(Resource):
                 active_providers.append(
                     {
                         "name": current_app.config.get("PING_NAME"),
-                        "url": current_app.config.get("PING_REDIRECT_URI"),
+                        "url": current_app.config.get("PING_URL", current_app.config.get("PING_REDIRECT_URI")),
                         "redirectUri": current_app.config.get("PING_REDIRECT_URI"),
                         "clientId": current_app.config.get("PING_CLIENT_ID"),
                         "responseType": "code",
@@ -557,7 +654,7 @@ class Providers(Resource):
                 active_providers.append(
                     {
                         "name": current_app.config.get("OAUTH2_NAME"),
-                        "url": current_app.config.get("OAUTH2_REDIRECT_URI"),
+                        "url": current_app.config.get("OAUTH2_URL", current_app.config.get("OAUTH2_REDIRECT_URI")),
                         "redirectUri": current_app.config.get("OAUTH2_REDIRECT_URI"),
                         "clientId": current_app.config.get("OAUTH2_CLIENT_ID"),
                         "responseType": "code",
@@ -567,7 +664,7 @@ class Providers(Resource):
                             "OAUTH2_AUTH_ENDPOINT"
                         ),
                         "requiredUrlParams": ["scope", "state", "nonce"],
-                        "state": "STATE",
+                        "state": generate_state_token(),
                         "nonce": get_psuedo_random_string(),
                         "type": "2.0",
                     }

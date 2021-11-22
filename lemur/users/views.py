@@ -101,20 +101,39 @@ class UsersList(AuthenticatedResource):
 
            Creates a new user
 
-           **Example request**:
+           **Example request with ID**:
 
            .. sourcecode:: http
 
               POST /users HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                  "username": "user3",
                  "email": "user3@example.com",
                  "active": true,
                  "roles": [
-                    {'id': 1} - or - {'name': 'myRole'}
+                    {"id": 1}
+                 ]
+              }
+
+           **Example request with name**:
+
+           .. sourcecode:: http
+
+              POST /users HTTP/1.1
+              Host: example.com
+              Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
+
+              {
+                 "username": "user3",
+                 "email": "user3@example.com",
+                 "active": true,
+                 "roles": [
+                    {"name": "myRole"}
                  ]
               }
 
@@ -129,7 +148,7 @@ class UsersList(AuthenticatedResource):
               {
                   "id": 3,
                   "active": True,
-                  "email": "user3@example.com,
+                  "email": "user3@example.com",
                   "username": "user3",
                   "profileImage": null
               }
@@ -201,20 +220,39 @@ class Users(AuthenticatedResource):
 
            Update a user
 
-           **Example request**:
+           **Example request with ID**:
 
            .. sourcecode:: http
 
               PUT /users/1 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                  "username": "user1",
                  "email": "user1@example.com",
                  "active": false,
                  "roles": [
-                     {'id': 1} - or - {'name': 'myRole'}
+                     {"id": 1}
+                 ]
+              }
+
+           **Example request with name**:
+
+           .. sourcecode:: http
+
+              PUT /users/1 HTTP/1.1
+              Host: example.com
+              Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
+
+              {
+                 "username": "user1",
+                 "email": "user1@example.com",
+                 "active": false,
+                 "roles": [
+                     {"name": "myRole"}
                  ]
               }
 

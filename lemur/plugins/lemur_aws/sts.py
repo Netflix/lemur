@@ -20,7 +20,13 @@ def sts_client(service, service_type="client"):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            sts = boto3.client("sts", config=config)
+            if current_app.config.get("LEMUR_AWS_REGION"):
+                deployment_region = current_app.config.get("LEMUR_AWS_REGION")
+                sts = boto3.client('sts', region_name=deployment_region,
+                                   endpoint_url=f"https://sts.{deployment_region}.amazonaws.com/",
+                                   config=config)
+            else:
+                sts = boto3.client("sts", config=config)
             arn = "arn:aws:iam::{0}:role/{1}".format(
                 kwargs.pop("account_number"),
                 current_app.config.get("LEMUR_INSTANCE_PROFILE", "Lemur"),

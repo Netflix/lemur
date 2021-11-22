@@ -11,9 +11,11 @@
 from flask import current_app
 
 from lemur import database
+from lemur.constants import EMAIL_RE, EMAIL_RE_HELP
 from lemur.certificates.models import Certificate
-from lemur.common.utils import truthiness
+from lemur.common.utils import truthiness, check_validation
 from lemur.notifications.models import Notification
+from lemur.logs import service as log_service
 
 
 def create_default_expiration_notifications(name, recipients, intervals=None):
@@ -34,7 +36,7 @@ def create_default_expiration_notifications(name, recipients, intervals=None):
             "name": "unit",
             "type": "select",
             "required": True,
-            "validation": "",
+            "validation": check_validation(""),
             "available": ["days", "weeks", "months"],
             "helpMessage": "Interval unit",
             "value": "days",
@@ -43,8 +45,8 @@ def create_default_expiration_notifications(name, recipients, intervals=None):
             "name": "recipients",
             "type": "str",
             "required": True,
-            "validation": "^([\w+-.%]+@[\w-.]+\.[A-Za-z]{2,4},?)+$",
-            "helpMessage": "Comma delimited list of email addresses",
+            "validation": EMAIL_RE.pattern,
+            "helpMessage": EMAIL_RE_HELP,
             "value": ",".join(recipients),
         },
     ]
@@ -63,7 +65,7 @@ def create_default_expiration_notifications(name, recipients, intervals=None):
                     "name": "interval",
                     "type": "int",
                     "required": True,
-                    "validation": "^\d+$",
+                    "validation": check_validation(r"^\d+$"),
                     "helpMessage": "Number of days to be alert before expiration.",
                     "value": i,
                 }
@@ -94,7 +96,7 @@ def create(label, plugin_name, options, description, certificates):
     :param options:
     :param description:
     :param certificates:
-    :rtype : Notification
+    :rtype: Notification
     :return:
     """
     notification = Notification(
@@ -104,26 +106,30 @@ def create(label, plugin_name, options, description, certificates):
     return database.create(notification)
 
 
-def update(notification_id, label, options, description, active, certificates):
+def update(notification_id, label, plugin_name, options, description, active, added_certificates, removed_certificates):
     """
     Updates an existing notification.
 
     :param notification_id:
     :param label: Notification label
+    :param plugin_name:
     :param options:
     :param description:
     :param active:
-    :param certificates:
-    :rtype : Notification
+    :param added_certificates:
+    :param removed_certificates:
+    :rtype: Notification
     :return:
     """
     notification = get(notification_id)
 
     notification.label = label
+    notification.plugin_name = plugin_name
     notification.options = options
     notification.description = description
     notification.active = active
-    notification.certificates = certificates
+    notification.certificates = notification.certificates + added_certificates
+    notification.certificates = [c for c in notification.certificates if c not in removed_certificates]
 
     return database.update(notification)
 
@@ -134,7 +140,10 @@ def delete(notification_id):
 
     :param notification_id: Lemur assigned ID
     """
-    database.delete(get(notification_id))
+    notification = get(notification_id)
+    if notification:
+        log_service.audit_log("delete_notification", notification.label, "Deleting notification")
+        database.delete(notification)
 
 
 def get(notification_id):
@@ -142,7 +151,7 @@ def get(notification_id):
     Retrieves an notification by its lemur assigned ID.
 
     :param notification_id: Lemur assigned ID
-    :rtype : Notification
+    :rtype: Notification
     :return:
     """
     return database.get(Notification, notification_id)

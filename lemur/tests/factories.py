@@ -1,14 +1,15 @@
+import json
 from datetime import date
 
 from factory import Sequence, post_generation, SubFactory
 from factory.alchemy import SQLAlchemyModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDate, FuzzyInteger
 
-
 from lemur.database import db
 from lemur.authorities.models import Authority
 from lemur.certificates.models import Certificate
 from lemur.destinations.models import Destination
+from lemur.dns_providers.models import DnsProvider
 from lemur.sources.models import Source
 from lemur.notifications.models import Notification
 from lemur.pending_certificates.models import PendingCertificate
@@ -193,6 +194,13 @@ class CryptoAuthorityFactory(AuthorityFactory):
     """Authority factory based on 'cryptography' plugin."""
 
     plugin = {"slug": "cryptography-issuer"}
+
+
+class OptionalCNAuthorityFactory(AuthorityFactory):
+    """Optional CN Authority factory."""
+
+    name = Sequence(lambda n: "authority{0}".format(n))
+    options = '[{"name": "cn_optional", "type": "boolean", "value":true, "helpMessage": "Define if CN is an optional input when issuing certificates"}]'
 
 
 class DestinationFactory(BaseFactory):
@@ -435,3 +443,17 @@ class PendingCertificateFactory(BaseFactory):
         if extracted:
             for domain in extracted:
                 self.roles.append(domain)
+
+
+class DnsProviderFactory(BaseFactory):
+    """DnsProvider Factory."""
+
+    name = Sequence(lambda n: f"dnsProvider{n}")
+    description = FuzzyText(length=128)
+    provider_type = FuzzyText(length=128)
+    credentials = json.dumps({"account_id": f"{FuzzyInteger(100000, 999999).fuzz()}"})
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = DnsProvider

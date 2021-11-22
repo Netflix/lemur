@@ -1,0 +1,17 @@
+  version: 2
+  updates:
+    - directory: "/"
+      schedule:
+        interval: "weekly"
+        day: "monday"
+        time: "08:00"
+        timezone: "America/Los_Angeles"
+      package-ecosystem: "pip"
+      reviewers:
+        - "hosseinsh"
+        - "csine-nflx"
+        - "charhate"
+        - "jtschladen"
+        - "douglasc-nflx"
+      versioning-strategy: lockfile-only
+      open-pull-requests-limit: 20

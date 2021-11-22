@@ -1,6 +1,7 @@
 'use strict';
 
 var gulp = require('gulp');
+const watch = require('./watch')
 
 var browserSync = require('browser-sync');
 var httpProxy = require('http-proxy');
@@ -38,7 +39,7 @@ function browserSyncInit(baseDir, files, browser) {
 
 }
 
-gulp.task('serve', ['watch'], function () {
+gulp.task('serve', gulp.series(['watch'], function (done) {
   browserSyncInit([
     '.tmp',
     'lemur/static/app'
@@ -51,9 +52,12 @@ gulp.task('serve', ['watch'], function () {
     'lemur/static/app/angular/**/*',
     'lemur/static/app/index.html'
   ]);
-});
+
+  done();
+}));
 
 
-gulp.task('serve:dist', ['build'], function () {
+gulp.task('serve:dist', gulp.series(['build'], function (done) {
   browserSyncInit('lemur/static/dist');
-});
+  done();
+}));

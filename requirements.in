@@ -6,7 +6,8 @@ arrow
 asyncpool
 boto3
 botocore
-celery[redis]
+celery[redis]==4.4.2 # need to first resolve the module not found error https://github.com/celery/celery/issues/6406
+certbot
 certifi
 certsrv
 CloudFlare
@@ -15,12 +16,12 @@ dnspython3
 dyn
 Flask-Bcrypt
 Flask-Mail
-Flask-Migrate
+Flask-Migrate <= 2.7.0 #mirgration to Flask CLI required, https://github.com/miguelgrinberg/Flask-Migrate/issues/407
 Flask-Principal
 Flask-RESTful
 Flask-Script
 Flask-SQLAlchemy
-Flask
+Flask <= 1.1.2 # similar to Flask-Migrate
 Flask-Cors
 flask_replicated
 future
@@ -30,7 +31,7 @@ inflection
 jinja2
 lockfile
 logmatic-python
-marshmallow-sqlalchemy
+marshmallow-sqlalchemy == 0.23.1 #related to the marshmallow issue (to avoid conflicts)
 marshmallow<2.20.5 #schema duplicate issues https://github.com/marshmallow-code/marshmallow-sqlalchemy/issues/121
 ndg-httpsclient
 paramiko  # required for the SFTP destination plugin
@@ -41,11 +42,13 @@ pyjwt
 pyOpenSSL
 pyyaml>=4.2b1 #high severity alert
 python_ldap
-raven[flask]
 redis
 requests
 retrying
+sentry-sdk
 six
 SQLAlchemy-Utils
+sqlalchemy < 1.4.0 # ImportError: cannot import name '_ColumnEntity' https://github.com/sqlalchemy/sqlalchemy/issues/6226
 tabulate
+validators
 xmltodict

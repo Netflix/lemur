@@ -33,4 +33,9 @@ class SourcePlugin(Plugin):
 
     @property
     def options(self):
+        """
+        Gets/sets options for the plugin.
+
+        :return:
+        """
         return self.default_options + self.additional_options

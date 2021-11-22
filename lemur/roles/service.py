@@ -9,9 +9,22 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+from flask import current_app
+
 from lemur import database
 from lemur.roles.models import Role
 from lemur.users.models import User
+from lemur.logs import service as log_service
+
+
+def warn_user_updates(role_name, current_users, new_users):
+    removed_users = list(u.username for u in set(current_users) - set(new_users))
+    if removed_users:
+        current_app.logger.warning(f"Removed {role_name} role for {removed_users}")
+
+    added_users = list(u.username for u in set(new_users) - set(current_users))
+    if added_users:
+        current_app.logger.warning(f"Added {role_name} role for {added_users}")
 
 
 def update(role_id, name, description, users):
@@ -25,10 +38,15 @@ def update(role_id, name, description, users):
     :return:
     """
     role = get(role_id)
+
+    if name == 'admin':
+        warn_user_updates(name, role.users, users)
     role.name = name
     role.description = description
     role.users = users
     database.update(role)
+
+    log_service.audit_log("update_role", name, f"Role with id {role_id} updated")
     return role
 
 
@@ -44,6 +62,8 @@ def set_third_party(role_id, third_party_status=False):
     role = get(role_id)
     role.third_party = third_party_status
     database.update(role)
+
+    log_service.audit_log("update_role", role.name, f"Updated third_party_status={third_party_status}")
     return role
 
 
@@ -71,6 +91,7 @@ def create(
     if users:
         role.users = users
 
+    log_service.audit_log("create_role", name, "Creating new role")
     return database.create(role)
 
 
@@ -101,7 +122,10 @@ def delete(role_id):
     :param role_id:
     :return:
     """
-    return database.delete(get(role_id))
+
+    role = get(role_id)
+    log_service.audit_log("delete_role", role.name, "Deleting role")
+    return database.delete(role)
 
 
 def render(args):
@@ -128,3 +152,11 @@ def render(args):
         query = database.filter(query, Role, terms)
 
     return database.sort_and_page(query, Role, args)
+
+
+def get_or_create(role_name, description):
+    role = get_by_name(role_name)
+    if not role:
+        role = create(name=role_name, description=description)
+
+    return role

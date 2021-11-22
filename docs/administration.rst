@@ -28,6 +28,13 @@ Basic Configuration
 
         LOG_FILE = "/logs/lemur/lemur-test.log"
 
+.. data:: LOG_UPGRADE_FILE
+    :noindex:
+
+    ::
+
+        LOG_UPGRADE_FILE = "/logs/lemur/db_upgrade.log"
+
 .. data:: DEBUG
     :noindex:
 
@@ -65,34 +72,40 @@ Basic Configuration
         SQLALCHEMY_DATABASE_URI = 'postgresql://<user>:<password>@<hostname>:5432/lemur'
 
 
-.. data:: SQLALCHEMY_POOL_SIZE
+.. data:: SQLALCHEMY_ENGINE_OPTIONS
     :noindex:
 
-            The default connection pool size is 5 for sqlalchemy managed connections.   Depending on the number of Lemur instances,
-            please specify per instance connection pool size.  Below is an example to set connection pool size to 10.
+        This is an optional config that handles all engine_options to SQLAlchemy. 
+        Please refer to the `flask-sqlalchemy website <https://flask-sqlalchemy.palletsprojects.com/en/2.x/config/>`_ for 
+        more details about the individual configs.
 
-        ::
+        The default connection pool size is 5 for sqlalchemy managed connections.
+        Depending on the number of Lemur instances, please specify the per instance connection `pool_size`.
+        Below is an example to set connection `pool_size` to 10.
 
-        SQLALCHEMY_POOL_SIZE = 10
+        `max_overflow` allows to create connections in addition to specified number of connections in pool size.
+        By default, sqlalchemy allows 10 connections to create in addition to the pool size.
+        If `pool_size` and `max_overflow` are not specified then each Lemur instance may create maximum of 15 connections.
 
-
-    .. warning::
-This is an optional setting but important to review and set for optimal database connection usage and for overall database performance.
-
-.. data:: SQLALCHEMY_MAX_OVERFLOW
-    :noindex:
-
-        This setting allows to create connections in addition to specified number of connections in pool size.   By default, sqlalchemy
-        allows 10 connections to create in addition to the pool size.  This is also an optional setting.  If `SQLALCHEMY_POOL_SIZE` and
-        `SQLALCHEMY_MAX_OVERFLOW` are not speficied then each Lemur instance may create maximum of 15 connections.
+        `pool_recycle` defines number of seconds after which a connection is automatically recycled.
 
     ::
 
-        SQLALCHECK_MAX_OVERFLOW = 0
+        SQLALCHEMY_ENGINE_OPTIONS = {
+            'pool_size': 10,
+            'pool_recycle': 600,
+            'pool_timeout': 20,
+            'max_overflow': 10,
+        }
 
+
+    .. warning::
+        Specifying `pool_size` is an optional setting but important to review and set for optimal database connection usage and for overall database performance.
+        Note that `SQLALCHEMY_POOL_SIZE`, `SQLALCHEMY_MAX_OVERFLOW`, `SQLALCHEMY_POOL_TIMEOUT` are deprecated since sqlalchemy v2.4.
 
     .. note::
-Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create connections above specified pool size.
+        Specifying `max_overflow` to 0 will enforce limit to not create connections above specified pool size.
+
 
 
 .. data:: LEMUR_ALLOW_WEEKEND_EXPIRATION
@@ -100,7 +113,7 @@ Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create c
 
         Specifies whether to allow certificates created by Lemur to expire on weekends. Default is True.
 
-.. data:: LEMUR_WHITELISTED_DOMAINS
+.. data:: LEMUR_ALLOWED_DOMAINS
     :noindex:
 
         List of regular expressions for domain restrictions; if the list is not empty, normal users can only issue
@@ -144,6 +157,15 @@ Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create c
         to start. Multiple keys can be provided to facilitate key rotation. The first key in the list is used for
         encryption and all keys are tried for decryption until one works. Each key must be 32 URL safe base-64 encoded bytes.
 
+        Only fields of type ``Vault`` will be encrypted. At present, only the following fields are encrypted:
+
+        * ``certificates.private_key``
+        * ``pending_certificates.private_key``
+        * ``dns_providers.credentials``
+        * ``roles.password``
+
+        For implementation details, see ``Vault`` in ``utils.py``.
+
         Running lemur create_config will securely generate a key for your configuration file.
         If you would like to generate your own, we recommend the following method:
 
@@ -155,17 +177,13 @@ Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create c
 
         LEMUR_ENCRYPTION_KEYS = ['1YeftooSbxCiX2zo8m1lXtpvQjy27smZcUUaGmffhMY=', 'LAfQt6yrkLqOK5lwpvQcT4jf2zdeTQJV1uYeh9coT5s=']
 
-.. data:: PUBLIC_CA_AUTHORITY_NAMES
-    :noindex:
-        A list of public issuers which would be checked against to determine whether limit of max validity of 397 days
-        should be applied to the certificate. Configure public CA authority names in this list to enforce validity check.
-        This is an optional setting. Using this will allow the sanity check as mentioned. The name check is a case-insensitive
-        string comparision.
 
 .. data:: PUBLIC_CA_MAX_VALIDITY_DAYS
     :noindex:
-        Use this config to override the limit of 397 days of validity for certificates issued by public issuers configured
-        using PUBLIC_CA_AUTHORITY_NAMES. Below example overrides the default validity of 397 days and sets it to 365 days.
+
+        Use this config to override the limit of 397 days of validity for certificates issued by CA/Browser compliant authorities.
+        The authorities with cab_compliant option set to true will use this config. The example below overrides the default validity
+        of 397 days and sets it to 365 days.
 
     ::
 
@@ -174,9 +192,10 @@ Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create c
 
 .. data:: DEFAULT_VALIDITY_DAYS
     :noindex:
+
         Use this config to override the default validity of 365 days for certificates offered through Lemur UI. Any CA which
-        is not listed in PUBLIC_CA_AUTHORITY_NAMES will be using this value as default validity to be displayed on UI. Please
-        note that this config is used for cert issuance only through Lemur UI. Below example overrides the default validity
+        is not CA/Browser Forum compliant will be using this value as default validity to be displayed on UI. Please
+        note that this config is used for cert issuance only through Lemur UI. The example below overrides the default validity
         of 365 days and sets it to 1095 days (3 years).
 
     ::
@@ -195,6 +214,31 @@ Specifying the `SQLALCHEMY_MAX_OVERFLOW` to 0 will enforce limit to not create c
         When set to True, certificates can be marked as deleted via the API and deleted certificates will not be displayed
         in the UI. When set to False (the default), the certificate delete API will always return "405 method not allowed"
         and deleted certificates will always be visible in the UI. (default: `False`)
+
+.. data:: LEMUR_AWS_REGION
+    :noindex:
+
+        This is an optional config applicable for settings where Lemur is deployed in AWS. For accessing regionalized
+        STS endpoints, LEMUR_AWS_REGION defines the region where Lemur is deployed.
+
+.. data:: SENTRY_DSN
+    :noindex:
+
+        To initialize the Sentry integration to capture errors and exceptions, the `SENTRY_DSN` is required to be set to
+        the respective URL. `LEMUR_ENV` is also a related variable to define the environment for sentry events, e.g.,
+        'test' or 'prod'.
+
+        Note that previously Lemur relied on Raven[flask] before migrating to `sentry_sdk`. In this case, you might be
+        using the legacy `SENTRY_CONFIG`, which Lemur attempts to respect, in case `SENTRY_DSN` is missing,
+        with environment set to empty.
+
+        Example for using Senty to capture exceptions:
+
+            >>>  from sentry_sdk import capture_exception
+            >>>  ..
+            >>>  capture_exception()
+            >>>  # supplying extra information
+            >>>  capture_exception(extra={"certificate_name": str(certificate.name)})
 
 
 Certificate Default Options
@@ -260,22 +304,199 @@ and are used when Lemur creates the CSR for your certificates.
         LEMUR_DEFAULT_AUTHORITY = "verisign"
 
 
+.. _NotificationOptions:
+
 Notification Options
 --------------------
 
-Lemur currently has very basic support for notifications. Currently only expiration notifications are supported. Actual notification
-is handled by the notification plugins that you have configured. Lemur ships with the 'Email' notification that allows expiration emails
-to be sent to subscribers.
+Lemur supports a small variety of notification types through a set of notification plugins.
+By default, Lemur configures a standard set of email notifications for all certificates.
 
-Templates for expiration emails are located under `lemur/plugins/lemur_email/templates` and can be modified for your needs.
-Notifications are sent to the certificate creator, owner and security team as specified by the `LEMUR_SECURITY_TEAM_EMAIL` configuration parameter.
+**Plugin-capable notifications**
 
-Certificates marked as inactive will **not** be notified of upcoming expiration. This enables a user to essentially
-silence the expiration. If a certificate is active and is expiring the above will be notified according to the `LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS` or
-30, 15, 2 days before expiration if no intervals are set.
+These notifications can be configured to use all available notification plugins.
 
-Lemur supports sending certification expiration notifications through SES and SMTP.
+Supported types:
 
+* Certificate expiration (Celery: `notify_expirations`, cron: `notify expirations`)
+
+**Email-only notifications**
+
+These notifications can only be sent via email and cannot use other notification plugins.
+
+Supported types:
+
+* CA certificate expiration (Celery: `notify_authority_expirations`, cron: `notify authority_expirations`)
+* Pending ACME certificate failure
+* Certificate rotation
+* Certificate reissued with no endpoints
+* Certificate reissue failed
+* Certificate revocation
+* Security certificate expiration summary (Celery: `send_security_expiration_summary`, cron: `notify security_expiration_summary`)
+* Certificate expiration where certificates are still detected as deployed at any associated domain (Celery: `notify_expiring_deployed_certificates`, cron: `notify expiring_deployed_certificates`)
+
+**Default notifications**
+
+When a certificate is created, the following email notifications are created for it if they do not exist.
+If these notifications already exist, they will be associated with the new certificate.
+
+* ``DEFAULT_<OWNER>_X_DAY``, where X is the set of values specified in ``LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS`` and defaults to 30, 15, and 2 if not specified. The owner's username will replace ``<OWNER>``.
+* ``DEFAULT_SECURITY_X_DAY``, where X is the set of values specified in ``LEMUR_SECURITY_TEAM_EMAIL_INTERVALS`` and defaults to ``LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS`` if not specified (which also defaults to 30, 15, and 2 if not specified).
+
+These notifications can be disabled if desired. They can also be unassociated with a specific certificate.
+
+**Disabling notifications**
+
+Notifications can be disabled either for an individual certificate (which disables all notifications for that certificate)
+or for an individual notification object (which disables that notification for all associated certificates).
+At present, disabling a notification object will only disable certificate expiration notifications, and not other types,
+since other notification types don't use notification objects.
+
+**Certificate expiration**
+
+Certificate expiration notifications are sent when the scheduled task to send certificate expiration notifications runs
+(see :ref:`PeriodicTasks`). Specific patterns of certificate names may be excluded using ``--exclude`` (when using
+cron; you may specify this multiple times for multiple patterns) or via the config option ``EXCLUDE_CN_FROM_NOTIFICATION``
+(when using celery; this is a list configuration option, meaning you specify multiple values, such as
+``['exclude', 'also exclude']``). The specified exclude pattern will match if found anywhere in the certificate name.
+
+When the periodic task runs, Lemur checks for certificates meeting the following conditions:
+
+* Certificate has notifications enabled
+* Certificate is not expired
+* Certificate is not revoked
+* Certificate name does not match the `exclude` parameter
+* Certificate has at least one associated notification object
+* That notification is active
+* That notification's configured interval and unit match the certificate's remaining lifespan
+
+All eligible certificates are then grouped by owner and applicable notification. For each notification and certificate group,
+Lemur will send the expiration notification using whichever plugin was configured for that notification object.
+In addition, Lemur will send an email to the certificate owner and security team (as specified by the
+``LEMUR_SECURITY_TEAM_EMAIL`` configuration parameter). The security team will be omitted if
+``LEMUR_DISABLE_SECURITY_TEAM_EXPIRATION_EMAILS`` is enabled.
+
+**CA certificate expiration**
+
+Certificate authority certificate expiration notifications are sent when the scheduled task to send authority certificate
+expiration notifications runs (see :ref:`PeriodicTasks`). Notifications are sent via the intervals configured in the
+configuration parameter ``LEMUR_AUTHORITY_CERT_EXPIRATION_EMAIL_INTERVALS``, with a default of 365 and 180 days.
+
+When the periodic task runs, Lemur checks for certificates meeting the following conditions:
+
+* Certificate has notifications enabled
+* Certificate is not expired
+* Certificate is not revoked
+* Certificate is associated with a CA
+* Certificate's remaining lifespan matches one of the configured intervals
+
+All eligible certificates are then grouped by owner and expiration interval. For each interval and certificate group,
+Lemur will send the CA certificate expiration notification via email to the certificate owner and security team
+(as specified by the ``LEMUR_SECURITY_TEAM_EMAIL`` configuration parameter).
+
+**Pending ACME certificate failure**
+
+Whenever a pending ACME certificate fails to be issued, Lemur will send a notification via email to the certificate owner
+and security team (as specified by the ``LEMUR_SECURITY_TEAM_EMAIL`` configuration parameter). This email is not sent if
+the pending certificate had notifications disabled.
+
+Lemur will attempt 3x times to resolve a pending certificate.
+This can at times result into 3 duplicate certificates, if all certificate attempts get resolved. There is a way to
+deduplicate these certificates periodically using a celery task ``disable_rotation_of_duplicate_certificates``.
+
+This needs 2 configurations
+
+.. data:: AUTHORITY_TO_DISABLE_ROTATE_OF_DUPLICATE_CERTIFICATES
+    :noindex:
+
+        List names of the authorities for which `disable_rotation_of_duplicate_certificates` should run. The task will
+        consider certificates issued by authorities configured here.
+
+    ::
+
+        AUTHORITY_TO_DISABLE_ROTATE_OF_DUPLICATE_CERTIFICATES = ["LetsEncrypt"]
+
+
+.. data:: DAYS_SINCE_ISSUANCE_DISABLE_ROTATE_OF_DUPLICATE_CERTIFICATES
+    :noindex:
+
+        Use this config (optional) to configure the number of days. The task `disable_rotation_of_duplicate_certificates`
+        will then consider valid certificates issued only in last those many number of days for deduplication. If not configured,
+        the task considers all the valid certificates. Ideally set this config to a value which is same as the number of
+        days between the two runs of `disable_rotation_of_duplicate_certificates`
+
+    ::
+
+        DAYS_SINCE_ISSUANCE_DISABLE_ROTATE_OF_DUPLICATE_CERTIFICATES = 7
+
+
+**Certificate re-issuance**
+
+When a cert is reissued (i.e. a new certificate is minted to replace it), *and* the re-issuance either fails or
+succeeds but the certificate has no associated endpoints (meaning the subsequent rotation step will not occur),
+Lemur will send a notification via email to the certificate owner. This notification is disabled by default;
+to enable it, you must set the option ``--notify`` (when using cron) or the configuration parameter
+``ENABLE_REISSUE_NOTIFICATION`` (when using celery).
+
+**Certificate rotation**
+
+Whenever a cert is rotated, Lemur will send a notification via email to the certificate owner. This notification is
+disabled by default; to enable it, you must set the option ``--notify`` (when using cron) or the configuration parameter
+``ENABLE_ROTATION_NOTIFICATION`` (when using celery).
+
+**Certificate revocation**
+
+Whenever a cert is revoked, Lemur will send a notification via email to the certificate owner. This notification will
+only be sent if the certificate's "notify" option is enabled.
+
+**Security certificate expiration summary**
+
+If you enable the Celery or cron task to send this notification type, Lemur will send a summary of all
+certificates with upcoming expiration date that occurs within the number of days specified by the
+``LEMUR_EXPIRATION_SUMMARY_EMAIL_THRESHOLD_DAYS`` configuration parameter (with a fallback of 14 days).
+Note that certificates will be included in this summary even if they do not have any associated notifications.
+
+This notification type also supports the same ``--exclude`` and ``EXCLUDE_CN_FROM_NOTIFICATION`` options as expiration emails.
+
+NOTE: At present, this summary email essentially duplicates the certificate expiration notifications, since all
+certificate expiration notifications are also sent to the security team. This issue will be fixed in the future.
+
+**Notification configuration**
+
+The following configuration options are supported:
+
+.. data:: EXCLUDE_CN_FROM_NOTIFICATION
+    :noindex:
+
+    Specifies CNs to exclude from notifications. This includes both single notifications as well as the notification summary. The specified exclude pattern will match if found anywhere in the certificate name.
+
+    .. note::
+        This is only used for celery. The equivalent for cron is '-e' or '--exclude'.
+
+       ::
+
+          EXCLUDE_CN_FROM_NOTIFICATION = ['exclude', 'also exclude']
+
+
+.. data:: DISABLE_NOTIFICATION_PLUGINS
+    :noindex:
+
+    Specifies a set of notification plugins to disable. Notifications will not be sent using these plugins. Currently only applies to expiration notifications, since they are the only type that utilize plugins.
+    This option may be particularly useful in a test environment, where you might wish to enable the notification job without actually sending notifications of a certain type (or all types).
+
+    .. note::
+        This is only used for celery. The equivalent for cron is '-d' or '--disabled-notification-plugins'.
+
+       ::
+
+          DISABLE_NOTIFICATION_PLUGINS = ['email-notification']
+
+
+**Email notifications**
+
+Templates for emails are located under `lemur/plugins/lemur_email/templates` and can be modified for your needs.
+
+The following configuration options are supported:
 
 .. data:: LEMUR_EMAIL_SENDER
     :noindex:
@@ -286,8 +507,27 @@ Lemur supports sending certification expiration notifications through SES and SM
         If using SMTP as your provider you will need to define additional configuration options as specified by Flask-Mail.
         See: `Flask-Mail <https://pythonhosted.org/Flask-Mail>`_
 
-        If you are using SES the email specified by the `LEMUR_MAIL` configuration will need to be verified by AWS before
+        If you are using SES the email specified by the `LEMUR_EMAIL` configuration will need to be verified by AWS before
         you can send any mail. See: `Verifying Email Address in Amazon SES <http://docs.aws.amazon.com/ses/latest/DeveloperGuide/verify-email-addresses.html>`_
+
+
+.. data:: LEMUR_SES_SOURCE_ARN
+    :noindex:
+
+    Specifies an ARN to use as the SourceArn when sending emails via SES.
+
+    .. note::
+        This parameter is only required if you're using a sending authorization with SES.
+        See: `Using sending authorization with Amazon SES <https://docs.aws.amazon.com/ses/latest/DeveloperGuide/sending-authorization.html>`_
+
+
+.. data:: LEMUR_SES_REGION
+    :noindex:
+
+    Specifies a region for sending emails via SES.
+
+    .. note::
+        This parameter defaults to us-east-1 and is only required if you wish to use a different region.
 
 
 .. data:: LEMUR_EMAIL
@@ -297,7 +537,7 @@ Lemur supports sending certification expiration notifications through SES and SM
 
         ::
 
-            LEMUR_EMAIL = 'lemur.example.com'
+            LEMUR_EMAIL = 'lemur@example.com'
 
 
 .. data:: LEMUR_SECURITY_TEAM_EMAIL
@@ -309,10 +549,20 @@ Lemur supports sending certification expiration notifications through SES and SM
 
             LEMUR_SECURITY_TEAM_EMAIL = ['security@example.com']
 
+
+.. data:: LEMUR_DISABLE_SECURITY_TEAM_EXPIRATION_EMAILS
+    :noindex:
+
+        This specifies whether or not LEMUR_SECURITY_TEAM_EMAIL will be included on all expiration emails. IMPORTANT: You will also need to disable the DEFAULT_SECURITY_X_DAY notifications to truly disable sending expiration emails to the security team. This double configuration is required for backwards compatibility.
+
+        ::
+
+            LEMUR_DISABLE_SECURITY_TEAM_EXPIRATION_EMAILS = True
+
 .. data:: LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS
     :noindex:
 
-        Lemur notification intervals
+        Lemur notification intervals. If unspecified, the value [30, 15, 2] is used.
 
         ::
 
@@ -326,6 +576,61 @@ Lemur supports sending certification expiration notifications through SES and SM
        ::
 
           LEMUR_SECURITY_TEAM_EMAIL_INTERVALS = [15, 2]
+
+.. data:: LEMUR_AUTHORITY_CERT_EXPIRATION_EMAIL_INTERVALS
+    :noindex:
+
+       Notification interval set for CA certificate expiration notifications. If unspecified, the value [365, 180] is used (roughly one year and 6 months).
+
+       ::
+
+          LEMUR_AUTHORITY_CERT_EXPIRATION_EMAIL_INTERVALS = [365, 180]
+
+.. data:: LEMUR_PORTS_FOR_DEPLOYED_CERTIFICATE_CHECK
+    :noindex:
+
+       Specifies the set of ports to use when checking if a certificate is still deployed at a given domain. This is utilized for the alert that is sent when an expiring certificate is detected to still be deployed.
+
+       ::
+
+          LEMUR_PORTS_FOR_DEPLOYED_CERTIFICATE_CHECK = [443]
+
+.. data:: LEMUR_DEPLOYED_CERTIFICATE_CHECK_COMMIT_MODE
+    :noindex:
+
+       Specifies whether or not to commit changes when running the deployed certificate check. If False, the DB will not be updated; network calls will still be made and logs/metrics will be emitted.
+
+       ::
+
+          LEMUR_DEPLOYED_CERTIFICATE_CHECK_COMMIT_MODE = True
+
+.. data:: LEMUR_DEPLOYED_CERTIFICATE_CHECK_EXCLUDED_DOMAINS
+    :noindex:
+
+       Specifies a set of domains to exclude from the deployed certificate checks. Anything specified here is treated as a substring; in other words, if you set this to ['excluded.com'], then 'abc.excluded.com' and 'unexcluded.com' will both be excluded; 'ex-cluded.com' will not be excluded.
+
+       ::
+
+          LEMUR_DEPLOYED_CERTIFICATE_CHECK_EXCLUDED_DOMAINS = ['excluded.com']
+
+.. data:: LEMUR_DEPLOYED_CERTIFICATE_CHECK_EXCLUDED_OWNERS
+    :noindex:
+
+       Specifies a set of owners to exclude from the deployed certificate checks. Anything specified here is treated as an exact match, NOT as a substring.
+
+       ::
+
+          LEMUR_DEPLOYED_CERTIFICATE_CHECK_EXCLUDED_OWNERS = ['excludedowner@example.com']
+
+
+.. data:: LEMUR_REISSUE_NOTIFICATION_EXCLUDED_DESTINATIONS
+    :noindex:
+
+       Specifies a set of destination labels to exclude from the reissued with endpoint notification checks. If a certificate is reissued without endpoints, but any of its destination labels are specified in this list, no "reissued without endpoints" notification will be sent.
+
+       ::
+
+          LEMUR_REISSUE_NOTIFICATION_EXCLUDED_DESTINATIONS = ['excluded-destination']
 
 
 Celery Options
@@ -358,6 +663,12 @@ need to configure celery. See :ref:`Periodic Tasks <PeriodicTasks>` for more in 
     :noindex:
 
         This defines the schedule, with which the celery beat makes the worker run the specified tasks.
+
+.. data:: CELERY_ENDPOINTS_EXPIRE_TIME_IN_HOURS
+    :noindex:
+
+        This is an optional parameter that defines the expiration time for endpoints when the endpoint expiration celery task is running. Default value is set to 2h.
+
 
 Since the celery module, relies on the RedisHandler, the following options also need to be set.
 
@@ -558,6 +869,13 @@ For more information about how to use social logins, see: `Satellizer <https://g
 
             PING_CLIENT_ID = "client-id"
 
+.. data:: PING_URL
+    :noindex:
+
+        ::
+
+            PING_URL = "https://<yourlemurserver>"
+
 .. data:: PING_REDIRECT_URI
     :noindex:
 
@@ -615,6 +933,13 @@ For more information about how to use social logins, see: `Satellizer <https://g
 
             OAUTH2_CLIENT_ID = "client-id"
 
+.. data:: OAUTH2_URL
+    :noindex:
+
+        ::
+
+            OAUTH2_URL = "https://<yourlemurserver>"
+
 .. data:: OAUTH2_REDIRECT_URI
     :noindex:
 
@@ -636,6 +961,36 @@ For more information about how to use social logins, see: `Satellizer <https://g
 
             OAUTH2_VERIFY_CERT = True
 
+.. data:: OAUTH_STATE_TOKEN_SECRET
+    :noindex:
+
+        The OAUTH_STATE_TOKEN_SECRET is used to sign state tokens to guard against CSRF attacks. Without a secret configured, Lemur will create
+        a fallback secret on a per-server basis that would last for the length of the server's lifetime (e.g., between redeploys). The secret must be `bytes-like <https://cryptography.io/en/latest/glossary/#term-bytes-like>`;
+        it will be used to instantiate the key parameter of `HMAC <https://cryptography.io/en/latest/hazmat/primitives/mac/hmac/#cryptography.hazmat.primitives.hmac.HMAC>`.
+
+        For implementation details, see ``generate_state_token()`` and ``verify_state_token()`` in ``lemur/auth/views.py``.
+
+        Running lemur create_config will securely generate a key for your configuration file.
+        If you would like to generate your own, we recommend the following method:
+
+            >>> import os
+            >>> import base64
+            >>> KEY_LENGTH = 32  # tweak as needed
+            >>> base64.b64encode(os.urandom(KEY_LENGTH))
+
+    ::
+
+        OAUTH_STATE_TOKEN_SECRET = lemur.common.utils.get_state_token_secret()
+
+.. data:: OAUTH_STATE_TOKEN_STALE_TOLERANCE_SECONDS
+    :noindex:
+
+        Defaults to 15 seconds if configuration is not discovered.
+
+        ::
+
+            OAUTH_STATE_TOKEN_STALE_TOLERANCE_SECONDS = 15
+
 .. data:: GOOGLE_CLIENT_ID
     :noindex:
 
@@ -650,6 +1005,25 @@ For more information about how to use social logins, see: `Satellizer <https://g
 
             GOOGLE_SECRET = "somethingsecret"
 
+.. data:: TOKEN_AUTH_HEADER_CASE_SENSITIVE
+    :noindex:
+
+        This is an optional parameter to change the case sensitivity of the access token request authorization header.
+        This is required if the oauth provider has implemented the access token request authorization header in a case-sensitive way
+
+        ::
+
+            TOKEN_AUTH_HEADER_CASE_SENSITIVE = True
+
+.. data:: USER_MEMBERSHIP_PROVIDER
+    :noindex:
+
+        An optional plugin to provide membership details. Provide plugin slug here. Plugin is used post user validation
+        to update membership details in Lemur. Also, it is configured to provide APIs to validate user email, team email/DL.
+
+        ::
+
+            USER_MEMBERSHIP_PROVIDER = "<yourmembershippluginslug>"
 
 Metric Providers
 ~~~~~~~~~~~~~~~~
@@ -668,6 +1042,45 @@ If you are not using a metric provider you do not need to configure any of these
 
 Plugin Specific Options
 -----------------------
+
+ACME Plugin
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. data:: ACME_DNS_PROVIDER_TYPES
+    :noindex:
+
+        Dictionary of ACME DNS Providers and their requirements.
+
+.. data:: ACME_ENABLE_DELEGATED_CNAME
+    :noindex:
+
+        Enables delegated DNS domain validation using CNAMES.  When enabled, Lemur will attempt to follow CNAME records to authoritative DNS servers when creating DNS-01 challenges.
+
+
+The following configration properties are optional for the ACME plugin to use. They allow reusing an existing ACME
+account. See :ref:`Using a pre-existing ACME account <AcmeAccountReuse>` for more details.
+
+
+.. data:: ACME_PRIVATE_KEY
+    :noindex:
+
+            This is the private key, the account was registered with (in JWK format)
+
+.. data:: ACME_REGR
+    :noindex:
+
+            This is the registration for the ACME account, the most important part is the uri attribute (in JSON)
+
+.. data:: ACME_PREFERRED_ISSUER
+    :noindex:
+
+            This is an optional parameter to indicate the preferred chain to retrieve from ACME when finalizing the order.
+            This is applicable to Let's Encrypts recent `migration <https://letsencrypt.org/certificates/>`_ to their
+            own root, where they provide two distinct certificate chains (fullchain_pem vs. alternative_fullchains_pem);
+            the main chain will be the long chain that is rooted in the expiring DTS root, whereas the alternative chain
+            is rooted in X1 root CA.
+            Select "X1" to get the shorter chain (currently alternative), leave blank or "DST Root CA X3" for the longer chain.
+
 
 Active Directory Certificate Services Plugin
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -709,10 +1122,12 @@ Active Directory Certificate Services Plugin
 
 .. data:: ADCS_START
     :noindex:
+
         Used in ADCS-Sourceplugin. Minimum id of the first certificate to be returned. ID is increased by one until ADCS_STOP. Missing cert-IDs are ignored
 
 .. data:: ADCS_STOP
     :noindex:
+
         Used for ADCS-Sourceplugin. Maximum id of the certificates returned. 
         
 
@@ -789,6 +1204,26 @@ The following parameters have to be set in the configuration files.
     :noindex:
 
         If there is a config variable ENTRUST_PRODUCT_<upper(authority.name)> take the value as cert product name else default to "STANDARD_SSL". Refer to the API documentation for valid products names.
+
+
+.. data:: ENTRUST_CROSS_SIGNED_RSA_L1K
+    :noindex:
+
+        This is optional. Entrust provides support for cross-signed subCAS. One can set ENTRUST_CROSS_SIGNED_RSA_L1K to the respective cross-signed RSA-based subCA PEM and Lemur will replace the retrieved subCA with ENTRUST_CROSS_SIGNED_RSA_L1K.
+
+
+.. data:: ENTRUST_CROSS_SIGNED_ECC_L1F
+    :noindex:
+
+        This is optional. Entrust provides support for cross-signed subCAS. One can set ENTRUST_CROSS_SIGNED_ECC_L1F to the respective cross-signed EC-based subCA PEM and Lemur will replace the retrieved subCA with ENTRUST_CROSS_SIGNED_ECC_L1F.
+
+
+.. data:: ENTRUST_USE_DEFAULT_CLIENT_ID
+    :noindex:
+
+        If set to True, Entrust will use the primary client ID of 1, which applies to most use-case.
+        Otherwise, Entrust will first lookup the clientId before ordering the certificate.
+
 
 Verisign Issuer Plugin
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -1034,6 +1469,10 @@ IAM-ServerCertificate
         "Statement": [
                     {
                          "Action": [
+                              "cloudfront:GetDistribution",
+                              "cloudfront:GetDistributionConfig",
+                              "cloudfront:ListDistributions",
+                              "cloudfront:UpdateDistribution",
                               "elasticloadbalancing:DescribeInstanceHealth",
                               "elasticloadbalancing:DescribeLoadBalancerAttributes",
                               "elasticloadbalancing:DescribeLoadBalancerPolicyTypes",
@@ -1117,7 +1556,7 @@ in Amazon's documentation `Setting up Amazon SES <http://docs.aws.amazon.com/ses
 
 The configuration::
 
-    LEMUR_MAIL = 'lemur.example.com'
+    LEMUR_EMAIL = 'lemur@example.com'
 
 Will be the sender of all notifications, so ensure that it is verified with AWS.
 
@@ -1170,23 +1609,6 @@ The following configuration properties are required to use the PowerDNS ACME Plu
             False: Disables certificate validation (Not Recommended)
 
             File/Dir path to CA Bundle: Verifies the TLS certificate was issued by a Certificate Authority in the provided CA bundle.
-
-ACME Plugin
-~~~~~~~~~~~~
-
-The following configration properties are optional for the ACME plugin to use. They allow reusing an existing ACME
-account. See :ref:`Using a pre-existing ACME account <AcmeAccountReuse>` for more details.
-
-
-.. data:: ACME_PRIVATE_KEY
-    :noindex:
-
-            This is the private key, the account was registered with (in JWK format)
-
-.. data:: ACME_REGR
-    :noindex:
-
-            This is the registration for the ACME account, the most important part is the uri attribute (in JSON)
 
 .. _CommandLineInterface:
 
@@ -1441,8 +1863,8 @@ Slack
     Adds support for slack notifications.
 
 
-AWS
-----
+AWS (Source)
+------------
 
 :Authors:
     Kevin Glisson <kglisson@netflix.com>,
@@ -1454,8 +1876,8 @@ AWS
     Uses AWS IAM as a source of certificates to manage. Supports a multi-account deployment.
 
 
-AWS
-----
+AWS (Destination)
+-----------------
 
 :Authors:
     Kevin Glisson <kglisson@netflix.com>,
@@ -1465,6 +1887,19 @@ AWS
     Destination
 :Description:
     Uses AWS IAM as a destination for Lemur generated certificates. Support a multi-account deployment.
+
+
+AWS (SNS Notification)
+----------------------
+
+:Authors:
+    Jasmine Schladen <jschladen@netflix.com>
+:Type:
+    Notification
+:Description:
+    Adds support for SNS notifications. SNS notifications (like other notification plugins) are currently only supported
+    for certificate expiration. Configuration requires a region, account number, and SNS topic name; these elements
+    are then combined to build the topic ARN. Lemur must have access to publish messages to the specified SNS topic.
 
 
 Kubernetes

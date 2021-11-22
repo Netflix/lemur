@@ -132,9 +132,11 @@ setup(
         'lemur.plugins': [
             'verisign_issuer = lemur.plugins.lemur_verisign.plugin:VerisignIssuerPlugin',
             'acme_issuer = lemur.plugins.lemur_acme.plugin:ACMEIssuerPlugin',
+            'acme_http_issuer = lemur.plugins.lemur_acme.plugin:ACMEHttpIssuerPlugin',
             'aws_destination = lemur.plugins.lemur_aws.plugin:AWSDestinationPlugin',
             'aws_source = lemur.plugins.lemur_aws.plugin:AWSSourcePlugin',
             'aws_s3 = lemur.plugins.lemur_aws.plugin:S3DestinationPlugin',
+            'aws_sns = lemur.plugins.lemur_aws.plugin:SNSNotificationPlugin',
             'email_notification = lemur.plugins.lemur_email.plugin:EmailNotificationPlugin',
             'slack_notification = lemur.plugins.lemur_slack.plugin:SlackNotificationPlugin',
             'java_truststore_export = lemur.plugins.lemur_jks.plugin:JavaTruststoreExportPlugin',
@@ -155,7 +157,8 @@ setup(
             'adcs_issuer = lemur.plugins.lemur_adcs.plugin:ADCSIssuerPlugin',
             'adcs_source = lemur.plugins.lemur_adcs.plugin:ADCSSourcePlugin',
             'entrust_issuer = lemur.plugins.lemur_entrust.plugin:EntrustIssuerPlugin',
-            'entrust_source = lemur.plugins.lemur_entrust.plugin:EntrustSourcePlugin'
+            'entrust_source = lemur.plugins.lemur_entrust.plugin:EntrustSourcePlugin',
+            'azure_destination = lemur.plugins.lemur_azure_dest.plugin:AzureDestinationPlugin'
         ],
     },
     classifiers=[

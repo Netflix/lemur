@@ -29,7 +29,8 @@
                 <button ng-click="edit(role.id)" class="btn btn-sm btn-info">
                   Edit
                 </button>
-                <a ng-click="remove(role)" class="btn btn-sm btn-danger">
+                <a ng-click="remove(role)" confirm-click="Proceed to remove the role {{ role.name }}?"
+                   class="btn btn-sm btn-danger">
                   Remove
                 </a>
               </div>

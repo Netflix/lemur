@@ -86,7 +86,7 @@ class NotificationsList(AuthenticatedResource):
                                 "required": true,
                                 "value": "kglisson@netflix.com,example@netflix.com",
                                 "helpMessage": "Comma delimited list of email addresses",
-                                "validation": "^([\\w+-.%]+@[\\w-.]+\\.[A-Za-z]{2,4},?)+$",
+                                "validation": "^([\\w+-.%]+@[-\\w.]+\\.[A-Za-z]{2,4},?)+$",
                                 "type": "str"
                             }
                         ],
@@ -117,7 +117,7 @@ class NotificationsList(AuthenticatedResource):
         """
         .. http:post:: /notifications
 
-           Creates a new account
+           Creates a new notification
 
            **Example request**:
 
@@ -126,6 +126,7 @@ class NotificationsList(AuthenticatedResource):
               POST /notifications HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
 
               {
                 "description": "a test",
@@ -156,7 +157,7 @@ class NotificationsList(AuthenticatedResource):
                         "required": true,
                         "value": "kglisson@netflix.com,example@netflix.com",
                         "helpMessage": "Comma delimited list of email addresses",
-                        "validation": "^([\\w+-.%]+@[\\w-.]+\\.[A-Za-z]{2,4},?)+$",
+                        "validation": "^([\\w+-.%]+@[-\\w.]+\\.[A-Za-z]{2,4},?)+$",
                         "type": "str"
                     }
                 ],
@@ -203,7 +204,7 @@ class NotificationsList(AuthenticatedResource):
                         "required": true,
                         "value": "kglisson@netflix.com,example@netflix.com",
                         "helpMessage": "Comma delimited list of email addresses",
-                        "validation": "^([\\w+-.%]+@[\\w-.]+\\.[A-Za-z]{2,4},?)+$",
+                        "validation": "^([\\w+-.%]+@[-\\w.]+\\.[A-Za-z]{2,4},?)+$",
                         "type": "str"
                     }
                 ],
@@ -213,9 +214,12 @@ class NotificationsList(AuthenticatedResource):
                 "id": 2
               }
 
-           :arg accountNumber: aws account number
-           :arg label: human readable account label
-           :arg comments: some description about the account
+           :label label: notification name
+           :label slug: notification plugin slug
+           :label plugin_options: notification plugin options
+           :label description: notification description
+           :label active: whether or not the notification is active/enabled
+           :label certificates: certificates to attach to notification
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
@@ -238,7 +242,7 @@ class Notifications(AuthenticatedResource):
         """
         .. http:get:: /notifications/1
 
-           Get a specific account
+           Get a specific notification
 
            **Example request**:
 
@@ -285,7 +289,7 @@ class Notifications(AuthenticatedResource):
                         "required": true,
                         "value": "kglisson@netflix.com,example@netflix.com",
                         "helpMessage": "Comma delimited list of email addresses",
-                        "validation": "^([\\w+-.%]+@[\\w-.]+\\.[A-Za-z]{2,4},?)+$",
+                        "validation": "^([\\w+-.%]+@[-\\w.]+\\.[A-Za-z]{2,4},?)+$",
                         "type": "str"
                     }
                 ],
@@ -305,15 +309,28 @@ class Notifications(AuthenticatedResource):
         """
         .. http:put:: /notifications/1
 
-           Updates an account
+           Updates a notification
 
            **Example request**:
 
            .. sourcecode:: http
 
-              POST /notifications/1 HTTP/1.1
+              PUT /notifications/1 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
+
+              {
+                "label": "labelChanged",
+                "plugin": {
+                    "slug": "email-notification",
+                    "plugin_options": "???"
+                  },
+                "description": "Sample notification",
+                "active": "true",
+                "added_certificates": "???",
+                "removed_certificates": "???"
+              }
 
 
            **Example response**:
@@ -326,24 +343,36 @@ class Notifications(AuthenticatedResource):
 
               {
                 "id": 1,
-                "accountNumber": 11111111111,
                 "label": "labelChanged",
-                "comments": "this is a thing"
+                "plugin": {
+                    "slug": "email-notification",
+                    "plugin_options": "???"
+                  },
+                "description": "Sample notification",
+                "active": "true",
+                "added_certificates": "???",
+                "removed_certificates": "???"
               }
 
-           :arg accountNumber: aws account number
-           :arg label: human readable account label
-           :arg comments: some description about the account
+           :label label: notification name
+           :label slug: notification plugin slug
+           :label plugin_options: notification plugin options
+           :label description: notification description
+           :label active: whether or not the notification is active/enabled
+           :label added_certificates: certificates to add
+           :label removed_certificates: certificates to remove
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
         return service.update(
             notification_id,
             data["label"],
+            data["plugin"]["slug"],
             data["plugin"]["plugin_options"],
             data["description"],
             data["active"],
-            data["certificates"],
+            data["added_certificates"],
+            data["removed_certificates"],
         )
 
     def delete(self, notification_id):
@@ -411,7 +440,7 @@ class CertificateNotifications(AuthenticatedResource):
                                 "required": true,
                                 "value": "kglisson@netflix.com,example@netflix.com",
                                 "helpMessage": "Comma delimited list of email addresses",
-                                "validation": "^([\\w+-.%]+@[\\w-.]+\\.[A-Za-z]{2,4},?)+$",
+                                "validation": "^([\\w+-.%]+@[-\\w.]+\\.[A-Za-z]{2,4},?)+$",
                                 "type": "str"
                             }
                         ],

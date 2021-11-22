@@ -8,7 +8,7 @@
 from flask import current_app
 from flask_restful import inputs
 from flask_restful.reqparse import RequestParser
-from marshmallow import fields, validate, validates_schema, post_load, pre_load
+from marshmallow import fields, validate, validates_schema, post_load, pre_load, post_dump
 from marshmallow.exceptions import ValidationError
 
 from lemur.authorities.schemas import AuthorityNestedOutputSchema
@@ -16,13 +16,14 @@ from lemur.certificates import utils as cert_utils
 from lemur.common import missing, utils, validators
 from lemur.common.fields import ArrowDateTime, Hex
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
-from lemur.constants import CERTIFICATE_KEY_TYPES
+from lemur.constants import CERTIFICATE_KEY_TYPES, CRLReason
 from lemur.destinations.schemas import DestinationNestedOutputSchema
 from lemur.dns_providers.schemas import DnsProvidersNestedOutputSchema
 from lemur.domains.schemas import DomainNestedOutputSchema
 from lemur.notifications import service as notification_service
 from lemur.notifications.schemas import NotificationNestedOutputSchema
 from lemur.policies.schemas import RotationPolicyNestedOutputSchema
+from lemur.roles import service as roles_service
 from lemur.roles.schemas import RoleNestedOutputSchema
 from lemur.schemas import (
     AssociatedAuthoritySchema,
@@ -67,7 +68,9 @@ class CertificateCreationSchema(CertificateSchema):
 
 class CertificateInputSchema(CertificateCreationSchema):
     name = fields.String()
-    common_name = fields.String(required=True, validate=validators.common_name)
+    # Earlier common_name was a required field and thus in most places there is no None check for it. Adding missing=""
+    # as it is not a required field anymore.
+    common_name = fields.String(validate=validators.common_name, missing="")
     authority = fields.Nested(AssociatedAuthoritySchema, required=True)
 
     validity_start = ArrowDateTime(allow_none=True)
@@ -88,7 +91,7 @@ class CertificateInputSchema(CertificateCreationSchema):
     csr = fields.String(allow_none=True, validate=validators.csr)
 
     key_type = fields.String(
-        validate=validate.OneOf(CERTIFICATE_KEY_TYPES), missing="RSA2048"
+        validate=validate.OneOf(CERTIFICATE_KEY_TYPES), missing="ECCPRIME256V1"
     )
 
     notify = fields.Boolean(default=True)
@@ -115,7 +118,7 @@ class CertificateInputSchema(CertificateCreationSchema):
     )
     state = fields.String(missing=lambda: current_app.config.get("LEMUR_DEFAULT_STATE"))
 
-    extensions = fields.Nested(ExtensionSchema)
+    extensions = fields.Nested(ExtensionSchema, missing={})
 
     @validates_schema
     def validate_authority(self, data):
@@ -131,6 +134,14 @@ class CertificateInputSchema(CertificateCreationSchema):
     @validates_schema
     def validate_dates(self, data):
         validators.dates(data)
+
+    @post_load
+    def validate_common_name(self, data):
+        if data["authority"] and (not data["authority"].is_cn_optional) and data["common_name"] == "":
+            raise ValidationError("Missing common_name")
+
+        if len(data["extensions"]["sub_alt_names"]["names"]) == 0 and data["common_name"] == "":
+            raise ValidationError("Missing common_name, either CN or SAN must be present")
 
     @pre_load
     def load_data(self, data):
@@ -161,7 +172,7 @@ class CertificateInputSchema(CertificateCreationSchema):
             if data.get("body"):
                 data["key_type"] = utils.get_key_type_from_certificate(data["body"])
             else:
-                data["key_type"] = "RSA2048"  # default value
+                data["key_type"] = "ECCPRIME256V1"  # default value
 
         return missing.convert_validity_years(data)
 
@@ -186,25 +197,52 @@ class CertificateEditInputSchema(CertificateSchema):
             data["replaces"] = data[
                 "replacements"
             ]  # TODO remove when field is deprecated
+
+        if data.get("owner"):
+            # Check if role already exists. This avoids adding duplicate role.
+            if data.get("roles") and any(r.get("name") == data["owner"] for r in data["roles"]):
+                return data
+
+            # Add required role
+            owner_role = roles_service.get_or_create(
+                data["owner"],
+                description=f"Auto generated role based on owner: {data['owner']}"
+            )
+
+            # Put  role info in correct format using RoleNestedOutputSchema
+            owner_role_dict = RoleNestedOutputSchema().dump(owner_role).data
+            if data.get("roles"):
+                data["roles"].append(owner_role_dict)
+            else:
+                data["roles"] = [owner_role_dict]
+
         return data
 
     @post_load
     def enforce_notifications(self, data):
         """
-        Ensures that when an owner changes, default notifications are added for the new owner.
-        Old owner notifications are retained unless explicitly removed.
+        Add default notification for current owner if none exist.
+        This ensures that the default notifications are added in the event of owner change.
+        Old owner notifications are retained unless explicitly removed later in the code path.
         :param data:
         :return:
         """
-        if data["owner"]:
+        if data.get("owner"):
             notification_name = "DEFAULT_{0}".format(
                 data["owner"].split("@")[0].upper()
             )
+
+            # Even if one default role exists, return
+            # This allows a User to remove unwanted default notification for current owner
+            if any(n.label.startswith(notification_name) for n in data["notifications"]):
+                return data
+
             data[
                 "notifications"
             ] += notification_service.create_default_expiration_notifications(
                 notification_name, [data["owner"]]
             )
+
         return data
 
 
@@ -306,12 +344,38 @@ class CertificateOutputSchema(LemurOutputSchema):
     )
     rotation_policy = fields.Nested(RotationPolicyNestedOutputSchema)
 
+    country = fields.String()
+    location = fields.String()
+    state = fields.String()
+    organization = fields.String()
+    organizational_unit = fields.String()
+
+    @post_dump
+    def handle_subject_details(self, data):
+        subject_details = ["country", "state", "location", "organization", "organizational_unit"]
+
+        # Remove subject details if authority is CA/Browser Forum compliant. The code will use default set of values in that case.
+        # If CA/Browser Forum compliance of an authority is unknown (None), it is safe to fallback to default values. Thus below
+        # condition checks for 'not False' ==> 'True or None'
+        if data.get("authority"):
+            is_cab_compliant = data.get("authority").get("isCabCompliant")
+
+            if is_cab_compliant is not False:
+                for field in subject_details:
+                    data.pop(field, None)
+
+        # Removing subject fields if None, else it complains in de-serialization
+        for field in subject_details:
+            if field in data and data[field] is None:
+                data.pop(field)
+
 
 class CertificateShortOutputSchema(LemurOutputSchema):
     id = fields.Integer()
     name = fields.String()
     owner = fields.Email()
     notify = fields.Boolean()
+    rotation = fields.Boolean()
     authority = fields.Nested(AuthorityNestedOutputSchema)
     issuer = fields.String()
     cn = fields.String()
@@ -390,6 +454,7 @@ class CertificateExportInputSchema(LemurInputSchema):
 
 
 class CertificateNotificationOutputSchema(LemurOutputSchema):
+    id = fields.Integer()
     description = fields.String()
     issuer = fields.String()
     name = fields.String()
@@ -399,11 +464,15 @@ class CertificateNotificationOutputSchema(LemurOutputSchema):
     replaced_by = fields.Nested(
         CertificateNestedOutputSchema, many=True, attribute="replaced"
     )
+    replaces = fields.Nested(
+        CertificateNestedOutputSchema, many=True, attribute="replaces"
+    )
     endpoints = fields.Nested(EndpointNestedOutputSchema, many=True, missing=[])
 
 
 class CertificateRevokeSchema(LemurInputSchema):
     comments = fields.String()
+    crl_reason = fields.String(validate=validate.OneOf(CRLReason.__members__), missing="unspecified")
 
 
 certificates_list_request_parser = RequestParser()

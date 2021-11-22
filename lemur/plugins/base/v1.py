@@ -6,7 +6,9 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+from flask import current_app
 from threading import local
+import re
 
 
 # stolen from https://github.com/getsentry/sentry/
@@ -109,11 +111,49 @@ class IPlugin(local):
         """
         return self.resource_links
 
-    @staticmethod
-    def get_option(name, options):
+    def get_option(self, name, options):
+        user_opt = self.get_user_option(name, options)
+        if user_opt is None:
+            return None
+
+        value = user_opt.get("value", user_opt.get("default"))
+        if value is None:
+            return None
+
+        return self.validate_option_value(name, value)
+
+    def validate_option_value(self, option_name, value):
+        class_opt = self.get_server_options(option_name)
+        if not class_opt:
+            current_app.logger.warning("Plugin option server-defaults not found")
+            return None
+        opt_type = class_opt["type"]
+        if opt_type == "str":
+            validation = class_opt.get("validation")
+            if not validation:
+                return value
+            if not re.match(validation, value):
+                raise ValueError(f"Option '{option_name}' cannot be validated")
+        elif opt_type == "select":
+            available = class_opt.get("available")
+            if available is None:
+                return value
+            if value not in available:
+                raise ValueError(f"Option '{option_name}' doesn't match available options")
+        return value
+
+    def get_server_options(self, name):
+        class_options = getattr(self, "options", [])
+        for o in class_options:
+            if o.get("name") == name:
+                return o
+        return None
+
+    def get_user_option(self, name, options):
         for o in options:
             if o.get("name") == name:
-                return o.get("value", o.get("default"))
+                return o
+        return None
 
 
 class Plugin(IPlugin):

@@ -4,9 +4,9 @@ import unicodedata
 from cryptography import x509
 from cryptography.hazmat.primitives.serialization import Encoding
 from flask import current_app
+from sentry_sdk import capture_exception
 
 from lemur.common.utils import is_selfsigned
-from lemur.extensions import sentry
 from lemur.constants import SAN_NAMING_TEMPLATE, DEFAULT_NAMING_TEMPLATE
 
 
@@ -29,18 +29,19 @@ def text_to_slug(value, joiner="-"):
     return value.strip(joiner)
 
 
-def certificate_name(common_name, issuer, not_before, not_after, san):
+def certificate_name(common_name, issuer, not_before, not_after, san, domains=[]):
     """
     Create a name for our certificate. A naming standard
     is based on a series of templates. The name includes
     useful information such as Common Name, Validation dates,
     and Issuer.
 
-    :param san:
     :param common_name:
     :param not_after:
     :param issuer:
     :param not_before:
+    :param san:
+    :param domains:
     :rtype: str
     :return:
     """
@@ -49,8 +50,13 @@ def certificate_name(common_name, issuer, not_before, not_after, san):
     else:
         t = DEFAULT_NAMING_TEMPLATE
 
+    if common_name and common_name.strip():
+        subject = common_name
+    elif len(domains):
+        subject = domains[0].name
+
     temp = t.format(
-        subject=common_name,
+        subject=subject,
         issuer=issuer.replace(" ", ""),
         not_before=not_before.strftime("%Y%m%d"),
         not_after=not_after.strftime("%Y%m%d"),
@@ -77,7 +83,7 @@ def common_name(cert):
             return subject_oid[0].value.strip()
         return None
     except Exception as e:
-        sentry.captureException()
+        capture_exception()
         current_app.logger.error(
             {
                 "message": "Unable to get common name",
@@ -95,11 +101,13 @@ def organization(cert):
     :return:
     """
     try:
-        return cert.subject.get_attributes_for_oid(x509.OID_ORGANIZATION_NAME)[
-            0
-        ].value.strip()
+        o = cert.subject.get_attributes_for_oid(x509.OID_ORGANIZATION_NAME)
+        if not o:
+            return None
+
+        return o[0].value.strip()
     except Exception as e:
-        sentry.captureException()
+        capture_exception()
         current_app.logger.error("Unable to get organization! {0}".format(e))
 
 
@@ -110,11 +118,13 @@ def organizational_unit(cert):
     :return:
     """
     try:
-        return cert.subject.get_attributes_for_oid(x509.OID_ORGANIZATIONAL_UNIT_NAME)[
-            0
-        ].value.strip()
+        ou = cert.subject.get_attributes_for_oid(x509.OID_ORGANIZATIONAL_UNIT_NAME)
+        if not ou:
+            return None
+
+        return ou[0].value.strip()
     except Exception as e:
-        sentry.captureException()
+        capture_exception()
         current_app.logger.error("Unable to get organizational unit! {0}".format(e))
 
 
@@ -125,11 +135,13 @@ def country(cert):
     :return:
     """
     try:
-        return cert.subject.get_attributes_for_oid(x509.OID_COUNTRY_NAME)[
-            0
-        ].value.strip()
+        c = cert.subject.get_attributes_for_oid(x509.OID_COUNTRY_NAME)
+        if not c:
+            return None
+
+        return c[0].value.strip()
     except Exception as e:
-        sentry.captureException()
+        capture_exception()
         current_app.logger.error("Unable to get country! {0}".format(e))
 
 
@@ -140,11 +152,13 @@ def state(cert):
     :return:
     """
     try:
-        return cert.subject.get_attributes_for_oid(x509.OID_STATE_OR_PROVINCE_NAME)[
-            0
-        ].value.strip()
+        s = cert.subject.get_attributes_for_oid(x509.OID_STATE_OR_PROVINCE_NAME)
+        if not s:
+            return None
+
+        return s[0].value.strip()
     except Exception as e:
-        sentry.captureException()
+        capture_exception()
         current_app.logger.error("Unable to get state! {0}".format(e))
 
 
@@ -155,11 +169,13 @@ def location(cert):
     :return:
     """
     try:
-        return cert.subject.get_attributes_for_oid(x509.OID_LOCALITY_NAME)[
-            0
-        ].value.strip()
+        loc = cert.subject.get_attributes_for_oid(x509.OID_LOCALITY_NAME)
+        if not loc:
+            return None
+
+        return loc[0].value.strip()
     except Exception as e:
-        sentry.captureException()
+        capture_exception()
         current_app.logger.error("Unable to get location! {0}".format(e))
 
 
@@ -178,11 +194,14 @@ def domains(cert):
         entries = ext.value.get_values_for_type(x509.DNSName)
         for entry in entries:
             domains.append(entry)
+        entries = ext.value.get_values_for_type(x509.IPAddress)
+        for entry in entries:
+            domains.append(str(entry))
     except x509.ExtensionNotFound:
         if current_app.config.get("LOG_SSL_SUBJ_ALT_NAME_ERRORS", True):
-            sentry.captureException()
+            capture_exception()
     except Exception as e:
-        sentry.captureException()
+        capture_exception()
 
     return domains
 
@@ -234,7 +253,7 @@ def bitstrength(cert):
     try:
         return cert.public_key().key_size
     except AttributeError:
-        sentry.captureException()
+        capture_exception()
         current_app.logger.debug("Unable to get bitstrength.")
 
 
