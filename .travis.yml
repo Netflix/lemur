@@ -45,6 +45,7 @@ before_script:
   - psql -c "create user lemur with password 'lemur;'" -U postgres
   - psql lemur -c "create extension IF NOT EXISTS pg_trgm;" -U postgres
   - npm config set registry https://registry.npmjs.org
+  - nvm install 16.13.0
   - nvm use 16.13.0
   - node -v
   - npm -v
