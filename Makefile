@@ -9,9 +9,8 @@ ifeq ($(USER), root)
 	@echo "WARNING: It looks like you are installing Lemur as root. This is not generally advised."
 	npm install --unsafe-perm
 else
-	npm cache clean -force
-	bash -c "source ~/.nvm/nvm.sh; nvm install 16.13.0; nvm use 16.13.0;"
-	node -v
+	npm cache clean --force
+	bash -c "source ~/.nvm/nvm.sh; nvm install 16.13.0; nvm use 16.13.0; node -v"
 	npm -v
 	npm install
 endif
@@ -85,7 +84,7 @@ test-cli:
 
 test-js:
 	@echo "--> Running JavaScript tests"
-	node -v
+	bash -c "source ~/.nvm/nvm.sh; nvm install 16.13.0; nvm use 16.13.0; node -v"
 	npm -v
 	npm test
 	@echo ""
