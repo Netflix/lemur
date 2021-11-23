@@ -9,7 +9,7 @@ ifeq ($(USER), root)
 	@echo "WARNING: It looks like you are installing Lemur as root. This is not generally advised."
 	npm install --unsafe-perm
 else
-	nvm use 16.13.0
+	bash -c "source ~/.nvm/nvm.sh; nvm use 16.13.0; node --version"
 	npm install
 endif
 	pip install "setuptools>=0.9.8"
