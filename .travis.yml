@@ -14,21 +14,21 @@ jobs:
       services:
         - xvfb
     - name: "python3.7-postgresql-10-bionic"
-        dist: bionic
-        language: python
-        python: "3.7"
-        env: TOXENV=py37
-        addons:
-          postgresql: '10'
-          chrome: stable
-          apt:
-            packages:
-              - postgresql-10
-              - postgresql-client-10
-              - postgresql-server-dev-10
-        services:
-          - postgresql
-          - xvfb
+      dist: bionic
+      language: python
+      python: "3.7"
+      env: TOXENV=py37
+      addons:
+        postgresql: '10'
+        chrome: stable
+        apt:
+          packages:
+            - postgresql-10
+            - postgresql-client-10
+            - postgresql-server-dev-10
+      services:
+        - postgresql
+        - xvfb
     - name: "python3.7-postgresql-12-bionic"
       dist: bionic
       language: python
