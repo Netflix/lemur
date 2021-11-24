@@ -1,4 +1,3 @@
-language: node_js
 node_js:
   - "16"
 
@@ -46,13 +45,9 @@ before_script:
   - psql -c "create user lemur with password 'lemur;'" -U postgres
   - psql lemur -c "create extension IF NOT EXISTS pg_trgm;" -U postgres
   - npm config set registry https://registry.npmjs.org
-  #- nvm install 16.13.0
-  #- nvm use 16.13.0
-  - node -v
-  #- npm -v
-  - npm install -g npm@latest bower
-  - node -v
-  - npm -v
+  - nvm install 16.13.0
+  - nvm use 16.13.0
+  - npm install -g bower
   - pip install --upgrade setuptools
   - export DISPLAY=:99.0
 
