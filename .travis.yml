@@ -1,3 +1,4 @@
+# update node.js version in before_script as well, using nvm install to pick needed version
 node_js:
   - "16"
 
@@ -93,6 +94,7 @@ before_script:
   - psql -c "create user lemur with password 'lemur;'" -U postgres
   - psql lemur -c "create extension IF NOT EXISTS pg_trgm;" -U postgres
   - npm config set registry https://registry.npmjs.org
+  # update node.js version here
   - nvm install 16.13.0
   - nvm use 16.13.0
   - npm install -g bower
