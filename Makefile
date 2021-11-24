@@ -9,7 +9,7 @@ ifeq ($(USER), root)
 	@echo "WARNING: It looks like you are installing Lemur as root. This is not generally advised."
 	npm install --unsafe-perm
 else
-    	node -v
+	node -v
 	npm -v
 	npm install
 endif
