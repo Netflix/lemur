@@ -238,7 +238,7 @@ jmespath==0.10.0
     #   -r requirements-tests.txt
     #   boto3
     #   botocore
-josepy==1.10.0
+josepy==1.11.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
