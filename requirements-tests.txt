@@ -110,7 +110,7 @@ jmespath==0.10.0
     # via
     #   boto3
     #   botocore
-josepy==1.10.0
+josepy==1.11.0
     # via
     #   acme
     #   certbot
