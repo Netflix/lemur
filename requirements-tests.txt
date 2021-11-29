@@ -48,7 +48,7 @@ configargparse==1.4.1
     # via certbot
 configobj==5.0.6
     # via certbot
-coverage==6.1.2
+coverage==6.2
     # via -r requirements-tests.in
 cryptography==36.0.0
     # via
