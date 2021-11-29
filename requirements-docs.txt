@@ -472,7 +472,7 @@ s3transfer==0.5.0
     # via
     #   -r requirements-tests.txt
     #   boto3
-sentry-sdk==1.4.3
+sentry-sdk==1.5.0
     # via -r requirements-docs.in
 six==1.16.0
     # via
