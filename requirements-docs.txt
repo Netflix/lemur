@@ -312,7 +312,7 @@ packaging==20.9
     #   fakeredis
     #   pytest
     #   sphinx
-paramiko==2.8.0
+paramiko==2.8.1
     # via -r requirements-docs.in
 parsedatetime==2.6
     # via
