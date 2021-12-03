@@ -1025,6 +1025,22 @@ For more information about how to use social logins, see: `Satellizer <https://g
 
             USER_MEMBERSHIP_PROVIDER = "<yourmembershippluginslug>"
 
+Authoriation Providers
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you are not using a custom authorization provider you do not need to configure any of these options
+
+.. data:: USER_DOMAIN_AUTHORIZATION_PROVIDER
+    :noindex:
+
+        An optional plugin to perform authorization of domains for which certificate is being issued. Provide plugin slug here.
+        Plugin is used to check if caller is authorized to issue a certificate for a given Common Name and Subject Alternative
+        Name (SAN) of type DNSName. Plugin shall be an implementation of DomainAuthorizationPlugin.
+
+        ::
+
+            USER_DOMAIN_AUTHORIZATION_PROVIDER = "<yourauthorizationpluginslug>"
+
 Metric Providers
 ~~~~~~~~~~~~~~~~
 
