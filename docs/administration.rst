@@ -2032,7 +2032,7 @@ get it added.
 Want to create your own extension? See :doc:`../developer/plugins/index` to get started.
 
 
-.. _iam target
+.. _iam_target:
 
 Identity and Access Management
 ==============================
@@ -2073,7 +2073,7 @@ Membership Plugin
     User Membership
 :Description:
     Adds support to learn and validate user membership details from an external service. User memberships are used to
-    create user roled dynamically as described in :ref:`iam target`. Configure this plugin slug as `USER_MEMBERSHIP_PROVIDER`
+    create user roled dynamically as described in :ref:`iam_target`. Configure this plugin slug as `USER_MEMBERSHIP_PROVIDER`
 
 Authorization Plugins
 ---------------------
