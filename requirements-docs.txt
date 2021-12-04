@@ -46,19 +46,19 @@ beautifulsoup4==4.9.3
     # via cloudflare
 billiard==3.6.4.0
     # via celery
-black==21.10b0
+black==21.11b1
     # via -r requirements-tests.txt
 blinker==1.4
     # via
     #   flask-mail
     #   flask-principal
-boto3==1.20.5
+boto3==1.20.15
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
-botocore==1.23.5
+botocore==1.23.15
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -108,9 +108,9 @@ configobj==5.0.6
     # via
     #   -r requirements-tests.txt
     #   certbot
-coverage==6.1.2
+coverage==6.2
     # via -r requirements-tests.txt
-cryptography==35.0.0
+cryptography==36.0.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -148,11 +148,11 @@ ecdsa==0.14.1
     #   sshpubkeys
 factory-boy==3.2.1
     # via -r requirements-tests.txt
-faker==9.8.1
+faker==9.8.3
     # via
     #   -r requirements-tests.txt
     #   factory-boy
-fakeredis==1.6.1
+fakeredis==1.7.0
     # via -r requirements-tests.txt
 flask==1.1.2
     # via
@@ -238,7 +238,7 @@ jmespath==0.10.0
     #   -r requirements-tests.txt
     #   boto3
     #   botocore
-josepy==1.10.0
+josepy==1.11.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -312,7 +312,7 @@ packaging==20.9
     #   fakeredis
     #   pytest
     #   sphinx
-paramiko==2.8.0
+paramiko==2.8.1
     # via -r requirements-docs.in
 parsedatetime==2.6
     # via
@@ -472,7 +472,7 @@ s3transfer==0.5.0
     # via
     #   -r requirements-tests.txt
     #   boto3
-sentry-sdk==1.4.3
+sentry-sdk==1.5.0
     # via -r requirements-docs.in
 six==1.16.0
     # via
