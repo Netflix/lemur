@@ -2084,6 +2084,6 @@ Authorization Plugins
     External Authorization
 :Description:
     Adds support to implement custom authorization logic that is best suited for your enterprise. Lemur offers `AuthorizationPlugin`
-    and its extended version `DomainAuthorizationPlugin`. One can implement a `DomainAuthorizationPlugin` and configure its
+    and its extended version `DomainAuthorizationPlugin`. One can implement `DomainAuthorizationPlugin` and configure its
     slug as `USER_DOMAIN_AUTHORIZATION_PROVIDER` to check if caller is authorized to issue a certificate for a given Common
     Name and Subject Alternative Name (SAN) of type DNSName
