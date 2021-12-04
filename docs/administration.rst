@@ -1025,8 +1025,9 @@ For more information about how to use social logins, see: `Satellizer <https://g
 
             USER_MEMBERSHIP_PROVIDER = "<yourmembershippluginslug>"
 
-Authoriation Providers
-~~~~~~~~~~~~~~~~~~~~~~~~
+Authorization Providers
+~~~~~~~~~~~~~~~~~~~~~~~
+
 
 If you are not using a custom authorization provider you do not need to configure any of these options
 
@@ -2031,6 +2032,8 @@ get it added.
 Want to create your own extension? See :doc:`../developer/plugins/index` to get started.
 
 
+.. _iam target
+
 Identity and Access Management
 ==============================
 
@@ -2057,3 +2060,30 @@ These permissions are applied to the user upon login and refreshed on every requ
 .. seealso::
 
     `Flask-Principal <https://pythonhosted.org/Flask-Principal>`_
+
+To allow integration with external access/membership management tools that may exist in your organization, lemur offers
+below plugins in addition to it's own RBAC implementation.
+
+Membership Plugin
+-----------------
+
+:Authors:
+    Sayali Charhate <scharhate@netflix.com>
+:Type:
+    User Membership
+:Description:
+    Adds support to learn and validate user membership details from an external service. User memberships are used to
+    create user roled dynamically as described in :ref:`iam target`. Configure this plugin slug as `USER_MEMBERSHIP_PROVIDER`
+
+Authorization Plugins
+---------------------
+
+:Authors:
+    Sayali Charhate <scharhate@netflix.com>
+:Type:
+    External Authorization
+:Description:
+    Adds support to implement custom authorization logic that is best suited for your enterprise. Lemur offers `AuthorizationPlugin`
+    and its extended version `DomainAuthorizationPlugin`. One can implement a `DomainAuthorizationPlugin` and configure its
+    slug as `USER_DOMAIN_AUTHORIZATION_PROVIDER` to check if caller is authorized to issue a certificate for a given Common
+    Name and Subject Alternative Name (SAN) of type DNSName
