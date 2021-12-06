@@ -18,7 +18,7 @@ aws-xray-sdk==2.8.0
     # via moto
 bandit==1.7.1
     # via -r requirements-tests.in
-black==21.11b1
+black==21.12b0
     # via -r requirements-tests.in
 boto3==1.20.15
     # via
@@ -219,8 +219,6 @@ pyyaml==6.0
     #   moto
 redis==3.5.3
     # via fakeredis
-regex==2021.4.4
-    # via black
 requests==2.26.0
     # via
     #   acme

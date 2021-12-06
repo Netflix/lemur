@@ -46,7 +46,7 @@ beautifulsoup4==4.9.3
     # via cloudflare
 billiard==3.6.4.0
     # via celery
-black==21.11b1
+black==21.12b0
     # via -r requirements-tests.txt
 blinker==1.4
     # via
@@ -435,10 +435,6 @@ redis==3.5.3
     #   -r requirements-tests.txt
     #   celery
     #   fakeredis
-regex==2021.4.4
-    # via
-    #   -r requirements-tests.txt
-    #   black
 requests==2.26.0
     # via
     #   -r requirements-tests.txt
