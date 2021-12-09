@@ -1034,7 +1034,7 @@ If you are not using a custom authorization provider you do not need to configur
 .. data:: USER_DOMAIN_AUTHORIZATION_PROVIDER
     :noindex:
 
-        An optional plugin to perform authorization of domains for which certificate is being issued. Provide plugin slug here.
+        An optional plugin to perform domain level authorization during certificate issuance. Provide plugin slug here.
         Plugin is used to check if caller is authorized to issue a certificate for a given Common Name and Subject Alternative
         Name (SAN) of type DNSName. Plugin shall be an implementation of DomainAuthorizationPlugin.
 
@@ -2073,7 +2073,7 @@ Membership Plugin
     User Membership
 :Description:
     Adds support to learn and validate user membership details from an external service. User memberships are used to
-    create user roled dynamically as described in :ref:`iam_target`. Configure this plugin slug as `USER_MEMBERSHIP_PROVIDER`
+    create user roles dynamically as described in :ref:`iam_target`. Configure this plugin slug as `USER_MEMBERSHIP_PROVIDER`
 
 Authorization Plugins
 ---------------------

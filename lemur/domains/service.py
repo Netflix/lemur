@@ -62,7 +62,7 @@ def is_domain_sensitive(name):
 
 def is_authorized_for_domain(name):
     """
-    If authorization plugin is available, perform the check to see if current user can issue certificate for a give
+    If authorization plugin is available, perform the check to see if current user can issue certificate for a given
     domain.
     Return True if authorized, False otherwise.
     If authorization plugin is not available, return true by default
