@@ -19,7 +19,6 @@ from lemur.database import db
 
 from lemur.models import policies_ciphers
 
-
 BAD_CIPHERS = ["Protocol-SSLv3", "Protocol-SSLv2", "Protocol-TLSv1"]
 
 
@@ -44,12 +43,20 @@ class Policy(db.Model):
     ciphers = relationship("Cipher", secondary=policies_ciphers, backref="policy")
 
 
+class EndpointDnsAlias(db.Model):
+    __tablename__ = "endpoint_dnsalias"
+    id = Column(Integer, primary_key=True)
+    endpoint_id = Column(Integer, ForeignKey('endpoints.id'))
+    alias = Column(String(256))
+
+
 class Endpoint(db.Model):
     __tablename__ = "endpoints"
     id = Column(Integer, primary_key=True)
     owner = Column(String(128))
     name = Column(String(128))
     dnsname = Column(String(256))
+    aliases = relationship("EndpointDnsAlias", backref="endpoint")
     type = Column(String(128))
     active = Column(Boolean, default=True)
     port = Column(Integer)
@@ -67,6 +74,13 @@ class Endpoint(db.Model):
     )
 
     replaced = association_proxy("certificate", "replaced")
+
+    @property
+    def dns_aliases(self):
+        aliases = []
+        for alias in self.aliases:
+            aliases.append(alias.alias)
+        return aliases
 
     @property
     def issues(self):

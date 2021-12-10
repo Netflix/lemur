@@ -392,13 +392,6 @@ Example Celery configuration (To be placed in your configuration file)::
             },
             'schedule': crontab(hour="*/3", minute=5),
         },
-        'sync_source_destination': {
-            'task': 'lemur.common.celery.sync_source_destination',
-            'options': {
-                'expires': 180
-            },
-            'schedule': crontab(hour="*"),
-        },
         'notify_expirations': {
             'task': 'lemur.common.celery.notify_expirations',
             'options': {

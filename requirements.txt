@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements.txt requirements.in
 #
-acme==1.19.0
+acme==1.21.0
     # via
     #   -r requirements.in
     #   certbot
@@ -16,7 +16,7 @@ amqp==2.6.1
     # via kombu
 aniso8601==9.0.1
     # via flask-restful
-arrow==1.1.1
+arrow==1.2.1
     # via -r requirements.in
 asyncpool==1.0
     # via -r requirements.in
@@ -32,18 +32,18 @@ blinker==1.4
     # via
     #   flask-mail
     #   flask-principal
-boto3==1.18.48
+boto3==1.20.20
     # via -r requirements.in
-botocore==1.21.48
+botocore==1.23.20
     # via
     #   -r requirements.in
     #   boto3
     #   s3transfer
 celery[redis]==4.4.2
     # via -r requirements.in
-certbot==1.19.0
+certbot==1.21.0
     # via -r requirements.in
-certifi==2021.5.30
+certifi==2021.10.8
     # via
     #   -r requirements.in
     #   requests
@@ -65,7 +65,7 @@ configargparse==1.4.1
     # via certbot
 configobj==5.0.6
     # via certbot
-cryptography==3.4.8
+cryptography==36.0.0
     # via
     #   -r requirements.in
     #   acme
@@ -73,6 +73,8 @@ cryptography==3.4.8
     #   josepy
     #   paramiko
     #   pyopenssl
+decorator==5.1.0
+    # via validators
 distro==1.5.0
     # via certbot
 dnspython==1.15.0
@@ -102,7 +104,7 @@ flask-migrate==2.7.0
     # via -r requirements.in
 flask-principal==0.4.0
     # via -r requirements.in
-flask-replicated==1.4
+flask-replicated==2.1
     # via -r requirements.in
 flask-restful==0.3.9
     # via -r requirements.in
@@ -126,7 +128,7 @@ itsdangerous==2.0.1
     # via flask
 javaobj-py3==0.4.3
     # via pyjks
-jinja2==3.0.1
+jinja2==3.0.3
     # via
     #   -r requirements.in
     #   flask
@@ -134,7 +136,7 @@ jmespath==0.10.0
     # via
     #   boto3
     #   botocore
-josepy==1.9.0
+josepy==1.11.0
     # via
     #   acme
     #   certbot
@@ -160,13 +162,13 @@ marshmallow-sqlalchemy==0.23.1
     # via -r requirements.in
 ndg-httpsclient==0.5.1
     # via -r requirements.in
-paramiko==2.7.2
+paramiko==2.8.1
     # via -r requirements.in
 parsedatetime==2.6
     # via certbot
 pem==21.2.0
     # via -r requirements.in
-psycopg2==2.9.1
+psycopg2==2.9.2
     # via -r requirements.in
 pyasn1==0.4.8
     # via
@@ -184,11 +186,11 @@ pycryptodomex==3.10.1
     # via pyjks
 pyjks==20.0.0
     # via -r requirements.in
-pyjwt==2.1.0
+pyjwt==2.3.0
     # via -r requirements.in
 pynacl==1.4.0
     # via paramiko
-pyopenssl==20.0.1
+pyopenssl==21.0.0
     # via
     #   -r requirements.in
     #   acme
@@ -207,7 +209,7 @@ python-editor==1.0.4
     # via alembic
 python-json-logger==2.0.1
     # via logmatic-python
-python-ldap==3.3.1
+python-ldap==3.4.0
     # via -r requirements.in
 pytz==2021.1
     # via
@@ -216,7 +218,7 @@ pytz==2021.1
     #   certbot
     #   flask-restful
     #   pyrfc3339
-pyyaml==5.4.1
+pyyaml==6.0
     # via
     #   -r requirements.in
     #   cloudflare
@@ -238,7 +240,7 @@ retrying==1.3.3
     # via -r requirements.in
 s3transfer==0.5.0
     # via boto3
-sentry-sdk==1.3.1
+sentry-sdk==1.5.0
     # via -r requirements.in
 six==1.16.0
     # via
@@ -253,6 +255,7 @@ six==1.16.0
     #   python-dateutil
     #   retrying
     #   sqlalchemy-utils
+    #   validators
 soupsieve==2.2.1
     # via beautifulsoup4
 sqlalchemy==1.3.24
@@ -262,7 +265,7 @@ sqlalchemy==1.3.24
     #   flask-sqlalchemy
     #   marshmallow-sqlalchemy
     #   sqlalchemy-utils
-sqlalchemy-utils==0.37.8
+sqlalchemy-utils==0.37.9
     # via -r requirements.in
 tabulate==0.8.9
     # via -r requirements.in
@@ -273,6 +276,8 @@ urllib3==1.26.5
     #   botocore
     #   requests
     #   sentry-sdk
+validators==0.18.2
+    # via -r requirements.in
 vine==1.3.0
     # via
     #   amqp

@@ -373,7 +373,8 @@ When the periodic task runs, Lemur checks for certificates meeting the following
 All eligible certificates are then grouped by owner and applicable notification. For each notification and certificate group,
 Lemur will send the expiration notification using whichever plugin was configured for that notification object.
 In addition, Lemur will send an email to the certificate owner and security team (as specified by the
-``LEMUR_SECURITY_TEAM_EMAIL`` configuration parameter).
+``LEMUR_SECURITY_TEAM_EMAIL`` configuration parameter). The security team will be omitted if
+``LEMUR_DISABLE_SECURITY_TEAM_EXPIRATION_EMAILS`` is enabled.
 
 **CA certificate expiration**
 
@@ -547,6 +548,16 @@ The following configuration options are supported:
         ::
 
             LEMUR_SECURITY_TEAM_EMAIL = ['security@example.com']
+
+
+.. data:: LEMUR_DISABLE_SECURITY_TEAM_EXPIRATION_EMAILS
+    :noindex:
+
+        This specifies whether or not LEMUR_SECURITY_TEAM_EMAIL will be included on all expiration emails. IMPORTANT: You will also need to disable the DEFAULT_SECURITY_X_DAY notifications to truly disable sending expiration emails to the security team. This double configuration is required for backwards compatibility.
+
+        ::
+
+            LEMUR_DISABLE_SECURITY_TEAM_EXPIRATION_EMAILS = True
 
 .. data:: LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS
     :noindex:
@@ -858,6 +869,13 @@ For more information about how to use social logins, see: `Satellizer <https://g
 
             PING_CLIENT_ID = "client-id"
 
+.. data:: PING_URL
+    :noindex:
+
+        ::
+
+            PING_URL = "https://<yourlemurserver>"
+
 .. data:: PING_REDIRECT_URI
     :noindex:
 
@@ -914,6 +932,13 @@ For more information about how to use social logins, see: `Satellizer <https://g
         ::
 
             OAUTH2_CLIENT_ID = "client-id"
+
+.. data:: OAUTH2_URL
+    :noindex:
+
+        ::
+
+            OAUTH2_URL = "https://<yourlemurserver>"
 
 .. data:: OAUTH2_REDIRECT_URI
     :noindex:
@@ -979,6 +1004,16 @@ For more information about how to use social logins, see: `Satellizer <https://g
         ::
 
             GOOGLE_SECRET = "somethingsecret"
+
+.. data:: TOKEN_AUTH_HEADER_CASE_SENSITIVE
+    :noindex:
+
+        This is an optional parameter to change the case sensitivity of the access token request authorization header.
+        This is required if the oauth provider has implemented the access token request authorization header in a case-sensitive way
+
+        ::
+
+            TOKEN_AUTH_HEADER_CASE_SENSITIVE = True
 
 .. data:: USER_MEMBERSHIP_PROVIDER
     :noindex:
@@ -1434,6 +1469,10 @@ IAM-ServerCertificate
         "Statement": [
                     {
                          "Action": [
+                              "cloudfront:GetDistribution",
+                              "cloudfront:GetDistributionConfig",
+                              "cloudfront:ListDistributions",
+                              "cloudfront:UpdateDistribution",
                               "elasticloadbalancing:DescribeInstanceHealth",
                               "elasticloadbalancing:DescribeLoadBalancerAttributes",
                               "elasticloadbalancing:DescribeLoadBalancerPolicyTypes",

@@ -74,13 +74,6 @@ CELERYBEAT_SCHEDULE = {
     #     'schedule': crontab(hour="*/2", minute=0),
     #     # this job is running 30min before endpoints_expire which deletes endpoints which were not updated
     # },
-    # 'sync_source_destination': {
-    #     'task': 'lemur.common.celery.sync_source_destination',
-    #     'options': {
-    #         'expires': 180
-    #     },
-    #     'schedule': crontab(hour="*/2", minute=15),
-    # },
     # 'report_celery_last_success_metrics': {
     #     'task': 'lemur.common.celery.report_celery_last_success_metrics',
     #     'options': {

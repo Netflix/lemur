@@ -10,6 +10,7 @@ from tempfile import NamedTemporaryFile
 import arrow
 import pytest
 from cryptography import x509
+from cryptography.x509.oid import ExtensionOID
 from cryptography.hazmat.backends import default_backend
 from marshmallow import ValidationError
 from freezegun import freeze_time
@@ -352,7 +353,7 @@ def test_certificate_input_schema(client, authority):
     assert data["country"] == "US"
     assert data["key_type"] == "ECCPRIME256V1"
 
-    assert len(data.keys()) == 19
+    assert len(data.keys()) == 20
 
 
 def test_certificate_input_schema_empty_location(client, authority):
@@ -372,7 +373,7 @@ def test_certificate_input_schema_empty_location(client, authority):
     data, errors = CertificateInputSchema().load(input_data)
 
     assert not errors
-    assert len(data.keys()) == 19
+    assert len(data.keys()) == 20
     assert data["location"] == ""
 
     # make sure the defaults got set
@@ -551,7 +552,7 @@ def test_certificate_allowed_names(client, authority, session, logged_in_user):
     assert not errors
 
 
-def test_certificate_incative_authority(client, authority, session, logged_in_user):
+def test_certificate_inactive_authority(client, authority, session, logged_in_user):
     """Cannot issue certificates with an inactive authority."""
     from lemur.certificates.schemas import CertificateInputSchema
 
@@ -622,6 +623,64 @@ def test_certificate_sensitive_name(client, authority, session, logged_in_user):
     assert errors["common_name"][0].startswith(
         "Domain sensitive.example.com has been marked as sensitive"
     )
+
+
+def test_certificate_missing_common_name(client, authority, session, logged_in_user):
+    """CN is mandatory unless authority has option cn_optional set to true"""
+    from lemur.certificates.schemas import CertificateInputSchema
+
+    input_data = {
+        "owner": "jim@example.com",
+        "authority": {"id": authority.id},
+        "description": "testtestest"
+    }
+
+    data, errors = CertificateInputSchema().load(input_data)
+    assert errors["_schema"][0].startswith(
+        "Missing common_name"
+    )
+
+
+def test_certificate_only_san_no_cn(session, issuer_plugin, optional_cn_authority, logged_in_user, user):
+    """Only SAN is okay with the authority having option cn_optional set to true. Checks new naming with SAN"""
+    from lemur.certificates.schemas import CertificateInputSchema
+    from lemur.certificates.service import create
+
+    input_data = {
+        "owner": "joe@example.com",
+        "authority": {"id": optional_cn_authority.id},
+        "description": "testtestest",
+        "extensions": {
+            "subAltNames": {
+                "names": [
+                    {"nameType": "IPAddress", "value": "192.168.7.1"},
+                ]
+            }
+        }
+    }
+
+    data, errors = CertificateInputSchema().load(input_data)
+    assert not errors
+
+    csr_text, pkey = create_csr(
+        owner=data["owner"],
+        key_type=data["key_type"],
+        extensions=data["extensions"]
+    )
+    assert csr_text
+
+    parsed_csr = utils.parse_csr(csr_text)
+    san = parsed_csr.extensions.get_extension_for_oid(ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
+    assert san
+    assert san.value.get_values_for_type(x509.IPAddress)
+    assert "192.168.7.1" == str(san.value.get_values_for_type(x509.IPAddress)[0])
+
+    cert = create(
+        authority=data["authority"], csr=csr_text, owner=data["owner"], creator=user["user"]
+    )
+
+    assert cert
+    assert cert.name == "192.168.7.1-LemurTrustUnittestsClass1CA2018-20211108-20211109"
 
 
 def test_certificate_upload_schema_ok(client):

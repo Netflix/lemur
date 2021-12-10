@@ -265,13 +265,31 @@ class CertificatesList(AuthenticatedResource):
         """
         .. http:get:: /certificates
 
-           The current list of certificates
+            The current list of certificates. This API supports additional params like
+
+            Pagination, sorting:
+                /certificates?count=10&page=1&short=true&sortBy=id&sortDir=desc
+            Filters, mentioned as url param filter=field;value
+                /certificates?filter=cn;lemur.test.com
+                /certificates?filter=notify;true
+                /certificates?filter=rotation;true
+                /certificates?filter=name;lemur.test.cert
+                /certificates?filter=issuer;Digicert
+            Request expired certs
+                /certificates?showExpired=1
+            Search by Serial Number
+                Decimal:
+                /certificates?serial=218243997808053074560741989466015229225
+                Hex:
+                /certificates?serial=0xA43043DAB7F6F8AE115E94854EEB6529
+                /certificates?serial=a4:30:43:da:b7:f6:f8:ae:11:5e:94:85:4e:eb:65:29
+
 
            **Example request**:
 
            .. sourcecode:: http
 
-              GET /certificates HTTP/1.1
+              GET /certificates?serial=82311058732025924142789179368889309156 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
 
@@ -359,6 +377,7 @@ class CertificatesList(AuthenticatedResource):
         parser.add_argument("creator", type=str, location="args")
         parser.add_argument("show", type=str, location="args")
         parser.add_argument("showExpired", type=int, location="args")
+        parser.add_argument("serial", type=str, location="args")
 
         args = parser.parse_args()
         args["user"] = g.user

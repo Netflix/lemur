@@ -312,7 +312,7 @@ class ExtensionSchema(BaseExtensionSchema):
     key_usage = KeyUsageExtension()
     extended_key_usage = ExtendedKeyUsageExtension()
     subject_key_identifier = fields.Nested(SubjectKeyIdentifierSchema)
-    sub_alt_names = fields.Nested(NamesSchema)
+    sub_alt_names = fields.Nested(NamesSchema, missing={"names": []})
     authority_key_identifier = fields.Nested(AuthorityKeyIdentifierSchema)
     certificate_info_access = fields.Nested(CertificateInfoAccessSchema)
     crl_distribution_points = fields.Nested(

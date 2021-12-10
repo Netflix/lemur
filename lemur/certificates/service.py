@@ -113,15 +113,16 @@ def get_all_certs():
     return Certificate.query.all()
 
 
-def get_all_valid_certs(authority_plugin_name, paginate=False, page=1, count=1000):
+def get_all_valid_certs(authority_plugin_name, paginate=False, page=1, count=1000, created_on_or_before=None):
     """
     Retrieves all valid (not expired & not revoked) certificates within Lemur, for the given authority plugin names
     ignored if no authority_plugin_name provided.
 
     Note that depending on the DB size retrieving all certificates might an expensive operation
-    :param paginate: option to use pagination, for large number of certicicates. default to false
+    :param paginate: option to use pagination, for large number of certificates. default to false
     :param page: the page to turn. default to 1
     :param count: number of return certificates per page. default 1000
+    :param created_on_or_before: optional Arrow date to select only certificates issued on or before the date
 
     :return: list of certificates to check for revocation
     """
@@ -129,13 +130,17 @@ def get_all_valid_certs(authority_plugin_name, paginate=False, page=1, count=100
     query = database.session_query(Certificate) if paginate else Certificate.query
 
     if authority_plugin_name:
-        query = query.outerjoin(Authority, Authority.id == Certificate.authority_id).filter(
-            Certificate.not_after > arrow.now().format("YYYY-MM-DD")).filter(
-            Authority.plugin_name.in_(authority_plugin_name)).filter(Certificate.revoked.is_(False))
+        query = query.outerjoin(Authority, Authority.id == Certificate.authority_id)\
+            .filter(Certificate.not_after > arrow.now().format("YYYY-MM-DD"))\
+            .filter(Authority.plugin_name.in_(authority_plugin_name))\
+            .filter(Certificate.revoked.is_(False))
 
     else:
-        query = query.filter(Certificate.not_after > arrow.now().format("YYYY-MM-DD")).filter(
-            Certificate.revoked.is_(False))
+        query = query.filter(Certificate.not_after > arrow.now().format("YYYY-MM-DD"))\
+            .filter(Certificate.revoked.is_(False))
+
+    if created_on_or_before:
+        query = query.filter(Certificate.date_created <= created_on_or_before.format("YYYY-MM-DD"))
 
     if paginate:
         items = database.paginate(query, page, count)
@@ -458,7 +463,7 @@ def create(**kwargs):
         log_data = {
             "message": "Exception minting certificate",
             "issuer": kwargs["authority"].name,
-            "cn": kwargs["common_name"],
+            "cn": kwargs.get("common_name"),
         }
         current_app.logger.error(log_data, exc_info=True)
         capture_exception()
@@ -542,6 +547,7 @@ def render(args):
 
     destination_id = args.pop("destination_id")
     notification_id = args.pop("notification_id", None)
+    serial_number = args.pop("serial", None)
     show = args.pop("show")
     # owner = args.pop('owner')
     # creator = args.pop('creator')  # TODO we should enabling filtering by owner
@@ -635,6 +641,14 @@ def render(args):
     if current_app.config.get("ALLOW_CERT_DELETION", False):
         query = query.filter(Certificate.deleted == false())
 
+    if serial_number:
+        if serial_number.lower().startswith('0x'):
+            serial_number = str(int(serial_number[2:], 16))
+        elif ":" in serial_number:
+            serial_number = str(int(serial_number.replace(':', ''), 16))
+
+        query = query.filter(Certificate.serial == serial_number)
+
     result = database.sort_and_page(query, Certificate, args)
     return result
 
@@ -704,10 +718,14 @@ def create_csr(**csr_config):
     private_key = generate_private_key(csr_config.get("key_type"))
 
     builder = x509.CertificateSigningRequestBuilder()
-    name_list = [x509.NameAttribute(x509.OID_COMMON_NAME, csr_config["common_name"])]
+    name_list = []
     if current_app.config.get("LEMUR_OWNER_EMAIL_IN_SUBJECT", True):
         name_list.append(
             x509.NameAttribute(x509.OID_EMAIL_ADDRESS, csr_config["owner"])
+        )
+    if "common_name" in csr_config and csr_config["common_name"].strip():
+        name_list.append(
+            x509.NameAttribute(x509.OID_COMMON_NAME, csr_config["common_name"])
         )
     if "organization" in csr_config and csr_config["organization"].strip():
         name_list.append(
@@ -1066,16 +1084,17 @@ def remove_source_association(certificate, source):
     )
 
 
-def remove_destination_association(certificate, destination):
+def remove_destination_association(certificate, destination, clean=True):
     certificate.destinations.remove(destination)
     database.update(certificate)
 
-    try:
-        remove_from_destination(certificate, destination)
-    except Exception as e:
-        # This cleanup is the best-effort, it will capture the exception and log
-        capture_exception()
-        current_app.logger.warning(f"Failed to remove destination: {destination.label}. {str(e)}")
+    if clean:
+        try:
+            remove_from_destination(certificate, destination)
+        except Exception as e:
+            # This cleanup is the best-effort, it will capture the exception and log
+            capture_exception()
+            current_app.logger.warning(f"Failed to remove destination: {destination.label}. {str(e)}")
 
     metrics.send(
         "delete_certificate_destination_association",
@@ -1217,7 +1236,7 @@ def is_valid_owner(email):
         user_membership_provider = plugins.get(current_app.config.get("USER_MEMBERSHIP_PROVIDER"))
     if user_membership_provider is None:
         # nothing to check since USER_MEMBERSHIP_PROVIDER is not configured
-        return true
+        return True
 
     # expecting owner to be an existing team DL
     return user_membership_provider.does_group_exist(email)

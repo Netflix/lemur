@@ -37,6 +37,7 @@ from .factories import (
     CryptoAuthorityFactory,
     CACertificateFactory,
     DnsProviderFactory,
+    OptionalCNAuthorityFactory,
 )
 
 
@@ -126,6 +127,13 @@ def crypto_authority(session):
 @pytest.fixture
 def async_authority(session):
     a = AsyncAuthorityFactory()
+    session.commit()
+    return a
+
+
+@pytest.fixture
+def optional_cn_authority(session):
+    a = OptionalCNAuthorityFactory()
     session.commit()
     return a
 

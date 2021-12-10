@@ -64,9 +64,13 @@ def exchange_for_access_token(
 
     basic = base64.b64encode(bytes(token, "utf-8"))
     headers = {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "authorization": "basic {0}".format(basic.decode("utf-8")),
+        "Content-Type": "application/x-www-form-urlencoded"
     }
+
+    if current_app.config.get("TOKEN_AUTH_HEADER_CASE_SENSITIVE"):
+        headers["Authorization"] = "Basic {0}".format(basic.decode("utf-8"))
+    else:
+        headers["authorization"] = "basic {0}".format(basic.decode("utf-8"))
 
     # exchange authorization code for access token.
     r = requests.post(
@@ -632,7 +636,7 @@ class Providers(Resource):
                 active_providers.append(
                     {
                         "name": current_app.config.get("PING_NAME"),
-                        "url": current_app.config.get("PING_REDIRECT_URI"),
+                        "url": current_app.config.get("PING_URL", current_app.config.get("PING_REDIRECT_URI")),
                         "redirectUri": current_app.config.get("PING_REDIRECT_URI"),
                         "clientId": current_app.config.get("PING_CLIENT_ID"),
                         "responseType": "code",
@@ -650,7 +654,7 @@ class Providers(Resource):
                 active_providers.append(
                     {
                         "name": current_app.config.get("OAUTH2_NAME"),
-                        "url": current_app.config.get("OAUTH2_REDIRECT_URI"),
+                        "url": current_app.config.get("OAUTH2_URL", current_app.config.get("OAUTH2_REDIRECT_URI")),
                         "redirectUri": current_app.config.get("OAUTH2_REDIRECT_URI"),
                         "clientId": current_app.config.get("OAUTH2_CLIENT_ID"),
                         "responseType": "code",

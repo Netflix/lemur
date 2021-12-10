@@ -15,6 +15,7 @@ import logmatic
 import errno
 import pkg_resources
 import socket
+import stat
 
 from logging import Formatter, StreamHandler
 from logging.handlers import RotatingFileHandler
@@ -193,9 +194,14 @@ def configure_logging(app):
 
     :param app:
     """
-    handler = RotatingFileHandler(
-        app.config.get("LOG_FILE", "lemur.log"), maxBytes=10000000, backupCount=100
-    )
+    logfile = app.config.get("LOG_FILE", "lemur.log")
+    # if the log file is a character special device file (ie. stdout/stderr),
+    # file rotation will not work and must be disabled.
+    disable_file_rotation = os.path.exists(logfile) and stat.S_ISCHR(os.stat(logfile).st_mode)
+    if disable_file_rotation:
+        handler = StreamHandler(open(logfile, 'a'))
+    else:
+        handler = RotatingFileHandler(logfile, maxBytes=10000000, backupCount=100)
 
     handler.setFormatter(
         Formatter(
