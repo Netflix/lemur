@@ -59,6 +59,8 @@ cryptography==36.0.0
     #   pyopenssl
     #   python-jose
     #   sshpubkeys
+deprecated==1.2.13
+    # via redis
 distro==1.5.0
     # via certbot
 docker==5.0.0
@@ -217,7 +219,7 @@ pyyaml==6.0
     #   bandit
     #   cfn-lint
     #   moto
-redis==3.5.3
+redis==4.0.2
     # via fakeredis
 requests==2.26.0
     # via
@@ -286,7 +288,9 @@ werkzeug==2.0.1
     #   moto
     #   pytest-flask
 wrapt==1.13.3
-    # via aws-xray-sdk
+    # via
+    #   aws-xray-sdk
+    #   deprecated
 xmltodict==0.12.0
     # via moto
 zope.component==5.0.0

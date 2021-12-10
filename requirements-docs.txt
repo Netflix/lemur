@@ -122,6 +122,10 @@ cryptography==36.0.0
     #   pyopenssl
     #   python-jose
     #   sshpubkeys
+deprecated==1.2.13
+    # via
+    #   -r requirements-tests.txt
+    #   redis
 distro==1.5.0
     # via
     #   -r requirements-tests.txt
@@ -429,7 +433,7 @@ pyyaml==6.0
     #   cfn-lint
     #   cloudflare
     #   moto
-redis==3.5.3
+redis==4.0.2
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -590,6 +594,7 @@ wrapt==1.13.3
     # via
     #   -r requirements-tests.txt
     #   aws-xray-sdk
+    #   deprecated
 xmltodict==0.12.0
     # via
     #   -r requirements-docs.in
