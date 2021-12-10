@@ -595,7 +595,7 @@ werkzeug==2.0.1
     #   flask
     #   moto
     #   pytest-flask
-wrapt==1.12.1
+wrapt==1.13.3
     # via
     #   -r requirements-tests.txt
     #   aws-xray-sdk
