@@ -58,9 +58,9 @@ nodeenv==1.6.0
     #   pre-commit
 packaging==20.9
     # via bleach
-pkginfo==1.7.0
+pkginfo==1.8.2
     # via twine
-pre-commit==2.15.0
+pre-commit==2.16.0
     # via -r requirements-dev.in
 pycodestyle==2.7.0
     # via flake8
@@ -101,7 +101,7 @@ toml==0.10.2
     # via pre-commit
 tqdm==4.61.0
     # via twine
-twine==3.6.0
+twine==3.7.0
     # via -r requirements-dev.in
 urllib3==1.26.5
     # via requests

@@ -46,19 +46,19 @@ beautifulsoup4==4.9.3
     # via cloudflare
 billiard==3.6.4.0
     # via celery
-black==21.11b1
+black==21.12b0
     # via -r requirements-tests.txt
 blinker==1.4
     # via
     #   flask-mail
     #   flask-principal
-boto3==1.20.15
+boto3==1.20.20
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
-botocore==1.23.15
+botocore==1.23.20
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -122,6 +122,10 @@ cryptography==36.0.0
     #   pyopenssl
     #   python-jose
     #   sshpubkeys
+deprecated==1.2.13
+    # via
+    #   -r requirements-tests.txt
+    #   redis
 distro==1.5.0
     # via
     #   -r requirements-tests.txt
@@ -148,7 +152,7 @@ ecdsa==0.14.1
     #   sshpubkeys
 factory-boy==3.2.1
     # via -r requirements-tests.txt
-faker==9.8.3
+faker==9.9.0
     # via
     #   -r requirements-tests.txt
     #   factory-boy
@@ -429,16 +433,12 @@ pyyaml==6.0
     #   cfn-lint
     #   cloudflare
     #   moto
-redis==3.5.3
+redis==4.0.2
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   celery
     #   fakeredis
-regex==2021.4.4
-    # via
-    #   -r requirements-tests.txt
-    #   black
 requests==2.26.0
     # via
     #   -r requirements-tests.txt
@@ -590,10 +590,11 @@ werkzeug==2.0.1
     #   flask
     #   moto
     #   pytest-flask
-wrapt==1.12.1
+wrapt==1.13.3
     # via
     #   -r requirements-tests.txt
     #   aws-xray-sdk
+    #   deprecated
 xmltodict==0.12.0
     # via
     #   -r requirements-docs.in
