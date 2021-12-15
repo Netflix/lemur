@@ -34,6 +34,7 @@ from lemur.notifications.messaging import send_revocation_notification
 from lemur.notifications.models import Notification
 from lemur.pending_certificates.models import PendingCertificate
 from lemur.plugins.base import plugins
+from lemur.plugins.utils import get_plugin_option
 from lemur.roles import service as role_service
 from lemur.roles.models import Role
 
@@ -457,6 +458,15 @@ def create(**kwargs):
     """
     Creates a new certificate.
     """
+    # Validate destinations do not overlap accounts
+    if "destinations" in kwargs:
+        dest_accounts = {}
+        for dest in kwargs["destinations"]:
+            account = get_plugin_option("accountNumber", dest.options)
+            if account in dest_accounts:
+                raise Exception(f"Only one destination allowed per account: {account}")
+            dest_accounts[account] = True
+
     try:
         cert_body, private_key, cert_chain, external_id, csr = mint(**kwargs)
     except Exception:
