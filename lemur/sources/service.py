@@ -292,13 +292,7 @@ def sync(source, user, ttl_hours=2):
             "certificates": (new_certs, updated_certs),
         }
     except Exception as e:  # noqa
-        current_app.logger.warning(
-            "Unable to describe server certificate for endpoints in source {0}:"
-            " plugin has not implemented 'get_certificate_by_name'".format(
-                source.label
-            )
-        )
-
+        current_app.logger.warning(f"Sync source '{source.label}' aborted: {e}")
         capture_exception()
         raise e
 
