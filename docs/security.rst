@@ -12,7 +12,7 @@ We ask that you do not report security issues to our normal GitHub issue
 tracker.
 
 If you believe you've identified a security issue with ``lemur``, please
-report it to ``cloudsecurity@netflix.com``.
+report it to ``lemur@netflix.com``.
 
 Once you've submitted an issue via email, you should receive an acknowledgment
 within 48 hours, and depending on the action to be taken, you may receive
