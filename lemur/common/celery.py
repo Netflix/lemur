@@ -546,7 +546,7 @@ def sync_source(source):
 
     current_app.logger.debug(log_data)
     try:
-        sync([source])
+        sync([source], current_app.config.get("CELERY_ENDPOINTS_EXPIRE_TIME_IN_HOURS", 2))
         metrics.send(
             f"{function}.success", "counter", 1, metric_tags={"source": source}
         )
@@ -646,42 +646,6 @@ def certificate_rotate(**kwargs):
 
     log_data["message"] = "rotation completed"
     current_app.logger.debug(log_data)
-    metrics.send(f"{function}.success", "counter", 1)
-    return log_data
-
-
-@celery.task(soft_time_limit=3600)
-def endpoints_expire():
-    """
-    This celery task removes all endpoints that have not been recently updated
-    :return:
-    """
-    function = f"{__name__}.{sys._getframe().f_code.co_name}"
-    task_id = None
-    if celery.current_task:
-        task_id = celery.current_task.request.id
-
-    log_data = {
-        "function": function,
-        "message": "endpoints expire",
-        "task_id": task_id,
-    }
-
-    if task_id and is_task_active(function, task_id, None):
-        log_data["message"] = "Skipping task: Task is already active"
-        current_app.logger.debug(log_data)
-        return
-
-    current_app.logger.debug(log_data)
-    try:
-        cli_endpoints.expire(current_app.config.get("CELERY_ENDPOINTS_EXPIRE_TIME_IN_HOURS", 2))
-    except SoftTimeLimitExceeded:
-        log_data["message"] = "endpoint expire: Time limit exceeded."
-        current_app.logger.error(log_data)
-        capture_exception()
-        metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
-        return
-
     metrics.send(f"{function}.success", "counter", 1)
     return log_data
 

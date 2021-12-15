@@ -6,16 +6,20 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import arrow
+from datetime import timedelta
 import copy
 
 from flask import current_app
 from sentry_sdk import capture_exception
+from sqlalchemy import cast
+from sqlalchemy_utils import ArrowType
 
 from lemur import database
 from lemur.sources.models import Source
 from lemur.certificates.models import Certificate
 from lemur.certificates import service as certificate_service
 from lemur.endpoints import service as endpoint_service
+from lemur.endpoints.models import Endpoint
 from lemur.extensions import metrics
 from lemur.destinations import service as destination_service
 
@@ -164,6 +168,24 @@ def sync_endpoints(source):
     return new, updated, updated_by_hash
 
 
+def expire_endpoints(source, ttl_hours):
+    now = arrow.utcnow()
+    expiration = now - timedelta(hours=ttl_hours)
+    endpoints = database.session_query(Endpoint).filter(Endpoint.source_id == source.id).filter(
+        cast(Endpoint.last_updated, ArrowType) <= expiration
+    )
+    expired = 0
+    for endpoint in endpoints:
+        current_app.logger.debug(
+            "Expiring endpoint from source {source}: {name} Last Updated: {last_updated}".format(
+                source=source.label, name=endpoint.name, last_updated=endpoint.last_updated))
+        database.delete(endpoint)
+        metrics.send("endpoint_expired", "counter", 1,
+                     metric_tags={"source": source.label})
+        expired += 1
+    return expired
+
+
 def find_cert(certificate):
     updated_by_hash = 0
     exists = False
@@ -248,24 +270,37 @@ def sync_certificates(source, user):
     return new, updated, updated_by_hash
 
 
-def sync(source, user):
-    new_certs, updated_certs, updated_certs_by_hash = sync_certificates(source, user)
-    metrics.send("sync.updated_certs_by_hash",
-                 "gauge", updated_certs_by_hash,
-                 metric_tags={"source": source.label})
+def sync(source, user, ttl_hours=2):
+    try:
+        new_certs, updated_certs, updated_certs_by_hash = sync_certificates(source, user)
+        metrics.send("sync.updated_certs_by_hash",
+                     "gauge", updated_certs_by_hash,
+                     metric_tags={"source": source.label})
 
-    new_endpoints, updated_endpoints, updated_endpoints_by_hash = sync_endpoints(source)
-    metrics.send("sync.updated_endpoints_by_hash",
-                 "gauge", updated_endpoints_by_hash,
-                 metric_tags={"source": source.label})
+        new_endpoints, updated_endpoints, updated_endpoints_by_hash = sync_endpoints(source)
+        metrics.send("sync.updated_endpoints_by_hash",
+                     "gauge", updated_endpoints_by_hash,
+                     metric_tags={"source": source.label})
 
-    source.last_run = arrow.utcnow()
-    database.update(source)
+        expired_endpoints = expire_endpoints(source, ttl_hours)
 
-    return {
-        "endpoints": (new_endpoints, updated_endpoints),
-        "certificates": (new_certs, updated_certs),
-    }
+        source.last_run = arrow.utcnow()
+        database.update(source)
+
+        return {
+            "endpoints": (new_endpoints, updated_endpoints, expired_endpoints),
+            "certificates": (new_certs, updated_certs),
+        }
+    except Exception as e:  # noqa
+        current_app.logger.warning(
+            "Unable to describe server certificate for endpoints in source {0}:"
+            " plugin has not implemented 'get_certificate_by_name'".format(
+                source.label
+            )
+        )
+
+        capture_exception()
+        raise e
 
 
 def create(label, plugin_name, options, description=None):

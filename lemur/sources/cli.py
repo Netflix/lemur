@@ -108,26 +108,34 @@ def execute_clean(plugin, certificate, source):
     action="append",
     help="Sources to operate on.",
 )
-def sync(source_strings):
+@manager.option(
+    "-ttl",
+    "--time-to-live",
+    type=int,
+    dest="ttl",
+    default=2,
+    help="Time in hours, after which endpoint has not been refreshed, to remove endpoints from the source.",
+)
+def sync(source_strings, ttl):
     sources = validate_sources(source_strings)
     for source in sources:
         status = FAILURE_METRIC_STATUS
 
         start_time = time.time()
-        print("[+] Staring to sync source: {label}!\n".format(label=source.label))
+        print("[+] Staring to sync source: {label} expire ttl={ttl}h\n".format(label=source.label, ttl=ttl))
 
         user = user_service.get_by_username("lemur")
 
         try:
-            data = source_service.sync(source, user)
+            data = source_service.sync(source, user, ttl_hours=ttl)
             print(
                 "[+] Certificates: New: {new} Updated: {updated}".format(
                     new=data["certificates"][0], updated=data["certificates"][1]
                 )
             )
             print(
-                "[+] Endpoints: New: {new} Updated: {updated}".format(
-                    new=data["endpoints"][0], updated=data["endpoints"][1]
+                "[+] Endpoints: New: {new} Updated: {updated} Expired: {expired}".format(
+                    new=data["endpoints"][0], updated=data["endpoints"][1], expired=data["endpoints"][2]
                 )
             )
             print(
