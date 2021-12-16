@@ -122,8 +122,8 @@ def sync(source_strings, ttl):
         status = FAILURE_METRIC_STATUS
 
         start_time = time.time()
-        print("[+] Staring to sync source: {label} expire ttl={ttl}h\n".format(label=source.label, ttl=ttl))
-
+        print("[+] Staring to sync source: {label} and expire endpoints ttl={ttl}h\n".format(
+            label=source.label, ttl=ttl))
         user = user_service.get_by_username("lemur")
 
         try:

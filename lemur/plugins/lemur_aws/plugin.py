@@ -321,7 +321,6 @@ class AWSSourcePlugin(SourcePlugin):
                     capture_exception()
                     continue
 
-            continue
             # fetch advanced ELBs
             elbs_v2 = elb.get_all_elbs_v2(account_number=account_number, region=region)
             current_app.logger.info({
