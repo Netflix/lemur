@@ -100,8 +100,8 @@ def test_get_all_elb_and_elbv2s(app, aws_credentials):
     from lemur.plugins.utils import set_plugin_option
 
     cert_arn_prefix = "arn:aws:iam::123456789012:server-certificate/"
-    cert_arn = cert_arn_prefix + "plugin-test.netflix.net-R3-20211023-20220121"
-    cert_arn_v2 = cert_arn_prefix + "plugin-test-v2.netflix.net-R3-20211023-20220121"
+    cert_arn = cert_arn_prefix + "plugin-test.example.com-R3-20211023-20220121"
+    cert_arn_v2 = cert_arn_prefix + "plugin-test-v2.example.com-R3-20211023-20220121"
 
     client = boto3.client("elb", region_name="us-east-1")
 
@@ -157,9 +157,9 @@ def test_get_all_elb_and_elbv2s(app, aws_credentials):
     elb_map = {}
     for elb in elbs:
         elb_map[elb["name"]] = elb
-    assert elb_map["example-lb"]["certificate_name"] == "plugin-test.netflix.net-R3-20211023-20220121"
+    assert elb_map["example-lb"]["certificate_name"] == "plugin-test.example.com-R3-20211023-20220121"
     assert elb_map["example-lb"]["registry_type"] == "iam"
     assert elb_map["example-lb"]["port"] == 443
-    assert elb_map["test-lbv2"]["certificate_name"] == "plugin-test-v2.netflix.net-R3-20211023-20220121"
+    assert elb_map["test-lbv2"]["certificate_name"] == "plugin-test-v2.example.com-R3-20211023-20220121"
     assert elb_map["test-lbv2"]["registry_type"] == "iam"
     assert elb_map["test-lbv2"]["port"] == 1443
