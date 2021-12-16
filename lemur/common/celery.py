@@ -24,7 +24,6 @@ from lemur.certificates import service as certificate_service
 from lemur.common.redis import RedisHandler
 from lemur.constants import ACME_ADDITIONAL_ATTEMPTS
 from lemur.dns_providers import cli as cli_dns_providers
-from lemur.endpoints import cli as cli_endpoints
 from lemur.extensions import metrics
 from lemur.factory import create_app
 from lemur.notifications import cli as cli_notification
