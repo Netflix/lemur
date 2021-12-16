@@ -21,7 +21,6 @@ from lemur.acme_providers.cli import manager as acme_manager
 from lemur.sources.cli import manager as source_manager
 from lemur.policies.cli import manager as policy_manager
 from lemur.reporting.cli import manager as report_manager
-from lemur.endpoints.cli import manager as endpoint_manager
 from lemur.certificates.cli import manager as certificate_manager
 from lemur.notifications.cli import manager as notification_manager
 from lemur.pending_certificates.cli import manager as pending_certificate_manager
@@ -585,7 +584,6 @@ def main():
     manager.add_command("source", source_manager)
     manager.add_command("certificate", certificate_manager)
     manager.add_command("notify", notification_manager)
-    manager.add_command("endpoint", endpoint_manager)
     manager.add_command("report", report_manager)
     manager.add_command("policy", policy_manager)
     manager.add_command("pending_certs", pending_certificate_manager)
