@@ -93,7 +93,6 @@ def test_upload_acme_token(app):
 @mock_elb()
 @mock_ec2()
 @mock_elbv2()
-@mock_sts()
 def test_get_all_elb_and_elbv2s(app, aws_credentials):
     from copy import deepcopy
     from lemur.plugins.lemur_aws.elb import get_load_balancer_arn_from_endpoint
