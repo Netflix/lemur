@@ -221,7 +221,7 @@ pyyaml==6.0
     #   moto
 redis==4.0.2
     # via fakeredis
-requests==2.26.0
+requests==2.27.0
     # via
     #   acme
     #   docker
