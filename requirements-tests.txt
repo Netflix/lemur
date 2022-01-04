@@ -30,7 +30,7 @@ botocore==1.23.20
     #   boto3
     #   moto
     #   s3transfer
-certbot==1.21.0
+certbot==1.22.0
     # via -r requirements-tests.in
 certifi==2021.10.8
     # via requests

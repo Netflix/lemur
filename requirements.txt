@@ -41,7 +41,7 @@ botocore==1.23.20
     #   s3transfer
 celery[redis]==4.4.2
     # via -r requirements.in
-certbot==1.21.0
+certbot==1.22.0
     # via -r requirements.in
 certifi==2021.10.8
     # via
