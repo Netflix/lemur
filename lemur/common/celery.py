@@ -75,6 +75,8 @@ def is_task_active(fun, task_id, args):
 
     i = inspect()
     active_tasks = i.active()
+    if active_tasks is None:
+        return False
     for _, tasks in active_tasks.items():
         for task in tasks:
             if task.get("id") == task_id:
