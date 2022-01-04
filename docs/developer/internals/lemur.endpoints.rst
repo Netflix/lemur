@@ -10,16 +10,7 @@ endpoints Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`cli` Module	
---------------------------	
-
-.. automodule:: lemur.endpoints.cli
-    :noindex:
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-:mod:`models` Module	
+:mod:`models` Module
 -----------------------------	
 
 .. automodule:: lemur.endpoints.models

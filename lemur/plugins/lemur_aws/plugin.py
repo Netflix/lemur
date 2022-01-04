@@ -232,7 +232,7 @@ def get_distribution_endpoint(account_number, cert_id_to_name, distrib_dict):
 class AWSSourcePlugin(SourcePlugin):
     title = "AWS"
     slug = "aws-source"
-    description = "Discovers all SSL certificates and ELB endpoints in an AWS account"
+    description = "Discovers all SSL certificates and ELB or Cloudfront endpoints in an AWS account"
     version = aws.VERSION
 
     author = "Kevin Glisson"
@@ -263,8 +263,9 @@ class AWSSourcePlugin(SourcePlugin):
             "name": "endpointType",
             "type": "select",
             "available": [
-                "elb",
-                "cloudfront",
+                "elb",          # Discover IAM certs, elb and elbv2 in this account and regions
+                "cloudfront",   # Discover IAM certs, CloudFront distributions in this account and regions
+                "none",         # Discover IAM certs only in this account and regions
             ],
             "default": "elb",
             "helpMessage": "Type of AWS endpoint to discover. Defaults to elb if not set.",
@@ -286,8 +287,11 @@ class AWSSourcePlugin(SourcePlugin):
         ]
 
     def get_endpoints(self, options, **kwargs):
-        if self.get_option("endpointType", options) == "cloudfront":
+        endpoint_type = self.get_option("endpointType", options)
+        if endpoint_type == "cloudfront":
             return self.get_distributions(options, **kwargs)
+        elif endpoint_type == "none":
+            return []
         else:
             return self.get_load_balancers(options, **kwargs)
 
@@ -302,17 +306,13 @@ class AWSSourcePlugin(SourcePlugin):
             regions = "".join(regions.split()).split(",")
 
         for region in regions:
-            try:
-                elbs = elb.get_all_elbs(account_number=account_number, region=region)
-                current_app.logger.info({
-                    "message": "Describing classic load balancers",
-                    "account_number": account_number,
-                    "region": region,
-                    "number_of_load_balancers": len(elbs)
-                })
-            except Exception as e:  # noqa
-                capture_exception()
-                continue
+            elbs = elb.get_all_elbs(account_number=account_number, region=region)
+            current_app.logger.info({
+                "message": "Describing classic load balancers",
+                "account_number": account_number,
+                "region": region,
+                "number_of_load_balancers": len(elbs)
+            })
 
             for e in elbs:
                 try:
@@ -322,12 +322,7 @@ class AWSSourcePlugin(SourcePlugin):
                     continue
 
             # fetch advanced ELBs
-            try:
-                elbs_v2 = elb.get_all_elbs_v2(account_number=account_number, region=region)
-            except Exception as e:  # noqa
-                capture_exception()
-                continue
-
+            elbs_v2 = elb.get_all_elbs_v2(account_number=account_number, region=region)
             current_app.logger.info({
                 "message": "Describing advanced load balancers",
                 "account_number": account_number,

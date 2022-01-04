@@ -34,6 +34,7 @@ from lemur.notifications.messaging import send_revocation_notification
 from lemur.notifications.models import Notification
 from lemur.pending_certificates.models import PendingCertificate
 from lemur.plugins.base import plugins
+from lemur.plugins.utils import get_plugin_option
 from lemur.roles import service as role_service
 from lemur.roles.models import Role
 
@@ -113,15 +114,16 @@ def get_all_certs():
     return Certificate.query.all()
 
 
-def get_all_valid_certs(authority_plugin_name, paginate=False, page=1, count=1000):
+def get_all_valid_certs(authority_plugin_name, paginate=False, page=1, count=1000, created_on_or_before=None):
     """
     Retrieves all valid (not expired & not revoked) certificates within Lemur, for the given authority plugin names
     ignored if no authority_plugin_name provided.
 
     Note that depending on the DB size retrieving all certificates might an expensive operation
-    :param paginate: option to use pagination, for large number of certicicates. default to false
+    :param paginate: option to use pagination, for large number of certificates. default to false
     :param page: the page to turn. default to 1
     :param count: number of return certificates per page. default 1000
+    :param created_on_or_before: optional Arrow date to select only certificates issued on or before the date
 
     :return: list of certificates to check for revocation
     """
@@ -129,13 +131,17 @@ def get_all_valid_certs(authority_plugin_name, paginate=False, page=1, count=100
     query = database.session_query(Certificate) if paginate else Certificate.query
 
     if authority_plugin_name:
-        query = query.outerjoin(Authority, Authority.id == Certificate.authority_id).filter(
-            Certificate.not_after > arrow.now().format("YYYY-MM-DD")).filter(
-            Authority.plugin_name.in_(authority_plugin_name)).filter(Certificate.revoked.is_(False))
+        query = query.outerjoin(Authority, Authority.id == Certificate.authority_id)\
+            .filter(Certificate.not_after > arrow.now().format("YYYY-MM-DD"))\
+            .filter(Authority.plugin_name.in_(authority_plugin_name))\
+            .filter(Certificate.revoked.is_(False))
 
     else:
-        query = query.filter(Certificate.not_after > arrow.now().format("YYYY-MM-DD")).filter(
-            Certificate.revoked.is_(False))
+        query = query.filter(Certificate.not_after > arrow.now().format("YYYY-MM-DD"))\
+            .filter(Certificate.revoked.is_(False))
+
+    if created_on_or_before:
+        query = query.filter(Certificate.date_created <= created_on_or_before.format("YYYY-MM-DD"))
 
     if paginate:
         items = database.paginate(query, page, count)
@@ -452,6 +458,15 @@ def create(**kwargs):
     """
     Creates a new certificate.
     """
+    # Validate destinations do not overlap accounts
+    if "destinations" in kwargs:
+        dest_accounts = {}
+        for dest in kwargs["destinations"]:
+            account = get_plugin_option("accountNumber", dest.options)
+            if account in dest_accounts:
+                raise Exception(f"Only one destination allowed per account: {account}")
+            dest_accounts[account] = True
+
     try:
         cert_body, private_key, cert_chain, external_id, csr = mint(**kwargs)
     except Exception:
@@ -1079,16 +1094,17 @@ def remove_source_association(certificate, source):
     )
 
 
-def remove_destination_association(certificate, destination):
+def remove_destination_association(certificate, destination, clean=True):
     certificate.destinations.remove(destination)
     database.update(certificate)
 
-    try:
-        remove_from_destination(certificate, destination)
-    except Exception as e:
-        # This cleanup is the best-effort, it will capture the exception and log
-        capture_exception()
-        current_app.logger.warning(f"Failed to remove destination: {destination.label}. {str(e)}")
+    if clean:
+        try:
+            remove_from_destination(certificate, destination)
+        except Exception as e:
+            # This cleanup is the best-effort, it will capture the exception and log
+            capture_exception()
+            current_app.logger.warning(f"Failed to remove destination: {destination.label}. {str(e)}")
 
     metrics.send(
         "delete_certificate_destination_association",
@@ -1230,7 +1246,7 @@ def is_valid_owner(email):
         user_membership_provider = plugins.get(current_app.config.get("USER_MEMBERSHIP_PROVIDER"))
     if user_membership_provider is None:
         # nothing to check since USER_MEMBERSHIP_PROVIDER is not configured
-        return true
+        return True
 
     # expecting owner to be an existing team DL
     return user_membership_provider.does_group_exist(email)
