@@ -8,7 +8,7 @@ jobs:
       dist: bionic
       language: python
       python: "3.9"
-      env: TOXENV=py37
+      env: TOXENV=py39
       addons:
         postgresql: '10'
         chrome: stable
@@ -24,7 +24,7 @@ jobs:
       dist: bionic
       language: python
       python: "3.9"
-      env: TOXENV=py37
+      env: TOXENV=py39
       addons:
         postgresql: '12'
         chrome: stable
