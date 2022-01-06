@@ -15,7 +15,7 @@ formats: all
 
 # Set the version of Python and requirements required to build the docs
 python:
-   version: 3.9
+   version: 3.8
    install:
    - requirements: requirements-docs.txt
    - method: setuptools
