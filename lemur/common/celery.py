@@ -1003,7 +1003,7 @@ def notify_expiring_deployed_certificates():
     return log_data
 
 @celery.task(soft_time_limit=10800)  # 3 hours
-def identity_expiring_deployed_certificates:
+def identity_expiring_deployed_certificates():
     """
     DEPRECATED: Use identify_expiring_deployed_certificates instead.
     """
