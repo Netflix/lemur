@@ -1002,9 +1002,16 @@ def notify_expiring_deployed_certificates():
     metrics.send(f"{function}.success", "counter", 1)
     return log_data
 
+@celery.task(soft_time_limit=10800)  # 3 hours
+def identity_expiring_deployed_certificates:
+    """
+    DEPRECATED: Use identify_expiring_deployed_certificates instead.
+    """
+    current_app.logger.warn("identity_expiring_deployed_certificates is deprecated and will be removed in a future release, please use identify_expiring_deployed_certificates instead")
+    return identify_expiring_deployed_certificates()
 
 @celery.task(soft_time_limit=10800)  # 3 hours
-def identity_expiring_deployed_certificates():
+def identify_expiring_deployed_certificates():
     """
     This celery task attempts to find any certificates that are expiring soon but are still deployed,
     and stores information on which port(s) the certificate is currently being used for TLS.
