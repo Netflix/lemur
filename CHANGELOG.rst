@@ -1,6 +1,15 @@
 Changelog
 =========
 
+
+1.0.0 - `2022-01-06`
+~~~~~~~~~~~~~~~~~~~~
+
+This is our first major release due to a dependency on Python 3.8.
+Lemur is now using flake8>=4.0 and pyflakes>=2.4, requiring Python 3.8 or higher.
+Our Travis Builds are currently on Python 3.8 and Python 3.9.
+
+
 0.11.0 - `2022-01-05`
 ~~~~~~~~~~~~~~~~~~~~~
 
