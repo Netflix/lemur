@@ -34,9 +34,9 @@ blinker==1.4
     # via
     #   flask-mail
     #   flask-principal
-boto3==1.20.30
+boto3==1.20.31
     # via -r requirements.in
-botocore==1.23.30
+botocore==1.23.31
     # via
     #   -r requirements.in
     #   boto3
@@ -177,7 +177,7 @@ marshmallow-sqlalchemy==0.23.1
     # via -r requirements.in
 ndg-httpsclient==0.5.1
     # via -r requirements.in
-paramiko==2.9.1
+paramiko==2.9.2
     # via -r requirements.in
 parsedatetime==2.6
     # via certbot
@@ -205,7 +205,7 @@ pyjks==20.0.0
     # via -r requirements.in
 pyjwt==2.3.0
     # via -r requirements.in
-pynacl==1.4.0
+pynacl==1.5.0
     # via paramiko
 pyopenssl==21.0.0
     # via
@@ -265,7 +265,6 @@ six==1.16.0
     #   flask-cors
     #   flask-restful
     #   hvac
-    #   pynacl
     #   pyopenssl
     #   python-dateutil
     #   retrying

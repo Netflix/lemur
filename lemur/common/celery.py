@@ -73,6 +73,8 @@ def is_task_active(fun, task_id, args):
 
     i = celery_app.control.inspect()
     active_tasks = i.active()
+    if active_tasks is None:
+        return False
     for _, tasks in active_tasks.items():
         for task in tasks:
             if task.get("id") == task_id:
@@ -1001,6 +1003,15 @@ def notify_expiring_deployed_certificates():
 
 @celery_app.task(soft_time_limit=10800)  # 3 hours
 def identity_expiring_deployed_certificates():
+    """
+    DEPRECATED: Use identify_expiring_deployed_certificates instead.
+    """
+    current_app.logger.warn("identity_expiring_deployed_certificates is deprecated and will be removed in a future release, please use identify_expiring_deployed_certificates instead")
+    return identify_expiring_deployed_certificates()
+
+
+@celery_app.task(soft_time_limit=10800)  # 3 hours
+def identify_expiring_deployed_certificates():
     """
     This celery task attempts to find any certificates that are expiring soon but are still deployed,
     and stores information on which port(s) the certificate is currently being used for TLS.

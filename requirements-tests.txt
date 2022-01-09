@@ -22,11 +22,11 @@ bandit==1.7.1
     # via -r requirements-tests.in
 black==21.12b0
     # via -r requirements-tests.in
-boto3==1.20.30
+boto3==1.20.31
     # via
     #   aws-sam-translator
     #   moto
-botocore==1.23.30
+botocore==1.23.31
     # via
     #   aws-xray-sdk
     #   boto3
@@ -147,7 +147,7 @@ marshmallow==2.20.4
     #   marshmallow-sqlalchemy
 marshmallow-sqlalchemy==0.23.1
     # via -r requirements-tests.in
-moto[all]==2.3.0
+moto[all]==2.3.1
     # via -r requirements-tests.in
 mypy-extensions==0.4.3
     # via black
