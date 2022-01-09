@@ -64,16 +64,14 @@ def make_celery(app):
     return celery
 
 
-celery = make_celery(flask_app)
+celery_app = make_celery(flask_app)
 
 
 def is_task_active(fun, task_id, args):
-    from celery.task.control import inspect
-
     if not args:
         args = "()"  # empty args
 
-    i = inspect()
+    i = celery_app.control.inspect()
     active_tasks = i.active()
     for _, tasks in active_tasks.items():
         for task in tasks:
@@ -115,7 +113,7 @@ def get_celery_request_tags(**kwargs):
     return tags
 
 
-@celery.task()
+@celery_app.task()
 def report_celery_last_success_metrics():
     """
     For each celery task, this will determine the number of seconds since it has last been successful.
@@ -127,8 +125,8 @@ def report_celery_last_success_metrics():
     """
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     task_id = None
-    if celery.current_task:
-        task_id = celery.current_task.request.id
+    if celery_app.current_task:
+        task_id = celery_app.current_task.request.id
 
     log_data = {
         "function": function,
@@ -229,7 +227,7 @@ def report_revoked_task(**kwargs):
         metrics.send("celery.revoked_task", "TIMER", 1, metric_tags=error_tags)
 
 
-@celery.task(soft_time_limit=600)
+@celery_app.task(soft_time_limit=600)
 def fetch_acme_cert(id, notify_reissue_cert_id=None):
     """
     Attempt to get the full certificate for the pending certificate listed.
@@ -239,8 +237,8 @@ def fetch_acme_cert(id, notify_reissue_cert_id=None):
         notify_reissue_cert_id: ID of existing Certificate to use for reissue notifications, if supplied
     """
     task_id = None
-    if celery.current_task:
-        task_id = celery.current_task.request.id
+    if celery_app.current_task:
+        task_id = celery_app.current_task.request.id
 
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     log_data = {
@@ -345,14 +343,14 @@ def fetch_acme_cert(id, notify_reissue_cert_id=None):
     return log_data
 
 
-@celery.task()
+@celery_app.task()
 def fetch_all_pending_acme_certs():
     """Instantiate celery workers to resolve all pending Acme certificates"""
 
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     task_id = None
-    if celery.current_task:
-        task_id = celery.current_task.request.id
+    if celery_app.current_task:
+        task_id = celery_app.current_task.request.id
 
     log_data = {
         "function": function,
@@ -383,13 +381,13 @@ def fetch_all_pending_acme_certs():
     return log_data
 
 
-@celery.task()
+@celery_app.task()
 def remove_old_acme_certs():
     """Prune old pending acme certificates from the database"""
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     task_id = None
-    if celery.current_task:
-        task_id = celery.current_task.request.id
+    if celery_app.current_task:
+        task_id = celery_app.current_task.request.id
 
     log_data = {
         "function": function,
@@ -417,7 +415,7 @@ def remove_old_acme_certs():
     return log_data
 
 
-@celery.task()
+@celery_app.task()
 def clean_all_sources():
     """
     This function will clean unused certificates from sources. This is a destructive operation and should only
@@ -425,8 +423,8 @@ def clean_all_sources():
     """
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     task_id = None
-    if celery.current_task:
-        task_id = celery.current_task.request.id
+    if celery_app.current_task:
+        task_id = celery_app.current_task.request.id
 
     log_data = {
         "function": function,
@@ -449,7 +447,7 @@ def clean_all_sources():
     return log_data
 
 
-@celery.task(soft_time_limit=3600)
+@celery_app.task(soft_time_limit=3600)
 def clean_source(source):
     """
     This celery task will clean the specified source. This is a destructive operation that will delete unused
@@ -460,8 +458,8 @@ def clean_source(source):
     """
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     task_id = None
-    if celery.current_task:
-        task_id = celery.current_task.request.id
+    if celery_app.current_task:
+        task_id = celery_app.current_task.request.id
 
     log_data = {
         "function": function,
@@ -486,15 +484,15 @@ def clean_source(source):
     return log_data
 
 
-@celery.task()
+@celery_app.task()
 def sync_all_sources():
     """
     This function will sync certificates from all sources. This function triggers one celery task per source.
     """
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     task_id = None
-    if celery.current_task:
-        task_id = celery.current_task.request.id
+    if celery_app.current_task:
+        task_id = celery_app.current_task.request.id
 
     log_data = {
         "function": function,
@@ -517,7 +515,7 @@ def sync_all_sources():
     return log_data
 
 
-@celery.task(soft_time_limit=7200)
+@celery_app.task(soft_time_limit=7200)
 def sync_source(source):
     """
     This celery task will sync the specified source.
@@ -528,8 +526,8 @@ def sync_source(source):
 
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     task_id = None
-    if celery.current_task:
-        task_id = celery.current_task.request.id
+    if celery_app.current_task:
+        task_id = celery_app.current_task.request.id
 
     log_data = {
         "function": function,
@@ -565,7 +563,7 @@ def sync_source(source):
     return log_data
 
 
-@celery.task(soft_time_limit=3600)
+@celery_app.task(soft_time_limit=3600)
 def certificate_reissue():
     """
     This celery task reissues certificates which are pending reissue
@@ -573,8 +571,8 @@ def certificate_reissue():
     """
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     task_id = None
-    if celery.current_task:
-        task_id = celery.current_task.request.id
+    if celery_app.current_task:
+        task_id = celery_app.current_task.request.id
 
     log_data = {
         "function": function,
@@ -604,7 +602,7 @@ def certificate_reissue():
     return log_data
 
 
-@celery.task(soft_time_limit=3600)
+@celery_app.task(soft_time_limit=3600)
 def certificate_rotate(**kwargs):
 
     """
@@ -613,8 +611,8 @@ def certificate_rotate(**kwargs):
     """
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     task_id = None
-    if celery.current_task:
-        task_id = celery.current_task.request.id
+    if celery_app.current_task:
+        task_id = celery_app.current_task.request.id
 
     region = kwargs.get("region")
     log_data = {
@@ -649,7 +647,7 @@ def certificate_rotate(**kwargs):
     return log_data
 
 
-@celery.task(soft_time_limit=600)
+@celery_app.task(soft_time_limit=600)
 def get_all_zones():
     """
     This celery syncs all zones from the available dns providers
@@ -657,8 +655,8 @@ def get_all_zones():
     """
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     task_id = None
-    if celery.current_task:
-        task_id = celery.current_task.request.id
+    if celery_app.current_task:
+        task_id = celery_app.current_task.request.id
 
     log_data = {
         "function": function,
@@ -685,7 +683,7 @@ def get_all_zones():
     return log_data
 
 
-@celery.task(soft_time_limit=7200)
+@celery_app.task(soft_time_limit=7200)
 def check_revoked():
     """
     This celery task attempts to check if any certs are expired
@@ -693,8 +691,8 @@ def check_revoked():
     """
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     task_id = None
-    if celery.current_task:
-        task_id = celery.current_task.request.id
+    if celery_app.current_task:
+        task_id = celery_app.current_task.request.id
 
     log_data = {
         "function": function,
@@ -721,7 +719,7 @@ def check_revoked():
     return log_data
 
 
-@celery.task(soft_time_limit=3600)
+@celery_app.task(soft_time_limit=3600)
 def notify_expirations():
     """
     This celery task notifies about expiring certs
@@ -729,8 +727,8 @@ def notify_expirations():
     """
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     task_id = None
-    if celery.current_task:
-        task_id = celery.current_task.request.id
+    if celery_app.current_task:
+        task_id = celery_app.current_task.request.id
 
     log_data = {
         "function": function,
@@ -760,7 +758,7 @@ def notify_expirations():
     return log_data
 
 
-@celery.task(soft_time_limit=3600)
+@celery_app.task(soft_time_limit=3600)
 def notify_authority_expirations():
     """
     This celery task notifies about expiring certificate authority certs
@@ -768,8 +766,8 @@ def notify_authority_expirations():
     """
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     task_id = None
-    if celery.current_task:
-        task_id = celery.current_task.request.id
+    if celery_app.current_task:
+        task_id = celery_app.current_task.request.id
 
     log_data = {
         "function": function,
@@ -796,7 +794,7 @@ def notify_authority_expirations():
     return log_data
 
 
-@celery.task(soft_time_limit=3600)
+@celery_app.task(soft_time_limit=3600)
 def send_security_expiration_summary():
     """
     This celery task sends a summary about expiring certificates to the security team.
@@ -804,8 +802,8 @@ def send_security_expiration_summary():
     """
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     task_id = None
-    if celery.current_task:
-        task_id = celery.current_task.request.id
+    if celery_app.current_task:
+        task_id = celery_app.current_task.request.id
 
     log_data = {
         "function": function,
@@ -832,7 +830,7 @@ def send_security_expiration_summary():
     return log_data
 
 
-@celery.task(soft_time_limit=3600)
+@celery_app.task(soft_time_limit=3600)
 def enable_autorotate_for_certs_attached_to_endpoint():
     """
     This celery task automatically enables autorotation for unexpired certificates that are
@@ -841,8 +839,8 @@ def enable_autorotate_for_certs_attached_to_endpoint():
     """
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     task_id = None
-    if celery.current_task:
-        task_id = celery.current_task.request.id
+    if celery_app.current_task:
+        task_id = celery_app.current_task.request.id
 
     log_data = {
         "function": function,
@@ -856,7 +854,7 @@ def enable_autorotate_for_certs_attached_to_endpoint():
     return log_data
 
 
-@celery.task(soft_time_limit=3600)
+@celery_app.task(soft_time_limit=3600)
 def enable_autorotate_for_certs_attached_to_destination():
     """
     This celery task automatically enables autorotation for unexpired certificates that are
@@ -865,8 +863,8 @@ def enable_autorotate_for_certs_attached_to_destination():
     """
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     task_id = None
-    if celery.current_task:
-        task_id = celery.current_task.request.id
+    if celery_app.current_task:
+        task_id = celery_app.current_task.request.id
 
     log_data = {
         "function": function,
@@ -880,7 +878,7 @@ def enable_autorotate_for_certs_attached_to_destination():
     return log_data
 
 
-@celery.task(soft_time_limit=3600)
+@celery_app.task(soft_time_limit=3600)
 def deactivate_entrust_test_certificates():
     """
     This celery task attempts to deactivate all not yet deactivated Entrust certificates, and should only run in TEST
@@ -888,8 +886,8 @@ def deactivate_entrust_test_certificates():
     """
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     task_id = None
-    if celery.current_task:
-        task_id = celery.current_task.request.id
+    if celery_app.current_task:
+        task_id = celery_app.current_task.request.id
 
     log_data = {
         "function": function,
@@ -916,7 +914,7 @@ def deactivate_entrust_test_certificates():
     return log_data
 
 
-@celery.task(soft_time_limit=3600)
+@celery_app.task(soft_time_limit=3600)
 def disable_rotation_of_duplicate_certificates():
     """
     We occasionally get duplicate certificates with Let's encrypt. Figure out the set of duplicate certificates and
@@ -931,8 +929,8 @@ def disable_rotation_of_duplicate_certificates():
 
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     task_id = None
-    if celery.current_task:
-        task_id = celery.current_task.request.id
+    if celery_app.current_task:
+        task_id = celery_app.current_task.request.id
 
     log_data = {
         "function": function,
@@ -963,7 +961,7 @@ def disable_rotation_of_duplicate_certificates():
     metrics.send(f"{function}.success", "counter", 1)
 
 
-@celery.task(soft_time_limit=3600)
+@celery_app.task(soft_time_limit=3600)
 def notify_expiring_deployed_certificates():
     """
     This celery task attempts to find any certificates that are expiring soon but are still deployed,
@@ -971,8 +969,8 @@ def notify_expiring_deployed_certificates():
     """
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     task_id = None
-    if celery.current_task:
-        task_id = celery.current_task.request.id
+    if celery_app.current_task:
+        task_id = celery_app.current_task.request.id
 
     log_data = {
         "function": function,
@@ -1001,7 +999,7 @@ def notify_expiring_deployed_certificates():
     return log_data
 
 
-@celery.task(soft_time_limit=10800)  # 3 hours
+@celery_app.task(soft_time_limit=10800)  # 3 hours
 def identity_expiring_deployed_certificates():
     """
     This celery task attempts to find any certificates that are expiring soon but are still deployed,
@@ -1009,8 +1007,8 @@ def identity_expiring_deployed_certificates():
     """
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     task_id = None
-    if celery.current_task:
-        task_id = celery.current_task.request.id
+    if celery_app.current_task:
+        task_id = celery_app.current_task.request.id
 
     log_data = {
         "function": function,
