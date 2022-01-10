@@ -161,13 +161,12 @@ def configure_extensions(app):
         )
 
     if app.config["CORS"]:
-        app.config["CORS_HEADERS"] = "Content-Type"
         cors.init_app(
             app,
             resources=r"/api/*",
-            headers="Content-Type",
-            origin="*",
-            supports_credentials=True,
+            headers=app.config.get("CORS_HEADERS", "Content-Type"),
+            origin=app.config.get("CORS_ORIGIN", "*"),
+            supports_credentials=True
         )
 
 
