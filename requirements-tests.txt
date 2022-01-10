@@ -20,11 +20,11 @@ bandit==1.7.1
     # via -r requirements-tests.in
 black==21.12b0
     # via -r requirements-tests.in
-boto3==1.20.20
+boto3==1.20.31
     # via
     #   aws-sam-translator
     #   moto
-botocore==1.23.20
+botocore==1.23.31
     # via
     #   aws-xray-sdk
     #   boto3
