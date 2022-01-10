@@ -152,7 +152,7 @@ ecdsa==0.14.1
     #   sshpubkeys
 factory-boy==3.2.1
     # via -r requirements-tests.txt
-faker==11.1.0
+faker==11.3.0
     # via
     #   -r requirements-tests.txt
     #   factory-boy
