@@ -62,6 +62,27 @@ Basic Configuration
         CORS = False
 
 
+.. data:: CORS_HEADERS
+    :noindex:
+
+    A comma separated list of Cross-Origin Resource Sharing (CORS) HTTP headers.
+
+    ::
+
+        CORS_HEADERS = 'Content-Type'
+
+
+.. data:: CORS_ORIGIN
+    :noindex:
+
+    Cross-Origin Resource Sharing (CORS) is an HTTP-header based mechanism that allows a server to indicate any origins
+    (domain, scheme, or port) other than its own from which a browser should permit loading of resources.
+
+    ::
+
+        CORS_ORIGIN = '*'
+
+
 .. data:: SQLALCHEMY_DATABASE_URI
     :noindex:
 
