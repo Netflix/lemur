@@ -10,6 +10,7 @@ from builtins import str
 
 from flask import Blueprint, make_response, jsonify, g, current_app
 from flask_restful import reqparse, Api, inputs
+from lemur.plugins.bases.authorization import UnauthorizedError
 from sentry_sdk import capture_exception
 
 from lemur.common.schema import validate_schema
@@ -511,22 +512,21 @@ class CertificatesList(AuthenticatedResource):
         roles.append(role)
         authority_permission = AuthorityPermission(data["authority"].id, roles)
 
-        if authority_permission.can():
-            data["creator"] = g.user
+        if not authority_permission.can():
+            return dict(message=f"You are not authorized to use the authority: {data['authority'].name}"), 403
+
+        data["creator"] = g.user
+        # allowed_issuance_for_domain throws UnauthorizedError if caller is not authorized
+        try:
+            service.allowed_issuance_for_domain(data["common_name"], data["extensions"])
+        except UnauthorizedError as e:
+            return dict(message=str(e)), 403
+        else:
             cert = service.create(**data)
             if isinstance(cert, Certificate):
                 # only log if created, not pending
                 log_service.create(g.user, "create_cert", certificate=cert)
             return cert
-
-        return (
-            dict(
-                message="You are not authorized to use the authority: {0}".format(
-                    data["authority"].name
-                )
-            ),
-            403,
-        )
 
 
 class CertificatesUpload(AuthenticatedResource):

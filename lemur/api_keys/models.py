@@ -19,6 +19,7 @@ class ApiKey(db.Model):
     ttl = Column(BigInteger)
     issued_at = Column(BigInteger)
     revoked = Column(Boolean)
+    application_name = Column(String, nullable=True)
 
     def __repr__(self):
         return "ApiKey(name={name}, user_id={user_id}, ttl={ttl}, issued_at={iat}, revoked={revoked})".format(

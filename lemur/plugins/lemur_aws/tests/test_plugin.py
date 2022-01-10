@@ -1,5 +1,5 @@
 import boto3
-from moto import mock_sts, mock_s3, mock_ec2, mock_elb, mock_elbv2
+from moto import mock_sts, mock_s3, mock_ec2, mock_elb, mock_elbv2, mock_acm
 
 
 def test_get_certificates(app):
@@ -90,6 +90,7 @@ def test_upload_acme_token(app):
 
 
 @mock_sts()
+@mock_acm()
 @mock_elb()
 @mock_ec2()
 @mock_elbv2()
@@ -99,10 +100,23 @@ def test_get_all_elb_and_elbv2s(app, aws_credentials):
     from lemur.plugins.base import plugins
     from lemur.plugins.utils import set_plugin_option
 
-    cert_arn_prefix = "arn:aws:iam::123456789012:server-certificate/"
-    cert_arn = cert_arn_prefix + "plugin-test.example.com-R3-20211023-20220121"
-    cert_arn_v2 = cert_arn_prefix + "plugin-test-v2.example.com-R3-20211023-20220121"
-
+    acm_client = boto3.client("acm", region_name="us-east-1")
+    acm_request_response = acm_client.request_certificate(
+        DomainName="test.example.com",
+        DomainValidationOptions=[
+            {"DomainName": "test.example.com", "ValidationDomain": "test.example.com"},
+        ],
+    )
+    arn1 = acm_request_response["CertificateArn"]
+    cert_name1 = arn1.split("/")[-1]
+    acm_request_response = acm_client.request_certificate(
+        DomainName="test2.example.com",
+        DomainValidationOptions=[
+            {"DomainName": "test2.example.com", "ValidationDomain": "test2.example.com"},
+        ],
+    )
+    arn2 = acm_request_response["CertificateArn"]
+    cert_name2 = arn2.split("/")[-1]
     client = boto3.client("elb", region_name="us-east-1")
 
     client.create_load_balancer(
@@ -113,7 +127,7 @@ def test_get_all_elb_and_elbv2s(app, aws_credentials):
                 "LoadBalancerPort": 443,
                 "InstanceProtocol": "tcp",
                 "InstancePort": 5443,
-                "SSLCertificateId": cert_arn,
+                "SSLCertificateId": arn1,
             }
         ],
     )
@@ -144,7 +158,7 @@ def test_get_all_elb_and_elbv2s(app, aws_credentials):
         LoadBalancerArn=lb_arn,
         Protocol="HTTPS",
         Port=1443,
-        Certificates=[{"CertificateArn": cert_arn_v2}],
+        Certificates=[{"CertificateArn": arn2}],
         DefaultActions=[{"Type": "forward", "TargetGroupArn": target_group_arn}],
     )
 
@@ -157,9 +171,9 @@ def test_get_all_elb_and_elbv2s(app, aws_credentials):
     elb_map = {}
     for elb in elbs:
         elb_map[elb["name"]] = elb
-    assert elb_map["example-lb"]["certificate_name"] == "plugin-test.example.com-R3-20211023-20220121"
-    assert elb_map["example-lb"]["registry_type"] == "iam"
+    assert elb_map["example-lb"]["certificate_name"] == cert_name1
+    assert elb_map["example-lb"]["registry_type"] == "acm"
     assert elb_map["example-lb"]["port"] == 443
-    assert elb_map["test-lbv2"]["certificate_name"] == "plugin-test-v2.example.com-R3-20211023-20220121"
-    assert elb_map["test-lbv2"]["registry_type"] == "iam"
+    assert elb_map["test-lbv2"]["certificate_name"] == cert_name2
+    assert elb_map["test-lbv2"]["registry_type"] == "acm"
     assert elb_map["test-lbv2"]["port"] == 1443
