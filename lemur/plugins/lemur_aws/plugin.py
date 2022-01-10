@@ -306,17 +306,13 @@ class AWSSourcePlugin(SourcePlugin):
             regions = "".join(regions.split()).split(",")
 
         for region in regions:
-            try:
-                elbs = elb.get_all_elbs(account_number=account_number, region=region)
-                current_app.logger.info({
-                    "message": "Describing classic load balancers",
-                    "account_number": account_number,
-                    "region": region,
-                    "number_of_load_balancers": len(elbs)
-                })
-            except Exception as e:  # noqa
-                capture_exception()
-                continue
+            elbs = elb.get_all_elbs(account_number=account_number, region=region)
+            current_app.logger.info({
+                "message": "Describing classic load balancers",
+                "account_number": account_number,
+                "region": region,
+                "number_of_load_balancers": len(elbs)
+            })
 
             for e in elbs:
                 try:
@@ -326,12 +322,7 @@ class AWSSourcePlugin(SourcePlugin):
                     continue
 
             # fetch advanced ELBs
-            try:
-                elbs_v2 = elb.get_all_elbs_v2(account_number=account_number, region=region)
-            except Exception as e:  # noqa
-                capture_exception()
-                continue
-
+            elbs_v2 = elb.get_all_elbs_v2(account_number=account_number, region=region)
             current_app.logger.info({
                 "message": "Describing advanced load balancers",
                 "account_number": account_number,

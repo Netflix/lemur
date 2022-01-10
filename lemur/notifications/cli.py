@@ -116,7 +116,7 @@ def notify_expiring_deployed_certificates(exclude):
     """
     Attempt to find any certificates that are expiring soon but are still deployed, and notify the certificate owner.
     This information is retrieved from the database, and is based on the previous run of
-    identity_expiring_deployed_certificates.
+    identify_expiring_deployed_certificates.
     """
     status = FAILURE_METRIC_STATUS
     try:

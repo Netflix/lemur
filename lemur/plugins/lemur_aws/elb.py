@@ -126,7 +126,12 @@ def _filter_ignored_elbs(elbs, key_field, arg_name, response_key_field, **kwargs
         keys = [elb[key_field] for elb in elbs]
         client = kwargs.pop("client")
         # {'TagDescriptions': [{'ResourceArn': 'string','Tags': [{'Key': 'string','Value': 'string'},]}]}
-        tags_list = client.describe_tags(**{arg_name: keys})["TagDescriptions"]
+        tags_list = []
+        # Restrict to 20 tags per call per elbv1 limits.
+        while len(keys):
+            next_keys = keys[:20]
+            keys = keys[20:]
+            tags_list += client.describe_tags(**{arg_name: next_keys})["TagDescriptions"]
         ignored_keys = {}
         for tags in tags_list:
             key = tags[response_key_field]
