@@ -29,7 +29,7 @@
         <table ng-table="certificateTable" class="table" show-filter="showFilter" template-pagination="angular/pager.html">
           <tbody>
           <tr ng-class="{'even-row': $even }" ng-repeat-start="certificate in $data track by $index">
-            <td data-title="'Id'" filter="{'id': 'text'}">
+            <td data-title="'Id'" filter="{'id': 'number'}">
               {{ certificate.id }}
             </td>
             <td data-title="'Name'" sortable="'name'" filter="{ 'name': 'text' }">

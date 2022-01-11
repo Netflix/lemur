@@ -16,7 +16,7 @@
         <table ng-table="pendingCertificateTable" class="table" show-filter="showFilter" template-pagination="angular/pager.html">
           <tbody>
           <tr ng-class="{'even-row': $even }" ng-repeat-start="pendingCertificate in $data track by $index">
-            <td data-title="'Id'" filter="{'id': 'text'}">
+            <td data-title="'Id'" filter="{'id': 'number'}">
               {{ pendingCertificate.id }}
             </td>
             <td data-title="'Name'" sortable="'name'" filter="{ 'name': 'text' }">
