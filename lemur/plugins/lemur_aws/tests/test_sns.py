@@ -63,7 +63,8 @@ def create_and_subscribe_to_topic():
     sqs_client = boto3.client("sqs", region_name="us-east-1")
     queue = sqs_client.create_queue(QueueName="lemursnstestqueue")
     queue_url = queue["QueueUrl"]
-    queue_arn = sqs_client.get_queue_attributes(QueueUrl=queue_url)["Attributes"]["QueueArn"]
+    queue_arn = sqs_client.get_queue_attributes(
+        QueueUrl=queue_url, AttributeNames=["All"])["Attributes"]["QueueArn"]
     sns_client.subscribe(TopicArn=topic_arn, Protocol="sqs", Endpoint=queue_arn)
 
     return [topic_arn, sqs_client, queue_url]

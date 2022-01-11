@@ -28,12 +28,14 @@ from lemur.common.utils import generate_private_key, truthiness, parse_serial, g
 from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
 from lemur.destinations.models import Destination
 from lemur.domains.models import Domain
+from lemur.domains.service import is_authorized_for_domain
 from lemur.endpoints import service as endpoint_service
 from lemur.extensions import metrics, signals
 from lemur.notifications.messaging import send_revocation_notification
 from lemur.notifications.models import Notification
 from lemur.pending_certificates.models import PendingCertificate
 from lemur.plugins.base import plugins
+from lemur.plugins.utils import get_plugin_option
 from lemur.roles import service as role_service
 from lemur.roles.models import Role
 
@@ -457,6 +459,15 @@ def create(**kwargs):
     """
     Creates a new certificate.
     """
+    # Validate destinations do not overlap accounts
+    if "destinations" in kwargs:
+        dest_accounts = {}
+        for dest in kwargs["destinations"]:
+            account = get_plugin_option("accountNumber", dest.options)
+            if account in dest_accounts:
+                raise Exception(f"Only one destination allowed per account: {account}")
+            dest_accounts[account] = True
+
     try:
         cert_body, private_key, cert_chain, external_id, csr = mint(**kwargs)
     except Exception:
@@ -1240,3 +1251,19 @@ def is_valid_owner(email):
 
     # expecting owner to be an existing team DL
     return user_membership_provider.does_group_exist(email)
+
+
+def allowed_issuance_for_domain(common_name, extensions):
+    check_permission_for_cn = True if common_name else False
+
+    # authorize issuance for every x509.DNSName SAN
+    if extensions and extensions.get("sub_alt_names"):
+        for san in extensions["sub_alt_names"]["names"]:
+            if isinstance(san, x509.DNSName):
+                if san.value == common_name:
+                    check_permission_for_cn = False
+                is_authorized_for_domain(san.value)
+
+    # lemur UI copies CN as SAN (x509.DNSName). Permission check for CN might already be covered above.
+    if check_permission_for_cn:
+        is_authorized_for_domain(common_name)

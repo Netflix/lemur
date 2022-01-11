@@ -167,7 +167,8 @@ setup(
         'Intended Audience :: System Administrators',
         'Operating System :: OS Independent',
         'Topic :: Software Development',
-        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Natural Language :: English",
         "License :: OSI Approved :: Apache Software License"
     ]

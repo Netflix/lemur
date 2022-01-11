@@ -41,7 +41,9 @@ CERTIFICATE_KEY_TYPES = [
 ]
 
 # For commonly reused regexes used by plugins
-EMAIL_RE = re.compile('^([\w+-.%]+@[-\w.]+\.[A-Za-z]{2,4},?)+$')  # noqa: W605
+# RFC5322-compliant Regular Expression for email addresses
+EMAIL_RE = re.compile(r"([-!#-'*+/-9=?A-Z^-~]+(\.[-!#-'*+/-9=?A-Z^-~]+)*|\"([]!#-[^-~ \t]|(\\[\t -~]))+\")"
+                   r"@([-!#-'*+/-9=?A-Z^-~]+(\.[-!#-'*+/-9=?A-Z^-~]+)*|\[[\t -Z^-~]*])")
 EMAIL_RE_HELP = "Comma delimited list of email addresses"
 
 

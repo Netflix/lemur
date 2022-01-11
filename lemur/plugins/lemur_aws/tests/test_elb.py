@@ -20,7 +20,6 @@ def test_get_all_elbs(app, aws_credentials):
                 "LoadBalancerPort": 443,
                 "InstanceProtocol": "tcp",
                 "InstancePort": 5443,
-                "SSLCertificateId": "tcp",
             }
         ],
     )
@@ -36,7 +35,6 @@ def test_get_all_elbs(app, aws_credentials):
                 "LoadBalancerPort": 443,
                 "InstanceProtocol": "tcp",
                 "InstancePort": 5443,
-                "SSLCertificateId": "tcp",
             }
         ],
         Tags=[

@@ -825,8 +825,8 @@ def test_create_basic_csr(client):
         owner="joe@example.com",
         key_type="RSA2048",
         extensions=dict(
-            names=dict(
-                sub_alt_names=x509.SubjectAlternativeName(
+            sub_alt_names=dict(
+                names=x509.SubjectAlternativeName(
                     [
                         x509.DNSName("test.example.com"),
                         x509.DNSName("test2.example.com"),
@@ -1578,3 +1578,86 @@ def run_server(port, cert_file_name):
     daemon.setDaemon(True)  # Set as a daemon so it will be killed once the main thread is dead.
     daemon.start()
     return daemon
+
+
+def mocked_is_authorized_for_domain(name):
+    domain_in_error = "fail.lemur.com"
+    if name == domain_in_error:
+        raise UnauthorizedError(user="dummy_user", resource=domain_in_error, action="issue_certificate",
+                                details="unit test, mocked failure")
+
+
+@pytest.mark.parametrize(
+    "common_name, extensions, expected_error, authz_check_count",
+    [
+        ("fail.lemur.com", None, True, 1),
+        ("fail.lemur.com", dict(
+            sub_alt_names=dict(
+                names=x509.SubjectAlternativeName(
+                    [
+                        x509.DNSName("test.example.com"),
+                        x509.DNSName("test2.example.com"),
+                    ]
+                )
+            )
+        ), True, 3),  # CN is checked after SAN
+        ("test.example.com", dict(
+            sub_alt_names=dict(
+                names=x509.SubjectAlternativeName(
+                    [
+                        x509.DNSName("fail.lemur.com"),
+                        x509.DNSName("test2.example.com"),
+                    ]
+                )
+            )
+        ), True, 1),
+        (None, dict(
+            sub_alt_names=dict(
+                names=x509.SubjectAlternativeName(
+                    [
+                        x509.DNSName("fail.lemur.com"),
+                        x509.DNSName("test2.example.com"),
+                    ]
+                )
+            )
+        ), True, 1),
+        ("pass.lemur.com", None, False, 1),
+        ("pass.lemur.com", dict(
+            sub_alt_names=dict(
+                names=x509.SubjectAlternativeName(
+                    [
+                        x509.DNSName("test.example.com"),
+                        x509.DNSName("test2.example.com"),
+                    ]
+                )
+            )
+        ), False, 3),
+        ("pass.lemur.com", dict(
+            sub_alt_names=dict(
+                names=x509.SubjectAlternativeName(
+                    [
+                        x509.DNSName("test.example.com"),
+                        x509.DNSName("pass.lemur.com"),
+                    ]
+                )
+            )
+        ), False, 2),  # CN repeated in SAN
+    ],
+)
+def test_allowed_issuance_for_domain(common_name, extensions, expected_error, authz_check_count):
+    from lemur.certificates.service import allowed_issuance_for_domain
+
+    with patch(
+        'lemur.certificates.service.is_authorized_for_domain', side_effect=mocked_is_authorized_for_domain
+    ) as wrapper:
+        try:
+            allowed_issuance_for_domain(common_name, extensions)
+            if expected_error:
+                assert False, f"UnauthorizedError did not occur, input: CN({common_name}), SAN({extensions})"
+        except UnauthorizedError as e:
+            if expected_error:
+                pass
+            else:
+                assert False, f"UnauthorizedError occured, input: CN({common_name}), SAN({extensions})"
+
+        assert wrapper.call_count == authz_check_count
