@@ -120,6 +120,8 @@ def login_required(f):
                 expired_time = datetime.fromtimestamp(access_key.issued_at) + timedelta(days=access_key.ttl)
                 if current_time >= expired_time:
                     return dict(message="Token has expired"), 403
+            if access_key.application_name:
+                g.caller_application = access_key.application_name
 
         user = user_service.get(payload["sub"])
 
