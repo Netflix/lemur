@@ -12,7 +12,6 @@
 import json
 
 from flask import current_app
-from sqlalchemy.orm import joinedload
 
 from lemur import database
 from lemur.common.utils import truthiness, data_encrypt
@@ -20,7 +19,6 @@ from lemur.extensions import metrics
 from lemur.authorities.models import Authority
 from lemur.certificates.models import Certificate
 from lemur.roles import service as role_service
-from lemur.roles.models import Role
 from lemur.logs import service as log_service
 
 from lemur.certificates.service import upload
@@ -228,10 +226,7 @@ def render(args):
     :param args:
     :return:
     """
-    query = database.session_query(Authority)\
-        .options(joinedload(Authority.roles))\
-        .options(joinedload(Authority.roles).joinedload(Role.users))\
-        .options(joinedload(Authority.authority_certificate))
+    query = database.session_query(Authority)
 
     filt = args.pop("filter")
 
