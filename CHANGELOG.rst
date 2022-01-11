@@ -10,13 +10,12 @@ One can implement a DomainAuthorizationPlugin to check if caller is authorized t
 for a given Common Name and Subject Alternative Name (SAN) of type DNSName (PR `#3889 <https://github.com/Netflix/lemur/pull/3889>`_)
 
 Related to the above change (PR `#3889 <https://github.com/Netflix/lemur/pull/3889>`_), a new column `application_name`
-is added to the `api_keys` table. Null values are allowed making sure this change in backward compatible.
+is added to the `api_keys` table. Null values are allowed making sure this change is backward compatible.
 
 Other notable changes:
 - A task name is fixed from `identity_expiring_deployed_certificates` -> `identify_expiring_deployed_certificates`. The
 old task name with typo is marked as deprecated and will be removed in future release flagging it as a breaking change.
 (Thanks to `Bob Shannon <https://github.com/bobmshannon>`_)
-
 - ID filter on certificates UI requires a numeric value.
 
 
