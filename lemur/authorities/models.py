@@ -45,7 +45,6 @@ class Authority(db.Model):
         secondary=roles_authorities,
         passive_deletes=True,
         backref=db.backref("authority"),
-        lazy="dynamic",
     )
     user_id = Column(Integer, ForeignKey("users.id"))
     authority_certificate = relationship(
