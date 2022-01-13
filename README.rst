@@ -11,9 +11,6 @@ Lemur
 
 .. image:: https://img.shields.io/badge/NetflixOSS-active-brightgreen.svg
 
-.. image:: https://travis-ci.org/Netflix/lemur.svg
-    :target: https://travis-ci.org/Netflix/lemur
-
 .. image:: https://coveralls.io/repos/github/Netflix/lemur/badge.svg?branch=master
     :target: https://coveralls.io/github/Netflix/lemur?branch=master
 
@@ -22,7 +19,8 @@ Lemur
 Lemur manages TLS certificate creation. While not able to issue certificates itself, Lemur acts as a broker between CAs
 and environments providing a central portal for developers to issue TLS certificates with 'sane' defaults.
 
-It works on Python 3.7. We deploy on Ubuntu and develop on OS X.
+Lemur runs on Python 3.8 and 3.9.
+We deploy on Ubuntu and develop mostly on OS X.
 
 
 Project resources

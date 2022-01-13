@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+from flask import current_app
 from flask_script import Manager
 from sentry_sdk import capture_exception
 
@@ -50,7 +51,8 @@ def expirations(exclude, disabled_notification_plugins):
     status = FAILURE_METRIC_STATUS
     try:
         print("Starting to notify subscribers about expiring certificates!")
-        success, failed = send_expiration_notifications(exclude, disabled_notification_plugins)
+        disable_security_team_emails = current_app.config.get("LEMUR_DISABLE_SECURITY_TEAM_EXPIRATION_EMAILS", False)
+        success, failed = send_expiration_notifications(exclude, disabled_notification_plugins, disable_security_team_emails)
         print(
             f"Finished notifying subscribers about expiring certificates! Sent: {success} Failed: {failed}"
         )
@@ -114,7 +116,7 @@ def notify_expiring_deployed_certificates(exclude):
     """
     Attempt to find any certificates that are expiring soon but are still deployed, and notify the certificate owner.
     This information is retrieved from the database, and is based on the previous run of
-    identity_expiring_deployed_certificates.
+    identify_expiring_deployed_certificates.
     """
     status = FAILURE_METRIC_STATUS
     try:

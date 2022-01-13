@@ -26,6 +26,16 @@ class InvalidListener(LemurException):
         )
 
 
+class InvalidDistribution(LemurException):
+    def __init__(self, field):
+        self.field = field
+
+    def __str__(self):
+        return repr(
+            "Invalid distribution {0}, must use IAM certificates".format(self.field)
+        )
+
+
 class AttrNotFound(LemurException):
     def __init__(self, field):
         self.field = field

@@ -227,6 +227,7 @@ def render(args):
     :return:
     """
     query = database.session_query(Authority)
+
     filt = args.pop("filter")
 
     if filt:

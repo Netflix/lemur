@@ -4,6 +4,7 @@ import json
 import sys
 from flask import current_app
 from retrying import retry
+from requests.packages.urllib3.util.retry import Retry
 
 from lemur.constants import CRLReason
 from lemur.plugins import lemur_entrust as entrust
@@ -216,6 +217,14 @@ class EntrustIssuerPlugin(IssuerPlugin):
         self.session.auth = (user, password)
         self.session.hooks = dict(response=log_status_code)
         # self.session.config['keep_alive'] = False
+
+        # max_retries applies only to failed DNS lookups, socket connections and connection timeouts,
+        # never to requests where data has made it to the server.
+        # we Retry we also covers HTTP status code 500, 502, 503, 504
+        retry_strategy = Retry(total=3, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504])
+        adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
+        self.session.mount("https://", adapter)
+
         super(EntrustIssuerPlugin, self).__init__(*args, **kwargs)
 
     def create_certificate(self, csr, issuer_options):
@@ -293,12 +302,33 @@ class EntrustIssuerPlugin(IssuerPlugin):
 
     @retry(stop_max_attempt_number=3, wait_fixed=1000)
     def deactivate_certificate(self, certificate):
-        """Deactivates an Entrust certificate."""
+        """Deactivates an Entrust certificate, as long as it is still active, and not already deactivcated. """
+        log_data = {
+            "function": f"{__name__}.{sys._getframe().f_code.co_name}",
+            "external_id": f"{certificate.external_id}"
+        }
+
+        # Let's first check the status of the certificate
         base_url = current_app.config.get("ENTRUST_URL")
-        deactivate_url = f"{base_url}/certificates/{certificate.external_id}/deactivations"
-        response = self.session.post(deactivate_url)
-        metrics.send("entrust_deactivate_certificate", "counter", 1)
-        return handle_response(response)
+        status_url = f"{base_url}/certificates/{certificate.external_id}"
+        response = self.session.get(status_url)
+
+        try:
+            data = handle_response(response)
+        except (ValueError, Exception):
+            # if the certificate cannot be found, there is no need to deactivate it
+            log_data['message'] = "No certificate found for the ID"
+            current_app.logger.info(log_data)
+            return 200
+
+        if data and data['status'].lower() == 'active':
+            deactivate_url = f"{base_url}/certificates/{certificate.external_id}/deactivations"
+            response = self.session.post(deactivate_url)
+            metrics.send("entrust_deactivate_certificate", "counter", 1)
+            return handle_response(response)
+        else:
+            # the certificate is no longer valid, or doesn't exist and cannot be deacticated
+            return 200
 
     @staticmethod
     def create_authority(options):
@@ -356,6 +386,14 @@ class EntrustSourcePlugin(SourcePlugin):
         self.session.cert = (cert_file, key_file)
         self.session.auth = (user, password)
         self.session.hooks = dict(response=log_status_code)
+
+        # max_retries applies only to failed DNS lookups, socket connections and connection timeouts,
+        # never to requests where data has made it to the server.
+        # we Retry we also covers HTTP status code 500, 502, 503, 504
+        retry_strategy = Retry(total=3, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504])
+        adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
+        self.session.mount("https://", adapter)
+
         super(EntrustSourcePlugin, self).__init__(*args, **kwargs)
 
     def get_certificates(self, options, **kwargs):

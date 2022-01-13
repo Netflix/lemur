@@ -10,6 +10,7 @@ from builtins import str
 
 from flask import Blueprint, make_response, jsonify, g, current_app
 from flask_restful import reqparse, Api, inputs
+from lemur.plugins.bases.authorization import UnauthorizedError
 from sentry_sdk import capture_exception
 
 from lemur.common.schema import validate_schema
@@ -265,13 +266,31 @@ class CertificatesList(AuthenticatedResource):
         """
         .. http:get:: /certificates
 
-           The current list of certificates
+            The current list of certificates. This API supports additional params like
+
+            Pagination, sorting:
+                /certificates?count=10&page=1&short=true&sortBy=id&sortDir=desc
+            Filters, mentioned as url param filter=field;value
+                /certificates?filter=cn;lemur.test.com
+                /certificates?filter=notify;true
+                /certificates?filter=rotation;true
+                /certificates?filter=name;lemur.test.cert
+                /certificates?filter=issuer;Digicert
+            Request expired certs
+                /certificates?showExpired=1
+            Search by Serial Number
+                Decimal:
+                /certificates?serial=218243997808053074560741989466015229225
+                Hex:
+                /certificates?serial=0xA43043DAB7F6F8AE115E94854EEB6529
+                /certificates?serial=a4:30:43:da:b7:f6:f8:ae:11:5e:94:85:4e:eb:65:29
+
 
            **Example request**:
 
            .. sourcecode:: http
 
-              GET /certificates HTTP/1.1
+              GET /certificates?serial=82311058732025924142789179368889309156 HTTP/1.1
               Host: example.com
               Accept: application/json, text/javascript
 
@@ -359,6 +378,7 @@ class CertificatesList(AuthenticatedResource):
         parser.add_argument("creator", type=str, location="args")
         parser.add_argument("show", type=str, location="args")
         parser.add_argument("showExpired", type=int, location="args")
+        parser.add_argument("serial", type=str, location="args")
 
         args = parser.parse_args()
         args["user"] = g.user
@@ -480,6 +500,9 @@ class CertificatesList(AuthenticatedResource):
            :statuscode 403: unauthenticated
 
         """
+        if not service.is_valid_owner(data["owner"]):
+            return dict(message=f"Invalid owner: check if {data['owner']} is a valid group email. Individuals cannot be certificate owners."), 412
+
         role = role_service.get_by_name(data["authority"].owner)
 
         # all the authority role members should be allowed
@@ -489,22 +512,21 @@ class CertificatesList(AuthenticatedResource):
         roles.append(role)
         authority_permission = AuthorityPermission(data["authority"].id, roles)
 
-        if authority_permission.can():
-            data["creator"] = g.user
+        if not authority_permission.can():
+            return dict(message=f"You are not authorized to use the authority: {data['authority'].name}"), 403
+
+        data["creator"] = g.user
+        # allowed_issuance_for_domain throws UnauthorizedError if caller is not authorized
+        try:
+            service.allowed_issuance_for_domain(data["common_name"], data["extensions"])
+        except UnauthorizedError as e:
+            return dict(message=str(e)), 403
+        else:
             cert = service.create(**data)
             if isinstance(cert, Certificate):
                 # only log if created, not pending
                 log_service.create(g.user, "create_cert", certificate=cert)
             return cert
-
-        return (
-            dict(
-                message="You are not authorized to use the authority: {0}".format(
-                    data["authority"].name
-                )
-            ),
-            403,
-        )
 
 
 class CertificatesUpload(AuthenticatedResource):

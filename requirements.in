@@ -6,7 +6,7 @@ arrow
 asyncpool
 boto3
 botocore
-celery[redis]==4.4.2 # need to first resolve the module not found error https://github.com/celery/celery/issues/6406
+celery[redis]
 certbot
 certifi
 certsrv
@@ -42,7 +42,7 @@ pyjwt
 pyOpenSSL
 pyyaml>=4.2b1 #high severity alert
 python_ldap
-redis
+redis==4.0.2  # remove once fakeredis supports 4.1.0 https://github.com/jamesls/fakeredis/pull/324
 requests
 retrying
 sentry-sdk
@@ -50,4 +50,5 @@ six
 SQLAlchemy-Utils
 sqlalchemy < 1.4.0 # ImportError: cannot import name '_ColumnEntity' https://github.com/sqlalchemy/sqlalchemy/issues/6226
 tabulate
+validators
 xmltodict

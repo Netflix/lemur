@@ -63,6 +63,7 @@ def is_valid(listener_tuple):
     return listener_tuple
 
 
+@sts_client("elb")
 def get_all_elbs(**kwargs):
     """
     Fetches all elbs for a given account/region
@@ -73,9 +74,8 @@ def get_all_elbs(**kwargs):
     elbs = []
     try:
         while True:
-            response = get_elbs(**kwargs)
-
-            elbs += response["LoadBalancerDescriptions"]
+            response = _get_elbs(**kwargs)
+            elbs += _filter_ignored_elbsv1(response["LoadBalancerDescriptions"], **kwargs)
 
             if not response.get("NextMarker"):
                 return elbs
@@ -87,6 +87,69 @@ def get_all_elbs(**kwargs):
         raise
 
 
+def _filter_ignored_elbsv1(elbs, **kwargs):
+    """
+    Filter load balancers using the elb.describe_tags method.
+    :param elbs: List of ELBs from elb.describe_load_balancers
+    :param kwargs: must contain a 'client' from @sts_client
+    :return:
+    """
+    return _filter_ignored_elbs(elbs, "LoadBalancerName", "LoadBalancerNames", "LoadBalancerName", **kwargs)
+
+
+def _filter_ignored_elbsv2(elbs, **kwargs):
+    """
+    Filter load balancers using the elbv2.describe_tags method.
+    :param elbs: List of ELBs from elbv2.describe_load_balancers
+    :param kwargs: must contain a 'client' from @sts_client
+    :return:
+    """
+    return _filter_ignored_elbs(elbs, "LoadBalancerArn", "ResourceArns", "ResourceArn", **kwargs)
+
+
+def _filter_ignored_elbs(elbs, key_field, arg_name, response_key_field, **kwargs):
+    """
+    Look up tags and remove any ELBs that should be ignored.
+    :param elbs: List of dictionaries keyed by the field key_field
+    :param key_field: Field value pass in call to describe_tags
+    :param arg_name: Name of the argument to describe_tags
+    :param response_key_field: Name of the field in response list with the object key.
+    :param kwargs: must contain a 'client' from @sts_client
+    :return:
+    """
+    if not elbs:
+        return elbs
+    ignore_tag = current_app.config.get("AWS_ELB_IGNORE_TAG")
+    if not ignore_tag:
+        return elbs
+    try:
+        keys = [elb[key_field] for elb in elbs]
+        client = kwargs.pop("client")
+        # {'TagDescriptions': [{'ResourceArn': 'string','Tags': [{'Key': 'string','Value': 'string'},]}]}
+        tags_list = []
+        # Restrict to 20 tags per call per elbv1 limits.
+        while len(keys):
+            next_keys = keys[:20]
+            keys = keys[20:]
+            tags_list += client.describe_tags(**{arg_name: next_keys})["TagDescriptions"]
+        ignored_keys = {}
+        for tags in tags_list:
+            key = tags[response_key_field]
+            tags = tags["Tags"]
+            for tag in tags:
+                if tag["Key"] == ignore_tag:
+                    current_app.logger.info(f"Ignoring ELB due to ignore tag: {key}")
+                    ignored_keys[key] = True
+
+        return [elb for elb in elbs if not elb[key_field] in ignored_keys]
+
+    except Exception as e:  # noqa
+        metrics.send("describe_tags_error", "counter", 1)
+        capture_exception()
+        raise
+
+
+@sts_client("elbv2")
 def get_all_elbs_v2(**kwargs):
     """
     Fetches all elbs for a given account/region
@@ -98,8 +161,8 @@ def get_all_elbs_v2(**kwargs):
 
     try:
         while True:
-            response = get_elbs_v2(**kwargs)
-            elbs += response["LoadBalancers"]
+            response = _get_elbs_v2(**kwargs)
+            elbs += _filter_ignored_elbsv2(response["LoadBalancers"], **kwargs)
 
             if not response.get("NextMarker"):
                 return elbs
@@ -183,8 +246,15 @@ def get_load_balancer_arn_from_endpoint(endpoint_name, **kwargs):
 
 
 @sts_client("elb")
-@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
 def get_elbs(**kwargs):
+    """
+    Fetches one page elb objects for a given account and region.
+    """
+    return _get_elbs(**kwargs)
+
+
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
+def _get_elbs(**kwargs):
     """
     Fetches one page elb objects for a given account and region.
     """
@@ -198,8 +268,18 @@ def get_elbs(**kwargs):
 
 
 @sts_client("elbv2")
-@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
 def get_elbs_v2(**kwargs):
+    """
+    Fetches one page of elb objects for a given account and region.
+
+    :param kwargs:
+    :return:
+    """
+    return _get_elbs_v2(**kwargs)
+
+
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
+def _get_elbs_v2(**kwargs):
     """
     Fetches one page of elb objects for a given account and region.
 

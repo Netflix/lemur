@@ -29,18 +29,19 @@ def text_to_slug(value, joiner="-"):
     return value.strip(joiner)
 
 
-def certificate_name(common_name, issuer, not_before, not_after, san):
+def certificate_name(common_name, issuer, not_before, not_after, san, domains=[]):
     """
     Create a name for our certificate. A naming standard
     is based on a series of templates. The name includes
     useful information such as Common Name, Validation dates,
     and Issuer.
 
-    :param san:
     :param common_name:
     :param not_after:
     :param issuer:
     :param not_before:
+    :param san:
+    :param domains:
     :rtype: str
     :return:
     """
@@ -49,8 +50,13 @@ def certificate_name(common_name, issuer, not_before, not_after, san):
     else:
         t = DEFAULT_NAMING_TEMPLATE
 
+    if common_name and common_name.strip():
+        subject = common_name
+    elif len(domains):
+        subject = domains[0].name
+
     temp = t.format(
-        subject=common_name,
+        subject=subject,
         issuer=issuer.replace(" ", ""),
         not_before=not_before.strftime("%Y%m%d"),
         not_after=not_after.strftime("%Y%m%d"),
@@ -188,6 +194,9 @@ def domains(cert):
         entries = ext.value.get_values_for_type(x509.DNSName)
         for entry in entries:
             domains.append(entry)
+        entries = ext.value.get_values_for_type(x509.IPAddress)
+        for entry in entries:
+            domains.append(str(entry))
     except x509.ExtensionNotFound:
         if current_app.config.get("LOG_SSL_SUBJ_ALT_NAME_ERRORS", True):
             capture_exception()

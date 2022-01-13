@@ -208,15 +208,16 @@ class PluginInputSchema(LemurInputSchema):
                     f"Unable to get plugin options. Slug: {data['slug']} Option: {option!r}"
                 )
             if "plugin" in option.get("type", []):
+                # for plugins, sub-plugin options are validated in a recursive call to schema.load() below
                 sub_data, errors = PluginInputSchema().load(option_value)
                 if errors:
                     raise ValidationError(
                         f"Unable to load plugin options. Slug: {data['slug']} Option {option_name}"
                     )
                 option["value"] = sub_data
-
-            # validate user inputs for sub-plugin options and only accept "value" field from user
-            if data["plugin_object"]:
+                plugin_options_validated.append(option)
+            elif data["plugin_object"]:
+                # validate user inputs for sub-plugin options and only accept "value" field from user
                 try:
                     # Run regex validation rule on user input
                     data["plugin_object"].validate_option_value(option_name, option_value)
@@ -311,7 +312,7 @@ class ExtensionSchema(BaseExtensionSchema):
     key_usage = KeyUsageExtension()
     extended_key_usage = ExtendedKeyUsageExtension()
     subject_key_identifier = fields.Nested(SubjectKeyIdentifierSchema)
-    sub_alt_names = fields.Nested(NamesSchema)
+    sub_alt_names = fields.Nested(NamesSchema, missing={"names": []})
     authority_key_identifier = fields.Nested(AuthorityKeyIdentifierSchema)
     certificate_info_access = fields.Nested(CertificateInfoAccessSchema)
     crl_distribution_points = fields.Nested(

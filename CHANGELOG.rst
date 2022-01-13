@@ -1,6 +1,65 @@
 Changelog
 =========
 
+
+1.1.0 - `2022-01-10`
+~~~~~~~~~~~~~~~~~~~~
+
+Introducing new Plugins AuthorizationPlugin(Plugin) and DomainAuthorizationPlugin(AuthorizationPlugin).
+One can implement a DomainAuthorizationPlugin to check if caller is authorized to issue a certificate
+for a given Common Name and Subject Alternative Name (SAN) of type DNSName (PR `#3889 <https://github.com/Netflix/lemur/pull/3889>`_)
+
+Related to the above change (PR `#3889 <https://github.com/Netflix/lemur/pull/3889>`_), a new column `application_name`
+is added to the `api_keys` table. Null values are allowed making sure this change is backward compatible.
+
+Other notable changes:
+- A task name is fixed from `identity_expiring_deployed_certificates` -> `identify_expiring_deployed_certificates`. The
+old task name with typo is marked as deprecated and will be removed in future release flagging it as a breaking change.
+(Thanks to `Bob Shannon <https://github.com/bobmshannon>`_)
+- ID filter on certificates UI requires a numeric value.
+
+
+1.0.0 - `2022-01-06`
+~~~~~~~~~~~~~~~~~~~~
+
+This is our first major release due to a dependency on Python 3.8.
+Lemur is now using flake8>=4.0 and pyflakes>=2.4, requiring Python 3.8 or higher.
+Our GitHub Actions Builds are currently on Python 3.8 and Python 3.9.
+
+
+0.11.0 - `2022-01-05`
+~~~~~~~~~~~~~~~~~~~~~
+
+This release includes multiple improvements on many fronts.
+The next release will be a major release, requiring Python 3.8 or higher.
+
+Some of the notable changes in this release are:
+
+- CloudFront Plugin: a new endpoint with rotation support
+- Improved Endpoint expiration flow; the Sync job now expires old endpoints
+- AWS ELB tag supports to opt-out of auto-rotate for load balancers
+- Membership plugin
+- Moving Travis Build to Node 16
+- OAuth2 & Ping Config improvement
+- Improved Certificate status check
+- Improved ACME plugin:
+    - reuse existing domain validation resulting in faster issuance
+    - IP certificate issuance support, accompanied by UI support
+    - emit remaining domain validation
+- Azure destination: Switch to PCKS12 upload
+- Improved logs, such as:
+    - Warning logs for admin role assignment and authority creation
+    - Audit logs in JSON format for better search
+    - Improved SES logging
+
+Special thanks to all who contributed to this release, notably:
+- `Bob Shannon <https://github.com/bobmshannon>`_
+- `sirferl <https://github.com/sirferl>`_
+- `Sam Havron <https://github.com/havron>`_
+- `Guillaume Dumont <https://github.com/dumontg>`_
+- `Joe McRobot <https://github.com/JoeMcRobot>`_
+
+
 0.10.0 - `2021-06-28`
 ~~~~~~~~~~~~~~~~~~~~~
 

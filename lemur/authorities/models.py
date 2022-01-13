@@ -45,7 +45,6 @@ class Authority(db.Model):
         secondary=roles_authorities,
         passive_deletes=True,
         backref=db.backref("authority"),
-        lazy="dynamic",
     )
     user_id = Column(Integer, ForeignKey("users.id"))
     authority_certificate = relationship(
@@ -115,3 +114,20 @@ class Authority(db.Model):
 
     def __repr__(self):
         return "Authority(name={name})".format(name=self.name)
+
+    @property
+    def is_cn_optional(self):
+        """
+        Parse the options to find whether common name is treated as an optional field.
+        Returns False if option is not available
+        """
+        if not self.options:
+            return False
+
+        options_array = json.loads(self.options)
+        if isinstance(options_array, list):
+            for option in options_array:
+                if "name" in option and option["name"] == 'cn_optional':
+                    return option["value"]
+
+        return False

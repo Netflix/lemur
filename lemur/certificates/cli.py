@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+import arrow
 import sys
 from flask import current_app
 from flask_principal import Identity, identity_changed
@@ -485,9 +486,9 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
 @manager.option(
     "-a",
     "--notify",
-    dest="message",
+    dest="notify",
     action="store_true",
-    help="Send a re-issue failed notification to the certificates owner (if re-isuance fails).",
+    help="Send a re-issue failed notification to the certificates owner (if re-issuance fails).",
 )
 @manager.option(
     "-c",
@@ -683,8 +684,10 @@ def check_revoked():
     ocsp_err_count = 0
     crl_err_count = 0
     while there_are_still_certs:
+        # get all valid certs issued until day before. This is to avoid OCSP not knowing about a newly created cert.
         certs = get_all_valid_certs(current_app.config.get("SUPPORTED_REVOCATION_AUTHORITY_PLUGINS", []),
-                                    paginate=True, page=page, count=count)
+                                    paginate=True, page=page, count=count,
+                                    created_on_or_before=arrow.now().shift(days=-1))
         if len(certs) < count:
             # this must be tha last page
             there_are_still_certs = False
@@ -707,7 +710,10 @@ def check_revoked():
                 ocsp_err_count += ocsp_err
                 crl_err_count += crl_err
 
-                cert.status = "valid" if status else "revoked"
+                if status is None:
+                    cert.status = "unknown"
+                else:
+                    cert.status = "valid" if status else "revoked"
 
                 if cert.status == "revoked":
                     log_data["valid"] = cert.status
@@ -1047,10 +1053,18 @@ def is_duplicate(matching_cert, compare_to):
 @manager.option(
     "-e",
     "--exclude",
-    dest="exclude",
+    dest="exclude_domains",
     action="append",
     default=[],
     help="Domains that should be excluded from check.",
+)
+@manager.option(
+    "-eo",
+    "--exclude-owners",
+    dest="exclude_owners",
+    action="append",
+    default=[],
+    help="Owners that should be excluded from check.",
 )
 @manager.option(
     "-c",
@@ -1060,10 +1074,10 @@ def is_duplicate(matching_cert, compare_to):
     default=False,
     help="Persist changes.",
 )
-def identify_expiring_deployed_certificates(exclude, commit):
+def identify_expiring_deployed_certificates(exclude_domains, exclude_owners, commit):
     status = FAILURE_METRIC_STATUS
     try:
-        identify_and_persist_expiring_deployed_certificates(exclude, commit)
+        identify_and_persist_expiring_deployed_certificates(exclude_domains, exclude_owners, commit)
         status = SUCCESS_METRIC_STATUS
     except Exception:
         capture_exception()

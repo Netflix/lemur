@@ -148,6 +148,7 @@ idWw1VrejtwclobqNMVtG3EiPUIpJGpbMcJgbiLSmKkrvQtGng==
 -----END CERTIFICATE-----
 """
         mock_finalized_order.alternative_fullchains_pem = [mock_finalized_order.fullchain_pem]
+        mock_finalized_order.authorizations = [Mock()]
         mock_client.finalize_order.return_value = mock_finalized_order
 
         mock_acme.return_value = (mock_client, "")

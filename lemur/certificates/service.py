@@ -28,12 +28,14 @@ from lemur.common.utils import generate_private_key, truthiness, parse_serial, g
 from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
 from lemur.destinations.models import Destination
 from lemur.domains.models import Domain
+from lemur.domains.service import is_authorized_for_domain
 from lemur.endpoints import service as endpoint_service
 from lemur.extensions import metrics, signals
 from lemur.notifications.messaging import send_revocation_notification
 from lemur.notifications.models import Notification
 from lemur.pending_certificates.models import PendingCertificate
 from lemur.plugins.base import plugins
+from lemur.plugins.utils import get_plugin_option
 from lemur.roles import service as role_service
 from lemur.roles.models import Role
 
@@ -113,15 +115,16 @@ def get_all_certs():
     return Certificate.query.all()
 
 
-def get_all_valid_certs(authority_plugin_name, paginate=False, page=1, count=1000):
+def get_all_valid_certs(authority_plugin_name, paginate=False, page=1, count=1000, created_on_or_before=None):
     """
     Retrieves all valid (not expired & not revoked) certificates within Lemur, for the given authority plugin names
     ignored if no authority_plugin_name provided.
 
     Note that depending on the DB size retrieving all certificates might an expensive operation
-    :param paginate: option to use pagination, for large number of certicicates. default to false
+    :param paginate: option to use pagination, for large number of certificates. default to false
     :param page: the page to turn. default to 1
     :param count: number of return certificates per page. default 1000
+    :param created_on_or_before: optional Arrow date to select only certificates issued on or before the date
 
     :return: list of certificates to check for revocation
     """
@@ -129,13 +132,17 @@ def get_all_valid_certs(authority_plugin_name, paginate=False, page=1, count=100
     query = database.session_query(Certificate) if paginate else Certificate.query
 
     if authority_plugin_name:
-        query = query.outerjoin(Authority, Authority.id == Certificate.authority_id).filter(
-            Certificate.not_after > arrow.now().format("YYYY-MM-DD")).filter(
-            Authority.plugin_name.in_(authority_plugin_name)).filter(Certificate.revoked.is_(False))
+        query = query.outerjoin(Authority, Authority.id == Certificate.authority_id)\
+            .filter(Certificate.not_after > arrow.now().format("YYYY-MM-DD"))\
+            .filter(Authority.plugin_name.in_(authority_plugin_name))\
+            .filter(Certificate.revoked.is_(False))
 
     else:
-        query = query.filter(Certificate.not_after > arrow.now().format("YYYY-MM-DD")).filter(
-            Certificate.revoked.is_(False))
+        query = query.filter(Certificate.not_after > arrow.now().format("YYYY-MM-DD"))\
+            .filter(Certificate.revoked.is_(False))
+
+    if created_on_or_before:
+        query = query.filter(Certificate.date_created <= created_on_or_before.format("YYYY-MM-DD"))
 
     if paginate:
         items = database.paginate(query, page, count)
@@ -452,13 +459,22 @@ def create(**kwargs):
     """
     Creates a new certificate.
     """
+    # Validate destinations do not overlap accounts
+    if "destinations" in kwargs:
+        dest_accounts = {}
+        for dest in kwargs["destinations"]:
+            account = get_plugin_option("accountNumber", dest.options)
+            if account in dest_accounts:
+                raise Exception(f"Only one destination allowed per account: {account}")
+            dest_accounts[account] = True
+
     try:
         cert_body, private_key, cert_chain, external_id, csr = mint(**kwargs)
     except Exception:
         log_data = {
             "message": "Exception minting certificate",
             "issuer": kwargs["authority"].name,
-            "cn": kwargs["common_name"],
+            "cn": kwargs.get("common_name"),
         }
         current_app.logger.error(log_data, exc_info=True)
         capture_exception()
@@ -515,7 +531,7 @@ def create(**kwargs):
         from lemur.common.celery import fetch_acme_cert
 
         if not current_app.config.get("ACME_DISABLE_AUTORESOLVE", False):
-            fetch_acme_cert.apply_async((pending_cert.id, kwargs.get("async_reissue_notification_cert", None)), countdown=5)
+            fetch_acme_cert.apply_async((pending_cert.id, kwargs.get("async_reissue_notification_cert_id", None)), countdown=5)
 
     return cert
 
@@ -542,6 +558,7 @@ def render(args):
 
     destination_id = args.pop("destination_id")
     notification_id = args.pop("notification_id", None)
+    serial_number = args.pop("serial", None)
     show = args.pop("show")
     # owner = args.pop('owner')
     # creator = args.pop('creator')  # TODO we should enabling filtering by owner
@@ -635,6 +652,14 @@ def render(args):
     if current_app.config.get("ALLOW_CERT_DELETION", False):
         query = query.filter(Certificate.deleted == false())
 
+    if serial_number:
+        if serial_number.lower().startswith('0x'):
+            serial_number = str(int(serial_number[2:], 16))
+        elif ":" in serial_number:
+            serial_number = str(int(serial_number.replace(':', ''), 16))
+
+        query = query.filter(Certificate.serial == serial_number)
+
     result = database.sort_and_page(query, Certificate, args)
     return result
 
@@ -704,10 +729,14 @@ def create_csr(**csr_config):
     private_key = generate_private_key(csr_config.get("key_type"))
 
     builder = x509.CertificateSigningRequestBuilder()
-    name_list = [x509.NameAttribute(x509.OID_COMMON_NAME, csr_config["common_name"])]
+    name_list = []
     if current_app.config.get("LEMUR_OWNER_EMAIL_IN_SUBJECT", True):
         name_list.append(
             x509.NameAttribute(x509.OID_EMAIL_ADDRESS, csr_config["owner"])
+        )
+    if "common_name" in csr_config and csr_config["common_name"].strip():
+        name_list.append(
+            x509.NameAttribute(x509.OID_COMMON_NAME, csr_config["common_name"])
         )
     if "organization" in csr_config and csr_config["organization"].strip():
         name_list.append(
@@ -930,7 +959,7 @@ def reissue_certificate(certificate, notify=None, replace=None, user=None):
 
     # allow celery to send notifications for PendingCertificates using the old cert
     if notify:
-        primitives["async_reissue_notification_cert"] = certificate
+        primitives["async_reissue_notification_cert_id"] = certificate.id
 
     new_cert = create(**primitives)
 
@@ -1066,16 +1095,17 @@ def remove_source_association(certificate, source):
     )
 
 
-def remove_destination_association(certificate, destination):
+def remove_destination_association(certificate, destination, clean=True):
     certificate.destinations.remove(destination)
     database.update(certificate)
 
-    try:
-        remove_from_destination(certificate, destination)
-    except Exception as e:
-        # This cleanup is the best-effort, it will capture the exception and log
-        capture_exception()
-        current_app.logger.warning(f"Failed to remove destination: {destination.label}. {str(e)}")
+    if clean:
+        try:
+            remove_from_destination(certificate, destination)
+        except Exception as e:
+            # This cleanup is the best-effort, it will capture the exception and log
+            capture_exception()
+            current_app.logger.warning(f"Failed to remove destination: {destination.label}. {str(e)}")
 
     metrics.send(
         "delete_certificate_destination_association",
@@ -1087,7 +1117,8 @@ def remove_destination_association(certificate, destination):
     )
 
 
-def identify_and_persist_expiring_deployed_certificates(exclude, commit, timeout_seconds_per_network_call=1):
+def identify_and_persist_expiring_deployed_certificates(exclude_domains, exclude_owners, commit,
+                                                        timeout_seconds_per_network_call=1):
     """
     Finds all certificates expiring soon but are still being used for TLS at any domain with which they are associated.
     Identified ports will then be persisted on the certificate_associations row for the given cert/domain combo.
@@ -1095,14 +1126,14 @@ def identify_and_persist_expiring_deployed_certificates(exclude, commit, timeout
     Note that this makes actual TLS network calls in order to establish the "deployed" part of this check.
     """
     all_certs = defaultdict(dict)
-    for c in get_certs_for_expiring_deployed_cert_check(exclude):
-        domains_for_cert = find_and_persist_domains_where_cert_is_deployed(c, exclude, commit,
+    for c in get_certs_for_expiring_deployed_cert_check(exclude_domains, exclude_owners):
+        domains_for_cert = find_and_persist_domains_where_cert_is_deployed(c, exclude_domains, commit,
                                                                            timeout_seconds_per_network_call)
         if len(domains_for_cert) > 0:
             all_certs[c] = domains_for_cert
 
 
-def get_certs_for_expiring_deployed_cert_check(exclude):
+def get_certs_for_expiring_deployed_cert_check(exclude_domains, exclude_owners):
     threshold_days = current_app.config.get("LEMUR_EXPIRING_DEPLOYED_CERT_THRESHOLD_DAYS", 14)
     max_not_after = arrow.utcnow().shift(days=+threshold_days).format("YYYY-MM-DD")
 
@@ -1115,9 +1146,15 @@ def get_certs_for_expiring_deployed_cert_check(exclude):
     )
 
     exclude_conditions = []
-    if exclude:
-        for e in exclude:
+    if exclude_domains:
+        for e in exclude_domains:
             exclude_conditions.append(~Certificate.name.ilike("%{}%".format(e)))
+
+        q = q.filter(and_(*exclude_conditions))
+
+    if exclude_owners:
+        for e in exclude_owners:
+            exclude_conditions.append(~Certificate.owner.ilike("{}".format(e)))
 
         q = q.filter(and_(*exclude_conditions))
 
@@ -1189,7 +1226,7 @@ def get_expiring_deployed_certificates(exclude=None):
     :return: A dictionary with owner as key, and a list of certificates associated with domains/ports.
     """
     certs_domains_and_ports = defaultdict(dict)
-    for certificate in get_certs_for_expiring_deployed_cert_check(exclude):
+    for certificate in get_certs_for_expiring_deployed_cert_check(exclude, None):
         matched_domains = defaultdict(list)
         for cert_association in [assoc for assoc in certificate.certificate_associations if assoc.ports]:
             matched_domains[cert_association.domain.name] = cert_association.ports
@@ -1202,3 +1239,31 @@ def get_expiring_deployed_certificates(exclude=None):
                                              key=lambda x: x[0].owner), lambda x: x[0].owner):
         certs_domains_and_ports_by_owner[owner] = list(owner_certs)
     return certs_domains_and_ports_by_owner
+
+
+def is_valid_owner(email):
+    user_membership_provider = None
+    if current_app.config.get("USER_MEMBERSHIP_PROVIDER") is not None:
+        user_membership_provider = plugins.get(current_app.config.get("USER_MEMBERSHIP_PROVIDER"))
+    if user_membership_provider is None:
+        # nothing to check since USER_MEMBERSHIP_PROVIDER is not configured
+        return True
+
+    # expecting owner to be an existing team DL
+    return user_membership_provider.does_group_exist(email)
+
+
+def allowed_issuance_for_domain(common_name, extensions):
+    check_permission_for_cn = True if common_name else False
+
+    # authorize issuance for every x509.DNSName SAN
+    if extensions and extensions.get("sub_alt_names"):
+        for san in extensions["sub_alt_names"]["names"]:
+            if isinstance(san, x509.DNSName):
+                if san.value == common_name:
+                    check_permission_for_cn = False
+                is_authorized_for_domain(san.value)
+
+    # lemur UI copies CN as SAN (x509.DNSName). Permission check for CN might already be covered above.
+    if check_permission_for_cn:
+        is_authorized_for_domain(common_name)

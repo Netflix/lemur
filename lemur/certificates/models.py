@@ -209,19 +209,6 @@ class Certificate(db.Model):
         self.not_after = defaults.not_after(cert)
         self.serial = defaults.serial(cert)
 
-        # when destinations are appended they require a valid name.
-        if kwargs.get("name"):
-            self.name = get_or_increase_name(
-                defaults.text_to_slug(kwargs["name"]), self.serial
-            )
-        else:
-            self.name = get_or_increase_name(
-                defaults.certificate_name(
-                    self.cn, self.issuer, self.not_before, self.not_after, self.san
-                ),
-                self.serial,
-            )
-
         self.owner = kwargs["owner"]
 
         if kwargs.get("private_key"):
@@ -234,7 +221,6 @@ class Certificate(db.Model):
             self.csr = kwargs["csr"].strip()
 
         self.notify = kwargs.get("notify", True)
-        self.destinations = kwargs.get("destinations", [])
         self.notifications = kwargs.get("notifications", [])
         self.description = kwargs.get("description")
         self.roles = list(set(kwargs.get("roles", [])))
@@ -258,6 +244,22 @@ class Certificate(db.Model):
                 self.domains.append(existing_domain[0])
             else:
                 self.domains.append(Domain(name=domain))
+
+        # when destinations are appended they require a valid name
+        # do not attempt to modify self.destinations before this step
+        if kwargs.get("name"):
+            self.name = get_or_increase_name(
+                defaults.text_to_slug(kwargs["name"]), self.serial
+            )
+        else:
+            self.name = get_or_increase_name(
+                defaults.certificate_name(
+                    self.cn, self.issuer, self.not_before, self.not_after, self.san, self.domains
+                ),
+                self.serial,
+            )
+
+        self.destinations = kwargs.get("destinations", [])
 
         # Check integrity before saving anything into the database.
         # For user-facing API calls, validation should also be done in schema validators.

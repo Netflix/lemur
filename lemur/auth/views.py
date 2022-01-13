@@ -5,7 +5,6 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import json
 
 import jwt
 import base64
@@ -65,9 +64,13 @@ def exchange_for_access_token(
 
     basic = base64.b64encode(bytes(token, "utf-8"))
     headers = {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "authorization": "basic {0}".format(basic.decode("utf-8")),
+        "Content-Type": "application/x-www-form-urlencoded"
     }
+
+    if current_app.config.get("TOKEN_AUTH_HEADER_CASE_SENSITIVE"):
+        headers["Authorization"] = "Basic {0}".format(basic.decode("utf-8"))
+    else:
+        headers["authorization"] = "basic {0}".format(basic.decode("utf-8"))
 
     # exchange authorization code for access token.
     r = requests.post(
@@ -145,44 +148,21 @@ def retrieve_user(user_api_url, access_token):
     return user, profile
 
 
-def retrieve_user_memberships(user_api_url, user_membership_api_url, access_token):
+def retrieve_user_memberships(user_api_url, user_membership_provider, access_token):
     user, profile = retrieve_user(user_api_url, access_token)
 
-    if user_membership_api_url is None:
+    if user_membership_provider is None:
         return user, profile
     """
-    Potentially, below code can be made more generic i.e., plugin driven. Unaware of the usage of this
-    code across the community, current implementation is config driven. Without user_membership_api_url
-    configured, it is backward compatible.
+    Unaware of the usage of this code across the community, current implementation is config driven.
+    Without USER_MEMBERSHIP_PROVIDER configured, it is backward compatible. Please define a plugin
+    for custom implementation.
     """
-    tls_provider = plugins.get(current_app.config.get("PING_USER_MEMBERSHIP_TLS_PROVIDER"))
-
-    # put user id in url
-    user_membership_api_url = user_membership_api_url.replace("%user_id%", profile["userId"])
-
-    session = tls_provider.session(current_app.config.get("PING_USER_MEMBERSHIP_SERVICE"))
-    headers = {"Content-Type": "application/json"}
-    data = {"relation": "DIRECT_ONLY", "groupFilter": {"type": "GOOGLE"}, "size": 500}
+    membership_provider = plugins.get(user_membership_provider)
     user_membership = {"email": profile["email"],
                        "thumbnailPhotoUrl": profile["thumbnailPhotoUrl"],
-                       "googleGroups": []}
-    while True:
-        # retrieve information about the current user memberships
-        r = session.post(user_membership_api_url, data=json.dumps(data), headers=headers)
+                       "googleGroups": membership_provider.retrieve_user_memberships(profile["userId"])}
 
-        if r.status_code == 200:
-            response = r.json()
-            membership_details = response["data"]
-            for membership in membership_details:
-                user_membership["googleGroups"].append(membership["membership"]["name"])
-
-            if "nextPageToken" in response and response["nextPageToken"]:
-                data["nextPageToken"] = response["nextPageToken"]
-            else:
-                break
-        else:
-            current_app.logger.error(f"Response Code:{r.status_code} {r.text}")
-            break
     return user, user_membership
 
 
@@ -495,7 +475,7 @@ class Ping(Resource):
 
         user, profile = retrieve_user_memberships(
             current_app.config.get("PING_USER_API_URL"),
-            current_app.config.get("PING_USER_MEMBERSHIP_URL"),
+            current_app.config.get("USER_MEMBERSHIP_PROVIDER"),
             access_token
         )
         roles = create_user_roles(profile)
@@ -588,7 +568,7 @@ class Google(Resource):
 
     def post(self):
         access_token_url = "https://accounts.google.com/o/oauth2/token"
-        people_api_url = "https://www.googleapis.com/plus/v1/people/me/openIdConnect"
+        user_info_url = "https://www.googleapis.com/oauth2/v1/userinfo"
 
         self.reqparse.add_argument("clientId", type=str, required=True, location="json")
         self.reqparse.add_argument(
@@ -605,6 +585,7 @@ class Google(Resource):
             "redirect_uri": args["redirectUri"],
             "code": args["code"],
             "client_secret": current_app.config.get("GOOGLE_SECRET"),
+            "scope": "email",
         }
 
         r = requests.post(access_token_url, data=payload)
@@ -613,7 +594,7 @@ class Google(Resource):
         # Step 2. Retrieve information about the current user
         headers = {"Authorization": "Bearer {0}".format(token["access_token"])}
 
-        r = requests.get(people_api_url, headers=headers)
+        r = requests.get(user_info_url, headers=headers)
         profile = r.json()
 
         user = user_service.get_by_email(profile["email"])
@@ -655,7 +636,7 @@ class Providers(Resource):
                 active_providers.append(
                     {
                         "name": current_app.config.get("PING_NAME"),
-                        "url": current_app.config.get("PING_REDIRECT_URI"),
+                        "url": current_app.config.get("PING_URL", current_app.config.get("PING_REDIRECT_URI")),
                         "redirectUri": current_app.config.get("PING_REDIRECT_URI"),
                         "clientId": current_app.config.get("PING_CLIENT_ID"),
                         "responseType": "code",
@@ -673,7 +654,7 @@ class Providers(Resource):
                 active_providers.append(
                     {
                         "name": current_app.config.get("OAUTH2_NAME"),
-                        "url": current_app.config.get("OAUTH2_REDIRECT_URI"),
+                        "url": current_app.config.get("OAUTH2_URL", current_app.config.get("OAUTH2_REDIRECT_URI")),
                         "redirectUri": current_app.config.get("OAUTH2_REDIRECT_URI"),
                         "clientId": current_app.config.get("OAUTH2_CLIENT_ID"),
                         "responseType": "code",

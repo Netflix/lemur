@@ -1,5 +1,5 @@
 import boto3
-from moto import mock_sts, mock_s3
+from moto import mock_sts, mock_s3, mock_ec2, mock_elb, mock_elbv2, mock_acm
 
 
 def test_get_certificates(app):
@@ -87,3 +87,93 @@ def test_upload_acme_token(app):
                                    options=additional_options,
                                    account_number=account)
     assert response
+
+
+@mock_sts()
+@mock_acm()
+@mock_elb()
+@mock_ec2()
+@mock_elbv2()
+def test_get_all_elb_and_elbv2s(app, aws_credentials):
+    from copy import deepcopy
+    from lemur.plugins.lemur_aws.elb import get_load_balancer_arn_from_endpoint
+    from lemur.plugins.base import plugins
+    from lemur.plugins.utils import set_plugin_option
+
+    acm_client = boto3.client("acm", region_name="us-east-1")
+    acm_request_response = acm_client.request_certificate(
+        DomainName="test.example.com",
+        DomainValidationOptions=[
+            {"DomainName": "test.example.com", "ValidationDomain": "test.example.com"},
+        ],
+    )
+    arn1 = acm_request_response["CertificateArn"]
+    cert_name1 = arn1.split("/")[-1]
+    acm_request_response = acm_client.request_certificate(
+        DomainName="test2.example.com",
+        DomainValidationOptions=[
+            {"DomainName": "test2.example.com", "ValidationDomain": "test2.example.com"},
+        ],
+    )
+    arn2 = acm_request_response["CertificateArn"]
+    cert_name2 = arn2.split("/")[-1]
+    client = boto3.client("elb", region_name="us-east-1")
+
+    client.create_load_balancer(
+        LoadBalancerName="example-lb",
+        Listeners=[
+            {
+                "Protocol": "string",
+                "LoadBalancerPort": 443,
+                "InstanceProtocol": "tcp",
+                "InstancePort": 5443,
+                "SSLCertificateId": arn1,
+            }
+        ],
+    )
+
+    ec2 = boto3.resource("ec2", region_name="us-east-1")
+    elbv2 = boto3.client("elbv2", region_name="us-east-1")
+    vpc = ec2.create_vpc(CidrBlock="10.0.1.0/24")
+    subnet1 = ec2.create_subnet(
+        VpcId=vpc.id,
+        CidrBlock="10.0.1.128/25",
+        AvailabilityZone="us-east-1b"
+    )
+    elbv2.create_load_balancer(
+        Name="test-lbv2",
+        Subnets=[
+            subnet1.id,
+        ],
+    )
+    lb_arn = get_load_balancer_arn_from_endpoint("test-lbv2",
+                                                 account_number="123456789012",
+                                                 region="us-east-1")
+    target_group_arn = elbv2.create_target_group(
+        Name="a-target",
+        Protocol="HTTPS",
+        Port=443,
+        VpcId=vpc.id).get("TargetGroups")[0]["TargetGroupArn"]
+    listener = elbv2.create_listener(
+        LoadBalancerArn=lb_arn,
+        Protocol="HTTPS",
+        Port=1443,
+        Certificates=[{"CertificateArn": arn2}],
+        DefaultActions=[{"Type": "forward", "TargetGroupArn": target_group_arn}],
+    )
+
+    aws_source = plugins.get("aws-source")
+    options = deepcopy(aws_source.options)
+    set_plugin_option("accountNumber", "123456789012", options)
+    set_plugin_option("endpointType", "elb", options)
+    set_plugin_option("regions", "us-east-1", options)
+    elbs = aws_source.get_endpoints(options)
+    elb_map = {}
+    for elb in elbs:
+        elb_map[elb["name"]] = elb
+    assert elb_map["example-lb"]["certificate_name"] == cert_name1
+    assert elb_map["example-lb"]["registry_type"] == "acm"
+    assert elb_map["example-lb"]["port"] == 443
+    assert elb_map["test-lbv2"]["certificate_name"] == cert_name2
+    assert elb_map["test-lbv2"]["registry_type"] == "acm"
+    assert elb_map["test-lbv2"]["port"] == 1443

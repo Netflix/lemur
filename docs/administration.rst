@@ -373,7 +373,8 @@ When the periodic task runs, Lemur checks for certificates meeting the following
 All eligible certificates are then grouped by owner and applicable notification. For each notification and certificate group,
 Lemur will send the expiration notification using whichever plugin was configured for that notification object.
 In addition, Lemur will send an email to the certificate owner and security team (as specified by the
-``LEMUR_SECURITY_TEAM_EMAIL`` configuration parameter).
+``LEMUR_SECURITY_TEAM_EMAIL`` configuration parameter). The security team will be omitted if
+``LEMUR_DISABLE_SECURITY_TEAM_EXPIRATION_EMAILS`` is enabled.
 
 **CA certificate expiration**
 
@@ -548,6 +549,16 @@ The following configuration options are supported:
 
             LEMUR_SECURITY_TEAM_EMAIL = ['security@example.com']
 
+
+.. data:: LEMUR_DISABLE_SECURITY_TEAM_EXPIRATION_EMAILS
+    :noindex:
+
+        This specifies whether or not LEMUR_SECURITY_TEAM_EMAIL will be included on all expiration emails. IMPORTANT: You will also need to disable the DEFAULT_SECURITY_X_DAY notifications to truly disable sending expiration emails to the security team. This double configuration is required for backwards compatibility.
+
+        ::
+
+            LEMUR_DISABLE_SECURITY_TEAM_EXPIRATION_EMAILS = True
+
 .. data:: LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS
     :noindex:
 
@@ -601,6 +612,15 @@ The following configuration options are supported:
        ::
 
           LEMUR_DEPLOYED_CERTIFICATE_CHECK_EXCLUDED_DOMAINS = ['excluded.com']
+
+.. data:: LEMUR_DEPLOYED_CERTIFICATE_CHECK_EXCLUDED_OWNERS
+    :noindex:
+
+       Specifies a set of owners to exclude from the deployed certificate checks. Anything specified here is treated as an exact match, NOT as a substring.
+
+       ::
+
+          LEMUR_DEPLOYED_CERTIFICATE_CHECK_EXCLUDED_OWNERS = ['excludedowner@example.com']
 
 
 .. data:: LEMUR_REISSUE_NOTIFICATION_EXCLUDED_DESTINATIONS
@@ -849,6 +869,13 @@ For more information about how to use social logins, see: `Satellizer <https://g
 
             PING_CLIENT_ID = "client-id"
 
+.. data:: PING_URL
+    :noindex:
+
+        ::
+
+            PING_URL = "https://<yourlemurserver>"
+
 .. data:: PING_REDIRECT_URI
     :noindex:
 
@@ -862,33 +889,6 @@ For more information about how to use social logins, see: `Satellizer <https://g
         ::
 
             PING_AUTH_ENDPOINT = "https://<yourpingserver>/oauth2/authorize"
-
-.. data:: PING_USER_MEMBERSHIP_URL
-    :noindex:
-
-        An optional additional endpoint to learn membership details post the user validation.
-
-        ::
-
-            PING_USER_MEMBERSHIP_URL = "https://<yourmembershipendpoint>"
-
-.. data:: PING_USER_MEMBERSHIP_TLS_PROVIDER
-    :noindex:
-
-        A custom TLS session provider plugin name
-
-        ::
-
-            PING_USER_MEMBERSHIP_TLS_PROVIDER = "slug-name"
-
-.. data:: PING_USER_MEMBERSHIP_SERVICE
-    :noindex:
-
-        Membership service name used by PING_USER_MEMBERSHIP_TLS_PROVIDER to create a session
-
-        ::
-
-            PING_USER_MEMBERSHIP_SERVICE = "yourmembershipservice"
 
 .. data:: OAUTH2_SECRET
     :noindex:
@@ -932,6 +932,13 @@ For more information about how to use social logins, see: `Satellizer <https://g
         ::
 
             OAUTH2_CLIENT_ID = "client-id"
+
+.. data:: OAUTH2_URL
+    :noindex:
+
+        ::
+
+            OAUTH2_URL = "https://<yourlemurserver>"
 
 .. data:: OAUTH2_REDIRECT_URI
     :noindex:
@@ -998,6 +1005,42 @@ For more information about how to use social logins, see: `Satellizer <https://g
 
             GOOGLE_SECRET = "somethingsecret"
 
+.. data:: TOKEN_AUTH_HEADER_CASE_SENSITIVE
+    :noindex:
+
+        This is an optional parameter to change the case sensitivity of the access token request authorization header.
+        This is required if the oauth provider has implemented the access token request authorization header in a case-sensitive way
+
+        ::
+
+            TOKEN_AUTH_HEADER_CASE_SENSITIVE = True
+
+.. data:: USER_MEMBERSHIP_PROVIDER
+    :noindex:
+
+        An optional plugin to provide membership details. Provide plugin slug here. Plugin is used post user validation
+        to update membership details in Lemur. Also, it is configured to provide APIs to validate user email, team email/DL.
+
+        ::
+
+            USER_MEMBERSHIP_PROVIDER = "<yourmembershippluginslug>"
+
+Authorization Providers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+
+If you are not using a custom authorization provider you do not need to configure any of these options
+
+.. data:: USER_DOMAIN_AUTHORIZATION_PROVIDER
+    :noindex:
+
+        An optional plugin to perform domain level authorization during certificate issuance. Provide plugin slug here.
+        Plugin is used to check if caller is authorized to issue a certificate for a given Common Name and Subject Alternative
+        Name (SAN) of type DNSName. Plugin shall be an implementation of DomainAuthorizationPlugin.
+
+        ::
+
+            USER_DOMAIN_AUTHORIZATION_PROVIDER = "<yourauthorizationpluginslug>"
 
 Metric Providers
 ~~~~~~~~~~~~~~~~
@@ -1443,6 +1486,10 @@ IAM-ServerCertificate
         "Statement": [
                     {
                          "Action": [
+                              "cloudfront:GetDistribution",
+                              "cloudfront:GetDistributionConfig",
+                              "cloudfront:ListDistributions",
+                              "cloudfront:UpdateDistribution",
                               "elasticloadbalancing:DescribeInstanceHealth",
                               "elasticloadbalancing:DescribeLoadBalancerAttributes",
                               "elasticloadbalancing:DescribeLoadBalancerPolicyTypes",
@@ -1985,6 +2032,8 @@ get it added.
 Want to create your own extension? See :doc:`../developer/plugins/index` to get started.
 
 
+.. _iam_target:
+
 Identity and Access Management
 ==============================
 
@@ -2011,3 +2060,30 @@ These permissions are applied to the user upon login and refreshed on every requ
 .. seealso::
 
     `Flask-Principal <https://pythonhosted.org/Flask-Principal>`_
+
+To allow integration with external access/membership management tools that may exist in your organization, lemur offers
+below plugins in addition to it's own RBAC implementation.
+
+Membership Plugin
+-----------------
+
+:Authors:
+    Sayali Charhate <scharhate@netflix.com>
+:Type:
+    User Membership
+:Description:
+    Adds support to learn and validate user membership details from an external service. User memberships are used to
+    create user roles dynamically as described in :ref:`iam_target`. Configure this plugin slug as `USER_MEMBERSHIP_PROVIDER`
+
+Authorization Plugins
+---------------------
+
+:Authors:
+    Sayali Charhate <scharhate@netflix.com>
+:Type:
+    External Authorization
+:Description:
+    Adds support to implement custom authorization logic that is best suited for your enterprise. Lemur offers `AuthorizationPlugin`
+    and its extended version `DomainAuthorizationPlugin`. One can implement `DomainAuthorizationPlugin` and configure its
+    slug as `USER_DOMAIN_AUTHORIZATION_PROVIDER` to check if caller is authorized to issue a certificate for a given Common
+    Name and Subject Alternative Name (SAN) of type DNSName

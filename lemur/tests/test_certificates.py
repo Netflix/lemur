@@ -10,6 +10,7 @@ from tempfile import NamedTemporaryFile
 import arrow
 import pytest
 from cryptography import x509
+from cryptography.x509.oid import ExtensionOID
 from cryptography.hazmat.backends import default_backend
 from marshmallow import ValidationError
 from freezegun import freeze_time
@@ -352,7 +353,7 @@ def test_certificate_input_schema(client, authority):
     assert data["country"] == "US"
     assert data["key_type"] == "ECCPRIME256V1"
 
-    assert len(data.keys()) == 19
+    assert len(data.keys()) == 20
 
 
 def test_certificate_input_schema_empty_location(client, authority):
@@ -372,7 +373,7 @@ def test_certificate_input_schema_empty_location(client, authority):
     data, errors = CertificateInputSchema().load(input_data)
 
     assert not errors
-    assert len(data.keys()) == 19
+    assert len(data.keys()) == 20
     assert data["location"] == ""
 
     # make sure the defaults got set
@@ -551,7 +552,7 @@ def test_certificate_allowed_names(client, authority, session, logged_in_user):
     assert not errors
 
 
-def test_certificate_incative_authority(client, authority, session, logged_in_user):
+def test_certificate_inactive_authority(client, authority, session, logged_in_user):
     """Cannot issue certificates with an inactive authority."""
     from lemur.certificates.schemas import CertificateInputSchema
 
@@ -622,6 +623,64 @@ def test_certificate_sensitive_name(client, authority, session, logged_in_user):
     assert errors["common_name"][0].startswith(
         "Domain sensitive.example.com has been marked as sensitive"
     )
+
+
+def test_certificate_missing_common_name(client, authority, session, logged_in_user):
+    """CN is mandatory unless authority has option cn_optional set to true"""
+    from lemur.certificates.schemas import CertificateInputSchema
+
+    input_data = {
+        "owner": "jim@example.com",
+        "authority": {"id": authority.id},
+        "description": "testtestest"
+    }
+
+    data, errors = CertificateInputSchema().load(input_data)
+    assert errors["_schema"][0].startswith(
+        "Missing common_name"
+    )
+
+
+def test_certificate_only_san_no_cn(session, issuer_plugin, optional_cn_authority, logged_in_user, user):
+    """Only SAN is okay with the authority having option cn_optional set to true. Checks new naming with SAN"""
+    from lemur.certificates.schemas import CertificateInputSchema
+    from lemur.certificates.service import create
+
+    input_data = {
+        "owner": "joe@example.com",
+        "authority": {"id": optional_cn_authority.id},
+        "description": "testtestest",
+        "extensions": {
+            "subAltNames": {
+                "names": [
+                    {"nameType": "IPAddress", "value": "192.168.7.1"},
+                ]
+            }
+        }
+    }
+
+    data, errors = CertificateInputSchema().load(input_data)
+    assert not errors
+
+    csr_text, pkey = create_csr(
+        owner=data["owner"],
+        key_type=data["key_type"],
+        extensions=data["extensions"]
+    )
+    assert csr_text
+
+    parsed_csr = utils.parse_csr(csr_text)
+    san = parsed_csr.extensions.get_extension_for_oid(ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
+    assert san
+    assert san.value.get_values_for_type(x509.IPAddress)
+    assert "192.168.7.1" == str(san.value.get_values_for_type(x509.IPAddress)[0])
+
+    cert = create(
+        authority=data["authority"], csr=csr_text, owner=data["owner"], creator=user["user"]
+    )
+
+    assert cert
+    assert cert.name == "192.168.7.1-LemurTrustUnittestsClass1CA2018-20211108-20211109"
 
 
 def test_certificate_upload_schema_ok(client):
@@ -766,8 +825,8 @@ def test_create_basic_csr(client):
         owner="joe@example.com",
         key_type="RSA2048",
         extensions=dict(
-            names=dict(
-                sub_alt_names=x509.SubjectAlternativeName(
+            sub_alt_names=dict(
+                names=x509.SubjectAlternativeName(
                     [
                         x509.DNSName("test.example.com"),
                         x509.DNSName("test2.example.com"),
@@ -1461,12 +1520,14 @@ def test_identify_and_persist_expiring_deployed_certificates():
     In this test, the serial number is always the same, since it's parsed from the hardcoded test cert.
     """
 
-    # one non-expiring cert, two expiring certs, one cert that doesn't match a running server, and one cert using an excluded domain
+    # one non-expiring cert, two expiring certs, one cert that doesn't match a running server,
+    # one cert using an excluded domain, and one cert belonging to an excluded owner.
     cert_1 = create_cert_that_expires_in_days(180, domains=[Domain(name='localhost')], owner='testowner1@example.com')
     cert_2 = create_cert_that_expires_in_days(10, domains=[Domain(name='localhost')], owner='testowner2@example.com')
     cert_3 = create_cert_that_expires_in_days(10, domains=[Domain(name='localhost')], owner='testowner3@example.com')
     cert_4 = create_cert_that_expires_in_days(10, domains=[Domain(name='not-localhost')], owner='testowner4@example.com')
     cert_5 = create_cert_that_expires_in_days(10, domains=[Domain(name='abc.excluded.com')], owner='testowner5@example.com')
+    cert_6 = create_cert_that_expires_in_days(10, domains=[Domain(name='localhost')], owner='excludedowner@example.com')
 
     # test certs are all hardcoded with the same body/chain so we don't need to use the created cert here
     cert_file_data = SAN_CERT_STR + INTERMEDIATE_CERT_STR + ROOTCA_CERT_STR + SAN_CERT_KEY
@@ -1483,11 +1544,12 @@ def test_identify_and_persist_expiring_deployed_certificates():
             assert len(c.certificate_associations) == 1
             for ca in c.certificate_associations:
                 assert ca.ports is None
-        identify_and_persist_expiring_deployed_certificates(['excluded.com'], True)
-        for c in [cert_1, cert_5]:
+        identify_and_persist_expiring_deployed_certificates(['excluded.com'], ['excludedowner@example.com'], True)
+        for c in [cert_1, cert_5, cert_6]:
             assert len(c.certificate_associations) == 1
             for ca in c.certificate_associations:
-                assert ca.ports is None  # cert_1 is not expiring, cert_5 is excluded, so neither should be update
+                assert ca.ports is None  # cert_1 is not expiring, cert_5 is excluded by domain,
+                # and cert_6 is excluded by owner, so none of them should be updated
         for c in [cert_4]:
             assert len(c.certificate_associations) == 1
             for ca in c.certificate_associations:
@@ -1516,3 +1578,86 @@ def run_server(port, cert_file_name):
     daemon.setDaemon(True)  # Set as a daemon so it will be killed once the main thread is dead.
     daemon.start()
     return daemon
+
+
+def mocked_is_authorized_for_domain(name):
+    domain_in_error = "fail.lemur.com"
+    if name == domain_in_error:
+        raise UnauthorizedError(user="dummy_user", resource=domain_in_error, action="issue_certificate",
+                                details="unit test, mocked failure")
+
+
+@pytest.mark.parametrize(
+    "common_name, extensions, expected_error, authz_check_count",
+    [
+        ("fail.lemur.com", None, True, 1),
+        ("fail.lemur.com", dict(
+            sub_alt_names=dict(
+                names=x509.SubjectAlternativeName(
+                    [
+                        x509.DNSName("test.example.com"),
+                        x509.DNSName("test2.example.com"),
+                    ]
+                )
+            )
+        ), True, 3),  # CN is checked after SAN
+        ("test.example.com", dict(
+            sub_alt_names=dict(
+                names=x509.SubjectAlternativeName(
+                    [
+                        x509.DNSName("fail.lemur.com"),
+                        x509.DNSName("test2.example.com"),
+                    ]
+                )
+            )
+        ), True, 1),
+        (None, dict(
+            sub_alt_names=dict(
+                names=x509.SubjectAlternativeName(
+                    [
+                        x509.DNSName("fail.lemur.com"),
+                        x509.DNSName("test2.example.com"),
+                    ]
+                )
+            )
+        ), True, 1),
+        ("pass.lemur.com", None, False, 1),
+        ("pass.lemur.com", dict(
+            sub_alt_names=dict(
+                names=x509.SubjectAlternativeName(
+                    [
+                        x509.DNSName("test.example.com"),
+                        x509.DNSName("test2.example.com"),
+                    ]
+                )
+            )
+        ), False, 3),
+        ("pass.lemur.com", dict(
+            sub_alt_names=dict(
+                names=x509.SubjectAlternativeName(
+                    [
+                        x509.DNSName("test.example.com"),
+                        x509.DNSName("pass.lemur.com"),
+                    ]
+                )
+            )
+        ), False, 2),  # CN repeated in SAN
+    ],
+)
+def test_allowed_issuance_for_domain(common_name, extensions, expected_error, authz_check_count):
+    from lemur.certificates.service import allowed_issuance_for_domain
+
+    with patch(
+        'lemur.certificates.service.is_authorized_for_domain', side_effect=mocked_is_authorized_for_domain
+    ) as wrapper:
+        try:
+            allowed_issuance_for_domain(common_name, extensions)
+            if expected_error:
+                assert False, f"UnauthorizedError did not occur, input: CN({common_name}), SAN({extensions})"
+        except UnauthorizedError as e:
+            if expected_error:
+                pass
+            else:
+                assert False, f"UnauthorizedError occured, input: CN({common_name}), SAN({extensions})"
+
+        assert wrapper.call_count == authz_check_count

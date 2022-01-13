@@ -6,16 +6,20 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import arrow
+from datetime import timedelta
 import copy
 
 from flask import current_app
 from sentry_sdk import capture_exception
+from sqlalchemy import cast
+from sqlalchemy_utils import ArrowType
 
 from lemur import database
 from lemur.sources.models import Source
 from lemur.certificates.models import Certificate
 from lemur.certificates import service as certificate_service
 from lemur.endpoints import service as endpoint_service
+from lemur.endpoints.models import Endpoint
 from lemur.extensions import metrics
 from lemur.destinations import service as destination_service
 
@@ -164,6 +168,24 @@ def sync_endpoints(source):
     return new, updated, updated_by_hash
 
 
+def expire_endpoints(source, ttl_hours):
+    now = arrow.utcnow()
+    expiration = now - timedelta(hours=ttl_hours)
+    endpoints = database.session_query(Endpoint).filter(Endpoint.source_id == source.id).filter(
+        cast(Endpoint.last_updated, ArrowType) <= expiration
+    )
+    expired = 0
+    for endpoint in endpoints:
+        current_app.logger.debug(
+            "Expiring endpoint from source {source}: {name} Last Updated: {last_updated}".format(
+                source=source.label, name=endpoint.name, last_updated=endpoint.last_updated))
+        database.delete(endpoint)
+        metrics.send("endpoint_expired", "counter", 1,
+                     metric_tags={"source": source.label})
+        expired += 1
+    return expired
+
+
 def find_cert(certificate):
     updated_by_hash = 0
     exists = False
@@ -192,7 +214,7 @@ def find_cert(certificate):
 
 # TODO this is very slow as we don't batch update certificates
 def sync_certificates(source, user):
-    new, updated, updated_by_hash = 0, 0, 0
+    new, updated, updated_by_hash, unlinked = 0, 0, 0, 0
 
     current_app.logger.debug("Retrieving certificates from {0}".format(source.label))
     s = plugins.get(source.plugin_name)
@@ -202,6 +224,10 @@ def sync_certificates(source, user):
     metrics.send("sync_certificates_count",
                  "gauge", len(certificates),
                  metric_tags={"source": source.label})
+
+    existing_certificates_with_source_by_id = {}
+    for e in certificate_service.get_all_valid_certificates_with_source(source.id):
+        existing_certificates_with_source_by_id[e.id] = e
 
     for certificate in certificates:
         exists, updated_by_hash = find_cert(certificate)
@@ -222,30 +248,53 @@ def sync_certificates(source, user):
                 if certificate.get("authority_id"):
                     e.authority_id = certificate["authority_id"]
                 certificate_update(e, source)
+                if e.id in existing_certificates_with_source_by_id:
+                    del existing_certificates_with_source_by_id[e.id]
                 updated += 1
+
+    # remove source from any certificates no longer being reported by it
+    destination = destination_service.get_by_label(source.label)
+    for certificate in existing_certificates_with_source_by_id.values():
+        certificate_service.remove_source_association(certificate, source)
+        current_app.logger.warning(f"Removed source {source.label} for {certificate.name} during source sync")
+        if destination in certificate.destinations:
+            certificate_service.remove_destination_association(certificate, destination, clean=False)
+            current_app.logger.warning(f"Removed destination {source.label} for {certificate.name} during source sync")
+        updated += 1
+        unlinked += 1
+
+    metrics.send("sync_certificates_unlinked",
+                 "gauge", unlinked,
+                 metric_tags={"source": source.label})
 
     return new, updated, updated_by_hash
 
 
-def sync(source, user):
-    new_certs, updated_certs, updated_certs_by_hash = sync_certificates(source, user)
-    new_endpoints, updated_endpoints, updated_endpoints_by_hash = sync_endpoints(source)
+def sync(source, user, ttl_hours=2):
+    try:
+        new_certs, updated_certs, updated_certs_by_hash = sync_certificates(source, user)
+        metrics.send("sync.updated_certs_by_hash",
+                     "gauge", updated_certs_by_hash,
+                     metric_tags={"source": source.label})
 
-    metrics.send("sync.updated_certs_by_hash",
-                 "gauge", updated_certs_by_hash,
-                 metric_tags={"source": source.label})
+        new_endpoints, updated_endpoints, updated_endpoints_by_hash = sync_endpoints(source)
+        metrics.send("sync.updated_endpoints_by_hash",
+                     "gauge", updated_endpoints_by_hash,
+                     metric_tags={"source": source.label})
 
-    metrics.send("sync.updated_endpoints_by_hash",
-                 "gauge", updated_endpoints_by_hash,
-                 metric_tags={"source": source.label})
+        expired_endpoints = expire_endpoints(source, ttl_hours)
 
-    source.last_run = arrow.utcnow()
-    database.update(source)
+        source.last_run = arrow.utcnow()
+        database.update(source)
 
-    return {
-        "endpoints": (new_endpoints, updated_endpoints),
-        "certificates": (new_certs, updated_certs),
-    }
+        return {
+            "endpoints": (new_endpoints, updated_endpoints, expired_endpoints),
+            "certificates": (new_certs, updated_certs),
+        }
+    except Exception as e:  # noqa
+        current_app.logger.warning(f"Sync source '{source.label}' aborted: {e}")
+        capture_exception()
+        raise e
 
 
 def create(label, plugin_name, options, description=None):
@@ -364,25 +413,34 @@ def add_aws_destination_to_sources(dst):
     We rely on account numbers to avoid duplicates.
     :return: true for success and false for not adding the destination as source
     """
-    # a set of all accounts numbers available as sources
-    src_accounts = set()
+    # check that destination can be synced to a source
+    destination_plugin = plugins.get(dst.plugin_name)
+    if destination_plugin.sync_as_source is None or not destination_plugin.sync_as_source:
+        return False
+    account_number = get_plugin_option("accountNumber", dst.options)
+    if account_number is None:
+        return False
+    path = get_plugin_option("path", dst.options)
+    if path is None:
+        return False
+
+    # a set of all (account number, path) available as sources
+    src_account_paths = set()
     sources = get_all()
     for src in sources:
-        src_accounts.add(get_plugin_option("accountNumber", src.options))
+        src_account_paths.add(
+            (get_plugin_option("accountNumber", src.options), get_plugin_option("path", src.options))
+        )
 
-    # check
-    destination_plugin = plugins.get(dst.plugin_name)
-    account_number = get_plugin_option("accountNumber", dst.options)
-    if (
-        account_number is not None
-        and destination_plugin.sync_as_source is not None
-        and destination_plugin.sync_as_source
-        and (account_number not in src_accounts)
-    ):
+    if (account_number, path) not in src_account_paths:
         src_options = copy.deepcopy(
             plugins.get(destination_plugin.sync_as_source_name).options
         )
         set_plugin_option("accountNumber", account_number, src_options)
+        set_plugin_option("path", path, src_options)
+        # Set the right endpointType for cloudfront sources.
+        if get_plugin_option("endpointType", src_options) is not None and path == "/cloudfront/":
+            set_plugin_option("endpointType", "cloudfront", src_options)
         create(
             label=dst.label,
             plugin_name=destination_plugin.sync_as_source_name,
