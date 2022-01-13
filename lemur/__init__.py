@@ -131,5 +131,6 @@ def configure_hook(app):
             response.headers.add("Access-Control-Allow-Credentials", "true")
             response.headers.add("Access-Control-Allow-Headers", app.config.get("CORS_HEADERS", "*"))
             response.headers.add("Access-Control-Allow-Origin", app.config.get("CORS_ORIGIN", "*"))
+            response.headers.add("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS")
 
         return response
