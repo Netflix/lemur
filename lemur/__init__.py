@@ -129,7 +129,7 @@ def configure_hook(app):
         # If CORS, update response headers
         if app.config.get("CORS"):
             response.headers.add("Access-Control-Allow-Credentials", "true")
-            response.headers.add("Access-Control-Allow-Headers", app.config.get("CORS_HEADERS", "Content-Type"))
+            response.headers.add("Access-Control-Allow-Headers", app.config.get("CORS_ALLOW_HEADERS", "Content-Type"))
             response.headers.add("Access-Control-Allow-Origin", app.config.get("CORS_ORIGIN", "*"))
 
         return response
