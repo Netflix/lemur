@@ -163,14 +163,13 @@ def configure_extensions(app):
     if app.config.get("CORS"):
         origins = app.config.get("CORS_ORIGIN", "*")
         allow_headers = app.config.get("CORS_ALLOW_HEADERS", "Content-Type")
-        expose_headers = app.config.get("CORS_EXPOSE_HEADERS", "Access-Control-Allow-Origin")
+        methods = app.config.get("CORS_ALLOW_METHODS", "GET,PUT,POST,DELETE,OPTIONS")
         cors.init_app(
             app,
             resources=r"/api/*",
             origins=origins if origins == "*" else [origin.strip() for origin in origins.split(',')],
             allow_headers=[header.strip() for header in allow_headers.split(',')],
-            expose_headers=[header.strip() for header in expose_headers.split(',')],
-            methods=app.config.get("CORS_ALLOW_METHODS", "GET,PUT,POST,DELETE,OPTIONS"),
+            methods=[method.strip() for method in methods.split(',')],
             supports_credentials=True
         )
 
