@@ -125,12 +125,4 @@ def configure_hook(app):
         # Record our response time metric
         metrics.send("response_time", "TIMER", elapsed, metric_tags=tags)
         metrics.send("status_code_{}".format(response.status_code), "counter", 1)
-
-        # If CORS, update response headers
-        if app.config.get("CORS"):
-            response.headers.add("Access-Control-Allow-Credentials", "true")
-            response.headers.add("Access-Control-Allow-Headers", app.config.get("CORS_HEADERS", "Content-Type"))
-            response.headers.add("Access-Control-Allow-Origin", app.config.get("CORS_ORIGIN", "*"))
-            response.headers.add("Access-Control-Allow-Methods", app.config.get("CORS_METHODS", "GET,PUT,POST,DELETE,OPTIONS"))
-
         return response
