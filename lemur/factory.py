@@ -165,7 +165,7 @@ def configure_extensions(app):
         cors.init_app(
             app,
             resources=r"/api/*",
-            origin=app.config.get("CORS_ORIGIN", "*"),
+            origins=app.config.get("CORS_ORIGIN", "*"),
             allow_headers=[header.strip() for header in allow_headers.split(',')],
             methods=app.config.get("CORS_ALLOW_METHODS", "GET,PUT,POST,DELETE,OPTIONS"),
             supports_credentials=True
