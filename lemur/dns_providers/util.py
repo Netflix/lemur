@@ -91,9 +91,9 @@ def get_dns_records(domain, rdtype, nameserver):
         dns_resolver = dns.resolver.Resolver()
         dns_resolver.nameservers = [nameserver]
         dns_response = dns_resolver.query(domain, rdtype)
-        for rdata in dns_response:
-            for record in rdata.strings:
-                records.append(record.decode("utf-8"))
+        records = [record.decode('utf-8') 
+                    for rdata in dns_response 
+                        for record in rdata.strings]
     except dns.exception.DNSException:
         capture_exception()
         function = sys._getframe().f_code.co_name
