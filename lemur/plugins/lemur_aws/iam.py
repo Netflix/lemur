@@ -84,27 +84,27 @@ def get_registry_type_from_arn(arn):
     :param arn: IAM TLS certificate arn
     :return: iam or acm or unkown
     """
-    if arn.startswith("arn:aws:iam"):
+    if arn.startswith("arn:aws:iam") or arn.startswith("arn:aws-us-gov:iam") or arn.startswith("arn:aws-cn:iam"):
         return 'iam'
-    elif arn.startswith("arn:aws:acm"):
+    elif arn.startswith("arn:aws:acm") or arn.startswith("arn:aws-us-gov:acm") or arn.startswith("arn:aws-cn:acm"):
         return 'acm'
     else:
         return 'unknown'
 
 
-def create_arn_from_cert(account_number, region, certificate_name, path=''):
+def create_arn_from_cert(account_number, partition, certificate_name, path=''):
     """
     Create an ARN from a certificate.
     :param path:
     :param account_number:
-    :param region:
+    :param partition:
     :param certificate_name:
     :return:
     """
     if path is None or path == '':
-        return f"arn:aws:iam::{account_number}:server-certificate/{certificate_name}"
+        return f"arn:{partition}:iam::{account_number}:server-certificate/{certificate_name}"
     else:
-        return f"arn:aws:iam::{account_number}:server-certificate/{path}/{certificate_name}"
+        return f"arn:{partition}:iam::{account_number}:server-certificate/{path}/{certificate_name}"
 
 
 @sts_client("iam")

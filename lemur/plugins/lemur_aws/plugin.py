@@ -384,13 +384,14 @@ class AWSSourcePlugin(SourcePlugin):
         if endpoint.type not in ["elb", "elbv2"]:
             raise NotImplementedError()
 
-        # relies on the fact that region is included in DNS name
-        region = get_region_from_dns(endpoint.dnsname)
+        partition = current_app.config.get("LEMUR_AWS_PARTITION", "aws")
         if endpoint.registry_type == 'iam':
-            arn = iam.create_arn_from_cert(account_number, region, certificate.name, endpoint.certificate_path)
+            arn = iam.create_arn_from_cert(account_number, partition, certificate.name, endpoint.certificate_path)
         else:
             raise Exception(f"Lemur doesn't support rotating certificates on {endpoint.registry_type} registry")
 
+        # relies on the fact that region is included in DNS name
+        region = get_region_from_dns(endpoint.dnsname)
         if endpoint.type == "elbv2":
             listener_arn = elb.get_listener_arn_from_endpoint(
                 endpoint.name,
@@ -708,8 +709,8 @@ class SNSNotificationPlugin(ExpirationNotificationPlugin):
         While we receive a `targets` parameter here, it is unused, as the SNS topic is pre-configured in the
         plugin configuration, and can't reasonably be changed dynamically.
         """
-
-        topic_arn = f"arn:aws:sns:{self.get_option('region', options)}:" \
+        partition = current_app.config.get("LEMUR_AWS_PARTITION", "aws")
+        topic_arn = f"arn:{partition}:sns:{self.get_option('region', options)}:" \
                     f"{self.get_option('accountNumber', options)}:" \
                     f"{self.get_option('topicName', options)}"
 
