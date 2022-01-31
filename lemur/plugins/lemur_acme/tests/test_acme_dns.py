@@ -311,12 +311,13 @@ class TestAcmeDns(unittest.TestCase):
 
     def test_create_authority(self):
         options = {
+            "name": "test ACME authority",
             "plugin": {"plugin_options": [{"name": "certificate", "value": "123"}]}
         }
         acme_root, b, role = self.ACMEIssuerPlugin.create_authority(options)
         self.assertEqual(acme_root, "123")
         self.assertEqual(b, "")
-        self.assertEqual(role, [{"username": "", "password": "", "name": "acme"}])
+        self.assertEqual(role, [{"username": "", "password": "", "name": "acme_test_ACME_authority_admin"}])
 
     @patch("lemur.plugins.lemur_acme.acme_handlers.dns_provider_service")
     def test_get_dns_provider(self, mock_dns_provider_service):

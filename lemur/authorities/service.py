@@ -94,21 +94,19 @@ def create_authority_roles(roles, owner, plugin_title, creator):
     role_objs = []
     for r in roles:
         role = role_service.get_by_name(r["name"])
-        if not role:
-            role = role_service.create(
-                r["name"],
-                password=r["password"],
-                description="Auto generated role for {0}".format(plugin_title),
-                username=r["username"],
-            )
-
-        # the user creating the authority should be able to administer it
-        if role.username == "admin":
-            creator.roles.append(role)
+        # error out if the role already exists, because we want a unique role per authority
+        if role:
+            raise Exception("Unable to create authority role {} because it already exists".format(r["name"]))
+        role = role_service.create(
+            r["name"],
+            password=r["password"],
+            description="Auto generated role for {0}".format(plugin_title),
+            username=r["username"],
+        )
 
         role_objs.append(role)
 
-    # create an role for the owner and assign it
+    # get or create a role for the owner
     owner_role = role_service.get_by_name(owner)
     if not owner_role:
         owner_role = role_service.create(
@@ -130,8 +128,6 @@ def create(**kwargs):
         raise Exception(f"Admin and/or operator roles for authority {ca_name} already exist")
 
     body, private_key, chain, roles = mint(**kwargs)
-
-    kwargs["creator"].roles = list(set(list(kwargs["creator"].roles) + roles))
 
     kwargs["body"] = body
     kwargs["private_key"] = private_key

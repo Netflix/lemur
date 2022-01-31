@@ -32,7 +32,8 @@ class ADCSIssuerPlugin(IssuerPlugin):
         """
         adcs_root = current_app.config.get("ADCS_ROOT")
         adcs_issuing = current_app.config.get("ADCS_ISSUING")
-        role = {"username": "", "password": "", "name": "adcs"}
+        name = "adcs_" + "_".join(options['name'].split(" ")) + "_admin"
+        role = {"username": "", "password": "", "name": name}
         return adcs_root, adcs_issuing, [role]
 
     def create_certificate(self, csr, issuer_options):

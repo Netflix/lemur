@@ -279,9 +279,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
         :param options:
         :return:
         """
-        name = "acme"
-        if options.get("authority"):
-            name += "_" + '_'.join(options['name'].split(" "))
+        name = "acme_" + "_".join(options['name'].split(" ")) + "_admin"
         role = {"username": "", "password": "", "name": name}
 
         plugin_options = options.get("plugin", {}).get("plugin_options")
@@ -416,9 +414,7 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
         :param options:
         :return:
         """
-        name = "acme"
-        if options['name']:
-            name += "_" + '_'.join(options['name'].split(" "))
+        name = "acme_" + "_".join(options['name'].split(" ")) + "_admin"
         role = {"username": "", "password": "", "name": name}
 
         plugin_options = options.get("plugin", {}).get("plugin_options")
