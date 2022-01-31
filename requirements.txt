@@ -16,7 +16,7 @@ amqp==5.0.9
     # via kombu
 aniso8601==9.0.1
     # via flask-restful
-arrow==1.2.1
+arrow==1.2.2
     # via -r requirements.in
 asyncpool==1.0
     # via -r requirements.in
