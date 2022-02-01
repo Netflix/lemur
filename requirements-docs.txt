@@ -643,6 +643,3 @@ zope.interface==5.4.0
     #   -r requirements-tests.txt
     #   certbot
     #   zope.component
-
-# The following packages are considered to be unsafe in a requirements file:
-# setuptools

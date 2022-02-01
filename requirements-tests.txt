@@ -310,6 +310,3 @@ zope.interface==5.4.0
     # via
     #   certbot
     #   zope.component
-
-# The following packages are considered to be unsafe in a requirements file:
-# setuptools
