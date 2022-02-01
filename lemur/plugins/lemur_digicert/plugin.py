@@ -469,7 +469,8 @@ class DigiCertIssuerPlugin(IssuerPlugin):
         :param options:
         :return:
         """
-        role = {"username": "", "password": "", "name": "digicert"}
+        name = "digicert_" + "_".join(options['name'].split(" ")) + "_admin"
+        role = {"username": "", "password": "", "name": name}
         return current_app.config.get("DIGICERT_ROOT"), "", [role]
 
 
@@ -649,5 +650,6 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
         :param options:
         :return:
         """
-        role = {"username": "", "password": "", "name": "digicert"}
+        name = "digicert_" + "_".join(options['name'].split(" ")) + "_admin"
+        role = {"username": "", "password": "", "name": name}
         return current_app.config.get("DIGICERT_CIS_ROOTS", {}).get(options['authority'].name), "", [role]

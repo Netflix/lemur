@@ -342,7 +342,8 @@ class EntrustIssuerPlugin(IssuerPlugin):
         """
         entrust_root = current_app.config.get("ENTRUST_ROOT")
         entrust_issuing = current_app.config.get("ENTRUST_ISSUING")
-        role = {"username": "", "password": "", "name": "entrust"}
+        name = "entrust_" + "_".join(options['name'].split(" ")) + "_admin"
+        role = {"username": "", "password": "", "name": name}
         current_app.logger.info(f"Creating Auth: {options} {entrust_issuing}")
         # body, chain, role
         return entrust_root, "", [role]

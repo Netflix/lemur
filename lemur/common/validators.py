@@ -9,6 +9,7 @@ from marshmallow.exceptions import ValidationError
 
 from lemur.auth.permissions import SensitiveDomainPermission
 from lemur.common.utils import check_cert_signature, is_weekend
+from lemur.plugins.base import plugins
 
 
 def common_name(value):
@@ -203,3 +204,15 @@ def verify_cert_chain(certs, error_class=ValidationError):
 
         # Next loop will validate that *this issuer* cert is signed by the next chain cert.
         cert = issuer
+
+
+def is_valid_owner(email):
+    user_membership_provider = None
+    if current_app.config.get("USER_MEMBERSHIP_PROVIDER") is not None:
+        user_membership_provider = plugins.get(current_app.config.get("USER_MEMBERSHIP_PROVIDER"))
+    if user_membership_provider is None:
+        # nothing to check since USER_MEMBERSHIP_PROVIDER is not configured
+        return True
+
+    # expecting owner to be an existing team DL
+    return user_membership_provider.does_group_exist(email)

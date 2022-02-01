@@ -2,6 +2,22 @@ Changelog
 =========
 
 
+1.2.0 - `2022-01-31`
+~~~~~~~~~~~~~~~~~~~~
+
+This release fixes a vulnerability where creating an authority automatically granted the selected owner role to the
+authority creator, which allowed users to grant themselves to arbitrary roles. The owner role is no longer auto-assigned
+when creating an authority.
+
+Additionally, all authorities now receive a unique role upon creation. Previously, authorities using the same issuer
+plugin would always share a role (for example, Entrust authorities always used the role "entrust"). Now, authorities
+are associated with a unique role named in the format `issuerPlugin_authority_name_admin`. The creator will not be
+automatically added to this role.
+
+Other notable changes:
+- The Endpoints UI page now displays endpoint source and allows filtering by source
+
+
 1.1.0 - `2022-01-10`
 ~~~~~~~~~~~~~~~~~~~~
 
