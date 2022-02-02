@@ -439,10 +439,9 @@ def upload(**kwargs):
     """
     roles = create_certificate_roles(**kwargs)
 
-    if kwargs.get("roles"):
-        kwargs["roles"] += roles
-    else:
-        kwargs["roles"] = roles
+    if not kwargs.get("roles"):
+        kwargs["roles"] = []
+    kwargs["roles"] += [role for role in roles if role not in kwargs["roles"]]
 
     cert = Certificate(**kwargs)
     cert.authority = kwargs.get("authority")

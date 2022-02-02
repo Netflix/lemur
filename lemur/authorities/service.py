@@ -133,10 +133,9 @@ def create(**kwargs):
     kwargs["private_key"] = private_key
     kwargs["chain"] = chain
 
-    if kwargs.get("roles"):
-        kwargs["roles"] += roles
-    else:
-        kwargs["roles"] = roles
+    if not kwargs.get("roles"):
+        kwargs["roles"] = []
+    kwargs["roles"] += [role for role in roles if role not in kwargs["roles"]]
 
     cert = upload(**kwargs)
     kwargs["authority_certificate"] = cert
