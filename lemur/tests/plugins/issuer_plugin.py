@@ -30,7 +30,8 @@ class TestIssuerPlugin(IssuerPlugin):
 
     @staticmethod
     def create_authority(options):
-        role = {"username": "", "password": "", "name": "test"}
+        name = "test_" + "_".join(options['name'].split(" ")) + "_admin"
+        role = {"username": "", "password": "", "name": name}
         return SAN_CERT_STR, "", [role]
 
 
@@ -53,7 +54,8 @@ class TestAsyncIssuerPlugin(IssuerPlugin):
 
     @staticmethod
     def create_authority(options):
-        role = {"username": "", "password": "", "name": "test"}
+        name = "test_" + "_".join(options['name'].split(" ")) + "_admin"
+        role = {"username": "", "password": "", "name": name}
         return SAN_CERT_STR, "", [role]
 
     def cancel_ordered_certificate(self, pending_certificate, **kwargs):

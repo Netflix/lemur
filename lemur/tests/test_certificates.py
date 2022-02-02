@@ -153,8 +153,12 @@ def test_cleanup_after_revoke(session, issuer_plugin, crypto_authority):
     assert not revoked_cert.destinations
 
 
-def test_get_by_attributes(session, certificate):
-    from lemur.certificates.service import get_by_attributes
+def test_get_by_attributes(session, authority, user, certificate):
+    from lemur.certificates.service import create, get_by_attributes
+
+    create(
+        authority=authority, csr=CSR_STR, owner="joe@example.com", creator=user["user"]
+    )
 
     # Should get one cert
     certificate1 = get_by_attributes(
@@ -181,12 +185,23 @@ def test_get_by_attributes(session, certificate):
     assert len(multiple) > 1
 
 
-def test_find_duplicates(session):
+def test_find_duplicates(session, issuer_plugin, user):
+    from lemur.authorities.service import create
     from lemur.certificates.service import find_duplicates
 
+    # create cert (duplicate of another one created in another test)
     cert = {"body": SAN_CERT_STR, "chain": INTERMEDIATE_CERT_STR}
 
     dups1 = find_duplicates(cert)
+
+    # create authority with no chain
+    authority = create(
+        plugin={"plugin_object": issuer_plugin, "slug": issuer_plugin.slug},
+        owner="jim@example.com",
+        type="root",
+        name="example authority 2",
+        creator=user["user"],
+    )
 
     cert["chain"] = ""
 
@@ -196,7 +211,7 @@ def test_find_duplicates(session):
     assert len(dups2) > 0
 
 
-def test_get_certificate_primitives(certificate):
+def test_get_certificate_primitives(certificate, logged_in_user):
     from lemur.certificates.service import get_certificate_primitives
 
     names = [x509.DNSName(x.name) for x in certificate.domains]
@@ -410,7 +425,7 @@ def test_certificate_input_with_extensions(client, authority):
     assert data["key_type"] == "RSA2048"
 
 
-def test_certificate_input_schema_parse_csr(authority):
+def test_certificate_input_schema_parse_csr(authority, logged_in_admin):
     from lemur.certificates.schemas import CertificateInputSchema
 
     test_san_dns = "foobar.com"

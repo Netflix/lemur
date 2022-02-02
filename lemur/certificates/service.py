@@ -439,10 +439,9 @@ def upload(**kwargs):
     """
     roles = create_certificate_roles(**kwargs)
 
-    if kwargs.get("roles"):
-        kwargs["roles"] += roles
-    else:
-        kwargs["roles"] = roles
+    if not kwargs.get("roles"):
+        kwargs["roles"] = []
+    kwargs["roles"] += [role for role in roles if role not in kwargs["roles"]]
 
     cert = Certificate(**kwargs)
     cert.authority = kwargs.get("authority")
@@ -1240,18 +1239,6 @@ def get_expiring_deployed_certificates(exclude=None):
                                              key=lambda x: x[0].owner), lambda x: x[0].owner):
         certs_domains_and_ports_by_owner[owner] = list(owner_certs)
     return certs_domains_and_ports_by_owner
-
-
-def is_valid_owner(email):
-    user_membership_provider = None
-    if current_app.config.get("USER_MEMBERSHIP_PROVIDER") is not None:
-        user_membership_provider = plugins.get(current_app.config.get("USER_MEMBERSHIP_PROVIDER"))
-    if user_membership_provider is None:
-        # nothing to check since USER_MEMBERSHIP_PROVIDER is not configured
-        return True
-
-    # expecting owner to be an existing team DL
-    return user_membership_provider.does_group_exist(email)
 
 
 def allowed_issuance_for_domain(common_name, extensions):

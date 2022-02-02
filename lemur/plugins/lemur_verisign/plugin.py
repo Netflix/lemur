@@ -239,7 +239,8 @@ class VerisignIssuerPlugin(IssuerPlugin):
         :param options:
         :return:
         """
-        role = {"username": "", "password": "", "name": "verisign"}
+        name = "verisign_" + "_".join(options['name'].split(" ")) + "_admin"
+        role = {"username": "", "password": "", "name": name}
         return current_app.config.get("VERISIGN_ROOT"), "", [role]
 
     def get_available_units(self):
