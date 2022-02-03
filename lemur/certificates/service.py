@@ -458,14 +458,15 @@ def create(**kwargs):
     """
     Creates a new certificate.
     """
-    # Validate destinations do not overlap accounts
+    # Validate destinations do not overlap accounts for the same plugin
     if "destinations" in kwargs:
-        dest_accounts = {}
+        dest_plugin_accounts = {}
         for dest in kwargs["destinations"]:
+            plugin_accounts = dest_plugin_accounts.setdefault(dest.plugin_name, {})
             account = get_plugin_option("accountNumber", dest.options)
-            if account in dest_accounts:
-                raise Exception(f"Only one destination allowed per account: {account}")
-            dest_accounts[account] = True
+            if account in plugin_accounts:
+                raise Exception(f"Too many destintions for plugin {dest.plugin_name} and account {account}")
+            plugin_accounts[account] = True
 
     try:
         cert_body, private_key, cert_chain, external_id, csr = mint(**kwargs)
