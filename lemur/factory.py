@@ -160,14 +160,17 @@ def configure_extensions(app):
             environment=app.config.get("LEMUR_ENV", ''),
         )
 
-    if app.config["CORS"]:
-        app.config["CORS_HEADERS"] = "Content-Type"
+    if app.config.get("CORS"):
+        origins = app.config.get("CORS_ORIGIN", "*")
+        allow_headers = app.config.get("CORS_ALLOW_HEADERS", "Content-Type")
+        methods = app.config.get("CORS_ALLOW_METHODS", "GET,PUT,POST,DELETE,OPTIONS")
         cors.init_app(
             app,
             resources=r"/api/*",
-            headers="Content-Type",
-            origin="*",
-            supports_credentials=True,
+            origins=origins if origins == "*" else [origin.strip() for origin in origins.split(',')],
+            allow_headers=[header.strip() for header in allow_headers.split(',')],
+            methods=[method.strip() for method in methods.split(',')],
+            supports_credentials=True
         )
 
 
