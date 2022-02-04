@@ -10,6 +10,8 @@ from builtins import str
 
 from flask import Blueprint, make_response, jsonify, g, current_app
 from flask_restful import reqparse, Api, inputs
+
+from lemur.common import validators
 from lemur.plugins.bases.authorization import UnauthorizedError
 from sentry_sdk import capture_exception
 
@@ -500,7 +502,7 @@ class CertificatesList(AuthenticatedResource):
            :statuscode 403: unauthenticated
 
         """
-        if not service.is_valid_owner(data["owner"]):
+        if not validators.is_valid_owner(data["owner"]):
             return dict(message=f"Invalid owner: check if {data['owner']} is a valid group email. Individuals cannot be certificate owners."), 412
 
         role = role_service.get_by_name(data["authority"].owner)

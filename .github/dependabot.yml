@@ -13,5 +13,5 @@
         - "charhate"
         - "jtschladen"
         - "douglasc-nflx"
-      versioning-strategy: lockfile-only
+      versioning-strategy: auto
       open-pull-requests-limit: 20

@@ -31,6 +31,7 @@ class EndpointOutputSchema(LemurOutputSchema):
     name = fields.String()
     dnsname = fields.String()
     dns_aliases = fields.List(fields.String())
+    source_label = fields.String()
     owner = fields.Email()
     type = fields.String()
     port = fields.Integer()

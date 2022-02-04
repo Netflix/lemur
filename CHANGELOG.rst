@@ -2,12 +2,45 @@ Changelog
 =========
 
 
+1.2.0 - `2022-01-31`
+~~~~~~~~~~~~~~~~~~~~
+
+This release fixes a vulnerability where creating an authority automatically granted the selected owner role to the
+authority creator, which allowed users to grant themselves to arbitrary roles. The owner role is no longer auto-assigned
+when creating an authority.
+
+Additionally, all authorities now receive a unique role upon creation. Previously, authorities using the same issuer
+plugin would always share a role (for example, Entrust authorities always used the role "entrust"). Now, authorities
+are associated with a unique role named in the format `issuerPlugin_authority_name_admin`. The creator will not be
+automatically added to this role.
+
+Other notable changes:
+- The Endpoints UI page now displays endpoint source and allows filtering by source
+
+
+1.1.0 - `2022-01-10`
+~~~~~~~~~~~~~~~~~~~~
+
+Introducing new Plugins AuthorizationPlugin(Plugin) and DomainAuthorizationPlugin(AuthorizationPlugin).
+One can implement a DomainAuthorizationPlugin to check if caller is authorized to issue a certificate
+for a given Common Name and Subject Alternative Name (SAN) of type DNSName (PR `#3889 <https://github.com/Netflix/lemur/pull/3889>`_)
+
+Related to the above change (PR `#3889 <https://github.com/Netflix/lemur/pull/3889>`_), a new column `application_name`
+is added to the `api_keys` table. Null values are allowed making sure this change is backward compatible.
+
+Other notable changes:
+- A task name is fixed from `identity_expiring_deployed_certificates` -> `identify_expiring_deployed_certificates`. The
+old task name with typo is marked as deprecated and will be removed in future release flagging it as a breaking change.
+(Thanks to `Bob Shannon <https://github.com/bobmshannon>`_)
+- ID filter on certificates UI requires a numeric value.
+
+
 1.0.0 - `2022-01-06`
 ~~~~~~~~~~~~~~~~~~~~
 
 This is our first major release due to a dependency on Python 3.8.
 Lemur is now using flake8>=4.0 and pyflakes>=2.4, requiring Python 3.8 or higher.
-Our Travis Builds are currently on Python 3.8 and Python 3.9.
+Our GitHub Actions Builds are currently on Python 3.8 and Python 3.9.
 
 
 0.11.0 - `2022-01-05`

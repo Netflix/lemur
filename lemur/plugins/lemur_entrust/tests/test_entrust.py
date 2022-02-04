@@ -63,3 +63,14 @@ def test_process_options(mock_current_app, authority):
 
     client_id = 1
     assert expected == plugin.process_options(options, client_id)
+
+
+def test_create_authority(app):
+    from lemur.plugins.base import plugins
+
+    options = {
+        "name": "test Entrust authority"
+    }
+    p = plugins.get("entrust-issuer")
+    entrust_root, intermediate, role = p.create_authority(options)
+    assert role == [{"username": "", "password": "", "name": "entrust_test_Entrust_authority_admin"}]

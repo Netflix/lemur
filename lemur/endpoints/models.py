@@ -83,6 +83,10 @@ class Endpoint(db.Model):
         return aliases
 
     @property
+    def source_label(self):
+        return self.source.label
+
+    @property
     def issues(self):
         issues = []
 
