@@ -16,6 +16,7 @@ def config_mock(*args):
         "DIGICERT_DEFAULT_SIGNING_ALGORITHM": "sha256",
         "DIGICERT_CIS_PROFILE_NAMES": {"digicert": 'digicert'},
         "DIGICERT_CIS_SIGNING_ALGORITHMS": {"digicert": 'digicert'},
+        "DIGICERT_CIS_ROOTS": {"root": "ROOT"},
     }
     return values[args[0]]
 
@@ -249,3 +250,28 @@ def test_cancel_ordered_certificate(mock_pending_cert):
     # A non-existing order id, does not raise exception because if it doesn't exist, then it doesn't matter
     mock_pending_cert.external_id = 111
     subject.cancel_ordered_certificate(mock_pending_cert, **data)
+
+
+@patch("lemur.plugins.lemur_digicert.plugin.current_app")
+def test_create_authority(mock_current_app):
+    from lemur.plugins.lemur_digicert.plugin import DigiCertIssuerPlugin
+
+    options = {
+        "name": "test Digicert authority"
+    }
+    digicert_root, intermediate, role = DigiCertIssuerPlugin.create_authority(options)
+    assert role == [{"username": "", "password": "", "name": "digicert_test_Digicert_authority_admin"}]
+
+
+@patch("lemur.plugins.lemur_digicert.plugin.current_app")
+def test_create_cis_authority(mock_current_app, authority):
+    from lemur.plugins.lemur_digicert.plugin import DigiCertCISIssuerPlugin
+
+    mock_current_app.config.get = Mock(side_effect=config_mock)
+
+    options = {
+        "name": "test Digicert CIS authority",
+        "authority": authority
+    }
+    digicert_root, intermediate, role = DigiCertCISIssuerPlugin.create_authority(options)
+    assert role == [{"username": "", "password": "", "name": "digicert_test_Digicert_CIS_authority_admin"}]

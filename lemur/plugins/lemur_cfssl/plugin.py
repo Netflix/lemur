@@ -100,7 +100,8 @@ class CfsslIssuerPlugin(IssuerPlugin):
         :param options:
         :return:
         """
-        role = {"username": "", "password": "", "name": "cfssl"}
+        name = "cfssl_" + "_".join(options['name'].split(" ")) + "_admin"
+        role = {"username": "", "password": "", "name": name}
         return current_app.config.get("CFSSL_ROOT"), "", [role]
 
     def revoke_certificate(self, certificate, reason):

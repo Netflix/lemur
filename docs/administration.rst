@@ -252,8 +252,16 @@ Basic Configuration
 .. data:: LEMUR_AWS_REGION
     :noindex:
 
-        This is an optional config applicable for settings where Lemur is deployed in AWS. For accessing regionalized
-        STS endpoints, LEMUR_AWS_REGION defines the region where Lemur is deployed.
+        This is an optional config applicable for settings where Lemur is deployed in AWS.
+        When specified, this will override the default regional AWS endpoints that are used
+        for accessing STS and services such as IAM for example. You must set this if running
+        in an alternative AWS partition such as GovCloud, for example.
+
+.. data:: LEMUR_AWS_PARTITION
+   :noindex:
+
+       Specifies the AWS partition that Lemur should use. Valid values are 'aws', 'aws-us-gov', and 'aws-cn'. Defaults to 'aws'.
+       If Lemur is deployed in and managing endpoints AWS GovCloud, for example, you must set this to `aws-us-gov`.
 
 .. data:: SENTRY_DSN
     :noindex:
