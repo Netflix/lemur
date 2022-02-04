@@ -51,6 +51,20 @@ def get_by_name(name):
     return database.get(Endpoint, name, field="name")
 
 
+def get_by_name_and_source(name, source):
+    """
+    Retrieves and endpoint by it's name and source.
+    :param name:
+    :param source:
+    :return:
+    """
+    return (
+        Endpoint.query.filter(Endpoint.name == name)
+        .filter(Endpoint.source.has(Source.label == source))
+        .scalar()
+    )
+
+
 def get_by_dnsname(dnsname):
     """
     Retrieves an endpoint given it's name.
