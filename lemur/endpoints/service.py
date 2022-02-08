@@ -53,7 +53,7 @@ def get_by_name(name):
 
 def get_by_name_and_source(name, source):
     """
-    Retrieves and endpoint by it's name and source.
+    Retrieves an endpoint by it's name and source.
     :param name:
     :param source:
     :return:

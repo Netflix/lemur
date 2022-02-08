@@ -270,7 +270,10 @@ def rotate(endpoint_name, source, new_certificate_name, old_certificate_name, me
                 endpoint = validate_endpoint(endpoint_name)
             except MultipleResultsFound as e:
                 print("[!] Multiple endpoints found with name {0}, try narrowing the search down to an endpoint from a specific source by re-running this command with the --source flag.".format(endpoint_name))
-                sys.exit(1)
+                log_data["message"] = "Multiple endpoints found with same name, unable to perform rotation"
+                log_data["duplicated_endpoint_name"] = endpoint_name
+                current_app.logger.info(log_data)
+                raise
 
         if endpoint and new_cert:
             print(
