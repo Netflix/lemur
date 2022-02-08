@@ -148,7 +148,7 @@ angular.module('lemur')
           (!certificate.validityStart || !certificate.validityEnd)) { // these are not mandatory fields in schema, thus handling validation in js
           return showMissingDateError();
       }
-      if(certificate.validityType === 'defaultDays') {
+      if(certificate.validityType === 'defaultDays' && $scope.certificate.authority.plugin.slug !== 'acme-issuer') {
         populateValidityDateAsPerDefault(certificate);
       }
 
@@ -317,7 +317,7 @@ angular.module('lemur')
           (!certificate.validityStart || !certificate.validityEnd)) { // these are not mandatory fields in schema, thus handling validation in js
           return showMissingDateError();
      }
-     if(certificate.validityType === 'defaultDays') {
+     if(certificate.validityType === 'defaultDays' && $scope.certificate.authority.plugin.slug !== 'acme-issuer') {
         populateValidityDateAsPerDefault(certificate);
      }
 
