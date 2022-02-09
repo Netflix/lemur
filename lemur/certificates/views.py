@@ -929,8 +929,11 @@ class Certificates(AuthenticatedResource):
                         400,
                     )
 
-        # if owner is changed, remove all notifications and roles associated with old owner
+        # if owner is changed, validate owner and remove all notifications and roles associated with old owner
         if cert.owner != data["owner"]:
+            if not validators.is_valid_owner(data["owner"]):
+                return dict(message=f"Invalid owner: check if {data['owner']} is a valid group email. Individuals cannot "
+                                    f"be authority owners."), 412
             service.cleanup_owner_roles_notification(cert.owner, data)
 
         error_message = ""
@@ -1209,6 +1212,10 @@ class CertificateUpdateOwner(AuthenticatedResource):
 
         if not cert:
             return dict(message="Cannot find specified certificate"), 404
+
+        if not validators.is_valid_owner(data["owner"]):
+            return dict(message=f"Invalid owner: check if {data['owner']} is a valid group email. Individuals cannot "
+                                f"be authority owners."), 412
 
         # allow creators
         if g.current_user != cert.user:
