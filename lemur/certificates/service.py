@@ -376,6 +376,23 @@ def update_switches(cert, notify_flag=None, rotation_flag=None):
     return database.update(cert)
 
 
+def update_owner(cert, owner_name):
+    """
+    Modify owner for certificate. Removes roles and notifications associated with prior owner.
+    :param owner_name: new owner name
+    :param cert: Certificate object to be updated
+    :return:
+    """
+
+    # remove all notifications and roles associated with old owner
+    cert.roles = [r for r in cert.roles if r.name != owner_name]
+    notification_prefix = f"DEFAULT_{owner_name.split('@')[0].upper()}"
+    cert.notifications = [n for n in cert.notifications if not n.label.startswith(notification_prefix)]
+
+    cert.owner = owner_name
+    return database.update(cert)
+
+
 def create_certificate_roles(**kwargs):
     # create a role for the owner and assign it
     owner_role = role_service.get_or_create(

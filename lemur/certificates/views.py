@@ -929,8 +929,11 @@ class Certificates(AuthenticatedResource):
                         400,
                     )
 
-        # if owner is changed, remove all notifications and roles associated with old owner
+        # if owner is changed, validate owner and remove all notifications and roles associated with old owner
         if cert.owner != data["owner"]:
+            if not validators.is_valid_owner(data["owner"]):
+                return dict(message=f"Invalid owner: check if {data['owner']} is a valid group email. Individuals cannot "
+                                    f"be authority owners."), 412
             service.cleanup_owner_roles_notification(cert.owner, data)
 
         error_message = ""
@@ -1111,6 +1114,123 @@ class Certificates(AuthenticatedResource):
         service.update(certificate_id, deleted=True)
         log_service.create(g.current_user, "delete_cert", certificate=cert)
         return "Certificate deleted", 204
+
+
+class CertificateUpdateOwner(AuthenticatedResource):
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        super(CertificateUpdateOwner, self).__init__()
+
+    @validate_schema(certificate_edit_input_schema, certificate_output_schema)
+    def post(self, certificate_id, data=None):
+        """
+        .. http:post:: /certificates/1/update/owner
+
+           Update certificate owner
+
+           **Example request**:
+
+           .. sourcecode:: http
+
+              POST /certificates/1/update/owner HTTP/1.1
+              Host: example.com
+              Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
+
+              {
+                 "owner": "joan@example.com"
+              }
+
+           **Example response**:
+
+           .. sourcecode:: http
+
+              HTTP/1.1 200 OK
+              Vary: Accept
+              Content-Type: text/javascript
+
+              {
+                "status": null,
+                "cn": "*.test.example.net",
+                "chain": "",
+                "authority": {
+                    "active": true,
+                    "owner": "secure@example.com",
+                    "id": 1,
+                    "description": "verisign test authority",
+                    "name": "verisign"
+                },
+                "owner": "joe@example.com",
+                "serial": "82311058732025924142789179368889309156",
+                "id": 2288,
+                "issuer": "SymantecCorporation",
+                "dateCreated": "2016-06-03T06:09:42.133769+00:00",
+                "notBefore": "2016-06-03T00:00:00+00:00",
+                "notAfter": "2018-01-12T23:59:59+00:00",
+                "destinations": [],
+                "bits": 2048,
+                "body": "-----BEGIN CERTIFICATE-----...",
+                "description": null,
+                "deleted": null,
+                "notify": false,
+                "rotation": false,
+                "notifications": [{
+                    "id": 1
+                }]
+                "signingAlgorithm": "sha256",
+                "user": {
+                    "username": "jane",
+                    "active": true,
+                    "email": "jane@example.com",
+                    "id": 2
+                },
+                "active": true,
+                "domains": [{
+                    "sensitive": false,
+                    "id": 1090,
+                    "name": "*.test.example.net"
+                }],
+                "replaces": [],
+                "name": "WILDCARD.test.example.net-SymantecCorporation-20160603-20180112",
+                "roles": [{
+                    "id": 464,
+                    "description": "This is a google group based role created by Lemur",
+                    "name": "joe@example.com"
+                }],
+                "rotation": true,
+                "rotationPolicy": {"name": "default"},
+                "san": null
+              }
+
+           :reqheader Authorization: OAuth token to authenticate
+           :statuscode 200: no error
+           :statuscode 403: unauthenticated
+
+        """
+        cert = service.get(certificate_id)
+
+        if not cert:
+            return dict(message="Cannot find specified certificate"), 404
+
+        if not validators.is_valid_owner(data["owner"]):
+            return dict(message=f"Invalid owner: check if {data['owner']} is a valid group email. Individuals cannot "
+                                f"be authority owners."), 412
+
+        # allow creators
+        if g.current_user != cert.user:
+            owner_role = role_service.get_by_name(cert.owner)
+            permission = CertificatePermission(owner_role, [x.name for x in cert.roles])
+
+            if not permission.can():
+                return (
+                    dict(message="You are not authorized to update this certificate"),
+                    403,
+                )
+
+        cert = service.update_owner(cert, data["owner"])
+
+        log_service.create(g.current_user, "update_cert", certificate=cert)
+        return cert
 
 
 class NotificationCertificatesList(AuthenticatedResource):
@@ -1547,6 +1667,9 @@ api.add_resource(
 )
 api.add_resource(
     Certificates, "/certificates/<int:certificate_id>/update/switches", endpoint="certificateUpdateSwitches"
+)
+api.add_resource(
+    CertificateUpdateOwner, "/certificates/<int:certificate_id>/update/owner", endpoint="certificateUpdateOwner"
 )
 api.add_resource(CertificatesStats, "/certificates/stats", endpoint="certificateStats")
 api.add_resource(
