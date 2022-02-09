@@ -1153,19 +1153,50 @@ def test_certificate_get_body(client):
         ("", 401),
     ],
 )
-def test_certificate_post_update_notify(client, certificate, token, status):
-    # negate the current notify flag and pass it to update POST call to flip the notify
+def test_certificate_post_update_switches(client, certificate, token, status):
+    # negate the current notify/rotation flag and pass it to update POST call to flip the notify/rotation
     toggled_notify = not certificate.notify
+    toggled_rotation = not certificate.rotation
 
     response = client.post(
         api.url_for(Certificates, certificate_id=certificate.id),
-        data=json.dumps({"notify": toggled_notify}),
+        data=json.dumps({"notify": toggled_notify, "rotation": toggled_rotation}),
         headers=token
     )
 
     assert response.status_code == status
     if status == 200:
         assert response.json.get("notify") == toggled_notify
+        assert response.json.get("rotation") == toggled_rotation
+
+
+@pytest.mark.parametrize(
+    "token,status",
+    [
+        (VALID_USER_HEADER_TOKEN, 403),
+        (VALID_ADMIN_HEADER_TOKEN, 200),
+        (VALID_ADMIN_API_TOKEN, 200),
+        ("", 401),
+    ],
+)
+def test_certificates_update_owner(client, certificate, token, status, issuer_plugin):
+    from lemur.certificates import service as certificate_service
+
+    new_cert_owner = "newowner@example.com"
+
+    old_cert_owner = certificate_service.get(certificate.id).owner
+    assert old_cert_owner != new_cert_owner
+
+    response = client.post(
+        api.url_for(CertificateUpdateOwner, certificate_id=certificate.id),
+        data=json.dumps({"owner": new_cert_owner}),
+        headers=token
+    )
+
+    assert response.status_code == status
+    if status == 200:
+        assert response.json.get("owner") == new_cert_owner
+        assert certificate_service.get(certificate.id).owner == new_cert_owner
 
 
 @pytest.mark.parametrize(
