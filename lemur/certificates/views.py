@@ -1121,7 +1121,6 @@ class CertificateUpdateOwner(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(CertificateUpdateOwner, self).__init__()
 
-
     @validate_schema(certificate_edit_input_schema, certificate_output_schema)
     def post(self, certificate_id, data=None):
         """
