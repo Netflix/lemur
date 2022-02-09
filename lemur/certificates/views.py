@@ -1138,7 +1138,7 @@ class CertificateUpdateOwner(AuthenticatedResource):
               Content-Type: application/json;charset=UTF-8
 
               {
-                 "owner": joan@example.com
+                 "owner": "joan@example.com"
               }
 
            **Example response**:
@@ -1160,7 +1160,7 @@ class CertificateUpdateOwner(AuthenticatedResource):
                     "description": "verisign test authority",
                     "name": "verisign"
                 },
-                "owner": "joan@example.com",
+                "owner": "joe@example.com",
                 "serial": "82311058732025924142789179368889309156",
                 "id": 2288,
                 "issuer": "SymantecCorporation",
