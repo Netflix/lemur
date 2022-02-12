@@ -1179,13 +1179,29 @@ def test_certificate_post_update_switches(client, certificate, token, status):
         ("", 401),
     ],
 )
-def test_certificates_update_owner(client, certificate, token, status, issuer_plugin):
+def test_certificates_update_owner(client, token, status, issuer_plugin, certificate, notification_plugin):
     from lemur.certificates import service as certificate_service
+    from lemur.roles import service as role_service
+    from lemur.notifications import service as notification_service
+    from lemur.tests.factories import NotificationFactory, RoleFactory
 
     new_cert_owner = "newowner@example.com"
 
-    old_cert_owner = certificate_service.get(certificate.id).owner
-    assert old_cert_owner != new_cert_owner
+    notification_label = "DEFAULT_" + certificate.owner.split("@")[0].upper() + "_30_DAY"
+    notification = notification_service.get_by_label(notification_label)
+    if not notification:
+        notification = NotificationFactory(label=notification_label)
+    certificate.notifications.append(notification)
+    owner_role = role_service.get_by_name(certificate.owner)
+    if not owner_role:
+        owner_role = RoleFactory(name=certificate.owner)
+    certificate.roles.append(owner_role)
+
+    assert certificate.owner != new_cert_owner
+    assert notification in certificate.notifications
+    assert owner_role in certificate.roles
+    for role in certificate.roles:
+        assert new_cert_owner not in role.name
 
     response = client.post(
         api.url_for(CertificateUpdateOwner, certificate_id=certificate.id),
@@ -1196,7 +1212,16 @@ def test_certificates_update_owner(client, certificate, token, status, issuer_pl
     assert response.status_code == status
     if status == 200:
         assert response.json.get("owner") == new_cert_owner
-        assert certificate_service.get(certificate.id).owner == new_cert_owner
+        new_cert = certificate_service.get(certificate.id)
+        assert new_cert.owner == new_cert_owner
+
+        new_owner_role = role_service.get_by_name(new_cert_owner)
+        new_owner_notification = notification_service.get_by_label("DEFAULT_NEWOWNER_30_DAY")
+
+        assert notification not in new_cert.notifications
+        assert new_owner_notification in new_cert.notifications
+        assert owner_role not in new_cert.roles
+        assert new_owner_role in certificate.roles
 
 
 @pytest.mark.parametrize(

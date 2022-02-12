@@ -1227,7 +1227,7 @@ class CertificateUpdateOwner(AuthenticatedResource):
                     403,
                 )
 
-        cert = service.update_owner(cert, data["owner"])
+        cert = service.update_owner(cert, data)
 
         log_service.create(g.current_user, "update_cert", certificate=cert)
         return cert

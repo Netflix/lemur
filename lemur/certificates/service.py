@@ -376,20 +376,20 @@ def update_switches(cert, notify_flag=None, rotation_flag=None):
     return database.update(cert)
 
 
-def update_owner(cert, owner_name):
+def update_owner(cert, new_cert_data):
     """
     Modify owner for certificate. Removes roles and notifications associated with prior owner.
-    :param owner_name: new owner name
     :param cert: Certificate object to be updated
+    :param new_cert_data: Dictionary including cert fields to be updated (owner, notifications, roles).
+    These values are set in CertificateEditInputSchema and are generated for the new owner.
     :return:
     """
-
     # remove all notifications and roles associated with old owner
-    cert.roles = [r for r in cert.roles if r.name != owner_name]
-    notification_prefix = f"DEFAULT_{owner_name.split('@')[0].upper()}"
-    cert.notifications = [n for n in cert.notifications if not n.label.startswith(notification_prefix)]
+    cert.roles = new_cert_data["roles"] + [r for r in cert.roles if r.name != cert.owner]
+    notification_prefix = f"DEFAULT_{cert.owner.split('@')[0].upper()}"
+    cert.notifications = new_cert_data["notifications"] + [n for n in cert.notifications if not n.label.startswith(notification_prefix)]
 
-    cert.owner = owner_name
+    cert.owner = new_cert_data["owner"]
     return database.update(cert)
 
 
