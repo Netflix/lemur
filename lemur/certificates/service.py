@@ -381,7 +381,7 @@ def update_owner(cert, new_cert_data):
     Modify owner for certificate. Removes roles and notifications associated with prior owner.
     :param cert: Certificate object to be updated
     :param new_cert_data: Dictionary including cert fields to be updated (owner, notifications, roles).
-                          These values are set in CertificateEditInputSchema and are generated for the new owner.
+    These values are set in CertificateEditInputSchema and are generated for the new owner.
     :return:
     """
     # remove all notifications and roles associated with old owner
