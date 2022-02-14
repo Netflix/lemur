@@ -7,7 +7,7 @@ acme
 arrow
 boto3
 botocore
-celery[redis]
+celery[redis] < 5.2.3 # caused by https://github.com/celery/celery/pull/7194, remove once https://github.com/celery/celery/pull/7218 is released
 certbot
 certsrv
 CloudFlare
@@ -37,7 +37,7 @@ pem
 pyjks >= 19 # pyjks < 19 depends on pycryptodome, which conflicts with dyn's usage of pycrypto
 pyjwt
 pyOpenSSL
-redis==4.0.2 # remove once fakeredis supports 4.1.0 https://github.com/jamesls/fakeredis/pull/324
+redis
 retrying
 sentry-sdk
 SQLAlchemy-Utils
