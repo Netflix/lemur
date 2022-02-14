@@ -177,6 +177,8 @@ marshmallow-sqlalchemy==0.23.1
     # via -r requirements.in
 ndg-httpsclient==0.5.1
     # via -r requirements.in
+packaging==21.3
+    # via redis
 paramiko==2.9.2
     # via -r requirements.in
 parsedatetime==2.6
@@ -213,6 +215,8 @@ pyopenssl==22.0.0
     #   acme
     #   josepy
     #   ndg-httpsclient
+pyparsing==3.0.7
+    # via packaging
 pyrfc3339==1.1
     # via
     #   acme
@@ -236,7 +240,7 @@ pyyaml==6.0
     # via
     #   -r requirements.in
     #   cloudflare
-redis==4.0.2
+redis==4.1.3
     # via
     #   -r requirements.in
     #   celery
