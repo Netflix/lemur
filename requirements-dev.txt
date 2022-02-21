@@ -18,7 +18,7 @@ distlib==0.3.4
     # via virtualenv
 docutils==0.18.1
     # via readme-renderer
-filelock==3.4.2
+filelock==3.6.0
     # via virtualenv
 flake8==4.0.1
     # via -r requirements-dev.in
@@ -26,7 +26,7 @@ identify==2.4.10
     # via pre-commit
 idna==3.3
     # via requests
-importlib-metadata==4.11.0
+importlib-metadata==4.11.1
     # via
     #   keyring
     #   twine
@@ -50,7 +50,7 @@ packaging==21.3
     # via bleach
 pkginfo==1.8.2
     # via twine
-platformdirs==2.5.0
+platformdirs==2.5.1
     # via virtualenv
 pre-commit==2.17.0
     # via -r requirements-dev.in

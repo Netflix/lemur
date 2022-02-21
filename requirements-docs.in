@@ -7,7 +7,7 @@ acme
 arrow
 boto3
 botocore
-celery[redis] < 5.2.3 # caused by https://github.com/celery/celery/pull/7194, remove once https://github.com/celery/celery/pull/7218 is released
+celery[redis]
 certbot
 certsrv
 CloudFlare
@@ -27,6 +27,7 @@ flask_replicated
 gunicorn
 hvac # required for the vault destination plugin
 inflection
+itsdangerous < 2.1.0 # requires Flask 2.0.3
 josepy
 logmatic-python
 marshmallow-sqlalchemy == 0.23.1 #related to the marshmallow issue (to avoid conflicts, as newer versions require marshmallow>=3.0.0)
