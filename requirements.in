@@ -6,7 +6,7 @@ arrow
 asyncpool
 boto3
 botocore
-celery[redis] < 5.2.3 # caused by https://github.com/celery/celery/pull/7194, remove once https://github.com/celery/celery/pull/7218 is released
+celery[redis]
 certbot
 certifi
 certsrv

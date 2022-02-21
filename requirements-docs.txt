@@ -236,7 +236,7 @@ idna==3.3
     #   requests
 imagesize==1.3.0
     # via sphinx
-importlib-metadata==4.11.0
+importlib-metadata==4.11.1
     # via sphinx
 inflection==0.5.1
     # via -r requirements-docs.in
