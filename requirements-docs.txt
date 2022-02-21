@@ -244,8 +244,9 @@ iniconfig==1.1.1
     # via
     #   -r requirements-tests.txt
     #   pytest
-itsdangerous==2.1.0
+itsdangerous==2.0.1
     # via
+    #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   flask
 javaobj-py3==0.4.3
