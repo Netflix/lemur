@@ -2,7 +2,7 @@
 
 bandit
 black
-coverage
+coverage >= 6.3.2
 certbot
 factory-boy
 Faker
