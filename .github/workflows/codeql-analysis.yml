@@ -39,8 +39,7 @@ jobs:
     
     # Install prerequisites for python-ldap. See: https://www.python-ldap.org/en/python-ldap-3.3.0/installing.html#build-prerequisites
     - name: Install python-ldap prerequisites
-      run: sudo apt-get update
-      run: sudo apt-get install libldap2-dev libsasl2-dev
+      run: sudo apt-get update && sudo apt-get install libldap2-dev libsasl2-dev
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
