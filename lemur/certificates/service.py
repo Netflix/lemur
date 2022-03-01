@@ -1209,6 +1209,8 @@ def find_and_persist_domains_where_cert_is_deployed(certificate, excluded_domain
                     if parsed_serial == int(certificate.serial):
                         matched_ports_for_domain.append(port)
                         match = True
+                        current_app.logger.info(f'Identified expiring deployed certificate {certificate.name} '
+                                                f'at domain {domain_name} on port {port}')
                     status = SUCCESS_METRIC_STATUS
                 except Exception:
                     current_app.logger.info(f'Unable to check certificate for domain {domain_name} on port {port}',
