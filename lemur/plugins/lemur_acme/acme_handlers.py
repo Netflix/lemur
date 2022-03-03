@@ -32,7 +32,7 @@ from lemur.dns_providers import service as dns_provider_service
 from lemur.exceptions import InvalidAuthority, UnknownProvider, InvalidConfiguration
 from lemur.extensions import metrics
 
-from lemur.plugins.lemur_acme import cloudflare, dyn, route53, ultradns, powerdns
+from lemur.plugins.lemur_acme import cloudflare, dyn, route53, ultradns, powerdns, nsone
 from lemur.authorities import service as authorities_service
 from retrying import retry
 
@@ -343,7 +343,8 @@ class AcmeDnsHandler(AcmeHandler):
             "dyn": dyn,
             "route53": route53,
             "ultradns": ultradns,
-            "powerdns": powerdns
+            "powerdns": powerdns,
+            "nsone": nsone
         }
         provider = provider_types.get(type)
         if not provider:
