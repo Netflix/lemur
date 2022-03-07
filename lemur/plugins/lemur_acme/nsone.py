@@ -4,10 +4,11 @@ import inspect
 import time
 import requests
 
+from flask import current_app
+from sentry_sdk import capture_exception
 import lemur.common.utils as utils
 import lemur.dns_providers.util as dnsutil
-from lemur.extensions import metrics, sentry
-from flask import current_app
+from lemur.extensions import metrics
 
 REQUIRED_VARIABLES = [
     "ACME_NSONE_KEY",
@@ -33,7 +34,7 @@ def get_zones():
         log_data["message"] = "Retrieved Zones Successfully"
         current_app.logger.debug(log_data)
     except Exception as err:
-        sentry.captureException()
+        capture_exception()
         log_data["message"] = "Failed to Retrieve Zone Data"
         log_data["error"] = err
         current_app.logger.debug(log_data)
@@ -83,7 +84,7 @@ def create_txt_record(domain, token, account_number=None):
         log_data["message"] = "TXT record(s) successfully created"
         current_app.logger.debug(log_data)
     except Exception as err:
-        sentry.captureException()
+        capture_exception()
         log_data["Exception"] = err
         log_data["message"] = "Unable to create TXT record(s)"
         current_app.logger.debug(log_data)
@@ -172,7 +173,7 @@ def delete_txt_record(change_id, account_number, domain, token):
                     log_data["message"] = "TXT record successfully deleted"
                     current_app.logger.debug(log_data)
                 except Exception as err:
-                    sentry.captureException()
+                    capture_exception()
                     log_data["Exception"] = err
                     log_data["message"] = "Unable to delete TXT record"
                     current_app.logger.debug(log_data)
@@ -182,7 +183,7 @@ def delete_txt_record(change_id, account_number, domain, token):
                     log_data["message"] = "TXT record successfully deleted"
                     current_app.logger.debug(log_data)
                 except Exception as err:
-                    sentry.captureException()
+                    capture_exception()
                     log_data["Exception"] = err
                     log_data["message"] = "Unable to delete TXT record"
                     current_app.logger.debug(log_data)
@@ -260,7 +261,7 @@ def _get_txt_records(domain):
         current_app.logger.debug(log_data)
 
     except Exception as err:
-        sentry.captureException()
+        capture_exception()
         log_data["Exception"] = err
         log_data["message"] = "Failed to Retrieve TXT Records"
         current_app.logger.debug(log_data)
