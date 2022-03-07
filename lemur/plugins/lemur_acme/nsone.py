@@ -23,7 +23,7 @@ def get_zones():
     :return: list of Zone Objects
     """
     _check_conf()
-    path = f"/v1/zones"
+    path = f'{"/v1/zones"}'
     zones = []
     function = inspect.currentframe().f_code.co_name
     log_data = {
@@ -219,7 +219,6 @@ def _get_zone_name(domain):
     Get most specific matching zone for the given domain and return as a String
 
     :param domain: FQDN
-    :param account_number:
     :return: FQDN of domain
     """
     zones = get_zones()
@@ -295,7 +294,7 @@ def _get(path, params=None):
 
 def _patch_txt_records(domain, records, patch=True):
     """
-    Send Patch request to NS1 Server
+    Send Patch or Put request to NS1 Server
 
     :param domain: FQDN
     :param account_number:
@@ -313,7 +312,7 @@ def _patch_txt_records(domain, records, patch=True):
 
 def _patch(path, payload):
     """
-    Execute a Patch request on the given URL (base_uri + path) with given payload
+    Execute a Patch to update the given URL (base_uri + path) with given payload
 
     :param path:
     :param payload:
@@ -331,7 +330,7 @@ def _patch(path, payload):
 
 def _put(path, payload):
     """
-    Execute a Patch request on the given URL (base_uri + path) with given payload
+    Execute a Put to add the given URL (base_uri + path) with payload
 
     :param path:
     :param payload:
