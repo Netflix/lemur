@@ -76,13 +76,13 @@ class TestNsone(unittest.TestCase):
             "networks": [0],
             "nx_ttl": 0,
             "primary": {
-                "enabled":True,
+                "enabled": True,
                 "secondaries": [{
                     "ip": "string",
                     "networks": [0],
                     "notify": True,
                     "port": 0}]
-            },"records": [{
+            }, "records": [{
                 "domain": "string",
                 "id": "string",
                 "short_answers": ["string"],
@@ -126,7 +126,7 @@ class TestNsone(unittest.TestCase):
         account_number = "1234567890"
         change_id = (domain, token)
         nsone._check_conf = Mock()
-        nsone._get_txt_records = Mock(return_value={"answers":[]})
+        nsone._get_txt_records = Mock(return_value={"answers": []})
         nsone._get_zone_name = Mock(return_value=zone)
         mock_current_app.logger.debug = Mock()
         mock_current_app.config.get = Mock(return_value="localhost")
@@ -155,7 +155,7 @@ class TestNsone(unittest.TestCase):
         change_id = (domain, token)
         nsone._check_conf = Mock()
         cur_records = {
-            "answers":[{
+            "answers": [{
                 "answer": ["ABCDEFHG"],
                 "id": "1234567890abcdef"
             }],
