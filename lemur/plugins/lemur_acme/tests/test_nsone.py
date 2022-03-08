@@ -48,49 +48,54 @@ class TestNsone(unittest.TestCase):
         path = "a/b/c"
         zones = ['example.com', 'test.example.com']
         get_response = [{
-            "dns_servers":["string"],
-            "expiry":0,
-            "primary_master":"string",
-            "id":"string",
+            "dns_servers": ["string"],
+            "expiry": 0,
+            "primary_master": "string",
+            "id": "string",
             "meta":{
-                "asn":["string"],
-                "ca_province":["string"],
-                "connections":0,
-                "country":["string"],
-                "georegion":["string"],
-                "high_watermark":0,
-                "ip_prefixes":["string"],
-                "latitude":0,
-                "loadAvg":0,
-                "laditude":0,
-                "low_watermark":0,
-                "note":"string",
-                "priority":0,
-                "pulsar":"string",
-                "requests":0,
-                "up":True,
-                "us_state":["string"],
-                "weight":0},
-            "network_pools":["string"],
-            "networks":[0],
-            "nx_ttl":0,
-            "primary":{
+                "asn": ["string"],
+                "ca_province": ["string"],
+                "connections": 0,
+                "country": ["string"],
+                "georegion": ["string"],
+                "high_watermark": 0,
+                "ip_prefixes": ["string"],
+                "latitude": 0,
+                "loadAvg": 0,
+                "laditude": 0,
+                "low_watermark": 0,
+                "note": "string",
+                "priority": 0,
+                "pulsar": "string",
+                "requests": 0,
+                "up": True,
+                "us_state": ["string"],
+                "weight": 0
+            },
+            "network_pools": ["string"],
+            "networks": [0],
+            "nx_ttl": 0,
+            "primary": {
                 "enabled":True,
-                "secondaries":[{"ip":"string","networks":[0],"notify":True,"port":0}]
-            },"records":[{
-                "domain":"string",
-                "id":"string",
-                "short_answers":["string"],
-                "tier":0,
-                "ttl":0,
-                "type":"string"}],
-            "refresh":0,
-            "retry":0,
-            "ttl":0,
-            "zone":"string",
-            "view":["string"],
-            "local_tags":["string"],
-            "tags":{}}]
+                "secondaries": [{
+                    "ip": "string",
+                    "networks": [0],
+                    "notify": True,
+                    "port": 0}]
+            },"records": [{
+                "domain": "string",
+                "id": "string",
+                "short_answers": ["string"],
+                "tier": 0,
+                "ttl": 0,
+                "type": "string"}],
+            "refresh": 0,
+            "retry": 0,
+            "ttl": 0,
+            "zone": "string",
+            "view": ["string"],
+            "local_tags": ["string"],
+            "tags": {}}]
         nsone._check_conf = Mock()
         nsone._get = Mock(path)
         nsone._get.side_effect = [get_response]
@@ -151,9 +156,10 @@ class TestNsone(unittest.TestCase):
         nsone._check_conf = Mock()
         cur_records = {
             "answers":[{
-                "answer":["ABCDEFHG"],"id":"1234567890abcdef"
+                "answer": ["ABCDEFHG"],
+                "id": "1234567890abcdef"
             }],
-            "id":"1234567890abcdef"}
+            "id": "1234567890abcdef"}
         nsone._get_txt_records = Mock(return_value=cur_records)
         nsone._get_zone_name = Mock(return_value=zone)
         mock_current_app.logger.debug = Mock()
@@ -172,7 +178,7 @@ class TestNsone(unittest.TestCase):
             "answers": [
                 {"answer": ["ABCDEFHG"], "id": "1234567890abcdef"},
                 {"answer": ["ABCDEFGHIJ"]}
-                ],
+            ],
             "id": "1234567890abcdef"}
         result = nsone.create_txt_record(domain, token, account_number)
         mock_current_app.logger.debug.assert_called_with(log_data)
@@ -224,21 +230,22 @@ class TestNsone(unittest.TestCase):
         account_number = "1234567890"
         change_id = (domain, token)
         records = {
-               "answers":[{
-                    "answer":["ABCDEFG"],
-                    "id":"1234567890abcdef"}],
-                "domain":"_acme-challenge.test.example.com",
-                "id":"1234567890abcdef",
-                "meta":{},
-                "networks":[1],
-                "regions":{},
-                "tags":{},
-                "tier":1,
-                "ttl":3600,
-                "type":"TXT",
-                "zone_fqdn":"example.com",
-                "zone_handle":"example.com",
-                "use_client_subnet":"false"
+            "answers": [{
+                "answer": ["ABCDEFG"],
+                "id": "1234567890abcdef"
+            }],
+            "domain": "_acme-challenge.test.example.com",
+            "id": "1234567890abcdef",
+            "meta": {},
+            "networks": [1],
+            "regions": {},
+            "tags": {},
+            "tier": 1,
+            "ttl": 3600,
+            "type": "TXT",
+            "zone_fqdn": "example.com",
+            "zone_handle": "example.com",
+            "use_client_subnet": "false"
         }
         nsone._check_conf = Mock()
         nsone._get_zone_name = Mock(return_value=zone)
