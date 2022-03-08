@@ -6,7 +6,7 @@ import requests
 
 from flask import current_app
 from sentry_sdk import capture_exception
-import lemur.common.utils as utils
+from lemur.common import utils
 import lemur.dns_providers.util as dnsutil
 from lemur.extensions import metrics
 
