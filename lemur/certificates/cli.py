@@ -44,6 +44,7 @@ from lemur.extensions import metrics
 from lemur.notifications.messaging import send_rotation_notification, send_reissue_no_endpoints_notification, \
     send_reissue_failed_notification
 from lemur.plugins.base import plugins
+from sqlalchemy.orm.exc import MultipleResultsFound
 
 manager = Manager(usage="Handles all certificate related tasks.")
 
@@ -101,6 +102,23 @@ def validate_endpoint(endpoint_name):
 
         if not endpoint:
             print("[-] No endpoint found with name: {0}".format(endpoint_name))
+            sys.exit(1)
+
+        return endpoint
+
+
+def validate_endpoint_from_source(endpoint_name, source):
+    """
+    Ensuring that the specified endpoint from the given source exists.
+    :param endpoint_name:
+    :param source:
+    :return:
+    """
+    if endpoint_name and source:
+        endpoint = endpoint_service.get_by_name_and_source(endpoint_name, source)
+
+        if not endpoint:
+            print("[-] No endpoint found from source {0} with name: {1}".format(source, endpoint_name))
             sys.exit(1)
 
         return endpoint
@@ -194,6 +212,12 @@ def request_reissue(certificate, notify, commit):
     help="Name of the endpoint you wish to rotate.",
 )
 @manager.option(
+    "-s",
+    "--source",
+    dest="source",
+    help="Source of the endpoint you wish to rotate.",
+)
+@manager.option(
     "-n",
     "--new-certificate",
     dest="new_certificate_name",
@@ -220,7 +244,7 @@ def request_reissue(certificate, notify, commit):
     default=False,
     help="Persist changes.",
 )
-def rotate(endpoint_name, new_certificate_name, old_certificate_name, message, commit):
+def rotate(endpoint_name, source, new_certificate_name, old_certificate_name, message, commit):
     """
     Rotates an endpoint and reissues it if it has not already been replaced. If it has
     been replaced, will use the replacement certificate for the rotation.
@@ -239,7 +263,17 @@ def rotate(endpoint_name, new_certificate_name, old_certificate_name, message, c
     try:
         old_cert = validate_certificate(old_certificate_name)
         new_cert = validate_certificate(new_certificate_name)
-        endpoint = validate_endpoint(endpoint_name)
+        if source:
+            endpoint = validate_endpoint_from_source(endpoint_name, source)
+        else:
+            try:
+                endpoint = validate_endpoint(endpoint_name)
+            except MultipleResultsFound as e:
+                print("[!] Multiple endpoints found with name {0}, try narrowing the search down to an endpoint from a specific source by re-running this command with the --source flag.".format(endpoint_name))
+                log_data["message"] = "Multiple endpoints found with same name, unable to perform rotation"
+                log_data["duplicated_endpoint_name"] = endpoint_name
+                current_app.logger.info(log_data)
+                raise
 
         if endpoint and new_cert:
             print(

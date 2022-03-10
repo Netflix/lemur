@@ -28,6 +28,7 @@ future
 gunicorn
 hvac # required for the vault destination plugin
 inflection
+itsdangerous < 2.1.0 # requires Flask 2.0.3
 jinja2
 lockfile
 logmatic-python
@@ -42,7 +43,7 @@ pyjwt
 pyOpenSSL
 pyyaml>=4.2b1 #high severity alert
 python_ldap
-redis==4.0.2  # remove once fakeredis supports 4.1.0 https://github.com/jamesls/fakeredis/pull/324
+redis
 requests
 retrying
 sentry-sdk

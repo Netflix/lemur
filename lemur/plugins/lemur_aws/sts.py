@@ -27,9 +27,10 @@ def sts_client(service, service_type="client"):
                                    config=config)
             else:
                 sts = boto3.client("sts", config=config)
-            arn = "arn:aws:iam::{0}:role/{1}".format(
-                kwargs.pop("account_number"),
-                current_app.config.get("LEMUR_INSTANCE_PROFILE", "Lemur"),
+            arn = "arn:{partition}:iam::{account_number}:role/{profile}".format(
+                partition=current_app.config.get("LEMUR_AWS_PARTITION", "aws"),
+                account_number=kwargs.pop("account_number"),
+                profile=current_app.config.get("LEMUR_INSTANCE_PROFILE", "Lemur"),
             )
 
             # TODO add user specific information to RoleSessionName
@@ -38,7 +39,7 @@ def sts_client(service, service_type="client"):
             if service_type == "client":
                 client = boto3.client(
                     service,
-                    region_name=kwargs.pop("region", "us-east-1"),
+                    region_name=kwargs.pop("region", current_app.config.get("LEMUR_AWS_REGION", "us-east-1")),
                     aws_access_key_id=role["Credentials"]["AccessKeyId"],
                     aws_secret_access_key=role["Credentials"]["SecretAccessKey"],
                     aws_session_token=role["Credentials"]["SessionToken"],
@@ -48,7 +49,7 @@ def sts_client(service, service_type="client"):
             elif service_type == "resource":
                 resource = boto3.resource(
                     service,
-                    region_name=kwargs.pop("region", "us-east-1"),
+                    region_name=kwargs.pop("region", current_app.config.get("LEMUR_AWS_REGION", "us-east-1")),
                     aws_access_key_id=role["Credentials"]["AccessKeyId"],
                     aws_secret_access_key=role["Credentials"]["SecretAccessKey"],
                     aws_session_token=role["Credentials"]["SessionToken"],

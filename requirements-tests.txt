@@ -4,9 +4,9 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-tests.txt requirements-tests.in
 #
-acme==1.22.0
+acme==1.24.0
     # via certbot
-alembic==1.7.5
+alembic==1.7.6
     # via flask-migrate
 attrs==21.4.0
     # via
@@ -18,31 +18,31 @@ aws-sam-translator==1.42.0
     # via cfn-lint
 aws-xray-sdk==2.9.0
     # via moto
-bandit==1.7.1
+bandit==1.7.4
     # via -r requirements-tests.in
-black==21.12b0
+black==22.1.0
     # via -r requirements-tests.in
-boto3==1.20.41
+boto3==1.21.14
     # via
     #   aws-sam-translator
     #   moto
-botocore==1.23.41
+botocore==1.24.14
     # via
     #   aws-xray-sdk
     #   boto3
     #   moto
     #   s3transfer
-certbot==1.22.0
+certbot==1.24.0
     # via -r requirements-tests.in
 certifi==2021.10.8
     # via requests
 cffi==1.15.0
     # via cryptography
-cfn-lint==0.57.0
+cfn-lint==0.58.2
     # via moto
-charset-normalizer==2.0.10
+charset-normalizer==2.0.12
     # via requests
-click==8.0.3
+click==8.0.4
     # via
     #   black
     #   flask
@@ -50,7 +50,7 @@ configargparse==1.5.3
     # via certbot
 configobj==5.0.6
     # via certbot
-coverage==6.2
+coverage==6.3.2
     # via -r requirements-tests.in
 cryptography==36.0.1
     # via
@@ -63,7 +63,7 @@ cryptography==36.0.1
     #   sshpubkeys
 deprecated==1.2.13
     # via redis
-distro==1.6.0
+distro==1.7.0
     # via certbot
 docker==5.0.3
     # via moto
@@ -74,11 +74,11 @@ ecdsa==0.17.0
     #   sshpubkeys
 factory-boy==3.2.1
     # via -r requirements-tests.in
-faker==11.3.0
+faker==13.3.1
     # via
     #   -r requirements-tests.in
     #   factory-boy
-fakeredis==1.7.0
+fakeredis==1.7.1
     # via -r requirements-tests.in
 flask==1.1.2
     # via
@@ -90,13 +90,13 @@ flask-migrate==2.7.0
     # via -r requirements-tests.in
 flask-sqlalchemy==2.5.1
     # via flask-migrate
-freezegun==1.1.0
+freezegun==1.2.0
     # via -r requirements-tests.in
 future==0.18.2
     # via aws-xray-sdk
 gitdb==4.0.9
     # via gitpython
-gitpython==3.1.26
+gitpython==3.1.27
     # via bandit
 graphql-core==3.2.0
     # via moto
@@ -107,7 +107,9 @@ idna==3.3
 iniconfig==1.1.1
     # via pytest
 itsdangerous==2.0.1
-    # via flask
+    # via
+    #   -r requirements-tests.in
+    #   flask
 jinja2==3.0.3
     # via
     #   flask
@@ -138,7 +140,7 @@ junit-xml==1.9
     # via cfn-lint
 mako==1.1.6
     # via alembic
-markupsafe==2.0.1
+markupsafe==2.1.0
     # via
     #   jinja2
     #   mako
@@ -149,11 +151,11 @@ marshmallow==2.20.4
     #   marshmallow-sqlalchemy
 marshmallow-sqlalchemy==0.23.1
     # via -r requirements-tests.in
-moto[all]==3.0.0
+moto[all]==3.0.6
     # via -r requirements-tests.in
 mypy-extensions==0.4.3
     # via black
-networkx==2.6.3
+networkx==2.7.1
     # via cfn-lint
 nose==1.3.7
     # via -r requirements-tests.in
@@ -161,16 +163,17 @@ packaging==21.3
     # via
     #   fakeredis
     #   pytest
+    #   redis
 parsedatetime==2.6
     # via certbot
 pathspec==0.9.0
     # via black
-pbr==5.8.0
+pbr==5.8.1
     # via
     #   jschema-to-python
     #   sarif-om
     #   stevedore
-platformdirs==2.4.1
+platformdirs==2.5.1
     # via black
 pluggy==1.0.0
     # via pytest
@@ -184,7 +187,7 @@ pycparser==2.21
     # via cffi
 pyflakes==2.4.0
     # via -r requirements-tests.in
-pyopenssl==21.0.0
+pyopenssl==22.0.0
     # via
     #   acme
     #   josepy
@@ -196,14 +199,14 @@ pyrfc3339==1.1
     #   certbot
 pyrsistent==0.18.1
     # via jsonschema
-pytest==6.2.5
+pytest==7.0.1
     # via
     #   -r requirements-tests.in
     #   pytest-flask
     #   pytest-mock
 pytest-flask==1.2.0
     # via -r requirements-tests.in
-pytest-mock==3.6.1
+pytest-mock==3.7.0
     # via -r requirements-tests.in
 python-dateutil==2.8.2
     # via
@@ -225,7 +228,7 @@ pyyaml==6.0
     #   bandit
     #   cfn-lint
     #   moto
-redis==4.0.2
+redis==4.1.4
     # via fakeredis
 requests==2.27.1
     # via
@@ -239,11 +242,11 @@ requests-mock==1.9.3
     # via -r requirements-tests.in
 requests-toolbelt==0.9.1
     # via acme
-responses==0.17.0
+responses==0.19.0
     # via moto
 rsa==4.8
     # via python-jose
-s3transfer==0.5.0
+s3transfer==0.5.2
     # via boto3
 sarif-om==1.0.4
     # via cfn-lint
@@ -256,10 +259,8 @@ six==1.16.0
     #   fakeredis
     #   jsonschema
     #   junit-xml
-    #   pyopenssl
     #   python-dateutil
     #   requests-mock
-    #   responses
 smmap==5.0.0
     # via gitdb
 sortedcontainers==2.4.0
@@ -274,22 +275,20 @@ sshpubkeys==3.3.1
     # via moto
 stevedore==3.5.0
     # via bandit
-text-unidecode==1.3
-    # via faker
-toml==0.10.2
-    # via pytest
-tomli==1.2.3
-    # via black
-typing-extensions==4.0.1
+tomli==2.0.1
+    # via
+    #   black
+    #   pytest
+typing-extensions==4.1.1
     # via black
 urllib3==1.26.8
     # via
     #   botocore
     #   requests
     #   responses
-websocket-client==1.2.3
+websocket-client==1.3.1
     # via docker
-werkzeug==2.0.2
+werkzeug==2.0.3
     # via
     #   flask
     #   moto

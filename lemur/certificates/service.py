@@ -376,6 +376,23 @@ def update_switches(cert, notify_flag=None, rotation_flag=None):
     return database.update(cert)
 
 
+def update_owner(cert, new_cert_data):
+    """
+    Modify owner for certificate. Removes roles and notifications associated with prior owner.
+    :param cert: Certificate object to be updated
+    :param new_cert_data: Dictionary including cert fields to be updated (owner, notifications, roles).
+    These values are set in CertificateEditInputSchema and are generated for the new owner.
+    :return:
+    """
+    # remove all notifications and roles associated with old owner
+    cert.roles = new_cert_data["roles"] + [r for r in cert.roles if r.name != cert.owner]
+    notification_prefix = f"DEFAULT_{cert.owner.split('@')[0].upper()}"
+    cert.notifications = new_cert_data["notifications"] + [n for n in cert.notifications if not n.label.startswith(notification_prefix)]
+
+    cert.owner = new_cert_data["owner"]
+    return database.update(cert)
+
+
 def create_certificate_roles(**kwargs):
     # create a role for the owner and assign it
     owner_role = role_service.get_or_create(
@@ -439,10 +456,9 @@ def upload(**kwargs):
     """
     roles = create_certificate_roles(**kwargs)
 
-    if kwargs.get("roles"):
-        kwargs["roles"] += roles
-    else:
-        kwargs["roles"] = roles
+    if not kwargs.get("roles"):
+        kwargs["roles"] = []
+    kwargs["roles"] += [role for role in roles if role not in kwargs["roles"]]
 
     cert = Certificate(**kwargs)
     cert.authority = kwargs.get("authority")
@@ -459,14 +475,15 @@ def create(**kwargs):
     """
     Creates a new certificate.
     """
-    # Validate destinations do not overlap accounts
+    # Validate destinations do not overlap accounts for the same plugin
     if "destinations" in kwargs:
-        dest_accounts = {}
+        dest_plugin_accounts = {}
         for dest in kwargs["destinations"]:
+            plugin_accounts = dest_plugin_accounts.setdefault(dest.plugin_name, {})
             account = get_plugin_option("accountNumber", dest.options)
-            if account in dest_accounts:
-                raise Exception(f"Only one destination allowed per account: {account}")
-            dest_accounts[account] = True
+            if account in plugin_accounts:
+                raise Exception(f"Too many destintions for plugin {dest.plugin_name} and account {account}")
+            plugin_accounts[account] = True
 
     try:
         cert_body, private_key, cert_chain, external_id, csr = mint(**kwargs)
@@ -1192,6 +1209,8 @@ def find_and_persist_domains_where_cert_is_deployed(certificate, excluded_domain
                     if parsed_serial == int(certificate.serial):
                         matched_ports_for_domain.append(port)
                         match = True
+                        current_app.logger.warning(f'Identified expiring deployed certificate {certificate.name} '
+                                                   f'at domain {domain_name} on port {port}')
                     status = SUCCESS_METRIC_STATUS
                 except Exception:
                     current_app.logger.info(f'Unable to check certificate for domain {domain_name} on port {port}',

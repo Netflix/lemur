@@ -10,6 +10,7 @@ fakeredis
 flask <= 1.1.2 # similar to Flask-Migrate
 flask-migrate <= 2.7.0 #mirgration to Flask CLI required, https://github.com/miguelgrinberg/Flask-Migrate/issues/407
 freezegun
+itsdangerous < 2.1.0 # requires Flask 2.0.3
 marshmallow-sqlalchemy == 0.23.1 #related to the marshmallow issue (to avoid conflicts)
 marshmallow<2.20.5 #schema duplicate issues https://github.com/marshmallow-code/marshmallow-sqlalchemy/issues/121
 moto[all]

@@ -1153,19 +1153,75 @@ def test_certificate_get_body(client):
         ("", 401),
     ],
 )
-def test_certificate_post_update_notify(client, certificate, token, status):
-    # negate the current notify flag and pass it to update POST call to flip the notify
+def test_certificate_post_update_switches(client, certificate, token, status):
+    # negate the current notify/rotation flag and pass it to update POST call to flip the notify/rotation
     toggled_notify = not certificate.notify
+    toggled_rotation = not certificate.rotation
 
     response = client.post(
         api.url_for(Certificates, certificate_id=certificate.id),
-        data=json.dumps({"notify": toggled_notify}),
+        data=json.dumps({"notify": toggled_notify, "rotation": toggled_rotation}),
         headers=token
     )
 
     assert response.status_code == status
     if status == 200:
         assert response.json.get("notify") == toggled_notify
+        assert response.json.get("rotation") == toggled_rotation
+
+
+@pytest.mark.parametrize(
+    "token,status",
+    [
+        (VALID_USER_HEADER_TOKEN, 403),
+        (VALID_ADMIN_HEADER_TOKEN, 200),
+        (VALID_ADMIN_API_TOKEN, 200),
+        ("", 401),
+    ],
+)
+def test_certificates_update_owner(client, token, status, issuer_plugin, certificate, notification_plugin):
+    from lemur.certificates import service as certificate_service
+    from lemur.roles import service as role_service
+    from lemur.notifications import service as notification_service
+    from lemur.tests.factories import NotificationFactory, RoleFactory
+
+    new_cert_owner = "newowner@example.com"
+
+    notification_label = "DEFAULT_" + certificate.owner.split("@")[0].upper() + "_30_DAY"
+    notification = notification_service.get_by_label(notification_label)
+    if not notification:
+        notification = NotificationFactory(label=notification_label)
+    certificate.notifications.append(notification)
+    owner_role = role_service.get_by_name(certificate.owner)
+    if not owner_role:
+        owner_role = RoleFactory(name=certificate.owner)
+    certificate.roles.append(owner_role)
+
+    assert certificate.owner != new_cert_owner
+    assert notification in certificate.notifications
+    assert owner_role in certificate.roles
+    for role in certificate.roles:
+        assert new_cert_owner not in role.name
+
+    response = client.post(
+        api.url_for(CertificateUpdateOwner, certificate_id=certificate.id),
+        data=json.dumps({"owner": new_cert_owner}),
+        headers=token
+    )
+
+    assert response.status_code == status
+    if status == 200:
+        assert response.json.get("owner") == new_cert_owner
+        new_cert = certificate_service.get(certificate.id)
+        assert new_cert.owner == new_cert_owner
+
+        new_owner_role = role_service.get_by_name(new_cert_owner)
+        new_owner_notification = notification_service.get_by_label("DEFAULT_NEWOWNER_30_DAY")
+
+        assert notification not in new_cert.notifications
+        assert new_owner_notification in new_cert.notifications
+        assert owner_role not in new_cert.roles
+        assert new_owner_role in certificate.roles
 
 
 @pytest.mark.parametrize(
