@@ -181,7 +181,7 @@ ndg-httpsclient==0.5.1
     # via -r requirements.in
 packaging==21.3
     # via redis
-paramiko==2.9.2
+paramiko==2.10.1
     # via -r requirements.in
 parsedatetime==2.6
     # via certbot
@@ -271,6 +271,7 @@ six==1.16.0
     #   flask-cors
     #   flask-restful
     #   hvac
+    #   paramiko
     #   python-dateutil
     #   retrying
     #   sqlalchemy-utils
@@ -310,16 +311,16 @@ wrapt==1.13.3
     # via deprecated
 xmltodict==0.12.0
     # via -r requirements.in
-zope.component==5.0.1
+zope-component==5.0.1
     # via certbot
-zope.event==4.5.0
-    # via zope.component
-zope.hookable==5.1.0
-    # via zope.component
-zope.interface==5.4.0
+zope-event==4.5.0
+    # via zope-component
+zope-hookable==5.1.0
+    # via zope-component
+zope-interface==5.4.0
     # via
     #   certbot
-    #   zope.component
+    #   zope-component
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
