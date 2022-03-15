@@ -46,6 +46,16 @@ lemur_acme package
     :undoc-members:
     :show-inheritance:
 
+:mod:`nsone` Module
+------------------------------------	
+
+.. automodule:: lemur.plugins.lemur_acme.nsone	
+    :noindex:
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
 :mod:`plugin` Module
 ---------------------------------------	
 
