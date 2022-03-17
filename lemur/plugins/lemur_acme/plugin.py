@@ -102,6 +102,13 @@ class ACMEIssuerPlugin(IssuerPlugin):
             "default": "",
             "required": False,
             "helpMessage": "Account Registration",
+        },
+        {
+            "name": "drop_last_cert_from_chain",
+            "type": "bool",
+            "required": False,
+            "helpMessage": "Drops the last certificate, i.e., the Cross Signed root, from the Chain",
+            "default": False,
         }
     ]
 
