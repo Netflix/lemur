@@ -4,14 +4,14 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-docs.txt requirements-docs.in
 #
-acme==1.24.0
+acme==1.25.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   certbot
 alabaster==0.7.12
     # via sphinx
-alembic==1.7.6
+alembic==1.7.7
     # via
     #   -r requirements-tests.txt
     #   flask-migrate
@@ -55,13 +55,13 @@ blinker==1.4
     # via
     #   flask-mail
     #   flask-principal
-boto3==1.21.14
+boto3==1.21.21
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
-botocore==1.24.14
+botocore==1.24.21
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -71,7 +71,7 @@ botocore==1.24.14
     #   s3transfer
 celery[redis]==5.2.3
     # via -r requirements-docs.in
-certbot==1.24.0
+certbot==1.25.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -88,7 +88,7 @@ cffi==1.15.0
     #   bcrypt
     #   cryptography
     #   pynacl
-cfn-lint==0.58.2
+cfn-lint==0.58.3
     # via
     #   -r requirements-tests.txt
     #   moto
@@ -123,7 +123,7 @@ configobj==5.0.6
     #   certbot
 coverage==6.3.2
     # via -r requirements-tests.txt
-cryptography==36.0.1
+cryptography==36.0.2
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -165,7 +165,7 @@ ecdsa==0.17.0
     #   sshpubkeys
 factory-boy==3.2.1
     # via -r requirements-tests.txt
-faker==13.3.1
+faker==13.3.2
     # via
     #   -r requirements-tests.txt
     #   factory-boy
@@ -257,12 +257,12 @@ jinja2==3.0.3
     #   flask
     #   moto
     #   sphinx
-jmespath==0.10.0
+jmespath==1.0.0
     # via
     #   -r requirements-tests.txt
     #   boto3
     #   botocore
-josepy==1.12.0
+josepy==1.13.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -303,11 +303,11 @@ kombu==5.2.4
     # via celery
 logmatic-python==0.1.7
     # via -r requirements-docs.in
-mako==1.1.6
+mako==1.2.0
     # via
     #   -r requirements-tests.txt
     #   alembic
-markupsafe==2.1.0
+markupsafe==2.1.1
     # via
     #   -r requirements-tests.txt
     #   jinja2
@@ -322,7 +322,7 @@ marshmallow-sqlalchemy==0.23.1
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
-moto[all]==3.0.6
+moto[all]==3.1.0
     # via -r requirements-tests.txt
 mypy-extensions==0.4.3
     # via
@@ -417,7 +417,7 @@ pyrsistent==0.18.1
     # via
     #   -r requirements-tests.txt
     #   jsonschema
-pytest==7.0.1
+pytest==7.1.1
     # via
     #   -r requirements-tests.txt
     #   pytest-flask
@@ -587,7 +587,7 @@ typing-extensions==4.1.1
     # via
     #   -r requirements-tests.txt
     #   black
-urllib3==1.26.8
+urllib3==1.26.9
     # via
     #   -r requirements-tests.txt
     #   botocore
@@ -612,7 +612,7 @@ werkzeug==2.0.3
     #   flask
     #   moto
     #   pytest-flask
-wrapt==1.13.3
+wrapt==1.14.0
     # via
     #   -r requirements-tests.txt
     #   aws-xray-sdk
