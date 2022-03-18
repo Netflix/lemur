@@ -22,11 +22,11 @@ filelock==3.6.0
     # via virtualenv
 flake8==4.0.1
     # via -r requirements-dev.in
-identify==2.4.11
+identify==2.4.12
     # via pre-commit
 idna==3.3
     # via requests
-importlib-metadata==4.11.2
+importlib-metadata==4.11.3
     # via
     #   keyring
     #   twine
@@ -66,7 +66,7 @@ pyyaml==6.0
     # via
     #   -r requirements-dev.in
     #   pre-commit
-readme-renderer==33.0
+readme-renderer==34.0
     # via twine
 requests==2.27.1
     # via
@@ -90,7 +90,7 @@ tqdm==4.63.0
     # via twine
 twine==3.8.0
     # via -r requirements-dev.in
-urllib3==1.26.8
+urllib3==1.26.9
     # via
     #   requests
     #   twine
