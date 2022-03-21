@@ -19,7 +19,7 @@ from flask import current_app
 from sentry_sdk import capture_exception
 
 from lemur.authorizations import service as authorization_service
-from lemur.common.utils import check_validation
+from lemur.common.utils import check_validation, drop_last_cert_from_chain
 from lemur.constants import CRLReason, EMAIL_RE
 from lemur.dns_providers import service as dns_provider_service
 from lemur.exceptions import InvalidConfiguration
@@ -164,7 +164,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
                 and self.options.get("drop_last_cert_from_chain") is True \
                 and cert["chain"].count("BEGIN CERTIFICATE") > 1:
             # skipping the last element
-            cert["chain"] = '\n\n'.join(cert["chain"].split("\n\n")[:-1])  # skipping the last element
+            cert["chain"] = drop_last_cert_from_chain(cert["chain"])
 
         return cert
 
@@ -253,8 +253,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
                 if self.options and "drop_last_cert_from_chain" in self.options \
                         and self.options.get("drop_last_cert_from_chain") is True \
                         and cert["chain"].count("BEGIN CERTIFICATE") > 1:
-                    # skipping the last element
-                    cert["chain"] = '\n\n'.join(cert["chain"].split("\n\n")[:-1])  # skipping the last element
+                    cert["chain"] = drop_last_cert_from_chain(cert["chain"])
 
             except (PollError, AcmeError, Exception) as e:
                 capture_exception()
