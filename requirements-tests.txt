@@ -22,11 +22,11 @@ bandit==1.7.4
     # via -r requirements-tests.in
 black==22.1.0
     # via -r requirements-tests.in
-boto3==1.21.21
+boto3==1.21.22
     # via
     #   aws-sam-translator
     #   moto
-botocore==1.24.21
+botocore==1.24.22
     # via
     #   aws-xray-sdk
     #   boto3
@@ -90,7 +90,7 @@ flask-migrate==2.7.0
     # via -r requirements-tests.in
 flask-sqlalchemy==2.5.1
     # via flask-migrate
-freezegun==1.2.0
+freezegun==1.2.1
     # via -r requirements-tests.in
 future==0.18.2
     # via aws-xray-sdk
@@ -151,7 +151,7 @@ marshmallow==2.20.4
     #   marshmallow-sqlalchemy
 marshmallow-sqlalchemy==0.23.1
     # via -r requirements-tests.in
-moto[all]==3.1.0
+moto[all]==3.1.1
     # via -r requirements-tests.in
 mypy-extensions==0.4.3
     # via black
@@ -216,7 +216,7 @@ python-dateutil==2.8.2
     #   moto
 python-jose[cryptography]==3.3.0
     # via moto
-pytz==2021.3
+pytz==2022.1
     # via
     #   acme
     #   certbot
@@ -242,7 +242,7 @@ requests-mock==1.9.3
     # via -r requirements-tests.in
 requests-toolbelt==0.9.1
     # via acme
-responses==0.19.0
+responses==0.20.0
     # via moto
 rsa==4.8
     # via python-jose
@@ -299,16 +299,16 @@ wrapt==1.14.0
     #   deprecated
 xmltodict==0.12.0
     # via moto
-zope.component==5.0.1
+zope-component==5.0.1
     # via certbot
-zope.event==4.5.0
-    # via zope.component
-zope.hookable==5.1.0
-    # via zope.component
-zope.interface==5.4.0
+zope-event==4.5.0
+    # via zope-component
+zope-hookable==5.1.0
+    # via zope-component
+zope-interface==5.4.0
     # via
     #   certbot
-    #   zope.component
+    #   zope-component
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
