@@ -142,6 +142,13 @@ class AcmeHttpChallenge(AcmeChallenge):
 
         pem_certificate, pem_certificate_chain = self.acme.extract_cert_and_chain(finalized_orderr.fullchain_pem,
                                                                                   finalized_orderr.alternative_fullchains_pem)
+
+        if "drop_last_cert_from_chain" in authority.options and pem_certificate_chain.count("BEGIN CERTIFICATE") > 1:
+            for option in json.loads(authority.options):
+                if option["name"] == "drop_last_cert_from_chain" and option["value"] == "True":
+                    # skipping the last element
+                    pem_certificate_chain = '\n\n'.join(pem_certificate_chain.split("\n\n")[:-1])  # skipping the last element
+
         acme_uri = acme_client.client.net.account.uri.replace('https://', '')
         self.acme.log_remaining_validation(finalized_orderr.authorizations, acme_uri)
 
@@ -243,6 +250,13 @@ class AcmeDnsChallenge(AcmeChallenge):
         pem_certificate, pem_certificate_chain = self.create_certificate_immediately(
             acme_client, dns_authorization, csr
         )
+
+        if "drop_last_cert_from_chain" in authority.options \
+                and authority.options.get("drop_last_cert_from_chain") is True \
+                and pem_certificate_chain.count("BEGIN CERTIFICATE") > 1:
+            # skipping the last element
+            pem_certificate_chain = '\n\n'.join(pem_certificate_chain.split("\n\n")[:-1])  # skipping the last element
+
         # TODO add external ID (if possible)
         return pem_certificate, pem_certificate_chain, None
 
