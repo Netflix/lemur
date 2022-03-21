@@ -159,6 +159,13 @@ class ACMEIssuerPlugin(IssuerPlugin):
             "chain": "\n".join(str(pem_certificate_chain).splitlines()),
             "external_id": str(pending_cert.external_id),
         }
+
+        if self.options and "drop_last_cert_from_chain" in self.options \
+                and self.options.get("drop_last_cert_from_chain") is True \
+                and cert["chain"].count("BEGIN CERTIFICATE") > 1:
+            # skipping the last element
+            cert["chain"] = '\n\n'.join(cert["chain"].split("\n\n")[:-1])  # skipping the last element
+
         return cert
 
     def get_ordered_certificates(self, pending_certs):
@@ -242,6 +249,13 @@ class ACMEIssuerPlugin(IssuerPlugin):
                     "external_id": str(entry["pending_cert"].external_id),
                 }
                 certs.append({"cert": cert, "pending_cert": entry["pending_cert"]})
+
+                if self.options and "drop_last_cert_from_chain" in self.options \
+                        and self.options.get("drop_last_cert_from_chain") is True \
+                        and cert["chain"].count("BEGIN CERTIFICATE") > 1:
+                    # skipping the last element
+                    cert["chain"] = '\n\n'.join(cert["chain"].split("\n\n")[:-1])  # skipping the last element
+
             except (PollError, AcmeError, Exception) as e:
                 capture_exception()
                 metrics.send("get_ordered_certificates_resolution_error", "counter", 1)
@@ -394,6 +408,13 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
             "type": "destinationSelect",
             "required": True,
             "helpMessage": "The destination to use to deploy the token.",
+        },
+        {
+            "name": "drop_last_cert_from_chain",
+            "type": "bool",
+            "required": False,
+            "helpMessage": "Drops the last certificate, i.e., the Cross Signed root, from the Chain",
+            "default": False,
         }
     ]
 
