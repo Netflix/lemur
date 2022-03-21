@@ -346,6 +346,7 @@ class TestAcmeDns(unittest.TestCase):
     ):
         provider = plugin.ACMEIssuerPlugin()
         mock_authority = Mock()
+        mock_authority.options = '[{}]'
 
         mock_client = Mock()
         mock_acme.return_value = (mock_client, "")
