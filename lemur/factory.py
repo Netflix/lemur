@@ -243,7 +243,7 @@ def install_plugins(app):
     # },
     for ep in pkg_resources.iter_entry_points("lemur.plugins"):
         try:
-            plugin = ep.resolve()
+            plugin = ep.load()
         except Exception:
             import traceback
 
