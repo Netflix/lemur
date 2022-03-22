@@ -1588,6 +1588,16 @@ Will be the sender of all notifications, so ensure that it is verified with AWS.
 SES if the default notification gateway and will be used unless SMTP settings are configured in the application configuration
 settings.
 
+NS1 ACME Plugin
+~~~~~~~~~~~~~~~~~
+
+The NS1 ACME plugin allows DNS1 validation using NS1 domain services.
+
+.. data:: NS1_KEY
+   :noindex:
+
+           The NS1 read/write API key for managing TXT records for domain validation
+
 PowerDNS ACME Plugin
 ~~~~~~~~~~~~~~~~~~~~~~
 
