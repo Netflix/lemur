@@ -19,7 +19,7 @@ from flask import current_app
 from sentry_sdk import capture_exception
 
 from lemur.authorizations import service as authorization_service
-from lemur.common.utils import check_validation
+from lemur.common.utils import check_validation, drop_last_cert_from_chain
 from lemur.constants import CRLReason, EMAIL_RE
 from lemur.dns_providers import service as dns_provider_service
 from lemur.exceptions import InvalidConfiguration
@@ -102,6 +102,13 @@ class ACMEIssuerPlugin(IssuerPlugin):
             "default": "",
             "required": False,
             "helpMessage": "Account Registration",
+        },
+        {
+            "name": "drop_last_cert_from_chain",
+            "type": "bool",
+            "required": False,
+            "helpMessage": "Drops the last certificate, i.e., the Cross Signed root, from the Chain",
+            "default": False,
         }
     ]
 
@@ -152,6 +159,12 @@ class ACMEIssuerPlugin(IssuerPlugin):
             "chain": "\n".join(str(pem_certificate_chain).splitlines()),
             "external_id": str(pending_cert.external_id),
         }
+
+        if self.options and "drop_last_cert_from_chain" in self.options \
+                and self.options.get("drop_last_cert_from_chain") is True:
+            # skipping the last element
+            cert["chain"] = drop_last_cert_from_chain(cert["chain"])
+
         return cert
 
     def get_ordered_certificates(self, pending_certs):
@@ -235,6 +248,11 @@ class ACMEIssuerPlugin(IssuerPlugin):
                     "external_id": str(entry["pending_cert"].external_id),
                 }
                 certs.append({"cert": cert, "pending_cert": entry["pending_cert"]})
+
+                if self.options and "drop_last_cert_from_chain" in self.options \
+                        and self.options.get("drop_last_cert_from_chain") is True:
+                    cert["chain"] = drop_last_cert_from_chain(cert["chain"])
+
             except (PollError, AcmeError, Exception) as e:
                 capture_exception()
                 metrics.send("get_ordered_certificates_resolution_error", "counter", 1)
@@ -387,6 +405,13 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
             "type": "destinationSelect",
             "required": True,
             "helpMessage": "The destination to use to deploy the token.",
+        },
+        {
+            "name": "drop_last_cert_from_chain",
+            "type": "bool",
+            "required": False,
+            "helpMessage": "Drops the last certificate, i.e., the Cross Signed root, from the Chain",
+            "default": False,
         }
     ]
 

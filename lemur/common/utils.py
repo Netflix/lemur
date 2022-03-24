@@ -26,6 +26,7 @@ from cryptography.hazmat.primitives.serialization import load_pem_private_key, E
 from flask_restful.reqparse import RequestParser
 from sqlalchemy import and_, func
 
+from certbot.crypto_util import CERT_PEM_REGEX
 from lemur.constants import CERTIFICATE_KEY_TYPES
 from lemur.exceptions import InvalidConfiguration
 from lemur.utils import Vault
@@ -493,3 +494,21 @@ def is_json(json_input):
     except ValueError:
         return False
     return True
+
+
+def drop_last_cert_from_chain(full_chain: str) -> str:
+    """
+    drops the last certificate from a certificate chai, if more than one CA/subCA in the chain
+    :param full_chain: string of a certificate chain
+    :return:  string of a new certificate chain, omitting the last certificate
+    """
+    if full_chain == '' or full_chain.count("BEGIN CERTIFICATE") <= 1:
+        return full_chain
+    full_chain_certs = CERT_PEM_REGEX.findall(full_chain.encode())
+    pem_certificate = OpenSSL.crypto.dump_certificate(
+        OpenSSL.crypto.FILETYPE_PEM,
+        OpenSSL.crypto.load_certificate(
+            OpenSSL.crypto.FILETYPE_PEM, ''.join(cert.decode() for cert in full_chain_certs[:-1])
+        ),
+    ).decode()
+    return pem_certificate

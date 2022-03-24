@@ -10,7 +10,9 @@ from lemur.tests.vectors import (
     ECDSA_SECP384r1_CERT,
     ECDSA_SECP384r1_CERT_STR,
     DSA_CERT,
-    CERT_CHAIN_PKCS7_PEM
+    CERT_CHAIN_PKCS7_PEM,
+    ACME_CHAIN_LONG_STR,
+    ACME_CHAIN_X1_STR
 )
 
 
@@ -150,3 +152,9 @@ def test_is_json():
     assert is_json('{ "value":100}') is True
     assert is_json("{\"value\":100 }") is True
     assert is_json('{"range":[5,6.8],"name":"something"}') is True
+
+
+def drop_last_cert_from_chain(self):
+    from lemur.common.utils import drop_last_cert_from_chain
+    chain_pem = drop_last_cert_from_chain(ACME_CHAIN_LONG_STR)
+    self.assertEqual(chain_pem, ACME_CHAIN_LONG_STR[len(SAN_CERT_STR + ACME_CHAIN_X1_STR):].lstrip())

@@ -19,6 +19,7 @@ from sentry_sdk import capture_exception
 
 from lemur.authorizations import service as authorization_service
 from lemur.constants import ACME_ADDITIONAL_ATTEMPTS
+from lemur.common.utils import drop_last_cert_from_chain
 from lemur.exceptions import LemurException, InvalidConfiguration
 from lemur.extensions import metrics
 from lemur.plugins.base import plugins
@@ -142,6 +143,13 @@ class AcmeHttpChallenge(AcmeChallenge):
 
         pem_certificate, pem_certificate_chain = self.acme.extract_cert_and_chain(finalized_orderr.fullchain_pem,
                                                                                   finalized_orderr.alternative_fullchains_pem)
+
+        if "drop_last_cert_from_chain" in authority.options:
+            for option in json.loads(authority.options):
+                if option["name"] == "drop_last_cert_from_chain" and option["value"] == "True":
+                    # skipping the last element
+                    pem_certificate_chain = drop_last_cert_from_chain(pem_certificate_chain)
+
         acme_uri = acme_client.client.net.account.uri.replace('https://', '')
         self.acme.log_remaining_validation(finalized_orderr.authorizations, acme_uri)
 
@@ -243,6 +251,12 @@ class AcmeDnsChallenge(AcmeChallenge):
         pem_certificate, pem_certificate_chain = self.create_certificate_immediately(
             acme_client, dns_authorization, csr
         )
+
+        if "drop_last_cert_from_chain" in authority.options \
+                and authority.options.get("drop_last_cert_from_chain") is True:
+            # skipping the last element
+            pem_certificate_chain = drop_last_cert_from_chain(pem_certificate_chain)
+
         # TODO add external ID (if possible)
         return pem_certificate, pem_certificate_chain, None
 
