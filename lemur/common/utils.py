@@ -498,12 +498,12 @@ def is_json(json_input):
 
 def drop_last_cert_from_chain(full_chain: str) -> str:
     """
-    drops the last certificate from a certificate chain
+    drops the last certificate from a certificate chai, if more than one CA/subCA in the chain
     :param full_chain: string of a certificate chain
     :return:  string of a new certificate chain, omitting the last certificate
     """
-    if full_chain == '':
-        return ''
+    if full_chain == '' or full_chain.count("BEGIN CERTIFICATE") <= 1:
+        return full_chain
     full_chain_certs = CERT_PEM_REGEX.findall(full_chain.encode())
     pem_certificate = OpenSSL.crypto.dump_certificate(
         OpenSSL.crypto.FILETYPE_PEM,

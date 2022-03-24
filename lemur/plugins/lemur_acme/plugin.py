@@ -161,8 +161,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
         }
 
         if self.options and "drop_last_cert_from_chain" in self.options \
-                and self.options.get("drop_last_cert_from_chain") is True \
-                and cert["chain"].count("BEGIN CERTIFICATE") > 1:
+                and self.options.get("drop_last_cert_from_chain") is True:
             # skipping the last element
             cert["chain"] = drop_last_cert_from_chain(cert["chain"])
 
@@ -251,8 +250,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
                 certs.append({"cert": cert, "pending_cert": entry["pending_cert"]})
 
                 if self.options and "drop_last_cert_from_chain" in self.options \
-                        and self.options.get("drop_last_cert_from_chain") is True \
-                        and cert["chain"].count("BEGIN CERTIFICATE") > 1:
+                        and self.options.get("drop_last_cert_from_chain") is True:
                     cert["chain"] = drop_last_cert_from_chain(cert["chain"])
 
             except (PollError, AcmeError, Exception) as e:

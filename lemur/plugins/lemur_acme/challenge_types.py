@@ -144,7 +144,7 @@ class AcmeHttpChallenge(AcmeChallenge):
         pem_certificate, pem_certificate_chain = self.acme.extract_cert_and_chain(finalized_orderr.fullchain_pem,
                                                                                   finalized_orderr.alternative_fullchains_pem)
 
-        if "drop_last_cert_from_chain" in authority.options and pem_certificate_chain.count("BEGIN CERTIFICATE") > 1:
+        if "drop_last_cert_from_chain" in authority.options:
             for option in json.loads(authority.options):
                 if option["name"] == "drop_last_cert_from_chain" and option["value"] == "True":
                     # skipping the last element
@@ -253,8 +253,7 @@ class AcmeDnsChallenge(AcmeChallenge):
         )
 
         if "drop_last_cert_from_chain" in authority.options \
-                and authority.options.get("drop_last_cert_from_chain") is True \
-                and pem_certificate_chain.count("BEGIN CERTIFICATE") > 1:
+                and authority.options.get("drop_last_cert_from_chain") is True:
             # skipping the last element
             pem_certificate_chain = drop_last_cert_from_chain(pem_certificate_chain)
 
