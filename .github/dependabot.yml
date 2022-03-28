@@ -9,7 +9,6 @@
       package-ecosystem: "pip"
       reviewers:
         - "hosseinsh"
-        - "csine-nflx"
         - "charhate"
         - "jtschladen"
         - "douglasc-nflx"

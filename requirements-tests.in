@@ -11,6 +11,7 @@ flask <= 1.1.2 # similar to Flask-Migrate
 flask-migrate <= 2.7.0 #mirgration to Flask CLI required, https://github.com/miguelgrinberg/Flask-Migrate/issues/407
 freezegun
 itsdangerous < 2.1.0 # requires Flask 2.0.3
+jinja2 < 3.1.0 # requires a newer version of Flask
 marshmallow-sqlalchemy == 0.23.1 #related to the marshmallow issue (to avoid conflicts)
 marshmallow<2.20.5 #schema duplicate issues https://github.com/marshmallow-code/marshmallow-sqlalchemy/issues/121
 moto[all]
@@ -19,6 +20,8 @@ pyflakes
 pytest
 pytest-flask
 pytest-mock
+redis < 4.2.0 # requires a newer release of fakeredis
 requests-mock
 sqlalchemy < 1.4.0 # ImportError: cannot import name '_ColumnEntity' https://github.com/sqlalchemy/sqlalchemy/issues/6226
 pyyaml>=4.2b1
+werkzeug < 2.1.0 # requires a newer version of Flask
