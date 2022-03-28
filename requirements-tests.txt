@@ -152,7 +152,7 @@ marshmallow==2.20.4
     #   marshmallow-sqlalchemy
 marshmallow-sqlalchemy==0.23.1
     # via -r requirements-tests.in
-moto[all]==3.1.0
+moto[all]==3.1.1
     # via -r requirements-tests.in
 mypy-extensions==0.4.3
     # via black
