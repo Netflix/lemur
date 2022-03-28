@@ -38,12 +38,13 @@ pem
 pyjks >= 19 # pyjks < 19 depends on pycryptodome, which conflicts with dyn's usage of pycrypto
 pyjwt
 pyOpenSSL
-redis
+redis < 4.2.0 # requires a newer release of fakeredis
 retrying
 sentry-sdk
 SQLAlchemy-Utils
 tabulate
 vine
+werkzeug < 2.1.0 # requires a newer version of Flask
 xmltodict
 # Test requirements are needed to allow test docs to build
 -r requirements-tests.txt

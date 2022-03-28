@@ -34,9 +34,9 @@ blinker==1.4
     # via
     #   flask-mail
     #   flask-principal
-boto3==1.21.22
+boto3==1.21.28
     # via -r requirements.in
-botocore==1.24.22
+botocore==1.24.28
     # via
     #   -r requirements.in
     #   boto3
@@ -59,7 +59,7 @@ cffi==1.15.0
     #   pynacl
 charset-normalizer==2.0.12
     # via requests
-click==8.0.4
+click==8.1.0
     # via
     #   celery
     #   click-didyoumean
@@ -306,7 +306,9 @@ vine==5.0.0
 wcwidth==0.2.5
     # via prompt-toolkit
 werkzeug==2.0.3
-    # via flask
+    # via
+    #   -r requirements.in
+    #   flask
 wrapt==1.14.0
     # via deprecated
 xmltodict==0.12.0
