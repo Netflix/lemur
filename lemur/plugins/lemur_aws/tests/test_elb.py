@@ -54,7 +54,7 @@ def test_get_all_elbs(app, aws_credentials):
 @mock_sts()
 @mock_ec2()
 @mock_elbv2()
-def test_get_all_elbs_v2():
+def test_get_all_elbs_v2(app):
     from lemur.plugins.lemur_aws.elb import get_all_elbs_v2
 
     ec2 = boto3.resource("ec2", region_name="us-east-1")
