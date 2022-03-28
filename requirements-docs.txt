@@ -55,13 +55,13 @@ blinker==1.4
     # via
     #   flask-mail
     #   flask-principal
-boto3==1.21.21
+boto3==1.21.22
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
-botocore==1.24.21
+botocore==1.24.22
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -207,7 +207,7 @@ flask-sqlalchemy==2.5.1
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   flask-migrate
-freezegun==1.2.0
+freezegun==1.2.1
     # via -r requirements-tests.txt
 future==0.18.2
     # via
@@ -235,8 +235,6 @@ idna==3.3
     #   moto
     #   requests
 imagesize==1.3.0
-    # via sphinx
-importlib-metadata==4.11.3
     # via sphinx
 inflection==0.5.1
     # via -r requirements-docs.in
@@ -322,7 +320,7 @@ marshmallow-sqlalchemy==0.23.1
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
-moto[all]==3.1.0
+moto[all]==3.1.1
     # via -r requirements-tests.txt
 mypy-extensions==0.4.3
     # via
@@ -440,7 +438,7 @@ python-jose[cryptography]==3.3.0
     #   moto
 python-json-logger==2.0.2
     # via logmatic-python
-pytz==2021.3
+pytz==2022.1
     # via
     #   -r requirements-tests.txt
     #   acme
@@ -482,7 +480,7 @@ requests-toolbelt==0.9.1
     # via
     #   -r requirements-tests.txt
     #   acme
-responses==0.19.0
+responses==0.20.0
     # via
     #   -r requirements-tests.txt
     #   moto
@@ -535,7 +533,7 @@ sortedcontainers==2.4.0
     #   fakeredis
 soupsieve==2.3.1
     # via beautifulsoup4
-sphinx==4.4.0
+sphinx==4.5.0
     # via
     #   -r requirements-docs.in
     #   sphinx-rtd-theme
@@ -584,9 +582,7 @@ tomli==2.0.1
 twofish==0.3.0
     # via pyjks
 typing-extensions==4.1.1
-    # via
-    #   -r requirements-tests.txt
-    #   black
+    # via -r requirements-tests.txt
 urllib3==1.26.9
     # via
     #   -r requirements-tests.txt
@@ -622,25 +618,23 @@ xmltodict==0.12.0
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   moto
-zipp==3.7.0
-    # via importlib-metadata
-zope.component==5.0.1
+zope-component==5.0.1
     # via
     #   -r requirements-tests.txt
     #   certbot
-zope.event==4.5.0
+zope-event==4.5.0
     # via
     #   -r requirements-tests.txt
-    #   zope.component
-zope.hookable==5.1.0
+    #   zope-component
+zope-hookable==5.1.0
     # via
     #   -r requirements-tests.txt
-    #   zope.component
-zope.interface==5.4.0
+    #   zope-component
+zope-interface==5.4.0
     # via
     #   -r requirements-tests.txt
     #   certbot
-    #   zope.component
+    #   zope-component
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
