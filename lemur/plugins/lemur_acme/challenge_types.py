@@ -136,10 +136,13 @@ class AcmeHttpChallenge(AcmeChallenge):
             for authz in validationError.failed_authzrs:
                 for chall in authz.body.challenges:
                     if chall.error:
-                        current_app.logger.error(
-                            "ValidationError occured of type {}, with message {}".format(chall.error.typ,
-                                                                                         ERROR_CODES[chall.error.code]))
-            raise Exception('Validation error occured, can\'t complete challenges. See logs for more information.')
+                        current_app.logger.error(f"ValidationError occurred of type: {chall.error.typ}, "
+                                                 f"with message: {ERROR_CODES[chall.error.code]}, "
+                                                 f"detail: {chall.error.detail}")
+
+            raise Exception(f"ValidationError occurred of type: {chall.error.typ}, "
+                            f"with message: {ERROR_CODES[chall.error.code]}, "
+                            f"detail: {chall.error.detail}")
 
         pem_certificate, pem_certificate_chain = self.acme.extract_cert_and_chain(finalized_orderr.fullchain_pem,
                                                                                   finalized_orderr.alternative_fullchains_pem)
