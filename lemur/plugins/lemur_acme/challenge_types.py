@@ -146,7 +146,7 @@ class AcmeHttpChallenge(AcmeChallenge):
 
         if "drop_last_cert_from_chain" in authority.options:
             for option in json.loads(authority.options):
-                if option["name"] == "drop_last_cert_from_chain" and option["value"] == "True":
+                if option["name"] == "drop_last_cert_from_chain" and option["value"] is True:
                     # skipping the last element
                     pem_certificate_chain = drop_last_cert_from_chain(pem_certificate_chain)
 

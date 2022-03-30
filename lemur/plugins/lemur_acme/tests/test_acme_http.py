@@ -97,7 +97,7 @@ class TestAcmeHttp(unittest.TestCase):
         self.assertEqual(pem_certificate, SAN_CERT_STR)
         self.assertEqual(pem_certificate_chain, ACME_CHAIN_LONG_STR[len(SAN_CERT_STR):].lstrip())
         mock_authority.options = '[{"name": "tokenDestination", "value": "mock-sftp-destination"},' \
-                                 '{"name": "drop_last_cert_from_chain", "value": "True"}]'
+                                 '{"name": "drop_last_cert_from_chain", "value": true}]'
 
         pem_certificate, pem_certificate_chain, _ = provider.create_certificate(csr, issuer_options)
 
