@@ -8,7 +8,7 @@ factory-boy
 Faker
 fakeredis
 flask <= 1.1.2 # similar to Flask-Migrate
-flask-migrate <= 2.7.0 #mirgration to Flask CLI required, https://github.com/miguelgrinberg/Flask-Migrate/issues/407
+flask-migrate < 3.2.0 #mirgration to Flask CLI required, https://github.com/miguelgrinberg/Flask-Migrate/issues/407
 freezegun
 itsdangerous < 2.1.0 # requires Flask 2.0.3
 jinja2 < 3.1.0 # requires a newer version of Flask
