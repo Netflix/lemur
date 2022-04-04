@@ -41,7 +41,7 @@ botocore==1.24.28
     #   -r requirements.in
     #   boto3
     #   s3transfer
-celery[redis]==5.2.3
+celery[redis]==5.2.5
     # via -r requirements.in
 certbot==1.25.0
     # via -r requirements.in
@@ -313,16 +313,16 @@ wrapt==1.14.0
     # via deprecated
 xmltodict==0.12.0
     # via -r requirements.in
-zope.component==5.0.1
+zope-component==5.0.1
     # via certbot
-zope.event==4.5.0
-    # via zope.component
-zope.hookable==5.1.0
-    # via zope.component
-zope.interface==5.4.0
+zope-event==4.5.0
+    # via zope-component
+zope-hookable==5.1.0
+    # via zope-component
+zope-interface==5.4.0
     # via
     #   certbot
-    #   zope.component
+    #   zope-component
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
