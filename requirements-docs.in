@@ -14,7 +14,7 @@ CloudFlare
 cryptography
 dnspython3
 dyn
-Flask <= 1.1.2 # similar to Flask-Migrate
+Flask < 2.1.2 # similar to Flask-Migrate
 Flask-Bcrypt
 Flask-Cors
 Flask-Mail

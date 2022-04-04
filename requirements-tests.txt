@@ -80,7 +80,7 @@ faker==13.3.4
     #   factory-boy
 fakeredis==1.7.1
     # via -r requirements-tests.in
-flask==1.1.2
+flask==2.1.1
     # via
     #   -r requirements-tests.in
     #   flask-migrate
@@ -281,8 +281,6 @@ tomli==2.0.1
     # via
     #   black
     #   pytest
-typing-extensions==4.1.1
-    # via black
 urllib3==1.26.9
     # via
     #   botocore
@@ -302,16 +300,16 @@ wrapt==1.14.0
     #   deprecated
 xmltodict==0.12.0
     # via moto
-zope.component==5.0.1
+zope-component==5.0.1
     # via certbot
-zope.event==4.5.0
-    # via zope.component
-zope.hookable==5.1.0
-    # via zope.component
-zope.interface==5.4.0
+zope-event==4.5.0
+    # via zope-component
+zope-hookable==5.1.0
+    # via zope-component
+zope-interface==5.4.0
     # via
     #   certbot
-    #   zope.component
+    #   zope-component
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

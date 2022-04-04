@@ -21,7 +21,7 @@ Flask-Principal
 Flask-RESTful
 Flask-Script
 Flask-SQLAlchemy
-Flask <= 1.1.2 # similar to Flask-Migrate
+Flask < 2.1.2 # similar to Flask-Migrate
 Flask-Cors
 flask_replicated
 future

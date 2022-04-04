@@ -171,7 +171,7 @@ faker==13.3.4
     #   factory-boy
 fakeredis==1.7.1
     # via -r requirements-tests.txt
-flask==1.1.2
+flask==2.1.1
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -580,8 +580,6 @@ tomli==2.0.1
     #   pytest
 twofish==0.3.0
     # via pyjks
-typing-extensions==4.1.1
-    # via -r requirements-tests.txt
 urllib3==1.26.9
     # via
     #   -r requirements-tests.txt
