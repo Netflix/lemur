@@ -28,7 +28,7 @@ future
 gunicorn
 hvac # required for the vault destination plugin
 inflection
-itsdangerous < 2.1.0 # requires Flask 2.0.3
+itsdangerous < 2.2.0 # requires Flask 2.0.3
 jinja2 < 3.1.0 # requires a newer version of Flask
 lockfile
 logmatic-python

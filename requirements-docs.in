@@ -27,7 +27,7 @@ flask_replicated
 gunicorn
 hvac # required for the vault destination plugin
 inflection
-itsdangerous < 2.1.0 # requires Flask 2.0.3
+itsdangerous < 2.2.0 # requires Flask 2.0.3
 josepy
 logmatic-python
 marshmallow-sqlalchemy == 0.23.1 #related to the marshmallow issue (to avoid conflicts, as newer versions require marshmallow>=3.0.0)
