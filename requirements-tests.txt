@@ -26,7 +26,7 @@ boto3==1.21.28
     # via
     #   aws-sam-translator
     #   moto
-botocore==1.24.28
+botocore==1.24.32
     # via
     #   aws-xray-sdk
     #   boto3
@@ -281,8 +281,6 @@ tomli==2.0.1
     # via
     #   black
     #   pytest
-typing-extensions==4.1.1
-    # via black
 urllib3==1.26.9
     # via
     #   botocore
@@ -302,16 +300,16 @@ wrapt==1.14.0
     #   deprecated
 xmltodict==0.12.0
     # via moto
-zope.component==5.0.1
+zope-component==5.0.1
     # via certbot
-zope.event==4.5.0
-    # via zope.component
-zope.hookable==5.1.0
-    # via zope.component
-zope.interface==5.4.0
+zope-event==4.5.0
+    # via zope-component
+zope-hookable==5.1.0
+    # via zope-component
+zope-interface==5.4.0
     # via
     #   certbot
-    #   zope.component
+    #   zope-component
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
