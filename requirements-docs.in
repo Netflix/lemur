@@ -44,7 +44,7 @@ sentry-sdk
 SQLAlchemy-Utils
 tabulate
 vine
-werkzeug < 2.1.0 # requires a newer version of Flask
+werkzeug < 2.2.0 # requires a newer version of Flask
 xmltodict
 # Test requirements are needed to allow test docs to build
 -r requirements-tests.txt
