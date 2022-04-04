@@ -42,7 +42,7 @@ jeepney==0.8.0
     #   secretstorage
 keyring==23.5.0
     # via twine
-marshmallow==2.20.4
+marshmallow==3.15.0
     # via
     #   -r requirements-dev.in
     #   marshmallow-sqlalchemy
@@ -55,7 +55,9 @@ nodeenv==1.6.0
     #   -r requirements-dev.in
     #   pre-commit
 packaging==21.3
-    # via bleach
+    # via
+    #   bleach
+    #   marshmallow
 pkginfo==1.8.2
     # via twine
 platformdirs==2.5.1
