@@ -34,14 +34,14 @@ blinker==1.4
     # via
     #   flask-mail
     #   flask-principal
-boto3==1.21.28
+boto3==1.21.32
     # via -r requirements.in
-botocore==1.24.28
+botocore==1.24.32
     # via
     #   -r requirements.in
     #   boto3
     #   s3transfer
-celery[redis]==5.2.3
+celery[redis]==5.2.5
     # via -r requirements.in
 certbot==1.25.0
     # via -r requirements.in
@@ -59,7 +59,7 @@ cffi==1.15.0
     #   pynacl
 charset-normalizer==2.0.12
     # via requests
-click==8.1.0
+click==8.1.2
     # via
     #   celery
     #   click-didyoumean
@@ -72,7 +72,7 @@ click-plugins==1.1.1
     # via celery
 click-repl==0.2.0
     # via celery
-cloudflare==2.8.15
+cloudflare==2.9.9
     # via -r requirements.in
 configargparse==1.5.3
     # via certbot
@@ -109,7 +109,7 @@ flask==1.1.2
     #   flask-restful
     #   flask-script
     #   flask-sqlalchemy
-flask-bcrypt==0.7.1
+flask-bcrypt==1.0.0
     # via -r requirements.in
 flask-cors==3.0.10
     # via -r requirements.in
@@ -187,7 +187,7 @@ parsedatetime==2.6
     # via certbot
 pem==21.2.0
     # via -r requirements.in
-prompt-toolkit==3.0.28
+prompt-toolkit==3.0.29
     # via click-repl
 psycopg2==2.9.3
     # via -r requirements.in
@@ -313,16 +313,16 @@ wrapt==1.14.0
     # via deprecated
 xmltodict==0.12.0
     # via -r requirements.in
-zope.component==5.0.1
+zope-component==5.0.1
     # via certbot
-zope.event==4.5.0
-    # via zope.component
-zope.hookable==5.1.0
-    # via zope.component
-zope.interface==5.4.0
+zope-event==4.5.0
+    # via zope-component
+zope-hookable==5.1.0
+    # via zope-component
+zope-interface==5.4.0
     # via
     #   certbot
-    #   zope.component
+    #   zope-component
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
