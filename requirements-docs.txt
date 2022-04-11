@@ -55,13 +55,13 @@ blinker==1.4
     # via
     #   flask-mail
     #   flask-principal
-boto3==1.21.32
+boto3==1.21.37
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
-botocore==1.24.32
+botocore==1.24.37
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
