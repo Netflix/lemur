@@ -69,7 +69,7 @@ botocore==1.24.38
     #   boto3
     #   moto
     #   s3transfer
-celery[redis]==5.2.5
+celery[redis]==5.2.6
     # via -r requirements-docs.in
 certbot==1.26.0
     # via
