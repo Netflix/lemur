@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-docs.txt requirements-docs.in
 #
-acme==1.25.0
+acme==1.26.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -55,13 +55,13 @@ blinker==1.4
     # via
     #   flask-mail
     #   flask-principal
-boto3==1.21.32
+boto3==1.21.38
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
-botocore==1.24.32
+botocore==1.24.38
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -69,9 +69,9 @@ botocore==1.24.32
     #   boto3
     #   moto
     #   s3transfer
-celery[redis]==5.2.5
+celery[redis]==5.2.6
     # via -r requirements-docs.in
-certbot==1.25.0
+certbot==1.26.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -498,7 +498,7 @@ sarif-om==1.0.4
     # via
     #   -r requirements-tests.txt
     #   cfn-lint
-sentry-sdk==1.5.8
+sentry-sdk==1.5.9
     # via -r requirements-docs.in
 six==1.16.0
     # via
