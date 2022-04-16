@@ -106,13 +106,8 @@ class Certificate(db.Model):
             postgresql_ops={"cn": "gin_trgm_ops"},
             postgresql_using="gin",
         ),
-        Index(
-            "ix_certificates_name",
-            "name",
-            postgresql_ops={"name": "gin_trgm_ops"},
-            postgresql_using="gin",
-        )
-        # Index for ix_root_authority_id canot be created here, and is only created in the migration file
+        Index("ix_certificates_serial", "serial"),
+        # Index for ix_root_authority_id cannot be created here, and is only created in the migration file
         # since conditional indexes are not supported
     )
     id = Column(Integer, primary_key=True)
@@ -121,7 +116,7 @@ class Certificate(db.Model):
     )
     external_id = Column(String(128))
     owner = Column(String(128), nullable=False)
-    name = Column(String(256), unique=True)
+    name = Column(String(256), unique=True, index=True)
     description = Column(String(1024))
     notify = Column(Boolean, default=True)
 
@@ -132,7 +127,6 @@ class Certificate(db.Model):
 
     issuer = Column(String(128))
     serial = Column(String(128))
-    serial_ix = Index("ix_certificates_serial", "serial")
 
     cn = Column(String(128))
     deleted = Column(Boolean, index=True, default=False)
@@ -452,6 +446,7 @@ class CertificateAssociation(db.Model):
             "certificate_associations_ix",
             "domain_id",
             "certificate_id",
+            unique=True
         ),
         Index(
             "certificate_associations_certificate_id_idx",
