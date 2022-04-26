@@ -37,7 +37,7 @@
     "angular-translate": "^2.9.0",
     "angular-ui-switch": "~0.1.0",
     "angular-sanitize": "~1.5.0",
-    "angular-file-saver": "~1.0.1",
+    "angular-file-saver": "elquimeras/ng-file-saver#^1.1.4",
     "angular-ui-select": "~0.17.1",
     "d3": "^3.5.17"
   },
