@@ -200,7 +200,7 @@ pyrfc3339==1.1
     #   certbot
 pyrsistent==0.18.1
     # via jsonschema
-pytest==7.1.1
+pytest==7.1.2
     # via
     #   -r requirements-tests.in
     #   pytest-flask
