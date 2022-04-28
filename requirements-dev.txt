@@ -42,7 +42,7 @@ jeepney==0.8.0
     #   secretstorage
 keyring==23.5.0
     # via twine
-marshmallow==2.20.4
+marshmallow==2.21.0
     # via
     #   -r requirements-dev.in
     #   marshmallow-sqlalchemy

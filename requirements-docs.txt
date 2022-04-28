@@ -311,7 +311,7 @@ markupsafe==2.1.1
     #   jinja2
     #   mako
     #   moto
-marshmallow==2.20.4
+marshmallow==2.21.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
