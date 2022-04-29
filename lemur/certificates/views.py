@@ -520,7 +520,9 @@ class CertificatesList(AuthenticatedResource):
         data["creator"] = g.user
         # allowed_issuance_for_domain throws UnauthorizedError if caller is not authorized
         try:
-            service.allowed_issuance_for_domain(data["common_name"], data["extensions"])
+            # unless admin, perform fine grained authorization
+            if not g.user.is_admin:
+                service.allowed_issuance_for_domain(data["common_name"], data["extensions"])
         except UnauthorizedError as e:
             return dict(message=str(e)), 403
         else:
