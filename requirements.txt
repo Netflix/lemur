@@ -34,9 +34,9 @@ blinker==1.4
     # via
     #   flask-mail
     #   flask-principal
-boto3==1.22.1
+boto3==1.22.4
     # via -r requirements.in
-botocore==1.25.1
+botocore==1.25.4
     # via
     #   -r requirements.in
     #   boto3
@@ -181,7 +181,7 @@ ndg-httpsclient==0.5.1
     # via -r requirements.in
 packaging==21.3
     # via redis
-paramiko==2.10.3
+paramiko==2.10.4
     # via -r requirements.in
 parsedatetime==2.6
     # via certbot
