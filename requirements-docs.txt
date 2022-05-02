@@ -339,7 +339,7 @@ packaging==21.3
     #   pytest
     #   redis
     #   sphinx
-paramiko==2.10.3
+paramiko==2.10.4
     # via -r requirements-docs.in
 parsedatetime==2.6
     # via
