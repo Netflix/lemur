@@ -1050,6 +1050,16 @@ If you are not using a custom authorization provider you do not need to configur
 
             USER_DOMAIN_AUTHORIZATION_PROVIDER = "<yourauthorizationpluginslug>"
 
+.. data:: LEMUR_PRIVATE_AUTHORITY_PLUGIN_NAMES
+    :noindex:
+
+        Lemur can be used to issue certificates with private CA. One can write own issuer plugin to do so. Domain level authorization
+        is skipped for private CA i.e., the one implementing custom issuer plugin. Currently this config is not used elsewhere.
+
+        ::
+
+            LEMUR_PRIVATE_AUTHORITY_PLUGIN_NAMES = ["issuerpluginslug1", "issuerpluginslug2"]
+
 Metric Providers
 ~~~~~~~~~~~~~~~~
 

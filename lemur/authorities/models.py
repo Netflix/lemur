@@ -101,6 +101,15 @@ class Authority(db.Model):
         return None
 
     @property
+    def is_private_authority(self):
+        """
+        Tells if authority is private/internal. In other words, it is not publicly trusted.
+        If plugin is configured in list LEMUR_PRIVATE_AUTHORITY_PLUGIN_NAMES, the authority is treated as private
+        :return: True if private, False otherwise
+        """
+        return self.plugin_name in current_app.config.get("LEMUR_PRIVATE_AUTHORITY_PLUGIN_NAMES", [])
+
+    @property
     def max_issuance_days(self):
         if self.is_cab_compliant:
             return current_app.config.get("PUBLIC_CA_MAX_VALIDITY_DAYS", 397)
