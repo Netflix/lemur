@@ -176,12 +176,11 @@ def expire_endpoints(source, ttl_hours):
     )
     expired = 0
     for endpoint in endpoints:
-        current_app.logger.debug(
-            "Expiring endpoint from source {source}: {name} Last Updated: {last_updated}".format(
-                source=source.label, name=endpoint.name, last_updated=endpoint.last_updated))
+        current_app.logger.info(
+            f"Expiring endpoint from source {source.label}: {endpoint.name} Last Updated: {endpoint.last_updated}")
         database.delete(endpoint)
         metrics.send("endpoint_expired", "counter", 1,
-                     metric_tags={"source": source.label})
+                     metric_tags={"source": source.label, "endpoint": endpoint.dnsname})
         expired += 1
     return expired
 
