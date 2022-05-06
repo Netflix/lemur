@@ -168,6 +168,7 @@ def sync_endpoints(source):
         except Exception as e:
             current_app.logger.warning(f"Error in processing sync endpoint "
                                        f"dnsname={endpoint['dnsname']} port={endpoint['port']}: {format(e)}")
+            capture_exception()
 
     return new, updated, updated_by_hash
 
