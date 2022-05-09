@@ -310,7 +310,7 @@ werkzeug==2.0.3
     #   flask
 wrapt==1.14.0
     # via deprecated
-xmltodict==0.12.0
+xmltodict==0.13.0
     # via -r requirements.in
 zope-component==5.0.1
     # via certbot
