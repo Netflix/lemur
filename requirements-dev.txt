@@ -60,7 +60,7 @@ pkginfo==1.8.2
     # via twine
 platformdirs==2.5.1
     # via virtualenv
-pre-commit==2.18.1
+pre-commit==2.19.0
     # via -r requirements-dev.in
 pycodestyle==2.8.0
     # via flake8
