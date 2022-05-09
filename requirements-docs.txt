@@ -611,7 +611,7 @@ wrapt==1.14.0
     #   -r requirements-tests.txt
     #   aws-xray-sdk
     #   deprecated
-xmltodict==0.12.0
+xmltodict==0.13.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
