@@ -399,10 +399,25 @@ class AWSSourcePlugin(SourcePlugin):
                 account_number=account_number,
                 region=region,
             )
+
+            # An ELBv2 may have multiple certificates attached to it.
+            # We must keep track of the entire list of certificates when
+            # updating the default certificate of the listener to prevent
+            # other certificates from being inadvertently removed. This is
+            # because the AWS API does not use patch semantics.
+            certificates = elb.describe_listener_certificates_v2(
+                listener_arn,
+                account_number=account_number,
+                region=region,
+            )
+            for crt in certificates["Certificates"]:
+                if crt["IsDefault"]:
+                    crt["CertificateArn"] = arn
+
             elb.attach_certificate_v2(
                 listener_arn,
                 endpoint.port,
-                [{"CertificateArn": arn}],
+                certificates["Certificates"],
                 account_number=account_number,
                 region=region,
             )

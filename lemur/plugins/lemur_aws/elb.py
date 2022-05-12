@@ -385,6 +385,26 @@ def describe_load_balancer_types(policies, **kwargs):
     )
 
 
+@sts_client("elbv2")
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
+def describe_listener_certificates_v2(listener_arn, **kwargs):
+    """
+    Describes the default certificate and the certificate list for the specified listener.
+
+    :param listener_arn:
+    """
+    try:
+        return kwargs["client"].describe_listener_certificates(
+            ListenerArn=listener_arn
+        )
+    except Exception as e:  # noqa
+        metrics.send(
+            "describe_certificates_v2_error", "counter", 1, metric_tags={"error": str(e)}
+        )
+        capture_exception()
+        raise
+
+
 @sts_client("elb")
 @retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
 def attach_certificate(name, port, certificate_id, **kwargs):
