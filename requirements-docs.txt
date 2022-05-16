@@ -396,7 +396,7 @@ pygments==2.11.2
     # via sphinx
 pyjks==20.0.0
     # via -r requirements-docs.in
-pyjwt==2.3.0
+pyjwt==2.4.0
     # via -r requirements-docs.in
 pynacl==1.5.0
     # via paramiko
