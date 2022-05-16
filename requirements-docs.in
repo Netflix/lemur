@@ -38,7 +38,7 @@ pem
 pyjks >= 19 # pyjks < 19 depends on pycryptodome, which conflicts with dyn's usage of pycrypto
 pyjwt
 pyOpenSSL
-redis < 4.2.0 # requires a newer release of fakeredis
+redis < 4.3.0 # requires a newer release of fakeredis
 retrying
 sentry-sdk
 SQLAlchemy-Utils

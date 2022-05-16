@@ -8,6 +8,8 @@ acme==1.27.0
     # via certbot
 alembic==1.7.7
     # via flask-migrate
+async-timeout==4.0.2
+    # via redis
 attrs==21.4.0
     # via
     #   jschema-to-python
@@ -229,7 +231,7 @@ pyyaml==6.0
     #   bandit
     #   cfn-lint
     #   moto
-redis==4.1.4
+redis==4.2.2
     # via
     #   -r requirements-tests.in
     #   fakeredis
