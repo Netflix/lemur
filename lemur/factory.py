@@ -20,7 +20,7 @@ import stat
 from logging import Formatter, StreamHandler
 from logging.handlers import RotatingFileHandler
 
-from flask import Flask
+from flask import Flask, current_app
 from flask_replicated import FlaskReplicated
 
 import sentry_sdk
@@ -265,3 +265,7 @@ def install_plugins(app):
                     slug=slug
                 )
             )
+
+        if current_app.config.get("USER_DOMAIN_AUTHORIZATION_PROVIDER"):
+            user_domain_authz_provider = plugins.get(current_app.config.get("USER_DOMAIN_AUTHORIZATION_PROVIDER"))
+            user_domain_authz_provider.warmup()

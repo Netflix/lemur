@@ -17,6 +17,9 @@ class AuthorizationPlugin(Plugin):
     """
     type = "authorization"
 
+    def warmup(self):
+        pass
+
     def is_authorized(self, resource, caller):
         raise NotImplementedError
 
