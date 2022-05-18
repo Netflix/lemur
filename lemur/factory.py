@@ -267,5 +267,12 @@ def install_plugins(app):
             )
 
         if current_app.config.get("USER_DOMAIN_AUTHORIZATION_PROVIDER"):
-            user_domain_authz_provider = plugins.get(current_app.config.get("USER_DOMAIN_AUTHORIZATION_PROVIDER"))
-            user_domain_authz_provider.warmup()
+            try:
+                user_domain_authz_provider = plugins.get(current_app.config.get("USER_DOMAIN_AUTHORIZATION_PROVIDER"))
+                user_domain_authz_provider.warmup()
+            except Exception:
+                import traceback
+
+                app.logger.error(
+                    "Domain authorization warmup failed, this is a best effort call:\n%s\n" % (traceback.format_exc())
+                )
