@@ -86,89 +86,84 @@ def sync_endpoints(source):
         return new, updated, updated_by_hash
 
     for endpoint in endpoints:
-        try:
-            exists = endpoint_service.get_by_dnsname_and_port(
-                endpoint["dnsname"], endpoint["port"]
-            )
+        exists = endpoint_service.get_by_dnsname_and_port(
+            endpoint["dnsname"], endpoint["port"]
+        )
 
-            certificate_name = endpoint.pop("certificate_name")
+        certificate_name = endpoint.pop("certificate_name")
 
-            endpoint["certificate"] = certificate_service.get_by_name(certificate_name)
+        endpoint["certificate"] = certificate_service.get_by_name(certificate_name)
 
-            # if get cert by name failed, we attempt a search via serial number and hash comparison
-            # and link the endpoint certificate to Lemur certificate
-            if not endpoint["certificate"]:
-                certificate_attached_to_endpoint = None
-                try:
-                    certificate_attached_to_endpoint = s.get_certificate_by_name(certificate_name, source.options)
-                except NotImplementedError:
-                    current_app.logger.warning(
-                        "Unable to describe server certificate for endpoints in source {0}:"
-                        " plugin has not implemented 'get_certificate_by_name'".format(
-                            source.label
+        # if get cert by name failed, we attempt a search via serial number and hash comparison
+        # and link the endpoint certificate to Lemur certificate
+        if not endpoint["certificate"]:
+            certificate_attached_to_endpoint = None
+            try:
+                certificate_attached_to_endpoint = s.get_certificate_by_name(certificate_name, source.options)
+            except NotImplementedError:
+                current_app.logger.warning(
+                    "Unable to describe server certificate for endpoints in source {0}:"
+                    " plugin has not implemented 'get_certificate_by_name'".format(
+                        source.label
+                    )
+                )
+                capture_exception()
+
+            if certificate_attached_to_endpoint:
+                lemur_matching_cert, updated_by_hash_tmp = find_cert(certificate_attached_to_endpoint)
+                updated_by_hash += updated_by_hash_tmp
+
+                if lemur_matching_cert:
+                    endpoint["certificate"] = lemur_matching_cert[0]
+
+                if len(lemur_matching_cert) > 1:
+                    current_app.logger.error(
+                        "Too Many Certificates Found{0}. Name: {1} Endpoint: {2}".format(
+                            len(lemur_matching_cert), certificate_name, endpoint["name"]
                         )
                     )
-                    capture_exception()
+                    metrics.send("endpoint.certificate.conflict",
+                                 "gauge", len(lemur_matching_cert),
+                                 metric_tags={"cert": certificate_name, "endpoint": endpoint["name"],
+                                              "acct": s.get_option("accountNumber", source.options)})
 
-                if certificate_attached_to_endpoint:
-                    lemur_matching_cert, updated_by_hash_tmp = find_cert(certificate_attached_to_endpoint)
-                    updated_by_hash += updated_by_hash_tmp
+        if not endpoint["certificate"]:
+            current_app.logger.error({
+                "message": "Certificate Not Found",
+                "certificate_name": certificate_name,
+                "endpoint_name": endpoint["name"],
+                "dns_name": endpoint.get("dnsname"),
+                "account": s.get_option("accountNumber", source.options),
+            })
 
-                    if lemur_matching_cert:
-                        endpoint["certificate"] = lemur_matching_cert[0]
+            metrics.send("endpoint.certificate.not.found",
+                         "counter", 1,
+                         metric_tags={"cert": certificate_name, "endpoint": endpoint["name"],
+                                      "acct": s.get_option("accountNumber", source.options),
+                                      "dnsname": endpoint.get("dnsname")})
+            continue
 
-                    if len(lemur_matching_cert) > 1:
-                        current_app.logger.error(
-                            "Too Many Certificates Found{0}. Name: {1} Endpoint: {2}".format(
-                                len(lemur_matching_cert), certificate_name, endpoint["name"]
-                            )
-                        )
-                        metrics.send("endpoint.certificate.conflict",
-                                     "gauge", len(lemur_matching_cert),
-                                     metric_tags={"cert": certificate_name, "endpoint": endpoint["name"],
-                                                  "acct": s.get_option("accountNumber", source.options)})
+        policy = endpoint.pop("policy")
 
-            if not endpoint["certificate"]:
-                current_app.logger.error({
-                    "message": "Certificate Not Found",
-                    "certificate_name": certificate_name,
-                    "endpoint_name": endpoint["name"],
-                    "dns_name": endpoint.get("dnsname"),
-                    "account": s.get_option("accountNumber", source.options),
-                })
+        policy_ciphers = []
+        for nc in policy["ciphers"]:
+            policy_ciphers.append(endpoint_service.get_or_create_cipher(name=nc))
 
-                metrics.send("endpoint.certificate.not.found",
-                             "counter", 1,
-                             metric_tags={"cert": certificate_name, "endpoint": endpoint["name"],
-                                          "acct": s.get_option("accountNumber", source.options),
-                                          "dnsname": endpoint.get("dnsname")})
-                continue
+        policy["ciphers"] = policy_ciphers
+        endpoint["policy"] = endpoint_service.get_or_create_policy(**policy)
+        endpoint["source"] = source
 
-            policy = endpoint.pop("policy")
+        if not exists:
+            current_app.logger.debug(
+                "Endpoint Created: Name: {name}".format(name=endpoint["name"])
+            )
+            endpoint_service.create(**endpoint)
+            new += 1
 
-            policy_ciphers = []
-            for nc in policy["ciphers"]:
-                policy_ciphers.append(endpoint_service.get_or_create_cipher(name=nc))
-
-            policy["ciphers"] = policy_ciphers
-            endpoint["policy"] = endpoint_service.get_or_create_policy(**policy)
-            endpoint["source"] = source
-
-            if not exists:
-                current_app.logger.debug(
-                    "Endpoint Created: Name: {name}".format(name=endpoint["name"])
-                )
-                endpoint_service.create(**endpoint)
-                new += 1
-
-            else:
-                current_app.logger.debug("Endpoint Updated: {}".format(endpoint))
-                endpoint_service.update(exists.id, **endpoint)
-                updated += 1
-        except Exception as e:
-            current_app.logger.warning(f"Error in processing sync endpoint "
-                                       f"dnsname={endpoint['dnsname']} port={endpoint['port']}: {format(e)}")
-            capture_exception()
+        else:
+            current_app.logger.debug("Endpoint Updated: {}".format(endpoint))
+            endpoint_service.update(exists.id, **endpoint)
+            updated += 1
 
     return new, updated, updated_by_hash
 
