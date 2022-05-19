@@ -21,7 +21,7 @@ from lemur.extensions import db
 
 def filter_none(kwargs):
     """
-    Remove all `None` values froma  given dict. SQLAlchemy does not
+    Remove all `None` values from a  given dict. SQLAlchemy does not
     like to have values that are None passed to it.
 
     :param kwargs: Dict to filter

@@ -59,7 +59,8 @@ def get_by_name_and_source(name, source):
     :return:
     """
     return (
-        Endpoint.query.filter(Endpoint.name == name)
+        database.session_query(Endpoint)
+        .filter(Endpoint.name == name)
         .filter(Endpoint.source.has(Source.label == source))
         .scalar()
     )
