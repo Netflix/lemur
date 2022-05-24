@@ -10,6 +10,7 @@ from datetime import timedelta
 import copy
 
 from flask import current_app
+from sqlalchemy.exc import OperationalError
 from sentry_sdk import capture_exception
 from sqlalchemy import cast
 from sqlalchemy_utils import ArrowType
@@ -86,9 +87,23 @@ def sync_endpoints(source):
         return new, updated, updated_by_hash
 
     for endpoint in endpoints:
-        exists = endpoint_service.get_by_dnsname_and_port(
-            endpoint["dnsname"], endpoint["port"]
-        )
+        try:
+            exists = endpoint_service.get_by_dnsname_and_port(
+                endpoint["dnsname"], endpoint["port"]
+            )
+        except OperationalError as e:
+            # This is a workaround for handling sqlalchemy error "idle-in-transaction timeout", which is seen rarely
+            # during the sync of sources with few thousands of resources. The DB interaction may need a rewrite to
+            # avoid prolonged idle transactions.
+            if e.connection_invalidated:
+                # all the update, insert operations are committed individually. So this should be harmless/no-op
+                database.rollback()
+                # retry one more time
+                exists = endpoint_service.get_by_dnsname_and_port(
+                    endpoint["dnsname"], endpoint["port"]
+                )
+            else:
+                raise e
 
         certificate_name = endpoint.pop("certificate_name")
 

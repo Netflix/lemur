@@ -67,6 +67,13 @@ def commit():
     db.session.commit()
 
 
+def rollback():
+    """
+    Helper to rollback the current session.
+    """
+    db.session.rollback()
+
+
 def add(model):
     """
     Helper to add a `model` to the current session.
