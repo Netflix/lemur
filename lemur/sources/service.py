@@ -92,6 +92,9 @@ def sync_endpoints(source):
                 endpoint["dnsname"], endpoint["port"]
             )
         except OperationalError as e:
+            # This is a workaround for handling sqlalchemy error "idle-in-transaction timeout", which is seen rarely
+            # during the sync of sources with few thousands of resources. The DB interaction may need a rewrite to
+            # avoid prolonged idle transactions.
             if e.connection_invalidated:
                 # all the update, insert operations are committed individually. So this should be harmless/no-op
                 database.rollback()
