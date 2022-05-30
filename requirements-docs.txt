@@ -536,7 +536,7 @@ sortedcontainers==2.4.0
     #   fakeredis
 soupsieve==2.3.1
     # via beautifulsoup4
-sphinx==4.5.0
+sphinx==5.0.0
     # via
     #   -r requirements-docs.in
     #   sphinx-rtd-theme
