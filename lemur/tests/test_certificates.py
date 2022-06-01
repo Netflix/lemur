@@ -1547,7 +1547,7 @@ def test_sensitive_sort(client):
     resp = client.get(
         api.url_for(CertificatesList) + "?sortBy=private_key&sortDir=asc",
         headers=VALID_ADMIN_HEADER_TOKEN,
-            )
+    )
     assert "'private_key' is not sortable or filterable" in resp.json["message"]
 
 
@@ -1555,13 +1555,13 @@ def test_boolean_filter(client):
     resp = client.get(
         api.url_for(CertificatesList) + "?filter=notify;true",
         headers=VALID_ADMIN_HEADER_TOKEN,
-            )
+    )
     assert resp.status_code == 200
     # Also don't crash with invalid input (we currently treat that as false)
     resp = client.get(
         api.url_for(CertificatesList) + "?filter=notify;whatisthis",
         headers=VALID_ADMIN_HEADER_TOKEN,
-            )
+    )
     assert resp.status_code == 200
 
 
@@ -1719,7 +1719,7 @@ def test_allowed_issuance_for_domain(common_name, extensions, expected_error, au
     from lemur.certificates.service import allowed_issuance_for_domain
 
     with patch(
-            'lemur.certificates.service.is_authorized_for_domain', side_effect=mocked_is_authorized_for_domain
+        'lemur.certificates.service.is_authorized_for_domain', side_effect=mocked_is_authorized_for_domain
     ) as wrapper:
         try:
             allowed_issuance_for_domain(common_name, extensions)
