@@ -50,14 +50,14 @@ def test_get_or_increase_name(session, certificate):
 
     certificate.name = "test-cert-11111111"
     assert (
-        get_or_increase_name(certificate.name, certificate.serial)
-        == "test-cert-11111111-" + serial
+            get_or_increase_name(certificate.name, certificate.serial)
+            == "test-cert-11111111-" + serial
     )
 
     certificate.name = "test-cert-11111111-1"
     assert (
-        get_or_increase_name("test-cert-11111111-1", certificate.serial)
-        == "test-cert-11111111-1-" + serial
+            get_or_increase_name("test-cert-11111111-1", certificate.serial)
+            == "test-cert-11111111-1-" + serial
     )
 
     CertificateFactory(name="certificate1")
@@ -231,7 +231,7 @@ def test_certificate_output_schema(session, certificate, issuer_plugin):
 
     # Make sure serialization parses the cert only once (uses cached 'parsed_cert' attribute)
     with patch(
-        "lemur.common.utils.parse_certificate", side_effect=utils.parse_certificate
+            "lemur.common.utils.parse_certificate", side_effect=utils.parse_certificate
     ) as wrapper:
         data, errors = CertificateOutputSchema().dump(certificate)
         assert data["issuer"] == "LemurTrustUnittestsClass1CA2018"
@@ -944,8 +944,8 @@ def test_create_certificate(issuer_plugin, authority, user):
     assert str(cert.not_before) == "2017-12-31T22:00:00+00:00"
     assert cert.issuer == "LemurTrustUnittestsClass1CA2018"
     assert (
-        cert.name
-        == "SAN-san.example.org-LemurTrustUnittestsClass1CA2018-20171231-20471231-AFF2DB4F8D2D4D8E80FA382AE27C2333"
+            cert.name
+            == "SAN-san.example.org-LemurTrustUnittestsClass1CA2018-20171231-20471231-AFF2DB4F8D2D4D8E80FA382AE27C2333"
     )
 
     cert = create(
@@ -959,7 +959,7 @@ def test_create_certificate(issuer_plugin, authority, user):
 
 
 def test_reissue_certificate(
-    issuer_plugin, crypto_authority, certificate, logged_in_user
+        issuer_plugin, crypto_authority, certificate, logged_in_user
 ):
     from lemur.certificates.service import reissue_certificate
     from lemur.authorities.service import update_options
@@ -1095,10 +1095,10 @@ def test_upload_private_key_str(user):
 )
 def test_certificate_get_private_key(client, token, status):
     assert (
-        client.get(
-            api.url_for(Certificates, certificate_id=1), headers=token
-        ).status_code
-        == status
+            client.get(
+                api.url_for(Certificates, certificate_id=1), headers=token
+            ).status_code
+            == status
     )
 
 
@@ -1113,10 +1113,10 @@ def test_certificate_get_private_key(client, token, status):
 )
 def test_certificate_get(client, token, status):
     assert (
-        client.get(
-            api.url_for(Certificates, certificate_id=1), headers=token
-        ).status_code
-        == status
+            client.get(
+                api.url_for(Certificates, certificate_id=1), headers=token
+            ).status_code
+            == status
     )
 
 
@@ -1235,10 +1235,10 @@ def test_certificates_update_owner(client, token, status, issuer_plugin, certifi
 )
 def test_certificate_put(client, token, status):
     assert (
-        client.put(
-            api.url_for(Certificates, certificate_id=1), data={}, headers=token
-        ).status_code
-        == status
+            client.put(
+                api.url_for(Certificates, certificate_id=1), data={}, headers=token
+            ).status_code
+            == status
     )
 
 
@@ -1267,10 +1267,10 @@ def test_certificate_put_with_data(client, certificate, issuer_plugin):
 )
 def test_certificate_delete(client, token, status):
     assert (
-        client.delete(
-            api.url_for(Certificates, certificate_id=1), headers=token
-        ).status_code
-        == status
+            client.delete(
+                api.url_for(Certificates, certificate_id=1), headers=token
+            ).status_code
+            == status
     )
 
 
@@ -1285,11 +1285,11 @@ def test_certificate_delete(client, token, status):
 )
 def test_invalid_certificate_delete(client, invalid_certificate, token, status):
     assert (
-        client.delete(
-            api.url_for(Certificates, certificate_id=invalid_certificate.id),
-            headers=token,
-        ).status_code
-        == status
+            client.delete(
+                api.url_for(Certificates, certificate_id=invalid_certificate.id),
+                headers=token,
+            ).status_code
+            == status
     )
 
 
@@ -1304,10 +1304,10 @@ def test_invalid_certificate_delete(client, invalid_certificate, token, status):
 )
 def test_certificate_patch(client, token, status):
     assert (
-        client.patch(
-            api.url_for(Certificates, certificate_id=1), data={}, headers=token
-        ).status_code
-        == status
+            client.patch(
+                api.url_for(Certificates, certificate_id=1), data={}, headers=token
+            ).status_code
+            == status
     )
 
 
@@ -1322,7 +1322,7 @@ def test_certificate_patch(client, token, status):
 )
 def test_certificates_get(client, token, status):
     assert (
-        client.get(api.url_for(CertificatesList), headers=token).status_code == status
+            client.get(api.url_for(CertificatesList), headers=token).status_code == status
     )
 
 
@@ -1337,8 +1337,8 @@ def test_certificates_get(client, token, status):
 )
 def test_certificates_post(client, token, status):
     assert (
-        client.post(api.url_for(CertificatesList), data={}, headers=token).status_code
-        == status
+            client.post(api.url_for(CertificatesList), data={}, headers=token).status_code
+            == status
     )
 
 
@@ -1353,8 +1353,8 @@ def test_certificates_post(client, token, status):
 )
 def test_certificates_put(client, token, status):
     assert (
-        client.put(api.url_for(CertificatesList), data={}, headers=token).status_code
-        == status
+            client.put(api.url_for(CertificatesList), data={}, headers=token).status_code
+            == status
     )
 
 
@@ -1369,8 +1369,8 @@ def test_certificates_put(client, token, status):
 )
 def test_certificates_delete(client, token, status):
     assert (
-        client.delete(api.url_for(CertificatesList), headers=token).status_code
-        == status
+            client.delete(api.url_for(CertificatesList), headers=token).status_code
+            == status
     )
 
 
@@ -1385,8 +1385,8 @@ def test_certificates_delete(client, token, status):
 )
 def test_certificates_patch(client, token, status):
     assert (
-        client.patch(api.url_for(CertificatesList), data={}, headers=token).status_code
-        == status
+            client.patch(api.url_for(CertificatesList), data={}, headers=token).status_code
+            == status
     )
 
 
@@ -1401,10 +1401,10 @@ def test_certificates_patch(client, token, status):
 )
 def test_certificate_credentials_post(client, token, status):
     assert (
-        client.post(
-            api.url_for(CertificatePrivateKey, certificate_id=1), data={}, headers=token
-        ).status_code
-        == status
+            client.post(
+                api.url_for(CertificatePrivateKey, certificate_id=1), data={}, headers=token
+            ).status_code
+            == status
     )
 
 
@@ -1419,10 +1419,10 @@ def test_certificate_credentials_post(client, token, status):
 )
 def test_certificate_credentials_put(client, token, status):
     assert (
-        client.put(
-            api.url_for(CertificatePrivateKey, certificate_id=1), data={}, headers=token
-        ).status_code
-        == status
+            client.put(
+                api.url_for(CertificatePrivateKey, certificate_id=1), data={}, headers=token
+            ).status_code
+            == status
     )
 
 
@@ -1437,10 +1437,10 @@ def test_certificate_credentials_put(client, token, status):
 )
 def test_certificate_credentials_delete(client, token, status):
     assert (
-        client.delete(
-            api.url_for(CertificatePrivateKey, certificate_id=1), headers=token
-        ).status_code
-        == status
+            client.delete(
+                api.url_for(CertificatePrivateKey, certificate_id=1), headers=token
+            ).status_code
+            == status
     )
 
 
@@ -1455,10 +1455,10 @@ def test_certificate_credentials_delete(client, token, status):
 )
 def test_certificate_credentials_patch(client, token, status):
     assert (
-        client.patch(
-            api.url_for(CertificatePrivateKey, certificate_id=1), data={}, headers=token
-        ).status_code
-        == status
+            client.patch(
+                api.url_for(CertificatePrivateKey, certificate_id=1), data={}, headers=token
+            ).status_code
+            == status
     )
 
 
@@ -1473,7 +1473,7 @@ def test_certificate_credentials_patch(client, token, status):
 )
 def test_certificates_upload_get(client, token, status):
     assert (
-        client.get(api.url_for(CertificatesUpload), headers=token).status_code == status
+            client.get(api.url_for(CertificatesUpload), headers=token).status_code == status
     )
 
 
@@ -1488,8 +1488,8 @@ def test_certificates_upload_get(client, token, status):
 )
 def test_certificates_upload_post(client, token, status):
     assert (
-        client.post(api.url_for(CertificatesUpload), data={}, headers=token).status_code
-        == status
+            client.post(api.url_for(CertificatesUpload), data={}, headers=token).status_code
+            == status
     )
 
 
@@ -1504,8 +1504,8 @@ def test_certificates_upload_post(client, token, status):
 )
 def test_certificates_upload_put(client, token, status):
     assert (
-        client.put(api.url_for(CertificatesUpload), data={}, headers=token).status_code
-        == status
+            client.put(api.url_for(CertificatesUpload), data={}, headers=token).status_code
+            == status
     )
 
 
@@ -1520,8 +1520,8 @@ def test_certificates_upload_put(client, token, status):
 )
 def test_certificates_upload_delete(client, token, status):
     assert (
-        client.delete(api.url_for(CertificatesUpload), headers=token).status_code
-        == status
+            client.delete(api.url_for(CertificatesUpload), headers=token).status_code
+            == status
     )
 
 
@@ -1536,10 +1536,10 @@ def test_certificates_upload_delete(client, token, status):
 )
 def test_certificates_upload_patch(client, token, status):
     assert (
-        client.patch(
-            api.url_for(CertificatesUpload), data={}, headers=token
-        ).status_code
-        == status
+            client.patch(
+                api.url_for(CertificatesUpload), data={}, headers=token
+            ).status_code
+            == status
     )
 
 
@@ -1547,7 +1547,7 @@ def test_sensitive_sort(client):
     resp = client.get(
         api.url_for(CertificatesList) + "?sortBy=private_key&sortDir=asc",
         headers=VALID_ADMIN_HEADER_TOKEN,
-    )
+        )
     assert "'private_key' is not sortable or filterable" in resp.json["message"]
 
 
@@ -1555,13 +1555,13 @@ def test_boolean_filter(client):
     resp = client.get(
         api.url_for(CertificatesList) + "?filter=notify;true",
         headers=VALID_ADMIN_HEADER_TOKEN,
-    )
+        )
     assert resp.status_code == 200
     # Also don't crash with invalid input (we currently treat that as false)
     resp = client.get(
         api.url_for(CertificatesList) + "?filter=notify;whatisthis",
         headers=VALID_ADMIN_HEADER_TOKEN,
-    )
+        )
     assert resp.status_code == 200
 
 
@@ -1719,7 +1719,7 @@ def test_allowed_issuance_for_domain(common_name, extensions, expected_error, au
     from lemur.certificates.service import allowed_issuance_for_domain
 
     with patch(
-        'lemur.certificates.service.is_authorized_for_domain', side_effect=mocked_is_authorized_for_domain
+            'lemur.certificates.service.is_authorized_for_domain', side_effect=mocked_is_authorized_for_domain
     ) as wrapper:
         try:
             allowed_issuance_for_domain(common_name, extensions)
@@ -1732,3 +1732,19 @@ def test_allowed_issuance_for_domain(common_name, extensions, expected_error, au
                 assert False, f"UnauthorizedError occured, input: CN({common_name}), SAN({extensions})"
 
         assert wrapper.call_count == authz_check_count
+
+
+def test_send_certificate_expiration_metrics(certificate):
+    from lemur.certificates.service import send_certificate_expiration_metrics
+
+    new_cert = create_cert_that_expires_in_days(10)
+
+    success, failure = send_certificate_expiration_metrics()
+    assert failure == 0
+
+
+def test_get_cert_expiry_in_days(certificate):
+    from lemur.certificates.service import _get_cert_expiry_in_days
+    new_cert = create_cert_that_expires_in_days(10)
+
+    assert _get_cert_expiry_in_days(new_cert.not_after) == 10
