@@ -1292,12 +1292,12 @@ def send_certificate_expiration_metrics():
 
 
             metrics.send(
-                f"{certificate.name}.days_until_expiration",
+                f"certificates.expiry.days_until_expiration",
                 "gauge",
                 days_until_expiration,
                 metric_tags={
                     "cert_id": certificate.id,
-                    "common_name": certificate.cn,
+                    "common_name": certificate.cn.replace("*", "star"),
                     "has_active_endpoints": has_active_endpoints,
                     "is_replacement": is_replacement
                 }

@@ -1068,8 +1068,6 @@ def certificate_expirations_metrics():
         current_app.logger.debug(log_data)
         return
 
-    current_app.logger.debug(log_data)
-
     try:
         cli_certificate.expirations_metrics()
     except SoftTimeLimitExceeded:
