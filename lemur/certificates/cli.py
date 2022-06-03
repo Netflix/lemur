@@ -1122,7 +1122,7 @@ def identify_expiring_deployed_certificates(exclude_domains, exclude_owners, com
 
 
 @manager.command
-def expirations_metrics():
+def expiration_metrics():
     """
     Iterates over all certificates and emits a metric for the days remaining for a certificate to expire.
     This is used for building custom dashboards and alerts for certificate expiry.
