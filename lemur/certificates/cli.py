@@ -1131,7 +1131,7 @@ def expirations_metrics():
         print("Starting to publish metrics for time left until cert expirations")
         success, failure = send_certificate_expiration_metrics()
         print(
-            f"Finished publishing metrics for time left until cert expirations! Sent: {success} "
+            f"Finished publishing metrics for time left until cert expirations! Sent: {success}"
         )
         status = SUCCESS_METRIC_STATUS
     except Exception as e:

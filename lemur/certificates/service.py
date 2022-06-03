@@ -1290,7 +1290,6 @@ def send_certificate_expiration_metrics():
             has_active_endpoints = len(certificate.endpoints) > 0
             is_replacement = len(certificate.replaces) > 0
 
-
             metrics.send(
                 "certificates.days_until_expiration",
                 "gauge",
