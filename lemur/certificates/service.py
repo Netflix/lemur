@@ -31,7 +31,7 @@ from lemur.domains.models import Domain
 from lemur.domains.service import is_authorized_for_domain
 from lemur.endpoints import service as endpoint_service
 from lemur.extensions import metrics, signals
-from lemur.notifications.messaging import send_revocation_notification
+from lemur.notifications.messaging import send_revocation_notification, get_certificates
 from lemur.notifications.models import Notification
 from lemur.pending_certificates.models import PendingCertificate
 from lemur.plugins.base import plugins
@@ -1281,8 +1281,8 @@ def send_certificate_expiration_metrics():
     Iterate over each certificate and emit a metric for how many days until expiration.
     """
     success = failure = 0
-    # get all certificates
-    certificates = database.db.session.query(Certificate)
+    # get eligible certificates
+    certificates = get_certificates()
 
     for certificate in certificates:
         try:
@@ -1292,7 +1292,7 @@ def send_certificate_expiration_metrics():
 
 
             metrics.send(
-                f"certificates.expiry.days_until_expiration",
+                "certificates.days_until_expiration",
                 "gauge",
                 days_until_expiration,
                 metric_tags={
