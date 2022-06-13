@@ -464,7 +464,7 @@ redis==4.3.1
     #   -r requirements-tests.txt
     #   celery
     #   fakeredis
-requests==2.27.1
+requests==2.28.0
     # via
     #   -r requirements-tests.txt
     #   acme
