@@ -234,7 +234,7 @@ redis==4.3.1
     # via
     #   -r requirements-tests.in
     #   fakeredis
-requests==2.27.1
+requests==2.28.0
     # via
     #   acme
     #   docker
