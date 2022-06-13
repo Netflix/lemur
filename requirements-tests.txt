@@ -24,11 +24,11 @@ bandit==1.7.4
     # via -r requirements-tests.in
 black==22.3.0
     # via -r requirements-tests.in
-boto3==1.24.2
+boto3==1.24.7
     # via
     #   aws-sam-translator
     #   moto
-botocore==1.27.2
+botocore==1.27.7
     # via
     #   aws-xray-sdk
     #   boto3
