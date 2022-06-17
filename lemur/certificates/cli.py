@@ -1087,6 +1087,8 @@ def is_duplicate(matching_cert, compare_to):
 
         return len(matching_sans) == len(compare_to_sans) and set(matching_sans) == set(compare_to_sans)
 
+    return False
+
 
 @manager.option(
     "-e",
