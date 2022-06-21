@@ -79,7 +79,7 @@ certbot==1.28.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
-certifi==2022.5.18.1
+certifi==2022.6.15
     # via
     #   -r requirements-tests.txt
     #   requests
