@@ -1081,8 +1081,14 @@ def is_duplicate(matching_cert, compare_to):
     matching_destinations = [destination.label for destination in matching_cert.destinations]
     compare_to_destinations = [destination.label for destination in compare_to.destinations]
 
-    return (len(matching_destinations) == len(compare_to_destinations)
-            and set(matching_destinations) == set(compare_to_destinations))
+    if (len(matching_destinations) == len(compare_to_destinations)
+            and set(matching_destinations) == set(compare_to_destinations)):
+        matching_sans = [domain.name for domain in matching_cert.domains]
+        compare_to_sans = [domain.name for domain in compare_to.domains]
+
+        return len(matching_sans) == len(compare_to_sans) and set(matching_sans) == set(compare_to_sans)
+
+    return False
 
 
 @manager.option(
