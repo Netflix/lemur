@@ -1284,7 +1284,8 @@ def send_certificate_expiration_metrics():
 
     certificates = database.db.session.query(Certificate).filter(
         Certificate.expired == false(),
-        Certificate.revoked == false()
+        Certificate.revoked == false(),
+        not_(Certificate.replaced.any())
     )
 
     for certificate in certificates:
