@@ -1128,14 +1128,14 @@ def identify_expiring_deployed_certificates(exclude_domains, exclude_owners, com
 
 
 @manager.command
-def expiration_metrics():
+def expiration_metrics(expiry_window):
     """
     Iterates over all certificates and emits a metric for the days remaining for a certificate to expire.
     This is used for building custom dashboards and alerts for certificate expiry.
     """
     try:
         print("Starting to publish metrics for time left until cert expirations")
-        success, failure = send_certificate_expiration_metrics()
+        success, failure = send_certificate_expiration_metrics(expiry_window)
         print(
             f"Finished publishing metrics for time left until cert expirations! Sent: {success}"
         )

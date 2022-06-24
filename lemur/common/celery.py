@@ -1073,7 +1073,9 @@ def certificate_expirations_metrics():
         return
 
     try:
-        cli_certificate.expiration_metrics()
+        cli_certificate.expiration_metrics(
+            current_app.config.get("CERTIFICATE_EXPIRY_WINDOW_FOR_METRICS", None)
+        )
     except SoftTimeLimitExceeded:
         log_data["message"] = "Time limit exceeded."
         current_app.logger.error(log_data)

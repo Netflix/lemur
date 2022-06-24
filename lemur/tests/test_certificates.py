@@ -1743,6 +1743,24 @@ def test_send_certificate_expiration_metrics(certificate):
     assert failure == 0
 
 
+@pytest.mark.parametrize(
+    "cert_expiry, expiry_window, expected_result", [
+        (10, None, True),
+        (10, 60, True),
+        # cert expiry is outside the window
+        (70, 60, False)
+    ]
+)
+def test_get_certificates_for_expiration_metrics(certificate, cert_expiry, expiry_window, expected_result):
+    from lemur.certificates.service import get_certificates_for_expiration_metrics
+
+    new_cert = create_cert_that_expires_in_days(cert_expiry)
+    certs = get_certificates_for_expiration_metrics(expiry_window)
+
+    # check if new_cert is returned in certs list
+    assert (new_cert in certs) == expected_result
+
+
 def test_get_cert_expiry_in_days(certificate):
     from lemur.certificates.service import _get_cert_expiry_in_days
     new_cert = create_cert_that_expires_in_days(10)
