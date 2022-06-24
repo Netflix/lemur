@@ -38,7 +38,7 @@ blinker==1.4
     #   flask-principal
 boto3==1.24.8
     # via -r requirements.in
-botocore==1.27.8
+botocore==1.27.12
     # via
     #   -r requirements.in
     #   boto3
@@ -47,7 +47,7 @@ celery[redis]==5.2.7
     # via -r requirements.in
 certbot==1.28.0
     # via -r requirements.in
-certifi==2022.5.18.1
+certifi==2022.6.15
     # via
     #   -r requirements.in
     #   requests
@@ -244,7 +244,7 @@ pyyaml==6.0
     # via
     #   -r requirements.in
     #   cloudflare
-redis==4.3.1
+redis==4.3.3
     # via
     #   -r requirements.in
     #   celery
