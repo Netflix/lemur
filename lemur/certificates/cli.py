@@ -33,7 +33,8 @@ from lemur.certificates.service import (
     revoke as revoke_certificate,
     list_duplicate_certs_by_authority,
     get_certificates_with_same_prefix_with_rotate_on,
-    identify_and_persist_expiring_deployed_certificates
+    identify_and_persist_expiring_deployed_certificates,
+    send_certificate_expiration_metrics
 )
 from lemur.certificates.verify import verify_string
 from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS, CRLReason
@@ -1124,3 +1125,25 @@ def identify_expiring_deployed_certificates(exclude_domains, exclude_owners, com
         current_app.logger.exception("Error identifying expiring deployed certificates", exc_info=True)
 
     metrics.send("identify_expiring_deployed_certificates", "counter", 1, metric_tags={"status": status})
+
+
+@manager.command
+def expiration_metrics(expiry_window):
+    """
+    Iterates over all certificates and emits a metric for the days remaining for a certificate to expire.
+    This is used for building custom dashboards and alerts for certificate expiry.
+    """
+    try:
+        print("Starting to publish metrics for time left until cert expirations")
+        success, failure = send_certificate_expiration_metrics(expiry_window)
+        print(
+            f"Finished publishing metrics for time left until cert expirations! Sent: {success}"
+        )
+        status = SUCCESS_METRIC_STATUS
+    except Exception as e:
+        status = FAILURE_METRIC_STATUS
+        capture_exception()
+
+    metrics.send(
+        "expiration_metrics_job", "counter", 1, metric_tags={"status": status}
+    )

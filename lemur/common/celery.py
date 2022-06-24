@@ -1047,3 +1047,41 @@ def identify_expiring_deployed_certificates():
 
     metrics.send(f"{function}.success", "counter", 1)
     return log_data
+
+
+@celery_app.task(soft_time_limit=3600)
+def certificate_expirations_metrics():
+    """
+    This celery task iterates over all eligible certificates and emits a metric for the days remaining for a certificate to expire.
+    This is used for building custom dashboards and alerts for certificate expiry.
+    """
+
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    task_id = None
+    if celery_app.current_task:
+        task_id = celery_app.current_task.request.id
+
+    log_data = {
+        "function": function,
+        "message": "sending metrics for expiring certificates",
+        "task_id": task_id,
+    }
+
+    if task_id and is_task_active(function, task_id, None):
+        log_data["message"] = "Skipping task: Task is already active"
+        current_app.logger.debug(log_data)
+        return
+
+    try:
+        cli_certificate.expiration_metrics(
+            current_app.config.get("CERTIFICATE_EXPIRY_WINDOW_FOR_METRICS", None)
+        )
+    except SoftTimeLimitExceeded:
+        log_data["message"] = "Time limit exceeded."
+        current_app.logger.error(log_data)
+        capture_exception()
+        metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
+        return
+
+    metrics.send(f"{function}.success", "counter", 1)
+    return log_data

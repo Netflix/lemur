@@ -1274,3 +1274,64 @@ def allowed_issuance_for_domain(common_name, extensions):
     # lemur UI copies CN as SAN (x509.DNSName). Permission check for CN might already be covered above.
     if check_permission_for_cn:
         is_authorized_for_domain(common_name)
+
+
+def send_certificate_expiration_metrics(expiry_window=None):
+    """
+    Iterate over each certificate and emit a metric for how many days until expiration.
+
+    :param expiry_window: defines the window for cert filter, ex: 90 will only return certs expiring in the next 90 days.
+    """
+    success = failure = 0
+
+    certificates = get_certificates_for_expiration_metrics(expiry_window)
+
+    for certificate in certificates:
+        try:
+            days_until_expiration = _get_cert_expiry_in_days(certificate.not_after)
+            has_active_endpoints = len(certificate.endpoints) > 0
+            is_replacement = len(certificate.replaces) > 0
+
+            metrics.send(
+                "certificates.days_until_expiration",
+                "gauge",
+                days_until_expiration,
+                metric_tags={
+                    "cert_id": certificate.id,
+                    "common_name": certificate.cn.replace("*", "star"),
+                    "has_active_endpoints": has_active_endpoints,
+                    "is_replacement": is_replacement
+                }
+            )
+            success += 1
+        except Exception as e:
+            current_app.logger.warn(
+                f"Error sending expiry metric for certificate: {certificate.name}", exc_info=True
+            )
+            failure += 1
+
+    return success, failure
+
+
+def get_certificates_for_expiration_metrics(expiry_window):
+    """
+
+    :param expiry_window: defines the window for cert filter, ex: 90 will only return certs expiring in the next 90 days.
+    :return: list of certificates
+    """
+    filters = [
+        Certificate.expired == false(),
+        Certificate.revoked == false(),
+        not_(Certificate.replaced.any())
+    ]
+
+    # if expiry_window param was passed in then get only certs within that window
+    if expiry_window:
+        filters.append(Certificate.not_after <= arrow.now().shift(days=expiry_window).format("YYYY-MM-DD"))
+
+    return database.db.session.query(Certificate).filter(*filters)
+
+
+def _get_cert_expiry_in_days(cert_not_after):
+    time_until_expiration = arrow.get(cert_not_after) - arrow.utcnow()
+    return time_until_expiration.days
