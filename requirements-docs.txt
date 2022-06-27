@@ -501,7 +501,7 @@ sarif-om==1.0.4
     # via
     #   -r requirements-tests.txt
     #   cfn-lint
-sentry-sdk==1.5.12
+sentry-sdk==1.6.0
     # via -r requirements-docs.in
 six==1.16.0
     # via
