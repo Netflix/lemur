@@ -77,29 +77,4 @@ jobs:
         source ~/env/bin/activate
         bandit -r . -ll -ii -x lemur/tests/,docs
         xvfb-run make test-js
-    - name: Coveralls
-      run: |
-        python -m venv ~/env
-        source ~/env/bin/activate
-        coveralls --service=github
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        COVERALLS_FLAG_NAME: Python ${{ matrix.python-version }} Postgres ${{ matrix.postgres-version }} OS ${{ matrix.os }}
-        COVERALLS_PARALLEL: true
 
-  coveralls:
-    name: Indicate completion to coveralls.io
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-    - name: Set up Python 3.9
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.9
-    - name: Finished
-      run: |
-        sudo apt-get install git
-        pip3 install --upgrade coveralls
-        coveralls --service=github --finish
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
