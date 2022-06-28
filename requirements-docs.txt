@@ -574,7 +574,7 @@ stevedore==3.5.0
     # via
     #   -r requirements-tests.txt
     #   bandit
-tabulate==0.8.9
+tabulate==0.8.10
     # via -r requirements-docs.in
 tomli==2.0.1
     # via
