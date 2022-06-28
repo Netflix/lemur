@@ -50,7 +50,7 @@ marshmallow-sqlalchemy==0.23.1
     # via -r requirements-dev.in
 mccabe==0.6.1
     # via flake8
-nodeenv==1.6.0
+nodeenv==1.7.0
     # via
     #   -r requirements-dev.in
     #   pre-commit
