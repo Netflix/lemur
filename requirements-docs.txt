@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-docs.txt requirements-docs.in
 #
-acme==1.28.0
+acme==1.29.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
