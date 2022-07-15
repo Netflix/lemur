@@ -309,8 +309,7 @@ def sort_and_page(query, model, args):
     :param query: search query
     :param model: model to use for resulting items
     :param args: arguments to query with, including sorting and paging parameters
-    :return:the items given the count and page specified. The items would be an empty list
-    if page number exceeds max page number based on count per page and total number of records.
+    :return: the items given the count and page specified
     """
     sort_by = args.pop("sort_by")
     sort_dir = args.pop("sort_dir")
