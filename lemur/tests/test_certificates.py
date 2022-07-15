@@ -1766,3 +1766,58 @@ def test_get_cert_expiry_in_days(certificate):
     new_cert = create_cert_that_expires_in_days(10)
 
     assert _get_cert_expiry_in_days(new_cert.not_after) == 10
+
+
+def test_query_common_name(session):
+    from lemur.tests.factories import CertificateFactory
+    from lemur.certificates.service import query_common_name
+    from datetime import timedelta
+
+    cn1 = "testcn1.example.org"
+    cert_cn1_replaced = CertificateFactory()
+    cert_cn1_replaced.cn = cn1
+    cert_cn1_valid = CertificateFactory()
+    cert_cn1_valid.cn = cn1
+    cert_cn1_valid.owner = "owner1@example.org"
+    cert_cn1_valid.replaces.append(cert_cn1_replaced)
+    cert_cn1_valid2 = CertificateFactory()
+    cert_cn1_valid2.cn = cn1
+    cert_cn1_valid2.owner = "owner2@example.org"
+    yesterday = arrow.utcnow() + timedelta(days=-1)
+    cert_cn1_expired = CertificateFactory()
+    cert_cn1_expired.cn = cn1
+    cert_cn1_expired.not_after = yesterday
+    cert_cn1_revoked = CertificateFactory()
+    cert_cn1_revoked.cn = cn1
+    cert_cn1_revoked.status = "revoked"
+
+    cn2 = "testcn2.example.org"
+    cert_cn2 = CertificateFactory()
+    cert_cn2.cn = cn2
+
+    cn1_valid_certs = query_common_name(cn1, {"owner": "", "page": "", "count": ""})
+    assert len(cn1_valid_certs) == 2
+
+    cn1_valid_certs_paged = query_common_name(cn1, {"owner": "", "page": 1, "count": 100})
+    assert cn1_valid_certs_paged["total"] == 2
+    assert len(cn1_valid_certs_paged["items"]) == 2
+
+    cn1_valid_certs_paged_single = query_common_name(cn1, {"owner": "", "page": 1, "count": 1})
+    assert cn1_valid_certs_paged_single["total"] == 2
+    assert len(cn1_valid_certs_paged_single["items"]) == 1
+
+    cn1_owner1_valid_certs = query_common_name(cn1, {"owner": "owner1@example.org", "page": "", "count": ""})
+    assert len(cn1_owner1_valid_certs) == 1
+
+    cn1_owner1_valid_certs_paged = query_common_name(cn1, {"owner": "owner1@example.org", "page": 1, "count": 100})
+    assert cn1_owner1_valid_certs_paged["total"] == 1
+    assert len(cn1_owner1_valid_certs_paged["items"]) == 1
+
+    cn1_owner2_valid_certs = query_common_name(cn1, {"owner": "owner2@example.org", "page": "", "count": ""})
+    assert len(cn1_owner2_valid_certs) == 1
+
+    cn1_owner3_valid_certs = query_common_name(cn1, {"owner": "owner3@example.org", "page": "", "count": ""})
+    assert len(cn1_owner3_valid_certs) == 0
+
+    cn2_valid_certs = query_common_name(cn2, {"owner": "", "page": "", "count": ""})
+    assert len(cn2_valid_certs) == 1

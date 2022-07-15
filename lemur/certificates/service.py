@@ -145,7 +145,8 @@ def get_all_valid_certs(authority_plugin_name, paginate=False, page=1, count=100
         query = query.filter(Certificate.date_created <= created_on_or_before.format("YYYY-MM-DD"))
 
     if paginate:
-        items = database.paginate(query, page, count)
+        args = {"page": page, "count": count, "sort_by": "id", "sort_dir": "desc"}
+        items = database.sort_and_page(query, Certificate, args)
         return items['items']
 
     return query.all()
@@ -731,7 +732,8 @@ def query_common_name(common_name, args):
         query = query.filter(Certificate.cn.ilike(common_name))
 
     if paginate:
-        return database.paginate(query, page, count)
+        args = {"page": page, "count": count, "sort_by": "id", "sort_dir": "desc"}
+        return database.sort_and_page(query, Certificate, args)
 
     return query.all()
 

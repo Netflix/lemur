@@ -9,7 +9,6 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import math
 from inflection import underscore
 from sqlalchemy import exc, func, distinct
 from sqlalchemy.orm import make_transient, lazyload
@@ -225,24 +224,6 @@ def sort(query, model, field, direction):
     return query.order_by(column.desc() if direction == "desc" else column.asc())
 
 
-def paginate(query, page, count):
-    """
-    Returns the items given the count and page specified. The items would be an empty list
-    if page number exceeds max page number based on count per page and total number of records.
-
-    :param query: search query
-    :param page: current page number
-    :param count: results per page
-    """
-    total = get_count(query)
-    # Check if input page is higher than total number of pages based on count per page and total
-    # In such a case Flask-SQLAlchemy pagination call results in 404
-    if math.ceil(total / count) < page:
-        return dict(items=[], total=total)
-    items = query.paginate(page, count).items
-    return dict(items=items, total=total)
-
-
 def update_list(model, model_attr, item_model, items):
     """
     Helper that correctly updates a models items
@@ -323,12 +304,12 @@ def get_count(q):
 
 def sort_and_page(query, model, args):
     """
-    Helper that allows us to combine sorting and paging
+    Helper that allows us to combine sorting and paging. Note that paging is not safe unless combined with sorting.
 
-    :param query:
-    :param model:
-    :param args:
-    :return:
+    :param query: search query
+    :param model: model to use for resulting items
+    :param args: arguments to query with, including sorting and paging parameters
+    :return: the items given the count and page specified
     """
     sort_by = args.pop("sort_by")
     sort_dir = args.pop("sort_dir")
@@ -347,5 +328,6 @@ def sort_and_page(query, model, args):
 
     # offset calculated at zero
     page -= 1
+    # this is equivalent to query.paginate(page, count) where page has not been pre-decremented
     items = query.offset(count * page).limit(count).all()
     return dict(items=items, total=total)
