@@ -1143,6 +1143,7 @@ def expiration_metrics(expiry_window):
     except Exception as e:
         status = FAILURE_METRIC_STATUS
         capture_exception()
+        current_app.logger.exception("Error sending expiration metrics", exc_info=True)
 
     metrics.send(
         "expiration_metrics_job", "counter", 1, metric_tags={"status": status}
