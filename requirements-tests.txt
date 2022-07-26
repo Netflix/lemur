@@ -148,6 +148,7 @@ markupsafe==2.1.1
     #   jinja2
     #   mako
     #   moto
+    #   werkzeug
 marshmallow==2.21.0
     # via
     #   -r requirements-tests.in
@@ -289,7 +290,7 @@ urllib3==1.26.9
     #   responses
 websocket-client==1.3.1
     # via docker
-werkzeug==2.0.3
+werkzeug==2.2.0
     # via
     #   -r requirements-tests.in
     #   flask
