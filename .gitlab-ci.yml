@@ -18,6 +18,8 @@ build-stage-image:
     CI_ENABLE_CONTAINER_IMAGE_BUILDS: "true"
   script:
     - cd publish && docker buildx build --label target=staging --build-arg CI_COMMIT_SHA=${CI_COMMIT_SHA} --tag registry.ddbuild.io/ci/lemur:v$CI_PIPELINE_ID-$CI_COMMIT_SHORT_SHA --push .
+  except:
+    - tags
 
 # build a prod image when we create a new tag
 build-prod-image:
