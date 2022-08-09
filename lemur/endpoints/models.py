@@ -8,8 +8,8 @@
 """
 import arrow
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql.expression import case
 
@@ -17,7 +17,9 @@ from sqlalchemy_utils import ArrowType
 
 from lemur.database import db
 
-from lemur.models import policies_ciphers
+from lemur.models import policies_ciphers, EndpointsCertificates
+
+from deprecated import deprecated
 
 BAD_CIPHERS = ["Protocol-SSLv3", "Protocol-SSLv2", "Protocol-TLSv1"]
 
@@ -62,8 +64,12 @@ class Endpoint(db.Model):
     port = Column(Integer)
     policy_id = Column(Integer, ForeignKey("policy.id"))
     policy = relationship("Policy", backref="endpoint")
-    certificate_id = Column(Integer, ForeignKey("certificates.id"))
-    certificate_path = Column(String(256))
+    certificates_assoc = relationship(
+        "EndpointsCertificates", back_populates="endpoint"
+    )
+    certificates = association_proxy(
+        "certificates_assoc", "certificate", creator=lambda cert: EndpointsCertificates(certificate=cert)
+    )
     registry_type = Column(String(128))
     source_id = Column(Integer, ForeignKey("sources.id"))
     sensitive = Column(Boolean, default=False)
@@ -72,8 +78,6 @@ class Endpoint(db.Model):
     date_created = Column(
         ArrowType, default=arrow.utcnow, onupdate=arrow.utcnow, nullable=False
     )
-
-    replaced = association_proxy("certificate", "replaced")
 
     @property
     def dns_aliases(self):
@@ -118,6 +122,54 @@ class Endpoint(db.Model):
             )
 
         return issues
+
+    @hybrid_property
+    def primary_certificate(self):
+        """Returns the primary certificate associated with the endpoint."""
+        for assoc in self.certificates_assoc:
+            if assoc.primary:
+                return assoc.certificate
+        return None
+
+    @primary_certificate.setter
+    def primary_certificate(self, cert):
+        """Sets the primary certificate associated with the endpoint."""
+        for assoc in self.certificates_assoc:
+            if assoc.primary:
+                assoc.certificate = cert
+                return
+        self.certificates_assoc.append(
+            EndpointsCertificates(certificate=cert, endpoint=self, primary=True, path="")
+        )
+
+    @hybrid_property
+    @deprecated("The certificate attribute is deprecated and will be removed soon. Use Endpoint.primary_certificate instead.")
+    def certificate(self):
+        """DEPRECATED: Returns the primary certificate associated with the endpoint."""
+        return self.primary_certificate
+
+    @certificate.setter
+    @deprecated("The certificate attribute is deprecated and will be removed soon. Use Endpoint.primary_certificate instead.")
+    def certificate(self, cert):
+        """DEPRECATED: Sets the primary certificate associated with the endpoint."""
+        self.primary_certificate = cert
+
+    @hybrid_property
+    @deprecated("The certificate_path attribute is deprecated and will be removed soon. Retrieve from Endpoint.certificates_assoc instead.")
+    def certificate_path(self):
+        """DEPRECATED: Returns the path of the primary certificate associated with the endpoint."""
+        for assoc in self.certificates_assoc:
+            if assoc.primary:
+                return assoc.path
+        return None
+
+    @certificate_path.setter
+    @deprecated("The certificate_path attribute is deprecated and will be removed soon. Retrieve from Endpoint.certificates_assoc instead.")
+    def certificate_path(self, path):
+        """DEPRECATED: Sets the path of the primary certificate associated with the endpoint."""
+        for assoc in self.certificates_assoc:
+            if assoc.primary:
+                assoc.path = path
 
     def __repr__(self):
         return "Endpoint(name={name})".format(name=self.name)

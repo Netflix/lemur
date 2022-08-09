@@ -8,7 +8,8 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from sqlalchemy import Column, Integer, ForeignKey, Index, UniqueConstraint
+from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, ForeignKey, Index, UniqueConstraint, String, Boolean
 
 from lemur.database import db
 
@@ -201,4 +202,37 @@ Index(
     "pending_cert_role_associations_ix",
     pending_cert_role_associations.c.pending_cert_id,
     pending_cert_role_associations.c.role_id,
+)
+
+
+class EndpointsCertificates(db.Model):
+    __tablename__ = "endpoints_certificates"
+    id = Column(Integer, primary_key=True)
+    certificate_id = Column(ForeignKey("certificates.id"))
+    endpoint_id = Column(ForeignKey("endpoints.id"))
+    path = Column(String(256))
+    primary = Column("is_primary", Boolean, default=True)
+    certificate = relationship("Certificate", back_populates="endpoints_assoc")
+    endpoint = relationship("Endpoint", back_populates="certificates_assoc")
+
+    def __init__(self, certificate=None, endpoint=None, primary=True, path=""):
+        self.certificate = certificate
+        self.endpoint = endpoint
+        self.primary = primary
+        self.path = path
+
+
+Index(
+    "unique_primary_certificate_endpoint_ix",
+    EndpointsCertificates.endpoint_id,
+    EndpointsCertificates.primary,
+    unique=True,
+    postgresql_where=EndpointsCertificates.primary,
+)
+
+Index(
+    "unique_certificate_endpoint_ix",
+    EndpointsCertificates.certificate_id,
+    EndpointsCertificates.endpoint_id,
+    unique=True,
 )

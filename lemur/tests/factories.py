@@ -322,7 +322,6 @@ class EndpointFactory(BaseFactory):
     port = FuzzyInteger(0, high=65535)
     dnsname = "endpoint.example.com"
     policy = SubFactory(PolicyFactory)
-    certificate = SubFactory(CertificateFactory)
     source = SubFactory(SourceFactory)
 
     class Meta:

@@ -105,7 +105,7 @@ def get_all_pending_rotation():
     that have been replaced.
     :return:
     """
-    return Endpoint.query.filter(Endpoint.replaced.any()).all()
+    return Endpoint.query.filter(Endpoint.certificate.replaced.any()).all()
 
 
 def create(**kwargs):
@@ -117,8 +117,11 @@ def create(**kwargs):
     aliases = []
     if "aliases" in kwargs:
         aliases = [EndpointDnsAlias(alias=name) for name in kwargs.pop("aliases")]
+    if "certificate" in kwargs:
+        certificate = kwargs.pop("certificate")
     endpoint = Endpoint(**kwargs)
     endpoint.aliases = aliases
+    endpoint.primary_certificate = certificate
     database.create(endpoint)
     metrics.send(
         "endpoint_added", "counter", 1,
@@ -151,9 +154,9 @@ def update(endpoint_id, **kwargs):
     endpoint = database.get(Endpoint, endpoint_id)
 
     endpoint.policy = kwargs["policy"]
-    endpoint.certificate = kwargs["certificate"]
+    endpoint.primary_certificate = kwargs["certificate"]
     endpoint.source = kwargs["source"]
-    endpoint.certificate_path = kwargs.get("certificate_path")
+    endpoint.primary_certificate.path = kwargs.get("certificate_path")
     endpoint.registry_type = kwargs.get("registry_type")
     existing_alias = {}
     for e in endpoint.aliases:
@@ -181,7 +184,7 @@ def render(args):
     :return:
     """
     query = database.session_query(Endpoint)\
-        .options(joinedload(Endpoint.certificate))\
+        .options(joinedload(Endpoint.certificates_assoc))\
         .options(joinedload(Endpoint.source))
     filt = args.pop("filter")
 

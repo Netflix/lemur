@@ -94,10 +94,12 @@ def test_get_by_serial(session, certificate):
 def test_get_all_certs_attached_to_endpoint_without_autorotate(session):
     from lemur.certificates.service import get_all_certs_attached_to_endpoint_without_autorotate, \
         cleanup_after_revoke
-    from lemur.tests.factories import EndpointFactory
+    from lemur.tests.factories import CertificateFactory, EndpointFactory
 
     # add a certificate with endpoint
-    EndpointFactory()
+    ep = EndpointFactory()
+    crt = CertificateFactory()
+    ep.primary_certificate = crt
 
     list_before = get_all_certs_attached_to_endpoint_without_autorotate()
     len_list_before = len(list_before)

@@ -45,6 +45,7 @@ from lemur.models import (
     certificate_replacement_associations,
     roles_certificates,
     pending_cert_replacement_associations,
+    EndpointsCertificates,
 )
 from lemur.plugins.base import plugins
 from lemur.policies.models import RotationPolicy
@@ -185,7 +186,12 @@ class Certificate(db.Model):
     )
 
     logs = relationship("Log", backref="certificate")
-    endpoints = relationship("Endpoint", backref="certificate")
+    endpoints_assoc = relationship(
+        "EndpointsCertificates", back_populates="certificate"
+    )
+    endpoints = association_proxy(
+        "endpoints_assoc", "endpoint", creator=lambda ep: EndpointsCertificates(endpoint=ep)
+    )
     rotation_policy = relationship("RotationPolicy")
     sensitive_fields = ("private_key",)
 

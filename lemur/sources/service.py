@@ -107,6 +107,7 @@ def sync_endpoints(source):
 
         certificate_name = endpoint.pop("certificate_name")
 
+        # TODO(EDGE-1363) - Update source plugin(s) to sync SNI certificates
         endpoint["certificate"] = certificate_service.get_by_name(certificate_name)
 
         # if get cert by name failed, we attempt a search via serial number and hash comparison
