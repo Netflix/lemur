@@ -49,29 +49,38 @@
                         <td colspan="12">
                             <uib-tabset justified="true" class="col-md-6">
                                 <uib-tab>
-                                    <uib-tab-heading>Certificate</uib-tab-heading>
+                                    <uib-tab-heading>Certificate(s)</uib-tab-heading>
                                     <ul class="list-group">
-                                        <li class="list-group-item">
-                                            <strong>Name</strong>
-                                            <span class="pull-right">
-                                                {{ endpoint.certificate.name }}
-                                            </span>
-                                        </li>
-                                        <li class="list-group-item">
-                                            <strong>Not Before</strong>
-                                        <span class="pull-right" uib-tooltip="{{ endpoint.certificate.notBefore }}">
-                                          {{ momentService.createMoment(endpoint.certificate.notBefore) }}
-                                        </span>
-                                        </li>
-                                        <li class="list-group-item">
-                                            <strong>Not After</strong>
-                                            <span class="pull-right" uib-tooltip="{{ endpoint.certificate.notAfter }}">
-                                              {{ momentService.createMoment(endpoint.certificate.notAfter) }}
-                                            </span>
-                                        </li>
-                                        <li class="list-group-item">
-                                            <strong>Description</strong>
-                                            <p>{{ endpoint.certificate.description }}</p>
+                                        <li ng-repeat="item in endpoint.certificates | orderBy: '-primary'" class="list-group-item">
+                                            <ul class="list-group">
+                                                <li class="list-group-item">
+                                                    <strong>Name</strong>
+                                                    <span class="pull-right">
+                                                        {{ item.certificate.name }}
+                                                    </span>
+                                                </li>
+                                                <li class="list-group-item">
+                                                    <strong>Not Before</strong>
+                                                <span class="pull-right" uib-tooltip="{{ item.certificate.notBefore }}">
+                                                  {{ momentService.createMoment(item.certificate.notBefore) }}
+                                                </span>
+                                                </li>
+                                                <li class="list-group-item">
+                                                    <strong>Not After</strong>
+                                                    <span class="pull-right" uib-tooltip="{{ item.certificate.notAfter }}">
+                                                      {{ momentService.createMoment(item.certificate.notAfter) }}
+                                                    </span>
+                                                </li>
+                                                <li class="list-group-item">
+                                                    <strong>Attachment Type</strong>
+                                                    <span ng-if="item.primary" uib-tooltip="Default certificate used to serve requests" uib-tooltip-placement="right" class="label label-primary pull-right">Primary</span>
+                                                    <span ng-if="!item.primary" uib-tooltip="Certificate used to serve requests for multiple domains on the same port via SNI" uib-tooltip-placement="right" class="label label-default pull-right">SNI</span>
+                                                </li>
+                                                <li class="list-group-item">
+                                                    <strong>Description</strong>
+                                                    <p>{{ item.certificate.description }}</p>
+                                                </li>
+                                            </ul>
                                         </li>
                                     </ul>
                                 </uib-tab>

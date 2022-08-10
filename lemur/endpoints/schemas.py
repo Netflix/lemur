@@ -25,6 +25,13 @@ class PolicyNestedOutputSchema(LemurOutputSchema):
     ciphers = fields.Nested(CipherNestedOutputSchema, many=True)
 
 
+class EndpointCertificateOutputSchema(LemurOutputSchema):
+    __envelope__ = False
+    primary = fields.Boolean()
+    path = fields.String()
+    certificate = fields.Nested(CertificateNestedOutputSchema)
+
+
 class EndpointOutputSchema(LemurOutputSchema):
     id = fields.Integer()
     description = fields.String()
@@ -36,8 +43,7 @@ class EndpointOutputSchema(LemurOutputSchema):
     type = fields.String()
     port = fields.Integer()
     active = fields.Boolean()
-    certificate = fields.Nested(CertificateNestedOutputSchema)
-    certificate_path = fields.String()
+    certificates = fields.Nested(EndpointCertificateOutputSchema, many=True, attribute="certificates_assoc")
     registry_type = fields.String()
     policy = fields.Nested(PolicyNestedOutputSchema)
 
