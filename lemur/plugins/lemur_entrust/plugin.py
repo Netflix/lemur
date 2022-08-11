@@ -193,6 +193,16 @@ class EntrustIssuerPlugin(IssuerPlugin):
     author = "sirferl"
     author_url = "https://github.com/sirferl/lemur"
 
+    options = [
+        {
+            "name": "staging_account",
+            "type": "bool",
+            "required": False,
+            "helpMessage": "Set to True if this is an Entrust staging account.",
+            "default": False,
+        }
+    ]
+
     def __init__(self, *args, **kwargs):
         """Initialize the issuer with the appropriate details."""
         required_vars = [
@@ -302,11 +312,15 @@ class EntrustIssuerPlugin(IssuerPlugin):
 
     @retry(stop_max_attempt_number=3, wait_fixed=1000)
     def deactivate_certificate(self, certificate):
-        """Deactivates an Entrust certificate, as long as it is still active, and not already deactivcated. """
+        """Deactivates an Entrust certificate, as long as it is still active, and not already deactivated. """
         log_data = {
             "function": f"{__name__}.{sys._getframe().f_code.co_name}",
             "external_id": f"{certificate.external_id}"
         }
+
+        # backwards compatible change to protect this endpoint from being used in production
+        if self.options and "staging_account" in self.options and self.options.get("staging_account") is False:
+            raise Exception("This issuer is not configured to deactivate certificates.")
 
         # Let's first check the status of the certificate
         base_url = current_app.config.get("ENTRUST_URL")

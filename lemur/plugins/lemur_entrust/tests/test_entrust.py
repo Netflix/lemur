@@ -74,3 +74,13 @@ def test_create_authority(app):
     p = plugins.get("entrust-issuer")
     entrust_root, intermediate, role = p.create_authority(options)
     assert role == [{"username": "", "password": "", "name": "entrust_test_Entrust_authority_admin"}]
+
+
+@patch("lemur.plugins.lemur_entrust.plugin.current_app")
+def test_deactivate_certificate(app, authority, certificate):
+    from lemur.plugins.bases.issuer import deactivate_certificate
+    authority.options = {
+        "deactivate_certificate": True,
+    }
+    with self.assertRaisesRegex(Exception, "This issuer is not configured to deactivate certificates."):
+        deactivate_certificate(certificate)
