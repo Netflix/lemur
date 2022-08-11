@@ -327,7 +327,7 @@ class EntrustIssuerPlugin(IssuerPlugin):
             metrics.send("entrust_deactivate_certificate", "counter", 1)
             return handle_response(response)
         else:
-            # the certificate is no longer valid, or doesn't exist and cannot be deacticated
+            # the certificate is no longer valid, or doesn't exist and cannot be deactivated
             return 200
 
     @staticmethod
