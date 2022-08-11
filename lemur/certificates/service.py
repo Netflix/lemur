@@ -1013,6 +1013,11 @@ def remove_from_destination(certificate, destination):
         plugin.clean(certificate=certificate, options=destination.options)
 
 
+def deactivate(certificate):
+    plugin = plugins.get(certificate.authority.plugin_name)
+    return plugin.deactivate_certificate(certificate)
+
+
 def revoke(certificate, reason):
     plugin = plugins.get(certificate.authority.plugin_name)
     plugin.revoke_certificate(certificate, reason)
