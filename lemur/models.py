@@ -229,10 +229,3 @@ Index(
     unique=True,
     postgresql_where=EndpointsCertificates.primary,
 )
-
-Index(
-    "unique_certificate_endpoint_ix",
-    EndpointsCertificates.certificate_id,
-    EndpointsCertificates.endpoint_id,
-    unique=True,
-)

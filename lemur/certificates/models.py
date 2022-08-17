@@ -187,7 +187,7 @@ class Certificate(db.Model):
 
     logs = relationship("Log", backref="certificate")
     endpoints_assoc = relationship(
-        "EndpointsCertificates", back_populates="certificate"
+        "EndpointsCertificates", back_populates="certificate", cascade="all, delete-orphan"
     )
     endpoints = association_proxy(
         "endpoints_assoc", "endpoint", creator=lambda ep: EndpointsCertificates(endpoint=ep)

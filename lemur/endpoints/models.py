@@ -65,7 +65,7 @@ class Endpoint(db.Model):
     policy_id = Column(Integer, ForeignKey("policy.id"))
     policy = relationship("Policy", backref="endpoint")
     certificates_assoc = relationship(
-        "EndpointsCertificates", back_populates="endpoint"
+        "EndpointsCertificates", back_populates="endpoint", cascade="all, delete-orphan"
     )
     certificates = association_proxy(
         "certificates_assoc", "certificate", creator=lambda cert: EndpointsCertificates(certificate=cert)
