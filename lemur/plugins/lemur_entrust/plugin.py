@@ -459,7 +459,7 @@ class EntrustSourcePlugin(SourcePlugin):
                 break
             else:
                 offset += 1
-        current_app.logger.info(f"Retrieved {processed_certs} ertificates")
+        current_app.logger.info(f"Retrieved {processed_certs} certificates")
         return certs
 
     def get_endpoints(self, options, **kwargs):
