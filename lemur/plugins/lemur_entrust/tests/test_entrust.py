@@ -78,22 +78,19 @@ def test_create_authority(app):
 
 def test_deactivate_certificate(app):
     from lemur.plugins.base import plugins
-    import requests_mock
     p = plugins.get("entrust-issuer")
 
     mock_cert = Mock()
     mock_cert.external_id = 1
 
-    p.options = [
-            {
-                "name": "staging_account",
-                "type": "bool",
-                "required": True,
-                "helpMessage": "Set to True if this is an Entrust staging account.",
-                "default": False,
-                "value": True,
-            }
-    ]
+    p.options = [{
+        "name": "staging_account",
+        "type": "bool",
+        "required": True,
+        "helpMessage": "Set to True if this is an Entrust staging account.",
+        "default": False,
+        "value": True,
+    }]
     try:
         p.deactivate_certificate(mock_cert)
         assert False
