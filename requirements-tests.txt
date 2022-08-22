@@ -92,7 +92,7 @@ flask-migrate==2.7.0
     # via -r requirements-tests.in
 flask-sqlalchemy==2.5.1
     # via flask-migrate
-freezegun==1.2.1
+freezegun==1.2.2
     # via -r requirements-tests.in
 future==0.18.2
     # via aws-xray-sdk
