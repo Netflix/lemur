@@ -76,11 +76,26 @@ def test_create_authority(app):
     assert role == [{"username": "", "password": "", "name": "entrust_test_Entrust_authority_admin"}]
 
 
-@patch("lemur.plugins.lemur_entrust.plugin.current_app")
-def test_deactivate_certificate(app, authority, certificate):
-    from lemur.plugins.bases.issuer import deactivate_certificate
-    authority.options = {
-        "deactivate_certificate": True,
-    }
-    with self.assertRaisesRegex(Exception, "This issuer is not configured to deactivate certificates."):
-        deactivate_certificate(certificate)
+def test_deactivate_certificate(app):
+    from lemur.plugins.base import plugins
+    import requests_mock
+    p = plugins.get("entrust-issuer")
+
+    mock_cert = Mock()
+    mock_cert.external_id = 1
+
+    p.options = [
+            {
+                "name": "staging_account",
+                "type": "bool",
+                "required": True,
+                "helpMessage": "Set to True if this is an Entrust staging account.",
+                "default": False,
+                "value": True,
+            }
+    ]
+    try:
+        p.deactivate_certificate(mock_cert)
+        assert False
+    except Exception as inst:
+        assert inst.args[0] == "This issuer is not configured to deactivate certificates."

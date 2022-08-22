@@ -319,8 +319,9 @@ class EntrustIssuerPlugin(IssuerPlugin):
         }
 
         # backwards compatible change to protect this endpoint from being used in production
-        if self.options and "staging_account" in self.options and self.options.get("staging_account") is False:
-            raise Exception("This issuer is not configured to deactivate certificates.")
+        for option in self.options:
+            if option.get("name") == "staging_account" and option.get("value") is True:
+                raise Exception("This issuer is not configured to deactivate certificates.")
 
         # Let's first check the status of the certificate
         base_url = current_app.config.get("ENTRUST_URL")
