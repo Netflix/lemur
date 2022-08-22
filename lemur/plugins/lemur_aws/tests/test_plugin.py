@@ -1,5 +1,6 @@
 import boto3
 from moto import mock_sts, mock_s3, mock_ec2, mock_elb, mock_elbv2, mock_acm
+from unittest import mock
 
 
 def test_get_certificates(app):
@@ -96,7 +97,7 @@ def test_upload_acme_token(app):
 @mock_elbv2()
 def test_get_all_elb_and_elbv2s(app, aws_credentials):
     from copy import deepcopy
-    from lemur.plugins.lemur_aws.elb import get_load_balancer_arn_from_endpoint
+    from lemur.plugins.lemur_aws import elb as lemur_elb
     from lemur.plugins.base import plugins
     from lemur.plugins.utils import set_plugin_option
 
@@ -146,7 +147,7 @@ def test_get_all_elb_and_elbv2s(app, aws_credentials):
             subnet1.id,
         ],
     )
-    lb_arn = get_load_balancer_arn_from_endpoint("test-lbv2",
+    lb_arn = lemur_elb.get_load_balancer_arn_from_endpoint("test-lbv2",
                                                  account_number="123456789012",
                                                  region="us-east-1")
     target_group_arn = elbv2.create_target_group(
@@ -167,13 +168,35 @@ def test_get_all_elb_and_elbv2s(app, aws_credentials):
     set_plugin_option("accountNumber", "123456789012", options)
     set_plugin_option("endpointType", "elb", options)
     set_plugin_option("regions", "us-east-1", options)
-    elbs = aws_source.get_endpoints(options)
+
+    # Note: required because mocking describe_listener_certificates API call not yet supported by moto.
+    with mock.patch.object(
+            lemur_elb,
+            'describe_listener_certificates_v2',
+            return_value={
+                "Certificates": [
+                    {
+                        "CertificateArn": arn2,
+                        "IsDefault": True,
+                    },
+                    {
+                        "CertificateArn": arn1,
+                        "IsDefault": False,
+                    },
+                ]
+            }
+    ):
+        elbs = aws_source.get_endpoints(options)
+        assert lemur_elb.describe_listener_certificates_v2.called
+
     elb_map = {}
     for elb in elbs:
         elb_map[elb["name"]] = elb
-    assert elb_map["example-lb"]["certificate_name"] == cert_name1
-    assert elb_map["example-lb"]["registry_type"] == "acm"
+    assert elb_map["example-lb"]["primary_certificate"]["name"] == cert_name1
+    assert elb_map["example-lb"]["primary_certificate"]["registry_type"] == "acm"
     assert elb_map["example-lb"]["port"] == 443
-    assert elb_map["test-lbv2"]["certificate_name"] == cert_name2
-    assert elb_map["test-lbv2"]["registry_type"] == "acm"
+    assert elb_map["test-lbv2"]["primary_certificate"]["name"] == cert_name2
+    assert elb_map["test-lbv2"]["primary_certificate"]["registry_type"] == "acm"
+    assert elb_map["test-lbv2"]["sni_certificates"][0]["name"] == cert_name1
+    assert elb_map["test-lbv2"]["sni_certificates"][0]["registry_type"] == "acm"
     assert elb_map["test-lbv2"]["port"] == 1443

@@ -238,9 +238,9 @@ def get_all_certificates(restrict_path=None, **kwargs):
             kwargs.update(dict(Marker=response["Marker"]))
 
 
-def get_certificate_id_to_name(**kwargs):
+def get_certificate_id_to_arn(**kwargs):
     """
-    Use STS to fetch a map of IAM certificate IDs to names
+    Use STS to fetch a map of IAM certificate IDs to ARNs
     """
     id_to_name = {}
     account_number = kwargs.get("account_number")
@@ -256,7 +256,7 @@ def get_certificate_id_to_name(**kwargs):
         metadata = response["ServerCertificateMetadataList"]
 
         for m in metadata:
-            id_to_name[m["ServerCertificateId"]] = m["ServerCertificateName"]
+            id_to_name[m["ServerCertificateId"]] = m["Arn"]
 
         if not response.get("Marker"):
             return id_to_name

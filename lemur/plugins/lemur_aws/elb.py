@@ -315,6 +315,26 @@ def describe_listeners_v2(**kwargs):
         raise
 
 
+@sts_client("elbv2")
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
+def describe_listener_certificates_v2(**kwargs):
+    """
+    Fetches one page of listener certificate objects for a given listener arn.
+
+    :param kwargs:
+    :return:
+    """
+    try:
+        client = kwargs.pop("client")
+        return client.describe_listener_certificates(**kwargs)
+    except Exception as e:  # noqa
+        metrics.send(
+            "describe_listener_certificates_v2_error", "counter", 1, metric_tags={"error": str(e)}
+        )
+        capture_exception()
+        raise
+
+
 @sts_client("elb")
 @retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
 def describe_load_balancer_policies(load_balancer_name, policy_names, **kwargs):

@@ -105,62 +105,64 @@ def sync_endpoints(source):
             else:
                 raise e
 
-        certificate_name = endpoint.pop("certificate_name")
+        if "primary_certificate" in endpoint:
+            crt_name = endpoint["primary_certificate"]["name"]
+            current_app.logger.debug(
+                "Syncing primary certificate {} attached to endpoint {}".format(crt_name, endpoint["name"])
+            )
+            crt, updated_by_hash_tmp = get_cert_for_endpoint(source, endpoint, crt_name)
+            updated_by_hash += updated_by_hash_tmp
 
-        # TODO(EDGE-1363) - Update source plugin(s) to sync SNI certificates
-        endpoint["certificate"] = certificate_service.get_by_name(certificate_name)
-
-        # if get cert by name failed, we attempt a search via serial number and hash comparison
-        # and link the endpoint certificate to Lemur certificate
-        if not endpoint["certificate"]:
-            certificate_attached_to_endpoint = None
-            try:
-                certificate_attached_to_endpoint = s.get_certificate_by_name(certificate_name, source.options)
-            except NotImplementedError:
-                current_app.logger.warning(
-                    "Unable to describe server certificate for endpoints in source {0}:"
-                    " plugin has not implemented 'get_certificate_by_name'".format(
-                        source.label
-                    )
+            if crt:
+                endpoint["registry_type"] = endpoint["primary_certificate"]["registry_type"]
+                endpoint["primary_certificate"] = dict(
+                    certificate=crt,
+                    path=endpoint["primary_certificate"]["path"],
                 )
-                capture_exception()
+            else:
+                continue
+        elif "certificate_name" in endpoint:
+            current_app.logger.warn(
+                "Source plugin {} specified certificate for endpoint {} using the certificate_name "
+                "parameter which is deprecated, use the primary_certificate parameter instead.".format(
+                    source.plugin_name,
+                    endpoint["name"]
+                )
+            )
+            certificate_name = endpoint.pop("certificate_name")
+            crt, updated_by_hash_tmp = get_cert_for_endpoint(source, endpoint, certificate_name)
+            updated_by_hash += updated_by_hash_tmp
 
-            if certificate_attached_to_endpoint:
-                lemur_matching_cert, updated_by_hash_tmp = find_cert(certificate_attached_to_endpoint)
-                updated_by_hash += updated_by_hash_tmp
+            if crt:
+                endpoint["primary_certificate"] = dict(
+                    certificate=crt,
+                    path=endpoint.pop("certificate_path", "")
+                )
+            else:
+                continue
 
-                if lemur_matching_cert:
-                    endpoint["certificate"] = lemur_matching_cert[0]
+        synced_sni_certificates = []
+        for sni_certificate in endpoint.get("sni_certificates", []):
+            crt_name = sni_certificate["name"]
+            current_app.logger.debug(
+                "Syncing SNI certificate {} attached to endpoint {}".format(crt_name, endpoint["name"])
+            )
+            crt, updated_by_hash_tmp = get_cert_for_endpoint(source, endpoint, crt_name)
+            updated_by_hash += updated_by_hash_tmp
 
-                if len(lemur_matching_cert) > 1:
-                    current_app.logger.error(
-                        "Too Many Certificates Found{0}. Name: {1} Endpoint: {2}".format(
-                            len(lemur_matching_cert), certificate_name, endpoint["name"]
-                        )
-                    )
-                    metrics.send("endpoint.certificate.conflict",
-                                 "gauge", len(lemur_matching_cert),
-                                 metric_tags={"cert": certificate_name, "endpoint": endpoint["name"],
-                                              "acct": s.get_option("accountNumber", source.options)})
+            if "primary_certificate" not in endpoint:
+                endpoint["registry_type"] = sni_certificate["registry_type"]
 
-        if not endpoint["certificate"]:
-            current_app.logger.error({
-                "message": "Certificate Not Found",
-                "certificate_name": certificate_name,
-                "endpoint_name": endpoint["name"],
-                "dns_name": endpoint.get("dnsname"),
-                "account": s.get_option("accountNumber", source.options),
-            })
-
-            metrics.send("endpoint.certificate.not.found",
-                         "counter", 1,
-                         metric_tags={"cert": certificate_name, "endpoint": endpoint["name"],
-                                      "acct": s.get_option("accountNumber", source.options),
-                                      "dnsname": endpoint.get("dnsname")})
-            continue
+            if crt:
+                synced_sni_certificates.append(dict(
+                    certificate=crt,
+                    path=sni_certificate["path"]
+                ))
+            else:
+                continue
+        endpoint["sni_certificates"] = synced_sni_certificates
 
         policy = endpoint.pop("policy")
-
         policy_ciphers = []
         for nc in policy["ciphers"]:
             policy_ciphers.append(endpoint_service.get_or_create_cipher(name=nc))
@@ -182,6 +184,59 @@ def sync_endpoints(source):
             updated += 1
 
     return new, updated, updated_by_hash
+
+
+def get_cert_for_endpoint(source, endpoint, certificate_name):
+    endpoint_name, dns_name, updated_by_hash = endpoint["name"], endpoint.get("dns_name"), 0
+    s = plugins.get(source.plugin_name)
+    crt = certificate_service.get_by_name(certificate_name)
+
+    # if get cert by name failed, we attempt a search via serial number and hash comparison
+    # and link the endpoint certificate to Lemur certificate
+    if not crt:
+        certificate_attached_to_endpoint = None
+        try:
+            certificate_attached_to_endpoint = s.get_certificate_by_name(certificate_name, source.options)
+        except NotImplementedError:
+            current_app.logger.warning(
+                "Unable to describe server certificate for endpoints in source {0}:"
+                " plugin has not implemented 'get_certificate_by_name'".format(
+                    source.label
+                )
+            )
+            capture_exception()
+
+        if certificate_attached_to_endpoint:
+            lemur_matching_cert, updated_by_hash = find_cert(certificate_attached_to_endpoint)
+
+            if lemur_matching_cert:
+                crt = lemur_matching_cert[0]
+
+            if len(lemur_matching_cert) > 1:
+                current_app.logger.error(
+                    "Too Many Certificates Found{0}. Name: {1} Endpoint: {2}".format(
+                        len(lemur_matching_cert), certificate_name, endpoint_name
+                    )
+                )
+                metrics.send("endpoint.certificate.conflict",
+                             "gauge", len(lemur_matching_cert),
+                             metric_tags={"cert": certificate_name, "endpoint": endpoint_name,
+                                          "acct": s.get_option("accountNumber", source.options)})
+        if not crt:
+            current_app.logger.error({
+                "message": "Certificate Not Found",
+                "certificate_name": certificate_name,
+                "endpoint_name": endpoint_name,
+                "dns_name": dns_name,
+                "account": s.get_option("accountNumber", source.options),
+            })
+            metrics.send("endpoint.certificate.not.found",
+                         "counter", 1,
+                         metric_tags={"cert": certificate_name, "endpoint": endpoint_name,
+                                      "acct": s.get_option("accountNumber", source.options),
+                                      "dnsname": dns_name})
+
+    return crt, updated_by_hash
 
 
 def expire_endpoints(source, ttl_hours):

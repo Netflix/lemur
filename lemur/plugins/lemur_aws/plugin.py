@@ -112,9 +112,11 @@ def get_elb_endpoints(account_number, region, elb_dict):
             dnsname=elb_dict["DNSName"],
             type="elb",
             port=listener["Listener"]["LoadBalancerPort"],
-            certificate_name=iam.get_name_from_arn(listener["Listener"]["SSLCertificateId"]),
-            certificate_path=iam.get_path_from_arn(listener["Listener"]["SSLCertificateId"]),
-            registry_type=iam.get_registry_type_from_arn(listener["Listener"]["SSLCertificateId"]),
+            primary_certificate=dict(
+                name=iam.get_name_from_arn(listener["Listener"]["SSLCertificateId"]),
+                path=iam.get_path_from_arn(listener["Listener"]["SSLCertificateId"]),
+                registry_type=iam.get_registry_type_from_arn(listener["Listener"]["SSLCertificateId"]),
+            ),
         )
 
         if listener["PolicyNames"]:
@@ -148,19 +150,34 @@ def get_elb_endpoints_v2(account_number, region, elb_dict):
         LoadBalancerArn=elb_dict["LoadBalancerArn"],
     )
     for listener in listeners["Listeners"]:
-        if not listener.get("Certificates"):
+        listener_certificates = elb.describe_listener_certificates_v2(
+            account_number=account_number,
+            region=region,
+            ListenerArn=listener["ListenerArn"],
+        )
+
+        if not listener_certificates.get("Certificates"):
             continue
 
-        for certificate in listener["Certificates"]:
-            endpoint = dict(
-                name=elb_dict["LoadBalancerName"],
-                dnsname=elb_dict["DNSName"],
-                type="elbv2",
-                port=listener["Port"],
-                certificate_name=iam.get_name_from_arn(certificate["CertificateArn"]),
-                certificate_path=iam.get_path_from_arn(certificate["CertificateArn"]),
+        endpoint = dict(
+            name=elb_dict["LoadBalancerName"],
+            dnsname=elb_dict["DNSName"],
+            type="elbv2",
+            port=listener["Port"],
+            certificates=[],
+        )
+
+        endpoint["sni_certificates"] = []
+        for certificate in listener_certificates["Certificates"]:
+            crt = dict(
+                name=iam.get_name_from_arn(certificate["CertificateArn"]),
+                path=iam.get_path_from_arn(certificate["CertificateArn"]),
                 registry_type=iam.get_registry_type_from_arn(certificate["CertificateArn"]),
             )
+            if certificate.get("IsDefault", True):
+                endpoint["primary_certificate"] = crt
+            else:
+                endpoint["sni_certificates"].append(crt)
 
         if listener["SslPolicy"]:
             policy = elb.describe_ssl_policies_v2(
@@ -173,12 +190,12 @@ def get_elb_endpoints_v2(account_number, region, elb_dict):
     return endpoints
 
 
-def get_distribution_endpoint(account_number, cert_id_to_name, distrib_dict):
+def get_distribution_endpoint(account_number, cert_id_to_arn, distrib_dict):
     """
     Constructs endpoint data from a distribution response, or None if it does
     not represent a distribution Lemur cares about.
     :param account_number:
-    :param cert_id_to_name: map of IAM certificate IDs to names
+    :param cert_id_to_arn: map of IAM certificate IDs to ARNs
     :param distrib_dict:
     :return: a list of endpoint dictionaries
     """
@@ -197,7 +214,8 @@ def get_distribution_endpoint(account_number, cert_id_to_name, distrib_dict):
     if not iam_cert_id:
         return None
 
-    cert_name = cert_id_to_name.get(iam_cert_id)
+    cert_arn = cert_id_to_arn.get(iam_cert_id)
+    cert_name = iam.get_name_from_arn(cert_arn)
     if not cert_name:
         current_app.logger.warning(
             f"get_distribution_endpoints: no IAM certificate with id {iam_cert_id}")
@@ -224,7 +242,11 @@ def get_distribution_endpoint(account_number, cert_id_to_name, distrib_dict):
         aliases=aliases,
         type="cloudfront",
         port=443,
-        certificate_name=cert_name,
+        primary_certificate=dict(
+            name=cert_name,
+            path=iam.get_path_from_arn(cert_arn),
+            registry_type=iam.get_registry_type_from_arn(cert_arn),
+        ),
         policy=policy,
     )
 
@@ -342,7 +364,7 @@ class AWSSourcePlugin(SourcePlugin):
         endpoints = []
         account_number = self.get_option("accountNumber", options)
         try:
-            iam_cert_dict = iam.get_certificate_id_to_name(account_number=account_number)
+            iam_cert_dict = iam.get_certificate_id_to_arn(account_number=account_number)
             distributions = cloudfront.get_all_distributions(account_number=account_number)
         except Exception as e:  # noqa
             capture_exception()
@@ -475,9 +497,9 @@ class AWSSourcePlugin(SourcePlugin):
                 for certificate in listener["Certificates"]:
                     certificate_names.append(iam.get_name_from_arn(certificate["CertificateArn"]))
         elif endpoint.type == "cloudfront":
-            cert_id_to_name = iam.get_certificate_id_to_name(account_number=account_number)
+            cert_id_to_arn = iam.get_certificate_id_to_arn(account_number=account_number)
             dist = cloudfront.get_distribution(account_number=account_number, distribution_id=endpoint.name)
-            loaded = get_distribution_endpoint(account_number, cert_id_to_name, dist)
+            loaded = get_distribution_endpoint(account_number, cert_id_to_arn, dist)
             if loaded:
                 certificate_names.append(loaded["certificate_name"])
         else:

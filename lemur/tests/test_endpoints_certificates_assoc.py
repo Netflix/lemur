@@ -30,10 +30,7 @@ def test_secondary_certificates_assoc(session):
     additional_certs = [CertificateFactory() for _ in range(0, 5)]
 
     for crt in additional_certs:
-        # TODO(EDGE-1363) Expose API for managing secondary certificates associated with an endpoint
-        expected_endpoint.certificates_assoc.append(
-            EndpointsCertificates(certificate=crt, endpoint=expected_endpoint, primary=False)
-        )
+        expected_endpoint.add_sni_certificate(certificate=crt)
 
     actual_endpoint = session.query(Endpoint).filter(Endpoint.name == expected_endpoint.name).scalar()
     assert expected_endpoint == actual_endpoint
@@ -46,7 +43,6 @@ def test_primary_certificate_uniqueness(session):
     endpoint = EndpointFactory()
     endpoint.primary_certificate = crt
 
-    # TODO(EDGE-1363) Expose API for managing secondary certificates associated with an endpoint
     endpoint.certificates_assoc.append(
         EndpointsCertificates(certificate=CertificateFactory(), endpoint=endpoint, primary=True)
     )
@@ -75,9 +71,6 @@ def test_certificate_uniqueness(session):
     try:
         crt = CertificateFactory()
         for _ in range(0, 2):
-            # TODO(EDGE-1363) Expose API for managing secondary certificates associated with an endpoint
-            endpoint.certificates_assoc.append(
-                EndpointsCertificates(certificate=crt, endpoint=endpoint, primary=False)
-            )
+            endpoint.add_sni_certificate(certificate=crt)
     except SQLAlchemyError:
         assert False
