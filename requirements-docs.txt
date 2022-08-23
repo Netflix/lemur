@@ -59,13 +59,13 @@ blinker==1.4
     # via
     #   flask-mail
     #   flask-principal
-boto3==1.24.42
+boto3==1.24.46
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
-botocore==1.27.42
+botocore==1.27.56
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -115,7 +115,7 @@ click-plugins==1.1.1
     # via celery
 click-repl==0.2.0
     # via celery
-cloudflare==2.9.11
+cloudflare==2.9.12
     # via -r requirements-docs.in
 configargparse==1.5.3
     # via
@@ -125,7 +125,7 @@ configobj==5.0.6
     # via
     #   -r requirements-tests.txt
     #   certbot
-coverage==6.4.2
+coverage==6.4.4
     # via -r requirements-tests.txt
 cryptography==37.0.4
     # via
@@ -169,7 +169,7 @@ ecdsa==0.17.0
     #   sshpubkeys
 factory-boy==3.2.1
     # via -r requirements-tests.txt
-faker==13.15.1
+faker==14.1.0
     # via
     #   -r requirements-tests.txt
     #   factory-boy
@@ -211,7 +211,7 @@ flask-sqlalchemy==2.5.1
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   flask-migrate
-freezegun==1.2.1
+freezegun==1.2.2
     # via -r requirements-tests.txt
 future==0.18.2
     # via

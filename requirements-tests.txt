@@ -24,11 +24,11 @@ bandit==1.7.4
     # via -r requirements-tests.in
 black==22.6.0
     # via -r requirements-tests.in
-boto3==1.24.42
+boto3==1.24.46
     # via
     #   aws-sam-translator
     #   moto
-botocore==1.27.42
+botocore==1.27.56
     # via
     #   aws-xray-sdk
     #   boto3
@@ -52,7 +52,7 @@ configargparse==1.5.3
     # via certbot
 configobj==5.0.6
     # via certbot
-coverage==6.4.2
+coverage==6.4.4
     # via -r requirements-tests.in
 cryptography==37.0.4
     # via
@@ -76,7 +76,7 @@ ecdsa==0.17.0
     #   sshpubkeys
 factory-boy==3.2.1
     # via -r requirements-tests.in
-faker==13.15.1
+faker==14.1.0
     # via
     #   -r requirements-tests.in
     #   factory-boy
@@ -92,7 +92,7 @@ flask-migrate==2.7.0
     # via -r requirements-tests.in
 flask-sqlalchemy==2.5.1
     # via flask-migrate
-freezegun==1.2.1
+freezegun==1.2.2
     # via -r requirements-tests.in
 future==0.18.2
     # via aws-xray-sdk

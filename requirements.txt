@@ -36,9 +36,9 @@ blinker==1.4
     # via
     #   flask-mail
     #   flask-principal
-boto3==1.24.42
+boto3==1.24.46
     # via -r requirements.in
-botocore==1.27.42
+botocore==1.27.56
     # via
     #   -r requirements.in
     #   boto3
@@ -74,7 +74,7 @@ click-plugins==1.1.1
     # via celery
 click-repl==0.2.0
     # via celery
-cloudflare==2.9.11
+cloudflare==2.9.12
     # via -r requirements.in
 configargparse==1.5.3
     # via certbot
