@@ -302,7 +302,9 @@ def rotate(endpoint_name, source, new_certificate_name, old_certificate_name, me
             # which are associated with a certificate that has been replaced
             print("[+] Rotating all endpoints that have new certificates available")
             for endpoint in endpoint_service.get_all_pending_rotation():
-
+                if not endpoint.certificate.replaced:
+                    # TODO(EDGE-1365) Support rotating SNI certificates.
+                    continue
                 log_data["message"] = "Rotating endpoint from old to new cert"
                 if len(endpoint.certificate.replaced) > 1:
                     log_data["message"] = f"Multiple replacement certificates found, going with the first one out of " \
@@ -444,6 +446,9 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
             current_app.logger.info(log_data)
             all_pending_rotation_endpoints = endpoint_service.get_all_pending_rotation()
             for endpoint in all_pending_rotation_endpoints:
+                if not endpoint.certificate.replaced:
+                    # TODO(EDGE-1365) Support rotating SNI certificates.
+                    continue
                 log_data["endpoint"] = endpoint.dnsname
                 if region not in endpoint.dnsname:
                     log_data["message"] = "Skipping rotation, region mismatch"

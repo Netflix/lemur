@@ -15,6 +15,7 @@ from sqlalchemy.orm import joinedload
 
 from lemur import database
 from lemur.common.utils import truthiness
+from lemur.certificates.models import Certificate
 from lemur.endpoints.models import Endpoint, EndpointDnsAlias, Policy, Cipher
 from lemur.sources.models import Source
 from lemur.extensions import metrics
@@ -105,7 +106,7 @@ def get_all_pending_rotation():
     that have been replaced.
     :return:
     """
-    return Endpoint.query.filter(Endpoint.certificate.replaced.any()).all()
+    return Endpoint.query.filter(Endpoint.certificates.any(Certificate.replaced.any())).all()
 
 
 def create(**kwargs):

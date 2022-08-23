@@ -28,6 +28,17 @@ def test_get_by_name_and_source(client, source_plugin):
     assert endpoint == get_by_name_and_source(endpoint.name, endpoint.source.label)
 
 
+def test_get_all_pending_rotation(client, source_plugin):
+    from lemur.endpoints.service import get_all_pending_rotation
+
+    endpoint = EndpointFactory()
+    endpoint.certificate = CertificateFactory()
+    new_certificate = CertificateFactory()
+    endpoint.certificate.replaced = [new_certificate]
+
+    assert [endpoint] == get_all_pending_rotation()
+
+
 @pytest.mark.parametrize(
     "token,status",
     [
