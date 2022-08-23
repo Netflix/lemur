@@ -292,6 +292,9 @@ def rotate(endpoint_name, source, new_certificate_name, old_certificate_name, me
             log_data["certificate_old"] = old_cert.name
             log_data["message"] = "Rotating endpoint from old to new cert"
             for endpoint in old_cert.endpoints:
+                if endpoint.primary_certificate != old_cert:
+                    # TODO(EDGE-1365) Support rotating SNI certificates.
+                    continue
                 print(f"[+] Rotating {endpoint.name}")
                 log_data["endpoint"] = endpoint.dnsname
                 request_rotation(endpoint, new_cert, message, commit)
@@ -437,6 +440,9 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
             print(log_data)
             current_app.logger.info(log_data)
             for endpoint in old_cert.endpoints:
+                if endpoint.primary_certificate != old_cert:
+                    # TODO(EDGE-1365) Support rotating SNI certificates.
+                    continue
                 log_data["endpoint"] = endpoint.dnsname
                 request_rotation_region(endpoint, new_cert, message, commit, log_data, region)
 
