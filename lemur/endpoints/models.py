@@ -150,7 +150,7 @@ class Endpoint(db.Model):
     @sni_certificates.setter
     def sni_certificates(self, certs):
         """Sets the SNI certificates associated with the endpoint."""
-        self.certificates_assoc = [assoc for assoc in self.certificates_assoc if not assoc.primary]
+        self.certificates_assoc = [assoc for assoc in self.certificates_assoc if assoc.primary]
         for cert in certs:
             self.add_sni_certificate(cert)
 

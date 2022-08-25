@@ -45,7 +45,7 @@ def test_sync_endpoints(session):
     from unittest import mock
     from lemur.endpoints import service as endpoint_service
     from lemur.sources import service as source_service
-    from lemur.tests.factories import SourceFactory, CertificateFactory
+    from lemur.tests.factories import EndpointFactory, SourceFactory, CertificateFactory
     from lemur.plugins.lemur_aws.plugin import AWSSourcePlugin
 
     source = SourceFactory()
@@ -53,6 +53,10 @@ def test_sync_endpoints(session):
 
     crt1 = CertificateFactory()
     crt2 = CertificateFactory()
+    crt3 = CertificateFactory()
+    existing_endpoint = EndpointFactory(name="test-lb-4", dnsname="test4.example.com", port=443)
+    existing_endpoint.primary_certificate = crt1
+    existing_endpoint.source = source
     session.commit()
 
     with mock.patch.object(
@@ -116,13 +120,36 @@ def test_sync_endpoints(session):
                     )
                 ],
                 registry_type="iam",
+            ),
+            dict(
+                name="test-lb-4",
+                dnsname="test4.example.com",
+                type="elbv2",
+                port=443,
+                policy=dict(
+                    name="none",
+                    ciphers=[],
+                ),
+                primary_certificate=dict(
+                    name=crt2.name,
+                    path="/fakecrt2",
+                    registry_type="iam",
+                ),
+                sni_certificates=[
+                    dict(
+                        name=crt3.name,
+                        path="/fakecrt3",
+                        registry_type="iam",
+                    )
+                ],
+                registry_type="iam",
             )
         ],
     ):
         new, updated, updated_by_hash = source_service.sync_endpoints(source)
 
     assert new == 3
-    assert updated == 0
+    assert updated == 1
     assert updated_by_hash == 0
 
     ep1 = endpoint_service.get_by_name("test-lb-1")
@@ -142,6 +169,11 @@ def test_sync_endpoints(session):
     assert len(ep3.sni_certificates) == 2
     assert ep3.sni_certificates[0].name == crt1.name
     assert ep3.sni_certificates[1].name == crt2.name
+
+    ep4 = endpoint_service.get_by_name("test-lb-4")
+    assert ep4.primary_certificate.name == crt2.name
+    assert len(ep4.sni_certificates) == 1
+    assert ep4.sni_certificates[0].name == crt3.name
 
 
 @pytest.mark.parametrize(
