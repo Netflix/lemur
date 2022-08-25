@@ -1650,6 +1650,78 @@ class CertificateRevoke(AuthenticatedResource):
             return dict(message=f"Failed to revoke: {str(e)}"), 400
 
 
+class CertificateDeactivate(AuthenticatedResource):
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        super(CertificateDeactivate, self).__init__()
+
+    def put(self, certificate_id):
+        """
+        .. http:put:: /certificates/1/deactivate
+
+           deactivate a certificate (integration test only)
+           **Example request**:
+
+           .. sourcecode:: http
+
+              PUT /certificates/1/deactivate HTTP/1.1
+              Host: example.com
+              Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
+
+           **Example response**:
+
+           .. sourcecode:: http
+
+              HTTP/1.1 200 OK
+              Vary: Accept
+              Content-Type: text/javascript
+
+              {
+                "id": 1
+              }
+
+           :reqheader Authorization: OAuth token to authenticate
+           :statuscode 200: no error
+           :statuscode 403: unauthenticated or cert attached to LB
+           :statuscode 400: encountered error, more details in error message
+
+        """
+        cert = service.get(certificate_id)
+
+        if not cert:
+            return dict(message="Cannot find specified certificate"), 404
+
+        # allow creators
+        if g.current_user != cert.user:
+            owner_role = role_service.get_by_name(cert.owner)
+            permission = CertificatePermission(owner_role, [x.name for x in cert.roles])
+
+            if not permission.can():
+                return (
+                    dict(message="You are not authorized to deactivate this certificate."),
+                    403,
+                )
+
+        try:
+            error_message = service.deactivate(cert)
+            log_service.create(g.current_user, "deactivate_cert", certificate=cert)
+
+            if error_message:
+                return dict(message=f"Certificate (id:{cert.id}) is deactivated - {error_message}"), 400
+            return dict(id=cert.id)
+        except NotImplementedError as ne:
+            return dict(message="Deactivate is not implemented for issuer of this certificate"), 400
+        except Exception as e:
+            capture_exception()
+            return dict(message=f"Failed to Deactivate: {str(e)}"), 400
+
+
+api.add_resource(
+    CertificateDeactivate,
+    "/certificates/<int:certificate_id>/deactivate",
+    endpoint="deactivateCertificate",
+)
 api.add_resource(
     CertificateRevoke,
     "/certificates/<int:certificate_id>/revoke",

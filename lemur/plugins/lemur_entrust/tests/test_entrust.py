@@ -22,7 +22,7 @@ def config_mock(*args):
     return values[args[0]]
 
 
-@patch("lemur.plugins.lemur_digicert.plugin.current_app")
+@patch("lemur.plugins.lemur_entrust.plugin.current_app")
 def test_determine_end_date(mock_current_app):
     with freeze_time(time_to_freeze=arrow.get(2016, 11, 3).datetime):
         assert arrow.get(2017, 12, 3).format('YYYY-MM-DD') == plugin.determine_end_date(0)  # 1 year + 1 month
@@ -74,3 +74,25 @@ def test_create_authority(app):
     p = plugins.get("entrust-issuer")
     entrust_root, intermediate, role = p.create_authority(options)
     assert role == [{"username": "", "password": "", "name": "entrust_test_Entrust_authority_admin"}]
+
+
+def test_deactivate_certificate(app):
+    from lemur.plugins.base import plugins
+    p = plugins.get("entrust-issuer")
+
+    mock_cert = Mock()
+    mock_cert.external_id = 1
+
+    p.options = [{
+        "name": "staging_account",
+        "type": "bool",
+        "required": True,
+        "helpMessage": "Set to True if this is an Entrust staging account.",
+        "default": False,
+        "value": True,
+    }]
+    try:
+        p.deactivate_certificate(mock_cert)
+        assert False
+    except Exception as inst:
+        assert inst.args[0] == "This issuer is not configured to deactivate certificates."

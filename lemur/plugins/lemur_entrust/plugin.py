@@ -193,6 +193,16 @@ class EntrustIssuerPlugin(IssuerPlugin):
     author = "sirferl"
     author_url = "https://github.com/sirferl/lemur"
 
+    options = [
+        {
+            "name": "staging_account",
+            "type": "bool",
+            "required": False,
+            "helpMessage": "Set to True if this is an Entrust staging account.",
+            "default": False,
+        }
+    ]
+
     def __init__(self, *args, **kwargs):
         """Initialize the issuer with the appropriate details."""
         required_vars = [
@@ -302,11 +312,16 @@ class EntrustIssuerPlugin(IssuerPlugin):
 
     @retry(stop_max_attempt_number=3, wait_fixed=1000)
     def deactivate_certificate(self, certificate):
-        """Deactivates an Entrust certificate, as long as it is still active, and not already deactivcated. """
+        """Deactivates an Entrust certificate, as long as it is still active, and not already deactivated. """
         log_data = {
             "function": f"{__name__}.{sys._getframe().f_code.co_name}",
             "external_id": f"{certificate.external_id}"
         }
+
+        # backwards compatible change to protect this endpoint from being used in production
+        for option in self.options:
+            if option.get("name") == "staging_account" and option.get("value") is True:
+                raise Exception("This issuer is not configured to deactivate certificates.")
 
         # Let's first check the status of the certificate
         base_url = current_app.config.get("ENTRUST_URL")
@@ -327,7 +342,7 @@ class EntrustIssuerPlugin(IssuerPlugin):
             metrics.send("entrust_deactivate_certificate", "counter", 1)
             return handle_response(response)
         else:
-            # the certificate is no longer valid, or doesn't exist and cannot be deacticated
+            # the certificate is no longer valid, or doesn't exist and cannot be deactivated
             return 200
 
     @staticmethod
@@ -445,7 +460,7 @@ class EntrustSourcePlugin(SourcePlugin):
                 break
             else:
                 offset += 1
-        current_app.logger.info(f"Retrieved {processed_certs} ertificates")
+        current_app.logger.info(f"Retrieved {processed_certs} certificates")
         return certs
 
     def get_endpoints(self, options, **kwargs):

@@ -31,3 +31,6 @@ class IssuerPlugin(Plugin):
 
     def cancel_ordered_certificate(self, pending_cert, **kwargs):
         raise NotImplementedError
+
+    def deactivate_certificate(self, certificate):
+        raise NotImplementedError
