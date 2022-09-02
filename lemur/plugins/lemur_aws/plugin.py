@@ -437,6 +437,48 @@ class AWSSourcePlugin(SourcePlugin):
                 region=region,
             )
 
+    def replace_sni_certificate(self, endpoint, old_cert, new_cert):
+        options = endpoint.source.options
+        account_number = self.get_option("accountNumber", options)
+
+        if endpoint.type != "elbv2":
+            raise NotImplementedError(f"{endpoint.type} endpoints do not support SNI certificates")
+        if endpoint.registry_type != "iam":
+            raise Exception(f"Lemur doesn't support rotating certificates on {endpoint.registry_type} registry")
+
+        partition = current_app.config.get("LEMUR_AWS_PARTITION", "aws")
+        new_cert_arn = iam.create_arn_from_cert(account_number, partition, new_cert.name, "")
+        old_cert_arn = iam.create_arn_from_cert(account_number, partition, old_cert.name, "")
+        region = get_region_from_dns(endpoint.dnsname)
+
+        listener_arn = elb.get_listener_arn_from_endpoint(
+            endpoint.name,
+            endpoint.port,
+            account_number=account_number,
+            region=region,
+        )
+
+        # Rotate the SNI certificate associated with the endpoint.
+        # Note that the call to add the new listener certificate is idempotent meaning that if the new certificate
+        # is already in the certificate list then the call will be successful and the new certificate will not
+        # be added to the certificate list again. Furthermore, if the subsequent call to remove the old certificate
+        # fails for any reason then another attempt to remove it will be performed on the next rotation attempt.
+        current_app.logger.debug(f"Adding SNI certificate {new_cert.name} to endpoint {endpoint.name}")
+        elb.add_listener_certificates_v2(
+            account_number=account_number,
+            region=region,
+            listener_arn=listener_arn,
+            certificates=[{"CertificateArn": new_cert_arn}]
+        )
+
+        current_app.logger.debug(f"Removing SNI certificate {old_cert.name} from endpoint {endpoint.name}")
+        elb.remove_listener_certificates_v2(
+            account_number=account_number,
+            region=region,
+            listener_arn=listener_arn,
+            certificates=[{"CertificateArn": old_cert_arn}]
+        )
+
     def clean(self, certificate, options, **kwargs):
         account_number = self.get_option("accountNumber", options)
         iam.delete_cert(certificate.name, account_number=account_number)

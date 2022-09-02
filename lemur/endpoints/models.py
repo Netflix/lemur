@@ -160,6 +160,13 @@ class Endpoint(db.Model):
             EndpointsCertificates(certificate=certificate, endpoint=self, primary=False, path=path)
         )
 
+    def replace_sni_certificate(self, old_certificate, new_certificate, path=""):
+        """Replaces the SNI certificate associated with the endpoint."""
+        for assoc in self.certificates_assoc:
+            if assoc.certificate == old_certificate:
+                assoc.certificate = new_certificate
+                assoc.path = path
+
     def set_certificate_path(self, certificate, path):
         """Sets the path of the given certificate associated with the endpoint."""
         for assoc in self.certificates_assoc:

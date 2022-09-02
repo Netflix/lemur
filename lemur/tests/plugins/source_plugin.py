@@ -17,3 +17,6 @@ class TestSourcePlugin(SourcePlugin):
 
     def update_endpoint(self, endpoint, certificate):
         return
+
+    def replace_sni_certificate(self, endpoint, old_cert, new_cert):
+        return
