@@ -477,7 +477,7 @@ requests==2.28.1
     #   requests-toolbelt
     #   responses
     #   sphinx
-requests-mock==1.9.3
+requests-mock==1.10.0
     # via -r requirements-tests.txt
 requests-toolbelt==0.9.1
     # via
