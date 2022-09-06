@@ -242,7 +242,7 @@ requests==2.28.1
     #   requests-mock
     #   requests-toolbelt
     #   responses
-requests-mock==1.9.3
+requests-mock==1.10.0
     # via -r requirements-tests.in
 requests-toolbelt==0.9.1
     # via acme
