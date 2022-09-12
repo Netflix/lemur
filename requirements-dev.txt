@@ -6,7 +6,7 @@
 #
 bleach==4.1.0
     # via readme-renderer
-certifi==2022.6.15
+certifi==2022.6.15.1
     # via requests
 cffi==1.15.0
     # via cryptography
