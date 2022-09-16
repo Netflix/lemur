@@ -305,7 +305,7 @@ kombu==5.2.4
     # via celery
 logmatic-python==0.1.7
     # via -r requirements-docs.in
-mako==1.2.0
+mako==1.2.2
     # via
     #   -r requirements-tests.txt
     #   alembic
