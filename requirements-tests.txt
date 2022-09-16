@@ -141,7 +141,7 @@ jsonschema==3.2.0
     #   cfn-lint
 junit-xml==1.9
     # via cfn-lint
-mako==1.2.0
+mako==1.2.2
     # via alembic
 markupsafe==2.1.1
     # via
