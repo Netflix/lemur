@@ -135,7 +135,7 @@ future==0.18.2
     # via -r requirements.in
 gunicorn==20.1.0
     # via -r requirements.in
-hvac==0.11.2
+hvac==1.0.2
     # via -r requirements.in
 idna==3.3
     # via requests
@@ -207,6 +207,8 @@ pycparser==2.21
     # via cffi
 pycryptodomex==3.14.1
     # via pyjks
+pyhcl==0.4.4
+    # via hvac
 pyjks==20.0.0
     # via -r requirements.in
 pyjwt==2.4.0
@@ -272,7 +274,6 @@ six==1.16.0
     #   configobj
     #   flask-cors
     #   flask-restful
-    #   hvac
     #   paramiko
     #   python-dateutil
     #   retrying

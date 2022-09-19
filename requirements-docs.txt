@@ -231,7 +231,7 @@ graphql-core==3.2.0
     #   moto
 gunicorn==20.1.0
     # via -r requirements-docs.in
-hvac==0.11.2
+hvac==1.0.2
     # via -r requirements-docs.in
 idna==3.3
     # via
@@ -393,6 +393,8 @@ pyflakes==2.4.0
     # via -r requirements-tests.txt
 pygments==2.11.2
     # via sphinx
+pyhcl==0.4.4
+    # via hvac
 pyjks==20.0.0
     # via -r requirements-docs.in
 pyjwt==2.4.0
@@ -514,7 +516,6 @@ six==1.16.0
     #   fakeredis
     #   flask-cors
     #   flask-restful
-    #   hvac
     #   jsonschema
     #   junit-xml
     #   paramiko
