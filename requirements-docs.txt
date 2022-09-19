@@ -75,7 +75,7 @@ botocore==1.27.70
     #   s3transfer
 celery[redis]==5.2.7
     # via -r requirements-docs.in
-certbot==1.29.0
+certbot==1.30.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
