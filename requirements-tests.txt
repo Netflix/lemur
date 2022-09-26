@@ -36,7 +36,7 @@ botocore==1.27.80
     #   s3transfer
 certbot==1.30.0
     # via -r requirements-tests.in
-certifi==2022.9.14
+certifi==2022.9.24
     # via requests
 cffi==1.15.0
     # via cryptography
