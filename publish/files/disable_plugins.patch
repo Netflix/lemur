@@ -8,6 +8,7 @@
              'acme_issuer = lemur.plugins.lemur_acme.plugin:ACMEIssuerPlugin',
              'acme_http_issuer = lemur.plugins.lemur_acme.plugin:ACMEHttpIssuerPlugin',
              'aws_destination = lemur.plugins.lemur_aws.plugin:AWSDestinationPlugin',
+             'gcp_destination = lemur.plugins.lemur_gcp.plugin:GCPDestinationPlugin',
 @@ -139,26 +138,9 @@
 -            'aws_sns = lemur.plugins.lemur_aws.plugin:SNSNotificationPlugin',
              'email_notification = lemur.plugins.lemur_email.plugin:EmailNotificationPlugin',

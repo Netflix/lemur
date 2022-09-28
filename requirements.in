@@ -25,6 +25,7 @@ Flask <= 1.1.2 # similar to Flask-Migrate
 Flask-Cors
 flask_replicated
 future
+google-cloud-compute
 gunicorn
 hvac # required for the vault destination plugin
 inflection

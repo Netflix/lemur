@@ -135,6 +135,8 @@ future==0.18.2
     # via -r requirements.in
 gunicorn==20.1.0
     # via -r requirements.in
+google-cloud-compute==1.5.1
+    # via -r requirements.in
 hvac==0.11.2
     # via -r requirements.in
 idna==3.3
