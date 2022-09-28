@@ -1044,7 +1044,14 @@ def process_duplicates(duplicate_candidate_cert, skipped_certs, rotation_disable
             certs_to_stay_on_autorotate.append(matching_cert.name)
 
     if skip_cert:
-        return False, certs_with_same_prefix
+        # Not reporting failure for skipping cert since they are not duplicates,
+        # comparision is working as intended
+        for skipped_cert in certs_with_same_prefix:
+            skipped_certs.append(skipped_cert.name)
+            metrics.send("disable_rotation_duplicates", "counter", 1,
+                         metric_tags={"status": "skipped", "certificate": skipped_cert.name}
+                         )
+        return True, None
 
     # If no certificate has endpoint, pick fallback_cert_to_rotate or any one to allow one certificate to auto-rotate.
     if not certs_to_stay_on_autorotate:
