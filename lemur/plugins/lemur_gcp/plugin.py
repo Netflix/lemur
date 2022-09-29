@@ -1,7 +1,7 @@
 from flask import current_app
 from google.cloud.compute_v1.services import ssl_certificates
 from google.oauth2 import service_account
-import google.auth
+from google.oauth2.credentials import Credentials
 import hvac
 import os
 
@@ -94,8 +94,8 @@ class GCPDestinationPlugin(DestinationPlugin):
             roleset="",
             mount_point=f"{self.get_option('vaultMountPoint', options)}"
         )["data"]["token"].rstrip(".")
-        credentials, _ = google.auth.default()  # Fetches default GCP credentials for the current environment
-        credentials.token = service_token  # replace default credentials with oauth2 token fetched from vault
+
+        credentials = Credentials(service_token)
 
         return credentials
 
