@@ -85,7 +85,7 @@ def test_upload(mock_ssl_certificates, mock_credentials, mock_gcp_account_id):
 
     ssl_certificate_body = {
         "name": name,
-        "certificate": body,
+        "certificate": GCPDestinationPlugin()._full_ca(body, cert_chain),
         "description": "",
         "private_key": private_key,
     }
@@ -122,3 +122,7 @@ def test_certificate_name():
 )
 def test_modify_cert_name_for_gcp(original_cert_name, gcp_cert_name):
     assert GCPDestinationPlugin()._modify_cert_name_for_gcp(original_cert_name) == gcp_cert_name
+
+
+def test_full_ca():
+    assert GCPDestinationPlugin()._full_ca(body, cert_chain) == f"{body}\n{cert_chain}"

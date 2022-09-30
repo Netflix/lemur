@@ -52,7 +52,7 @@ class GCPDestinationPlugin(DestinationPlugin):
         try:
             ssl_certificate_body = {
                 "name": self._certificate_name(body),
-                "certificate": body,
+                "certificate": self._full_ca(body, cert_chain),
                 "description": "",
                 "private_key": private_key,
             }
@@ -122,3 +122,7 @@ class GCPDestinationPlugin(DestinationPlugin):
         gcp_name = gcp_name.rstrip('.*-')
 
         return gcp_name
+
+    def _full_ca(self, body, cert_chain):
+        # in GCP you need to assemble the cert body and the cert chain in the same parameter
+        return f"{body}\n{cert_chain}"
