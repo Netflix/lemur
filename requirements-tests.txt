@@ -80,7 +80,7 @@ faker==15.0.0
     # via
     #   -r requirements-tests.in
     #   factory-boy
-fakeredis==1.9.1
+fakeredis==1.9.3
     # via -r requirements-tests.in
 flask==1.1.2
     # via
@@ -259,7 +259,6 @@ six==1.16.0
     #   cfn-lint
     #   configobj
     #   ecdsa
-    #   fakeredis
     #   jsonschema
     #   junit-xml
     #   python-dateutil
