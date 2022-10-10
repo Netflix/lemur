@@ -427,7 +427,7 @@ pytest==7.1.3
     #   pytest-mock
 pytest-flask==1.2.0
     # via -r requirements-tests.txt
-pytest-mock==3.9.0
+pytest-mock==3.10.0
     # via -r requirements-tests.txt
 python-dateutil==2.8.2
     # via
