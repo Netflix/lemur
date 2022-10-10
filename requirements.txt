@@ -191,7 +191,7 @@ pem==21.2.0
     # via -r requirements.in
 prompt-toolkit==3.0.28
     # via click-repl
-psycopg2==2.9.3
+psycopg2==2.9.4
     # via -r requirements.in
 pyasn1==0.4.8
     # via
