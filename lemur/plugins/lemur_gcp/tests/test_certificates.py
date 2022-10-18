@@ -54,3 +54,27 @@ def test_modify_for_gcp(original_cert_name, gcp_cert_name):
 
 def test_full_ca():
     assert certificates.full_ca(body, cert_chain) == f"{body}\n{cert_chain}"
+
+
+def test_get_self_link():
+    assert certificates.get_self_link("sandbox", "cert1") == \
+           "https://www.googleapis.com/compute/v1/projects/sandbox/global/sslCertificates/cert1"
+
+
+@pytest.mark.parametrize(
+    ("certs", "new_cert", "old_cert", "expected"),
+    [
+        # new cert does not exist, old cert exists at end
+        (["a", "b"], "c", "b", ["a", "c"]),
+        # new cert does not exist, old cert does not exist
+        (["a"], "c", "b", ["a", "c"]),
+        # new cert matches old cert
+        (["a", "b"], "b", "b", ["a", "b"]),
+        # new cert does exist, old cert does not exist
+        (["a", "b", "c"], "c", "d", ["a", "b", "c"]),
+        # new cert exists, old cert exists
+        (["a", "b"], "a", "b", ["a"]),
+    ]
+)
+def test_calc_certs(certs, new_cert, old_cert, expected):
+    assert certificates.calc_diff(certs, new_cert, old_cert) == expected
