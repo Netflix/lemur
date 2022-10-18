@@ -46,7 +46,8 @@ def create_pkcs12(cert, chain, p12_tmp, key, alias, passphrase):
     :param passphrase:
     """
     assert isinstance(cert, str)
-    assert isinstance(chain, str)
+    if chain is not None:
+        assert isinstance(chain, str)
     assert isinstance(key, str)
 
     with mktempfile() as key_tmp:
