@@ -120,8 +120,8 @@ def update_target_proxy_default_cert(project_id, credentials, endpoint, certific
 
 
 def set_target_https_proxy_certs(project_id, client, endpoint, certificate_self_links, existing_self_links):
-    current_app.logger.debug(f"Setting certificates from {existing_self_links} to {certificate_self_links} for "
-                             f"endpoint {endpoint.name}")
+    current_app.logger.info(f"Setting certificates from {existing_self_links} to {certificate_self_links} for "
+                            f"endpoint {endpoint.name}")
     req = TargetHttpsProxiesSetSslCertificatesRequest()
     req.ssl_certificates = certificate_self_links
     operation = client.set_ssl_certificates(
@@ -133,8 +133,8 @@ def set_target_https_proxy_certs(project_id, client, endpoint, certificate_self_
 
 
 def set_target_ssl_proxy_certs(project_id, client, endpoint, certificate_self_links, existing_self_links):
-    current_app.logger.debug(f"Setting certificates from {existing_self_links} to {certificate_self_links} for "
-                             f"endpoint {endpoint.name}")
+    current_app.logger.info(f"Setting certificates from {existing_self_links} to {certificate_self_links} for "
+                            f"endpoint {endpoint.name}")
     req = TargetSslProxiesSetSslCertificatesRequest()
     req.ssl_certificates = certificate_self_links
     operation = client.set_ssl_certificates(
