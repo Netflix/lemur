@@ -115,7 +115,7 @@ class TestAzureDestination(unittest.TestCase):
         )
         adapter.register_uri(
             "POST",
-            "https://couldbeanyvalue.com/certificates/localhost/import",
+            "https://couldbeanyvalue.com/certificates/localhost-LocalCA/import",
             text=json.dumps({"id": "id123"}),
             status_code=200,
         )

@@ -11,7 +11,7 @@
 """
 from flask import current_app
 
-from lemur.common.defaults import common_name, bitstrength
+from lemur.common.defaults import common_name, issuer, bitstrength
 from lemur.common.utils import parse_certificate, parse_private_key, check_validation
 from lemur.plugins.bases import DestinationPlugin
 
@@ -144,7 +144,7 @@ class AzureDestinationPlugin(DestinationPlugin):
         # Azure does not allow "." in the certificate name we replace them with "-"
         cert = parse_certificate(body)
         ca_certs = parse_certificate(cert_chain)
-        certificate_name = common_name(cert).replace(".", "-")
+        certificate_name = f"{common_name(cert).replace('.', '-')}-{issuer(cert)}"
 
         vault_URI = self.get_option("vaultUrl", options)
         tenant = self.get_option("azureTenant", options)
