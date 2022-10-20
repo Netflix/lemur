@@ -1,5 +1,6 @@
+import os
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import patch
 
 from flask import Flask
 from lemur.plugins.lemur_azure_dest import plugin
@@ -94,11 +95,9 @@ class TestAzureDestination(unittest.TestCase):
     def tearDown(self):
         self.ctx.pop()
 
-    # commented patch: another unsuccessful try
-    # @patch("requests.post", side_effect=mocked_requests_post)
-    # @patch("requests.post")
-    @patch("lemur.plugins.lemur_azure_dest.plugin.current_app")
-    def test_upload(self, patched_app):
+    @patch.dict(os.environ, {"VAULT_ADDR": "https://fakevaultinstance:8200"})
+    @patch("hvac.Client")
+    def test_upload(self, hvac_client_mock):
 
         from lemur.plugins.lemur_azure_dest.plugin import AzureDestinationPlugin
         import requests_mock
@@ -122,18 +121,31 @@ class TestAzureDestination(unittest.TestCase):
 
         subject.session.mount("https://", adapter)
 
+        hvac_client_mock().secrets.azure.generate_credentials.return_value = {"client_id": "fakeid123", "client_secret": "fakesecret123"}
+
         name = 'Test_Certificate'
         body = test_server_cert
         private_key = test_server_key
         cert_chain = test_ca_cert
-        options = [{'name': 'vaultUrl', 'value': 'https://couldbeanyvalue.com'}, {'name': 'azureTenant', 'value': 'mockedTenant'},
-                {'name': 'appID', 'value': 'mockedAPPid'}, {'name': 'azurePassword', 'value': 'norealPW'}]
 
-        # commented lines: another unsuccessful try
-        # return value for HTTP post - we won't access Azure
-        # mock_post = Mock()
-        # mock_post.open = mock_open()
-        # mock_post.return_value =  "['message': 'Response', 'status': 200, 'response': {'id': 'someID'}]"
-        plugin.get_access_token = Mock(return_value='valid_test_token')
+        with self.subTest(case="upload cert using azureApp auth method"):
+            options = [
+                {"name": "azureKeyVaultUrl", "value": "https://couldbeanyvalue.com"},
+                {"name": "azureTenant", 'value': "mockedTenant"},
+                {"name": "azureAppID", 'value': "mockedAPPid"},
+                {"name": "azurePassword", 'value': "norealPW"},
+                {"name": "authenticationMethod", "value": "azureApp"}
+            ]
+            subject.upload(name, body, private_key, cert_chain, options)
 
-        iferl = subject.upload(name, body, private_key, cert_chain, options)
+        with self.subTest(case="upload cert using hashicorpVault auth method"):
+            options = [
+                {"name": "azureKeyVaultUrl", "value": "https://couldbeanyvalue.com"},
+                {"name": "azureTenant", "value": "mockedTenant"},
+                {"name": "authenticationMethod", "value": "hashicorpVault"},
+                {"name": "hashicorpVaultRoleName", "value": "mockedRole"},
+                {"name": "hashicorpVaultMountPoint", "value": "/azure"}
+            ]
+            subject.upload(name, body, private_key, cert_chain, options)
+
+            hvac_client_mock().secrets.azure.generate_credentials.assert_called_with(mount_point="/azure", name="mockedRole")

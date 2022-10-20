@@ -17,10 +17,13 @@ from lemur.plugins.bases import DestinationPlugin
 
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import pkcs12
+from retrying import retry
 import requests
 import json
 import sys
 import base64
+import os
+import hvac
 
 
 def handle_response(my_response):
@@ -58,23 +61,24 @@ def handle_response(my_response):
         return data
 
 
-def get_access_token(tenant, appID, password, self):
+@retry(wait_fixed=1000, stop_max_delay=600000)
+def get_access_token(tenant, client_id, client_secret, self):
     """
-    Gets the access token with the appid and the password and returns it
+    Gets the access token for the client_id and the client_secret and returns it
 
-    Improvment option: we can try to save it and renew it only when necessary
+    Improvement option: we can try to save it and renew it only when necessary
 
     :param tenant: Tenant used
-    :param appID: Application ID from Azure
-    :param password: password for Application ID
+    :param client_id: Client ID to use for fetching an access token
+    :param client_secret: Client Secret to use for fetching an access token
     :return: Access token to post to the keyvault
     """
     # prepare the call for the access_token
     auth_url = f"https://login.microsoftonline.com/{tenant}/oauth2/token"
     post_data = {
         'grant_type': 'client_credentials',
-        'client_id': appID,
-        'client_secret': password,
+        'client_id': client_id,
+        'client_secret': client_secret,
         'resource': 'https://vault.azure.net'
     }
     try:
@@ -84,6 +88,24 @@ def get_access_token(tenant, appID, password, self):
 
     access_token = json.loads(response.content)["access_token"]
     return access_token
+
+
+def get_oauth_credentials_from_hashicorp_vault(mount_point, role_name):
+    """
+    Retrieves OAuth credentials from Hashicorp Vault's Azure secrets engine.
+
+    :param mount_point: Path the Azure secrets engine is mounted on
+    :param role_name: Name of the role to fetch credentials for
+    :returns:
+        - client_id - OAuth client ID
+        - client_secret - OAuth client secret
+    """
+    client = hvac.Client(url=os.environ["VAULT_ADDR"])
+    creds = client.secrets.azure.generate_credentials(
+        mount_point=mount_point,
+        name=role_name,
+    )
+    return creds["client_id"], creds["client_secret"]
 
 
 class AzureDestinationPlugin(DestinationPlugin):
@@ -98,33 +120,55 @@ class AzureDestinationPlugin(DestinationPlugin):
 
     options = [
         {
-            "name": "vaultUrl",
+            "name": "azureKeyVaultUrl",
             "type": "str",
             "required": True,
             "validation": check_validation("^https?://[a-zA-Z0-9.:-]+$"),
             "helpMessage": "Valid URL to Azure key vault instance",
         },
         {
+            "name": "authenticationMethod",
+            "type": "select",
+            "value": "azureApp",
+            "required": True,
+            "available": ["hashicorpVault", "azureApp"],
+            "helpMessage": "Authentication method to use",
+        },
+        {
             "name": "azureTenant",
             "type": "str",
             "required": True,
-            "validation": check_validation("^([a-zA-Z0-9/-/?])+$"),
-            "helpMessage": "Tenant for the Azure Key Vault",
+            "validation": check_validation("^([a-zA-Z0-9-?])+$"),
+            "helpMessage": "Tenant for the Azure Key Vault.",
         },
         {
-            "name": "appID",
+            "name": "azureAppID",
             "type": "str",
-            "required": True,
-            "validation": check_validation("^([a-zA-Z0-9/-/?])+$"),
-            "helpMessage": "AppID for the Azure Key Vault",
+            "required": False,
+            "validation": check_validation("^([a-zA-Z0-9-?]?)+$"),
+            "helpMessage": "AppID for the Azure Key Vault. Required if authentication method is 'azureApp'.",
         },
         {
             "name": "azurePassword",
             "type": "str",
-            "required": True,
-            "validation": check_validation("[0-9a-zA-Z.:_-~]+"),
-            "helpMessage": "Tenant password for the Azure Key Vault",
-        }
+            "required": False,
+            "validation": check_validation("([0-9a-zA-Z.:_-~]?)+"),
+            "helpMessage": "Tenant password for the Azure Key Vault. Required if authentication method is 'azureApp'.",
+        },
+        {
+            "name": "hashicorpVaultMountPoint",
+            "type": "str",
+            "required": False,
+            "helpMessage": "Path the Azure secrets engine was mounted on. Required if authentication "
+                           "method is 'hashicorpVault'.",
+        },
+        {
+            "name": "hashicorpVaultRoleName",
+            "type": "str",
+            "required": False,
+            "helpMessage": "Name of the role to fetch credentials for. Required if authentication "
+                           "method is 'hashicorpVault'.",
+        },
     ]
 
     def __init__(self, *args, **kwargs):
@@ -146,12 +190,25 @@ class AzureDestinationPlugin(DestinationPlugin):
         ca_certs = parse_certificate(cert_chain)
         certificate_name = f"{common_name(cert).replace('.', '-')}-{issuer(cert)}"
 
-        vault_URI = self.get_option("vaultUrl", options)
+        vault_URI = self.get_option("azureKeyVaultUrl", options)
         tenant = self.get_option("azureTenant", options)
-        app_id = self.get_option("appID", options)
+        app_id = self.get_option("azureAppID", options)
         password = self.get_option("azurePassword", options)
+        auth_method = self.get_option("authenticationMethod", options)
 
-        access_token = get_access_token(tenant, app_id, password, self)
+        if auth_method == "hashicorpVault":
+            mount_point = self.get_option("hashicorpVaultMountPoint", options)
+            role_name = self.get_option("hashicorpVaultRoleName", options)
+            client_id, client_secret = get_oauth_credentials_from_hashicorp_vault(mount_point, role_name)
+
+            # It may take up-to 10 minutes for the generated OAuth credentials to become usable due
+            # to AD replication delay. To account for this, the call to get_access_token is continuously
+            # re-tried until it succeeds or 10 minutes elapse.
+            access_token = get_access_token(tenant, client_id, client_secret, self)
+        elif auth_method == "azureApp":
+            access_token = get_access_token(tenant, app_id, password, self)
+        else:
+            raise Exception("No supported way to authenticate with Azure")
 
         cert_url = f"{vault_URI}/certificates/{certificate_name}/import?api-version=7.1"
         post_header = {
