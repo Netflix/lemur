@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import patch
 
 from flask import Flask
-from lemur.plugins.lemur_azure_dest import plugin
+from lemur.plugins.lemur_azure import plugin
 import json
 
 # mock certificate to test the upload function code
@@ -99,7 +99,7 @@ class TestAzureDestination(unittest.TestCase):
     @patch("hvac.Client")
     def test_upload(self, hvac_client_mock):
 
-        from lemur.plugins.lemur_azure_dest.plugin import AzureDestinationPlugin
+        from lemur.plugins.lemur_azure.plugin import AzureDestinationPlugin
         import requests_mock
         import requests
 

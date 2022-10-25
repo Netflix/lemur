@@ -1,5 +1,5 @@
 """
-.. module: lemur.plugins.lemur_azure_dest.plugin
+.. module: lemur.plugins.lemur_azure.plugin
     :platform: Unix
     :copyright: (c) 2019
     :license: Apache, see LICENCE for more details.
@@ -13,7 +13,7 @@ from flask import current_app
 
 from lemur.common.defaults import common_name, issuer, bitstrength
 from lemur.common.utils import parse_certificate, parse_private_key, check_validation
-from lemur.plugins.bases import DestinationPlugin
+from lemur.plugins.bases import DestinationPlugin, SourcePlugin
 
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import pkcs12
@@ -245,3 +245,23 @@ class AzureDestinationPlugin(DestinationPlugin):
             return_value = handle_response(response)
         except requests.exceptions.RequestException as e:
             current_app.logger.exception(f"AZURE: Error for POST {e}")
+
+
+class AzureSourcePlugin(SourcePlugin):
+    title = "Azure"
+    slug = "azure-source"
+    description = "Discovers all certificates and Application Gateways within an Azure tenant"
+
+    author = "Bob Shannon"
+    author_url = "https://github.com/datadog/lemur"
+
+    def __init__(self, *args, **kwargs):
+        super(AzureSourcePlugin, self).__init__(*args, **kwargs)
+
+    def get_certificates(self, options, **kwargs):
+        # TODO(EDGE-1725) Support discovering endpoints and certificates in Azure source plugin
+        pass
+
+    def get_endpoints(self, options, **kwargs):
+        # TODO(EDGE-1725) Support discovering endpoints and certificates in Azure source plugin
+        pass
