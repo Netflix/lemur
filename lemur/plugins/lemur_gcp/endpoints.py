@@ -6,7 +6,7 @@ from google.cloud.compute_v1.services import ssl_policies, global_forwarding_rul
 from google.cloud.compute_v1 import TargetHttpsProxiesSetSslCertificatesRequest, \
     TargetSslProxiesSetSslCertificatesRequest
 
-from lemur.plugins.lemur_gcp import certificates
+from lemur.plugins.lemur_gcp import certificates, utils
 
 
 def fetch_target_proxies(project_id, credentials):
@@ -70,7 +70,7 @@ def get_endpoint_from_proxy(project_id, proxy, ssl_policies_client, forwarding_r
     )
     for idx, self_link in enumerate(proxy.ssl_certificates):
         crt = dict(
-            name=get_name_from_self_link(self_link),
+            name=utils.get_name_from_self_link(self_link),
             path="",
             registry_type="gcp",
         )
@@ -85,7 +85,7 @@ def get_endpoint_from_proxy(project_id, proxy, ssl_policies_client, forwarding_r
     if proxy.ssl_policy:
         policy = ssl_policies_client.get(
             project=project_id,
-            ssl_policy=get_name_from_self_link(proxy.ssl_policy))
+            ssl_policy=utils.get_name_from_self_link(proxy.ssl_policy))
         endpoint["policy"] = format_ssl_policy(policy)
     return endpoint
 
@@ -150,25 +150,25 @@ def update_target_proxy_sni_certs(project_id, credentials, endpoint, old_cert, n
     if kind not in ("targethttpsproxy", "targetsslproxy") or endpoint.registry_type != "gcp":
         raise NotImplementedError()
     current_app.logger.info(f"Rotating SNI cert for endpoint {endpoint.name}")
-    old_cert_name = certificates.get_name(old_cert.body)
-    old_cert_self_link = certificates.get_self_link(project_id, old_cert_name)
     new_cert_name = certificates.get_name(new_cert.body)
     new_cert_self_link = certificates.get_self_link(project_id, new_cert_name)
     if kind == "targethttpsproxy":
         client = target_https_proxies.TargetHttpsProxiesClient(credentials=credentials)
         proxy = client.get(project=project_id, target_https_proxy=endpoint.name)
-        if old_cert_self_link not in proxy.ssl_certificates:
-            current_app.logger.warning(f"Old cert {old_cert} found by Lemur but not in GCP - proceeding with "
+        cert_to_delete = certificates.find_cert(project_id, credentials, old_cert.body, proxy.ssl_certificates)
+        if not cert_to_delete:
+            current_app.logger.warning(f"Old cert {old_cert} found by Lemur but not in endpoint - proceeding with "
                                        "rotation anyway as detaching a non-existent cert is a no-op.")
-        certs = certificates.calc_diff(proxy.ssl_certificates, new_cert_self_link, old_cert_self_link)
+        certs = certificates.calc_diff(proxy.ssl_certificates, new_cert_self_link, cert_to_delete)
         set_target_https_proxy_certs(project_id, client, endpoint, certs, proxy.ssl_certificates)
     elif kind == "targetsslproxy":
         client = target_ssl_proxies.TargetSslProxiesClient(credentials=credentials)
         proxy = client.get(project=project_id, target_ssl_proxy=endpoint.name)
-        if old_cert_self_link not in proxy.ssl_certificates:
-            current_app.logger.warning(f"Old cert {old_cert} found by Lemur but not in GCP - proceeding with "
+        cert_to_delete = certificates.find_cert(project_id, credentials, old_cert.body, proxy.ssl_certificates)
+        if not cert_to_delete:
+            current_app.logger.warning(f"Old cert {old_cert} found by Lemur but not in endpoint - proceeding with "
                                        "rotation anyway as detaching a non-existent cert is a no-op.")
-        certs = certificates.calc_diff(proxy.ssl_certificates, new_cert_self_link, old_cert_self_link)
+        certs = certificates.calc_diff(proxy.ssl_certificates, new_cert_self_link, cert_to_delete)
         set_target_ssl_proxy_certs(project_id, client, endpoint, certs, proxy.ssl_certificates)
 
 
@@ -186,15 +186,6 @@ def fetch_global_forwarding_rules_map(project_id, credentials):
     for rule in forwarding_rules_client.list(project=project_id):
         forwarding_rules_map[rule.target].append(rule)
     return forwarding_rules_map
-
-
-def get_name_from_self_link(self_link):
-    """
-    Returns the resource name from a self_link name.
-    :param self_link:
-    :return:
-    """
-    return self_link.split("/")[-1]
 
 
 def format_ssl_policy(policy):

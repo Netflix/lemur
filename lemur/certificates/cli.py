@@ -298,7 +298,10 @@ def rotate(endpoint_name, source, new_certificate_name, old_certificate_name, me
             log_data["message"] = "Rotating one endpoint"
             log_data["endpoint"] = endpoint.dnsname
             log_data["new_certificate"] = new_cert.name
-            log_data["old_certificate"] = endpoint.primary_certificate.name if endpoint.primary_certificate else "none"
+            if not old_cert:
+                log_data["old_certificate"] = endpoint.primary_certificate.name if endpoint.primary_certificate else "none"
+            else:
+                log_data["old_certificate"] = old_cert.name
             if region and region not in endpoint.dnsname:
                 log_data["message"] = "Skipping rotation, region mismatch"
             else:

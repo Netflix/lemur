@@ -1,4 +1,5 @@
 import pytest
+from unittest import mock
 
 from lemur.plugins.lemur_gcp import certificates
 from lemur.plugins.lemur_gcp.certificates import get_name, modify_for_gcp
@@ -59,6 +60,52 @@ def test_full_ca():
 def test_get_self_link():
     assert certificates.get_self_link("sandbox", "cert1") == \
            "https://www.googleapis.com/compute/v1/projects/sandbox/global/sslCertificates/cert1"
+
+
+@mock.patch("google.cloud.compute_v1.services.ssl_certificates.SslCertificatesClient.get")
+def test_find_cert(mock_get_cert):
+    from google.cloud.compute_v1 import types
+
+    project_id = "proj"
+    credentials = mock.Mock()
+    self_links = [
+        certificates.get_self_link(project_id, "cert0"),
+        certificates.get_self_link(project_id, "cert1"),
+    ]
+    gcp_cert0 = types.SslCertificate()
+    gcp_cert0.certificate = """-----BEGIN CERTIFICATE-----
+MIIB7TCCAZSgAwIBAgIQBm3vFdgxR8e2GOGwpR+XTDAKBggqhkjOPQQDAjBiMRIw
+EAYDVQQDDAlsb2NhbGhvc3QxFjAUBgNVBAoMDUV4YW1wbGUsIEluYy4xCzAJBgNV
+BAYTAlVTMRMwEQYDVQQIDApDYWxpZm9ybmlhMRIwEAYDVQQHDAlMb3MgR2F0b3Mw
+HhcNMjIwODI2MTkyMjMxWhcNNDIwODI2MTkyMjMxWjBiMRIwEAYDVQQDDAlsb2Nh
+bGhvc3QxFjAUBgNVBAoMDUV4YW1wbGUsIEluYy4xCzAJBgNVBAYTAlVTMRMwEQYD
+VQQIDApDYWxpZm9ybmlhMRIwEAYDVQQHDAlMb3MgR2F0b3MwWTATBgcqhkjOPQIB
+BggqhkjOPQMBBwNCAAQhNX4vrw7MYlenuUfEU5TYvYgjHGeJfULwJeYomzMloKWQ
+Msb0aRUWuEJ9STvqDSbHffK/Rm5BXAr328mzpIwRoywwKjAPBgNVHRMBAf8EBTAD
+AQH/MBcGA1UdEQEB/wQNMAuCCWxvY2FsaG9zdDAKBggqhkjOPQQDAgNHADBEAiB7
+dmVGV4armOiIvo+cyuAN8PLr4mq4ByiVFWl9WQavpAIgRA0leVMbErRrz78EEZZR
+aNVFrNhMcvbKB0eqb5VHL90=
+-----END CERTIFICATE-----"""
+    gcp_cert1 = types.SslCertificate()
+    gcp_cert1.certificate = """-----BEGIN CERTIFICATE-----
+MIIB7TCCAZSgAwIBAgIQVPzXJyapQJK23rgTs0pBbTAKBggqhkjOPQQDAjBiMRIw
+EAYDVQQDDAlsb2NhbGhvc3QxFjAUBgNVBAoMDUV4YW1wbGUsIEluYy4xCzAJBgNV
+BAYTAlVTMRMwEQYDVQQIDApDYWxpZm9ybmlhMRIwEAYDVQQHDAlMb3MgR2F0b3Mw
+HhcNMjIwOTE2MTYwMjQ0WhcNMjkwOTE2MTYwMjQ0WjBiMRIwEAYDVQQDDAlsb2Nh
+bGhvc3QxFjAUBgNVBAoMDUV4YW1wbGUsIEluYy4xCzAJBgNVBAYTAlVTMRMwEQYD
+VQQIDApDYWxpZm9ybmlhMRIwEAYDVQQHDAlMb3MgR2F0b3MwWTATBgcqhkjOPQIB
+BggqhkjOPQMBBwNCAARsV8zcYkw8S6N3q/QgB2N8L8NRIQMXUREpOwDBfVzXZn7A
+cqyotXSH9aJ4PtH6OKxiNT/K2lIoYrWYTz20AvCIoywwKjAPBgNVHRMBAf8EBTAD
+AQH/MBcGA1UdEQEB/wQNMAuCCWxvY2FsaG9zdDAKBggqhkjOPQQDAgNHADBEAiBO
+0cHTgH2LFjuEnyjY02FaLiZlKTNM7D9ibFZ6wq4ILgIgEBMvYTKiKRGoPkMI7eoB
+m+ZM2ySV8YGaVzkbkknOARI=
+-----END CERTIFICATE-----"""
+    mock_get_cert.side_effect = [
+        gcp_cert0,
+        gcp_cert1,
+    ]
+    got = certificates.find_cert(project_id, credentials, gcp_cert1.certificate, self_links)
+    assert got == "https://www.googleapis.com/compute/v1/projects/proj/global/sslCertificates/cert1"
 
 
 @pytest.mark.parametrize(

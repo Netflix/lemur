@@ -4,6 +4,7 @@ from google.cloud.compute_v1.services import ssl_certificates
 
 from lemur.common.defaults import common_name, text_to_slug
 from lemur.common.utils import parse_certificate, split_pem
+from lemur.plugins.lemur_gcp import utils
 
 
 def get_name(body):
@@ -108,6 +109,28 @@ def parse_certificate_meta(certificate_meta):
 
 def get_self_link(project, name):
     return f"https://www.googleapis.com/compute/v1/projects/{project}/global/sslCertificates/{name}"
+
+
+def find_cert(project_id, credentials, body, cert_self_links):
+    """
+    Fetches the certificate bodies for each self_link and returns the first match by body.
+    :param project_id:
+    :param credentials:
+    :param body:
+    :param cert_self_links:
+    :return: The self link with a matching body, if it exists.
+    """
+    client = ssl_certificates.SslCertificatesClient(credentials=credentials)
+    for self_link in cert_self_links:
+        name = utils.get_name_from_self_link(self_link)
+        cert_meta = client.get(project=project_id, ssl_certificate=name)
+        parsed_cert = parse_certificate_meta(cert_meta)
+        # The uploaded certificate may be invalid since GCP does not validate the body.
+        if not parsed_cert:
+            raise Exception(f"could not parse metadata for certificate {name}")
+        if parsed_cert["body"] == body:
+            return self_link
+    return None
 
 
 def calc_diff(certs, new_cert, old_cert):
