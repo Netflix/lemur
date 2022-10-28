@@ -159,6 +159,7 @@ setup(
             'entrust_issuer = lemur.plugins.lemur_entrust.plugin:EntrustIssuerPlugin',
             'entrust_source = lemur.plugins.lemur_entrust.plugin:EntrustSourcePlugin',
             'azure_destination = lemur.plugins.lemur_azure.plugin:AzureDestinationPlugin',
+            'azure_source = lemur.plugins.lemur_azure.plugin:AzureSourcePlugin',
             'gcp_destination = lemur.plugins.lemur_gcp.plugin:GCPDestinationPlugin',
             'gcp_source = lemur.plugins.lemur_gcp.plugin:GCPSourcePlugin'
         ],

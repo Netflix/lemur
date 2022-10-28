@@ -1,10 +1,8 @@
 import os
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, ANY
 
 from flask import Flask
-from lemur.plugins.lemur_azure import plugin
-import json
 
 # mock certificate to test the upload function code
 test_server_cert = '''-----BEGIN CERTIFICATE-----
@@ -84,7 +82,6 @@ Qils0nQFsH1VujvoF9Y04MAgZw==
 
 class TestAzureDestination(unittest.TestCase):
     def setUp(self):
-        self.azure_dest = plugin.AzureDestinationPlugin()
         # Creates a new Flask application for a test duration. In python 3.8, manual push of application context is
         # needed to run tests in dev environment without getting error 'Working outside of application context'.
         _app = Flask('lemur_test_azure_dest')
@@ -96,37 +93,26 @@ class TestAzureDestination(unittest.TestCase):
         self.ctx.pop()
 
     @patch.dict(os.environ, {"VAULT_ADDR": "https://fakevaultinstance:8200"})
+    @patch("azure.keyvault.certificates.CertificateClient.import_certificate")
     @patch("hvac.Client")
-    def test_upload(self, hvac_client_mock):
-
+    def test_upload(self, hvac_client_mock, import_certificate_mock):
         from lemur.plugins.lemur_azure.plugin import AzureDestinationPlugin
-        import requests_mock
-        import requests
 
         subject = AzureDestinationPlugin()
-        subject.session = requests.Session()
-        adapter = requests_mock.Adapter()
-        adapter.register_uri(
-            "POST",
-            "https://login.microsoftonline.com/mockedTenant/oauth2/token",
-            text=json.dumps({"access_token": "id123"}),
-            status_code=200,
-        )
-        adapter.register_uri(
-            "POST",
-            "https://couldbeanyvalue.com/certificates/localhost-LocalCA/import",
-            text=json.dumps({"id": "id123"}),
-            status_code=200,
-        )
-
-        subject.session.mount("https://", adapter)
-
-        hvac_client_mock().secrets.azure.generate_credentials.return_value = {"client_id": "fakeid123", "client_secret": "fakesecret123"}
 
         name = 'Test_Certificate'
         body = test_server_cert
         private_key = test_server_key
         cert_chain = test_ca_cert
+
+        def _assert_certificate_imported():
+            import_certificate_mock.assert_called_with(
+                certificate_name="localhost-LocalCA",
+                certificate_bytes=ANY,
+                enabled=True,
+                policy=ANY,
+                tags={"lemur.managed": "true"}
+            )
 
         with self.subTest(case="upload cert using azureApp auth method"):
             options = [
@@ -137,6 +123,7 @@ class TestAzureDestination(unittest.TestCase):
                 {"name": "authenticationMethod", "value": "azureApp"}
             ]
             subject.upload(name, body, private_key, cert_chain, options)
+            _assert_certificate_imported()
 
         with self.subTest(case="upload cert using hashicorpVault auth method"):
             options = [
@@ -146,6 +133,8 @@ class TestAzureDestination(unittest.TestCase):
                 {"name": "hashicorpVaultRoleName", "value": "mockedRole"},
                 {"name": "hashicorpVaultMountPoint", "value": "/azure"}
             ]
+            hvac_client_mock().secrets.azure.generate_credentials.return_value = {"client_id": "fakeid123",
+                                                                                  "client_secret": "fakesecret123"}
             subject.upload(name, body, private_key, cert_chain, options)
-
             hvac_client_mock().secrets.azure.generate_credentials.assert_called_with(mount_point="/azure", name="mockedRole")
+            _assert_certificate_imported()

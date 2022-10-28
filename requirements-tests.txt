@@ -257,7 +257,7 @@ requests-toolbelt==0.9.1
     # via acme
 responses==0.20.0
     # via moto
-rsa==4.8
+rsa==4.9
     # via python-jose
 s3transfer==0.6.0
     # via boto3
@@ -291,7 +291,7 @@ tomli==2.0.1
     # via
     #   black
     #   pytest
-typing-extensions==4.3.0
+typing-extensions==4.4.0
     # via black
 urllib3==1.26.9
     # via
