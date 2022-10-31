@@ -159,7 +159,12 @@ def update_target_proxy_sni_certs(project_id, credentials, endpoint, old_cert, n
         if not cert_to_delete:
             current_app.logger.warning(f"Old cert {old_cert} found by Lemur but not in endpoint - proceeding with "
                                        "rotation anyway as detaching a non-existent cert is a no-op.")
+        elif cert_to_delete == proxy.ssl_certificates[0]:
+            current_app.logger.warning(f"Old cert {old_cert} found by Lemur in endpoint as the default cert."
+                                       "Will not proceed with rotation.")
+            raise Exception("attempting to rotate primary cert during SNI cert rotation")
         certs = certificates.calc_diff(proxy.ssl_certificates, new_cert_self_link, cert_to_delete)
+        assert proxy.ssl_certificates[0] == certs[0]
         set_target_https_proxy_certs(project_id, client, endpoint, certs, proxy.ssl_certificates)
     elif kind == "targetsslproxy":
         client = target_ssl_proxies.TargetSslProxiesClient(credentials=credentials)
@@ -168,7 +173,12 @@ def update_target_proxy_sni_certs(project_id, credentials, endpoint, old_cert, n
         if not cert_to_delete:
             current_app.logger.warning(f"Old cert {old_cert} found by Lemur but not in endpoint - proceeding with "
                                        "rotation anyway as detaching a non-existent cert is a no-op.")
+        elif cert_to_delete == proxy.ssl_certificates[0]:
+            current_app.logger.warning(f"Old cert {old_cert} found by Lemur in endpoint as the default cert."
+                                       "Will not proceed with rotation.")
+            raise Exception("attempting to rotate primary cert during SNI cert rotation")
         certs = certificates.calc_diff(proxy.ssl_certificates, new_cert_self_link, cert_to_delete)
+        assert proxy.ssl_certificates[0] == certs[0]
         set_target_ssl_proxy_certs(project_id, client, endpoint, certs, proxy.ssl_certificates)
 
 
