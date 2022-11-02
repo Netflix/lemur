@@ -10,17 +10,65 @@
 .. moduleauthor:: sirferl
 """
 from flask import current_app
+from sentry_sdk import capture_exception
 from azure.keyvault.certificates import CertificateClient, CertificatePolicy
+from azure.core.exceptions import HttpResponseError, ResourceNotFoundError
 from azure.mgmt.network import NetworkManagementClient
 from azure.mgmt.subscription import SubscriptionClient
+from azure.mgmt.network.models import ApplicationGatewaySslPolicyName, ApplicationGatewaySslPolicyType, ApplicationGatewaySslCipherSuite
 
 from lemur.common.defaults import common_name, issuer, bitstrength
 from lemur.common.utils import parse_certificate, parse_private_key, check_validation
+from lemur.extensions import metrics
 from lemur.plugins.bases import DestinationPlugin, SourcePlugin
 from lemur.plugins.lemur_azure.auth import get_azure_credential
 
+from cryptography import x509
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import pkcs12
+
+
+def get_and_decode_certificate(certificate_client, certificate_name):
+    crt = certificate_client.get_certificate(certificate_name=certificate_name)
+    decoded_crt = x509.load_der_x509_certificate(bytes(crt.cer))
+    return dict(
+        body=decoded_crt.public_bytes(encoding=serialization.Encoding.PEM).decode("utf-8"),
+        name=crt.name,
+    )
+
+
+def policy_from_appgw(network_client, appgw):
+    if not appgw.ssl_policy:
+        return dict(
+            name="none",
+            ciphers=[],
+        )
+    policy = dict(
+        name="",
+        ciphers=[],
+    )
+    policy_name = appgw.ssl_policy.policy_name
+    if isinstance(appgw.ssl_policy.policy_name, ApplicationGatewaySslPolicyName):
+        policy_name = appgw.ssl_policy.policy_name.value
+    policy_type = appgw.ssl_policy.policy_type
+    if isinstance(appgw.ssl_policy.policy_type, ApplicationGatewaySslPolicyType):
+        policy_type = appgw.ssl_policy.policy_type.value
+
+    cipher_suites = []
+    if policy_type == "Predefined":
+        predefined_policy = network_client.application_gateways.get_ssl_predefined_policy(predefined_policy_name=policy_name)
+        cipher_suites = predefined_policy.cipher_suites
+    elif appgw.ssl_policy.cipher_suites:
+        cipher_suites = appgw.ssl_policy.cipher_suites
+
+    for c in cipher_suites:
+        if isinstance(c, ApplicationGatewaySslCipherSuite):
+            policy["ciphers"].append(c.value)
+        else:
+            policy["ciphers"].append(c)
+    policy["name"] = policy_name
+
+    return policy
 
 
 def certificate_from_id(appgw, certificate_id):
@@ -28,6 +76,7 @@ def certificate_from_id(appgw, certificate_id):
         if cert.id == certificate_id:
             return dict(
                 name=cert.name,
+                path="",
                 registry_type="keyvault",
             )
     raise Exception(f"No certificate with ID {certificate_id} associated with {appgw.id}")
@@ -138,11 +187,11 @@ class AzureDestinationPlugin(DestinationPlugin):
         :return:
         """
 
-        # we use the common name to identify the certificate
-        # Azure does not allow "." in the certificate name we replace them with "-"
+        # The certificate name must be a 1-127 character string, starting with a letter
+        # and containing only 0-9, a-z, A-Z, and -.
         cert = parse_certificate(body)
         ca_certs = parse_certificate(cert_chain)
-        certificate_name = f"{common_name(cert).replace('.', '-')}-{issuer(cert)}"
+        certificate_name = f"{common_name(cert).replace('.', '-').replace('*', 'star')}-{issuer(cert)}"
 
         certificate_client = CertificateClient(
             credential=get_azure_credential(self, options),
@@ -178,6 +227,13 @@ class AzureSourcePlugin(SourcePlugin):
     author_url = "https://github.com/datadog/lemur"
 
     options = [
+        {
+            "name": "azureKeyVaultUrl",
+            "type": "str",
+            "required": True,
+            "validation": check_validation("^https?://[a-zA-Z0-9.:-]+$"),
+            "helpMessage": "Azure key vault to discover certificates from.",
+        },
         {
             "name": "authenticationMethod",
             "type": "select",
@@ -227,12 +283,39 @@ class AzureSourcePlugin(SourcePlugin):
         super(AzureSourcePlugin, self).__init__(*args, **kwargs)
 
     def get_certificates(self, options, **kwargs):
-        # TODO(EDGE-1725) Support discovering endpoints and certificates in Azure source plugin
-        return []
+        certificates = []
+        certificate_client = CertificateClient(
+            credential=get_azure_credential(self, options),
+            vault_url=self.get_option("azureKeyVaultUrl", options),
+        )
+        for prop in certificate_client.list_properties_of_certificates():
+            try:
+                certificates.append(
+                    get_and_decode_certificate(certificate_client=certificate_client, certificate_name=prop.name)
+                )
+            except HttpResponseError:
+                current_app.logger.warning(
+                    f"get_azure_key_vault_certificate_failed: Unable to get certificate for {prop.name}"
+                )
+                capture_exception()
+                metrics.send(
+                    "get_azure_key_vault_certificate_failed", "counter", 1,
+                    metric_tags={
+                        "certificate_name": prop.name,
+                        "tenant": self.get_option("azureTenant", options),
+                    }
+                )
+        return certificates
 
     def get_certificate_by_name(self, certificate_name, options):
-        # TODO(EDGE-1725) Support discovering endpoints and certificates in Azure source plugin
-        return
+        certificate_client = CertificateClient(
+            credential=get_azure_credential(self, options),
+            vault_url=self.get_option("azureKeyVaultUrl", options),
+        )
+        try:
+            return get_and_decode_certificate(certificate_client=certificate_client, certificate_name=certificate_name)
+        except ResourceNotFoundError:
+            return None
 
     def get_endpoints(self, options, **kwargs):
         credential = get_azure_credential(self, options)
@@ -253,6 +336,7 @@ class AzureSourcePlugin(SourcePlugin):
                             type="applicationgateway",
                             primary_certificate=certificate_from_id(appgw, listener.ssl_certificate.id),
                             sni_certificates=[],
+                            policy=policy_from_appgw(network_client, appgw),
                         )
                         endpoints.append(ep)
         return endpoints
