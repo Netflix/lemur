@@ -176,6 +176,7 @@ class AzureDestinationPlugin(DestinationPlugin):
     ]
 
     def __init__(self, *args, **kwargs):
+        self.credential = None
         super(AzureDestinationPlugin, self).__init__(*args, **kwargs)
 
     def upload(self, name, body, private_key, cert_chain, options, **kwargs):
@@ -280,6 +281,7 @@ class AzureSourcePlugin(SourcePlugin):
     ]
 
     def __init__(self, *args, **kwargs):
+        self.credential = None
         super(AzureSourcePlugin, self).__init__(*args, **kwargs)
 
     def get_certificates(self, options, **kwargs):

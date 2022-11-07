@@ -1,4 +1,6 @@
-from azure.identity import ClientSecretCredential
+from azure.core.exceptions import ClientAuthenticationError
+from azure.identity import ClientSecretCredential, CredentialUnavailableError
+from flask import current_app
 
 import hvac
 import os
@@ -20,6 +22,24 @@ class RetryableClientSecretCredential(ClientSecretCredential):
 
 
 def get_azure_credential(plugin, options):
+    """
+    Fetches a credential used for authenticating with the Azure API.
+    A new credential will be created if one does not already exist.
+    If a credential already exists and is valid, then it will be re-used.
+    When an existing credential is determined to be invalid, it will be replaced with a new one.
+
+    :param plugin: source or destination plugin
+    :param options: options set for the plugin
+    :return: an Azure credential
+    """
+    if plugin.credential:
+        try:
+            plugin.credential.get_token("https://management.azure.com/.default")  # Try to dispense a valid token.
+            return plugin.credential
+        except (CredentialUnavailableError, ClientAuthenticationError) as e:
+            current_app.logger.warning(f"Failed to re-use existing Azure credential, another one will attempt to "
+                                       f"be re-generated: {e}")
+
     tenant = plugin.get_option("azureTenant", options)
     auth_method = plugin.get_option("authenticationMethod", options)
 
@@ -31,20 +51,22 @@ def get_azure_credential(plugin, options):
         # It may take up-to 10 minutes for the generated OAuth credentials to become usable due
         # to AD replication delay. To account for this, the credential will continuously
         # retry generating an access token until it succeeds or 10 minutes elapse.
-        return RetryableClientSecretCredential(
+        plugin.credential = RetryableClientSecretCredential(
             tenant_id=tenant,
             client_id=client_id,
             client_secret=client_secret,
         )
+        return plugin.credential
     elif auth_method == "azureApp":
         app_id = plugin.get_option("azureAppID", options)
         password = plugin.get_option("azurePassword", options)
 
-        return ClientSecretCredential(
+        plugin.credential = ClientSecretCredential(
             tenant_id=tenant,
             client_id=app_id,
             client_secret=password,
         )
+        return plugin.credential
 
     raise Exception("No supported way to authenticate with Azure")
 
