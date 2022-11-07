@@ -1555,6 +1555,11 @@ class CertificateExport(AuthenticatedResource):
             cert.body, cert.chain, cert.private_key, options
         )
 
+        # Clear memory for last passphrase if it's in plugin.options
+        for option in plugin.options:
+            if 'value' in option and option['value'] == passphrase:
+                del option['value']
+
         # we take a hit in message size when b64 encoding
         return dict(
             extension=extension,
