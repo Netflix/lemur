@@ -539,7 +539,7 @@ sphinx==5.1.1
     #   -r requirements-docs.in
     #   sphinx-rtd-theme
     #   sphinxcontrib-httpdomain
-sphinx-rtd-theme==1.0.0
+sphinx-rtd-theme==1.1.1
     # via -r requirements-docs.in
 sphinxcontrib-applehelp==1.0.2
     # via sphinx
