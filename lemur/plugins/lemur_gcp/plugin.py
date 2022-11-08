@@ -24,6 +24,12 @@ class GCPDestinationPlugin(DestinationPlugin):
             "helpMessage": "GCP Project ID",
         },
         {
+            "name": "region",
+            "type": "str",
+            "helpMessage": "Scopes the certificate to a region, if supplied. If no region is given, this will "
+                           "upload certificates as a global resource."
+        },
+        {
             "name": "authenticationMethod",
             "type": "select",
             "required": True,
@@ -60,6 +66,7 @@ class GCPDestinationPlugin(DestinationPlugin):
                 self.get_option("projectID", options),
                 ssl_certificate_body,
                 credentials,
+                self.get_option("region", options),
             )
         except exceptions.AlreadyExists:
             pass

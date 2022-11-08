@@ -1,6 +1,6 @@
 from cryptography import x509
 from flask import current_app
-from google.cloud.compute_v1.services import ssl_certificates
+from google.cloud.compute_v1.services import ssl_certificates, region_ssl_certificates
 
 from lemur.common.defaults import common_name, text_to_slug
 from lemur.common.utils import parse_certificate, split_pem
@@ -52,10 +52,15 @@ def full_ca(body, cert_chain):
     return f"{body}\n{cert_chain}"
 
 
-def insert_certificate(project_id, ssl_certificate_body, credentials):
-    return ssl_certificates.SslCertificatesClient(credentials=credentials).insert(
-        project=project_id, ssl_certificate_resource=ssl_certificate_body
-    )
+def insert_certificate(project_id, ssl_certificate_body, credentials, region=None):
+    if not region:
+        ssl_certificates.SslCertificatesClient(credentials=credentials).insert(
+            project=project_id, ssl_certificate_resource=ssl_certificate_body
+        )
+    else:
+        region_ssl_certificates.RegionSslCertificatesClient(credentials=credentials).insert(
+            project=project_id, ssl_certificate_resource=ssl_certificate_body, region=region
+        )
 
 
 def fetch_all(project_id, credentials):

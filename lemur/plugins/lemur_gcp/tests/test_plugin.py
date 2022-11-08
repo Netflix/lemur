@@ -67,6 +67,11 @@ options = [
         'value': 'lemur-test'
     },
     {
+        'name': 'region',
+        'type': 'str',
+        'value': 'europe-west3'
+    },
+    {
         'name': 'authenticationMethod',
         'type': 'str',
         'required': True,
@@ -94,7 +99,7 @@ def test_upload(mock_ssl_certificates, mock_credentials):
     }
 
     # assert our mocks are being called with the params we expect
-    mock_ssl_certificates.assert_called_with('lemur-test', ssl_certificate_body, token)
+    mock_ssl_certificates.assert_called_with("lemur-test", ssl_certificate_body, token, "europe-west3")
     mock_credentials.assert_called_with(plugin, options)
 
 
