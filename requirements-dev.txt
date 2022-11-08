@@ -16,7 +16,7 @@ charset-normalizer==2.0.12
     # via requests
 commonmark==0.9.1
     # via rich
-cryptography==38.0.1
+cryptography==38.0.3
     # via secretstorage
 distlib==0.3.4
     # via virtualenv
