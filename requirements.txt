@@ -211,7 +211,7 @@ pyhcl==0.4.4
     # via hvac
 pyjks==20.0.0
     # via -r requirements.in
-pyjwt==2.5.0
+pyjwt==2.6.0
     # via -r requirements.in
 pynacl==1.5.0
     # via paramiko
