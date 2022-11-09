@@ -23,9 +23,17 @@ In the field labeled "Service Account Token Path" enter in the path to where you
 
 ## Source
 The source plugin allows Lemur to discover certificates and endpoints in a given GCP account.
-Authentication is handled the same way as the destination plugin. The plugin currently supports
-fetching global endpoints (i.e. global HTTPS proxies and global SSL proxies), fetching self-managed
-certificates and rotating the primary certificate and SNI certificates for global endpoints.
+Authentication is handled the same way as the destination plugin. 
+
+The plugin currently supports the following endpoint types:
+
+* global external HTTPs proxies
+* global external SSL proxies 
+* regional external HTTPs proxies
+* regional internal HTTPs proxies
+
+The plugin can fetch global or regional self-managed certificates and rotate the primary certificate or
+SNI certificates for the endpoint types listed above.
 
 #### Testing Source plugin locally
 See `Testing Destination plugin locally`. By default, the source sync is done every 15 minutes.

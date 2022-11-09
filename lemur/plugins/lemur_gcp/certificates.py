@@ -52,7 +52,7 @@ def full_ca(body, cert_chain):
     return f"{body}\n{cert_chain}"
 
 
-def insert_certificate(project_id, ssl_certificate_body, credentials, region=None):
+def insert_certificate(project_id, ssl_certificate_body, credentials, region):
     if not region:
         ssl_certificates.SslCertificatesClient(credentials=credentials).insert(
             project=project_id, ssl_certificate_resource=ssl_certificate_body
@@ -63,10 +63,15 @@ def insert_certificate(project_id, ssl_certificate_body, credentials, region=Non
         )
 
 
-def fetch_all(project_id, credentials):
-    client = ssl_certificates.SslCertificatesClient(credentials=credentials)
+def fetch_all(project_id, credentials, region):
     certs = []
-    for cert_meta in client.list(project=project_id):
+    if region:
+        client = region_ssl_certificates.RegionSslCertificatesClient(credentials=credentials)
+        pager = client.list(project=project_id, region=region)
+    else:
+        client = ssl_certificates.SslCertificatesClient(credentials=credentials)
+        pager = client.list(project=project_id)
+    for cert_meta in pager:
         try:
             if cert_meta.type_ != "SELF_MANAGED":
                 continue
@@ -83,9 +88,13 @@ def fetch_all(project_id, credentials):
     return certs
 
 
-def fetch_by_name(project_id, credentials, certificate_name):
-    client = ssl_certificates.SslCertificatesClient(credentials=credentials)
-    cert_meta = client.get(project=project_id, ssl_certificate=certificate_name)
+def fetch_by_name(project_id, credentials, certificate_name, region):
+    if region:
+        client = region_ssl_certificates.RegionSslCertificatesClient(credentials=credentials)
+        cert_meta = client.get(project=project_id, ssl_certificate=certificate_name, region=region)
+    else:
+        client = ssl_certificates.SslCertificatesClient(credentials=credentials)
+        cert_meta = client.get(project=project_id, ssl_certificate=certificate_name)
     if cert_meta:
         cert = parse_certificate_meta(cert_meta)
         if cert:
@@ -106,29 +115,39 @@ def parse_certificate_meta(certificate_meta):
     if not chain:
         return None
     return dict(
-        body=chain[0],
-        chain="\n".join(chain[1:]),
+        body=chain[0].strip(),
+        chain="\n".join(chain[1:]).strip(),
         name=certificate_meta.name,
     )
 
 
-def get_self_link(project, name):
+def get_self_link(project, name, region):
+    if region:
+        return f"https://www.googleapis.com/compute/v1/projects/{project}/regions/{region}/sslCertificates/{name}"
     return f"https://www.googleapis.com/compute/v1/projects/{project}/global/sslCertificates/{name}"
 
 
-def find_cert(project_id, credentials, body, cert_self_links):
+def find_cert(project_id, credentials, body, cert_self_links, region):
     """
     Fetches the certificate bodies for each self_link and returns the first match by body.
     :param project_id:
     :param credentials:
     :param body:
     :param cert_self_links:
+    :param region:
     :return: The self link with a matching body, if it exists.
     """
-    client = ssl_certificates.SslCertificatesClient(credentials=credentials)
+    if region:
+        client = region_ssl_certificates.RegionSslCertificatesClient(credentials=credentials)
+    else:
+        client = ssl_certificates.SslCertificatesClient(credentials=credentials)
+
     for self_link in cert_self_links:
         name = utils.get_name_from_self_link(self_link)
-        cert_meta = client.get(project=project_id, ssl_certificate=name)
+        if region:
+            cert_meta = client.get(project=project_id, ssl_certificate=name, region=region)
+        else:
+            cert_meta = client.get(project=project_id, ssl_certificate=name)
         parsed_cert = parse_certificate_meta(cert_meta)
         # The uploaded certificate may be invalid since GCP does not validate the body.
         if not parsed_cert:

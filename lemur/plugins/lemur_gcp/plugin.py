@@ -95,6 +95,12 @@ class GCPSourcePlugin(SourcePlugin):
             "helpMessage": "GCP Project ID",
         },
         {
+            "name": "region",
+            "type": "str",
+            "helpMessage": "Scopes the operation to a region. If no region is given, this will "
+                           "list certificates as a global resource and rotate global endpoints."
+        },
+        {
             "name": "authenticationMethod",
             "type": "select",
             "required": True,
@@ -122,7 +128,8 @@ class GCPSourcePlugin(SourcePlugin):
         try:
             credentials = auth.get_gcp_credentials(self, options)
             project_id = self.get_option("projectID", options)
-            return certificates.fetch_all(project_id, credentials)
+            region = self.get_option("region", options)
+            return certificates.fetch_all(project_id, credentials, region)
         except Exception as e:
             current_app.logger.error(
                 f"Issue with fetching certificates from GCP. Action failed with the following log: {e}",
@@ -134,7 +141,8 @@ class GCPSourcePlugin(SourcePlugin):
         try:
             credentials = auth.get_gcp_credentials(self, options)
             project_id = self.get_option("projectID", options)
-            return certificates.fetch_by_name(project_id, credentials, certificate_name)
+            region = self.get_option("region", options)
+            return certificates.fetch_by_name(project_id, credentials, certificate_name, region)
         except Exception as e:
             current_app.logger.error(
                 f"Issue with fetching certificate by name from GCP. Action failed with the following log: {e}",
@@ -146,7 +154,8 @@ class GCPSourcePlugin(SourcePlugin):
         try:
             credentials = auth.get_gcp_credentials(self, options)
             project_id = self.get_option("projectID", options)
-            endpoints = fetch_target_proxies(project_id, credentials)
+            region = self.get_option("region", options)
+            endpoints = fetch_target_proxies(project_id, credentials, region)
             return endpoints
         except Exception as e:
             current_app.logger.error(
@@ -159,10 +168,12 @@ class GCPSourcePlugin(SourcePlugin):
         options = endpoint.source.options
         credentials = auth.get_gcp_credentials(self, options)
         project_id = self.get_option("projectID", options)
-        update_target_proxy_default_cert(project_id, credentials, endpoint, certificate)
+        region = self.get_option("region", options)
+        update_target_proxy_default_cert(project_id, credentials, endpoint, certificate, region)
 
     def replace_sni_certificate(self, endpoint, old_cert, new_cert):
         options = endpoint.source.options
         credentials = auth.get_gcp_credentials(self, options)
         project_id = self.get_option("projectID", options)
-        update_target_proxy_sni_certs(project_id, credentials, endpoint, old_cert, new_cert)
+        region = self.get_option("region", options)
+        update_target_proxy_sni_certs(project_id, credentials, endpoint, old_cert, new_cert, region)

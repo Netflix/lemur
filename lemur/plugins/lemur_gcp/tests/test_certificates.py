@@ -58,8 +58,10 @@ def test_full_ca():
 
 
 def test_get_self_link():
-    assert certificates.get_self_link("sandbox", "cert1") == \
+    assert certificates.get_self_link("sandbox", "cert1", None) == \
            "https://www.googleapis.com/compute/v1/projects/sandbox/global/sslCertificates/cert1"
+    assert certificates.get_self_link("sandbox", "cert2", "europe-west3") == \
+        "https://www.googleapis.com/compute/v1/projects/sandbox/regions/europe-west3/sslCertificates/cert2"
 
 
 @mock.patch("google.cloud.compute_v1.services.ssl_certificates.SslCertificatesClient.get")
@@ -69,8 +71,8 @@ def test_find_cert(mock_get_cert):
     project_id = "proj"
     credentials = mock.Mock()
     self_links = [
-        certificates.get_self_link(project_id, "cert0"),
-        certificates.get_self_link(project_id, "cert1"),
+        certificates.get_self_link(project_id, "cert0", None),
+        certificates.get_self_link(project_id, "cert1", None),
     ]
     gcp_cert0 = types.SslCertificate()
     gcp_cert0.certificate = """-----BEGIN CERTIFICATE-----
@@ -104,7 +106,7 @@ m+ZM2ySV8YGaVzkbkknOARI=
         gcp_cert0,
         gcp_cert1,
     ]
-    got = certificates.find_cert(project_id, credentials, gcp_cert1.certificate, self_links)
+    got = certificates.find_cert(project_id, credentials, gcp_cert1.certificate, self_links, None)
     assert got == "https://www.googleapis.com/compute/v1/projects/proj/global/sslCertificates/cert1"
 
 
