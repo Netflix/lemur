@@ -114,9 +114,16 @@ def get_client_id(session, organization):
         # catch an empty json object here
         d = {'response': 'No detailed message'}
 
+    if 'status' in d and d['status'] >= 300:
+        error_messages = d['errors']
+        raise Exception(f"Error for Getting Organization {error_messages}")
+
+    if 'organizations' not in d:
+        raise Exception(f"Error for Getting Organization: not org returned")
+
     found = False
     for y in d["organizations"]:
-        if y["name"] == organization:
+        if y["name"] == organization and y["verificationStatus"] == 'APPROVED':
             found = True
             client_id = y["clientId"]
     if found:
@@ -206,8 +213,6 @@ class EntrustIssuerPlugin(IssuerPlugin):
     def __init__(self, *args, **kwargs):
         """Initialize the issuer with the appropriate details."""
         required_vars = [
-            "ENTRUST_API_CERT",
-            "ENTRUST_API_KEY",
             "ENTRUST_API_USER",
             "ENTRUST_API_PASS",
             "ENTRUST_URL",
@@ -219,11 +224,13 @@ class EntrustIssuerPlugin(IssuerPlugin):
         validate_conf(current_app, required_vars)
 
         self.session = requests.Session()
-        cert_file = current_app.config.get("ENTRUST_API_CERT")
-        key_file = current_app.config.get("ENTRUST_API_KEY")
+        cert_file = current_app.config.get("ENTRUST_API_CERT", None)
+        key_file = current_app.config.get("ENTRUST_API_KEY", None)
         user = current_app.config.get("ENTRUST_API_USER")
         password = current_app.config.get("ENTRUST_API_PASS")
-        self.session.cert = (cert_file, key_file)
+        if cert_file and key_file:
+            # API key can be used with Client TLS certificate
+            self.session.cert = (cert_file, key_file)
         self.session.auth = (user, password)
         self.session.hooks = dict(response=log_status_code)
         # self.session.config['keep_alive'] = False
@@ -382,8 +389,6 @@ class EntrustSourcePlugin(SourcePlugin):
     def __init__(self, *args, **kwargs):
         """Initialize the issuer with the appropriate details."""
         required_vars = [
-            "ENTRUST_API_CERT",
-            "ENTRUST_API_KEY",
             "ENTRUST_API_USER",
             "ENTRUST_API_PASS",
             "ENTRUST_URL",
@@ -395,11 +400,13 @@ class EntrustSourcePlugin(SourcePlugin):
         validate_conf(current_app, required_vars)
 
         self.session = requests.Session()
-        cert_file = current_app.config.get("ENTRUST_API_CERT")
-        key_file = current_app.config.get("ENTRUST_API_KEY")
+        cert_file = current_app.config.get("ENTRUST_API_CERT", None)
+        key_file = current_app.config.get("ENTRUST_API_KEY", None)
         user = current_app.config.get("ENTRUST_API_USER")
         password = current_app.config.get("ENTRUST_API_PASS")
-        self.session.cert = (cert_file, key_file)
+        if cert_file and key_file:
+            # API key can be used with Client TLS certificate
+            self.session.cert = (cert_file, key_file)
         self.session.auth = (user, password)
         self.session.hooks = dict(response=log_status_code)
 
