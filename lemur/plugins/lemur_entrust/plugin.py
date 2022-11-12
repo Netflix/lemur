@@ -91,7 +91,7 @@ def process_options(options, client_id):
 @retry(stop_max_attempt_number=5, wait_fixed=1000)
 def get_client_id(session, organization):
     """
-    Helper function for looking up clientID pased on Organization and parsing the response.
+    Helper function for looking up clientID based on Organization and parsing the response.
     :param session:
     :param organization: the validated org with Entrust, for instance "Company, Inc."
     :return: ClientID
@@ -129,7 +129,7 @@ def get_client_id(session, organization):
     if found:
         return client_id
     else:
-        raise Exception(f"Error on Organization - Use on of the List: {d['organizations']}")
+        raise Exception(f"Error on Organization - Use one from the list: {d['organizations']}")
 
 
 def handle_response(my_response):
