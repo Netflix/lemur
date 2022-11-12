@@ -119,7 +119,7 @@ def get_client_id(session, organization):
         raise Exception(f"Error for Getting Organization {error_messages}")
 
     if 'organizations' not in d:
-        raise Exception("Error for Getting Organization: not org returned")
+        raise Exception("Error for Getting Organization: no org returned")
 
     found = False
     for y in d["organizations"]:
