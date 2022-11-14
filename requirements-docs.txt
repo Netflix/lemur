@@ -115,7 +115,7 @@ click-plugins==1.1.1
     # via celery
 click-repl==0.2.0
     # via celery
-cloudflare==2.10.3
+cloudflare==2.10.4
     # via -r requirements-docs.in
 configargparse==1.5.3
     # via
