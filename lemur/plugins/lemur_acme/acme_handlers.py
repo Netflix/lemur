@@ -119,8 +119,8 @@ class AcmeHandler(object):
 
         pem_certificate, pem_certificate_chain = self.extract_cert_and_chain(orderr.fullchain_pem,
                                                                              orderr.alternative_fullchains_pem)
-        acme_uri = acme_client.client.net.account.uri.replace('https://', '')
-        self.log_remaining_validation(orderr.authorizations, acme_uri)
+
+        self.log_remaining_validation(orderr.authorizations, acme_client.net.account.uri.replace('https://', ''))
 
         current_app.logger.debug(
             "{0} {1}".format(type(pem_certificate), type(pem_certificate_chain))
