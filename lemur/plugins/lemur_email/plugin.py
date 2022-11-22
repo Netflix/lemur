@@ -148,7 +148,7 @@ class EmailNotificationPlugin(ExpirationNotificationPlugin):
         title_parser = TitleParser()
         title_parser.feed(body)
         if title_parser.title:
-            subject = title_parser.title 
+            subject = title_parser.title
 
         s_type = current_app.config.get("LEMUR_EMAIL_SENDER", "ses").lower()
 
