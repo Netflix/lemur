@@ -13,8 +13,10 @@ from flask import current_app
 from sentry_sdk import capture_exception
 from azure.keyvault.certificates import CertificateClient, CertificatePolicy
 from azure.core.exceptions import HttpResponseError, ResourceNotFoundError
+from azure.mgmt.cdn import CdnManagementClient
 from azure.mgmt.network import NetworkManagementClient
 from azure.mgmt.subscription import SubscriptionClient
+from azure.mgmt.cdn.models import UserManagedHttpsParameters
 from azure.mgmt.network.models import ApplicationGatewaySslPolicyName, ApplicationGatewaySslPolicyType, ApplicationGatewaySslCipherSuite
 
 from lemur.common.defaults import common_name, issuer, bitstrength
@@ -26,6 +28,63 @@ from lemur.plugins.lemur_azure.auth import get_azure_credential
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import pkcs12
+
+
+def get_cdn_endpoints(cdn_client):
+    endpoints = []
+    for profile in cdn_client.profiles.list():
+        resource_group_name = resource_group_from_id(profile.id)
+        for endpoint in cdn_client.endpoints.list_by_profile(
+                resource_group_name=resource_group_name,
+                profile_name=profile.name
+        ):
+            ep = dict(
+                name=endpoint.name,
+                dnsname=endpoint.host_name,
+                port=443,  # Azure CDN doesn't support configuring a custom port.
+                type="azurecdn",
+                sni_certificates=[],
+                policy=dict(
+                    name="none",  # Azure CDN doesn't support configuring SSL policies.
+                    ciphers=[],
+                ),
+            )
+            for domain in cdn_client.custom_domains.list_by_endpoint(
+                    resource_group_name=resource_group_name,
+                    profile_name=profile.name,
+                    endpoint_name=endpoint.name,
+            ):
+                if isinstance(domain.custom_https_parameters, UserManagedHttpsParameters):
+                    ep["sni_certificates"].append(
+                        dict(
+                            name=domain.custom_https_parameters.certificate_source_parameters.secret_name,
+                            path="",
+                            registry_type="keyvault",
+                        )
+                    )
+                    endpoints.append(ep)
+    return endpoints
+
+
+def get_application_gateways(network_client):
+    endpoints = []
+    for appgw in network_client.application_gateways.list_all():
+        for listener in appgw.http_listeners:
+            if listener.protocol == "Https":
+                port = port_from_id(appgw, listener.frontend_port.id)
+                ip_address, is_public = ip_from_cfg_id(appgw, network_client, listener.frontend_ip_configuration.id)
+                listener_type = "public" if is_public else "internal"
+                ep = dict(
+                    name=f"{appgw.name}-{listener_type}-{port}",
+                    dnsname=ip_address,
+                    port=port,
+                    type="applicationgateway",
+                    primary_certificate=certificate_from_id(appgw, listener.ssl_certificate.id),
+                    sni_certificates=[],
+                    policy=policy_from_appgw(network_client, appgw),
+                )
+                endpoints.append(ep)
+    return endpoints
 
 
 def get_and_decode_certificate(certificate_client, certificate_name):
@@ -325,22 +384,10 @@ class AzureSourcePlugin(SourcePlugin):
         endpoints = []
         for subscription in SubscriptionClient(credential=credential).subscriptions.list():
             network_client = NetworkManagementClient(credential=credential, subscription_id=subscription.subscription_id)
-            for appgw in network_client.application_gateways.list_all():
-                for listener in appgw.http_listeners:
-                    if listener.protocol == "Https":
-                        port = port_from_id(appgw, listener.frontend_port.id)
-                        ip_address, is_public = ip_from_cfg_id(appgw, network_client, listener.frontend_ip_configuration.id)
-                        listener_type = "public" if is_public else "internal"
-                        ep = dict(
-                            name=f"{appgw.name}-{listener_type}-{port}",
-                            dnsname=ip_address,
-                            port=port,
-                            type="applicationgateway",
-                            primary_certificate=certificate_from_id(appgw, listener.ssl_certificate.id),
-                            sni_certificates=[],
-                            policy=policy_from_appgw(network_client, appgw),
-                        )
-                        endpoints.append(ep)
+            endpoints += get_application_gateways(network_client)
+
+            cdn_client = CdnManagementClient(credential=credential, subscription_id=subscription.subscription_id)
+            endpoints += get_cdn_endpoints(cdn_client)
         return endpoints
 
     @staticmethod

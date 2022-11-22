@@ -21,6 +21,14 @@ from azure.mgmt.network.models import (
     PublicIPAddress,
     SubResource
 )
+from azure.mgmt.cdn.models import (
+    CustomDomain,
+    Endpoint,
+    KeyVaultCertificateSourceParameters,
+    Profile,
+    Sku,
+    UserManagedHttpsParameters,
+)
 from azure.keyvault.certificates import CertificateProperties, KeyVaultCertificate
 
 
@@ -82,6 +90,10 @@ def _frontend_ip_cfg_resource_id(subscription_id, appgw_name, resource_name):
 
 def _public_ip_resource_id(subscription_id, resource_name):
     return f"/subscriptions/{subscription_id}/resourceGroups/fake-resource-group/providers/Microsoft.Network/publicIPAddresses/{resource_name}"
+
+
+def _cdn_profile_resource_id(subscription_id, resource_group_name, resource_name):
+    return f"/subscriptions/{subscription_id}/resourceGroups/{resource_group_name}/providers/Microsoft.Cdn/profiles/{resource_name}"
 
 
 def _frontend_port_id(subscription_id, appgw_name, resource_name):
@@ -155,6 +167,9 @@ class TestAzureSource(unittest.TestCase):
         pass
 
     @patch.dict(os.environ, {"VAULT_ADDR": "https://fakevaultinstance:8200"})
+    @patch("azure.mgmt.cdn.operations.ProfilesOperations.list")
+    @patch("azure.mgmt.cdn.operations.EndpointsOperations.list_by_profile")
+    @patch("azure.mgmt.cdn.operations.CustomDomainsOperations.list_by_endpoint")
     @patch("azure.mgmt.network.v2022_05_01.operations.PublicIPAddressesOperations.get")
     @patch("azure.mgmt.network.v2022_05_01.operations.ApplicationGatewaysOperations.get_ssl_predefined_policy")
     @patch("azure.mgmt.network.v2022_05_01.operations.ApplicationGatewaysOperations.list_all")
@@ -164,7 +179,10 @@ class TestAzureSource(unittest.TestCase):
             list_subscriptions_mock,
             list_all_appgw_mock,
             get_ssl_predefined_policy_mock,
-            get_public_ip_mock
+            get_public_ip_mock,
+            list_cdn_custom_domains_by_endpoint_mock,
+            list_cdn_endpoints_by_profile_mock,
+            list_cdn_profiles_mock,
     ):
         test_subscription_1 = Subscription()
         test_subscription_1.subscription_id = "fake-subscription-1"
@@ -352,6 +370,34 @@ class TestAzureSource(unittest.TestCase):
             ip_address="204.13.0.121",
         )
 
+        qux_cdn_profile = Profile(
+            name="qux-cdn",
+            location="Global",
+            sku=Sku(name="Standard_Microsoft"),
+        )
+        qux_cdn_profile.id = _cdn_profile_resource_id(
+            subscription_id="fake-subscription-1",
+            resource_group_name="fake-resource-group-1",
+            resource_name="qux-cdn-profile"
+        )
+        qux_cdn_endpoint = Endpoint(location="Global")
+        qux_cdn_endpoint.name = "qux-cdn"
+        qux_cdn_endpoint.host_name = "qux-cdn.azureedge.net"
+        qux_cdn_custom_domain = CustomDomain(
+            host_name="custom.mydomain.com",
+            custom_https_parameters=UserManagedHttpsParameters(
+                protocol_type="Https",
+                certificate_source_parameters=KeyVaultCertificateSourceParameters(
+                    subscription_id="fake-subscription-1",
+                    resource_group_name="fake-resource-group-1",
+                    vault_name="fake-key-vault",
+                    secret_name="fake-ssl-certificate-qux-1",
+                    update_rule="",
+                    delete_rule="",
+                ),
+            ),
+        )
+
         test_subscription_1_appgws = [foo_appgw, bar_appgw]
         test_subscription_2_appgws = [baz_appgw]
         test_public_ips = [foo_public_ip, baz_public_ip]
@@ -360,6 +406,10 @@ class TestAzureSource(unittest.TestCase):
         list_all_appgw_mock.side_effect = [test_subscription_1_appgws, test_subscription_2_appgws]
         get_public_ip_mock.side_effect = [ip for ip in test_public_ips]
         get_ssl_predefined_policy_mock.return_value = test_predefined_ssl_policy
+
+        list_cdn_profiles_mock.side_effect = [[qux_cdn_profile], []]
+        list_cdn_endpoints_by_profile_mock.side_effect = [[qux_cdn_endpoint], []]
+        list_cdn_custom_domains_by_endpoint_mock.side_effect = [[qux_cdn_custom_domain], []]
 
         synced_endpoints = self.azure_source.get_endpoints(self.options)
         assert synced_endpoints == [
@@ -377,6 +427,23 @@ class TestAzureSource(unittest.TestCase):
                 policy=dict(
                     name="AppGwSslPolicy20170401S",
                     ciphers=["TLS_RSA_WITH_AES_256_CBC_SHA"],
+                )
+            ),
+            dict(
+                name="qux-cdn",
+                dnsname="qux-cdn.azureedge.net",
+                port=443,
+                type="azurecdn",
+                sni_certificates=[
+                    dict(
+                        name="fake-ssl-certificate-qux-1",
+                        path="",
+                        registry_type="keyvault",
+                    ),
+                ],
+                policy=dict(
+                    name="none",
+                    ciphers=[],
                 )
             ),
             dict(

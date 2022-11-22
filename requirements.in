@@ -1,6 +1,7 @@
 # Run `make up-reqs` to update pinned dependencies in requirement text files
 
 acme
+azure-mgmt-cdn
 azure-mgmt-network
 azure-mgmt-subscription
 azure-identity
