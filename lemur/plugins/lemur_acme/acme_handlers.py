@@ -386,7 +386,7 @@ class AcmeDnsHandler(AcmeHandler):
 
             change_id = dns_provider.create_txt_record(
                 host_to_validate,
-                dns_challenge.validation(acme_client.client.net.key),
+                dns_challenge.validation(acme_client.net.key),
                 account_number,
             )
             change_ids.append(change_id)
@@ -434,12 +434,12 @@ class AcmeDnsHandler(AcmeHandler):
                     metrics.send("acme_challenge_already_valid", "counter", 1)
                     return
 
-                response = dns_challenge.response(acme_client.client.net.key)
+                response = dns_challenge.response(acme_client.net.key)
 
                 verified = response.simple_verify(
                     dns_challenge.chall,
                     authz_record.target_domain,
-                    acme_client.client.net.key.public_key(),
+                    acme_client.net.key.public_key(),
                 )
 
             if not verified:
@@ -536,7 +536,7 @@ class AcmeDnsHandler(AcmeHandler):
                         authz_record.change_id,
                         account_number,
                         host_to_validate,
-                        dns_challenge.validation(acme_client.client.net.key),
+                        dns_challenge.validation(acme_client.net.key),
                     )
 
         return authorizations
@@ -574,7 +574,7 @@ class AcmeDnsHandler(AcmeHandler):
                             authz_record.change_id,
                             account_number,
                             host_to_validate,
-                            dns_challenge.validation(acme_client.client.net.key),
+                            dns_challenge.validation(acme_client.net.key),
                         )
                     except Exception as e:
                         # If this fails, it's most likely because the record doesn't exist (It was already cleaned up)
