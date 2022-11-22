@@ -105,7 +105,7 @@ class TestAcmeDns(unittest.TestCase):
         self.assertEqual(result, mock_entry)
         self.assertFalse(hostname_still_validatd)
 
-    @patch("acme.client.Client")
+    @patch("acme.client.ClientV2")
     @patch("lemur.plugins.lemur_acme.plugin.len", return_value=1)
     @patch("lemur.plugins.lemur_acme.plugin.AcmeDnsHandler.get_dns_challenges")
     def test_start_dns_challenge(
@@ -133,7 +133,7 @@ class TestAcmeDns(unittest.TestCase):
         )
         self.assertEqual(type(result), AuthorizationRecord)
 
-    @patch("acme.client.Client")
+    @patch("acme.client.ClientV2")
     @patch("lemur.plugins.lemur_acme.cloudflare.wait_for_dns_change")
     @patch("time.sleep")
     def test_complete_dns_challenge_success(
@@ -158,7 +158,7 @@ class TestAcmeDns(unittest.TestCase):
         mock_authz.dns_challenge.append(dns_challenge)
         self.acme.complete_dns_challenge(mock_acme, mock_authz)
 
-    @patch("acme.client.Client")
+    @patch("acme.client.ClientV2")
     @patch("lemur.plugins.lemur_acme.cloudflare.wait_for_dns_change")
     def test_complete_dns_challenge_fail(
             self, mock_wait_for_dns_change, mock_acme
@@ -186,7 +186,7 @@ class TestAcmeDns(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.acme.complete_dns_challenge(mock_acme, mock_authz)
 
-    @patch("acme.client.Client")
+    @patch("acme.client.ClientV2")
     @patch("OpenSSL.crypto", return_value="mock_cert")
     @patch("josepy.util.ComparableX509")
     @patch("lemur.plugins.lemur_acme.plugin.AcmeDnsHandler.get_dns_challenges")
@@ -217,7 +217,7 @@ class TestAcmeDns(unittest.TestCase):
             self.acme.setup_acme_client(mock_authority)
 
     @patch("lemur.plugins.lemur_acme.acme_handlers.jose.JWK.json_loads")
-    @patch("lemur.plugins.lemur_acme.acme_handlers.BackwardsCompatibleClientV2")
+    @patch("lemur.plugins.lemur_acme.acme_handlers.ClientV2")
     def test_setup_acme_client_success_load_account_from_authority(self, mock_acme, mock_key_json_load):
         mock_authority = Mock()
         mock_authority.id = 2
@@ -238,7 +238,7 @@ class TestAcmeDns(unittest.TestCase):
 
     @patch("lemur.plugins.lemur_acme.acme_handlers.jose.JWKRSA.fields_to_partial_json")
     @patch("lemur.plugins.lemur_acme.acme_handlers.authorities_service")
-    @patch("lemur.plugins.lemur_acme.acme_handlers.BackwardsCompatibleClientV2")
+    @patch("lemur.plugins.lemur_acme.acme_handlers.ClientV2")
     def test_setup_acme_client_success_store_new_account(self, mock_acme, mock_authorities_service,
                                                          mock_key_generation):
         current_app.config["LEMUR_ENCRYPTION_KEYS"] = LEMUR_ENCRYPTION_KEYS
@@ -264,7 +264,7 @@ class TestAcmeDns(unittest.TestCase):
         assert "acme_private_key" in mock_authorities_service.update_options.call_args[1]['options']
 
     @patch("lemur.plugins.lemur_acme.acme_handlers.authorities_service")
-    @patch("lemur.plugins.lemur_acme.acme_handlers.BackwardsCompatibleClientV2")
+    @patch("lemur.plugins.lemur_acme.acme_handlers.ClientV2")
     def test_setup_acme_client_success(self, mock_acme, mock_authorities_service):
         mock_authority = Mock()
         mock_authority.options = '[{"name": "mock_name", "value": "mock_value"}, ' \
