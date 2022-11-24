@@ -123,12 +123,12 @@ def test_convert_pkcs7_bytes_to_pem():
     from lemur.common.utils import convert_pkcs7_bytes_to_pem
     from lemur.common.utils import parse_certificate
     cert_chain = convert_pkcs7_bytes_to_pem(CERT_CHAIN_PKCS7_PEM)
-    assert(len(cert_chain) == 3)
+    assert (len(cert_chain) == 3)
 
     leaf = cert_chain[1]
     root = cert_chain[2]
 
-    assert(parse_certificate("\n".join(str(root).splitlines())) == ROOTCA_CERT)
+    assert (parse_certificate("\n".join(str(root).splitlines())) == ROOTCA_CERT)
     assert (parse_certificate("\n".join(str(leaf).splitlines())) == INTERMEDIATE_CERT)
 
 
