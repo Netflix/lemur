@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-docs.txt requirements-docs.in
 #
-acme==1.32.0
+acme==2.0.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -472,15 +472,10 @@ requests==2.28.1
     #   hvac
     #   moto
     #   requests-mock
-    #   requests-toolbelt
     #   responses
     #   sphinx
 requests-mock==1.10.0
     # via -r requirements-tests.txt
-requests-toolbelt==0.9.1
-    # via
-    #   -r requirements-tests.txt
-    #   acme
 responses==0.20.0
     # via
     #   -r requirements-tests.txt

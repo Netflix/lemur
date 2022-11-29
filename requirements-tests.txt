@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-tests.txt requirements-tests.in
 #
-acme==1.32.0
+acme==2.0.0
     # via certbot
 alembic==1.7.7
     # via flask-migrate
@@ -238,12 +238,9 @@ requests==2.28.1
     #   docker
     #   moto
     #   requests-mock
-    #   requests-toolbelt
     #   responses
 requests-mock==1.10.0
     # via -r requirements-tests.in
-requests-toolbelt==0.9.1
-    # via acme
 responses==0.20.0
     # via moto
 rsa==4.8
