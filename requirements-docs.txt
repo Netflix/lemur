@@ -485,7 +485,7 @@ responses==0.20.0
     # via
     #   -r requirements-tests.txt
     #   moto
-retrying==1.3.3
+retrying==1.3.4
     # via -r requirements-docs.in
 rsa==4.8
     # via
