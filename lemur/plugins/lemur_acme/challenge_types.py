@@ -153,8 +153,8 @@ class AcmeHttpChallenge(AcmeChallenge):
                     # skipping the last element
                     pem_certificate_chain = drop_last_cert_from_chain(pem_certificate_chain)
 
-        acme_uri = acme_client.client.net.account.uri.replace('https://', '')
-        self.acme.log_remaining_validation(finalized_orderr.authorizations, acme_uri)
+        self.acme.log_remaining_validation(finalized_orderr.authorizations,
+                                           acme_client.net.account.uri.replace('https://', ''))
 
         if len(deployed_challenges) != 0:
             for token_path in deployed_challenges:

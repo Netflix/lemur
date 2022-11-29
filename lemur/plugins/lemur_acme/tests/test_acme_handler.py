@@ -72,7 +72,7 @@ class TestAcmeHandler(unittest.TestCase):
         self.assertFalse(self.acme.reuse_account(mock_authority))
 
     @patch("lemur.plugins.lemur_acme.acme_handlers.authorities_service")
-    @patch("lemur.plugins.lemur_acme.acme_handlers.BackwardsCompatibleClientV2")
+    @patch("lemur.plugins.lemur_acme.acme_handlers.ClientV2")
     def test_setup_acme_client_success(self, mock_acme, mock_authorities_service):
         mock_authority = Mock()
         mock_authority.options = '[{"name": "mock_name", "value": "mock_value"}, ' \
