@@ -90,8 +90,6 @@ cryptography==38.0.3
     #   pyopenssl
 decorator==5.1.1
     # via validators
-deprecated==1.2.13
-    # via redis
 distro==1.7.0
     # via certbot
 dnspython==1.15.0
@@ -246,7 +244,7 @@ pyyaml==6.0
     # via
     #   -r requirements.in
     #   cloudflare
-redis==4.3.4
+redis==4.3.5
     # via
     #   -r requirements.in
     #   celery
@@ -310,8 +308,6 @@ werkzeug==2.0.3
     # via
     #   -r requirements.in
     #   flask
-wrapt==1.14.0
-    # via deprecated
 xmltodict==0.13.0
     # via -r requirements.in
 zope-component==5.0.1
