@@ -20,7 +20,7 @@ pyflakes
 pytest
 pytest-flask
 pytest-mock
-redis < 4.4.0 # requires a newer release of fakeredis
+redis < 4.5.0 # requires a newer release of fakeredis
 requests-mock
 sqlalchemy < 1.4.0 # ImportError: cannot import name '_ColumnEntity' https://github.com/sqlalchemy/sqlalchemy/issues/6226
 pyyaml>=4.2b1
