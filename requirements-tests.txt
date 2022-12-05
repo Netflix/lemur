@@ -78,7 +78,7 @@ faker==15.3.3
     # via
     #   -r requirements-tests.in
     #   factory-boy
-fakeredis==2.0.0
+fakeredis==2.2.0
     # via -r requirements-tests.in
 flask==1.1.2
     # via
@@ -238,12 +238,9 @@ requests==2.28.1
     #   docker
     #   moto
     #   requests-mock
-    #   requests-toolbelt
     #   responses
 requests-mock==1.10.0
     # via -r requirements-tests.in
-requests-toolbelt==0.9.1
-    # via acme
 responses==0.20.0
     # via moto
 rsa==4.8
@@ -294,16 +291,6 @@ wrapt==1.14.0
     # via aws-xray-sdk
 xmltodict==0.13.0
     # via moto
-zope-component==5.0.1
-    # via certbot
-zope-event==4.5.0
-    # via zope-component
-zope-hookable==5.1.0
-    # via zope-component
-zope-interface==5.4.0
-    # via
-    #   certbot
-    #   zope-component
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

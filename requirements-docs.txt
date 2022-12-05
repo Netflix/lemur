@@ -169,7 +169,7 @@ faker==15.3.3
     # via
     #   -r requirements-tests.txt
     #   factory-boy
-fakeredis==2.0.0
+fakeredis==2.2.0
     # via -r requirements-tests.txt
 flask==1.1.2
     # via
@@ -472,15 +472,10 @@ requests==2.28.1
     #   hvac
     #   moto
     #   requests-mock
-    #   requests-toolbelt
     #   responses
     #   sphinx
 requests-mock==1.10.0
     # via -r requirements-tests.txt
-requests-toolbelt==0.9.1
-    # via
-    #   -r requirements-tests.txt
-    #   acme
 responses==0.20.0
     # via
     #   -r requirements-tests.txt
@@ -612,23 +607,6 @@ xmltodict==0.13.0
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   moto
-zope-component==5.0.1
-    # via
-    #   -r requirements-tests.txt
-    #   certbot
-zope-event==4.5.0
-    # via
-    #   -r requirements-tests.txt
-    #   zope-component
-zope-hookable==5.1.0
-    # via
-    #   -r requirements-tests.txt
-    #   zope-component
-zope-interface==5.4.0
-    # via
-    #   -r requirements-tests.txt
-    #   certbot
-    #   zope-component
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
