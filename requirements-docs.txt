@@ -336,7 +336,6 @@ packaging==21.3
     # via
     #   -r requirements-tests.txt
     #   pytest
-    #   redis
     #   sphinx
 paramiko==2.12.0
     # via -r requirements-docs.in
@@ -456,7 +455,7 @@ pyyaml==6.0
     #   cfn-lint
     #   cloudflare
     #   moto
-redis==4.3.5
+redis==4.4.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
