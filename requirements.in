@@ -43,7 +43,7 @@ pyjwt
 pyOpenSSL
 pyyaml>=4.2b1 #high severity alert
 python_ldap
-redis < 4.4.0 # requires a newer release of fakeredis
+redis < 4.5.0 # requires a newer release of fakeredis
 requests
 retrying
 sentry-sdk

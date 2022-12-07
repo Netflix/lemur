@@ -20,7 +20,7 @@ import OpenSSL.crypto
 import josepy as jose
 import dns.resolver
 from acme import challenges, errors, messages
-from acme.client import BackwardsCompatibleClientV2, ClientNetwork
+from acme.client import ClientV2, ClientNetwork
 from acme.errors import TimeoutError
 from acme.messages import Error as AcmeError, STATUS_VALID
 from certbot import crypto_util as acme_crypto_util
@@ -119,8 +119,8 @@ class AcmeHandler(object):
 
         pem_certificate, pem_certificate_chain = self.extract_cert_and_chain(orderr.fullchain_pem,
                                                                              orderr.alternative_fullchains_pem)
-        acme_uri = acme_client.client.net.account.uri.replace('https://', '')
-        self.log_remaining_validation(orderr.authorizations, acme_uri)
+
+        self.log_remaining_validation(orderr.authorizations, acme_client.net.account.uri.replace('https://', ''))
 
         current_app.logger.debug(
             "{0} {1}".format(type(pem_certificate), type(pem_certificate_chain))
@@ -184,7 +184,8 @@ class AcmeHandler(object):
                 "Connecting with directory at {0}".format(directory_url)
             )
             net = ClientNetwork(key, account=regr)
-            client = BackwardsCompatibleClientV2(net, key, directory_url)
+            directory = ClientV2.get_directory(directory_url, net)
+            client = ClientV2(directory, net=net)
             return client, {}
         else:
             # Create an account for each certificate issuance
@@ -196,7 +197,8 @@ class AcmeHandler(object):
             )
 
             net = ClientNetwork(key, account=None, timeout=3600)
-            client = BackwardsCompatibleClientV2(net, key, directory_url)
+            directory = ClientV2.get_directory(directory_url, net)
+            client = ClientV2(directory, net=net)
             if eab_kid and eab_hmac_key:
                 # external account binding (eab_kid and eab_hmac_key could be potentially single use to establish
                 # long-term credentials)
@@ -384,7 +386,7 @@ class AcmeDnsHandler(AcmeHandler):
 
             change_id = dns_provider.create_txt_record(
                 host_to_validate,
-                dns_challenge.validation(acme_client.client.net.key),
+                dns_challenge.validation(acme_client.net.key),
                 account_number,
             )
             change_ids.append(change_id)
@@ -432,12 +434,12 @@ class AcmeDnsHandler(AcmeHandler):
                     metrics.send("acme_challenge_already_valid", "counter", 1)
                     return
 
-                response = dns_challenge.response(acme_client.client.net.key)
+                response = dns_challenge.response(acme_client.net.key)
 
                 verified = response.simple_verify(
                     dns_challenge.chall,
                     authz_record.target_domain,
-                    acme_client.client.net.key.public_key(),
+                    acme_client.net.key.public_key(),
                 )
 
             if not verified:
@@ -534,7 +536,7 @@ class AcmeDnsHandler(AcmeHandler):
                         authz_record.change_id,
                         account_number,
                         host_to_validate,
-                        dns_challenge.validation(acme_client.client.net.key),
+                        dns_challenge.validation(acme_client.net.key),
                     )
 
         return authorizations
@@ -572,7 +574,7 @@ class AcmeDnsHandler(AcmeHandler):
                             authz_record.change_id,
                             account_number,
                             host_to_validate,
-                            dns_challenge.validation(acme_client.client.net.key),
+                            dns_challenge.validation(acme_client.net.key),
                         )
                     except Exception as e:
                         # If this fails, it's most likely because the record doesn't exist (It was already cleaned up)
