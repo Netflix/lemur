@@ -228,3 +228,24 @@ def test_get_recipients(certificate, endpoint):
     assert sorted(EmailNotificationPlugin.get_recipients(options, ["bob@example.com"])) == three_emails
     assert sorted(EmailNotificationPlugin.get_recipients(options, ["security@example.com", "bob@example.com",
                                                                    "joe@example.com"])) == three_emails
+
+
+def test_title_parser(certificate, endpoint):
+    from lemur.plugins.lemur_email.plugin import TitleParser
+
+    html_template_with_title = """
+    <html>
+        <head><title>The Title!</title></head>
+        <body><p>Here's your email!</p></body>
+    </html>"""
+    with_title = TitleParser()
+    with_title.feed(html_template_with_title)
+    assert(with_title.title)
+
+    html_template_without_title = """
+    <html>
+        <body><p>Here's your email!</p></body>
+    </html>"""
+    without_title = TitleParser()
+    without_title.feed(html_template_without_title)
+    assert(not without_title.title)
