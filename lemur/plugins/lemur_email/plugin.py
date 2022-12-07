@@ -7,6 +7,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import boto3
+from html.parser import HTMLParser
 from flask import current_app
 from flask_mail import Message
 from sentry_sdk import capture_exception
@@ -94,6 +95,21 @@ def send_via_ses(subject, body, targets, **kwargs):
         capture_exception()
 
 
+class TitleParser(HTMLParser):
+    def __init__(self):
+        HTMLParser.__init__(self)
+        self.match = False
+        self.title = ''
+
+    def handle_starttag(self, tag, attributes):
+        self.match = tag == 'title'
+
+    def handle_data(self, data):
+        if self.match:
+            self.title = data
+            self.match = False
+
+
 class EmailNotificationPlugin(ExpirationNotificationPlugin):
     title = "Email"
     slug = "email-notification"
@@ -129,6 +145,10 @@ class EmailNotificationPlugin(ExpirationNotificationPlugin):
         subject = f"Lemur: {readable_notification_type} Notification"
 
         body = render_html(notification_type, options, message)
+        title_parser = TitleParser()
+        title_parser.feed(body)
+        if title_parser.title:
+            subject = title_parser.title
 
         s_type = current_app.config.get("LEMUR_EMAIL_SENDER", "ses").lower()
 
