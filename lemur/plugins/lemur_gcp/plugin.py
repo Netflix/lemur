@@ -68,7 +68,8 @@ class GCPDestinationPlugin(DestinationPlugin):
                 credentials,
                 self.get_option("region", options),
             )
-        except exceptions.AlreadyExists:
+        except exceptions.Conflict:
+            current_app.logger.info(f"Certificate {name} already exists in GCP.")
             pass
         except Exception as e:
             current_app.logger.error(
