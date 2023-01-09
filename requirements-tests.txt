@@ -86,7 +86,7 @@ flask==1.1.2
     #   flask-migrate
     #   flask-sqlalchemy
     #   pytest-flask
-flask-migrate==2.7.0
+flask-migrate==4.0.1
     # via -r requirements-tests.in
 flask-sqlalchemy==2.5.1
     # via flask-migrate
