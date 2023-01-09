@@ -240,7 +240,7 @@ pyyaml==6.0
     # via
     #   -r requirements.in
     #   cloudflare
-redis==4.4.0
+redis==4.4.1
     # via
     #   -r requirements.in
     #   celery
