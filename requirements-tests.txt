@@ -92,7 +92,7 @@ flask-sqlalchemy==2.5.1
     # via flask-migrate
 freezegun==1.2.2
     # via -r requirements-tests.in
-future==0.18.2
+future==0.18.3
     # via aws-xray-sdk
 gitdb==4.0.9
     # via gitpython
