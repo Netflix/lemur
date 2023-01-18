@@ -80,7 +80,7 @@ pyyaml==6.0
     #   pre-commit
 readme-renderer==35.0
     # via twine
-requests==2.28.1
+requests==2.28.2
     # via
     #   requests-toolbelt
     #   twine
