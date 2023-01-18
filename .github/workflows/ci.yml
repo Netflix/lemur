@@ -62,7 +62,7 @@ jobs:
         python -m venv ~/env
         source ~/env/bin/activate
         python -m pip install --upgrade pip
-        python -m pip install --upgrade setuptools
+        python -m pip install --upgrade "setuptools<=v65.7.0" # https://github.com/Netflix/lemur/issues/4297
         pip install coveralls bandit
         sudo apt-get update
         sudo apt-get install libsasl2-dev libldap2-dev xvfb
