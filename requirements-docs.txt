@@ -337,7 +337,7 @@ packaging==21.3
     #   -r requirements-tests.txt
     #   pytest
     #   sphinx
-paramiko==2.12.0
+paramiko==3.0.0
     # via -r requirements-docs.in
 parsedatetime==2.6
     # via
@@ -507,7 +507,6 @@ six==1.16.0
     #   flask-restful
     #   jsonschema
     #   junit-xml
-    #   paramiko
     #   python-dateutil
     #   requests-mock
     #   retrying

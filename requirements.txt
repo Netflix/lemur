@@ -179,7 +179,7 @@ marshmallow-sqlalchemy==0.23.1
     # via -r requirements.in
 ndg-httpsclient==0.5.1
     # via -r requirements.in
-paramiko==2.12.0
+paramiko==3.0.0
     # via -r requirements.in
 parsedatetime==2.6
     # via certbot
@@ -265,7 +265,6 @@ six==1.16.0
     #   configobj
     #   flask-cors
     #   flask-restful
-    #   paramiko
     #   python-dateutil
     #   retrying
 soupsieve==2.3.1
