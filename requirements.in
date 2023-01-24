@@ -17,6 +17,7 @@ certifi
 certsrv
 CloudFlare
 cryptography
+deprecated
 dnspython3
 dyn
 Flask-Bcrypt
@@ -33,7 +34,6 @@ future
 google-cloud-compute
 gunicorn
 hvac # required for the vault destination plugin
-importlib-metadata < 5
 inflection
 itsdangerous < 2.1.0 # requires Flask 2.0.3
 jinja2 < 3.1.0 # requires a newer version of Flask
@@ -50,7 +50,7 @@ pyjwt
 pyOpenSSL
 pyyaml>=4.2b1 #high severity alert
 python_ldap
-redis < 4.4.0 # requires a newer release of fakeredis
+redis < 4.5.0 # requires a newer release of fakeredis
 requests
 retrying
 sentry-sdk

@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-tests.txt requirements-tests.in
 #
-acme==1.28.0
+acme==2.2.0
     # via certbot
 alembic==1.7.7
     # via flask-migrate
@@ -22,21 +22,21 @@ aws-xray-sdk==2.9.0
     # via moto
 bandit==1.7.4
     # via -r requirements-tests.in
-black==22.3.0
+black==22.12.0
     # via -r requirements-tests.in
-boto3==1.24.8
+boto3==1.24.96
     # via
     #   aws-sam-translator
     #   moto
-botocore==1.27.12
+botocore==1.27.96
     # via
     #   aws-xray-sdk
     #   boto3
     #   moto
     #   s3transfer
-certbot==1.28.0
+certbot==2.1.0
     # via -r requirements-tests.in
-certifi==2022.6.15
+certifi==2022.12.7
     # via requests
 cffi==1.15.0
     # via cryptography
@@ -52,9 +52,9 @@ configargparse==1.5.3
     # via certbot
 configobj==5.0.6
     # via certbot
-coverage==6.4.1
+coverage==6.5.0
     # via -r requirements-tests.in
-cryptography==37.0.2
+cryptography==39.0.0
     # via
     #   acme
     #   certbot
@@ -63,8 +63,6 @@ cryptography==37.0.2
     #   pyopenssl
     #   python-jose
     #   sshpubkeys
-deprecated==1.2.13
-    # via redis
 distro==1.7.0
     # via certbot
 docker==5.0.3
@@ -76,11 +74,11 @@ ecdsa==0.17.0
     #   sshpubkeys
 factory-boy==3.2.1
     # via -r requirements-tests.in
-faker==13.13.0
+faker==16.6.0
     # via
     #   -r requirements-tests.in
     #   factory-boy
-fakeredis==1.8.1
+fakeredis==2.4.0
     # via -r requirements-tests.in
 flask==1.1.2
     # via
@@ -92,13 +90,13 @@ flask-migrate==2.7.0
     # via -r requirements-tests.in
 flask-sqlalchemy==2.5.1
     # via flask-migrate
-freezegun==1.2.1
+freezegun==1.2.2
     # via -r requirements-tests.in
-future==0.18.2
+future==0.18.3
     # via aws-xray-sdk
 gitdb==4.0.9
     # via gitpython
-gitpython==3.1.27
+gitpython==3.1.30
     # via bandit
 graphql-core==3.2.0
     # via moto
@@ -139,11 +137,9 @@ jsonschema==3.2.0
     # via
     #   aws-sam-translator
     #   cfn-lint
-    #   openapi-schema-validator
-    #   openapi-spec-validator
 junit-xml==1.9
     # via cfn-lint
-mako==1.2.0
+mako==1.2.2
     # via alembic
 markupsafe==2.1.1
     # via
@@ -156,7 +152,7 @@ marshmallow==2.21.0
     #   marshmallow-sqlalchemy
 marshmallow-sqlalchemy==0.23.1
     # via -r requirements-tests.in
-moto[all]==3.1.17
+moto[all]==3.1.1
     # via -r requirements-tests.in
 mypy-extensions==0.4.3
     # via black
@@ -164,14 +160,8 @@ networkx==2.7.1
     # via cfn-lint
 nose==1.3.7
     # via -r requirements-tests.in
-openapi-schema-validator==0.2.3
-    # via openapi-spec-validator
-openapi-spec-validator==0.4.0
-    # via moto
 packaging==21.3
-    # via
-    #   pytest
-    #   redis
+    # via pytest
 parsedatetime==2.6
     # via certbot
 pathspec==0.9.0
@@ -195,28 +185,26 @@ pycparser==2.21
     # via cffi
 pyflakes==2.4.0
     # via -r requirements-tests.in
-pyopenssl==22.0.0
+pyopenssl==23.0.0
     # via
     #   acme
     #   josepy
 pyparsing==3.0.7
-    # via
-    #   moto
-    #   packaging
+    # via packaging
 pyrfc3339==1.1
     # via
     #   acme
     #   certbot
 pyrsistent==0.18.1
     # via jsonschema
-pytest==7.1.2
+pytest==7.1.3
     # via
     #   -r requirements-tests.in
     #   pytest-flask
     #   pytest-mock
 pytest-flask==1.2.0
     # via -r requirements-tests.in
-pytest-mock==3.7.0
+pytest-mock==3.10.0
     # via -r requirements-tests.in
 python-dateutil==2.8.2
     # via
@@ -238,23 +226,19 @@ pyyaml==6.0
     #   bandit
     #   cfn-lint
     #   moto
-    #   openapi-spec-validator
-redis==4.3.3
+redis==4.4.2
     # via
     #   -r requirements-tests.in
     #   fakeredis
-requests==2.28.0
+requests==2.28.2
     # via
     #   acme
     #   docker
     #   moto
     #   requests-mock
-    #   requests-toolbelt
     #   responses
-requests-mock==1.9.3
+requests-mock==1.10.0
     # via -r requirements-tests.in
-requests-toolbelt==0.9.1
-    # via acme
 responses==0.20.0
     # via moto
 rsa==4.9
@@ -268,7 +252,6 @@ six==1.16.0
     #   cfn-lint
     #   configobj
     #   ecdsa
-    #   fakeredis
     #   jsonschema
     #   junit-xml
     #   python-dateutil
@@ -288,11 +271,7 @@ sshpubkeys==3.3.1
 stevedore==3.5.0
     # via bandit
 tomli==2.0.1
-    # via
-    #   black
-    #   pytest
-typing-extensions==4.4.0
-    # via black
+    # via pytest
 urllib3==1.26.9
     # via
     #   botocore
@@ -306,22 +285,10 @@ werkzeug==2.0.3
     #   flask
     #   moto
     #   pytest-flask
-wrapt==1.14.0
-    # via
-    #   aws-xray-sdk
-    #   deprecated
+wrapt==1.14.1
+    # via aws-xray-sdk
 xmltodict==0.13.0
     # via moto
-zope-component==5.0.1
-    # via certbot
-zope-event==4.5.0
-    # via zope-component
-zope-hookable==5.1.0
-    # via zope-component
-zope-interface==5.4.0
-    # via
-    #   certbot
-    #   zope-component
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

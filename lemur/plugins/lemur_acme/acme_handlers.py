@@ -20,7 +20,7 @@ import OpenSSL.crypto
 import josepy as jose
 import dns.resolver
 from acme import challenges, errors, messages
-from acme.client import BackwardsCompatibleClientV2, ClientNetwork
+from acme.client import ClientV2, ClientNetwork
 from acme.errors import TimeoutError
 from acme.messages import Error as AcmeError, STATUS_VALID
 from certbot import crypto_util as acme_crypto_util
@@ -184,7 +184,7 @@ class AcmeHandler(object):
                 "Connecting with directory at {0}".format(directory_url)
             )
             net = ClientNetwork(key, account=regr)
-            client = BackwardsCompatibleClientV2(net, key, directory_url)
+            client = ClientV2(net, key, directory_url)
             return client, {}
         else:
             # Create an account for each certificate issuance
@@ -196,7 +196,7 @@ class AcmeHandler(object):
             )
 
             net = ClientNetwork(key, account=None, timeout=3600)
-            client = BackwardsCompatibleClientV2(net, key, directory_url)
+            client = ClientV2(net, key, directory_url)
             if eab_kid and eab_hmac_key:
                 # external account binding (eab_kid and eab_hmac_key could be potentially single use to establish
                 # long-term credentials)
