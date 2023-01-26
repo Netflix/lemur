@@ -1,13 +1,40 @@
 variables:
-  CURRENT_CI_IMAGE: v7679051-11c779a8
+  CURRENT_CI_IMAGE: registry.ddbuild.io/lemur/ci:0.1.0
   KUBERNETES_SERVICE_ACCOUNT_OVERWRITE: lemur
 
 stages:
+  - test
   - build-stage-image
   - build-prod-image
 
+test:
+  image: $CURRENT_CI_IMAGE
+  stage: test
+  timeout: 30m
+  tags: ["arch:amd64"]
+  variables:
+    POSTGRES_DB: lemur
+    POSTGRES_USER: lemur
+    POSTGRES_PASSWORD: lemur
+    POSTGRES_HOST_AUTH_METHOD: trust
+    # Enable colors in pytest output: https://github.com/pytest-dev/pytest/issues/7443
+    PY_COLORS: 1
+    # Enable colors in chalk output: https://github.com/chalk/chalk#chalklevel
+    FORCE_COLOR: 1
+  services:
+    - registry.ddbuild.io/images/mirror/postgres:12.7
+  script:
+    # Setup virtualenv
+    - python3 -m venv ~/env && \
+    - source ~/env/bin/activate && \
+    - python3 -m pip install --upgrade pip setuptools coveralls bandit
+    # Run tests
+    - make test
+    - bandit -r . -ll -ii -x lemur/tests/,docs
+    - xvfb-run make test-js
+
 build-stage-image:
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/images:$CURRENT_CI_IMAGE
+  image: $CURRENT_CI_IMAGE
   stage: build-stage-image
   when: on_success
   # the 3h timeout is required for images compiling large projects for ARM using qemu
@@ -17,13 +44,13 @@ build-stage-image:
   variables:
     CI_ENABLE_CONTAINER_IMAGE_BUILDS: "true"
   script:
-    - cd publish && docker buildx build --label target=staging --build-arg CI_COMMIT_SHA=${CI_COMMIT_SHA} --tag registry.ddbuild.io/ci/lemur:v$CI_PIPELINE_ID-$CI_COMMIT_SHORT_SHA --push .
+    - cd publish && docker buildx build --label target=staging --build-arg CI_COMMIT_SHA=${CI_COMMIT_SHA} --tag registry.ddbuild.io/lemur:v$CI_PIPELINE_ID-$CI_COMMIT_SHORT_SHA --push .
   except:
     - tags
 
 # build a prod image when we create a new tag
 build-prod-image:
-  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/images:$CURRENT_CI_IMAGE
+  image: $CURRENT_CI_IMAGE
   stage: build-prod-image
   when: on_success
   # the 3h timeout is required for images compiling large projects for ARM using qemu
@@ -33,6 +60,6 @@ build-prod-image:
   variables:
     CI_ENABLE_CONTAINER_IMAGE_BUILDS: "true"
   script:
-    - cd publish && docker buildx build --label target=prod --build-arg CI_COMMIT_SHA=${CI_COMMIT_SHA} --tag registry.ddbuild.io/ci/lemur:$CI_COMMIT_TAG --push .
+    - cd publish && docker buildx build --label target=prod --build-arg CI_COMMIT_SHA=${CI_COMMIT_SHA} --tag registry.ddbuild.io/lemur:$CI_COMMIT_TAG --push .
   only:
     - tags
