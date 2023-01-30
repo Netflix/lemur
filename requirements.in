@@ -49,7 +49,7 @@ retrying
 sentry-sdk
 six
 SQLAlchemy-Utils
-sqlalchemy < 1.4.0 # ImportError: cannot import name '_ColumnEntity' https://github.com/sqlalchemy/sqlalchemy/issues/6226
+sqlalchemy < 2.1.0 # ImportError: cannot import name '_ColumnEntity' https://github.com/sqlalchemy/sqlalchemy/issues/6226
 tabulate
 validators
 werkzeug < 2.1.0 # requires a newer version of Flask
