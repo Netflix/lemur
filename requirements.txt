@@ -131,6 +131,8 @@ flask-sqlalchemy==2.5.1
     #   flask-migrate
 future==0.18.3
     # via -r requirements.in
+greenlet==2.0.2
+    # via sqlalchemy
 gunicorn==20.1.0
     # via -r requirements.in
 hvac==1.0.2
@@ -269,7 +271,7 @@ six==1.16.0
     #   retrying
 soupsieve==2.3.1
     # via beautifulsoup4
-sqlalchemy==1.3.24
+sqlalchemy==2.0.1
     # via
     #   -r requirements.in
     #   alembic
@@ -282,6 +284,8 @@ tabulate==0.9.0
     # via -r requirements.in
 twofish==0.3.0
     # via pyjks
+typing-extensions==4.4.0
+    # via sqlalchemy
 urllib3==1.26.9
     # via
     #   botocore
