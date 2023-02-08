@@ -1,5 +1,6 @@
 import arrow
 import pem
+import requests
 
 from cert_manager import Client, Organization, Pending, SSL
 from flask import current_app
@@ -48,12 +49,32 @@ class SectigoIssuerPlugin(IssuerPlugin):
         supported_terms = ssl.types[cert_type]["terms"]
         cert_validity_days = _determine_certificate_term(validity_end, supported_terms)
 
-        result = ssl.enroll(
-            cert_type_name=cert_type,
-            csr=csr,
-            term=cert_validity_days,
-            org_id=cert_org[0]["id"],
+        current_app.logger.info(
+            {
+                "message": "Attempting to issue Sectigo certificate.",
+                "cert_type_name": cert_type,
+                "csr": csr,
+                "term": cert_validity_days,
+                "org_id": cert_org[0]["id"],
+            }
         )
+        try:
+            result = ssl.enroll(
+                cert_type_name=cert_type,
+                csr=csr,
+                term=cert_validity_days,
+                org_id=cert_org[0]["id"],
+            )
+        except requests.exceptions.HTTPError as err:
+            current_app.logger.error(
+                {
+                    "message": "Encountered an error while issuing Sectigo certificate.",
+                    "url": err.request.url,
+                    "response": err.response.text,
+                }
+            )
+            raise
+
         current_app.logger.info(
             {
                 "message": "Issued Sectigo certificate.",
