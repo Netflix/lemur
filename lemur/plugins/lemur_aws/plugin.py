@@ -669,6 +669,12 @@ class S3DestinationPlugin(ExportDestinationPlugin):
                                                                "filename": filename})
         return response
 
+    def clean(self, certificate, options, **kwargs):
+        prefix = self.get_option("prefix", options)
+        s3.delete(bucket_name=self.get_option("bucket", options),
+                  prefixed_object_name=f"{prefix}/{certificate.name}.pem",
+                  account_number=self.get_option("accountNumber", options))
+
 
 class SNSNotificationPlugin(ExpirationNotificationPlugin):
     title = "AWS SNS"
