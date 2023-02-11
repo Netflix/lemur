@@ -1,3 +1,5 @@
+from collections import namedtuple
+from os.path import join
 import boto3
 from moto import mock_sts, mock_s3, mock_ec2, mock_elb, mock_elbv2, mock_acm
 
@@ -7,6 +9,58 @@ def test_get_certificates(app):
 
     p = plugins.get("aws-s3")
     assert p
+
+
+@mock_sts()
+@mock_s3()
+def test_clean(app):
+    from lemur.common.utils import check_validation
+    from lemur.plugins.base import plugins
+
+    bucket = "public-bucket"
+    account = "123456789012"
+    prefix = "some-path/more-path/"
+
+    additional_options = [
+        {
+            "name": "bucket",
+            "value": bucket,
+            "type": "str",
+            "required": True,
+            "validation": check_validation(r"[0-9a-z.-]{3,63}"),
+            "helpMessage": "Must be a valid S3 bucket name!",
+        },
+        {
+            "name": "accountNumber",
+            "type": "str",
+            "value": account,
+            "required": True,
+            "validation": check_validation(r"[0-9]{12}"),
+            "helpMessage": "A valid AWS account number with permission to access S3",
+        },
+        {
+            "name": "prefix",
+            "type": "str",
+            "value": prefix,
+            "required": False,
+            "helpMessage": "Must be a valid S3 object prefix!",
+        },
+    ]
+
+    s3_client = boto3.client('s3')
+    s3_client.create_bucket(Bucket=bucket)
+
+    p = plugins.get("aws-s3")
+    Certificate = namedtuple("Certificate", ["name"])
+    certificate = Certificate(name="certificate")
+    s3_client.put_object(
+        Bucket=bucket,
+        Body="PEM_DATA",
+        Key=join(prefix, f"{certificate.name}.pem"),
+    )
+    assert s3_client.list_objects(Bucket=bucket)["Contents"]
+    p.clean(certificate, additional_options)
+    assert "Contents" not in s3_client.list_objects(Bucket=bucket)
 
 
 @mock_sts()
