@@ -32,7 +32,7 @@
 .. moduleauthor:: Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
 .. moduleauthor:: Harm Weites <harm@weites.com>
 """
-
+from os.path import join
 import sys
 from acme.errors import ClientError
 from flask import current_app
@@ -685,7 +685,7 @@ class S3DestinationPlugin(ExportDestinationPlugin):
     def clean(self, certificate, options, **kwargs):
         prefix = self.get_option("prefix", options)
         s3.delete(bucket_name=self.get_option("bucket", options),
-                  prefixed_object_name=f"{prefix}/{certificate.name}.pem",
+                  prefixed_object_name=join(prefix, f"{certificate.name}.pem"),
                   account_number=self.get_option("accountNumber", options))
 
 
