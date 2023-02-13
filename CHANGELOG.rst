@@ -1,12 +1,16 @@
 Changelog
 =========
 
+Unreleased
+~~~~~~~~~~~~~~~~~~~~
+
+
 1.3.0 - `2023-02-13`
 ~~~~~~~~~~~~~~~~~~~~
 This release contains many dependency updates, and numerous added or improved features over the last year.
 
 Some of the notable changes in this release are:
-
+- Removal of AWS S3 destinations and the respetive resources via the UI
 - No fine-grained authz for role global_cert_issuer
 - De-activate endpoint (Entrust Plugin)
 - Remove unsafe paginate method and replace with sort_and_page

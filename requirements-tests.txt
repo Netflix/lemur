@@ -24,11 +24,11 @@ bandit==1.7.4
     # via -r requirements-tests.in
 black==23.1.0
     # via -r requirements-tests.in
-boto3==1.26.64
+boto3==1.26.69
     # via
     #   aws-sam-translator
     #   moto
-botocore==1.29.64
+botocore==1.29.69
     # via
     #   aws-xray-sdk
     #   boto3
@@ -74,11 +74,11 @@ ecdsa==0.17.0
     #   sshpubkeys
 factory-boy==3.2.1
     # via -r requirements-tests.in
-faker==16.6.1
+faker==17.0.0
     # via
     #   -r requirements-tests.in
     #   factory-boy
-fakeredis==2.7.1
+fakeredis==2.8.0
     # via -r requirements-tests.in
 flask==1.1.2
     # via
