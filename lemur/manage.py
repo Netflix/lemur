@@ -225,6 +225,17 @@ class InitializeApp(Command):
             )
             sys.stdout.write("[+] Created 'operator' role\n")
 
+        global_cert_issuer_role = role_service.get_by_name("global_cert_issuer")
+
+        if global_cert_issuer_role:
+            sys.stdout.write("[-] global_cert_issuer role already created, skipping...!\n")
+        else:
+            # we create a global_cert_issuer role
+            global_cert_issuer_role = role_service.create(
+                "global_cert_issuer", description="This is the Lemur global_cert_issuer role."
+            )
+            sys.stdout.write("[+] Created 'global_cert_issuer' role\n")
+
         read_only_role = role_service.get_by_name("read-only")
 
         if read_only_role:
