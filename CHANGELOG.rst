@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Unreleased
+~~~~~~~~~~~~~~~~~~~~
+This release adds an implementation of `S3DestinationPlugin.clean`. This means that when S3 destinations are removed via
+the UI, Lemur will now delete the associated AWS resource(s).
 
 1.2.0 - `2022-01-31`
 ~~~~~~~~~~~~~~~~~~~~
