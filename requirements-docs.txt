@@ -165,11 +165,11 @@ ecdsa==0.17.0
     #   sshpubkeys
 factory-boy==3.2.1
     # via -r requirements-tests.txt
-faker==16.6.1
+faker==17.0.0
     # via
     #   -r requirements-tests.txt
     #   factory-boy
-fakeredis==2.7.1
+fakeredis==2.8.0
     # via -r requirements-tests.txt
 flask==1.1.2
     # via
