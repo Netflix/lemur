@@ -16,11 +16,12 @@ certbot
 certifi
 cert_manager
 certsrv
-https://binaries.ddbuild.io/dd-source/python/cert_orchestration_adapter-0.0.3-py3-none-any.whl
+https://binaries.ddbuild.io/dd-source/python/cert_orchestration_adapter-0.0.4-py3-none-any.whl
 CloudFlare
 cryptography
 deprecated
 dnspython3
+ddtrace == 0.53.0 # Required for cert orchestration adapter.
 dyn
 Flask-Bcrypt
 Flask-Mail

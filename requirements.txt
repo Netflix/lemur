@@ -135,7 +135,7 @@ configargparse==1.5.3
     # via certbot
 configobj==5.0.6
     # via certbot
-cryptography==39.0.0
+cryptography==39.0.1
     # via
     #   -r requirements.in
     #   acme
@@ -150,7 +150,7 @@ cryptography==39.0.0
     #   pyopenssl
 ddsketch==2.0.4
     # via ddtrace
-ddtrace==1.7.3
+ddtrace==0.53.0
     # via cert-orchestration-adapter
 decorator==5.1.1
     # via validators
