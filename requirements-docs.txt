@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-docs.txt requirements-docs.in
 #
-acme==2.2.0
+acme==2.3.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -75,7 +75,7 @@ botocore==1.29.74
     #   s3transfer
 celery[redis]==5.2.7
     # via -r requirements-docs.in
-certbot==2.2.0
+certbot==2.3.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
