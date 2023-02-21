@@ -143,11 +143,11 @@ Basic Configuration
 
     An example of how you might generate a random string:
 
-        >>> import random
-        >>> secret_key = ''.join(random.choice(string.ascii_uppercase) for x in range(6))
-        >>> secret_key = secret_key + ''.join(random.choice("~!@#$%^&*()_+") for x in range(6))
-        >>> secret_key = secret_key + ''.join(random.choice(string.ascii_lowercase) for x in range(6))
-        >>> secret_key = secret_key + ''.join(random.choice(string.digits) for x in range(6))
+        >>> import secrets
+        >>> secret_key = ''.join(secrets.choice(string.ascii_uppercase) for x in range(6))
+        >>> secret_key = secret_key + ''.join(secrets.choice("~!@#$%^&*()_+") for x in range(6))
+        >>> secret_key = secret_key + ''.join(secrets.choice(string.ascii_lowercase) for x in range(6))
+        >>> secret_key = secret_key + ''.join(secrets.choice(string.digits) for x in range(6))
 
 
 .. data:: LEMUR_ENCRYPTION_KEYS

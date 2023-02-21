@@ -10,6 +10,14 @@ Destination labels are now limited to 32 characters, and s3
 prefixes can no longer begin with /.
 S3 destination path prefixes now default to "" instead of "None/"
 
+1.3.2 - `2023-02-24`
+~~~~~~~~~~~~~~~~~~~~
+This release contains a fix for a security vulnerability.
+
+1.3.1 - `2023-02-15`
+~~~~~~~~~~~~~~~~~~~~
+This release contains no changes.
+
 1.3.0 - `2023-02-13`
 ~~~~~~~~~~~~~~~~~~~~
 This release contains many dependency updates, and numerous added or improved features over the last year.
