@@ -6,7 +6,7 @@
 #
 acme==2.3.0
     # via certbot
-alembic==1.7.7
+alembic==1.9.4
     # via flask-migrate
 async-timeout==4.0.2
     # via redis
@@ -86,7 +86,7 @@ flask==1.1.2
     #   flask-migrate
     #   flask-sqlalchemy
     #   pytest-flask
-flask-migrate==2.7.0
+flask-migrate==4.0.4
     # via -r requirements-tests.in
 flask-sqlalchemy==2.5.1
     # via flask-migrate

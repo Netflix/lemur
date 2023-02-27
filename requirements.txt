@@ -8,7 +8,7 @@ acme==2.3.0
     # via
     #   -r requirements.in
     #   certbot
-alembic==1.7.7
+alembic==1.9.4
     # via flask-migrate
 alembic-autogenerate-enums==0.0.2
     # via -r requirements.in
@@ -115,7 +115,7 @@ flask-cors==3.0.10
     # via -r requirements.in
 flask-mail==0.9.1
     # via -r requirements.in
-flask-migrate==2.7.0
+flask-migrate==4.0.4
     # via -r requirements.in
 flask-principal==0.4.0
     # via -r requirements.in
