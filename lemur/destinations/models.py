@@ -6,6 +6,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy.orm import validates
 from sqlalchemy_utils import JSONType
 from lemur.database import db
 
@@ -23,6 +24,12 @@ class Destination(db.Model):
     @property
     def plugin(self):
         return plugins.get(self.plugin_name)
+
+    @validates("label")
+    def validate_label(self, key, label):
+        if len(label) > 32:
+            raise ValueError("Label exceeds max length of 32")
+        return label
 
     def __repr__(self):
         return "Destination(label={label})".format(label=self.label)

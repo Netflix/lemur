@@ -10,6 +10,13 @@ from .vectors import (
 )
 
 
+def test_invalid_label():
+    from lemur.destinations.models import Destination
+    with pytest.raises(ValueError) as e:
+        Destination(label="too_long" * 50)
+    assert "Label exceeds max length" in str(e)
+
+
 def test_destination_input_schema(client, destination_plugin, destination):
     from lemur.destinations.schemas import DestinationInputSchema
 

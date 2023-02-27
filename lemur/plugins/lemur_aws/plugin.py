@@ -577,6 +577,7 @@ class S3DestinationPlugin(ExportDestinationPlugin):
             "name": "prefix",
             "type": "str",
             "required": False,
+            "validation": check_validation("[^/].*"),
             "helpMessage": "Must be a valid S3 object prefix!",
         },
     ]
@@ -586,18 +587,29 @@ class S3DestinationPlugin(ExportDestinationPlugin):
 
     def upload(self, name, body, private_key, chain, options, **kwargs):
         files = self.export(body, private_key, chain, options)
+        function = f"{__name__}.{sys._getframe().f_code.co_name}"
 
         for ext, passphrase, data in files:
-            s3.put(
+            filename = "{prefix}/{name}.{extension}".format(
+                prefix=self.get_option("prefix", options), name=name, extension=ext
+            )
+            response = s3.put(
                 self.get_option("bucket", options),
                 self.get_option("region", options),
-                "{prefix}/{name}.{extension}".format(
-                    prefix=self.get_option("prefix", options), name=name, extension=ext
-                ),
+                filename,
                 data,
                 self.get_option("encrypt", options),
                 account_number=self.get_option("accountNumber", options),
             )
+            res = "Success" if response else "Failure"
+            log_data = {
+                "function": function,
+                "message": "upload acme token challenge",
+                "result": res,
+                "bucket_name": self.get_option("bucket", options),
+                "filename": filename
+            }
+            current_app.logger.info(log_data)
 
     def upload_acme_token(self, token_path, token, options, **kwargs):
         """
