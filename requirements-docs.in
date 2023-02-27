@@ -50,6 +50,6 @@ xmltodict
 -r requirements-tests.txt
 
 # docs specific
-sphinx < 6.0 # related to https://github.com/repoze/repoze.sphinx.autointerface/pull/17
+sphinx < 7.0 # related to https://github.com/repoze/repoze.sphinx.autointerface/pull/17
 sphinxcontrib-httpdomain
 sphinx-rtd-theme
