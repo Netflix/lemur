@@ -128,7 +128,7 @@ LOG_UPGRADE_FILE = "db_upgrade.log"
 # Database
 
 # modify this if you are not using a local database
-SQLALCHEMY_DATABASE_URI = 'postgresql://lemur:lemur@localhost:5432/lemur'
+SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
 
 # AWS
 
