@@ -1,5 +1,5 @@
 import os.path
-import random
+import secrets
 import string
 from celery.schedules import crontab
 
@@ -18,10 +18,10 @@ debug = os.environ.get("DEBUG") == "True"
 
 
 def get_random_secret(length):
-    secret_key = ''.join(random.choice(string.ascii_uppercase) for x in range(round(length / 4)))
-    secret_key = secret_key + ''.join(random.choice("~!@#$%^&*()_+") for x in range(round(length / 4)))
-    secret_key = secret_key + ''.join(random.choice(string.ascii_lowercase) for x in range(round(length / 4)))
-    return secret_key + ''.join(random.choice(string.digits) for x in range(round(length / 4)))
+    secret_key = ''.join(secrets.choice(string.ascii_uppercase) for x in range(round(length / 4)))
+    secret_key = secret_key + ''.join(secrets.choice("~!@#$%^&*()_+") for x in range(round(length / 4)))
+    secret_key = secret_key + ''.join(secrets.choice(string.ascii_lowercase) for x in range(round(length / 4)))
+    return secret_key + ''.join(secrets.choice(string.digits) for x in range(round(length / 4)))
 
 
 # This is the secret key used by Flask session management
