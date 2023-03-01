@@ -5,8 +5,10 @@ Changelog
 Unreleased
 ~~~~~~~~~~
 
-Added additional validation and logging for destinations. Destination labels are now limited to 32 characters, and s3
+Added additional validation and logging for destinations.
+Destination labels are now limited to 32 characters, and s3
 prefixes can no longer begin with /.
+S3 destination path prefixes now default to "lemur/" instead of "None/"
 
 
 1.2.0 - `2022-01-31`
