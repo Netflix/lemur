@@ -9,6 +9,7 @@ def test_get_certificates(app):
     p = plugins.get("aws-s3")
     assert p
 
+
 def test_s3_default_prefix(app):
     from lemur.plugins.base import plugins
 
