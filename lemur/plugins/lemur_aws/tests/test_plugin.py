@@ -16,7 +16,7 @@ def test_s3_default_prefix(app):
     from lemur.plugins.base import plugins
 
     p = plugins.get("aws-s3")
-    assert p.get_option("prefix") is not None
+    assert p.get_option("prefix", p.options) is not None
 
 
 @mock_sts()
@@ -27,7 +27,7 @@ def test_upload_invalid_prefix(app):
 
     bucket = "public-bucket"
     account = "123456789012"
-    prefix = "some-path/more-path/"
+    prefix = "/invalid"
     token_content = "Challenge"
     token_name = "TOKEN"
     token_path = ".well-known/acme-challenge/" + token_name

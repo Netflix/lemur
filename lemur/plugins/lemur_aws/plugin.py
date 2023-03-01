@@ -577,9 +577,9 @@ class S3DestinationPlugin(ExportDestinationPlugin):
             "name": "prefix",
             "type": "str",
             "required": False,
-            "validation": check_validation("[^/].*"),
+            "validation": check_validation("^(?:[^/].*|)$"),
             "helpMessage": "Must be a valid S3 object prefix!",
-            "default": "lemur"
+            "default": ""
         },
     ]
 
