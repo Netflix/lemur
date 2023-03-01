@@ -2,7 +2,7 @@
 
 import base64
 import os
-import random
+import secrets
 import string
 
 _basedir = os.path.abspath(os.path.dirname(__file__))
@@ -10,10 +10,10 @@ _basedir = os.path.abspath(os.path.dirname(__file__))
 
 # generate random secrets for unittest
 def get_random_secret(length):
-    secret_key = ''.join(random.choice(string.ascii_uppercase) for x in range(round(length / 4)))
-    secret_key = secret_key + ''.join(random.choice("~!@#$%^&*()_+") for x in range(round(length / 4)))
-    secret_key = secret_key + ''.join(random.choice(string.ascii_lowercase) for x in range(round(length / 4)))
-    return secret_key + ''.join(random.choice(string.digits) for x in range(round(length / 4)))
+    secret_key = ''.join(secrets.choice(string.ascii_uppercase) for x in range(round(length / 4)))
+    secret_key = secret_key + ''.join(secrets.choice("~!@#$%^&*()_+") for x in range(round(length / 4)))
+    secret_key = secret_key + ''.join(secrets.choice(string.ascii_lowercase) for x in range(round(length / 4)))
+    return secret_key + ''.join(secrets.choice(string.digits) for x in range(round(length / 4)))
 
 
 THREADS_PER_PAGE = 8
@@ -25,6 +25,10 @@ CORS = False
 debug = False
 
 TESTING = True
+
+# All the secrets below must be generated using CRYPTOGRAPHICALLY SECURE RANDOMNESS and kept private
+# (ideally they would not be stored directly in this config file).
+# See Lemur's documentation for more information on secret management.
 
 # this is the secret key used by flask session management (utf8 encoded)
 SECRET_KEY = get_random_secret(length=32).encode('utf8')

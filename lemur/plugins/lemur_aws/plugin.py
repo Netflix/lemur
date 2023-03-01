@@ -32,7 +32,7 @@
 .. moduleauthor:: Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
 .. moduleauthor:: Harm Weites <harm@weites.com>
 """
-
+from os.path import join
 import sys
 from acme.errors import ClientError
 from flask import current_app
@@ -591,9 +591,7 @@ class S3DestinationPlugin(ExportDestinationPlugin):
         function = f"{__name__}.{sys._getframe().f_code.co_name}"
 
         for ext, passphrase, data in files:
-            filename = "{prefix}/{name}.{extension}".format(
-                prefix=self.get_option("prefix", options), name=name, extension=ext
-            )
+            filename = join(self.get_option("prefix", options), f"{name}.{ext}")
             response = s3.put(
                 self.get_option("bucket", options),
                 self.get_option("region", options),
@@ -681,6 +679,12 @@ class S3DestinationPlugin(ExportDestinationPlugin):
                                                                "bucket_name": bucket_name,
                                                                "filename": filename})
         return response
+
+    def clean(self, certificate, options, **kwargs):
+        prefix = self.get_option("prefix", options)
+        s3.delete(bucket_name=self.get_option("bucket", options),
+                  prefixed_object_name=join(prefix, f"{certificate.name}.pem"),
+                  account_number=self.get_option("accountNumber", options))
 
 
 class SNSNotificationPlugin(ExpirationNotificationPlugin):

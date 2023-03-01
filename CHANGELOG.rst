@@ -1,6 +1,51 @@
 Changelog
 =========
 
+Unreleased
+~~~~~~~~~~~~~~~~~~~~
+
+
+1.3.2 - `2023-02-24`
+~~~~~~~~~~~~~~~~~~~~
+This release contains a fix for a security vulnerability.
+
+1.3.1 - `2023-02-15`
+~~~~~~~~~~~~~~~~~~~~
+This release contains no changes.
+
+1.3.0 - `2023-02-13`
+~~~~~~~~~~~~~~~~~~~~
+This release contains many dependency updates, and numerous added or improved features over the last year.
+
+Some of the notable changes in this release are:
+- Removal of AWS S3 destinations and the respetive resources via the UI
+- No fine-grained authz for role global_cert_issuer
+- De-activate endpoint (Entrust Plugin)
+- Remove unsafe paginate method and replace with sort_and_page
+- Move to github workflows for tests
+- Detect duplicate certs
+- Metrics for certificate expiry
+- Sync source: handling idle/invalidated connection
+- Sync endpoint: capture error and continue
+- Domain-level fine-grained authz 
+- Handle and report authz warmup exception
+- Ensure secondary certificates are not removed when rotating AWS endpoints
+- Improved metric around expired endpoints
+- Change pkg_resources call in plugin loading to use resolve rather than load
+- Log when an expiring deployed certificate is detected 
+- NS1 DNS ACME Plugin
+- Add a new endpoint that allows updating a certificate owner
+- Support rotating endpoints with non-unique names via CLI
+- Restrict multiple accounts on a certificate, by plugin
+- Moving to dependabot's auto versioning strategy
+
+Special thanks to all who contributed to this release, notably:
+
+- `Neil Schelly <https://github.com/neilschelly>`_
+- `Mitch Cail <https://github.com/mitchcail>`_
+- `Bob Shannon <https://github.com/bobmshannon>`_
+- `alwaysjolley <https://github.com/alwaysjolley>`_
+
 
 Unreleased
 ~~~~~~~~~~

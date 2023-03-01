@@ -38,7 +38,7 @@ pem
 pyjks >= 19 # pyjks < 19 depends on pycryptodome, which conflicts with dyn's usage of pycrypto
 pyjwt
 pyOpenSSL
-redis < 4.5.0 # requires a newer release of fakeredis
+redis < 4.6.0 # requires a newer release of fakeredis
 retrying
 sentry-sdk
 SQLAlchemy-Utils
@@ -50,6 +50,6 @@ xmltodict
 -r requirements-tests.txt
 
 # docs specific
-sphinx < 6.0 # related to https://github.com/repoze/repoze.sphinx.autointerface/pull/17
+sphinx
 sphinxcontrib-httpdomain
 sphinx-rtd-theme

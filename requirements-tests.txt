@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-tests.txt requirements-tests.in
 #
-acme==2.2.0
+acme==2.3.0
     # via certbot
 alembic==1.7.7
     # via flask-migrate
@@ -24,17 +24,17 @@ bandit==1.7.4
     # via -r requirements-tests.in
 black==23.1.0
     # via -r requirements-tests.in
-boto3==1.26.64
+boto3==1.26.79
     # via
     #   aws-sam-translator
     #   moto
-botocore==1.29.64
+botocore==1.29.79
     # via
     #   aws-xray-sdk
     #   boto3
     #   moto
     #   s3transfer
-certbot==2.2.0
+certbot==2.3.0
     # via -r requirements-tests.in
 certifi==2022.12.7
     # via requests
@@ -74,11 +74,11 @@ ecdsa==0.17.0
     #   sshpubkeys
 factory-boy==3.2.1
     # via -r requirements-tests.in
-faker==16.6.1
+faker==17.0.0
     # via
     #   -r requirements-tests.in
     #   factory-boy
-fakeredis==2.7.1
+fakeredis==2.9.2
     # via -r requirements-tests.in
 flask==1.1.2
     # via
@@ -226,7 +226,7 @@ pyyaml==6.0
     #   bandit
     #   cfn-lint
     #   moto
-redis==4.4.2
+redis==4.5.1
     # via
     #   -r requirements-tests.in
     #   fakeredis

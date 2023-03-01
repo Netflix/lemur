@@ -92,6 +92,18 @@ class User(db.Model):
             if role.name == "admin":
                 return True
 
+    @property
+    def is_admin_or_global_cert_issuer(self):
+        """
+        Determine if the current user is a global cert issuer. The user has either 'admin' or 'global_cert_issuer' role
+        associated with them.
+
+        :return:
+        """
+        for role in self.roles:
+            if role.name == "admin" or role.name == "global_cert_issuer":
+                return True
+
     def __repr__(self):
         return "User(username={username})".format(username=self.username)
 
