@@ -591,9 +591,7 @@ class S3DestinationPlugin(ExportDestinationPlugin):
         function = f"{__name__}.{sys._getframe().f_code.co_name}"
 
         for ext, passphrase, data in files:
-            filename = "{prefix}/{name}.{extension}".format(
-                prefix=self.get_option("prefix", options), name=name, extension=ext
-            )
+            filename = join(self.get_option("prefix", options), f"{name}.{ext}")
             response = s3.put(
                 self.get_option("bucket", options),
                 self.get_option("region", options),

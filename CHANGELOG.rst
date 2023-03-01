@@ -2,7 +2,7 @@ Changelog
 =========
 
 Unreleased
-~~~~~~~~~~~~~~~~~~~~q
+~~~~~~~~~~~~~~~~~~~~
 Added additional validation and logging for destinations.
 Destination labels are now limited to 32 characters, and s3
 prefixes can no longer begin with /.
