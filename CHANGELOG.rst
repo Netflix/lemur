@@ -2,13 +2,12 @@ Changelog
 =========
 
 Unreleased
-~~~~~~~~~~~~~~~~~~~~
-This release adds an implementation of `S3DestinationPlugin.clean`. This means that when S3 destinations are removed via
-the UI, Lemur will now delete the associated AWS resource(s).
+~~~~~~~~~~~~~~~~~~~~q
 Added additional validation and logging for destinations.
 Destination labels are now limited to 32 characters, and s3
 prefixes can no longer begin with /.
 S3 destination path prefixes now default to "" instead of "None/"
+
 
 1.3.2 - `2023-02-24`
 ~~~~~~~~~~~~~~~~~~~~
@@ -23,7 +22,7 @@ This release contains no changes.
 This release contains many dependency updates, and numerous added or improved features over the last year.
 
 Some of the notable changes in this release are:
-
+- Removal of AWS S3 destinations and the respetive resources via the UI
 - No fine-grained authz for role global_cert_issuer
 - De-activate endpoint (Entrust Plugin)
 - Remove unsafe paginate method and replace with sort_and_page
@@ -32,12 +31,12 @@ Some of the notable changes in this release are:
 - Metrics for certificate expiry
 - Sync source: handling idle/invalidated connection
 - Sync endpoint: capture error and continue
-- Domain-level fine-grained authz
+- Domain-level fine-grained authz 
 - Handle and report authz warmup exception
 - Ensure secondary certificates are not removed when rotating AWS endpoints
 - Improved metric around expired endpoints
 - Change pkg_resources call in plugin loading to use resolve rather than load
-- Log when an expiring deployed certificate is detected
+- Log when an expiring deployed certificate is detected 
 - NS1 DNS ACME Plugin
 - Add a new endpoint that allows updating a certificate owner
 - Support rotating endpoints with non-unique names via CLI
