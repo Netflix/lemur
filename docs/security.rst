@@ -35,7 +35,7 @@ The general process is as follows:
 1. Receive a private report of a security issue
 2. Acknowledge receipt of the report
 3. Post advance notice to the GitHub repo indicating that a security issue exists
-4. Prepare a [GitHub Security Advisory](https://docs.github.com/en/code-security/security-advisories/repository-security-advisories/about-repository-security-advisories)
+4. Prepare a `GitHub Security Advisory`_
 5. Merge code fix
 6. Make Security Advisory public
 
@@ -65,7 +65,7 @@ and public disclosure may be shortened considerably.
 **GitHub Security Advisory**
 
 During the (approximate) week between advance notice and public disclosure, we will prepare
-a description of the security issue using a [GitHub Security Advisory](https://docs.github.com/en/code-security/security-advisories/repository-security-advisories/about-repository-security-advisories).
+a description of the security issue using a `GitHub Security Advisory`_.
 The fix for the issue should also be prepared using the private fork provided by the security advisory.
 
 **Day of Disclosure**
@@ -77,3 +77,4 @@ On the day of disclosure, we will take the following steps:
 3. Make the security advisory public
 
 .. _`master`: https://github.com/Netflix/lemur
+.. _GitHub Security Advisory: https://docs.github.com/en/code-security/security-advisories/repository-security-advisories/about-repository-security-advisories
