@@ -3,6 +3,9 @@ Changelog
 
 Unreleased
 ~~~~~~~~~~~~~~~~~~~~
+Enforce case consistency in authority signing algorithms. Specifically, this renames SHA384withECDSA -> sha384withECDSA
+and sha512withECDSA -> SHA512withECDSA. Notably, the backend schema will still accept the uppercase equivalents to
+maintain backwards compatibility.
 
 
 1.3.2 - `2023-02-24`
