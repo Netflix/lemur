@@ -28,34 +28,53 @@ Disclosure Process
 ------------------
 
 Our process for taking a security issue from private discussion to public
-disclosure involves multiple steps.
+disclosure involves multiple steps. Our standard process utilizes a GitHub Security Advisory.
 
-Approximately one week before full public disclosure, we will provide advanced notification that a security issue exists. Depending on the severity of the issue, we may choose to either send a targeted email to known Lemur users and contributors or post an issue to the Lemur repository.  In either case, the notification should contain the following.
+The general process is as follows:
+
+1. Receive a private report of a security issue
+2. Acknowledge receipt of the report
+3. Post advance notice to the GitHub repo indicating that a security issue exists
+4. Prepare a `GitHub Security Advisory`_
+5. Merge code fix
+6. Make Security Advisory public
+
+**Private report**
+
+After receiving a private report of a security issue, the reporter will receive notification
+of the date on which we plan to make the issue public. We also ask the reporter for their GitHub username
+if they'd like to receive credit for their finding.
+
+**Advance Notice**
+
+Approximately one week before full public disclosure, we will provide advance notification that a security issue exists.
+This will take the form of an issue posted to the Lemur repository.
+The notification should contain the following, as appropriate
+(details will only be shared to the extent that they do not highlight an unpatched vulnerability):
 
 * A description of the potential impact
-* The affected versions of ``lemur``.
-* The steps we will be taking to remedy the issue.
+* The affected versions of ``lemur``
+* The steps we will be taking to remedy the issue
 * The date on which the ``lemur`` team will apply these patches, issue
-  new releases, and publicly disclose the issue.
-
-If the issue was disclosed to us, the reporter will receive notification of the date
-on which we plan to make the issue public.
-
-On the day of disclosure, we will take the following steps:
-
-* Apply the relevant patches to the ``lemur`` repository. The commit
-  messages for these patches will indicate that they are for security issues,
-  but will not describe the issue in any detail; instead, they will warn of
-  upcoming disclosure.
-* Issue an updated release.
+  new releases, and publicly disclose the issue
 
 If a reported issue is believed to be particularly time-sensitive – due to a
 known exploit in the wild, for example – the time between advance notification
 and public disclosure may be shortened considerably.
 
-The list of people and organizations who receives advanced notification of
-security issues is not, and will not, be made public. This list generally
-consists of high-profile downstream distributors and is entirely at the
-discretion of the ``lemur`` team.
+**GitHub Security Advisory**
+
+During the (approximate) week between advance notice and public disclosure, we will prepare
+a description of the security issue using a `GitHub Security Advisory`_.
+The fix for the issue should also be prepared using the private fork provided by the security advisory.
+
+**Day of Disclosure**
+
+On the day of disclosure, we will take the following steps:
+
+1. Merge relevant patches to the ``lemur`` repository (from the security advisory fork)
+2. Issue an updated release
+3. Make the security advisory public
 
 .. _`master`: https://github.com/Netflix/lemur
+.. _GitHub Security Advisory: https://docs.github.com/en/code-security/security-advisories/repository-security-advisories/about-repository-security-advisories
