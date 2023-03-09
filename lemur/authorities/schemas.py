@@ -60,7 +60,7 @@ class AuthorityInputSchema(LemurInputSchema):
     parent = fields.Nested(AssociatedAuthoritySchema)
     signing_algorithm = fields.String(
         validate=validate.OneOf(["sha256WithRSA", "sha1WithRSA",
-                                 "sha256WithECDSA", "SHA384withECDSA", "SHA512withECDSA"]),
+                                 "sha256WithECDSA", "SHA384withECDSA", "SHA512withECDSA", "sha384WithECDSA", "sha512WithECDSA"]),
         missing="sha256WithRSA",
     )
     key_type = fields.String(
