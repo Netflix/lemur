@@ -8,8 +8,8 @@ Destination labels are now limited to 32 characters, and s3
 prefixes can no longer begin with /.
 S3 destination path prefixes now default to "" instead of "None/"
 
-Enforce case consistency in authority signing algorithms. Specifically, this renames SHA384withECDSA -> sha384withECDSA
-and sha512withECDSA -> SHA512withECDSA. Notably, the backend schema will still accept the uppercase equivalents to
+Enforce case consistency in authority signing algorithms. Specifically, this renames SHA384withECDSA -> sha384WithECDSA
+and SHA512withECDSA -> sha512WithECDSA. Notably, the backend schema will still accept the uppercase equivalents to
 maintain backwards compatibility.
 
 
