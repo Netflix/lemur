@@ -1,5 +1,5 @@
 # Lemur Builder
-FROM registry.ddbuild.io/base:focal as builder
+FROM gbi-ubuntu_2004 as builder
 
 ARG CI_COMMIT_SHA
 
@@ -43,7 +43,7 @@ RUN npm config set registry http://registry.npmjs.org/ && \
     rm -rf node_modules
 
 # Lemur Application
-FROM registry.ddbuild.io/base:focal
+FROM gbi-ubuntu_2004
 
 USER root
 
