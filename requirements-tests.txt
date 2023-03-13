@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-tests.txt requirements-tests.in
 #
-acme==2.3.0
+acme==2.4.0
     # via certbot
 alembic==1.7.7
     # via flask-migrate
@@ -24,7 +24,7 @@ bandit==1.7.4
     # via -r requirements-tests.in
 black==23.1.0
     # via -r requirements-tests.in
-boto3==1.26.79
+boto3==1.26.89
     # via
     #   aws-sam-translator
     #   moto
@@ -54,7 +54,7 @@ configobj==5.0.6
     # via certbot
 coverage==6.5.0
     # via -r requirements-tests.in
-cryptography==39.0.1
+cryptography==39.0.2
     # via
     #   acme
     #   certbot
@@ -74,7 +74,7 @@ ecdsa==0.17.0
     #   sshpubkeys
 factory-boy==3.2.1
     # via -r requirements-tests.in
-faker==17.0.0
+faker==17.6.0
     # via
     #   -r requirements-tests.in
     #   factory-boy

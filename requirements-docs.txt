@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-docs.txt requirements-docs.in
 #
-acme==2.3.0
+acme==2.4.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -59,7 +59,7 @@ blinker==1.4
     # via
     #   flask-mail
     #   flask-principal
-boto3==1.26.79
+boto3==1.26.89
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -127,7 +127,7 @@ configobj==5.0.6
     #   certbot
 coverage==6.5.0
     # via -r requirements-tests.txt
-cryptography==39.0.1
+cryptography==39.0.2
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -165,7 +165,7 @@ ecdsa==0.17.0
     #   sshpubkeys
 factory-boy==3.2.1
     # via -r requirements-tests.txt
-faker==17.0.0
+faker==17.6.0
     # via
     #   -r requirements-tests.txt
     #   factory-boy

@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements.txt requirements.in
 #
-acme==2.3.0
+acme==2.4.0
     # via
     #   -r requirements.in
     #   certbot
@@ -36,7 +36,7 @@ blinker==1.4
     # via
     #   flask-mail
     #   flask-principal
-boto3==1.26.79
+boto3==1.26.89
     # via -r requirements.in
 botocore==1.29.89
     # via
@@ -80,7 +80,7 @@ configargparse==1.5.3
     # via certbot
 configobj==5.0.6
     # via certbot
-cryptography==39.0.1
+cryptography==39.0.2
     # via
     #   -r requirements.in
     #   acme
