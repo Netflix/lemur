@@ -78,7 +78,7 @@ faker==17.0.0
     # via
     #   -r requirements-tests.in
     #   factory-boy
-fakeredis==2.9.2
+fakeredis==2.10.0
     # via -r requirements-tests.in
 flask==1.1.2
     # via
