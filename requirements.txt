@@ -179,7 +179,7 @@ marshmallow-sqlalchemy==0.23.1
     # via -r requirements.in
 ndg-httpsclient==0.5.1
     # via -r requirements.in
-paramiko==3.0.0
+paramiko==3.1.0
     # via -r requirements.in
 parsedatetime==2.6
     # via certbot
