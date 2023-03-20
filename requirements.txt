@@ -133,7 +133,7 @@ future==0.18.3
     # via -r requirements.in
 gunicorn==20.1.0
     # via -r requirements.in
-hvac==1.0.2
+hvac==1.1.0
     # via -r requirements.in
 idna==3.3
     # via requests
