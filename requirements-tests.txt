@@ -20,7 +20,7 @@ aws-sam-translator==1.44.0
     # via cfn-lint
 aws-xray-sdk==2.9.0
     # via moto
-bandit==1.7.4
+bandit==1.7.5
     # via -r requirements-tests.in
 black==23.1.0
     # via -r requirements-tests.in
@@ -141,6 +141,8 @@ junit-xml==1.9
     # via cfn-lint
 mako==1.2.2
     # via alembic
+markdown-it-py==2.2.0
+    # via rich
 markupsafe==2.1.1
     # via
     #   jinja2
@@ -152,6 +154,8 @@ marshmallow==2.21.0
     #   marshmallow-sqlalchemy
 marshmallow-sqlalchemy==0.23.1
     # via -r requirements-tests.in
+mdurl==0.1.2
+    # via markdown-it-py
 moto[all]==3.1.1
     # via -r requirements-tests.in
 mypy-extensions==0.4.3
@@ -187,6 +191,8 @@ pycparser==2.21
     # via cffi
 pyflakes==2.4.0
     # via -r requirements-tests.in
+pygments==2.14.0
+    # via rich
 pyopenssl==23.0.0
     # via
     #   acme
@@ -241,6 +247,8 @@ requests-mock==1.10.0
     # via -r requirements-tests.in
 responses==0.20.0
     # via moto
+rich==13.3.2
+    # via bandit
 rsa==4.8
     # via python-jose
 s3transfer==0.6.0
