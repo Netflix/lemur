@@ -151,7 +151,7 @@ docutils==0.18.1
     # via
     #   sphinx
     #   sphinx-rtd-theme
-dyn==1.8.1
+dyn==1.8.6
     # via -r requirements-docs.in
 ecdsa==0.17.0
     # via
