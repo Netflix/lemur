@@ -94,7 +94,7 @@ dnspython==1.15.0
     # via dnspython3
 dnspython3==1.15.0
     # via -r requirements.in
-dyn==1.8.1
+dyn==1.8.6
     # via -r requirements.in
 flask==1.1.2
     # via
