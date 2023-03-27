@@ -459,7 +459,7 @@ pyyaml==6.0
     #   cfn-lint
     #   cloudflare
     #   moto
-redis==4.5.2
+redis==4.5.3
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
