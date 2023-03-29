@@ -61,7 +61,7 @@ boto3==1.26.94
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
-botocore==1.29.94
+botocore==1.29.100
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -151,7 +151,7 @@ docutils==0.18.1
     # via
     #   sphinx
     #   sphinx-rtd-theme
-dyn==1.8.1
+dyn==1.8.6
     # via -r requirements-docs.in
 ecdsa==0.17.0
     # via
@@ -404,7 +404,7 @@ pyjwt==2.6.0
     # via -r requirements-docs.in
 pynacl==1.5.0
     # via paramiko
-pyopenssl==23.0.0
+pyopenssl==23.1.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -459,7 +459,7 @@ pyyaml==6.0
     #   cfn-lint
     #   cloudflare
     #   moto
-redis==4.5.2
+redis==4.5.3
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt

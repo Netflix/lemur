@@ -26,7 +26,7 @@ boto3==1.26.94
     # via
     #   aws-sam-translator
     #   moto
-botocore==1.29.94
+botocore==1.29.100
     # via
     #   aws-xray-sdk
     #   boto3
@@ -191,7 +191,7 @@ pyflakes==2.4.0
     # via -r requirements-tests.in
 pygments==2.14.0
     # via rich
-pyopenssl==23.0.0
+pyopenssl==23.1.0
     # via
     #   acme
     #   josepy
@@ -230,7 +230,7 @@ pyyaml==6.0
     #   bandit
     #   cfn-lint
     #   moto
-redis==4.5.2
+redis==4.5.3
     # via
     #   -r requirements-tests.in
     #   fakeredis
