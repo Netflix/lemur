@@ -21,6 +21,10 @@ aniso8601==9.0.1
     # via flask-restful
 arrow==1.2.3
     # via -r requirements-docs.in
+async-timeout==4.0.2
+    # via
+    #   -r requirements-tests.txt
+    #   redis
 attrs==21.4.0
     # via
     #   -r requirements-tests.txt
@@ -459,7 +463,7 @@ pyyaml==6.0
     #   cfn-lint
     #   cloudflare
     #   moto
-redis==4.5.3
+redis==4.5.4
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
