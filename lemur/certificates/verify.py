@@ -71,10 +71,11 @@ def ocsp_verify(cert, cert_path, issuer_chain_path):
     p_message = message.decode("utf-8")
 
     if "unauthorized" in p_message:
-        # indicates the OCSP server does not know this certificate
+        # indicates the OCSP server does not know this certificate. this is a retriable error.
         metrics.send("check_revocation_ocsp_verify", "counter", 1, metric_tags={"status": "unauthorized", "url": url})
-        raise Exception(f"OCSP unauthorized error: {url}, certificate serial number {cert.serial_number:02X}. Response:"
-                        f" {p_message}")
+        current_app.logger.warning(f"OCSP unauthorized error: {url}, "
+                                   f"certificate serial number {cert.serial_number:02X}. Response: {p_message}")
+        return None
 
     elif "error" in p_message or "Error" in p_message:
         metrics.send("check_revocation_ocsp_verify", "counter", 1, metric_tags={"status": "error", "url": url})
@@ -192,7 +193,7 @@ def verify(cert_path, issuer_chain_path):
             crl_err = 1
 
     if verify_result is None:
-        current_app.logger.debug("Failed to verify {}".format(cert.serial_number))
+        current_app.logger.warning("Failed to verify {}".format(cert.serial_number))
 
     return verify_result, ocsp_err, crl_err
 
