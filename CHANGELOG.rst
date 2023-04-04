@@ -3,6 +3,45 @@ Changelog
 
 Unreleased
 ~~~~~~~~~~~~~~~~~~~~
+
+
+1.4.0 - `2023-04-04`
+~~~~~~~~~~~~~~~~~~~~
+Added support for Python 3.10, Postgres 15, and Ubuntu 22.04.
+Removed support for Postgres 10 and Ubuntu 18.04.
+
+Python 3.11 is known not to work with the current version of Flask.
+
+All combinations tested via GitHub Actions are listed below:
+
+.. list-table:: Version Support Matrix
+   :header-rows: 1
+
+   * - Python
+     - Postgres
+     - Ubuntu
+   * - 3.8
+     - 12
+     - 20.04
+   * - 3.8
+     - 15
+     - 20.04
+   * - 3.9
+     - 12
+     - 20.04
+   * - 3.9
+     - 15
+     - 20.04
+   * - 3.9
+     - 15
+     - 20.04
+   * - 3.10
+     - 12
+     - 22.04
+   * - 3.10
+     - 15
+     - 22.04
+
 Added additional validation and logging for destinations.
 Destination labels are now limited to 32 characters, and s3
 prefixes can no longer begin with /.
@@ -11,7 +50,6 @@ S3 destination path prefixes now default to "" instead of "None/"
 Enforce case consistency in authority signing algorithms. Specifically, this renames SHA384withECDSA -> sha384WithECDSA
 and SHA512withECDSA -> sha512WithECDSA. Notably, the backend schema will still accept the uppercase equivalents to
 maintain backwards compatibility.
-
 
 1.3.2 - `2023-02-24`
 ~~~~~~~~~~~~~~~~~~~~
