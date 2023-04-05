@@ -22,13 +22,13 @@ aws-xray-sdk==2.9.0
     # via moto
 bandit==1.7.5
     # via -r requirements-tests.in
-black==23.1.0
+black==23.3.0
     # via -r requirements-tests.in
 boto3==1.26.94
     # via
     #   aws-sam-translator
     #   moto
-botocore==1.29.100
+botocore==1.29.106
     # via
     #   aws-xray-sdk
     #   boto3
@@ -78,7 +78,7 @@ faker==17.6.0
     # via
     #   -r requirements-tests.in
     #   factory-boy
-fakeredis==2.10.1
+fakeredis==2.10.3
     # via -r requirements-tests.in
 flask==1.1.2
     # via
