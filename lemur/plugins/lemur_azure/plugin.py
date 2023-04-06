@@ -19,8 +19,8 @@ from azure.mgmt.subscription import SubscriptionClient
 from azure.mgmt.cdn.models import UserManagedHttpsParameters
 from azure.mgmt.network.models import ApplicationGatewaySslPolicyName, ApplicationGatewaySslPolicyType, ApplicationGatewaySslCipherSuite
 
-from lemur.common.defaults import common_name, issuer, bitstrength
-from lemur.common.utils import parse_certificate, parse_private_key, check_validation
+from lemur.common.defaults import common_name, bitstrength
+from lemur.common.utils import parse_certificate, parse_private_key, check_validation, get_key_type_from_certificate
 from lemur.extensions import metrics
 from lemur.plugins.bases import DestinationPlugin, SourcePlugin
 from lemur.plugins.lemur_azure.auth import get_azure_credential
@@ -94,6 +94,17 @@ def get_and_decode_certificate(certificate_client, certificate_name):
         body=decoded_crt.public_bytes(encoding=serialization.Encoding.PEM).decode("utf-8"),
         name=crt.name,
     )
+
+
+def parse_ca_vendor(chain):
+    org_name = chain.subject.get_attributes_for_oid(x509.OID_ORGANIZATION_NAME)[
+        0
+    ].value.strip()
+    if "DigiCert" in org_name:
+        return "DigiCert"
+    elif "Sectigo" in org_name:
+        return "Sectigo"
+    return org_name.replace(" ", "").strip()
 
 
 def policy_from_appgw(network_client, appgw):
@@ -251,7 +262,13 @@ class AzureDestinationPlugin(DestinationPlugin):
         # and containing only 0-9, a-z, A-Z, and -.
         cert = parse_certificate(body)
         ca_certs = parse_certificate(cert_chain)
-        certificate_name = f"{common_name(cert).replace('.', '-').replace('*', 'star')}-{issuer(cert)}"
+        ca_vendor = parse_ca_vendor(ca_certs)
+        key_type = get_key_type_from_certificate(body)
+        certificate_name = "{common_name}-{ca_vendor}-{key_type}".format(
+            common_name=common_name(cert).replace('.', '-').replace('*', 'star'),
+            ca_vendor=ca_vendor,
+            key_type=key_type,
+        )
 
         certificate_client = CertificateClient(
             credential=get_azure_credential(self, options),

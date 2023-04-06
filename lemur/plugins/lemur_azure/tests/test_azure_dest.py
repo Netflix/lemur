@@ -107,7 +107,7 @@ class TestAzureDestination(unittest.TestCase):
 
         def _assert_certificate_imported():
             import_certificate_mock.assert_called_with(
-                certificate_name="localhost-LocalCA",
+                certificate_name="localhost-Sirferl-RSA2048",
                 certificate_bytes=ANY,
                 enabled=True,
                 policy=ANY,
