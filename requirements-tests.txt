@@ -228,7 +228,7 @@ pyyaml==6.0
     #   bandit
     #   cfn-lint
     #   moto
-redis==4.4.2
+redis==4.4.4
     # via
     #   -r requirements-tests.in
     #   fakeredis
