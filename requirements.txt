@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements.txt requirements.in
 #
-acme==2.4.0
+acme==2.5.0
     # via
     #   -r requirements.in
     #   certbot
@@ -45,7 +45,7 @@ botocore==1.29.106
     #   s3transfer
 celery[redis]==5.2.7
     # via -r requirements.in
-certbot==2.4.0
+certbot==2.5.0
     # via -r requirements.in
 certifi==2022.12.7
     # via
@@ -211,7 +211,7 @@ pyjwt==2.6.0
     # via -r requirements.in
 pynacl==1.5.0
     # via paramiko
-pyopenssl==23.1.0
+pyopenssl==23.1.1
     # via
     #   -r requirements.in
     #   acme
