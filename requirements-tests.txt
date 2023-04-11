@@ -38,7 +38,7 @@ certbot==2.1.0
     # via -r requirements-tests.in
 certifi==2022.12.7
     # via requests
-cffi==1.15.0
+cffi==1.15.1
     # via cryptography
 cfn-lint==0.58.4
     # via moto
@@ -54,7 +54,7 @@ configobj==5.0.6
     # via certbot
 coverage==6.5.0
     # via -r requirements-tests.in
-cryptography==39.0.1
+cryptography==40.0.1
     # via
     #   acme
     #   certbot
@@ -187,7 +187,7 @@ pycparser==2.21
     # via cffi
 pyflakes==2.4.0
     # via -r requirements-tests.in
-pyopenssl==23.0.0
+pyopenssl==23.1.1
     # via
     #   acme
     #   josepy

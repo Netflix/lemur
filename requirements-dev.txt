@@ -8,12 +8,16 @@ bleach==4.1.0
     # via readme-renderer
 certifi==2022.12.7
     # via requests
+cffi==1.15.1
+    # via cryptography
 cfgv==3.3.1
     # via pre-commit
 charset-normalizer==2.0.12
     # via requests
 commonmark==0.9.1
     # via rich
+cryptography==40.0.1
+    # via secretstorage
 distlib==0.3.4
     # via virtualenv
 docutils==0.18.1
@@ -30,8 +34,12 @@ importlib-metadata==4.11.3
     # via
     #   keyring
     #   twine
-invoke==1.7.3
+invoke==2.0.0
     # via -r requirements-dev.in
+jeepney==0.8.0
+    # via
+    #   keyring
+    #   secretstorage
 keyring==23.5.0
     # via twine
 marshmallow==2.21.0
@@ -47,9 +55,7 @@ nodeenv==1.7.0
     #   -r requirements-dev.in
     #   pre-commit
 packaging==23.0
-    # via
-    #   -r requirements-dev.in
-    #   bleach
+    # via bleach
 pkginfo==1.8.2
     # via twine
 platformdirs==2.5.1
@@ -58,6 +64,8 @@ pre-commit==2.21.0
     # via -r requirements-dev.in
 pycodestyle==2.8.0
     # via flake8
+pycparser==2.21
+    # via cffi
 pyflakes==2.4.0
     # via flake8
 pygments==2.11.2
@@ -80,6 +88,8 @@ rfc3986==2.0.0
     # via twine
 rich==12.1.0
     # via twine
+secretstorage==3.3.3
+    # via keyring
 six==1.16.0
     # via
     #   bleach
