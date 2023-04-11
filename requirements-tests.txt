@@ -276,7 +276,7 @@ tomli==2.0.1
     # via pytest
 types-toml==0.10.8.6
     # via responses
-urllib3==1.26.9
+urllib3==1.26.15
     # via
     #   botocore
     #   requests

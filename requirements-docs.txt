@@ -490,7 +490,7 @@ sarif-om==1.0.4
     # via
     #   -r requirements-tests.txt
     #   cfn-lint
-sentry-sdk==1.9.0
+sentry-sdk==1.14.0
     # via -r requirements-docs.in
 six==1.16.0
     # via
@@ -575,7 +575,7 @@ types-toml==0.10.8.6
     # via
     #   -r requirements-tests.txt
     #   responses
-urllib3==1.26.9
+urllib3==1.26.15
     # via
     #   -r requirements-tests.txt
     #   botocore

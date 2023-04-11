@@ -407,7 +407,7 @@ rsa==4.9
     # via google-auth
 s3transfer==0.6.0
     # via boto3
-sentry-sdk==1.9.0
+sentry-sdk==1.14.0
     # via -r requirements.in
 simplejson==3.18.1
     # via cert-orchestration-adapter
@@ -461,7 +461,7 @@ typing-extensions==4.4.0
     #   azure-core
     #   bytecode
     #   ddtrace
-urllib3==1.26.9
+urllib3==1.26.15
     # via
     #   botocore
     #   cert-orchestration-adapter
