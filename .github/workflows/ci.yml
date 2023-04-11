@@ -94,6 +94,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   coveralls:
+      name: Indicate completion to coveralls.io
       needs: build
       if: ${{ always() }}
       runs-on: ubuntu-latest
