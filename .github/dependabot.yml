@@ -9,5 +9,7 @@
       package-ecosystem: "pip"
       reviewers:
         - "DataDog/edge-ingress"
+      ignore:
+        - dependency-name: "cert-orchestration-adapter"
       versioning-strategy: auto
       open-pull-requests-limit: 20
