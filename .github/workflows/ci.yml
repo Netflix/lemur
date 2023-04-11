@@ -88,7 +88,17 @@ jobs:
         xvfb-run make test-js
     - name: Coveralls GitHub Action
       uses: coverallsapp/github-action@v2
+      with:
+        parallel: true
+        flag-name: Python ${{ matrix.python-version }} Postgres ${{ matrix.postgres-version }} OS ${{ matrix.os }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        COVERALLS_FLAG_NAME: Python ${{ matrix.python-version }} Postgres ${{ matrix.postgres-version }} OS ${{ matrix.os }}
-        COVERALLS_PARALLEL: true
+  coveralls:
+      needs: build
+      if: ${{ always() }}
+      runs-on: ubuntu-latest
+      steps:
+      - name: Coveralls Finished
+        uses: coverallsapp/github-action@v2
+        with:
+          parallel-finished: true
