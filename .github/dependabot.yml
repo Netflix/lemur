@@ -8,9 +8,6 @@
         timezone: "America/Los_Angeles"
       package-ecosystem: "pip"
       reviewers:
-        - "hosseinsh"
-        - "charhate"
-        - "jtschladen"
-        - "douglasc-nflx"
+        - "DataDog/edge-ingress"
       versioning-strategy: auto
       open-pull-requests-limit: 20
