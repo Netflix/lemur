@@ -24,14 +24,13 @@ def create(user, type, certificate=None):
     :param certificate:
     :return:
     """
-    audit_data = {
+    log_data = {
         "function": "lemur-audit",
         "action": type,
         "user": user.email,
-        "certificate": certificate.name
+        "certificate": certificate.name,
+        "message": f"[lemur-audit] action: {type}, user: {user.email}, certificate: {certificate.name}."
     }
-    log_data = audit_data.copy()
-    log_data["message"] = f"[lemur-audit] action: {type}, user: {user.email}, certificate: {certificate.name}."
     # format before August 2021: f"[lemur-audit] action: {type}, user: {user.email}, certificate: {certificate.name}."
     current_app.logger.info(log_data)
 
