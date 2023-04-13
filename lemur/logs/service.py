@@ -24,12 +24,14 @@ def create(user, type, certificate=None):
     :param certificate:
     :return:
     """
-    log_data = {
+    audit_data = {
         "function": "lemur-audit",
         "action": type,
         "user": user.email,
         "certificate": certificate.name
     }
+    log_data = audit_data.copy()
+    log_data["message"] = f"[lemur-audit] action: {type}, user: {user.email}, certificate: {certificate.name}."
     # format before August 2021: f"[lemur-audit] action: {type}, user: {user.email}, certificate: {certificate.name}."
     current_app.logger.info(log_data)
 
@@ -53,7 +55,8 @@ def audit_log(action, entity, message):
         "action": action,
         "user": user,
         "entity": entity,
-        "details": message
+        "details": message,
+        "message": f"[lemur-audit] action: {action}, user: {user}, entity: {entity}, details: {message}."
     }
     # format before August 2021: f"[lemur-audit] action: {action}, user: {user}, entity: {entity}, details: {message}"
     current_app.logger.info(log_data)
