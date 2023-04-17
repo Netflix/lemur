@@ -58,19 +58,15 @@ def get_psuedo_random_string():
     """
     Create a random and strongish challenge.
     """
-    challenge = "".join(secrets.choice(string.ascii_uppercase) for x in range(6))  # noqa
-    challenge += "".join(secrets.choice("~!@#$%^&*()_+") for x in range(6))  # noqa
-    challenge += "".join(secrets.choice(string.ascii_lowercase) for x in range(6))
-    challenge += "".join(secrets.choice(string.digits) for x in range(6))  # noqa
+    chars = string.ascii_uppercase + string.ascii_lowercase + string.digits + "~!@#$%^&*()_+"
+    challenge = ''.join(secrets.choice(chars) for x in range(24))
     return challenge
 
 
 def get_random_secret(length):
     """ Similar to get_pseudo_random_string, but accepts a length parameter. """
-    secret_key = ''.join(secrets.choice(string.ascii_uppercase) for x in range(round(length / 4)))
-    secret_key = secret_key + ''.join(secrets.choice("~!@#$%^&*()_+") for x in range(round(length / 4)))
-    secret_key = secret_key + ''.join(secrets.choice(string.ascii_lowercase) for x in range(round(length / 4)))
-    return secret_key + ''.join(secrets.choice(string.digits) for x in range(round(length / 4)))
+    chars = string.ascii_uppercase + string.ascii_lowercase + string.digits + "~!@#$%^&*()_+"
+    return ''.join(secrets.choice(chars) for x in range(length))
 
 
 def get_state_token_secret():
