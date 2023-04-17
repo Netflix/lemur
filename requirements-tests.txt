@@ -53,7 +53,7 @@ configobj==5.0.6
     # via certbot
 coverage==7.2.3
     # via -r requirements-tests.in
-cryptography==39.0.2
+cryptography==40.0.2
     # via
     #   acme
     #   certbot
