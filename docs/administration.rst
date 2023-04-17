@@ -144,10 +144,10 @@ Basic Configuration
     An example of how you might generate a random string:
 
         >>> import secrets
-        >>> secret_key = ''.join(secrets.choice(string.ascii_uppercase) for x in range(6))
-        >>> secret_key = secret_key + ''.join(secrets.choice("~!@#$%^&*()_+") for x in range(6))
-        >>> secret_key = secret_key + ''.join(secrets.choice(string.ascii_lowercase) for x in range(6))
-        >>> secret_key = secret_key + ''.join(secrets.choice(string.digits) for x in range(6))
+		>>> import string
+        >>> chars = string.ascii_uppercase + string.ascii_lowercase + string.digits + "~!@#$%^&*()_+"
+        >>> secret_key = ''.join(secrets.choice(chars) for x in range(24))
+
 
 
 .. data:: LEMUR_ENCRYPTION_KEYS
