@@ -171,6 +171,7 @@ markupsafe==2.1.1
     # via
     #   jinja2
     #   mako
+    #   werkzeug
 marshmallow==2.21.0
     # via
     #   -r requirements.in
@@ -296,7 +297,7 @@ vine==5.0.0
     #   kombu
 wcwidth==0.2.5
     # via prompt-toolkit
-werkzeug==2.0.3
+werkzeug==2.3.0
     # via
     #   -r requirements.in
     #   flask
