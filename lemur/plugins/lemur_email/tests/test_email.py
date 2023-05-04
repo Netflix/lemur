@@ -240,7 +240,7 @@ def test_title_parser(certificate, endpoint):
     </html>"""
     with_title = TitleParser()
     with_title.feed(html_template_with_title)
-    assert(with_title.title)
+    assert (with_title.title)
 
     html_template_without_title = """
     <html>
@@ -248,4 +248,4 @@ def test_title_parser(certificate, endpoint):
     </html>"""
     without_title = TitleParser()
     without_title.feed(html_template_without_title)
-    assert(not without_title.title)
+    assert (not without_title.title)

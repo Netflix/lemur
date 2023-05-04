@@ -69,6 +69,10 @@ def create_app(app_name=None, blueprints=None, config=None):
         if db.session:
             db.session.remove()
 
+    @app.shell_context_processor
+    def shell_context():
+        return {'app': app, 'db': db}
+
     return app
 
 

@@ -7,9 +7,10 @@
 """
 import arrow
 import sys
+import click
+
 from flask import current_app
 from flask_principal import Identity, identity_changed
-from flask_script import Manager
 from sqlalchemy import or_
 from tabulate import tabulate
 from time import sleep
@@ -47,7 +48,10 @@ from lemur.notifications.messaging import send_rotation_notification, send_reiss
 from lemur.plugins.base import plugins
 from sqlalchemy.orm.exc import MultipleResultsFound
 
-manager = Manager(usage="Handles all certificate related tasks.")
+
+@click.group(name="certificates", help="Handles all certificate related tasks.")
+def cli():
+    pass
 
 
 def print_certificate_details(details):
@@ -57,8 +61,8 @@ def print_certificate_details(details):
     :return:
     """
     details, errors = CertificateOutputSchema().dump(details)
-    print("[+] Re-issuing certificate with the following details: ")
-    print(
+    click.echo("[+] Re-issuing certificate with the following details: ")
+    click.echo(
         "\t[+] Common Name: {common_name}\n"
         "\t[+] Subject Alternate Names: {sans}\n"
         "\t[+] Authority: {authority_name}\n"
@@ -86,7 +90,7 @@ def validate_certificate(certificate_name):
         cert = get_by_name(certificate_name)
 
         if not cert:
-            print("[-] No certificate found with name: {0}".format(certificate_name))
+            click.echo("[-] No certificate found with name: {0}".format(certificate_name))
             sys.exit(1)
 
         return cert
@@ -102,7 +106,7 @@ def validate_endpoint(endpoint_name):
         endpoint = endpoint_service.get_by_name(endpoint_name)
 
         if not endpoint:
-            print("[-] No endpoint found with name: {0}".format(endpoint_name))
+            click.echo("[-] No endpoint found with name: {0}".format(endpoint_name))
             sys.exit(1)
 
         return endpoint
@@ -119,7 +123,7 @@ def validate_endpoint_from_source(endpoint_name, source):
         endpoint = endpoint_service.get_by_name_and_source(endpoint_name, source)
 
         if not endpoint:
-            print("[-] No endpoint found from source {0} with name: {1}".format(source, endpoint_name))
+            click.echo("[-] No endpoint found from source {0} with name: {1}".format(source, endpoint_name))
             sys.exit(1)
 
         return endpoint
@@ -151,7 +155,7 @@ def request_rotation(endpoint, certificate, message, commit):
             current_app.logger.exception(
                 f"Error rotating certificate: {certificate.name}", exc_info=True
             )
-            print(
+            click.echo(
                 "[!] Failed to rotate endpoint {0} to certificate {1} reason: {2}".format(
                     endpoint.name, certificate.name, e
                 )
@@ -173,7 +177,7 @@ def request_reissue(certificate, notify, commit):
     status = FAILURE_METRIC_STATUS
     notify = notify and certificate.notify
     try:
-        print("[+] {0} is eligible for re-issuance".format(certificate.name))
+        click.echo("[+] {0} is eligible for re-issuance".format(certificate.name))
 
         # set the lemur identity for all cli commands
         identity_changed.send(current_app._get_current_object(), identity=Identity(1))
@@ -183,7 +187,7 @@ def request_reissue(certificate, notify, commit):
 
         if commit:
             new_cert = reissue_certificate(certificate, notify=notify, replace=True)
-            print("[+] New certificate named: {0}".format(new_cert.name))
+            click.echo("[+] New certificate named: {0}".format(new_cert.name))
             if notify and isinstance(new_cert, Certificate):  # let celery handle PendingCertificates
                 send_reissue_no_endpoints_notification(certificate, new_cert)
 
@@ -194,7 +198,7 @@ def request_reissue(certificate, notify, commit):
         current_app.logger.exception(
             f"Error reissuing certificate: {certificate.name}", exc_info=True
         )
-        print(f"[!] Failed to reissue certificate: {certificate.name}. Reason: {e}")
+        click.echo(f"[!] Failed to reissue certificate: {certificate.name}. Reason: {e}")
         if notify:
             send_reissue_failed_notification(certificate)
 
@@ -206,43 +210,44 @@ def request_reissue(certificate, notify, commit):
     )
 
 
-@manager.option(
+@click.option(
     "-e",
     "--endpoint",
-    dest="endpoint_name",
+    "endpoint_name",
     help="Name of the endpoint you wish to rotate.",
 )
-@manager.option(
+@click.option(
     "-s",
     "--source",
-    dest="source",
+    "source",
     help="Source of the endpoint you wish to rotate.",
 )
-@manager.option(
+@click.option(
     "-n",
     "--new-certificate",
-    dest="new_certificate_name",
+    "new_certificate_name",
     help="Name of the certificate you wish to rotate to.",
 )
-@manager.option(
+@click.option(
     "-o",
     "--old-certificate",
-    dest="old_certificate_name",
+    "old_certificate_name",
     help="Name of the certificate you wish to rotate.",
 )
-@manager.option(
+@click.option(
     "-a",
     "--notify",
-    dest="message",
-    action="store_true",
+    "message",
+    type=bool,
+    default=True,
     help="Send a rotation notification to the certificates owner.",
 )
-@manager.option(
+@click.option(
     "-c",
     "--commit",
-    dest="commit",
-    action="store_true",
-    default=False,
+    "commit",
+    type=bool,
+    default=True,
     help="Persist changes.",
 )
 def rotate(endpoint_name, source, new_certificate_name, old_certificate_name, message, commit):
@@ -251,9 +256,9 @@ def rotate(endpoint_name, source, new_certificate_name, old_certificate_name, me
     been replaced, will use the replacement certificate for the rotation.
     """
     if commit:
-        print("[!] Running in COMMIT mode.")
+        click.echo("[!] Running in COMMIT mode.")
 
-    print("[+] Starting endpoint rotation.")
+    click.echo("[+] Starting endpoint rotation.")
 
     status = FAILURE_METRIC_STATUS
 
@@ -270,14 +275,14 @@ def rotate(endpoint_name, source, new_certificate_name, old_certificate_name, me
             try:
                 endpoint = validate_endpoint(endpoint_name)
             except MultipleResultsFound as e:
-                print("[!] Multiple endpoints found with name {0}, try narrowing the search down to an endpoint from a specific source by re-running this command with the --source flag.".format(endpoint_name))
+                click.echo("[!] Multiple endpoints found with name {0}, try narrowing the search down to an endpoint from a specific source by re-running this command with the --source flag.".format(endpoint_name))
                 log_data["message"] = "Multiple endpoints found with same name, unable to perform rotation"
                 log_data["duplicated_endpoint_name"] = endpoint_name
                 current_app.logger.info(log_data)
                 raise
 
         if endpoint and new_cert:
-            print(
+            click.echo(
                 f"[+] Rotating endpoint: {endpoint.name} to certificate {new_cert.name}"
             )
             log_data["message"] = "Rotating one endpoint"
@@ -287,12 +292,12 @@ def rotate(endpoint_name, source, new_certificate_name, old_certificate_name, me
             current_app.logger.info(log_data)
 
         elif old_cert and new_cert:
-            print(f"[+] Rotating all endpoints from {old_cert.name} to {new_cert.name}")
+            click.echo(f"[+] Rotating all endpoints from {old_cert.name} to {new_cert.name}")
             log_data["certificate"] = new_cert.name
             log_data["certificate_old"] = old_cert.name
             log_data["message"] = "Rotating endpoint from old to new cert"
             for endpoint in old_cert.endpoints:
-                print(f"[+] Rotating {endpoint.name}")
+                click.echo(f"[+] Rotating {endpoint.name}")
                 log_data["endpoint"] = endpoint.dnsname
                 request_rotation(endpoint, new_cert, message, commit)
                 current_app.logger.info(log_data)
@@ -300,7 +305,7 @@ def rotate(endpoint_name, source, new_certificate_name, old_certificate_name, me
         else:
             # No certificate name or endpoint is provided. We will now fetch all endpoints,
             # which are associated with a certificate that has been replaced
-            print("[+] Rotating all endpoints that have new certificates available")
+            click.echo("[+] Rotating all endpoints that have new certificates available")
             for endpoint in endpoint_service.get_all_pending_rotation():
 
                 log_data["message"] = "Rotating endpoint from old to new cert"
@@ -310,14 +315,14 @@ def rotate(endpoint_name, source, new_certificate_name, old_certificate_name, me
 
                 log_data["endpoint"] = endpoint.dnsname
                 log_data["certificate"] = endpoint.certificate.replaced[0].name
-                print(
+                click.echo(
                     f"[+] Rotating {endpoint.name} to {endpoint.certificate.replaced[0].name}"
                 )
                 request_rotation(endpoint, endpoint.certificate.replaced[0], message, commit)
                 current_app.logger.info(log_data)
 
         status = SUCCESS_METRIC_STATUS
-        print("[+] Done!")
+        click.echo("[+] Done!")
 
     except Exception as e:
         capture_exception(
@@ -351,47 +356,49 @@ def request_rotation_region(endpoint, new_cert, message, commit, log_data, regio
     else:
         log_data["message"] = "Skipping rotation, region mismatch"
 
-    print(log_data)
+    click.echo(log_data)
     current_app.logger.info(log_data)
 
 
-@manager.option(
+@cli.command("rotate_region")
+@click.option(
     "-e",
     "--endpoint",
-    dest="endpoint_name",
+    "endpoint_name",
     help="Name of the endpoint you wish to rotate.",
 )
-@manager.option(
+@click.option(
     "-n",
     "--new-certificate",
-    dest="new_certificate_name",
+    "new_certificate_name",
     help="Name of the certificate you wish to rotate to.",
 )
-@manager.option(
+@click.option(
     "-o",
     "--old-certificate",
-    dest="old_certificate_name",
+    "old_certificate_name",
     help="Name of the certificate you wish to rotate.",
 )
-@manager.option(
+@click.option(
     "-a",
     "--notify",
-    dest="message",
-    action="store_true",
+    "message",
+    type=bool,
+    default=True,
     help="Send a rotation notification to the certificates owner.",
 )
-@manager.option(
+@click.option(
     "-c",
     "--commit",
-    dest="commit",
-    action="store_true",
-    default=False,
+    "commit",
+    type=bool,
+    default=True,
     help="Persist changes.",
 )
-@manager.option(
+@click.option(
     "-r",
     "--region",
-    dest="region",
+    "region",
     required=True,
     help="Region in which to rotate the endpoint.",
 )
@@ -408,9 +415,9 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
     #todo: merge this method with rotate()
     """
     if commit:
-        print("[!] Running in COMMIT mode.")
+        click.echo("[!] Running in COMMIT mode.")
 
-    print("[+] Starting endpoint rotation.")
+    click.echo("[+] Starting endpoint rotation.")
     status = FAILURE_METRIC_STATUS
 
     log_data = {
@@ -432,7 +439,7 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
             log_data["certificate"] = new_cert.name
             log_data["certificate_old"] = old_cert.name
             log_data["message"] = "Rotating endpoint from old to new cert"
-            print(log_data)
+            click.echo(log_data)
             current_app.logger.info(log_data)
             for endpoint in old_cert.endpoints:
                 log_data["endpoint"] = endpoint.dnsname
@@ -440,14 +447,14 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
 
         else:
             log_data["message"] = "Rotating all endpoints that have new certificates available"
-            print(log_data)
+            click.echo(log_data)
             current_app.logger.info(log_data)
             all_pending_rotation_endpoints = endpoint_service.get_all_pending_rotation()
             for endpoint in all_pending_rotation_endpoints:
                 log_data["endpoint"] = endpoint.dnsname
                 if region not in endpoint.dnsname:
                     log_data["message"] = "Skipping rotation, region mismatch"
-                    print(log_data)
+                    click.echo(log_data)
                     current_app.logger.info(log_data)
                     metrics.send(
                         "endpoint_rotation_region_skipped",
@@ -483,7 +490,7 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
                     },
                 )
         status = SUCCESS_METRIC_STATUS
-        print("[+] Done!")
+        click.echo("[+] Done!")
 
     except Exception as e:
         capture_exception(
@@ -512,24 +519,26 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
     )
 
 
-@manager.option(
+@cli.command("reissue")
+@click.option(
     "-o",
     "--old-certificate",
-    dest="old_certificate_name",
+    "old_certificate_name",
     help="Name of the certificate you wish to reissue.",
 )
-@manager.option(
+@click.option(
     "-a",
     "--notify",
-    dest="notify",
-    action="store_true",
+    "notify",
+    type=bool,
+    default=True,
     help="Send a re-issue failed notification to the certificates owner (if re-issuance fails).",
 )
-@manager.option(
+@click.option(
     "-c",
     "--commit",
-    dest="commit",
-    action="store_true",
+    "commit",
+    type=bool,
     default=False,
     help="Persist changes.",
 )
@@ -540,9 +549,9 @@ def reissue(old_certificate_name, notify, commit):
     today + length of original.
     """
     if commit:
-        print("[!] Running in COMMIT mode.")
+        click.echo("[!] Running in COMMIT mode.")
 
-    print("[+] Starting certificate re-issuance.")
+    click.echo("[+] Starting certificate re-issuance.")
 
     status = FAILURE_METRIC_STATUS
 
@@ -556,29 +565,30 @@ def reissue(old_certificate_name, notify, commit):
             request_reissue(old_cert, notify, commit)
 
         status = SUCCESS_METRIC_STATUS
-        print("[+] Done!")
+        click.echo("[+] Done!")
     except Exception as e:
         capture_exception()
         current_app.logger.exception("Error reissuing certificate.", exc_info=True)
-        print("[!] Failed to reissue certificates. Reason: {}".format(e))
+        click.echo("[!] Failed to reissue certificates. Reason: {}".format(e))
 
     metrics.send(
         "certificate_reissue_job", "counter", 1, metric_tags={"status": status}
     )
 
 
-@manager.option(
+@cli.command("query")
+@click.option(
     "-f",
     "--fqdns",
-    dest="fqdns",
+    "fqdns",
     help="FQDNs to query. Multiple fqdns specified via comma.",
 )
-@manager.option("-i", "--issuer", dest="issuer", help="Issuer to query for.")
-@manager.option("-o", "--owner", dest="owner", help="Owner to query for.")
-@manager.option(
+@click.option("-i", "--issuer", "issuer", help="Issuer to query for.")
+@click.option("-o", "--owner", "owner", help="Owner to query for.")
+@click.option(
     "-e",
     "--expired",
-    dest="expired",
+    "expired",
     type=bool,
     default=False,
     help="Include expired certificates.",
@@ -619,7 +629,7 @@ def query(fqdns, issuer, owner, expired):
     for c in q.all():
         table.append([c.id, c.name, c.owner, c.issuer])
 
-    print(tabulate(table, headers=["Id", "Name", "Owner", "Issuer"], tablefmt="csv"))
+    click.echo(tabulate(table, headers=["Id", "Name", "Owner", "Issuer"], tablefmt="csv"))
 
 
 def worker(data, commit, reason):
@@ -627,7 +637,7 @@ def worker(data, commit, reason):
     try:
         cert = get(int(parts[0].strip()))
 
-        print("[+] Revoking certificate. Id: {0} Name: {1}".format(cert.id, cert.name))
+        click.echo("[+] Revoking certificate. Id: {0} Name: {1}".format(cert.id, cert.name))
         if commit:
             revoke_certificate(cert, reason)
 
@@ -646,10 +656,10 @@ def worker(data, commit, reason):
             1,
             metric_tags={"status": FAILURE_METRIC_STATUS},
         )
-        print("[!] Failed to revoke certificates. Reason: {}".format(e))
+        click.echo("[!] Failed to revoke certificates. Reason: {}".format(e))
 
 
-@manager.command
+@cli.command("clear_pending")
 def clear_pending():
     """
     Function clears all pending certificates.
@@ -659,16 +669,17 @@ def clear_pending():
     v.clear_pending_certificates()
 
 
-@manager.option("-p", "--path", dest="path", help="Absolute file path to a Lemur query csv.")
-@manager.option("-id", "--certid", dest="cert_id", help="ID of the certificate to be revoked")
-@manager.option("-r", "--reason", dest="reason", default="unspecified", help="CRL Reason as per RFC 5280 section 5.3.1")
-@manager.option("-m", "--message", dest="message", help="Message explaining reason for revocation")
-@manager.option(
+@cli.command("revoke")
+@click.option("-p", "--path", "path", help="Absolute file path to a Lemur query csv.")
+@click.option("-id", "--certid", "cert_id", help="ID of the certificate to be revoked")
+@click.option("-r", "--reason", "reason", default="unspecified", help="CRL Reason as per RFC 5280 section 5.3.1")
+@click.option("-m", "--message", "message", help="Message explaining reason for revocation")
+@click.option(
     "-c",
     "--commit",
-    dest="commit",
-    action="store_true",
-    default=False,
+    "commit",
+    type=bool,
+    default=True,
     help="Persist changes.",
 )
 def revoke(path, cert_id, reason, message, commit):
@@ -676,16 +687,16 @@ def revoke(path, cert_id, reason, message, commit):
     Revokes given certificate.
     """
     if not path and not cert_id:
-        print("[!] No input certificates mentioned to revoke")
+        click.echo("[!] No input certificates mentioned to revoke")
         return
     if path and cert_id:
-        print("[!] Please mention single certificate id (-id) or input file (-p)")
+        click.echo("[!] Please mention single certificate id (-id) or input file (-p)")
         return
 
     if commit:
-        print("[!] Running in COMMIT mode.")
+        click.echo("[!] Running in COMMIT mode.")
 
-    print("[+] Starting certificate revocation.")
+    click.echo("[+] Starting certificate revocation.")
 
     if reason not in CRLReason.__members__:
         reason = CRLReason.unspecified.name
@@ -699,7 +710,7 @@ def revoke(path, cert_id, reason, message, commit):
                 worker(x, commit, comments)
 
 
-@manager.command
+@cli.command("check_revoked")
 def check_revoked():
     """
     Function attempts to update Lemur's internal cache with revoked
@@ -792,7 +803,7 @@ def check_revoked():
     )
 
 
-@manager.command
+@cli.command("automatically_enable_autorotate_with_endpoint")
 def automatically_enable_autorotate_with_endpoint():
     """
     This function automatically enables auto-rotation for unexpired certificates that are
@@ -834,7 +845,7 @@ def automatically_enable_autorotate_with_endpoint():
         database.update(cert)
 
 
-@manager.command
+@cli.command("automatically_enable_autorotate_with_destination")
 def automatically_enable_autorotate_with_destination():
     """
     This function automatically enables auto-rotation for unexpired certificates that are
@@ -877,7 +888,7 @@ def automatically_enable_autorotate_with_destination():
         database.update(cert)
 
 
-@manager.command
+@cli.command("deactivate_entrust_certificates")
 def deactivate_entrust_certificates():
     """
     Attempt to deactivate test certificates issued by Entrust
@@ -922,7 +933,8 @@ def deactivate_entrust_certificates():
             current_app.logger.exception(e)
 
 
-@manager.option("-c", "--commit", dest="commit", action="store_true", default=False, help="Persist changes.")
+@cli.command("disable_rotation_of_duplicate_certificates")
+@click.option("-c", "--commit", "commit", type=bool, default=False, help="Persist changes.")
 def disable_rotation_of_duplicate_certificates(commit):
     log_data = {
         "function": f"{__name__}.{sys._getframe().f_code.co_name}",
@@ -930,7 +942,7 @@ def disable_rotation_of_duplicate_certificates(commit):
     }
 
     if commit:
-        print("[!] Running in COMMIT mode.")
+        click.echo("[!] Running in COMMIT mode.")
 
     authority_names = current_app.config.get("AUTHORITY_TO_DISABLE_ROTATE_OF_DUPLICATE_CERTIFICATES")
     if not authority_names:
@@ -1098,28 +1110,28 @@ def is_duplicate(matching_cert, compare_to):
     return False
 
 
-@manager.option(
+@cli.command("identify_expiring_deployed_certificates")
+@click.option(
     "-e",
     "--exclude",
-    dest="exclude_domains",
-    action="append",
+    "exclude_domains",
+    multiple=True,
     default=[],
     help="Domains that should be excluded from check.",
 )
-@manager.option(
+@click.option(
     "-eo",
     "--exclude-owners",
-    dest="exclude_owners",
-    action="append",
+    "exclude_owners",
+    multiple=True,
     default=[],
     help="Owners that should be excluded from check.",
 )
-@manager.option(
+@click.option(
     "-c",
     "--commit",
-    dest="commit",
-    action="store_true",
-    default=False,
+    "commit",
+    default=True,
     help="Persist changes.",
 )
 def identify_expiring_deployed_certificates(exclude_domains, exclude_owners, commit):
@@ -1134,16 +1146,16 @@ def identify_expiring_deployed_certificates(exclude_domains, exclude_owners, com
     metrics.send("identify_expiring_deployed_certificates", "counter", 1, metric_tags={"status": status})
 
 
-@manager.command
+@cli.command("expiration_metrics")
 def expiration_metrics(expiry_window):
     """
     Iterates over all certificates and emits a metric for the days remaining for a certificate to expire.
     This is used for building custom dashboards and alerts for certificate expiry.
     """
     try:
-        print("Starting to publish metrics for time left until cert expirations")
+        click.echo("Starting to publish metrics for time left until cert expirations")
         success, failure = send_certificate_expiration_metrics(expiry_window)
-        print(
+        click.echo(
             f"Finished publishing metrics for time left until cert expirations! Sent: {success}"
         )
         status = SUCCESS_METRIC_STATUS

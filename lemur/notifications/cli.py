@@ -5,8 +5,9 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+import click
+
 from flask import current_app
-from flask_script import Manager
 from sentry_sdk import capture_exception
 
 from lemur.certificates.service import get_expiring_deployed_certificates
@@ -17,22 +18,26 @@ from lemur.notifications.messaging import send_expiration_notifications, \
 from lemur.notifications.messaging import send_authority_expiration_notifications
 from lemur.notifications.messaging import send_security_expiration_summary
 
-manager = Manager(usage="Handles notification related tasks.")
+
+@click.group(name="notifications", help="Handles notification related tasks.")
+def cli():
+    pass
 
 
-@manager.option(
+@cli.command("expirations")
+@click.option(
     "-e",
     "--exclude",
-    dest="exclude",
-    action="append",
+    "exclude",
+    multiple=True,
     default=[],
     help="Common name matching of certificates that should be excluded from notification",
 )
-@manager.option(
+@click.option(
     "-d",
     "--disabled-notification-plugins",
-    dest="disabled_notification_plugins",
-    action="append",
+    "disabled_notification_plugins",
+    multiple=True,
     default=[],
     help="List of notification plugins for which notifications should NOT be sent",
 )
@@ -74,9 +79,9 @@ def authority_expirations():
     """
     status = FAILURE_METRIC_STATUS
     try:
-        print("Starting to notify subscribers about expiring certificate authority certificates!")
+        click.echo("Starting to notify subscribers about expiring certificate authority certificates!")
         success, failed = send_authority_expiration_notifications()
-        print(
+        click.echo(
             "Finished notifying subscribers about expiring certificate authority certificates! "
             f"Sent: {success} Failed: {failed}"
         )
