@@ -1,16 +1,18 @@
   version: 2
   updates:
-    - directory: "/"
+    - package-ecosystem: "pip"
+      directory: "/"
       schedule:
         interval: "weekly"
         day: "monday"
         time: "08:00"
         timezone: "America/Los_Angeles"
-      package-ecosystem: "pip"
-      reviewers:
-        - "hosseinsh"
-        - "charhate"
-        - "jtschladen"
-        - "douglasc-nflx"
       versioning-strategy: auto
       open-pull-requests-limit: 20
+    - package-ecosystem: "github-actions"
+      directory: "/"
+      schedule:
+        interval: "weekly"
+        day: "monday"
+        time: "08:00"
+        timezone: "America/Los_Angeles"
