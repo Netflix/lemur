@@ -94,8 +94,9 @@ twine==4.0.2
     # via -r requirements-dev.in
 typing-extensions==4.5.0
     # via sqlalchemy
-urllib3==2.0.2
+urllib3==1.26.15
     # via
+    #   -r requirements-dev.in
     #   requests
     #   twine
 virtualenv==20.23.0
