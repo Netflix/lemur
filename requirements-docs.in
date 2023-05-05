@@ -14,24 +14,23 @@ CloudFlare
 cryptography
 dnspython3
 dyn
-Flask <= 1.1.2 # similar to Flask-Migrate
+Flask
 Flask-Bcrypt
 Flask-Cors
 Flask-Mail
-Flask-Migrate <= 2.7.0 #mirgration to Flask CLI required, https://github.com/miguelgrinberg/Flask-Migrate/issues/407
+Flask-Migrate
 Flask-Principal
 Flask-RESTful
-Flask-Script
 Flask-SQLAlchemy
 flask_replicated
 gunicorn
 hvac # required for the vault destination plugin
 inflection
-itsdangerous < 2.1.0 # requires Flask 2.0.3
+itsdangerous
 josepy
 logmatic-python
 marshmallow-sqlalchemy == 0.23.1 #related to the marshmallow issue (to avoid conflicts, as newer versions require marshmallow>=3.0.0)
-sqlalchemy < 1.4.0 # ImportError: cannot import name '_ColumnEntity' https://github.com/sqlalchemy/sqlalchemy/issues/6226
+sqlalchemy
 marshmallow<2.21.1 #schema duplicate issues https://github.com/marshmallow-code/marshmallow-sqlalchemy/issues/121
 paramiko  # required for the SFTP destination plugin
 pem
@@ -44,7 +43,7 @@ sentry-sdk
 SQLAlchemy-Utils
 tabulate
 vine
-werkzeug < 2.1.0 # requires a newer version of Flask
+werkzeug
 xmltodict
 # Test requirements are needed to allow test docs to build
 -r requirements-tests.txt

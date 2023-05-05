@@ -13,7 +13,7 @@ from gunicorn.config import make_settings
 from cryptography.fernet import Fernet
 
 from flask import current_app
-from flask.cli import FlaskGroup
+from flask.cli import FlaskGroup, pass_script_info
 from flask_migrate.cli import db
 from flask_migrate import stamp
 
@@ -55,7 +55,13 @@ from lemur.dns_providers.models import DnsProvider  # noqa
 
 from sqlalchemy.sql import text
 
-cli = FlaskGroup(create_app=create_app)
+
+@click.group(cls=FlaskGroup, create_app=create_app)
+@click.option('-c', '--config', "config", help="Path to default configuration file for Lemur.")
+@pass_script_info
+def cli(script_info, config):
+    script_info.config = config
+
 
 REQUIRED_VARIABLES = [
     "LEMUR_SECURITY_TEAM_EMAIL",
@@ -193,7 +199,6 @@ def initialize_app(password):
     Additionally a Lemur user will be created as a default user
     and be used when certificates are discovered by Lemur.
     """
-    print("STARTING!!!")
     create_all()
     user = user_service.get_by_username("lemur")
 
@@ -516,6 +521,7 @@ def start(ctx):
 
 
 @cli.command("create_config")
+@click.option("-c", "--config", "config_path")
 def create_config(config_path):
     """
     Creates a new configuration file if one does not already exist
