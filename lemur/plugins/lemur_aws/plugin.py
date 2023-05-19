@@ -603,7 +603,7 @@ class S3DestinationPlugin(ExportDestinationPlugin):
             res = "Success" if response else "Failure"
             log_data = {
                 "function": function,
-                "message": "upload acme token challenge",
+                "message": "upload s3 file",
                 "result": res,
                 "bucket_name": self.get_option("bucket", options),
                 "filename": filename
@@ -681,10 +681,24 @@ class S3DestinationPlugin(ExportDestinationPlugin):
         return response
 
     def clean(self, certificate, options, **kwargs):
+        files = self.export(certificate.body, certificate.private_key, certificate.chain, options)
+        function = f"{__name__}.{sys._getframe().f_code.co_name}"
         prefix = self.get_option("prefix", options)
-        s3.delete(bucket_name=self.get_option("bucket", options),
-                  prefixed_object_name=join(prefix, f"{certificate.name}.pem"),
+
+        for ext, passphrase, data in files:
+            filename = join(prefix, f"{certificate.name}{ext}")
+            response = s3.delete(bucket_name=self.get_option("bucket", options),
+                  prefixed_object_name=filename,
                   account_number=self.get_option("accountNumber", options))
+            res = "Success" if response else "Failure"
+            log_data = {
+                "function": function,
+                "message": "delete s3 file",
+                "result": res,
+                "bucket_name": self.get_option("bucket", options),
+                "filename": filename
+            }
+            current_app.logger.info(log_data)
 
 
 class SNSNotificationPlugin(ExpirationNotificationPlugin):

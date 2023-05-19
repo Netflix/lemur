@@ -126,8 +126,8 @@ def test_clean(app):
     s3_client.create_bucket(Bucket=bucket)
 
     p = plugins.get("aws-s3")
-    Certificate = namedtuple("Certificate", ["name"])
-    certificate = Certificate(name="certificate")
+    Certificate = namedtuple("Certificate", ["name", "body", "private_key", "chain"])
+    certificate = Certificate(name="certificate", body="body", private_key="private_key", chain="chain")
     s3_client.put_object(
         Bucket=bucket,
         Body="PEM_DATA",
