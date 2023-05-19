@@ -686,9 +686,9 @@ class S3DestinationPlugin(ExportDestinationPlugin):
         prefix = self.get_option("prefix", options)
 
         for ext, passphrase, data in files:
-            filename = join(self.get_option("prefix", options), f"{certificate.name}.{ext}")
+            filename = join(prefix, f"{certificate.name}{ext}")
             response = s3.delete(bucket_name=self.get_option("bucket", options),
-                  prefixed_object_name=join(prefix, filename),
+                  prefixed_object_name=filename,
                   account_number=self.get_option("accountNumber", options))
             res = "Success" if response else "Failure"
             log_data = {
