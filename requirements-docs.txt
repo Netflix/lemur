@@ -151,7 +151,7 @@ docker==5.0.3
     # via
     #   -r requirements-tests.txt
     #   moto
-docutils==0.17.1
+docutils==0.18.1
     # via
     #   sphinx
     #   sphinx-rtd-theme
@@ -367,9 +367,7 @@ pluggy==1.0.0
 prompt-toolkit==3.0.28
     # via click-repl
 py==1.11.0
-    # via
-    #   -r requirements-tests.txt
-    #   pytest
+    # via -r requirements-tests.txt
 pyasn1==0.4.8
     # via
     #   -r requirements-tests.txt
@@ -387,7 +385,7 @@ pycryptodomex==3.14.1
     # via pyjks
 pyflakes==2.4.0
     # via -r requirements-tests.txt
-pygments==2.11.2
+pygments==2.15.1
     # via sphinx
 pyhcl==0.4.4
     # via hvac
@@ -520,7 +518,7 @@ sortedcontainers==2.4.0
     #   fakeredis
 soupsieve==2.3.1
     # via beautifulsoup4
-sphinx==5.1.1
+sphinx==6.2.0
     # via
     #   -r requirements-docs.in
     #   sphinx-rtd-theme
@@ -569,9 +567,7 @@ toml==0.10.2
     #   -r requirements-tests.txt
     #   responses
 tomli==2.0.1
-    # via
-    #   -r requirements-tests.txt
-    #   pytest
+    # via -r requirements-tests.txt
 twofish==0.3.0
     # via pyjks
 types-toml==0.10.8.6
