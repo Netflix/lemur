@@ -693,7 +693,7 @@ class S3DestinationPlugin(ExportDestinationPlugin):
             res = "Success" if response else "Failure"
             log_data = {
                 "function": function,
-                "message": "upload s3 file",
+                "message": "delete s3 file",
                 "result": res,
                 "bucket_name": self.get_option("bucket", options),
                 "filename": filename
