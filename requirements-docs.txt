@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-docs.txt requirements-docs.in
 #
-acme==2.5.0
+acme==2.6.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -21,10 +21,6 @@ aniso8601==9.0.1
     # via flask-restful
 arrow==1.2.3
     # via -r requirements-docs.in
-async-timeout==4.0.2
-    # via
-    #   -r requirements-tests.txt
-    #   redis
 attrs==21.4.0
     # via
     #   -r requirements-tests.txt
@@ -58,13 +54,13 @@ blinker==1.4
     # via
     #   flask-mail
     #   flask-principal
-boto3==1.26.114
+boto3==1.26.133
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
-botocore==1.29.118
+botocore==1.29.133
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -74,11 +70,11 @@ botocore==1.29.118
     #   s3transfer
 celery[redis]==5.2.7
     # via -r requirements-docs.in
-certbot==2.5.0
+certbot==2.6.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
-certifi==2022.12.7
+certifi==2023.5.7
     # via
     #   -r requirements-tests.txt
     #   requests
@@ -124,7 +120,7 @@ configobj==5.0.6
     # via
     #   -r requirements-tests.txt
     #   certbot
-coverage==7.2.3
+coverage==7.2.5
     # via -r requirements-tests.txt
 cryptography==40.0.2
     # via
@@ -164,11 +160,11 @@ ecdsa==0.17.0
     #   sshpubkeys
 factory-boy==3.2.1
     # via -r requirements-tests.txt
-faker==18.5.1
+faker==18.7.0
     # via
     #   -r requirements-tests.txt
     #   factory-boy
-fakeredis==2.11.0
+fakeredis==2.12.1
     # via -r requirements-tests.txt
 flask==1.1.2
     # via
@@ -399,7 +395,7 @@ pyhcl==0.4.4
     # via hvac
 pyjks==20.0.0
     # via -r requirements-docs.in
-pyjwt==2.6.0
+pyjwt==2.7.0
     # via -r requirements-docs.in
 pynacl==1.5.0
     # via paramiko
@@ -458,13 +454,13 @@ pyyaml==6.0
     #   cfn-lint
     #   cloudflare
     #   moto
-redis==4.5.4
+redis==4.5.5
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   celery
     #   fakeredis
-requests==2.28.2
+requests==2.30.0
     # via
     #   -r requirements-tests.txt
     #   acme
@@ -530,7 +526,7 @@ sortedcontainers==2.4.0
     #   fakeredis
 soupsieve==2.3.1
     # via beautifulsoup4
-sphinx==6.2.0
+sphinx==6.2.1
     # via
     #   -r requirements-docs.in
     #   sphinx-rtd-theme
@@ -561,7 +557,7 @@ sqlalchemy==1.3.24
     #   flask-sqlalchemy
     #   marshmallow-sqlalchemy
     #   sqlalchemy-utils
-sqlalchemy-utils==0.41.0
+sqlalchemy-utils==0.41.1
     # via -r requirements-docs.in
 sshpubkeys==3.3.1
     # via

@@ -4,12 +4,10 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-tests.txt requirements-tests.in
 #
-acme==2.5.0
+acme==2.6.0
     # via certbot
 alembic==1.7.7
     # via flask-migrate
-async-timeout==4.0.2
-    # via redis
 attrs==21.4.0
     # via
     #   jschema-to-python
@@ -23,19 +21,19 @@ bandit==1.7.5
     # via -r requirements-tests.in
 black==23.3.0
     # via -r requirements-tests.in
-boto3==1.26.114
+boto3==1.26.133
     # via
     #   aws-sam-translator
     #   moto
-botocore==1.29.118
+botocore==1.29.133
     # via
     #   aws-xray-sdk
     #   boto3
     #   moto
     #   s3transfer
-certbot==2.5.0
+certbot==2.6.0
     # via -r requirements-tests.in
-certifi==2022.12.7
+certifi==2023.5.7
     # via requests
 cffi==1.15.0
     # via cryptography
@@ -51,7 +49,7 @@ configargparse==1.5.3
     # via certbot
 configobj==5.0.6
     # via certbot
-coverage==7.2.3
+coverage==7.2.5
     # via -r requirements-tests.in
 cryptography==40.0.2
     # via
@@ -73,11 +71,11 @@ ecdsa==0.17.0
     #   sshpubkeys
 factory-boy==3.2.1
     # via -r requirements-tests.in
-faker==18.5.1
+faker==18.7.0
     # via
     #   -r requirements-tests.in
     #   factory-boy
-fakeredis==2.11.0
+fakeredis==2.12.1
     # via -r requirements-tests.in
 flask==1.1.2
     # via
@@ -229,11 +227,11 @@ pyyaml==6.0
     #   bandit
     #   cfn-lint
     #   moto
-redis==4.5.4
+redis==4.5.5
     # via
     #   -r requirements-tests.in
     #   fakeredis
-requests==2.28.2
+requests==2.30.0
     # via
     #   acme
     #   docker
