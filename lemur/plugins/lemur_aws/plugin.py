@@ -591,7 +591,7 @@ class S3DestinationPlugin(ExportDestinationPlugin):
         function = f"{__name__}.{sys._getframe().f_code.co_name}"
 
         for ext, passphrase, data in files:
-            filename = join(self.get_option("prefix", options), f"{name}.{ext}")
+            filename = join(self.get_option("prefix", options), f"{name}.{ext.lstrip('.')}")
             response = s3.put(
                 self.get_option("bucket", options),
                 self.get_option("region", options),
@@ -686,7 +686,7 @@ class S3DestinationPlugin(ExportDestinationPlugin):
         prefix = self.get_option("prefix", options)
 
         for ext, passphrase, data in files:
-            filename = join(prefix, f"{certificate.name}{ext}")
+            filename = join(prefix, f"{certificate.name}.{ext.lstrip('.')}")
             response = s3.delete(bucket_name=self.get_option("bucket", options),
                   prefixed_object_name=filename,
                   account_number=self.get_option("accountNumber", options))
