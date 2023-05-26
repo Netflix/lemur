@@ -16,7 +16,7 @@ certbot
 certifi
 cert_manager
 certsrv
-https://binaries.ddbuild.io/dd-source/python/cert_orchestration_adapter-0.0.4-py3-none-any.whl
+https://binaries.ddbuild.io/dd-source/python/cert_orchestration_adapter-0.1.1-py3-none-any.whl
 CloudFlare
 cryptography
 deprecated
