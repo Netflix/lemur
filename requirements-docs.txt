@@ -541,7 +541,7 @@ sphinxcontrib-htmlhelp==2.0.0
     # via sphinx
 sphinxcontrib-httpdomain==1.8.1
     # via -r requirements-docs.in
-sphinxcontrib-jquery==2.0.0
+sphinxcontrib-jquery==4.1
     # via sphinx-rtd-theme
 sphinxcontrib-jsmath==1.0.1
     # via sphinx
