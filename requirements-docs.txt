@@ -341,7 +341,7 @@ packaging==23.0
     #   black
     #   pytest
     #   sphinx
-paramiko==3.1.0
+paramiko==3.2.0
     # via -r requirements-docs.in
 parsedatetime==2.6
     # via
