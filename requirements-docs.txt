@@ -110,7 +110,7 @@ click-plugins==1.1.1
     # via celery
 click-repl==0.2.0
     # via celery
-cloudflare==2.11.1
+cloudflare==2.11.6
     # via -r requirements-docs.in
 configargparse==1.5.3
     # via
@@ -120,7 +120,7 @@ configobj==5.0.6
     # via
     #   -r requirements-tests.txt
     #   certbot
-coverage==7.2.5
+coverage==7.2.7
     # via -r requirements-tests.txt
 cryptography==40.0.2
     # via
@@ -531,6 +531,7 @@ sphinx==6.2.1
     #   -r requirements-docs.in
     #   sphinx-rtd-theme
     #   sphinxcontrib-httpdomain
+    #   sphinxcontrib-jquery
 sphinx-rtd-theme==1.2.1
     # via -r requirements-docs.in
 sphinxcontrib-applehelp==1.0.2

@@ -49,7 +49,7 @@ configargparse==1.5.3
     # via certbot
 configobj==5.0.6
     # via certbot
-coverage==7.2.5
+coverage==7.2.7
     # via -r requirements-tests.in
 cryptography==40.0.2
     # via
