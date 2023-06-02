@@ -51,7 +51,7 @@ def test_map_fields_with_validity_years_and_ipv4(mock_current_app):
             "common_name": "example.com",
             "owner": "bob@example.com",
             "description": "test certificate",
-            "extensions": {"sub_alt_names": {"names": [x509.DNSName(x) for x in names] + [x509.IPAddress(ipaddress.IPv4Address(x) for x in ipv4_names)]}},
+            "extensions": {"sub_alt_names": {"names": [x509.DNSName(x) for x in names] + [ipaddress.ip_address(x) for x in ipv4_names]}},
             "validity_years": 1
         }
         expected = {
