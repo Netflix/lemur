@@ -78,7 +78,6 @@ def app(request):
 @pytest.fixture(scope="session")
 def db(app, request):
     _db.drop_all()
-    _db.engine.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
     _db.create_all()
 
     _db.app = app
