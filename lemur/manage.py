@@ -8,7 +8,7 @@ import base64
 import requests
 import json
 
-from gunicorn.config import make_settings
+# from gunicorn.config import make_settings
 
 from cryptography.fernet import Fernet
 
@@ -490,7 +490,6 @@ def options_from_class():
 
 
 @cli.command("start", context_settings=dict(ignore_unknown_options=True, allow_extra_args=True))
-#@options_from_class()
 @click.pass_context
 def start(ctx):
     """
