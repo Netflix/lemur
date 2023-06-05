@@ -54,13 +54,13 @@ blinker==1.4
     # via
     #   flask-mail
     #   flask-principal
-boto3==1.26.142
+boto3==1.26.146
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
-botocore==1.29.143
+botocore==1.29.146
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -160,11 +160,11 @@ ecdsa==0.17.0
     #   sshpubkeys
 factory-boy==3.2.1
     # via -r requirements-tests.txt
-faker==18.7.0
+faker==18.10.1
     # via
     #   -r requirements-tests.txt
     #   factory-boy
-fakeredis==2.12.1
+fakeredis==2.13.0
     # via -r requirements-tests.txt
 flask==1.1.2
     # via
@@ -399,7 +399,7 @@ pyjwt==2.7.0
     # via -r requirements-docs.in
 pynacl==1.5.0
     # via paramiko
-pyopenssl==23.1.1
+pyopenssl==23.2.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
