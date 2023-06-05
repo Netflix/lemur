@@ -13,6 +13,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+import ipaddress
 import json
 
 import arrow
@@ -110,8 +111,9 @@ def get_additional_names(options):
     # add SANs if present
     if options.get("extensions"):
         for san in options["extensions"]["sub_alt_names"]["names"]:
-            if isinstance(san, x509.DNSName):
-                names.append(san.value)
+            is_ipv4 = (isinstance(san, x509.IPAddress) and isinstance(san.value, ipaddress.IPv4Address))
+            if isinstance(san, x509.DNSName) or is_ipv4:
+                names.append(str(san.value))
     return names
 
 
