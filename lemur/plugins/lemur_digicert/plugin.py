@@ -15,6 +15,7 @@
 """
 import ipaddress
 import json
+from typing import Any, Dict, List
 
 import arrow
 import pem
@@ -487,7 +488,7 @@ class DigiCertCISSourcePlugin(SourcePlugin):
     author = "Kevin Glisson"
     author_url = "https://github.com/netflix/lemur.git"
 
-    additional_options = []
+    additional_options: List[Dict[str, Any]] = []
 
     def __init__(self, *args, **kwargs):
         """Initialize source with appropriate details."""

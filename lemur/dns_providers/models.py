@@ -3,12 +3,12 @@ from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import ArrowType
 
-from lemur.database import db
+from lemur.database import BaseModel
 from lemur.plugins.base import plugins
 from lemur.utils import Vault
 
 
-class DnsProvider(db.Model):
+class DnsProvider(BaseModel):
     __tablename__ = "dns_providers"
     id = Column(Integer(), primary_key=True)
     name = Column(String(length=256), unique=True, nullable=True)

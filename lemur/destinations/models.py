@@ -8,12 +8,12 @@
 from sqlalchemy import Column, Integer, String, Text
 from sqlalchemy.orm import validates
 from sqlalchemy_utils import JSONType
-from lemur.database import db
+from lemur.database import BaseModel
 
 from lemur.plugins.base import plugins
 
 
-class Destination(db.Model):
+class Destination(BaseModel):
     __tablename__ = "destinations"
     id = Column(Integer, primary_key=True)
     label = Column(String(32))

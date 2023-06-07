@@ -14,7 +14,7 @@ from sqlalchemy.event import listen
 
 from sqlalchemy_utils.types.arrow import ArrowType
 
-from lemur.database import db
+from lemur.database import BaseModel, db
 from lemur.models import roles_users
 
 from lemur.extensions import bcrypt
@@ -32,7 +32,7 @@ def hash_password(mapper, connect, target):
     target.hash_password()
 
 
-class User(db.Model):
+class User(BaseModel):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
     password = Column(String(128))

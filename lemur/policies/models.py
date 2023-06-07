@@ -8,10 +8,10 @@
 """
 from sqlalchemy import Column, Integer, String
 
-from lemur.database import db
+from lemur.database import BaseModel
 
 
-class RotationPolicy(db.Model):
+class RotationPolicy(BaseModel):
     __tablename__ = "rotation_policies"
     id = Column(Integer, primary_key=True)
     name = Column(String)
