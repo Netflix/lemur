@@ -1,6 +1,8 @@
 import os.path
 import secrets
 import string
+from typing import Dict, Any, List
+
 from celery.schedules import crontab
 
 import base64
@@ -41,7 +43,7 @@ REDIS_DB = 0
 CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}'
 CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}'
 CELERY_IMPORTS = ('lemur.common.celery')
-CELERYBEAT_SCHEDULE = {
+CELERYBEAT_SCHEDULE: Dict[str, Any] = {
     # All tasks are disabled by default. Enable any tasks you wish to run.
     # 'fetch_all_pending_acme_certs': {
     #     'task': 'lemur.common.celery.fetch_all_pending_acme_certs',
@@ -179,8 +181,8 @@ LEMUR_DEFAULT_AUTHORITY = str(os.environ.get('LEMUR_DEFAULT_AUTHORITY', 'Example
 
 LEMUR_DEFAULT_ROLE = 'operator'
 
-ACTIVE_PROVIDERS = []
-METRIC_PROVIDERS = []
+ACTIVE_PROVIDERS: List[str] = []
+METRIC_PROVIDERS: List[str] = []
 
 # Authority Settings - These will change depending on which authorities you are
 # using
