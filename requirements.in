@@ -54,3 +54,4 @@ tabulate
 validators
 werkzeug < 2.1.0 # requires a newer version of Flask
 xmltodict
+pyannotate
