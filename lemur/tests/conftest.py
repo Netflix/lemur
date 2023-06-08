@@ -346,11 +346,6 @@ def aws_credentials():
     os.environ["AWS_SECURITY_TOKEN"] = "testing"
     os.environ["AWS_SESSION_TOKEN"] = "testing"
 
-# Configuration for pytest to automatically collect types.
-# Thanks to Guilherme Salgado.
-
-import pytest
-
 
 def pytest_collection_finish(session):
     """Handle the pytest collection finish hook: configure pyannotate.
