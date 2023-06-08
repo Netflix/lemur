@@ -8,6 +8,7 @@
 """
 from flask import current_app
 from threading import local
+from typing import Optional, Dict, List, Any
 import re
 
 
@@ -40,18 +41,18 @@ class IPlugin(local):
     """
 
     # Generic plugin information
-    title = None
-    slug = None
-    description = None
+    title: Optional[str] = None
+    slug: Optional[str] = None
+    description: Optional[str] = None
     version = None
-    author = None
-    author_url = None
+    author: Optional[str] = None
+    author_url: Optional[str] = None
     resource_links = ()
 
     # Configuration specifics
     conf_key = None
     conf_title = None
-    options = {}
+    options: List[Dict[str, Any]] = []
 
     # Global enabled state
     enabled = True

@@ -12,7 +12,7 @@
 from sqlalchemy.orm import relationship
 from sqlalchemy import Boolean, Column, Integer, String, Text, ForeignKey
 
-from lemur.database import db
+from lemur.database import BaseModel
 from lemur.utils import Vault
 from lemur.models import (
     roles_users,
@@ -22,7 +22,7 @@ from lemur.models import (
 )
 
 
-class Role(db.Model):
+class Role(BaseModel):
     __tablename__ = "roles"
     id = Column(Integer, primary_key=True)
     name = Column(String(128), unique=True)

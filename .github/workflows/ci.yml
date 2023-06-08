@@ -72,6 +72,7 @@ jobs:
         source ~/env/bin/activate
         python -m pip install --upgrade pip
         python -m pip install --upgrade "setuptools<=v65.7.0" # https://github.com/Netflix/lemur/issues/4297
+        pip install mypy
         pip install bandit
         sudo apt-get update
         sudo apt-get install libsasl2-dev libldap2-dev xvfb
@@ -80,6 +81,11 @@ jobs:
         python -m venv ~/env
         source ~/env/bin/activate
         make test
+    - name: mypy
+      run: |
+        python -m venv ~/env
+        source ~/env/bin/activate
+        mypy --install-types --non-interactive .
     - name: Test JS
       run: |
         python -m venv ~/env

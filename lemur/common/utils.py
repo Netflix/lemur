@@ -504,7 +504,7 @@ def drop_last_cert_from_chain(full_chain: str) -> str:
     pem_certificate = OpenSSL.crypto.dump_certificate(
         OpenSSL.crypto.FILETYPE_PEM,
         OpenSSL.crypto.load_certificate(
-            OpenSSL.crypto.FILETYPE_PEM, ''.join(cert.decode() for cert in full_chain_certs[:-1])
+            OpenSSL.crypto.FILETYPE_PEM, ''.join(cert.decode() for cert in full_chain_certs[:-1]).encode()
         ),
     ).decode()
     return pem_certificate

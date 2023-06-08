@@ -23,12 +23,12 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import JSON
 
-from lemur.database import db
+from lemur.database import BaseModel, db
 from lemur.plugins.base import plugins
 from lemur.models import roles_authorities
 
 
-class Authority(db.Model):
+class Authority(BaseModel):
     __tablename__ = "authorities"
     id = Column(Integer, primary_key=True)
     owner = Column(String(128), nullable=False)

@@ -35,7 +35,7 @@ from werkzeug.utils import cached_property
 
 from lemur.common import defaults, utils, validators
 from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
-from lemur.database import db
+from lemur.database import BaseModel
 from lemur.domains.models import Domain
 from lemur.extensions import metrics
 from lemur.models import (
@@ -97,7 +97,7 @@ def get_or_increase_name(name, serial):
     return "{0}-{1}".format(root, max(ends) + 1)
 
 
-class Certificate(db.Model):
+class Certificate(BaseModel):
     __tablename__ = "certificates"
     __table_args__ = (
         Index(
@@ -330,7 +330,7 @@ class Certificate(db.Model):
         if arrow.Arrow.fromdatetime(self.not_after) <= arrow.utcnow():
             return True
 
-    @expired.expression
+    @expired.expression  # type: ignore
     def expired(cls):
         return case([(cls.not_after <= arrow.utcnow(), True)], else_=False)
 
@@ -339,7 +339,7 @@ class Certificate(db.Model):
         if "revoked" == self.status:
             return True
 
-    @revoked.expression
+    @revoked.expression  # type: ignore
     def revoked(cls):
         return case([(cls.status == "revoked", True)], else_=False)
 
@@ -347,7 +347,7 @@ class Certificate(db.Model):
     def has_private_key(self):
         return self.private_key is not None
 
-    @has_private_key.expression
+    @has_private_key.expression  # type: ignore
     def has_private_key(cls):
         return case([(cls.private_key.is_(None), True)], else_=False)
 
@@ -364,7 +364,7 @@ class Certificate(db.Model):
         if self.not_after <= end:
             return True
 
-    @in_rotation_window.expression
+    @in_rotation_window.expression  # type: ignore
     def in_rotation_window(cls):
         """
         Determines if a certificate is available for rotation based
@@ -439,7 +439,7 @@ class Certificate(db.Model):
         return "Certificate(name={name})".format(name=self.name)
 
 
-class CertificateAssociation(db.Model):
+class CertificateAssociation(BaseModel):
     __tablename__ = 'certificate_associations'
     __table_args__ = (
         Index(

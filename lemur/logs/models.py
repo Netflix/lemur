@@ -11,10 +11,10 @@ from sqlalchemy import Column, Integer, ForeignKey, DefaultClause, func, Enum
 
 from sqlalchemy_utils.types.arrow import ArrowType
 
-from lemur.database import db
+from lemur.database import BaseModel
 
 
-class Log(db.Model):
+class Log(BaseModel):
     __tablename__ = "logs"
     id = Column(Integer, primary_key=True)
     certificate_id = Column(Integer, ForeignKey("certificates.id"))

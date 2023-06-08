@@ -21,7 +21,7 @@ from sqlalchemy_utils.types.arrow import ArrowType
 
 from lemur.certificates.models import get_sequence
 from lemur.common import defaults, utils
-from lemur.database import db
+from lemur.database import BaseModel
 from lemur.models import (
     pending_cert_source_associations,
     pending_cert_destination_associations,
@@ -58,7 +58,7 @@ def get_or_increase_name(name, serial):
     return "{0}-{1}".format(root, max(ends) + 1)
 
 
-class PendingCertificate(db.Model):
+class PendingCertificate(BaseModel):
     __tablename__ = "pending_certs"
     id = Column(Integer, primary_key=True)
     external_id = Column(String(128))

@@ -8,10 +8,10 @@
 """
 from sqlalchemy import BigInteger, Boolean, Column, ForeignKey, Integer, String
 
-from lemur.database import db
+from lemur.database import BaseModel
 
 
-class ApiKey(db.Model):
+class ApiKey(BaseModel):
     __tablename__ = "api_keys"
     id = Column(Integer, primary_key=True)
     name = Column(String)

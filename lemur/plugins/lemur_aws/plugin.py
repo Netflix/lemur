@@ -317,7 +317,7 @@ class AWSSourcePlugin(SourcePlugin):
             for e in elbs:
                 try:
                     endpoints.extend(get_elb_endpoints(account_number, region, e))
-                except Exception as e:  # noqa
+                except Exception:  # noqa
                     capture_exception()
                     continue
 

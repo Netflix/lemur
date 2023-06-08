@@ -8,13 +8,13 @@
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Integer, String, Text, Boolean
 from sqlalchemy_utils import JSONType
-from lemur.database import db
+from lemur.database import BaseModel
 
 from lemur.plugins.base import plugins
 from sqlalchemy_utils import ArrowType
 
 
-class Source(db.Model):
+class Source(BaseModel):
     __tablename__ = "sources"
     id = Column(Integer, primary_key=True)
     label = Column(String(32), unique=True)
