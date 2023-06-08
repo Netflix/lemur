@@ -74,6 +74,7 @@ jobs:
         python -m pip install --upgrade "setuptools<=v65.7.0" # https://github.com/Netflix/lemur/issues/4297
         pip install mypy
         pip install bandit
+        pip install pyannotate
         sudo apt-get update
         sudo apt-get install libsasl2-dev libldap2-dev xvfb
     - name: Test
