@@ -661,6 +661,7 @@ def main():
     cli.add_command(api_key_cli, "api_key")
     cli.add_command(certificate_cli, "certificate")
     cli.add_command(dns_provider_cli, "dns_provider")
+    cli.add_command(db, "db")
     cli.add_command(notification_cli, "notify")
     cli.add_command(pending_certificate_cli, "pending_certs")
     cli.add_command(policy_cli, "policy")
