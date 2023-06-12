@@ -238,7 +238,7 @@ requests==2.31.0
     #   moto
     #   requests-mock
     #   responses
-requests-mock==1.10.0
+requests-mock==1.11.0
     # via -r requirements-tests.in
 responses==0.20.0
     # via moto
