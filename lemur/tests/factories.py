@@ -1,5 +1,6 @@
 import json
 from datetime import date
+from typing import List
 
 from factory import Sequence, post_generation, SubFactory
 from factory.alchemy import SQLAlchemyModelFactory
@@ -266,7 +267,7 @@ class UserFactory(BaseFactory):
     email = Sequence(lambda n: "user{0}@example.com".format(n))
     active = True
     password = FuzzyText(length=24)
-    certificates = []
+    certificates: List[Certificate] = []
 
     class Meta:
         """Factory Configuration."""
@@ -282,7 +283,7 @@ class UserFactory(BaseFactory):
             for role in extracted:
                 self.roles.append(role)
 
-    @post_generation
+    @post_generation  # type: ignore
     def certificates(self, create, extracted, **kwargs):
         if not create:
             return

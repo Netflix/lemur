@@ -7,6 +7,8 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import json
+from typing import Any, Dict
+
 import requests
 from requests.exceptions import ConnectionError
 from datetime import datetime
@@ -45,7 +47,7 @@ class AtlasMetricPlugin(MetricPlugin):
         {"name": "sidecar_port", "type": "int", "required": False, "default": 8078},
     ]
 
-    metric_data = {}
+    metric_data: Dict[str, Any] = {}
     sidecar_host = None
     sidecar_port = None
 

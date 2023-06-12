@@ -127,7 +127,7 @@ def crl_verify(cert, cert_path):
             except InvalidSchema:
                 # Unhandled URI scheme (like ldap://); skip this distribution point.
                 continue
-            except ConnectionError or Timeout:
+            except (ConnectionError, Timeout):
                 raise Exception(f"Unable to retrieve CRL: {point}, serial {cert.serial_number:02X}")
 
             crl_cache[point] = x509.load_der_x509_crl(

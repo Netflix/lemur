@@ -16,7 +16,7 @@ from flask_principal import Permission, RoleNeed
 operator_permission = Permission(RoleNeed("operator"))
 admin_permission = Permission(RoleNeed("admin"))
 
-CertificateOwner = namedtuple("certificate", ["method", "value"])
+CertificateOwner = namedtuple("CertificateOwner", ["method", "value"])
 CertificateOwnerNeed = partial(CertificateOwner, "role")
 
 
@@ -49,7 +49,7 @@ class ApiKeyCreatorPermission(Permission):
         super(ApiKeyCreatorPermission, self).__init__(RoleNeed("admin"))
 
 
-RoleMember = namedtuple("role", ["method", "value"])
+RoleMember = namedtuple("RoleMember", ["method", "value"])
 RoleMemberNeed = partial(RoleMember, "member")
 
 
@@ -59,10 +59,10 @@ class RoleMemberPermission(Permission):
         super(RoleMemberPermission, self).__init__(*needs)
 
 
-AuthorityCreator = namedtuple("authority", ["method", "value"])
+AuthorityCreator = namedtuple("AuthorityCreator", ["method", "value"])
 AuthorityCreatorNeed = partial(AuthorityCreator, "authorityUse")
 
-AuthorityOwner = namedtuple("authority", ["method", "value"])
+AuthorityOwner = namedtuple("AuthorityOwner", ["method", "value"])
 AuthorityOwnerNeed = partial(AuthorityOwner, "role")
 
 

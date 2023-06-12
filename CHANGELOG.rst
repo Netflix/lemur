@@ -3,6 +3,7 @@ Changelog
 
 Unreleased
 ~~~~~~~~~~~~~~~~~~~~
+Fixed a bug where S3 deletes wouldn't work due to not respecting the configured exportPlugin.
 
 
 1.4.0 - `2023-04-04`

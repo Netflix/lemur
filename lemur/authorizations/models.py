@@ -7,12 +7,12 @@
 """
 from sqlalchemy import Column, Integer, String
 from sqlalchemy_utils import JSONType
-from lemur.database import db
+from lemur.database import BaseModel
 
 from lemur.plugins.base import plugins
 
 
-class Authorization(db.Model):
+class Authorization(BaseModel):
     __tablename__ = "pending_dns_authorizations"
     id = Column(Integer, primary_key=True, autoincrement=True)
     account_number = Column(String(128))

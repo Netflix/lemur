@@ -15,6 +15,7 @@ import logging
 import os.path
 import sys
 from subprocess import check_output
+from typing import Dict, Any
 
 from setuptools import Command
 from setuptools import setup, find_packages
@@ -28,7 +29,7 @@ ROOT = os.path.realpath(os.path.join(os.path.dirname(__file__)))
 # means that we need to add the src/ directory to the sys.path.
 sys.path.insert(0, ROOT)
 
-about = {}
+about: Dict[str, Any] = {}
 with open(os.path.join(ROOT, 'lemur', '__about__.py')) as f:
     exec(f.read(), about)  # nosec: about file is benign
 
