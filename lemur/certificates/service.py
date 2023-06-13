@@ -283,14 +283,14 @@ def find_duplicates(cert):
         return Certificate.query.filter_by(body=cert["body"].strip(), chain=None).all()
 
 
-def list_duplicate_certs_by_authority(authority_ids, days_since_issuance):
+def list_recent_valid_certs_issued_by_authority(authority_ids, days_since_issuance):
     """
-    Find duplicate certificates issued by given authorities that are still valid, not replaced, have auto-rotation ON,
-    with names that are forced to be unique using serial number like 'some.name.prefix-YYYYMMDD-YYYYMMDD-serialnumber',
-    thus the pattern "%-[0-9]{8}-[0-9]{8}-%"
-    :param authority_ids:
+    Find certificates issued by given authorities in last days_since_issuance number of days, that are still valid,
+    not replaced, have auto-rotation ON.
+
+    :param authority_ids: list of authority ids
     :param days_since_issuance: If not none, include certificates issued in only last days_since_issuance days
-    :return: List of certificates matching criteria
+    :return: List of certificates matching the criteria
     """
 
     now = arrow.now().format("YYYY-MM-DD")
@@ -298,8 +298,8 @@ def list_duplicate_certs_by_authority(authority_ids, days_since_issuance):
         .filter(Certificate.authority_id.in_(authority_ids))\
         .filter(Certificate.not_after >= now)\
         .filter(Certificate.rotation == true())\
-        .filter(not_(Certificate.replaced.any()))\
-        .filter(text("name ~ '.*-[0-9]{8}-[0-9]{8}-.*'"))
+        .filter(not_(Certificate.replaced.any()))
+
 
     if days_since_issuance:
         issuance_window = (
@@ -310,21 +310,29 @@ def list_duplicate_certs_by_authority(authority_ids, days_since_issuance):
     return query.all()
 
 
-def get_certificates_with_same_prefix_with_rotate_on(prefix):
+def get_certificates_with_same_cn_with_rotate_on(cn, days_since_issuance):
     """
-    Find certificates with given prefix that are still valid, not replaced and marked for auto-rotate
+    Find certificates with given common name that are still valid, not replaced and marked for auto-rotate
 
-    :param prefix: prefix to match
-    :return:
+    :param cn: common name to match
+    :param days_since_issuance: If not none, include certificates issued in only last days_since_issuance days
+    :return: List of certificates matching the criteria
     """
     now = arrow.now().format("YYYY-MM-DD")
-    return (
-        Certificate.query.filter(Certificate.name.like(prefix))
-        .filter(Certificate.rotation == true())
-        .filter(Certificate.not_after >= now)
+
+    query = database.session_query(Certificate)\
+        .filter(Certificate.cn.like(cn)) \
+        .filter(Certificate.rotation == true()) \
+        .filter(Certificate.not_after >= now)\
         .filter(not_(Certificate.replaced.any()))
-        .all()
-    )
+
+    if days_since_issuance:
+        issuance_window = (
+            arrow.now().shift(days=-days_since_issuance).format("YYYY-MM-DD")
+        )
+        query = query.filter(Certificate.date_created >= issuance_window)
+
+    return query.all()
 
 
 def export(cert, export_plugin):
