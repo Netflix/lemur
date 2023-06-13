@@ -154,9 +154,7 @@ SQLALCHEMY_DATABASE_URI = "postgresql://lemur:lemur@localhost:5432/lemur"
 
 
 def create_all():
-    with database.db.engine.connect() as conn:
-        conn.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
-        conn.commit()
+    database.db.engine.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
     database.db.create_all()
     stamp(revision="head")
 
