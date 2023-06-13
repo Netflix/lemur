@@ -17,7 +17,6 @@ from cryptography.hazmat.primitives import hashes, serialization
 from flask import current_app
 from sentry_sdk import capture_exception
 from sqlalchemy import and_, func, or_, not_, cast, Integer
-from sqlalchemy.sql import text
 from sqlalchemy.sql.expression import false, true
 
 from lemur import database
@@ -299,7 +298,6 @@ def list_recent_valid_certs_issued_by_authority(authority_ids, days_since_issuan
         .filter(Certificate.not_after >= now)\
         .filter(Certificate.rotation == true())\
         .filter(not_(Certificate.replaced.any()))
-
 
     if days_since_issuance:
         issuance_window = (

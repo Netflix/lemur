@@ -1079,6 +1079,7 @@ def is_duplicate(matching_cert, compare_to):
         or matching_cert.key_type != compare_to.key_type
         or matching_cert.not_before.date() != compare_to.not_before.date()
         or matching_cert.not_after.date() != compare_to.not_after.date()
+        or matching_cert.authority_id != compare_to.authority_id
     ):
         return False
 
