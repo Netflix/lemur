@@ -321,8 +321,8 @@ def get_certificates_with_same_cn_with_rotate_on(cn, days_since_issuance):
     now = arrow.now().format("YYYY-MM-DD")
 
     query = database.session_query(Certificate)\
-        .filter(Certificate.cn.like(cn)) \
-        .filter(Certificate.rotation == true()) \
+        .filter(Certificate.cn.like(cn))\
+        .filter(Certificate.rotation == true())\
         .filter(Certificate.not_after >= now)\
         .filter(not_(Certificate.replaced.any()))
 
