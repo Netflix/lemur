@@ -38,7 +38,7 @@ Basic Configuration
 .. data:: DEBUG
     :noindex:
 
-    Sets the flask debug flag to true (if supported by the webserver)
+        Sets the flask debug flag to true (if supported by the webserver)
 
     ::
 
@@ -52,10 +52,10 @@ Basic Configuration
 .. data:: CORS
     :noindex:
 
-    Allows for cross domain requests, this is most commonly used for development but could
-    be use in production if you decided to host the webUI on a different domain than the server.
+        Allows for cross domain requests, this is most commonly used for development but could
+        be use in production if you decided to host the webUI on a different domain than the server.
 
-    Use this cautiously, if you're not sure. Set it to `False`
+        Use this cautiously, if you're not sure. Set it to `False`
 
     ::
 
@@ -65,8 +65,8 @@ Basic Configuration
 .. data:: CORS_ORIGIN
     :noindex:
 
-    Sets the Access-Control-Allow-Origin response header. The Access-Control-Allow-Origin response header
-    indicates whether the response can be shared with requesting code from the given origin.
+        Sets the Access-Control-Allow-Origin response header. The Access-Control-Allow-Origin response header
+        indicates whether the response can be shared with requesting code from the given origin.
 
     ::
 
@@ -76,9 +76,9 @@ Basic Configuration
 .. data:: CORS_ALLOW_HEADERS
     :noindex:
 
-    Sets the Access-Control-Allow-Headers response header. The Access-Control-Allow-Headers response header
-    is used in response to a preflight request which includes the Access-Control-Request-Headers to indicate
-    which HTTP headers can be used during the actual request.
+        Sets the Access-Control-Allow-Headers response header. The Access-Control-Allow-Headers response header
+        is used in response to a preflight request which includes the Access-Control-Request-Headers to indicate
+        which HTTP headers can be used during the actual request.
 
     ::
 
@@ -88,12 +88,24 @@ Basic Configuration
 .. data:: CORS_ALLOW_METHODS
     :noindex:
 
-    Sets the Access-Control-Allow-Methods response header. The Access-Control-Allow-Methods response header
-    specifies one or more methods allowed when accessing a resource in response to a preflight request.
+        Sets the Access-Control-Allow-Methods response header. The Access-Control-Allow-Methods response header
+        specifies one or more methods allowed when accessing a resource in response to a preflight request.
 
     ::
 
         CORS_ALLOW_METHODS = GET,PUT,POST,DELETE,OPTIONS
+
+
+.. data:: CUSTOM_RESPONSE_HEADERS
+    :noindex:
+
+        The CUSTOM_RESPONSE_HEADERS option allows for the creation of multiple response headers by providing a JSON array in the following format: ["<header_name>=<header_value>"]. A response header is an HTTP header that can be used in an HTTP response and that doesn't relate to the content of the message. Response headers, like Age, Location or Server are used to give a more detailed context of the response.
+
+        Example: CUSTOM_RESPONSE_HEADERS='["Content-Security-Policy=default-src", "\'self\'", "X-Frame-Option=DENY"]'
+
+    ::
+
+        CUSTOM_RESPONSE_HEADERS = None
 
 
 .. data:: SQLALCHEMY_DATABASE_URI
@@ -175,7 +187,7 @@ Basic Configuration
 
         LEMUR_TOKEN_SECRET = 'supersecret'
 
-    An example of how you might generate a random string:
+        An example of how you might generate a random string:
 
         >>> import secrets
 		>>> import string
