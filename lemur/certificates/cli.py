@@ -1012,7 +1012,8 @@ def process_duplicates(duplicate_candidate_cert, days_since_issuance, skipped_ce
 
     processed_unique_cn.append(duplicate_candidate_cert.cn)
 
-    certs_with_same_cn = get_certificates_with_same_cn_with_rotate_on(duplicate_candidate_cert.cn, days_since_issuance)
+    certs_with_same_cn = get_certificates_with_same_cn_with_rotate_on(duplicate_candidate_cert.cn,
+                                                                      duplicate_candidate_cert.date_created)
 
     if len(certs_with_same_cn) == 1:
         # this is the only cert with rotation ON, no further action needed

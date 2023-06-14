@@ -308,27 +308,26 @@ def list_recent_valid_certs_issued_by_authority(authority_ids, days_since_issuan
     return query.all()
 
 
-def get_certificates_with_same_cn_with_rotate_on(cn, days_since_issuance):
+def get_certificates_with_same_cn_with_rotate_on(cn, date_created):
     """
-    Find certificates with given common name that are still valid, not replaced and marked for auto-rotate
+    Find certificates with given common name created on date_created that are still valid, not replaced and marked for
+    auto-rotate
 
     :param cn: common name to match
-    :param days_since_issuance: If not none, include certificates issued in only last days_since_issuance days
+    :param date_created: creation date
     :return: List of certificates matching the criteria
     """
     now = arrow.now().format("YYYY-MM-DD")
+    date_created_min = date_created.floor('day')
+    date_created_max = date_created.ceil('day')
 
     query = database.session_query(Certificate)\
         .filter(Certificate.cn.like(cn))\
         .filter(Certificate.rotation == true())\
         .filter(Certificate.not_after >= now)\
+        .filter(Certificate.date_created >= date_created_min)\
+        .filter(Certificate.date_created <= date_created_max)\
         .filter(not_(Certificate.replaced.any()))
-
-    if days_since_issuance:
-        issuance_window = (
-            arrow.now().shift(days=-days_since_issuance).format("YYYY-MM-DD")
-        )
-        query = query.filter(Certificate.date_created >= issuance_window)
 
     return query.all()
 
