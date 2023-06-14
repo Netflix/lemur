@@ -40,7 +40,7 @@ DEFAULT_BLUEPRINTS = (health,)
 API_VERSION = 1
 
 
-def create_app(app_name=None, blueprints=None):
+def create_app(app_name=None, blueprints=None, config=None):
     """
     Lemur application factory
 
@@ -61,8 +61,7 @@ def create_app(app_name=None, blueprints=None):
     ctx = get_current_context(silent=True)
 
     # get config option value from command line
-    config = None
-    if ctx:
+    if ctx and config is None:
         script_info = ctx.obj
         config = script_info.config
 
