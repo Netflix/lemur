@@ -21,7 +21,7 @@ if config.config_file_name:
 # target_metadata = mymodel.Base.metadata
 from flask import current_app
 
-db_url_escaped = current_app.config.get('SQLALCHEMY_DATABASE_URI').replace('%', '%%')
+db_url_escaped = current_app.config.get('SQLALCHEMY_DATABASE_URI', 'postgresql://lemur:lemur@localhost:5432/lemur').replace('%', '%%')
 config.set_main_option(
     "sqlalchemy.url", db_url_escaped
 )

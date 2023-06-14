@@ -57,7 +57,7 @@ from sqlalchemy.sql import text
 
 
 @click.group(cls=FlaskGroup, create_app=create_app)
-@click.option('-c', '--config', "config", help="Path to default configuration file for Lemur.")
+@click.option('-c', '--config', help="Path to default configuration file for Lemur.")
 @pass_script_info
 def cli(script_info, config):
     script_info.config = config
@@ -488,8 +488,7 @@ def options_from_class():
 
 
 @cli.command("start", context_settings=dict(ignore_unknown_options=True, allow_extra_args=True))
-@click.pass_context
-def start(ctx):
+def start():
     """
     This is the main Lemur server, it runs the flask app with gunicorn and
     uses any configuration options passed to it.
@@ -510,9 +509,7 @@ def start(ctx):
     # run startup tasks on an app like object
     validate_conf(current_app, REQUIRED_VARIABLES)
 
-    app.app_uri = 'lemur:create_app(config_path="{0}")'.format(
-        current_app.config.get("CONFIG_PATH")
-    )
+    app.app_uri = "lemur:create_app()"
 
     return app.run()
 

@@ -22,6 +22,7 @@ from logging.handlers import RotatingFileHandler
 
 from flask import Flask, current_app
 from flask_replicated import FlaskReplicated
+from click import get_current_context
 
 import sentry_sdk
 from sentry_sdk.integrations.celery import CeleryIntegration
@@ -39,7 +40,7 @@ DEFAULT_BLUEPRINTS = (health,)
 API_VERSION = 1
 
 
-def create_app(app_name=None, blueprints=None, config=None):
+def create_app(app_name=None, blueprints=None):
     """
     Lemur application factory
 
@@ -57,6 +58,14 @@ def create_app(app_name=None, blueprints=None, config=None):
         app_name = __name__
 
     app = Flask(app_name)
+    ctx = get_current_context(silent=True)
+
+    # get config option value from command line
+    config = None
+    if ctx:
+        script_info = ctx.obj
+        config = script_info.config
+
     configure_app(app, config)
     configure_blueprints(app, blueprints)
     configure_extensions(app)
@@ -84,8 +93,14 @@ def from_file(file_path, silent=False):
     :param file_path:
     :param silent:
     """
-    module_spec = importlib.util.spec_from_file_location("config", file_path)
-    d = importlib.util.module_from_spec(module_spec)
+
+    if os.path.isfile(file_path):
+        module_spec = importlib.util.spec_from_file_location("config", file_path)
+        d = importlib.util.module_from_spec(module_spec)
+    else:
+        raise Exception(
+            f"Unable to load config file: `{file_path}`"
+        )
 
     try:
         with open(file_path) as config_file:
