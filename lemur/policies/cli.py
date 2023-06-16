@@ -10,7 +10,7 @@ import click
 from lemur.policies import service as policy_service
 
 
-@click.group(name="policies", help="Handles all policy related tasks.")
+@click.group(name="policy", help="Handles all policy related tasks.")
 def cli():
     pass
 

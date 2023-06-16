@@ -13,7 +13,7 @@ from lemur.auth.service import create_token
 from datetime import datetime
 
 
-@click.group(name="acme", help="Handles all api key related tasks.")
+@click.group(name="api_keys", help="Handles all api key related tasks.")
 def cli():
     pass
 

@@ -239,7 +239,7 @@ def request_reissue(certificate, notify, commit):
     "--notify",
     "message",
     type=bool,
-    default=True,
+    default=False,
     help="Send a rotation notification to the certificates owner.",
 )
 @click.option(
@@ -247,7 +247,7 @@ def request_reissue(certificate, notify, commit):
     "--commit",
     "commit",
     type=bool,
-    default=True,
+    default=False,
     help="Persist changes.",
 )
 def rotate(endpoint_name, source, new_certificate_name, old_certificate_name, message, commit):
@@ -384,7 +384,7 @@ def request_rotation_region(endpoint, new_cert, message, commit, log_data, regio
     "--notify",
     "message",
     type=bool,
-    default=True,
+    default=False,
     help="Send a rotation notification to the certificates owner.",
 )
 @click.option(

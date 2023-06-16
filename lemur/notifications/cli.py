@@ -19,7 +19,7 @@ from lemur.notifications.messaging import send_authority_expiration_notification
 from lemur.notifications.messaging import send_security_expiration_summary
 
 
-@click.group(name="notifications", help="Handles notification related tasks.")
+@click.group(name="notify", help="Handles notification related tasks.")
 def cli():
     pass
 
