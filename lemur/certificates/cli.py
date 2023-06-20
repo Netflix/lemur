@@ -392,7 +392,7 @@ def request_rotation_region(endpoint, new_cert, message, commit, log_data, regio
     "--commit",
     "commit",
     type=bool,
-    default=True,
+    default=False,
     help="Persist changes.",
 )
 @click.option(
@@ -531,7 +531,7 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
     "--notify",
     "notify",
     type=bool,
-    default=True,
+    default=False,
     help="Send a re-issue failed notification to the certificates owner (if re-issuance fails).",
 )
 @click.option(
@@ -679,7 +679,7 @@ def clear_pending():
     "--commit",
     "commit",
     type=bool,
-    default=True,
+    default=False,
     help="Persist changes.",
 )
 def revoke(path, cert_id, reason, message, commit):
@@ -1131,7 +1131,7 @@ def is_duplicate(matching_cert, compare_to):
     "-c",
     "--commit",
     "commit",
-    default=True,
+    default=False,
     help="Persist changes.",
 )
 def identify_expiring_deployed_certificates(exclude_domains, exclude_owners, commit):

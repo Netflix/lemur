@@ -97,7 +97,7 @@ def from_file(file_path, silent=False):
         module_spec = importlib.util.spec_from_file_location("config", file_path)
         d = importlib.util.module_from_spec(module_spec)
     else:
-        raise Exception(
+        raise FileNotFoundError(
             f"Unable to load config file: `{file_path}`"
         )
 
@@ -179,16 +179,12 @@ def configure_extensions(app):
         )
 
     if app.config["CORS"]:
-        app.config["CORS_HEADERS"] = "Content-Type"
-        origins = app.config.get("CORS_ORIGIN", "*")
-        allow_headers = app.config.get("CORS_ALLOW_HEADERS", "Authorization,Content-Type")
-        methods = app.config.get("CORS_ALLOW_METHODS", "GET,PUT,POST,DELETE,OPTIONS")
         cors.init_app(
             app,
             resources=r"/api/*",
-            origins=origins if origins == "*" else [origin.strip() for origin in origins.split(',')],
-            allow_headers=[header.strip() for header in allow_headers.split(',')],
-            methods=[method.strip() for method in methods.split(',')],
+            origins=app.config.get("CORS_ORIGIN", ["*"]),
+            allow_headers=app.config.get("CORS_ALLOW_HEADERS", ["Authorization", "Content-Type"]),
+            methods=app.config.get("CORS_ALLOW_METHODS", ["GET", "PUT", "POST", "DELETE", "OPTIONS"]),
             supports_credentials=True,
         )
 

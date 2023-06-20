@@ -93,19 +93,7 @@ def configure_hook(app):
     from flask import jsonify
     from werkzeug.exceptions import HTTPException
 
-    # Set custom response headers
-    custom_response_headers = []
-    custom_response_headers_json = app.config.get("CUSTOM_RESPONSE_HEADERS", None)
-    if custom_response_headers_json:
-        try:
-            response_headers_list = json.loads(custom_response_headers_json)
-            for response_header in response_headers_list:
-                _rh = response_header.split("=")
-                custom_response_headers.append((_rh[0], _rh[1]))
-        except ValueError as e:
-            raise Exception(
-                f"Failed to load config variable `CUSTOM_RESPONSE_HEADERS`: `{e}`"
-            )
+    custom_response_headers = app.config.get("CUSTOM_RESPONSE_HEADERS", None)
 
     @app.errorhandler(Exception)
     def handle_error(e):
@@ -124,7 +112,7 @@ def configure_hook(app):
     def after_request(response):
         # Set custom response headers
         if custom_response_headers:
-            for name, value in custom_response_headers:
+            for name, value in custom_response_headers.items():
                 response.headers[name] = value
 
         # Return early if we don't have the start time

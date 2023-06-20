@@ -8,8 +8,6 @@ import base64
 import requests
 import json
 
-# from gunicorn.config import make_settings
-
 from cryptography.fernet import Fernet
 
 from flask import current_app
@@ -312,7 +310,7 @@ def initialize_app(password):
 @click.option("-e", "--email", "email", required=True)
 @click.option("-a", "--active", "active", type=bool, default=True, show_default=True)
 @click.option("-r", "--roles", "roles", multiple=True, required=True)
-@click.option("-p", "--password", "password", required=True)
+@click.option("-p", "--password", "password")
 def create_user(username, email, active, roles, password):
     """
     This command allows for the creation of a new user within Lemur.
@@ -367,7 +365,7 @@ def reset_password(username):
 @cli.command("create_role")
 @click.option("-n", "--name", "name", required=True)
 @click.option("-u", "--users", "users", multiple=True, required=True)
-@click.option("-d", "--description", "description", required=True)
+@click.option("-d", "--description", "description", default=[])
 def create_role(name, users, description):
     """
     This command allows for the creation of a new role within Lemur
@@ -427,64 +425,6 @@ class OptionEatAll(click.Option):
                 our_parser.process = parser_process
                 break
         return retval
-
-
-def options_from_db(options):
-    map_to_types = dict(
-        array=str,
-        number=float,
-        string=str,
-    )
-
-    def decorator(f):
-        for opt_params in reversed(options):
-            param_decls = (
-                '-' + opt_params['short'],
-                '--' + opt_params['long'],
-                opt_params['name'])
-            attrs = dict(
-                required=opt_params['required'],
-                type=map_to_types.get(
-                    opt_params['type'], opt_params['type'])
-            )
-            if opt_params['type'] == 'array':
-                attrs['cls'] = OptionEatAll
-                attrs['nargs'] = -1
-
-            click.option(*param_decls, **attrs)(f)
-        return f
-
-    return decorator
-
-
-run_options = [
-    {
-        "name": "thename1",
-        "short": "a",
-        "long": "ace",
-        "type": "string",
-        "required": False
-    }, {
-        "name": "thename2",
-        "short": "b",
-        "long": "bravo",
-        "type": "number",
-        "required": True
-    }, {
-        "name": "thename3",
-        "short": "c",
-        "long": "candy",
-        "type": "array",
-        "required": True
-    }
-]
-
-
-def options_from_class():
-    def decorator(f):
-        click.option("--test", required=True, type=str)(f)
-        return f
-    return decorator
 
 
 @cli.command("start", context_settings=dict(ignore_unknown_options=True, allow_extra_args=True))
@@ -653,9 +593,8 @@ def publish_verisign_units():
 def main():
 
     cli.add_command(acme_cli, "acme")
-    cli.add_command(api_key_cli, "api_key")
     cli.add_command(certificate_cli, "certificate")
-    cli.add_command(dns_provider_cli, "dns_provider")
+    cli.add_command(dns_provider_cli, "dns_providers")
     cli.add_command(db, "db")
     cli.add_command(notification_cli, "notify")
     cli.add_command(pending_certificate_cli, "pending_certs")

@@ -70,7 +70,7 @@ Basic Configuration
 
     ::
 
-        CORS_ORIGIN = *
+        CORS_ORIGIN = ["*"]
 
 
 .. data:: CORS_ALLOW_HEADERS
@@ -82,7 +82,7 @@ Basic Configuration
 
     ::
 
-        CORS_ALLOW_HEADERS = Authorization,Content-Type
+        CORS_ALLOW_HEADERS = ["Authorization", "Content-Type"]
 
 
 .. data:: CORS_ALLOW_METHODS
@@ -93,15 +93,20 @@ Basic Configuration
 
     ::
 
-        CORS_ALLOW_METHODS = GET,PUT,POST,DELETE,OPTIONS
+        CORS_ALLOW_METHODS = ["GET", "PUT", "POST", "DELETE", "OPTIONS"]
 
 
 .. data:: CUSTOM_RESPONSE_HEADERS
     :noindex:
 
-        The CUSTOM_RESPONSE_HEADERS option allows for the creation of multiple response headers by providing a JSON array in the following format: ["<header_name>=<header_value>"]. A response header is an HTTP header that can be used in an HTTP response and that doesn't relate to the content of the message. Response headers, like Age, Location or Server are used to give a more detailed context of the response.
+        The CUSTOM_RESPONSE_HEADERS option allows for the creation of multiple response headers. A response header is an HTTP header that can be used in an HTTP response and that doesn't relate to the content of the message. Response headers, like Age, Location or Server are used to give a more detailed context of the response.
 
-        Example: CUSTOM_RESPONSE_HEADERS='["Content-Security-Policy=default-src", "\'self\'", "X-Frame-Option=DENY"]'
+        Example:
+
+        CUSTOM_RESPONSE_HEADERS = {
+            "Content-Security-Policy": "default-src 'self'",
+            "X-Frame-Options": "DENY"
+        }
 
     ::
 

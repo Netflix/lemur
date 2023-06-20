@@ -9,7 +9,7 @@ from lemur.dns_providers.service import get_all_dns_providers, set_domains
 from lemur.extensions import metrics
 
 
-@click.group(name="acme", help="Iterates through all DNS providers and sets DNS zones in the database.")
+@click.group(name="dns_providers", help="Iterates through all DNS providers and sets DNS zones in the database.")
 def cli():
     pass
 

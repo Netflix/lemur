@@ -182,7 +182,7 @@ def sync(source_strings, ttl):
     "--commit",
     "commit",
     type=bool,
-    default=True,
+    default=False,
     help="Persist changes.",
 )
 def clean(source_strings, commit):
@@ -244,7 +244,7 @@ def clean(source_strings, commit):
     "--commit",
     "commit",
     type=bool,
-    default=True,
+    default=False,
     help="Persist changes.",
 )
 def clean_unused_and_expiring_within_days(source_strings, days_to_expire, commit):
@@ -306,7 +306,7 @@ def clean_unused_and_expiring_within_days(source_strings, days_to_expire, commit
     "--commit",
     "commit",
     type=bool,
-    default=True,
+    default=False,
     help="Persist changes.",
 )
 def clean_unused_and_issued_since_days(source_strings, days_since_issuance, commit):

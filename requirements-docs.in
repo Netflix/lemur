@@ -52,3 +52,4 @@ xmltodict
 sphinx
 sphinxcontrib-httpdomain
 sphinx-rtd-theme
+docutils <= 0.19 # sphinx-rtd-theme 1.2.2 requires docutils<0.19
