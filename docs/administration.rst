@@ -99,7 +99,11 @@ Basic Configuration
 .. data:: CUSTOM_RESPONSE_HEADERS
     :noindex:
 
-        The CUSTOM_RESPONSE_HEADERS option allows for the creation of multiple response headers. A response header is an HTTP header that can be used in an HTTP response and that doesn't relate to the content of the message. Response headers, like Age, Location or Server are used to give a more detailed context of the response.
+        Allows for the creation of multiple response headers. A response header is an HTTP header that can be used in an HTTP response and that doesn't relate to the content of the message. Response headers, like Age, Location or Server are used to give a more detailed context of the response.
+
+    ::
+
+        CUSTOM_RESPONSE_HEADERS = None (default)
 
         Example:
 
@@ -107,11 +111,6 @@ Basic Configuration
             "Content-Security-Policy": "default-src 'self'",
             "X-Frame-Options": "DENY"
         }
-
-    ::
-
-        CUSTOM_RESPONSE_HEADERS = None
-
 
 .. data:: SQLALCHEMY_DATABASE_URI
     :noindex:
