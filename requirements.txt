@@ -44,7 +44,7 @@ botocore==1.29.156
     #   -r requirements.in
     #   boto3
     #   s3transfer
-celery[redis]==5.3.1
+celery[redis]==5.3.0
     # via -r requirements.in
 certbot==2.6.0
     # via -r requirements.in
@@ -240,7 +240,7 @@ pyyaml==6.0
     # via
     #   -r requirements.in
     #   cloudflare
-redis==4.5.4
+redis==4.5.5
     # via
     #   -r requirements.in
     #   celery
