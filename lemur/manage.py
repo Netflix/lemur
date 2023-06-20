@@ -23,7 +23,6 @@ from lemur.reporting.cli import cli as report_cli
 from lemur.certificates.cli import cli as certificate_cli
 from lemur.notifications.cli import cli as notification_cli
 from lemur.pending_certificates.cli import cli as pending_certificate_cli
-from lemur.api_keys.cli import cli as api_key_cli
 
 
 from lemur import database

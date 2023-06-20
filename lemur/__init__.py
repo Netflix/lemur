@@ -10,7 +10,6 @@
 
 """
 import time
-import json
 from flask import g, request
 
 from lemur import factory
