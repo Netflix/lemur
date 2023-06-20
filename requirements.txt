@@ -78,7 +78,7 @@ configargparse==1.5.3
     # via certbot
 configobj==5.0.6
     # via certbot
-cryptography==40.0.2
+cryptography==41.0.1
     # via
     #   -r requirements.in
     #   acme
