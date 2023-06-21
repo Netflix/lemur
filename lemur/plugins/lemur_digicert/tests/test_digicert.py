@@ -39,26 +39,26 @@ def test_determine_end_date(mock_current_app):
 
 
 @patch("lemur.plugins.lemur_digicert.plugin.current_app")
-def test_map_fields_with_validity_years_and_ipv4(mock_current_app):
+def test_map_fields_with_validity_years_and_ip_addr(mock_current_app):
     mock_current_app.config.get = Mock(side_effect=config_mock)
 
     with patch('lemur.plugins.lemur_digicert.plugin.signature_hash') as mock_signature_hash:
         mock_signature_hash.return_value = "sha256"
 
         names = [u"one.example.com", u"two.example.com", u"three.example.com"]
-        ipv4_names = ["1.2.3.4"]
+        ip_addr_names = ["1.2.3.4", "2001:db8:85a3::8a2e:370:7334"]
         options = {
             "common_name": "example.com",
             "owner": "bob@example.com",
             "description": "test certificate",
-            "extensions": {"sub_alt_names": {"names": [x509.DNSName(x) for x in names] + [x509.IPAddress(ipaddress.ip_address(x)) for x in ipv4_names]}},
+            "extensions": {"sub_alt_names": {"names": [x509.DNSName(x) for x in names] + [x509.IPAddress(ipaddress.ip_address(x)) for x in ip_addr_names]}},
             "validity_years": 1
         }
         expected = {
             "certificate": {
                 "csr": CSR_STR,
                 "common_name": "example.com",
-                "dns_names": names + ipv4_names,
+                "dns_names": names + ip_addr_names,
                 "signature_hash": "sha256",
             },
             "organization": {"id": 111111},
