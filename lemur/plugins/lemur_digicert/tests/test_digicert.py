@@ -287,7 +287,7 @@ def test_handle_cis_response_no_key_logging(mock_current_app):
     mock_response = mock.Mock()
     mock_response.status_code = 406
     session = requests.Session()
-    session.headers = session.headers.update({'X-DC-DEVKEY': 'some_value'})
+    session.headers.update({'X-DC-DEVKEY': 'some_value'})
 
     # Calling the function
     with pytest.raises(Exception) as context:
