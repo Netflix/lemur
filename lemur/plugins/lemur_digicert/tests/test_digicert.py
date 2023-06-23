@@ -280,6 +280,7 @@ def test_create_cis_authority(mock_current_app, authority):
     digicert_root, intermediate, role = DigiCertCISIssuerPlugin.create_authority(options)
     assert role == [{"username": "", "password": "", "name": "digicert_test_Digicert_CIS_authority_admin"}]
 
+
 @patch("lemur.plugins.lemur_digicert.plugin.current_app")
 def test_handle_cis_response_no_key_logging(mock_current_app):
     from lemur.plugins.lemur_digicert.plugin import handle_cis_response
