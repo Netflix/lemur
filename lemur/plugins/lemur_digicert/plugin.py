@@ -112,8 +112,8 @@ def get_additional_names(options):
     # add SANs if present
     if options.get("extensions"):
         for san in options["extensions"]["sub_alt_names"]["names"]:
-            is_ipv4 = (isinstance(san, x509.IPAddress) and isinstance(san.value, ipaddress.IPv4Address))
-            if isinstance(san, x509.DNSName) or is_ipv4:
+            is_ip_addr = (isinstance(san, x509.IPAddress) and (isinstance(san.value, ipaddress.IPv4Address) or isinstance(san.value, ipaddress.IPv6Address)))
+            if isinstance(san, x509.DNSName) or is_ip_addr:
                 names.append(str(san.value))
     return names
 
