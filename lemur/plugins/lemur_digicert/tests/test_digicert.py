@@ -290,9 +290,9 @@ def test_handle_cis_response_no_key_logging(mock_current_app):
     session.headers = session.headers.update({'X-DC-DEVKEY': 'some_value'})
 
     # Calling the function
-    with pytest.assertRaises(Exception) as context:
+    with pytest.raises(Exception) as context:
         handle_cis_response(session, mock_response)
 
     # Asserting the exception and headers
-    assert 'wrong header' in str(context.exception)
-    assert 'X-DC-DEVKEY' not in str(context.exception)
+    assert 'wrong header' in str(context)
+    assert 'X-DC-DEVKEY' not in str(context)
