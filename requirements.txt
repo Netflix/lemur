@@ -181,7 +181,7 @@ paramiko==3.2.0
     # via -r requirements.in
 parsedatetime==2.6
     # via certbot
-pem==21.2.0
+pem==23.1.0
     # via -r requirements.in
 prompt-toolkit==3.0.28
     # via click-repl

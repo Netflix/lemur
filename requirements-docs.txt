@@ -357,7 +357,7 @@ pbr==5.8.1
     #   jschema-to-python
     #   sarif-om
     #   stevedore
-pem==21.2.0
+pem==23.1.0
     # via -r requirements-docs.in
 platformdirs==2.5.1
     # via
