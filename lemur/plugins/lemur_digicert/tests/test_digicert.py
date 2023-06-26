@@ -1,9 +1,11 @@
 import ipaddress
 import json
+from unittest import mock
 from unittest.mock import patch, Mock
 
 import arrow
 import pytest
+import requests
 from cryptography import x509
 from freezegun import freeze_time
 from lemur.plugins.lemur_digicert import plugin
@@ -277,3 +279,20 @@ def test_create_cis_authority(mock_current_app, authority):
     }
     digicert_root, intermediate, role = DigiCertCISIssuerPlugin.create_authority(options)
     assert role == [{"username": "", "password": "", "name": "digicert_test_Digicert_CIS_authority_admin"}]
+
+
+@patch("lemur.plugins.lemur_digicert.plugin.current_app")
+def test_handle_cis_response_no_key_logging(mock_current_app):
+    from lemur.plugins.lemur_digicert.plugin import handle_cis_response
+    mock_response = mock.Mock()
+    mock_response.status_code = 406
+    session = requests.Session()
+    session.headers.update({'X-DC-DEVKEY': 'some_value'})
+
+    # Calling the function
+    with pytest.raises(Exception) as context:
+        handle_cis_response(session, mock_response)
+
+    # Asserting the exception and headers
+    assert 'wrong header' in str(context)
+    assert 'X-DC-DEVKEY' not in str(context)
