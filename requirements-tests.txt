@@ -15,7 +15,7 @@ attrs==23.1.0
     #   jschema-to-python
     #   jsonschema
     #   sarif-om
-aws-sam-translator==1.69.0
+aws-sam-translator==1.70.0
     # via cfn-lint
 aws-xray-sdk==2.12.0
     # via moto
@@ -25,11 +25,11 @@ black==23.3.0
     # via -r requirements-tests.in
 blinker==1.6.2
     # via flask
-boto3==1.26.160
+boto3==1.26.161
     # via
     #   aws-sam-translator
     #   moto
-botocore==1.29.160
+botocore==1.29.161
     # via
     #   aws-xray-sdk
     #   boto3
@@ -184,9 +184,9 @@ pbr==5.11.1
     #   jschema-to-python
     #   sarif-om
     #   stevedore
-platformdirs==3.7.0
+platformdirs==3.8.0
     # via black
-pluggy==1.0.0
+pluggy==1.2.0
     # via pytest
 pyasn1==0.5.0
     # via
@@ -210,7 +210,7 @@ pyrfc3339==1.1
     #   certbot
 pyrsistent==0.19.3
     # via jsonschema
-pytest==7.3.2
+pytest==7.4.0
     # via
     #   -r requirements-tests.in
     #   pytest-flask
@@ -306,7 +306,7 @@ urllib3==1.26.16
     #   docker
     #   requests
     #   responses
-websocket-client==1.6.0
+websocket-client==1.6.1
     # via docker
 werkzeug==2.3.6
     # via
