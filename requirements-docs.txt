@@ -181,7 +181,7 @@ flask==1.1.2
     #   pytest-flask
 flask-bcrypt==1.0.1
     # via -r requirements-docs.in
-flask-cors==3.0.10
+flask-cors==4.0.0
     # via -r requirements-docs.in
 flask-mail==0.9.1
     # via -r requirements-docs.in
@@ -506,7 +506,6 @@ six==1.16.0
     #   click-repl
     #   configobj
     #   ecdsa
-    #   flask-cors
     #   flask-restful
     #   jsonschema
     #   junit-xml
