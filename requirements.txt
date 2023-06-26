@@ -109,7 +109,7 @@ flask==1.1.2
     #   flask-sqlalchemy
 flask-bcrypt==1.0.1
     # via -r requirements.in
-flask-cors==3.0.10
+flask-cors==4.0.0
     # via -r requirements.in
 flask-mail==0.9.1
     # via -r requirements.in
@@ -261,7 +261,6 @@ six==1.16.0
     #   bcrypt
     #   click-repl
     #   configobj
-    #   flask-cors
     #   flask-restful
     #   python-dateutil
     #   retrying
