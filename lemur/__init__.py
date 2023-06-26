@@ -92,7 +92,7 @@ def configure_hook(app):
     from flask import jsonify
     from werkzeug.exceptions import HTTPException
 
-    custom_response_headers = app.config.get("CUSTOM_RESPONSE_HEADERS", None)
+    custom_response_headers = app.config.get("CUSTOM_RESPONSE_HEADERS", {})
 
     @app.errorhandler(Exception)
     def handle_error(e):
@@ -109,10 +109,8 @@ def configure_hook(app):
 
     @app.after_request
     def after_request(response):
-        # Set custom response headers
-        if custom_response_headers:
-            for name, value in custom_response_headers.items():
-                response.headers[name] = value
+        # Update custom response headers
+        response.headers.update(custom_response_headers)
 
         # Return early if we don't have the start time
         if not hasattr(g, "request_start_time"):

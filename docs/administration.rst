@@ -55,45 +55,13 @@ Basic Configuration
         Allows for cross domain requests, this is most commonly used for development but could
         be use in production if you decided to host the webUI on a different domain than the server.
 
+        For CORS configuration options, please refer to `Flask-CORS Documentation <https://flask-cors.readthedocs.io/en/latest/configuration.html>`_
+
         Use this cautiously, if you're not sure. Set it to `False`
 
     ::
 
         CORS = False
-
-
-.. data:: CORS_ORIGIN
-    :noindex:
-
-        Sets the Access-Control-Allow-Origin response header. The Access-Control-Allow-Origin response header
-        indicates whether the response can be shared with requesting code from the given origin.
-
-    ::
-
-        CORS_ORIGIN = ["*"]
-
-
-.. data:: CORS_ALLOW_HEADERS
-    :noindex:
-
-        Sets the Access-Control-Allow-Headers response header. The Access-Control-Allow-Headers response header
-        is used in response to a preflight request which includes the Access-Control-Request-Headers to indicate
-        which HTTP headers can be used during the actual request.
-
-    ::
-
-        CORS_ALLOW_HEADERS = ["Authorization", "Content-Type"]
-
-
-.. data:: CORS_ALLOW_METHODS
-    :noindex:
-
-        Sets the Access-Control-Allow-Methods response header. The Access-Control-Allow-Methods response header
-        specifies one or more methods allowed when accessing a resource in response to a preflight request.
-
-    ::
-
-        CORS_ALLOW_METHODS = ["GET", "PUT", "POST", "DELETE", "OPTIONS"]
 
 
 .. data:: CUSTOM_RESPONSE_HEADERS
@@ -103,7 +71,7 @@ Basic Configuration
 
     ::
 
-        CUSTOM_RESPONSE_HEADERS = None (default)
+        CUSTOM_RESPONSE_HEADERS = {}
 
         Example:
 
