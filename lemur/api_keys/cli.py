@@ -5,28 +5,33 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Eric Coan <kungfury@instructure.com>
 """
-from flask_script import Manager
+import click
+
 from lemur.api_keys import service as api_key_service
 from lemur.auth.service import create_token
 
 from datetime import datetime
 
-manager = Manager(usage="Handles all api key related tasks.")
+
+@click.group(name="api_keys", help="Handles all api key related tasks.")
+def cli():
+    pass
 
 
-@manager.option(
-    "-u", "--user-id", dest="uid", help="The User ID this access key belongs too."
+@cli.command("create")
+@click.option(
+    "-u", "--user-id", "uid", help="The User ID this access key belongs too."
 )
-@manager.option("-n", "--name", dest="name", help="The name of this API Key.")
-@manager.option(
-    "-t", "--ttl", dest="ttl", help="The TTL of this API Key. -1 for forever."
+@click.option("-n", "--name", "name", help="The name of this API Key.")
+@click.option(
+    "-t", "--ttl", "ttl", help="The TTL of this API Key. -1 for forever."
 )
 def create(uid, name, ttl):
     """
     Create a new api key for a user.
     :return:
     """
-    print("[+] Creating a new api key.")
+    click.echo("[+] Creating a new api key.")
     key = api_key_service.create(
         user_id=uid,
         name=name,
@@ -34,17 +39,18 @@ def create(uid, name, ttl):
         issued_at=int(datetime.utcnow().timestamp()),
         revoked=False,
     )
-    print("[+] Successfully created a new api key. Generating a JWT...")
+    click.echo("[+] Successfully created a new api key. Generating a JWT...")
     jwt = create_token(uid, key.id, key.ttl)
-    print("[+] Your JWT is: {jwt}".format(jwt=jwt))
+    click.echo("[+] Your JWT is: {jwt}".format(jwt=jwt))
 
 
-@manager.option("-a", "--api-key-id", dest="aid", help="The API Key ID to revoke.")
+@cli.command("revoke")
+@click.option("-a", "--api-key-id", "aid", help="The API Key ID to revoke.")
 def revoke(aid):
     """
     Revokes an api key for a user.
     :return:
     """
-    print("[-] Revoking the API Key api key.")
+    click.echo("[-] Revoking the API Key api key.")
     api_key_service.revoke(aid=aid)
-    print("[+] Successfully revoked the api key")
+    click.echo("[+] Successfully revoked the api key")

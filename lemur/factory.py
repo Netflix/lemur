@@ -22,6 +22,7 @@ from logging.handlers import RotatingFileHandler
 
 from flask import Flask, current_app
 from flask_replicated import FlaskReplicated
+from click import get_current_context
 
 import sentry_sdk
 from sentry_sdk.integrations.celery import CeleryIntegration
@@ -57,6 +58,14 @@ def create_app(app_name=None, blueprints=None, config=None):
         app_name = __name__
 
     app = Flask(app_name)
+    ctx = get_current_context(silent=True)
+
+    # get config option value from command line
+    if ctx and config is None:
+        script_info = ctx.obj
+        if script_info:
+            config = script_info.config
+
     configure_app(app, config)
     configure_blueprints(app, blueprints)
     configure_extensions(app)
@@ -69,6 +78,10 @@ def create_app(app_name=None, blueprints=None, config=None):
         if db.session:
             db.session.remove()
 
+    @app.shell_context_processor
+    def shell_context():
+        return {'app': app, 'db': db}
+
     return app
 
 
@@ -80,8 +93,14 @@ def from_file(file_path, silent=False):
     :param file_path:
     :param silent:
     """
-    module_spec = importlib.util.spec_from_file_location("config", file_path)
-    d = importlib.util.module_from_spec(module_spec)
+
+    if os.path.isfile(file_path):
+        module_spec = importlib.util.spec_from_file_location("config", file_path)
+        d = importlib.util.module_from_spec(module_spec)
+    else:
+        raise FileNotFoundError(
+            f"Unable to load config file: `{file_path}`"
+        )
 
     try:
         with open(file_path) as config_file:
@@ -161,12 +180,16 @@ def configure_extensions(app):
         )
 
     if app.config["CORS"]:
-        app.config["CORS_HEADERS"] = "Content-Type"
+        # set cors defaults, if not in config
+        if "CORS_ORIGINS" not in app.config:
+            app.config["CORS_ORIGINS"] = "*"
+        if "CORS_ALLOW_HEADERS" not in app.config:
+            app.config["CORS_ALLOW_HEADERS"] = ["Authorization", "Content-Type"]
+
+        # cors init app
         cors.init_app(
             app,
             resources=r"/api/*",
-            headers="Content-Type",
-            origin="*",
             supports_credentials=True,
         )
 

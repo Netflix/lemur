@@ -5,11 +5,11 @@
 .. moduleauthor:: Curtis Castrapel <ccastrapel@netflix.com>
 """
 
+import click
 import copy
 import sys
 
 from flask import current_app
-from flask_script import Manager
 
 from lemur.authorities.service import get as get_authority
 from lemur.constants import ACME_ADDITIONAL_ATTEMPTS
@@ -18,11 +18,17 @@ from lemur.pending_certificates import service as pending_certificate_service
 from lemur.plugins.base import plugins
 
 
-manager = Manager(usage="Handles pending certificate related tasks.")
+@click.group(name="pending_certs", help="Handles pending certificate related tasks.")
+def cli():
+    pass
 
 
-@manager.option(
-    "-i", dest="ids", action="append", help="IDs of pending certificates to fetch"
+@cli.command("fetch")
+@click.option(
+    "-i",
+    "ids",
+    multiple=True,
+    help="IDs of pending certificates to fetch"
 )
 def fetch(ids):
     """
@@ -53,12 +59,12 @@ def fetch(ids):
         else:
             pending_certificate_service.increment_attempt(cert)
             failed += 1
-    print(
+    click.echo(
         "[+] Certificates: New: {new} Failed: {failed}".format(new=new, failed=failed)
     )
 
 
-@manager.command
+@cli.command("fetch_all_acme")
 def fetch_all_acme():
     """
     Attempt to get full certificates for each pending certificate listed with the acme-issuer. This is more efficient
@@ -127,7 +133,7 @@ def fetch_all_acme():
     log_data["failed"] = failed
     log_data["wrong_issuer"] = wrong_issuer
     current_app.logger.debug(log_data)
-    print(
+    click.echo(
         "[+] Certificates: New: {new} Failed: {failed} Not using ACME: {wrong_issuer}".format(
             new=new, failed=failed, wrong_issuer=wrong_issuer
         )
