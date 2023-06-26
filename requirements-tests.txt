@@ -25,11 +25,11 @@ black==23.3.0
     # via -r requirements-tests.in
 blinker==1.6.2
     # via flask
-boto3==1.26.157
+boto3==1.26.160
     # via
     #   aws-sam-translator
     #   moto
-botocore==1.29.157
+botocore==1.29.160
     # via
     #   aws-xray-sdk
     #   boto3
@@ -240,7 +240,7 @@ pyyaml==6.0
     #   cfn-lint
     #   moto
     #   responses
-redis==4.5.5
+redis==4.6.0
     # via
     #   -r requirements-tests.in
     #   fakeredis

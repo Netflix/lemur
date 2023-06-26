@@ -13,6 +13,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+import copy
 import ipaddress
 import json
 from typing import Any, Dict, List
@@ -244,7 +245,7 @@ def handle_cis_response(session, response):
     if response.status_code == 404:
         raise Exception("DigiCert: order not in issued state")
     elif response.status_code == 406:
-        log_header = session.headers
+        log_header = copy.deepcopy(session.headers)
         log_header.pop("X-DC-DEVKEY")
         reset_cis_session(session)
         raise Exception("DigiCert: wrong header request format: " + str(log_header))
