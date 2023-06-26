@@ -63,7 +63,8 @@ def create_app(app_name=None, blueprints=None, config=None):
     # get config option value from command line
     if ctx and config is None:
         script_info = ctx.obj
-        config = script_info.config
+        if script_info:
+            config = script_info.config
 
     configure_app(app, config)
     configure_blueprints(app, blueprints)
