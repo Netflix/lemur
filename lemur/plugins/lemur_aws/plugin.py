@@ -610,6 +610,9 @@ class S3DestinationPlugin(ExportDestinationPlugin):
             }
             current_app.logger.info(log_data)
 
+    def allow_multiple_per_account(self):
+        return True
+
     def upload_acme_token(self, token_path, token, options, **kwargs):
         """
         This is called from the acme http challenge
