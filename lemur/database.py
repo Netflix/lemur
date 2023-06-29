@@ -90,7 +90,7 @@ def add(model):
 def get_model_column(model, field):
     if field in getattr(model, "sensitive_fields", ()):
         raise AttrNotFound(field)
-    column = model.__table__.columns._data.get(field, None)
+    column = model.__table__.columns.get(field, None)
     if column is None:
         raise AttrNotFound(field)
 

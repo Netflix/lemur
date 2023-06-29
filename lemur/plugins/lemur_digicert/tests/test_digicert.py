@@ -1,9 +1,11 @@
 import ipaddress
 import json
+from unittest import mock
 from unittest.mock import patch, Mock
 
 import arrow
 import pytest
+import requests
 from cryptography import x509
 from freezegun import freeze_time
 from lemur.plugins.lemur_digicert import plugin
@@ -39,26 +41,26 @@ def test_determine_end_date(mock_current_app):
 
 
 @patch("lemur.plugins.lemur_digicert.plugin.current_app")
-def test_map_fields_with_validity_years_and_ipv4(mock_current_app):
+def test_map_fields_with_validity_years_and_ip_addr(mock_current_app):
     mock_current_app.config.get = Mock(side_effect=config_mock)
 
     with patch('lemur.plugins.lemur_digicert.plugin.signature_hash') as mock_signature_hash:
         mock_signature_hash.return_value = "sha256"
 
         names = [u"one.example.com", u"two.example.com", u"three.example.com"]
-        ipv4_names = ["1.2.3.4"]
+        ip_addr_names = ["1.2.3.4", "2001:db8:85a3::8a2e:370:7334"]
         options = {
             "common_name": "example.com",
             "owner": "bob@example.com",
             "description": "test certificate",
-            "extensions": {"sub_alt_names": {"names": [x509.DNSName(x) for x in names] + [x509.IPAddress(ipaddress.ip_address(x)) for x in ipv4_names]}},
+            "extensions": {"sub_alt_names": {"names": [x509.DNSName(x) for x in names] + [x509.IPAddress(ipaddress.ip_address(x)) for x in ip_addr_names]}},
             "validity_years": 1
         }
         expected = {
             "certificate": {
                 "csr": CSR_STR,
                 "common_name": "example.com",
-                "dns_names": names + ipv4_names,
+                "dns_names": names + ip_addr_names,
                 "signature_hash": "sha256",
             },
             "organization": {"id": 111111},
@@ -277,3 +279,20 @@ def test_create_cis_authority(mock_current_app, authority):
     }
     digicert_root, intermediate, role = DigiCertCISIssuerPlugin.create_authority(options)
     assert role == [{"username": "", "password": "", "name": "digicert_test_Digicert_CIS_authority_admin"}]
+
+
+@patch("lemur.plugins.lemur_digicert.plugin.current_app")
+def test_handle_cis_response_no_key_logging(mock_current_app):
+    from lemur.plugins.lemur_digicert.plugin import handle_cis_response
+    mock_response = mock.Mock()
+    mock_response.status_code = 406
+    session = requests.Session()
+    session.headers.update({'X-DC-DEVKEY': 'some_value'})
+
+    # Calling the function
+    with pytest.raises(Exception) as context:
+        handle_cis_response(session, mock_response)
+
+    # Asserting the exception and headers
+    assert 'wrong header' in str(context)
+    assert 'X-DC-DEVKEY' not in str(context)
