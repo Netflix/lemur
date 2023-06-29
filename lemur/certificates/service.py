@@ -487,8 +487,10 @@ def create(**kwargs):
         for dest in kwargs["destinations"]:
             plugin_accounts = dest_plugin_accounts.setdefault(dest.plugin_name, {})
             account = get_plugin_option("accountNumber", dest.options)
-            if account in plugin_accounts:
-                raise Exception(f"Too many destinations for plugin {dest.plugin_name} and account {account}")
+            dest_plugin = plugins.get(dest.plugin_name)
+            if account in plugin_accounts and not dest_plugin.allow_multiple_per_account():
+                raise Exception(f"Duplicate destinations for plugin {dest.plugin_name} and account {account} are not "
+                                f"allowed")
             plugin_accounts[account] = True
 
     try:

@@ -18,6 +18,12 @@ class DestinationPlugin(Plugin):
     def upload(self, name, body, private_key, cert_chain, options, **kwargs):
         raise NotImplementedError
 
+    def allow_multiple_per_account(self):
+        """
+        Specifies whether or not multiple of this destination type may be added per AWS account.
+        """
+        return False
+
 
 class ExportDestinationPlugin(DestinationPlugin):
     default_options = [
