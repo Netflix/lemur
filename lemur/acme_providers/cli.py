@@ -33,6 +33,10 @@ def cli():
     required=True,
     help="Value of the Token to store in DNS as content."
 )
+def dnstest_command(domain, token):
+    dnstest(domain, token)
+
+
 def dnstest(domain, token):
     """
     Create, verify, and delete DNS TXT records using an autodetected provider.
@@ -131,6 +135,10 @@ def dnstest(domain, token):
     required=True,
     help="Bucket Name",
 )
+def upload_acme_token_s3_command(token, token_name, prefix, account_number, bucket_name):
+    upload_acme_token_s3(token, token_name, prefix, account_number, bucket_name)
+
+
 def upload_acme_token_s3(token, token_name, prefix, account_number, bucket_name):
     """
     This method serves for testing the upload_acme_token to S3, fetching the token to verify it, and then deleting it.

@@ -34,6 +34,10 @@ def cli():
     default="all",
     help="Filter by deployment status.",
 )
+def fqdn_command(deployment, validity):
+    fqdn(deployment, validity)
+
+
 def fqdn(deployment, validity):
     """
     Generates a report in order to determine the number of FQDNs covered by Lemur issued certificates.
@@ -80,6 +84,10 @@ def fqdn(deployment, validity):
     default="all",
     help="Filter by deployment status.",
 )
+def expiring_command(ttl, deployment):
+    expiring(ttl, deployment)
+
+
 def expiring(ttl, deployment):
     """
     Returns certificates expiring in the next n days.

@@ -41,6 +41,10 @@ def cli():
     default=[],
     help="List of notification plugins for which notifications should NOT be sent",
 )
+def expirations_command(exclude, disabled_notification_plugins):
+    expirations(exclude, disabled_notification_plugins)
+
+
 def expirations(exclude, disabled_notification_plugins):
     """
     Runs Lemur's notification engine, that looks for expiring certificates and sends

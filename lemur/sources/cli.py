@@ -119,6 +119,10 @@ def execute_clean(plugin, certificate, source):
     default=2,
     help="Time in hours, after which endpoint has not been refreshed, to remove endpoints from the source.",
 )
+def sync_command(source_strings, ttl):
+    sync(source_strings, ttl)
+
+
 def sync(source_strings, ttl):
     sources = validate_sources(source_strings)
     for source in sources:
@@ -185,6 +189,10 @@ def sync(source_strings, ttl):
     default=False,
     help="Persist changes.",
 )
+def clean_command(source_strings, commit):
+    clean(source_strings, commit)
+
+
 def clean(source_strings, commit):
     sources = validate_sources(source_strings)
     for source in sources:
@@ -247,6 +255,10 @@ def clean(source_strings, commit):
     default=False,
     help="Persist changes.",
 )
+def clean_unused_and_expiring_within_days_command(source_strings, days_to_expire, commit):
+    clean_unused_and_expiring_within_days(source_strings, days_to_expire, commit)
+
+
 def clean_unused_and_expiring_within_days(source_strings, days_to_expire, commit):
     sources = validate_sources(source_strings)
     for source in sources:
@@ -309,6 +321,10 @@ def clean_unused_and_expiring_within_days(source_strings, days_to_expire, commit
     default=False,
     help="Persist changes.",
 )
+def clean_unused_and_issued_since_days_command(source_strings, days_since_issuance, commit):
+    clean_unused_and_issued_since_days(source_strings, days_since_issuance, commit)
+
+
 def clean_unused_and_issued_since_days(source_strings, days_since_issuance, commit):
     sources = validate_sources(source_strings)
     for source in sources:
@@ -355,6 +371,10 @@ def clean_unused_and_issued_since_days(source_strings, days_since_issuance, comm
     multiple=True,
     help="Destinations to operate on.",
 )
+def sync_source_destination_command(labels):
+    sync_source_destination(labels)
+
+
 def sync_source_destination(labels):
     """
     This command will sync destination and source, to make sure eligible destinations are also present as source.
@@ -375,6 +395,10 @@ def sync_source_destination(labels):
 
 @cli.command("enable_cloudfront")
 @click.option("-s", "--source", "source_label")
+def enable_cloudfront_command(source_label):
+    enable_cloudfront(source_label)
+
+
 def enable_cloudfront(source_label):
     """
     Given the label of a legacy AWS source (without path or endpointType options), set up the source for CloudFront:
