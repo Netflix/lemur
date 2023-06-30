@@ -250,6 +250,10 @@ def request_reissue(certificate, notify, commit):
     default=False,
     help="Persist changes.",
 )
+def rotate_command(endpoint_name, source, new_certificate_name, old_certificate_name, message, commit):
+    rotate(endpoint_name, source, new_certificate_name, old_certificate_name, message, commit)
+
+
 def rotate(endpoint_name, source, new_certificate_name, old_certificate_name, message, commit):
     """
     Rotates an endpoint and reissues it if it has not already been replaced. If it has
@@ -402,6 +406,10 @@ def request_rotation_region(endpoint, new_cert, message, commit, log_data, regio
     required=True,
     help="Region in which to rotate the endpoint.",
 )
+def rotate_region_command(endpoint_name, new_certificate_name, old_certificate_name, message, commit, region):
+    rotate_region(endpoint_name, new_certificate_name, old_certificate_name, message, commit, region)
+
+
 def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, message, commit, region):
     """
     Rotates an endpoint in a defined region it if it has not already been replaced. If it has
@@ -542,6 +550,10 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
     default=False,
     help="Persist changes.",
 )
+def reissue_command(old_certificate_name, notify, commit):
+    reissue(old_certificate_name, notify, commit)
+
+
 def reissue(old_certificate_name, notify, commit):
     """
     Reissues certificate with the same parameters as it was originally issued with.
@@ -593,6 +605,10 @@ def reissue(old_certificate_name, notify, commit):
     default=False,
     help="Include expired certificates.",
 )
+def query_command(fqdns, issuer, owner, expired):
+    query(fqdns, issuer, owner, expired)
+
+
 def query(fqdns, issuer, owner, expired):
     """Prints certificates that match the query params."""
     table = []
@@ -660,6 +676,10 @@ def worker(data, commit, reason):
 
 
 @cli.command("clear_pending")
+def clear_pending_command():
+    clear_pending()
+
+
 def clear_pending():
     """
     Function clears all pending certificates.
@@ -682,6 +702,10 @@ def clear_pending():
     default=False,
     help="Persist changes.",
 )
+def revoke_command(path, cert_id, reason, message, commit):
+    revoke(path, cert_id, reason, message, commit)
+
+
 def revoke(path, cert_id, reason, message, commit):
     """
     Revokes given certificate.
@@ -711,6 +735,10 @@ def revoke(path, cert_id, reason, message, commit):
 
 
 @cli.command("check_revoked")
+def check_revoked_command():
+    check_revoked()
+
+
 def check_revoked():
     """
     Function attempts to update Lemur's internal cache with revoked
@@ -804,6 +832,10 @@ def check_revoked():
 
 
 @cli.command("automatically_enable_autorotate_with_endpoint")
+def automatically_enable_autorotate_with_endpoint_command():
+    automatically_enable_autorotate_with_endpoint()
+
+
 def automatically_enable_autorotate_with_endpoint():
     """
     This function automatically enables auto-rotation for unexpired certificates that are
@@ -846,6 +878,10 @@ def automatically_enable_autorotate_with_endpoint():
 
 
 @cli.command("automatically_enable_autorotate_with_destination")
+def automatically_enable_autorotate_with_destination_command():
+    automatically_enable_autorotate_with_destination()
+
+
 def automatically_enable_autorotate_with_destination():
     """
     This function automatically enables auto-rotation for unexpired certificates that are
@@ -889,6 +925,10 @@ def automatically_enable_autorotate_with_destination():
 
 
 @cli.command("deactivate_entrust_certificates")
+def deactivate_entrust_certificates_command():
+    deactivate_entrust_certificates()
+
+
 def deactivate_entrust_certificates():
     """
     Attempt to deactivate test certificates issued by Entrust
@@ -935,6 +975,10 @@ def deactivate_entrust_certificates():
 
 @cli.command("disable_rotation_of_duplicate_certificates")
 @click.option("-c", "--commit", "commit", type=bool, default=False, help="Persist changes.")
+def disable_rotation_of_duplicate_certificates_command(commit):
+    disable_rotation_of_duplicate_certificates(commit)
+
+
 def disable_rotation_of_duplicate_certificates(commit):
     log_data = {
         "function": f"{__name__}.{sys._getframe().f_code.co_name}",
@@ -1133,6 +1177,10 @@ def is_duplicate(matching_cert, compare_to):
     default=False,
     help="Persist changes.",
 )
+def identify_expiring_deployed_certificates_command(exclude_domains, exclude_owners, commit):
+    identify_expiring_deployed_certificates(exclude_domains, exclude_owners, commit)
+
+
 def identify_expiring_deployed_certificates(exclude_domains, exclude_owners, commit):
     status = FAILURE_METRIC_STATUS
     try:
@@ -1146,6 +1194,10 @@ def identify_expiring_deployed_certificates(exclude_domains, exclude_owners, com
 
 
 @cli.command("expiration_metrics")
+def expiration_metrics_command(expiry_window):
+    expiration_metrics(expiry_window)
+
+
 def expiration_metrics(expiry_window):
     """
     Iterates over all certificates and emits a metric for the days remaining for a certificate to expire.

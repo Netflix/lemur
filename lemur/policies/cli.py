@@ -18,6 +18,10 @@ def cli():
 @cli.command("create")
 @click.option("-d", "--days", "days", help="Number of days before expiration.")
 @click.option("-n", "--name", "name", help="Policy name.")
+def create_command(days, name):
+    create(days, name)
+
+
 def create(days, name):
     """
     Create a new certificate rotation policy

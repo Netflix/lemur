@@ -30,6 +30,10 @@ def cli():
     multiple=True,
     help="IDs of pending certificates to fetch"
 )
+def fetch_command(ids):
+    fetch(ids)
+
+
 def fetch(ids):
     """
     Attempt to get full certificate for each pending certificate listed.
@@ -65,6 +69,10 @@ def fetch(ids):
 
 
 @cli.command("fetch_all_acme")
+def fetch_all_acme_command():
+    fetch_all_acme()
+
+
 def fetch_all_acme():
     """
     Attempt to get full certificates for each pending certificate listed with the acme-issuer. This is more efficient

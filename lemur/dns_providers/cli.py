@@ -15,6 +15,10 @@ def cli():
 
 
 @cli.command("get_all_zones")
+def get_all_zones_command():
+    get_all_zones()
+
+
 def get_all_zones():
     """
     Retrieves all DNS providers from the database. Refreshes the zones associated with each DNS provider
