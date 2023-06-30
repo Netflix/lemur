@@ -232,7 +232,7 @@ class TestAcmeDns(unittest.TestCase):
 
         result_client, result_registration = self.acme.setup_acme_client(mock_authority)
 
-        mock_acme.new_account_and_tos.assert_not_called()
+        mock_acme.new_account.assert_not_called()
         assert result_client
         assert not result_registration
 
@@ -251,7 +251,7 @@ class TestAcmeDns(unittest.TestCase):
         mock_registration.uri = "http://test.com"
         mock_client.register = mock_registration
         mock_client.agree_to_tos = Mock(return_value=True)
-        mock_client.new_account_and_tos.return_value = mock_registration
+        mock_client.new_account.return_value = mock_registration
         mock_acme.return_value = mock_client
 
         mock_key_generation.return_value = {"n": "PwIOkViO"}

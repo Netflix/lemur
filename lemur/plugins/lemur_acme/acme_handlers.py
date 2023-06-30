@@ -206,12 +206,13 @@ class AcmeHandler(object):
                                                                 kid=eab_kid,
                                                                 hmac_key=eab_hmac_key,
                                                                 directory=client.directory)
-                registration = client.new_account_and_tos(
-                    messages.NewRegistration.from_data(email=email, external_account_binding=eab)
+                registration = client.new_account(
+                    messages.NewRegistration.from_data(email=email, external_account_binding=eab,
+                                                       terms_of_service_agreed=True)
                 )
             else:
-                registration = client.new_account_and_tos(
-                    messages.NewRegistration.from_data(email=email)
+                registration = client.new_account(
+                    messages.NewRegistration.from_data(email=email, terms_of_service_agreed=True)
                 )
 
             # if store_account is checked, add the private_key and registration resources to the options
@@ -547,10 +548,7 @@ class AcmeDnsHandler(AcmeHandler):
         on an exception
 
         :param acme_client:
-        :param account_number:
-        :param dns_provider:
         :param authorizations:
-        :param dns_provider_options:
         :return:
         """
         for authz_record in authorizations:
