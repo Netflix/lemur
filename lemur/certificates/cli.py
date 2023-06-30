@@ -738,6 +738,7 @@ def revoke(path, cert_id, reason, message, commit):
 def check_revoked_command():
     check_revoked()
 
+
 def check_revoked():
     """
     Function attempts to update Lemur's internal cache with revoked
@@ -879,6 +880,7 @@ def automatically_enable_autorotate_with_endpoint():
 @cli.command("automatically_enable_autorotate_with_destination")
 def automatically_enable_autorotate_with_destination_command():
     automatically_enable_autorotate_with_destination()
+
 
 def automatically_enable_autorotate_with_destination():
     """
