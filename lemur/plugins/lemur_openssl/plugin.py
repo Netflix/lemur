@@ -63,20 +63,20 @@ def create_pkcs12(cert, chain, p12_tmp, key, alias, passphrase, legacy: bool = F
                 else:
                     f.writelines([cert.strip() + "\n"])
             cmd = [
-                    "openssl",
-                    "pkcs12",
-                    "-export",
-                    "-name",
-                    alias,
-                    "-in",
-                    cert_tmp,
-                    "-inkey",
-                    key_tmp,
-                    "-out",
-                    p12_tmp,
-                    "-password",
-                    "pass:{}".format(passphrase),
-                ]
+                "openssl",
+                "pkcs12",
+                "-export",
+                "-name",
+                alias,
+                "-in",
+                cert_tmp,
+                "-inkey",
+                key_tmp,
+                "-out",
+                p12_tmp,
+                "-password",
+                "pass:{}".format(passphrase),
+            ]
 
             if legacy:
                 cmd.append("-legacy")
