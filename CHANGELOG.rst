@@ -10,6 +10,9 @@ Removed flask-script.
 Updated werkzeug to 2.3.6 and jinja2 to 3.1.2.
 Updated CORS settings to use Flask-CORS Configuration Options.
 Added new Custom Response Headers option to Lemur Configuration.
+Added legacy p12 export type to openssl plugin. New versions of openssl produce keystores incompatible with older
+versions of JDK8, so in some cases it may be useful to export in this format. Note that legacy p12 files do *NOT* feature
+strong encryption, and you should not rely on confidentiality of the exported resource.
 
 CLI Command Updates:
 - `runserver` cmd has been replaced by the default `run` cmd.

@@ -35,7 +35,7 @@ def run_process(command):
         raise Exception(stderr)
 
 
-def create_pkcs12(cert, chain, p12_tmp, key, alias, passphrase):
+def create_pkcs12(cert, chain, p12_tmp, key, alias, passphrase, legacy: bool = False):
     """
     Creates a pkcs12 formated file.
     :param cert:
@@ -44,6 +44,7 @@ def create_pkcs12(cert, chain, p12_tmp, key, alias, passphrase):
     :param key:
     :param alias:
     :param passphrase:
+    :param legacy: should legacy insecure encryption be used (for support with ancient Java versions)
     """
     assert isinstance(cert, str)
     if chain is not None:
@@ -61,9 +62,7 @@ def create_pkcs12(cert, chain, p12_tmp, key, alias, passphrase):
                     f.writelines([cert.strip() + "\n", chain.strip() + "\n"])
                 else:
                     f.writelines([cert.strip() + "\n"])
-
-            run_process(
-                [
+            cmd = [
                     "openssl",
                     "pkcs12",
                     "-export",
@@ -78,6 +77,12 @@ def create_pkcs12(cert, chain, p12_tmp, key, alias, passphrase):
                     "-password",
                     "pass:{}".format(passphrase),
                 ]
+
+            if legacy:
+                cmd.append("-legacy")
+
+            run_process(
+                cmd
             )
 
 
@@ -95,7 +100,7 @@ class OpenSSLExportPlugin(ExportPlugin):
             "name": "type",
             "type": "select",
             "required": True,
-            "available": ["PKCS12 (.p12)"],
+            "available": ["PKCS12 (.p12)", "legacy PKCS12 (.p12)"],
             "helpMessage": "Choose the format you wish to export",
         },
         {
@@ -142,6 +147,13 @@ class OpenSSLExportPlugin(ExportPlugin):
 
                 create_pkcs12(body, chain, output_tmp, key, alias, passphrase)
                 extension = "p12"
+            elif type == "legacy PKCS12 (.p12)":
+                if not key:
+                    raise Exception("Private Key required by {0}".format(type))
+
+                create_pkcs12(body, chain, output_tmp, key, alias, passphrase, legacy=True)
+                extension = "p12"
+
             else:
                 raise Exception("Unable to export, unsupported type: {0}".format(type))
 
