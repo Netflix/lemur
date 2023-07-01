@@ -4,6 +4,17 @@ Changelog
 Unreleased
 ~~~~~~~~~~~~~~~~~~~~
 Fixed a bug where S3 deletes wouldn't work due to not respecting the configured exportPlugin.
+Flask 2.3.2 Upgrade.
+Implemented Click CLI.
+Removed flask-script.
+Updated werkzeug to 2.3.6 and jinja2 to 3.1.2.
+Updated CORS settings to use Flask-CORS Configuration Options.
+Added new Custom Response Headers option to Lemur Configuration.
+
+CLI Command Updates:
+- `runserver` cmd has been replaced by the default `run` cmd.
+- `show_urls` cmd has been replaced by the default `routes` cmd.
+- `clean` cmd has been removed. currently there is no default replacement for the `clean` cmd.
 
 
 1.4.0 - `2023-04-04`

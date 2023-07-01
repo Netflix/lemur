@@ -16,20 +16,19 @@ dnspython3
 dyn
 Flask-Bcrypt
 Flask-Mail
-Flask-Migrate <= 2.7.0 #mirgration to Flask CLI required, https://github.com/miguelgrinberg/Flask-Migrate/issues/407
+Flask-Migrate
 Flask-Principal
 Flask-RESTful
-Flask-Script
 Flask-SQLAlchemy
-Flask <= 1.1.2 # similar to Flask-Migrate
+Flask
 Flask-Cors
 flask_replicated
 future
 gunicorn
 hvac # required for the vault destination plugin
 inflection
-itsdangerous < 2.1.0 # requires Flask 2.0.3
-jinja2 < 3.1.0 # requires a newer version of Flask
+itsdangerous
+jinja2
 lockfile
 logmatic-python
 marshmallow-sqlalchemy == 0.23.1 #related to the marshmallow issue (to avoid conflicts)
@@ -43,7 +42,7 @@ pyjwt
 pyOpenSSL
 pyyaml>=4.2b1 #high severity alert
 python_ldap
-redis < 4.6.0 # requires a newer release of fakeredis
+redis < 4.7.0 # requires a newer release of fakeredis
 requests
 retrying
 sentry-sdk
@@ -52,5 +51,5 @@ SQLAlchemy-Utils
 sqlalchemy < 1.4.0 # ImportError: cannot import name '_ColumnEntity' https://github.com/sqlalchemy/sqlalchemy/issues/6226
 tabulate
 validators
-werkzeug < 2.1.0 # requires a newer version of Flask
+werkzeug
 xmltodict

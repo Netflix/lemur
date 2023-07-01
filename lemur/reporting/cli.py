@@ -5,30 +5,39 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+import click
+
 from tabulate import tabulate
-from flask_script import Manager
 
 from lemur.reporting.service import fqdns, expiring_certificates
 
-manager = Manager(usage="Reporting related tasks.")
+
+@click.group(name="report", help="Reporting related tasks.")
+def cli():
+    pass
 
 
-@manager.option(
+@cli.command("fqdn")
+@click.option(
     "-v",
     "--validity",
-    dest="validity",
-    choices=["all", "expired", "valid"],
+    "validity",
+    type=click.Choice(["all", "expired", "valid"], case_sensitive=False),
     default="all",
     help="Filter certificates by validity.",
 )
-@manager.option(
+@click.option(
     "-d",
     "--deployment",
-    dest="deployment",
-    choices=["all", "deployed", "ready"],
+    "deployment",
+    type=click.Choice(["all", "deployed", "ready"], case_sensitive=False),
     default="all",
     help="Filter by deployment status.",
 )
+def fqdn_command(deployment, validity):
+    fqdn(deployment, validity)
+
+
 def fqdn(deployment, validity):
     """
     Generates a report in order to determine the number of FQDNs covered by Lemur issued certificates.
@@ -57,18 +66,28 @@ def fqdn(deployment, validity):
                 ]
             )
 
-    print(tabulate(rows, headers=headers))
+    click.echo(tabulate(rows, headers=headers))
 
 
-@manager.option("-ttl", "--ttl", dest="ttl", default=30, help="Days til expiration.")
-@manager.option(
+@cli.command("expiring")
+@click.option("-ttl",
+              "--ttl",
+              "ttl",
+              default=30,
+              help="Days til expiration."
+)
+@click.option(
     "-d",
     "--deployment",
-    dest="deployment",
-    choices=["all", "deployed", "ready"],
+    "deployment",
+    type=click.Choice(["all", "deployed", "ready"], case_sensitive=False),
     default="all",
     help="Filter by deployment status.",
 )
+def expiring_command(ttl, deployment):
+    expiring(ttl, deployment)
+
+
 def expiring(ttl, deployment):
     """
     Returns certificates expiring in the next n days.
@@ -82,4 +101,4 @@ def expiring(ttl, deployment):
                 [cert.cn, cert.owner, cert.issuer, cert.not_after, endpoint.dnsname]
             )
 
-    print(tabulate(rows, headers=headers))
+    click.echo(tabulate(rows, headers=headers))

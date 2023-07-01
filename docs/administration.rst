@@ -38,7 +38,7 @@ Basic Configuration
 .. data:: DEBUG
     :noindex:
 
-    Sets the flask debug flag to true (if supported by the webserver)
+        Sets the flask debug flag to true (if supported by the webserver)
 
     ::
 
@@ -52,15 +52,33 @@ Basic Configuration
 .. data:: CORS
     :noindex:
 
-    Allows for cross domain requests, this is most commonly used for development but could
-    be use in production if you decided to host the webUI on a different domain than the server.
+        Allows for cross domain requests, this is most commonly used for development but could
+        be use in production if you decided to host the webUI on a different domain than the server.
 
-    Use this cautiously, if you're not sure. Set it to `False`
+        For CORS configuration options, please refer to `Flask-CORS Documentation <https://flask-cors.readthedocs.io/en/latest/configuration.html>`_
+
+        Use this cautiously, if you're not sure. Set it to `False`
 
     ::
 
         CORS = False
 
+
+.. data:: CUSTOM_RESPONSE_HEADERS
+    :noindex:
+
+        Allows for the creation of multiple response headers. A response header is an HTTP header that can be used in an HTTP response and that doesn't relate to the content of the message. Response headers, like Age, Location or Server are used to give a more detailed context of the response.
+
+    ::
+
+        CUSTOM_RESPONSE_HEADERS = {}
+
+        Example:
+
+        CUSTOM_RESPONSE_HEADERS = {
+            "Content-Security-Policy": "default-src 'self'",
+            "X-Frame-Options": "DENY"
+        }
 
 .. data:: SQLALCHEMY_DATABASE_URI
     :noindex:
@@ -141,7 +159,7 @@ Basic Configuration
 
         LEMUR_TOKEN_SECRET = 'supersecret'
 
-    An example of how you might generate a random string:
+        An example of how you might generate a random string:
 
         >>> import secrets
 		>>> import string
