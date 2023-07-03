@@ -18,11 +18,18 @@ def wait_for_dns_change(change_id, client=None):
 def find_zone_id(domain, client=None):
     paginator = client.get_paginator("list_hosted_zones")
     zones = []
+    match_length = 0
     for page in paginator.paginate():
         for zone in page["HostedZones"]:
             if domain.endswith(zone["Name"]) or (domain + ".").endswith(zone["Name"]):
                 if not zone["Config"]["PrivateZone"]:
-                    zones.append((zone["Name"], zone["Id"]))
+                    if len(zone["Name"]) > match_length:
+                        # reset the list, as we have found a longer match
+                        zones = [(zone["Name"], zone["Id"])]
+                        match_length = len(zone["Name"])
+                    elif len(zone["Name"]) == match_length:
+                        # add all equal length zones, though only the first one will be returned
+                        zones.append((zone["Name"], zone["Id"]))
 
     if not zones:
         raise ValueError("Unable to find a Route53 hosted zone for {}".format(domain))
