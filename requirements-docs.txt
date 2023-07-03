@@ -21,10 +21,6 @@ aniso8601==9.0.1
     # via flask-restful
 arrow==1.2.3
     # via -r requirements-docs.in
-async-timeout==4.0.2
-    # via
-    #   -r requirements-tests.txt
-    #   redis
 attrs==23.1.0
     # via
     #   -r requirements-tests.txt
@@ -32,7 +28,7 @@ attrs==23.1.0
     #   jsonlines
     #   jsonschema
     #   sarif-om
-aws-sam-translator==1.69.0
+aws-sam-translator==1.70.0
     # via
     #   -r requirements-tests.txt
     #   cfn-lint
@@ -60,13 +56,13 @@ blinker==1.6.2
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.26.160
+boto3==1.26.161
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
-botocore==1.29.160
+botocore==1.29.161
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -164,10 +160,6 @@ ecdsa==0.18.0
     #   moto
     #   python-jose
     #   sshpubkeys
-exceptiongroup==1.1.1
-    # via
-    #   -r requirements-tests.txt
-    #   pytest
 factory-boy==3.2.1
     # via -r requirements-tests.txt
 faker==18.11.1
@@ -234,11 +226,6 @@ idna==3.4
     #   requests
 imagesize==1.4.1
     # via sphinx
-importlib-metadata==6.7.0
-    # via
-    #   -r requirements-tests.txt
-    #   flask
-    #   sphinx
 inflection==0.5.1
     # via -r requirements-docs.in
 iniconfig==2.0.0
@@ -373,11 +360,11 @@ pbr==5.11.1
     #   stevedore
 pem==23.1.0
     # via -r requirements-docs.in
-platformdirs==3.7.0
+platformdirs==3.8.0
     # via
     #   -r requirements-tests.txt
     #   black
-pluggy==1.0.0
+pluggy==1.2.0
     # via
     #   -r requirements-tests.txt
     #   pytest
@@ -432,7 +419,7 @@ pyrsistent==0.19.3
     # via
     #   -r requirements-tests.txt
     #   jsonschema
-pytest==7.3.2
+pytest==7.4.0
     # via
     #   -r requirements-tests.txt
     #   pytest-flask
@@ -591,11 +578,6 @@ sympy==1.12
     #   cfn-lint
 tabulate==0.9.0
     # via -r requirements-docs.in
-tomli==2.0.1
-    # via
-    #   -r requirements-tests.txt
-    #   black
-    #   pytest
 twofish==0.3.0
     # via pyjks
 types-pyyaml==6.0.12.10
@@ -607,8 +589,6 @@ typing-extensions==4.6.3
     #   -r requirements-tests.txt
     #   alembic
     #   aws-sam-translator
-    #   black
-    #   kombu
     #   pydantic
 tzdata==2023.3
     # via celery
@@ -628,7 +608,7 @@ vine==5.0.0
     #   kombu
 wcwidth==0.2.6
     # via prompt-toolkit
-websocket-client==1.6.0
+websocket-client==1.6.1
     # via
     #   -r requirements-tests.txt
     #   docker
@@ -648,10 +628,6 @@ xmltodict==0.13.0
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   moto
-zipp==3.15.0
-    # via
-    #   -r requirements-tests.txt
-    #   importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
