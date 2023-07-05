@@ -21,10 +21,6 @@ aniso8601==9.0.1
     # via flask-restful
 arrow==1.2.3
     # via -r requirements-docs.in
-async-timeout==4.0.2
-    # via
-    #   -r requirements-tests.txt
-    #   redis
 attrs==23.1.0
     # via
     #   -r requirements-tests.txt
@@ -32,7 +28,7 @@ attrs==23.1.0
     #   jsonlines
     #   jsonschema
     #   sarif-om
-aws-sam-translator==1.69.0
+aws-sam-translator==1.70.0
     # via
     #   -r requirements-tests.txt
     #   cfn-lint
@@ -60,13 +56,13 @@ blinker==1.6.2
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.26.160
+boto3==1.26.165
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
-botocore==1.29.160
+botocore==1.29.165
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -164,13 +160,9 @@ ecdsa==0.18.0
     #   moto
     #   python-jose
     #   sshpubkeys
-exceptiongroup==1.1.1
-    # via
-    #   -r requirements-tests.txt
-    #   pytest
 factory-boy==3.2.1
     # via -r requirements-tests.txt
-faker==18.11.1
+faker==18.11.2
     # via
     #   -r requirements-tests.txt
     #   factory-boy
@@ -230,15 +222,9 @@ hvac==1.1.1
 idna==3.4
     # via
     #   -r requirements-tests.txt
-    #   moto
     #   requests
 imagesize==1.4.1
     # via sphinx
-importlib-metadata==6.7.0
-    # via
-    #   -r requirements-tests.txt
-    #   flask
-    #   sphinx
 inflection==0.5.1
     # via -r requirements-docs.in
 iniconfig==2.0.0
@@ -296,12 +282,23 @@ jsonschema==4.17.3
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   cfn-lint
+    #   jsonschema-spec
+    #   openapi-schema-validator
+    #   openapi-spec-validator
+jsonschema-spec==0.1.6
+    # via
+    #   -r requirements-tests.txt
+    #   openapi-spec-validator
 junit-xml==1.9
     # via
     #   -r requirements-tests.txt
     #   cfn-lint
 kombu==5.3.1
     # via celery
+lazy-object-proxy==1.9.0
+    # via
+    #   -r requirements-tests.txt
+    #   openapi-spec-validator
 logmatic-python==0.1.7
     # via -r requirements-docs.in
 mako==1.2.4
@@ -317,7 +314,6 @@ markupsafe==2.1.3
     #   -r requirements-tests.txt
     #   jinja2
     #   mako
-    #   moto
     #   werkzeug
 marshmallow==2.21.0
     # via
@@ -332,7 +328,7 @@ mdurl==0.1.2
     # via
     #   -r requirements-tests.txt
     #   markdown-it-py
-moto[all]==3.1.1
+moto[all]==4.1.12
     # via -r requirements-tests.txt
 mpmath==1.3.0
     # via
@@ -348,6 +344,14 @@ networkx==3.1
     #   cfn-lint
 nose==1.3.7
     # via -r requirements-tests.txt
+openapi-schema-validator==0.4.4
+    # via
+    #   -r requirements-tests.txt
+    #   openapi-spec-validator
+openapi-spec-validator==0.5.7
+    # via
+    #   -r requirements-tests.txt
+    #   moto
 packaging==23.1
     # via
     #   -r requirements-tests.txt
@@ -361,6 +365,10 @@ parsedatetime==2.6
     # via
     #   -r requirements-tests.txt
     #   certbot
+pathable==0.4.3
+    # via
+    #   -r requirements-tests.txt
+    #   jsonschema-spec
 pathspec==0.11.1
     # via
     #   -r requirements-tests.txt
@@ -373,16 +381,20 @@ pbr==5.11.1
     #   stevedore
 pem==23.1.0
     # via -r requirements-docs.in
-platformdirs==3.7.0
+platformdirs==3.8.0
     # via
     #   -r requirements-tests.txt
     #   black
-pluggy==1.0.0
+pluggy==1.2.0
     # via
     #   -r requirements-tests.txt
     #   pytest
 prompt-toolkit==3.0.38
     # via click-repl
+py-partiql-parser==0.3.3
+    # via
+    #   -r requirements-tests.txt
+    #   moto
 pyasn1==0.5.0
     # via
     #   -r requirements-tests.txt
@@ -423,6 +435,10 @@ pyopenssl==23.2.0
     #   -r requirements-tests.txt
     #   acme
     #   josepy
+pyparsing==3.1.0
+    # via
+    #   -r requirements-tests.txt
+    #   moto
 pyrfc3339==1.1
     # via
     #   -r requirements-tests.txt
@@ -432,7 +448,7 @@ pyrsistent==0.19.3
     # via
     #   -r requirements-tests.txt
     #   jsonschema
-pytest==7.3.2
+pytest==7.4.0
     # via
     #   -r requirements-tests.txt
     #   pytest-flask
@@ -462,7 +478,6 @@ pytz==2023.3
     #   acme
     #   certbot
     #   flask-restful
-    #   moto
     #   pyrfc3339
 pyyaml==6.0
     # via
@@ -470,6 +485,7 @@ pyyaml==6.0
     #   bandit
     #   cfn-lint
     #   cloudflare
+    #   jsonschema-spec
     #   moto
     #   responses
 redis==4.6.0
@@ -490,6 +506,7 @@ requests==2.31.0
     #   cloudflare
     #   docker
     #   hvac
+    #   jsonschema-spec
     #   moto
     #   requests-mock
     #   responses
@@ -502,6 +519,10 @@ responses==0.23.1
     #   moto
 retrying==1.3.4
     # via -r requirements-docs.in
+rfc3339-validator==0.1.4
+    # via
+    #   -r requirements-tests.txt
+    #   openapi-schema-validator
 rich==13.4.2
     # via
     #   -r requirements-tests.txt
@@ -530,6 +551,7 @@ six==1.16.0
     #   python-dateutil
     #   requests-mock
     #   retrying
+    #   rfc3339-validator
     #   sphinxcontrib-httpdomain
 smmap==5.0.0
     # via
@@ -591,11 +613,6 @@ sympy==1.12
     #   cfn-lint
 tabulate==0.9.0
     # via -r requirements-docs.in
-tomli==2.0.1
-    # via
-    #   -r requirements-tests.txt
-    #   black
-    #   pytest
 twofish==0.3.0
     # via pyjks
 types-pyyaml==6.0.12.10
@@ -607,8 +624,6 @@ typing-extensions==4.6.3
     #   -r requirements-tests.txt
     #   alembic
     #   aws-sam-translator
-    #   black
-    #   kombu
     #   pydantic
 tzdata==2023.3
     # via celery
@@ -628,7 +643,7 @@ vine==5.0.0
     #   kombu
 wcwidth==0.2.6
     # via prompt-toolkit
-websocket-client==1.6.0
+websocket-client==1.6.1
     # via
     #   -r requirements-tests.txt
     #   docker
@@ -648,10 +663,6 @@ xmltodict==0.13.0
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   moto
-zipp==3.15.0
-    # via
-    #   -r requirements-tests.txt
-    #   importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
