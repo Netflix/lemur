@@ -35,6 +35,24 @@ def run_process(command):
         raise Exception(stderr)
 
 
+def get_openssl_version():
+    """
+    :return: the openssl version, if it can be determined
+    """
+    command = ['openssl', 'version']
+    p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    current_app.logger.debug(command)
+    stdout, stderr = p.communicate()
+
+    if p.returncode != 0:
+        current_app.logger.debug(" ".join(command))
+        current_app.logger.error(stderr)
+        raise Exception(stderr)
+
+    if stdout.startswith(b'OpenSSL'):
+        return stdout.split()[1]
+
+
 def create_pkcs12(cert, chain, p12_tmp, key, alias, passphrase, legacy: bool = False):
     """
     Creates a pkcs12 formated file.
@@ -79,7 +97,9 @@ def create_pkcs12(cert, chain, p12_tmp, key, alias, passphrase, legacy: bool = F
             ]
 
             if legacy:
-                cmd.append("-legacy")
+                version = get_openssl_version()
+                if version >= b'3':
+                    cmd.append("-legacy")
 
             run_process(
                 cmd
