@@ -3,6 +3,9 @@ Changelog
 
 Unreleased
 ~~~~~~~~~~~~~~~~~~~~
+
+1.5.0 - `2023-07-05`
+~~~~~~~~~~~~~~~~~~~~
 Fixed a bug where S3 deletes wouldn't work due to not respecting the configured exportPlugin.
 Flask 2.3.2 Upgrade.
 Implemented Click CLI.
