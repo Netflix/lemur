@@ -98,7 +98,7 @@ def create_pkcs12(cert, chain, p12_tmp, key, alias, passphrase, legacy: bool = F
 
             if legacy:
                 version = get_openssl_version()
-                if version >= b'3':
+                if version and version >= b'3':
                     cmd.append("-legacy")
 
             run_process(
