@@ -6,24 +6,24 @@ import ssl
 import threading
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from tempfile import NamedTemporaryFile
+from unittest.mock import patch
 
 import arrow
 import pytest
 from cryptography import x509
-from cryptography.x509.oid import ExtensionOID
 from cryptography.hazmat.backends import default_backend
-from marshmallow import ValidationError
+from cryptography.x509.oid import ExtensionOID
 from freezegun import freeze_time
-from unittest.mock import patch
-
+from marshmallow import ValidationError
 from sqlalchemy.testing import fail
 
-from lemur.certificates.service import create_csr, identify_and_persist_expiring_deployed_certificates
+from lemur.certificates.service import create_csr, identify_and_persist_expiring_deployed_certificates, \
+    reissue_certificate
 from lemur.certificates.views import *  # noqa
 from lemur.common import utils
 from lemur.domains.models import Domain
+from lemur.tests.factories import DestinationFactory, DuplicateAllowedDestinationFactory
 from lemur.tests.test_messaging import create_cert_that_expires_in_days
-
 from lemur.tests.vectors import (
     VALID_ADMIN_API_TOKEN,
     VALID_ADMIN_HEADER_TOKEN,
@@ -1821,3 +1821,89 @@ def test_query_common_name(session):
 
     cn2_valid_certs = query_common_name(cn2, {"owner": "", "page": "", "count": ""})
     assert len(cn2_valid_certs) == 1
+
+
+def test_reissue_certificate_with_duplicate_destinations_not_allowed(session,
+                                                                     logged_in_user,
+                                                                     crypto_authority,
+                                                                     issuer_plugin,
+                                                                     destination_plugin,
+                                                                     certificate):
+    # test-authority would return a mismatching private key, so use 'cryptography-issuer' plugin instead.
+    certificate.authority = crypto_authority
+
+    destination1 = DestinationFactory()
+    destination2 = DestinationFactory()
+    certificate.destinations.append(destination1)
+    certificate.destinations.append(destination2)
+    with pytest.raises(Exception, match='Duplicate destinations for plugin test-destination and account 1234567890 '
+                                        'are not allowed'):
+        reissue_certificate(certificate)
+
+
+def test_reissue_certificate_with_duplicate_destinations_allowed(session,
+                                                                 logged_in_user,
+                                                                 crypto_authority,
+                                                                 issuer_plugin,
+                                                                 duplicate_allowed_destination_plugin,
+                                                                 certificate):
+    # test-authority would return a mismatching private key, so use 'cryptography-issuer' plugin instead.
+    certificate.authority = crypto_authority
+
+    destination1 = DuplicateAllowedDestinationFactory()
+    destination2 = DuplicateAllowedDestinationFactory()
+    certificate.destinations.append(destination1)
+    certificate.destinations.append(destination2)
+    new_cert = reissue_certificate(certificate)
+    assert new_cert
+    assert len(new_cert.destinations) == 2
+    assert destination1 in new_cert.destinations
+    assert destination2 in new_cert.destinations
+
+
+def test_certificate_update_duplicate_destinations_not_allowed(client, crypto_authority, certificate, issuer_plugin,
+                                                               destination_plugin):
+    # test-authority would return a mismatching private key, so use 'cryptography-issuer' plugin instead.
+    certificate.authority = crypto_authority
+
+    destination1 = DestinationFactory()
+    destination2 = DestinationFactory()
+    certificate.destinations.append(destination1)
+    certificate.destinations.append(destination2)
+
+    resp = client.put(
+        api.url_for(Certificates, certificate_id=certificate.id),
+        data=json.dumps(
+            certificate_output_schema.dump(certificate).data
+        ),
+        headers=VALID_ADMIN_HEADER_TOKEN,
+    )
+    assert resp.status_code == 400
+    assert 'Duplicate destinations for plugin test-destination and account 1234567890 are not allowed' \
+           in resp.json['message']
+
+
+def test_certificate_update_duplicate_destinations_allowed(client, crypto_authority, certificate, issuer_plugin,
+                                                           duplicate_allowed_destination_plugin):
+    from lemur.destinations.schemas import destination_output_schema
+
+    # test-authority would return a mismatching private key, so use 'cryptography-issuer' plugin instead.
+    certificate.authority = crypto_authority
+
+    destination1 = DuplicateAllowedDestinationFactory()
+    destination2 = DuplicateAllowedDestinationFactory()
+    certificate.destinations.append(destination1)
+    certificate.destinations.append(destination2)
+
+    resp = client.put(
+        api.url_for(Certificates, certificate_id=certificate.id),
+        data=json.dumps(
+            certificate_output_schema.dump(certificate).data
+        ),
+        headers=VALID_ADMIN_HEADER_TOKEN,
+    )
+    assert resp.status_code == 200
+    resp_cert = resp.json
+    assert len(resp_cert['destinations']) is 2
+    assert destination_output_schema.dump(destination1).data in resp_cert['destinations']
+    assert destination_output_schema.dump(destination2).data in resp_cert['destinations']

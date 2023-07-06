@@ -11,6 +11,7 @@ from builtins import str
 from flask import Blueprint, make_response, jsonify, g, current_app
 from flask_restful import reqparse, Api, inputs
 
+from lemur.certificates.service import validate_no_duplicate_destinations
 from lemur.common import validators
 from lemur.plugins.bases.authorization import UnauthorizedError
 from sentry_sdk import capture_exception
@@ -918,6 +919,14 @@ class Certificates(AuthenticatedResource):
                     dict(message="You are not authorized to update this certificate"),
                     403,
                 )
+
+        try:
+            validate_no_duplicate_destinations(data["destinations"])
+        except Exception as e:
+            return (
+                dict(message=str(e)),
+                400,
+            )
 
         for destination in data["destinations"]:
             if destination.plugin.requires_key:

@@ -38,6 +38,7 @@ from .factories import (
     CACertificateFactory,
     DnsProviderFactory,
     OptionalCNAuthorityFactory,
+    DuplicateAllowedDestinationFactory,
 )
 
 
@@ -141,6 +142,13 @@ def optional_cn_authority(session):
 @pytest.fixture
 def destination(session):
     d = DestinationFactory()
+    session.commit()
+    return d
+
+
+@pytest.fixture
+def duplicate_allowed_destination(session):
+    d = DuplicateAllowedDestinationFactory()
     session.commit()
     return d
 
@@ -281,6 +289,15 @@ def destination_plugin():
 
     register(TestDestinationPlugin)
     return TestDestinationPlugin
+
+
+@pytest.fixture
+def duplicate_allowed_destination_plugin():
+    from lemur.plugins.base import register
+    from .plugins.destination_plugin import TestDestinationPluginDuplicatesAllowed
+
+    register(TestDestinationPluginDuplicatesAllowed)
+    return TestDestinationPluginDuplicatesAllowed
 
 
 @pytest.fixture
