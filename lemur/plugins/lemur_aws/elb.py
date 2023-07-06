@@ -214,6 +214,51 @@ def get_listener_arn_from_endpoint(endpoint_name, endpoint_port, **kwargs):
 
 
 @sts_client("elbv2")
+@retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=20)
+def has_listener_cert_for_sni(listener_arn, **kwargs):
+    """
+    Describe listener to list certificates in use
+    For cert added as SNI listener, it will be listed with both, default true and false
+    :param listener_arn:
+    :return: True/False
+    """
+    try:
+        listener_certificates = kwargs["client"].describe_listener_certificates(
+            ListenerArn=listener_arn
+        )
+
+        default_cert = ""
+
+        for cert in listener_certificates["Certificates"]:
+            if cert["IsDefault"]:
+                default_cert = cert["CertificateArn"]
+                break
+
+        for cert in listener_certificates["Certificates"]:
+            if cert["IsDefault"] is False and cert["CertificateArn"] == default_cert:
+                return True
+
+        return False
+
+    except Exception as e:  # noqa
+        metrics.send(
+            "has_listener_cert_for_SNI_error",
+            "counter",
+            1,
+            metric_tags={
+                "error": str(e),
+                "listener_arn": listener_arn,
+            },
+        )
+        capture_exception(
+            extra={
+                "listener_arn": listener_arn,
+            }
+        )
+        raise
+
+
+@sts_client("elbv2")
 @retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=5)
 def get_load_balancer_arn_from_endpoint(endpoint_name, **kwargs):
     """
@@ -421,9 +466,18 @@ def attach_certificate_v2(listener_arn, port, certificates, **kwargs):
     :param certificates:
     """
     try:
-        return kwargs["client"].modify_listener(
+        needs_cert_update_for_sni = has_listener_cert_for_sni(listener_arn)
+
+        modified_listener = kwargs["client"].modify_listener(
             ListenerArn=listener_arn, Port=port, Certificates=certificates
         )
+
+        if needs_cert_update_for_sni:
+            kwargs["client"].add_listener_certificates(
+                ListenerArn=listener_arn, Certificates=certificates
+            )
+        return modified_listener
+
     except botocore.exceptions.ClientError as e:
         if e.response["Error"]["Code"] == "LoadBalancerNotFound":
             current_app.logger.warning("Loadbalancer does not exist.")
