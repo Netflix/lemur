@@ -1904,6 +1904,6 @@ def test_certificate_update_duplicate_destinations_allowed(client, crypto_author
     )
     assert resp.status_code == 200
     resp_cert = resp.json
-    assert len(resp_cert['destinations']) is 2
+    assert len(resp_cert['destinations']) == 2
     assert destination_output_schema.dump(destination1).data in resp_cert['destinations']
     assert destination_output_schema.dump(destination2).data in resp_cert['destinations']
