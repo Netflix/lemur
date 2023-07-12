@@ -481,17 +481,8 @@ def create(**kwargs):
     """
     Creates a new certificate.
     """
-    # Validate destinations do not overlap accounts for the same plugin
     if "destinations" in kwargs:
-        dest_plugin_accounts = {}
-        for dest in kwargs["destinations"]:
-            plugin_accounts = dest_plugin_accounts.setdefault(dest.plugin_name, {})
-            account = get_plugin_option("accountNumber", dest.options)
-            dest_plugin = plugins.get(dest.plugin_name)
-            if account in plugin_accounts and not dest_plugin.allow_multiple_per_account():
-                raise Exception(f"Duplicate destinations for plugin {dest.plugin_name} and account {account} are not "
-                                f"allowed")
-            plugin_accounts[account] = True
+        validate_no_duplicate_destinations(kwargs["destinations"])
 
     try:
         cert_body, private_key, cert_chain, external_id, csr = mint(**kwargs)
@@ -559,6 +550,21 @@ def create(**kwargs):
             fetch_acme_cert.apply_async((pending_cert.id, kwargs.get("async_reissue_notification_cert_id", None)), countdown=5)
 
     return cert
+
+
+def validate_no_duplicate_destinations(destinations):
+    """
+    Validates destinations do not overlap accounts for the same plugin (for plugins that don't allow duplicates).
+    """
+    dest_plugin_accounts = {}
+    for dest in destinations:
+        plugin_accounts = dest_plugin_accounts.setdefault(dest.plugin_name, {})
+        account = get_plugin_option("accountNumber", dest.options)
+        dest_plugin = plugins.get(dest.plugin_name)
+        if account in plugin_accounts and not dest_plugin.allow_multiple_per_account():
+            raise Exception(f"Duplicate destinations for plugin {dest.plugin_name} and account {account} are not "
+                            f"allowed")
+        plugin_accounts[account] = True
 
 
 def render(args):

@@ -23,11 +23,11 @@ black==23.3.0
     # via -r requirements-tests.in
 blinker==1.6.2
     # via flask
-boto3==1.26.165
+boto3==1.28.1
     # via
     #   aws-sam-translator
     #   moto
-botocore==1.29.165
+botocore==1.31.1
     # via
     #   aws-xray-sdk
     #   boto3
@@ -73,11 +73,11 @@ ecdsa==0.18.0
     #   sshpubkeys
 factory-boy==3.2.1
     # via -r requirements-tests.in
-faker==18.11.2
+faker==18.13.0
     # via
     #   -r requirements-tests.in
     #   factory-boy
-fakeredis==2.15.0
+fakeredis==2.16.0
     # via -r requirements-tests.in
 flask==2.3.2
     # via
