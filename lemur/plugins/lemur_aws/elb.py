@@ -462,7 +462,7 @@ def has_listener_cert_for_sni(listener_arn, client):
                 break
 
         if not default_cert:
-            return false
+            return False
 
         for cert in listener_certificates["Certificates"]:
             if cert["IsDefault"] is False and cert["CertificateArn"] == default_cert:
