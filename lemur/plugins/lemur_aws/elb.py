@@ -6,7 +6,6 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import botocore
-import click
 from flask import current_app
 
 from retrying import retry
@@ -429,7 +428,7 @@ def attach_certificate_v2(listener_arn, port, certificates, **kwargs):
         )
 
         if needs_cert_update_for_sni:
-            click.echo("[+] Adding cert as listener cert for SNI")
+            current_app.logger.info(f"Adding cert as listener cert for SNI. listener_arn: {listener_arn}")
             kwargs["client"].add_listener_certificates(
                 ListenerArn=listener_arn, Certificates=certificates
             )
@@ -457,7 +456,7 @@ def has_listener_cert_for_sni(listener_arn, client):
         default_cert = ""
 
         for cert in listener_certificates["Certificates"]:
-            if cert["IsDefault"]:
+            if "IsDefault" in cert and cert["IsDefault"]:
                 default_cert = cert["CertificateArn"]
                 break
 
@@ -465,7 +464,7 @@ def has_listener_cert_for_sni(listener_arn, client):
             return False
 
         for cert in listener_certificates["Certificates"]:
-            if cert["IsDefault"] is False and cert["CertificateArn"] == default_cert:
+            if "IsDefault" in cert and cert["IsDefault"] is False and cert["CertificateArn"] == default_cert:
                 return True
 
         return False
