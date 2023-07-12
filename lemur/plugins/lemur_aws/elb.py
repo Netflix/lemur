@@ -421,11 +421,67 @@ def attach_certificate_v2(listener_arn, port, certificates, **kwargs):
     :param certificates:
     """
     try:
-        return kwargs["client"].modify_listener(
+        needs_cert_update_for_sni = has_listener_cert_for_sni(listener_arn, kwargs["client"])
+
+        modified_listener = kwargs["client"].modify_listener(
             ListenerArn=listener_arn, Port=port, Certificates=certificates
         )
+
+        if needs_cert_update_for_sni:
+            current_app.logger.info(f"Adding cert as listener cert for SNI. listener_arn: {listener_arn}")
+            kwargs["client"].add_listener_certificates(
+                ListenerArn=listener_arn, Certificates=certificates
+            )
+        return modified_listener
+
     except botocore.exceptions.ClientError as e:
         if e.response["Error"]["Code"] == "LoadBalancerNotFound":
             current_app.logger.warning("Loadbalancer does not exist.")
         else:
             raise e
+
+
+def has_listener_cert_for_sni(listener_arn, client):
+    """
+    Describe listener to list certificates in use
+    For cert added as SNI listener, it will be listed with both, default true and false
+    :param listener_arn:
+    :return: True/False
+    """
+    try:
+        listener_certificates = client.describe_listener_certificates(
+            ListenerArn=listener_arn
+        )
+
+        default_cert = ""
+
+        for cert in listener_certificates["Certificates"]:
+            if "IsDefault" in cert and cert["IsDefault"]:
+                default_cert = cert["CertificateArn"]
+                break
+
+        if not default_cert:
+            return False
+
+        for cert in listener_certificates["Certificates"]:
+            if "IsDefault" in cert and cert["IsDefault"] is False and cert["CertificateArn"] == default_cert:
+                return True
+
+        return False
+
+    except Exception as e:  # noqa
+        metrics.send(
+            "has_listener_cert_for_SNI_error",
+            "counter",
+            1,
+            metric_tags={
+                "error": str(e),
+                "listener_arn": listener_arn,
+            },
+        )
+        capture_exception(
+            extra={
+                "listener_arn": listener_arn,
+            }
+        )
+        raise
