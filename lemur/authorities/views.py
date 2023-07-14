@@ -225,7 +225,8 @@ class AuthoritiesList(AuthenticatedResource):
            :arg serialNumber: serial number of the authority
            :arg firstSerial: specifies the starting serial number for certificates issued off of this authority
            :reqheader Authorization: OAuth token to authenticate
-           :statuscode 403: unauthenticated
+           :statuscode 401: unauthenticated
+           :statuscode 403: unauthorized
            :statuscode 200: no error
         """
 
