@@ -227,6 +227,31 @@ def test_authorities_post(client, token, status):
 
 
 @pytest.mark.parametrize(
+    "token,authority_number,status",
+    [
+        (VALID_USER_HEADER_TOKEN, 1, 403),
+        (VALID_ADMIN_HEADER_TOKEN, 2, 200),
+        (VALID_ADMIN_API_TOKEN, 3, 200),
+        ("", 4, 401),
+    ],
+)
+def test_authorities_post(client, authority_number, token, status):
+    """
+    This test relies on the configuration option ADMIN_ONLY_AUTHORITY_CREATION = True, set in conf.py
+    """
+    response = client.post(
+        api.url_for(AuthoritiesList),
+        data=json.dumps({'name': f'testauthority{authority_number}', 'owner': 'test@example.com',
+                         'common_name': 'testauthority1.example.com', "serial_number": 1,
+                         "validityStart": "2023-07-12T07:00:00.000Z",
+                         "validityEnd": "2050-07-13T07:00:00.000Z",
+                         'plugin': {'slug': 'cryptography-issuer'}}),
+        headers=token
+    )
+    assert response.status_code == status, f"expected code {status}, but actual code was {response.status_code}; error: {response.json}"
+
+
+@pytest.mark.parametrize(
     "token,status",
     [
         (VALID_USER_HEADER_TOKEN, 405),

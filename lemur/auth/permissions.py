@@ -59,6 +59,15 @@ class RoleMemberPermission(Permission):
         super(RoleMemberPermission, self).__init__(*needs)
 
 
+class AuthorityCreatorPermission(Permission):
+    def __init__(self):
+        requires_admin = current_app.config.get("ADMIN_ONLY_AUTHORITY_CREATION", False)
+        if requires_admin:
+            super(AuthorityCreatorPermission, self).__init__(RoleNeed("admin"))
+        else:
+            super(AuthorityCreatorPermission, self).__init__()
+
+
 AuthorityCreator = namedtuple("AuthorityCreator", ["method", "value"])
 AuthorityCreatorNeed = partial(AuthorityCreator, "authorityUse")
 
