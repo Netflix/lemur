@@ -59,6 +59,7 @@ blinker==1.6.2
 boto3==1.28.1
     # via
     #   -r requirements-docs.in
+    #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
 botocore==1.31.1
@@ -122,10 +123,9 @@ configobj==5.0.8
     #   certbot
 coverage==7.2.7
     # via -r requirements-tests.txt
-cryptography==41.0.1
+cryptography==41.0.2
     # via
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
     #   acme
     #   certbot
     #   josepy
