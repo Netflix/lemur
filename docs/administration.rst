@@ -266,6 +266,11 @@ Basic Configuration
             >>>  # supplying extra information
             >>>  capture_exception(extra={"certificate_name": str(certificate.name)})
 
+.. data:: ADMIN_ONLY_AUTHORITY_CREATION
+    :noindex:
+
+        Allows authority creation to be an admin-only operation. By default, any user can create new authorities.
+
 
 Certificate Default Options
 ---------------------------
