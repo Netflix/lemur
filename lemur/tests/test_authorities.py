@@ -235,7 +235,7 @@ def test_authorities_post(client, token, status):
         ("", 4, 401),
     ],
 )
-def test_authorities_post(client, authority_number, token, status):
+def test_authorities_post_with_data(client, authority_number, token, status):
     """
     This test relies on the configuration option ADMIN_ONLY_AUTHORITY_CREATION = True, set in conf.py
     """
