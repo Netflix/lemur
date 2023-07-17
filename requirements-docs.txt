@@ -48,7 +48,7 @@ beautifulsoup4==4.12.2
     # via cloudflare
 billiard==4.1.0
     # via celery
-black==23.3.0
+black==23.7.0
     # via -r requirements-tests.txt
 blinker==1.6.2
     # via
@@ -126,6 +126,7 @@ coverage==7.2.7
 cryptography==41.0.2
     # via
     #   -r requirements-docs.in
+    #   -r requirements-tests.txt
     #   acme
     #   certbot
     #   josepy
