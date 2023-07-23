@@ -25,6 +25,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa, ec, padding
 from cryptography.hazmat.primitives.serialization import load_pem_private_key, Encoding, pkcs7
 from flask_restful.reqparse import RequestParser
 from sqlalchemy import and_, func
+import josepy as jose
 
 from certbot.crypto_util import CERT_PEM_REGEX
 from lemur.constants import CERTIFICATE_KEY_TYPES
@@ -243,6 +244,22 @@ def generate_private_key(key_type):
         return ec.generate_private_key(
             _CURVE_TYPES[key_type], backend=default_backend()
         )
+
+def key_to_alg(key):
+    algorithm = jose.RS256
+    # Determine alg with kty (and crv).
+    if key.typ == "EC":
+        crv = key.fields_to_partial_json().get("crv", None)
+        if crv == "P-256" or not crv:
+            algorithm = jose.ES256
+        elif crv == "P-384":
+            algorithm = jose.ES384
+        elif crv == "P-521":
+            algorithm = jose.ES512
+    elif key.typ == "oct":
+        algorithm = jose.HS256
+
+    return algorithm
 
 
 def check_cert_signature(cert, issuer_public_key):
