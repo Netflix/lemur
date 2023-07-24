@@ -215,7 +215,7 @@ graphql-core==3.2.3
     # via
     #   -r requirements-tests.txt
     #   moto
-gunicorn==20.1.0
+gunicorn==21.2.0
     # via -r requirements-docs.in
 hvac==1.1.1
     # via -r requirements-docs.in
@@ -357,6 +357,7 @@ packaging==23.1
     #   -r requirements-tests.txt
     #   black
     #   docker
+    #   gunicorn
     #   pytest
     #   sphinx
 paramiko==3.2.0

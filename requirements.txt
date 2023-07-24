@@ -126,7 +126,7 @@ flask-sqlalchemy==2.5.1
     #   flask-migrate
 future==0.18.3
     # via -r requirements.in
-gunicorn==20.1.0
+gunicorn==21.2.0
     # via -r requirements.in
 hvac==1.1.1
     # via -r requirements.in
@@ -175,6 +175,8 @@ marshmallow-sqlalchemy==0.23.1
     # via -r requirements.in
 ndg-httpsclient==0.5.1
     # via -r requirements.in
+packaging==23.1
+    # via gunicorn
 paramiko==3.2.0
     # via -r requirements.in
 parsedatetime==2.6
