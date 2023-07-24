@@ -76,7 +76,7 @@ pygments==2.15.1
     # via
     #   readme-renderer
     #   rich
-pyyaml==6.0
+pyyaml==6.0.1
     # via
     #   -r requirements-dev.in
     #   pre-commit
