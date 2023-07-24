@@ -71,7 +71,7 @@ ecdsa==0.18.0
     #   moto
     #   python-jose
     #   sshpubkeys
-factory-boy==3.2.1
+factory-boy==3.3.0
     # via -r requirements-tests.in
 faker==19.1.0
     # via
