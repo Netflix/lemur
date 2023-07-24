@@ -480,7 +480,7 @@ pytz==2023.3
     #   certbot
     #   flask-restful
     #   pyrfc3339
-pyyaml==6.0
+pyyaml==6.0.1
     # via
     #   -r requirements-tests.txt
     #   bandit
