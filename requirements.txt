@@ -35,9 +35,9 @@ blinker==1.6.2
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.28.3
+boto3==1.28.9
     # via -r requirements.in
-botocore==1.31.3
+botocore==1.31.9
     # via
     #   -r requirements.in
     #   boto3
@@ -126,7 +126,7 @@ flask-sqlalchemy==2.5.1
     #   flask-migrate
 future==0.18.3
     # via -r requirements.in
-gunicorn==20.1.0
+gunicorn==21.2.0
     # via -r requirements.in
 hvac==1.1.1
     # via -r requirements.in
@@ -175,6 +175,8 @@ marshmallow-sqlalchemy==0.23.1
     # via -r requirements.in
 ndg-httpsclient==0.5.1
     # via -r requirements.in
+packaging==23.1
+    # via gunicorn
 paramiko==3.2.0
     # via -r requirements.in
 parsedatetime==2.6
