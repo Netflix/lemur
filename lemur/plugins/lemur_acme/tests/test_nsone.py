@@ -5,6 +5,7 @@ import unittest
 from unittest.mock import patch, Mock
 
 from flask import Flask
+
 from lemur.plugins.lemur_acme import plugin, nsone
 
 
@@ -52,7 +53,7 @@ class TestNsone(unittest.TestCase):
             "expiry": 0,
             "primary_master": "string",
             "id": "string",
-            "meta":{
+            "meta": {
                 "asn": ["string"],
                 "ca_province": ["string"],
                 "connections": 0,
