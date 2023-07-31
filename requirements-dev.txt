@@ -22,7 +22,7 @@ docutils==0.20.1
     # via readme-renderer
 filelock==3.12.2
     # via virtualenv
-flake8==6.0.0
+flake8==6.1.0
     # via -r requirements-dev.in
 identify==2.5.24
     # via pre-commit
@@ -66,11 +66,11 @@ platformdirs==3.8.0
     # via virtualenv
 pre-commit==3.3.3
     # via -r requirements-dev.in
-pycodestyle==2.10.0
+pycodestyle==2.11.0
     # via flake8
 pycparser==2.21
     # via cffi
-pyflakes==3.0.1
+pyflakes==3.1.0
     # via flake8
 pygments==2.15.1
     # via
