@@ -83,7 +83,7 @@ def test_notification_put(client, token, status):
 @pytest.mark.parametrize(
     "token,status",
     [
-        (VALID_USER_HEADER_TOKEN, 200),
+        (VALID_USER_HEADER_TOKEN, 403),
         (VALID_ADMIN_HEADER_TOKEN, 200),
         (VALID_ADMIN_API_TOKEN, 200),
         ("", 401),
