@@ -14,6 +14,7 @@ from lemur.common.schema import validate_schema
 from lemur.auth.service import AuthenticatedResource
 from lemur.auth.permissions import AuthorityCreatorPermission
 from lemur.auth.permissions import AuthorityPermission
+from lemur.auth.permissions import operator_permission
 
 from lemur.certificates import service as certificate_service
 
@@ -118,6 +119,7 @@ class AuthoritiesList(AuthenticatedResource):
         args["user"] = g.current_user
         return service.render(args)
 
+    @operator_permission.require(http_exception=403)
     @validate_schema(authority_input_schema, authority_output_schema)
     def post(self, data=None):
         """
@@ -299,6 +301,7 @@ class Authorities(AuthenticatedResource):
         """
         return service.get(authority_id)
 
+    @operator_permission.require(http_exception=403)
     @validate_schema(authority_update_schema, authority_output_schema)
     def put(self, authority_id, data=None):
         """

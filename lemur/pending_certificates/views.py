@@ -8,7 +8,7 @@ from flask import Blueprint, g, make_response, jsonify
 from flask_restful import Api, reqparse, inputs
 
 from lemur.auth.service import AuthenticatedResource
-from lemur.auth.permissions import CertificatePermission
+from lemur.auth.permissions import CertificatePermission, operator_permission
 
 from lemur.common.schema import validate_schema
 from lemur.common.utils import paginated_parser
@@ -210,6 +210,7 @@ class PendingCertificates(AuthenticatedResource):
         """
         return service.get(pending_certificate_id)
 
+    @operator_permission.require(http_exception=403)
     @validate_schema(
         pending_certificate_edit_input_schema, pending_certificate_output_schema
     )
@@ -329,6 +330,7 @@ class PendingCertificates(AuthenticatedResource):
         pending_cert = service.update(pending_certificate_id, **data)
         return pending_cert
 
+    @operator_permission.require(http_exception=403)
     @validate_schema(pending_certificate_cancel_schema, None)
     def delete(self, pending_certificate_id, data=None):
         """
@@ -455,6 +457,7 @@ class PendingCertificatesUpload(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(PendingCertificatesUpload, self).__init__()
 
+    @operator_permission.require(http_exception=403)
     @validate_schema(
         pending_certificate_upload_input_schema, pending_certificate_output_schema
     )

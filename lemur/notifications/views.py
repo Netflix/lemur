@@ -17,6 +17,7 @@ from lemur.notifications.schemas import (
 
 from lemur.auth.service import AuthenticatedResource
 from lemur.common.utils import paginated_parser
+from lemur.auth.permissions import operator_permission
 
 from lemur.common.schema import validate_schema
 
@@ -112,6 +113,7 @@ class NotificationsList(AuthenticatedResource):
         args = parser.parse_args()
         return service.render(args)
 
+    @operator_permission.require(http_exception=403)
     @validate_schema(notification_input_schema, notification_output_schema)
     def post(self, data=None):
         """
@@ -304,6 +306,7 @@ class Notifications(AuthenticatedResource):
         """
         return service.get(notification_id)
 
+    @operator_permission.require(http_exception=403)
     @validate_schema(notification_input_schema, notification_output_schema)
     def put(self, notification_id, data=None):
         """
@@ -375,6 +378,7 @@ class Notifications(AuthenticatedResource):
             data["removed_certificates"],
         )
 
+    @operator_permission.require(http_exception=403)
     def delete(self, notification_id):
         service.delete(notification_id)
         return {"result": True}

@@ -20,7 +20,7 @@ from lemur.common.schema import validate_schema
 from lemur.common.utils import paginated_parser
 
 from lemur.auth.service import AuthenticatedResource
-from lemur.auth.permissions import AuthorityPermission, CertificatePermission
+from lemur.auth.permissions import AuthorityPermission, CertificatePermission, operator_permission
 
 from lemur.certificates import service
 from lemur.certificates.models import Certificate
@@ -387,6 +387,7 @@ class CertificatesList(AuthenticatedResource):
         args["user"] = g.user
         return service.render(args)
 
+    @operator_permission.require(http_exception=403)
     @validate_schema(certificate_input_schema, certificate_output_schema)
     def post(self, data=None):
         """
@@ -541,6 +542,7 @@ class CertificatesUpload(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(CertificatesUpload, self).__init__()
 
+    @operator_permission.require(http_exception=403)
     @validate_schema(certificate_upload_input_schema, certificate_output_schema)
     def post(self, data=None):
         """
@@ -816,6 +818,7 @@ class Certificates(AuthenticatedResource):
         """
         return service.get(certificate_id)
 
+    @operator_permission.require(http_exception=403)
     @validate_schema(certificate_edit_input_schema, certificate_output_schema)
     def put(self, certificate_id, data=None):
         """
@@ -967,6 +970,7 @@ class Certificates(AuthenticatedResource):
             return dict(message=f"Edit Successful except -\n\n {error_message}"), 400
         return cert
 
+    @operator_permission.require(http_exception=403)
     @validate_schema(certificate_edit_input_schema, certificate_output_schema)
     def post(self, certificate_id, data=None):
         """
@@ -1074,6 +1078,7 @@ class Certificates(AuthenticatedResource):
         log_service.create(g.current_user, "update_cert", certificate=cert)
         return cert
 
+    @operator_permission.require(http_exception=403)
     def delete(self, certificate_id, data=None):
         """
         .. http:delete:: /certificates/1
@@ -1132,6 +1137,7 @@ class CertificateUpdateOwner(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(CertificateUpdateOwner, self).__init__()
 
+    @operator_permission.require(http_exception=403)
     @validate_schema(certificate_edit_input_schema, certificate_output_schema)
     def post(self, certificate_id, data=None):
         """
@@ -1455,6 +1461,7 @@ class CertificateExport(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(CertificateExport, self).__init__()
 
+    @operator_permission.require(http_exception=403)
     @validate_schema(certificate_export_input_schema, None)
     def post(self, certificate_id, data=None):
         """
@@ -1582,6 +1589,7 @@ class CertificateRevoke(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(CertificateRevoke, self).__init__()
 
+    @operator_permission.require(http_exception=403)
     @validate_schema(certificate_revoke_schema, None)
     def put(self, certificate_id, data=None):
         """
@@ -1669,6 +1677,7 @@ class CertificateDeactivate(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(CertificateDeactivate, self).__init__()
 
+    @operator_permission.require(http_exception=403)
     def put(self, certificate_id):
         """
         .. http:put:: /certificates/1/deactivate

@@ -13,7 +13,7 @@ from flask import current_app
 from flask_principal import Permission, RoleNeed
 
 # Permissions
-operator_permission = Permission(RoleNeed("operator"))
+operator_permission = Permission(RoleNeed("admin"), RoleNeed("operator"))
 admin_permission = Permission(RoleNeed("admin"))
 
 CertificateOwner = namedtuple("CertificateOwner", ["method", "value"])
