@@ -210,10 +210,10 @@ class PendingCertificates(AuthenticatedResource):
         """
         return service.get(pending_certificate_id)
 
-    @operator_permission.require(http_exception=403)
     @validate_schema(
         pending_certificate_edit_input_schema, pending_certificate_output_schema
     )
+    @operator_permission.require(http_exception=403)
     def put(self, pending_certificate_id, data=None):
         """
         .. http:put:: /pending_certificates/1
@@ -330,8 +330,8 @@ class PendingCertificates(AuthenticatedResource):
         pending_cert = service.update(pending_certificate_id, **data)
         return pending_cert
 
-    @operator_permission.require(http_exception=403)
     @validate_schema(pending_certificate_cancel_schema, None)
+    @operator_permission.require(http_exception=403)
     def delete(self, pending_certificate_id, data=None):
         """
         .. http:delete:: /pending_certificates/1
@@ -457,10 +457,10 @@ class PendingCertificatesUpload(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(PendingCertificatesUpload, self).__init__()
 
-    @operator_permission.require(http_exception=403)
     @validate_schema(
         pending_certificate_upload_input_schema, pending_certificate_output_schema
     )
+    @operator_permission.require(http_exception=403)
     def post(self, pending_certificate_id, data=None):
         """
         .. http:post:: /pending_certificates/1/upload

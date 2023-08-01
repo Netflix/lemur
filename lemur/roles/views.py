@@ -256,8 +256,8 @@ class Roles(AuthenticatedResource):
             403,
         )
 
-    @operator_permission.require(http_exception=403)
     @validate_schema(role_input_schema, role_output_schema)
+    @operator_permission.require(http_exception=403)
     def put(self, role_id, data=None):
         """
         .. http:put:: /roles/1

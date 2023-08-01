@@ -113,8 +113,8 @@ class NotificationsList(AuthenticatedResource):
         args = parser.parse_args()
         return service.render(args)
 
-    @operator_permission.require(http_exception=403)
     @validate_schema(notification_input_schema, notification_output_schema)
+    @operator_permission.require(http_exception=403)
     def post(self, data=None):
         """
         .. http:post:: /notifications
@@ -306,8 +306,8 @@ class Notifications(AuthenticatedResource):
         """
         return service.get(notification_id)
 
-    @operator_permission.require(http_exception=403)
     @validate_schema(notification_input_schema, notification_output_schema)
+    @operator_permission.require(http_exception=403)
     def put(self, notification_id, data=None):
         """
         .. http:put:: /notifications/1

@@ -387,8 +387,8 @@ class CertificatesList(AuthenticatedResource):
         args["user"] = g.user
         return service.render(args)
 
-    @operator_permission.require(http_exception=403)
     @validate_schema(certificate_input_schema, certificate_output_schema)
+    @operator_permission.require(http_exception=403)
     def post(self, data=None):
         """
         .. http:post:: /certificates
@@ -542,8 +542,8 @@ class CertificatesUpload(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(CertificatesUpload, self).__init__()
 
-    @operator_permission.require(http_exception=403)
     @validate_schema(certificate_upload_input_schema, certificate_output_schema)
+    @operator_permission.require(http_exception=403)
     def post(self, data=None):
         """
         .. http:post:: /certificates/upload
@@ -818,8 +818,8 @@ class Certificates(AuthenticatedResource):
         """
         return service.get(certificate_id)
 
-    @operator_permission.require(http_exception=403)
     @validate_schema(certificate_edit_input_schema, certificate_output_schema)
+    @operator_permission.require(http_exception=403)
     def put(self, certificate_id, data=None):
         """
         .. http:put:: /certificates/1
@@ -970,8 +970,8 @@ class Certificates(AuthenticatedResource):
             return dict(message=f"Edit Successful except -\n\n {error_message}"), 400
         return cert
 
-    @operator_permission.require(http_exception=403)
     @validate_schema(certificate_edit_input_schema, certificate_output_schema)
+    @operator_permission.require(http_exception=403)
     def post(self, certificate_id, data=None):
         """
         .. http:post:: /certificates/1/update/switches
@@ -1137,8 +1137,8 @@ class CertificateUpdateOwner(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(CertificateUpdateOwner, self).__init__()
 
-    @operator_permission.require(http_exception=403)
     @validate_schema(certificate_edit_input_schema, certificate_output_schema)
+    @operator_permission.require(http_exception=403)
     def post(self, certificate_id, data=None):
         """
         .. http:post:: /certificates/1/update/owner
@@ -1461,8 +1461,8 @@ class CertificateExport(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(CertificateExport, self).__init__()
 
-    @operator_permission.require(http_exception=403)
     @validate_schema(certificate_export_input_schema, None)
+    @operator_permission.require(http_exception=403)
     def post(self, certificate_id, data=None):
         """
         .. http:post:: /certificates/1/export
@@ -1589,8 +1589,8 @@ class CertificateRevoke(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(CertificateRevoke, self).__init__()
 
-    @operator_permission.require(http_exception=403)
     @validate_schema(certificate_revoke_schema, None)
+    @operator_permission.require(http_exception=403)
     def put(self, certificate_id, data=None):
         """
         .. http:put:: /certificates/1/revoke
