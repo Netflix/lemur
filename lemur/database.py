@@ -305,7 +305,7 @@ def get_count(q):
     try:
         count = q.session.execute(count_q).scalar()
     except Exception:
-        raise Exception(f"error executing query")
+        raise Exception("error executing query")
     return count
 
 
