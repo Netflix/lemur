@@ -302,7 +302,10 @@ def get_count(q):
     )
     if disable_group_by:
         count_q = count_q.group_by(None)
-    count = q.session.execute(count_q).scalar()
+    try:
+        count = q.session.execute(count_q).scalar()
+    except Exception:
+        raise Exception(f"error executing query")
     return count
 
 
