@@ -6,20 +6,19 @@ from factory import Sequence, post_generation, SubFactory
 from factory.alchemy import SQLAlchemyModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDate, FuzzyInteger
 
-from lemur.database import db
+from lemur.api_keys.models import ApiKey
 from lemur.authorities.models import Authority
 from lemur.certificates.models import Certificate
+from lemur.database import db
 from lemur.destinations.models import Destination
 from lemur.dns_providers.models import DnsProvider
-from lemur.sources.models import Source
+from lemur.endpoints.models import Policy, Endpoint
 from lemur.notifications.models import Notification
 from lemur.pending_certificates.models import PendingCertificate
-from lemur.users.models import User
-from lemur.roles.models import Role
-from lemur.endpoints.models import Policy, Endpoint
 from lemur.policies.models import RotationPolicy
-from lemur.api_keys.models import ApiKey
-
+from lemur.roles.models import Role
+from lemur.sources.models import Source
+from lemur.users.models import User
 from .vectors import (
     SAN_CERT_STR,
     SAN_CERT_KEY,
@@ -209,6 +208,22 @@ class DestinationFactory(BaseFactory):
 
     plugin_name = "test-destination"
     label = Sequence(lambda n: "destination{0}".format(n))
+    options = [{"name": "exportPlugin", "type": "export-plugin", "value": {"plugin_options": [{}]}},
+               {"name": "accountNumber", "type": "str", "value": "1234567890"}]
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = Destination
+
+
+class DuplicateAllowedDestinationFactory(BaseFactory):
+    """Destination factory."""
+
+    plugin_name = "test-destination-dupe-allowed"
+    label = Sequence(lambda n: "duplicate-allowed-destination{0}".format(n))
+    options = [{"name": "exportPlugin", "type": "export-plugin", "value": {"plugin_options": [{}]}},
+               {"name": "accountNumber", "type": "str", "value": "1234567890"}]
 
     class Meta:
         """Factory Configuration."""
@@ -284,7 +299,7 @@ class UserFactory(BaseFactory):
                 self.roles.append(role)
 
     @post_generation  # type: ignore
-    def certificates(self, create, extracted, **kwargs):
+    def certificates(self, create, extracted, **kwargs):  # noqa: F811
         if not create:
             return
 

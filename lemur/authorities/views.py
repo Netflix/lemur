@@ -12,6 +12,7 @@ from lemur.common import validators
 from lemur.common.utils import paginated_parser
 from lemur.common.schema import validate_schema
 from lemur.auth.service import AuthenticatedResource
+from lemur.auth.permissions import AuthorityCreatorPermission
 from lemur.auth.permissions import AuthorityPermission
 
 from lemur.certificates import service as certificate_service
@@ -224,9 +225,15 @@ class AuthoritiesList(AuthenticatedResource):
            :arg serialNumber: serial number of the authority
            :arg firstSerial: specifies the starting serial number for certificates issued off of this authority
            :reqheader Authorization: OAuth token to authenticate
-           :statuscode 403: unauthenticated
+           :statuscode 401: unauthenticated
+           :statuscode 403: unauthorized
            :statuscode 200: no error
         """
+
+        permission = AuthorityCreatorPermission()
+        if not permission.can():
+            return dict(message="You are not allowed to create a new authority."), 403
+
         if not validators.is_valid_owner(data["owner"]):
             return dict(message=f"Invalid owner: check if {data['owner']} is a valid group email. Individuals cannot "
                                 f"be authority owners."), 412

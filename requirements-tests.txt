@@ -19,15 +19,15 @@ aws-xray-sdk==2.12.0
     # via moto
 bandit==1.7.5
     # via -r requirements-tests.in
-black==23.3.0
+black==23.7.0
     # via -r requirements-tests.in
 blinker==1.6.2
     # via flask
-boto3==1.26.165
+boto3==1.28.9
     # via
     #   aws-sam-translator
     #   moto
-botocore==1.29.165
+botocore==1.31.15
     # via
     #   aws-xray-sdk
     #   boto3
@@ -35,7 +35,7 @@ botocore==1.29.165
     #   s3transfer
 certbot==2.6.0
     # via -r requirements-tests.in
-certifi==2023.5.7
+certifi==2023.7.22
     # via requests
 cffi==1.15.1
     # via cryptography
@@ -53,7 +53,7 @@ configobj==5.0.8
     # via certbot
 coverage==7.2.7
     # via -r requirements-tests.in
-cryptography==41.0.1
+cryptography==41.0.3
     # via
     #   acme
     #   certbot
@@ -71,13 +71,13 @@ ecdsa==0.18.0
     #   moto
     #   python-jose
     #   sshpubkeys
-factory-boy==3.2.1
+factory-boy==3.3.0
     # via -r requirements-tests.in
-faker==18.11.2
+faker==19.2.0
     # via
     #   -r requirements-tests.in
     #   factory-boy
-fakeredis==2.15.0
+fakeredis==2.17.0
     # via -r requirements-tests.in
 flask==2.3.2
     # via
@@ -158,7 +158,7 @@ marshmallow-sqlalchemy==0.23.1
     # via -r requirements-tests.in
 mdurl==0.1.2
     # via markdown-it-py
-moto[all]==4.1.12
+moto[all]==4.1.14
     # via -r requirements-tests.in
 mpmath==1.3.0
     # via sympy
@@ -192,7 +192,7 @@ platformdirs==3.8.0
     # via black
 pluggy==1.2.0
     # via pytest
-py-partiql-parser==0.3.3
+py-partiql-parser==0.3.6
     # via moto
 pyasn1==0.5.0
     # via
@@ -240,7 +240,7 @@ pytz==2023.3
     #   acme
     #   certbot
     #   pyrfc3339
-pyyaml==6.0
+pyyaml==6.0.1
     # via
     #   -r requirements-tests.in
     #   bandit
