@@ -23,7 +23,7 @@ black==23.7.0
     # via -r requirements-tests.in
 blinker==1.6.2
     # via flask
-boto3==1.28.9
+boto3==1.28.20
     # via
     #   aws-sam-translator
     #   moto
