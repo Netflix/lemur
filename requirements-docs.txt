@@ -65,6 +65,7 @@ boto3==1.28.9
 botocore==1.31.20
     # via
     #   -r requirements-docs.in
+    #   -r requirements-tests.txt
     #   aws-xray-sdk
     #   boto3
     #   moto
@@ -414,7 +415,7 @@ pydantic==1.10.9
     # via
     #   -r requirements-tests.txt
     #   aws-sam-translator
-pyflakes==3.0.1
+pyflakes==3.1.0
     # via -r requirements-tests.txt
 pygments==2.15.1
     # via
