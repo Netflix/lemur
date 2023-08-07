@@ -202,7 +202,7 @@ pycparser==2.21
     # via cffi
 pydantic==1.10.9
     # via aws-sam-translator
-pyflakes==3.0.1
+pyflakes==3.1.0
     # via -r requirements-tests.in
 pygments==2.15.1
     # via rich
