@@ -185,7 +185,7 @@ pem==23.1.0
     # via -r requirements.in
 prompt-toolkit==3.0.38
     # via click-repl
-psycopg2==2.9.6
+psycopg2==2.9.7
     # via -r requirements.in
 pyasn1==0.5.0
     # via
