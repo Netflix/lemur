@@ -10,7 +10,7 @@ acme==2.6.0
     #   certbot
 alembic==1.11.1
     # via flask-migrate
-alembic-autogenerate-enums==0.1.1
+alembic-autogenerate-enums==0.1.2
     # via -r requirements.in
 amqp==5.1.1
     # via kombu
