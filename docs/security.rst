@@ -12,11 +12,12 @@ We ask that you do not report security issues to our normal GitHub issue
 tracker.
 
 If you believe you've identified a security issue with ``lemur``, please
-report it to ``lemur@netflix.com``.
+report it using GitHub's `private vulnerability reporting process`_
+in the [Lemur repository](https://github.com/Netflix/lemur/security/advisories/new).
 
-Once you've submitted an issue via email, you should receive an acknowledgment
+Once you've submitted a report, you should receive an acknowledgment
 within 48 hours, and depending on the action to be taken, you may receive
-further follow-up emails.
+further follow-up.
 
 Supported Versions
 ------------------
@@ -32,7 +33,7 @@ disclosure involves multiple steps. Our standard process utilizes a GitHub Secur
 
 The general process is as follows:
 
-1. Receive a private report of a security issue
+1. Receive a private report of a security issue via the `private vulnerability reporting process`_
 2. Acknowledge receipt of the report
 3. Post advance notice to the GitHub repo indicating that a security issue exists
 4. Prepare a `GitHub Security Advisory`_
@@ -42,8 +43,7 @@ The general process is as follows:
 **Private report**
 
 After receiving a private report of a security issue, the reporter will receive notification
-of the date on which we plan to make the issue public. We also ask the reporter for their GitHub username
-if they'd like to receive credit for their finding.
+of the date on which we plan to make the issue public.
 
 **Advance Notice**
 
@@ -78,3 +78,4 @@ On the day of disclosure, we will take the following steps:
 
 .. _`master`: https://github.com/Netflix/lemur
 .. _GitHub Security Advisory: https://docs.github.com/en/code-security/security-advisories/repository-security-advisories/about-repository-security-advisories
+.. _private vulnerability reporting process: https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing/privately-reporting-a-security-vulnerability
