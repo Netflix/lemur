@@ -59,6 +59,7 @@ blinker==1.6.2
 boto3==1.28.21
     # via
     #   -r requirements-docs.in
+    #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
 botocore==1.31.21
@@ -206,7 +207,7 @@ gitdb==4.0.10
     # via
     #   -r requirements-tests.txt
     #   gitpython
-gitpython==3.1.31
+gitpython==3.1.32
     # via
     #   -r requirements-tests.txt
     #   bandit
