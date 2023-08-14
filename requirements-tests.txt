@@ -23,11 +23,11 @@ black==23.7.0
     # via -r requirements-tests.in
 blinker==1.6.2
     # via flask
-boto3==1.28.21
+boto3==1.28.25
     # via
     #   aws-sam-translator
     #   moto
-botocore==1.31.21
+botocore==1.31.25
     # via
     #   aws-xray-sdk
     #   boto3
@@ -51,7 +51,7 @@ configargparse==1.5.3
     # via certbot
 configobj==5.0.8
     # via certbot
-coverage==7.2.7
+coverage==7.3.0
     # via -r requirements-tests.in
 cryptography==41.0.3
     # via
@@ -73,7 +73,7 @@ ecdsa==0.18.0
     #   sshpubkeys
 factory-boy==3.3.0
     # via -r requirements-tests.in
-faker==19.2.0
+faker==19.3.0
     # via
     #   -r requirements-tests.in
     #   factory-boy
