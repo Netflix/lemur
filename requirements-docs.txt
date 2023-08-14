@@ -59,6 +59,7 @@ blinker==1.6.2
 boto3==1.28.25
     # via
     #   -r requirements-docs.in
+    #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
 botocore==1.31.25
@@ -161,7 +162,7 @@ ecdsa==0.18.0
     #   sshpubkeys
 factory-boy==3.3.0
     # via -r requirements-tests.txt
-faker==19.2.0
+faker==19.3.0
     # via
     #   -r requirements-tests.txt
     #   factory-boy
