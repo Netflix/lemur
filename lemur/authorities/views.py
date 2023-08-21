@@ -120,7 +120,6 @@ class AuthoritiesList(AuthenticatedResource):
         return service.render(args)
 
     @validate_schema(authority_input_schema, authority_output_schema)
-    @operator_permission.require(http_exception=403)
     def post(self, data=None):
         """
         .. http:post:: /authorities
@@ -302,7 +301,6 @@ class Authorities(AuthenticatedResource):
         return service.get(authority_id)
 
     @validate_schema(authority_update_schema, authority_output_schema)
-    @operator_permission.require(http_exception=403)
     def put(self, authority_id, data=None):
         """
         .. http:put:: /authorities/1

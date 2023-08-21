@@ -173,7 +173,6 @@ class Domains(AuthenticatedResource):
         return service.get(domain_id)
 
     @validate_schema(domain_input_schema, domain_output_schema)
-    @operator_permission.require(http_exception=403)
     def put(self, domain_id, data=None):
         """
         .. http:get:: /domains/1
