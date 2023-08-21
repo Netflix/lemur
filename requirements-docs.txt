@@ -360,7 +360,7 @@ packaging==23.1
     #   gunicorn
     #   pytest
     #   sphinx
-paramiko==3.2.0
+paramiko==3.3.1
     # via -r requirements-docs.in
 parsedatetime==2.6
     # via
