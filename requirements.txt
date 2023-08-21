@@ -86,8 +86,6 @@ cryptography==41.0.3
     #   josepy
     #   paramiko
     #   pyopenssl
-decorator==5.1.1
-    # via validators
 distro==1.8.0
     # via certbot
 dnspython==1.15.0
@@ -286,7 +284,7 @@ urllib3==1.26.16
     #   botocore
     #   requests
     #   sentry-sdk
-validators==0.20.0
+validators==0.21.2
     # via -r requirements.in
 vine==5.0.0
     # via
