@@ -17,7 +17,7 @@ from lemur.notifications.schemas import (
 
 from lemur.auth.service import AuthenticatedResource
 from lemur.common.utils import paginated_parser
-from lemur.auth.permissions import operator_permission
+from lemur.auth.permissions import StrictRolePermission
 
 from lemur.common.schema import validate_schema
 
@@ -114,7 +114,6 @@ class NotificationsList(AuthenticatedResource):
         return service.render(args)
 
     @validate_schema(notification_input_schema, notification_output_schema)
-    @operator_permission.require(http_exception=403)
     def post(self, data=None):
         """
         .. http:post:: /notifications
@@ -225,6 +224,8 @@ class NotificationsList(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
+        if not StrictRolePermission().can():
+            return dict(message="You are not authorized to create a new notification."), 403
         return service.create(
             data["label"],
             data["plugin"]["slug"],
@@ -307,7 +308,6 @@ class Notifications(AuthenticatedResource):
         return service.get(notification_id)
 
     @validate_schema(notification_input_schema, notification_output_schema)
-    @operator_permission.require(http_exception=403)
     def put(self, notification_id, data=None):
         """
         .. http:put:: /notifications/1
@@ -367,6 +367,8 @@ class Notifications(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
+        if not StrictRolePermission().can():
+            return dict(message="You are not authorized to update a notification."), 403
         return service.update(
             notification_id,
             data["label"],
@@ -378,8 +380,9 @@ class Notifications(AuthenticatedResource):
             data["removed_certificates"],
         )
 
-    @operator_permission.require(http_exception=403)
     def delete(self, notification_id):
+        if not StrictRolePermission().can():
+            return dict(message="You are not authorized to delete a notification."), 403
         service.delete(notification_id)
         return {"result": True}
 

@@ -11,7 +11,6 @@ from functools import wraps
 from flask import request, current_app
 from sentry_sdk import capture_exception
 from sqlalchemy.orm.collections import InstrumentedList
-from werkzeug.exceptions import HTTPException
 
 from inflection import camelize, underscore
 from marshmallow import Schema, post_dump, pre_load
@@ -160,10 +159,7 @@ def validate_schema(input_schema, output_schema):
             except Exception as e:
                 capture_exception()
                 current_app.logger.exception(e)
-                code = 500
-                if isinstance(e, HTTPException):
-                    code = e.code
-                return dict(message=str(e)), code
+                return dict(message=str(e)), 500
 
             if isinstance(resp, tuple):
                 return resp[0], resp[1]

@@ -8,7 +8,7 @@ from flask import Blueprint, g, make_response, jsonify
 from flask_restful import Api, reqparse, inputs
 
 from lemur.auth.service import AuthenticatedResource
-from lemur.auth.permissions import CertificatePermission, operator_permission
+from lemur.auth.permissions import CertificatePermission, StrictRolePermission
 
 from lemur.common.schema import validate_schema
 from lemur.common.utils import paginated_parser
@@ -213,7 +213,6 @@ class PendingCertificates(AuthenticatedResource):
     @validate_schema(
         pending_certificate_edit_input_schema, pending_certificate_output_schema
     )
-    @operator_permission.require(http_exception=403)
     def put(self, pending_certificate_id, data=None):
         """
         .. http:put:: /pending_certificates/1
@@ -331,7 +330,6 @@ class PendingCertificates(AuthenticatedResource):
         return pending_cert
 
     @validate_schema(pending_certificate_cancel_schema, None)
-    @operator_permission.require(http_exception=403)
     def delete(self, pending_certificate_id, data=None):
         """
         .. http:delete:: /pending_certificates/1
@@ -460,7 +458,6 @@ class PendingCertificatesUpload(AuthenticatedResource):
     @validate_schema(
         pending_certificate_upload_input_schema, pending_certificate_output_schema
     )
-    @operator_permission.require(http_exception=403)
     def post(self, pending_certificate_id, data=None):
         """
         .. http:post:: /pending_certificates/1/upload
@@ -545,6 +542,8 @@ class PendingCertificatesUpload(AuthenticatedResource):
            :statuscode 200: no error
 
         """
+        if not StrictRolePermission().can():
+            return dict(message="You are not authorized to upload a pending certificate."), 403
         return service.upload(pending_certificate_id, **data)
 
 

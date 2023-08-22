@@ -20,7 +20,7 @@ from lemur.common.schema import validate_schema
 from lemur.common.utils import paginated_parser
 
 from lemur.auth.service import AuthenticatedResource
-from lemur.auth.permissions import AuthorityPermission, CertificatePermission, operator_permission
+from lemur.auth.permissions import AuthorityPermission, CertificatePermission, StrictRolePermission
 
 from lemur.certificates import service
 from lemur.certificates.models import Certificate
@@ -388,7 +388,6 @@ class CertificatesList(AuthenticatedResource):
         return service.render(args)
 
     @validate_schema(certificate_input_schema, certificate_output_schema)
-    @operator_permission.require(http_exception=403)
     def post(self, data=None):
         """
         .. http:post:: /certificates
@@ -504,6 +503,9 @@ class CertificatesList(AuthenticatedResource):
            :statuscode 403: unauthenticated
 
         """
+        if not StrictRolePermission().can():
+            return dict(message="You are not authorized to create a new certificate."), 403
+
         if not validators.is_valid_owner(data["owner"]):
             return dict(message=f"Invalid owner: check if {data['owner']} is a valid group email. Individuals cannot be certificate owners."), 412
 
@@ -543,7 +545,6 @@ class CertificatesUpload(AuthenticatedResource):
         super(CertificatesUpload, self).__init__()
 
     @validate_schema(certificate_upload_input_schema, certificate_output_schema)
-    @operator_permission.require(http_exception=403)
     def post(self, data=None):
         """
         .. http:post:: /certificates/upload
@@ -637,6 +638,9 @@ class CertificatesUpload(AuthenticatedResource):
            :statuscode 200: no error
 
         """
+        if not StrictRolePermission().can():
+            return dict(message="You are not authorized to upload a certificate."), 403
+
         data["creator"] = g.user
         if data.get("destinations"):
             if data.get("private_key"):
@@ -819,7 +823,6 @@ class Certificates(AuthenticatedResource):
         return service.get(certificate_id)
 
     @validate_schema(certificate_edit_input_schema, certificate_output_schema)
-    @operator_permission.require(http_exception=403)
     def put(self, certificate_id, data=None):
         """
         .. http:put:: /certificates/1
@@ -971,7 +974,6 @@ class Certificates(AuthenticatedResource):
         return cert
 
     @validate_schema(certificate_edit_input_schema, certificate_output_schema)
-    @operator_permission.require(http_exception=403)
     def post(self, certificate_id, data=None):
         """
         .. http:post:: /certificates/1/update/switches
@@ -1078,7 +1080,6 @@ class Certificates(AuthenticatedResource):
         log_service.create(g.current_user, "update_cert", certificate=cert)
         return cert
 
-    @operator_permission.require(http_exception=403)
     def delete(self, certificate_id, data=None):
         """
         .. http:delete:: /certificates/1
@@ -1138,7 +1139,6 @@ class CertificateUpdateOwner(AuthenticatedResource):
         super(CertificateUpdateOwner, self).__init__()
 
     @validate_schema(certificate_edit_input_schema, certificate_output_schema)
-    @operator_permission.require(http_exception=403)
     def post(self, certificate_id, data=None):
         """
         .. http:post:: /certificates/1/update/owner
@@ -1462,7 +1462,6 @@ class CertificateExport(AuthenticatedResource):
         super(CertificateExport, self).__init__()
 
     @validate_schema(certificate_export_input_schema, None)
-    @operator_permission.require(http_exception=403)
     def post(self, certificate_id, data=None):
         """
         .. http:post:: /certificates/1/export
@@ -1590,7 +1589,6 @@ class CertificateRevoke(AuthenticatedResource):
         super(CertificateRevoke, self).__init__()
 
     @validate_schema(certificate_revoke_schema, None)
-    @operator_permission.require(http_exception=403)
     def put(self, certificate_id, data=None):
         """
         .. http:put:: /certificates/1/revoke
@@ -1677,7 +1675,6 @@ class CertificateDeactivate(AuthenticatedResource):
         self.reqparse = reqparse.RequestParser()
         super(CertificateDeactivate, self).__init__()
 
-    @operator_permission.require(http_exception=403)
     def put(self, certificate_id):
         """
         .. http:put:: /certificates/1/deactivate

@@ -91,8 +91,8 @@ class SourcesList(AuthenticatedResource):
         args = parser.parse_args()
         return service.render(args)
 
-    @admin_permission.require(http_exception=403)
     @validate_schema(source_input_schema, source_output_schema)
+    @admin_permission.require(http_exception=403)
     def post(self, data=None):
         """
         .. http:post:: /sources
@@ -223,8 +223,8 @@ class Sources(AuthenticatedResource):
         """
         return service.get(source_id)
 
-    @admin_permission.require(http_exception=403)
     @validate_schema(source_input_schema, source_output_schema)
+    @admin_permission.require(http_exception=403)
     def put(self, source_id, data=None):
         """
         .. http:put:: /sources/1

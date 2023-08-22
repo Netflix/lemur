@@ -13,7 +13,7 @@ from flask_restful import reqparse, Api
 
 from lemur.roles import service
 from lemur.auth.service import AuthenticatedResource
-from lemur.auth.permissions import RoleMemberPermission, admin_permission, operator_permission
+from lemur.auth.permissions import RoleMemberPermission, admin_permission
 from lemur.common.utils import paginated_parser
 from lemur.logs import service as log_service
 
@@ -92,8 +92,8 @@ class RolesList(AuthenticatedResource):
         args["user"] = g.current_user
         return service.render(args)
 
-    @admin_permission.require(http_exception=403)
     @validate_schema(role_input_schema, role_output_schema)
+    @admin_permission.require(http_exception=403)
     def post(self, data=None):
         """
         .. http:post:: /roles
