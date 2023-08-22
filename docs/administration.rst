@@ -252,8 +252,8 @@ Basic Configuration
     :noindex:
 
         When set to True, this property enforces the default Lemur role functionality. The default Lemur roles are
-        ``admin``, ``operator``, and ``read-only``. If this is set to True, users are required to have a role assigned
-        upon creation and the ``operator`` and ``read-only`` role are strictly enforced. Users assigned the ``read-only``
+        ``admin``, ``operator``, and ``read-only``. Users will be required to have a default role assigned
+        upon creation. The ``operator`` and ``read-only`` roles are strictly enforced. Users assigned the ``read-only``
         role will not be able to create/update resources.
 
     ::
