@@ -14,6 +14,9 @@ from lemur.logs import service as log_service
 from lemur.users.models import User
 
 
+DEFAULT_ROLES = ["admin", "operator", "read-only"]
+
+
 def create(username, password, email, active, profile_picture, roles):
     """
     Create a new user
@@ -26,6 +29,10 @@ def create(username, password, email, active, profile_picture, roles):
     :param roles:
     :return:
     """
+    strict_role_enforcement = current_app.config.get("LEMUR_STRICT_ROLE_ENFORCEMENT", False)
+    if strict_role_enforcement and not any(role.name in DEFAULT_ROLES for role in roles):
+        return dict(message="Default role required: admin, operator, read-only"), 400
+
     user = User(
         password=password,
         username=username,
@@ -50,6 +57,10 @@ def update(user_id, username, email, active, profile_picture, roles):
     :param roles:
     :return:
     """
+    strict_role_enforcement = current_app.config.get("LEMUR_STRICT_ROLE_ENFORCEMENT", False)
+    if strict_role_enforcement and not any(role.name in DEFAULT_ROLES for role in roles):
+        return dict(message="Default role required: admin, operator, read-only"), 400
+
     user = get(user_id)
     user.username = username
     user.email = email

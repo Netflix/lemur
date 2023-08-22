@@ -247,6 +247,20 @@ Basic Configuration
        Specifies the AWS partition that Lemur should use. Valid values are 'aws', 'aws-us-gov', and 'aws-cn'. Defaults to 'aws'.
        If Lemur is deployed in and managing endpoints AWS GovCloud, for example, you must set this to `aws-us-gov`.
 
+
+.. data:: LEMUR_STRICT_ROLE_ENFORCEMENT
+    :noindex:
+
+        When set to True, this property enforces the default Lemur role functionality. The default Lemur roles are
+        ``admin``, ``operator``, and ``read-only``. If this is set to True, users are required to have a role assigned
+        upon creation and the ``operator`` and ``read-only`` role are strictly enforced. Users assigned the ``read-only``
+        role will not be able to create/update resources.
+
+    ::
+
+        LEMUR_STRICT_ROLE_ENFORCEMENT = False
+
+
 .. data:: SENTRY_DSN
     :noindex:
 
