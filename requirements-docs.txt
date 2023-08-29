@@ -477,7 +477,7 @@ requests==2.28.2
     #   requests-mock
     #   responses
     #   sphinx
-requests-mock==1.10.0
+requests-mock==1.11.0
     # via -r requirements-tests.txt
 responses==0.22.0
     # via
