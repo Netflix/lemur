@@ -537,7 +537,7 @@ sphinx==6.2.1
     #   sphinx-rtd-theme
     #   sphinxcontrib-httpdomain
     #   sphinxcontrib-jquery
-sphinx-rtd-theme==1.2.0
+sphinx-rtd-theme==1.2.2
     # via -r requirements-docs.in
 sphinxcontrib-applehelp==1.0.2
     # via sphinx
