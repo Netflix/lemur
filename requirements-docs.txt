@@ -391,7 +391,7 @@ pycryptodomex==3.14.1
     # via pyjks
 pyflakes==2.4.0
     # via -r requirements-tests.txt
-pygments==2.15.1
+pygments==2.15.0
     # via
     #   -r requirements-tests.txt
     #   rich

@@ -189,7 +189,7 @@ pycparser==2.21
     # via cffi
 pyflakes==2.4.0
     # via -r requirements-tests.in
-pygments==2.15.1
+pygments==2.15.0
     # via rich
 pyopenssl==23.1.1
     # via
