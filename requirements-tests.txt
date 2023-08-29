@@ -22,7 +22,7 @@ aws-xray-sdk==2.9.0
     # via moto
 bandit==1.7.5
     # via -r requirements-tests.in
-black==23.3.0
+black==23.7.0
     # via -r requirements-tests.in
 boto3==1.24.96
     # via
