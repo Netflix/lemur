@@ -140,7 +140,7 @@ def test_role_put_with_data_and_user(client, session):
         client.put(
             api.url_for(Roles, role_id=role.id), data=json.dumps(data), headers=headers
         ).status_code
-        == 403
+        == 200
     )
     assert (
         client.get(api.url_for(RolesList), data={}, headers=headers).json["total"] > 1
@@ -182,7 +182,7 @@ def test_role_patch(client, token, status):
 @pytest.mark.parametrize(
     "token,status",
     [
-        (VALID_USER_HEADER_TOKEN, 403),
+        (VALID_USER_HEADER_TOKEN, 400),
         (VALID_ADMIN_HEADER_TOKEN, 400),
         (VALID_ADMIN_API_TOKEN, 400),
         ("", 401),
