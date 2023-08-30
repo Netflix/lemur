@@ -188,5 +188,5 @@ def upload_acme_token_s3(token, token_name, prefix, account_number, bucket_name)
         prefix + "/"
 
     token_res = s3.get(bucket_name, prefix + token_name, account_number=account_number)
-    assert(token_res == token)
+    assert (token_res == token)
     s3.delete(bucket_name, prefix + token_name, account_number=account_number)

@@ -283,7 +283,7 @@ class UserFactory(BaseFactory):
                 self.roles.append(role)
 
     @post_generation
-    def certificates(self, create, extracted, **kwargs):
+    def certificates(self, create, extracted, **kwargs):  # noqa: F811
         if not create:
             return
 

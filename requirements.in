@@ -36,8 +36,8 @@ flask_replicated
 future
 google-cloud-compute
 gunicorn
-grpcio == 1.50.0 # Required for cert orchestration adapter.
-grpcio-status == 1.44.0 # Required for cert orchestration adapter.
+grpcio == 1.53.0 # Required for cert orchestration adapter.
+grpcio-status == 1.47.0 # Required for cert orchestration adapter.
 hvac # required for the vault destination plugin
 inflection
 itsdangerous < 2.1.0 # requires Flask 2.0.3

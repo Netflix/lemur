@@ -1,5 +1,4 @@
 # Run `make up-reqs` to update pinned dependencies in requirement text files
-
 bandit
 black
 coverage

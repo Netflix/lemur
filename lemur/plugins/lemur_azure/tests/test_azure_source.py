@@ -170,9 +170,9 @@ class TestAzureSource(unittest.TestCase):
     @patch("azure.mgmt.cdn.operations.ProfilesOperations.list")
     @patch("azure.mgmt.cdn.operations.EndpointsOperations.list_by_profile")
     @patch("azure.mgmt.cdn.operations.CustomDomainsOperations.list_by_endpoint")
-    @patch("azure.mgmt.network.v2022_05_01.operations.PublicIPAddressesOperations.get")
-    @patch("azure.mgmt.network.v2022_05_01.operations.ApplicationGatewaysOperations.get_ssl_predefined_policy")
-    @patch("azure.mgmt.network.v2022_05_01.operations.ApplicationGatewaysOperations.list_all")
+    @patch("azure.mgmt.network.operations.PublicIPAddressesOperations.get")
+    @patch("azure.mgmt.network.operations.ApplicationGatewaysOperations.get_ssl_predefined_policy")
+    @patch("azure.mgmt.network.operations.ApplicationGatewaysOperations.list_all")
     @patch("azure.mgmt.subscription.operations.SubscriptionsOperations.list")
     def test_get_endpoints(
             self,

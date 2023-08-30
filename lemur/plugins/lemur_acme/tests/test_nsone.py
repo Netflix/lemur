@@ -52,7 +52,7 @@ class TestNsone(unittest.TestCase):
             "expiry": 0,
             "primary_master": "string",
             "id": "string",
-            "meta":{
+            "meta": {
                 "asn": ["string"],
                 "ca_province": ["string"],
                 "connections": 0,
