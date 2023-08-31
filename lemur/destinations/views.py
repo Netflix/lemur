@@ -99,8 +99,8 @@ class DestinationsList(AuthenticatedResource):
         args = parser.parse_args()
         return service.render(args)
 
-    @admin_permission.require(http_exception=403)
     @validate_schema(destination_input_schema, destination_output_schema)
+    @admin_permission.require(http_exception=403)
     def post(self, data=None):
         """
         .. http:post:: /destinations
@@ -251,8 +251,8 @@ class Destinations(AuthenticatedResource):
         """
         return service.get(destination_id)
 
-    @admin_permission.require(http_exception=403)
     @validate_schema(destination_input_schema, destination_output_schema)
+    @admin_permission.require(http_exception=403)
     def put(self, destination_id, data=None):
         """
         .. http:put:: /destinations/1

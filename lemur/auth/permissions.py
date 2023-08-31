@@ -60,6 +60,15 @@ class RoleMemberPermission(Permission):
         super(RoleMemberPermission, self).__init__(*needs)
 
 
+class AuthorityCreatorPermission(Permission):
+    def __init__(self):
+        requires_admin = current_app.config.get("ADMIN_ONLY_AUTHORITY_CREATION", False)
+        if requires_admin:
+            super(AuthorityCreatorPermission, self).__init__(RoleNeed("admin"))
+        else:
+            super(AuthorityCreatorPermission, self).__init__()
+
+
 AuthorityCreator = namedtuple("authority", ["method", "value"])
 AuthorityCreatorNeed = partial(AuthorityCreator, "authorityUse")
 
@@ -74,3 +83,13 @@ class AuthorityPermission(Permission):
             needs.append(AuthorityOwnerNeed(str(r)))
 
         super(AuthorityPermission, self).__init__(*needs)
+
+
+class StrictRolePermission(Permission):
+    def __init__(self):
+        strict_role_enforcement = current_app.config.get("LEMUR_STRICT_ROLE_ENFORCEMENT", False)
+        if strict_role_enforcement:
+            needs = [RoleNeed("admin"), RoleNeed("operator")]
+            super(StrictRolePermission, self).__init__(*needs)
+        else:
+            super(StrictRolePermission, self).__init__()
