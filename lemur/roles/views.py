@@ -92,8 +92,8 @@ class RolesList(AuthenticatedResource):
         args["user"] = g.current_user
         return service.render(args)
 
-    @admin_permission.require(http_exception=403)
     @validate_schema(role_input_schema, role_output_schema)
+    @admin_permission.require(http_exception=403)
     def post(self, data=None):
         """
         .. http:post:: /roles

@@ -93,8 +93,8 @@ class UsersList(AuthenticatedResource):
         args = parser.parse_args()
         return service.render(args)
 
-    @admin_permission.require(http_exception=403)
     @validate_schema(user_input_schema, user_output_schema)
+    @admin_permission.require(http_exception=403)
     def post(self, data=None):
         """
         .. http:post:: /users
@@ -212,8 +212,8 @@ class Users(AuthenticatedResource):
         """
         return service.get(user_id)
 
-    @admin_permission.require(http_exception=403)
     @validate_schema(user_input_schema, user_output_schema)
+    @admin_permission.require(http_exception=403)
     def put(self, user_id, data=None):
         """
         .. http:put:: /users/1

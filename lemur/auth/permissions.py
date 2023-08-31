@@ -82,3 +82,13 @@ class AuthorityPermission(Permission):
             needs.append(AuthorityOwnerNeed(str(r)))
 
         super(AuthorityPermission, self).__init__(*needs)
+
+
+class StrictRolePermission(Permission):
+    def __init__(self):
+        strict_role_enforcement = current_app.config.get("LEMUR_STRICT_ROLE_ENFORCEMENT", False)
+        if strict_role_enforcement:
+            needs = [RoleNeed("admin"), RoleNeed("operator")]
+            super(StrictRolePermission, self).__init__(*needs)
+        else:
+            super(StrictRolePermission, self).__init__()
