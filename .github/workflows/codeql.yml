@@ -41,7 +41,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     
     # Install prerequisites for python-ldap. See: https://www.python-ldap.org/en/python-ldap-3.3.0/installing.html#build-prerequisites
     - name: Install python-ldap prerequisites
