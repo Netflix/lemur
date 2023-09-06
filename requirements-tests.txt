@@ -23,11 +23,11 @@ black==23.7.0
     # via -r requirements-tests.in
 blinker==1.6.2
     # via flask
-boto3==1.28.35
+boto3==1.28.40
     # via
     #   aws-sam-translator
     #   moto
-botocore==1.31.35
+botocore==1.31.40
     # via
     #   aws-xray-sdk
     #   boto3
@@ -73,7 +73,7 @@ ecdsa==0.18.0
     #   sshpubkeys
 factory-boy==3.3.0
     # via -r requirements-tests.in
-faker==19.3.0
+faker==19.3.1
     # via
     #   -r requirements-tests.in
     #   factory-boy
@@ -93,7 +93,7 @@ freezegun==1.2.2
     # via -r requirements-tests.in
 gitdb==4.0.10
     # via gitpython
-gitpython==3.1.32
+gitpython==3.1.34
     # via bandit
 graphql-core==3.2.3
     # via moto
@@ -218,7 +218,7 @@ pyrfc3339==1.1
     #   certbot
 pyrsistent==0.19.3
     # via jsonschema
-pytest==7.4.0
+pytest==7.4.1
     # via
     #   -r requirements-tests.in
     #   pytest-flask
