@@ -3,6 +3,7 @@ Changelog
 
 Unreleased
 ~~~~~~~~~~~~~~~~~~~~
+Add NTLM auth support for ADCS issuer.
 Added ability to limit authority creation to admins only using config option `ADMIN_ONLY_AUTHORITY_CREATION`.
 
 
