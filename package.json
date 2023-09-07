@@ -5,6 +5,9 @@
     "type": "git",
     "url": "git://github.com/netflix/lemur.git"
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "bower": "^1.8.8",
     "browser-sync": "^2.26.7",
