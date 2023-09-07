@@ -16,7 +16,7 @@ from sqlalchemy.orm import joinedload
 from lemur import database
 from lemur.common.utils import truthiness
 from lemur.certificates.models import Certificate
-from lemur.endpoints.models import Endpoint, EndpointDnsAlias, Policy, Cipher
+from lemur.endpoints.models import Endpoint, EndpointsCertificates, EndpointDnsAlias, Policy, Cipher
 from lemur.sources.models import Source
 from lemur.extensions import metrics
 
@@ -107,6 +107,20 @@ def get_all_pending_rotation():
     :return:
     """
     return Endpoint.query.filter(Endpoint.certificates.any(Certificate.replaced.any())).all()
+
+
+def get_all_pending_rotation_by_source(source_label):
+    """
+    Retrieves all endpoints for a given source which have certificates deployed
+    that have been replaced.
+    :return:
+    """
+    return Endpoint.query \
+        .join(Endpoint.certificates_assoc)\
+        .join(EndpointsCertificates.certificate)\
+        .filter(Certificate.replaced.any())\
+        .filter(Endpoint.source.has(label=source_label))\
+        .all()
 
 
 def create(**kwargs):

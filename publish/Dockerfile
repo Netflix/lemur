@@ -5,10 +5,10 @@ ARG CI_COMMIT_SHA
 
 USER root
 
-COPY ./files/setup_14.x .
-RUN chmod +x setup_14.x && \
-    ./setup_14.x && \
-    rm -rf setup_14.x && \
+COPY ./files/setup_15.x .
+RUN chmod +x setup_15.x && \
+    ./setup_15.x && \
+    rm -rf setup_15.x && \
     apt-get update && \
     apt-get install -y --no-install-recommends libpq-dev curl build-essential locales libffi-dev libsasl2-dev libldap2-dev \
         dh-autoreconf git python3-dev python3-pip python3-venv python3-wheel nodejs unzip make

@@ -323,10 +323,20 @@ def rotate(endpoint_name, source, new_certificate_name, old_certificate_name, me
                     request_rotation(ep, old_cert, new_cert, message, commit)
                 current_app.logger.info(log_data)
         else:
-            # No certificate name or endpoint is provided. We will now fetch all endpoints,
-            # which are associated with a certificate that has been replaced
-            print("[+] Rotating all endpoints that have new certificates available")
-            for endpoint in endpoint_service.get_all_pending_rotation():
+            # No certificate name or endpoint is provided.
+            # If a source is provided then we rotate endpoints only associated to that source.
+            # Otherwise, we will now fetch all endpoints, which are associated with a certificate that has been replaced
+
+            if source:
+                print(f"[+] Rotating all endpoints for source: {source} that have new certificates available")
+                log_data["rotation_by_source"] = True
+                log_data["source_label"] = source
+                endpoints = endpoint_service.get_all_pending_rotation_by_source(source)
+            else:
+                print("[+] Rotating all endpoints that have new certificates available")
+                log_data["rotation_by_source"] = False
+                endpoints = endpoint_service.get_all_pending_rotation()
+            for endpoint in endpoints:
                 for certificate in endpoint.certificates:
                     log_data["message"] = "Rotating endpoint from old to new cert"
                     if not certificate.replaced:
