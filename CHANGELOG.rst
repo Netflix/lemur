@@ -3,6 +3,12 @@ Changelog
 
 Unreleased
 ~~~~~~~~~~~~~~~~~~~~
+Added password complexity requirements:
+- At least 12 characters (required for your Muhlenberg password)—the more characters, the better
+- A mixture of both uppercase and lowercase letters
+- A mixture of letters and numbers
+- Inclusion of at least one special character, e.g., ! @ # ? ]
+If you don't want password complexity, requirements you can set CHECK_PASSWORD_STRENGTH to False.
 Added ability to limit authority creation to admins only using config option `ADMIN_ONLY_AUTHORITY_CREATION`.
 
 
