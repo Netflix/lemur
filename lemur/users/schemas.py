@@ -46,7 +46,7 @@ class UserCreateInputSchema(UserInputSchema):
                 raise ValidationError('Password must contain at least one digit.')
 
             # Inclusion of at least one special character
-            if not re.findall('[!@#?\]]', value):
+            if not re.findall(r'[!@#?\]]', value):
                 raise ValidationError('Password must contain at least one special character (!@#?]).')
 
 
