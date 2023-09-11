@@ -617,6 +617,8 @@ def certificate_rotate(**kwargs):
         task_id = celery_app.current_task.request.id
 
     region = kwargs.get("region")
+    source = kwargs.get("source")
+    commit = kwargs.get("commit", True)
     log_data = {
         "function": function,
         "message": "rotating certificates",
@@ -628,20 +630,35 @@ def certificate_rotate(**kwargs):
         current_app.logger.debug(log_data)
         return
 
+    metric_tags = {
+        "function": function,
+        "source": source,
+        "region": region,
+        "commit": commit,
+    }
+
     current_app.logger.debug(log_data)
     try:
         notify = current_app.config.get("ENABLE_ROTATION_NOTIFICATION", None)
-        cli_certificate.rotate(None, None, None, None, notify, True, region)
+        cli_certificate.rotate(
+            endpoint_name=None,
+            source=source,
+            new_certificate_name=None,
+            old_certificate_name=None,
+            message=notify,
+            commit=commit,
+            region=region
+        )
     except SoftTimeLimitExceeded:
         log_data["message"] = "Certificate rotate: Time limit exceeded."
         current_app.logger.error(log_data)
         capture_exception()
-        metrics.send("celery.timeout", "counter", 1, metric_tags={"function": function})
+        metrics.send("celery.timeout", "counter", 1, metric_tags=metric_tags)
         return
 
     log_data["message"] = "rotation completed"
     current_app.logger.debug(log_data)
-    metrics.send(f"{function}.success", "counter", 1)
+    metrics.send(f"{function}.success", "counter", 1, metric_tags=metric_tags)
     return log_data
 
 
