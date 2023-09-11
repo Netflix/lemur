@@ -16,6 +16,10 @@ def wait_for_dns_change(change_id, client=None):
 
 @sts_client("route53")
 def find_zone_id(domain, client=None):
+    return _find_zone_id(domain, client)
+
+
+def _find_zone_id(domain, client=None):
     paginator = client.get_paginator("list_hosted_zones")
     min_diff_length = float("inf")
     chosen_zone = None
