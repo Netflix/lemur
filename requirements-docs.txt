@@ -217,7 +217,7 @@ graphql-core==3.2.3
     #   moto
 gunicorn==21.2.0
     # via -r requirements-docs.in
-hvac==1.1.1
+hvac==1.2.1
     # via -r requirements-docs.in
 idna==3.4
     # via
