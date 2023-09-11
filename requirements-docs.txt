@@ -566,12 +566,13 @@ sortedcontainers==2.4.0
     #   fakeredis
 soupsieve==2.4.1
     # via beautifulsoup4
-sphinx==6.2.1
+sphinx==7.2.5
     # via
     #   -r requirements-docs.in
     #   sphinx-rtd-theme
     #   sphinxcontrib-httpdomain
     #   sphinxcontrib-jquery
+    #   sphinxcontrib-serializinghtml
 sphinx-rtd-theme==1.3.0
     # via -r requirements-docs.in
 sphinxcontrib-applehelp==1.0.4
@@ -588,7 +589,7 @@ sphinxcontrib-jsmath==1.0.1
     # via sphinx
 sphinxcontrib-qthelp==1.0.3
     # via sphinx
-sphinxcontrib-serializinghtml==1.1.5
+sphinxcontrib-serializinghtml==1.1.9
     # via sphinx
 sqlalchemy==1.3.24
     # via
