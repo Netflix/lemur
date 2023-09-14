@@ -21,6 +21,7 @@ from flask_restful import reqparse, Resource, Api
 from flask_principal import Identity, identity_changed
 
 from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
+from lemur.exceptions import TokenExchangeFailed
 from lemur.extensions import metrics
 from lemur.common.utils import get_psuedo_random_string, get_state_token_secret
 
@@ -80,8 +81,24 @@ def exchange_for_access_token(
         r = requests.post(
             access_token_url, headers=headers, data=params, verify=verify_cert
         )
-    id_token = r.json()["id_token"]
-    access_token = r.json()["access_token"]
+
+    response = r.json()
+
+    if not r.ok or "error" in response:
+        raise TokenExchangeFailed(response.get("error", "Unknown error"), response.get("error_description", ""))
+
+    id_token = response.get("id_token")
+    access_token = response.get("access_token")
+
+    if id_token is None or access_token is None:
+        error = "missing tokens"
+        missing_tokens = []
+        if id_token is None:
+            missing_tokens.append("id_token is missing")
+        if access_token is None:
+            missing_tokens.append("access_token is missing")
+        description = " and ".join(missing_tokens)
+        raise TokenExchangeFailed(error, description)
 
     return id_token, access_token
 
