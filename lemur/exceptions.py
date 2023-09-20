@@ -45,7 +45,6 @@ class TokenExchangeFailed(LemurException):
         return f'Token exchange failed with {self.error}. {self.description}'
 
 
-
 class AttrNotFound(LemurException):
     def __init__(self, field):
         self.field = field
