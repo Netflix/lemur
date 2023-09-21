@@ -36,6 +36,15 @@ class InvalidDistribution(LemurException):
         )
 
 
+class TokenExchangeFailed(LemurException):
+    def __init__(self, error, description):
+        self.error = error
+        self.description = description
+
+    def __str__(self):
+        return f'Token exchange failed with {self.error}. {self.description}'
+
+
 class AttrNotFound(LemurException):
     def __init__(self, field):
         self.field = field
