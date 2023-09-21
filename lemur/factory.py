@@ -158,7 +158,7 @@ def configure_extensions(app):
     :param app:
     """
     db.init_app(app)
-    migrate.init_app(app, db)
+    migrate.init_app(app, db, app.config.get("FLASK_MIGRATIONS_PATH", "migrations"))
     principal.init_app(app)
     smtp_mail.init_app(app)
     metrics.init_app(app)
