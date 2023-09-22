@@ -9,6 +9,7 @@ import os
 import tempfile
 from contextlib import contextmanager
 
+import cryptography.fernet
 from sqlalchemy import types
 from cryptography.fernet import Fernet, MultiFernet
 from flask import current_app
@@ -119,4 +120,11 @@ class Vault(types.TypeDecorator):
         if not value:
             return
 
-        return MultiFernet(self.keys).decrypt(value).decode("utf8")
+        try:
+            return MultiFernet(self.keys).decrypt(value).decode("utf8")
+        except cryptography.fernet.InvalidToken as e:
+            if current_app.config.get("DEBUG", False):
+                current_app.logger.error(f"Error decrypting token: {value}")
+            else:
+                current_app.logger.error(f"Error decrypting token.  (Enable debugging mode to log the token.)")
+            raise
