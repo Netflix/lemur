@@ -126,5 +126,5 @@ class Vault(types.TypeDecorator):
             if current_app.config.get("DEBUG", False):
                 current_app.logger.error(f"Error decrypting token: {value}")
             else:
-                current_app.logger.error(f"Error decrypting token.  (Enable debugging mode to log the token.)")
+                current_app.logger.error("Error decrypting token.  (Enable debugging mode to log the token.)")
             raise
