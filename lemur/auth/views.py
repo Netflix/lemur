@@ -201,6 +201,13 @@ def create_user_roles(profile: dict) -> list[str]:
             )
             continue
 
+        if not isinstance(profile[idp_groups_key], list) and all(isinstance(item, str) for item in profile[idp_groups_key]):
+            # Catch instances where roles are not a list of strings
+            current_app.logger.warning(
+                f"""'{idp_groups_key}' sent by identity provider for user {profile["email"]} is not a list of strings."""
+            )
+            continue
+
         # Take a fixed set of groups/roles and map it to Lemur roles.
         # If the IDP_GROUPS_TO_ROLES is empty or not set, nothing happens.
         idp_group_to_role_map = current_app.config.get("IDP_ROLES_MAPPING", {})
