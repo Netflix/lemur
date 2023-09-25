@@ -158,7 +158,7 @@ marshmallow-sqlalchemy==0.23.1
     # via -r requirements-tests.in
 mdurl==0.1.2
     # via markdown-it-py
-moto[all]==4.2.3
+moto[all]==4.2.4
     # via -r requirements-tests.in
 mpmath==1.3.0
     # via sympy
