@@ -212,8 +212,8 @@ pyasn1-modules==0.3.0
 pycparser==2.21
     # via cffi
 pycryptodomex==3.18.0
-    # via pyjks
-pygments==2.16.1
+    # via pyjkspy
+pygments==2.15.1
     # via rich
 pyhcl==0.4.4
     # via hvac
