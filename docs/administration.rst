@@ -35,6 +35,37 @@ Basic Configuration
 
         LOG_UPGRADE_FILE = "/logs/lemur/db_upgrade.log"
 
+.. data:: LOG_REQUEST_HEADERS
+    :noindex:
+
+    ::
+        Defaults to False (off).  This adds logging similar to a webserver, where each request made to the API is logged.
+        Useful for tracing where requests are being made from, or for auditing purposes.
+
+        LOG_REQUEST_HEADERS = True
+
+.. data:: LOG_SANITIZE_REQUEST_HEADERS
+    :noindex:
+
+    ::
+        Defaults to True (on).  This sanitizes the requests logging to remove the query parameters,
+        as those parameters often contain sensitivity information.
+
+        LOG_SANITIZE_REQUEST_HEADERS = True
+
+    .. warning::
+        This should never be used in a production environment as it exposes sensitivite information.
+
+.. data:: LOG_REQUEST_HEADERS_SKIP_ENDPOINT = ["/metrics", "/healthcheck"]  # These endpoints are noisy so skip them by default
+    :noindex:
+
+    ::
+        Some endpoints are not useful to log and can generate a lot of noise.  If an endpoint is listed here,
+        it will be skipped and not logged.  It is only recommended to add endpoints that are purely informational
+        or only used internally.
+
+        LOG_REQUEST_HEADERS_SKIP_ENDPOINT = ["/metrics", "/healthcheck"]
+
 .. data:: DEBUG
     :noindex:
 
