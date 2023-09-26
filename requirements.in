@@ -15,6 +15,7 @@ cryptography
 dnspython3
 dyn
 Flask-Bcrypt
+Flask-Limiter
 Flask-Mail
 Flask-Migrate
 Flask-Principal
