@@ -15,6 +15,8 @@ from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, hmac
 from flask import Blueprint, current_app
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from flask_principal import Identity, identity_changed
 from flask_restful import reqparse, Resource, Api
 
@@ -31,6 +33,7 @@ from lemur.users import service as user_service
 
 mod = Blueprint("auth", __name__)
 api = Api(mod)
+limiter = Limiter(app=current_app, key_func=get_remote_address)
 
 
 def exchange_for_access_token(
@@ -351,6 +354,7 @@ class Login(Resource):
         self.reqparse = reqparse.RequestParser()
         super(Login, self).__init__()
 
+    @limiter.limit("10/5minute")
     def post(self):
         """
         .. http:post:: /auth/login
