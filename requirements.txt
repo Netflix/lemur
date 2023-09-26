@@ -135,7 +135,7 @@ hvac==1.2.1
     # via -r requirements.in
 idna==3.4
     # via requests
-importlib-resources==6.1.0
+importlib-resources==5.13.0
     # via limits
 inflection==0.5.1
     # via -r requirements.in
