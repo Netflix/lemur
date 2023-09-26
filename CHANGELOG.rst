@@ -10,7 +10,8 @@ Added password complexity requirements:
 - Inclusion of at least one special character, e.g., ! @ # ? ]
 If you don't want password complexity, requirements you can set CHECK_PASSWORD_STRENGTH to False.
 Added ability to limit authority creation to admins only using config option `ADMIN_ONLY_AUTHORITY_CREATION`.
-
+User passwords can now be updated by admins with the update user endpoint.
+Route53 find_zone_dns now selects the maximum suffix match for zone id (previously we selected the first match).
 
 1.5.0 - `2023-07-05`
 ~~~~~~~~~~~~~~~~~~~~

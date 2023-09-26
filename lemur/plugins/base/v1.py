@@ -6,10 +6,11 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from flask import current_app
+import re
 from threading import local
 from typing import Optional, Dict, List, Any
-import re
+
+from flask import current_app
 
 
 # stolen from https://github.com/getsentry/sentry/
@@ -133,7 +134,7 @@ class IPlugin(local):
             validation = class_opt.get("validation")
             if not validation:
                 return value
-            if not re.match(validation, value):
+            if (callable(validation) and not validation(value)) or not re.match(validation, value):
                 raise ValueError(f"Option '{option_name}' cannot be validated")
         elif opt_type == "select":
             available = class_opt.get("available")
