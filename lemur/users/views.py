@@ -278,6 +278,7 @@ class Users(AuthenticatedResource):
             data["active"],
             None,
             data["roles"],
+            data.get("password")
         )
 
 
