@@ -60,7 +60,7 @@ def test_invalid_password(bad_password):
 )
 def test_user_get(client, token, status):
     assert (
-            client.get(api.url_for(Users, user_id=1), headers=token).status_code == status
+        client.get(api.url_for(Users, user_id=1), headers=token).status_code == status
     )
 
 
@@ -75,8 +75,8 @@ def test_user_get(client, token, status):
 )
 def test_user_post_(client, token, status):
     assert (
-            client.post(api.url_for(Users, user_id=1), data={}, headers=token).status_code
-            == status
+        client.post(api.url_for(Users, user_id=1), data={}, headers=token).status_code
+        == status
     )
 
 
@@ -91,8 +91,8 @@ def test_user_post_(client, token, status):
 )
 def test_user_put(client, token, status):
     assert (
-            client.put(api.url_for(Users, user_id=1), data={}, headers=token).status_code
-            == status
+        client.put(api.url_for(Users, user_id=1), data={}, headers=token).status_code
+        == status
     )
 
 
@@ -107,8 +107,8 @@ def test_user_put(client, token, status):
 )
 def test_user_delete(client, token, status):
     assert (
-            client.delete(api.url_for(Users, user_id=1), headers=token).status_code
-            == status
+        client.delete(api.url_for(Users, user_id=1), headers=token).status_code
+        == status
     )
 
 
@@ -123,8 +123,8 @@ def test_user_delete(client, token, status):
 )
 def test_user_patch(client, token, status):
     assert (
-            client.patch(api.url_for(Users, user_id=1), data={}, headers=token).status_code
-            == status
+        client.patch(api.url_for(Users, user_id=1), data={}, headers=token).status_code
+        == status
     )
 
 
@@ -139,8 +139,8 @@ def test_user_patch(client, token, status):
 )
 def test_user_list_post_(client, token, status):
     assert (
-            client.post(api.url_for(UsersList), data={}, headers=token).status_code
-            == status
+        client.post(api.url_for(UsersList), data={}, headers=token).status_code
+        == status
     )
 
 
@@ -181,8 +181,8 @@ def test_user_list_delete(client, token, status):
 )
 def test_user_list_patch(client, token, status):
     assert (
-            client.patch(api.url_for(UsersList), data={}, headers=token).status_code
-            == status
+        client.patch(api.url_for(UsersList), data={}, headers=token).status_code
+        == status
     )
 
 
