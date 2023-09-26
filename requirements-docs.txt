@@ -152,6 +152,8 @@ cryptography==41.0.4
     #   pyopenssl
     #   python-jose
     #   sshpubkeys
+deprecated==1.2.14
+    # via limits
 distro==1.8.0
     # via
     #   -r requirements-tests.txt
@@ -191,6 +193,7 @@ flask==2.3.3
     #   -r requirements-tests.txt
     #   flask-bcrypt
     #   flask-cors
+    #   flask-limiter
     #   flask-mail
     #   flask-migrate
     #   flask-principal
@@ -200,6 +203,8 @@ flask==2.3.3
 flask-bcrypt==1.0.1
     # via -r requirements-docs.in
 flask-cors==4.0.0
+    # via -r requirements-docs.in
+flask-limiter==3.5.0
     # via -r requirements-docs.in
 flask-mail==0.9.1
     # via -r requirements-docs.in
@@ -242,6 +247,8 @@ idna==3.4
     #   requests
 imagesize==1.4.1
     # via sphinx
+importlib-resources==5.13.0
+    # via limits
 inflection==0.5.1
     # via -r requirements-docs.in
 iniconfig==2.0.0
@@ -322,6 +329,8 @@ lazy-object-proxy==1.9.0
     # via
     #   -r requirements-tests.txt
     #   openapi-spec-validator
+limits==3.6.0
+    # via flask-limiter
 logmatic-python==0.1.7
     # via -r requirements-docs.in
 mako==1.2.4
@@ -375,12 +384,15 @@ openapi-spec-validator==0.6.0
     # via
     #   -r requirements-tests.txt
     #   moto
+ordered-set==4.1.0
+    # via flask-limiter
 packaging==23.1
     # via
     #   -r requirements-tests.txt
     #   black
     #   docker
     #   gunicorn
+    #   limits
     #   pytest
     #   sphinx
 paramiko==3.3.1
@@ -559,6 +571,7 @@ rich==13.5.3
     # via
     #   -r requirements-tests.txt
     #   bandit
+    #   flask-limiter
 rpds-py==0.10.3
     # via
     #   -r requirements-tests.txt
@@ -666,6 +679,8 @@ typing-extensions==4.8.0
     #   -r requirements-tests.txt
     #   alembic
     #   aws-sam-translator
+    #   flask-limiter
+    #   limits
     #   pydantic
     #   pydantic-core
 tzdata==2023.3
@@ -706,6 +721,7 @@ wrapt==1.15.0
     # via
     #   -r requirements-tests.txt
     #   aws-xray-sdk
+    #   deprecated
 xmltodict==0.13.0
     # via
     #   -r requirements-docs.in
