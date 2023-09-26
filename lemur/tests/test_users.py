@@ -32,13 +32,16 @@ def test_valid_password():
     schema.validate_password(good_password)
 
 
-@pytest.mark.parametrize("bad_password",
-                         ["ABCD1234!#]",  # No lowercase
-                          "abcd1234@#]",  # No uppercase
-                          "!@#]Abcdefg",  # No digit
-                          "ABCDabcd1234",  # No special character
-                          "Ab1!@#]",  # less than 12 characters
-                          ])
+@pytest.mark.parametrize(
+    "bad_password",
+    [
+        "ABCD1234!#]",  # No lowercase
+        "abcd1234@#]",  # No uppercase
+        "!@#]Abcdefg",  # No digit
+        "ABCDabcd1234",  # No special character
+        "Ab1!@#]",  # less than 12 characters
+    ],
+)
 def test_invalid_password(bad_password):
     schema = UserCreateInputSchema()
     # All these passwords should raise an exception
