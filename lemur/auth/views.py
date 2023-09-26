@@ -33,7 +33,7 @@ from lemur.users import service as user_service
 
 mod = Blueprint("auth", __name__)
 api = Api(mod)
-limiter = Limiter(current_app, key_func=get_remote_address)
+limiter = Limiter(app=current_app, key_func=get_remote_address)
 
 
 def exchange_for_access_token(

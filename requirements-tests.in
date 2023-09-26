@@ -3,6 +3,7 @@
 bandit
 black
 coverage
+celery[redis]==5.3.4
 certbot
 factory-boy
 Faker
