@@ -56,13 +56,13 @@ Basic Configuration
     .. warning::
         This should never be used in a production environment as it exposes sensitivite information.
 
-.. data:: LOG_REQUEST_HEADERS_SKIP_ENDPOINT = ["/metrics", "/healthcheck"]  # These endpoints are noisy so skip them by default
+.. data:: LOG_REQUEST_HEADERS_SKIP_ENDPOINT
     :noindex:
 
     ::
-        Some endpoints are not useful to log and can generate a lot of noise.  If an endpoint is listed here,
-        it will be skipped and not logged.  It is only recommended to add endpoints that are purely informational
-        or only used internally.
+        Defaults to the metrics and healthcheck endpoints.  Some endpoints are not useful to log and can generate a lot of noise.
+        If an endpoint is listed here, it will be skipped and not logged.  It is only recommended to add endpoints that are purely
+        informational or only used internally.
 
         LOG_REQUEST_HEADERS_SKIP_ENDPOINT = ["/metrics", "/healthcheck"]
 
