@@ -27,7 +27,7 @@ def test_user_input_schema(client):
 
 def test_valid_password():
     schema = UserCreateInputSchema()
-    good_password = "ABcd1234@#]"
+    good_password = "ABcdefg123456@#]"
     # This password should not raise an exception
     schema.validate_password(good_password)
 
