@@ -18,7 +18,7 @@ from lemur.users import service
 from lemur.users.schemas import (
     user_input_schema,
     user_output_schema,
-    users_output_schema,
+    users_output_schema, user_create_input_schema,
 )
 
 mod = Blueprint("users", __name__)
@@ -89,7 +89,7 @@ class UsersList(AuthenticatedResource):
         args = parser.parse_args()
         return service.render(args)
 
-    @validate_schema(user_input_schema, user_output_schema)
+    @validate_schema(user_create_input_schema, user_output_schema)
     @admin_permission.require(http_exception=403)
     def post(self, data=None):
         """
