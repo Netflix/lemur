@@ -195,7 +195,9 @@ nose==1.3.7
 openapi-schema-validator==0.6.1
     # via openapi-spec-validator
 openapi-spec-validator==0.6.0
-    # via moto
+    # via
+    #   -r requirements-tests.in
+    #   moto
 packaging==23.1
     # via
     #   black
