@@ -6,30 +6,28 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 
-import jwt
 import base64
-import requests
 import time
 
+import jwt
+import requests
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, hmac
-
 from flask import Blueprint, current_app
-
-from flask_restful import reqparse, Resource, Api
 from flask_principal import Identity, identity_changed
+from flask_restful import reqparse, Resource, Api
 
-from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
-from lemur.extensions import metrics
-from lemur.common.utils import get_psuedo_random_string, get_state_token_secret
-
-from lemur.users import service as user_service
-from lemur.roles import service as role_service
-from lemur.logs import service as log_service
-from lemur.auth.service import create_token, fetch_token_header, get_rsa_public_key
 from lemur.auth import ldap
+from lemur.auth.service import create_token, fetch_token_header, get_rsa_public_key
+from lemur.common.utils import get_psuedo_random_string, get_state_token_secret
+from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
+from lemur.exceptions import TokenExchangeFailed
+from lemur.extensions import metrics
+from lemur.logs import service as log_service
 from lemur.plugins.base import plugins
+from lemur.roles import service as role_service
+from lemur.users import service as user_service
 
 mod = Blueprint("auth", __name__)
 api = Api(mod)
@@ -80,8 +78,24 @@ def exchange_for_access_token(
         r = requests.post(
             access_token_url, headers=headers, data=params, verify=verify_cert
         )
-    id_token = r.json()["id_token"]
-    access_token = r.json()["access_token"]
+
+    response = r.json()
+
+    if not r.ok or "error" in response:
+        raise TokenExchangeFailed(response.get("error", "Unknown error"), response.get("error_description", ""))
+
+    id_token = response.get("id_token")
+    access_token = response.get("access_token")
+
+    if id_token is None or access_token is None:
+        error = "missing tokens"
+        missing_tokens = []
+        if id_token is None:
+            missing_tokens.append("id_token is missing")
+        if access_token is None:
+            missing_tokens.append("access_token is missing")
+        description = " and ".join(missing_tokens)
+        raise TokenExchangeFailed(error, description)
 
     return id_token, access_token
 

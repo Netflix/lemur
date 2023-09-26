@@ -5,7 +5,8 @@ Unreleased
 ~~~~~~~~~~~~~~~~~~~~
 Add NTLM auth support for ADCS issuer.
 Added ability to limit authority creation to admins only using config option `ADMIN_ONLY_AUTHORITY_CREATION`.
-
+User passwords can now be updated by admins with the update user endpoint.
+Route53 find_zone_dns now selects the maximum suffix match for zone id (previously we selected the first match).
 
 1.5.0 - `2023-07-05`
 ~~~~~~~~~~~~~~~~~~~~
