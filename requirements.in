@@ -9,12 +9,13 @@ botocore
 celery[redis]
 certbot
 certifi
-certsrv
+certsrv[ntlm]
 CloudFlare
 cryptography
 dnspython3
 dyn
 Flask-Bcrypt
+Flask-Limiter
 Flask-Mail
 Flask-Migrate
 Flask-Principal

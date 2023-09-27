@@ -8,12 +8,12 @@
 
 """
 from functools import wraps
-from flask import request, current_app
-from sentry_sdk import capture_exception
-from sqlalchemy.orm.collections import InstrumentedList
 
+from flask import request, current_app
 from inflection import camelize, underscore
 from marshmallow import Schema, post_dump, pre_load
+from sentry_sdk import capture_exception
+from sqlalchemy.orm.collections import InstrumentedList
 
 
 class LemurSchema(Schema):

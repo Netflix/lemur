@@ -9,31 +9,28 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
-import os
-import importlib
-import logmatic
 import errno
-import pkg_resources
+import importlib
+import os
 import socket
 import stat
-
 from logging import Formatter, StreamHandler
 from logging.handlers import RotatingFileHandler
 
+import logmatic
+import pkg_resources
+import sentry_sdk
+from click import get_current_context
 from flask import Flask, current_app
 from flask_replicated import FlaskReplicated
-from click import get_current_context
-
-import sentry_sdk
 from sentry_sdk.integrations.celery import CeleryIntegration
+from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
-from sentry_sdk.integrations.flask import FlaskIntegration
 
 from lemur.certificates.hooks import activate_debug_dump
 from lemur.common.health import mod as health
 from lemur.extensions import db, migrate, principal, smtp_mail, metrics, cors
-
 
 DEFAULT_BLUEPRINTS = (health,)
 

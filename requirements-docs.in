@@ -17,6 +17,7 @@ dyn
 Flask
 Flask-Bcrypt
 Flask-Cors
+Flask-Limiter
 Flask-Mail
 Flask-Migrate
 Flask-Principal
