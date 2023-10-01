@@ -6,6 +6,9 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 
+# Import annotations to make type hints backwards compatible with Python 3.8 and older
+from __future__ import annotations
+
 import base64
 import time
 
@@ -184,15 +187,22 @@ def retrieve_user_memberships(user_api_url, user_membership_provider, access_tok
 
 
 def create_user_roles(profile: dict) -> list[str]:
-    """Creates new roles based on profile information.
+    """
+    Generate a list of Lemur role names based on the provided user profile.
 
-    :param profile:
-    :return:
+    The function maps the user's roles from the identity provider to corresponding roles in Lemur,
+    creates roles dynamically based on the profile data, and assigns a unique role for each user.
+
+    :param profile: A dictionary containing user information, including roles/groups from the identity provider.
+    :return: A list of Lemur role names corresponding to the provided user profile.
     """
     roles = []
 
     # We default to pulling in "googleGroups" as that was historically hard coded
     idp_groups_keys = current_app.config.get("IDP_GROUPS_KEYS", ["googleGroups"])
+
+    if isinstance(idp_groups_keys, str):
+        idp_groups_keys = [idp_groups_keys]
 
     for idp_groups_key in idp_groups_keys:
         if idp_groups_key not in profile:
