@@ -245,6 +245,7 @@ def generate_private_key(key_type):
             _CURVE_TYPES[key_type], backend=default_backend()
         )
 
+
 def key_to_alg(key):
     algorithm = jose.RS256
     # Determine alg with kty (and crv).
