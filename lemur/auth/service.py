@@ -8,27 +8,23 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
-import jwt
 import json
-import binascii
-
-from functools import wraps
 from datetime import datetime, timedelta
+from functools import wraps
 
-from flask import g, current_app, jsonify, request
-
-from flask_restful import Resource
-from flask_principal import identity_loaded, RoleNeed, UserNeed
-
-from flask_principal import Identity, identity_changed
-
+import binascii
+import jwt
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
+from flask import g, current_app, jsonify, request
+from flask_principal import Identity, identity_changed
+from flask_principal import identity_loaded, RoleNeed, UserNeed
+from flask_restful import Resource
 
-from lemur.users import service as user_service
 from lemur.api_keys import service as api_key_service
 from lemur.auth.permissions import AuthorityCreatorNeed, RoleMemberNeed
+from lemur.users import service as user_service
 
 
 def get_rsa_public_key(n, e):
@@ -57,9 +53,21 @@ def create_token(user, aid=None, ttl=None):
     :param user:
     :return:
     """
-    expiration_delta = timedelta(
-        days=int(current_app.config.get("LEMUR_TOKEN_EXPIRATION", 1))
-    )
+    expiration_delta = timedelta(days=1)
+    custom_expiry = current_app.config.get("LEMUR_TOKEN_EXPIRATION")
+    if custom_expiry:
+        if isinstance(custom_expiry, str) and custom_expiry.endswith("m"):
+            expiration_delta = timedelta(
+                minutes=int(custom_expiry.rstrip("m"))
+            )
+        elif isinstance(custom_expiry, str) and custom_expiry.endswith("h"):
+            expiration_delta = timedelta(
+                hours=int(custom_expiry.rstrip("h"))
+            )
+        else:
+            expiration_delta = timedelta(
+                days=int(custom_expiry)
+            )
     payload = {"iat": datetime.utcnow(), "exp": datetime.utcnow() + expiration_delta}
 
     # Handle Just a User ID & User Object.

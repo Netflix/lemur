@@ -3,6 +3,7 @@
 bandit
 black
 coverage
+celery[redis]==5.3.4
 certbot
 factory-boy
 Faker
@@ -14,8 +15,9 @@ itsdangerous
 jinja2
 marshmallow-sqlalchemy == 0.23.1 #related to the marshmallow issue (to avoid conflicts)
 marshmallow<2.21.1 #schema duplicate issues https://github.com/marshmallow-code/marshmallow-sqlalchemy/issues/121
-moto[all] == 4.2.3 # 3.1.2 breaks ELBv2 tests
+moto[all] == 4.2.4 # 3.1.2 breaks ELBv2 tests
 nose
+openapi-spec-validator
 pyflakes
 pytest
 pytest-flask
