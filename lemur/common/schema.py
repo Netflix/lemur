@@ -8,12 +8,12 @@
 
 """
 from functools import wraps
-from flask import request, current_app
-from sentry_sdk import capture_exception
-from sqlalchemy.orm.collections import InstrumentedList
 
+from flask import request, current_app
 from inflection import camelize, underscore
 from marshmallow import Schema, post_dump, pre_load
+from sentry_sdk import capture_exception
+from sqlalchemy.orm.collections import InstrumentedList
 
 
 class LemurSchema(Schema):
@@ -156,6 +156,12 @@ def validate_schema(input_schema, output_schema):
 
             try:
                 resp = f(*args, **kwargs)
+            except KeyError as e:
+                capture_exception()
+                current_app.logger.exception(e)
+                missing_field = str(e).replace("'", "")  # This removes quotes around the missing key
+                msg = f"`{missing_field}` is required but is missing or not configured.  Please provide and try again."
+                return dict(message=msg), 500
             except Exception as e:
                 capture_exception()
                 current_app.logger.exception(e)

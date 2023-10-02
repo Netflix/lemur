@@ -6,12 +6,11 @@
 .. moduleauthor:: Ian Stahnke <ian.stahnke@myob.com>
 """
 import ldap
-
 from flask import current_app
 
-from lemur.users import service as user_service
-from lemur.roles import service as role_service
 from lemur.common.utils import validate_conf, get_psuedo_random_string
+from lemur.roles import service as role_service
+from lemur.users import service as user_service
 
 
 class LdapPrincipal:
@@ -210,7 +209,7 @@ class LdapPrincipal:
             self.ldap_groups = []
             for group in lgroups:
                 (dn, values) = group
-                if type(values) == dict:
+                if isinstance(values, dict):
                     self.ldap_groups.append(values["cn"][0].decode("utf-8"))
         else:
             lgroups = self.ldap_client.search_s(

@@ -20,7 +20,7 @@ from lemur.common.schema import validate_schema
 from lemur.common.utils import paginated_parser
 
 from lemur.auth.service import AuthenticatedResource
-from lemur.auth.permissions import AuthorityPermission, CertificatePermission
+from lemur.auth.permissions import AuthorityPermission, CertificatePermission, StrictRolePermission
 
 from lemur.certificates import service
 from lemur.certificates.models import Certificate
@@ -503,6 +503,9 @@ class CertificatesList(AuthenticatedResource):
            :statuscode 403: unauthenticated
 
         """
+        if not StrictRolePermission().can():
+            return dict(message="You are not authorized to create a new certificate."), 403
+
         if not validators.is_valid_owner(data["owner"]):
             return dict(message=f"Invalid owner: check if {data['owner']} is a valid group email. Individuals cannot be certificate owners."), 412
 
@@ -635,6 +638,9 @@ class CertificatesUpload(AuthenticatedResource):
            :statuscode 200: no error
 
         """
+        if not StrictRolePermission().can():
+            return dict(message="You are not authorized to upload a certificate."), 403
+
         data["creator"] = g.user
         if data.get("destinations"):
             if data.get("private_key"):

@@ -56,7 +56,7 @@ jobs:
       FORCE_COLOR: 1
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
@@ -71,7 +71,7 @@ jobs:
         python -m venv ~/env
         source ~/env/bin/activate
         python -m pip install --upgrade pip
-        python -m pip install --upgrade "setuptools<=v65.7.0" # https://github.com/Netflix/lemur/issues/4297
+        python -m pip install --upgrade setuptools
         pip install mypy
         pip install bandit
         sudo apt-get update

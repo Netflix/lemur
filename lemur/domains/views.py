@@ -12,7 +12,7 @@ from flask_restful import reqparse, Api
 
 from lemur.domains import service
 from lemur.auth.service import AuthenticatedResource
-from lemur.auth.permissions import SensitiveDomainPermission
+from lemur.auth.permissions import SensitiveDomainPermission, StrictRolePermission
 
 from lemur.common.schema import validate_schema
 from lemur.common.utils import paginated_parser
@@ -128,6 +128,8 @@ class DomainsList(AuthenticatedResource):
            :statuscode 200: no error
            :statuscode 403: unauthenticated
         """
+        if not StrictRolePermission().can():
+            return dict(message="You are not authorized to create a domain"), 403
         return service.create(data["name"], data["sensitive"])
 
 
@@ -209,10 +211,9 @@ class Domains(AuthenticatedResource):
            :statuscode 200: no error
            :statuscode 403: unauthenticated
         """
-        if SensitiveDomainPermission().can():
-            return service.update(domain_id, data["name"], data["sensitive"])
-
-        return dict(message="You are not authorized to modify this domain"), 403
+        if not StrictRolePermission().can() or not SensitiveDomainPermission().can():
+            return dict(message="You are not authorized to modify this domain."), 403
+        return service.update(domain_id, data["name"], data["sensitive"])
 
 
 class CertificateDomains(AuthenticatedResource):
