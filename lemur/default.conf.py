@@ -16,6 +16,9 @@ DEBUG = False
 
 LOG_LEVEL = "DEBUG"
 LOG_FILE = "lemur.log"
+LOG_REQUEST_HEADERS = False
+LOG_SANITIZE_REQUEST_HEADERS = True
+LOG_REQUEST_HEADERS_SKIP_ENDPOINT = ["/metrics", "/healthcheck"]
 
 # Set of controls to use around ingesting user group information from the IDP
 # Allows mapping user groups to Lemur roles and automatically creating them
