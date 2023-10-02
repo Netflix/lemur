@@ -126,7 +126,9 @@ METRIC_PROVIDERS = []
 LOG_LEVEL = "DEBUG"
 LOG_FILE = "lemur.log"
 LOG_UPGRADE_FILE = "db_upgrade.log"
-
+LOG_REQUEST_HEADERS = False
+LOG_SANITIZE_REQUEST_HEADERS = True
+LOG_REQUEST_HEADERS_SKIP_ENDPOINT = ["/metrics", "/healthcheck"]  # These endpoints are noisy so skip them by default
 
 # Database
 
