@@ -94,8 +94,8 @@ class CertificateInputSchema(CertificateCreationSchema):
         validate=validate.OneOf(CERTIFICATE_KEY_TYPES), missing="ECCPRIME256V1"
     )
 
-    notify = fields.Boolean(default=True)
-    rotation = fields.Boolean()
+    notify = fields.Boolean(default=current_app.config.get("LEMUR_DEFAULT_CERTIFICATE_NOTIFY", True))
+    rotation = fields.Boolean(default=current_app.config.get("LEMUR_DEFAULT_CERTIFICATE_ROTATE", False))
     rotation_policy = fields.Nested(
         AssociatedRotationPolicySchema,
         missing={"name": "default"},

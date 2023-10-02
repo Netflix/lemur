@@ -324,6 +324,25 @@ Lemur allows you to fine tune your certificates to your organization. The follow
 and are used when Lemur creates the CSR for your certificates.
 
 
+.. data:: LEMUR_DEFAULT_CERTIFICATE_NOTIFY
+    :noindex:
+
+        Flags the certificate to notify during certificate creation.  Defaults to True.
+
+    ::
+
+        LEMUR_DEFAULT_CERTIFICATE_NOTIFY = True
+
+
+.. data:: LEMUR_DEFAULT_CERTIFICATE_ROTATE
+    :noindex:
+
+        Flags the certificate to rotate on expiration during certificate creation.  Defaults to False.
+
+    ::
+
+        LEMUR_DEFAULT_CERTIFICATE_ROTATE = False
+
 .. data:: LEMUR_DEFAULT_COUNTRY
     :noindex:
 
