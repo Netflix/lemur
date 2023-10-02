@@ -364,7 +364,7 @@ wcwidth==0.2.6
     # via prompt-toolkit
 websocket-client==1.6.3
     # via docker
-werkzeug==2.3.7
+werkzeug==3.0.0
     # via
     #   -r requirements-tests.in
     #   flask

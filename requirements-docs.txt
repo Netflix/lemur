@@ -710,7 +710,7 @@ websocket-client==1.6.3
     # via
     #   -r requirements-tests.txt
     #   docker
-werkzeug==2.3.7
+werkzeug==3.0.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
