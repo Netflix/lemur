@@ -27,7 +27,7 @@ from certbot import crypto_util as acme_crypto_util
 from flask import current_app
 from sentry_sdk import capture_exception
 
-from lemur.common.utils import generate_private_key
+from lemur.common.utils import generate_private_key, key_to_alg
 from lemur.dns_providers import service as dns_provider_service
 from lemur.exceptions import InvalidAuthority, UnknownProvider, InvalidConfiguration
 from lemur.extensions import metrics
@@ -183,7 +183,7 @@ class AcmeHandler(object):
             current_app.logger.debug(
                 "Connecting with directory at {0}".format(directory_url)
             )
-            net = ClientNetwork(key, account=regr)
+            net = ClientNetwork(key, account=regr, alg=key_to_alg(key))
             directory = ClientV2.get_directory(directory_url, net)
             client = ClientV2(directory, net=net)
             return client, {}
@@ -196,7 +196,7 @@ class AcmeHandler(object):
                 "Connecting with directory at {0}".format(directory_url)
             )
 
-            net = ClientNetwork(key, account=None, timeout=3600)
+            net = ClientNetwork(key, account=None, timeout=3600, alg=key_to_alg(key))
             directory = ClientV2.get_directory(directory_url, net)
             client = ClientV2(directory, net=net)
             if eab_kid and eab_hmac_key:
