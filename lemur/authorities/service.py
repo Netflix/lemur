@@ -64,6 +64,10 @@ def mint(**kwargs):
     issuer = kwargs["plugin"]["plugin_object"]
     values = issuer.create_authority(kwargs)
 
+    # Check body for root cert
+    if values[0] is None:
+        raise ValueError(f"Plugin '{issuer.get_title()}' provided no root certification. Check plugin configuration.")
+
     # support older plugins
     if len(values) == 3:
         body, chain, roles = values
