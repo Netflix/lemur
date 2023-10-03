@@ -11,8 +11,8 @@ Lemur
 
 .. image:: https://img.shields.io/badge/NetflixOSS-active-brightgreen.svg
 
-.. image:: https://coveralls.io/repos/github/Netflix/lemur/badge.svg?branch=master
-    :target: https://coveralls.io/github/Netflix/lemur?branch=master
+.. image:: https://coveralls.io/repos/github/Netflix/lemur/badge.svg?branch=main
+    :target: https://coveralls.io/github/Netflix/lemur?branch=main
 
 
 

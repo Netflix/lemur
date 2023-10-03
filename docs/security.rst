@@ -22,7 +22,7 @@ further follow-up.
 Supported Versions
 ------------------
 
-At any given time, we will provide security support for the `master`_ branch
+At any given time, we will provide security support for the `main`_ branch
 as well as the most recent release.
 
 Disclosure Process
