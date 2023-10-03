@@ -227,7 +227,7 @@ Uncertain about how to write tests? Take a look at some existing tests that are 
 
 You can see a list of open pull requests (pending changes) by visiting https://github.com/netflix/lemur/pulls
 
-Pull requests should be against **master** and pass all TravisCI checks
+Pull requests should be against **main** and pass all TravisCI checks
 
 
 Writing a Plugin
