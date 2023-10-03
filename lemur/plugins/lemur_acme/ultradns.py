@@ -1,18 +1,16 @@
-import time
-import requests
 import json
 import sys
+import time
 
 import dns
 import dns.exception
 import dns.name
 import dns.query
 import dns.resolver
-
+import requests
 from flask import current_app
-from sentry_sdk import capture_exception
-
 from lemur.extensions import metrics
+from sentry_sdk import capture_exception
 
 
 class Record:
@@ -413,7 +411,7 @@ def get_authoritative_nameserver(domain):
     while not last:
         s = n.split(depth)
 
-        last = s[0].to_unicode() == u"@"
+        last = s[0].to_unicode() == "@"
         sub = s[1]
 
         query = dns.message.make_query(sub, dns.rdatatype.NS)

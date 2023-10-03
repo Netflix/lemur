@@ -1,13 +1,13 @@
+import re
 import sys
+
 import dns
 import dns.exception
 import dns.name
 import dns.query
 import dns.resolver
-import re
-from sentry_sdk import capture_exception
-
 from lemur.extensions import metrics
+from sentry_sdk import capture_exception
 
 
 class DNSError(Exception):
@@ -54,7 +54,7 @@ def get_authoritative_nameserver(domain):
     while not last:
         s = n.split(depth)
 
-        last = s[0].to_unicode() == u"@"
+        last = s[0].to_unicode() == "@"
         sub = s[1]
 
         query = dns.message.make_query(sub, dns.rdatatype.NS)

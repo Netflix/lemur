@@ -15,10 +15,6 @@ from itertools import groupby
 
 import arrow
 from flask import current_app
-from sentry_sdk import capture_exception
-from sqlalchemy import and_
-from sqlalchemy.sql.expression import false, true
-
 from lemur import database
 from lemur.certificates import service as certificates_service
 from lemur.certificates.models import Certificate
@@ -29,6 +25,9 @@ from lemur.extensions import metrics
 from lemur.pending_certificates.schemas import pending_certificate_output_schema
 from lemur.plugins import plugins
 from lemur.plugins.utils import get_plugin_option
+from sentry_sdk import capture_exception
+from sqlalchemy import and_
+from sqlalchemy.sql.expression import false, true
 
 
 def get_certificates(exclude=None):
@@ -51,7 +50,7 @@ def get_certificates(exclude=None):
     exclude_conditions = []
     if exclude:
         for e in exclude:
-            exclude_conditions.append(~Certificate.name.ilike("%{}%".format(e)))
+            exclude_conditions.append(~Certificate.name.ilike(f"%{e}%"))
 
         q = q.filter(and_(*exclude_conditions))
 
@@ -85,7 +84,7 @@ def get_certificates_for_security_summary_email(exclude=None):
     exclude_conditions = []
     if exclude:
         for e in exclude:
-            exclude_conditions.append(~Certificate.name.ilike("%{}%".format(e)))
+            exclude_conditions.append(~Certificate.name.ilike(f"%{e}%"))
 
         q = q.filter(and_(*exclude_conditions))
 

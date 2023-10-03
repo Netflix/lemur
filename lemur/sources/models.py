@@ -5,13 +5,12 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from sqlalchemy.orm import relationship
-from sqlalchemy import Column, Integer, String, Text, Boolean
-from sqlalchemy_utils import JSONType
 from lemur.database import BaseModel
-
 from lemur.plugins.base import plugins
+from sqlalchemy import Column, Integer, String, Text, Boolean
+from sqlalchemy.orm import relationship
 from sqlalchemy_utils import ArrowType
+from sqlalchemy_utils import JSONType
 
 
 class Source(BaseModel):
@@ -30,4 +29,4 @@ class Source(BaseModel):
         return plugins.get(self.plugin_name)
 
     def __repr__(self):
-        return "Source(label={label})".format(label=self.label)
+        return f"Source(label={self.label})"

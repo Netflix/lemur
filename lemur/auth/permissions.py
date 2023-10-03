@@ -6,8 +6,8 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from functools import partial
 from collections import namedtuple
+from functools import partial
 
 from flask import current_app
 from flask_principal import Permission, RoleNeed
@@ -29,7 +29,7 @@ class SensitiveDomainPermission(Permission):
             for role in sensitive_domain_roles:
                 needs.append(RoleNeed(role))
 
-        super(SensitiveDomainPermission, self).__init__(*needs)
+        super().__init__(*needs)
 
 
 class CertificatePermission(Permission):
@@ -41,12 +41,12 @@ class CertificatePermission(Permission):
             if str(r) != str(r).lower():
                 needs.append(CertificateOwnerNeed(str(r).lower()))
 
-        super(CertificatePermission, self).__init__(*needs)
+        super().__init__(*needs)
 
 
 class ApiKeyCreatorPermission(Permission):
     def __init__(self):
-        super(ApiKeyCreatorPermission, self).__init__(RoleNeed("admin"))
+        super().__init__(RoleNeed("admin"))
 
 
 RoleMember = namedtuple("RoleMember", ["method", "value"])
@@ -56,16 +56,16 @@ RoleMemberNeed = partial(RoleMember, "member")
 class RoleMemberPermission(Permission):
     def __init__(self, role_id):
         needs = [RoleNeed("admin"), RoleMemberNeed(role_id)]
-        super(RoleMemberPermission, self).__init__(*needs)
+        super().__init__(*needs)
 
 
 class AuthorityCreatorPermission(Permission):
     def __init__(self):
         requires_admin = current_app.config.get("ADMIN_ONLY_AUTHORITY_CREATION", False)
         if requires_admin:
-            super(AuthorityCreatorPermission, self).__init__(RoleNeed("admin"))
+            super().__init__(RoleNeed("admin"))
         else:
-            super(AuthorityCreatorPermission, self).__init__()
+            super().__init__()
 
 
 AuthorityCreator = namedtuple("AuthorityCreator", ["method", "value"])
@@ -81,7 +81,7 @@ class AuthorityPermission(Permission):
         for r in roles:
             needs.append(AuthorityOwnerNeed(str(r)))
 
-        super(AuthorityPermission, self).__init__(*needs)
+        super().__init__(*needs)
 
 
 class StrictRolePermission(Permission):
@@ -89,6 +89,6 @@ class StrictRolePermission(Permission):
         strict_role_enforcement = current_app.config.get("LEMUR_STRICT_ROLE_ENFORCEMENT", False)
         if strict_role_enforcement:
             needs = [RoleNeed("admin"), RoleNeed("operator")]
-            super(StrictRolePermission, self).__init__(*needs)
+            super().__init__(*needs)
         else:
-            super(StrictRolePermission, self).__init__()
+            super().__init__()

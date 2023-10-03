@@ -47,7 +47,7 @@ def test_map_fields_with_validity_years_and_ip_addr(mock_current_app):
     with patch('lemur.plugins.lemur_digicert.plugin.signature_hash') as mock_signature_hash:
         mock_signature_hash.return_value = "sha256"
 
-        names = [u"one.example.com", u"two.example.com", u"three.example.com"]
+        names = ["one.example.com", "two.example.com", "three.example.com"]
         ip_addr_names = ["1.2.3.4", "2001:db8:85a3::8a2e:370:7334"]
         options = {
             "common_name": "example.com",
@@ -77,7 +77,7 @@ def test_map_fields_with_validity_end_and_start(mock_current_app):
     with patch('lemur.plugins.lemur_digicert.plugin.signature_hash') as mock_signature_hash:
         mock_signature_hash.return_value = "sha256"
 
-        names = [u"one.example.com", u"two.example.com", u"three.example.com"]
+        names = ["one.example.com", "two.example.com", "three.example.com"]
         options = {
             "common_name": "example.com",
             "owner": "bob@example.com",
@@ -109,7 +109,7 @@ def test_map_cis_fields_with_validity_years(mock_current_app, authority):
     with patch('lemur.plugins.lemur_digicert.plugin.signature_hash') as mock_signature_hash:
         mock_signature_hash.return_value = "sha256"
 
-        names = [u"one.example.com", u"two.example.com", u"three.example.com"]
+        names = ["one.example.com", "two.example.com", "three.example.com"]
         options = {
             "common_name": "example.com",
             "owner": "bob@example.com",
@@ -144,7 +144,7 @@ def test_map_cis_fields_with_validity_end_and_start(mock_current_app, app, autho
     with patch('lemur.plugins.lemur_digicert.plugin.signature_hash') as mock_signature_hash:
         mock_signature_hash.return_value = "sha256"
 
-        names = [u"one.example.com", u"two.example.com", u"three.example.com"]
+        names = ["one.example.com", "two.example.com", "three.example.com"]
         options = {
             "common_name": "example.com",
             "owner": "bob@example.com",

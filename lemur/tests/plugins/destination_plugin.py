@@ -10,7 +10,7 @@ class TestDestinationPlugin(DestinationPlugin):
     author_url = "https://github.com/netflix/lemur.git"
 
     def __init__(self, *args, **kwargs):
-        super(TestDestinationPlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def upload(self, name, body, private_key, cert_chain, options, **kwargs):
         return
@@ -25,7 +25,7 @@ class TestDestinationPluginDuplicatesAllowed(DestinationPlugin):
     author_url = "https://github.com/netflix/lemur.git"
 
     def __init__(self, *args, **kwargs):
-        super(TestDestinationPluginDuplicatesAllowed, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def allow_multiple_per_account(self):
         return True

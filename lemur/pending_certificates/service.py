@@ -4,25 +4,24 @@
 .. moduleauthor:: James Chuong <jchuong@instartlogic.com>
 """
 import arrow
-from sqlalchemy import or_, cast, Integer
 from flask import current_app
-
 from lemur import database
-from lemur.authorities.models import Authority
 from lemur.authorities import service as authorities_service
+from lemur.authorities.models import Authority
 from lemur.certificates import service as certificate_service
 from lemur.certificates.schemas import CertificateUploadInputSchema
-from lemur.common.utils import truthiness, parse_cert_chain, parse_certificate
 from lemur.common import validators
+from lemur.common.utils import truthiness, parse_cert_chain, parse_certificate
 from lemur.destinations.models import Destination
 from lemur.domains.models import Domain
 from lemur.extensions import metrics
+from lemur.logs import service as log_service
 from lemur.notifications.models import Notification
 from lemur.pending_certificates.models import PendingCertificate
 from lemur.plugins.base import plugins
 from lemur.roles.models import Role
 from lemur.users import service as user_service
-from lemur.logs import service as log_service
+from sqlalchemy import or_, cast, Integer
 
 
 def get(pending_cert_id):
@@ -106,7 +105,7 @@ def create_certificate(pending_certificate, certificate, user):
     data, errors = CertificateUploadInputSchema().load(certificate)
     if errors:
         raise Exception(
-            "Unable to create certificate: {reasons}".format(reasons=errors)
+            f"Unable to create certificate: {errors}"
         )
 
     data.update(vars(pending_certificate))
@@ -212,13 +211,13 @@ def render(args):
             # we can't rely on issuer being correct in the cert directly so we combine queries
             sub_query = (
                 database.session_query(Authority.id)
-                .filter(Authority.name.ilike("%{0}%".format(terms[1])))
+                .filter(Authority.name.ilike(f"%{terms[1]}%"))
                 .subquery()
             )
 
             query = query.filter(
                 or_(
-                    PendingCertificate.issuer.ilike("%{0}%".format(terms[1])),
+                    PendingCertificate.issuer.ilike(f"%{terms[1]}%"),
                     PendingCertificate.authority_id.in_(sub_query),
                 )
             )
@@ -234,9 +233,9 @@ def render(args):
         elif "cn" in terms:
             query = query.filter(
                 or_(
-                    PendingCertificate.cn.ilike("%{0}%".format(terms[1])),
+                    PendingCertificate.cn.ilike(f"%{terms[1]}%"),
                     PendingCertificate.domains.any(
-                        Domain.name.ilike("%{0}%".format(terms[1]))
+                        Domain.name.ilike(f"%{terms[1]}%")
                     ),
                 )
             )

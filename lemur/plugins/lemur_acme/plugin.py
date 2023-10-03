@@ -16,19 +16,17 @@ from acme.errors import PollError, WildcardUnsupportedError
 from acme.messages import Error as AcmeError
 from botocore.exceptions import ClientError
 from flask import current_app
-from sentry_sdk import capture_exception
-
 from lemur.authorizations import service as authorization_service
 from lemur.common.utils import check_validation, drop_last_cert_from_chain
 from lemur.constants import CRLReason, EMAIL_RE
 from lemur.dns_providers import service as dns_provider_service
 from lemur.exceptions import InvalidConfiguration
 from lemur.extensions import metrics
-
 from lemur.plugins import lemur_acme as acme
 from lemur.plugins.bases import IssuerPlugin
 from lemur.plugins.lemur_acme.acme_handlers import AcmeHandler, AcmeDnsHandler
 from lemur.plugins.lemur_acme.challenge_types import AcmeHttpChallenge, AcmeDnsChallenge
+from sentry_sdk import capture_exception
 
 
 class ACMEIssuerPlugin(IssuerPlugin):
@@ -113,7 +111,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
     ]
 
     def __init__(self, *args, **kwargs):
-        super(ACMEIssuerPlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_ordered_certificate(self, pending_cert):
         self.acme = AcmeDnsHandler()
@@ -302,7 +300,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
 
         plugin_options = options.get("plugin", {}).get("plugin_options")
         if not plugin_options:
-            error = "Invalid options for lemur_acme plugin: {}".format(options)
+            error = f"Invalid options for lemur_acme plugin: {options}"
             current_app.logger.error(error)
             raise InvalidConfiguration(error)
         # Define static acme_root based off configuration variable by default. However, if user has passed a
@@ -416,7 +414,7 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
     ]
 
     def __init__(self, *args, **kwargs):
-        super(ACMEHttpIssuerPlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def create_certificate(self, csr, issuer_options):
         """
@@ -444,7 +442,7 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
 
         plugin_options = options.get("plugin", {}).get("plugin_options")
         if not plugin_options:
-            error = "Invalid options for lemur_acme plugin: {}".format(options)
+            error = f"Invalid options for lemur_acme plugin: {options}"
             current_app.logger.error(error)
             raise InvalidConfiguration(error)
         # Define static acme_root based off configuration variable by default. However, if user has passed a

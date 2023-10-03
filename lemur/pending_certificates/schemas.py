@@ -1,9 +1,6 @@
-from marshmallow import fields, validates_schema, post_load
-from marshmallow.exceptions import ValidationError
-
-from lemur.common import utils, validators
 from lemur.authorities.schemas import AuthorityNestedOutputSchema
 from lemur.certificates.schemas import CertificateNestedOutputSchema
+from lemur.common import utils, validators
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
 from lemur.destinations.schemas import DestinationNestedOutputSchema
 from lemur.domains.schemas import DomainNestedOutputSchema
@@ -20,6 +17,8 @@ from lemur.schemas import (
     ExtensionSchema,
 )
 from lemur.users.schemas import UserNestedOutputSchema
+from marshmallow import fields, validates_schema, post_load
+from marshmallow.exceptions import ValidationError
 
 
 class PendingCertificateSchema(LemurInputSchema):
@@ -92,7 +91,7 @@ class PendingCertificateEditInputSchema(PendingCertificateSchema):
         :return:
         """
         if data["owner"]:
-            notification_name = "DEFAULT_{0}".format(
+            notification_name = "DEFAULT_{}".format(
                 data["owner"].split("@")[0].upper()
             )
             data[

@@ -30,15 +30,14 @@ Create Date: 2020-09-21 14:28:50.757998
 revision = 'c301c59688d2'
 down_revision = '434c29e40511'
 
-from alembic import op
-from sqlalchemy.sql import text
-import time
 import datetime
-from flask import current_app
-
+import time
 from logging import Formatter, FileHandler, getLogger
 
+from alembic import op
+from flask import current_app
 from lemur.common import utils
+from sqlalchemy.sql import text
 
 log = getLogger(__name__)
 handler = FileHandler(current_app.config.get("LOG_UPGRADE_FILE", "db_upgrade.log"))
@@ -109,9 +108,9 @@ def update_key_type():
         try:
             cert_key_type = utils.get_key_type_from_certificate(body)
         except ValueError as e:
-            log.error("Error in processing certificate - ID: %s Error: %s \n" % (cert_id, str(e)))
+            log.error("Error in processing certificate - ID: {} Error: {} \n".format(cert_id, str(e)))
         else:
-            log.info("Processing certificate - ID: %s key_type: %s\n" % (cert_id, cert_key_type))
+            log.info("Processing certificate - ID: {} key_type: {}\n".format(cert_id, cert_key_type))
             stmt = text(
                 "update certificates set key_type=:key_type where id=:id"
             )

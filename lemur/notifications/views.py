@@ -8,19 +8,16 @@
 """
 from flask import Blueprint
 from flask_restful import Api, reqparse, inputs
+from lemur.auth.permissions import StrictRolePermission
+from lemur.auth.service import AuthenticatedResource
+from lemur.common.schema import validate_schema
+from lemur.common.utils import paginated_parser
 from lemur.notifications import service
 from lemur.notifications.schemas import (
     notification_input_schema,
     notification_output_schema,
     notifications_output_schema,
 )
-
-from lemur.auth.service import AuthenticatedResource
-from lemur.common.utils import paginated_parser
-from lemur.auth.permissions import StrictRolePermission
-
-from lemur.common.schema import validate_schema
-
 
 mod = Blueprint("notifications", __name__)
 api = Api(mod)
@@ -31,7 +28,7 @@ class NotificationsList(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(NotificationsList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, notifications_output_schema)
     def get(self):
@@ -238,7 +235,7 @@ class NotificationsList(AuthenticatedResource):
 class Notifications(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(Notifications, self).__init__()
+        super().__init__()
 
     @validate_schema(None, notification_output_schema)
     def get(self, notification_id):
@@ -391,7 +388,7 @@ class CertificateNotifications(AuthenticatedResource):
     """ Defines the 'certificate/<int:certificate_id/notifications'' endpoint """
 
     def __init__(self):
-        super(CertificateNotifications, self).__init__()
+        super().__init__()
 
     @validate_schema(None, notifications_output_schema)
     def get(self, certificate_id):

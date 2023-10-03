@@ -6,7 +6,6 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from __future__ import absolute_import, print_function
 
 from lemur.plugins.base.manager import PluginManager
 from lemur.plugins.base.v1 import *  # noqa

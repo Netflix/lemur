@@ -15,10 +15,10 @@ Create Date: 2016-05-20 17:33:04.360687
 revision = "3307381f3b88"
 down_revision = "412b22cb656a"
 
-from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.sql import text
+from alembic import op
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.sql import text
 
 
 def upgrade():
@@ -38,7 +38,7 @@ def upgrade():
         "certificates", "owner", existing_type=sa.VARCHAR(length=128), nullable=True
     )
     op.drop_constraint(
-        u"certificates_authority_id_fkey", "certificates", type_="foreignkey"
+        "certificates_authority_id_fkey", "certificates", type_="foreignkey"
     )
     op.create_foreign_key(
         None,
@@ -150,7 +150,7 @@ def downgrade():
     op.drop_constraint(None, "certificates", type_="foreignkey")
     op.drop_constraint(None, "certificates", type_="foreignkey")
     op.create_foreign_key(
-        u"certificates_authority_id_fkey",
+        "certificates_authority_id_fkey",
         "certificates",
         "authorities",
         ["authority_id"],

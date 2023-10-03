@@ -16,12 +16,11 @@ import hvac
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from flask import current_app
-from validators.url import url
-
 from lemur.common.defaults import common_name, country, state, location, organizational_unit, organization
 from lemur.common.utils import parse_certificate, check_validation
 from lemur.plugins.bases import DestinationPlugin
 from lemur.plugins.bases import SourcePlugin
+from validators.url import url
 
 
 class VaultSourcePlugin(SourcePlugin):
@@ -105,19 +104,19 @@ class VaultSourcePlugin(SourcePlugin):
 
         client = hvac.Client(url=url)
         if auth_method == 'token':
-            with open(auth_key, "r") as tfile:
+            with open(auth_key) as tfile:
                 token = tfile.readline().rstrip("\n")
             client.token = token
 
         if auth_method == 'kubernetes':
             token_path = '/var/run/secrets/kubernetes.io/serviceaccount/token'
-            with open(token_path, 'r') as f:
+            with open(token_path) as f:
                 jwt = f.read()
             client.auth_kubernetes(auth_key, jwt)
 
         client.secrets.kv.default_kv_version = api_version
 
-        path = "{0}/{1}".format(path, obj_name)
+        path = f"{path}/{obj_name}"
 
         secret = get_secret(client, mount, path)
         for cname in secret["data"]:
@@ -232,7 +231,7 @@ class VaultDestinationPlugin(DestinationPlugin):
     ]
 
     def __init__(self, *args, **kwargs):
-        super(VaultDestinationPlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def upload(self, name, body, private_key, cert_chain, options, **kwargs):
         """
@@ -275,13 +274,13 @@ class VaultDestinationPlugin(DestinationPlugin):
 
         client = hvac.Client(url=url)
         if auth_method == 'token':
-            with open(auth_key, "r") as tfile:
+            with open(auth_key) as tfile:
                 token = tfile.readline().rstrip("\n")
             client.token = token
 
         if auth_method == 'kubernetes':
             token_path = '/var/run/secrets/kubernetes.io/serviceaccount/token'
-            with open(token_path, 'r') as f:
+            with open(token_path) as f:
                 jwt = f.read()
             client.auth_kubernetes(auth_key, jwt)
 
@@ -307,7 +306,7 @@ class VaultDestinationPlugin(DestinationPlugin):
             C=country(cert)
         )
 
-        path = "{0}/{1}".format(t_path, f_obj_name)
+        path = f"{t_path}/{f_obj_name}"
 
         secret = get_secret(client, mount, path)
         secret["data"][cname] = {}
@@ -318,14 +317,14 @@ class VaultDestinationPlugin(DestinationPlugin):
             chain = cert_chain
 
         if bundle == "Nginx":
-            secret["data"][cname]["crt"] = "{0}\n{1}".format(body, chain)
+            secret["data"][cname]["crt"] = f"{body}\n{chain}"
             secret["data"][cname]["key"] = private_key
         elif bundle == "Apache":
             secret["data"][cname]["crt"] = body
             secret["data"][cname]["chain"] = chain
             secret["data"][cname]["key"] = private_key
         elif bundle == "PEM":
-            secret["data"][cname]["pem"] = "{0}\n{1}\n{2}".format(
+            secret["data"][cname]["pem"] = "{}\n{}\n{}".format(
                 body, chain, private_key
             )
         else:
@@ -339,7 +338,7 @@ class VaultDestinationPlugin(DestinationPlugin):
             )
         except ConnectionError as err:
             current_app.logger.exception(
-                "Exception uploading secret to vault: {0}".format(err), exc_info=True
+                f"Exception uploading secret to vault: {err}", exc_info=True
             )
 
 

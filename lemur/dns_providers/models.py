@@ -1,11 +1,10 @@
+from lemur.database import BaseModel
+from lemur.plugins.base import plugins
+from lemur.utils import Vault
 from sqlalchemy import Column, Integer, String, text
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import ArrowType
-
-from lemur.database import BaseModel
-from lemur.plugins.base import plugins
-from lemur.utils import Vault
 
 
 class DnsProvider(BaseModel):
@@ -38,4 +37,4 @@ class DnsProvider(BaseModel):
         return plugins.get(self.plugin_name)
 
     def __repr__(self):
-        return "DnsProvider(name={name})".format(name=self.name)
+        return f"DnsProvider(name={self.name})"

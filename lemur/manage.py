@@ -1,55 +1,46 @@
 #!/usr/bin/env python
-from __future__ import unicode_literals  # at top of module
 
-import click
+import base64
+import json
 import os
 import sys
-import base64
+
+import click
 import requests
-import json
-
 from cryptography.fernet import Fernet
-
 from flask import current_app
 from flask.cli import FlaskGroup, pass_script_info
-from flask_migrate.cli import db
 from flask_migrate import stamp
-
-from lemur.dns_providers.cli import cli as dns_provider_cli
-from lemur.acme_providers.cli import cli as acme_cli
-from lemur.sources.cli import cli as source_cli
-from lemur.policies.cli import cli as policy_cli
-from lemur.reporting.cli import cli as report_cli
-from lemur.certificates.cli import cli as certificate_cli
-from lemur.notifications.cli import cli as notification_cli
-from lemur.pending_certificates.cli import cli as pending_certificate_cli
-
-
-from lemur import database
-from lemur.users import service as user_service
-from lemur.roles import service as role_service
-from lemur.policies import service as policy_service
-from lemur.notifications import service as notification_service
-
-from lemur.common.utils import validate_conf
-
+from flask_migrate.cli import db
 from lemur import create_app
-
+from lemur import database
+from lemur.acme_providers.cli import cli as acme_cli
+from lemur.authorities.models import Authority  # noqa
+from lemur.certificates.cli import cli as certificate_cli
+from lemur.certificates.models import Certificate  # noqa
+from lemur.common.utils import validate_conf
+from lemur.destinations.models import Destination  # noqa
+from lemur.dns_providers.cli import cli as dns_provider_cli
+from lemur.dns_providers.models import DnsProvider  # noqa
+from lemur.domains.models import Domain  # noqa
+from lemur.endpoints.models import Endpoint  # noqa
+from lemur.logs.models import Log  # noqa
+from lemur.notifications import service as notification_service
+from lemur.notifications.cli import cli as notification_cli
+from lemur.notifications.models import Notification  # noqa
+from lemur.pending_certificates.cli import cli as pending_certificate_cli
+from lemur.pending_certificates.models import PendingCertificate  # noqa
+from lemur.policies import service as policy_service
+from lemur.policies.cli import cli as policy_cli
+from lemur.policies.models import RotationPolicy  # noqa
+from lemur.reporting.cli import cli as report_cli
+from lemur.roles import service as role_service
+from lemur.roles.models import Role  # noqa
+from lemur.sources.cli import cli as source_cli
+from lemur.sources.models import Source  # noqa
+from lemur.users import service as user_service
 # Needed to be imported so that SQLAlchemy create_all can find our models
 from lemur.users.models import User  # noqa
-from lemur.roles.models import Role  # noqa
-from lemur.authorities.models import Authority  # noqa
-from lemur.certificates.models import Certificate  # noqa
-from lemur.destinations.models import Destination  # noqa
-from lemur.domains.models import Domain  # noqa
-from lemur.notifications.models import Notification  # noqa
-from lemur.sources.models import Source  # noqa
-from lemur.logs.models import Log  # noqa
-from lemur.endpoints.models import Endpoint  # noqa
-from lemur.policies.models import RotationPolicy  # noqa
-from lemur.pending_certificates.models import PendingCertificate  # noqa
-from lemur.dns_providers.models import DnsProvider  # noqa
-
 from sqlalchemy.sql import text
 
 
@@ -294,7 +285,7 @@ def initialize_app(password):
     recipients = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
     click.echo("[+] Creating expiration email notifications!")
     click.echo(
-        "[!] Using {0} as specified by LEMUR_SECURITY_TEAM_EMAIL for notifications".format(
+        "[!] Using {} as specified by LEMUR_SECURITY_TEAM_EMAIL for notifications".format(
             recipients
         )
     )
@@ -339,7 +330,7 @@ def create_user(username, email, active, roles, password):
         if role_obj:
             role_objs.append(role_obj)
         else:
-            click.echo("[!] Cannot find role {0}".format(r))
+            click.echo(f"[!] Cannot find role {r}")
             sys.exit(1)
 
     if not password:
@@ -352,7 +343,7 @@ def create_user(username, email, active, roles, password):
             sys.exit(1)
 
     user_service.create(username, password, email, active, None, role_objs)
-    click.echo("[+] Created new user: {0}".format(username))
+    click.echo(f"[+] Created new user: {username}")
 
 
 @cli.command("reset_password")
@@ -364,10 +355,10 @@ def reset_password(username):
     user = user_service.get_by_username(username)
 
     if not user:
-        click.echo("[!] No user found for username: {0}".format(username))
+        click.echo(f"[!] No user found for username: {username}")
         sys.exit(1)
 
-    click.echo("[+] Resetting password for {0}".format(username))
+    click.echo(f"[+] Resetting password for {username}")
     password1 = click.prompt("Password", hide_input=True)
     password2 = click.prompt("Confirm Password", hide_input=True)
 
@@ -394,10 +385,10 @@ def create_role(name, users, description):
         if user_obj:
             user_objs.append(user_obj)
         else:
-            click.echo("[!] Cannot find user {0}".format(u))
+            click.echo(f"[!] Cannot find user {u}")
             sys.exit(1)
     role_service.create(name, description=description, users=users)
-    click.echo("[+] Created new role: {0}".format(name))
+    click.echo(f"[+] Created new role: {name}")
 
 
 @cli.command("start", context_settings=dict(ignore_unknown_options=True, allow_extra_args=True))
@@ -446,7 +437,7 @@ def create_config(config_path):
     with open(config_path, "w") as f:
         f.write(config)
 
-    click.echo("[+] Created a new configuration file {0}".format(config_path))
+    click.echo(f"[+] Created a new configuration file {config_path}")
 
 
 @cli.command("lock")
@@ -473,7 +464,7 @@ def lock(path=None):
     key = Fernet.generate_key()
 
     if not os.path.exists(dest_dir):
-        click.echo("[+] Creating encryption directory: {0}".format(dest_dir))
+        click.echo(f"[+] Creating encryption directory: {dest_dir}")
         os.makedirs(dest_dir)
 
     for root, dirs, files in os.walk(os.path.join(path, "decrypted")):
@@ -485,10 +476,10 @@ def lock(path=None):
                 data = f.encrypt(in_file.read())
                 out_file.write(data)
                 click.echo(
-                    "[+] Writing file: {0} Source: {1}".format(dest, source)
+                    f"[+] Writing file: {dest} Source: {source}"
                 )
 
-    click.echo("[+] Keys have been encrypted with key {0}".format(key))
+    click.echo(f"[+] Keys have been encrypted with key {key}")
 
 
 @cli.command("unlock")
@@ -512,7 +503,7 @@ def unlock(path=None):
     source_dir = os.path.join(path, "encrypted")
 
     if not os.path.exists(dest_dir):
-        click.echo("[+] Creating decryption directory: {0}".format(dest_dir))
+        click.echo(f"[+] Creating decryption directory: {dest_dir}")
         os.makedirs(dest_dir)
 
     for root, dirs, files in os.walk(source_dir):
@@ -524,7 +515,7 @@ def unlock(path=None):
                 data = f.decrypt(in_file.read())
                 out_file.write(data)
                 click.echo(
-                    "[+] Writing file: {0} Source: {1}".format(dest, source)
+                    f"[+] Writing file: {dest} Source: {source}"
                 )
 
     click.echo("[+] Keys have been unencrypted!")
@@ -554,7 +545,7 @@ def publish_verisign_units():
             {
                 "timestamp": 1321351651,
                 "type": "GAUGE",
-                "name": "Symantec {0} Unit Count".format(name),
+                "name": f"Symantec {name} Unit Count",
                 "tags": {},
                 "value": value,
             }

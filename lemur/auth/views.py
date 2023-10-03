@@ -21,7 +21,6 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_principal import Identity, identity_changed
 from flask_restful import reqparse, Resource, Api
-
 from lemur.auth import ldap
 from lemur.auth.service import create_token, fetch_token_header, get_rsa_public_key
 from lemur.common.utils import get_psuedo_random_string, get_state_token_secret
@@ -63,7 +62,7 @@ def exchange_for_access_token(
     }
 
     # the secret and cliendId will be given to you when you signup for the provider
-    token = "{0}:{1}".format(client_id, secret)
+    token = f"{client_id}:{secret}"
 
     basic = base64.b64encode(bytes(token, "utf-8"))
     headers = {
@@ -71,9 +70,9 @@ def exchange_for_access_token(
     }
 
     if current_app.config.get("TOKEN_AUTH_HEADER_CASE_SENSITIVE"):
-        headers["Authorization"] = "Basic {0}".format(basic.decode("utf-8"))
+        headers["Authorization"] = "Basic {}".format(basic.decode("utf-8"))
     else:
-        headers["authorization"] = "basic {0}".format(basic.decode("utf-8"))
+        headers["authorization"] = "basic {}".format(basic.decode("utf-8"))
 
     # exchange authorization code for access token.
     r = requests.post(
@@ -400,7 +399,7 @@ class Login(Resource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(Login, self).__init__()
+        super().__init__()
 
     @limiter.limit("10/5minute")
     def post(self):
@@ -480,7 +479,7 @@ class Login(Resource):
                     )
                     return dict(token=create_token(user))
             except Exception as e:
-                current_app.logger.error("ldap error: {0}".format(e))
+                current_app.logger.error(f"ldap error: {e}")
                 ldap_message = "ldap error: %s" % e
                 metrics.send(
                     "login", "counter", 1, metric_tags={"status": FAILURE_METRIC_STATUS}
@@ -507,7 +506,7 @@ class Ping(Resource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(Ping, self).__init__()
+        super().__init__()
 
     def get(self):
         return "Redirecting..."
@@ -567,7 +566,7 @@ class Ping(Resource):
 class OAuth2(Resource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(OAuth2, self).__init__()
+        super().__init__()
 
     def get(self):
         return "Redirecting..."
@@ -630,7 +629,7 @@ class OAuth2(Resource):
 class Google(Resource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(Google, self).__init__()
+        super().__init__()
 
     def post(self):
         access_token_url = "https://accounts.google.com/o/oauth2/token"
@@ -658,7 +657,7 @@ class Google(Resource):
         token = r.json()
 
         # Step 2. Retrieve information about the current user
-        headers = {"Authorization": "Bearer {0}".format(token["access_token"])}
+        headers = {"Authorization": "Bearer {}".format(token["access_token"])}
 
         r = requests.get(user_info_url, headers=headers)
         profile = r.json()

@@ -2,8 +2,8 @@ from unittest.mock import patch, Mock
 
 import arrow
 from cryptography import x509
-from lemur.plugins.lemur_entrust import plugin
 from freezegun import freeze_time
+from lemur.plugins.lemur_entrust import plugin
 
 
 def config_mock(*args):
@@ -35,7 +35,7 @@ def test_process_options(mock_current_app, authority):
     mock_current_app.config.get = Mock(side_effect=config_mock)
     plugin.determine_end_date = Mock(return_value=arrow.get(2017, 11, 5).format('YYYY-MM-DD'))
     authority.name = "Entrust"
-    names = [u"one.example.com", u"two.example.com", u"three.example.com"]
+    names = ["one.example.com", "two.example.com", "three.example.com"]
     options = {
         "common_name": "example.com",
         "owner": "bob@example.com",

@@ -5,11 +5,10 @@ from cryptography.exceptions import UnsupportedAlgorithm, InvalidSignature
 from cryptography.hazmat.backends import default_backend
 from cryptography.x509 import NameOID
 from flask import current_app
-from marshmallow.exceptions import ValidationError
-
 from lemur.auth.permissions import SensitiveDomainPermission
 from lemur.common.utils import check_cert_signature, is_weekend
 from lemur.plugins.base import plugins
+from marshmallow.exceptions import ValidationError
 
 
 def common_name(value):
@@ -35,7 +34,7 @@ def sensitive_domain(domain):
     allowlist = current_app.config.get("LEMUR_ALLOWED_DOMAINS", [])
     if allowlist and not any(re.match(pattern, domain) for pattern in allowlist):
         raise ValidationError(
-            "Domain {0} does not match allowed domain patterns. "
+            "Domain {} does not match allowed domain patterns. "
             "Contact an administrator to issue the certificate.".format(domain)
         )
 
@@ -44,7 +43,7 @@ def sensitive_domain(domain):
 
     if domain_service.is_domain_sensitive(domain):
         raise ValidationError(
-            "Domain {0} has been marked as sensitive. "
+            "Domain {} has been marked as sensitive. "
             "Contact an administrator to issue the certificate.".format(domain)
         )
 
@@ -58,7 +57,7 @@ def encoding(oid_encoding):
     valid_types = ["b64asn1", "string", "ia5string"]
     if oid_encoding.lower() not in [o_type.lower() for o_type in valid_types]:
         raise ValidationError(
-            "Invalid Oid Encoding: {0} choose from {1}".format(
+            "Invalid Oid Encoding: {} choose from {}".format(
                 oid_encoding, ",".join(valid_types)
             )
         )
@@ -83,7 +82,7 @@ def sub_alt_type(alt_type):
     ]
     if alt_type.lower() not in [a_type.lower() for a_type in valid_types]:
         raise ValidationError(
-            "Invalid SubAltName Type: {0} choose from {1}".format(
+            "Invalid SubAltName Type: {} choose from {}".format(
                 type, ",".join(valid_types)
             )
         )
@@ -140,7 +139,7 @@ def dates(data):
                 < data["authority"].authority_certificate.not_before.date()
             ):
                 raise ValidationError(
-                    "Validity start must not be before {0}".format(
+                    "Validity start must not be before {}".format(
                         data["authority"].authority_certificate.not_before
                     )
                 )
@@ -150,7 +149,7 @@ def dates(data):
                 > data["authority"].authority_certificate.not_after.date()
             ):
                 raise ValidationError(
-                    "Validity end must not be after {0}".format(
+                    "Validity end must not be after {}".format(
                         data["authority"].authority_certificate.not_after
                     )
                 )

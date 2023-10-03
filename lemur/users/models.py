@@ -8,16 +8,13 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from sqlalchemy.orm import relationship
+from lemur.database import BaseModel, db
+from lemur.extensions import bcrypt
+from lemur.models import roles_users
 from sqlalchemy import Integer, String, Column, Boolean
 from sqlalchemy.event import listen
-
+from sqlalchemy.orm import relationship
 from sqlalchemy_utils.types.arrow import ArrowType
-
-from lemur.database import BaseModel, db
-from lemur.models import roles_users
-
-from lemur.extensions import bcrypt
 
 
 def hash_password(mapper, connect, target):
@@ -105,7 +102,7 @@ class User(BaseModel):
                 return True
 
     def __repr__(self):
-        return "User(username={username})".format(username=self.username)
+        return f"User(username={self.username})"
 
 
 listen(User, "before_insert", hash_password)

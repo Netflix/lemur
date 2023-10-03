@@ -7,30 +7,27 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
-from sqlalchemy.orm.exc import NoResultFound
-
-from marshmallow import fields, post_load, pre_load, post_dump
-from marshmallow.exceptions import ValidationError
-
+from lemur.authorities.models import Authority
+from lemur.certificates.models import Certificate
 from lemur.common import validators
-from lemur.common.schema import LemurSchema, LemurInputSchema, LemurOutputSchema
 from lemur.common.fields import (
     KeyUsageExtension,
     ExtendedKeyUsageExtension,
     BasicConstraintsExtension,
     SubjectAlternativeNameExtension,
 )
-
+from lemur.common.schema import LemurSchema, LemurInputSchema, LemurOutputSchema
+from lemur.destinations.models import Destination
+from lemur.dns_providers.models import DnsProvider
+from lemur.notifications.models import Notification
 from lemur.plugins import plugins
 from lemur.plugins.utils import get_plugin_option
+from lemur.policies.models import RotationPolicy
 from lemur.roles.models import Role
 from lemur.users.models import User
-from lemur.authorities.models import Authority
-from lemur.dns_providers.models import DnsProvider
-from lemur.policies.models import RotationPolicy
-from lemur.certificates.models import Certificate
-from lemur.destinations.models import Destination
-from lemur.notifications.models import Notification
+from marshmallow import fields, post_load, pre_load, post_dump
+from marshmallow.exceptions import ValidationError
+from sqlalchemy.orm.exc import NoResultFound
 
 
 def validate_options(options):
@@ -190,7 +187,7 @@ class PluginInputSchema(LemurInputSchema):
             data["plugin_object"] = plugins.get(data["slug"])
         except KeyError as e:
             raise ValidationError(
-                "Unable to find plugin. Slug: {0} Reason: {1}".format(data["slug"], e)
+                "Unable to find plugin. Slug: {} Reason: {}".format(data["slug"], e)
             )
 
         plugin_options_validated = []

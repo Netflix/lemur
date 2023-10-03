@@ -15,8 +15,10 @@ import ssl
 import string
 
 import OpenSSL
+import josepy as jose
 import pem
 import sqlalchemy
+from certbot.crypto_util import CERT_PEM_REGEX
 from cryptography import x509
 from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
 from cryptography.hazmat.backends import default_backend
@@ -24,13 +26,10 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, ec, padding
 from cryptography.hazmat.primitives.serialization import load_pem_private_key, Encoding, pkcs7
 from flask_restful.reqparse import RequestParser
-from sqlalchemy import and_, func
-import josepy as jose
-
-from certbot.crypto_util import CERT_PEM_REGEX
 from lemur.constants import CERTIFICATE_KEY_TYPES
 from lemur.exceptions import InvalidConfiguration
 from lemur.utils import Vault
+from sqlalchemy import and_, func
 from sqlalchemy.dialects.postgresql import TEXT
 
 paginated_parser = RequestParser()
@@ -335,7 +334,7 @@ def validate_conf(app, required_vars):
     for var in required_vars:
         if var not in app.config:
             raise InvalidConfiguration(
-                "Required variable '{var}' is not set in Lemur's conf.".format(var=var)
+                f"Required variable '{var}' is not set in Lemur's conf."
             )
 
 
@@ -400,8 +399,7 @@ def windowed_query(q, column, windowsize):
     """"Break a Query into windows on a given column."""
 
     for whereclause in column_windows(q.session, column, windowsize):
-        for row in q.filter(whereclause).order_by(column):
-            yield row
+        yield from q.filter(whereclause).order_by(column)
 
 
 def truthiness(s):

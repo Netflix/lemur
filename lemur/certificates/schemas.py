@@ -8,9 +8,6 @@
 from flask import current_app
 from flask_restful import inputs
 from flask_restful.reqparse import RequestParser
-from marshmallow import fields, validate, validates_schema, post_load, pre_load, post_dump
-from marshmallow.exceptions import ValidationError
-
 from lemur.authorities.schemas import AuthorityNestedOutputSchema
 from lemur.certificates import utils as cert_utils
 from lemur.common import missing, utils, validators
@@ -38,6 +35,8 @@ from lemur.schemas import (
     AssociatedRotationPolicySchema,
 )
 from lemur.users.schemas import UserNestedOutputSchema
+from marshmallow import fields, validate, validates_schema, post_load, pre_load, post_dump
+from marshmallow.exceptions import ValidationError
 
 
 class CertificateSchema(LemurInputSchema):
@@ -52,7 +51,7 @@ class CertificateCreationSchema(CertificateSchema):
             data[
                 "notifications"
             ] += notification_service.create_default_expiration_notifications(
-                "DEFAULT_{0}".format(data["owner"].split("@")[0].upper()),
+                "DEFAULT_{}".format(data["owner"].split("@")[0].upper()),
                 [data["owner"]],
             )
 
@@ -228,7 +227,7 @@ class CertificateEditInputSchema(CertificateSchema):
         :return:
         """
         if data.get("owner"):
-            notification_name = "DEFAULT_{0}".format(
+            notification_name = "DEFAULT_{}".format(
                 data["owner"].split("@")[0].upper()
             )
 

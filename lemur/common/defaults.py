@@ -1,13 +1,12 @@
 import re
-import unicodedata
 
+import unicodedata
 from cryptography import x509
 from cryptography.hazmat.primitives.serialization import Encoding
 from flask import current_app
-from sentry_sdk import capture_exception
-
 from lemur.common.utils import is_selfsigned
 from lemur.constants import SAN_NAMING_TEMPLATE, DEFAULT_NAMING_TEMPLATE
+from sentry_sdk import capture_exception
 
 
 def text_to_slug(value, joiner="-"):
@@ -108,7 +107,7 @@ def organization(cert):
         return o[0].value.strip()
     except Exception as e:
         capture_exception()
-        current_app.logger.error("Unable to get organization! {0}".format(e))
+        current_app.logger.error(f"Unable to get organization! {e}")
 
 
 def organizational_unit(cert):
@@ -125,7 +124,7 @@ def organizational_unit(cert):
         return ou[0].value.strip()
     except Exception as e:
         capture_exception()
-        current_app.logger.error("Unable to get organizational unit! {0}".format(e))
+        current_app.logger.error(f"Unable to get organizational unit! {e}")
 
 
 def country(cert):
@@ -142,7 +141,7 @@ def country(cert):
         return c[0].value.strip()
     except Exception as e:
         capture_exception()
-        current_app.logger.error("Unable to get country! {0}".format(e))
+        current_app.logger.error(f"Unable to get country! {e}")
 
 
 def state(cert):
@@ -159,7 +158,7 @@ def state(cert):
         return s[0].value.strip()
     except Exception as e:
         capture_exception()
-        current_app.logger.error("Unable to get state! {0}".format(e))
+        current_app.logger.error(f"Unable to get state! {e}")
 
 
 def location(cert):
@@ -176,7 +175,7 @@ def location(cert):
         return loc[0].value.strip()
     except Exception as e:
         capture_exception()
-        current_app.logger.error("Unable to get location! {0}".format(e))
+        current_app.logger.error(f"Unable to get location! {e}")
 
 
 def domains(cert):
@@ -277,7 +276,7 @@ def issuer(cert):
     ) or cert.issuer.get_attributes_for_oid(x509.OID_ORGANIZATION_NAME)
     if not attrs:
         current_app.logger.error(
-            "Unable to get issuer! Cert serial {:x}".format(cert.serial_number)
+            f"Unable to get issuer! Cert serial {cert.serial_number:x}"
         )
         return "<unknown>"
 

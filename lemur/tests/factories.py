@@ -5,7 +5,6 @@ from typing import List
 from factory import Sequence, post_generation, SubFactory
 from factory.alchemy import SQLAlchemyModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDate, FuzzyInteger
-
 from lemur.api_keys.models import ApiKey
 from lemur.authorities.models import Authority
 from lemur.certificates.models import Certificate
@@ -19,6 +18,7 @@ from lemur.policies.models import RotationPolicy
 from lemur.roles.models import Role
 from lemur.sources.models import Source
 from lemur.users.models import User
+
 from .vectors import (
     SAN_CERT_STR,
     SAN_CERT_KEY,
@@ -44,7 +44,7 @@ class BaseFactory(SQLAlchemyModelFactory):
 class RotationPolicyFactory(BaseFactory):
     """Rotation Factory."""
 
-    name = Sequence(lambda n: "policy{0}".format(n))
+    name = Sequence(lambda n: f"policy{n}")
     days = 30
 
     class Meta:
@@ -56,7 +56,7 @@ class RotationPolicyFactory(BaseFactory):
 class CertificateFactory(BaseFactory):
     """Certificate factory."""
 
-    name = Sequence(lambda n: "certificate{0}".format(n))
+    name = Sequence(lambda n: f"certificate{n}")
     chain = INTERMEDIATE_CERT_STR
     body = SAN_CERT_STR
     private_key = SAN_CERT_KEY
@@ -159,7 +159,7 @@ class InvalidCertificateFactory(CertificateFactory):
 class AuthorityFactory(BaseFactory):
     """Authority factory."""
 
-    name = Sequence(lambda n: "authority{0}".format(n))
+    name = Sequence(lambda n: f"authority{n}")
     owner = "joe@example.com"
     plugin = {"slug": "test-issuer"}
     description = FuzzyText(length=128)
@@ -183,7 +183,7 @@ class AuthorityFactory(BaseFactory):
 class AsyncAuthorityFactory(AuthorityFactory):
     """Async Authority factory."""
 
-    name = Sequence(lambda n: "authority{0}".format(n))
+    name = Sequence(lambda n: f"authority{n}")
     owner = "joe@example.com"
     plugin = {"slug": "test-issuer-async"}
     description = FuzzyText(length=128)
@@ -199,7 +199,7 @@ class CryptoAuthorityFactory(AuthorityFactory):
 class OptionalCNAuthorityFactory(AuthorityFactory):
     """Optional CN Authority factory."""
 
-    name = Sequence(lambda n: "authority{0}".format(n))
+    name = Sequence(lambda n: f"authority{n}")
     options = '[{"name": "cn_optional", "type": "boolean", "value":true, "helpMessage": "Define if CN is an optional input when issuing certificates"}]'
 
 
@@ -207,7 +207,7 @@ class DestinationFactory(BaseFactory):
     """Destination factory."""
 
     plugin_name = "test-destination"
-    label = Sequence(lambda n: "destination{0}".format(n))
+    label = Sequence(lambda n: f"destination{n}")
     options = [{"name": "exportPlugin", "type": "export-plugin", "value": {"plugin_options": [{}]}},
                {"name": "accountNumber", "type": "str", "value": "1234567890"}]
 
@@ -221,7 +221,7 @@ class DuplicateAllowedDestinationFactory(BaseFactory):
     """Destination factory."""
 
     plugin_name = "test-destination-dupe-allowed"
-    label = Sequence(lambda n: "duplicate-allowed-destination{0}".format(n))
+    label = Sequence(lambda n: f"duplicate-allowed-destination{n}")
     options = [{"name": "exportPlugin", "type": "export-plugin", "value": {"plugin_options": [{}]}},
                {"name": "accountNumber", "type": "str", "value": "1234567890"}]
 
@@ -235,7 +235,7 @@ class SourceFactory(BaseFactory):
     """Source factory."""
 
     plugin_name = "test-source"
-    label = Sequence(lambda n: "source{0}".format(n))
+    label = Sequence(lambda n: f"source{n}")
 
     class Meta:
         """Factory Configuration."""
@@ -247,7 +247,7 @@ class NotificationFactory(BaseFactory):
     """Notification factory."""
 
     plugin_name = "test-notification"
-    label = Sequence(lambda n: "notification{0}".format(n))
+    label = Sequence(lambda n: f"notification{n}")
 
     class Meta:
         """Factory Configuration."""
@@ -258,7 +258,7 @@ class NotificationFactory(BaseFactory):
 class RoleFactory(BaseFactory):
     """Role factory."""
 
-    name = Sequence(lambda n: "role{0}".format(n))
+    name = Sequence(lambda n: f"role{n}")
 
     class Meta:
         """Factory Configuration."""
@@ -278,8 +278,8 @@ class RoleFactory(BaseFactory):
 class UserFactory(BaseFactory):
     """User Factory."""
 
-    username = Sequence(lambda n: "user{0}".format(n))
-    email = Sequence(lambda n: "user{0}@example.com".format(n))
+    username = Sequence(lambda n: f"user{n}")
+    email = Sequence(lambda n: f"user{n}@example.com")
     active = True
     password = FuzzyText(length=24)
     certificates: List[Certificate] = []
@@ -320,7 +320,7 @@ class UserFactory(BaseFactory):
 class PolicyFactory(BaseFactory):
     """Policy Factory."""
 
-    name = Sequence(lambda n: "endpoint{0}".format(n))
+    name = Sequence(lambda n: f"endpoint{n}")
 
     class Meta:
         """Factory Configuration."""
@@ -332,7 +332,7 @@ class EndpointFactory(BaseFactory):
     """Endpoint Factory."""
 
     owner = "joe@example.com"
-    name = Sequence(lambda n: "endpoint{0}".format(n))
+    name = Sequence(lambda n: f"endpoint{n}")
     type = FuzzyChoice(["elb"])
     active = True
     port = FuzzyInteger(0, high=65535)
@@ -350,7 +350,7 @@ class EndpointFactory(BaseFactory):
 class ApiKeyFactory(BaseFactory):
     """Api Key Factory."""
 
-    name = Sequence(lambda n: "api_key_{0}".format(n))
+    name = Sequence(lambda n: f"api_key_{n}")
     revoked = False
     ttl = -1
     issued_at = 1
@@ -372,7 +372,7 @@ class ApiKeyFactory(BaseFactory):
 class PendingCertificateFactory(BaseFactory):
     """PendingCertificate factory."""
 
-    name = Sequence(lambda n: "pending_certificate{0}".format(n))
+    name = Sequence(lambda n: f"pending_certificate{n}")
     external_id = 12345
     csr = CSR_STR
     chain = INTERMEDIATE_CERT_STR

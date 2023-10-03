@@ -8,19 +8,16 @@
 """
 from flask import Blueprint
 from flask_restful import Api, reqparse
-from lemur.sources import service
-
+from lemur.auth.permissions import admin_permission
+from lemur.auth.service import AuthenticatedResource
 from lemur.common.schema import validate_schema
+from lemur.common.utils import paginated_parser
+from lemur.sources import service
 from lemur.sources.schemas import (
     source_input_schema,
     source_output_schema,
     sources_output_schema,
 )
-
-from lemur.auth.service import AuthenticatedResource
-from lemur.auth.permissions import admin_permission
-from lemur.common.utils import paginated_parser
-
 
 mod = Blueprint("sources", __name__)
 api = Api(mod)
@@ -31,7 +28,7 @@ class SourcesList(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(SourcesList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, sources_output_schema)
     def get(self):
@@ -175,7 +172,7 @@ class SourcesList(AuthenticatedResource):
 class Sources(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(Sources, self).__init__()
+        super().__init__()
 
     @validate_schema(None, source_output_schema)
     def get(self, source_id):
@@ -308,7 +305,7 @@ class CertificateSources(AuthenticatedResource):
     """ Defines the 'certificate/<int:certificate_id/sources'' endpoint """
 
     def __init__(self):
-        super(CertificateSources, self).__init__()
+        super().__init__()
 
     @validate_schema(None, sources_output_schema)
     def get(self, certificate_id):

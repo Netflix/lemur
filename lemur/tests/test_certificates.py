@@ -1,5 +1,3 @@
-from __future__ import unicode_literals  # at top of module
-
 import datetime
 import json
 import ssl
@@ -14,9 +12,6 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.x509.oid import ExtensionOID
 from freezegun import freeze_time
-from marshmallow import ValidationError
-from sqlalchemy.testing import fail
-
 from lemur.certificates.service import create_csr, identify_and_persist_expiring_deployed_certificates, \
     reissue_certificate
 from lemur.certificates.views import *  # noqa
@@ -36,6 +31,8 @@ from lemur.tests.vectors import (
     ROOTCA_KEY,
     ROOTCA_CERT_STR,
 )
+from marshmallow import ValidationError
+from sqlalchemy.testing import fail
 
 
 def test_get_or_increase_name(session, certificate):
@@ -46,7 +43,7 @@ def test_get_or_increase_name(session, certificate):
 
     assert get_or_increase_name(
         certificate.name, certificate.serial
-    ) == "{0}-{1}".format(certificate.name, serial)
+    ) == f"{certificate.name}-{serial}"
 
     certificate.name = "test-cert-11111111"
     assert (
@@ -66,7 +63,7 @@ def test_get_or_increase_name(session, certificate):
 
     assert get_or_increase_name(
         "certificate1", int(serial, 16)
-    ) == "certificate1-{}-1".format(serial)
+    ) == f"certificate1-{serial}-1"
 
 
 def test_get_all_certs(session, certificate):

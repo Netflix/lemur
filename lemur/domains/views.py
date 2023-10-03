@@ -9,14 +9,11 @@
 """
 from flask import Blueprint
 from flask_restful import reqparse, Api
-
-from lemur.domains import service
-from lemur.auth.service import AuthenticatedResource
 from lemur.auth.permissions import SensitiveDomainPermission, StrictRolePermission
-
+from lemur.auth.service import AuthenticatedResource
 from lemur.common.schema import validate_schema
 from lemur.common.utils import paginated_parser
-
+from lemur.domains import service
 from lemur.domains.schemas import (
     domain_input_schema,
     domain_output_schema,
@@ -31,7 +28,7 @@ class DomainsList(AuthenticatedResource):
     """ Defines the 'domains' endpoint """
 
     def __init__(self):
-        super(DomainsList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, domains_output_schema)
     def get(self):
@@ -136,7 +133,7 @@ class DomainsList(AuthenticatedResource):
 class Domains(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(Domains, self).__init__()
+        super().__init__()
 
     @validate_schema(None, domain_output_schema)
     def get(self, domain_id):
@@ -220,7 +217,7 @@ class CertificateDomains(AuthenticatedResource):
     """ Defines the 'domains' endpoint """
 
     def __init__(self):
-        super(CertificateDomains, self).__init__()
+        super().__init__()
 
     @validate_schema(None, domains_output_schema)
     def get(self, certificate_id):

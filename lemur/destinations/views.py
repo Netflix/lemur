@@ -8,19 +8,16 @@
 """
 from flask import Blueprint
 from flask_restful import Api, reqparse
-from lemur.destinations import service
-
-from lemur.auth.service import AuthenticatedResource
 from lemur.auth.permissions import admin_permission
-from lemur.common.utils import paginated_parser
-
+from lemur.auth.service import AuthenticatedResource
 from lemur.common.schema import validate_schema
+from lemur.common.utils import paginated_parser
+from lemur.destinations import service
 from lemur.destinations.schemas import (
     destinations_output_schema,
     destination_input_schema,
     destination_output_schema,
 )
-
 
 mod = Blueprint("destinations", __name__)
 api = Api(mod)
@@ -31,7 +28,7 @@ class DestinationsList(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(DestinationsList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, destinations_output_schema)
     def get(self):
@@ -193,7 +190,7 @@ class DestinationsList(AuthenticatedResource):
 class Destinations(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(Destinations, self).__init__()
+        super().__init__()
 
     @validate_schema(None, destination_output_schema)
     def get(self, destination_id):
@@ -355,7 +352,7 @@ class CertificateDestinations(AuthenticatedResource):
     """ Defines the 'certificate/<int:certificate_id/destinations'' endpoint """
 
     def __init__(self):
-        super(CertificateDestinations, self).__init__()
+        super().__init__()
 
     @validate_schema(None, destination_output_schema)
     def get(self, certificate_id):
@@ -429,7 +426,7 @@ class DestinationsStats(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(DestinationsStats, self).__init__()
+        super().__init__()
 
     def get(self):
         self.reqparse.add_argument("metric", type=str, location="args")

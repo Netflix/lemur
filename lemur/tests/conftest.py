@@ -1,24 +1,23 @@
+import datetime
 import os
 
-import datetime
 import pytest
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from flask import current_app
 from flask_principal import identity_changed, Identity
-from sqlalchemy.sql import text
-
 from lemur import create_app
+from lemur.auth.service import create_token
 from lemur.common.utils import parse_private_key
 from lemur.database import db as _db
-from lemur.auth.service import create_token
 from lemur.tests.vectors import (
     SAN_CERT_KEY,
     INTERMEDIATE_KEY,
     ROOTCA_CERT_STR,
     ROOTCA_KEY,
 )
+from sqlalchemy.sql import text
 
 from .factories import (
     ApiKeyFactory,
@@ -49,7 +48,7 @@ def pytest_runtest_setup(item):
     if "incremental" in item.keywords:
         previousfailed = getattr(item.parent, "_previousfailed", None)
         if previousfailed is not None:
-            pytest.xfail("previous test failed ({0})".format(previousfailed.name))
+            pytest.xfail(f"previous test failed ({previousfailed.name})")
 
 
 def pytest_runtest_makereport(item, call):

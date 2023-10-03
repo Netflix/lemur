@@ -9,7 +9,9 @@
 import json
 
 from flask import current_app
-from sqlalchemy.orm import relationship
+from lemur.database import BaseModel, db
+from lemur.models import roles_authorities
+from lemur.plugins.base import plugins
 from sqlalchemy import (
     Column,
     Integer,
@@ -22,10 +24,7 @@ from sqlalchemy import (
     Boolean,
 )
 from sqlalchemy.dialects.postgresql import JSON
-
-from lemur.database import BaseModel, db
-from lemur.plugins.base import plugins
-from lemur.models import roles_authorities
+from sqlalchemy.orm import relationship
 
 
 class Authority(BaseModel):
@@ -122,7 +121,7 @@ class Authority(BaseModel):
         return current_app.config.get("DEFAULT_VALIDITY_DAYS", 365)  # 1 year default
 
     def __repr__(self):
-        return "Authority(name={name})".format(name=self.name)
+        return f"Authority(name={self.name})"
 
     @property
     def is_cn_optional(self):

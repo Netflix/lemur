@@ -9,11 +9,9 @@
 from flask import Blueprint
 from flask_restful import Api, reqparse
 from lemur.auth.service import AuthenticatedResource
-
-
-from lemur.schemas import plugins_output_schema, plugin_output_schema
 from lemur.common.schema import validate_schema
 from lemur.plugins.base import plugins
+from lemur.schemas import plugins_output_schema, plugin_output_schema
 
 mod = Blueprint("plugins", __name__)
 api = Api(mod)
@@ -24,7 +22,7 @@ class PluginsList(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(PluginsList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, plugins_output_schema)
     def get(self):
@@ -83,7 +81,7 @@ class Plugins(AuthenticatedResource):
     """ Defines the 'plugins' endpoint """
 
     def __init__(self):
-        super(Plugins, self).__init__()
+        super().__init__()
 
     @validate_schema(None, plugin_output_schema)
     def get(self, name):

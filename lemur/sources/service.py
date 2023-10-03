@@ -5,31 +5,29 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import arrow
-from datetime import timedelta
 import copy
+from datetime import timedelta
 
+import arrow
 from flask import current_app
-from sqlalchemy.exc import OperationalError
-from sentry_sdk import capture_exception
-from sqlalchemy import cast
-from sqlalchemy_utils import ArrowType
-
 from lemur import database
-from lemur.sources.models import Source
-from lemur.certificates.models import Certificate
 from lemur.certificates import service as certificate_service
+from lemur.certificates.models import Certificate
+from lemur.certificates.schemas import CertificateUploadInputSchema
+from lemur.common.defaults import serial
+from lemur.common.utils import find_matching_certificates_by_hash, parse_certificate
+from lemur.destinations import service as destination_service
 from lemur.endpoints import service as endpoint_service
 from lemur.endpoints.models import Endpoint
 from lemur.extensions import metrics
-from lemur.destinations import service as destination_service
-
-from lemur.certificates.schemas import CertificateUploadInputSchema
-from lemur.common.utils import find_matching_certificates_by_hash, parse_certificate
-from lemur.common.defaults import serial
 from lemur.logs import service as log_service
 from lemur.plugins.base import plugins
 from lemur.plugins.utils import get_plugin_option, set_plugin_option
+from lemur.sources.models import Source
+from sentry_sdk import capture_exception
+from sqlalchemy import cast
+from sqlalchemy.exc import OperationalError
+from sqlalchemy_utils import ArrowType
 
 
 def certificate_create(certificate, source):
@@ -37,7 +35,7 @@ def certificate_create(certificate, source):
 
     if errors:
         raise Exception(
-            "Unable to import certificate: {reasons}".format(reasons=errors)
+            f"Unable to import certificate: {errors}"
         )
 
     data["creator"] = certificate["creator"]
@@ -73,14 +71,14 @@ def sync_update_destination(certificate, source):
 
 def sync_endpoints(source):
     new, updated, updated_by_hash = 0, 0, 0
-    current_app.logger.debug("Retrieving endpoints from {0}".format(source.label))
+    current_app.logger.debug(f"Retrieving endpoints from {source.label}")
     s = plugins.get(source.plugin_name)
 
     try:
         endpoints = s.get_endpoints(source.options)
     except NotImplementedError:
         current_app.logger.warning(
-            "Unable to sync endpoints for source {0} plugin has not implemented 'get_endpoints'".format(
+            "Unable to sync endpoints for source {} plugin has not implemented 'get_endpoints'".format(
                 source.label
             )
         )
@@ -117,7 +115,7 @@ def sync_endpoints(source):
                 certificate_attached_to_endpoint = s.get_certificate_by_name(certificate_name, source.options)
             except NotImplementedError:
                 current_app.logger.warning(
-                    "Unable to describe server certificate for endpoints in source {0}:"
+                    "Unable to describe server certificate for endpoints in source {}:"
                     " plugin has not implemented 'get_certificate_by_name'".format(
                         source.label
                     )
@@ -133,7 +131,7 @@ def sync_endpoints(source):
 
                 if len(lemur_matching_cert) > 1:
                     current_app.logger.error(
-                        "Too Many Certificates Found{0}. Name: {1} Endpoint: {2}".format(
+                        "Too Many Certificates Found{}. Name: {} Endpoint: {}".format(
                             len(lemur_matching_cert), certificate_name, endpoint["name"]
                         )
                     )
@@ -176,7 +174,7 @@ def sync_endpoints(source):
             new += 1
 
         else:
-            current_app.logger.debug("Endpoint Updated: {}".format(endpoint))
+            current_app.logger.debug(f"Endpoint Updated: {endpoint}")
             endpoint_service.update(exists.id, **endpoint)
             updated += 1
 
@@ -230,7 +228,7 @@ def find_cert(certificate):
 def sync_certificates(source, user):
     new, updated, updated_by_hash, unlinked = 0, 0, 0, 0
 
-    current_app.logger.debug("Retrieving certificates from {0}".format(source.label))
+    current_app.logger.debug(f"Retrieving certificates from {source.label}")
     s = plugins.get(source.plugin_name)
     certificates = s.get_certificates(source.options)
 

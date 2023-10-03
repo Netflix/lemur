@@ -6,22 +6,11 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import base64
-from builtins import str
 
 from flask import Blueprint, make_response, jsonify, g, current_app
 from flask_restful import reqparse, Api, inputs
-
-from lemur.certificates.service import validate_no_duplicate_destinations
-from lemur.common import validators
-from lemur.plugins.bases.authorization import UnauthorizedError
-from sentry_sdk import capture_exception
-
-from lemur.common.schema import validate_schema
-from lemur.common.utils import paginated_parser
-
-from lemur.auth.service import AuthenticatedResource
 from lemur.auth.permissions import AuthorityPermission, CertificatePermission, StrictRolePermission
-
+from lemur.auth.service import AuthenticatedResource
 from lemur.certificates import service
 from lemur.certificates.models import Certificate
 from lemur.certificates.schemas import (
@@ -34,10 +23,14 @@ from lemur.certificates.schemas import (
     certificates_list_output_schema_factory,
     certificate_revoke_schema,
 )
-
-from lemur.roles import service as role_service
+from lemur.certificates.service import validate_no_duplicate_destinations
+from lemur.common import validators
+from lemur.common.schema import validate_schema
+from lemur.common.utils import paginated_parser
 from lemur.logs import service as log_service
-
+from lemur.plugins.bases.authorization import UnauthorizedError
+from lemur.roles import service as role_service
+from sentry_sdk import capture_exception
 
 mod = Blueprint("certificates", __name__)
 api = Api(mod)
@@ -48,7 +41,7 @@ class CertificatesListValid(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(CertificatesListValid, self).__init__()
+        super().__init__()
 
     @validate_schema(None, certificates_output_schema)
     def get(self):
@@ -152,7 +145,7 @@ class CertificatesNameQuery(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(CertificatesNameQuery, self).__init__()
+        super().__init__()
 
     @validate_schema(None, certificates_output_schema)
     def get(self, certificate_name):
@@ -262,7 +255,7 @@ class CertificatesList(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(CertificatesList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, certificates_list_output_schema_factory)
     def get(self):
@@ -542,7 +535,7 @@ class CertificatesUpload(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(CertificatesUpload, self).__init__()
+        super().__init__()
 
     @validate_schema(certificate_upload_input_schema, certificate_output_schema)
     def post(self, data=None):
@@ -657,7 +650,7 @@ class CertificatesStats(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(CertificatesStats, self).__init__()
+        super().__init__()
 
     def get(self):
         self.reqparse.add_argument("metric", type=str, location="args")
@@ -680,7 +673,7 @@ class CertificatesStats(AuthenticatedResource):
 
 class CertificatePrivateKey(AuthenticatedResource):
     def __init__(self):
-        super(CertificatePrivateKey, self).__init__()
+        super().__init__()
 
     def get(self, certificate_id):
         """
@@ -737,7 +730,7 @@ class CertificatePrivateKey(AuthenticatedResource):
 class Certificates(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(Certificates, self).__init__()
+        super().__init__()
 
     @validate_schema(None, certificate_output_schema)
     def get(self, certificate_id):
@@ -939,7 +932,7 @@ class Certificates(AuthenticatedResource):
                 if not cert.private_key:
                     return (
                         dict(
-                            message="Unable to add destination: {0}. Certificate does not have required private key.".format(
+                            message="Unable to add destination: {}. Certificate does not have required private key.".format(
                                 destination.label
                             )
                         ),
@@ -1136,7 +1129,7 @@ class Certificates(AuthenticatedResource):
 class CertificateUpdateOwner(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(CertificateUpdateOwner, self).__init__()
+        super().__init__()
 
     @validate_schema(certificate_edit_input_schema, certificate_output_schema)
     def post(self, certificate_id, data=None):
@@ -1255,7 +1248,7 @@ class NotificationCertificatesList(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(NotificationCertificatesList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, certificates_output_schema)
     def get(self, notification_id):
@@ -1367,7 +1360,7 @@ class NotificationCertificatesList(AuthenticatedResource):
 class CertificatesReplacementsList(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(CertificatesReplacementsList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, certificates_output_schema)
     def get(self, certificate_id):
@@ -1459,7 +1452,7 @@ class CertificatesReplacementsList(AuthenticatedResource):
 class CertificateExport(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(CertificateExport, self).__init__()
+        super().__init__()
 
     @validate_schema(certificate_export_input_schema, None)
     def post(self, certificate_id, data=None):
@@ -1540,7 +1533,7 @@ class CertificateExport(AuthenticatedResource):
             if not cert.private_key:
                 return (
                     dict(
-                        message="Unable to export certificate, plugin: {0} requires a private key but no key was found.".format(
+                        message="Unable to export certificate, plugin: {} requires a private key but no key was found.".format(
                             plugin.slug
                         )
                     ),
@@ -1586,7 +1579,7 @@ class CertificateExport(AuthenticatedResource):
 class CertificateRevoke(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(CertificateRevoke, self).__init__()
+        super().__init__()
 
     @validate_schema(certificate_revoke_schema, None)
     def put(self, certificate_id, data=None):
@@ -1673,7 +1666,7 @@ class CertificateRevoke(AuthenticatedResource):
 class CertificateDeactivate(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(CertificateDeactivate, self).__init__()
+        super().__init__()
 
     def put(self, certificate_id):
         """

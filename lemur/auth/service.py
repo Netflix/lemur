@@ -21,7 +21,6 @@ from flask import g, current_app, jsonify, request
 from flask_principal import Identity, identity_changed
 from flask_principal import identity_loaded, RoleNeed, UserNeed
 from flask_restful import Resource
-
 from lemur.api_keys import service as api_key_service
 from lemur.auth.permissions import AuthorityCreatorNeed, RoleMemberNeed
 from lemur.users import service as user_service
@@ -209,4 +208,4 @@ class AuthenticatedResource(Resource):
     method_decorators = [login_required]
 
     def __init__(self):
-        super(AuthenticatedResource, self).__init__()
+        super().__init__()

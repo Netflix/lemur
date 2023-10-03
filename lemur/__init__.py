@@ -12,28 +12,9 @@
 import socket
 import time
 import urllib.parse
+
 from flask import g, request
-
 from lemur import factory
-from lemur.extensions import metrics
-
-from lemur.users.views import mod as users_bp
-from lemur.roles.views import mod as roles_bp
-from lemur.auth.views import mod as auth_bp
-from lemur.domains.views import mod as domains_bp
-from lemur.destinations.views import mod as destinations_bp
-from lemur.authorities.views import mod as authorities_bp
-from lemur.certificates.views import mod as certificates_bp
-from lemur.defaults.views import mod as defaults_bp
-from lemur.plugins.views import mod as plugins_bp
-from lemur.notifications.views import mod as notifications_bp
-from lemur.sources.views import mod as sources_bp
-from lemur.endpoints.views import mod as endpoints_bp
-from lemur.logs.views import mod as logs_bp
-from lemur.api_keys.views import mod as api_key_bp
-from lemur.pending_certificates.views import mod as pending_certificates_bp
-from lemur.dns_providers.views import mod as dns_providers_bp
-
 from lemur.__about__ import (
     __author__,
     __copyright__,
@@ -44,7 +25,23 @@ from lemur.__about__ import (
     __uri__,
     __version__,
 )
-
+from lemur.api_keys.views import mod as api_key_bp
+from lemur.auth.views import mod as auth_bp
+from lemur.authorities.views import mod as authorities_bp
+from lemur.certificates.views import mod as certificates_bp
+from lemur.defaults.views import mod as defaults_bp
+from lemur.destinations.views import mod as destinations_bp
+from lemur.dns_providers.views import mod as dns_providers_bp
+from lemur.domains.views import mod as domains_bp
+from lemur.endpoints.views import mod as endpoints_bp
+from lemur.extensions import metrics
+from lemur.logs.views import mod as logs_bp
+from lemur.notifications.views import mod as notifications_bp
+from lemur.pending_certificates.views import mod as pending_certificates_bp
+from lemur.plugins.views import mod as plugins_bp
+from lemur.roles.views import mod as roles_bp
+from lemur.sources.views import mod as sources_bp
+from lemur.users.views import mod as users_bp
 
 __all__ = [
     "__title__",
@@ -184,5 +181,5 @@ def configure_hook(app):
 
         # Record our response time metric
         metrics.send("response_time", "TIMER", elapsed, metric_tags=tags)
-        metrics.send("status_code_{}".format(response.status_code), "counter", 1)
+        metrics.send(f"status_code_{response.status_code}", "counter", 1)
         return response

@@ -10,7 +10,7 @@ class TestSourcePlugin(SourcePlugin):
     author_url = "https://github.com/netflix/lemur.git"
 
     def __init__(self, *args, **kwargs):
-        super(TestSourcePlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_certificates(self):
         return

@@ -7,33 +7,31 @@
 
 .. moduleauthor:: Mathias Petermann <mathias.petermann@projektfokus.ch>
 """
-from datetime import datetime, timedelta
 import json
+from datetime import datetime, timedelta
 
 from acme import challenges
 from acme.errors import WildcardUnsupportedError
 from acme.messages import errors, STATUS_VALID, ERROR_CODES
 from botocore.exceptions import ClientError
 from flask import current_app
-from sentry_sdk import capture_exception
-
 from lemur.authorizations import service as authorization_service
-from lemur.constants import ACME_ADDITIONAL_ATTEMPTS
 from lemur.common.utils import drop_last_cert_from_chain
+from lemur.constants import ACME_ADDITIONAL_ATTEMPTS
+from lemur.destinations import service as destination_service
 from lemur.exceptions import LemurException, InvalidConfiguration
 from lemur.extensions import metrics
 from lemur.plugins.base import plugins
-from lemur.destinations import service as destination_service
 from lemur.plugins.lemur_acme.acme_handlers import AcmeHandler, AcmeDnsHandler
-
 from retrying import retry
+from sentry_sdk import capture_exception
 
 
 class AcmeChallengeMissmatchError(LemurException):
     pass
 
 
-class AcmeChallenge(object):
+class AcmeChallenge:
     """
     This is the base class, all ACME challenges will need to extend, allowing for future extendability
     """
@@ -106,7 +104,7 @@ class AcmeHttpChallenge(AcmeChallenge):
                 current_app.logger.info(log_data)
 
         if len(chall) == 0 and not all_pre_validated:
-            raise Exception('HTTP-01 challenge was not offered by the CA server at {}'.format(orderr.uri))
+            raise Exception(f'HTTP-01 challenge was not offered by the CA server at {orderr.uri}')
         elif not all_pre_validated:
             validation_target = None
             for option in json.loads(issuer_options["authority"].options):
@@ -174,7 +172,7 @@ class AcmeHttpChallenge(AcmeChallenge):
 
         if destination is None:
             raise Exception(
-                'Couldn\'t find the destination with name {}. Cant complete HTTP01 challenge'.format(validation_target))
+                f'Couldn\'t find the destination with name {validation_target}. Cant complete HTTP01 challenge')
 
         destination_plugin = plugins.get(destination.plugin_name)
 
@@ -190,7 +188,7 @@ class AcmeHttpChallenge(AcmeChallenge):
 
         if destination is None:
             current_app.logger.info(
-                'Couldn\'t find the destination with name {}, won\'t cleanup the challenge'.format(validation_target))
+                f'Couldn\'t find the destination with name {validation_target}, won\'t cleanup the challenge')
 
         destination_plugin = plugins.get(destination.plugin_name)
 
@@ -224,7 +222,7 @@ class AcmeDnsChallenge(AcmeChallenge):
 
             credentials = json.loads(dns_provider.credentials)
             current_app.logger.debug(
-                "Using DNS provider: {0}".format(dns_provider.provider_type)
+                f"Using DNS provider: {dns_provider.provider_type}"
             )
             account_number = credentials.get("account_id")
             provider_type = dns_provider.provider_type

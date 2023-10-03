@@ -5,17 +5,13 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import arrow
 import sys
-import click
+from time import sleep
 
+import arrow
+import click
 from flask import current_app
 from flask_principal import Identity, identity_changed
-from sqlalchemy import or_
-from tabulate import tabulate
-from time import sleep
-from sentry_sdk import capture_exception
-
 from lemur import database
 from lemur.authorities.models import Authority
 from lemur.authorities.service import get as authorities_get_by_id
@@ -46,7 +42,10 @@ from lemur.extensions import metrics
 from lemur.notifications.messaging import send_rotation_notification, send_reissue_no_endpoints_notification, \
     send_reissue_failed_notification
 from lemur.plugins.base import plugins
+from sentry_sdk import capture_exception
+from sqlalchemy import or_
 from sqlalchemy.orm.exc import MultipleResultsFound
+from tabulate import tabulate
 
 
 @click.group(name="certificates", help="Handles all certificate related tasks.")
@@ -90,7 +89,7 @@ def validate_certificate(certificate_name):
         cert = get_by_name(certificate_name)
 
         if not cert:
-            click.echo("[-] No certificate found with name: {0}".format(certificate_name))
+            click.echo(f"[-] No certificate found with name: {certificate_name}")
             sys.exit(1)
 
         return cert
@@ -106,7 +105,7 @@ def validate_endpoint(endpoint_name):
         endpoint = endpoint_service.get_by_name(endpoint_name)
 
         if not endpoint:
-            click.echo("[-] No endpoint found with name: {0}".format(endpoint_name))
+            click.echo(f"[-] No endpoint found with name: {endpoint_name}")
             sys.exit(1)
 
         return endpoint
@@ -123,7 +122,7 @@ def validate_endpoint_from_source(endpoint_name, source):
         endpoint = endpoint_service.get_by_name_and_source(endpoint_name, source)
 
         if not endpoint:
-            click.echo("[-] No endpoint found from source {0} with name: {1}".format(source, endpoint_name))
+            click.echo(f"[-] No endpoint found from source {source} with name: {endpoint_name}")
             sys.exit(1)
 
         return endpoint
@@ -156,7 +155,7 @@ def request_rotation(endpoint, certificate, message, commit):
                 f"Error rotating certificate: {certificate.name}", exc_info=True
             )
             click.echo(
-                "[!] Failed to rotate endpoint {0} to certificate {1} reason: {2}".format(
+                "[!] Failed to rotate endpoint {} to certificate {} reason: {}".format(
                     endpoint.name, certificate.name, e
                 )
             )
@@ -177,7 +176,7 @@ def request_reissue(certificate, notify, commit):
     status = FAILURE_METRIC_STATUS
     notify = notify and certificate.notify
     try:
-        click.echo("[+] {0} is eligible for re-issuance".format(certificate.name))
+        click.echo(f"[+] {certificate.name} is eligible for re-issuance")
 
         # set the lemur identity for all cli commands
         identity_changed.send(current_app._get_current_object(), identity=Identity(1))
@@ -187,7 +186,7 @@ def request_reissue(certificate, notify, commit):
 
         if commit:
             new_cert = reissue_certificate(certificate, notify=notify, replace=True)
-            click.echo("[+] New certificate named: {0}".format(new_cert.name))
+            click.echo(f"[+] New certificate named: {new_cert.name}")
             if notify and isinstance(new_cert, Certificate):  # let celery handle PendingCertificates
                 send_reissue_no_endpoints_notification(certificate, new_cert)
 
@@ -279,7 +278,8 @@ def rotate(endpoint_name, source, new_certificate_name, old_certificate_name, me
             try:
                 endpoint = validate_endpoint(endpoint_name)
             except MultipleResultsFound as e:
-                click.echo("[!] Multiple endpoints found with name {0}, try narrowing the search down to an endpoint from a specific source by re-running this command with the --source flag.".format(endpoint_name))
+                click.echo(
+                    f"[!] Multiple endpoints found with name {endpoint_name}, try narrowing the search down to an endpoint from a specific source by re-running this command with the --source flag.")
                 log_data["message"] = "Multiple endpoints found with same name, unable to perform rotation"
                 log_data["duplicated_endpoint_name"] = endpoint_name
                 current_app.logger.info(log_data)
@@ -581,7 +581,7 @@ def reissue(old_certificate_name, notify, commit):
     except Exception as e:
         capture_exception()
         current_app.logger.exception("Error reissuing certificate.", exc_info=True)
-        click.echo("[!] Failed to reissue certificates. Reason: {}".format(e))
+        click.echo(f"[!] Failed to reissue certificates. Reason: {e}")
 
     metrics.send(
         "certificate_reissue_job", "counter", 1, metric_tags={"status": status}
@@ -617,18 +617,18 @@ def query(fqdns, issuer, owner, expired):
     if issuer:
         sub_query = (
             database.session_query(Authority.id)
-            .filter(Authority.name.ilike("%{0}%".format(issuer)))
+            .filter(Authority.name.ilike(f"%{issuer}%"))
             .subquery()
         )
 
         q = q.filter(
             or_(
-                Certificate.issuer.ilike("%{0}%".format(issuer)),
+                Certificate.issuer.ilike(f"%{issuer}%"),
                 Certificate.authority_id.in_(sub_query),
             )
         )
     if owner:
-        q = q.filter(Certificate.owner.ilike("%{0}%".format(owner)))
+        q = q.filter(Certificate.owner.ilike(f"%{owner}%"))
 
     if not expired:
         q = q.filter(Certificate.expired == False)  # noqa
@@ -637,8 +637,8 @@ def query(fqdns, issuer, owner, expired):
         for f in fqdns.split(","):
             q = q.filter(
                 or_(
-                    Certificate.cn.ilike("%{0}%".format(f)),
-                    Certificate.domains.any(Domain.name.ilike("%{0}%".format(f))),
+                    Certificate.cn.ilike(f"%{f}%"),
+                    Certificate.domains.any(Domain.name.ilike(f"%{f}%")),
                 )
             )
 
@@ -653,7 +653,7 @@ def worker(data, commit, reason):
     try:
         cert = get(int(parts[0].strip()))
 
-        click.echo("[+] Revoking certificate. Id: {0} Name: {1}".format(cert.id, cert.name))
+        click.echo(f"[+] Revoking certificate. Id: {cert.id} Name: {cert.name}")
         if commit:
             revoke_certificate(cert, reason)
 
@@ -672,7 +672,7 @@ def worker(data, commit, reason):
             1,
             metric_tags={"status": FAILURE_METRIC_STATUS},
         )
-        click.echo("[!] Failed to revoke certificates. Reason: {}".format(e))
+        click.echo(f"[!] Failed to revoke certificates. Reason: {e}")
 
 
 @cli.command("clear_pending")
@@ -729,7 +729,7 @@ def revoke(path, cert_id, reason, message, commit):
     if cert_id:
         worker(cert_id, commit, comments)
     else:
-        with open(path, "r") as f:
+        with open(path) as f:
             for x in f.readlines()[2:]:
                 worker(x, commit, comments)
 

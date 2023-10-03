@@ -11,6 +11,22 @@ import arrow
 from cryptography import x509
 from flask import current_app
 from idna.core import InvalidCodepoint
+from lemur.common import defaults, utils, validators
+from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
+from lemur.database import BaseModel
+from lemur.domains.models import Domain
+from lemur.extensions import metrics
+from lemur.models import (
+    certificate_source_associations,
+    certificate_destination_associations,
+    certificate_notification_associations,
+    certificate_replacement_associations,
+    roles_certificates,
+    pending_cert_replacement_associations,
+)
+from lemur.plugins.base import plugins
+from lemur.policies.models import RotationPolicy
+from lemur.utils import Vault
 from sentry_sdk import capture_exception
 from sqlalchemy import (
     event,
@@ -31,24 +47,6 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.sql.expression import case, extract
 from sqlalchemy_utils.types.arrow import ArrowType
 from werkzeug.utils import cached_property
-
-
-from lemur.common import defaults, utils, validators
-from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
-from lemur.database import BaseModel
-from lemur.domains.models import Domain
-from lemur.extensions import metrics
-from lemur.models import (
-    certificate_source_associations,
-    certificate_destination_associations,
-    certificate_notification_associations,
-    certificate_replacement_associations,
-    roles_certificates,
-    pending_cert_replacement_associations,
-)
-from lemur.plugins.base import plugins
-from lemur.policies.models import RotationPolicy
-from lemur.utils import Vault
 
 
 def get_sequence(name):
@@ -77,14 +75,14 @@ def get_or_increase_name(name, serial):
     if not certificates:
         return name
 
-    serial_name = "{0}-{1}".format(name, hex(int(serial))[2:].upper())
+    serial_name = f"{name}-{hex(int(serial))[2:].upper()}"
     certificates = Certificate.query.filter(Certificate.name == serial_name).all()
 
     if not certificates:
         return serial_name
 
     certificates = Certificate.query.filter(
-        Certificate.name.ilike("{0}%".format(serial_name))
+        Certificate.name.ilike(f"{serial_name}%")
     ).all()
 
     ends = [0]
@@ -94,7 +92,7 @@ def get_or_increase_name(name, serial):
         if end:
             ends.append(end)
 
-    return "{0}-{1}".format(root, max(ends) + 1)
+    return f"{root}-{max(ends) + 1}"
 
 
 class Certificate(BaseModel):
@@ -436,7 +434,7 @@ class Certificate(BaseModel):
         return return_extensions
 
     def __repr__(self):
-        return "Certificate(name={name})".format(name=self.name)
+        return f"Certificate(name={self.name})"
 
 
 class CertificateAssociation(BaseModel):

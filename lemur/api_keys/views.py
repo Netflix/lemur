@@ -11,14 +11,7 @@ from datetime import datetime
 
 from flask import Blueprint, g
 from flask_restful import reqparse, Api
-
 from lemur.api_keys import service
-from lemur.auth.service import AuthenticatedResource, create_token
-from lemur.auth.permissions import ApiKeyCreatorPermission
-
-from lemur.common.schema import validate_schema
-from lemur.common.utils import paginated_parser
-
 from lemur.api_keys.schemas import (
     api_key_input_schema,
     api_key_revoke_schema,
@@ -27,6 +20,10 @@ from lemur.api_keys.schemas import (
     api_key_described_output_schema,
     user_api_key_input_schema,
 )
+from lemur.auth.permissions import ApiKeyCreatorPermission
+from lemur.auth.service import AuthenticatedResource, create_token
+from lemur.common.schema import validate_schema
+from lemur.common.utils import paginated_parser
 
 mod = Blueprint("api_keys", __name__)
 api = Api(mod)
@@ -36,7 +33,7 @@ class ApiKeyList(AuthenticatedResource):
     """ Defines the 'api_keys' endpoint """
 
     def __init__(self):
-        super(ApiKeyList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, api_keys_output_schema)
     def get(self):
@@ -134,7 +131,7 @@ class ApiKeyList(AuthenticatedResource):
             if data["user"]["id"] != g.current_user.id:
                 return (
                     dict(
-                        message="You are not authorized to create tokens for: {0}".format(
+                        message="You are not authorized to create tokens for: {}".format(
                             data["user"]["username"]
                         )
                     ),
@@ -157,7 +154,7 @@ class ApiKeyUserList(AuthenticatedResource):
     """ Defines the 'keys' endpoint on the 'users' endpoint. """
 
     def __init__(self):
-        super(ApiKeyUserList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, api_keys_output_schema)
     def get(self, user_id):
@@ -254,7 +251,7 @@ class ApiKeyUserList(AuthenticatedResource):
             if user_id != g.current_user.id:
                 return (
                     dict(
-                        message="You are not authorized to create tokens for: {0}".format(
+                        message="You are not authorized to create tokens for: {}".format(
                             user_id
                         )
                     ),
@@ -276,7 +273,7 @@ class ApiKeyUserList(AuthenticatedResource):
 class ApiKeys(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(ApiKeys, self).__init__()
+        super().__init__()
 
     @validate_schema(None, api_key_output_schema)
     def get(self, aid):
@@ -416,7 +413,7 @@ class ApiKeys(AuthenticatedResource):
 class UserApiKeys(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(UserApiKeys, self).__init__()
+        super().__init__()
 
     @validate_schema(None, api_key_output_schema)
     def get(self, uid, aid):
@@ -565,7 +562,7 @@ class UserApiKeys(AuthenticatedResource):
 class ApiKeysDescribed(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(ApiKeysDescribed, self).__init__()
+        super().__init__()
 
     @validate_schema(None, api_key_described_output_schema)
     def get(self, aid):

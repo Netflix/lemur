@@ -8,11 +8,10 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from flask import current_app, g
-
 from lemur import database
+from lemur.certificates.models import Certificate
 from lemur.logs.models import Log
 from lemur.users.models import User
-from lemur.certificates.models import Certificate
 
 
 def create(user, type, certificate=None):
@@ -88,14 +87,14 @@ def render(args):
 
         if "certificate.name" in terms:
             sub_query = database.session_query(Certificate.id).filter(
-                Certificate.name.ilike("%{0}%".format(terms[1]))
+                Certificate.name.ilike(f"%{terms[1]}%")
             )
 
             query = query.filter(Log.certificate_id.in_(sub_query))
 
         elif "user.email" in terms:
             sub_query = database.session_query(User.id).filter(
-                User.email.ilike("%{0}%".format(terms[1]))
+                User.email.ilike(f"%{terms[1]}%")
             )
 
             query = query.filter(Log.user_id.in_(sub_query))

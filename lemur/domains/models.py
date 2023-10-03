@@ -7,9 +7,8 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
-from sqlalchemy import Column, Integer, String, Boolean
-
 from lemur.database import BaseModel
+from sqlalchemy import Column, Integer, String, Boolean
 
 
 class Domain(BaseModel):
@@ -20,4 +19,4 @@ class Domain(BaseModel):
     sensitive = Column(Boolean, default=False)
 
     def __repr__(self):
-        return "Domain(name={name})".format(name=self.name)
+        return f"Domain(name={self.name})"

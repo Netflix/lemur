@@ -10,9 +10,8 @@ Create Date: 2016-06-28 16:05:25.720213
 revision = "29d8c8455c86"
 down_revision = "3307381f3b88"
 
-from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
+from alembic import op
 
 
 def upgrade():
@@ -54,7 +53,7 @@ def upgrade():
         sa.Column(
             "date_created",
             sa.DateTime(),
-            server_default=sa.text(u"now()"),
+            server_default=sa.text("now()"),
             nullable=False,
         ),
         sa.Column("policy_id", sa.Integer(), nullable=True),

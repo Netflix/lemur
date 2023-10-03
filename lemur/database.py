@@ -9,15 +9,13 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from inflection import underscore
 from flask_sqlalchemy.model import DefaultMeta
+from inflection import underscore
+from lemur.exceptions import AttrNotFound, DuplicateError
+from lemur.extensions import db
 from sqlalchemy import exc, func, distinct
 from sqlalchemy.orm import make_transient, lazyload
 from sqlalchemy.sql import and_, or_
-
-from lemur.exceptions import AttrNotFound, DuplicateError
-from lemur.extensions import db
-
 
 BaseModel: DefaultMeta = db.Model
 
@@ -211,7 +209,7 @@ def filter(query, model, terms):
     :return:
     """
     column = get_model_column(model, underscore(terms[0]))
-    return query.filter(column.ilike("%{}%".format(terms[1])))
+    return query.filter(column.ilike(f"%{terms[1]}%"))
 
 
 def sort(query, model, field, direction):

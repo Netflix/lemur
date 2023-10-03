@@ -1,16 +1,16 @@
-import arrow
-import requests
 import json
 import sys
-from flask import current_app
-from retrying import retry
-from requests.packages.urllib3.util.retry import Retry
 
+import arrow
+import requests
+from flask import current_app
+from lemur.common.utils import validate_conf, get_key_type_from_certificate
 from lemur.constants import CRLReason
+from lemur.extensions import metrics
 from lemur.plugins import lemur_entrust as entrust
 from lemur.plugins.bases import IssuerPlugin, SourcePlugin
-from lemur.extensions import metrics
-from lemur.common.utils import validate_conf, get_key_type_from_certificate
+from requests.packages.urllib3.util.retry import Retry
+from retrying import retry
 
 
 def log_status_code(r, *args, **kwargs):
@@ -242,7 +242,7 @@ class EntrustIssuerPlugin(IssuerPlugin):
         adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("https://", adapter)
 
-        super(EntrustIssuerPlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def create_certificate(self, csr, issuer_options):
         """
@@ -417,7 +417,7 @@ class EntrustSourcePlugin(SourcePlugin):
         adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("https://", adapter)
 
-        super(EntrustSourcePlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_certificates(self, options, **kwargs):
         """ Fetch all Entrust certificates """
@@ -446,7 +446,7 @@ class EntrustSourcePlugin(SourcePlugin):
             if status_code > 399:
                 raise Exception(f"ENTRUST error: {status_code}\n{data['errors']}")
             for c in data["certificates"]:
-                download_url = "{0}{1}".format(
+                download_url = "{}{}".format(
                     host, c["uri"]
                 )
                 cert_response = self.session.get(download_url)

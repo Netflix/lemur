@@ -1,6 +1,7 @@
+from unittest.mock import patch, MagicMock
+
 import pytest
 from lemur.auth.ldap import *  # noqa
-from unittest.mock import patch, MagicMock
 
 
 class LdapPrincipalTester(LdapPrincipal):
@@ -14,8 +15,8 @@ class LdapPrincipalTester(LdapPrincipal):
                 "user",
                 {
                     "memberOf": [
-                        "CN=Lemur Access,OU=Groups,DC=example,DC=com".encode("utf-8"),
-                        "CN=Pen Pushers,OU=Groups,DC=example,DC=com".encode("utf-8"),
+                        b"CN=Lemur Access,OU=Groups,DC=example,DC=com",
+                        b"CN=Pen Pushers,OU=Groups,DC=example,DC=com",
                     ]
                 },
             )

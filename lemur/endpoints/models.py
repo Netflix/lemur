@@ -7,17 +7,14 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import arrow
-from sqlalchemy.orm import relationship
-from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
-from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.sql.expression import case
-
-from sqlalchemy_utils import ArrowType
-
 from lemur.database import BaseModel
-
 from lemur.models import policies_ciphers
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql.expression import case
+from sqlalchemy_utils import ArrowType
 
 BAD_CIPHERS = ["Protocol-SSLv3", "Protocol-SSLv2", "Protocol-TLSv1"]
 
@@ -95,7 +92,7 @@ class Endpoint(BaseModel):
                 issues.append(
                     {
                         "name": "deprecated cipher",
-                        "value": "{0} has been deprecated consider removing it.".format(
+                        "value": "{} has been deprecated consider removing it.".format(
                             cipher.name
                         ),
                     }
@@ -120,4 +117,4 @@ class Endpoint(BaseModel):
         return issues
 
     def __repr__(self):
-        return "Endpoint(name={name})".format(name=self.name)
+        return f"Endpoint(name={self.name})"

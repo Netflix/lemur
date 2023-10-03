@@ -3,14 +3,12 @@
 
 An export plugin that exports CSR from a private key and certificate.
 """
-from io import open
 import subprocess
 
 from flask import current_app
-
-from lemur.utils import mktempfile, mktemppath
-from lemur.plugins.bases import ExportPlugin
 from lemur.plugins import lemur_csr as csr
+from lemur.plugins.bases import ExportPlugin
+from lemur.utils import mktempfile, mktemppath
 
 
 def run_process(command):

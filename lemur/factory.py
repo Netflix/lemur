@@ -23,14 +23,13 @@ import sentry_sdk
 from click import get_current_context
 from flask import Flask, current_app
 from flask_replicated import FlaskReplicated
+from lemur.certificates.hooks import activate_debug_dump
+from lemur.common.health import mod as health
+from lemur.extensions import db, migrate, principal, smtp_mail, metrics, cors
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
-
-from lemur.certificates.hooks import activate_debug_dump
-from lemur.common.health import mod as health
-from lemur.extensions import db, migrate, principal, smtp_mail, metrics, cors
 
 DEFAULT_BLUEPRINTS = (health,)
 
@@ -104,7 +103,7 @@ def from_file(file_path, silent=False):
             exec(  # nosec: config file safe
                 compile(config_file.read(), file_path, "exec"), d.__dict__
             )
-    except IOError as e:
+    except OSError as e:
         if silent and e.errno in (errno.ENOENT, errno.EISDIR):
             return False
         e.strerror = "Unable to load configuration file (%s)" % e.strerror
@@ -200,7 +199,7 @@ def configure_blueprints(app, blueprints):
     :param blueprints:
     """
     for blueprint in blueprints:
-        app.register_blueprint(blueprint, url_prefix="/api/{0}".format(API_VERSION))
+        app.register_blueprint(blueprint, url_prefix=f"/api/{API_VERSION}")
 
 
 def configure_database(app):
@@ -268,7 +267,7 @@ def install_plugins(app):
             import traceback
 
             app.logger.error(
-                "Failed to load plugin %r:\n%s\n" % (ep.name, traceback.format_exc())
+                f"Failed to load plugin {ep.name!r}:\n{traceback.format_exc()}\n"
             )
         else:
             register(plugin)

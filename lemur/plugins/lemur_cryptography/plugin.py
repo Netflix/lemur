@@ -8,17 +8,14 @@
 """
 import uuid
 
-from flask import current_app
-
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
-
-from lemur.common.utils import parse_private_key
-from lemur.plugins.bases import IssuerPlugin
-from lemur.plugins import lemur_cryptography as cryptography_issuer
-
+from flask import current_app
 from lemur.certificates.service import create_csr
+from lemur.common.utils import parse_private_key
+from lemur.plugins import lemur_cryptography as cryptography_issuer
+from lemur.plugins.bases import IssuerPlugin
 
 
 def build_certificate_authority(options):
@@ -213,7 +210,7 @@ class CryptographyIssuerPlugin(IssuerPlugin):
         :return: :raise Exception:
         """
         current_app.logger.debug(
-            "Issuing new cryptography certificate with options: {0}".format(options)
+            f"Issuing new cryptography certificate with options: {options}"
         )
         cert_pem, chain_cert_pem = issue_certificate(csr, options)
         return cert_pem, chain_cert_pem, None
@@ -228,7 +225,7 @@ class CryptographyIssuerPlugin(IssuerPlugin):
         :return:
         """
         current_app.logger.debug(
-            "Issuing new cryptography authority with options: {0}".format(options)
+            f"Issuing new cryptography authority with options: {options}"
         )
         cert_pem, private_key, chain_cert_pem = build_certificate_authority(options)
         roles = [

@@ -15,10 +15,6 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from flask import current_app
-from sentry_sdk import capture_exception
-from sqlalchemy import and_, func, or_, not_, cast, Integer
-from sqlalchemy.sql.expression import false, true
-
 from lemur import database
 from lemur.authorities.models import Authority
 from lemur.certificates.models import Certificate, CertificateAssociation
@@ -37,6 +33,9 @@ from lemur.plugins.base import plugins
 from lemur.plugins.utils import get_plugin_option
 from lemur.roles import service as role_service
 from lemur.roles.models import Role
+from sentry_sdk import capture_exception
+from sqlalchemy import and_, func, or_, not_, cast, Integer
+from sqlalchemy.sql.expression import false, true
 
 csr_created = signals.signal("csr_created", "CSR generated")
 csr_imported = signals.signal("csr_imported", "CSR imported from external source")
@@ -598,7 +597,7 @@ def render(args):
 
     if filt:
         terms = filt.split(";")
-        term = "%{0}%".format(terms[1])
+        term = f"%{terms[1]}%"
         # Exact matches for quotes. Only applies to name, issuer, and cn
         if terms[1].startswith('"') and terms[1].endswith('"'):
             term = terms[1][1:-1]
@@ -804,7 +803,7 @@ def create_csr(**csr_config):
         if v:
             if k in critical_extensions:
                 current_app.logger.debug(
-                    "Adding Critical Extension: {0} {1}".format(k, v)
+                    f"Adding Critical Extension: {k} {v}"
                 )
                 if k == "sub_alt_names":
                     if v["names"]:
@@ -813,7 +812,7 @@ def create_csr(**csr_config):
                     builder = builder.add_extension(v, critical=True)
 
             if k in noncritical_extensions:
-                current_app.logger.debug("Adding Extension: {0} {1}".format(k, v))
+                current_app.logger.debug(f"Adding Extension: {k} {v}")
                 builder = builder.add_extension(v, critical=False)
 
     ski = extensions.get("subject_key_identifier", {})
@@ -1185,13 +1184,13 @@ def get_certs_for_expiring_deployed_cert_check(exclude_domains, exclude_owners):
     exclude_conditions = []
     if exclude_domains:
         for e in exclude_domains:
-            exclude_conditions.append(~Certificate.name.ilike("%{}%".format(e)))
+            exclude_conditions.append(~Certificate.name.ilike(f"%{e}%"))
 
         q = q.filter(and_(*exclude_conditions))
 
     if exclude_owners:
         for e in exclude_owners:
-            exclude_conditions.append(~Certificate.owner.ilike("{}".format(e)))
+            exclude_conditions.append(~Certificate.owner.ilike(f"{e}"))
 
         q = q.filter(and_(*exclude_conditions))
 

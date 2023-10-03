@@ -7,15 +7,14 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import json
+from datetime import datetime
 from typing import Any, Dict
 
 import requests
-from requests.exceptions import ConnectionError
-from datetime import datetime
-
 from flask import current_app
 from lemur.plugins import lemur_atlas as atlas
 from lemur.plugins.bases.metric import MetricPlugin
+from requests.exceptions import ConnectionError
 
 
 def millis_since_epoch():
@@ -99,7 +98,7 @@ class AtlasMetricPlugin(MetricPlugin):
 
             if res.status_code != 200:
                 current_app.logger.warning(
-                    "Failed to publish altas metric. {0}".format(res.content)
+                    f"Failed to publish altas metric. {res.content}"
                 )
 
         except ConnectionError:

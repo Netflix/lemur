@@ -9,13 +9,12 @@
 
 """
 from flask import current_app
-
 from lemur import database
-from lemur.constants import EMAIL_RE, EMAIL_RE_HELP
 from lemur.certificates.models import Certificate
 from lemur.common.utils import truthiness, check_validation
-from lemur.notifications.models import Notification
+from lemur.constants import EMAIL_RE, EMAIL_RE_HELP
 from lemur.logs import service as log_service
+from lemur.notifications.models import Notification
 
 
 def create_default_expiration_notifications(name, recipients, intervals=None):
@@ -58,7 +57,7 @@ def create_default_expiration_notifications(name, recipients, intervals=None):
 
     notifications = []
     for i in intervals:
-        n = get_by_label("{name}_{interval}_DAY".format(name=name, interval=i))
+        n = get_by_label(f"{name}_{i}_DAY")
         if not n:
             inter = [
                 {
@@ -72,7 +71,7 @@ def create_default_expiration_notifications(name, recipients, intervals=None):
             ]
             inter.extend(options)
             n = create(
-                label="{name}_{interval}_DAY".format(name=name, interval=i),
+                label=f"{name}_{i}_DAY",
                 plugin_name=current_app.config.get(
                     "LEMUR_DEFAULT_NOTIFICATION_PLUGIN", "email-notification"
                 ),

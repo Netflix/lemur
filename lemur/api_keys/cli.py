@@ -5,12 +5,11 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Eric Coan <kungfury@instructure.com>
 """
-import click
+from datetime import datetime
 
+import click
 from lemur.api_keys import service as api_key_service
 from lemur.auth.service import create_token
-
-from datetime import datetime
 
 
 @click.group(name="api_keys", help="Handles all api key related tasks.")
@@ -45,7 +44,7 @@ def create(uid, name, ttl):
     )
     click.echo("[+] Successfully created a new api key. Generating a JWT...")
     jwt = create_token(uid, key.id, key.ttl)
-    click.echo("[+] Your JWT is: {jwt}".format(jwt=jwt))
+    click.echo(f"[+] Your JWT is: {jwt}")
 
 
 @cli.command("revoke")
