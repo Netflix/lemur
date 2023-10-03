@@ -2063,7 +2063,7 @@ To get the latest code from github run
 
 .. note::
     It's important to grab the latest release by specifying the release tag. This tags denote stable versions of Lemur.
-    If you want to try the bleeding edge version of Lemur you can by using the master branch.
+    If you want to try the bleeding edge version of Lemur you can by using the main branch.
 
 
 After you have the latest version of the Lemur code base you must run any needed database migrations. To run migrations
