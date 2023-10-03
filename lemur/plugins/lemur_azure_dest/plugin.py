@@ -122,7 +122,7 @@ class AzureDestinationPlugin(DestinationPlugin):
             "name": "azurePassword",
             "type": "str",
             "required": True,
-            "validation": check_validation("[0-9a-zA-Z.:_-~]+"),
+            "validation": check_validation("[0-9a-zA-Z.:_~-]+"),
             "helpMessage": "Tenant password for the Azure Key Vault",
         }
     ]
