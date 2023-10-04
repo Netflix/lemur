@@ -278,6 +278,7 @@ def create_user_roles(profile: dict) -> list[str]:
                 current_app.config["LEMUR_DEFAULT_ROLE"],
                 description="This is the default Lemur role.",
             )
+        roles.append(default)
 
     # Dedupe the roles
     roles = list(set(roles))
