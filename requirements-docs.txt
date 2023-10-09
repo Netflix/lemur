@@ -380,7 +380,7 @@ openapi-schema-validator==0.6.1
     # via
     #   -r requirements-tests.txt
     #   openapi-spec-validator
-openapi-spec-validator==0.6.0
+openapi-spec-validator==0.7.0
     # via
     #   -r requirements-tests.txt
     #   moto
