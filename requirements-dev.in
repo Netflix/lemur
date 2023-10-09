@@ -9,4 +9,4 @@ marshmallow<2.21.1 #schema duplicate issues https://github.com/marshmallow-code/
 nodeenv
 pyyaml>=4.2b1
 sqlalchemy < 1.4.0 # ImportError: cannot import name '_ColumnEntity' https://github.com/sqlalchemy/sqlalchemy/issues/6226
-urllib3 <= 1.26.16 # limited due to dependency conflict with twine
+urllib3 <= 1.26.17 # limited due to dependency conflict with twine

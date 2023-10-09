@@ -312,7 +312,7 @@ typing-extensions==4.8.0
     #   limits
 tzdata==2023.3
     # via celery
-urllib3==1.26.16
+urllib3==1.26.17
     # via
     #   botocore
     #   requests
