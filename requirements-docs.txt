@@ -693,7 +693,7 @@ tzdata==2023.3
     # via
     #   -r requirements-tests.txt
     #   celery
-urllib3==1.26.16
+urllib3==2.0.6
     # via
     #   -r requirements-tests.txt
     #   botocore
