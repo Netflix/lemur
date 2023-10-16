@@ -308,7 +308,7 @@ jsonschema==4.19.1
     #   cfn-lint
     #   openapi-schema-validator
     #   openapi-spec-validator
-jsonschema-spec==0.2.4
+jsonschema-path==0.3.1
     # via
     #   -r requirements-tests.txt
     #   openapi-spec-validator
@@ -384,7 +384,7 @@ openapi-schema-validator==0.6.1
     # via
     #   -r requirements-tests.txt
     #   openapi-spec-validator
-openapi-spec-validator==0.7.0
+openapi-spec-validator==0.7.1
     # via
     #   -r requirements-tests.txt
     #   moto
@@ -408,7 +408,7 @@ parsedatetime==2.6
 pathable==0.4.3
     # via
     #   -r requirements-tests.txt
-    #   jsonschema-spec
+    #   jsonschema-path
 pathspec==0.11.2
     # via
     #   -r requirements-tests.txt
@@ -527,7 +527,7 @@ pyyaml==6.0.1
     #   bandit
     #   cfn-lint
     #   cloudflare
-    #   jsonschema-spec
+    #   jsonschema-path
     #   moto
     #   responses
 redis==4.6.0
@@ -540,7 +540,7 @@ referencing==0.30.2
     # via
     #   -r requirements-tests.txt
     #   jsonschema
-    #   jsonschema-spec
+    #   jsonschema-path
     #   jsonschema-specifications
 regex==2023.8.8
     # via
@@ -554,7 +554,7 @@ requests==2.31.0
     #   cloudflare
     #   docker
     #   hvac
-    #   jsonschema-spec
+    #   jsonschema-path
     #   moto
     #   requests-mock
     #   responses
