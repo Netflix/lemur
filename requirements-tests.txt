@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-tests.txt requirements-tests.in
 #
-acme==2.7.0
+acme==2.7.1
     # via certbot
 alembic==1.12.0
     # via flask-migrate
@@ -42,7 +42,7 @@ botocore==1.31.62
     #   s3transfer
 celery[redis]==5.3.4
     # via -r requirements-tests.in
-certbot==2.7.0
+certbot==2.7.1
     # via -r requirements-tests.in
 certifi==2023.7.22
     # via requests
