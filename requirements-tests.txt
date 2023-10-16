@@ -92,7 +92,7 @@ ecdsa==0.18.0
     #   sshpubkeys
 factory-boy==3.3.0
     # via -r requirements-tests.in
-faker==19.8.0
+faker==19.10.0
     # via
     #   -r requirements-tests.in
     #   factory-boy
