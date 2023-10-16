@@ -35,6 +35,37 @@ Basic Configuration
 
         LOG_UPGRADE_FILE = "/logs/lemur/db_upgrade.log"
 
+.. data:: LOG_REQUEST_HEADERS
+    :noindex:
+
+    ::
+        Defaults to False (off).  This adds logging similar to a webserver, where each request made to the API is logged.
+        Useful for tracing where requests are being made from, or for auditing purposes.
+
+        LOG_REQUEST_HEADERS = True
+
+.. data:: LOG_SANITIZE_REQUEST_HEADERS
+    :noindex:
+
+    ::
+        Defaults to True (on).  This sanitizes the requests logging to remove the query parameters,
+        as those parameters often contain sensitivity information.
+
+        LOG_SANITIZE_REQUEST_HEADERS = True
+
+    .. warning::
+        This should never be used in a production environment as it exposes sensitivite information.
+
+.. data:: LOG_REQUEST_HEADERS_SKIP_ENDPOINT
+    :noindex:
+
+    ::
+        Defaults to the metrics and healthcheck endpoints.  Some endpoints are not useful to log and can generate a lot of noise.
+        If an endpoint is listed here, it will be skipped and not logged.  It is only recommended to add endpoints that are purely
+        informational or only used internally.
+
+        LOG_REQUEST_HEADERS_SKIP_ENDPOINT = ["/metrics", "/healthcheck"]
+
 .. data:: DEBUG
     :noindex:
 
@@ -246,6 +277,20 @@ Basic Configuration
 
        Specifies the AWS partition that Lemur should use. Valid values are 'aws', 'aws-us-gov', and 'aws-cn'. Defaults to 'aws'.
        If Lemur is deployed in and managing endpoints AWS GovCloud, for example, you must set this to `aws-us-gov`.
+
+
+.. data:: LEMUR_STRICT_ROLE_ENFORCEMENT
+    :noindex:
+
+        When set to True, this property enforces the default Lemur role functionality. The default Lemur roles are
+        ``admin``, ``operator``, and ``read-only``. Users will be required to have a default role assigned
+        upon creation. The ``operator`` and ``read-only`` roles are strictly enforced. Users assigned the ``read-only``
+        role will not be able to create/update resources.
+
+    ::
+
+        LEMUR_STRICT_ROLE_ENFORCEMENT = False
+
 
 .. data:: SENTRY_DSN
     :noindex:
@@ -721,6 +766,182 @@ Since the celery module, relies on the RedisHandler, the following options also 
 Authentication Options
 ----------------------
 Lemur currently supports Basic Authentication, LDAP Authentication, Ping OAuth2, and Google out of the box. Additional flows can be added relatively easily.
+
+IDP Configuration Options
+-------------------------
+Lemur historically was hard coded for supporting creating or adding groups from the `googleGroups` key. This was great if you used Google, but a limitation
+if you used another IDP. These settings allow you to customize your IDP and do one of two things:
+* Uses a fixed mapping in our config, if the user has that group we give a specified Lemur role.
+* Dynamically takes all the groups assigned to a user (such as `profile['roles']` or `profile['googleGroups']`), creates a Lemur group if it doesn't already exist, then assigns it to the user.
+
+Group to role mapping can be either very static with a hard mapping (`IDP_ROLES_MAPPING`) or entirely dynamic from your designated IDP groups (`IDP_GROUPS_KEYS`).
+Using both methods at once is supported.
+
+Here is an example IDP configuration stanza you can add to your config. Adjust to suit your environment of course.
+
+.. code-block:: python
+
+        IDP_ROLES_MAPPING = {"security": "admin", "engineering": "operator", "jane_from_accounting": "read-only"}
+        IDP_GROUPS_KEYS = ["googleGroups", "roles"]
+        IDP_ASSIGN_ROLES_FROM_USER_GROUPS = True
+        IDP_CREATE_ROLES_FROM_USER_GROUPS = True
+        IDP_CREATE_PER_USER_ROLE = True
+        IDP_PROTECT_BUILTINS = True
+
+.. data:: IDP_ROLES_MAPPING
+    :noindex:
+
+        Defaults to `{}`.
+
+        This is used to create a fixed user mapping from an IDP group to a Lemur group.  This is very useful if you have do very static assigments using a set number of groups.
+        The dynamic group assignment will not assign built-in groups (`admin`, `operator`, or `read-only`) by default, using `IDP_ROLES_MAPPING` is the recommended way to assign
+        these groups.
+
+        Custom created Lemur groups may be assigned through `IDP_ROLES_MAPPING`, but they must be created before attempting to assign them, this will not automatically create any groups.
+        
+        The dictionary is defined with the IDP group as the dictionary key, and the matching Lemur group as the value. (e.g. `{"idp_group": "lemur_group"`)
+
+        ::
+
+            IDP_ROLES_MAPPING = {"security": "admin", "engineering": "operator", "jane_from_accounting": "read-only"}
+
+.. data:: IDP_GROUPS_KEYS
+    :noindex:
+
+        Defaults to `["googleGroups"]` as this is historically what was hard coded in Lemur.
+
+        Provide a list of dictionary keys used by IDP(s) to return user groups.  In code, you can look at the dictionary object provided by your IDP and find the dictionary key that contains
+        the groups you would like to add.  You can also check in Lemur code and look at the `profile` dictionary object for the user.
+
+        You can chain as many fields as you desire, this could be useful if pulling from multiple IDPs or if an IDP provides two different types of groups.
+
+        .. note::
+            Here is a list of key names that may be useful. Double check that these keys match your environment as your results may differ.
+
+            GCP: `googleGroups`
+            LDAP: `roles`
+
+        .. warning::
+            Any keys provided here will be used additively, so care must be taken as unintentional group assignments may be made if using multiple IDPs.
+
+            It is highly recommended to use `IDP_ROLES_PREFIX` and/or `IDP_ROLES_SUFFIX` to create a naming schema to avoid importing all groups assigned in your IDP.
+
+            The groups that are built into Lemur (`admin`, `operator`, `read-only`) will not be assigned by default. See: `IDP_PROTECT_BUILTINS`
+
+        ::
+
+            IDP_GROUPS_KEYS = ["googleGroups"]
+
+.. data:: IDP_ROLES_PREFIX
+    :noindex:
+
+        Defaults to `""`. (No filtering, all groups will be included)
+
+        This is used to create a naming schema/convention to provide a method for only importing a certain set of groups.  A simple string comparison is used
+        to see if the group name starts with the prefix provided here.  If it matches the group will be used; if it doesn't it will be skipped.
+
+        ::
+
+            IDP_ROLES_PREFIX = "LEMUR-"
+
+.. data:: IDP_ROLES_SUFFIX
+    :noindex:
+
+        Defaults to `""`. (No filtering, all groups will be included)
+
+        This is used to create a naming schema/convention to provide a method for only importing a certain set of groups.  A simple string comparison is used
+        to see if the group name ends with the suffix provided here.  If it matches the group will be used; if it doesn't it will be skipped.
+
+        ::
+
+            IDP_ROLES_SUFFIX = "_LEMUR"
+
+.. data:: IDP_ROLES_DESCRIPTION
+    :noindex:
+
+        Defaults to `Identity provider role from '{idp_groups_key}' (generated by Lemur)`.
+
+        Allows for a custom group description for automatically created groups.
+        
+        .. note::
+            While the default description will automatically inject the IDP group key into the description, a custom version will not.
+            If you are using multiple group fields or IDPs, you may want to leave this at the default.
+
+        ::
+
+            IDP_ROLES_DESCRIPTION = "Automatically generated role from my IDP"
+
+.. data:: IDP_ASSIGN_ROLES_FROM_USER_GROUPS
+    :noindex:
+
+        Defaults to `True`.
+
+        Enables automatic assignment of groups found in the IDP key to the user.  This is used to dynamically assign groups based on your IDP groups assignments.
+        
+        .. note::
+            This does not create groups if they are not found, for that functionality see `IDP_CREATE_ROLES_FROM_USER_GROUPS`.
+        
+        .. warning::
+            While automatic group assignment can be very useful, this can potentially assign groups unexpectedly as once this is enabled group assignment is done from the IDP.
+            If you want more strict or controlled group assignments, it is recommended to use `IDP_ROLES_MAPPING`.
+
+        ::
+
+            IDP_ASSIGN_ROLES_FROM_USER_GROUPS = True
+
+.. data:: IDP_CREATE_ROLES_FROM_USER_GROUPS
+    :noindex:
+
+        Defaults to `True`.
+
+        Enables automatic creation of groups found in the IDP key to the user.  This is used to dynamically create groups based on your IDP groups assignments.
+        
+        .. note::
+            This does not assign groups to a user, for that functionality see `IDP_ASSIGN_ROLES_FROM_USER_GROUPS`.
+        
+        .. warning::
+            While automatic group creation can be very useful, this can potentially create groups unexpectedly as once this is enabled group assignment is done from the IDP.
+            If you want more strict or controlled group assignments, it is recommended to use `IDP_ROLES_MAPPING`.
+
+        ::
+
+            IDP_CREATE_ROLES_FROM_USER_GROUPS = True
+
+
+.. data:: IDP_CREATE_PER_USER_ROLE
+    :noindex:
+
+        Defaults to `True`.
+
+        Creates a group for each user.  While this is very noisy, this can be useful to assign a cert to a singular user.
+        
+        .. note::
+            Organizations with very large numbers of users may want to condsider disabling this, due to the potential load.
+
+        ::
+
+            IDP_CREATE_PER_USER_ROLE = True
+
+.. data:: IDP_PROTECT_BUILTINS
+    :noindex:
+
+        Defaults to `True`.
+
+        Prevents dynamic assignment of the built in groups (`admin`, `operator`, `read-only`) to users. If a group provided by the IDP key has these values,
+        it is skipped.  The built in groups are protected by default as accidential adding assignments is very easy to do.  For example, an LDAP administrator
+        adds a group named `admin` and now all of your LDAP admins are also Lemur admins.
+
+        If you want to assign built in groups, it is recommended to use `IDP_ROLES_MAPPING`.
+
+        .. note::
+            Historically Lemur allowed for dynamic assignment of the built-in groups.
+
+        .. warning::
+            Disabling this protection is not recommended.
+
+        ::
+
+            IDP_PROTECT_BUILTINS = True
 
 LDAP Options
 ~~~~~~~~~~~~
@@ -1823,7 +2044,7 @@ To get the latest code from github run
 
 .. note::
     It's important to grab the latest release by specifying the release tag. This tags denote stable versions of Lemur.
-    If you want to try the bleeding edge version of Lemur you can by using the master branch.
+    If you want to try the bleeding edge version of Lemur you can by using the main branch.
 
 
 After you have the latest version of the Lemur code base you must run any needed database migrations. To run migrations

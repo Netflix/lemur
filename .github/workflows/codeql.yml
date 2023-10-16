@@ -13,10 +13,10 @@ name: "CodeQL"
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "main" ]
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ "master" ]
+    branches: [ "main" ]
   schedule:
     - cron: '15 16 * * 2'
 
@@ -41,7 +41,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     
     # Install prerequisites for python-ldap. See: https://www.python-ldap.org/en/python-ldap-3.3.0/installing.html#build-prerequisites
     - name: Install python-ldap prerequisites

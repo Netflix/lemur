@@ -8,7 +8,7 @@ from flask import Blueprint, g, make_response, jsonify
 from flask_restful import Api, reqparse, inputs
 
 from lemur.auth.service import AuthenticatedResource
-from lemur.auth.permissions import CertificatePermission
+from lemur.auth.permissions import CertificatePermission, StrictRolePermission
 
 from lemur.common.schema import validate_schema
 from lemur.common.utils import paginated_parser
@@ -542,6 +542,8 @@ class PendingCertificatesUpload(AuthenticatedResource):
            :statuscode 200: no error
 
         """
+        if not StrictRolePermission().can():
+            return dict(message="You are not authorized to upload a pending certificate."), 403
         return service.upload(pending_certificate_id, **data)
 
 

@@ -13,6 +13,8 @@ from lemur import database
 from lemur.logs import service as log_service
 from lemur.users.models import User
 
+STRICT_ENFORCEMENT_DEFAULT_ROLES = ["admin", "operator", "read-only"]
+
 
 def create(username, password, email, active, profile_picture, roles):
     """
@@ -26,6 +28,11 @@ def create(username, password, email, active, profile_picture, roles):
     :param roles:
     :return:
     """
+    strict_role_enforcement = current_app.config.get("LEMUR_STRICT_ROLE_ENFORCEMENT", False)
+    if strict_role_enforcement and not any(role.name in STRICT_ENFORCEMENT_DEFAULT_ROLES for role in roles):
+        return dict(message="Default role required, user needs least one of the following roles assigned: admin, "
+                            "operator, read-only"), 400
+
     user = User(
         password=password,
         username=username,
@@ -38,7 +45,7 @@ def create(username, password, email, active, profile_picture, roles):
     return database.create(user)
 
 
-def update(user_id, username, email, active, profile_picture, roles):
+def update(user_id, username, email, active, profile_picture, roles, password=None):
     """
     Updates an existing user
 
@@ -48,13 +55,21 @@ def update(user_id, username, email, active, profile_picture, roles):
     :param active:
     :param profile_picture:
     :param roles:
+    :param password:
     :return:
     """
+    strict_role_enforcement = current_app.config.get("LEMUR_STRICT_ROLE_ENFORCEMENT", False)
+    if strict_role_enforcement and not any(role.name in STRICT_ENFORCEMENT_DEFAULT_ROLES for role in roles):
+        return dict(message="Default role required, user needs least one of the following roles assigned: admin, "
+                            "operator, read-only"), 400
+
     user = get(user_id)
     user.username = username
     user.email = email
     user.active = active
     user.profile_picture = profile_picture
+    if password:
+        user.password = password
     update_roles(user, roles)
 
     log_service.audit_log("update_user", username, f"Updating user with id {user_id}")
