@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-tests.txt requirements-tests.in
 #
-acme==2.7.0
+acme==2.7.1
     # via certbot
 alembic==1.12.0
     # via flask-migrate
