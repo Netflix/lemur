@@ -83,6 +83,9 @@ cryptography==41.0.4
     #   pyopenssl
     #   python-jose
     #   sshpubkeys
+    #   types-paramiko
+    #   types-pyopenssl
+    #   types-redis
 distro==1.8.0
     # via certbot
 docker==6.1.3
@@ -190,8 +193,12 @@ moto[all]==4.2.4
     #   moto
 mpmath==1.3.0
     # via sympy
+mypy==1.6.0
+    # via -r requirements-tests.in
 mypy-extensions==1.0.0
-    # via black
+    # via
+    #   black
+    #   mypy
 networkx==3.1
     # via cfn-lint
 nose==1.3.7
@@ -345,12 +352,35 @@ stevedore==5.1.0
     # via bandit
 sympy==1.12
     # via cfn-lint
+types-deprecated==1.2.9.3
+    # via -r requirements-tests.in
+types-paramiko==3.3.0.0
+    # via -r requirements-tests.in
+types-pyopenssl==23.2.0.2
+    # via
+    #   -r requirements-tests.in
+    #   types-redis
+types-pyrfc3339==1.1.1.5
+    # via -r requirements-tests.in
+types-pytz==2023.3.1.1
+    # via -r requirements-tests.in
 types-pyyaml==6.0.12.12
     # via responses
+types-redis==4.6.0.7
+    # via -r requirements-tests.in
+types-requests==2.31.0.9
+    # via -r requirements-tests.in
+types-setuptools==68.2.0.0
+    # via -r requirements-tests.in
+types-six==1.16.21.9
+    # via -r requirements-tests.in
+types-tabulate==0.9.0.3
+    # via -r requirements-tests.in
 typing-extensions==4.8.0
     # via
     #   alembic
     #   aws-sam-translator
+    #   mypy
     #   pydantic
     #   pydantic-core
 tzdata==2023.3
@@ -361,6 +391,7 @@ urllib3==2.0.7
     #   docker
     #   requests
     #   responses
+    #   types-requests
 vine==5.0.0
     # via
     #   amqp

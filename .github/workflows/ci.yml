@@ -70,7 +70,6 @@ jobs:
         source ~/env/bin/activate
         python -m pip install --upgrade pip
         python -m pip install --upgrade setuptools
-        pip install mypy
         pip install bandit
         sudo apt-get update
         sudo apt-get install libsasl2-dev libldap2-dev xvfb
@@ -83,7 +82,6 @@ jobs:
       run: |
         python -m venv ~/env
         source ~/env/bin/activate
-        mypy --install-types --non-interactive .
     - name: Test JS
       run: |
         python -m venv ~/env

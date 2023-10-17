@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-docs.txt requirements-docs.in
 #
-acme==2.6.0
+acme==2.7.1
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -21,7 +21,7 @@ amqp==5.1.1
     #   kombu
 aniso8601==9.0.1
     # via flask-restful
-annotated-types==0.5.0
+annotated-types==0.6.0
     # via
     #   -r requirements-tests.txt
     #   pydantic
@@ -35,11 +35,11 @@ attrs==23.1.0
     #   jsonschema
     #   referencing
     #   sarif-om
-aws-sam-translator==1.75.0
+aws-sam-translator==1.78.0
     # via
     #   -r requirements-tests.txt
     #   cfn-lint
-aws-xray-sdk==2.12.0
+aws-xray-sdk==2.12.1
     # via
     #   -r requirements-tests.txt
     #   moto
@@ -57,21 +57,21 @@ billiard==4.1.0
     # via
     #   -r requirements-tests.txt
     #   celery
-black==23.9.1
+black==23.10.0
     # via -r requirements-tests.txt
-blinker==1.6.2
+blinker==1.6.3
     # via
     #   -r requirements-tests.txt
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.28.57
+boto3==1.28.64
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
-botocore==1.31.57
+botocore==1.31.64
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -84,7 +84,7 @@ celery[redis]==5.3.4
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   celery
-certbot==2.6.0
+certbot==2.7.1
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -95,16 +95,16 @@ certifi==2023.7.22
     #   sentry-sdk
 certsrv==2.1.1
     # via -r requirements-docs.in
-cffi==1.15.1
+cffi==1.16.0
     # via
     #   -r requirements-tests.txt
     #   cryptography
     #   pynacl
-cfn-lint==0.80.3
+cfn-lint==0.82.0
     # via
     #   -r requirements-tests.txt
     #   moto
-charset-normalizer==3.2.0
+charset-normalizer==3.3.0
     # via
     #   -r requirements-tests.txt
     #   requests
@@ -139,7 +139,7 @@ configobj==5.0.8
     # via
     #   -r requirements-tests.txt
     #   certbot
-coverage==7.3.1
+coverage==7.3.2
     # via -r requirements-tests.txt
 cryptography==41.0.4
     # via
@@ -182,13 +182,13 @@ ecdsa==0.18.0
     #   sshpubkeys
 factory-boy==3.3.0
     # via -r requirements-tests.txt
-faker==19.6.2
+faker==19.10.0
     # via
     #   -r requirements-tests.txt
     #   factory-boy
 fakeredis==2.19.0
     # via -r requirements-tests.txt
-flask==2.3.3
+flask==3.0.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -230,7 +230,7 @@ gitdb==4.0.10
     # via
     #   -r requirements-tests.txt
     #   gitpython
-gitpython==3.1.37
+gitpython==3.1.38
     # via
     #   -r requirements-tests.txt
     #   bandit
@@ -309,7 +309,7 @@ jsonschema==4.19.1
     #   cfn-lint
     #   openapi-schema-validator
     #   openapi-spec-validator
-jsonschema-spec==0.2.4
+jsonschema-path==0.3.1
     # via
     #   -r requirements-tests.txt
     #   openapi-spec-validator
@@ -379,17 +379,17 @@ networkx==3.1
     #   cfn-lint
 nose==1.3.7
     # via -r requirements-tests.txt
-openapi-schema-validator==0.6.1
+openapi-schema-validator==0.6.2
     # via
     #   -r requirements-tests.txt
     #   openapi-spec-validator
-openapi-spec-validator==0.6.0
+openapi-spec-validator==0.7.1
     # via
     #   -r requirements-tests.txt
     #   moto
 ordered-set==4.1.0
     # via flask-limiter
-packaging==23.1
+packaging==23.2
     # via
     #   -r requirements-tests.txt
     #   black
@@ -407,7 +407,7 @@ parsedatetime==2.6
 pathable==0.4.3
     # via
     #   -r requirements-tests.txt
-    #   jsonschema-spec
+    #   jsonschema-path
 pathspec==0.11.2
     # via
     #   -r requirements-tests.txt
@@ -420,7 +420,7 @@ pbr==5.11.1
     #   stevedore
 pem==23.1.0
     # via -r requirements-docs.in
-platformdirs==3.10.0
+platformdirs==3.11.0
     # via
     #   -r requirements-tests.txt
     #   black
@@ -451,7 +451,7 @@ pycparser==2.21
     #   cffi
 pycryptodomex==3.19.0
     # via pyjks
-pydantic==2.4.1
+pydantic==2.4.2
     # via
     #   -r requirements-tests.txt
     #   aws-sam-translator
@@ -527,7 +527,7 @@ pyyaml==6.0.1
     #   bandit
     #   cfn-lint
     #   cloudflare
-    #   jsonschema-spec
+    #   jsonschema-path
     #   moto
     #   responses
 redis==4.6.0
@@ -540,9 +540,9 @@ referencing==0.30.2
     # via
     #   -r requirements-tests.txt
     #   jsonschema
-    #   jsonschema-spec
+    #   jsonschema-path
     #   jsonschema-specifications
-regex==2023.8.8
+regex==2023.10.3
     # via
     #   -r requirements-tests.txt
     #   cfn-lint
@@ -554,7 +554,7 @@ requests==2.31.0
     #   cloudflare
     #   docker
     #   hvac
-    #   jsonschema-spec
+    #   jsonschema-path
     #   moto
     #   requests-mock
     #   responses
@@ -571,12 +571,12 @@ rfc3339-validator==0.1.4
     # via
     #   -r requirements-tests.txt
     #   openapi-schema-validator
-rich==13.5.3
+rich==13.6.0
     # via
     #   -r requirements-tests.txt
     #   bandit
     #   flask-limiter
-rpds-py==0.10.3
+rpds-py==0.10.6
     # via
     #   -r requirements-tests.txt
     #   jsonschema
@@ -693,7 +693,7 @@ tzdata==2023.3
     # via
     #   -r requirements-tests.txt
     #   celery
-urllib3==1.26.16
+urllib3==2.0.7
     # via
     #   -r requirements-tests.txt
     #   botocore
@@ -708,11 +708,11 @@ vine==5.0.0
     #   amqp
     #   celery
     #   kombu
-wcwidth==0.2.6
+wcwidth==0.2.8
     # via
     #   -r requirements-tests.txt
     #   prompt-toolkit
-websocket-client==1.6.3
+websocket-client==1.6.4
     # via
     #   -r requirements-tests.txt
     #   docker
