@@ -361,14 +361,16 @@ mdurl==0.1.2
     # via
     #   -r requirements-tests.txt
     #   markdown-it-py
-moto[all]==4.2.4
-    # via
-    #   -r requirements-tests.txt
-    #   moto
+moto[all]==4.2.5
+    # via -r requirements-tests.txt
 mpmath==1.3.0
     # via
     #   -r requirements-tests.txt
     #   sympy
+multipart==0.2.4
+    # via
+    #   -r requirements-tests.txt
+    #   moto
 mypy-extensions==1.0.0
     # via
     #   -r requirements-tests.txt
