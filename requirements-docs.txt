@@ -153,6 +153,9 @@ cryptography==41.0.4
     #   pyopenssl
     #   python-jose
     #   sshpubkeys
+    #   types-paramiko
+    #   types-pyopenssl
+    #   types-redis
 deprecated==1.2.14
     # via limits
 distro==1.8.0
@@ -371,10 +374,13 @@ multipart==0.2.4
     # via
     #   -r requirements-tests.txt
     #   moto
+mypy==1.6.0
+    # via -r requirements-tests.txt
 mypy-extensions==1.0.0
     # via
     #   -r requirements-tests.txt
     #   black
+    #   mypy
 networkx==3.1
     # via
     #   -r requirements-tests.txt
@@ -676,12 +682,34 @@ tabulate==0.9.0
     # via -r requirements-docs.in
 twofish==0.3.0
     # via pyjks
+types-deprecated==1.2.9.3
+    # via -r requirements-tests.txt
+types-paramiko==3.3.0.0
+    # via -r requirements-tests.txt
+types-pyopenssl==23.2.0.2
+    # via
+    #   -r requirements-tests.txt
+    #   types-redis
+types-pyrfc3339==1.1.1.5
+    # via -r requirements-tests.txt
 types-python-dateutil==2.8.19.14
     # via arrow
+types-pytz==2023.3.1.1
+    # via -r requirements-tests.txt
 types-pyyaml==6.0.12.12
     # via
     #   -r requirements-tests.txt
     #   responses
+types-redis==4.6.0.7
+    # via -r requirements-tests.txt
+types-requests==2.31.0.9
+    # via -r requirements-tests.txt
+types-setuptools==68.2.0.0
+    # via -r requirements-tests.txt
+types-six==1.16.21.9
+    # via -r requirements-tests.txt
+types-tabulate==0.9.0.3
+    # via -r requirements-tests.txt
 typing-extensions==4.8.0
     # via
     #   -r requirements-tests.txt
@@ -689,6 +717,7 @@ typing-extensions==4.8.0
     #   aws-sam-translator
     #   flask-limiter
     #   limits
+    #   mypy
     #   pydantic
     #   pydantic-core
 tzdata==2023.3
@@ -697,12 +726,14 @@ tzdata==2023.3
     #   celery
 urllib3==2.0.7
     # via
+    #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   botocore
     #   docker
     #   requests
     #   responses
     #   sentry-sdk
+    #   types-requests
 vine==5.0.0
     # via
     #   -r requirements-docs.in
