@@ -11,7 +11,7 @@ ifeq ($(USER), root)
 else
 	npm install
 endif
-	pip install "setuptools>=0.9.8"
+	pip install setuptools
 	# order matters here, base package must install first
 	pip install -e .
 	pip install -e "file://`pwd`#egg=lemur[dev]"
@@ -28,7 +28,7 @@ ifeq ($(USER), root)
 else
 	npm install
 endif
-	pip install "setuptools>=0.9.8"
+	pip install setuptools
 	# order matters here, base package must install first
 	pip install -e .
 	node_modules/.bin/gulp build
@@ -118,7 +118,7 @@ endif
 	pip-compile --output-file requirements.txt requirements.in -U --no-emit-index-url --resolver=backtracking
 	pip-compile --output-file requirements-docs.txt requirements-docs.in -U --no-emit-index-url --resolver=backtracking
 	pip-compile --output-file requirements-dev.txt requirements-dev.in -U --no-emit-index-url --resolver=backtracking
-	pip-compile --output-file requirements-tests.txt requirements-tests.in -U --no-emit-index-url --resolver=backtracking
+	pip-compile --output-file requirements-tests.txt requirements-tests.in -U --no-emit-index-url --resolver=backtracking --verbose
 	@echo "--> Done updating Python requirements"
 	@echo "--> Removing python-ldap from requirements-docs.txt"
 	grep -v "python-ldap" requirements-docs.txt > tempreqs && mv tempreqs requirements-docs.txt

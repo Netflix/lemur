@@ -4,20 +4,5 @@ flake8
 pre-commit
 invoke
 twine
-marshmallow-sqlalchemy
-marshmallow
 nodeenv
-pyyaml
-sqlalchemy
-urllib3
-mypy
-types-tabulate
-types-six
-types-setuptools
-types-pytz
-types-pyRFC3339
-types-Deprecated
-types-requests
-types-pyOpenSSL
-types-paramiko
-types-redis
+-r requirements-tests.txt

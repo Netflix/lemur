@@ -1,20 +1,12 @@
 # Run `make up-reqs` to update pinned dependencies in requirement text files
-
+-r requirements.txt
 bandit
 black
 coverage
-celery[redis]
-certbot
 factory-boy
 Faker
 fakeredis
-flask
-flask-migrate
 freezegun
-itsdangerous
-jinja2
-marshmallow-sqlalchemy
-marshmallow
 moto[all]
 nose
 openapi-spec-validator
@@ -22,11 +14,7 @@ pyflakes
 pytest
 pytest-flask
 pytest-mock
-redis
 requests-mock
-sqlalchemy
-pyyaml
-werkzeug
 mypy
 types-tabulate
 types-six
@@ -38,4 +26,3 @@ types-requests
 types-pyOpenSSL
 types-paramiko
 types-redis
-urllib3
