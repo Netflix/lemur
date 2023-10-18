@@ -351,6 +351,7 @@ class CertificateOutputSchema(LemurOutputSchema):
         data['serial_hex'] = hex(int(data['serial']))
         return data
 
+
 class CertificateShortOutputSchema(LemurOutputSchema):
     id = fields.Integer()
     name = fields.String()
