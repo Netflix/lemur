@@ -39,6 +39,14 @@ jobs:
         ports:
           # Maps tcp port 5432 on service container to the host
           - 5432:5432
+      db-setup:
+        image: postgres
+        env:
+          POSTGRES_USER: lemur
+          POSTGRES_PASSWORD: lemur
+        script: psql -U lemur -c 'CREATE EXTENSION IF NOT EXISTS pg_trgm'
+        depends_on:
+          - postgres
 
     env:
       TOXENV: ${{ matrix.toxenv }}
