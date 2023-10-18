@@ -7,30 +7,28 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
-from sqlalchemy.orm.exc import NoResultFound
-
 from marshmallow import fields, post_load, pre_load, post_dump
 from marshmallow.exceptions import ValidationError
+from sqlalchemy.orm.exc import NoResultFound
 
+from lemur.authorities.models import Authority
+from lemur.certificates.models import Certificate
 from lemur.common import validators
-from lemur.common.schema import LemurSchema, LemurInputSchema, LemurOutputSchema
 from lemur.common.fields import (
     KeyUsageExtension,
     ExtendedKeyUsageExtension,
     BasicConstraintsExtension,
     SubjectAlternativeNameExtension,
 )
-
+from lemur.common.schema import LemurSchema, LemurInputSchema, LemurOutputSchema
+from lemur.destinations.models import Destination
+from lemur.dns_providers.models import DnsProvider
+from lemur.notifications.models import Notification
 from lemur.plugins import plugins
 from lemur.plugins.utils import get_plugin_option
+from lemur.policies.models import RotationPolicy
 from lemur.roles.models import Role
 from lemur.users.models import User
-from lemur.authorities.models import Authority
-from lemur.dns_providers.models import DnsProvider
-from lemur.policies.models import RotationPolicy
-from lemur.certificates.models import Certificate
-from lemur.destinations.models import Destination
-from lemur.notifications.models import Notification
 
 
 def validate_options(options):
@@ -244,7 +242,7 @@ class PluginOutputSchema(LemurOutputSchema):
     label = fields.String()
     description = fields.String()
     active = fields.Boolean()
-    options = fields.List(fields.Dict(), dump_to="pluginOptions")
+    options = fields.List(fields.Dict(), data_key="pluginOptions")
     slug = fields.String()
     title = fields.String()
 
@@ -312,11 +310,11 @@ class ExtensionSchema(BaseExtensionSchema):
     key_usage = KeyUsageExtension()
     extended_key_usage = ExtendedKeyUsageExtension()
     subject_key_identifier = fields.Nested(SubjectKeyIdentifierSchema)
-    sub_alt_names = fields.Nested(NamesSchema, missing={"names": []})
+    sub_alt_names = fields.Nested(NamesSchema, load_default={"names": []})
     authority_key_identifier = fields.Nested(AuthorityKeyIdentifierSchema)
     certificate_info_access = fields.Nested(CertificateInfoAccessSchema)
     crl_distribution_points = fields.Nested(
-        CRLDistributionPointsSchema, dump_to="cRL_distribution_points"
+        CRLDistributionPointsSchema, data_key="cRL_distribution_points"
     )
     # FIXME: Convert custom OIDs to a custom field in fields.py like other Extensions
     # FIXME: Remove support in UI for Critical custom extensions https://github.com/Netflix/lemur/issues/665

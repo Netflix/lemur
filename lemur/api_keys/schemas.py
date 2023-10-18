@@ -23,7 +23,7 @@ def current_user_id():
 class ApiKeyInputSchema(LemurInputSchema):
     name = fields.String(required=False)
     user = fields.Nested(
-        UserInputSchema, missing=current_user_id, default=current_user_id
+        UserInputSchema, load_default=current_user_id, dump_default=current_user_id
     )
     ttl = fields.Integer()
 

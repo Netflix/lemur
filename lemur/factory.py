@@ -14,11 +14,11 @@ import importlib
 import os
 import socket
 import stat
+from importlib.metadata import entry_points
 from logging import Formatter, StreamHandler
 from logging.handlers import RotatingFileHandler
 
 import logmatic
-import pkg_resources
 import sentry_sdk
 from click import get_current_context
 from flask import Flask, current_app
@@ -256,12 +256,7 @@ def install_plugins(app):
     from lemur.plugins import plugins
     from lemur.plugins.base import register
 
-    # entry_points={
-    #    'lemur.plugins': [
-    #         'verisign = lemur_verisign.plugin:VerisignPlugin'
-    #     ],
-    # },
-    for ep in pkg_resources.iter_entry_points("lemur.plugins"):
+    for ep in entry_points("lemur.plugins"):
         try:
             plugin = ep.load()
         except Exception:
