@@ -163,8 +163,7 @@ IDP_CREATE_PER_USER_ROLE = True  # Generates Lemur role for each user (allows ce
 
 
 def create_all():
-    with database.db.engine.connect() as conn:
-        conn.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
+    database.db.engine.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
     database.db.create_all()
     stamp(revision="head")
 

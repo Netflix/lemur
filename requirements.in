@@ -49,7 +49,7 @@ retrying
 sentry-sdk
 six
 SQLAlchemy-Utils
-sqlalchemy
+sqlalchemy<2  # complete https://docs.sqlalchemy.org/en/20/changelog/migration_20.html first
 tabulate
 validators
 werkzeug

@@ -127,7 +127,7 @@ flask-replicated==2.1
     # via -r requirements.in
 flask-restful==0.3.10
     # via -r requirements.in
-flask-sqlalchemy==3.1.1
+flask-sqlalchemy==3.0.5
     # via
     #   -r requirements.in
     #   flask-migrate
@@ -298,7 +298,7 @@ six==1.16.0
     #   retrying
 soupsieve==2.5
     # via beautifulsoup4
-sqlalchemy==2.0.22
+sqlalchemy==1.4.49
     # via
     #   -r requirements.in
     #   alembic
@@ -319,7 +319,6 @@ typing-extensions==4.8.0
     #   flask-limiter
     #   kombu
     #   limits
-    #   sqlalchemy
 tzdata==2023.3
     # via celery
 urllib3==1.26.18
