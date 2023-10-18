@@ -24,9 +24,9 @@ class UserInputSchema(LemurInputSchema):
     email = fields.Email(required=True)
     password = fields.String()
     active = fields.Boolean()
-    roles = fields.Nested(AssociatedRoleSchema, many=True, load_default=[])
-    certificates = fields.Nested(AssociatedCertificateSchema, many=True, load_default=[])
-    authorities = fields.Nested(AssociatedAuthoritySchema, many=True, load_default=[])
+    roles = fields.Nested(AssociatedRoleSchema, many=True, missing=[])
+    certificates = fields.Nested(AssociatedCertificateSchema, many=True, missing=[])
+    authorities = fields.Nested(AssociatedAuthoritySchema, many=True, missing=[])
 
 
 class UserCreateInputSchema(UserInputSchema):

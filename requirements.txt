@@ -37,9 +37,9 @@ blinker==1.6.3
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.28.65
+boto3==1.28.66
     # via -r requirements.in
-botocore==1.31.65
+botocore==1.31.66
     # via
     #   -r requirements.in
     #   boto3
@@ -184,11 +184,11 @@ markupsafe==2.1.3
     #   jinja2
     #   mako
     #   werkzeug
-marshmallow==3.20.1
+marshmallow==2.21.0
     # via
     #   -r requirements.in
     #   marshmallow-sqlalchemy
-marshmallow-sqlalchemy==0.28.2
+marshmallow-sqlalchemy==0.23.1
     # via -r requirements.in
 mdurl==0.1.2
     # via markdown-it-py
@@ -200,8 +200,6 @@ packaging==23.2
     # via
     #   gunicorn
     #   limits
-    #   marshmallow
-    #   marshmallow-sqlalchemy
 paramiko==3.3.1
     # via -r requirements.in
 parsedatetime==2.6

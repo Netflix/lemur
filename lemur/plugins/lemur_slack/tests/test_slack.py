@@ -11,7 +11,7 @@ def test_formatting(certificate):
     from lemur.plugins.lemur_slack.plugin import create_expiration_attachments
     from lemur.certificates.schemas import certificate_notification_output_schema
 
-    data = [certificate_notification_output_schema.dump(certificate)]
+    data = [certificate_notification_output_schema.dump(certificate).data]
 
     attachment = {
         "title": certificate.name,

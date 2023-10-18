@@ -125,16 +125,16 @@ def unwrap_pagination(data, output_schema):
                 return data
 
             marshaled_data = {"total": data["total"]}
-            marshaled_data["items"] = output_schema.dump(data["items"], many=True)
+            marshaled_data["items"] = output_schema.dump(data["items"], many=True).data
             return marshaled_data
 
-        return output_schema.dump(data)
+        return output_schema.dump(data).data
 
     elif isinstance(data, list):
         marshaled_data = {"total": len(data)}
-        marshaled_data["items"] = output_schema.dump(data, many=True)
+        marshaled_data["items"] = output_schema.dump(data, many=True).data
         return marshaled_data
-    return output_schema.dump(data)
+    return output_schema.dump(data).data
 
 
 def validate_schema(input_schema, output_schema):

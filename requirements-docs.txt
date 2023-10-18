@@ -80,13 +80,13 @@ blinker==1.6.3
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.28.65
+boto3==1.28.66
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
-botocore==1.31.65
+botocore==1.31.66
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -424,12 +424,12 @@ markupsafe==2.1.3
     #   jinja2
     #   mako
     #   werkzeug
-marshmallow==3.20.1
+marshmallow==2.21.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   marshmallow-sqlalchemy
-marshmallow-sqlalchemy==0.28.2
+marshmallow-sqlalchemy==0.23.1
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -483,8 +483,6 @@ packaging==23.2
     #   docker
     #   gunicorn
     #   limits
-    #   marshmallow
-    #   marshmallow-sqlalchemy
     #   pytest
     #   sphinx
 paramiko==3.3.1

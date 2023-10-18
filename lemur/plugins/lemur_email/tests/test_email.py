@@ -25,13 +25,13 @@ def test_render_expiration(certificate, endpoint):
     new_cert = CertificateFactory()
     new_cert.replaces.append(certificate)
 
-    assert render_html("expiration", get_options(), [certificate_notification_output_schema.dump(certificate)])
+    assert render_html("expiration", get_options(), [certificate_notification_output_schema.dump(certificate).data])
 
 
 def test_render_revocation(certificate, endpoint):
     certificate.endpoints.append(endpoint)
 
-    assert render_html("revocation", get_options(), certificate_notification_output_schema.dump(certificate))
+    assert render_html("revocation", get_options(), certificate_notification_output_schema.dump(certificate).data)
 
 
 def test_render_rotation(certificate, endpoint):
@@ -39,11 +39,11 @@ def test_render_rotation(certificate, endpoint):
     new_cert.replaces.append(certificate)
     new_cert.endpoints.append(endpoint)
 
-    assert render_html("rotation", get_options(), certificate_notification_output_schema.dump(new_cert))
+    assert render_html("rotation", get_options(), certificate_notification_output_schema.dump(new_cert).data)
 
 
 def test_render_reissue_failed(certificate):
-    assert render_html("reissue_failed", get_options(), certificate_notification_output_schema.dump(certificate))
+    assert render_html("reissue_failed", get_options(), certificate_notification_output_schema.dump(certificate).data)
 
 
 def test_render_reissued_with_no_endpoints(certificate):
@@ -51,11 +51,11 @@ def test_render_reissued_with_no_endpoints(certificate):
     new_cert.replaces.append(certificate)
 
     assert render_html("reissued_with_no_endpoints", get_options(),
-                       certificate_notification_output_schema.dump(new_cert))
+                       certificate_notification_output_schema.dump(new_cert).data)
 
 
 def test_render_rotation_failure(pending_certificate):
-    assert render_html("failed", get_options(), certificate_notification_output_schema.dump(pending_certificate))
+    assert render_html("failed", get_options(), certificate_notification_output_schema.dump(pending_certificate).data)
 
 
 def test_render_expiration_summary(certificate, notification, notification_plugin):
@@ -95,7 +95,7 @@ def test_render_expiration_summary(certificate, notification, notification_plugi
 def test_render_expiring_deployed_certificate(certificate):
     verify_sender_email()
 
-    cert_data = certificate_notification_output_schema.dump(certificate)
+    cert_data = certificate_notification_output_schema.dump(certificate).data
     cert_data['domains_and_ports'] = [{'domain': 'subdomain.example.com', 'ports': [443]},
                                       {'domain': 'example.com', 'ports': [443, 444]}]
 

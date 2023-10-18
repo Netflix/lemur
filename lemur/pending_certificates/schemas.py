@@ -24,7 +24,7 @@ from lemur.users.schemas import UserNestedOutputSchema
 
 class PendingCertificateSchema(LemurInputSchema):
     owner = fields.Email(required=True)
-    description = fields.String(load_default="", allow_none=True)
+    description = fields.String(missing="", allow_none=True)
 
 
 class PendingCertificateOutputSchema(LemurOutputSchema):
@@ -32,7 +32,7 @@ class PendingCertificateOutputSchema(LemurOutputSchema):
     external_id = fields.String()
     csr = fields.String()
     chain = fields.String()
-    deleted = fields.Boolean(dump_default=False)
+    deleted = fields.Boolean(default=False)
     description = fields.String()
     issuer = fields.String()
     name = fields.String()
@@ -44,8 +44,11 @@ class PendingCertificateOutputSchema(LemurOutputSchema):
 
     rotation = fields.Boolean()
 
+    # Note aliasing is the first step in deprecating these fields.
+    notify = fields.Boolean()
     active = fields.Boolean(attribute="notify")
 
+    cn = fields.String()
     common_name = fields.String(attribute="cn")
 
     owner = fields.Email()
@@ -62,7 +65,7 @@ class PendingCertificateOutputSchema(LemurOutputSchema):
     replaces = fields.Nested(CertificateNestedOutputSchema, many=True)
     authority = fields.Nested(AuthorityNestedOutputSchema)
     roles = fields.Nested(RoleNestedOutputSchema, many=True)
-    endpoints = fields.Nested(EndpointNestedOutputSchema, many=True, load_default=[])
+    endpoints = fields.Nested(EndpointNestedOutputSchema, many=True, missing=[])
     replaced_by = fields.Nested(
         CertificateNestedOutputSchema, many=True, attribute="replaced"
     )
@@ -75,10 +78,10 @@ class PendingCertificateEditInputSchema(PendingCertificateSchema):
     notify = fields.Boolean()
     rotation = fields.Boolean()
 
-    destinations = fields.Nested(AssociatedDestinationSchema, load_default=[], many=True)
-    notifications = fields.Nested(AssociatedNotificationSchema, load_default=[], many=True)
-    replaces = fields.Nested(AssociatedCertificateSchema, load_default=[], many=True)
-    roles = fields.Nested(AssociatedRoleSchema, load_default=[], many=True)
+    destinations = fields.Nested(AssociatedDestinationSchema, missing=[], many=True)
+    notifications = fields.Nested(AssociatedNotificationSchema, missing=[], many=True)
+    replaces = fields.Nested(AssociatedCertificateSchema, missing=[], many=True)
+    roles = fields.Nested(AssociatedRoleSchema, missing=[], many=True)
 
     @post_load
     def enforce_notifications(self, data):
@@ -105,9 +108,9 @@ class PendingCertificateCancelSchema(LemurInputSchema):
 
 
 class PendingCertificateUploadInputSchema(LemurInputSchema):
-    external_id = fields.String(load_default=None, allow_none=True)
+    external_id = fields.String(missing=None, allow_none=True)
     body = fields.String(required=True)
-    chain = fields.String(load_default=None, allow_none=True)
+    chain = fields.String(missing=None, allow_none=True)
 
     @validates_schema
     def validate_cert_chain(self, data):

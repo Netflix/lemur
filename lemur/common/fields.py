@@ -54,8 +54,8 @@ class ArrowDateTime(Field):
     }
 
     DATEFORMAT_DESERIALIZATION_FUNCS = {
-        "iso": utils.from_iso_datetime,
-        "iso8601": utils.from_iso_datetime,
+        "iso": utils.from_iso,
+        "iso8601": utils.from_iso,
         "rfc": utils.from_rfc,
         "rfc822": utils.from_rfc,
     }
@@ -86,7 +86,7 @@ class ArrowDateTime(Field):
         format_func = self.DATEFORMAT_SERIALIZATION_FUNCS.get(self.dateformat, None)
         if format_func:
             try:
-                return format_func(value)
+                return format_func(value, localtime=self.localtime)
             except (AttributeError, ValueError) as err:
                 self.fail("format", input=value)
         else:

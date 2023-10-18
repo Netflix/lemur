@@ -36,41 +36,41 @@ class AuthorityInputSchema(LemurInputSchema):
 
     # certificate body fields
     organizational_unit = fields.String(
-        load_default=lambda: current_app.config.get("LEMUR_DEFAULT_ORGANIZATIONAL_UNIT")
+        missing=lambda: current_app.config.get("LEMUR_DEFAULT_ORGANIZATIONAL_UNIT")
     )
     organization = fields.String(
-        load_default=lambda: current_app.config.get("LEMUR_DEFAULT_ORGANIZATION")
+        missing=lambda: current_app.config.get("LEMUR_DEFAULT_ORGANIZATION")
     )
     location = fields.String(
-        load_default=lambda: current_app.config.get("LEMUR_DEFAULT_LOCATION")
+        missing=lambda: current_app.config.get("LEMUR_DEFAULT_LOCATION")
     )
     country = fields.String(
-        load_default=lambda: current_app.config.get("LEMUR_DEFAULT_COUNTRY")
+        missing=lambda: current_app.config.get("LEMUR_DEFAULT_COUNTRY")
     )
-    state = fields.String(load_default=lambda: current_app.config.get("LEMUR_DEFAULT_STATE"))
+    state = fields.String(missing=lambda: current_app.config.get("LEMUR_DEFAULT_STATE"))
     # Creating a String field instead of Email to allow empty value
     email = fields.String()
 
     plugin = fields.Nested(PluginInputSchema)
 
     # signing related options
-    type = fields.String(validate=validate.OneOf(["root", "subca"]), load_default="root")
+    type = fields.String(validate=validate.OneOf(["root", "subca"]), missing="root")
     parent = fields.Nested(AssociatedAuthoritySchema)
     signing_algorithm = fields.String(
         validate=validate.OneOf(["sha256WithRSA", "sha1WithRSA",
                                  "sha256WithECDSA", "SHA384withECDSA", "SHA512withECDSA", "sha384WithECDSA",
                                  "sha512WithECDSA"]),
-        load_default="sha256WithRSA",
+        missing="sha256WithRSA",
     )
     key_type = fields.String(
-        validate=validate.OneOf(CERTIFICATE_KEY_TYPES), load_default="RSA2048"
+        validate=validate.OneOf(CERTIFICATE_KEY_TYPES), missing="RSA2048"
     )
     key_name = fields.String()
     sensitivity = fields.String(
-        validate=validate.OneOf(["medium", "high"]), load_default="medium"
+        validate=validate.OneOf(["medium", "high"]), missing="medium"
     )
     serial_number = fields.Integer()
-    first_serial = fields.Integer(load_default=1)
+    first_serial = fields.Integer(missing=1)
 
     extensions = fields.Nested(ExtensionSchema)
 
@@ -96,7 +96,7 @@ class AuthorityInputSchema(LemurInputSchema):
 class AuthorityUpdateSchema(LemurInputSchema):
     owner = fields.Email(required=True)
     description = fields.String()
-    active = fields.Boolean(load_default=True)
+    active = fields.Boolean(missing=True)
     roles = fields.Nested(AssociatedRoleSchema(many=True))
 
 

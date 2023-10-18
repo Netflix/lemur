@@ -242,7 +242,7 @@ class PluginOutputSchema(LemurOutputSchema):
     label = fields.String()
     description = fields.String()
     active = fields.Boolean()
-    options = fields.List(fields.Dict(), data_key="pluginOptions")
+    options = fields.List(fields.Dict(), dump_to="pluginOptions")
     slug = fields.String()
     title = fields.String()
 
@@ -310,11 +310,11 @@ class ExtensionSchema(BaseExtensionSchema):
     key_usage = KeyUsageExtension()
     extended_key_usage = ExtendedKeyUsageExtension()
     subject_key_identifier = fields.Nested(SubjectKeyIdentifierSchema)
-    sub_alt_names = fields.Nested(NamesSchema, load_default={"names": []})
+    sub_alt_names = fields.Nested(NamesSchema, missing={"names": []})
     authority_key_identifier = fields.Nested(AuthorityKeyIdentifierSchema)
     certificate_info_access = fields.Nested(CertificateInfoAccessSchema)
     crl_distribution_points = fields.Nested(
-        CRLDistributionPointsSchema, data_key="cRL_distribution_points"
+        CRLDistributionPointsSchema, dump_to="cRL_distribution_points"
     )
     # FIXME: Convert custom OIDs to a custom field in fields.py like other Extensions
     # FIXME: Remove support in UI for Critical custom extensions https://github.com/Netflix/lemur/issues/665

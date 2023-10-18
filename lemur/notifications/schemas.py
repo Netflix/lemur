@@ -21,9 +21,9 @@ class NotificationInputSchema(LemurInputSchema):
     description = fields.String()
     active = fields.Boolean()
     plugin = fields.Nested(PluginInputSchema, required=True)
-    certificates = fields.Nested(AssociatedCertificateSchema, many=True, load_default=[])
-    added_certificates = fields.Nested(AssociatedCertificateSchema, many=True, load_default=[])
-    removed_certificates = fields.Nested(AssociatedCertificateSchema, many=True, load_default=[])
+    certificates = fields.Nested(AssociatedCertificateSchema, many=True, missing=[])
+    added_certificates = fields.Nested(AssociatedCertificateSchema, many=True, missing=[])
+    removed_certificates = fields.Nested(AssociatedCertificateSchema, many=True, missing=[])
 
 
 class NotificationOutputSchema(LemurOutputSchema):

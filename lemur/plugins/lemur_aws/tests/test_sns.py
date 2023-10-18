@@ -15,7 +15,7 @@ from lemur.tests.test_messaging import verify_sender_email
 
 @mock_sns()
 def test_format_nonexpiration(certificate, endpoint):
-    data = [certificate_notification_output_schema.dump(certificate)]
+    data = [certificate_notification_output_schema.dump(certificate).data]
 
     for certificate in data:
         expected_message = {
@@ -36,7 +36,7 @@ def test_format_nonexpiration(certificate, endpoint):
 
 @mock_sns()
 def test_format_expiration(certificate, endpoint):
-    data = [certificate_notification_output_schema.dump(certificate)]
+    data = [certificate_notification_output_schema.dump(certificate).data]
     options = get_options()
 
     for certificate in data:
@@ -73,7 +73,7 @@ def create_and_subscribe_to_topic():
 @mock_sns()
 @mock_sqs()
 def test_publish(certificate, endpoint):
-    data = [certificate_notification_output_schema.dump(certificate)]
+    data = [certificate_notification_output_schema.dump(certificate).data]
 
     topic_arn, sqs_client, queue_url = create_and_subscribe_to_topic()
 
@@ -123,7 +123,7 @@ def test_send_expiration_notification():
 
     received_messages = sqs_client.receive_message(QueueUrl=queue_url)["Messages"]
     assert len(received_messages) == 1
-    expected_message = format_message(certificate_notification_output_schema.dump(certificate), "expiration",
+    expected_message = format_message(certificate_notification_output_schema.dump(certificate).data, "expiration",
                                       notification.options)
     actual_message = json.loads(received_messages[0]["Body"])["Message"]
     assert actual_message == expected_message
@@ -159,7 +159,7 @@ def test_send_expiration_notification_email_disabled():
 
     received_messages = sqs_client.receive_message(QueueUrl=queue_url)["Messages"]
     assert len(received_messages) == 1
-    expected_message = format_message(certificate_notification_output_schema.dump(certificate), "expiration",
+    expected_message = format_message(certificate_notification_output_schema.dump(certificate).data, "expiration",
                                       notification.options)
     actual_message = json.loads(received_messages[0]["Body"])["Message"]
     assert actual_message == expected_message

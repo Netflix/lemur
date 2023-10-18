@@ -67,12 +67,12 @@ blinker==1.6.3
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.28.65
+boto3==1.28.66
     # via
     #   -r requirements.txt
     #   aws-sam-translator
     #   moto
-botocore==1.31.65
+botocore==1.31.66
     # via
     #   -r requirements.txt
     #   aws-xray-sdk
@@ -81,6 +81,7 @@ botocore==1.31.65
     #   s3transfer
 celery[redis]==5.3.4
     # via
+    #   -r requirements-tests.in
     #   -r requirements.txt
     #   celery
 certbot==2.7.1
@@ -329,11 +330,11 @@ markupsafe==2.1.3
     #   jinja2
     #   mako
     #   werkzeug
-marshmallow==3.20.1
+marshmallow==2.21.0
     # via
     #   -r requirements.txt
     #   marshmallow-sqlalchemy
-marshmallow-sqlalchemy==0.28.2
+marshmallow-sqlalchemy==0.23.1
     # via -r requirements.txt
 mdurl==0.1.2
     # via
@@ -374,8 +375,6 @@ packaging==23.2
     #   docker
     #   gunicorn
     #   limits
-    #   marshmallow
-    #   marshmallow-sqlalchemy
     #   pytest
 paramiko==3.3.1
     # via -r requirements.txt

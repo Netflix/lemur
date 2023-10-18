@@ -163,7 +163,7 @@ def get_eligible_security_summary_certs(exclude=None):
                                             lambda x: (x.not_after - now).days):
         cert_data = []
         for certificate in interval_certs:
-            cert_data.append(certificate_notification_output_schema.dump(certificate))
+            cert_data.append(certificate_notification_output_schema.dump(certificate).data)
         interval_data = {"interval": interval, "certificates": cert_data}
         message_data.append(interval_data)
 
@@ -260,7 +260,7 @@ def send_expiration_notifications(exclude, disabled_notification_plugins, disabl
                     n, certificate = data
                     cert_data = certificate_notification_output_schema.dump(
                         certificate
-                    )
+                    ).data
                     notification_data.append(cert_data)
                     cert_ids.append(certificate.id)
 
@@ -316,7 +316,7 @@ def send_authority_expiration_notifications():
             for certificate in certificates:
                 cert_data = certificate_notification_output_schema.dump(
                     certificate
-                )
+                ).data
                 cert_data['self_signed'] = is_selfsigned(certificate.parsed_cert)
                 cert_data['issued_cert_count'] = certificates_service.get_issued_cert_count_for_authority(certificate.root_authority)
                 notification_data.append(cert_data)
@@ -381,14 +381,14 @@ def send_default_notification(notification_type, data, targets, notification_opt
 
 
 def send_revocation_notification(certificate):
-    data = certificate_notification_output_schema.dump(certificate)
+    data = certificate_notification_output_schema.dump(certificate).data
     data["security_email"] = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
     email_tags = {"cert_id": certificate.id, "cert_name": certificate.name, "owner": certificate.owner}
     return send_default_notification("revocation", data, [data["owner"]], email_tags=email_tags)
 
 
 def send_rotation_notification(certificate):
-    data = certificate_notification_output_schema.dump(certificate)
+    data = certificate_notification_output_schema.dump(certificate).data
     data["security_email"] = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
     email_tags = {"cert_id": certificate.id, "cert_name": certificate.name, "owner": certificate.owner}
     return send_default_notification("rotation", data, [data["owner"]], email_tags=email_tags)
@@ -404,7 +404,7 @@ def send_reissue_no_endpoints_notification(old_cert, new_cert):
             has_excluded_destination = excluded_destinations and old_cert.destinations and \
                 [d for d in old_cert.destinations if d.label in excluded_destinations]
             if not has_excluded_destination:
-                data = certificate_notification_output_schema.dump(new_cert)
+                data = certificate_notification_output_schema.dump(new_cert).data
                 data["security_email"] = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
                 email_recipients = [data["owner"]] + data["security_email"]
                 email_tags = {"old_cert_id": old_cert.id, "new_cert_id": new_cert.id, "new_cert_name": new_cert.name,
@@ -419,7 +419,7 @@ def send_reissue_no_endpoints_notification(old_cert, new_cert):
 
 def send_reissue_failed_notification(certificate):
     try:
-        data = certificate_notification_output_schema.dump(certificate)
+        data = certificate_notification_output_schema.dump(certificate).data
         data["security_email"] = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
         email_recipients = [data["owner"]] + data["security_email"]
         email_tags = {"cert_id": certificate.id, "cert_name": certificate.name, "owner": certificate.owner}
@@ -442,7 +442,7 @@ def send_pending_failure_notification(
     :return:
     """
 
-    data = pending_certificate_output_schema.dump(pending_cert)
+    data = pending_certificate_output_schema.dump(pending_cert).data
     data["security_email"] = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
 
     email_recipients = []
@@ -525,7 +525,7 @@ def send_expiring_deployed_certificate_notifications(certificates):
         # for now, we'll just email the security team
         email_recipients = security_email
         for certificate, domains_and_ports in owner_certs:
-            cert_data = certificate_notification_output_schema.dump(certificate)
+            cert_data = certificate_notification_output_schema.dump(certificate).data
             # we add the domain info into the cert dump in order to reuse existing common email formatting logic
             domain_and_port_data = []
             for domain, ports in domains_and_ports.items():
