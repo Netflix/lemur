@@ -31,7 +31,7 @@ itsdangerous
 josepy
 logmatic-python
 marshmallow-sqlalchemy
-sqlalchemy<2  # complete https://docs.sqlalchemy.org/en/20/changelog/migration_20.html first
+sqlalchemy < 1.4.0 # ImportError: cannot import name '_ColumnEntity' https://github.com/sqlalchemy/sqlalchemy/issues/6226
 marshmallow
 paramiko  # required for the SFTP destination plugin
 pem

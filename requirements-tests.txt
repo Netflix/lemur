@@ -99,7 +99,7 @@ cffi==1.16.0
     #   -r requirements.txt
     #   cryptography
     #   pynacl
-cfn-lint==0.82.1
+cfn-lint==0.82.2
     # via moto
 charset-normalizer==3.3.0
     # via
@@ -181,7 +181,7 @@ exceptiongroup==1.1.3
     # via pytest
 factory-boy==3.3.0
     # via -r requirements-tests.in
-faker==19.10.0
+faker==19.11.0
     # via
     #   -r requirements-tests.in
     #   factory-boy
@@ -215,7 +215,7 @@ flask-replicated==2.1
     # via -r requirements.txt
 flask-restful==0.3.10
     # via -r requirements.txt
-flask-sqlalchemy==3.0.5
+flask-sqlalchemy==2.5.1
     # via
     #   -r requirements.txt
     #   flask-migrate
@@ -333,7 +333,7 @@ marshmallow==3.20.1
     # via
     #   -r requirements.txt
     #   marshmallow-sqlalchemy
-marshmallow-sqlalchemy==0.29.0
+marshmallow-sqlalchemy==0.28.2
     # via -r requirements.txt
 mdurl==0.1.2
     # via
@@ -586,7 +586,7 @@ soupsieve==2.5
     # via
     #   -r requirements.txt
     #   beautifulsoup4
-sqlalchemy==1.4.49
+sqlalchemy==1.3.24
     # via
     #   -r requirements.txt
     #   alembic
@@ -601,8 +601,6 @@ stevedore==5.1.0
     # via bandit
 sympy==1.12
     # via cfn-lint
-tabulate==0.9.0
-    # via -r requirements.txt
 tomli==2.0.1
     # via
     #   black

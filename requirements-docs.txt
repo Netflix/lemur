@@ -117,7 +117,7 @@ cffi==1.16.0
     #   -r requirements-tests.txt
     #   cryptography
     #   pynacl
-cfn-lint==0.82.1
+cfn-lint==0.82.2
     # via
     #   -r requirements-tests.txt
     #   moto
@@ -218,7 +218,7 @@ exceptiongroup==1.1.3
     #   pytest
 factory-boy==3.3.0
     # via -r requirements-tests.txt
-faker==19.10.0
+faker==19.11.0
     # via
     #   -r requirements-tests.txt
     #   factory-boy
@@ -269,7 +269,7 @@ flask-restful==0.3.10
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
-flask-sqlalchemy==3.0.5
+flask-sqlalchemy==2.5.1
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -429,7 +429,7 @@ marshmallow==3.20.1
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   marshmallow-sqlalchemy
-marshmallow-sqlalchemy==0.29.0
+marshmallow-sqlalchemy==0.28.2
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -775,7 +775,7 @@ sphinxcontrib-qthelp==1.0.6
     # via sphinx
 sphinxcontrib-serializinghtml==1.1.9
     # via sphinx
-sqlalchemy==1.4.49
+sqlalchemy==1.3.24
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -800,9 +800,7 @@ sympy==1.12
     #   -r requirements-tests.txt
     #   cfn-lint
 tabulate==0.9.0
-    # via
-    #   -r requirements-docs.in
-    #   -r requirements-tests.txt
+    # via -r requirements-docs.in
 tomli==2.0.1
     # via
     #   -r requirements-tests.txt
