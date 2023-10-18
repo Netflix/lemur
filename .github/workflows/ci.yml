@@ -54,10 +54,9 @@ jobs:
       FORCE_COLOR: 1
 
     steps:
-      - name: Apply PostgreSQL extension
-        run: |
-          echo "CREATE EXTENSION IF NOT EXISTS pg_trgm;" | psql -h localhost -U lemur -d lemur
       - uses: actions/checkout@v4
+      - name: Apply PostgreSQL extension
+        run: echo "CREATE EXTENSION IF NOT EXISTS pg_trgm;" | psql -h localhost -U lemur -d lemur
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
@@ -67,16 +66,16 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
-    - name: Install dependencies
-      run: |
-        python -m venv ~/env
-        source ~/env/bin/activate
-        python -m pip install --upgrade pip
-        python -m pip install --upgrade setuptools
-        pip install bandit
-        sudo apt-get update
-        sudo apt-get install libsasl2-dev libldap2-dev xvfb
-    - name: Test
+      - name: Install dependencies
+        run: |
+          python -m venv ~/env
+          source ~/env/bin/activate
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools
+          pip install bandit
+          sudo apt-get update
+          sudo apt-get install libsasl2-dev libldap2-dev xvfb
+      - name: Test
       run: |
         python -m venv ~/env
         source ~/env/bin/activate
