@@ -39,14 +39,6 @@ jobs:
         ports:
           # Maps tcp port 5432 on service container to the host
           - 5432:5432
-      db-setup:
-        image: postgres
-        env:
-          POSTGRES_USER: lemur
-          POSTGRES_PASSWORD: lemur
-        script: psql -U lemur -c 'CREATE EXTENSION IF NOT EXISTS pg_trgm'
-        depends_on:
-          - postgres
 
     env:
       TOXENV: ${{ matrix.toxenv }}
@@ -62,16 +54,19 @@ jobs:
       FORCE_COLOR: 1
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-        cache: 'pip'
-    - name: Set up Node.js 16
-      uses: actions/setup-node@v3
-      with:
-        node-version: 16
+      - name: Apply PostgreSQL extension
+        run: |
+          echo "CREATE EXTENSION IF NOT EXISTS pg_trgm;" | psql -h localhost -U lemur -d lemur
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+      - name: Set up Node.js 16
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
     - name: Install dependencies
       run: |
         python -m venv ~/env
