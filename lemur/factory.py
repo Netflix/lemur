@@ -256,7 +256,7 @@ def install_plugins(app):
     from lemur.plugins import plugins
     from lemur.plugins.base import register
 
-    for ep in entry_points("lemur.plugins"):
+    for ep in entry_points(group="lemur.plugins"):
         try:
             plugin = ep.load()
         except Exception:
