@@ -118,7 +118,7 @@ endif
 	pip-compile --output-file requirements.txt requirements.in -U --no-emit-index-url --resolver=backtracking
 	pip-compile --output-file requirements-docs.txt requirements-docs.in -U --no-emit-index-url --resolver=backtracking
 	pip-compile --output-file requirements-dev.txt requirements-dev.in -U --no-emit-index-url --resolver=backtracking
-	pip-compile --output-file requirements-tests.txt requirements-tests.in -U --no-emit-index-url --resolver=backtracking --verbose
+	pip-compile --output-file requirements-tests.txt requirements-tests.in -U --no-emit-index-url --resolver=backtracking
 	@echo "--> Done updating Python requirements"
 	@echo "--> Removing python-ldap from requirements-docs.txt"
 	grep -v "python-ldap" requirements-docs.txt > tempreqs && mv tempreqs requirements-docs.txt
