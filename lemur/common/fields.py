@@ -86,7 +86,7 @@ class ArrowDateTime(Field):
         format_func = self.DATEFORMAT_SERIALIZATION_FUNCS.get(self.dateformat, None)
         if format_func:
             try:
-                return format_func(value, localtime=self.localtime)
+                return format_func(value)
             except (AttributeError, ValueError) as err:
                 self.fail("format", input=value)
         else:

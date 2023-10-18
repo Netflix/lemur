@@ -1,5 +1,6 @@
 import json
 import unittest
+
 from lemur.dns_providers import util as dnsutil
 from lemur.dns_providers.schemas import dns_provider_output_schema
 
@@ -29,7 +30,7 @@ def test_output_schema(dns_provider):
     # no credentials using the output schema dump
     assert dns_provider.credentials
     assert json.loads(dns_provider.credentials)["account_id"]
-    dump = dns_provider_output_schema.dump(dns_provider).data
+    dump = dns_provider_output_schema.dump(dns_provider)
     assert 'name' in dump
     assert 'credentials' not in dump
 

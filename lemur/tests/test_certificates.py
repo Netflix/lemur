@@ -1874,7 +1874,7 @@ def test_certificate_update_duplicate_destinations_not_allowed(client, crypto_au
     resp = client.put(
         api.url_for(Certificates, certificate_id=certificate.id),
         data=json.dumps(
-            certificate_output_schema.dump(certificate).data
+            certificate_output_schema.dump(certificate)
         ),
         headers=VALID_ADMIN_HEADER_TOKEN,
     )
@@ -1898,12 +1898,12 @@ def test_certificate_update_duplicate_destinations_allowed(client, crypto_author
     resp = client.put(
         api.url_for(Certificates, certificate_id=certificate.id),
         data=json.dumps(
-            certificate_output_schema.dump(certificate).data
+            certificate_output_schema.dump(certificate)
         ),
         headers=VALID_ADMIN_HEADER_TOKEN,
     )
     assert resp.status_code == 200
     resp_cert = resp.json
     assert len(resp_cert['destinations']) == 2
-    assert destination_output_schema.dump(destination1).data in resp_cert['destinations']
-    assert destination_output_schema.dump(destination2).data in resp_cert['destinations']
+    assert destination_output_schema.dump(destination1) in resp_cert['destinations']
+    assert destination_output_schema.dump(destination2) in resp_cert['destinations']

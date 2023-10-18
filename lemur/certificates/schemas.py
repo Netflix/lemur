@@ -80,6 +80,9 @@ class CertificateInputSchema(CertificateCreationSchema):
     destinations = fields.Nested(AssociatedDestinationSchema, load_default=[], many=True)
     notifications = fields.Nested(AssociatedNotificationSchema, load_default=[], many=True)
     replaces = fields.Nested(AssociatedCertificateSchema, load_default=[], many=True)
+    replacements = fields.Nested(
+        AssociatedCertificateSchema, missing=[], many=True
+    )  # deprecated
     roles = fields.Nested(AssociatedRoleSchema, load_default=[], many=True)
     dns_provider = fields.Nested(
         AssociatedDnsProviderSchema, load_default=None, allow_none=True, required=False
@@ -142,6 +145,10 @@ class CertificateInputSchema(CertificateCreationSchema):
 
     @pre_load
     def load_data(self, data):
+        if data.get("replacements"):
+            data["replaces"] = data[
+                "replacements"
+            ]  # TODO remove when field is deprecated
         if data.get("csr"):
             csr_sans = cert_utils.get_sans_from_csr(data["csr"])
             if not data.get("extensions"):
@@ -179,11 +186,17 @@ class CertificateEditInputSchema(CertificateSchema):
     destinations = fields.Nested(AssociatedDestinationSchema, load_default=[], many=True)
     notifications = fields.Nested(AssociatedNotificationSchema, load_default=[], many=True)
     replaces = fields.Nested(AssociatedCertificateSchema, load_default=[], many=True)
+    replacements = fields.Nested(
+        AssociatedCertificateSchema, missing=[], many=True
+    )  # deprecated
     roles = fields.Nested(AssociatedRoleSchema, load_default=[], many=True)
 
     @pre_load
     def load_data(self, data):
-
+        if data.get("replacements"):
+            data["replaces"] = data[
+                "replacements"
+            ]  # TODO remove when field is deprecated
         if data.get("owner"):
             # Check if role already exists. This avoids adding duplicate role.
             if data.get("roles") and any(r.get("name") == data["owner"] for r in data["roles"]):
@@ -196,7 +209,7 @@ class CertificateEditInputSchema(CertificateSchema):
             )
 
             # Put  role info in correct format using RoleNestedOutputSchema
-            owner_role_dict = RoleNestedOutputSchema().dump(owner_role).data
+            owner_role_dict = RoleNestedOutputSchema().dump(owner_role)
             if data.get("roles"):
                 data["roles"].append(owner_role_dict)
             else:
@@ -252,11 +265,11 @@ class CertificateNestedOutputSchema(LemurOutputSchema):
     notify = fields.Boolean()
     rotation_policy = fields.Nested(RotationPolicyNestedOutputSchema)
 
-    common_name = fields.String()
+    common_name = fields.String(attribute="cn")
 
-    validity_end = ArrowDateTime()
+    validity_end = ArrowDateTime(attribute="not_after")
 
-    validity_start = ArrowDateTime()
+    validity_start = ArrowDateTime(attribute="not_before")
 
     issuer = fields.Nested(AuthorityNestedOutputSchema)
 
@@ -285,15 +298,15 @@ class CertificateOutputSchema(LemurOutputSchema):
 
     rotation = fields.Boolean()
 
-    active = fields.Boolean()
+    active = fields.Boolean(attribute="notify")
     has_private_key = fields.Boolean()
 
-    common_name = fields.String()
+    common_name = fields.String(attribute="cn")
     distinguished_name = fields.String()
 
-    validity_end = ArrowDateTime()
+    validity_end = ArrowDateTime(attribute="not_after")
 
-    validity_start = ArrowDateTime()
+    validity_start = ArrowDateTime(attribute="not_before")
 
     owner = fields.Email()
     san = fields.Boolean()
@@ -442,7 +455,7 @@ class CertificateNotificationOutputSchema(LemurOutputSchema):
     name = fields.String()
     owner = fields.Email()
     user = fields.Nested(UserNestedOutputSchema)
-    validity_end = ArrowDateTime()
+    validity_end = ArrowDateTime(attribute="not_after")
     replaced_by = fields.Nested(
         CertificateNestedOutputSchema, many=True, attribute="replaced"
     )

@@ -924,7 +924,7 @@ def get_certificate_primitives(certificate):
     """
     start, end = calculate_reissue_range(certificate.not_before, certificate.not_after)
     ser = CertificateInputSchema().load(
-        CertificateOutputSchema().dump(certificate).data
+        CertificateOutputSchema().dump(certificate)
     )
     assert not ser.errors, "Error re-serializing certificate: %s" % ser.errors
     data = ser.data

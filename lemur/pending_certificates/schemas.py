@@ -44,9 +44,9 @@ class PendingCertificateOutputSchema(LemurOutputSchema):
 
     rotation = fields.Boolean()
 
-    active = fields.Boolean()
+    active = fields.Boolean(attribute="notify")
 
-    common_name = fields.String()
+    common_name = fields.String(attribute="cn")
 
     owner = fields.Email()
 
