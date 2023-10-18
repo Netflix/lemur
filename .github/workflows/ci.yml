@@ -56,7 +56,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Apply PostgreSQL extension
-        run: echo "CREATE EXTENSION IF NOT EXISTS pg_trgm;" | psql -h localhost -U lemur -d lemur -p lemur
+        run: echo "CREATE EXTENSION IF NOT EXISTS pg_trgm;" | psql -h localhost -U lemur -d lemur
         env:
           POSTGRES_PASSWORD: lemur
       - name: Set up Python ${{ matrix.python-version }}
