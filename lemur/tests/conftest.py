@@ -75,22 +75,38 @@ def app(request):
     ctx.pop()
 
 
+from sqlalchemy.orm import Session
+
+
 @pytest.fixture(scope="session")
 def db(app, request):
     _db.drop_all()
-    with _db.engine.connect() as conn:
-        conn.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
+
+    with Session(_db.engine) as session:
+        with session.begin():
+            session.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
+
     _db.create_all()
 
     _db.app = app
 
-    UserFactory()
-    r = RoleFactory(name="admin")
-    u = UserFactory(roles=[r])
-    rp = RotationPolicyFactory(name="default")
-    ApiKeyFactory(user=u)
+    with Session(_db.engine) as session:
+        with session.begin():
+            # replace with your actual model factory methods
+            user = UserFactory()
+            session.add(user)
 
-    _db.session.commit()
+            role = RoleFactory(name="admin")
+            user.roles.append(role)
+            session.add(role)
+
+            rotation_policy = RotationPolicyFactory(name="default")
+            session.add(rotation_policy)
+
+            api_key = ApiKeyFactory(user=user)
+            session.add(api_key)
+        session.commit()
+
     yield _db
     _db.drop_all()
 
