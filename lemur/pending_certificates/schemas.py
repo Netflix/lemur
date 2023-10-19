@@ -1,9 +1,9 @@
 from marshmallow import fields, validates_schema, post_load
 from marshmallow.exceptions import ValidationError
 
-from lemur.common import utils, validators
 from lemur.authorities.schemas import AuthorityNestedOutputSchema
 from lemur.certificates.schemas import CertificateNestedOutputSchema
+from lemur.common import utils, validators
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
 from lemur.destinations.schemas import DestinationNestedOutputSchema
 from lemur.domains.schemas import DomainNestedOutputSchema

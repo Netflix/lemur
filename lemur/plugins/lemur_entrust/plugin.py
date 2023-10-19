@@ -1,16 +1,17 @@
-import arrow
-import requests
 import json
 import sys
+
+import arrow
+import requests
 from flask import current_app
 from retrying import retry
-from requests.packages.urllib3.util.retry import Retry
+from urllib3.util.retry import Retry
 
+from lemur.common.utils import validate_conf, get_key_type_from_certificate
 from lemur.constants import CRLReason
+from lemur.extensions import metrics
 from lemur.plugins import lemur_entrust as entrust
 from lemur.plugins.bases import IssuerPlugin, SourcePlugin
-from lemur.extensions import metrics
-from lemur.common.utils import validate_conf, get_key_type_from_certificate
 
 
 def log_status_code(r, *args, **kwargs):

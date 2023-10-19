@@ -1,16 +1,16 @@
 import unittest
+from unittest.mock import MagicMock
 from unittest.mock import patch, Mock
 
 import josepy as jose
-
 from acme.messages import STATUS_PENDING, STATUS_VALID
 from cryptography.x509 import DNSName
 from flask import Flask, current_app
+
+from lemur.common.utils import generate_private_key
 from lemur.plugins.lemur_acme import plugin
 from lemur.plugins.lemur_acme.acme_handlers import AuthorizationRecord
-from lemur.common.utils import generate_private_key
 from lemur.tests.conf import LEMUR_ENCRYPTION_KEYS
-from unittest.mock import MagicMock
 
 
 class TestAcmeDns(unittest.TestCase):
@@ -214,7 +214,7 @@ class TestAcmeDns(unittest.TestCase):
         mock_authority = Mock()
         mock_authority.options = []
         with self.assertRaises(Exception):
-            self.acme.setup_acme_client(mock_authority)
+            self.acme.setup_acme_client_no_retry(mock_authority)
 
     @patch("lemur.plugins.lemur_acme.acme_handlers.jose.JWK.json_loads")
     @patch("lemur.plugins.lemur_acme.acme_handlers.ClientV2")

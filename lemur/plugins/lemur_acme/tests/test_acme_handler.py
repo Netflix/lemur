@@ -1,10 +1,10 @@
 import unittest
 from unittest.mock import patch, Mock
 
-from flask import Flask
 from cryptography.x509 import DNSName
-from lemur.plugins.lemur_acme import acme_handlers
+from flask import Flask
 
+from lemur.plugins.lemur_acme import acme_handlers
 from lemur.tests.vectors import (
     ACME_CHAIN_SHORT_STR,
     ACME_CHAIN_LONG_STR,
@@ -43,7 +43,7 @@ class TestAcmeHandler(unittest.TestCase):
         mock_authority = Mock()
         mock_authority.options = []
         with self.assertRaises(Exception):
-            self.acme.setup_acme_client(mock_authority)
+            self.acme.setup_acme_client_no_retry(mock_authority)
 
     def test_reuse_account_not_defined(self):
         mock_authority = Mock()
