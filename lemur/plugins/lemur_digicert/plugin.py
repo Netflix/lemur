@@ -16,20 +16,21 @@
 import copy
 import ipaddress
 import json
+import sys
 from typing import Any, Dict, List
 
 import arrow
 import pem
 import requests
-import sys
 from cryptography import x509
 from flask import current_app, g
+from retrying import retry
+from urllib3.util.retry import Retry
+
 from lemur.common.utils import validate_conf, convert_pkcs7_bytes_to_pem
 from lemur.extensions import metrics
 from lemur.plugins import lemur_digicert as digicert
 from lemur.plugins.bases import IssuerPlugin, SourcePlugin
-from retrying import retry
-from requests.packages.urllib3.util.retry import Retry
 
 
 def log_status_code(r, *args, **kwargs):
