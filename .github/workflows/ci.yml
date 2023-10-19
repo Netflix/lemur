@@ -80,6 +80,8 @@ jobs:
           make test
       - name: mypy
         run: |
+          python -m venv ~/env
+          source ~/env/bin/activate
           mypy .
       - name: Test JS
         run: |
