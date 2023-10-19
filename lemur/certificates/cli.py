@@ -5,13 +5,17 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import sys
-from time import sleep
-
 import arrow
+import sys
 import click
+
 from flask import current_app
 from flask_principal import Identity, identity_changed
+from sqlalchemy import or_
+from tabulate import tabulate
+from time import sleep
+from sentry_sdk import capture_exception
+
 from lemur import database
 from lemur.authorities.models import Authority
 from lemur.authorities.service import get as authorities_get_by_id
@@ -42,10 +46,7 @@ from lemur.extensions import metrics
 from lemur.notifications.messaging import send_rotation_notification, send_reissue_no_endpoints_notification, \
     send_reissue_failed_notification
 from lemur.plugins.base import plugins
-from sentry_sdk import capture_exception
-from sqlalchemy import or_
 from sqlalchemy.orm.exc import MultipleResultsFound
-from tabulate import tabulate
 
 
 @click.group(name="certificates", help="Handles all certificate related tasks.")
@@ -278,8 +279,7 @@ def rotate(endpoint_name, source, new_certificate_name, old_certificate_name, me
             try:
                 endpoint = validate_endpoint(endpoint_name)
             except MultipleResultsFound as e:
-                click.echo(
-                    f"[!] Multiple endpoints found with name {endpoint_name}, try narrowing the search down to an endpoint from a specific source by re-running this command with the --source flag.")
+                click.echo(f"[!] Multiple endpoints found with name {endpoint_name}, try narrowing the search down to an endpoint from a specific source by re-running this command with the --source flag.")
                 log_data["message"] = "Multiple endpoints found with same name, unable to perform rotation"
                 log_data["duplicated_endpoint_name"] = endpoint_name
                 current_app.logger.info(log_data)

@@ -6,19 +6,21 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from html.parser import HTMLParser
-
 import boto3
+from html.parser import HTMLParser
 from flask import current_app
 from flask_mail import Message
+from sentry_sdk import capture_exception
+
 from lemur.constants import EMAIL_RE, EMAIL_RE_HELP
-from lemur.exceptions import InvalidConfiguration
 from lemur.extensions import smtp_mail
-from lemur.plugins import lemur_email as email
+from lemur.exceptions import InvalidConfiguration
+
 from lemur.plugins.bases import ExpirationNotificationPlugin
+from lemur.plugins import lemur_email as email
+
 from lemur.plugins.lemur_email.templates.config import env
 from lemur.plugins.utils import get_plugin_option
-from sentry_sdk import capture_exception
 
 
 def render_html(template_name, options, certificates):

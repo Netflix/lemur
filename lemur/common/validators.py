@@ -5,10 +5,11 @@ from cryptography.exceptions import UnsupportedAlgorithm, InvalidSignature
 from cryptography.hazmat.backends import default_backend
 from cryptography.x509 import NameOID
 from flask import current_app
+from marshmallow.exceptions import ValidationError
+
 from lemur.auth.permissions import SensitiveDomainPermission
 from lemur.common.utils import check_cert_signature, is_weekend
 from lemur.plugins.base import plugins
-from marshmallow.exceptions import ValidationError
 
 
 def common_name(value):

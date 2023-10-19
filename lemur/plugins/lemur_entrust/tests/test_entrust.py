@@ -2,8 +2,8 @@ from unittest.mock import patch, Mock
 
 import arrow
 from cryptography import x509
-from freezegun import freeze_time
 from lemur.plugins.lemur_entrust import plugin
+from freezegun import freeze_time
 
 
 def config_mock(*args):

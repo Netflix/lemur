@@ -7,8 +7,9 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
-from lemur.database import BaseModel
 from sqlalchemy import Column, Integer, String, Boolean
+
+from lemur.database import BaseModel
 
 
 class Domain(BaseModel):

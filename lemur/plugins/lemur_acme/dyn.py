@@ -14,8 +14,9 @@ from dyn.tm.errors import (
 from dyn.tm.session import DynectSession
 from dyn.tm.zones import Node, Zone, get_all_zones
 from flask import current_app
-from lemur.extensions import metrics
 from sentry_sdk import capture_exception
+
+from lemur.extensions import metrics
 
 
 def get_dynect_session():

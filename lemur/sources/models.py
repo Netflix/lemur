@@ -5,12 +5,13 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from lemur.database import BaseModel
-from lemur.plugins.base import plugins
-from sqlalchemy import Column, Integer, String, Text, Boolean
 from sqlalchemy.orm import relationship
-from sqlalchemy_utils import ArrowType
+from sqlalchemy import Column, Integer, String, Text, Boolean
 from sqlalchemy_utils import JSONType
+from lemur.database import BaseModel
+
+from lemur.plugins.base import plugins
+from sqlalchemy_utils import ArrowType
 
 
 class Source(BaseModel):

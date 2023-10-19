@@ -9,11 +9,14 @@
 """
 from flask import Blueprint
 from flask_restful import reqparse, Api
-from lemur.auth.permissions import SensitiveDomainPermission, StrictRolePermission
+
+from lemur.domains import service
 from lemur.auth.service import AuthenticatedResource
+from lemur.auth.permissions import SensitiveDomainPermission, StrictRolePermission
+
 from lemur.common.schema import validate_schema
 from lemur.common.utils import paginated_parser
-from lemur.domains import service
+
 from lemur.domains.schemas import (
     domain_input_schema,
     domain_output_schema,

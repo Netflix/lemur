@@ -8,13 +8,16 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from lemur.database import BaseModel, db
-from lemur.extensions import bcrypt
-from lemur.models import roles_users
+from sqlalchemy.orm import relationship
 from sqlalchemy import Integer, String, Column, Boolean
 from sqlalchemy.event import listen
-from sqlalchemy.orm import relationship
+
 from sqlalchemy_utils.types.arrow import ArrowType
+
+from lemur.database import BaseModel, db
+from lemur.models import roles_users
+
+from lemur.extensions import bcrypt
 
 
 def hash_password(mapper, connect, target):

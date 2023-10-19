@@ -15,6 +15,7 @@ import os
 
 import requests
 from flask import current_app
+
 from lemur.common.defaults import common_name
 from lemur.common.utils import parse_certificate, base64encode, check_validation
 from lemur.plugins.bases import DestinationPlugin
@@ -80,7 +81,7 @@ def build_secret(secret_format, secret_name, body, private_key, cert_chain):
     }
     if secret_format == "Full":
         secret["data"] = {
-            "combined.pem": base64encode(f"{body}\n{private_key}"),
+            "combined.pem": base64encode("{}\n{}".format(body, private_key)),
             "ca.crt": base64encode(cert_chain),
             "service.key": base64encode(private_key),
             "service.crt": base64encode(body),
@@ -88,7 +89,7 @@ def build_secret(secret_format, secret_name, body, private_key, cert_chain):
     if secret_format == "TLS":
         secret["type"] = "kubernetes.io/tls"
         secret["data"] = {
-            "tls.crt": base64encode(f"{body}\n{cert_chain}"),
+            "tls.crt": base64encode("{}\n{}".format(body, cert_chain)),
             "tls.key": base64encode(private_key),
         }
     if secret_format == "Certificate":

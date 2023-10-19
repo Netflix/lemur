@@ -11,7 +11,14 @@ from datetime import datetime
 
 from flask import Blueprint, g
 from flask_restful import reqparse, Api
+
 from lemur.api_keys import service
+from lemur.auth.service import AuthenticatedResource, create_token
+from lemur.auth.permissions import ApiKeyCreatorPermission
+
+from lemur.common.schema import validate_schema
+from lemur.common.utils import paginated_parser
+
 from lemur.api_keys.schemas import (
     api_key_input_schema,
     api_key_revoke_schema,
@@ -20,10 +27,6 @@ from lemur.api_keys.schemas import (
     api_key_described_output_schema,
     user_api_key_input_schema,
 )
-from lemur.auth.permissions import ApiKeyCreatorPermission
-from lemur.auth.service import AuthenticatedResource, create_token
-from lemur.common.schema import validate_schema
-from lemur.common.utils import paginated_parser
 
 mod = Blueprint("api_keys", __name__)
 api = Api(mod)

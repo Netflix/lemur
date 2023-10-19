@@ -16,11 +16,12 @@ import hvac
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from flask import current_app
+from validators.url import url
+
 from lemur.common.defaults import common_name, country, state, location, organizational_unit, organization
 from lemur.common.utils import parse_certificate, check_validation
 from lemur.plugins.bases import DestinationPlugin
 from lemur.plugins.bases import SourcePlugin
-from validators.url import url
 
 
 class VaultSourcePlugin(SourcePlugin):

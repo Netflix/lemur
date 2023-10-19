@@ -5,22 +5,25 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+from copy import deepcopy
+import click
 import sys
 import time
-from copy import deepcopy
 
-import click
+from tabulate import tabulate
 from flask import current_app
-from lemur.certificates import service as certificate_service
+from sentry_sdk import capture_exception
+
 from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
-from lemur.destinations import service as dest_service
+
 from lemur.extensions import metrics
 from lemur.plugins.base import plugins
 from lemur.plugins.utils import get_plugin_option, set_plugin_option
+
+from lemur.destinations import service as dest_service
 from lemur.sources import service as source_service
 from lemur.users import service as user_service
-from sentry_sdk import capture_exception
-from tabulate import tabulate
+from lemur.certificates import service as certificate_service
 
 
 @click.group(name="source", help="Handles all source related tasks.")

@@ -8,14 +8,17 @@
 """
 import uuid
 
+from flask import current_app
+
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
-from flask import current_app
-from lemur.certificates.service import create_csr
+
 from lemur.common.utils import parse_private_key
-from lemur.plugins import lemur_cryptography as cryptography_issuer
 from lemur.plugins.bases import IssuerPlugin
+from lemur.plugins import lemur_cryptography as cryptography_issuer
+
+from lemur.certificates.service import create_csr
 
 
 def build_certificate_authority(options):

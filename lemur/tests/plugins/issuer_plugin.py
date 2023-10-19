@@ -1,8 +1,9 @@
+from lemur.plugins.bases import IssuerPlugin
+
+from lemur.tests.vectors import SAN_CERT_STR, INTERMEDIATE_CERT_STR, IP_SAN_NO_CN_CERT_STR
+from lemur.common.utils import parse_csr
 from cryptography import x509
 from cryptography.x509.oid import ExtensionOID
-from lemur.common.utils import parse_csr
-from lemur.plugins.bases import IssuerPlugin
-from lemur.tests.vectors import SAN_CERT_STR, INTERMEDIATE_CERT_STR, IP_SAN_NO_CN_CERT_STR
 
 
 class TestIssuerPlugin(IssuerPlugin):

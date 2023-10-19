@@ -14,22 +14,23 @@ import importlib
 import os
 import socket
 import stat
+from importlib.metadata import entry_points
 from logging import Formatter, StreamHandler
 from logging.handlers import RotatingFileHandler
 
 import logmatic
-import pkg_resources
 import sentry_sdk
 from click import get_current_context
 from flask import Flask, current_app
 from flask_replicated import FlaskReplicated
-from lemur.certificates.hooks import activate_debug_dump
-from lemur.common.health import mod as health
-from lemur.extensions import db, migrate, principal, smtp_mail, metrics, cors
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+
+from lemur.certificates.hooks import activate_debug_dump
+from lemur.common.health import mod as health
+from lemur.extensions import db, migrate, principal, smtp_mail, metrics, cors
 
 DEFAULT_BLUEPRINTS = (health,)
 
@@ -255,19 +256,14 @@ def install_plugins(app):
     from lemur.plugins import plugins
     from lemur.plugins.base import register
 
-    # entry_points={
-    #    'lemur.plugins': [
-    #         'verisign = lemur_verisign.plugin:VerisignPlugin'
-    #     ],
-    # },
-    for ep in pkg_resources.iter_entry_points("lemur.plugins"):
+    for ep in entry_points().get("lemur.plugins", []):
         try:
             plugin = ep.load()
         except Exception:
             import traceback
 
             app.logger.error(
-                f"Failed to load plugin {ep.name!r}:\n{traceback.format_exc()}\n"
+                "Failed to load plugin {!r}:\n{}\n".format(ep.name, traceback.format_exc())
             )
         else:
             register(plugin)

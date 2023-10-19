@@ -6,8 +6,8 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from collections import namedtuple
 from functools import partial
+from collections import namedtuple
 
 from flask import current_app
 from flask_principal import Permission, RoleNeed

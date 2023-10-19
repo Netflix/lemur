@@ -1,16 +1,18 @@
+import time
+import requests
 import json
 import sys
-import time
 
 import dns
 import dns.exception
 import dns.name
 import dns.query
 import dns.resolver
-import requests
+
 from flask import current_app
-from lemur.extensions import metrics
 from sentry_sdk import capture_exception
+
+from lemur.extensions import metrics
 
 
 class Record:

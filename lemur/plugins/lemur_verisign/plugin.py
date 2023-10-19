@@ -12,11 +12,12 @@ import requests
 import xmltodict
 from cryptography import x509
 from flask import current_app
+from sentry_sdk import capture_exception
+
 from lemur.common.utils import get_psuedo_random_string
 from lemur.extensions import metrics
 from lemur.plugins import lemur_verisign as verisign
 from lemur.plugins.bases import IssuerPlugin, SourcePlugin
-from sentry_sdk import capture_exception
 
 # https://support.venafi.com/entries/66445046-Info-VeriSign-Error-Codes
 VERISIGN_ERRORS = {
@@ -226,8 +227,7 @@ class VerisignIssuerPlugin(IssuerPlugin):
         external_id = None
         if 'Transaction_ID' in response_dict['Response'].keys():
             external_id = response_dict['Response']['Transaction_ID']
-        chain = current_app.config.get(f"VERISIGN_INTERMEDIATE_{authority}",
-                                       current_app.config.get("VERISIGN_INTERMEDIATE"))
+        chain = current_app.config.get(f"VERISIGN_INTERMEDIATE_{authority}", current_app.config.get("VERISIGN_INTERMEDIATE"))
         return cert, chain, external_id
 
     @staticmethod

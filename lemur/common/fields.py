@@ -12,10 +12,11 @@ from datetime import datetime as dt
 import arrow
 from cryptography import x509
 from flask import current_app
-from lemur.common import validators
 from marshmallow import utils
 from marshmallow.exceptions import ValidationError
 from marshmallow.fields import Field
+
+from lemur.common import validators
 
 
 class Hex(Field):

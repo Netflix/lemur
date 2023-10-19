@@ -9,9 +9,7 @@
 import json
 
 from flask import current_app
-from lemur.database import BaseModel, db
-from lemur.models import roles_authorities
-from lemur.plugins.base import plugins
+from sqlalchemy.orm import relationship
 from sqlalchemy import (
     Column,
     Integer,
@@ -24,7 +22,10 @@ from sqlalchemy import (
     Boolean,
 )
 from sqlalchemy.dialects.postgresql import JSON
-from sqlalchemy.orm import relationship
+
+from lemur.database import BaseModel, db
+from lemur.plugins.base import plugins
+from lemur.models import roles_authorities
 
 
 class Authority(BaseModel):

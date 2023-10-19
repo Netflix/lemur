@@ -8,10 +8,11 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from flask import current_app, g
+
 from lemur import database
-from lemur.certificates.models import Certificate
 from lemur.logs.models import Log
 from lemur.users.models import User
+from lemur.certificates.models import Certificate
 
 
 def create(user, type, certificate=None):

@@ -7,8 +7,15 @@
 """
 from flask import Blueprint, g
 from flask_restful import reqparse, Api
-from lemur.auth.permissions import AuthorityCreatorPermission, AuthorityPermission, StrictRolePermission
+
+from lemur.common import validators
+from lemur.common.utils import paginated_parser
+from lemur.common.schema import validate_schema
 from lemur.auth.service import AuthenticatedResource
+from lemur.auth.permissions import AuthorityCreatorPermission, AuthorityPermission, StrictRolePermission
+
+from lemur.certificates import service as certificate_service
+
 from lemur.authorities import service
 from lemur.authorities.schemas import (
     authority_input_schema,
@@ -16,10 +23,7 @@ from lemur.authorities.schemas import (
     authorities_output_schema,
     authority_update_schema,
 )
-from lemur.certificates import service as certificate_service
-from lemur.common import validators
-from lemur.common.schema import validate_schema
-from lemur.common.utils import paginated_parser
+
 
 mod = Blueprint("authorities", __name__)
 api = Api(mod)

@@ -1,12 +1,13 @@
 import re
-
 import unicodedata
+
 from cryptography import x509
 from cryptography.hazmat.primitives.serialization import Encoding
 from flask import current_app
+from sentry_sdk import capture_exception
+
 from lemur.common.utils import is_selfsigned
 from lemur.constants import SAN_NAMING_TEMPLATE, DEFAULT_NAMING_TEMPLATE
-from sentry_sdk import capture_exception
 
 
 def text_to_slug(value, joiner="-"):

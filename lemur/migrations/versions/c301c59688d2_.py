@@ -30,14 +30,15 @@ Create Date: 2020-09-21 14:28:50.757998
 revision = 'c301c59688d2'
 down_revision = '434c29e40511'
 
-import datetime
+from alembic import op
+from sqlalchemy.sql import text
 import time
+import datetime
+from flask import current_app
+
 from logging import Formatter, FileHandler, getLogger
 
-from alembic import op
-from flask import current_app
 from lemur.common import utils
-from sqlalchemy.sql import text
 
 log = getLogger(__name__)
 handler = FileHandler(current_app.config.get("LOG_UPGRADE_FILE", "db_upgrade.log"))

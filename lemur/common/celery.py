@@ -10,13 +10,14 @@ command: celery -A lemur.common.celery worker --loglevel=info -l DEBUG -B
 import copy
 import sys
 import time
-from datetime import datetime, timezone, timedelta
-
 from celery import Celery
 from celery.app.task import Context
 from celery.exceptions import SoftTimeLimitExceeded
 from celery.signals import task_failure, task_received, task_revoked, task_success
+from datetime import datetime, timezone, timedelta
 from flask import current_app
+from sentry_sdk import capture_exception
+
 from lemur.authorities.service import get as get_authority
 from lemur.certificates import cli as cli_certificate
 from lemur.certificates import service as certificate_service
@@ -34,7 +35,6 @@ from lemur.notifications.messaging import (
 from lemur.pending_certificates import service as pending_certificate_service
 from lemur.plugins.base import plugins
 from lemur.sources.cli import clean, sync, validate_sources
-from sentry_sdk import capture_exception
 
 if current_app:
     flask_app = current_app

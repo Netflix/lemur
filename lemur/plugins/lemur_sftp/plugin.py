@@ -19,12 +19,13 @@
 from os import path
 
 import paramiko
+from paramiko.ssh_exception import AuthenticationException, NoValidConnectionsError
+
 from flask import current_app
+from lemur.plugins import lemur_sftp
 from lemur.common.defaults import common_name
 from lemur.common.utils import parse_certificate, check_validation
-from lemur.plugins import lemur_sftp
 from lemur.plugins.bases import DestinationPlugin
-from paramiko.ssh_exception import AuthenticationException, NoValidConnectionsError
 
 
 class SFTPDestinationPlugin(DestinationPlugin):

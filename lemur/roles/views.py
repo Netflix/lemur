@@ -10,17 +10,20 @@
 from flask import Blueprint, g
 from flask import make_response, jsonify
 from flask_restful import reqparse, Api
-from lemur.auth.permissions import RoleMemberPermission, admin_permission
+
+from lemur.roles import service
 from lemur.auth.service import AuthenticatedResource
-from lemur.common.schema import validate_schema
+from lemur.auth.permissions import RoleMemberPermission, admin_permission
 from lemur.common.utils import paginated_parser
 from lemur.logs import service as log_service
-from lemur.roles import service
+
+from lemur.common.schema import validate_schema
 from lemur.roles.schemas import (
     role_input_schema,
     role_output_schema,
     roles_output_schema,
 )
+
 
 mod = Blueprint("roles", __name__)
 api = Api(mod)

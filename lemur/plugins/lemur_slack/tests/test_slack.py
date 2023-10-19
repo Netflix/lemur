@@ -1,9 +1,10 @@
 from datetime import timedelta
 
 import arrow
+from moto import mock_ses
+
 from lemur.tests.factories import NotificationFactory, CertificateFactory
 from lemur.tests.test_messaging import verify_sender_email
-from moto import mock_ses
 
 
 def test_formatting(certificate):

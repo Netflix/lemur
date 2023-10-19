@@ -12,14 +12,16 @@
 import json
 
 from flask import current_app
+
 from lemur import database
-from lemur.authorities.models import Authority
-from lemur.certificates.models import Certificate
-from lemur.certificates.service import upload
 from lemur.common.utils import truthiness, data_encrypt
 from lemur.extensions import metrics
-from lemur.logs import service as log_service
+from lemur.authorities.models import Authority
+from lemur.certificates.models import Certificate
 from lemur.roles import service as role_service
+from lemur.logs import service as log_service
+
+from lemur.certificates.service import upload
 
 
 def update(authority_id, description, owner, active, roles):
@@ -63,6 +65,10 @@ def mint(**kwargs):
     """
     issuer = kwargs["plugin"]["plugin_object"]
     values = issuer.create_authority(kwargs)
+
+    # Check body for root cert
+    if values[0] is None:
+        raise ValueError(f"Plugin '{issuer.get_title()}' provided no root certification. Check plugin configuration.")
 
     # support older plugins
     if len(values) == 3:

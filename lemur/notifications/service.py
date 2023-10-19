@@ -9,12 +9,13 @@
 
 """
 from flask import current_app
+
 from lemur import database
+from lemur.constants import EMAIL_RE, EMAIL_RE_HELP
 from lemur.certificates.models import Certificate
 from lemur.common.utils import truthiness, check_validation
-from lemur.constants import EMAIL_RE, EMAIL_RE_HELP
-from lemur.logs import service as log_service
 from lemur.notifications.models import Notification
+from lemur.logs import service as log_service
 
 
 def create_default_expiration_notifications(name, recipients, intervals=None):

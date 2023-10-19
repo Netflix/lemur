@@ -14,7 +14,7 @@ CloudFlare
 cryptography
 dnspython3
 dyn
-Flask
+Flask<3  # until https://github.com/pytest-dev/pytest-flask/pull/168 is released
 Flask-Bcrypt
 Flask-Cors
 Flask-Limiter
@@ -30,15 +30,15 @@ inflection
 itsdangerous
 josepy
 logmatic-python
-marshmallow-sqlalchemy == 0.23.1 #related to the marshmallow issue (to avoid conflicts, as newer versions require marshmallow>=3.0.0)
-sqlalchemy < 1.4.0 # ImportError: cannot import name '_ColumnEntity' https://github.com/sqlalchemy/sqlalchemy/issues/6226
+marshmallow-sqlalchemy == 0.23.1 #related to the marshmallow issue (to avoid conflicts)
 marshmallow<2.21.1 #schema duplicate issues https://github.com/marshmallow-code/marshmallow-sqlalchemy/issues/121
+sqlalchemy < 1.4.0 # ImportError: cannot import name '_ColumnEntity' https://github.com/sqlalchemy/sqlalchemy/issues/6226
 paramiko  # required for the SFTP destination plugin
 pem
-pyjks >= 19 # pyjks < 19 depends on pycryptodome, which conflicts with dyn's usage of pycrypto
+pyjks
 pyjwt
 pyOpenSSL
-redis < 5.1.0 # requires a newer release of fakeredis
+redis
 retrying
 sentry-sdk
 SQLAlchemy-Utils
@@ -53,4 +53,4 @@ xmltodict
 sphinx
 sphinxcontrib-httpdomain
 sphinx-rtd-theme
-docutils <= 0.19 # sphinx-rtd-theme 1.2.2 requires docutils<0.19
+docutils

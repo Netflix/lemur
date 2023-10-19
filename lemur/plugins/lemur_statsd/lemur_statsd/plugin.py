@@ -1,7 +1,8 @@
 import lemur_statsd as plug
-from datadog import DogStatsd
+
 from flask import current_app
 from lemur.plugins.bases.metric import MetricPlugin
+from datadog import DogStatsd
 
 
 class StatsdMetricPlugin(MetricPlugin):

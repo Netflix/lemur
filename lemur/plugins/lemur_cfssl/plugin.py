@@ -8,19 +8,20 @@
 .. moduleauthor:: Charles Hendrie <chad.hendrie@tr.com>
 """
 
-import base64
-import hashlib
-import hmac
 import json
-
 import requests
+import base64
+import hmac
+import hashlib
+
 from flask import current_app
-from lemur.common.utils import get_authority_key
+
 from lemur.common.utils import parse_certificate
+from lemur.common.utils import get_authority_key
 from lemur.constants import CRLReason
-from lemur.extensions import metrics
-from lemur.plugins import lemur_cfssl as cfssl
 from lemur.plugins.bases import IssuerPlugin
+from lemur.plugins import lemur_cfssl as cfssl
+from lemur.extensions import metrics
 
 
 class CfsslIssuerPlugin(IssuerPlugin):

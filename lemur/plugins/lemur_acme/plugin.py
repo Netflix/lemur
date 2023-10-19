@@ -16,17 +16,19 @@ from acme.errors import PollError, WildcardUnsupportedError
 from acme.messages import Error as AcmeError
 from botocore.exceptions import ClientError
 from flask import current_app
+from sentry_sdk import capture_exception
+
 from lemur.authorizations import service as authorization_service
 from lemur.common.utils import check_validation, drop_last_cert_from_chain
 from lemur.constants import CRLReason, EMAIL_RE
 from lemur.dns_providers import service as dns_provider_service
 from lemur.exceptions import InvalidConfiguration
 from lemur.extensions import metrics
+
 from lemur.plugins import lemur_acme as acme
 from lemur.plugins.bases import IssuerPlugin
 from lemur.plugins.lemur_acme.acme_handlers import AcmeHandler, AcmeDnsHandler
 from lemur.plugins.lemur_acme.challenge_types import AcmeHttpChallenge, AcmeDnsChallenge
-from sentry_sdk import capture_exception
 
 
 class ACMEIssuerPlugin(IssuerPlugin):

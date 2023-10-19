@@ -9,11 +9,12 @@
 import subprocess
 
 from flask import current_app
-from lemur.common.defaults import common_name
-from lemur.common.utils import get_psuedo_random_string, parse_certificate, check_validation
-from lemur.plugins import lemur_openssl as openssl
-from lemur.plugins.bases import ExportPlugin
+
 from lemur.utils import mktempfile, mktemppath
+from lemur.plugins.bases import ExportPlugin
+from lemur.plugins import lemur_openssl as openssl
+from lemur.common.utils import get_psuedo_random_string, parse_certificate, check_validation
+from lemur.common.defaults import common_name
 
 
 def run_process(command):

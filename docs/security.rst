@@ -22,7 +22,7 @@ further follow-up.
 Supported Versions
 ------------------
 
-At any given time, we will provide security support for the `master`_ branch
+At any given time, we will provide security support for the `main`_ branch
 as well as the most recent release.
 
 Disclosure Process
@@ -76,6 +76,6 @@ On the day of disclosure, we will take the following steps:
 2. Issue an updated release
 3. Make the security advisory public
 
-.. _`master`: https://github.com/Netflix/lemur
+.. _`main`: https://github.com/Netflix/lemur
 .. _GitHub Security Advisory: https://docs.github.com/en/code-security/security-advisories/repository-security-advisories/about-repository-security-advisories
 .. _private vulnerability reporting process: https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing/privately-reporting-a-security-vulnerability

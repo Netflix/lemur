@@ -1,13 +1,13 @@
-import re
 import sys
-
 import dns
 import dns.exception
 import dns.name
 import dns.query
 import dns.resolver
-from lemur.extensions import metrics
+import re
 from sentry_sdk import capture_exception
+
+from lemur.extensions import metrics
 
 
 class DNSError(Exception):

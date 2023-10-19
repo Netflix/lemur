@@ -7,14 +7,15 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import json
-from datetime import datetime
 from typing import Any, Dict
 
 import requests
+from requests.exceptions import ConnectionError
+from datetime import datetime
+
 from flask import current_app
 from lemur.plugins import lemur_atlas as atlas
 from lemur.plugins.bases.metric import MetricPlugin
-from requests.exceptions import ConnectionError
 
 
 def millis_since_epoch():

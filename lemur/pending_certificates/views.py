@@ -6,19 +6,24 @@
 """
 from flask import Blueprint, g, make_response, jsonify
 from flask_restful import Api, reqparse, inputs
-from lemur.auth.permissions import CertificatePermission, StrictRolePermission
+
 from lemur.auth.service import AuthenticatedResource
+from lemur.auth.permissions import CertificatePermission, StrictRolePermission
+
 from lemur.common.schema import validate_schema
 from lemur.common.utils import paginated_parser
-from lemur.logs import service as log_service
+
 from lemur.pending_certificates import service
+from lemur.roles import service as role_service
+from lemur.logs import service as log_service
+
+
 from lemur.pending_certificates.schemas import (
     pending_certificate_output_schema,
     pending_certificate_edit_input_schema,
     pending_certificate_cancel_schema,
     pending_certificate_upload_input_schema,
 )
-from lemur.roles import service as role_service
 
 mod = Blueprint("pending_certificates", __name__)
 api = Api(mod)

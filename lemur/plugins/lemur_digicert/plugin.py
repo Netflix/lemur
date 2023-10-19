@@ -24,12 +24,13 @@ import pem
 import requests
 from cryptography import x509
 from flask import current_app, g
+from retrying import retry
+from urllib3.util.retry import Retry
+
 from lemur.common.utils import validate_conf, convert_pkcs7_bytes_to_pem
 from lemur.extensions import metrics
 from lemur.plugins import lemur_digicert as digicert
 from lemur.plugins.bases import IssuerPlugin, SourcePlugin
-from requests.packages.urllib3.util.retry import Retry
-from retrying import retry
 
 
 def log_status_code(r, *args, **kwargs):

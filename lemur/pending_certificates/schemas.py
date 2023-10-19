@@ -1,3 +1,6 @@
+from marshmallow import fields, validates_schema, post_load
+from marshmallow.exceptions import ValidationError
+
 from lemur.authorities.schemas import AuthorityNestedOutputSchema
 from lemur.certificates.schemas import CertificateNestedOutputSchema
 from lemur.common import utils, validators
@@ -17,8 +20,6 @@ from lemur.schemas import (
     ExtensionSchema,
 )
 from lemur.users.schemas import UserNestedOutputSchema
-from marshmallow import fields, validates_schema, post_load
-from marshmallow.exceptions import ValidationError
 
 
 class PendingCertificateSchema(LemurInputSchema):

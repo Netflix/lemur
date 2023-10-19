@@ -6,10 +6,11 @@
 """
 
 from flask import current_app
+from sentry_sdk import capture_exception
+
 from lemur.exceptions import InvalidDistribution
 from lemur.extensions import metrics
 from lemur.plugins.lemur_aws.sts import sts_client
-from sentry_sdk import capture_exception
 
 
 def get_all_distributions(**kwargs):

@@ -1,46 +1,54 @@
 #!/usr/bin/env python
 
-import base64
-import json
+import click
 import os
 import sys
-
-import click
+import base64
 import requests
+import json
+
 from cryptography.fernet import Fernet
+
 from flask import current_app
 from flask.cli import FlaskGroup, pass_script_info
-from flask_migrate import stamp
 from flask_migrate.cli import db
-from lemur import create_app
-from lemur import database
-from lemur.acme_providers.cli import cli as acme_cli
-from lemur.authorities.models import Authority  # noqa
-from lemur.certificates.cli import cli as certificate_cli
-from lemur.certificates.models import Certificate  # noqa
-from lemur.common.utils import validate_conf
-from lemur.destinations.models import Destination  # noqa
+from flask_migrate import stamp
+
 from lemur.dns_providers.cli import cli as dns_provider_cli
-from lemur.dns_providers.models import DnsProvider  # noqa
-from lemur.domains.models import Domain  # noqa
-from lemur.endpoints.models import Endpoint  # noqa
-from lemur.logs.models import Log  # noqa
-from lemur.notifications import service as notification_service
-from lemur.notifications.cli import cli as notification_cli
-from lemur.notifications.models import Notification  # noqa
-from lemur.pending_certificates.cli import cli as pending_certificate_cli
-from lemur.pending_certificates.models import PendingCertificate  # noqa
-from lemur.policies import service as policy_service
-from lemur.policies.cli import cli as policy_cli
-from lemur.policies.models import RotationPolicy  # noqa
-from lemur.reporting.cli import cli as report_cli
-from lemur.roles import service as role_service
-from lemur.roles.models import Role  # noqa
+from lemur.acme_providers.cli import cli as acme_cli
 from lemur.sources.cli import cli as source_cli
-from lemur.sources.models import Source  # noqa
+from lemur.policies.cli import cli as policy_cli
+from lemur.reporting.cli import cli as report_cli
+from lemur.certificates.cli import cli as certificate_cli
+from lemur.notifications.cli import cli as notification_cli
+from lemur.pending_certificates.cli import cli as pending_certificate_cli
+
+
+from lemur import database
 from lemur.users import service as user_service
+from lemur.roles import service as role_service
+from lemur.policies import service as policy_service
+from lemur.notifications import service as notification_service
+
+from lemur.common.utils import validate_conf
+
+from lemur import create_app
+
 # Needed to be imported so that SQLAlchemy create_all can find our models
 from lemur.users.models import User  # noqa
+from lemur.roles.models import Role  # noqa
+from lemur.authorities.models import Authority  # noqa
+from lemur.certificates.models import Certificate  # noqa
+from lemur.destinations.models import Destination  # noqa
+from lemur.domains.models import Domain  # noqa
+from lemur.notifications.models import Notification  # noqa
+from lemur.sources.models import Source  # noqa
+from lemur.logs.models import Log  # noqa
+from lemur.endpoints.models import Endpoint  # noqa
+from lemur.policies.models import RotationPolicy  # noqa
+from lemur.pending_certificates.models import PendingCertificate  # noqa
+from lemur.dns_providers.models import DnsProvider  # noqa
+
 from sqlalchemy.sql import text
 
 
@@ -148,12 +156,12 @@ IDP_GROUPS_KEYS = ["googleGroups"]  # a list of keys used by IDP(s) to return us
 # IDP_ROLES_PREFIX = "PREFIX-"  # prefix for all IDP-defined roles, used to match naming conventions
 # IDP_ROLES_SUFFIX = "_SUFFIX"  # suffix for all IDP-defined roles, used to match naming conventions
 # IDP_ROLES_DESCRIPTION = "Automatically generated role"  # Description to attach to automatically generated roles
-# IDP_ROLES_MAPPING = {}  # Dictionary that matches the IDP group name to the Lemur role. The Lemur role must exist.
-# Example: IDP_ROLES_MAPPING = {"security": "admin", "engineering": "operator", "jane_from_accounting": "read-only"}
+# IDP_ROLES_MAPPING = {{}}  # Dictionary that matches the IDP group name to the Lemur role. The Lemur role must exist.
+# Example: IDP_ROLES_MAPPING = {{"security": "admin", "engineering": "operator", "jane_from_accounting": "read-only"}}
 IDP_ASSIGN_ROLES_FROM_USER_GROUPS = True  # Assigns a Lemur role for each group found attached to the user
 IDP_CREATE_ROLES_FROM_USER_GROUPS = True  # Creates a Lemur role for each group found attached to the user if missing
 # Protects the built-in groups and prevents dynamically assigning users to them. Prevents IDP admin from becoming
-# Lemur admin. Use IDP_ROLES_MAPPING to create a mapping to assign these groups if desired. eg {"admin": "admin"}
+# Lemur admin. Use IDP_ROLES_MAPPING to create a mapping to assign these groups if desired. eg {{"admin": "admin"}}
 IDP_PROTECT_BUILTINS = True
 IDP_CREATE_PER_USER_ROLE = True  # Generates Lemur role for each user (allows cert assignment to a single user)
 

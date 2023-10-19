@@ -5,11 +5,12 @@
 .. moduleauthor:: Curtis Castrapel <ccastrapel@netflix.com>
 """
 
+import click
 import copy
 import sys
 
-import click
 from flask import current_app
+
 from lemur.authorities.service import get as get_authority
 from lemur.constants import ACME_ADDITIONAL_ATTEMPTS
 from lemur.notifications.messaging import send_pending_failure_notification

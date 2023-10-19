@@ -5,17 +5,6 @@
 """
 from datetime import datetime as dt
 
-from lemur.certificates.models import get_sequence
-from lemur.common import defaults, utils
-from lemur.database import BaseModel
-from lemur.models import (
-    pending_cert_source_associations,
-    pending_cert_destination_associations,
-    pending_cert_notification_associations,
-    pending_cert_replacement_associations,
-    pending_cert_role_associations,
-)
-from lemur.utils import Vault
 from sqlalchemy import (
     Integer,
     ForeignKey,
@@ -29,6 +18,18 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import JSONType
 from sqlalchemy_utils.types.arrow import ArrowType
+
+from lemur.certificates.models import get_sequence
+from lemur.common import defaults, utils
+from lemur.database import BaseModel
+from lemur.models import (
+    pending_cert_source_associations,
+    pending_cert_destination_associations,
+    pending_cert_notification_associations,
+    pending_cert_replacement_associations,
+    pending_cert_role_associations,
+)
+from lemur.utils import Vault
 
 
 def get_or_increase_name(name, serial):

@@ -9,8 +9,18 @@ import base64
 
 from flask import Blueprint, make_response, jsonify, g, current_app
 from flask_restful import reqparse, Api, inputs
-from lemur.auth.permissions import AuthorityPermission, CertificatePermission, StrictRolePermission
+
+from lemur.certificates.service import validate_no_duplicate_destinations
+from lemur.common import validators
+from lemur.plugins.bases.authorization import UnauthorizedError
+from sentry_sdk import capture_exception
+
+from lemur.common.schema import validate_schema
+from lemur.common.utils import paginated_parser
+
 from lemur.auth.service import AuthenticatedResource
+from lemur.auth.permissions import AuthorityPermission, CertificatePermission, StrictRolePermission
+
 from lemur.certificates import service
 from lemur.certificates.models import Certificate
 from lemur.certificates.schemas import (
@@ -23,14 +33,10 @@ from lemur.certificates.schemas import (
     certificates_list_output_schema_factory,
     certificate_revoke_schema,
 )
-from lemur.certificates.service import validate_no_duplicate_destinations
-from lemur.common import validators
-from lemur.common.schema import validate_schema
-from lemur.common.utils import paginated_parser
-from lemur.logs import service as log_service
-from lemur.plugins.bases.authorization import UnauthorizedError
+
 from lemur.roles import service as role_service
-from sentry_sdk import capture_exception
+from lemur.logs import service as log_service
+
 
 mod = Blueprint("certificates", __name__)
 api = Api(mod)

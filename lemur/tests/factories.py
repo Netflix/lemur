@@ -5,6 +5,7 @@ from typing import List
 from factory import Sequence, post_generation, SubFactory
 from factory.alchemy import SQLAlchemyModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDate, FuzzyInteger
+
 from lemur.api_keys.models import ApiKey
 from lemur.authorities.models import Authority
 from lemur.certificates.models import Certificate
@@ -18,7 +19,6 @@ from lemur.policies.models import RotationPolicy
 from lemur.roles.models import Role
 from lemur.sources.models import Source
 from lemur.users.models import User
-
 from .vectors import (
     SAN_CERT_STR,
     SAN_CERT_KEY,

@@ -5,18 +5,18 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import subprocess
-from subprocess import TimeoutExpired
-
 import requests
+import subprocess
+from flask import current_app
+from requests.exceptions import ConnectionError, InvalidSchema, Timeout
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
-from flask import current_app
+from sentry_sdk import capture_exception
+from subprocess import TimeoutExpired
+
+from lemur.utils import mktempfile
 from lemur.common.utils import parse_certificate
 from lemur.extensions import metrics
-from lemur.utils import mktempfile
-from requests.exceptions import ConnectionError, InvalidSchema, Timeout
-from sentry_sdk import capture_exception
 
 crl_cache = {}
 

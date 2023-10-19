@@ -1,10 +1,11 @@
-from lemur.database import BaseModel
-from lemur.plugins.base import plugins
-from lemur.utils import Vault
 from sqlalchemy import Column, Integer, String, text
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import ArrowType
+
+from lemur.database import BaseModel
+from lemur.plugins.base import plugins
+from lemur.utils import Vault
 
 
 class DnsProvider(BaseModel):

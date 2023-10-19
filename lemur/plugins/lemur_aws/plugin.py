@@ -32,17 +32,17 @@
 .. moduleauthor:: Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
 .. moduleauthor:: Harm Weites <harm@weites.com>
 """
-import sys
 from os.path import join
-
+import sys
 from acme.errors import ClientError
 from flask import current_app
+from sentry_sdk import capture_exception
+
 from lemur.common.utils import check_validation
 from lemur.extensions import metrics
 from lemur.plugins import lemur_aws as aws, ExpirationNotificationPlugin
 from lemur.plugins.bases import DestinationPlugin, ExportDestinationPlugin, SourcePlugin
 from lemur.plugins.lemur_aws import iam, s3, elb, ec2, sns, cloudfront
-from sentry_sdk import capture_exception
 
 
 def get_region_from_dns(dns):

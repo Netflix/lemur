@@ -21,7 +21,7 @@ Flask-Migrate
 Flask-Principal
 Flask-RESTful
 Flask-SQLAlchemy
-Flask
+Flask<3  # until https://github.com/pytest-dev/pytest-flask/pull/168 is released
 Flask-Cors
 flask_replicated
 future
@@ -38,18 +38,18 @@ ndg-httpsclient
 paramiko  # required for the SFTP destination plugin
 pem
 psycopg2
-pyjks >= 19 # pyjks < 19 depends on pycryptodome, which conflicts with dyn's usage of pycrypto
+pyjks
 pyjwt
 pyOpenSSL
-pyyaml>=4.2b1 #high severity alert
+pyyaml
 python_ldap
-redis < 5.1.0 # requires a newer release of fakeredis
+redis
 requests
 retrying
 sentry-sdk
 six
 SQLAlchemy-Utils
-sqlalchemy < 1.4.0 # ImportError: cannot import name '_ColumnEntity' https://github.com/sqlalchemy/sqlalchemy/issues/6226
+sqlalchemy < 1.4.0 # ImportError: cannot import name '_ColumnEntity' https://github.com/sqlalchemy/sqlalchemy/issues/6226tabulate
 tabulate
 validators
 werkzeug

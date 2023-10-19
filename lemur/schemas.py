@@ -7,6 +7,10 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
+from marshmallow import fields, post_load, pre_load, post_dump
+from marshmallow.exceptions import ValidationError
+from sqlalchemy.orm.exc import NoResultFound
+
 from lemur.authorities.models import Authority
 from lemur.certificates.models import Certificate
 from lemur.common import validators
@@ -25,9 +29,6 @@ from lemur.plugins.utils import get_plugin_option
 from lemur.policies.models import RotationPolicy
 from lemur.roles.models import Role
 from lemur.users.models import User
-from marshmallow import fields, post_load, pre_load, post_dump
-from marshmallow.exceptions import ValidationError
-from sqlalchemy.orm.exc import NoResultFound
 
 
 def validate_options(options):

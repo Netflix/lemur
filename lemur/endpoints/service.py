@@ -9,13 +9,15 @@
 
 """
 import arrow
+
+from sqlalchemy import func
+from sqlalchemy.orm import joinedload
+
 from lemur import database
 from lemur.common.utils import truthiness
 from lemur.endpoints.models import Endpoint, EndpointDnsAlias, Policy, Cipher
-from lemur.extensions import metrics
 from lemur.sources.models import Source
-from sqlalchemy import func
-from sqlalchemy.orm import joinedload
+from lemur.extensions import metrics
 
 
 def get_all():

@@ -5,15 +5,16 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+from sqlalchemy.orm import relationship
+from sqlalchemy import Integer, String, Column, Boolean, Text
+from sqlalchemy_utils import JSONType
+
 from lemur.database import BaseModel
+from lemur.plugins.base import plugins
 from lemur.models import (
     certificate_notification_associations,
     pending_cert_notification_associations,
 )
-from lemur.plugins.base import plugins
-from sqlalchemy import Integer, String, Column, Boolean, Text
-from sqlalchemy.orm import relationship
-from sqlalchemy_utils import JSONType
 
 
 class Notification(BaseModel):

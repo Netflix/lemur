@@ -11,22 +11,6 @@ import arrow
 from cryptography import x509
 from flask import current_app
 from idna.core import InvalidCodepoint
-from lemur.common import defaults, utils, validators
-from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
-from lemur.database import BaseModel
-from lemur.domains.models import Domain
-from lemur.extensions import metrics
-from lemur.models import (
-    certificate_source_associations,
-    certificate_destination_associations,
-    certificate_notification_associations,
-    certificate_replacement_associations,
-    roles_certificates,
-    pending_cert_replacement_associations,
-)
-from lemur.plugins.base import plugins
-from lemur.policies.models import RotationPolicy
-from lemur.utils import Vault
 from sentry_sdk import capture_exception
 from sqlalchemy import (
     event,
@@ -47,6 +31,24 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.sql.expression import case, extract
 from sqlalchemy_utils.types.arrow import ArrowType
 from werkzeug.utils import cached_property
+
+
+from lemur.common import defaults, utils, validators
+from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
+from lemur.database import BaseModel
+from lemur.domains.models import Domain
+from lemur.extensions import metrics
+from lemur.models import (
+    certificate_source_associations,
+    certificate_destination_associations,
+    certificate_notification_associations,
+    certificate_replacement_associations,
+    roles_certificates,
+    pending_cert_replacement_associations,
+)
+from lemur.plugins.base import plugins
+from lemur.policies.models import RotationPolicy
+from lemur.utils import Vault
 
 
 def get_sequence(name):

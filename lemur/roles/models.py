@@ -9,16 +9,17 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
+from sqlalchemy.orm import relationship
+from sqlalchemy import Boolean, Column, Integer, String, Text, ForeignKey
+
 from lemur.database import BaseModel
+from lemur.utils import Vault
 from lemur.models import (
     roles_users,
     roles_authorities,
     roles_certificates,
     pending_cert_role_associations,
 )
-from lemur.utils import Vault
-from sqlalchemy import Boolean, Column, Integer, String, Text, ForeignKey
-from sqlalchemy.orm import relationship
 
 
 class Role(BaseModel):

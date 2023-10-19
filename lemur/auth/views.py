@@ -21,6 +21,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_principal import Identity, identity_changed
 from flask_restful import reqparse, Resource, Api
+
 from lemur.auth import ldap
 from lemur.auth.service import create_token, fetch_token_header, get_rsa_public_key
 from lemur.common.utils import get_psuedo_random_string, get_state_token_secret
@@ -277,6 +278,7 @@ def create_user_roles(profile: dict) -> list[str]:
                 current_app.config["LEMUR_DEFAULT_ROLE"],
                 description="This is the default Lemur role.",
             )
+        roles.append(default)
 
     # Dedupe the roles
     roles = list(set(roles))

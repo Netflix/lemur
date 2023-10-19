@@ -9,9 +9,11 @@
 from flask import Blueprint
 from flask_restful import Api, reqparse
 from lemur.auth.service import AuthenticatedResource
+
+
+from lemur.schemas import plugins_output_schema, plugin_output_schema
 from lemur.common.schema import validate_schema
 from lemur.plugins.base import plugins
-from lemur.schemas import plugins_output_schema, plugin_output_schema
 
 mod = Blueprint("plugins", __name__)
 api = Api(mod)

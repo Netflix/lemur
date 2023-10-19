@@ -7,11 +7,14 @@
 """
 from flask import Blueprint, g
 from flask_restful import reqparse, Api
-from lemur.auth.service import AuthenticatedResource
-from lemur.common.schema import validate_schema
+
 from lemur.common.utils import paginated_parser
+from lemur.common.schema import validate_schema
+from lemur.auth.service import AuthenticatedResource
+
 from lemur.endpoints import service
 from lemur.endpoints.schemas import endpoint_output_schema, endpoints_output_schema
+
 
 mod = Blueprint("endpoints", __name__)
 api = Api(mod)

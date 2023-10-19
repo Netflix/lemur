@@ -10,9 +10,9 @@ import tempfile
 from contextlib import contextmanager
 
 import cryptography.fernet
+from sqlalchemy import types
 from cryptography.fernet import Fernet, MultiFernet
 from flask import current_app
-from sqlalchemy import types
 
 
 @contextmanager

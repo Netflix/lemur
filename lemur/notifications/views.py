@@ -8,16 +8,19 @@
 """
 from flask import Blueprint
 from flask_restful import Api, reqparse, inputs
-from lemur.auth.permissions import StrictRolePermission
-from lemur.auth.service import AuthenticatedResource
-from lemur.common.schema import validate_schema
-from lemur.common.utils import paginated_parser
 from lemur.notifications import service
 from lemur.notifications.schemas import (
     notification_input_schema,
     notification_output_schema,
     notifications_output_schema,
 )
+
+from lemur.auth.service import AuthenticatedResource
+from lemur.common.utils import paginated_parser
+from lemur.auth.permissions import StrictRolePermission
+
+from lemur.common.schema import validate_schema
+
 
 mod = Blueprint("notifications", __name__)
 api = Api(mod)

@@ -15,6 +15,10 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from flask import current_app
+from sentry_sdk import capture_exception
+from sqlalchemy import and_, func, or_, not_, cast, Integer
+from sqlalchemy.sql.expression import false, true
+
 from lemur import database
 from lemur.authorities.models import Authority
 from lemur.certificates.models import Certificate, CertificateAssociation
@@ -33,9 +37,6 @@ from lemur.plugins.base import plugins
 from lemur.plugins.utils import get_plugin_option
 from lemur.roles import service as role_service
 from lemur.roles.models import Role
-from sentry_sdk import capture_exception
-from sqlalchemy import and_, func, or_, not_, cast, Integer
-from sqlalchemy.sql.expression import false, true
 
 csr_created = signals.signal("csr_created", "CSR generated")
 csr_imported = signals.signal("csr_imported", "CSR imported from external source")
