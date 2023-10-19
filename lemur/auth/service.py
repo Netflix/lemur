@@ -209,4 +209,4 @@ class AuthenticatedResource(Resource):
     method_decorators = [login_required]
 
     def __init__(self):
-        super(AuthenticatedResource, self).__init__()
+        super().__init__()

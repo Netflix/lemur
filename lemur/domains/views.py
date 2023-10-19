@@ -31,7 +31,7 @@ class DomainsList(AuthenticatedResource):
     """ Defines the 'domains' endpoint """
 
     def __init__(self):
-        super(DomainsList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, domains_output_schema)
     def get(self):
@@ -136,7 +136,7 @@ class DomainsList(AuthenticatedResource):
 class Domains(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(Domains, self).__init__()
+        super().__init__()
 
     @validate_schema(None, domain_output_schema)
     def get(self, domain_id):
@@ -220,7 +220,7 @@ class CertificateDomains(AuthenticatedResource):
     """ Defines the 'domains' endpoint """
 
     def __init__(self):
-        super(CertificateDomains, self).__init__()
+        super().__init__()
 
     @validate_schema(None, domains_output_schema)
     def get(self, certificate_id):

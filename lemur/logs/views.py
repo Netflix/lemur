@@ -26,7 +26,7 @@ class LogsList(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(LogsList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, logs_output_schema)
     def get(self):

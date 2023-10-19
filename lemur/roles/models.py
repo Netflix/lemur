@@ -52,4 +52,4 @@ class Role(BaseModel):
     sensitive_fields = ("password",)
 
     def __repr__(self):
-        return "Role(name={name})".format(name=self.name)
+        return f"Role(name={self.name})"

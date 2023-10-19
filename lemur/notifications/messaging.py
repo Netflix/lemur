@@ -51,7 +51,7 @@ def get_certificates(exclude=None):
     exclude_conditions = []
     if exclude:
         for e in exclude:
-            exclude_conditions.append(~Certificate.name.ilike("%{}%".format(e)))
+            exclude_conditions.append(~Certificate.name.ilike(f"%{e}%"))
 
         q = q.filter(and_(*exclude_conditions))
 
@@ -85,7 +85,7 @@ def get_certificates_for_security_summary_email(exclude=None):
     exclude_conditions = []
     if exclude:
         for e in exclude:
-            exclude_conditions.append(~Certificate.name.ilike("%{}%".format(e)))
+            exclude_conditions.append(~Certificate.name.ilike(f"%{e}%"))
 
         q = q.filter(and_(*exclude_conditions))
 

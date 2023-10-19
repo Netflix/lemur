@@ -33,7 +33,7 @@ def render_html(template_name, options, certificates):
     :return:
     """
     message = {"options": options, "certificates": certificates}
-    template = env.get_template("{}.html".format(template_name))
+    template = env.get_template(f"{template_name}.html")
     return template.render(
         dict(message=message, hostname=current_app.config.get("LEMUR_HOSTNAME"))
     )

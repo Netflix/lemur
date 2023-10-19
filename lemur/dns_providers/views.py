@@ -27,7 +27,7 @@ class DnsProvidersList(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(DnsProvidersList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, dns_provider_output_schema)
     def get(self):
@@ -180,7 +180,7 @@ class DnsProviderOptions(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(DnsProviderOptions, self).__init__()
+        super().__init__()
 
     def get(self):
         return service.get_types()

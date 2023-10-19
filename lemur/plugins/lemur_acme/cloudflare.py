@@ -19,7 +19,7 @@ def find_zone_id(host):
     while n < 5:
         n = n + 1
         domain = ".".join(elements[-n:])
-        current_app.logger.debug("Trying to get ID for zone {0}".format(domain))
+        current_app.logger.debug(f"Trying to get ID for zone {domain}")
 
         try:
             zone = cf.zones.get(params={"name": domain, "per_page": 1})
@@ -58,14 +58,14 @@ def create_txt_record(host, value, account_number):
     txt_record = {"name": host, "type": "TXT", "content": value}
 
     current_app.logger.debug(
-        "Creating TXT record {0} with value {1}".format(host, value)
+        f"Creating TXT record {host} with value {value}"
     )
 
     try:
         r = cf.zones.dns_records.post(zone_id, data=txt_record)
     except Exception as e:
         current_app.logger.error(
-            "/zones.dns_records.post %s: %s" % (txt_record["name"], e)
+            "/zones.dns_records.post {}: {}".format(txt_record["name"], e)
         )
     return zone_id, r["id"]
 
@@ -74,7 +74,7 @@ def delete_txt_record(change_ids, account_number, host, value):
     cf = cf_api_call()
     for change_id in change_ids:
         zone_id, record_id = change_id
-        current_app.logger.debug("Removing record with id {0}".format(record_id))
+        current_app.logger.debug(f"Removing record with id {record_id}")
         try:
             cf.zones.dns_records.delete(zone_id, record_id)
         except Exception as e:

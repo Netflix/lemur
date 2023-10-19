@@ -31,7 +31,7 @@ class SourcesList(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(SourcesList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, sources_output_schema)
     def get(self):
@@ -175,7 +175,7 @@ class SourcesList(AuthenticatedResource):
 class Sources(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(Sources, self).__init__()
+        super().__init__()
 
     @validate_schema(None, source_output_schema)
     def get(self, source_id):
@@ -308,7 +308,7 @@ class CertificateSources(AuthenticatedResource):
     """ Defines the 'certificate/<int:certificate_id/sources'' endpoint """
 
     def __init__(self):
-        super(CertificateSources, self).__init__()
+        super().__init__()
 
     @validate_schema(None, sources_output_schema)
     def get(self, certificate_id):

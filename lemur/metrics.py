@@ -9,7 +9,7 @@ from flask import current_app
 from lemur.plugins.base import plugins
 
 
-class Metrics(object):
+class Metrics:
     """
     :param app: The Flask application object. Defaults to None.
     """

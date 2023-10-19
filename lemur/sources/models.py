@@ -30,4 +30,4 @@ class Source(BaseModel):
         return plugins.get(self.plugin_name)
 
     def __repr__(self):
-        return "Source(label={label})".format(label=self.label)
+        return f"Source(label={self.label})"

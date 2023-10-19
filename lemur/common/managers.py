@@ -12,7 +12,7 @@ from lemur.exceptions import InvalidConfiguration
 
 
 # inspired by https://github.com/getsentry/sentry
-class InstanceManager(object):
+class InstanceManager:
     def __init__(self, class_list=None, instances=True):
         if class_list is None:
             class_list = []
@@ -63,12 +63,12 @@ class InstanceManager(object):
 
             except InvalidConfiguration as e:
                 current_app.logger.warning(
-                    "Plugin '{0}' may not work correctly. {1}".format(class_name, e)
+                    f"Plugin '{class_name}' may not work correctly. {e}"
                 )
 
             except Exception as e:
                 current_app.logger.exception(
-                    "Unable to import {0}. Reason: {1}".format(cls_path, e)
+                    f"Unable to import {cls_path}. Reason: {e}"
                 )
                 continue
 

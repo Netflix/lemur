@@ -29,7 +29,7 @@ class LdapPrincipal:
         self.ldap_principal = args["username"]
         self.ldap_email_domain = current_app.config.get("LDAP_EMAIL_DOMAIN", None)
         if "@" not in self.ldap_principal:
-            self.ldap_principal = "%s@%s" % (
+            self.ldap_principal = "{}@{}".format(
                 self.ldap_principal,
                 self.ldap_email_domain,
             )
@@ -110,7 +110,7 @@ class LdapPrincipal:
         # update their 'roles'
         role = role_service.get_by_name(self.ldap_principal)
         if not role:
-            description = "auto generated role based on owner: {0}".format(
+            description = "auto generated role based on owner: {}".format(
                 self.ldap_principal
             )
             role = role_service.create(
@@ -127,7 +127,7 @@ class LdapPrincipal:
             if role:
                 if ldap_group_name in self.ldap_groups:
                     current_app.logger.debug(
-                        "assigning role {0} to ldap user {1}".format(
+                        "assigning role {} to ldap user {}".format(
                             self.ldap_principal, role
                         )
                     )
@@ -156,7 +156,7 @@ class LdapPrincipal:
         raise an exception on error.
         """
         if "@" not in self.ldap_principal:
-            self.ldap_principal = "%s@%s" % (
+            self.ldap_principal = "{}@{}".format(
                 self.ldap_principal,
                 self.ldap_email_domain,
             )
@@ -186,7 +186,7 @@ class LdapPrincipal:
         except ldap.SERVER_DOWN:
             raise Exception("ldap server unavailable")
         except ldap.LDAPError as e:
-            raise Exception("ldap error: {0}".format(e))
+            raise Exception(f"ldap error: {e}")
 
         if self.ldap_is_active_directory:
             # Lookup user DN, needed to search for group membership
@@ -198,7 +198,7 @@ class LdapPrincipal:
             )[0][1]["distinguishedName"][0]
             userdn = userdn.decode("utf-8")
             # Search all groups that have the userDN as a member
-            groupfilter = "(&(objectclass=group)(member:1.2.840.113556.1.4.1941:={0}))".format(
+            groupfilter = "(&(objectclass=group)(member:1.2.840.113556.1.4.1941:={}))".format(
                 userdn
             )
             lgroups = self.ldap_client.search_s(

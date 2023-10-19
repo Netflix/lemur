@@ -50,7 +50,7 @@ def validate_sources(source_strings):
 
             if not source:
                 click.echo(
-                    "Unable to find specified source with label: {0}".format(source_str)
+                    f"Unable to find specified source with label: {source_str}"
                 )
                 sys.exit(1)
 
@@ -77,7 +77,7 @@ def validate_destinations(destination_strings):
 
         if not dest:
             click.echo(
-                "Unable to find specified destination with label: {0}".format(label)
+                f"Unable to find specified destination with label: {label}"
             )
             sys.exit(1)
 
@@ -155,7 +155,7 @@ def sync(source_strings, ttl):
         except Exception as e:
             current_app.logger.exception(e)
 
-            click.echo("[X] Failed syncing source {label}!\n".format(label=source.label))
+            click.echo(f"[X] Failed syncing source {source.label}!\n")
 
             capture_exception()
             metrics.send(
@@ -206,7 +206,7 @@ def clean(source_strings, commit):
 
         start_time = time.time()
 
-        click.echo("[+] Staring to clean source: {label}!\n".format(label=source.label))
+        click.echo(f"[+] Staring to clean source: {source.label}!\n")
 
         cleaned = 0
         certificates = certificate_service.get_all_pending_cleaning_expired(source)
@@ -272,7 +272,7 @@ def clean_unused_and_expiring_within_days(source_strings, days_to_expire, commit
 
         start_time = time.time()
 
-        click.echo("[+] Staring to clean source: {label}!\n".format(label=source.label))
+        click.echo(f"[+] Staring to clean source: {source.label}!\n")
 
         cleaned = 0
         certificates = certificate_service.get_all_pending_cleaning_expiring_in_days(source, days_to_expire)
@@ -338,7 +338,7 @@ def clean_unused_and_issued_since_days(source_strings, days_since_issuance, comm
 
         start_time = time.time()
 
-        click.echo("[+] Staring to clean source: {label}!\n".format(label=source.label))
+        click.echo(f"[+] Staring to clean source: {source.label}!\n")
 
         cleaned = 0
         certificates = certificate_service.get_all_pending_cleaning_issued_since_days(source, days_since_issuance)

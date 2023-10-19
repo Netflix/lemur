@@ -6,7 +6,6 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from io import open
 import subprocess
 
 from flask import current_app
@@ -93,7 +92,7 @@ def create_pkcs12(cert, chain, p12_tmp, key, alias, passphrase, legacy: bool = F
                 "-out",
                 p12_tmp,
                 "-password",
-                "pass:{}".format(passphrase),
+                f"pass:{passphrase}",
             ]
 
             if legacy:
@@ -163,19 +162,19 @@ class OpenSSLExportPlugin(ExportPlugin):
         with mktemppath() as output_tmp:
             if type == "PKCS12 (.p12)":
                 if not key:
-                    raise Exception("Private Key required by {0}".format(type))
+                    raise Exception(f"Private Key required by {type}")
 
                 create_pkcs12(body, chain, output_tmp, key, alias, passphrase)
                 extension = "p12"
             elif type == "legacy PKCS12 (.p12)":
                 if not key:
-                    raise Exception("Private Key required by {0}".format(type))
+                    raise Exception(f"Private Key required by {type}")
 
                 create_pkcs12(body, chain, output_tmp, key, alias, passphrase, legacy=True)
                 extension = "p12"
 
             else:
-                raise Exception("Unable to export, unsupported type: {0}".format(type))
+                raise Exception(f"Unable to export, unsupported type: {type}")
 
             with open(output_tmp, "rb") as f:
                 raw = f.read()

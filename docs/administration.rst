@@ -1232,6 +1232,13 @@ For more information about how to use social logins, see: `Satellizer <https://g
 
             OAUTH2_VERIFY_CERT = True
 
+.. data:: OAUTH2_SCOPE
+    :noindex:
+
+        ::
+
+            OAUTH2_SCOPE = ["openid", "email", "profile", "groups"]
+
 .. data:: OAUTH_STATE_TOKEN_SECRET
     :noindex:
 

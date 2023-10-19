@@ -72,7 +72,7 @@ def log_status_code(r, *args, **kwargs):
     :param kwargs:
     :return:
     """
-    metrics.send("symantec_status_code_{}".format(r.status_code), "counter", 1)
+    metrics.send(f"symantec_status_code_{r.status_code}", "counter", 1)
 
 
 def get_additional_names(options):
@@ -102,7 +102,7 @@ def process_options(options):
     # if there is a config variable with VERISIGN_PRODUCT_<upper(authority.name)> take the value as Cert product-type
     # else default to "Server", to be compatoible with former versions
     authority = options.get("authority").name.upper()
-    product_type = current_app.config.get("VERISIGN_PRODUCT_{0}".format(authority), "Server")
+    product_type = current_app.config.get(f"VERISIGN_PRODUCT_{authority}", "Server")
     data = {
         "challenge": get_psuedo_random_string(),
         "serverType": "Apache",
@@ -189,7 +189,7 @@ class VerisignIssuerPlugin(IssuerPlugin):
         self.session = requests.Session()
         self.session.cert = current_app.config.get("VERISIGN_PEM_PATH")
         self.session.hooks = dict(response=log_status_code)
-        super(VerisignIssuerPlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def create_certificate(self, csr, issuer_options):
         """
@@ -205,7 +205,7 @@ class VerisignIssuerPlugin(IssuerPlugin):
         data["csr"] = csr
 
         current_app.logger.info(
-            "Requesting a new verisign certificate: {0}".format(data)
+            f"Requesting a new verisign certificate: {data}"
         )
 
         response = self.session.post(url, data=data)
@@ -227,7 +227,7 @@ class VerisignIssuerPlugin(IssuerPlugin):
         external_id = None
         if 'Transaction_ID' in response_dict['Response'].keys():
             external_id = response_dict['Response']['Transaction_ID']
-        chain = current_app.config.get("VERISIGN_INTERMEDIATE_{0}".format(authority), current_app.config.get("VERISIGN_INTERMEDIATE"))
+        chain = current_app.config.get(f"VERISIGN_INTERMEDIATE_{authority}", current_app.config.get("VERISIGN_INTERMEDIATE"))
         return cert, chain, external_id
 
     @staticmethod
@@ -281,7 +281,7 @@ class VerisignIssuerPlugin(IssuerPlugin):
             response = self.session.get(url, params={"transaction_id": order_id})
 
             if response.status_code == 200:
-                print("Rejecting certificate. TransactionId: {}".format(order_id))
+                print(f"Rejecting certificate. TransactionId: {order_id}")
 
 
 class VerisignSourcePlugin(SourcePlugin):
@@ -298,7 +298,7 @@ class VerisignSourcePlugin(SourcePlugin):
     def __init__(self, *args, **kwargs):
         self.session = requests.Session()
         self.session.cert = current_app.config.get("VERISIGN_PEM_PATH")
-        super(VerisignSourcePlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_certificates(self):
         url = current_app.config.get("VERISIGN_URL") + "/reportingws"

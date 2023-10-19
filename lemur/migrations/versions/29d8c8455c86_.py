@@ -54,7 +54,7 @@ def upgrade():
         sa.Column(
             "date_created",
             sa.DateTime(),
-            server_default=sa.text(u"now()"),
+            server_default=sa.text("now()"),
             nullable=False,
         ),
         sa.Column("policy_id", sa.Integer(), nullable=True),

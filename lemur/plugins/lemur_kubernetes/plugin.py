@@ -81,7 +81,7 @@ def build_secret(secret_format, secret_name, body, private_key, cert_chain):
     }
     if secret_format == "Full":
         secret["data"] = {
-            "combined.pem": base64encode("%s\n%s" % (body, private_key)),
+            "combined.pem": base64encode("{}\n{}".format(body, private_key)),
             "ca.crt": base64encode(cert_chain),
             "service.key": base64encode(private_key),
             "service.crt": base64encode(body),
@@ -89,7 +89,7 @@ def build_secret(secret_format, secret_name, body, private_key, cert_chain):
     if secret_format == "TLS":
         secret["type"] = "kubernetes.io/tls"
         secret["data"] = {
-            "tls.crt": base64encode("%s\n%s" % (body, cert_chain)),
+            "tls.crt": base64encode("{}\n{}".format(body, cert_chain)),
             "tls.key": base64encode(private_key),
         }
     if secret_format == "Certificate":
@@ -184,7 +184,7 @@ class KubernetesDestinationPlugin(DestinationPlugin):
     ]
 
     def __init__(self, *args, **kwargs):
-        super(KubernetesDestinationPlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def upload(self, name, body, private_key, cert_chain, options, **kwargs):
 
@@ -209,7 +209,7 @@ class KubernetesDestinationPlugin(DestinationPlugin):
 
         except Exception as e:
             current_app.logger.exception(
-                "Exception in upload: {}".format(e), exc_info=True
+                f"Exception in upload: {e}", exc_info=True
             )
             raise
 
@@ -221,7 +221,7 @@ class KubernetesDestinationPlugin(DestinationPlugin):
         bearer = self.get_option("kubernetesAuthToken", options)
         if not bearer:
             bearer_file = self.get_option("kubernetesAuthTokenFile", options)
-            with open(bearer_file, "r") as file:
+            with open(bearer_file) as file:
                 bearer = file.readline()
             if bearer:
                 current_app.logger.debug("Using token read from %s", bearer_file)
@@ -251,7 +251,7 @@ class KubernetesDestinationPlugin(DestinationPlugin):
         namespace = self.get_option("kubernetesNamespace", options)
         if not namespace:
             namespace_file = self.get_option("kubernetesNamespaceFile", options)
-            with open(namespace_file, "r") as file:
+            with open(namespace_file) as file:
                 namespace = file.readline()
             if namespace:
                 current_app.logger.debug(
@@ -268,7 +268,7 @@ class KubernetesDestinationPlugin(DestinationPlugin):
 
 class K8sSession(requests.Session):
     def __init__(self, bearer, cert_file):
-        super(K8sSession, self).__init__()
+        super().__init__()
 
         self.headers.update({"Authorization": "Bearer %s" % bearer})
 
@@ -296,7 +296,7 @@ class K8sSession(requests.Session):
         """
         This method overrides the default timeout to be 10s.
         """
-        return super(K8sSession, self).request(
+        return super().request(
             method,
             url,
             params,

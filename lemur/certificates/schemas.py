@@ -52,7 +52,7 @@ class CertificateCreationSchema(CertificateSchema):
             data[
                 "notifications"
             ] += notification_service.create_default_expiration_notifications(
-                "DEFAULT_{0}".format(data["owner"].split("@")[0].upper()),
+                "DEFAULT_{}".format(data["owner"].split("@")[0].upper()),
                 [data["owner"]],
             )
 
@@ -228,7 +228,7 @@ class CertificateEditInputSchema(CertificateSchema):
         :return:
         """
         if data.get("owner"):
-            notification_name = "DEFAULT_{0}".format(
+            notification_name = "DEFAULT_{}".format(
                 data["owner"].split("@")[0].upper()
             )
 

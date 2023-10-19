@@ -14,11 +14,11 @@ import importlib
 import os
 import socket
 import stat
+from importlib.metadata import entry_points
 from logging import Formatter, StreamHandler
 from logging.handlers import RotatingFileHandler
 
 import logmatic
-import pkg_resources
 import sentry_sdk
 from click import get_current_context
 from flask import Flask, current_app
@@ -104,7 +104,7 @@ def from_file(file_path, silent=False):
             exec(  # nosec: config file safe
                 compile(config_file.read(), file_path, "exec"), d.__dict__
             )
-    except IOError as e:
+    except OSError as e:
         if silent and e.errno in (errno.ENOENT, errno.EISDIR):
             return False
         e.strerror = "Unable to load configuration file (%s)" % e.strerror
@@ -200,7 +200,7 @@ def configure_blueprints(app, blueprints):
     :param blueprints:
     """
     for blueprint in blueprints:
-        app.register_blueprint(blueprint, url_prefix="/api/{0}".format(API_VERSION))
+        app.register_blueprint(blueprint, url_prefix=f"/api/{API_VERSION}")
 
 
 def configure_database(app):
@@ -256,19 +256,14 @@ def install_plugins(app):
     from lemur.plugins import plugins
     from lemur.plugins.base import register
 
-    # entry_points={
-    #    'lemur.plugins': [
-    #         'verisign = lemur_verisign.plugin:VerisignPlugin'
-    #     ],
-    # },
-    for ep in pkg_resources.iter_entry_points("lemur.plugins"):
+    for ep in entry_points().get("lemur.plugins", []):
         try:
             plugin = ep.load()
         except Exception:
             import traceback
 
             app.logger.error(
-                "Failed to load plugin %r:\n%s\n" % (ep.name, traceback.format_exc())
+                "Failed to load plugin {!r}:\n{}\n".format(ep.name, traceback.format_exc())
             )
         else:
             register(plugin)

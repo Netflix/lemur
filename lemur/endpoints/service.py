@@ -187,7 +187,7 @@ def render(args):
 
     if filt:
         terms = filt.split(";")
-        term = "%{0}%".format(terms[1])
+        term = f"%{terms[1]}%"
         if "active" in filt:  # this is really weird but strcmp seems to not work here??
             query = query.filter(Endpoint.active == truthiness(terms[1]))
         elif "port" in filt:

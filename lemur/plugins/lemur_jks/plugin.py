@@ -31,7 +31,7 @@ def create_truststore(cert, chain, alias, passphrase):
     entries = []
     for idx, cert_bytes in enumerate(cert_chain_as_der(cert, chain)):
         # The original cert gets name <ALIAS>_cert, first chain element is <ALIAS>_cert_1, etc.
-        cert_alias = alias + "_cert" + ("_{}".format(idx) if idx else "")
+        cert_alias = alias + "_cert" + (f"_{idx}" if idx else "")
         entries.append(TrustedCertEntry.new(cert_alias, cert_bytes))
 
     return KeyStore.new("jks", entries).saves(passphrase)

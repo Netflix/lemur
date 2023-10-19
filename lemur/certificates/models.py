@@ -77,14 +77,14 @@ def get_or_increase_name(name, serial):
     if not certificates:
         return name
 
-    serial_name = "{0}-{1}".format(name, hex(int(serial))[2:].upper())
+    serial_name = f"{name}-{hex(int(serial))[2:].upper()}"
     certificates = Certificate.query.filter(Certificate.name == serial_name).all()
 
     if not certificates:
         return serial_name
 
     certificates = Certificate.query.filter(
-        Certificate.name.ilike("{0}%".format(serial_name))
+        Certificate.name.ilike(f"{serial_name}%")
     ).all()
 
     ends = [0]
@@ -94,7 +94,7 @@ def get_or_increase_name(name, serial):
         if end:
             ends.append(end)
 
-    return "{0}-{1}".format(root, max(ends) + 1)
+    return f"{root}-{max(ends) + 1}"
 
 
 class Certificate(BaseModel):
@@ -436,7 +436,7 @@ class Certificate(BaseModel):
         return return_extensions
 
     def __repr__(self):
-        return "Certificate(name={name})".format(name=self.name)
+        return f"Certificate(name={self.name})"
 
 
 class CertificateAssociation(BaseModel):

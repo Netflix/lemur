@@ -113,7 +113,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
     ]
 
     def __init__(self, *args, **kwargs):
-        super(ACMEIssuerPlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_ordered_certificate(self, pending_cert):
         self.acme = AcmeDnsHandler()
@@ -302,7 +302,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
 
         plugin_options = options.get("plugin", {}).get("plugin_options")
         if not plugin_options:
-            error = "Invalid options for lemur_acme plugin: {}".format(options)
+            error = f"Invalid options for lemur_acme plugin: {options}"
             current_app.logger.error(error)
             raise InvalidConfiguration(error)
         # Define static acme_root based off configuration variable by default. However, if user has passed a
@@ -416,7 +416,7 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
     ]
 
     def __init__(self, *args, **kwargs):
-        super(ACMEHttpIssuerPlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def create_certificate(self, csr, issuer_options):
         """
@@ -444,7 +444,7 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
 
         plugin_options = options.get("plugin", {}).get("plugin_options")
         if not plugin_options:
-            error = "Invalid options for lemur_acme plugin: {}".format(options)
+            error = f"Invalid options for lemur_acme plugin: {options}"
             current_app.logger.error(error)
             raise InvalidConfiguration(error)
         # Define static acme_root based off configuration variable by default. However, if user has passed a

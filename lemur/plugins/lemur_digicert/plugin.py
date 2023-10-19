@@ -16,20 +16,21 @@
 import copy
 import ipaddress
 import json
+import sys
 from typing import Any, Dict, List
 
 import arrow
 import pem
 import requests
-import sys
 from cryptography import x509
 from flask import current_app, g
+from retrying import retry
+from urllib3.util.retry import Retry
+
 from lemur.common.utils import validate_conf, convert_pkcs7_bytes_to_pem
 from lemur.extensions import metrics
 from lemur.plugins import lemur_digicert as digicert
 from lemur.plugins.bases import IssuerPlugin, SourcePlugin
-from retrying import retry
-from requests.packages.urllib3.util.retry import Retry
 
 
 def log_status_code(r, *args, **kwargs):
@@ -46,7 +47,7 @@ def log_status_code(r, *args, **kwargs):
         "status_code": r.status_code,
         "url": (r.url if r.url else ""),
     }
-    metrics.send("digicert_status_code_{}".format(r.status_code), "counter", 1)
+    metrics.send(f"digicert_status_code_{r.status_code}", "counter", 1)
     current_app.logger.info(log_data)
 
 
@@ -260,7 +261,7 @@ def handle_cis_response(session, response):
 @retry(stop_max_attempt_number=10, wait_fixed=1000)
 def get_certificate_id(session, base_url, order_id):
     """Retrieve certificate order id from Digicert API."""
-    order_url = "{0}/services/v2/order/certificate/{1}".format(base_url, order_id)
+    order_url = f"{base_url}/services/v2/order/certificate/{order_id}"
     response_data = handle_response(session.get(order_url))
     if response_data["status"] != "issued":
         raise Exception("Order not in issued state.")
@@ -271,7 +272,7 @@ def get_certificate_id(session, base_url, order_id):
 @retry(stop_max_attempt_number=10, wait_fixed=1000)
 def get_cis_certificate(session, base_url, order_id):
     """Retrieve certificate order id from Digicert API, including the chain"""
-    certificate_url = "{0}/platform/cis/certificate/{1}/download".format(base_url, order_id)
+    certificate_url = f"{base_url}/platform/cis/certificate/{order_id}/download"
     session.headers.update({"Accept": "application/x-pkcs7-certificates"})
     response = session.get(certificate_url)
     session.headers.pop("Accept")
@@ -314,7 +315,7 @@ class DigiCertSourcePlugin(SourcePlugin):
 
         self.session.hooks = dict(response=log_status_code)
 
-        super(DigiCertSourcePlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_certificates(self):
         pass
@@ -360,7 +361,7 @@ class DigiCertIssuerPlugin(IssuerPlugin):
 
         self.session.hooks = dict(response=log_status_code)
 
-        super(DigiCertIssuerPlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def create_certificate(self, csr, issuer_options):
         """Create a DigiCert certificate.
@@ -373,7 +374,7 @@ class DigiCertIssuerPlugin(IssuerPlugin):
         cert_type = current_app.config.get("DIGICERT_ORDER_TYPE")
 
         # make certificate request
-        determinator_url = "{0}/services/v2/order/certificate/{1}".format(
+        determinator_url = "{}/services/v2/order/certificate/{}".format(
             base_url, cert_type
         )
         data = map_fields(issuer_options, csr)
@@ -387,7 +388,7 @@ class DigiCertIssuerPlugin(IssuerPlugin):
         certificate_id = get_certificate_id(self.session, base_url, order_id)
 
         # retrieve certificate
-        certificate_url = "{0}/services/v2/certificate/{1}/download/format/pem_all".format(
+        certificate_url = "{}/services/v2/certificate/{}/download/format/pem_all".format(
             base_url, certificate_id
         )
         end_entity, intermediate, root = pem.parse(
@@ -404,7 +405,7 @@ class DigiCertIssuerPlugin(IssuerPlugin):
         base_url = current_app.config.get("DIGICERT_URL")
 
         # make certificate revoke request
-        create_url = "{0}/services/v2/certificate/{1}/revoke".format(
+        create_url = "{}/services/v2/certificate/{}/revoke".format(
             base_url, certificate.external_id
         )
 
@@ -424,7 +425,7 @@ class DigiCertIssuerPlugin(IssuerPlugin):
             certificate_id = get_certificate_id(self.session, base_url, order_id)
         except Exception as ex:
             return None
-        certificate_url = "{0}/services/v2/certificate/{1}/download/format/pem_all".format(
+        certificate_url = "{}/services/v2/certificate/{}/download/format/pem_all".format(
             base_url, certificate_id
         )
         end_entity, intermediate, root = pem.parse(
@@ -440,7 +441,7 @@ class DigiCertIssuerPlugin(IssuerPlugin):
     def cancel_ordered_certificate(self, pending_cert, **kwargs):
         """ Set the certificate order to canceled """
         base_url = current_app.config.get("DIGICERT_URL")
-        api_url = "{0}/services/v2/order/certificate/{1}/status".format(
+        api_url = "{}/services/v2/order/certificate/{}/status".format(
             base_url, pending_cert.external_id
         )
         payload = {"status": "CANCELED", "note": kwargs.get("note")}
@@ -450,16 +451,16 @@ class DigiCertIssuerPlugin(IssuerPlugin):
             # don't own that order (someone else's order id!).  Either way, we can just ignore it
             # and have it removed from Lemur
             current_app.logger.warning(
-                "Digicert Plugin tried to cancel pending certificate {0} but it does not exist!".format(
+                "Digicert Plugin tried to cancel pending certificate {} but it does not exist!".format(
                     pending_cert.name
                 )
             )
         elif response.status_code != 204:
             current_app.logger.debug(
-                "{0} code {1}".format(response.status_code, response.content)
+                f"{response.status_code} code {response.content}"
             )
             raise Exception(
-                "Failed to cancel pending certificate {0}".format(pending_cert.name)
+                f"Failed to cancel pending certificate {pending_cert.name}"
             )
 
     @staticmethod
@@ -518,14 +519,14 @@ class DigiCertCISSourcePlugin(SourcePlugin):
         adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("https://", adapter)
 
-        super(DigiCertCISSourcePlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_certificates(self, options, **kwargs):
         """Fetch all Digicert certificates."""
         base_url = current_app.config.get("DIGICERT_CIS_URL")
 
         # make request
-        search_url = "{0}/platform/cis/certificate/search".format(base_url)
+        search_url = f"{base_url}/platform/cis/certificate/search"
 
         certs = []
         page = 1
@@ -537,7 +538,7 @@ class DigiCertCISSourcePlugin(SourcePlugin):
             data = handle_cis_response(self.session, response)
 
             for c in data["certificates"]:
-                download_url = "{0}/platform/cis/certificate/{1}".format(
+                download_url = "{}/platform/cis/certificate/{}".format(
                     base_url, c["id"]
                 )
                 certificate = self.session.get(download_url)
@@ -597,14 +598,14 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
         adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("https://", adapter)
 
-        super(DigiCertCISIssuerPlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def create_certificate(self, csr, issuer_options):
         """Create a DigiCert certificate."""
         base_url = current_app.config.get("DIGICERT_CIS_URL")
 
         # make certificate request
-        create_url = "{0}/platform/cis/certificate".format(base_url)
+        create_url = f"{base_url}/platform/cis/certificate"
 
         data = map_cis_fields(issuer_options, csr)
         response = self.session.post(create_url, data=json.dumps(data))
@@ -627,7 +628,7 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
         base_url = current_app.config.get("DIGICERT_CIS_URL")
 
         # make certificate revoke request
-        revoke_url = "{0}/platform/cis/certificate/{1}/revoke".format(
+        revoke_url = "{}/platform/cis/certificate/{}/revoke".format(
             base_url, certificate.external_id
         )
         metrics.send("digicert_revoke_certificate_success", "counter", 1)
