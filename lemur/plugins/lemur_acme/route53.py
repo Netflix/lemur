@@ -34,7 +34,7 @@ def _find_zone_id(domain, client=None):
                         chosen_zone = (zone["Name"], zone["Id"])
 
     if chosen_zone is None:
-        raise ValueError("Unable to find a Route53 hosted zone for {}".format(domain))
+        raise ValueError(f"Unable to find a Route53 hosted zone for {domain}")
 
     return chosen_zone[1]  # Return the chosen zone ID
 
@@ -75,10 +75,10 @@ def change_txt_record(action, zone_id, domain, value, client=None):
     seen = False
     for record in current_txt_records:
         for k, v in record.items():
-            if '"{}"'.format(value) == v:
+            if f'"{value}"' == v:
                 seen = True
     if not seen:
-        current_txt_records.append({"Value": '"{}"'.format(value)})
+        current_txt_records.append({"Value": f'"{value}"'})
 
     if action == "DELETE" and len(current_txt_records) > 1:
         # If we want to delete one record out of many, we'll update the record to not include the deleted value instead.
@@ -86,7 +86,7 @@ def change_txt_record(action, zone_id, domain, value, client=None):
         current_txt_records = [
             record
             for record in current_txt_records
-            if not (record.get("Value") == '"{}"'.format(value))
+            if not (record.get("Value") == f'"{value}"')
         ]
         action = "UPSERT"
 

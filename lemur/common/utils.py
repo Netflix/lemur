@@ -335,7 +335,7 @@ def validate_conf(app, required_vars):
     for var in required_vars:
         if var not in app.config:
             raise InvalidConfiguration(
-                "Required variable '{var}' is not set in Lemur's conf.".format(var=var)
+                f"Required variable '{var}' is not set in Lemur's conf."
             )
 
 
@@ -400,8 +400,7 @@ def windowed_query(q, column, windowsize):
     """"Break a Query into windows on a given column."""
 
     for whereclause in column_windows(q.session, column, windowsize):
-        for row in q.filter(whereclause).order_by(column):
-            yield row
+        yield from q.filter(whereclause).order_by(column)
 
 
 def truthiness(s):

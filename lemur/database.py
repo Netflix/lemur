@@ -211,7 +211,7 @@ def filter(query, model, terms):
     :return:
     """
     column = get_model_column(model, underscore(terms[0]))
-    return query.filter(column.ilike("%{}%".format(terms[1])))
+    return query.filter(column.ilike(f"%{terms[1]}%"))
 
 
 def sort(query, model, field, direction):

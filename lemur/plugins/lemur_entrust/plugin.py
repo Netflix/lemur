@@ -243,7 +243,7 @@ class EntrustIssuerPlugin(IssuerPlugin):
         adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("https://", adapter)
 
-        super(EntrustIssuerPlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def create_certificate(self, csr, issuer_options):
         """
@@ -418,7 +418,7 @@ class EntrustSourcePlugin(SourcePlugin):
         adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("https://", adapter)
 
-        super(EntrustSourcePlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_certificates(self, options, **kwargs):
         """ Fetch all Entrust certificates """
@@ -447,7 +447,7 @@ class EntrustSourcePlugin(SourcePlugin):
             if status_code > 399:
                 raise Exception(f"ENTRUST error: {status_code}\n{data['errors']}")
             for c in data["certificates"]:
-                download_url = "{0}{1}".format(
+                download_url = "{}{}".format(
                     host, c["uri"]
                 )
                 cert_response = self.session.get(download_url)

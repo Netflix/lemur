@@ -99,7 +99,7 @@ class AtlasMetricPlugin(MetricPlugin):
 
             if res.status_code != 200:
                 current_app.logger.warning(
-                    "Failed to publish altas metric. {0}".format(res.content)
+                    f"Failed to publish altas metric. {res.content}"
                 )
 
         except ConnectionError:

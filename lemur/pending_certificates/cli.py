@@ -64,7 +64,7 @@ def fetch(ids):
             pending_certificate_service.increment_attempt(cert)
             failed += 1
     click.echo(
-        "[+] Certificates: New: {new} Failed: {failed}".format(new=new, failed=failed)
+        f"[+] Certificates: New: {new} Failed: {failed}"
     )
 
 
@@ -80,7 +80,7 @@ def fetch_all_acme():
     certificates.
     """
 
-    log_data = {"function": "{}.{}".format(__name__, sys._getframe().f_code.co_name)}
+    log_data = {"function": f"{__name__}.{sys._getframe().f_code.co_name}"}
     pending_certs = pending_certificate_service.get_unresolved_pending_certs()
     new = 0
     failed = 0

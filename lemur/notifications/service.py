@@ -58,7 +58,7 @@ def create_default_expiration_notifications(name, recipients, intervals=None):
 
     notifications = []
     for i in intervals:
-        n = get_by_label("{name}_{interval}_DAY".format(name=name, interval=i))
+        n = get_by_label(f"{name}_{i}_DAY")
         if not n:
             inter = [
                 {
@@ -72,7 +72,7 @@ def create_default_expiration_notifications(name, recipients, intervals=None):
             ]
             inter.extend(options)
             n = create(
-                label="{name}_{interval}_DAY".format(name=name, interval=i),
+                label=f"{name}_{i}_DAY",
                 plugin_name=current_app.config.get(
                     "LEMUR_DEFAULT_NOTIFICATION_PLUGIN", "email-notification"
                 ),

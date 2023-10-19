@@ -413,7 +413,7 @@ def get_authoritative_nameserver(domain):
     while not last:
         s = n.split(depth)
 
-        last = s[0].to_unicode() == u"@"
+        last = s[0].to_unicode() == "@"
         sub = s[1]
 
         query = dns.message.make_query(sub, dns.rdatatype.NS)

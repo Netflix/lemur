@@ -35,7 +35,7 @@ class CfsslIssuerPlugin(IssuerPlugin):
 
     def __init__(self, *args, **kwargs):
         self.session = requests.Session()
-        super(CfsslIssuerPlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def create_certificate(self, csr, issuer_options):
         """
@@ -46,10 +46,10 @@ class CfsslIssuerPlugin(IssuerPlugin):
         :return:
         """
         current_app.logger.info(
-            "Requesting a new cfssl certificate with csr: {0}".format(csr)
+            f"Requesting a new cfssl certificate with csr: {csr}"
         )
 
-        url = "{0}{1}".format(current_app.config.get("CFSSL_URL"), "/api/v1/cfssl/sign")
+        url = "{}{}".format(current_app.config.get("CFSSL_URL"), "/api/v1/cfssl/sign")
 
         data = {"certificate_request": csr}
         data = json.dumps(data)
@@ -72,7 +72,7 @@ class CfsslIssuerPlugin(IssuerPlugin):
                 {"token": token.decode("utf-8"), "request": data.decode("utf-8")}
             )
 
-            url = "{0}{1}".format(
+            url = "{}{}".format(
                 current_app.config.get("CFSSL_URL"), "/api/v1/cfssl/authsign"
             )
         response = self.session.post(
@@ -107,7 +107,7 @@ class CfsslIssuerPlugin(IssuerPlugin):
     def revoke_certificate(self, certificate, reason):
         """Revoke a CFSSL certificate."""
         base_url = current_app.config.get("CFSSL_URL")
-        create_url = "{0}/api/v1/cfssl/revoke".format(base_url)
+        create_url = f"{base_url}/api/v1/cfssl/revoke"
 
         crl_reason = CRLReason.unspecified
         if "crl_reason" in reason:
@@ -122,7 +122,7 @@ class CfsslIssuerPlugin(IssuerPlugin):
             + crl_reason.name
             + '"}'
         )
-        current_app.logger.debug("Revoking cert: {0}".format(data))
+        current_app.logger.debug(f"Revoking cert: {data}")
         response = self.session.post(
             create_url, data=data.encode(encoding="utf_8", errors="strict")
         )

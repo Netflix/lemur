@@ -18,7 +18,7 @@ class ADCSIssuerPlugin(IssuerPlugin):
     def __init__(self, *args, **kwargs):
         """Initialize the issuer with the appropriate details."""
         self.session = requests.Session()
-        super(ADCSIssuerPlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @staticmethod
     def create_authority(options):
@@ -44,12 +44,12 @@ class ADCSIssuerPlugin(IssuerPlugin):
         # if there is a config variable ADCS_TEMPLATE_<upper(authority.name)> take the value as Cert template
         # else default to ADCS_TEMPLATE to be compatible with former versions
         authority = issuer_options.get("authority").name.upper()
-        adcs_template = current_app.config.get("ADCS_TEMPLATE_{0}".format(authority), current_app.config.get("ADCS_TEMPLATE"))
+        adcs_template = current_app.config.get(f"ADCS_TEMPLATE_{authority}", current_app.config.get("ADCS_TEMPLATE"))
         ca_server = Certsrv(
             adcs_server, adcs_user, adcs_pwd, auth_method=adcs_auth_method
         )
-        current_app.logger.info("Requesting CSR: {0}".format(csr))
-        current_app.logger.info("Issuer options: {0}".format(issuer_options))
+        current_app.logger.info(f"Requesting CSR: {csr}")
+        current_app.logger.info(f"Issuer options: {issuer_options}")
         cert = (
             ca_server.get_cert(csr, adcs_template, encoding="b64")
             .decode("utf-8")
@@ -98,19 +98,19 @@ class ADCSSourcePlugin(SourcePlugin):
                     .replace("\r\n", "\n")
                 )
             except Exception as err:
-                if "{0}".format(err).find("CERTSRV_E_PROPERTY_EMPTY"):
+                if f"{err}".find("CERTSRV_E_PROPERTY_EMPTY"):
                     # this error indicates end of certificate list(?), so we stop
                     break
                 else:
                     # We do nothing in case there is no certificate returned for other reasons
-                    current_app.logger.info("Error with id {0}: {1}".format(id, err))
+                    current_app.logger.info(f"Error with id {id}: {err}")
             else:
                 # we have a certificate
                 pubkey = crypto.load_certificate(crypto.FILETYPE_PEM, cert)
                 # loop through extensions to see if we find "TLS Web Server Authentication"
                 for e_id in range(0, pubkey.get_extension_count() - 1):
                     try:
-                        extension = "{0}".format(pubkey.get_extension(e_id))
+                        extension = f"{pubkey.get_extension(e_id)}"
                     except Exception:
                         extensionn = ""
                     if extension.find("TLS Web Server Authentication") != -1:

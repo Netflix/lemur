@@ -45,7 +45,7 @@ def create(uid, name, ttl):
     )
     click.echo("[+] Successfully created a new api key. Generating a JWT...")
     jwt = create_token(uid, key.id, key.ttl)
-    click.echo("[+] Your JWT is: {jwt}".format(jwt=jwt))
+    click.echo(f"[+] Your JWT is: {jwt}")
 
 
 @cli.command("revoke")

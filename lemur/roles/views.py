@@ -34,7 +34,7 @@ class RolesList(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(RolesList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, roles_output_schema)
     def get(self):
@@ -153,7 +153,7 @@ class RolesList(AuthenticatedResource):
 
 class RoleViewCredentials(AuthenticatedResource):
     def __init__(self):
-        super(RoleViewCredentials, self).__init__()
+        super().__init__()
 
     def get(self, role_id):
         """
@@ -209,7 +209,7 @@ class RoleViewCredentials(AuthenticatedResource):
 class Roles(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(Roles, self).__init__()
+        super().__init__()
 
     @validate_schema(None, role_output_schema)
     def get(self, role_id):
@@ -342,7 +342,7 @@ class UserRolesList(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(UserRolesList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, roles_output_schema)
     def get(self, user_id):
@@ -402,7 +402,7 @@ class AuthorityRolesList(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(AuthorityRolesList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, roles_output_schema)
     def get(self, authority_id):

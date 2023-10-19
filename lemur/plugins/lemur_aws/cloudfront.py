@@ -108,7 +108,7 @@ def attach_certificate(distribution_id, iam_cert_id, **kwargs):
             raise InvalidDistribution(distribution_id)
         if iam_cert_id == viewer_cert["IAMCertificateId"]:
             current_app.logger.warning(
-                "distribution {0} already assigned to IAM certificate {1}, not updated".format(
+                "distribution {} already assigned to IAM certificate {}, not updated".format(
                     distribution_id, iam_cert_id))
             return
         viewer_cert["IAMCertificateId"] = iam_cert_id

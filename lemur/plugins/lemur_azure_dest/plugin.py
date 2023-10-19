@@ -129,7 +129,7 @@ class AzureDestinationPlugin(DestinationPlugin):
 
     def __init__(self, *args, **kwargs):
         self.session = requests.Session()
-        super(AzureDestinationPlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def upload(self, name, body, private_key, cert_chain, options, **kwargs):
         """

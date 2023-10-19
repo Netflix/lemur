@@ -106,7 +106,7 @@ def create_certificate(pending_certificate, certificate, user):
     data, errors = CertificateUploadInputSchema().load(certificate)
     if errors:
         raise Exception(
-            "Unable to create certificate: {reasons}".format(reasons=errors)
+            f"Unable to create certificate: {errors}"
         )
 
     data.update(vars(pending_certificate))
@@ -212,13 +212,13 @@ def render(args):
             # we can't rely on issuer being correct in the cert directly so we combine queries
             sub_query = (
                 database.session_query(Authority.id)
-                .filter(Authority.name.ilike("%{0}%".format(terms[1])))
+                .filter(Authority.name.ilike(f"%{terms[1]}%"))
                 .subquery()
             )
 
             query = query.filter(
                 or_(
-                    PendingCertificate.issuer.ilike("%{0}%".format(terms[1])),
+                    PendingCertificate.issuer.ilike(f"%{terms[1]}%"),
                     PendingCertificate.authority_id.in_(sub_query),
                 )
             )
@@ -234,9 +234,9 @@ def render(args):
         elif "cn" in terms:
             query = query.filter(
                 or_(
-                    PendingCertificate.cn.ilike("%{0}%".format(terms[1])),
+                    PendingCertificate.cn.ilike(f"%{terms[1]}%"),
                     PendingCertificate.domains.any(
-                        Domain.name.ilike("%{0}%".format(terms[1]))
+                        Domain.name.ilike(f"%{terms[1]}%")
                     ),
                 )
             )

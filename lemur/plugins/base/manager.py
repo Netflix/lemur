@@ -19,7 +19,7 @@ class PluginManager(InstanceManager):
 
     def all(self, version=1, plugin_type=None):
         for plugin in sorted(
-            super(PluginManager, self).all(), key=lambda x: x.get_title()
+            super().all(), key=lambda x: x.get_title()
         ):
             if not plugin.type == plugin_type and plugin_type:
                 continue
@@ -63,9 +63,9 @@ class PluginManager(InstanceManager):
                 return result
 
     def register(self, cls):
-        self.add("%s.%s" % (cls.__module__, cls.__name__))
+        self.add("{}.{}".format(cls.__module__, cls.__name__))
         return cls
 
     def unregister(self, cls):
-        self.remove("%s.%s" % (cls.__module__, cls.__name__))
+        self.remove("{}.{}".format(cls.__module__, cls.__name__))
         return cls

@@ -25,7 +25,7 @@ class Authorization(BaseModel):
         return plugins.get(self.plugin_name)
 
     def __repr__(self):
-        return "Authorization(id={id})".format(id=self.id)
+        return f"Authorization(id={self.id})"
 
     def __init__(self, account_number, domains, dns_provider_type, options=None):
         self.account_number = account_number

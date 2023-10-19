@@ -105,7 +105,7 @@ class User(BaseModel):
                 return True
 
     def __repr__(self):
-        return "User(username={username})".format(username=self.username)
+        return f"User(username={self.username})"
 
 
 listen(User, "before_insert", hash_password)

@@ -20,4 +20,4 @@ class Domain(BaseModel):
     sensitive = Column(Boolean, default=False)
 
     def __repr__(self):
-        return "Domain(name={name})".format(name=self.name)
+        return f"Domain(name={self.name})"

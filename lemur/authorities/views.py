@@ -34,7 +34,7 @@ class AuthoritiesList(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(AuthoritiesList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, authorities_output_schema)
     def get(self):
@@ -243,7 +243,7 @@ class AuthoritiesList(AuthenticatedResource):
 class Authorities(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(Authorities, self).__init__()
+        super().__init__()
 
     @validate_schema(None, authority_output_schema)
     def get(self, authority_id):
@@ -425,7 +425,7 @@ class Authorities(AuthenticatedResource):
 
 class CertificateAuthority(AuthenticatedResource):
     def __init__(self):
-        super(CertificateAuthority, self).__init__()
+        super().__init__()
 
     @validate_schema(None, authority_output_schema)
     def get(self, certificate_id):

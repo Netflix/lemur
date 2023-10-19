@@ -92,7 +92,7 @@ class PendingCertificateEditInputSchema(PendingCertificateSchema):
         :return:
         """
         if data["owner"]:
-            notification_name = "DEFAULT_{0}".format(
+            notification_name = "DEFAULT_{}".format(
                 data["owner"].split("@")[0].upper()
             )
             data[

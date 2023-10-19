@@ -245,7 +245,7 @@ def fetch_acme_cert(id, notify_reissue_cert_id=None):
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     log_data = {
         "function": function,
-        "message": "Resolving pending certificate {}".format(id),
+        "message": f"Resolving pending certificate {id}",
         "task_id": task_id,
         "id": id,
     }
@@ -373,7 +373,7 @@ def fetch_all_pending_acme_certs():
         cert_authority = get_authority(cert.authority_id)
         if cert_authority.plugin_name == "acme-issuer":
             if datetime.now(timezone.utc) - cert.last_updated > timedelta(minutes=5):
-                log_data["message"] = "Triggering job for cert {}".format(cert.name)
+                log_data["message"] = f"Triggering job for cert {cert.name}"
                 log_data["cert_name"] = cert.name
                 log_data["cert_id"] = cert.id
                 current_app.logger.debug(log_data)

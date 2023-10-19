@@ -184,5 +184,5 @@ def configure_hook(app):
 
         # Record our response time metric
         metrics.send("response_time", "TIMER", elapsed, metric_tags=tags)
-        metrics.send("status_code_{}".format(response.status_code), "counter", 1)
+        metrics.send(f"status_code_{response.status_code}", "counter", 1)
         return response

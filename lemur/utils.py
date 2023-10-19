@@ -26,7 +26,7 @@ def mktempfile():
         try:
             os.unlink(name)
         except OSError as e:
-            current_app.logger.debug("No file {0}".format(name))
+            current_app.logger.debug(f"No file {name}")
 
 
 @contextmanager
@@ -40,7 +40,7 @@ def mktemppath():
         try:
             os.unlink(path)
         except OSError as e:
-            current_app.logger.debug("No file {0}".format(path))
+            current_app.logger.debug(f"No file {path}")
 
 
 def get_keys():

@@ -20,7 +20,7 @@ def put(bucket_name, region_name, prefix, data, encrypt, **kwargs):
     """
     bucket = kwargs["resource"].Bucket(bucket_name)
     current_app.logger.debug(
-        "Persisting data to S3. Bucket: {0} Prefix: {1}".format(bucket_name, prefix)
+        f"Persisting data to S3. Bucket: {bucket_name} Prefix: {prefix}"
     )
 
     # get data ready for writing

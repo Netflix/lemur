@@ -24,7 +24,7 @@ class PluginsList(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(PluginsList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, plugins_output_schema)
     def get(self):
@@ -83,7 +83,7 @@ class Plugins(AuthenticatedResource):
     """ Defines the 'plugins' endpoint """
 
     def __init__(self):
-        super(Plugins, self).__init__()
+        super().__init__()
 
     @validate_schema(None, plugin_output_schema)
     def get(self, name):

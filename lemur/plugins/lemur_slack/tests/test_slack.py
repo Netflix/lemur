@@ -18,7 +18,7 @@ def test_formatting(certificate):
         "color": "danger",
         "fields": [
             {"short": True, "value": "joe@example.com", "title": "Owner"},
-            {"short": True, "value": u"Tuesday, December 31, 2047", "title": "Expires"},
+            {"short": True, "value": "Tuesday, December 31, 2047", "title": "Expires"},
             {"short": True, "value": 0, "title": "Endpoints Detected"},
         ],
         "title_link": "https://lemur.example.com/#/certificates/{name}".format(

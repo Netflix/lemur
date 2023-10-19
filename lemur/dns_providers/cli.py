@@ -38,7 +38,7 @@ def get_all_zones():
             zones = acme_dns_handler.get_all_zones(dns_provider)
             set_domains(dns_provider, zones)
         except Exception as e:
-            click.echo("[+] Error with DNS Provider {}: {}".format(dns_provider.name, e))
+            click.echo(f"[+] Error with DNS Provider {dns_provider.name}: {e}")
             log_data["message"] = f"get all zones failed for {dns_provider} {e}."
             capture_exception(extra=log_data)
 

@@ -16,7 +16,7 @@ class DuplicateError(LemurException):
         self.key = key
 
     def __str__(self):
-        return repr("Duplicate found! Could not create: {0}".format(self.key))
+        return repr(f"Duplicate found! Could not create: {self.key}")
 
 
 class InvalidListener(LemurException):
@@ -32,7 +32,7 @@ class InvalidDistribution(LemurException):
 
     def __str__(self):
         return repr(
-            "Invalid distribution {0}, must use IAM certificates".format(self.field)
+            f"Invalid distribution {self.field}, must use IAM certificates"
         )
 
 
@@ -50,7 +50,7 @@ class AttrNotFound(LemurException):
         self.field = field
 
     def __str__(self):
-        return repr("The field '{0}' is not sortable or filterable".format(self.field))
+        return repr(f"The field '{self.field}' is not sortable or filterable")
 
 
 class InvalidConfiguration(Exception):

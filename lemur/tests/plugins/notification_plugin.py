@@ -10,7 +10,7 @@ class TestNotificationPlugin(NotificationPlugin):
     author_url = "https://github.com/netflix/lemur.git"
 
     def __init__(self, *args, **kwargs):
-        super(TestNotificationPlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @staticmethod
     def send(notification_type, message, targets, options, **kwargs):

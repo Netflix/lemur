@@ -126,7 +126,7 @@ def get_elb_endpoints(account_number, region, elb_dict):
             )
             endpoint["policy"] = format_elb_cipher_policy(policy)
 
-        current_app.logger.debug("Found new endpoint. Endpoint: {}".format(endpoint))
+        current_app.logger.debug(f"Found new endpoint. Endpoint: {endpoint}")
 
         endpoints.append(endpoint)
 
@@ -434,7 +434,7 @@ class AWSSourcePlugin(SourcePlugin):
                 )
         except ClientError:
             current_app.logger.warning(
-                "get_elb_certificate_failed: Unable to get certificate for {0}".format(certificate_name))
+                f"get_elb_certificate_failed: Unable to get certificate for {certificate_name}")
             capture_exception()
             metrics.send(
                 "get_elb_certificate_failed", "counter", 1,
@@ -584,7 +584,7 @@ class S3DestinationPlugin(ExportDestinationPlugin):
     ]
 
     def __init__(self, *args, **kwargs):
-        super(S3DestinationPlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def upload(self, name, body, private_key, chain, options, **kwargs):
         files = self.export(body, private_key, chain, options)

@@ -95,7 +95,7 @@ class Endpoint(BaseModel):
                 issues.append(
                     {
                         "name": "deprecated cipher",
-                        "value": "{0} has been deprecated consider removing it.".format(
+                        "value": "{} has been deprecated consider removing it.".format(
                             cipher.name
                         ),
                     }
@@ -120,4 +120,4 @@ class Endpoint(BaseModel):
         return issues
 
     def __repr__(self):
-        return "Endpoint(name={name})".format(name=self.name)
+        return f"Endpoint(name={self.name})"

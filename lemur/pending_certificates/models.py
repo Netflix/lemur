@@ -34,15 +34,15 @@ from lemur.utils import Vault
 
 def get_or_increase_name(name, serial):
     certificates = PendingCertificate.query.filter(
-        PendingCertificate.name.ilike("{0}%".format(name))
+        PendingCertificate.name.ilike(f"{name}%")
     ).all()
 
     if not certificates:
         return name
 
-    serial_name = "{0}-{1}".format(name, hex(int(serial))[2:].upper())
+    serial_name = f"{name}-{hex(int(serial))[2:].upper()}"
     certificates = PendingCertificate.query.filter(
-        PendingCertificate.name.ilike("{0}%".format(serial_name))
+        PendingCertificate.name.ilike(f"{serial_name}%")
     ).all()
 
     if not certificates:
@@ -55,7 +55,7 @@ def get_or_increase_name(name, serial):
         if end:
             ends.append(end)
 
-    return "{0}-{1}".format(root, max(ends) + 1)
+    return f"{root}-{max(ends) + 1}"
 
 
 class PendingCertificate(BaseModel):

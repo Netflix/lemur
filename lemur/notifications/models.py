@@ -45,4 +45,4 @@ class Notification(BaseModel):
         return plugins.get(self.plugin_name)
 
     def __repr__(self):
-        return "Notification(label={label})".format(label=self.label)
+        return f"Notification(label={self.label})"

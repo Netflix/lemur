@@ -30,7 +30,7 @@ class UsersList(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(UsersList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, users_output_schema)
     def get(self):
@@ -170,7 +170,7 @@ class UsersList(AuthenticatedResource):
 class Users(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(Users, self).__init__()
+        super().__init__()
 
     @validate_schema(None, user_output_schema)
     def get(self, user_id):
@@ -285,7 +285,7 @@ class Users(AuthenticatedResource):
 class CertificateUsers(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(CertificateUsers, self).__init__()
+        super().__init__()
 
     @validate_schema(None, user_output_schema)
     def get(self, certificate_id):
@@ -327,7 +327,7 @@ class CertificateUsers(AuthenticatedResource):
 class RoleUsers(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(RoleUsers, self).__init__()
+        super().__init__()
 
     @validate_schema(None, users_output_schema)
     def get(self, role_id):
@@ -380,7 +380,7 @@ class RoleUsers(AuthenticatedResource):
 
 class Me(AuthenticatedResource):
     def __init__(self):
-        super(Me, self).__init__()
+        super().__init__()
 
     @validate_schema(None, user_output_schema)
     def get(self):

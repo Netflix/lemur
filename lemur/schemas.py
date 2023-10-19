@@ -188,7 +188,7 @@ class PluginInputSchema(LemurInputSchema):
             data["plugin_object"] = plugins.get(data["slug"])
         except KeyError as e:
             raise ValidationError(
-                "Unable to find plugin. Slug: {0} Reason: {1}".format(data["slug"], e)
+                "Unable to find plugin. Slug: {} Reason: {}".format(data["slug"], e)
             )
 
         plugin_options_validated = []

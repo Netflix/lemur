@@ -37,7 +37,7 @@ from lemur.extensions import metrics
 from lemur.plugins.lemur_acme import cloudflare, dyn, route53, ultradns, powerdns, nsone
 
 
-class AuthorizationRecord(object):
+class AuthorizationRecord:
     def __init__(self, domain, target_domain, authz, dns_challenge, change_id, cname_delegation):
         self.domain = domain
         self.target_domain = target_domain
@@ -47,7 +47,7 @@ class AuthorizationRecord(object):
         self.cname_delegation = cname_delegation
 
 
-class AcmeHandler(object):
+class AcmeHandler:
 
     def reuse_account(self, authority):
         if not authority.options:
@@ -121,7 +121,7 @@ class AcmeHandler(object):
         self.log_remaining_validation(orderr.authorizations, acme_client.net.account.uri.replace('https://', ''))
 
         current_app.logger.debug(
-            "{0} {1}".format(type(pem_certificate), type(pem_certificate_chain))
+            f"{type(pem_certificate)} {type(pem_certificate_chain)}"
         )
         return pem_certificate, pem_certificate_chain
 
@@ -182,7 +182,7 @@ class AcmeHandler(object):
             key = jose.JWK.json_loads(existing_key)
             regr = messages.RegistrationResource.json_loads(existing_regr)
             current_app.logger.debug(
-                "Connecting with directory at {0}".format(directory_url)
+                f"Connecting with directory at {directory_url}"
             )
             net = ClientNetwork(key, account=regr, alg=key_to_alg(key))
             directory = ClientV2.get_directory(directory_url, net)
@@ -194,7 +194,7 @@ class AcmeHandler(object):
 
             current_app.logger.debug("Creating a new ACME account")
             current_app.logger.debug(
-                "Connecting with directory at {0}".format(directory_url)
+                f"Connecting with directory at {directory_url}"
             )
 
             net = ClientNetwork(key, account=None, timeout=3600, alg=key_to_alg(key))
@@ -236,7 +236,7 @@ class AcmeHandler(object):
 
                 authorities_service.update_options(authority.id, options=json.dumps(new_options))
 
-            current_app.logger.debug("Connected: {0}".format(registration.uri))
+            current_app.logger.debug(f"Connected: {registration.uri}")
 
         return client, registration
 
@@ -256,7 +256,7 @@ class AcmeHandler(object):
                 if dns_name.value not in domains:
                     domains.append(dns_name.value)
 
-        current_app.logger.debug("Got these domains: {0}".format(domains))
+        current_app.logger.debug(f"Got these domains: {domains}")
         return domains
 
     def revoke_certificate(self, certificate, crl_reason=0):
@@ -352,7 +352,7 @@ class AcmeDnsHandler(AcmeHandler):
         }
         provider = provider_types.get(type)
         if not provider:
-            raise UnknownProvider("No such DNS provider: {}".format(type))
+            raise UnknownProvider(f"No such DNS provider: {type}")
         return provider
 
     def start_dns_challenge(
@@ -399,7 +399,7 @@ class AcmeDnsHandler(AcmeHandler):
 
     def complete_dns_challenge(self, acme_client, authz_record):
         current_app.logger.debug(
-            "Finalizing DNS challenge for {0}".format(
+            "Finalizing DNS challenge for {}".format(
                 authz_record.authz[0].body.identifier.value
             )
         )
@@ -407,7 +407,7 @@ class AcmeDnsHandler(AcmeHandler):
         if not dns_providers:
             metrics.send("complete_dns_challenge_error_no_dnsproviders", "counter", 1)
             raise Exception(
-                "No DNS providers found for domain: {}".format(authz_record.target_domain)
+                f"No DNS providers found for domain: {authz_record.target_domain}"
             )
 
         for dns_provider in dns_providers:
@@ -475,7 +475,7 @@ class AcmeDnsHandler(AcmeHandler):
                 metrics.send(
                     "get_authorizations_no_dns_provider_for_domain", "counter", 1
                 )
-                raise Exception("No DNS providers found for domain: {}".format(target_domain))
+                raise Exception(f"No DNS providers found for domain: {target_domain}")
 
             for dns_provider in self.dns_providers_for_domain[target_domain]:
                 dns_provider_plugin = self.get_dns_provider(dns_provider.provider_type)

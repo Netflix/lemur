@@ -213,7 +213,7 @@ class CryptographyIssuerPlugin(IssuerPlugin):
         :return: :raise Exception:
         """
         current_app.logger.debug(
-            "Issuing new cryptography certificate with options: {0}".format(options)
+            f"Issuing new cryptography certificate with options: {options}"
         )
         cert_pem, chain_cert_pem = issue_certificate(csr, options)
         return cert_pem, chain_cert_pem, None
@@ -228,7 +228,7 @@ class CryptographyIssuerPlugin(IssuerPlugin):
         :return:
         """
         current_app.logger.debug(
-            "Issuing new cryptography authority with options: {0}".format(options)
+            f"Issuing new cryptography authority with options: {options}"
         )
         cert_pem, private_key, chain_cert_pem = build_certificate_authority(options)
         roles = [

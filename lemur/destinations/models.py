@@ -32,4 +32,4 @@ class Destination(BaseModel):
         return label
 
     def __repr__(self):
-        return "Destination(label={label})".format(label=self.label)
+        return f"Destination(label={self.label})"

@@ -69,14 +69,14 @@ class ArrowDateTime(Field):
     }
 
     def __init__(self, format=None, **kwargs):
-        super(ArrowDateTime, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         # Allow this to be None. It may be set later in the ``_serialize``
         # or ``_desrialize`` methods This allows a Schema to dynamically set the
         # dateformat, e.g. from a Meta option
         self.dateformat = format
 
     def _add_to_schema(self, field_name, schema):
-        super(ArrowDateTime, self)._add_to_schema(field_name, schema)
+        super()._add_to_schema(field_name, schema)
         self.dateformat = self.dateformat or schema.opts.dateformat
 
     def _serialize(self, value, attr, obj):
@@ -364,7 +364,7 @@ class SubjectAlternativeNameExtension(Field):
                     value = value.dotted_string
                 else:
                     current_app.logger.warning(
-                        "Unknown SubAltName type: {name}".format(name=name)
+                        f"Unknown SubAltName type: {name}"
                     )
                     continue
 

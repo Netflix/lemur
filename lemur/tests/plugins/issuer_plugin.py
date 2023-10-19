@@ -15,7 +15,7 @@ class TestIssuerPlugin(IssuerPlugin):
     author_url = "https://github.com/netflix/lemur.git"
 
     def __init__(self, *args, **kwargs):
-        super(TestIssuerPlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def create_certificate(self, csr, issuer_options):
         # body, chain, external_id
@@ -44,7 +44,7 @@ class TestAsyncIssuerPlugin(IssuerPlugin):
     author_url = "https://github.com/jchuong"
 
     def __init__(self, *args, **kwargs):
-        super(TestAsyncIssuerPlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def create_certificate(self, csr, issuer_options):
         return "", "", 12345

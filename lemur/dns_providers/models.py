@@ -38,4 +38,4 @@ class DnsProvider(BaseModel):
         return plugins.get(self.plugin_name)
 
     def __repr__(self):
-        return "DnsProvider(name={name})".format(name=self.name)
+        return f"DnsProvider(name={self.name})"

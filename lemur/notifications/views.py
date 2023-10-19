@@ -31,7 +31,7 @@ class NotificationsList(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(NotificationsList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, notifications_output_schema)
     def get(self):
@@ -238,7 +238,7 @@ class NotificationsList(AuthenticatedResource):
 class Notifications(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(Notifications, self).__init__()
+        super().__init__()
 
     @validate_schema(None, notification_output_schema)
     def get(self, notification_id):
@@ -391,7 +391,7 @@ class CertificateNotifications(AuthenticatedResource):
     """ Defines the 'certificate/<int:certificate_id/notifications'' endpoint """
 
     def __init__(self):
-        super(CertificateNotifications, self).__init__()
+        super().__init__()
 
     @validate_schema(None, notifications_output_schema)
     def get(self, certificate_id):

@@ -122,7 +122,7 @@ class Authority(BaseModel):
         return current_app.config.get("DEFAULT_VALIDITY_DAYS", 365)  # 1 year default
 
     def __repr__(self):
-        return "Authority(name={name})".format(name=self.name)
+        return f"Authority(name={self.name})"
 
     @property
     def is_cn_optional(self):
