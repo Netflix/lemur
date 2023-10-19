@@ -19,7 +19,7 @@ Lemur
 Lemur manages TLS certificate creation. While not able to issue certificates itself, Lemur acts as a broker between CAs
 and environments providing a central portal for developers to issue TLS certificates with 'sane' defaults.
 
-Lemur runs on Python 3.8 and 3.9.
+Lemur aims to support the 3 most recent python releases which have been released for at least a year. For example, if python3.12 released last month, we'd aim to support versions 3.9, 3.10, and 3.11.
 We deploy on Ubuntu and develop mostly on OS X.
 
 
