@@ -798,7 +798,9 @@ sympy==1.12
     #   -r requirements-tests.txt
     #   cfn-lint
 tabulate==0.9.0
-    # via -r requirements-docs.in
+    # via
+    #   -r requirements-docs.in
+    #   -r requirements-tests.txt
 tomli==2.0.1
     # via
     #   -r requirements-tests.txt

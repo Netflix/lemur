@@ -27,3 +27,4 @@ types-requests
 types-pyOpenSSL
 types-paramiko
 types-redis
+types-requests
