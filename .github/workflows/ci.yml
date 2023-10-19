@@ -78,11 +78,6 @@ jobs:
           python -m venv ~/env
           source ~/env/bin/activate
           make test
-      - name: mypy
-        run: |
-          python -m venv ~/env
-          source ~/env/bin/activate
-          make develop
           mypy .
       - name: Test JS
         run: |
