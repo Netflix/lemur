@@ -5,8 +5,8 @@ import arrow
 import boto3
 from moto import mock_sns, mock_sqs, mock_ses
 
-from lemur.notifications import service
 from lemur.certificates.schemas import certificate_notification_output_schema
+from lemur.notifications import service
 from lemur.plugins.lemur_aws.sns import format_message
 from lemur.plugins.lemur_aws.sns import publish
 from lemur.tests.factories import NotificationFactory, CertificateFactory

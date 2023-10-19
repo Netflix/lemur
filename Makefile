@@ -11,7 +11,7 @@ ifeq ($(USER), root)
 else
 	npm install
 endif
-	pip install "setuptools>=0.9.8"
+	pip install setuptools
 	# order matters here, base package must install first
 	pip install -e .
 	pip install -e "file://`pwd`#egg=lemur[dev]"
@@ -28,7 +28,7 @@ ifeq ($(USER), root)
 else
 	npm install
 endif
-	pip install "setuptools>=0.9.8"
+	pip install setuptools
 	# order matters here, base package must install first
 	pip install -e .
 	node_modules/.bin/gulp build
@@ -94,6 +94,7 @@ lint: lint-python lint-js
 lint-python:
 	@echo "--> Linting Python files"
 	PYFLAKES_NODOCTEST=1 flake8 lemur
+	mypy .
 	@echo ""
 
 lint-js:

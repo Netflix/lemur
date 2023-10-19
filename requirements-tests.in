@@ -1,29 +1,30 @@
 # Run `make up-reqs` to update pinned dependencies in requirement text files
-
+-r requirements.txt
 bandit
 black
-coverage
 celery[redis]==5.3.4
-certbot
+coverage
 factory-boy
 Faker
 fakeredis
-flask
-flask-migrate
 freezegun
-itsdangerous
-jinja2
-marshmallow-sqlalchemy == 0.23.1 #related to the marshmallow issue (to avoid conflicts)
-marshmallow<2.21.1 #schema duplicate issues https://github.com/marshmallow-code/marshmallow-sqlalchemy/issues/121
-moto[all] == 4.2.5 # 3.1.2 breaks ELBv2 tests
+moto[all]
 nose
 openapi-spec-validator
 pyflakes
 pytest
 pytest-flask
 pytest-mock
-redis < 5.1.0 # requires a newer release of fakeredis
 requests-mock
-sqlalchemy < 1.4.0 # ImportError: cannot import name '_ColumnEntity' https://github.com/sqlalchemy/sqlalchemy/issues/6226
-pyyaml>=4.2b1
-werkzeug
+mypy
+types-tabulate
+types-six
+types-setuptools
+types-pytz
+types-pyRFC3339
+types-Deprecated
+types-requests
+types-pyOpenSSL
+types-paramiko
+types-redis
+types-requests

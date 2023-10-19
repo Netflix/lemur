@@ -5,18 +5,16 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-import arrow
-import warnings
 import ipaddress
-
-from flask import current_app
+import warnings
 from datetime import datetime as dt
 
+import arrow
 from cryptography import x509
-
+from flask import current_app
 from marshmallow import utils
-from marshmallow.fields import Field
 from marshmallow.exceptions import ValidationError
+from marshmallow.fields import Field
 
 from lemur.common import validators
 
