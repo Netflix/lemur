@@ -725,7 +725,7 @@ class Providers(Resource):
                         "redirectUri": current_app.config.get("OAUTH2_REDIRECT_URI"),
                         "clientId": current_app.config.get("OAUTH2_CLIENT_ID"),
                         "responseType": "code",
-                        "scope": ["openid", "email", "profile", "groups"],
+                        "scope": current_app.config.get("OAUTH2_SCOPE", ["openid", "email", "profile", "groups"]),
                         "scopeDelimiter": " ",
                         "authorizationEndpoint": current_app.config.get(
                             "OAUTH2_AUTH_ENDPOINT"
