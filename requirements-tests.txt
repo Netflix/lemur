@@ -27,9 +27,7 @@ annotated-types==0.6.0
 arrow==1.3.0
     # via -r requirements.txt
 async-timeout==4.0.3
-    # via
-    #   -r requirements.txt
-    #   redis
+    # via -r requirements.txt
 asyncpool==1.0
     # via -r requirements.txt
 attrs==23.1.0
@@ -83,7 +81,6 @@ celery[redis]==5.3.4
     # via
     #   -r requirements-tests.in
     #   -r requirements.txt
-    #   celery
 certbot==2.7.1
     # via -r requirements.txt
 certifi==2023.7.22
@@ -92,9 +89,7 @@ certifi==2023.7.22
     #   requests
     #   sentry-sdk
 certsrv[ntlm]==2.1.1
-    # via
-    #   -r requirements.txt
-    #   certsrv
+    # via -r requirements.txt
 cffi==1.16.0
     # via
     #   -r requirements.txt
@@ -178,8 +173,6 @@ ecdsa==0.18.0
     #   moto
     #   python-jose
     #   sshpubkeys
-exceptiongroup==1.1.3
-    # via pytest
 factory-boy==3.3.0
     # via -r requirements-tests.in
 faker==19.11.0
@@ -239,10 +232,7 @@ idna==3.4
     #   -r requirements.txt
     #   requests
 importlib-metadata==6.8.0
-    # via
-    #   -r requirements.txt
-    #   certbot
-    #   flask
+    # via -r requirements.txt
 importlib-resources==6.1.0
     # via
     #   -r requirements.txt
@@ -471,7 +461,7 @@ pytest==7.4.2
     #   -r requirements-tests.in
     #   pytest-flask
     #   pytest-mock
-pytest-flask==1.2.0
+pytest-flask==1.3.0
     # via -r requirements-tests.in
 pytest-mock==3.11.1
     # via -r requirements-tests.in
@@ -485,9 +475,7 @@ python-dateutil==2.8.2
     #   freezegun
     #   moto
 python-jose[cryptography]==3.3.0
-    # via
-    #   moto
-    #   python-jose
+    # via moto
 python-json-logger==2.0.7
     # via
     #   -r requirements.txt
@@ -602,11 +590,6 @@ sympy==1.12
     # via cfn-lint
 tabulate==0.9.0
     # via -r requirements.txt
-tomli==2.0.1
-    # via
-    #   black
-    #   mypy
-    #   pytest
 twofish==0.3.0
     # via
     #   -r requirements.txt
@@ -646,9 +629,7 @@ typing-extensions==4.8.0
     #   -r requirements.txt
     #   alembic
     #   aws-sam-translator
-    #   black
     #   flask-limiter
-    #   kombu
     #   limits
     #   mypy
     #   pydantic
@@ -698,7 +679,6 @@ zipp==3.17.0
     # via
     #   -r requirements.txt
     #   importlib-metadata
-    #   importlib-resources
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

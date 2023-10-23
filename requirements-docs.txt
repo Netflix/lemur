@@ -34,9 +34,7 @@ arrow==1.3.0
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
 async-timeout==4.0.3
-    # via
-    #   -r requirements-tests.txt
-    #   redis
+    # via -r requirements-tests.txt
 asyncpool==1.0
     # via -r requirements-tests.txt
 attrs==23.1.0
@@ -98,7 +96,6 @@ celery[redis]==5.3.4
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
-    #   celery
 certbot==2.7.1
     # via
     #   -r requirements-docs.in
@@ -212,10 +209,6 @@ ecdsa==0.18.0
     #   moto
     #   python-jose
     #   sshpubkeys
-exceptiongroup==1.1.3
-    # via
-    #   -r requirements-tests.txt
-    #   pytest
 factory-boy==3.3.0
     # via -r requirements-tests.txt
 faker==19.11.0
@@ -305,11 +298,7 @@ idna==3.4
 imagesize==1.4.1
     # via sphinx
 importlib-metadata==6.8.0
-    # via
-    #   -r requirements-tests.txt
-    #   certbot
-    #   flask
-    #   sphinx
+    # via -r requirements-tests.txt
 importlib-resources==6.1.0
     # via
     #   -r requirements-tests.txt
@@ -438,9 +427,7 @@ mdurl==0.1.2
     #   -r requirements-tests.txt
     #   markdown-it-py
 moto[all]==4.2.6
-    # via
-    #   -r requirements-tests.txt
-    #   moto
+    # via -r requirements-tests.txt
 mpmath==1.3.0
     # via
     #   -r requirements-tests.txt
@@ -536,11 +523,13 @@ pyasn1==0.5.0
     #   pyasn1-modules
     #   pyjks
     #   python-jose
+    #   python-ldap
     #   rsa
 pyasn1-modules==0.3.0
     # via
     #   -r requirements-tests.txt
     #   pyjks
+    #   python-ldap
 pycparser==2.21
     # via
     #   -r requirements-tests.txt
@@ -605,7 +594,7 @@ pytest==7.4.2
     #   -r requirements-tests.txt
     #   pytest-flask
     #   pytest-mock
-pytest-flask==1.2.0
+pytest-flask==1.3.0
     # via -r requirements-tests.txt
 pytest-mock==3.11.1
     # via -r requirements-tests.txt
@@ -622,12 +611,10 @@ python-jose[cryptography]==3.3.0
     # via
     #   -r requirements-tests.txt
     #   moto
-    #   python-jose
 python-json-logger==2.0.7
     # via
     #   -r requirements-tests.txt
     #   logmatic-python
-    # via -r requirements-tests.txt
 python-ldap==3.4.3
     # via -r requirements-tests.txt
 pytz==2023.3.post1
@@ -803,12 +790,6 @@ tabulate==0.9.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
-tomli==2.0.1
-    # via
-    #   -r requirements-tests.txt
-    #   black
-    #   mypy
-    #   pytest
 twofish==0.3.0
     # via
     #   -r requirements-tests.txt
@@ -852,9 +833,7 @@ typing-extensions==4.8.0
     #   -r requirements-tests.txt
     #   alembic
     #   aws-sam-translator
-    #   black
     #   flask-limiter
-    #   kombu
     #   limits
     #   mypy
     #   pydantic
@@ -909,7 +888,6 @@ zipp==3.17.0
     # via
     #   -r requirements-tests.txt
     #   importlib-metadata
-    #   importlib-resources
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
