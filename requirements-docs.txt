@@ -628,6 +628,8 @@ python-json-logger==2.0.7
     #   -r requirements-tests.txt
     #   logmatic-python
     # via -r requirements-tests.txt
+python-ldap==3.4.3
+    # via -r requirements-tests.txt
 pytz==2023.3.post1
     # via
     #   -r requirements-tests.txt
