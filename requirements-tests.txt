@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-tests.txt requirements-tests.in
 #
-acme==2.7.1
+acme==2.7.2
     # via
     #   -r requirements.txt
     #   certbot
@@ -25,8 +25,6 @@ aniso8601==9.0.1
 annotated-types==0.6.0
     # via pydantic
 arrow==1.3.0
-    # via -r requirements.txt
-async-timeout==4.0.3
     # via -r requirements.txt
 asyncpool==1.0
     # via -r requirements.txt
@@ -81,7 +79,7 @@ celery[redis]==5.3.4
     # via
     #   -r requirements-tests.in
     #   -r requirements.txt
-certbot==2.7.1
+certbot==2.7.2
     # via -r requirements.txt
 certifi==2023.7.22
     # via
@@ -231,8 +229,6 @@ idna==3.4
     # via
     #   -r requirements.txt
     #   requests
-importlib-metadata==6.8.0
-    # via -r requirements.txt
 importlib-resources==6.1.0
     # via
     #   -r requirements.txt
@@ -463,7 +459,7 @@ pytest==7.4.2
     #   pytest-mock
 pytest-flask==1.3.0
     # via -r requirements-tests.in
-pytest-mock==3.11.1
+pytest-mock==3.12.0
     # via -r requirements-tests.in
 python-dateutil==2.8.2
     # via
@@ -675,10 +671,6 @@ xmltodict==0.13.0
     # via
     #   -r requirements.txt
     #   moto
-zipp==3.17.0
-    # via
-    #   -r requirements.txt
-    #   importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
