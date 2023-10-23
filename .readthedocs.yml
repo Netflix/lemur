@@ -18,8 +18,9 @@ build:
    os: ubuntu-22.04
    tools:
       python: "3.11"
-   commands:
-      - grep -v "python-ldap" requirements-docs.txt > tempreqs && mv tempreqs requirements-docs.txt
+   jobs:
+      pre_install:
+         - grep -v "python-ldap" requirements-docs.txt > tempreqs && mv tempreqs requirements-docs.txt
 
 
 python:
