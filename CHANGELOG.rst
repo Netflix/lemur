@@ -3,6 +3,8 @@ Changelog
 
 Unreleased
 ~~~~~~~~~~~~~~~~~~~~
+Added ability for new versions of LEMUR_TOKEN_SECRET via the LEMUR_TOKENS_SECRET config option. This allows for
+migration and rotation of the secret.
 
 
 1.6.0 - `2023-10-23`
