@@ -3,6 +3,10 @@ Changelog
 
 Unreleased
 ~~~~~~~~~~~~~~~~~~~~
+
+
+1.6.0 - `2023-10-23`
+~~~~~~~~~~~~~~~~~~~~
 Add NTLM auth support for ADCS issuer.
 Added password complexity requirements:
 - At least 12 characters (required for your Muhlenberg password)—the more characters, the better
