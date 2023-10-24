@@ -117,6 +117,10 @@ def login_required(f):
             return dict(message="Token has expired"), 403
         except jwt.InvalidTokenError:
             return dict(message="Token is invalid"), 403
+        except Exception:  # noqa
+            if current_app.config.get("DEBUG", False):
+                raise
+            return dict(message="Failed to decode token"), 403
 
         if "aid" in payload:
             access_key = api_key_service.get(payload["aid"])
