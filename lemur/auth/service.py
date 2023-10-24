@@ -15,7 +15,7 @@ from functools import wraps
 import binascii
 import jwt
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
 from flask import g, current_app, jsonify, request
 from flask_principal import Identity, identity_changed
@@ -24,6 +24,7 @@ from flask_restful import Resource
 
 from lemur.api_keys import service as api_key_service
 from lemur.auth.permissions import AuthorityCreatorNeed, RoleMemberNeed
+from lemur.extensions import metrics
 from lemur.users import service as user_service
 
 
@@ -91,11 +92,17 @@ def create_token(user, aid=None, ttl=None):
 
 def decode_with_multiple_secrets(encoded_jwt, secrets, algorithms):
     errors = []
-    for secret in secrets:
+    for index, secret in enumerate(secrets):
         try:
-            return jwt.decode(encoded_jwt, secret, algorithms=algorithms)
+            payload = jwt.decode(encoded_jwt, secret, algorithms=algorithms)
         except Exception as e:
             errors.append(e)
+            continue
+        if len(secrets) > 1:
+            digest = hashes.Hash(hashes.SHA256(), backend=default_backend())
+            digest.update(secret)
+            metrics.send("jwt_decode", "counter", 1, metric_tags={**dict(kid=index, fingerprint=digest.finalize().hex()), **payload})
+        return payload
     if errors:
         raise errors[0]
 
