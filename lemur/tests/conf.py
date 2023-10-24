@@ -34,6 +34,7 @@ SECRET_KEY = get_random_secret(length=32).encode('utf8')
 
 # You should consider storing these separately from your config (should be URL-safe)
 LEMUR_TOKEN_SECRET = "test"
+LEMUR_TOKEN_SECRETS = [LEMUR_TOKEN_SECRET]
 LEMUR_ENCRYPTION_KEYS = base64.urlsafe_b64encode(get_random_secret(length=32).encode('utf8'))
 
 
