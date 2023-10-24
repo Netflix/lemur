@@ -84,8 +84,20 @@ def create_token(user, aid=None, ttl=None):
             del payload["exp"]
         else:
             payload["exp"] = datetime.utcnow() + timedelta(days=ttl)
-    token = jwt.encode(payload, current_app.config["LEMUR_TOKEN_SECRET"])
+    token_secrets = current_app.config.get("LEMUR_TOKEN_SECRETS", [current_app.config["LEMUR_TOKEN_SECRET"]])
+    token = jwt.encode(payload, token_secrets[0])
     return token
+
+
+def decode_with_multiple_secrets(encoded_jwt, secrets, algorithms):
+    errors = []
+    for secret in secrets:
+        try:
+            return jwt.decode(encoded_jwt, secret, algorithms=algorithms)
+        except Exception as e:
+            errors.append(e)
+    if errors:
+        raise errors[0]
 
 
 def login_required(f):
@@ -107,10 +119,10 @@ def login_required(f):
             token = request.headers.get("Authorization").split()[1]
         except Exception as e:
             return dict(message="Token is invalid"), 403
-
+        token_secrets = current_app.config.get("LEMUR_TOKEN_SECRETS", [current_app.config["LEMUR_TOKEN_SECRET"]])
         try:
             header_data = fetch_token_header(token)
-            payload = jwt.decode(token, current_app.config["LEMUR_TOKEN_SECRET"], algorithms=[header_data["alg"]])
+            payload = decode_with_multiple_secrets(token, token_secrets, algorithms=[header_data["alg"]])
         except jwt.DecodeError:
             return dict(message="Token is invalid"), 403
         except jwt.ExpiredSignatureError:

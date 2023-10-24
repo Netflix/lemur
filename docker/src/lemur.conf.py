@@ -30,6 +30,7 @@ SECRET_KEY = repr(os.environ.get('SECRET_KEY', get_random_secret(32).encode('utf
 # You should consider storing these separately from your config
 LEMUR_TOKEN_SECRET = repr(os.environ.get('LEMUR_TOKEN_SECRET',
                                          base64.b64encode(get_random_secret(32).encode('utf8'))))
+LEMUR_TOKEN_SECRETS = [LEMUR_TOKEN_SECRET]
 # This must match the key for whichever DB the container is using - this could be a dump of dev or test, or a unique key
 LEMUR_ENCRYPTION_KEYS = repr(os.environ.get('LEMUR_ENCRYPTION_KEYS',
                                             base64.b64encode(get_random_secret(32).encode('utf8')).decode('utf8')))

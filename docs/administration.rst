@@ -184,7 +184,7 @@ Basic Configuration
 .. data:: LEMUR_TOKEN_SECRET
     :noindex:
 
-        The TOKEN_SECRET is the secret used to create JWT tokens that are given out to users. This should be securely generated and kept private.
+        The TOKEN_SECRET is the secret used to create JWT tokens for users and api keys. This should be securely generated and kept private.
 
     ::
 
@@ -197,6 +197,17 @@ Basic Configuration
         >>> chars = string.ascii_uppercase + string.ascii_lowercase + string.digits + "~!@#$%^&*()_+"
         >>> secret_key = ''.join(secrets.choice(chars) for x in range(24))
 
+
+.. data:: LEMUR_TOKEN_SECRETS
+    :noindex:
+
+        Defines a priority ordering of versions of LEMUR_TOKEN_SECRET. This is useful when rotating the token secret.
+        The first element is used to create new JWTs. When verifying JWTs, each token is attempted in order. If all verifies
+        fail, the exception from the first verify will be raised.
+
+    ::
+
+        LEMUR_TOKEN_SECRETS = [LEMUR_TOKEN_SECRET]
 
 
 .. data:: LEMUR_ENCRYPTION_KEYS
