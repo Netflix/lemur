@@ -5,6 +5,8 @@ Unreleased
 ~~~~~~~~~~~~~~~~~~~~
 Added ability for new versions of LEMUR_TOKEN_SECRET via the LEMUR_TOKEN_SECRETS config option. This allows for
 migration and rotation of the secret.
+Added ability to register a callback for PING_SECRET. This can be used to minimize downtime when rotating a secret without
+a retention period.
 
 
 1.6.0 - `2023-10-23`

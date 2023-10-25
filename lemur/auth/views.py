@@ -526,6 +526,8 @@ class Ping(Resource):
         access_token_url = current_app.config.get("PING_ACCESS_TOKEN_URL")
 
         secret = current_app.config.get("PING_SECRET")
+        if callable(secret):
+            secret = secret()
 
         id_token, access_token = exchange_for_access_token(
             args["code"],
