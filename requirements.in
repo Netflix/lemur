@@ -18,7 +18,7 @@ cert_manager
 certsrv
 https://binaries.ddbuild.io/dd-source/python/cert_orchestration_adapter-0.1.2-py3-none-any.whl
 CloudFlare
-cryptography
+cryptography >= 41.0.4 # Required to avoid vulnerability in previous version (VULN-4474)
 deprecated
 dnspython3
 ddtrace == 0.53.0 # Required for cert orchestration adapter.
@@ -65,6 +65,7 @@ six
 SQLAlchemy-Utils
 sqlalchemy < 1.4.0 # ImportError: cannot import name '_ColumnEntity' https://github.com/sqlalchemy/sqlalchemy/issues/6226
 tabulate
+urllib3 == 1.26.18 # urllib3 is used by 'requests' package. Version restriction is required to avoid vulnerability in previous version (VULN-4806)
 validators
 werkzeug < 2.1.0 # requires a newer version of Flask
 xmltodict

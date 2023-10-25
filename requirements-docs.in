@@ -11,7 +11,7 @@ celery[redis]
 certbot
 certsrv
 CloudFlare
-cryptography
+cryptography >= 41.0.4 # Required to avoid vulnerability in previous version (VULN-4474)
 dnspython3
 dyn
 Flask <= 1.1.2 # similar to Flask-Migrate
@@ -43,6 +43,7 @@ retrying
 sentry-sdk
 SQLAlchemy-Utils
 tabulate
+urllib3 == 1.26.18 # urllib3 is used by 'requests' package. Version restriction is required to avoid vulnerability in previous version (VULN-4806)
 vine
 werkzeug < 2.1.0 # requires a newer version of Flask
 xmltodict
