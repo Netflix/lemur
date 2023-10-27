@@ -134,12 +134,12 @@ def get_all_valid_certs(authority_plugin_name, paginate=False, page=1, count=100
         query = query.outerjoin(Authority, Authority.id == Certificate.authority_id)\
             .filter(Certificate.not_after > arrow.now().format("YYYY-MM-DD"))\
             .filter(Authority.plugin_name.in_(authority_plugin_name))\
-            .filter(Certificate.revoked.is_(False))
-
+            .filter(Certificate.revoked.is_(False))\
+            .order_by(Certificate.id)
     else:
         query = query.filter(Certificate.not_after > arrow.now().format("YYYY-MM-DD"))\
-            .filter(Certificate.revoked.is_(False))
-
+            .filter(Certificate.revoked.is_(False))\
+            .order_by(Certificate.id)
     if created_on_or_before:
         query = query.filter(Certificate.date_created <= created_on_or_before.format("YYYY-MM-DD"))
 
