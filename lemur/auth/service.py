@@ -100,7 +100,10 @@ def decode_with_multiple_secrets(encoded_jwt, secrets, algorithms):
             continue
         if len(secrets) > 1:
             digest = hashes.Hash(hashes.SHA256(), backend=default_backend())
-            digest.update(secret)
+            if isinstance(secret, str):
+                digest.update(secret.encode())
+            else:
+                digest.update(secret)
             metrics.send("jwt_decode", "counter", 1, metric_tags={**dict(kid=index, fingerprint=digest.finalize().hex()), **payload})
         return payload
     if errors:
