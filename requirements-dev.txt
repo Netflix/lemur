@@ -811,7 +811,7 @@ websocket-client==1.6.4
     # via
     #   -r requirements-tests.txt
     #   docker
-werkzeug==3.0.0
+werkzeug==3.0.1
     # via
     #   -r requirements-tests.txt
     #   flask
