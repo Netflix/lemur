@@ -98,8 +98,8 @@ def test_process_options_no_eku(mock_current_app, authority):
 
 
 @patch("lemur.plugins.lemur_entrust.plugin.current_app")
-def test_process_options_no_eku(mock_current_app, authority):
-    mock_current_app.config.get = Mock(side_effect=config_mock_no_eku)
+def test_process_options_custom_eku(mock_current_app, authority):
+    mock_current_app.config.get = Mock(side_effect=config_mock_custom_eku)
     plugin.determine_end_date = Mock(return_value=arrow.get(2017, 11, 5).format('YYYY-MM-DD'))
     authority.name = "Entrust"
     names = ["one.example.com", "two.example.com", "three.example.com"]
