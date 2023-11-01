@@ -20,17 +20,17 @@ _base_config = {
 
 
 def config_mock(*args):
-    return _base_config[args[0]]
+    return _base_config.get(args[0])
 
 
 def config_mock_no_eku(*args):
     values = {**_base_config, 'ENTRUST_DEFAULT_EKU': None}
-    return values[args[0]]
+    return values.get(args[0])
 
 
 def config_mock_custom_eku(*args):
     values = {**_base_config, 'ENTRUST_DEFAULT_EKU': "custom"}
-    return values[args[0]]
+    return values.get(args[0])
 
 
 @patch("lemur.plugins.lemur_entrust.plugin.current_app")
