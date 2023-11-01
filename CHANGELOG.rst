@@ -5,6 +5,8 @@ Unreleased
 ~~~~~~~~~~~~~~~~~~~~
 Added ability for new versions of LEMUR_TOKEN_SECRET via the LEMUR_TOKEN_SECRETS config option. This allows for
 migration and rotation of the secret.
+Added ENTRUST_DEFAULT_EKU config property which controls the eku field setting to certificate create requests; defaults to "SERVER_AND_CLIENT_AUTH". If explicitly set to None, no eku field will be set in requests.
+
 
 
 1.6.0 - `2023-10-23`

@@ -79,13 +79,15 @@ def process_options(options, client_id):
 
     data = {
         "signingAlg": "SHA-2",
-        "eku": "SERVER_AND_CLIENT_AUTH",
         "certType": product_type,
         "certExpiryDate": validity_end,
         "tracking": tracking_data,
         "org": options.get("organization"),
         "clientId": client_id
     }
+    default_eku = current_app.config.get("ENTRUST_DEFAULT_EKU", "SERVER_AND_CLIENT_AUTH")
+    if default_eku:
+        data["eku"] = default_eku
     return data
 
 

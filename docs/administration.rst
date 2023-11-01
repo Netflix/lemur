@@ -1521,6 +1521,11 @@ The following parameters have to be set in the configuration files.
         If set to True, Entrust will use the primary client ID of 1, which applies to most use-case.
         Otherwise, Entrust will first lookup the clientId before ordering the certificate.
 
+.. data:: ENTRUST_DEFAULT_EKU
+    :noindex:
+
+        Controls the eku field setting to certificate create requests; defaults to "SERVER_AND_CLIENT_AUTH". If explicitly set to None, no eku field will be set in requests.
+
 
 Verisign Issuer Plugin
 ~~~~~~~~~~~~~~~~~~~~~~
