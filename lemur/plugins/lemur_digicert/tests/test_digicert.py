@@ -18,7 +18,7 @@ _base_config = {
     "DIGICERT_CIS_PROFILE_NAMES": {"digicert": 'digicert'},
     "DIGICERT_CIS_SIGNING_ALGORITHMS": {"digicert": 'digicert'},
     "DIGICERT_CIS_ROOTS": {"root": "ROOT"},
-    "DIGICERT_CIS_USE_CSR_FIELDS": True,
+    "DIGICERT_CIS_USE_CSR_FIELDS": False,
 }
 
 
