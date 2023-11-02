@@ -20,7 +20,7 @@ THREADS_PER_PAGE = 8
 
 # These will need to be set to `True` if you are developing locally
 CORS = False
-debug = False
+DEBUG = False
 
 TESTING = True
 
