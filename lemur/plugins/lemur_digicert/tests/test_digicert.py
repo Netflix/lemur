@@ -20,6 +20,7 @@ def config_mock(*args):
         "DIGICERT_CIS_PROFILE_NAMES": {"digicert": 'digicert'},
         "DIGICERT_CIS_SIGNING_ALGORITHMS": {"digicert": 'digicert'},
         "DIGICERT_CIS_ROOTS": {"root": "ROOT"},
+        "DIGICERT_CIS_USE_CSR_FIELDS": True,
     }
     return values[args[0]]
 
@@ -96,6 +97,7 @@ def test_map_fields_with_validity_end_and_start(mock_current_app):
             },
             "organization": {"id": 111111},
             "custom_expiration_date": arrow.get(2017, 5, 7).format("YYYY-MM-DD"),
+            "use_csr_fields": True,
         }
 
         assert expected == plugin.map_fields(options, CSR_STR)

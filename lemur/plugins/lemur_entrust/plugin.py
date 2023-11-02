@@ -85,9 +85,8 @@ def process_options(options, client_id):
         "org": options.get("organization"),
         "clientId": client_id
     }
-    default_eku = current_app.config.get("ENTRUST_DEFAULT_EKU", "SERVER_AND_CLIENT_AUTH")
-    if default_eku:
-        data["eku"] = default_eku
+    if current_app.config.get("ENTRUST_USE_EKU", True):
+        data["eku"] = current_app.config.get("ENTRUST_DEFAULT_EKU", "SERVER_AND_CLIENT_AUTH")
     return data
 
 

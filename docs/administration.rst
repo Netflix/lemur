@@ -1524,7 +1524,12 @@ The following parameters have to be set in the configuration files.
 .. data:: ENTRUST_DEFAULT_EKU
     :noindex:
 
-        Controls the eku field setting to certificate create requests; defaults to "SERVER_AND_CLIENT_AUTH". If explicitly set to None, no eku field will be set in requests.
+        Controls the eku field setting to certificate create requests; defaults to "SERVER_AND_CLIENT_AUTH".
+
+.. data:: ENTRUST_USE_EKU
+    :noindex:
+
+        Controls if the eku field is set for certificate create requests; defaults to True.
 
 
 Verisign Issuer Plugin
