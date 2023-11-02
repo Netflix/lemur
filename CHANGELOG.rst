@@ -3,6 +3,7 @@ Changelog
 
 Unreleased
 ~~~~~~~~~~~~~~~~~~~~
+To avoid confusion, the debug app configuration property has been replaced with the standard DEBUG flask app config.
 Added ability for new versions of LEMUR_TOKEN_SECRET via the LEMUR_TOKEN_SECRETS config option. This allows for
 migration and rotation of the secret.
 Added ENTRUST_DEFAULT_EKU, ENTRUST_USE_EKU config properties which controls the eku field setting to certificate create

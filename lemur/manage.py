@@ -86,7 +86,7 @@ THREADS_PER_PAGE = 8
 
 # These will need to be set to `True` if you are developing locally
 CORS = False
-debug = False
+DEBUG = False
 
 # this is the secret key used by flask session management
 SECRET_KEY = "{flask_secret_key}"
