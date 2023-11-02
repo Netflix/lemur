@@ -24,7 +24,7 @@ def config_mock(*args):
 
 
 def config_mock_no_eku(*args):
-    values = {**_base_config, 'ENTRUST_DEFAULT_EKU': None}
+    values = {**_base_config, 'ENTRUST_USE_EKU': False}
     return values.get(args[0])
 
 

@@ -11,17 +11,25 @@ from freezegun import freeze_time
 from lemur.plugins.lemur_digicert import plugin
 from lemur.tests.vectors import CSR_STR
 
+_base_config = {
+    "DIGICERT_ORG_ID": 111111,
+    "DIGICERT_PRIVATE": False,
+    "DIGICERT_DEFAULT_SIGNING_ALGORITHM": "sha256",
+    "DIGICERT_CIS_PROFILE_NAMES": {"digicert": 'digicert'},
+    "DIGICERT_CIS_SIGNING_ALGORITHMS": {"digicert": 'digicert'},
+    "DIGICERT_CIS_ROOTS": {"root": "ROOT"},
+    "DIGICERT_CIS_USE_CSR_FIELDS": True,
+}
+
 
 def config_mock(*args):
-    values = {
-        "DIGICERT_ORG_ID": 111111,
-        "DIGICERT_PRIVATE": False,
-        "DIGICERT_DEFAULT_SIGNING_ALGORITHM": "sha256",
-        "DIGICERT_CIS_PROFILE_NAMES": {"digicert": 'digicert'},
-        "DIGICERT_CIS_SIGNING_ALGORITHMS": {"digicert": 'digicert'},
-        "DIGICERT_CIS_ROOTS": {"root": "ROOT"},
-        "DIGICERT_CIS_USE_CSR_FIELDS": True,
-    }
+    return _base_config[args[0]]
+
+
+def config_mock_use_csr(*args):
+    values = {**_base_config,
+              **{"DIGICERT_CIS_USE_CSR_FIELDS": True}
+              }
     return values[args[0]]
 
 
@@ -54,7 +62,9 @@ def test_map_fields_with_validity_years_and_ip_addr(mock_current_app):
             "common_name": "example.com",
             "owner": "bob@example.com",
             "description": "test certificate",
-            "extensions": {"sub_alt_names": {"names": [x509.DNSName(x) for x in names] + [x509.IPAddress(ipaddress.ip_address(x)) for x in ip_addr_names]}},
+            "extensions": {"sub_alt_names": {
+                "names": [x509.DNSName(x) for x in names] + [x509.IPAddress(ipaddress.ip_address(x)) for x in
+                                                             ip_addr_names]}},
             "validity_years": 1
         }
         expected = {
@@ -71,8 +81,8 @@ def test_map_fields_with_validity_years_and_ip_addr(mock_current_app):
 
 
 @patch("lemur.plugins.lemur_digicert.plugin.current_app")
-def test_map_fields_with_validity_end_and_start(mock_current_app):
-    mock_current_app.config.get = Mock(side_effect=config_mock)
+def test_map_fields_with_validity_and_use_csr(mock_current_app):
+    mock_current_app.config.get = Mock(side_effect=config_mock_use_csr)
     plugin.determine_end_date = Mock(return_value=arrow.get(2017, 5, 7))
 
     with patch('lemur.plugins.lemur_digicert.plugin.signature_hash') as mock_signature_hash:
@@ -187,7 +197,7 @@ def test_signature_hash(mock_current_app, app):
 
 
 def test_issuer_plugin_create_certificate(
-        certificate_="""\
+    certificate_="""\
 -----BEGIN CERTIFICATE-----
 abc
 -----END CERTIFICATE-----
