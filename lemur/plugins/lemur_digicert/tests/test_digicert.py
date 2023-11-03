@@ -80,8 +80,8 @@ def test_map_fields_with_validity_years_and_ip_addr(mock_current_app):
 
 
 @patch("lemur.plugins.lemur_digicert.plugin.current_app")
-def test_map_fields_with_validity_and_use_csr(mock_current_app):
-    mock_current_app.config.get = Mock(side_effect=config_mock_use_csr)
+def test_map_fields_with_validity_end_and_start(mock_current_app):
+    mock_current_app.config.get = Mock(side_effect=config_mock)
     plugin.determine_end_date = Mock(return_value=arrow.get(2017, 5, 7))
 
     with patch('lemur.plugins.lemur_digicert.plugin.signature_hash') as mock_signature_hash:
@@ -106,15 +106,14 @@ def test_map_fields_with_validity_and_use_csr(mock_current_app):
             },
             "organization": {"id": 111111},
             "custom_expiration_date": arrow.get(2017, 5, 7).format("YYYY-MM-DD"),
-            "use_csr_fields": True,
         }
 
         assert expected == plugin.map_fields(options, CSR_STR)
 
 
 @patch("lemur.plugins.lemur_digicert.plugin.current_app")
-def test_map_cis_fields_with_validity_years(mock_current_app, authority):
-    mock_current_app.config.get = Mock(side_effect=config_mock)
+def test_map_cis_fields_with_validity_years_and_use_csr(mock_current_app, authority):
+    mock_current_app.config.get = Mock(side_effect=config_mock_use_csr())
     plugin.determine_end_date = Mock(return_value=arrow.get(2018, 11, 3))
 
     with patch('lemur.plugins.lemur_digicert.plugin.signature_hash') as mock_signature_hash:
@@ -142,6 +141,7 @@ def test_map_cis_fields_with_validity_years(mock_current_app, authority):
                 "valid_to": arrow.get(2018, 11, 3).format("YYYY-MM-DDTHH:mm:ss") + "Z"
             },
             "profile_name": None,
+            "use_csr_fields": True,
         }
 
         assert expected == plugin.map_cis_fields(options, CSR_STR)
