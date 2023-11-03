@@ -2,6 +2,7 @@ from unittest.mock import patch, Mock
 
 import arrow
 from cryptography import x509
+from cryptography.x509 import CertificateSigningRequest, Extension, Extensions
 from lemur.plugins.lemur_entrust import plugin
 from freezegun import freeze_time
 
@@ -17,7 +18,6 @@ _base_config = {
     "ENTRUST_PHONE": "0123456",
     "ENTRUST_PRODUCT_ENTRUST": "ADVANTAGE_SSL",
     'ENTRUST_USE_EKU': True,
-    'ENTRUST_DEFAULT_EKU': 'SERVER_AND_CLIENT_AUTH',
 }
 
 
@@ -25,13 +25,8 @@ def config_mock(*args):
     return _base_config.get(args[0])
 
 
-def config_mock_no_eku(*args):
-    values = {**_base_config, 'ENTRUST_USE_EKU': False}
-    return values.get(args[0])
-
-
-def config_mock_custom_eku(*args):
-    values = {**_base_config, 'ENTRUST_DEFAULT_EKU': "custom"}
+def config_mock_infer_eku(*args):
+    values = {**_base_config, 'ENTRUST_INFER_EKU': True}
     return values.get(args[0])
 
 
@@ -78,9 +73,11 @@ def test_process_options(mock_current_app, authority):
     assert expected == plugin.process_options(options, client_id)
 
 
+
 @patch("lemur.plugins.lemur_entrust.plugin.current_app")
-def test_process_options_no_eku(mock_current_app, authority):
-    mock_current_app.config.get = Mock(side_effect=config_mock_no_eku)
+@patch("cryptography.x509.load_pem_x509_csr")
+def test_process_options_infer_eku(mock_load_pem, mock_current_app, authority):
+    mock_current_app.config.get = Mock(side_effect=config_mock_infer_eku)
     plugin.determine_end_date = Mock(return_value=arrow.get(2017, 11, 5).format('YYYY-MM-DD'))
     authority.name = "Entrust"
     names = ["one.example.com", "two.example.com", "three.example.com"]
@@ -96,28 +93,24 @@ def test_process_options_no_eku(mock_current_app, authority):
     }
 
     client_id = 1
-    assert 'eku' not in plugin.process_options(options, client_id)
+    csr = "csr"  # The actual value doesn't matter
 
+    client_auth_oid = x509.oid.ExtendedKeyUsageOID.CLIENT_AUTH
+    server_auth_oid = x509.oid.ExtendedKeyUsageOID.SERVER_AUTH
+    client_eku_ext = x509.ExtendedKeyUsage([client_auth_oid])
+    server_eku_ext = x509.ExtendedKeyUsage([server_auth_oid])
+    both_eku_ext = x509.ExtendedKeyUsage([client_auth_oid, server_auth_oid])
 
-@patch("lemur.plugins.lemur_entrust.plugin.current_app")
-def test_process_options_custom_eku(mock_current_app, authority):
-    mock_current_app.config.get = Mock(side_effect=config_mock_custom_eku)
-    plugin.determine_end_date = Mock(return_value=arrow.get(2017, 11, 5).format('YYYY-MM-DD'))
-    authority.name = "Entrust"
-    names = ["one.example.com", "two.example.com", "three.example.com"]
-    options = {
-        "common_name": "example.com",
-        "owner": "bob@example.com",
-        "description": "test certificate",
-        "extensions": {"sub_alt_names": {"names": [x509.DNSName(x) for x in names]}},
-        "organization": "Example, Inc.",
-        "organizational_unit": "Example Org",
-        "validity_end": arrow.utcnow().shift(years=1, months=+1),
-        "authority": authority,
-    }
+    mock_csr = Mock(spec=CertificateSigningRequest)
+    mock_csr.extensions = Extensions([Extension(oid=x509.oid.ExtensionOID.EXTENDED_KEY_USAGE, critical=False, value=both_eku_ext)])
+    mock_load_pem.return_value = mock_csr
+    assert plugin.process_options(options, client_id, csr)['eku'] == 'SERVER_AND_CLIENT_AUTH'
 
-    client_id = 1
-    assert plugin.process_options(options, client_id)['eku'] == 'custom'
+    mock_csr.extensions = Extensions([Extension(oid=x509.oid.ExtensionOID.EXTENDED_KEY_USAGE, critical=False, value=client_eku_ext)])
+    assert plugin.process_options(options, client_id, csr)['eku'] == 'CLIENT_AUTH'
+
+    mock_csr.extensions = Extensions([Extension(oid=x509.oid.ExtensionOID.EXTENDED_KEY_USAGE, critical=False, value=server_eku_ext)])
+    assert plugin.process_options(options, client_id, csr)['eku'] == 'SERVER_AUTH'
 
 
 def test_create_authority(app):
