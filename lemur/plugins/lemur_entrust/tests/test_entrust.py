@@ -73,7 +73,6 @@ def test_process_options(mock_current_app, authority):
     assert expected == plugin.process_options(options, client_id)
 
 
-
 @patch("lemur.plugins.lemur_entrust.plugin.current_app")
 @patch("cryptography.x509.load_pem_x509_csr")
 def test_process_options_infer_eku(mock_load_pem, mock_current_app, authority):
@@ -102,14 +101,17 @@ def test_process_options_infer_eku(mock_load_pem, mock_current_app, authority):
     both_eku_ext = x509.ExtendedKeyUsage([client_auth_oid, server_auth_oid])
 
     mock_csr = Mock(spec=CertificateSigningRequest)
-    mock_csr.extensions = Extensions([Extension(oid=x509.oid.ExtensionOID.EXTENDED_KEY_USAGE, critical=False, value=both_eku_ext)])
+    mock_csr.extensions = Extensions(
+        [Extension(oid=x509.oid.ExtensionOID.EXTENDED_KEY_USAGE, critical=False, value=both_eku_ext)])
     mock_load_pem.return_value = mock_csr
     assert plugin.process_options(options, client_id, csr)['eku'] == 'SERVER_AND_CLIENT_AUTH'
 
-    mock_csr.extensions = Extensions([Extension(oid=x509.oid.ExtensionOID.EXTENDED_KEY_USAGE, critical=False, value=client_eku_ext)])
+    mock_csr.extensions = Extensions(
+        [Extension(oid=x509.oid.ExtensionOID.EXTENDED_KEY_USAGE, critical=False, value=client_eku_ext)])
     assert plugin.process_options(options, client_id, csr)['eku'] == 'CLIENT_AUTH'
 
-    mock_csr.extensions = Extensions([Extension(oid=x509.oid.ExtensionOID.EXTENDED_KEY_USAGE, critical=False, value=server_eku_ext)])
+    mock_csr.extensions = Extensions(
+        [Extension(oid=x509.oid.ExtensionOID.EXTENDED_KEY_USAGE, critical=False, value=server_eku_ext)])
     assert plugin.process_options(options, client_id, csr)['eku'] == 'SERVER_AUTH'
 
 

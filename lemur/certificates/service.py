@@ -753,8 +753,8 @@ def query_common_name(common_name, args):
 
 def get_ekus(csr: str):
     """Given a csr PEM, return the """
-    csr = x509.load_pem_x509_csr(csr.encode(), default_backend())
-    return csr.extensions.get_extension_for_class(x509.ExtendedKeyUsage)
+    csr_obj = x509.load_pem_x509_csr(csr.encode(), default_backend())
+    return csr_obj.extensions.get_extension_for_class(x509.ExtendedKeyUsage)
 
 
 def create_csr(**csr_config):
