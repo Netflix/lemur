@@ -113,7 +113,7 @@ def test_map_fields_with_validity_end_and_start(mock_current_app):
 
 @patch("lemur.plugins.lemur_digicert.plugin.current_app")
 def test_map_cis_fields_with_validity_years_and_use_csr(mock_current_app, authority):
-    mock_current_app.config.get = Mock(side_effect=config_mock_use_csr())
+    mock_current_app.config.get = Mock(side_effect=config_mock_use_csr)
     plugin.determine_end_date = Mock(return_value=arrow.get(2018, 11, 3))
 
     with patch('lemur.plugins.lemur_digicert.plugin.signature_hash') as mock_signature_hash:
