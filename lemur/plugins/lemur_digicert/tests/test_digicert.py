@@ -29,7 +29,7 @@ def config_mock(*args):
 def config_mock_use_csr(*args):
     values = _base_config.copy()
     values["DIGICERT_CIS_USE_CSR_FIELDS"] = True
-    return values[args[0]]
+    return values.get(args[0])
 
 
 @patch("lemur.plugins.lemur_digicert.plugin.current_app")
