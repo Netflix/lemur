@@ -1627,6 +1627,50 @@ The following configuration properties are required to use the Digicert issuer p
 
             This is whether or not to issue a private certificate. (Default: False)
 
+Digicert CIS Issuer Plugin
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following configuration properties are required to use the Digicert CIS issuer plugin.
+
+
+.. data:: DIGICERT_CIS_URL
+    :noindex:
+
+            This is the url for the Digicert CIS API (e.g. https://ws.digicert.com)
+
+
+.. data:: DIGICERT_CIS_API_KEY
+    :noindex:
+
+            This is the Digicert API key
+
+
+.. data:: DIGICERT_CIS_PROFILE_NAMES
+    :noindex:
+
+            A string->string mapping from human readable representations to profile identifiers. For example {"Digicert": "my_company_ssl"} specifies that when users
+	    request a Digicert issuer cert, the plugin will pass profile=my_company_ssl to the API.
+
+The following configuration properties are optional when using the Digicert CIS issuer plugin.
+
+
+.. data:: DIGICERT_CIS_SIGNING_ALGORITHMS
+    :noindex:
+
+            Defines the default signing algorithm for a given issuer name e.g. {"Digicert": "sha1"} will result in sha1 certs issued with the Digicert issuer (default = {}).
+
+
+.. data:: DIGICERT_CIS_ROOTS
+    :noindex:
+
+            A string->string mapping from issuer name to root PEM. These will be optionally be appended to / stripped from response chains as requested by users.
+
+
+.. data:: DIGICERT_CIS_USE_CSR_FIELDS
+    :noindex:
+
+            Controls the setting of the `use_csr_fields` parameter of the create certificate endpoint. When set, certificates will be issued with values from the csr instead of via API fields (default = False).
+
 
 CFSSL Issuer Plugin
 ~~~~~~~~~~~~~~~~~~~
