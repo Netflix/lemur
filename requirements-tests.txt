@@ -462,7 +462,7 @@ pyspnego==0.10.2
     # via
     #   -r requirements.txt
     #   requests-ntlm
-pytest==7.4.2
+pytest==7.4.3
     # via
     #   -r requirements-tests.in
     #   pytest-flask
