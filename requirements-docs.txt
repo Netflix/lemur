@@ -294,7 +294,7 @@ gunicorn==21.2.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
-hvac==1.2.1
+hvac==2.0.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -566,10 +566,6 @@ pygments==2.16.1
     #   -r requirements-tests.txt
     #   rich
     #   sphinx
-pyhcl==0.4.5
-    # via
-    #   -r requirements-tests.txt
-    #   hvac
 pyjks==20.0.0
     # via
     #   -r requirements-docs.in

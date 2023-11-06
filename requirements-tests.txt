@@ -232,7 +232,7 @@ graphql-core==3.2.3
     # via moto
 gunicorn==21.2.0
     # via -r requirements.txt
-hvac==1.2.1
+hvac==2.0.0
     # via -r requirements.txt
 idna==3.4
     # via
@@ -437,10 +437,6 @@ pygments==2.16.1
     # via
     #   -r requirements.txt
     #   rich
-pyhcl==0.4.5
-    # via
-    #   -r requirements.txt
-    #   hvac
 pyjks==20.0.0
     # via -r requirements.txt
 pyjwt==2.8.0
