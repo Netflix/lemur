@@ -874,7 +874,7 @@ urllib3==1.26.18
     #   sentry-sdk
 validators==0.22.0
     # via -r requirements-tests.txt
-vine==5.0.0
+vine==5.1.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
