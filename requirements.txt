@@ -135,7 +135,7 @@ future==0.18.3
     # via -r requirements.in
 gunicorn==21.2.0
     # via -r requirements.in
-hvac==1.2.1
+hvac==2.0.0
     # via -r requirements.in
 idna==3.4
     # via requests
@@ -226,8 +226,6 @@ pycryptodomex==3.19.0
     # via pyjks
 pygments==2.16.1
     # via rich
-pyhcl==0.4.5
-    # via hvac
 pyjks==20.0.0
     # via -r requirements.in
 pyjwt==2.8.0
