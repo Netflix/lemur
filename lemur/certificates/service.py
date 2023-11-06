@@ -751,6 +751,12 @@ def query_common_name(common_name, args):
     return query.all()
 
 
+def get_ekus(csr: str):
+    """Given a csr PEM, return the """
+    csr_obj = x509.load_pem_x509_csr(csr.encode(), default_backend())
+    return csr_obj.extensions.get_extension_for_class(x509.ExtendedKeyUsage)
+
+
 def create_csr(**csr_config):
     """
     Given a list of domains create the appropriate csr

@@ -7,6 +7,7 @@ from flask import current_app
 from retrying import retry
 from urllib3.util.retry import Retry
 
+from lemur.certificates.service import get_ekus
 from lemur.common.utils import validate_conf, get_key_type_from_certificate
 from lemur.constants import CRLReason
 from lemur.extensions import metrics
@@ -49,12 +50,13 @@ def determine_end_date(end_date):
     return end_date.format('YYYY-MM-DD')
 
 
-def process_options(options, client_id):
+def process_options(options, client_id, csr=None):
     """
     Processes and maps the incoming issuer options to fields/options that
     Entrust understands
 
     :param options:
+    :param csr:
     :return: dict of valid entrust options
     """
     # if there is a config variable ENTRUST_PRODUCT_<upper(authority.name)>
@@ -76,15 +78,25 @@ def process_options(options, client_id):
         "requesterEmail": current_app.config.get("ENTRUST_EMAIL"),
         "requesterPhone": current_app.config.get("ENTRUST_PHONE")
     }
+    eku = "SERVER_AND_CLIENT_AUTH"
+    if current_app.config.get("ENTRUST_INFER_EKU", False) and csr:
+        ekus = get_ekus(csr)
+        client_auth = any(usage._name == 'clientAuth' for usage in ekus.value)
+        server_auth = any(usage._name == 'serverAuth' for usage in ekus.value)
+
+        if client_auth and not server_auth:
+            eku = "CLIENT_AUTH"
+        elif server_auth and not client_auth:
+            eku = "SERVER_AUTH"
 
     data = {
         "signingAlg": "SHA-2",
-        "eku": "SERVER_AND_CLIENT_AUTH",
         "certType": product_type,
         "certExpiryDate": validity_end,
         "tracking": tracking_data,
         "org": options.get("organization"),
-        "clientId": client_id
+        "clientId": client_id,
+        "eku": eku,
     }
     return data
 
@@ -273,7 +285,7 @@ class EntrustIssuerPlugin(IssuerPlugin):
 
         url = current_app.config.get("ENTRUST_URL") + "/certificates"
 
-        data = process_options(issuer_options, client_id)
+        data = process_options(issuer_options, client_id, csr)
         data["csr"] = csr
 
         response_dict = order_and_download_certificate(self.session, url, data)

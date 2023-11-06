@@ -189,6 +189,8 @@ def map_cis_fields(options, csr):
             "name": options["organization"],
         },
     }
+    if current_app.config.get("DIGICERT_CIS_USE_CSR_FIELDS", False):
+        data["use_csr_fields"] = True
     #  possibility to default to a SIGNING_ALGORITHM for a given profile
     if current_app.config.get("DIGICERT_CIS_SIGNING_ALGORITHMS", {}).get(options['authority'].name):
         data["signature_hash"] = current_app.config.get("DIGICERT_CIS_SIGNING_ALGORITHMS", {}).get(
