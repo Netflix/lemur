@@ -56,7 +56,7 @@ beautifulsoup4==4.12.2
     # via cloudflare
 billiard==3.6.4.0
     # via celery
-black==23.10.1
+black==23.11.0
     # via -r requirements-tests.txt
 blinker==1.6.3
     # via
@@ -165,6 +165,10 @@ ecdsa==0.18.0
     #   moto
     #   python-jose
     #   sshpubkeys
+exceptiongroup==1.1.3
+    # via
+    #   -r requirements-tests.txt
+    #   pytest
 factory-boy==3.3.0
     # via -r requirements-tests.txt
 faker==19.12.0
@@ -233,6 +237,11 @@ idna==3.4
     #   requests
 imagesize==1.4.1
     # via sphinx
+importlib-metadata==6.8.0
+    # via
+    #   -r requirements-tests.txt
+    #   certbot
+    #   sphinx
 inflection==0.5.1
     # via -r requirements-docs.in
 iniconfig==2.0.0
@@ -326,12 +335,18 @@ mdurl==0.1.2
     # via
     #   -r requirements-tests.txt
     #   markdown-it-py
-moto[all]==4.2.2
-    # via -r requirements-tests.txt
+moto[all]==4.2.6
+    # via
+    #   -r requirements-tests.txt
+    #   moto
 mpmath==1.3.0
     # via
     #   -r requirements-tests.txt
     #   sympy
+multipart==0.2.4
+    # via
+    #   -r requirements-tests.txt
+    #   moto
 mypy-extensions==1.0.0
     # via
     #   -r requirements-tests.txt
@@ -386,7 +401,7 @@ pluggy==1.3.0
     #   pytest
 prompt-toolkit==3.0.39
     # via click-repl
-py-partiql-parser==0.3.6
+py-partiql-parser==0.4.0
     # via
     #   -r requirements-tests.txt
     #   moto
@@ -466,6 +481,7 @@ python-jose[cryptography]==3.3.0
     # via
     #   -r requirements-tests.txt
     #   moto
+    #   python-jose
 python-json-logger==2.0.7
     # via logmatic-python
 pytz==2023.3.post1
@@ -610,6 +626,11 @@ sympy==1.12
     #   cfn-lint
 tabulate==0.9.0
     # via -r requirements-docs.in
+tomli==2.0.1
+    # via
+    #   -r requirements-tests.txt
+    #   black
+    #   pytest
 twofish==0.3.0
     # via pyjks
 types-python-dateutil==2.8.19.14
@@ -623,6 +644,8 @@ typing-extensions==4.8.0
     #   -r requirements-tests.txt
     #   alembic
     #   aws-sam-translator
+    #   black
+    #   kombu
     #   pydantic
     #   pydantic-core
 urllib3==1.26.18
@@ -662,6 +685,10 @@ xmltodict==0.13.0
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   moto
+zipp==3.17.0
+    # via
+    #   -r requirements-tests.txt
+    #   importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
