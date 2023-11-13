@@ -72,7 +72,7 @@ billiard==4.1.0
     # via
     #   -r requirements-tests.txt
     #   celery
-black==23.10.1
+black==23.11.0
     # via -r requirements-tests.txt
 blinker==1.6.3
     # via
@@ -437,7 +437,7 @@ mdurl==0.1.2
     # via
     #   -r requirements-tests.txt
     #   markdown-it-py
-moto[all]==4.2.6
+moto[all]==4.2.8
     # via
     #   -r requirements-tests.txt
     #   moto
@@ -525,7 +525,7 @@ prompt-toolkit==3.0.39
     #   click-repl
 psycopg2==2.9.9
     # via -r requirements-tests.txt
-py-partiql-parser==0.4.0
+py-partiql-parser==0.4.2
     # via
     #   -r requirements-tests.txt
     #   moto
