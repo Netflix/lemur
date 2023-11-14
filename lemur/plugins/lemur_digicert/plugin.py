@@ -305,7 +305,6 @@ class DigiCertSourcePlugin(SourcePlugin):
             "DIGICERT_API_KEY",
             "DIGICERT_URL",
             "DIGICERT_ORG_ID",
-            "DIGICERT_ROOT",
         ]
         validate_conf(current_app, required_vars)
 
@@ -330,60 +329,63 @@ class DigiCertSourcePlugin(SourcePlugin):
 
     def get_certificates(self, options, **kwargs):
         """Fetch all Digicert certificates."""
-        base_url = current_app.config.get("DIGICERT_URL")
+        
+        if current_app.config.get("DIGICERT_SOURCE_ENABLED"):
 
-        # make request
-        search_url = f"{base_url}/services/v2/order/certificate"
+            base_url = current_app.config.get("DIGICERT_URL")
 
-        certs = []
-        offset = 0
-        limit = 40
+            # make request
+            search_url = f"{base_url}/services/v2/order/certificate"
 
-        while True:
-            response = self.session.get(
-                search_url, params={
-                    "filters[status]": "issued",
-                    "filters[organization_id]": current_app.config["DIGICERT_ORG_ID"],
-                    "offset": offset,
-                    "limit": limit
-                }
-            )
+            certs = []
+            offset = 0
+            limit = 40
 
-            data = handle_response(response)
-
-            for c in data["orders"]:
-                # https://dev.digicert.com/en/certcentral-apis/services-api/glossary.html#certificate-formats
-                # ID 29. pem_all
-                if c["status"] == "issued":
-                    download_url = "{0}/services/v2/certificate/{1}/download/platform/{2}".format(
-                        base_url,
-                        c["certificate"]["id"],
-                        29
-                    )
-
-                    pem_all = self.session.get(download_url)
-
-                    certificates = x509.load_pem_x509_certificates(pem_all.content)
-                    certificate = certificates[0].public_bytes(serialization.Encoding.PEM).decode()
-                    chains = certificates[-(len(certificates) - 1):]
-                    chain_str = ""
-                    for chain in chains:
-                        chain_str += chain.public_bytes(serialization.Encoding.PEM).decode()
-
-                    # normalize serial
-                    serial = str(int(c["certificate"]["serial_number"], 16))
-                    cert = {
-                        "body": certificate,
-                        "chain": chain_str,
-                        "serial": serial,
-                        "external_id": str(c["certificate"]["id"])
+            while True:
+                response = self.session.get(
+                    search_url, params={
+                        "filters[status]": "issued",
+                        "filters[organization_id]": current_app.config["DIGICERT_ORG_ID"],
+                        "offset": offset,
+                        "limit": limit
                     }
-                    certs.append(cert)
+                )
 
-            offset += limit
-            if offset >= data["page"]["total"]:
-                break
-        return certs
+                data = handle_response(response)
+
+                for c in data["orders"]:
+                    # https://dev.digicert.com/en/certcentral-apis/services-api/glossary.html#certificate-formats
+                    # ID 29. pem_all
+                    if c["status"] == "issued":
+                        download_url = "{0}/services/v2/certificate/{1}/download/platform/{2}".format(
+                            base_url,
+                            c["certificate"]["id"],
+                            29
+                        )
+
+                        pem_all = self.session.get(download_url)
+
+                        certificates = x509.load_pem_x509_certificates(pem_all.content)
+                        certificate = certificates[0].public_bytes(serialization.Encoding.PEM).decode()
+                        chains = certificates[1:]
+                        chain_str = ""
+                        for chain in chains:
+                            chain_str += chain.public_bytes(serialization.Encoding.PEM).decode()
+
+                        # normalize serial
+                        serial = str(int(c["certificate"]["serial_number"], 16))
+                        cert = {
+                            "body": certificate,
+                            "chain": chain_str,
+                            "serial": serial,
+                            "external_id": str(c["certificate"]["id"])
+                        }
+                        certs.append(cert)
+
+                offset += limit
+                if offset >= data["page"]["total"]:
+                    break
+            return certs
 
 
 class DigiCertIssuerPlugin(IssuerPlugin):
