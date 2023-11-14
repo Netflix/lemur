@@ -39,7 +39,7 @@ class VaultSourcePlugin(SourcePlugin):
             "name": "vaultUrl",
             "type": "str",
             "required": True,
-            "validation": url,
+            "validation": bool(url),
             "helpMessage": "Valid URL to Hashi Vault instance",
         },
         {
@@ -166,7 +166,7 @@ class VaultDestinationPlugin(DestinationPlugin):
             "name": "vaultUrl",
             "type": "str",
             "required": True,
-            "validation": url,
+            "validation": bool(url),
             "helpMessage": "Valid URL to Hashi Vault instance",
         },
         {
