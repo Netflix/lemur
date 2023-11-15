@@ -33,6 +33,7 @@ from lemur.extensions import metrics
 from lemur.plugins import lemur_digicert as digicert
 from lemur.plugins.bases import IssuerPlugin, SourcePlugin
 
+
 def log_status_code(r, *args, **kwargs):
     """
     Is a request hook that logs all status codes to the digicert api.
@@ -329,7 +330,7 @@ class DigiCertSourcePlugin(SourcePlugin):
 
     def get_certificates(self, options, **kwargs):
         """Fetch all Digicert certificates."""
-        
+
         if current_app.config.get("DIGICERT_SOURCE_ENABLED"):
 
             base_url = current_app.config.get("DIGICERT_URL")
