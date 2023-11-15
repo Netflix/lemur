@@ -4,7 +4,7 @@
     :synopsis: Contains helper functions for interactive with AWS ACM Apis.
     :copyright: (c) 2018 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
-.. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
+.. moduleauthor:: Pinmarva <pinmarva@gmail.com>
 """
 import botocore
 
@@ -13,6 +13,7 @@ from sentry_sdk import capture_exception
 
 from lemur.extensions import metrics
 from lemur.plugins.lemur_aws.sts import sts_client
+
 
 def retry_throttled(exception):
     """
@@ -62,7 +63,7 @@ def upload_cert(name, body, private_key, cert_chain=None, **kwargs):
     assert isinstance(private_key, str)
     client = kwargs.pop("client")
 
-    metrics.send("upload_cert", "counter", 1, metric_tags={"name": name})
+    metrics.send("upload_acm_cert", "counter", 1, metric_tags={"name": name})
     try:
         if cert_chain:
             return client.import_certificate(
@@ -90,7 +91,7 @@ def delete_cert(cert_arn, **kwargs):
     :return:
     """
     client = kwargs.pop("client")
-    metrics.send("delete_cert", "counter", 1, metric_tags={"cert_arn": cert_arn})
+    metrics.send("delete_acm_cert", "counter", 1, metric_tags={"cert_arn": cert_arn})
     try:
         client.delete_certificate(CertificateArn=cert_arn)
     except botocore.exceptions.ClientError as e:
@@ -110,7 +111,7 @@ def get_certificate(name, **kwargs):
 
 @retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=25)
 def _get_certificate(arn, **kwargs):
-    metrics.send("get_certificate", "counter", 1, metric_tags={"arn": arn})
+    metrics.send("get_acm_certificate", "counter", 1, metric_tags={"arn": arn})
     client = kwargs.pop("client")
     try:
         return client.get_certificate(CertificateArn=arn)
@@ -131,10 +132,10 @@ def get_certificates(**kwargs):
 
 @retry(retry_on_exception=retry_throttled, wait_fixed=2000, stop_max_attempt_number=25)
 def _get_certificates(**kwargs):
-    metrics.send("get_certificates", "counter", 1)
+    metrics.send("get_acm_certificates", "counter", 1)
     return kwargs.pop("client").list_certificates(
         **kwargs,
-        CertificateStatuses = [
+        CertificateStatuses=[
             'ISSUED'
         ]
     )
@@ -149,7 +150,7 @@ def get_all_certificates(**kwargs):
     certificates = []
     account_number = kwargs.get("account_number")
     metrics.send(
-        "get_all_certificates",
+        "get_all_acm_certificates",
         "counter",
         1,
         metric_tags={"account_number": account_number},
@@ -165,9 +166,12 @@ def get_all_certificates(**kwargs):
                 client=kwargs["client"]
             )
 
+            if certificate is None:
+                continue
+
             certificate.update(
-                name = m["DomainName"],
-                id = m["CertificateArn"]
+                name=m["DomainName"],
+                external_id=m["CertificateArn"]
             )
             certificates.append(certificate)
 
@@ -175,4 +179,3 @@ def get_all_certificates(**kwargs):
             return certificates
         else:
             kwargs.update(dict(Marker=response["Marker"]))
-

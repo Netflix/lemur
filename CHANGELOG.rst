@@ -8,6 +8,8 @@ Added ability for new versions of LEMUR_TOKEN_SECRET via the LEMUR_TOKEN_SECRETS
 migration and rotation of the secret.
 Added ENTRUST_INFER_EKU config property which attempts to computes the appropriate EKU value from the csr (default False).
 Added DIGICERT_CIS_USE_CSR_FIELDS to control the `use_csr_fields` create certificate API field (default False).
+Added AWS ACM source plugin. This plugin retreives all certificates for an account and a region.
+Added AWS ACM destination plugin. This plugin upload  a certificate to AWS ACM.
 
 
 

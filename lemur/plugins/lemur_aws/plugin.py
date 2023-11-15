@@ -755,7 +755,7 @@ class SNSNotificationPlugin(ExpirationNotificationPlugin):
 class AWSACMSourcePlugin(SourcePlugin):
     title = "AWS-ACM"
     slug = "aws-acm-source"
-    description = "Discovers all ACM SSL certificates in an AWS account"
+    description = "Discovers all ACM TLS certificates in an AWS account"
     version = aws.VERSION
 
     author_url = "https://github.com/netflix/lemur"
@@ -785,7 +785,7 @@ class AWSACMSourcePlugin(SourcePlugin):
                 body=c["Certificate"],
                 chain=c.get("CertificateChain"),
                 name=c["name"],
-                external_id=c["id"],
+                external_id=c["external_id"],
             )
             for c in cert_data
         ]
@@ -793,7 +793,7 @@ class AWSACMSourcePlugin(SourcePlugin):
 
 class ACMDestinationPlugin(DestinationPlugin):
     title = "AWS-ACM"
-    slug = "aws-acm"
+    slug = "aws-acm-dest"
     description = "Allow the uploading of certificates to Amazon ACM"
     version = aws.VERSION
 
@@ -831,4 +831,4 @@ class ACMDestinationPlugin(DestinationPlugin):
 
     def clean(self, certificate, options, **kwargs):
         account_number = self.get_option("accountNumber", options)
-        acm.delete_cert(certificate.external_id, account_number=account_number)
+        acm.delete_cert(certificate["external_id"], account_number=account_number)
