@@ -145,10 +145,24 @@ def report_celery_last_success_metrics():
     schedule = current_app.config.get("CELERYBEAT_SCHEDULE")
     for _, t in schedule.items():
         task = t.get("task")
-        last_success = int(red.get(f"{task}.last_success") or 0)
-        metrics.send(
-            f"{task}.time_since_last_success", "gauge", current_time - last_success
-        )
+
+        metric_tags = {}
+        kwargs = t.get("kwargs")
+        if kwargs is not None and "source" in kwargs:
+            source = kwargs["source"]
+            last_success = int(red.get(f"{task}_{source}.last_success") or 0)
+            metric_tags["source_name"] = source
+        else:
+            last_success = int(red.get(f"{task}.last_success") or 0)
+
+        if last_success != 0:
+            metrics.send(
+                f"{task}.time_since_last_success",
+                "gauge",
+                current_time - last_success,
+                metric_tags=metric_tags
+            )
+
     red.set(
         f"{function}.last_success", int(time.time())
     )  # Alert if this metric is not seen
@@ -659,6 +673,12 @@ def certificate_rotate(**kwargs):
     log_data["message"] = "rotation completed"
     current_app.logger.debug(log_data)
     metrics.send(f"{function}.success", "counter", 1, metric_tags=metric_tags)
+
+    # When doing rotation by source we want to emit a `time_since_last_success` metric for the given source.
+    # as this source information is only available via the kwargs for this task we have to store the last_success time for the source here to access later
+    if source:
+        red.set(f"{function}_{source}.last_success", int(time.time()))
+
     return log_data
 
 
