@@ -1638,7 +1638,7 @@ The Digicert Source Plugin will read from one Digicert organization.
 .. data:: DIGICERT_SOURCE_ENABLED
     :noindex:
 
-            Boolean. This enable or disable the plugin.
+            Boolean. This enables or disables the plugin.
 
 
 .. data:: DIGICERT_URL
