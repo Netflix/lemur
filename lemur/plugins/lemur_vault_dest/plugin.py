@@ -16,7 +16,7 @@ import hvac
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from flask import current_app
-from validators.url import url
+from lemur.constants import URL_RE
 
 from lemur.common.defaults import common_name, country, state, location, organizational_unit, organization
 from lemur.common.utils import parse_certificate, check_validation
@@ -39,7 +39,7 @@ class VaultSourcePlugin(SourcePlugin):
             "name": "vaultUrl",
             "type": "str",
             "required": True,
-            "validation": url,
+            "validation": URL_RE,
             "helpMessage": "Valid URL to Hashi Vault instance",
         },
         {
@@ -166,7 +166,7 @@ class VaultDestinationPlugin(DestinationPlugin):
             "name": "vaultUrl",
             "type": "str",
             "required": True,
-            "validation": url,
+            "validation": URL_RE,
             "helpMessage": "Valid URL to Hashi Vault instance",
         },
         {
