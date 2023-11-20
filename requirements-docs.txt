@@ -643,7 +643,7 @@ pyyaml==6.0.1
     #   jsonschema-path
     #   moto
     #   responses
-redis==4.6.0
+redis==5.0.1
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
