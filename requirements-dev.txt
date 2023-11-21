@@ -407,7 +407,7 @@ mdurl==0.1.2
     #   markdown-it-py
 more-itertools==10.1.0
     # via jaraco-classes
-moto[all]==4.2.8
+moto[all]==4.2.9
     # via
     #   -r requirements-tests.txt
     #   moto
@@ -419,7 +419,7 @@ multipart==0.2.4
     # via
     #   -r requirements-tests.txt
     #   moto
-mypy==1.6.1
+mypy==1.7.0
     # via -r requirements-tests.txt
 mypy-extensions==1.0.0
     # via
