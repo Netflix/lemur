@@ -89,7 +89,7 @@ celery[redis]==5.3.5
     # via
     #   -r requirements-tests.txt
     #   celery
-certbot==2.7.2
+certbot==2.7.4
     # via -r requirements-tests.txt
 certifi==2023.11.17
     # via
