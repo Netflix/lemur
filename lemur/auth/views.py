@@ -153,7 +153,7 @@ def retrieve_user(user_api_url, access_token):
 
     headers = {}
 
-    if current_app.config.get("PING_INCLUDE_BEARER_TOKEN") and "ping" in current_app.config.get("PING_INCLUDE_BEARER_TOKEN"):
+    if current_app.config.get("PING_INCLUDE_BEARER_TOKEN") and "ping" in current_app.config.get("ACTIVE_PROVIDERS"):
         headers = {"Authorization": f"Bearer {access_token}"}
     else:
         headers = {"Authorization": f"Bearer {access_token}"}
