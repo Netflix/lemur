@@ -491,7 +491,7 @@ def create(**kwargs):
             "message": "Exception minting certificate",
             "issuer": kwargs["authority"].name,
             "cn": kwargs.get("common_name"),
-            "san":  ",".join(
+            "san": ",".join(
                 str(x.value) for x in kwargs["extensions"]["sub_alt_names"]["names"]
             ),
         }
