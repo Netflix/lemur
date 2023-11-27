@@ -42,7 +42,7 @@ from lemur.common.utils import check_validation
 from lemur.extensions import metrics
 from lemur.plugins import lemur_aws as aws, ExpirationNotificationPlugin
 from lemur.plugins.bases import DestinationPlugin, ExportDestinationPlugin, SourcePlugin
-from lemur.plugins.lemur_aws import iam, s3, elb, ec2, sns, cloudfront
+from lemur.plugins.lemur_aws import iam, s3, elb, ec2, sns, cloudfront, acm
 
 
 def get_region_from_dns(dns):
@@ -750,3 +750,85 @@ class SNSNotificationPlugin(ExpirationNotificationPlugin):
 
         current_app.logger.info(f"Publishing {notification_type} notification to topic {topic_arn}")
         sns.publish(topic_arn, message, notification_type, options, region_name=self.get_option("region", options))
+
+
+class AWSACMSourcePlugin(SourcePlugin):
+    title = "AWS-ACM"
+    slug = "aws-acm-source"
+    description = "Discovers all ACM TLS certificates in an AWS account"
+    version = aws.VERSION
+
+    author_url = "https://github.com/netflix/lemur"
+
+    options = [
+        {
+            "name": "accountNumber",
+            "type": "str",
+            "required": True,
+            "validation": check_validation("^[0-9]{12,12}$"),
+            "helpMessage": "Must be a valid AWS account number!",
+        },
+        {
+            "name": "regions",
+            "type": "str",
+            "helpMessage": "Comma separated list of regions to search in, if no region is specified we look in all regions.",
+        },
+    ]
+
+    def get_certificates(self, options, **kwargs):
+        cert_data = acm.get_all_certificates(
+            account_number=self.get_option("accountNumber", options)
+        )
+
+        return [
+            dict(
+                body=c["Certificate"],
+                chain=c.get("CertificateChain"),
+                name=c["name"],
+                external_id=c["external_id"],
+            )
+            for c in cert_data
+        ]
+
+
+class ACMDestinationPlugin(DestinationPlugin):
+    title = "AWS-ACM"
+    slug = "aws-acm-dest"
+    description = "Allow the uploading of certificates to Amazon ACM"
+    version = aws.VERSION
+
+    author_url = "https://github.com/Netflix/lemur"
+
+    options = [
+        {
+            "name": "accountNumber",
+            "type": "str",
+            "required": True,
+            "validation": check_validation("[0-9]{12}"),
+            "helpMessage": "A valid AWS account number with permission to access ACM",
+        },
+        {
+            "name": "region",
+            "type": "str",
+            "default": "us-east-1",
+            "required": False,
+            "helpMessage": "Region bucket exists",
+            "available": ["us-east-1", "us-west-2", "eu-west-1"],
+        },
+    ]
+
+    def upload(self, name, body, private_key, cert_chain, options, **kwargs):
+        try:
+            acm.upload_cert(
+                name,
+                body,
+                private_key,
+                cert_chain=cert_chain,
+                account_number=self.get_option("accountNumber", options),
+            )
+        except ClientError:
+            capture_exception()
+
+    def clean(self, certificate, options, **kwargs):
+        account_number = self.get_option("accountNumber", options)
+        acm.delete_cert(certificate["external_id"], account_number=account_number)
