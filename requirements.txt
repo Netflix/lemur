@@ -251,7 +251,7 @@ python-dateutil==2.8.2
     #   celery
 python-json-logger==2.0.7
     # via logmatic-python
-python-ldap==3.4.3
+python-ldap==3.4.4
     # via -r requirements.in
 pytz==2023.3.post1
     # via
