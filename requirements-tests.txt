@@ -127,7 +127,7 @@ click-repl==0.3.0
     # via
     #   -r requirements.txt
     #   celery
-cloudflare==2.12.4
+cloudflare==2.14.2
     # via -r requirements.txt
 configargparse==1.7
     # via
