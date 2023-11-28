@@ -1627,6 +1627,38 @@ The following configuration properties are required to use the Digicert issuer p
 
             This is whether or not to issue a private certificate. (Default: False)
 
+
+
+Digicert Source
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Digicert Source Plugin will read from one Digicert organization.
+
+
+.. data:: DIGICERT_SOURCE_ENABLED
+    :noindex:
+
+            Boolean. This enables or disables the plugin.
+
+
+.. data:: DIGICERT_URL
+    :noindex:
+
+            This is the url for the Digicert API (e.g. https://www.digicert.com)
+
+
+.. data:: DIGICERT_API_KEY
+    :noindex:
+
+            This is the Digicert API key
+
+
+.. data:: DIGICERT_ORG_ID
+    :noindex:
+
+            This is the Digicert organization ID
+
+
 Digicert CIS Issuer Plugin
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 

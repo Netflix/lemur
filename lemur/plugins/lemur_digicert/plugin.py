@@ -26,6 +26,7 @@ from cryptography import x509
 from flask import current_app, g
 from retrying import retry
 from urllib3.util.retry import Retry
+from cryptography.hazmat.primitives import serialization
 
 from lemur.common.utils import validate_conf, convert_pkcs7_bytes_to_pem
 from lemur.extensions import metrics
@@ -297,13 +298,14 @@ class DigiCertSourcePlugin(SourcePlugin):
     author = "Kevin Glisson"
     author_url = "https://github.com/netflix/lemur.git"
 
+    additional_options: List[Dict[str, Any]] = []
+
     def __init__(self, *args, **kwargs):
         """Initialize source with appropriate details."""
         required_vars = [
             "DIGICERT_API_KEY",
             "DIGICERT_URL",
             "DIGICERT_ORG_ID",
-            "DIGICERT_ROOT",
         ]
         validate_conf(current_app, required_vars)
 
@@ -317,10 +319,74 @@ class DigiCertSourcePlugin(SourcePlugin):
 
         self.session.hooks = dict(response=log_status_code)
 
+        # max_retries applies only to failed DNS lookups, socket connections and connection timeouts,
+        # never to requests where data has made it to the server.
+        # we Retry we also covers HTTP status code 406, 500, 502, 503, 504
+        retry_strategy = Retry(total=3, backoff_factor=0.1, status_forcelist=[406, 500, 502, 503, 504])
+        adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
+        self.session.mount("https://", adapter)
+
         super().__init__(*args, **kwargs)
 
-    def get_certificates(self):
-        pass
+    def get_certificates(self, options, **kwargs):
+        """Fetch all Digicert certificates."""
+
+        if current_app.config.get("DIGICERT_SOURCE_ENABLED"):
+
+            base_url = current_app.config.get("DIGICERT_URL")
+
+            # make request
+            search_url = f"{base_url}/services/v2/order/certificate"
+
+            certs = []
+            offset = 0
+            limit = 40
+
+            while True:
+                response = self.session.get(
+                    search_url, params={
+                        "filters[status]": "issued",
+                        "filters[organization_id]": current_app.config["DIGICERT_ORG_ID"],
+                        "offset": offset,
+                        "limit": limit
+                    }
+                )
+
+                data = handle_response(response)
+
+                for c in data["orders"]:
+                    # https://dev.digicert.com/en/certcentral-apis/services-api/glossary.html#certificate-formats
+                    # ID 29. pem_all
+                    if c["status"] == "issued":
+                        download_url = "{0}/services/v2/certificate/{1}/download/platform/{2}".format(
+                            base_url,
+                            c["certificate"]["id"],
+                            29
+                        )
+
+                        pem_all = self.session.get(download_url)
+
+                        certificates = x509.load_pem_x509_certificates(pem_all.content)
+                        certificate = certificates[0].public_bytes(serialization.Encoding.PEM).decode()
+                        chains = certificates[1:]
+                        chain_str = ""
+                        for chain in chains:
+                            chain_str += chain.public_bytes(serialization.Encoding.PEM).decode()
+
+                        # normalize serial
+                        serial = str(int(c["certificate"]["serial_number"], 16))
+                        cert = {
+                            "body": certificate,
+                            "chain": chain_str,
+                            "serial": serial,
+                            "external_id": str(c["certificate"]["id"])
+                        }
+                        certs.append(cert)
+
+                offset += limit
+                if offset >= data["page"]["total"]:
+                    break
+            return certs
 
 
 class DigiCertIssuerPlugin(IssuerPlugin):
@@ -484,7 +550,7 @@ class DigiCertIssuerPlugin(IssuerPlugin):
 class DigiCertCISSourcePlugin(SourcePlugin):
     """Wrap the Digicert CIS Certifcate API."""
 
-    title = "DigiCert"
+    title = "DigiCert CIS"
     slug = "digicert-cis-source"
     description = "Enables the use of Digicert as a source of existing certificates."
     version = digicert.VERSION
