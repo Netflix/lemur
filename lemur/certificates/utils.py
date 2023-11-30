@@ -56,6 +56,8 @@ def get_cn_from_csr(data):
         raise ValidationError("CSR presented is not valid.")
 
     common_name = request.subject.get_attributes_for_oid(x509.NameOID.COMMON_NAME)
+    if not common_name:
+        return None
     return common_name[0].value
 
 
