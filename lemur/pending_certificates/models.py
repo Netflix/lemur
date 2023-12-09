@@ -139,7 +139,9 @@ class PendingCertificate(BaseModel):
             self.private_key = self.private_key.strip()
         self.external_id = kwargs.get("external_id")
 
-        domains = [Domain(name=x.value) for x in kwargs["extensions"]["sub_alt_names"]["names"]]
+        domains = []
+        if kwargs.get("extensions"):
+            domains = [Domain(name=x.value) for x in kwargs["extensions"]["sub_alt_names"]["names"]]
 
         # when destinations are appended they require a valid name.
         if kwargs.get("name"):
