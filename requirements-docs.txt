@@ -99,7 +99,7 @@ celery[redis]==5.3.5
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   celery
-certbot==2.7.4
+certbot==2.8.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
