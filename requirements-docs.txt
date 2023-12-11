@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-docs.txt requirements-docs.in
 #
-acme==2.7.4
+acme==2.8.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -86,7 +86,7 @@ boto3==1.33.6
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
-botocore==1.33.6
+botocore==1.33.11
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -274,7 +274,7 @@ flask-sqlalchemy==2.5.1
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   flask-migrate
-freezegun==1.3.0
+freezegun==1.3.1
     # via -r requirements-tests.txt
 future==0.18.3
     # via -r requirements-tests.txt
