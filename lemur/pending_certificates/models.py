@@ -22,6 +22,7 @@ from sqlalchemy_utils.types.arrow import ArrowType
 from lemur.certificates.models import get_sequence
 from lemur.common import defaults, utils
 from lemur.database import BaseModel
+from lemur.domains.models import Domain
 from lemur.models import (
     pending_cert_source_associations,
     pending_cert_destination_associations,
@@ -138,6 +139,10 @@ class PendingCertificate(BaseModel):
             self.private_key = self.private_key.strip()
         self.external_id = kwargs.get("external_id")
 
+        domains = []
+        if kwargs.get("extensions"):
+            domains = [Domain(name=x.value) for x in kwargs["extensions"]["sub_alt_names"]["names"]]
+
         # when destinations are appended they require a valid name.
         if kwargs.get("name"):
             self.name = get_or_increase_name(defaults.text_to_slug(kwargs["name"]), 0)
@@ -150,7 +155,8 @@ class PendingCertificate(BaseModel):
                     kwargs["authority"].name,
                     dt.now(),
                     dt.now(),
-                    False,
+                    len(domains) > 1,
+                    domains
                 ),
                 self.external_id,
             )
