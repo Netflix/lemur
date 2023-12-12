@@ -721,13 +721,15 @@ def query_name(certificate_name, args):
 
 def query_common_name(common_name, args):
     """
-    Helper function that queries for not expired certificates by common name (and owner)
+    Helper function that queries for not expired certificates by common name,
+    owner and san. Pagination is supported.
 
     :param common_name:
     :param args:
     :return:
     """
     owner = args.pop("owner")
+    san = args.pop("san")
     page = args.pop("page")
     count = args.pop("count")
 
@@ -746,6 +748,10 @@ def query_common_name(common_name, args):
     if common_name != "%":
         # if common_name is a wildcard ('%'), no need to include it in the query
         query = query.filter(Certificate.cn.ilike(common_name))
+
+    if san != "%":
+        # if san is a wildcard ('%'), no need to include it in the query
+        query = query.filter(Certificate.id.in_(like_domain_query(san)))
 
     if paginate:
         args = {"page": page, "count": count, "sort_by": "id", "sort_dir": "desc"}

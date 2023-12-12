@@ -137,6 +137,7 @@ class CertificatesListValid(AuthenticatedResource):
         # using non-paginated parser to ensure backward compatibility
         self.reqparse.add_argument("filter", type=str, location="args")
         self.reqparse.add_argument("owner", type=str, location="args")
+        self.reqparse.add_argument("san", type=str, location="args")
         self.reqparse.add_argument("count", type=int, location="args")
         self.reqparse.add_argument("page", type=int, location="args")
 

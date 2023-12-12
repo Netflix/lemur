@@ -1796,6 +1796,10 @@ def test_query_common_name(session):
     cn1_valid_certs = query_common_name(cn1, {"owner": "", "page": "", "count": ""})
     assert len(cn1_valid_certs) == 2
 
+    # since CN is also stored as SAN, count should be the same if filtered using cn1 as SAN
+    cn1_san_valid_certs = query_common_name('%', {"owner": "", "san": cn1})
+    assert len(cn1_san_valid_certs) == 2
+
     cn1_valid_certs_paged = query_common_name(cn1, {"owner": "", "page": 1, "count": 100})
     assert cn1_valid_certs_paged["total"] == 2
     assert len(cn1_valid_certs_paged["items"]) == 2
