@@ -1827,6 +1827,31 @@ def test_query_common_name(session):
     assert len(cn2_valid_certs) == 1
 
 
+def test_query_san(session):
+    from lemur.tests.factories import CertificateFactory
+    from lemur.certificates.service import query_common_name
+
+    san1 = "testsan1.example.org"
+    san2 = "testsan2.example.org"
+
+    cert_one_san_valid = CertificateFactory()
+    cert_one_san_valid.domains = [Domain(name=san1)]
+    cert_one_san_valid.owner = "owner1@example.org"
+
+    cert_two_san_valid = CertificateFactory()
+    cert_two_san_valid.domains = [Domain(name=san1), Domain(name=san2)]
+    cert_two_san_valid.owner = "owner2@example.org"
+
+    san1_valid_certs = query_common_name('%', {"owner": "", "san": san1, "page": "", "count": ""})
+    assert len(san1_valid_certs) == 2
+
+    san1_owner1_valid_certs = query_common_name('%', {"owner": "owner1@example.org", "san": san1, "page": "", "count": ""})
+    assert len(san1_owner1_valid_certs) == 1
+
+    san1_valid_certs = query_common_name('%', {"owner": "", "san": san2, "page": "", "count": ""})
+    assert len(san1_valid_certs) == 1
+
+
 def test_reissue_certificate_with_duplicate_destinations_not_allowed(session,
                                                                      logged_in_user,
                                                                      crypto_authority,
