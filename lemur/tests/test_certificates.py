@@ -1776,10 +1776,12 @@ def test_query_common_name(session):
     cert_cn1_replaced.cn = cn1
     cert_cn1_valid = CertificateFactory()
     cert_cn1_valid.cn = cn1
+    cert_cn1_valid.domains = [Domain(name=cn1)]
     cert_cn1_valid.owner = "owner1@example.org"
     cert_cn1_valid.replaces.append(cert_cn1_replaced)
     cert_cn1_valid2 = CertificateFactory()
     cert_cn1_valid2.cn = cn1
+    cert_cn1_valid2.domains = [Domain(name=cn1)]
     cert_cn1_valid2.owner = "owner2@example.org"
     yesterday = arrow.utcnow() + timedelta(days=-1)
     cert_cn1_expired = CertificateFactory()
@@ -1793,35 +1795,35 @@ def test_query_common_name(session):
     cert_cn2 = CertificateFactory()
     cert_cn2.cn = cn2
 
-    cn1_valid_certs = query_common_name(cn1, {"owner": "", "page": "", "count": ""})
+    cn1_valid_certs = query_common_name(cn1, {"owner": "", "san": "", "page": "", "count": ""})
     assert len(cn1_valid_certs) == 2
 
     # since CN is also stored as SAN, count should be the same if filtered using cn1 as SAN
-    cn1_san_valid_certs = query_common_name('%', {"owner": "", "san": cn1})
+    cn1_san_valid_certs = query_common_name('%', {"owner": "", "san": cn1, "page": "", "count": ""})
     assert len(cn1_san_valid_certs) == 2
 
-    cn1_valid_certs_paged = query_common_name(cn1, {"owner": "", "page": 1, "count": 100})
+    cn1_valid_certs_paged = query_common_name(cn1, {"owner": "", "san": "", "page": 1, "count": 100})
     assert cn1_valid_certs_paged["total"] == 2
     assert len(cn1_valid_certs_paged["items"]) == 2
 
-    cn1_valid_certs_paged_single = query_common_name(cn1, {"owner": "", "page": 1, "count": 1})
+    cn1_valid_certs_paged_single = query_common_name(cn1, {"owner": "", "san": "", "page": 1, "count": 1})
     assert cn1_valid_certs_paged_single["total"] == 2
     assert len(cn1_valid_certs_paged_single["items"]) == 1
 
-    cn1_owner1_valid_certs = query_common_name(cn1, {"owner": "owner1@example.org", "page": "", "count": ""})
+    cn1_owner1_valid_certs = query_common_name(cn1, {"owner": "owner1@example.org", "san": "", "page": "", "count": ""})
     assert len(cn1_owner1_valid_certs) == 1
 
-    cn1_owner1_valid_certs_paged = query_common_name(cn1, {"owner": "owner1@example.org", "page": 1, "count": 100})
+    cn1_owner1_valid_certs_paged = query_common_name(cn1, {"owner": "owner1@example.org", "san": "", "page": 1, "count": 100})
     assert cn1_owner1_valid_certs_paged["total"] == 1
     assert len(cn1_owner1_valid_certs_paged["items"]) == 1
 
-    cn1_owner2_valid_certs = query_common_name(cn1, {"owner": "owner2@example.org", "page": "", "count": ""})
+    cn1_owner2_valid_certs = query_common_name(cn1, {"owner": "owner2@example.org", "san": "", "page": "", "count": ""})
     assert len(cn1_owner2_valid_certs) == 1
 
-    cn1_owner3_valid_certs = query_common_name(cn1, {"owner": "owner3@example.org", "page": "", "count": ""})
+    cn1_owner3_valid_certs = query_common_name(cn1, {"owner": "owner3@example.org", "san": "", "page": "", "count": ""})
     assert len(cn1_owner3_valid_certs) == 0
 
-    cn2_valid_certs = query_common_name(cn2, {"owner": "", "page": "", "count": ""})
+    cn2_valid_certs = query_common_name(cn2, {"owner": "", "san": "", "page": "", "count": ""})
     assert len(cn2_valid_certs) == 1
 
 

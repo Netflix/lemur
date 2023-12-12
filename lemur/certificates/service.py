@@ -749,7 +749,7 @@ def query_common_name(common_name, args):
         # if common_name is a wildcard ('%'), no need to include it in the query
         query = query.filter(Certificate.cn.ilike(common_name))
 
-    if san != "%":
+    if san and san != "%":
         # if san is a wildcard ('%'), no need to include it in the query
         query = query.filter(Certificate.id.in_(like_domain_query(san)))
 
