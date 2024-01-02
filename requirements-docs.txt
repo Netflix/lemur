@@ -812,7 +812,7 @@ twofish==0.3.0
     #   pyjks
 types-deprecated==1.2.9.3
     # via -r requirements-tests.txt
-types-paramiko==3.3.0.0
+types-paramiko==3.3.0.2
     # via -r requirements-tests.txt
 types-pyopenssl==23.3.0.0
     # via
