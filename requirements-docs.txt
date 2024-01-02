@@ -57,7 +57,7 @@ aws-xray-sdk==2.12.1
     #   moto
 babel==2.13.0
     # via sphinx
-bandit==1.7.5
+bandit==1.7.6
     # via -r requirements-tests.txt
 bcrypt==4.0.1
     # via
