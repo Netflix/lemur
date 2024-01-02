@@ -59,7 +59,7 @@ billiard==4.2.0
     # via
     #   -r requirements.txt
     #   celery
-black==23.11.0
+black==23.12.1
     # via -r requirements-tests.in
 blinker==1.6.3
     # via
