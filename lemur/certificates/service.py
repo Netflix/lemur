@@ -491,6 +491,9 @@ def create(**kwargs):
             "message": "Exception minting certificate",
             "issuer": kwargs["authority"].name,
             "cn": kwargs.get("common_name"),
+            "san": ",".join(
+                str(x.value) for x in kwargs["extensions"]["sub_alt_names"]["names"]
+            ),
         }
         current_app.logger.error(log_data, exc_info=True)
         capture_exception()
@@ -718,13 +721,15 @@ def query_name(certificate_name, args):
 
 def query_common_name(common_name, args):
     """
-    Helper function that queries for not expired certificates by common name (and owner)
+    Helper function that queries for not expired certificates by common name,
+    owner and san. Pagination is supported.
 
     :param common_name:
     :param args:
     :return:
     """
     owner = args.pop("owner")
+    san = args.pop("san")
     page = args.pop("page")
     count = args.pop("count")
 
@@ -744,11 +749,21 @@ def query_common_name(common_name, args):
         # if common_name is a wildcard ('%'), no need to include it in the query
         query = query.filter(Certificate.cn.ilike(common_name))
 
+    if san and san != "%":
+        # if san is a wildcard ('%'), no need to include it in the query
+        query = query.filter(Certificate.id.in_(like_domain_query(san)))
+
     if paginate:
         args = {"page": page, "count": count, "sort_by": "id", "sort_dir": "desc"}
         return database.sort_and_page(query, Certificate, args)
 
     return query.all()
+
+
+def get_ekus(csr: str):
+    """Given a csr PEM, return the """
+    csr_obj = x509.load_pem_x509_csr(csr.encode(), default_backend())
+    return csr_obj.extensions.get_extension_for_class(x509.ExtendedKeyUsage)
 
 
 def create_csr(**csr_config):

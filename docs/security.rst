@@ -79,3 +79,22 @@ On the day of disclosure, we will take the following steps:
 .. _`main`: https://github.com/Netflix/lemur
 .. _GitHub Security Advisory: https://docs.github.com/en/code-security/security-advisories/repository-security-advisories/about-repository-security-advisories
 .. _private vulnerability reporting process: https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing/privately-reporting-a-security-vulnerability
+
+Credential Rotation
+-------------------
+When the jwt signing key (`LEMUR_TOKEN_SECRET`) is rotated (due to compromise or as a regular operational task), there are a few options for migration to ensure the
+security of the system:
+
+1. **Immediate Key Replacement**: You can immediately replace the `LEMUR_TOKEN_SECRET` with a new securely generated
+version. This will instantly invalidate all existing user sessions and API keys. While this might be necessary in case
+of an active compromise, it is not the recommended approach due to the disruption it can cause to users and services.
+
+2. **Gradual Key Rotation** (Recommended): This involves a more gradual and controlled process of secret rotation.
+   - First, securely generate a new version of the secret.
+   - Next, set `LEMUR_TOKEN_SECRETS` to a list containing both the new and the old secret, respectively.
+   - Once this configuration is deployed, new user sessions will gradually start using the new secret as their sessions expire. The expiration of sessions is controlled by the `LEMUR_TOKEN_EXPIRATION` configuration option.
+   - You can monitor this transition using `jwt_decode` metrics, which include tags for `kid` and `fingerprint`. These metrics can help in monitoring the versioned migration of sessions to the new secret.
+   - For long lived (or infinite TTL API keys), you will need to create equivalent API keys and distribute them to your clients once the new token secret is added to the beginning of LEMUR_TOKEN_SECRETS. Again, you can monitor migration with the provided kid and fingerprint metrics. Additionally, all claims of the jwt are added as metric tags so you can monitor migration of individual API keys.
+   - Once the metrics indicate that the old secret is no longer in use, or the TTL (Time to Live) for all sessions and API keys derived from the old secret has been exceeded, you can safely remove the old secret from the `LEMUR_TOKEN_SECRETS` configuration.
+
+This approach ensures a smooth transition to the new secret without disrupting active user sessions or API keys. It also provides a way to monitor the migration and ensure that the old secret is completely phased out before it is removed.

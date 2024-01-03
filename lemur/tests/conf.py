@@ -20,7 +20,7 @@ THREADS_PER_PAGE = 8
 
 # These will need to be set to `True` if you are developing locally
 CORS = False
-debug = False
+DEBUG = False
 
 TESTING = True
 
@@ -34,6 +34,7 @@ SECRET_KEY = get_random_secret(length=32).encode('utf8')
 
 # You should consider storing these separately from your config (should be URL-safe)
 LEMUR_TOKEN_SECRET = "test"
+LEMUR_TOKEN_SECRETS = [LEMUR_TOKEN_SECRET]
 LEMUR_ENCRYPTION_KEYS = base64.urlsafe_b64encode(get_random_secret(length=32).encode('utf8'))
 
 

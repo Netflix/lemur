@@ -15,7 +15,7 @@ from functools import wraps
 import binascii
 import jwt
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
 from flask import g, current_app, jsonify, request
 from flask_principal import Identity, identity_changed
@@ -24,6 +24,7 @@ from flask_restful import Resource
 
 from lemur.api_keys import service as api_key_service
 from lemur.auth.permissions import AuthorityCreatorNeed, RoleMemberNeed
+from lemur.extensions import metrics
 from lemur.users import service as user_service
 
 
@@ -84,8 +85,29 @@ def create_token(user, aid=None, ttl=None):
             del payload["exp"]
         else:
             payload["exp"] = datetime.utcnow() + timedelta(days=ttl)
-    token = jwt.encode(payload, current_app.config["LEMUR_TOKEN_SECRET"])
+    token_secrets = current_app.config.get("LEMUR_TOKEN_SECRETS", [current_app.config["LEMUR_TOKEN_SECRET"]])
+    token = jwt.encode(payload, token_secrets[0])
     return token
+
+
+def decode_with_multiple_secrets(encoded_jwt, secrets, algorithms):
+    errors = []
+    for index, secret in enumerate(secrets):
+        try:
+            payload = jwt.decode(encoded_jwt, secret, algorithms=algorithms)
+        except Exception as e:
+            errors.append(e)
+            continue
+        if len(secrets) > 1:
+            digest = hashes.Hash(hashes.SHA256(), backend=default_backend())
+            if isinstance(secret, str):
+                digest.update(secret.encode())
+            else:
+                digest.update(secret)
+            metrics.send("jwt_decode", "counter", 1, metric_tags={**dict(kid=index, fingerprint=digest.finalize().hex()), **payload})
+        return payload
+    if errors:
+        raise errors[0]
 
 
 def login_required(f):
@@ -107,16 +129,20 @@ def login_required(f):
             token = request.headers.get("Authorization").split()[1]
         except Exception as e:
             return dict(message="Token is invalid"), 403
-
+        token_secrets = current_app.config.get("LEMUR_TOKEN_SECRETS", [current_app.config["LEMUR_TOKEN_SECRET"]])
         try:
             header_data = fetch_token_header(token)
-            payload = jwt.decode(token, current_app.config["LEMUR_TOKEN_SECRET"], algorithms=[header_data["alg"]])
+            payload = decode_with_multiple_secrets(token, token_secrets, algorithms=[header_data["alg"]])
         except jwt.DecodeError:
             return dict(message="Token is invalid"), 403
         except jwt.ExpiredSignatureError:
             return dict(message="Token has expired"), 403
         except jwt.InvalidTokenError:
             return dict(message="Token is invalid"), 403
+        except Exception:  # noqa
+            if current_app.config.get("DEBUG", False):
+                raise
+            return dict(message="Failed to decode token"), 403
 
         if "aid" in payload:
             access_key = api_key_service.get(payload["aid"])

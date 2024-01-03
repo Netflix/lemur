@@ -184,7 +184,7 @@ Basic Configuration
 .. data:: LEMUR_TOKEN_SECRET
     :noindex:
 
-        The TOKEN_SECRET is the secret used to create JWT tokens that are given out to users. This should be securely generated and kept private.
+        The TOKEN_SECRET is the secret used to create JWT tokens for users and api keys. This should be securely generated and kept private.
 
     ::
 
@@ -197,6 +197,17 @@ Basic Configuration
         >>> chars = string.ascii_uppercase + string.ascii_lowercase + string.digits + "~!@#$%^&*()_+"
         >>> secret_key = ''.join(secrets.choice(chars) for x in range(24))
 
+
+.. data:: LEMUR_TOKEN_SECRETS
+    :noindex:
+
+        Defines a priority ordering of versions of LEMUR_TOKEN_SECRET. This is useful when rotating the token secret.
+        The first element is used to create new JWTs. When verifying JWTs, each token is attempted in order. If all verifies
+        fail, the exception from the first verify will be raised.
+
+    ::
+
+        LEMUR_TOKEN_SECRETS = [LEMUR_TOKEN_SECRET]
 
 
 .. data:: LEMUR_ENCRYPTION_KEYS
@@ -1529,6 +1540,10 @@ The following parameters have to be set in the configuration files.
         If set to True, Entrust will use the primary client ID of 1, which applies to most use-case.
         Otherwise, Entrust will first lookup the clientId before ordering the certificate.
 
+.. data:: ENTRUST_INFER_EKU
+    :noindex:
+
+        When set, we attempt to determine the appropriate EKU field setting; if we can't tell, we default to "SERVER_AND_CLIENT_AUTH"; default = False.
 
 Verisign Issuer Plugin
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -1630,6 +1645,82 @@ The following configuration properties are required to use the Digicert issuer p
     :noindex:
 
             This is whether or not to issue a private certificate. (Default: False)
+
+
+
+Digicert Source
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Digicert Source Plugin will read from one Digicert organization.
+
+
+.. data:: DIGICERT_SOURCE_ENABLED
+    :noindex:
+
+            Boolean. This enables or disables the plugin.
+
+
+.. data:: DIGICERT_URL
+    :noindex:
+
+            This is the url for the Digicert API (e.g. https://www.digicert.com)
+
+
+.. data:: DIGICERT_API_KEY
+    :noindex:
+
+            This is the Digicert API key
+
+
+.. data:: DIGICERT_ORG_ID
+    :noindex:
+
+            This is the Digicert organization ID
+
+
+Digicert CIS Issuer Plugin
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following configuration properties are required to use the Digicert CIS issuer plugin.
+
+
+.. data:: DIGICERT_CIS_URL
+    :noindex:
+
+            This is the url for the Digicert CIS API (e.g. https://ws.digicert.com)
+
+
+.. data:: DIGICERT_CIS_API_KEY
+    :noindex:
+
+            This is the Digicert API key
+
+
+.. data:: DIGICERT_CIS_PROFILE_NAMES
+    :noindex:
+
+            A string->string mapping from human readable representations to profile identifiers. For example {"Digicert": "my_company_ssl"} specifies that when users
+	    request a Digicert issuer cert, the plugin will pass profile=my_company_ssl to the API.
+
+The following configuration properties are optional when using the Digicert CIS issuer plugin.
+
+
+.. data:: DIGICERT_CIS_SIGNING_ALGORITHMS
+    :noindex:
+
+            Defines the default signing algorithm for a given issuer name e.g. {"Digicert": "sha1"} will result in sha1 certs issued with the Digicert issuer (default = {}).
+
+
+.. data:: DIGICERT_CIS_ROOTS
+    :noindex:
+
+            A string->string mapping from issuer name to root PEM. These will be optionally be appended to / stripped from response chains as requested by users.
+
+
+.. data:: DIGICERT_CIS_USE_CSR_FIELDS
+    :noindex:
+
+            Controls the setting of the `use_csr_fields` parameter of the create certificate endpoint. When set, certificates will be issued with values from the csr instead of via API fields (default = False).
 
 
 CFSSL Issuer Plugin
