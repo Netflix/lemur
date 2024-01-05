@@ -525,7 +525,7 @@ pycparser==2.21
     # via
     #   -r requirements-tests.txt
     #   cffi
-pycryptodomex==3.19.0
+pycryptodomex==3.19.1
     # via
     #   -r requirements-tests.txt
     #   pyjks
