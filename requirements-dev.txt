@@ -57,10 +57,6 @@ bcrypt==4.0.1
     #   -r requirements-tests.txt
     #   flask-bcrypt
     #   paramiko
-beautifulsoup4==4.12.2
-    # via
-    #   -r requirements-tests.txt
-    #   cloudflare
 billiard==4.2.0
     # via
     #   -r requirements-tests.txt
@@ -136,7 +132,7 @@ click-repl==0.3.0
     # via
     #   -r requirements-tests.txt
     #   celery
-cloudflare==2.14.2
+cloudflare==2.16.0
     # via -r requirements-tests.txt
 configargparse==1.7
     # via
@@ -717,10 +713,6 @@ sortedcontainers==2.4.0
     # via
     #   -r requirements-tests.txt
     #   fakeredis
-soupsieve==2.5
-    # via
-    #   -r requirements-tests.txt
-    #   beautifulsoup4
 sqlalchemy==1.3.24
     # via
     #   -r requirements-tests.txt
