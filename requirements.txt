@@ -28,8 +28,6 @@ bcrypt==4.0.1
     # via
     #   flask-bcrypt
     #   paramiko
-beautifulsoup4==4.12.2
-    # via cloudflare
 billiard==4.2.0
     # via celery
 blinker==1.6.3
@@ -74,7 +72,7 @@ click-plugins==1.1.1
     # via celery
 click-repl==0.3.0
     # via celery
-cloudflare==2.14.2
+cloudflare==2.16.0
     # via -r requirements.in
 configargparse==1.7
     # via certbot
@@ -292,8 +290,6 @@ six==1.16.0
     #   flask-restful
     #   python-dateutil
     #   retrying
-soupsieve==2.5
-    # via beautifulsoup4
 sqlalchemy==1.3.24
     # via
     #   -r requirements.in
