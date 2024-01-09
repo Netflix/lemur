@@ -11,6 +11,7 @@ Added DIGICERT_CIS_USE_CSR_FIELDS to control the `use_csr_fields` create certifi
 Added Digicert source plugin. Enable it with DIGICERT_SOURCE_ENABLED
 Added AWS ACM source plugin. This plugin retreives all certificates for an account and a region.
 Added AWS ACM destination plugin. This plugin uploads a certificate to AWS ACM.
+Allow updating options field via authority update API.
 
 
 1.6.0 - `2023-10-23`
