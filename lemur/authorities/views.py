@@ -420,6 +420,7 @@ class Authorities(AuthenticatedResource):
             description=data["description"],
             active=data["active"],
             roles=data["roles"],
+            options=data.get("options")
         )
 
 
