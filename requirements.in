@@ -11,12 +11,13 @@ arrow
 asyncpool
 boto3
 botocore
+cachetools
 celery[redis]
 certbot
 certifi
 cert_manager
 certsrv
-https://binaries.ddbuild.io/dd-source/python/cert_orchestration_adapter-0.1.3-py3-none-any.whl
+https://binaries.ddbuild.io/dd-source/python/cert_orchestration_adapter-0.1.5-py3-none-any.whl
 CloudFlare
 cryptography >= 41.0.4 # Required to avoid vulnerability in previous version (VULN-4474)
 deprecated

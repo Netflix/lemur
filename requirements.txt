@@ -85,13 +85,14 @@ botocore==1.31.69
     #   s3transfer
 cachetools==5.3.1
     # via
+    #   -r requirements.in
     #   cert-orchestration-adapter
     #   google-auth
 celery[redis]==5.2.7
     # via -r requirements.in
 cert-manager==2.3.1
     # via -r requirements.in
-cert-orchestration-adapter @ https://binaries.ddbuild.io/dd-source/python/cert_orchestration_adapter-0.1.3-py3-none-any.whl
+cert-orchestration-adapter @ https://binaries.ddbuild.io/dd-source/python/cert_orchestration_adapter-0.1.5-py3-none-any.whl
     # via -r requirements.in
 certbot==2.7.2
     # via -r requirements.in
@@ -226,7 +227,6 @@ isodate==0.6.1
     #   azure-keyvault-certificates
     #   azure-keyvault-keys
     #   azure-keyvault-secrets
-    #   azure-mgmt-cdn
     #   azure-mgmt-network
     #   msrest
 itsdangerous==2.0.1
@@ -276,7 +276,9 @@ msal==1.24.1
 msal-extensions==1.0.0
     # via azure-identity
 msrest==0.7.1
-    # via azure-mgmt-subscription
+    # via
+    #   azure-mgmt-cdn
+    #   azure-mgmt-subscription
 ndg-httpsclient==0.5.1
     # via -r requirements.in
 oauthlib==3.2.2

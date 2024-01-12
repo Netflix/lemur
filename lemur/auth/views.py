@@ -15,6 +15,8 @@ from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, hmac
 
+from lemur.auth.vault_jwt_auth import JWTAuthenticator
+
 from flask import Blueprint, current_app
 
 from flask_restful import reqparse, Resource, Api
@@ -616,6 +618,58 @@ class Google(Resource):
         )
 
 
+class Vault(Resource):
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        super(Vault, self).__init__()
+
+    def get(self):
+        return "Redirecting..."
+
+    def post(self):
+        self.reqparse.add_argument("id_token", type=str, required=True, location="json")
+        args = self.reqparse.parse_args()
+        id_token = args["id_token"]
+        authenticator = JWTAuthenticator.instance(
+            name="lemur_vault_authenticator",
+            audience=current_app.config.get("VAULT_CLIENT_ID"),
+            issuers=[current_app.config.get("VAULT_ISSUER_URL"),],
+            timeout=1,)
+        profile = authenticator.authenticate(id_token)
+
+        user_has_authorized_email = profile['email'] in current_app.config.get("VAULT_AUTHORIZED_EMAILS")
+        user_in_authorized_group = False
+        for group in current_app.config.get("VAULT_AUTHORIZED_GROUPS"):
+            if group in profile['groups']:
+                user_in_authorized_group = True
+                break
+
+        if not user_has_authorized_email and not user_in_authorized_group:
+            return dict(message="The supplied credentials are invalid"), 403
+
+        user = user_service.get_by_email(profile['email'])
+
+        roles = create_user_roles(profile)
+        user = update_user(user, profile, roles)
+
+        if not user.active:
+            metrics.send(
+                "login", "counter", 1, metric_tags={"status": FAILURE_METRIC_STATUS}
+            )
+            return dict(message="The supplied credentials are invalid"), 403
+
+        # Tell Flask-Principal the identity changed
+        identity_changed.send(
+            current_app._get_current_object(), identity=Identity(user.id)
+        )
+
+        metrics.send(
+            "login", "counter", 1, metric_tags={"status": SUCCESS_METRIC_STATUS}
+        )
+
+        return dict(token=create_token(user))
+
+
 class Providers(Resource):
     def get(self):
         active_providers = []
@@ -670,6 +724,31 @@ class Providers(Resource):
                     }
                 )
 
+            elif provider == "vault":
+                active_providers.append(
+                    {
+                        "name": current_app.config.get("VAULT_NAME"),
+                        "url": current_app.config.get("VAULT_REDIRECT_URI"),
+                        "redirectUri": current_app.config.get("VAULT_REDIRECT_URI"),
+                        "clientId": current_app.config.get("VAULT_CLIENT_ID"),
+                        "responseType": "id_token",
+                        "responseParams": {
+                            "code": "code",
+                            "clientId": "clientId",
+                            "redirectUri": "redirectUri",
+                            "id_token": "id_token",
+                        },
+                        "scope": ["openid"],
+                        "scopeDelimiter": " ",
+                        "authorizationEndpoint": current_app.config.get(
+                            "VAULT_AUTH_ENDPOINT"
+                        ),
+                        "requiredUrlParams": ["scope", "nonce"],
+                        "oauthType": "2.0",
+                        "nonce": get_psuedo_random_string(),
+                    }
+                )
+
         return active_providers
 
 
@@ -677,4 +756,5 @@ api.add_resource(Login, "/auth/login", endpoint="login")
 api.add_resource(Ping, "/auth/ping", endpoint="ping")
 api.add_resource(Google, "/auth/google", endpoint="google")
 api.add_resource(OAuth2, "/auth/oauth2", endpoint="oauth2")
+api.add_resource(Vault, "/auth/vault", endpoint="vault")
 api.add_resource(Providers, "/auth/providers", endpoint="providers")
