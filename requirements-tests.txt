@@ -63,12 +63,12 @@ blinker==1.6.3
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.33.6
+boto3==1.34.19
     # via
     #   -r requirements.txt
     #   aws-sam-translator
     #   moto
-botocore==1.33.11
+botocore==1.34.19
     # via
     #   -r requirements.txt
     #   aws-xray-sdk
@@ -550,7 +550,7 @@ rpds-py==0.10.6
     #   referencing
 rsa==4.9
     # via python-jose
-s3transfer==0.8.2
+s3transfer==0.10.0
     # via
     #   -r requirements.txt
     #   boto3
