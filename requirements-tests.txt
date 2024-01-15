@@ -222,7 +222,7 @@ future==0.18.3
     # via -r requirements.txt
 gitdb==4.0.10
     # via gitpython
-gitpython==3.1.40
+gitpython==3.1.41
     # via bandit
 graphql-core==3.2.3
     # via moto
