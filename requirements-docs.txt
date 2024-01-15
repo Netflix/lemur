@@ -278,7 +278,7 @@ gitdb==4.0.10
     # via
     #   -r requirements-tests.txt
     #   gitpython
-gitpython==3.1.40
+gitpython==3.1.41
     # via
     #   -r requirements-tests.txt
     #   bandit
