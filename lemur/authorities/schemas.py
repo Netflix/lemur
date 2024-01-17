@@ -98,6 +98,7 @@ class AuthorityUpdateSchema(LemurInputSchema):
     description = fields.String()
     active = fields.Boolean(missing=True)
     roles = fields.Nested(AssociatedRoleSchema(many=True))
+    options = fields.String()
 
 
 class RootAuthorityCertificateOutputSchema(LemurOutputSchema):
