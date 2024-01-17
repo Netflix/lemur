@@ -63,7 +63,7 @@ class VaultSourcePlugin(SourcePlugin):
             "type": "str",
             "required": True,
             "validation": check_validation("^[a-zA-Z0-9/._-]+/?$"),
-            "helpMessage": "Must be vaild file path for token based auth and valid role if k8s based auth",
+            "helpMessage": "Must be valid file path for token based auth and valid role if k8s based auth",
         },
         {
             "name": "vaultMount",
@@ -76,7 +76,7 @@ class VaultSourcePlugin(SourcePlugin):
             "name": "vaultPath",
             "type": "str",
             "required": True,
-            "validation": check_validation("^[a-zA-Z0-9._-]+/?$"),
+            "validation": check_validation("^([a-zA-Z0-9._-]+/?)+$"),
             "helpMessage": "Must be a valid Vault secrets path",
         },
         {
@@ -203,14 +203,14 @@ class VaultDestinationPlugin(DestinationPlugin):
             "name": "vaultPath",
             "type": "str",
             "required": True,
-            "validation": check_validation("^(([a-zA-Z0-9._-]+|({CN}|{OU}|{O}|{L}|{S}|{C})+/?)+$"),
+            "validation": check_validation("^(([a-zA-Z0-9._-]+|{CN}|{OU}|{O}|{L}|{S}|{C})+/?)+$"),
             "helpMessage": "Must be a valid Vault secrets path. Support vars: {CN}|{OU}|{O}|{L}|{S}|{C}",
         },
         {
             "name": "objectName",
             "type": "str",
             "required": False,
-            "validation": check_validation("^([0-9a-zA-Z.:_-]+|({CN}|{OU}|{O}|{L}|{S}|{C})+$"),
+            "validation": check_validation("^(([a-zA-Z0-9:._-]+|{CN}|{OU}|{O}|{L}|{S}|{C})+/?)+$"),
             "helpMessage": "Name to bundle certs under, if blank use {CN}. Support vars: {CN}|{OU}|{O}|{L}|{S}|{C}",
         },
         {

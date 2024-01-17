@@ -2,6 +2,8 @@ from validators.url import url
 from lemur.plugins.bases import SourcePlugin
 import pytest
 
+from lemur.plugins.lemur_vault_dest.plugin import VaultSourcePlugin, VaultDestinationPlugin
+
 
 class TestSourcePlugin(SourcePlugin):
     title = "Test"
@@ -94,3 +96,49 @@ def test_vault_plugin_input_schema(session):
     assert not errors
     assert data
     assert "plugin_object" in data
+
+
+@pytest.mark.parametrize("option, value, valid", [
+    ("tokenFileOrVaultRole", "", False),
+    ("vaultPath", "", False),
+    ("tokenFileOrVaultRole", "/leading/slash", True),
+    ("vaultPath", "/leading/slash", False),
+    ("tokenFileOrVaultRole", "{CN}/subs", False),
+    ("vaultPath", "{CN}/subs", False),
+    ("tokenFileOrVaultRole", "/leading/slash", True),
+    ("vaultPath", "/leading/slash", False),
+    ("tokenFileOrVaultRole", "noslash", True),
+    ("vaultPath", "noslash", True),
+    ("tokenFileOrVaultRole", "some/random/file.json", True),
+    ("vaultPath", "some/random/file.json", True),
+])
+def test_source_options(option, value, valid):
+    plugin = VaultSourcePlugin()
+    if valid:
+        plugin.validate_option_value(option, value)
+    else:
+        with pytest.raises(ValueError):
+            plugin.validate_option_value(option, value)
+
+
+@pytest.mark.parametrize("option, value, valid", [
+    ("tokenFileOrVaultRole", "", False),
+    ("vaultPath", "", False),
+    ("tokenFileOrVaultRole", "/leading/slash", True),
+    ("vaultPath", "/leading/slash", False),
+    ("tokenFileOrVaultRole", "{CN}/subs", False),
+    ("vaultPath", "{CN}/subs", True),
+    ("tokenFileOrVaultRole", "/leading/slash", True),
+    ("vaultPath", "/leading/slash", False),
+    ("tokenFileOrVaultRole", "noslash", True),
+    ("vaultPath", "noslash", True),
+    ("tokenFileOrVaultRole", "some/random/file.json", True),
+    ("vaultPath", "some/random/file.json", True),
+])
+def test_dest_options(option, value, valid):
+    plugin = VaultDestinationPlugin()
+    if valid:
+        plugin.validate_option_value(option, value)
+    else:
+        with pytest.raises(ValueError):
+            plugin.validate_option_value(option, value)
