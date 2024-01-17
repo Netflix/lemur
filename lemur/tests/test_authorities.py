@@ -411,7 +411,7 @@ def test_authority_roles(client, session, issuer_plugin):
 @pytest.mark.parametrize(
     "token,authority_number,status",
     [
-        (VALID_ADMIN_HEADER_TOKEN, 2, 200),
+        (VALID_ADMIN_HEADER_TOKEN, 100, 200),
     ],
 )
 def test_authorities_put_update_options(client, authority_number, token, status):
