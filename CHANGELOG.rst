@@ -3,6 +3,9 @@ Changelog
 
 Unreleased
 ~~~~~~~~~~~~~~~~~~~~
+
+1.7.0 - `2024-01-17`
+~~~~~~~~~~~~~~~~~~~~
 To avoid confusion, the debug app configuration property has been replaced with the standard DEBUG flask app config.
 Added ability for new versions of LEMUR_TOKEN_SECRET via the LEMUR_TOKEN_SECRETS config option. This allows for
 migration and rotation of the secret.
