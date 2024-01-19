@@ -55,7 +55,7 @@ configobj==5.0.8
     # via certbot
 coverage==7.3.2
     # via -r requirements-tests.in
-cryptography==41.0.4
+cryptography==41.0.7
     # via
     #   -r requirements-tests.in
     #   acme
@@ -161,9 +161,7 @@ marshmallow-sqlalchemy==0.23.1
 mdurl==0.1.2
     # via markdown-it-py
 moto[all]==4.2.6
-    # via
-    #   -r requirements-tests.in
-    #   moto
+    # via -r requirements-tests.in
 mpmath==1.3.0
     # via sympy
 multipart==0.2.4
@@ -240,9 +238,7 @@ python-dateutil==2.8.2
     #   freezegun
     #   moto
 python-jose[cryptography]==3.3.0
-    # via
-    #   moto
-    #   python-jose
+    # via moto
 pytz==2023.3.post1
     # via
     #   acme

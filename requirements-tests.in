@@ -3,7 +3,7 @@ bandit
 black
 coverage
 certbot
-cryptography >= 41.0.4 # Required to avoid vulnerability in previous version (VULN-4474)
+cryptography >= 41.0.6 # Required to avoid vulnerability in previous version (VULN-5135)
 factory-boy
 Faker
 fakeredis

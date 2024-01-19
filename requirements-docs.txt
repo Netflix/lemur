@@ -129,7 +129,7 @@ configobj==5.0.8
     #   certbot
 coverage==7.3.2
     # via -r requirements-tests.txt
-cryptography==41.0.4
+cryptography==41.0.7
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -336,9 +336,7 @@ mdurl==0.1.2
     #   -r requirements-tests.txt
     #   markdown-it-py
 moto[all]==4.2.6
-    # via
-    #   -r requirements-tests.txt
-    #   moto
+    # via -r requirements-tests.txt
 mpmath==1.3.0
     # via
     #   -r requirements-tests.txt
@@ -373,7 +371,7 @@ packaging==23.2
     #   gunicorn
     #   pytest
     #   sphinx
-paramiko==3.3.1
+paramiko==3.4.0
     # via -r requirements-docs.in
 parsedatetime==2.6
     # via
@@ -418,8 +416,10 @@ pycparser==2.21
     # via
     #   -r requirements-tests.txt
     #   cffi
-pycryptodomex==3.19.0
-    # via pyjks
+pycryptodomex==3.20.0
+    # via
+    #   -r requirements-docs.in
+    #   pyjks
 pydantic==2.4.2
     # via
     #   -r requirements-tests.txt
@@ -481,7 +481,6 @@ python-jose[cryptography]==3.3.0
     # via
     #   -r requirements-tests.txt
     #   moto
-    #   python-jose
 python-json-logger==2.0.7
     # via logmatic-python
 pytz==2023.3.post1

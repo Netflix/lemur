@@ -130,7 +130,7 @@ configargparse==1.7
     # via certbot
 configobj==5.0.8
     # via certbot
-cryptography==41.0.4
+cryptography==41.0.7
     # via
     #   -r requirements.in
     #   acme
@@ -287,7 +287,7 @@ packaging==23.2
     # via
     #   ddtrace
     #   gunicorn
-paramiko==3.3.1
+paramiko==3.4.0
     # via -r requirements.in
 parsedatetime==2.6
     # via certbot
@@ -325,8 +325,10 @@ pyasn1-modules==0.3.0
     #   python-ldap
 pycparser==2.21
     # via cffi
-pycryptodomex==3.19.0
-    # via pyjks
+pycryptodomex==3.20.0
+    # via
+    #   -r requirements.in
+    #   pyjks
 pyjks==20.0.0
     # via -r requirements.in
 pyjwt[crypto]==2.8.0

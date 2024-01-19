@@ -19,7 +19,7 @@ cert_manager
 certsrv
 https://binaries.ddbuild.io/dd-source/python/cert_orchestration_adapter-0.1.5-py3-none-any.whl
 CloudFlare
-cryptography >= 41.0.4 # Required to avoid vulnerability in previous version (VULN-4474)
+cryptography >= 41.0.6 # Required to avoid vulnerability in previous version (VULN-5135)
 deprecated
 dnspython3
 ddtrace == 0.53.0 # Required for cert orchestration adapter.
@@ -49,10 +49,11 @@ logmatic-python
 marshmallow-sqlalchemy == 0.23.1 #related to the marshmallow issue (to avoid conflicts)
 marshmallow<2.21.1 #schema duplicate issues https://github.com/marshmallow-code/marshmallow-sqlalchemy/issues/121
 ndg-httpsclient
-paramiko  # required for the SFTP destination plugin
+paramiko >= 3.4.0 # required for the SFTP destination plugin
 pem
 protobuf == 3.20.2 # Required for cert orchestration adapter.
 psycopg2
+pycryptodomex >= 3.19.1 # Required to address vulnerability in older version (VULN-5325)
 pyjks >= 19 # pyjks < 19 depends on pycryptodome, which conflicts with dyn's usage of pycrypto
 pyjwt
 pyOpenSSL
