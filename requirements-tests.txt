@@ -623,7 +623,7 @@ types-requests==2.31.0.6
     # via -r requirements-tests.in
 types-setuptools==69.0.0.20240115
     # via -r requirements-tests.in
-types-six==1.16.21.9
+types-six==1.16.21.20240106
     # via -r requirements-tests.in
 types-tabulate==0.9.0.20240106
     # via -r requirements-tests.in
