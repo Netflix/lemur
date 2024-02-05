@@ -249,7 +249,7 @@ graphql-core==3.2.3
     #   moto
 gunicorn==21.2.0
     # via -r requirements-tests.txt
-hvac==2.0.0
+hvac==2.1.0
     # via -r requirements-tests.txt
 identify==2.5.30
     # via pre-commit
