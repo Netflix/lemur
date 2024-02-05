@@ -794,7 +794,7 @@ types-deprecated==1.2.9.3
     # via -r requirements-tests.txt
 types-paramiko==3.4.0.20240106
     # via -r requirements-tests.txt
-types-pyopenssl==23.3.0.20240106
+types-pyopenssl==24.0.0.20240130
     # via
     #   -r requirements-tests.txt
     #   types-redis
