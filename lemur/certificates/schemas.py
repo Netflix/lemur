@@ -369,7 +369,7 @@ class CertificateOutputSchema(LemurOutputSchema):
             if field in data and data[field] is None:
                 data.pop(field)
 
-        # Earlier common_name was a required field and thus in most places there is no None check for it.
+        # Earlier common_name was a required field and thus in most places it is checked not be None
         # Now that it is optional, setting value as empty string instead of None for backward compatibility
         if data.get("common_name") is None:
             data["common_name"] = ""
