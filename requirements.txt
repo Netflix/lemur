@@ -42,8 +42,10 @@ botocore==1.34.19
     #   -r requirements.in
     #   boto3
     #   s3transfer
-celery[redis]==5.3.5
-    # via -r requirements.in
+celery[redis]==5.3.6
+    # via
+    #   -r requirements.in
+    #   celery
 certbot==2.8.0
     # via -r requirements.in
 certifi==2023.11.17
@@ -165,7 +167,7 @@ josepy==1.14.0
     #   certbot
 jsonlines==4.0.0
     # via cloudflare
-kombu==5.3.3
+kombu==5.3.5
     # via celery
 limits==3.6.0
     # via flask-limiter

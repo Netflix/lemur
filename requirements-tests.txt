@@ -75,7 +75,7 @@ botocore==1.34.19
     #   boto3
     #   moto
     #   s3transfer
-celery[redis]==5.3.5
+celery[redis]==5.3.6
     # via
     #   -r requirements-tests.in
     #   -r requirements.txt
@@ -294,7 +294,7 @@ jsonschema-specifications==2023.7.1
     #   openapi-schema-validator
 junit-xml==1.9
     # via cfn-lint
-kombu==5.3.3
+kombu==5.3.5
     # via
     #   -r requirements.txt
     #   celery
