@@ -10,6 +10,7 @@
 """
 
 import json
+from typing import Optional
 
 from flask import current_app
 
@@ -24,7 +25,7 @@ from lemur.logs import service as log_service
 from lemur.certificates.service import upload
 
 
-def update(authority_id, description, owner, active, roles):
+def update(authority_id, description, owner, active, roles, options: Optional[str] = None):
     """
     Update an authority with new values.
 
@@ -38,6 +39,8 @@ def update(authority_id, description, owner, active, roles):
     authority.active = active
     authority.description = description
     authority.owner = owner
+    if options:
+        authority.options = options
 
     log_service.audit_log("update_authority", authority.name, "Updating authority")  # check ui what can be updated
     return database.update(authority)
