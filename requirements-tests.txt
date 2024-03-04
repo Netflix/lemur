@@ -218,7 +218,7 @@ flask-sqlalchemy==2.5.1
     #   flask-migrate
 freezegun==1.4.0
     # via -r requirements-tests.in
-future==0.18.3
+future==1.0.0
     # via -r requirements.txt
 graphql-core==3.2.3
     # via moto
