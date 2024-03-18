@@ -94,7 +94,6 @@ celery[redis]==5.3.5
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
-    #   celery
 certbot==2.8.0
     # via
     #   -r requirements-docs.in
@@ -426,9 +425,7 @@ mdurl==0.1.2
     #   -r requirements-tests.txt
     #   markdown-it-py
 moto[all]==4.2.10
-    # via
-    #   -r requirements-tests.txt
-    #   moto
+    # via -r requirements-tests.txt
 mpmath==1.3.0
     # via
     #   -r requirements-tests.txt
@@ -566,7 +563,7 @@ pynacl==1.5.0
     # via
     #   -r requirements-tests.txt
     #   paramiko
-pyopenssl==24.0.0
+pyopenssl==24.1.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -608,7 +605,6 @@ python-jose[cryptography]==3.3.0
     # via
     #   -r requirements-tests.txt
     #   moto
-    #   python-jose
 python-json-logger==2.0.7
     # via
     #   -r requirements-tests.txt
