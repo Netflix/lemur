@@ -80,7 +80,7 @@ build-prod-image:
     - docker buildx build
       --label target=staging
       --build-arg CI_COMMIT_SHA=${CI_COMMIT_SHA}
-      --tag registry.ddbuild.io/lemur:v$CI_PIPELINE_ID-$CI_COMMIT_SHORT_SHA
+      --tag registry.ddbuild.io/lemur:$CI_COMMIT_TAG
       --metadata-file ${METADATA_FILE}
       --push
       .
