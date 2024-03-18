@@ -5,12 +5,8 @@ ARG CI_COMMIT_SHA
 
 USER root
 
-COPY ./files/setup_15.x .
-RUN chmod +x setup_15.x && \
-    ./setup_15.x && \
-    rm -rf setup_15.x && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends libpq-dev curl build-essential locales libffi-dev libsasl2-dev libldap2-dev \
+RUN curl -sL https://deb.nodesource.com/setup_18.x | bash -
+RUN apt-get install -y --no-install-recommends libpq-dev curl build-essential locales libffi-dev libsasl2-dev libldap2-dev \
         dh-autoreconf git python3-dev python3-pip python3-venv python3-wheel nodejs unzip make
 
 # Download Lemur source code
