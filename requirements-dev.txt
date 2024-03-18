@@ -219,7 +219,7 @@ flask-bcrypt==1.0.1
     # via -r requirements-tests.txt
 flask-cors==4.0.0
     # via -r requirements-tests.txt
-flask-limiter==3.5.0
+flask-limiter==3.5.1
     # via -r requirements-tests.txt
 flask-mail==0.9.1
     # via -r requirements-tests.txt

@@ -240,7 +240,7 @@ flask-cors==4.0.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
-flask-limiter==3.5.0
+flask-limiter==3.5.1
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
