@@ -6,6 +6,7 @@ stages:
   - test
   - build-stage-image
   - build-prod-image
+  - gbilite
 
 test:
   image: $CURRENT_CI_IMAGE
@@ -37,9 +38,7 @@ build-stage-image:
   image: $CURRENT_CI_IMAGE
   stage: build-stage-image
   when: on_success
-  # the 3h timeout is required for images compiling large projects for ARM using qemu
-  # we can revert back to 1h when we use native builders for ARM
-  timeout: 3h
+  timeout: 2h
   tags: ["arch:amd64"]
   variables:
     CI_ENABLE_CONTAINER_IMAGE_BUILDS: "true"
@@ -47,16 +46,7 @@ build-stage-image:
     DDSIGN_ID_TOKEN:
       aud: image-integrity
   script:
-    - cd publish
-    - METADATA_FILE=$(mktemp)
-    - docker buildx build
-      --label target=staging
-      --build-arg CI_COMMIT_SHA=${CI_COMMIT_SHA}
-      --tag registry.ddbuild.io/lemur:v$CI_PIPELINE_ID-$CI_COMMIT_SHORT_SHA
-      --metadata-file ${METADATA_FILE}
-      --push
-      .
-    - ddsign sign registry.ddbuild.io/lemur:v$CI_PIPELINE_ID-$CI_COMMIT_SHORT_SHA --docker-metadata-file ${METADATA_FILE}
+    - CHECKOUT_REF=$CI_COMMIT_SHA GBILITE_ENV=staging GBILITE_IMAGE_TO_BUILD="lemur:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}" /bin/bash .campaigns/build_and_push_image.sh
   except:
     - tags
 
@@ -65,9 +55,7 @@ build-prod-image:
   image: $CURRENT_CI_IMAGE
   stage: build-prod-image
   when: on_success
-  # the 3h timeout is required for images compiling large projects for ARM using qemu
-  # we can revert back to 1h when we use native builders for ARM
-  timeout: 3h
+  timeout: 2h
   tags: ["arch:amd64"]
   variables:
     CI_ENABLE_CONTAINER_IMAGE_BUILDS: "true"
@@ -75,15 +63,34 @@ build-prod-image:
     DDSIGN_ID_TOKEN:
       aud: image-integrity
   script:
-    - cd publish
-    - METADATA_FILE=$(mktemp)
-    - docker buildx build
-      --label target=staging
-      --build-arg CI_COMMIT_SHA=${CI_COMMIT_SHA}
-      --tag registry.ddbuild.io/lemur:$CI_COMMIT_TAG
-      --metadata-file ${METADATA_FILE}
-      --push
-      .
-    - ddsign sign registry.ddbuild.io/lemur:$CI_COMMIT_TAG --docker-metadata-file ${METADATA_FILE}
+    - GBILITE_ENV=prod GBILITE_IMAGE_TO_BUILD="lemur:$CI_COMMIT_TAG" /bin/bash .campaigns/build_and_push_image.sh
   only:
     - tags
+
+gbilite-get-images:
+  image: $CURRENT_CI_IMAGE
+  stage: gbilite
+  tags: ["arch:amd64"]
+  rules:
+    - if: $GBILITE_GITLAB_ACTION == "gbilite-get-images"
+  script:
+    - /bin/bash .campaigns/get_images.sh > .campaigns/allimages.txt
+  artifacts:
+    paths:
+      - .campaigns/allimages.txt
+
+gbilite-build-image:
+  image: $CURRENT_CI_IMAGE
+  stage: gbilite
+  timeout: 2h
+  tags: ["arch:amd64"]
+  rules:
+    - if: $GBILITE_GITLAB_ACTION == "gbilite-build-image"
+  script:
+    - /bin/bash .campaigns/build_and_push_image.sh
+  id_tokens:
+    DDSIGN_ID_TOKEN:
+      aud: image-integrity
+  artifacts:
+    paths:
+      - .campaigns/image_info.txt
