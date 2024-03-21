@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set -eo pipefail
 
 # The user that clones the repository (root) is different from the user performing git commands
 git config --global --add safe.directory /go/src/github.com/DataDog/lemur
