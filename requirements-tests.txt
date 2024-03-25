@@ -138,13 +138,12 @@ cryptography==42.0.4
     #   acme
     #   certbot
     #   josepy
+    #   joserfc
     #   moto
     #   paramiko
     #   pyopenssl
     #   pyspnego
-    #   python-jose
     #   requests-ntlm
-    #   sshpubkeys
     #   types-paramiko
     #   types-pyopenssl
     #   types-redis
@@ -166,11 +165,6 @@ docker==6.1.3
     # via moto
 dyn==1.8.6
     # via -r requirements.txt
-ecdsa==0.18.0
-    # via
-    #   moto
-    #   python-jose
-    #   sshpubkeys
 exceptiongroup==1.1.3
     # via pytest
 factory-boy==3.3.0
@@ -263,6 +257,8 @@ josepy==1.14.0
     #   -r requirements.txt
     #   acme
     #   certbot
+joserfc==0.9.0
+    # via moto
 jschema-to-python==1.2.3
     # via cfn-lint
 jsondiff==2.0.0
@@ -329,7 +325,7 @@ mdurl==0.1.2
     # via
     #   -r requirements.txt
     #   markdown-it-py
-moto[all]==4.2.10
+moto[all]==5.0.3
     # via -r requirements-tests.in
 mpmath==1.3.0
     # via sympy
@@ -392,7 +388,7 @@ prompt-toolkit==3.0.39
     #   click-repl
 psycopg2==2.9.9
     # via -r requirements.txt
-py-partiql-parser==0.4.2
+py-partiql-parser==0.5.1
     # via moto
 pyasn1==0.5.0
     # via
@@ -400,9 +396,7 @@ pyasn1==0.5.0
     #   ndg-httpsclient
     #   pyasn1-modules
     #   pyjks
-    #   python-jose
     #   python-ldap
-    #   rsa
 pyasn1-modules==0.3.0
     # via
     #   -r requirements.txt
@@ -469,8 +463,6 @@ python-dateutil==2.8.2
     #   faker
     #   freezegun
     #   moto
-python-jose[cryptography]==3.3.0
-    # via moto
 python-json-logger==2.0.7
     # via
     #   -r requirements.txt
@@ -539,8 +531,6 @@ rpds-py==0.10.6
     # via
     #   jsonschema
     #   referencing
-rsa==4.9
-    # via python-jose
 s3transfer==0.10.0
     # via
     #   -r requirements.txt
@@ -553,7 +543,6 @@ six==1.16.0
     # via
     #   -r requirements.txt
     #   configobj
-    #   ecdsa
     #   flask-restful
     #   junit-xml
     #   python-dateutil
@@ -571,8 +560,6 @@ sqlalchemy==1.3.24
     #   sqlalchemy-utils
 sqlalchemy-utils==0.41.1
     # via -r requirements.txt
-sshpubkeys==3.3.1
-    # via moto
 stevedore==5.1.0
     # via bandit
 sympy==1.12
