@@ -8,11 +8,11 @@ acme==2.9.0
     # via
     #   -r requirements.in
     #   certbot
-alembic==1.12.0
+alembic==1.13.1
     # via flask-migrate
 alembic-autogenerate-enums==0.1.2
     # via -r requirements.in
-amqp==5.1.1
+amqp==5.2.0
     # via kombu
 aniso8601==9.0.1
     # via flask-restful
@@ -22,31 +22,31 @@ async-timeout==4.0.3
     # via redis
 asyncpool==1.0
     # via -r requirements.in
-attrs==23.1.0
+attrs==23.2.0
     # via jsonlines
-bcrypt==4.0.1
+bcrypt==4.1.2
     # via
     #   flask-bcrypt
     #   paramiko
 billiard==4.2.0
     # via celery
-blinker==1.6.3
+blinker==1.7.0
     # via
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.34.19
+boto3==1.34.72
     # via -r requirements.in
-botocore==1.34.64
+botocore==1.34.72
     # via
     #   -r requirements.in
     #   boto3
     #   s3transfer
-celery[redis]==5.3.5
+celery[redis]==5.3.6
     # via -r requirements.in
-certbot==2.8.0
+certbot==2.9.0
     # via -r requirements.in
-certifi==2023.11.17
+certifi==2024.2.2
     # via
     #   -r requirements.in
     #   requests
@@ -57,7 +57,7 @@ cffi==1.16.0
     # via
     #   cryptography
     #   pynacl
-charset-normalizer==3.3.0
+charset-normalizer==3.3.2
     # via requests
 click==8.1.7
     # via
@@ -66,19 +66,19 @@ click==8.1.7
     #   click-plugins
     #   click-repl
     #   flask
-click-didyoumean==0.3.0
+click-didyoumean==0.3.1
     # via celery
 click-plugins==1.1.1
     # via celery
 click-repl==0.3.0
     # via celery
-cloudflare==2.16.0
+cloudflare==2.19.2
     # via -r requirements.in
 configargparse==1.7
     # via certbot
 configobj==5.0.8
     # via certbot
-cryptography==42.0.4
+cryptography==42.0.5
     # via
     #   -r requirements.in
     #   acme
@@ -90,7 +90,7 @@ cryptography==42.0.4
     #   requests-ntlm
 deprecated==1.2.14
     # via limits
-distro==1.8.0
+distro==1.9.0
     # via certbot
 dnspython==1.15.0
     # via dnspython3
@@ -117,7 +117,7 @@ flask-limiter==3.5.1
     # via -r requirements.in
 flask-mail==0.9.1
     # via -r requirements.in
-flask-migrate==4.0.5
+flask-migrate==4.0.7
     # via -r requirements.in
 flask-principal==0.4.0
     # via -r requirements.in
@@ -135,13 +135,13 @@ gunicorn==21.2.0
     # via -r requirements.in
 hvac==2.1.0
     # via -r requirements.in
-idna==3.4
+idna==3.6
     # via requests
-importlib-metadata==6.8.0
+importlib-metadata==7.1.0
     # via
     #   certbot
     #   flask
-importlib-resources==6.1.0
+importlib-resources==6.4.0
     # via limits
 inflection==0.5.1
     # via -r requirements.in
@@ -165,19 +165,19 @@ josepy==1.14.0
     #   certbot
 jsonlines==4.0.0
     # via cloudflare
-kombu==5.3.3
+kombu==5.3.6
     # via celery
-limits==3.6.0
+limits==3.10.1
     # via flask-limiter
 lockfile==0.12.2
     # via -r requirements.in
 logmatic-python==0.1.7
     # via -r requirements.in
-mako==1.2.4
+mako==1.3.2
     # via alembic
 markdown-it-py==3.0.0
     # via rich
-markupsafe==2.1.3
+markupsafe==2.1.5
     # via
     #   jinja2
     #   mako
@@ -194,7 +194,7 @@ ndg-httpsclient==0.5.1
     # via -r requirements.in
 ordered-set==4.1.0
     # via flask-limiter
-packaging==23.2
+packaging==24.0
     # via
     #   gunicorn
     #   limits
@@ -204,25 +204,25 @@ parsedatetime==2.6
     # via certbot
 pem==23.1.0
     # via -r requirements.in
-prompt-toolkit==3.0.39
+prompt-toolkit==3.0.43
     # via click-repl
 psycopg2==2.9.9
     # via -r requirements.in
-pyasn1==0.5.0
+pyasn1==0.6.0
     # via
     #   ndg-httpsclient
     #   pyasn1-modules
     #   pyjks
     #   python-ldap
-pyasn1-modules==0.3.0
+pyasn1-modules==0.4.0
     # via
     #   pyjks
     #   python-ldap
 pycparser==2.21
     # via cffi
-pycryptodomex==3.19.1
+pycryptodomex==3.20.0
     # via pyjks
-pygments==2.16.1
+pygments==2.17.2
     # via rich
 pyjks==20.0.0
     # via -r requirements.in
@@ -242,7 +242,7 @@ pyrfc3339==1.1
     #   certbot
 pyspnego==0.10.2
     # via requests-ntlm
-python-dateutil==2.8.2
+python-dateutil==2.9.0.post0
     # via
     #   arrow
     #   botocore
@@ -251,7 +251,7 @@ python-json-logger==2.0.7
     # via logmatic-python
 python-ldap==3.4.4
     # via -r requirements.in
-pytz==2023.3.post1
+pytz==2024.1
     # via
     #   acme
     #   certbot
@@ -261,7 +261,7 @@ pyyaml==6.0.1
     # via
     #   -r requirements.in
     #   cloudflare
-redis==5.0.1
+redis==5.0.3
     # via
     #   -r requirements.in
     #   celery
@@ -277,11 +277,11 @@ requests-ntlm==1.2.0
     # via certsrv
 retrying==1.3.4
     # via -r requirements.in
-rich==13.6.0
+rich==13.7.1
     # via flask-limiter
-s3transfer==0.10.0
+s3transfer==0.10.1
     # via boto3
-sentry-sdk==1.40.0
+sentry-sdk==1.44.0
     # via -r requirements.in
 six==1.16.0
     # via
@@ -297,45 +297,45 @@ sqlalchemy==1.3.24
     #   flask-sqlalchemy
     #   marshmallow-sqlalchemy
     #   sqlalchemy-utils
-sqlalchemy-utils==0.41.1
+sqlalchemy-utils==0.41.2
     # via -r requirements.in
 tabulate==0.9.0
     # via -r requirements.in
 twofish==0.3.0
     # via pyjks
-types-python-dateutil==2.8.19.14
+types-python-dateutil==2.9.0.20240316
     # via arrow
-typing-extensions==4.8.0
+typing-extensions==4.10.0
     # via
     #   alembic
     #   flask-limiter
     #   kombu
     #   limits
-tzdata==2023.3
+tzdata==2024.1
     # via celery
 urllib3==1.26.18
     # via
     #   botocore
     #   requests
     #   sentry-sdk
-validators==0.22.0
+validators==0.24.0
     # via -r requirements.in
 vine==5.1.0
     # via
     #   amqp
     #   celery
     #   kombu
-wcwidth==0.2.8
+wcwidth==0.2.13
     # via prompt-toolkit
 werkzeug==3.0.1
     # via
     #   -r requirements.in
     #   flask
-wrapt==1.15.0
+wrapt==1.16.0
     # via deprecated
 xmltodict==0.13.0
     # via -r requirements.in
-zipp==3.17.0
+zipp==3.18.1
     # via
     #   importlib-metadata
     #   importlib-resources
