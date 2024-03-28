@@ -89,7 +89,7 @@ Once your system is prepared, ensure that you are in the virtualenv:
 And then run:
 
 .. code-block:: bash
-
+  make up-reqs
   make release
 
 .. note:: This command will install npm dependencies as well as compile static assets.
@@ -192,6 +192,11 @@ Your database installation requires the pg_trgm extension. If you do not have th
     postgres=# ALTER USER lemur WITH SUPERUSER
 
 Additional notifications can be created through the UI or API.  See :ref:`Notification Options <NotificationOptions>` and :ref:`Command Line Interface <CommandLineInterface>` for details.
+
+.. code-block:: bash
+
+    cd /www/lemur/lemur
+    lemur db init
 
 **Make note of the password used as this will be used during first login to the Lemur UI.**
 
