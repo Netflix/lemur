@@ -8,7 +8,7 @@ factory-boy
 Faker
 fakeredis
 freezegun
-moto[all] < 5
+moto[all] < 6
 nose
 openapi-spec-validator
 pyflakes
