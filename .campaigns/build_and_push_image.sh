@@ -27,5 +27,5 @@ ddsign sign registry.ddbuild.io/$GBILITE_IMAGE_TO_BUILD --docker-metadata-file $
 
 # Output image metadata (required by campaigner)
 cd ../
-echo $IMAGE_TAG .campaigns/image_info.txt
+echo $IMAGE_TAG > .campaigns/image_info.txt
 echo $(crane digest registry.ddbuild.io/$GBILITE_IMAGE_TO_BUILD) >> .campaigns/image_info.txt
