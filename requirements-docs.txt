@@ -76,7 +76,7 @@ blinker==1.7.0
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.34.72
+boto3==1.34.74
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -657,7 +657,7 @@ requests==2.31.0
     #   requests-ntlm
     #   responses
     #   sphinx
-requests-mock==1.12.0
+requests-mock==1.12.1
     # via -r requirements-tests.txt
 requests-ntlm==1.2.0
     # via
