@@ -657,7 +657,7 @@ requests==2.31.0
     #   requests-ntlm
     #   responses
     #   sphinx
-requests-mock==1.12.0
+requests-mock==1.12.1
     # via -r requirements-tests.txt
 requests-ntlm==1.2.0
     # via
