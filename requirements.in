@@ -25,6 +25,8 @@ Flask<3  # until https://github.com/pytest-dev/pytest-flask/pull/168 is released
 Flask-Cors
 flask_replicated
 future
+google-cloud-private-ca
+protobuf
 gunicorn
 hvac # required for the vault destination plugin
 inflection
