@@ -69,12 +69,12 @@ blinker==1.7.0
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.34.72
+boto3==1.34.74
     # via
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
-botocore==1.34.72
+botocore==1.34.74
     # via
     #   -r requirements-tests.txt
     #   aws-xray-sdk
@@ -152,6 +152,7 @@ cryptography==42.0.5
     #   pyspnego
     #   python-jose
     #   requests-ntlm
+    #   secretstorage
     #   sshpubkeys
     #   types-paramiko
     #   types-pyopenssl
@@ -285,6 +286,10 @@ javaobj-py3==0.4.3
     # via
     #   -r requirements-tests.txt
     #   pyjks
+jeepney==0.8.0
+    # via
+    #   keyring
+    #   secretstorage
 jinja2==3.1.3
     # via
     #   -r requirements-tests.txt
@@ -633,7 +638,7 @@ requests==2.31.0
     #   requests-toolbelt
     #   responses
     #   twine
-requests-mock==1.12.0
+requests-mock==1.12.1
     # via -r requirements-tests.txt
 requests-ntlm==1.2.0
     # via
@@ -676,6 +681,8 @@ sarif-om==1.0.4
     # via
     #   -r requirements-tests.txt
     #   cfn-lint
+secretstorage==3.3.3
+    # via keyring
 sentry-sdk==1.44.0
     # via -r requirements-tests.txt
 six==1.16.0
