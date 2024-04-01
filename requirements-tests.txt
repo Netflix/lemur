@@ -518,7 +518,7 @@ requests==2.31.0
     #   requests-mock
     #   requests-ntlm
     #   responses
-requests-mock==1.12.0
+requests-mock==1.12.1
     # via -r requirements-tests.in
 requests-ntlm==1.2.0
     # via
