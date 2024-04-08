@@ -789,7 +789,7 @@ urllib3==1.26.18
     #   responses
     #   sentry-sdk
     #   twine
-validators==0.24.0
+validators==0.28.0
     # via -r requirements-tests.txt
 vine==5.1.0
     # via
