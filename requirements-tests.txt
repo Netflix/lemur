@@ -63,12 +63,12 @@ blinker==1.7.0
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.34.80
+boto3==1.34.79
     # via
     #   -r requirements.txt
     #   aws-sam-translator
     #   moto
-botocore==1.34.80
+botocore==1.34.79
     # via
     #   -r requirements.txt
     #   aws-xray-sdk
@@ -179,7 +179,7 @@ exceptiongroup==1.2.0
     # via pytest
 factory-boy==3.3.0
     # via -r requirements-tests.in
-faker==24.8.0
+faker==24.7.1
     # via
     #   -r requirements-tests.in
     #   factory-boy
