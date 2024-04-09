@@ -15,10 +15,18 @@
 
     The plugin requires `GOOGLE_ACCOUNT_CREDENTIALS` config variable, which should point at the file containing
     credentials that Lemur is using to connect to Google Cloud Platform.
-    These credentials normally would be for a service account that has permissions
-    - `privateca.certificates.update`
-    - `privateca.certificates.create`
-    for a specified Certifiate authority or have a role `roles/privateca.certificateManager` 
+
+    IAM permissions:
+    To issue a certificate, Lemur would need permission `privateca.certificates.create`
+    for the specified Certifiate authority
+
+    To revoke a certificate, Lemur would need permission `privateca.certificates.update`
+    for the specified Certifiate authority
+
+    To add a Google-based CA, Lemur would need permission `privateca.certificateAuthorities.get`
+
+    This can be achieved by assigning `roles/privateca.certificateAuthorityViewer` and `
+    roles/privateca.certificateManager` to Lemur's service account, or by using a custom role.
 
 .. moduleauthor:: Oleg Dopertchouk <odopertchouk@squarespace.com>
 """
