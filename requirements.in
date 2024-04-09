@@ -27,6 +27,7 @@ flask_replicated
 future
 google-cloud-private-ca
 protobuf
+types-protobuf
 gunicorn
 hvac # required for the vault destination plugin
 inflection

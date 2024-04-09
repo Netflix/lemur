@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-tests.txt requirements-tests.in
 #
-acme==2.9.0
+acme==2.10.0
     # via
     #   -r requirements.txt
     #   certbot
@@ -40,7 +40,7 @@ attrs==23.2.0
     #   jsonschema
     #   referencing
     #   sarif-om
-aws-sam-translator==1.86.0
+aws-sam-translator==1.87.0
     # via cfn-lint
 aws-xray-sdk==2.13.0
     # via moto
@@ -63,23 +63,27 @@ blinker==1.7.0
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.34.72
+boto3==1.34.80
     # via
     #   -r requirements.txt
     #   aws-sam-translator
     #   moto
-botocore==1.34.72
+botocore==1.34.80
     # via
     #   -r requirements.txt
     #   aws-xray-sdk
     #   boto3
     #   moto
     #   s3transfer
+cachetools==5.3.3
+    # via
+    #   -r requirements.txt
+    #   google-auth
 celery[redis]==5.3.6
     # via
     #   -r requirements-tests.in
     #   -r requirements.txt
-certbot==2.9.0
+certbot==2.10.0
     # via -r requirements.txt
 certifi==2024.2.2
     # via
@@ -93,7 +97,7 @@ cffi==1.16.0
     #   -r requirements.txt
     #   cryptography
     #   pynacl
-cfn-lint==0.86.1
+cfn-lint==0.86.2
     # via moto
 charset-normalizer==3.3.2
     # via
@@ -166,7 +170,7 @@ docker==7.0.0
     # via moto
 dyn==1.8.6
     # via -r requirements.txt
-ecdsa==0.18.0
+ecdsa==0.19.0
     # via
     #   moto
     #   python-jose
@@ -175,7 +179,7 @@ exceptiongroup==1.2.0
     # via pytest
 factory-boy==3.3.0
     # via -r requirements-tests.in
-faker==24.4.0
+faker==24.8.0
     # via
     #   -r requirements-tests.in
     #   factory-boy
@@ -217,8 +221,40 @@ freezegun==1.4.0
     # via -r requirements-tests.in
 future==1.0.0
     # via -r requirements.txt
+google-api-core[grpc]==2.18.0
+    # via
+    #   -r requirements.txt
+    #   google-cloud-private-ca
+google-auth==2.29.0
+    # via
+    #   -r requirements.txt
+    #   google-api-core
+    #   google-cloud-private-ca
+google-cloud-private-ca==1.12.0
+    # via -r requirements.txt
+googleapis-common-protos[grpc]==1.63.0
+    # via
+    #   -r requirements.txt
+    #   google-api-core
+    #   grpc-google-iam-v1
+    #   grpcio-status
 graphql-core==3.2.3
     # via moto
+grpc-google-iam-v1==0.13.0
+    # via
+    #   -r requirements.txt
+    #   google-cloud-private-ca
+grpcio==1.62.1
+    # via
+    #   -r requirements.txt
+    #   google-api-core
+    #   googleapis-common-protos
+    #   grpc-google-iam-v1
+    #   grpcio-status
+grpcio-status==1.62.1
+    # via
+    #   -r requirements.txt
+    #   google-api-core
 gunicorn==21.2.0
     # via -r requirements.txt
 hvac==2.1.0
@@ -244,7 +280,7 @@ itsdangerous==2.1.2
     # via
     #   -r requirements.txt
     #   flask
-javaobj-py3==0.4.3
+javaobj-py3==0.4.4
     # via
     #   -r requirements.txt
     #   pyjks
@@ -390,6 +426,20 @@ prompt-toolkit==3.0.43
     # via
     #   -r requirements.txt
     #   click-repl
+proto-plus==1.23.0
+    # via
+    #   -r requirements.txt
+    #   google-api-core
+    #   google-cloud-private-ca
+protobuf==4.25.3
+    # via
+    #   -r requirements.txt
+    #   google-api-core
+    #   google-cloud-private-ca
+    #   googleapis-common-protos
+    #   grpc-google-iam-v1
+    #   grpcio-status
+    #   proto-plus
 psycopg2==2.9.9
     # via -r requirements.txt
 py-partiql-parser==0.5.0
@@ -406,9 +456,10 @@ pyasn1==0.6.0
 pyasn1-modules==0.4.0
     # via
     #   -r requirements.txt
+    #   google-auth
     #   pyjks
     #   python-ldap
-pycparser==2.21
+pycparser==2.22
     # via
     #   -r requirements.txt
     #   cffi
@@ -512,13 +563,14 @@ requests==2.31.0
     #   certsrv
     #   cloudflare
     #   docker
+    #   google-api-core
     #   hvac
     #   jsonschema-path
     #   moto
     #   requests-mock
     #   requests-ntlm
     #   responses
-requests-mock==1.12.0
+requests-mock==1.12.1
     # via -r requirements-tests.in
 requests-ntlm==1.2.0
     # via
@@ -540,14 +592,17 @@ rpds-py==0.18.0
     #   jsonschema
     #   referencing
 rsa==4.9
-    # via python-jose
+    # via
+    #   -r requirements.txt
+    #   google-auth
+    #   python-jose
 s3transfer==0.10.1
     # via
     #   -r requirements.txt
     #   boto3
 sarif-om==1.0.4
     # via cfn-lint
-sentry-sdk==1.44.0
+sentry-sdk==1.44.1
     # via -r requirements.txt
 six==1.16.0
     # via
@@ -591,6 +646,8 @@ types-deprecated==1.2.9.20240311
     # via -r requirements-tests.in
 types-paramiko==3.4.0.20240311
     # via -r requirements-tests.in
+types-protobuf==4.24.0.20240408
+    # via -r requirements.txt
 types-pyopenssl==24.0.0.20240311
     # via
     #   -r requirements-tests.in
@@ -603,7 +660,7 @@ types-python-dateutil==2.9.0.20240316
     #   arrow
 types-pytz==2024.1.0.20240203
     # via -r requirements-tests.in
-types-redis==4.6.0.20240311
+types-redis==4.6.0.20240409
     # via -r requirements-tests.in
 types-requests==2.31.0.6
     # via -r requirements-tests.in
@@ -615,7 +672,7 @@ types-tabulate==0.9.0.20240106
     # via -r requirements-tests.in
 types-urllib3==1.26.25.14
     # via types-requests
-typing-extensions==4.10.0
+typing-extensions==4.11.0
     # via
     #   -r requirements.txt
     #   alembic
@@ -639,7 +696,7 @@ urllib3==1.26.18
     #   requests
     #   responses
     #   sentry-sdk
-validators==0.24.0
+validators==0.28.0
     # via -r requirements.txt
 vine==5.1.0
     # via
@@ -651,7 +708,7 @@ wcwidth==0.2.13
     # via
     #   -r requirements.txt
     #   prompt-toolkit
-werkzeug==3.0.1
+werkzeug==3.0.2
     # via
     #   -r requirements.txt
     #   flask
