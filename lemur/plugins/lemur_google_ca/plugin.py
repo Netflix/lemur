@@ -13,6 +13,13 @@
     - types-protobuf (for mypy)
     Make sure to add these to `requirements.in`
 
+    The plugin requires `GOOGLE_ACCOUNT_CREDENTIALS` config variable, which should point at the file containing
+    credentials that Lemur is using to connect to Google Cloud Platform.
+    These credentials normally would be for a service account that has permissions
+    - `privateca.certificates.update`
+    - `privateca.certificates.create`
+    for a specified Certifiate authority or have a role `roles/privateca.certificateManager` 
+
 .. moduleauthor:: Oleg Dopertchouk <odopertchouk@squarespace.com>
 """
 import json
