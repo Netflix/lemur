@@ -83,7 +83,6 @@ class GoogleCaIssuerPlugin(IssuerPlugin):
             "name": "Project",
             "type": "str",
             "required": True,
-            "value": "lemur",
             "validation": "(?i)^[a-zA-Z_0-9.-]+$",
             "helpMessage": "Must be a valid GCP project name!",
         },
@@ -91,7 +90,6 @@ class GoogleCaIssuerPlugin(IssuerPlugin):
             "name": "Location",
             "type": "str",
             "required": True,
-            "value": "us-central1",
             "validation": "(?i)^[a-z0-9-]+$",
             "helpMessage": "Must be a valid GCP location name!",
         },
@@ -99,7 +97,6 @@ class GoogleCaIssuerPlugin(IssuerPlugin):
             "name": "CAPool",
             "type": "str",
             "required": True,
-            "value": "ca-pool1",
             "validation": "(?i)^[a-zA-Z_0-9.-]+$",
             "helpMessage": "Must be a valid GCP name!",
         },
@@ -133,7 +130,6 @@ class GoogleCaIssuerPlugin(IssuerPlugin):
         ca_path = f"projects/{ca_options['Project']}" \
                   f"/locations/{ca_options['Location']}" \
                   f"/caPools/{ca_options['CAPool']}"
-
         lifetime = get_duration(options)
 
         client = private_ca.CertificateAuthorityServiceClient(
@@ -190,7 +186,11 @@ class GoogleCaIssuerPlugin(IssuerPlugin):
         if "crl_reason" in reason:
             crl_reason = CRLReason[reason["crl_reason"]]
 
-        client = private_ca.CertificateAuthorityServiceClient()
+        client = private_ca.CertificateAuthorityServiceClient(
+            credentials=service_account.Credentials.from_service_account_file(
+                current_app.config['GOOGLE_APPLICATION_CREDENTIALS']
+            )
+        )
         request = privateca_v1.RevokeCertificateRequest(
             name=ca_path,
             reason=crl_reason,
