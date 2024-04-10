@@ -76,7 +76,7 @@ def fetch_authority(ca_path: str) -> tuple[str, str]:
     client = privateca_v1.CertificateAuthorityServiceClient()
     resp = client.get_certificate_authority(name=ca_path)
     if resp.state != privateca_v1.CertificateAuthority.State.ENABLED:
-        raise Exception("The CA is not enabled")
+        raise Exception(f"The CA {ca_path} is not enabled")
     certs = list(resp.pem_ca_certificates)
     ca_pem = certs[0]
     ca_chain = '\n'.join(certs[1:])
