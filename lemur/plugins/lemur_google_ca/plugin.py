@@ -180,7 +180,7 @@ class GoogleCaIssuerPlugin(IssuerPlugin):
                   f"/certificateAuthorities/{plugin_options['CAName']}"
         ca_pem, chain_pem = fetch_authority(ca_path)
 
-        name = f"googleca_ca_name_{ca_name}_admin"
+        name = f"googleca_{ca_name}_admin"
         role = {"username": "", "password": "", "name": name}
         return ca_pem, "", chain_pem, [role]
 
