@@ -47,7 +47,6 @@ from lemur.common.utils import validate_conf
 import lemur.plugins.lemur_google_ca
 from lemur.plugins.bases import IssuerPlugin
 
-import google.cloud.security.privateca_v1 as privateca_v1
 
 SECONDS_PER_YEAR = 365 * 24 * 60 * 60
 
