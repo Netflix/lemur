@@ -31,12 +31,6 @@ class TestGoogleCa(unittest.TestCase):
     def tearDown(self):
         self.ctx.pop()
 
-    def test_create_certificate(self):
-        assert 1
-
-    def test_create_authority(self):
-        assert 1
-
     @patch('lemur.plugins.lemur_google_ca.plugin.create_ca_client')
     def test_fetch_authority_enabled(self, mock_ca_client):
         # Set up mock response
@@ -96,7 +90,7 @@ class TestGoogleCa(unittest.TestCase):
         self.assertEqual(cert_pem, "cert_pem")
         self.assertEqual(chain_pem, "chain_pem1\nchain_pem2")
 
-        expected_ca_path = f"projects/dummy_project/locations/dummy_location/caPools/dummy_capool"
+        expected_ca_path = "projects/dummy_project/locations/dummy_location/caPools/dummy_capool"
         expected_lifetime_seconds = 365 * 24 * 60 * 60  # Assuming 1 year in your get_duration function
 
         # test that we call client.create_certificate the right way
