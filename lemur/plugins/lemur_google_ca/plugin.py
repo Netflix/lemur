@@ -35,7 +35,7 @@ import re
 import uuid
 from typing import Optional
 
-import google.cloud.security.privateca_v1 as private_ca
+import google.cloud.security.privateca_v1 as privateca
 
 import arrow
 from flask import current_app
@@ -46,7 +46,6 @@ from lemur.constants import CRLReason
 from lemur.common.utils import validate_conf
 import lemur.plugins.lemur_google_ca
 from lemur.plugins.bases import IssuerPlugin
-
 
 SECONDS_PER_YEAR = 365 * 24 * 60 * 60
 
@@ -73,14 +72,25 @@ def generate_certificate_id(common_name) -> str:
 
 
 def fetch_authority(ca_path: str) -> tuple[str, str]:
-    client = privateca_v1.CertificateAuthorityServiceClient()
+    client = create_ca_client()
     resp = client.get_certificate_authority(name=ca_path)
-    if resp.state != privateca_v1.CertificateAuthority.State.ENABLED:
+    if resp.state != privateca.CertificateAuthority.State.ENABLED:
         raise Exception(f"The CA {ca_path} is not enabled")
     certs = list(resp.pem_ca_certificates)
     ca_pem = certs[0]
     ca_chain = '\n'.join(certs[1:])
     return ca_pem, ca_chain
+
+
+def create_ca_client():
+    """
+    Creates a client for accessing GCP API based on credentials supplied in application config.
+    """
+    return privateca.CertificateAuthorityServiceClient(
+        credentials=service_account.Credentials.from_service_account_file(
+            current_app.config['GOOGLE_APPLICATION_CREDENTIALS']
+        )
+    )
 
 
 class GoogleCaIssuerPlugin(IssuerPlugin):
@@ -146,14 +156,10 @@ class GoogleCaIssuerPlugin(IssuerPlugin):
                   f"/caPools/{ca_options['CAPool']}"
         lifetime = get_duration(options)
 
-        client = private_ca.CertificateAuthorityServiceClient(
-            credentials=service_account.Credentials.from_service_account_file(
-                current_app.config['GOOGLE_APPLICATION_CREDENTIALS']
-            )
-        )
-        request = private_ca.CreateCertificateRequest(
+        client = create_ca_client()
+        request = privateca.CreateCertificateRequest(
             parent=ca_path,
-            certificate=private_ca.Certificate(
+            certificate=privateca.Certificate(
                 pem_csr=csr,
                 lifetime=duration_pb2.Duration(seconds=lifetime)
             ),
@@ -200,12 +206,8 @@ class GoogleCaIssuerPlugin(IssuerPlugin):
         if "crl_reason" in reason:
             crl_reason = CRLReason[reason["crl_reason"]]
 
-        client = private_ca.CertificateAuthorityServiceClient(
-            credentials=service_account.Credentials.from_service_account_file(
-                current_app.config['GOOGLE_APPLICATION_CREDENTIALS']
-            )
-        )
-        request = privateca_v1.RevokeCertificateRequest(
+        client = create_ca_client()
+        request = privateca.RevokeCertificateRequest(
             name=ca_path,
             reason=crl_reason,
         )
