@@ -285,7 +285,7 @@ hvac==2.1.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
-idna==3.6
+idna==3.7
     # via
     #   -r requirements-tests.txt
     #   requests
