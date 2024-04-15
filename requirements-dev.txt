@@ -287,7 +287,7 @@ hvac==2.1.0
     # via -r requirements-tests.txt
 identify==2.5.35
     # via pre-commit
-idna==3.6
+idna==3.7
     # via
     #   -r requirements-tests.txt
     #   requests
@@ -738,7 +738,7 @@ sarif-om==1.0.4
     #   cfn-lint
 secretstorage==3.3.3
     # via keyring
-sentry-sdk==1.44.0
+sentry-sdk==1.45.0
     # via -r requirements-tests.txt
 six==1.16.0
     # via

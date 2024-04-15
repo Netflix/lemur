@@ -160,7 +160,7 @@ gunicorn==21.2.0
     # via -r requirements.in
 hvac==2.1.0
     # via -r requirements.in
-idna==3.6
+idna==3.7
     # via requests
 importlib-metadata==7.1.0
     # via
@@ -324,7 +324,7 @@ rsa==4.9
     # via google-auth
 s3transfer==0.10.1
     # via boto3
-sentry-sdk==1.44.1
+sentry-sdk==1.45.0
     # via -r requirements.in
 six==1.16.0
     # via
