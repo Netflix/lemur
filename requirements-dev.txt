@@ -243,7 +243,7 @@ graphql-core==3.2.3
     # via
     #   -r requirements-tests.txt
     #   moto
-gunicorn==21.2.0
+gunicorn==22.0.0
     # via -r requirements-tests.txt
 hvac==2.1.0
     # via -r requirements-tests.txt

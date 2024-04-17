@@ -131,7 +131,7 @@ flask-sqlalchemy==2.5.1
     #   flask-migrate
 future==1.0.0
     # via -r requirements.in
-gunicorn==21.2.0
+gunicorn==22.0.0
     # via -r requirements.in
 hvac==2.1.0
     # via -r requirements.in
