@@ -79,7 +79,7 @@ cachetools==5.3.3
     # via
     #   -r requirements.txt
     #   google-auth
-celery[redis]==5.3.6
+celery[redis]==5.4.0
     # via
     #   -r requirements-tests.in
     #   -r requirements.txt
