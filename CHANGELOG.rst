@@ -3,6 +3,7 @@ Changelog
 
 Unreleased
 ~~~~~~~~~~~~~~~~~~~~
+Added Google CA issuer plugin. This plugin creates certificates via Google CA Manager API.
 
 1.7.0 - `2024-01-17`
 ~~~~~~~~~~~~~~~~~~~~
@@ -16,7 +17,6 @@ Added AWS ACM source plugin. This plugin retreives all certificates for an accou
 Added AWS ACM destination plugin. This plugin uploads a certificate to AWS ACM.
 Allow updating options field via authority update API.
 Fixed a DoS security issue affecting Windows env via the name parameter of the certificate post endpoint.
-
 
 1.6.0 - `2023-10-23`
 ~~~~~~~~~~~~~~~~~~~~
