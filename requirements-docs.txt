@@ -857,7 +857,7 @@ types-requests==2.31.0.6
     # via -r requirements-tests.txt
 types-setuptools==69.2.0.20240317
     # via -r requirements-tests.txt
-types-six==1.16.21.20240311
+types-six==1.16.21.20240425
     # via -r requirements-tests.txt
 types-tabulate==0.9.0.20240106
     # via -r requirements-tests.txt
