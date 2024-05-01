@@ -514,7 +514,6 @@ class CertificatesList(AuthenticatedResource):
             if message and code:
                 return dict(message=message), code
 
-
         role = role_service.get_by_name(data["authority"].owner)
 
         # all the authority role members should be allowed

@@ -182,6 +182,7 @@ def get_all_certs_attached_to_endpoint_without_autorotate():
         .all()  # noqa
     )
 
+
 def get_all_certs_not_attached_to_endpoint_or_destination_with_autorotate():
     """
     Retrieves all certificates that are not attached to an endpoint or destinations, but that have autorotate enabled.

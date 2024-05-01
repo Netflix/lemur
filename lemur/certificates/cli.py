@@ -877,7 +877,7 @@ def automatically_enable_autorotate_with_endpoint():
         database.update(cert)
 
 
-@cli.command(" v")
+@cli.command("automatically_disable_autorotate_without_endpoint_or_destination")
 def automatically_disable_autorotate_without_endpoint_or_destination_command():
     automatically_disable_autorotate_without_endpoint_or_destination()
 
@@ -899,9 +899,6 @@ def automatically_disable_autorotate_without_endpoint_or_destination():
         if not isinstance(callable, current_app.config.get("DISABLE_AUTOROTATION_FILTER")) or not current_app.config.get("DISABLE_AUTOROTATION_FILTER")(cert):
             continue
 
-
-
-
         log_data["certificate"] = cert.name
         log_data["certificate_id"] = cert.id
         log_data["authority_id"] = cert.authority_id
@@ -918,6 +915,7 @@ def automatically_disable_autorotate_without_endpoint_or_destination():
                                   })
         cert.rotation = False
         database.update(cert)
+
 
 @cli.command("automatically_enable_autorotate_with_destination")
 def automatically_enable_autorotate_with_destination_command():
