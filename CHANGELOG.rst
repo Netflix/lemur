@@ -3,6 +3,10 @@ Changelog
 
 Unreleased
 ~~~~~~~~~~~~~~~~~~~~
+Added Google CA issuer plugin. This plugin creates certificates via Google CA Manager API.
+
+1.7.0 - `2024-01-17`
+~~~~~~~~~~~~~~~~~~~~
 To avoid confusion, the debug app configuration property has been replaced with the standard DEBUG flask app config.
 Added ability for new versions of LEMUR_TOKEN_SECRET via the LEMUR_TOKEN_SECRETS config option. This allows for
 migration and rotation of the secret.
@@ -11,7 +15,8 @@ Added DIGICERT_CIS_USE_CSR_FIELDS to control the `use_csr_fields` create certifi
 Added Digicert source plugin. Enable it with DIGICERT_SOURCE_ENABLED
 Added AWS ACM source plugin. This plugin retreives all certificates for an account and a region.
 Added AWS ACM destination plugin. This plugin uploads a certificate to AWS ACM.
-
+Allow updating options field via authority update API.
+Fixed a DoS security issue affecting Windows env via the name parameter of the certificate post endpoint.
 
 1.6.0 - `2023-10-23`
 ~~~~~~~~~~~~~~~~~~~~
