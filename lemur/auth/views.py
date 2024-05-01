@@ -87,7 +87,7 @@ def exchange_for_access_token(
     response = r.json()
 
     if not r.ok or "error" in response:
-        if current_app.config.get("LOG_ACCESS_TOKEN_EXCHANGE"):
+        if current_app.config.get("LOG_ACCESS_TOKEN_EXCHANGE", False):
             current_app.logger.info(
                 "Access token exchange response error [%s], error description [%s], access token URL: [%s], \
                 client ID: [%s], client secret non-empty: [%s], redirect URI: [%s]",
