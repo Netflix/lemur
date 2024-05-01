@@ -35,7 +35,7 @@ from lemur.certificates.service import (
     list_recent_valid_certs_issued_by_authority,
     get_certificates_with_same_cn_with_rotate_on,
     identify_and_persist_expiring_deployed_certificates,
-    send_certificate_expiration_metrics
+    send_certificate_expiration_metrics, get_all_certs_not_attached_to_endpoint_or_destination_with_autorotate
 )
 from lemur.certificates.verify import verify_string
 from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS, CRLReason
@@ -876,6 +876,48 @@ def automatically_enable_autorotate_with_endpoint():
         cert.rotation = True
         database.update(cert)
 
+
+@cli.command(" v")
+def automatically_disable_autorotate_without_endpoint_or_destination_command():
+    automatically_disable_autorotate_without_endpoint_or_destination()
+
+
+def automatically_disable_autorotate_without_endpoint_or_destination():
+    """
+    This function automatically disables auto-rotation for unexpired certificates that are
+    not attached to an endpoint or destination but have autorotate enabled.
+
+    WARNING: This will overwrite the Auto-rotate toggle!
+    """
+    log_data = {
+        "function": f"{__name__}.{sys._getframe().f_code.co_name}",
+        "message": "Disabling auto-rotate for certificate"
+    }
+
+    eligible_certs = get_all_certs_not_attached_to_endpoint_or_destination_with_autorotate()
+    for cert in eligible_certs:
+        if not isinstance(callable, current_app.config.get("DISABLE_AUTOROTATION_FILTER")) or not current_app.config.get("DISABLE_AUTOROTATION_FILTER")(cert):
+            continue
+
+
+
+
+        log_data["certificate"] = cert.name
+        log_data["certificate_id"] = cert.id
+        log_data["authority_id"] = cert.authority_id
+        log_data["authority_name"] = authorities_get_by_id(cert.authority_id).name
+        log_data["destination_names"] = "NONE"
+        current_app.logger.info(log_data)
+        metrics.send("automatically_disable_autorotate_without_endpoint_or_destination",
+                     "counter", 1,
+                     metric_tags={"certificate": log_data["certificate"],
+                                  "certificate_id": log_data["certificate_id"],
+                                  "authority_id": log_data["authority_id"],
+                                  "authority_name": log_data["authority_name"],
+                                  "destination_names": log_data["destination_names"]
+                                  })
+        cert.rotation = False
+        database.update(cert)
 
 @cli.command("automatically_enable_autorotate_with_destination")
 def automatically_enable_autorotate_with_destination_command():

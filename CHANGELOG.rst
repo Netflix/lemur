@@ -7,6 +7,8 @@ Added Google CA issuer plugin. This plugin creates certificates via Google CA Ma
 Added CERTIFICATE_CREATE_REQUEST_VALIDATION: a configurable, plugin-independent callback that can be used to reject requests
 based on your specific business logic. For example, you could disallow certs with rotate set and no destinations to reduce
 volume of unused certs.
+Added the automatically_disable_autorotate_without_endpoint_or_destination celery task, along with a customizable DISABLE_AUTOROTATION_FILTER
+function you can use to determine when to disable autorotate. By default, nothing will be changed by this task when scheduled.
 
 1.7.0 - `2024-01-17`
 ~~~~~~~~~~~~~~~~~~~~
