@@ -87,6 +87,17 @@ def exchange_for_access_token(
     response = r.json()
 
     if not r.ok or "error" in response:
+        if current_app.config.get("LOG_ACCESS_TOKEN_EXCHANGE"):
+            current_app.logger.info(
+                "Access token exchange response error [%s], error description [%s], access token URL: [%s], \
+                client ID: [%s], client secret non-empty: [%s], redirect URI: [%s]",
+                response.get("error", "Unknown error"),
+                response.get("error_description", ""),
+                access_token_url,
+                client_id,
+                bool(secret),
+                redirect_uri,
+            )
         raise TokenExchangeFailed(response.get("error", "Unknown error"), response.get("error_description", ""))
 
     id_token = response.get("id_token")
