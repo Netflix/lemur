@@ -771,7 +771,7 @@ sortedcontainers==2.4.0
     # via
     #   -r requirements-tests.txt
     #   fakeredis
-sphinx==7.2.6
+sphinx==7.3.7
     # via
     #   -r requirements-docs.in
     #   sphinx-rtd-theme
@@ -829,6 +829,7 @@ tomli==2.0.1
     #   black
     #   mypy
     #   pytest
+    #   sphinx
 twofish==0.3.0
     # via
     #   -r requirements-tests.txt
