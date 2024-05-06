@@ -310,7 +310,7 @@ iniconfig==2.0.0
     #   pytest
 invoke==2.2.0
     # via -r requirements-dev.in
-itsdangerous==2.1.2
+itsdangerous==2.2.0
     # via
     #   -r requirements-tests.txt
     #   flask

@@ -170,7 +170,7 @@ importlib-resources==6.4.0
     # via limits
 inflection==0.5.1
     # via -r requirements.in
-itsdangerous==2.1.2
+itsdangerous==2.2.0
     # via
     #   -r requirements.in
     #   flask
