@@ -345,7 +345,7 @@ iniconfig==2.0.0
     # via
     #   -r requirements-tests.txt
     #   pytest
-itsdangerous==2.1.2
+itsdangerous==2.2.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
