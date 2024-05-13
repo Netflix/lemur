@@ -240,7 +240,7 @@ flask-bcrypt==1.0.1
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
-flask-cors==4.0.0
+flask-cors==4.0.1
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
