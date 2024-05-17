@@ -3,13 +3,12 @@ Changelog
 
 Unreleased
 ~~~~~~~~~~~~~~~~~~~~
-Added Google CA issuer plugin. This plugin creates certificates via Google CA Manager API.
 
 1.8.0 - `2024-05-17`
 ~~~~~~~~~~~~~~~~~~~~
 
 - Added `PING_EXCLUDE_USER_PARAMS` config option.
-- Issuer plugin for Google CA Manager.
+- Added Google CA issuer plugin. This plugin creates certificates via Google CA Manager API.
 - Allow CN to be optional in reissue and clone.
 
 Special thanks to all who contributed to this release, notably:
