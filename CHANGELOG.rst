@@ -4,7 +4,7 @@ Changelog
 Unreleased
 ~~~~~~~~~~~~~~~~~~~~
 
-1.8.0 - `2024-05-17`
+1.8.0 - `2024-05-20`
 ~~~~~~~~~~~~~~~~~~~~
 
 - Added `PING_EXCLUDE_USER_PARAMS` config option.
