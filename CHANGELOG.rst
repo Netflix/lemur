@@ -4,6 +4,11 @@ Changelog
 Unreleased
 ~~~~~~~~~~~~~~~~~~~~
 
+1.8.1 - `2024-05-20`
+~~~~~~~~~~~~~~~~~~~~
+
+Updated deployment workflow to use `pypa/gh-action-pypi-publish`.
+
 1.8.0 - `2024-05-20`
 ~~~~~~~~~~~~~~~~~~~~
 
