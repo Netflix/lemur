@@ -145,7 +145,7 @@ click-repl==0.3.0
     # via
     #   -r requirements-tests.txt
     #   celery
-cloudflare==2.19.2
+cloudflare==2.20.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
