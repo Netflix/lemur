@@ -24,6 +24,7 @@ def test_zone_selection(app):  # noqa
     # Replace this with reference to your function
     assert _find_zone_id("test.dev.acme.identity.uq.edu.au", client) == "Z2"
     assert _find_zone_id("another.dev.acme.identity.uq.edu.au", client) == "Z2"
+    assert _find_zone_id("anotherdev.acme.identity.uq.edu.au", client) == "Z1"
     assert _find_zone_id("test2.acme.identity.uq.edu.au", client) == "Z1"
 
     # Test that it raises a ValueError for a domain where no matching zone is found
