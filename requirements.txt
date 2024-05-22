@@ -305,7 +305,7 @@ redis==5.0.3
     # via
     #   -r requirements.in
     #   celery
-requests==2.31.0
+requests==2.32.0
     # via
     #   -r requirements.in
     #   acme
