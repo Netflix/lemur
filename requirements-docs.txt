@@ -248,7 +248,7 @@ flask-limiter==3.6.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
-flask-mail==0.9.1
+flask-mail==0.10.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt

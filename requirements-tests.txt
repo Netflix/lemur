@@ -203,7 +203,7 @@ flask-cors==4.0.1
     # via -r requirements.txt
 flask-limiter==3.6.0
     # via -r requirements.txt
-flask-mail==0.9.1
+flask-mail==0.10.0
     # via -r requirements.txt
 flask-migrate==4.0.7
     # via -r requirements.txt
