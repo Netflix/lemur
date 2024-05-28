@@ -217,7 +217,7 @@ flask-sqlalchemy==2.5.1
     # via
     #   -r requirements.txt
     #   flask-migrate
-freezegun==1.5.0
+freezegun==1.5.1
     # via -r requirements-tests.in
 future==1.0.0
     # via -r requirements.txt
