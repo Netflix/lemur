@@ -13,6 +13,7 @@ class RetryableClientSecretCredential(ClientSecretCredential):
     get_token will be retried continuously until it succeeds or the pre-configured 10-minute
     timeout elapses.
     """
+
     def __init__(self, tenant_id, client_id, client_secret, **kwargs):
         super().__init__(tenant_id, client_id, client_secret, **kwargs)
 
@@ -34,11 +35,15 @@ def get_azure_credential(plugin, options):
     """
     if plugin.credential:
         try:
-            plugin.credential.get_token("https://management.azure.com/.default")  # Try to dispense a valid token.
+            plugin.credential.get_token(
+                "https://management.azure.com/.default"
+            )  # Try to dispense a valid token.
             return plugin.credential
         except (CredentialUnavailableError, ClientAuthenticationError) as e:
-            current_app.logger.warning(f"Failed to re-use existing Azure credential, another one will attempt to "
-                                       f"be re-generated: {e}")
+            current_app.logger.warning(
+                f"Failed to re-use existing Azure credential, another one will attempt to "
+                f"be re-generated: {e}"
+            )
 
     tenant = plugin.get_option("azureTenant", options)
     auth_method = plugin.get_option("authenticationMethod", options)
@@ -46,7 +51,9 @@ def get_azure_credential(plugin, options):
     if auth_method == "hashicorpVault":
         mount_point = plugin.get_option("hashicorpVaultMountPoint", options)
         role_name = plugin.get_option("hashicorpVaultRoleName", options)
-        client_id, client_secret = get_oauth_credentials_from_hashicorp_vault(mount_point, role_name)
+        client_id, client_secret = get_oauth_credentials_from_hashicorp_vault(
+            mount_point, role_name
+        )
 
         # It may take up-to 10 minutes for the generated OAuth credentials to become usable due
         # to AD replication delay. To account for this, the credential will continuously

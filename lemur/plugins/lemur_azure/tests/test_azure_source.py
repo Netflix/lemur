@@ -19,7 +19,7 @@ from azure.mgmt.network.models import (
     ApplicationGatewaySslPolicyType,
     ApplicationGatewaySslCipherSuite,
     PublicIPAddress,
-    SubResource
+    SubResource,
 )
 from azure.mgmt.cdn.models import (
     CustomDomain,
@@ -112,7 +112,7 @@ class TestAzureSource(unittest.TestCase):
             {"name": "azureTenant", "value": "mockedTenant"},
             {"name": "azureAppID", "value": "mockedAppID"},
             {"name": "azurePassword", "value": "mockedPW"},
-            {"name": "authenticationMethod", "value": "azureApp"}
+            {"name": "authenticationMethod", "value": "azureApp"},
         ]
 
     @patch.dict(os.environ, {"VAULT_ADDR": "https://fakevaultinstance:8200"})
@@ -123,20 +123,34 @@ class TestAzureSource(unittest.TestCase):
         kv_cert = KeyVaultCertificate(cer=fake_cer_contents)
         get_certificate_mock.return_value = kv_cert
 
-        crt = self.azure_source.get_certificate_by_name("localhost-LocalCA", self.options)
+        crt = self.azure_source.get_certificate_by_name(
+            "localhost-LocalCA", self.options
+        )
         assert crt["body"] == test_server_cert_1
 
     @patch.dict(os.environ, {"VAULT_ADDR": "https://fakevaultinstance:8200"})
     @patch("azure.keyvault.certificates.CertificateClient.get_certificate")
-    @patch("azure.keyvault.certificates.CertificateClient.list_properties_of_certificates")
-    def test_get_certificates(self, list_properties_of_certificates_mock, get_certificate_mock):
+    @patch(
+        "azure.keyvault.certificates.CertificateClient.list_properties_of_certificates"
+    )
+    def test_get_certificates(
+        self, list_properties_of_certificates_mock, get_certificate_mock
+    ):
         test_crt_1 = x509.load_pem_x509_certificate(str.encode(test_server_cert_1))
-        test_crt_1_contents = test_crt_1.public_bytes(encoding=serialization.Encoding.DER)
+        test_crt_1_contents = test_crt_1.public_bytes(
+            encoding=serialization.Encoding.DER
+        )
         test_crt_2 = x509.load_pem_x509_certificate(str.encode(test_server_cert_2))
-        test_crt_2_contents = test_crt_2.public_bytes(encoding=serialization.Encoding.DER)
+        test_crt_2_contents = test_crt_2.public_bytes(
+            encoding=serialization.Encoding.DER
+        )
         test_properties = [
-            CertificateProperties(cert_id="https://couldbeanyvalue.com/certificates/localhost-LocalCA/1234abc"),
-            CertificateProperties(cert_id="https://couldbeanyvalue.com/certificates/star-wild-example-org-LemurTrust/1234abc"),
+            CertificateProperties(
+                cert_id="https://couldbeanyvalue.com/certificates/localhost-LocalCA/1234abc"
+            ),
+            CertificateProperties(
+                cert_id="https://couldbeanyvalue.com/certificates/star-wild-example-org-LemurTrust/1234abc"
+            ),
         ]
         test_certificates = [
             KeyVaultCertificate(
@@ -146,7 +160,7 @@ class TestAzureSource(unittest.TestCase):
             KeyVaultCertificate(
                 properties=test_properties[1],
                 cer=test_crt_2_contents,
-            )
+            ),
         ]
 
         list_properties_of_certificates_mock.return_value = test_properties
@@ -156,11 +170,15 @@ class TestAzureSource(unittest.TestCase):
         assert synced_certificates == [
             dict(
                 name="localhost-LocalCA",
-                body=test_crt_1.public_bytes(encoding=serialization.Encoding.PEM).decode("utf-8"),
+                body=test_crt_1.public_bytes(
+                    encoding=serialization.Encoding.PEM
+                ).decode("utf-8"),
             ),
             dict(
                 name="star-wild-example-org-LemurTrust",
-                body=test_crt_2.public_bytes(encoding=serialization.Encoding.PEM).decode("utf-8"),
+                body=test_crt_2.public_bytes(
+                    encoding=serialization.Encoding.PEM
+                ).decode("utf-8"),
             ),
         ]
 
@@ -171,18 +189,20 @@ class TestAzureSource(unittest.TestCase):
     @patch("azure.mgmt.cdn.operations.EndpointsOperations.list_by_profile")
     @patch("azure.mgmt.cdn.operations.CustomDomainsOperations.list_by_endpoint")
     @patch("azure.mgmt.network.operations.PublicIPAddressesOperations.get")
-    @patch("azure.mgmt.network.operations.ApplicationGatewaysOperations.get_ssl_predefined_policy")
+    @patch(
+        "azure.mgmt.network.operations.ApplicationGatewaysOperations.get_ssl_predefined_policy"
+    )
     @patch("azure.mgmt.network.operations.ApplicationGatewaysOperations.list_all")
     @patch("azure.mgmt.subscription.operations.SubscriptionsOperations.list")
     def test_get_endpoints(
-            self,
-            list_subscriptions_mock,
-            list_all_appgw_mock,
-            get_ssl_predefined_policy_mock,
-            get_public_ip_mock,
-            list_cdn_custom_domains_by_endpoint_mock,
-            list_cdn_endpoints_by_profile_mock,
-            list_cdn_profiles_mock,
+        self,
+        list_subscriptions_mock,
+        list_all_appgw_mock,
+        get_ssl_predefined_policy_mock,
+        get_public_ip_mock,
+        list_cdn_custom_domains_by_endpoint_mock,
+        list_cdn_endpoints_by_profile_mock,
+        list_cdn_profiles_mock,
     ):
         test_subscription_1 = Subscription()
         test_subscription_1.subscription_id = "fake-subscription-1"
@@ -193,7 +213,7 @@ class TestAzureSource(unittest.TestCase):
             predefined_policy_name="AppGwSslPolicy20170401S",
             cipher_suites=[
                 ApplicationGatewaySslCipherSuite("TLS_RSA_WITH_AES_256_CBC_SHA"),
-            ]
+            ],
         )
         foo_appgw = ApplicationGateway(
             id="fake-appgw-foo",
@@ -202,39 +222,60 @@ class TestAzureSource(unittest.TestCase):
                     name="public-listener-443",
                     protocol="Https",
                     frontend_ip_configuration=SubResource(
-                        id=_frontend_ip_cfg_resource_id(subscription_id="fake-subscription-1",
-                                                        appgw_name="fake-appgw-foo",
-                                                        resource_name="fake-frontend-ip-cfg-foo-1")),
+                        id=_frontend_ip_cfg_resource_id(
+                            subscription_id="fake-subscription-1",
+                            appgw_name="fake-appgw-foo",
+                            resource_name="fake-frontend-ip-cfg-foo-1",
+                        )
+                    ),
                     frontend_port=SubResource(
-                        id=_frontend_port_id(subscription_id="fake-subscription-1", appgw_name="fake-appgw-foo",
-                                             resource_name="fake-frontend-port-foo")),
+                        id=_frontend_port_id(
+                            subscription_id="fake-subscription-1",
+                            appgw_name="fake-appgw-foo",
+                            resource_name="fake-frontend-port-foo",
+                        )
+                    ),
                     ssl_certificate=SubResource(
-                        id=_ssl_certificate_id(subscription_id="fake-subscription-1", appgw_name="fake-appgw-foo",
-                                               resource_name="fake-ssl-certificate-foo")),
+                        id=_ssl_certificate_id(
+                            subscription_id="fake-subscription-1",
+                            appgw_name="fake-appgw-foo",
+                            resource_name="fake-ssl-certificate-foo",
+                        )
+                    ),
                 ),
             ],
             frontend_ip_configurations=[
                 ApplicationGatewayFrontendIPConfiguration(
-                    id=_frontend_ip_cfg_resource_id(subscription_id="fake-subscription-1",
-                                                    appgw_name="fake-appgw-foo",
-                                                    resource_name="fake-frontend-ip-cfg-foo-1"),
+                    id=_frontend_ip_cfg_resource_id(
+                        subscription_id="fake-subscription-1",
+                        appgw_name="fake-appgw-foo",
+                        resource_name="fake-frontend-ip-cfg-foo-1",
+                    ),
                     public_ip_address=SubResource(
-                        id=_public_ip_resource_id(subscription_id="fake-subscription-1",
-                                                  resource_name="fake-public-ipv4-foo-1"),
+                        id=_public_ip_resource_id(
+                            subscription_id="fake-subscription-1",
+                            resource_name="fake-public-ipv4-foo-1",
+                        ),
                     ),
                 ),
             ],
             frontend_ports=[
                 ApplicationGatewayFrontendPort(
-                    id=_frontend_port_id(subscription_id="fake-subscription-1", appgw_name="fake-appgw-foo",
-                                         resource_name="fake-frontend-port-foo"),
+                    id=_frontend_port_id(
+                        subscription_id="fake-subscription-1",
+                        appgw_name="fake-appgw-foo",
+                        resource_name="fake-frontend-port-foo",
+                    ),
                     port=443,
                 ),
             ],
             ssl_certificates=[
                 ApplicationGatewaySslCertificate(
-                    id=_ssl_certificate_id(subscription_id="fake-subscription-1", appgw_name="fake-appgw-foo",
-                                           resource_name="fake-ssl-certificate-foo"),
+                    id=_ssl_certificate_id(
+                        subscription_id="fake-subscription-1",
+                        appgw_name="fake-appgw-foo",
+                        resource_name="fake-ssl-certificate-foo",
+                    ),
                     name="fake-ssl-certificate-foo",
                 )
             ],
@@ -244,7 +285,10 @@ class TestAzureSource(unittest.TestCase):
             ),
         )
         foo_public_ip = PublicIPAddress(
-            id=_public_ip_resource_id(subscription_id="fake-subscription-1", resource_name="fake-public-ipv4-foo-1"),
+            id=_public_ip_resource_id(
+                subscription_id="fake-subscription-1",
+                resource_name="fake-public-ipv4-foo-1",
+            ),
             ip_address="204.13.0.120",
         )
         foo_appgw.name = "fake-appgw-foo"
@@ -255,29 +299,43 @@ class TestAzureSource(unittest.TestCase):
                     name="public-listener-80",
                     protocol="Http",
                     frontend_ip_configuration=SubResource(
-                        id=_frontend_ip_cfg_resource_id(subscription_id="fake-subscription-1",
-                                                        appgw_name="fake-appgw-bar",
-                                                        resource_name="fake-frontend-ip-cfg-bar-1")),
+                        id=_frontend_ip_cfg_resource_id(
+                            subscription_id="fake-subscription-1",
+                            appgw_name="fake-appgw-bar",
+                            resource_name="fake-frontend-ip-cfg-bar-1",
+                        )
+                    ),
                     frontend_port=SubResource(
-                        id=_frontend_port_id(subscription_id="fake-subscription-1", appgw_name="fake-appgw-bar",
-                                             resource_name="fake-frontend-port-bar")),
+                        id=_frontend_port_id(
+                            subscription_id="fake-subscription-1",
+                            appgw_name="fake-appgw-bar",
+                            resource_name="fake-frontend-port-bar",
+                        )
+                    ),
                 )
             ],
             frontend_ip_configurations=[
                 ApplicationGatewayFrontendIPConfiguration(
-                    id=_frontend_ip_cfg_resource_id(subscription_id="fake-subscription-1",
-                                                    appgw_name="fake-appgw-bar",
-                                                    resource_name="fake-frontend-ip-cfg-bar-1"),
+                    id=_frontend_ip_cfg_resource_id(
+                        subscription_id="fake-subscription-1",
+                        appgw_name="fake-appgw-bar",
+                        resource_name="fake-frontend-ip-cfg-bar-1",
+                    ),
                     public_ip_address=SubResource(
-                        id=_public_ip_resource_id(subscription_id="fake-subscription-1",
-                                                  resource_name="fake-public-ipv4-bar-1"),
+                        id=_public_ip_resource_id(
+                            subscription_id="fake-subscription-1",
+                            resource_name="fake-public-ipv4-bar-1",
+                        ),
                     ),
                 ),
             ],
             frontend_ports=[
                 ApplicationGatewayFrontendPort(
-                    id=_frontend_port_id(subscription_id="fake-subscription-1", appgw_name="fake-appgw-bar",
-                                         resource_name="fake-frontend-port-bar"),
+                    id=_frontend_port_id(
+                        subscription_id="fake-subscription-1",
+                        appgw_name="fake-appgw-bar",
+                        resource_name="fake-frontend-port-bar",
+                    ),
                     port=80,
                 ),
             ],
@@ -290,83 +348,126 @@ class TestAzureSource(unittest.TestCase):
                     name="public-listener-443",
                     protocol="Https",
                     frontend_ip_configuration=SubResource(
-                        id=_frontend_ip_cfg_resource_id(subscription_id="fake-subscription-2",
-                                                        appgw_name="fake-appgw-baz",
-                                                        resource_name="fake-frontend-ip-cfg-baz-1")),
+                        id=_frontend_ip_cfg_resource_id(
+                            subscription_id="fake-subscription-2",
+                            appgw_name="fake-appgw-baz",
+                            resource_name="fake-frontend-ip-cfg-baz-1",
+                        )
+                    ),
                     frontend_port=SubResource(
-                        id=_frontend_port_id(subscription_id="fake-subscription-2", appgw_name="fake-appgw-baz",
-                                             resource_name="fake-frontend-port-baz-1")),
+                        id=_frontend_port_id(
+                            subscription_id="fake-subscription-2",
+                            appgw_name="fake-appgw-baz",
+                            resource_name="fake-frontend-port-baz-1",
+                        )
+                    ),
                     ssl_certificate=SubResource(
-                        id=_ssl_certificate_id(subscription_id="fake-subscription-2", appgw_name="fake-appgw-baz",
-                                               resource_name="fake-ssl-certificate-baz-1")),
+                        id=_ssl_certificate_id(
+                            subscription_id="fake-subscription-2",
+                            appgw_name="fake-appgw-baz",
+                            resource_name="fake-ssl-certificate-baz-1",
+                        )
+                    ),
                 ),
                 ApplicationGatewayHttpListener(
                     name="internal-listener-443",
                     protocol="Https",
                     frontend_ip_configuration=SubResource(
-                        id=_frontend_ip_cfg_resource_id(subscription_id="fake-subscription-2",
-                                                        appgw_name="fake-appgw-baz",
-                                                        resource_name="fake-frontend-ip-cfg-baz-2")),
+                        id=_frontend_ip_cfg_resource_id(
+                            subscription_id="fake-subscription-2",
+                            appgw_name="fake-appgw-baz",
+                            resource_name="fake-frontend-ip-cfg-baz-2",
+                        )
+                    ),
                     frontend_port=SubResource(
-                        id=_frontend_port_id(subscription_id="fake-subscription-2", appgw_name="fake-appgw-baz",
-                                             resource_name="fake-frontend-port-baz-2")),
+                        id=_frontend_port_id(
+                            subscription_id="fake-subscription-2",
+                            appgw_name="fake-appgw-baz",
+                            resource_name="fake-frontend-port-baz-2",
+                        )
+                    ),
                     ssl_certificate=SubResource(
-                        id=_ssl_certificate_id(subscription_id="fake-subscription-2", appgw_name="fake-appgw-baz",
-                                               resource_name="fake-ssl-certificate-baz-2")),
-                )
+                        id=_ssl_certificate_id(
+                            subscription_id="fake-subscription-2",
+                            appgw_name="fake-appgw-baz",
+                            resource_name="fake-ssl-certificate-baz-2",
+                        )
+                    ),
+                ),
             ],
             frontend_ip_configurations=[
                 ApplicationGatewayFrontendIPConfiguration(
-                    id=_frontend_ip_cfg_resource_id(subscription_id="fake-subscription-2",
-                                                    appgw_name="fake-appgw-baz",
-                                                    resource_name="fake-frontend-ip-cfg-baz-1"),
+                    id=_frontend_ip_cfg_resource_id(
+                        subscription_id="fake-subscription-2",
+                        appgw_name="fake-appgw-baz",
+                        resource_name="fake-frontend-ip-cfg-baz-1",
+                    ),
                     public_ip_address=SubResource(
-                        id=_public_ip_resource_id(subscription_id="fake-subscription-2",
-                                                  resource_name="fake-public-ipv4-baz-1"),
+                        id=_public_ip_resource_id(
+                            subscription_id="fake-subscription-2",
+                            resource_name="fake-public-ipv4-baz-1",
+                        ),
                     ),
                 ),
                 ApplicationGatewayFrontendIPConfiguration(
-                    id=_frontend_ip_cfg_resource_id(subscription_id="fake-subscription-2",
-                                                    appgw_name="fake-appgw-baz",
-                                                    resource_name="fake-frontend-ip-cfg-baz-2"),
+                    id=_frontend_ip_cfg_resource_id(
+                        subscription_id="fake-subscription-2",
+                        appgw_name="fake-appgw-baz",
+                        resource_name="fake-frontend-ip-cfg-baz-2",
+                    ),
                     private_ip_address="10.10.200.1",
                 ),
             ],
             frontend_ports=[
                 ApplicationGatewayFrontendPort(
-                    id=_frontend_port_id(subscription_id="fake-subscription-2", appgw_name="fake-appgw-baz",
-                                         resource_name="fake-frontend-port-baz-1"),
+                    id=_frontend_port_id(
+                        subscription_id="fake-subscription-2",
+                        appgw_name="fake-appgw-baz",
+                        resource_name="fake-frontend-port-baz-1",
+                    ),
                     port=443,
                 ),
                 ApplicationGatewayFrontendPort(
-                    id=_frontend_port_id(subscription_id="fake-subscription-2", appgw_name="fake-appgw-baz",
-                                         resource_name="fake-frontend-port-baz-2"),
+                    id=_frontend_port_id(
+                        subscription_id="fake-subscription-2",
+                        appgw_name="fake-appgw-baz",
+                        resource_name="fake-frontend-port-baz-2",
+                    ),
                     port=443,
                 ),
             ],
             ssl_certificates=[
                 ApplicationGatewaySslCertificate(
-                    id=_ssl_certificate_id(subscription_id="fake-subscription-2", appgw_name="fake-appgw-baz",
-                                           resource_name="fake-ssl-certificate-baz-1"),
+                    id=_ssl_certificate_id(
+                        subscription_id="fake-subscription-2",
+                        appgw_name="fake-appgw-baz",
+                        resource_name="fake-ssl-certificate-baz-1",
+                    ),
                     name="fake-ssl-certificate-baz-1",
                 ),
                 ApplicationGatewaySslCertificate(
-                    id=_ssl_certificate_id(subscription_id="fake-subscription-2", appgw_name="fake-appgw-baz",
-                                           resource_name="fake-ssl-certificate-baz-2"),
+                    id=_ssl_certificate_id(
+                        subscription_id="fake-subscription-2",
+                        appgw_name="fake-appgw-baz",
+                        resource_name="fake-ssl-certificate-baz-2",
+                    ),
                     name="fake-ssl-certificate-baz-2",
-                )
+                ),
             ],
             ssl_policy=ApplicationGatewaySslPolicy(
                 policy_name="UserDefinedCustomAppGwSslPolicy",
                 policy_type=ApplicationGatewaySslPolicyType("CustomV2"),
                 cipher_suites=[
                     "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
-                ]
+                ],
             ),
         )
         baz_appgw.name = "fake-appgw-baz"
         baz_public_ip = PublicIPAddress(
-            id=_public_ip_resource_id(subscription_id="fake-subscription-2", resource_name="fake-public-ipv4-baz-1"),
+            id=_public_ip_resource_id(
+                subscription_id="fake-subscription-2",
+                resource_name="fake-public-ipv4-baz-1",
+            ),
             ip_address="204.13.0.121",
         )
 
@@ -378,7 +479,7 @@ class TestAzureSource(unittest.TestCase):
         qux_cdn_profile.id = _cdn_profile_resource_id(
             subscription_id="fake-subscription-1",
             resource_group_name="fake-resource-group-1",
-            resource_name="qux-cdn-profile"
+            resource_name="qux-cdn-profile",
         )
         qux_cdn_endpoint = Endpoint(location="Global")
         qux_cdn_endpoint.name = "qux-cdn"
@@ -402,14 +503,23 @@ class TestAzureSource(unittest.TestCase):
         test_subscription_2_appgws = [baz_appgw]
         test_public_ips = [foo_public_ip, baz_public_ip]
 
-        list_subscriptions_mock.return_value = [test_subscription_1, test_subscription_2]
-        list_all_appgw_mock.side_effect = [test_subscription_1_appgws, test_subscription_2_appgws]
+        list_subscriptions_mock.return_value = [
+            test_subscription_1,
+            test_subscription_2,
+        ]
+        list_all_appgw_mock.side_effect = [
+            test_subscription_1_appgws,
+            test_subscription_2_appgws,
+        ]
         get_public_ip_mock.side_effect = [ip for ip in test_public_ips]
         get_ssl_predefined_policy_mock.return_value = test_predefined_ssl_policy
 
         list_cdn_profiles_mock.side_effect = [[qux_cdn_profile], []]
         list_cdn_endpoints_by_profile_mock.side_effect = [[qux_cdn_endpoint], []]
-        list_cdn_custom_domains_by_endpoint_mock.side_effect = [[qux_cdn_custom_domain], []]
+        list_cdn_custom_domains_by_endpoint_mock.side_effect = [
+            [qux_cdn_custom_domain],
+            [],
+        ]
 
         synced_endpoints = self.azure_source.get_endpoints(self.options)
         assert synced_endpoints == [
@@ -427,7 +537,7 @@ class TestAzureSource(unittest.TestCase):
                 policy=dict(
                     name="AppGwSslPolicy20170401S",
                     ciphers=["TLS_RSA_WITH_AES_256_CBC_SHA"],
-                )
+                ),
             ),
             dict(
                 name="qux-cdn",
@@ -444,7 +554,7 @@ class TestAzureSource(unittest.TestCase):
                 policy=dict(
                     name="none",
                     ciphers=[],
-                )
+                ),
             ),
             dict(
                 name="fake-appgw-baz-public-443",
@@ -460,7 +570,7 @@ class TestAzureSource(unittest.TestCase):
                 policy=dict(
                     name="UserDefinedCustomAppGwSslPolicy",
                     ciphers=["TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256"],
-                )
+                ),
             ),
             dict(
                 name="fake-appgw-baz-internal-443",
@@ -476,6 +586,6 @@ class TestAzureSource(unittest.TestCase):
                 policy=dict(
                     name="UserDefinedCustomAppGwSslPolicy",
                     ciphers=["TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256"],
-                )
+                ),
             ),
         ]

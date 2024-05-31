@@ -17,10 +17,19 @@ from azure.mgmt.cdn import CdnManagementClient
 from azure.mgmt.network import NetworkManagementClient
 from azure.mgmt.subscription import SubscriptionClient
 from azure.mgmt.cdn.models import UserManagedHttpsParameters
-from azure.mgmt.network.models import ApplicationGatewaySslPolicyName, ApplicationGatewaySslPolicyType, ApplicationGatewaySslCipherSuite
+from azure.mgmt.network.models import (
+    ApplicationGatewaySslPolicyName,
+    ApplicationGatewaySslPolicyType,
+    ApplicationGatewaySslCipherSuite,
+)
 
 from lemur.common.defaults import common_name, bitstrength
-from lemur.common.utils import parse_certificate, parse_private_key, check_validation, get_key_type_from_certificate
+from lemur.common.utils import (
+    parse_certificate,
+    parse_private_key,
+    check_validation,
+    get_key_type_from_certificate,
+)
 from lemur.extensions import metrics
 from lemur.plugins.bases import DestinationPlugin, SourcePlugin
 from lemur.plugins.lemur_azure.auth import get_azure_credential
@@ -35,8 +44,7 @@ def get_cdn_endpoints(cdn_client):
     for profile in cdn_client.profiles.list():
         resource_group_name = resource_group_from_id(profile.id)
         for endpoint in cdn_client.endpoints.list_by_profile(
-                resource_group_name=resource_group_name,
-                profile_name=profile.name
+            resource_group_name=resource_group_name, profile_name=profile.name
         ):
             ep = dict(
                 name=endpoint.name,
@@ -50,11 +58,13 @@ def get_cdn_endpoints(cdn_client):
                 ),
             )
             for domain in cdn_client.custom_domains.list_by_endpoint(
-                    resource_group_name=resource_group_name,
-                    profile_name=profile.name,
-                    endpoint_name=endpoint.name,
+                resource_group_name=resource_group_name,
+                profile_name=profile.name,
+                endpoint_name=endpoint.name,
             ):
-                if isinstance(domain.custom_https_parameters, UserManagedHttpsParameters):
+                if isinstance(
+                    domain.custom_https_parameters, UserManagedHttpsParameters
+                ):
                     ep["sni_certificates"].append(
                         dict(
                             name=domain.custom_https_parameters.certificate_source_parameters.secret_name,
@@ -72,14 +82,18 @@ def get_application_gateways(network_client):
         for listener in appgw.http_listeners:
             if listener.protocol == "Https":
                 port = port_from_id(appgw, listener.frontend_port.id)
-                ip_address, is_public = ip_from_cfg_id(appgw, network_client, listener.frontend_ip_configuration.id)
+                ip_address, is_public = ip_from_cfg_id(
+                    appgw, network_client, listener.frontend_ip_configuration.id
+                )
                 listener_type = "public" if is_public else "internal"
                 ep = dict(
                     name=f"{appgw.name}-{listener_type}-{port}",
                     dnsname=ip_address,
                     port=port,
                     type="applicationgateway",
-                    primary_certificate=certificate_from_id(appgw, listener.ssl_certificate.id),
+                    primary_certificate=certificate_from_id(
+                        appgw, listener.ssl_certificate.id
+                    ),
                     sni_certificates=[],
                     policy=policy_from_appgw(network_client, appgw),
                 )
@@ -91,7 +105,9 @@ def get_and_decode_certificate(certificate_client, certificate_name):
     crt = certificate_client.get_certificate(certificate_name=certificate_name)
     decoded_crt = x509.load_der_x509_certificate(bytes(crt.cer))
     return dict(
-        body=decoded_crt.public_bytes(encoding=serialization.Encoding.PEM).decode("utf-8"),
+        body=decoded_crt.public_bytes(encoding=serialization.Encoding.PEM).decode(
+            "utf-8"
+        ),
         name=crt.name,
     )
 
@@ -126,7 +142,11 @@ def policy_from_appgw(network_client, appgw):
 
     cipher_suites = []
     if policy_type == "Predefined":
-        predefined_policy = network_client.application_gateways.get_ssl_predefined_policy(predefined_policy_name=policy_name)
+        predefined_policy = (
+            network_client.application_gateways.get_ssl_predefined_policy(
+                predefined_policy_name=policy_name
+            )
+        )
         cipher_suites = predefined_policy.cipher_suites
     elif appgw.ssl_policy.cipher_suites:
         cipher_suites = appgw.ssl_policy.cipher_suites
@@ -149,7 +169,9 @@ def certificate_from_id(appgw, certificate_id):
                 path="",
                 registry_type="keyvault",
             )
-    raise Exception(f"No certificate with ID {certificate_id} associated with {appgw.id}")
+    raise Exception(
+        f"No certificate with ID {certificate_id} associated with {appgw.id}"
+    )
 
 
 def port_from_id(appgw, port_id):
@@ -173,13 +195,18 @@ def ip_from_cfg_id(appgw, network_client, frontend_ip_cfg_id):
             if cfg.public_ip_address:
                 resource_group = resource_group_from_id(cfg.public_ip_address.id)
                 ip_name = resource_name_from_id(cfg.public_ip_address.id)
-                return network_client.public_ip_addresses.get(
-                    resource_group_name=resource_group,
-                    public_ip_address_name=ip_name
-                ).ip_address, True
+                return (
+                    network_client.public_ip_addresses.get(
+                        resource_group_name=resource_group,
+                        public_ip_address_name=ip_name,
+                    ).ip_address,
+                    True,
+                )
             elif cfg.private_ip_address:
                 return cfg.private_ip_address, False
-    raise Exception(f"No IP address associated with {appgw.id} and frontend IP configuration {frontend_ip_cfg_id}")
+    raise Exception(
+        f"No IP address associated with {appgw.id} and frontend IP configuration {frontend_ip_cfg_id}"
+    )
 
 
 class AzureDestinationPlugin(DestinationPlugin):
@@ -234,14 +261,14 @@ class AzureDestinationPlugin(DestinationPlugin):
             "type": "str",
             "required": False,
             "helpMessage": "Path the Azure secrets engine was mounted on. Required if authentication "
-                           "method is 'hashicorpVault'.",
+            "method is 'hashicorpVault'.",
         },
         {
             "name": "hashicorpVaultRoleName",
             "type": "str",
             "required": False,
             "helpMessage": "Name of the role to fetch credentials for. Required if authentication "
-                           "method is 'hashicorpVault'.",
+            "method is 'hashicorpVault'.",
         },
     ]
 
@@ -265,7 +292,7 @@ class AzureDestinationPlugin(DestinationPlugin):
         ca_vendor = parse_ca_vendor(ca_certs)
         key_type = get_key_type_from_certificate(body)
         certificate_name = "{common_name}-{ca_vendor}-{key_type}".format(
-            common_name=common_name(cert).replace('.', '-').replace('*', 'star'),
+            common_name=common_name(cert).replace(".", "-").replace("*", "star"),
             ca_vendor=ca_vendor,
             key_type=key_type,
         )
@@ -281,7 +308,7 @@ class AzureDestinationPlugin(DestinationPlugin):
                 key=parse_private_key(private_key),
                 cert=cert,
                 cas=[ca_certs],
-                encryption_algorithm=serialization.NoEncryption()
+                encryption_algorithm=serialization.NoEncryption(),
             ),
             enabled=True,
             policy=CertificatePolicy(
@@ -298,7 +325,9 @@ class AzureDestinationPlugin(DestinationPlugin):
 class AzureSourcePlugin(SourcePlugin):
     title = "Azure"
     slug = "azure-source"
-    description = "Discovers all certificates and Application Gateways within an Azure tenant"
+    description = (
+        "Discovers all certificates and Application Gateways within an Azure tenant"
+    )
 
     author = "Bob Shannon"
     author_url = "https://github.com/datadog/lemur"
@@ -345,14 +374,14 @@ class AzureSourcePlugin(SourcePlugin):
             "type": "str",
             "required": False,
             "helpMessage": "Path the Azure secrets engine was mounted on. Required if authentication "
-                           "method is 'hashicorpVault'.",
+            "method is 'hashicorpVault'.",
         },
         {
             "name": "hashicorpVaultRoleName",
             "type": "str",
             "required": False,
             "helpMessage": "Name of the role to fetch credentials for. Required if authentication "
-                           "method is 'hashicorpVault'.",
+            "method is 'hashicorpVault'.",
         },
     ]
 
@@ -369,7 +398,10 @@ class AzureSourcePlugin(SourcePlugin):
         for prop in certificate_client.list_properties_of_certificates():
             try:
                 certificates.append(
-                    get_and_decode_certificate(certificate_client=certificate_client, certificate_name=prop.name)
+                    get_and_decode_certificate(
+                        certificate_client=certificate_client,
+                        certificate_name=prop.name,
+                    )
                 )
             except HttpResponseError:
                 current_app.logger.warning(
@@ -377,11 +409,13 @@ class AzureSourcePlugin(SourcePlugin):
                 )
                 capture_exception()
                 metrics.send(
-                    "get_azure_key_vault_certificate_failed", "counter", 1,
+                    "get_azure_key_vault_certificate_failed",
+                    "counter",
+                    1,
                     metric_tags={
                         "certificate_name": prop.name,
                         "tenant": self.get_option("azureTenant", options),
-                    }
+                    },
                 )
         return certificates
 
@@ -391,7 +425,9 @@ class AzureSourcePlugin(SourcePlugin):
             vault_url=self.get_option("azureKeyVaultUrl", options),
         )
         try:
-            return get_and_decode_certificate(certificate_client=certificate_client, certificate_name=certificate_name)
+            return get_and_decode_certificate(
+                certificate_client=certificate_client, certificate_name=certificate_name
+            )
         except ResourceNotFoundError:
             return None
 
@@ -399,31 +435,40 @@ class AzureSourcePlugin(SourcePlugin):
         credential = get_azure_credential(self, options)
 
         endpoints = []
-        for subscription in SubscriptionClient(credential=credential).subscriptions.list():
-            network_client = NetworkManagementClient(credential=credential, subscription_id=subscription.subscription_id)
+        for subscription in SubscriptionClient(
+            credential=credential
+        ).subscriptions.list():
+            network_client = NetworkManagementClient(
+                credential=credential, subscription_id=subscription.subscription_id
+            )
             endpoints += get_application_gateways(network_client)
 
-            cdn_client = CdnManagementClient(credential=credential, subscription_id=subscription.subscription_id)
+            cdn_client = CdnManagementClient(
+                credential=credential, subscription_id=subscription.subscription_id
+            )
             endpoints += get_cdn_endpoints(cdn_client)
         return endpoints
 
     @staticmethod
     def update_endpoint(endpoint, certificate):
-        current_app.logger.info({
-            "message": "No explicit action required to rotate endpoint. Azure will automatically perform the rotation "
-                       "after the new certificate is uploaded to its Key Vault.",
-            "endpoint": endpoint.name,
-            "certificate": certificate.name,
-
-        })
+        current_app.logger.info(
+            {
+                "message": "No explicit action required to rotate endpoint. Azure will automatically perform the rotation "
+                "after the new certificate is uploaded to its Key Vault.",
+                "endpoint": endpoint.name,
+                "certificate": certificate.name,
+            }
+        )
         return
 
     @staticmethod
     def replace_sni_certificate(endpoint, old_cert, new_cert):
-        current_app.logger.info({
-            "message": "No explicit action required to rotate endpoint. Azure will automatically perform the rotation "
-                       "after the new certificate is uploaded to its Key Vault.",
-            "endpoint": endpoint.name,
-            "old_certificate": old_cert.name,
-            "new_certificate": new_cert.name,
-        })
+        current_app.logger.info(
+            {
+                "message": "No explicit action required to rotate endpoint. Azure will automatically perform the rotation "
+                "after the new certificate is uploaded to its Key Vault.",
+                "endpoint": endpoint.name,
+                "old_certificate": old_cert.name,
+                "new_certificate": new_cert.name,
+            }
+        )
