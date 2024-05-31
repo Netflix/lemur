@@ -143,7 +143,7 @@ cryptography==41.0.7
     #   paramiko
     #   pyjwt
     #   pyopenssl
-ddtrace==0.53.0
+ddtrace==1.16.1
     # via
     #   -r requirements.in
     #   cert-orchestration-adapter

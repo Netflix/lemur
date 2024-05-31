@@ -22,7 +22,7 @@ CloudFlare
 cryptography >= 41.0.6 # Required to avoid vulnerability in previous version (VULN-5135)
 deprecated
 dnspython3
-ddtrace == 0.53.0 # Required for cert orchestration adapter.
+ddtrace == 1.16.1 # Required for cert orchestration adapter.
 dyn
 Flask-Bcrypt
 Flask-Mail
