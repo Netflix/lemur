@@ -94,8 +94,7 @@ class TestAzureDestination(unittest.TestCase):
 
     @patch.dict(os.environ, {"VAULT_ADDR": "https://fakevaultinstance:8200"})
     @patch("azure.keyvault.certificates.CertificateClient.import_certificate")
-    @patch("hvac.Client")
-    def test_upload(self, hvac_client_mock, import_certificate_mock):
+    def test_upload(self, import_certificate_mock):
         from lemur.plugins.lemur_azure.plugin import AzureDestinationPlugin
 
         subject = AzureDestinationPlugin()
@@ -131,14 +130,7 @@ class TestAzureDestination(unittest.TestCase):
                 {"name": "azureTenant", "value": "mockedTenant"},
                 {"name": "authenticationMethod", "value": "hashicorpVault"},
                 {"name": "hashicorpVaultRoleName", "value": "mockedRole"},
-                {"name": "hashicorpVaultMountPoint", "value": "/azure"},
+                {"name": "hashicorpVaultMountPoint", "value": "azure"},
             ]
-            hvac_client_mock().secrets.azure.generate_credentials.return_value = {
-                "client_id": "fakeid123",
-                "client_secret": "fakesecret123",
-            }
             subject.upload(name, body, private_key, cert_chain, options)
-            hvac_client_mock().secrets.azure.generate_credentials.assert_called_with(
-                mount_point="/azure", name="mockedRole"
-            )
             _assert_certificate_imported()

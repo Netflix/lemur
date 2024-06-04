@@ -298,7 +298,9 @@ class AzureDestinationPlugin(DestinationPlugin):
         )
 
         certificate_client = CertificateClient(
-            credential=get_azure_credential(self, options),
+            credential=get_azure_credential(
+                audience="https://vault.azure.net", plugin=self, options=options
+            ),
             vault_url=self.get_option("azureKeyVaultUrl", options),
         )
         certificate_client.import_certificate(
@@ -392,7 +394,9 @@ class AzureSourcePlugin(SourcePlugin):
     def get_certificates(self, options, **kwargs):
         certificates = []
         certificate_client = CertificateClient(
-            credential=get_azure_credential(self, options),
+            credential=get_azure_credential(
+                audience="https://vault.azure.net", plugin=self, options=options
+            ),
             vault_url=self.get_option("azureKeyVaultUrl", options),
         )
         for prop in certificate_client.list_properties_of_certificates():
@@ -421,7 +425,9 @@ class AzureSourcePlugin(SourcePlugin):
 
     def get_certificate_by_name(self, certificate_name, options):
         certificate_client = CertificateClient(
-            credential=get_azure_credential(self, options),
+            credential=get_azure_credential(
+                audience="https://vault.azure.net", plugin=self, options=options
+            ),
             vault_url=self.get_option("azureKeyVaultUrl", options),
         )
         try:
@@ -432,8 +438,9 @@ class AzureSourcePlugin(SourcePlugin):
             return None
 
     def get_endpoints(self, options, **kwargs):
-        credential = get_azure_credential(self, options)
-
+        credential = get_azure_credential(
+            audience="https://management.azure.com", plugin=self, options=options
+        )
         endpoints = []
         for subscription in SubscriptionClient(
             credential=credential

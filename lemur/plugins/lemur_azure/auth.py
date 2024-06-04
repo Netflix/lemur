@@ -1,28 +1,44 @@
-from azure.core.exceptions import ClientAuthenticationError
-from azure.identity import ClientSecretCredential, CredentialUnavailableError
-from flask import current_app
+from azure.core.credentials import AccessToken, TokenCredential
+from azure.identity import ClientSecretCredential
 
 import hvac
 import os
 
-from retrying import retry
+
+class VaultTokenCredential(TokenCredential):
+    def __init__(self, audience, client, mount_point, role_name):
+        if not audience:
+            self.audience = "https://management.azure.com/"
+        else:
+            self.audience = audience
+        self.client = client
+        self.mount_point = mount_point
+        self.role_name = role_name
+
+    def __eq__(self, other):
+        return (
+            self.audience == other.audience
+            and self.client == other.client
+            and self.mount_point == other.mount_point
+            and self.role_name == other.role_name
+        )
+
+    def get_token(self, *scopes, claims=None, tenant_id=None, **kwargs):
+        payload = {"resource": self.audience}
+        data = self.client.adapter.get(
+            "/v1/{mount_point}/token/{role_name}".format(
+                mount_point=self.mount_point,
+                role_name=self.role_name,
+            ),
+            params=payload,
+        )["data"]
+        return AccessToken(
+            token=data["access_token"],
+            expires_on=data["expires_on"],
+        )
 
 
-class RetryableClientSecretCredential(ClientSecretCredential):
-    """Credential that authenticates a principle using a client secret. Each call to
-    get_token will be retried continuously until it succeeds or the pre-configured 10-minute
-    timeout elapses.
-    """
-
-    def __init__(self, tenant_id, client_id, client_secret, **kwargs):
-        super().__init__(tenant_id, client_id, client_secret, **kwargs)
-
-    @retry(wait_fixed=1000, stop_max_delay=600000)
-    def get_token(self, *scopes, **kwargs):
-        return super().get_token(*scopes, **kwargs)
-
-
-def get_azure_credential(plugin, options):
+def get_azure_credential(audience, plugin, options):
     """
     Fetches a credential used for authenticating with the Azure API.
     A new credential will be created if one does not already exist.
@@ -33,35 +49,19 @@ def get_azure_credential(plugin, options):
     :param options: options set for the plugin
     :return: an Azure credential
     """
-    if plugin.credential:
-        try:
-            plugin.credential.get_token(
-                "https://management.azure.com/.default"
-            )  # Try to dispense a valid token.
-            return plugin.credential
-        except (CredentialUnavailableError, ClientAuthenticationError) as e:
-            current_app.logger.warning(
-                f"Failed to re-use existing Azure credential, another one will attempt to "
-                f"be re-generated: {e}"
-            )
-
     tenant = plugin.get_option("azureTenant", options)
     auth_method = plugin.get_option("authenticationMethod", options)
 
     if auth_method == "hashicorpVault":
         mount_point = plugin.get_option("hashicorpVaultMountPoint", options)
         role_name = plugin.get_option("hashicorpVaultRoleName", options)
-        client_id, client_secret = get_oauth_credentials_from_hashicorp_vault(
-            mount_point, role_name
-        )
+        client = hvac.Client(url=os.environ["VAULT_ADDR"])
 
-        # It may take up-to 10 minutes for the generated OAuth credentials to become usable due
-        # to AD replication delay. To account for this, the credential will continuously
-        # retry generating an access token until it succeeds or 10 minutes elapse.
-        plugin.credential = RetryableClientSecretCredential(
-            tenant_id=tenant,
-            client_id=client_id,
-            client_secret=client_secret,
+        plugin.credential = VaultTokenCredential(
+            audience=audience,
+            client=client,
+            mount_point=mount_point,
+            role_name=role_name,
         )
         return plugin.credential
     elif auth_method == "azureApp":
@@ -76,21 +76,3 @@ def get_azure_credential(plugin, options):
         return plugin.credential
 
     raise Exception("No supported way to authenticate with Azure")
-
-
-def get_oauth_credentials_from_hashicorp_vault(mount_point, role_name):
-    """
-    Retrieves OAuth credentials from Hashicorp Vault's Azure secrets engine.
-
-    :param mount_point: Path the Azure secrets engine is mounted on
-    :param role_name: Name of the role to fetch credentials for
-    :returns:
-        - client_id - OAuth client ID
-        - client_secret - OAuth client secret
-    """
-    client = hvac.Client(url=os.environ["VAULT_ADDR"])
-    creds = client.secrets.azure.generate_credentials(
-        mount_point=mount_point,
-        name=role_name,
-    )
-    return creds["client_id"], creds["client_secret"]
