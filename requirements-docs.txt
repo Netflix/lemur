@@ -145,7 +145,7 @@ click-repl==0.3.0
     # via
     #   -r requirements-tests.txt
     #   celery
-cloudflare==2.19.2
+cloudflare==2.20.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -159,7 +159,7 @@ configobj==5.0.8
     #   certbot
 coverage==7.4.4
     # via -r requirements-tests.txt
-cryptography==42.0.5
+cryptography==42.0.7
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -217,11 +217,11 @@ exceptiongroup==1.2.0
     #   pytest
 factory-boy==3.3.0
     # via -r requirements-tests.txt
-faker==24.9.0
+faker==25.4.0
     # via
     #   -r requirements-tests.txt
     #   factory-boy
-fakeredis==2.21.3
+fakeredis==2.23.1
     # via -r requirements-tests.txt
 flask==2.3.3
     # via
@@ -240,15 +240,15 @@ flask-bcrypt==1.0.1
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
-flask-cors==4.0.0
+flask-cors==4.0.1
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
-flask-limiter==3.5.1
+flask-limiter==3.7.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
-flask-mail==0.9.1
+flask-mail==0.10.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -273,7 +273,7 @@ flask-sqlalchemy==2.5.1
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   flask-migrate
-freezegun==1.4.0
+freezegun==1.5.1
     # via -r requirements-tests.txt
 future==1.0.0
     # via -r requirements-tests.txt
@@ -345,7 +345,7 @@ iniconfig==2.0.0
     # via
     #   -r requirements-tests.txt
     #   pytest
-itsdangerous==2.1.2
+itsdangerous==2.2.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -470,7 +470,7 @@ multipart==0.2.4
     # via
     #   -r requirements-tests.txt
     #   moto
-mypy==1.9.0
+mypy==1.10.0
     # via -r requirements-tests.txt
 mypy-extensions==1.0.0
     # via
@@ -694,7 +694,7 @@ regex==2023.12.25
     # via
     #   -r requirements-tests.txt
     #   cfn-lint
-requests==2.31.0
+requests==2.32.0
     # via
     #   -r requirements-tests.txt
     #   acme
@@ -750,7 +750,7 @@ sarif-om==1.0.4
     # via
     #   -r requirements-tests.txt
     #   cfn-lint
-sentry-sdk==2.0.1
+sentry-sdk==2.2.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -771,7 +771,7 @@ sortedcontainers==2.4.0
     # via
     #   -r requirements-tests.txt
     #   fakeredis
-sphinx==7.2.6
+sphinx==7.3.7
     # via
     #   -r requirements-docs.in
     #   sphinx-rtd-theme
@@ -829,17 +829,22 @@ tomli==2.0.1
     #   black
     #   mypy
     #   pytest
+    #   sphinx
 twofish==0.3.0
     # via
     #   -r requirements-tests.txt
     #   pyjks
+types-cffi==1.16.0.20240331
+    # via
+    #   -r requirements-tests.txt
+    #   types-pyopenssl
 types-deprecated==1.2.9.20240311
     # via -r requirements-tests.txt
-types-paramiko==3.4.0.20240311
+types-paramiko==3.4.0.20240423
     # via -r requirements-tests.txt
 types-protobuf==5.26.0.20240422
     # via -r requirements-tests.txt
-types-pyopenssl==24.0.0.20240311
+types-pyopenssl==24.1.0.20240425
     # via
     #   -r requirements-tests.txt
     #   types-redis
@@ -855,8 +860,10 @@ types-redis==4.6.0.20240417
     # via -r requirements-tests.txt
 types-requests==2.31.0.6
     # via -r requirements-tests.txt
-types-setuptools==69.2.0.20240317
-    # via -r requirements-tests.txt
+types-setuptools==69.5.0.20240519
+    # via
+    #   -r requirements-tests.txt
+    #   types-cffi
 types-six==1.16.21.20240425
     # via -r requirements-tests.txt
 types-tabulate==0.9.0.20240106
@@ -871,6 +878,7 @@ typing-extensions==4.11.0
     #   alembic
     #   aws-sam-translator
     #   black
+    #   fakeredis
     #   flask-limiter
     #   kombu
     #   limits
@@ -902,7 +910,7 @@ wcwidth==0.2.13
     # via
     #   -r requirements-tests.txt
     #   prompt-toolkit
-werkzeug==3.0.2
+werkzeug==3.0.3
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
