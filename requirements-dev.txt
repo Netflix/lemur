@@ -519,7 +519,7 @@ pluggy==1.4.0
     # via
     #   -r requirements-tests.txt
     #   pytest
-pre-commit==3.7.0
+pre-commit==3.7.1
     # via -r requirements-dev.in
 prompt-toolkit==3.0.43
     # via
