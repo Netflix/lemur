@@ -102,7 +102,7 @@ certbot==2.10.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
-certifi==2024.2.2
+certifi==2024.6.2
     # via
     #   -r requirements-tests.txt
     #   requests
