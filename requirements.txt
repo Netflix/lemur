@@ -363,7 +363,7 @@ urllib3==1.26.18
     #   botocore
     #   requests
     #   sentry-sdk
-validators==0.28.1
+validators==0.28.3
     # via -r requirements.in
 vine==5.1.0
     # via
