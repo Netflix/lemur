@@ -3,6 +3,9 @@ Changelog
 
 Unreleased
 ~~~~~~~~~~~~~~~~~~~~
+
+1.8.2 - `2024-06-11`
+~~~~~~~~~~~~~~~~~~~~
 DigicertCISIssuer create_authority endpoint now defaults root to the name field if authority field isn't specified.
 
 1.8.1 - `2024-05-20`
