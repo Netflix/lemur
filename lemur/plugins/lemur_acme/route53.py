@@ -26,9 +26,11 @@ def _find_zone_id(domain, client=None):
 
     for page in paginator.paginate():
         for zone in page["HostedZones"]:
-            if domain.endswith(zone["Name"]) or (domain + ".").endswith(zone["Name"]):
+            # strip the trailing "." to match against the domain (but return the full, original value)
+            zone_name = zone["Name"].rstrip(".")
+            if domain == zone_name or domain.endswith("." + zone_name):
                 if not zone["Config"]["PrivateZone"]:
-                    diff_length = len(domain) - len(zone["Name"])
+                    diff_length = len(domain) - len(zone_name)
                     if diff_length < min_diff_length:
                         min_diff_length = diff_length
                         chosen_zone = (zone["Name"], zone["Id"])

@@ -3,47 +3,65 @@ Changelog
 
 Unreleased
 ~~~~~~~~~~~~~~~~~~~~
-Added Google CA issuer plugin. This plugin creates certificates via Google CA Manager API.
+
+1.8.2 - `2024-06-11`
+~~~~~~~~~~~~~~~~~~~~
 DigicertCISIssuer create_authority endpoint now defaults root to the name field if authority field isn't specified.
+
+1.8.1 - `2024-05-20`
+~~~~~~~~~~~~~~~~~~~~
+
+Updated deployment workflow to use `pypa/gh-action-pypi-publish`.
+
+1.8.0 - `2024-05-20`
+~~~~~~~~~~~~~~~~~~~~
+
+- Added `PING_EXCLUDE_USER_PARAMS` config option.
+- Added Google CA issuer plugin. This plugin creates certificates via Google CA Manager API.
+- Allow CN to be optional in reissue and clone.
+
+Special thanks to all who contributed to this release, notably:
+
+- `odopertchouk <https://github.com/odopertchouk>`_
 
 1.7.0 - `2024-01-17`
 ~~~~~~~~~~~~~~~~~~~~
-To avoid confusion, the debug app configuration property has been replaced with the standard DEBUG flask app config.
-Added ability for new versions of LEMUR_TOKEN_SECRET via the LEMUR_TOKEN_SECRETS config option. This allows for
-migration and rotation of the secret.
-Added ENTRUST_INFER_EKU config property which attempts to computes the appropriate EKU value from the csr (default False).
-Added DIGICERT_CIS_USE_CSR_FIELDS to control the `use_csr_fields` create certificate API field (default False).
-Added Digicert source plugin. Enable it with DIGICERT_SOURCE_ENABLED
-Added AWS ACM source plugin. This plugin retreives all certificates for an account and a region.
-Added AWS ACM destination plugin. This plugin uploads a certificate to AWS ACM.
-Allow updating options field via authority update API.
-Fixed a DoS security issue affecting Windows env via the name parameter of the certificate post endpoint.
+- To avoid confusion, the debug app configuration property has been replaced with the standard DEBUG flask app config.
+- Added ability for new versions of LEMUR_TOKEN_SECRET via the LEMUR_TOKEN_SECRETS config option. This allows for migration and rotation of the secret.
+- Added ENTRUST_INFER_EKU config property which attempts to computes the appropriate EKU value from the csr (default False).
+- Added DIGICERT_CIS_USE_CSR_FIELDS to control the `use_csr_fields` create certificate API field (default False).
+- Added Digicert source plugin. Enable it with DIGICERT_SOURCE_ENABLED
+- Added AWS ACM source plugin. This plugin retreives all certificates for an account and a region.
+- Added AWS ACM destination plugin. This plugin uploads a certificate to AWS ACM.
+- Allow updating options field via authority update API.
+- Fixed a DoS security issue affecting Windows env via the name parameter of the certificate post endpoint.
 
 1.6.0 - `2023-10-23`
 ~~~~~~~~~~~~~~~~~~~~
-Add NTLM auth support for ADCS issuer.
-Added password complexity requirements:
-- At least 12 characters (required for your Muhlenberg password)—the more characters, the better
-- A mixture of both uppercase and lowercase letters
-- A mixture of letters and numbers
-- Inclusion of at least one special character, e.g., ! @ # ? ]
-If you don't want password complexity requirements, you can set CHECK_PASSWORD_STRENGTH to False.
-Added ability to limit authority creation to admins only using config option `ADMIN_ONLY_AUTHORITY_CREATION`.
-User passwords can now be updated by admins with the update user endpoint.
-Route53 find_zone_dns now selects the maximum suffix match for zone id (previously we selected the first match).
+- Add NTLM auth support for ADCS issuer.
+- Added password complexity requirements:
+
+    - At least 12 characters (required for your Muhlenberg password)—the more characters, the better
+    - A mixture of both uppercase and lowercase letters
+    - A mixture of letters and numbers
+    - Inclusion of at least one special character, e.g., ! @ # ? ]
+
+- If you don't want password complexity requirements, you can set CHECK_PASSWORD_STRENGTH to False.
+- Added ability to limit authority creation to admins only using config option `ADMIN_ONLY_AUTHORITY_CREATION`.
+- User passwords can now be updated by admins with the update user endpoint.
+- Route53 find_zone_dns now selects the maximum suffix match for zone id (previously we selected the first match).
 
 1.5.0 - `2023-07-05`
 ~~~~~~~~~~~~~~~~~~~~
-Fixed a bug where S3 deletes wouldn't work due to not respecting the configured exportPlugin.
-Flask 2.3.2 Upgrade.
-Implemented Click CLI.
-Removed flask-script.
-Updated werkzeug to 2.3.6 and jinja2 to 3.1.2.
-Updated CORS settings to use Flask-CORS Configuration Options.
-Added new Custom Response Headers option to Lemur Configuration.
-Added legacy p12 export type to openssl plugin. New versions of openssl produce keystores incompatible with older
-versions of JDK8, so in some cases it may be useful to export in this format. Note that legacy p12 files do *NOT* feature
-strong encryption, and you should not rely on confidentiality of the exported resource.
+- Fixed a bug where S3 deletes wouldn't work due to not respecting the configured exportPlugin.
+- Flask 2.3.2 Upgrade.
+- Implemented Click CLI.
+- Removed flask-script.
+- Updated werkzeug to 2.3.6 and jinja2 to 3.1.2.
+- Updated CORS settings to use Flask-CORS Configuration Options.
+- Added new Custom Response Headers option to Lemur Configuration.
+- Added legacy p12 export type to openssl plugin. New versions of openssl produce keystores incompatible with older
+- versions of JDK8, so in some cases it may be useful to export in this format. Note that legacy p12 files do *NOT* feature strong encryption, and you should not rely on confidentiality of the exported resource.
 
 CLI Command Updates:
 - `runserver` cmd has been replaced by the default `run` cmd.
@@ -110,6 +128,7 @@ This release contains no changes.
 This release contains many dependency updates, and numerous added or improved features over the last year.
 
 Some of the notable changes in this release are:
+
 - Removal of AWS S3 destinations and the respetive resources via the UI
 - No fine-grained authz for role global_cert_issuer
 - De-activate endpoint (Entrust Plugin)
