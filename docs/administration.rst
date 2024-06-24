@@ -1521,6 +1521,11 @@ The following parameters have to be set in the configuration files.
         If set to True, Entrust will use the primary client ID of 1, which applies to most use-case.
         Otherwise, Entrust will first lookup the clientId before ordering the certificate.
 
+.. data:: ENTRUST_CLIENT_IDS
+    :noindex:
+
+        If set and ENTRUST_USE_DEFAULT_CLIENT_ID is not set, Entrust will randomly pick a client id from the provided list.
+
 .. data:: ENTRUST_INFER_EKU
     :noindex:
 

@@ -5,6 +5,7 @@ Unreleased
 ~~~~~~~~~~~~~~~~~~~~
 Added Google CA issuer plugin. This plugin creates certificates via Google CA Manager API.
 DigicertCISIssuer create_authority endpoint now defaults root to the name field if authority field isn't specified.
+Added ENTRUST_CLIENT_IDS for using multiple predefined clients.
 
 1.7.0 - `2024-01-17`
 ~~~~~~~~~~~~~~~~~~~~
