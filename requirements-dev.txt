@@ -515,7 +515,7 @@ platformdirs==4.2.0
     #   -r requirements-tests.txt
     #   black
     #   virtualenv
-pluggy==1.4.0
+pluggy==1.5.0
     # via
     #   -r requirements-tests.txt
     #   pytest
@@ -614,7 +614,7 @@ pyspnego==0.10.2
     # via
     #   -r requirements-tests.txt
     #   requests-ntlm
-pytest==8.1.1
+pytest==8.2.2
     # via
     #   -r requirements-tests.txt
     #   pytest-flask

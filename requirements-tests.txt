@@ -420,7 +420,7 @@ pem==23.1.0
     # via -r requirements.txt
 platformdirs==4.2.0
     # via black
-pluggy==1.4.0
+pluggy==1.5.0
     # via pytest
 prompt-toolkit==3.0.43
     # via
@@ -502,7 +502,7 @@ pyspnego==0.10.2
     # via
     #   -r requirements.txt
     #   requests-ntlm
-pytest==8.1.1
+pytest==8.2.2
     # via
     #   -r requirements-tests.in
     #   pytest-flask
