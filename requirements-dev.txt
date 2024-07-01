@@ -283,7 +283,7 @@ grpcio-status==1.62.1
     #   google-api-core
 gunicorn==22.0.0
     # via -r requirements-tests.txt
-hvac==2.2.0
+hvac==2.3.0
     # via -r requirements-tests.txt
 identify==2.5.35
     # via pre-commit
