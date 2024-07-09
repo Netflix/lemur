@@ -882,7 +882,7 @@ xmltodict==0.13.0
     # via
     #   -r requirements-tests.txt
     #   moto
-zipp==3.18.1
+zipp==3.19.1
     # via
     #   -r requirements-tests.txt
     #   importlib-metadata
