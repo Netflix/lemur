@@ -225,7 +225,7 @@ flask-bcrypt==1.0.1
     # via -r requirements-tests.txt
 flask-cors==4.0.1
     # via -r requirements-tests.txt
-flask-limiter==3.7.0
+flask-limiter==3.8.0
     # via -r requirements-tests.txt
 flask-mail==0.10.0
     # via -r requirements-tests.txt
@@ -397,7 +397,7 @@ lazy-object-proxy==1.10.0
     # via
     #   -r requirements-tests.txt
     #   openapi-spec-validator
-limits==3.10.1
+limits==3.13.0
     # via
     #   -r requirements-tests.txt
     #   flask-limiter

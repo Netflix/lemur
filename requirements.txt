@@ -115,7 +115,7 @@ flask-bcrypt==1.0.1
     # via -r requirements.in
 flask-cors==4.0.1
     # via -r requirements.in
-flask-limiter==3.7.0
+flask-limiter==3.8.0
     # via -r requirements.in
 flask-mail==0.10.0
     # via -r requirements.in
@@ -192,7 +192,7 @@ jsonlines==4.0.0
     # via cloudflare
 kombu==5.3.6
     # via celery
-limits==3.10.1
+limits==3.13.0
     # via flask-limiter
 lockfile==0.12.2
     # via -r requirements.in

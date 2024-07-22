@@ -201,7 +201,7 @@ flask-bcrypt==1.0.1
     # via -r requirements.txt
 flask-cors==4.0.1
     # via -r requirements.txt
-flask-limiter==3.7.0
+flask-limiter==3.8.0
     # via -r requirements.txt
 flask-mail==0.10.0
     # via -r requirements.txt
@@ -333,7 +333,7 @@ kombu==5.3.6
     #   celery
 lazy-object-proxy==1.10.0
     # via openapi-spec-validator
-limits==3.10.1
+limits==3.13.0
     # via
     #   -r requirements.txt
     #   flask-limiter
