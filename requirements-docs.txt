@@ -771,7 +771,7 @@ sortedcontainers==2.4.0
     # via
     #   -r requirements-tests.txt
     #   fakeredis
-sphinx==7.4.3
+sphinx==7.4.7
     # via
     #   -r requirements-docs.in
     #   sphinx-rtd-theme
