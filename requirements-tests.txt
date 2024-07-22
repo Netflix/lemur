@@ -648,7 +648,7 @@ types-deprecated==1.2.9.20240311
     # via -r requirements-tests.in
 types-paramiko==3.4.0.20240423
     # via -r requirements-tests.in
-types-protobuf==5.26.0.20240422
+types-protobuf==5.27.0.20240626
     # via -r requirements.txt
 types-pyopenssl==24.1.0.20240425
     # via
