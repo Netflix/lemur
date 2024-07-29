@@ -844,7 +844,7 @@ types-paramiko==3.4.0.20240423
     # via -r requirements-tests.txt
 types-protobuf==5.27.0.20240626
     # via -r requirements-tests.txt
-types-pyopenssl==24.1.0.20240425
+types-pyopenssl==24.1.0.20240722
     # via
     #   -r requirements-tests.txt
     #   types-redis
