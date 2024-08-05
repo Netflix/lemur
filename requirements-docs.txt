@@ -750,7 +750,7 @@ sarif-om==1.0.4
     # via
     #   -r requirements-tests.txt
     #   cfn-lint
-sentry-sdk==2.11.0
+sentry-sdk==2.12.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
