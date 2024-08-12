@@ -223,7 +223,7 @@ packaging==24.0
     # via
     #   gunicorn
     #   limits
-paramiko==3.4.0
+paramiko==3.4.1
     # via -r requirements.in
 parsedatetime==2.6
     # via certbot
