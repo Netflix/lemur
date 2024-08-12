@@ -506,7 +506,7 @@ packaging==24.0
     #   limits
     #   pytest
     #   sphinx
-paramiko==3.4.0
+paramiko==3.4.1
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
