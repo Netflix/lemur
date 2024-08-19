@@ -666,7 +666,7 @@ types-redis==4.6.0.20240425
     # via -r requirements-tests.in
 types-requests==2.31.0.6
     # via -r requirements-tests.in
-types-setuptools==71.1.0.20240806
+types-setuptools==71.1.0.20240818
     # via
     #   -r requirements-tests.in
     #   types-cffi
