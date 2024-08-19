@@ -313,7 +313,7 @@ grpcio-status==1.62.1
     # via
     #   -r requirements-tests.txt
     #   google-api-core
-gunicorn==22.0.0
+gunicorn==23.0.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
