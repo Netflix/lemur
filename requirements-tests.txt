@@ -544,7 +544,7 @@ pyyaml==6.0.1
     #   jsonschema-path
     #   moto
     #   responses
-redis==5.0.7
+redis==5.0.8
     # via
     #   -r requirements.txt
     #   celery
