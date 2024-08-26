@@ -910,7 +910,7 @@ wcwidth==0.2.13
     # via
     #   -r requirements-tests.txt
     #   prompt-toolkit
-werkzeug==3.0.3
+werkzeug==3.0.4
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
