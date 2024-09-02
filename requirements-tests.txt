@@ -179,7 +179,7 @@ exceptiongroup==1.2.0
     # via pytest
 factory-boy==3.3.0
     # via -r requirements-tests.in
-faker==27.0.0
+faker==28.1.0
     # via
     #   -r requirements-tests.in
     #   factory-boy
