@@ -199,7 +199,7 @@ flask==2.3.3
     #   pytest-flask
 flask-bcrypt==1.0.1
     # via -r requirements.txt
-flask-cors==4.0.1
+flask-cors==5.0.0
     # via -r requirements.txt
 flask-limiter==3.8.0
     # via -r requirements.txt
