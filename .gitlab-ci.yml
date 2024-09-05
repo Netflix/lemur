@@ -13,7 +13,7 @@ test:
   stage: test
   timeout: 30m
   rules:
-    - if: $GBILITE_GITLAB_ACTION != "gbilite-get-images"
+    - if: $GBILITE_GITLAB_ACTION != "gbilite-get-images" && $GBILITE_GITLAB_ACTION != "gbilite-build-image"
   tags: ["arch:amd64"]
   variables:
     POSTGRES_DB: lemur
