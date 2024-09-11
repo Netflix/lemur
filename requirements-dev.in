@@ -1,11 +1,11 @@
 # Run `make up-reqs` to update pinned dependencies in requirement text files
 flake8
-pre-commit
 invoke
-twine
 marshmallow-sqlalchemy == 0.23.1 #related to the marshmallow issue (to avoid conflicts)
 marshmallow<2.21.1 #schema duplicate issues https://github.com/marshmallow-code/marshmallow-sqlalchemy/issues/121
 nodeenv
+pre-commit
 pyyaml>=4.2b1
 sqlalchemy < 1.4.0 # ImportError: cannot import name '_ColumnEntity' https://github.com/sqlalchemy/sqlalchemy/issues/6226
-urllib3 == 1.26.18 # urllib3 is used by 'twine' package. Version restriction is required to avoid vulnerability in previous version (VULN-4806)
+twine
+urllib3 == 1.26.20 # urllib3 is used by 'twine' package. Version restriction is required to avoid vulnerability in previous version (VULN-4806) (VULN-7275)

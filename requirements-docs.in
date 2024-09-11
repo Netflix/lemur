@@ -16,7 +16,7 @@ dnspython3
 dyn
 Flask <= 1.1.2 # similar to Flask-Migrate
 Flask-Bcrypt
-Flask-Cors
+Flask-Cors > 4.0.0 # (VULN-6645)
 Flask-Mail
 Flask-Migrate <= 2.7.0 #mirgration to Flask CLI required, https://github.com/miguelgrinberg/Flask-Migrate/issues/407
 Flask-Principal
@@ -31,7 +31,6 @@ itsdangerous < 2.1.0 # requires Flask 2.0.3
 josepy
 logmatic-python
 marshmallow-sqlalchemy == 0.23.1 #related to the marshmallow issue (to avoid conflicts, as newer versions require marshmallow>=3.0.0)
-sqlalchemy < 1.4.0 # ImportError: cannot import name '_ColumnEntity' https://github.com/sqlalchemy/sqlalchemy/issues/6226
 marshmallow<2.21.1 #schema duplicate issues https://github.com/marshmallow-code/marshmallow-sqlalchemy/issues/121
 paramiko >= 3.4.0 # required for the SFTP destination plugin
 pem
@@ -41,17 +40,19 @@ pyjwt
 pyOpenSSL
 redis < 4.5.0 # requires a newer release of fakeredis
 retrying
-sentry-sdk
+sentry-sdk > 2.8.0 # VULN-7698
+sqlalchemy < 1.4.0 # ImportError: cannot import name '_ColumnEntity' https://github.com/sqlalchemy/sqlalchemy/issues/6226
 SQLAlchemy-Utils
 tabulate
-urllib3 == 1.26.18 # urllib3 is used by 'requests' package. Version restriction is required to avoid vulnerability in previous version (VULN-4806)
+urllib3 == 1.26.20 # urllib3 is used by 'requests' package. Version restriction is required to avoid vulnerability in previous version (VULN-4806) (VULN-7275)
 vine
-werkzeug < 2.1.0 # requires a newer version of Flask
+werkzeug > 3.0.3 # requires a newer version of Flask (VULN-6679)
 xmltodict
+
 # Test requirements are needed to allow test docs to build
 -r requirements-tests.txt
 
 # docs specific
 sphinx < 8.0 # related to https://github.com/repoze/repoze.sphinx.autointerface/pull/17
-sphinxcontrib-httpdomain
 sphinx-rtd-theme
+sphinxcontrib-httpdomain
