@@ -1,48 +1,48 @@
 # Run `make up-reqs` to update pinned dependencies in requirement text files
 
 acme
-azure-mgmt-cdn
-azure-mgmt-network
-azure-mgmt-subscription
-azure-identity
-azure-keyvault
 alembic-autogenerate-enums
 arrow
 asyncpool
+azure-identity > 1.16.1
+azure-keyvault
+azure-mgmt-cdn
+azure-mgmt-network
+azure-mgmt-subscription
 boto3
 botocore
 cachetools
 celery[redis]
+cert_manager
 certbot
 certifi
-cert_manager
 certsrv
-https://binaries.ddbuild.io/dd-source/python/cert_orchestration_adapter-0.1.5-py3-none-any.whl
 CloudFlare
 cryptography >= 41.0.6 # Required to avoid vulnerability in previous version (VULN-5135)
+ddtrace == 1.16.1 # Required for cert orchestration adapter.
 deprecated
 dnspython3
-ddtrace == 1.16.1 # Required for cert orchestration adapter.
 dyn
+Flask <= 1.1.2 # similar to Flask-Migrate
 Flask-Bcrypt
+Flask-Cors > 4.0.0 # (VULN-6645)
 Flask-Mail
 Flask-Migrate <= 2.7.0 #mirgration to Flask CLI required, https://github.com/miguelgrinberg/Flask-Migrate/issues/407
 Flask-Principal
 Flask-RESTful
 Flask-Script
 Flask-SQLAlchemy
-Flask <= 1.1.2 # similar to Flask-Migrate
-Flask-Cors
 flask_replicated
 future
 google-cloud-compute
-gunicorn
-grpcio == 1.53.0 # Required for cert orchestration adapter.
+grpcio > 1.53.2 # Required for cert orchestration adapter. (VULN-7774)
 grpcio-status == 1.47.0 # Required for cert orchestration adapter.
+gunicorn
+https://binaries.ddbuild.io/dd-source/python/cert_orchestration_adapter-0.1.5-py3-none-any.whl
 hvac # required for the vault destination plugin
 inflection
 itsdangerous < 2.1.0 # requires Flask 2.0.3
-jinja2 < 3.1.0 # requires a newer version of Flask
+jinja2 >= 3.1.4 # requires a newer version of Flask (VULN-6686)
 jsonschema ~= 3.0 # Required for cert orchestration adapter.
 lockfile
 logmatic-python
@@ -57,17 +57,17 @@ pycryptodomex >= 3.19.1 # Required to address vulnerability in older version (VU
 pyjks >= 19 # pyjks < 19 depends on pycryptodome, which conflicts with dyn's usage of pycrypto
 pyjwt
 pyOpenSSL
-pyyaml>=4.2b1 #high severity alert
 python_ldap
+pyyaml>=4.2b1 #high severity alert
 redis < 4.5.0 # requires a newer release of fakeredis
-requests
+requests > 2.32.0 # VULN-6901
 retrying
-sentry-sdk
+sentry-sdk > 2.8.0 # VULN-7698
 six
-SQLAlchemy-Utils
 sqlalchemy < 1.4.0 # ImportError: cannot import name '_ColumnEntity' https://github.com/sqlalchemy/sqlalchemy/issues/6226
+SQLAlchemy-Utils
 tabulate
-urllib3 == 1.26.18 # urllib3 is used by 'requests' package. Version restriction is required to avoid vulnerability in previous version (VULN-4806)
+urllib3 == 1.26.20 # urllib3 is used by 'requests' package. Version restriction is required to avoid vulnerability in previous version (VULN-4806) (VULN-7275)
 validators
-werkzeug < 2.1.0 # requires a newer version of Flask
+werkzeug > 3.0.3 # requires a newer version of Flask (VULN-6679)
 xmltodict
