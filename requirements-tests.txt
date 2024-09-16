@@ -177,7 +177,7 @@ ecdsa==0.19.0
     #   sshpubkeys
 exceptiongroup==1.2.0
     # via pytest
-factory-boy==3.3.0
+factory-boy==3.3.1
     # via -r requirements-tests.in
 faker==28.4.1
     # via
