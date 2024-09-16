@@ -197,7 +197,7 @@ exceptiongroup==1.2.0
     # via
     #   -r requirements-tests.txt
     #   pytest
-factory-boy==3.3.0
+factory-boy==3.3.1
     # via -r requirements-tests.txt
 faker==28.4.1
     # via
