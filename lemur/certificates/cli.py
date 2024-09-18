@@ -587,6 +587,7 @@ def reissue(old_certificate_name, serial_numbers, notify, commit):
     today + length of original.
     Accepts both name and a list of serial numbers; if both are provided, both will be used.
     If neither name nor serial numbers are provided, all certs pending reissue will be reissued.
+    Note that serial numbers must be in decimal format (not hex).
     """
     if commit:
         click.echo("[!] Running in COMMIT mode.")
