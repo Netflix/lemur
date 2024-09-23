@@ -591,7 +591,7 @@ def certificate_reissue():
     current_app.logger.debug(log_data)
     try:
         notify = current_app.config.get("ENABLE_REISSUE_NOTIFICATION", None)
-        cli_certificate.reissue(None, None, notify, True)
+        cli_certificate.reissue(None, notify, True, None)
     except SoftTimeLimitExceeded:
         log_data["message"] = "Certificate reissue: Time limit exceeded."
         current_app.logger.error(log_data)

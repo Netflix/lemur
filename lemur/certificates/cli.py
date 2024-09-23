@@ -580,7 +580,7 @@ def reissue_command(old_certificate_name, serial_numbers, notify, commit):
     reissue(old_certificate_name, serial_numbers, notify, commit)
 
 
-def reissue(old_certificate_name, serial_numbers, notify, commit):
+def reissue(old_certificate_name, notify, commit, serial_numbers):
     """
     Reissues certificate with the same parameters as it was originally issued with.
     If no time period is provided, reissues certificate as valid from today to
