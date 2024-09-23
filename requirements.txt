@@ -346,7 +346,7 @@ tabulate==0.9.0
     # via -r requirements.in
 twofish==0.3.0
     # via pyjks
-types-protobuf==5.27.0.20240907
+types-protobuf==5.27.0.20240920
     # via -r requirements.in
 types-python-dateutil==2.9.0.20240316
     # via arrow
