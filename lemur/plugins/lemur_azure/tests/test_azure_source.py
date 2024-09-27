@@ -495,6 +495,7 @@ class TestAzureSource(unittest.TestCase):
                     secret_name="fake-ssl-certificate-qux-1",
                     update_rule="",
                     delete_rule="",
+                    type_name="",
                 ),
             ),
         )
