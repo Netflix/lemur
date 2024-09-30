@@ -44,7 +44,7 @@ aws-sam-translator==1.87.0
     # via cfn-lint
 aws-xray-sdk==2.13.0
     # via moto
-bandit==1.7.9
+bandit==1.7.10
     # via -r requirements-tests.in
 bcrypt==4.1.2
     # via
@@ -179,11 +179,11 @@ exceptiongroup==1.2.0
     # via pytest
 factory-boy==3.3.1
     # via -r requirements-tests.in
-faker==28.4.1
+faker==29.0.0
     # via
     #   -r requirements-tests.in
     #   factory-boy
-fakeredis==2.24.1
+fakeredis==2.25.0
     # via -r requirements-tests.in
 flask==2.3.3
     # via
@@ -648,7 +648,7 @@ types-deprecated==1.2.9.20240311
     # via -r requirements-tests.in
 types-paramiko==3.4.0.20240423
     # via -r requirements-tests.in
-types-protobuf==5.27.0.20240907
+types-protobuf==5.28.0.20240924
     # via -r requirements.txt
 types-pyopenssl==24.1.0.20240722
     # via
@@ -662,7 +662,7 @@ types-python-dateutil==2.9.0.20240316
     #   arrow
 types-pytz==2024.2.0.20240913
     # via -r requirements-tests.in
-types-redis==4.6.0.20240819
+types-redis==4.6.0.20240903
     # via -r requirements-tests.in
 types-requests==2.31.0.6
     # via -r requirements-tests.in
