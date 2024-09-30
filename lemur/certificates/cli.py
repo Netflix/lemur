@@ -51,6 +51,7 @@ from lemur.plugins.base import plugins
 
 
 @click.group(name="certificates", help="Handles all certificate related tasks.")
+@with_appcontext
 def cli():
     pass
 
@@ -548,7 +549,6 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
 
 
 @cli.command("reissue")
-@with_appcontext
 @click.option(
     "-o",
     "--old-certificate",
