@@ -231,6 +231,7 @@ def request_reissue(certificate, notify, commit):
     )
 
 
+@cli.command("rotate")
 @click.option(
     "-e",
     "--endpoint",
