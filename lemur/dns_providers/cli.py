@@ -1,15 +1,17 @@
 import sys
-import click
 
+import click
+from flask.cli import with_appcontext
 from sentry_sdk import capture_exception
 
 from lemur.constants import SUCCESS_METRIC_STATUS
-from lemur.plugins.lemur_acme.acme_handlers import AcmeDnsHandler
 from lemur.dns_providers.service import get_all_dns_providers, set_domains
 from lemur.extensions import metrics
+from lemur.plugins.lemur_acme.acme_handlers import AcmeDnsHandler
 
 
 @click.group(name="dns_providers", help="Iterates through all DNS providers and sets DNS zones in the database.")
+@with_appcontext
 def cli():
     pass
 

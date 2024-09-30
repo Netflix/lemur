@@ -11,6 +11,7 @@ from time import sleep
 import arrow
 import click
 from flask import current_app
+from flask.cli import with_appcontext
 from flask_principal import Identity, identity_changed
 from sentry_sdk import capture_exception
 from sqlalchemy import or_
@@ -50,6 +51,7 @@ from lemur.plugins.base import plugins
 
 
 @click.group(name="certificates", help="Handles all certificate related tasks.")
+@with_appcontext
 def cli():
     pass
 
@@ -577,7 +579,7 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
     help="Persist changes.",
 )
 def reissue_command(old_certificate_name, serial_numbers, notify, commit):
-    reissue(old_certificate_name, serial_numbers, notify, commit)
+    reissue(old_certificate_name, notify, commit, serial_numbers)
 
 
 def reissue(old_certificate_name, notify, commit, serial_numbers):
