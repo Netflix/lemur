@@ -401,7 +401,7 @@ packaging==24.0
     #   gunicorn
     #   limits
     #   pytest
-paramiko==3.4.1
+paramiko==3.5.0
     # via -r requirements.txt
 parsedatetime==2.6
     # via
