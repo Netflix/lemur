@@ -9,7 +9,6 @@
 import json
 
 from flask import current_app
-from sqlalchemy.orm import relationship
 from sqlalchemy import (
     Column,
     Integer,
@@ -22,10 +21,11 @@ from sqlalchemy import (
     Boolean,
 )
 from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy.orm import relationship
 
 from lemur.database import BaseModel, db
-from lemur.plugins.base import plugins
 from lemur.models import roles_authorities
+from lemur.plugins.base import plugins
 
 
 class Authority(BaseModel):
@@ -117,7 +117,7 @@ class Authority(BaseModel):
     @property
     def default_validity_days(self):
         if self.is_cab_compliant:
-            return current_app.config.get("PUBLIC_CA_MAX_VALIDITY_DAYS", 397)
+            return current_app.config.get("PUBLIC_CA_DEFAULT_VALIDITY_DAYS", current_app.config.get("PUBLIC_CA_MAX_VALIDITY_DAYS", 397))
 
         return current_app.config.get("DEFAULT_VALIDITY_DAYS", 365)  # 1 year default
 

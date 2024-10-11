@@ -1,11 +1,8 @@
+import base64
 import os.path
 import secrets
 import string
 from typing import Dict, Any, List
-
-from celery.schedules import crontab
-
-import base64
 
 _basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -167,6 +164,7 @@ LEMUR_EMAIL_SENDER = 'smtp'
 # mail configuration
 # MAIL_SERVER = 'mail.example.com'
 
+PUBLIC_CA_DEFAULT_VALIDITY_DAYS = 397
 PUBLIC_CA_MAX_VALIDITY_DAYS = 397
 DEFAULT_VALIDITY_DAYS = 365
 
