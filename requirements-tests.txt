@@ -179,7 +179,7 @@ exceptiongroup==1.2.0
     # via pytest
 factory-boy==3.3.1
     # via -r requirements-tests.in
-faker==29.0.0
+faker==30.3.0
     # via
     #   -r requirements-tests.in
     #   factory-boy
@@ -682,6 +682,7 @@ typing-extensions==4.11.0
     #   alembic
     #   aws-sam-translator
     #   black
+    #   faker
     #   fakeredis
     #   flask-limiter
     #   kombu
