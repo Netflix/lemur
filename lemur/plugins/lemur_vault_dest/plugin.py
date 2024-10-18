@@ -22,7 +22,7 @@ from lemur.plugins.bases import SourcePlugin
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 
-from validators.url import regex as url_regex
+from validators.url import url
 
 
 class VaultSourcePlugin(SourcePlugin):
@@ -40,7 +40,7 @@ class VaultSourcePlugin(SourcePlugin):
             "name": "vaultUrl",
             "type": "str",
             "required": True,
-            "validation": url_regex.pattern,
+            "validation": bool(url),
             "helpMessage": "Valid URL to Hashi Vault instance",
         },
         {
@@ -167,7 +167,7 @@ class VaultDestinationPlugin(DestinationPlugin):
             "name": "vaultUrl",
             "type": "str",
             "required": True,
-            "validation": url_regex.pattern,
+            "validation": bool(url),
             "helpMessage": "Valid URL to Hashi Vault instance",
         },
         {

@@ -3,6 +3,8 @@
 .tox
 .DS_Store
 /.tmp/
+/.tmp/lemur-dev.tar.gz
+/docker/lemur-dev.tar.gz
 *.egg-info
 *.pyc
 *.log
@@ -40,3 +42,17 @@ lemur/tests/tmp
 /lemur/plugins/lemur_email/tests/expiration-rendered.html
 /lemur/plugins/lemur_email/tests/rotation-rendered.html
 .celerybeat-schedule
+
+/docker/lemur.dev.tar.gz
+
+# Python Virtual Environments
+.env
+.venv
+/env
+/venv
+/ENV
+/env.bak
+/venv.bak
+
+# VSCode files
+/.vscode

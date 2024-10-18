@@ -1,5 +1,3 @@
-version: '3'
-
 volumes:
   pg_data: { }
 
@@ -13,10 +11,11 @@ services:
       - pgsql-env
 
   lemur:
-    # image: "netlix-lemur:latest"
+    image: "lemur:local-dev"
     restart: on-failure
     build:
-      context: .
+      context: ../
+      dockerfile: ./docker/Dockerfile
     depends_on:
       - postgres
       - redis
@@ -24,8 +23,8 @@ services:
       - lemur-env
       - pgsql-env
     ports:
-      - 87:80
-      - 447:443
+      - 127.0.0.1:87:80
+      - 127.0.0.1:447:443
 
   redis:
     image: "redis:alpine3.12"

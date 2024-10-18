@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from freezegun import freeze_time
 
 from flask import current_app
@@ -33,7 +33,7 @@ def test_verify_state_token(client):
     token = generate_state_token()
     assert verify_state_token(token)
 
-    with freeze_time(datetime.now() - timedelta(seconds=OAUTH_STATE_TOKEN_STALE_TOLERANCE_SECONDS), tick=True):
+    with freeze_time(datetime.now(timezone.utc) - timedelta(seconds=OAUTH_STATE_TOKEN_STALE_TOLERANCE_SECONDS), tick=True):
         stale_token = generate_state_token()
     assert not verify_state_token(stale_token)
 

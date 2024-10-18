@@ -2,7 +2,7 @@ import arrow
 import pem
 import requests
 
-from cert_manager import Client, Organization, Pending, SSL
+from cert_manager import Client, Organization, PendingError, SSL
 from flask import current_app
 from lemur.common.utils import validate_conf
 from lemur.plugins.bases import IssuerPlugin
@@ -103,7 +103,7 @@ class SectigoIssuerPlugin(IssuerPlugin):
 
 
 def _retry_if_certificate_pending(exception):
-    return isinstance(exception, Pending)
+    return isinstance(exception, PendingError)
 
 
 @retry(
@@ -129,7 +129,7 @@ def _collect_certificate(cert_id, ssl_client):
             ca_bundle,
             cert_id,
         )
-    except Pending:
+    except PendingError:
         current_app.logger.info(
             {
                 "message": "Certificate is still pending, will retry collecting it again..."

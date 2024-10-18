@@ -1,73 +1,76 @@
 # Run `make up-reqs` to update pinned dependencies in requirement text files
 
 acme
+alembic-autogenerate-enums
+anyio==4.5.0
+arrow
+asyncpool
+azure-identity >= 1.16.1 # (VUNL-7150)
+azure-keyvault
 azure-mgmt-cdn
 azure-mgmt-network
 azure-mgmt-subscription
-azure-identity
-azure-keyvault
-alembic-autogenerate-enums
-arrow
-asyncpool
 boto3
 botocore
-cachetools
 celery[redis]
+cert_manager
 certbot
 certifi
-cert_manager
-certsrv
-https://binaries.ddbuild.io/dd-source/python/cert_orchestration_adapter-0.1.5-py3-none-any.whl
+certsrv[ntlm]
 CloudFlare
-cryptography >= 41.0.6 # Required to avoid vulnerability in previous version (VULN-5135)
-deprecated
+cryptography
+dnspython == 2.6.1
 dnspython3
-ddtrace == 1.16.1 # Required for cert orchestration adapter.
 dyn
 Flask-Bcrypt
+Flask-Cors >= 4.0.0 # (VULN-6645)
+Flask-Limiter
 Flask-Mail
-Flask-Migrate <= 2.7.0 #mirgration to Flask CLI required, https://github.com/miguelgrinberg/Flask-Migrate/issues/407
+Flask-Migrate <= 2.7.0
 Flask-Principal
 Flask-RESTful
-Flask-Script
+flask-Script==2.0.5
 Flask-SQLAlchemy
-Flask <= 1.1.2 # similar to Flask-Migrate
-Flask-Cors
+Flask<3  # until https://github.com/pytest-dev/pytest-flask/pull/168 is released
 flask_replicated
 future
 google-cloud-compute
+google-cloud-private-ca
+grpcio >= 1.62.0 # (VULN-7774)
 gunicorn
-grpcio == 1.53.0 # Required for cert orchestration adapter.
-grpcio-status == 1.47.0 # Required for cert orchestration adapter.
+https://binaries.ddbuild.io/dd-source/python/cert_orchestration_adapter-0.0.3-py3-none-any.whl
 hvac # required for the vault destination plugin
+importlib-metadata==8.5.0
 inflection
-itsdangerous < 2.1.0 # requires Flask 2.0.3
-jinja2 < 3.1.0 # requires a newer version of Flask
-jsonschema ~= 3.0 # Required for cert orchestration adapter.
+itsdangerous
+jinja2 >= 3.1.4 # (VULN-6686)
 lockfile
 logmatic-python
+markupsafe == 2.1.5
 marshmallow-sqlalchemy == 0.23.1 #related to the marshmallow issue (to avoid conflicts)
 marshmallow<2.21.1 #schema duplicate issues https://github.com/marshmallow-code/marshmallow-sqlalchemy/issues/121
 ndg-httpsclient
-paramiko >= 3.4.0 # required for the SFTP destination plugin
+paramiko  # required for the SFTP destination plugin
 pem
-protobuf == 3.20.2 # Required for cert orchestration adapter.
+protobuf
 psycopg2
-pycryptodomex >= 3.19.1 # Required to address vulnerability in older version (VULN-5325)
-pyjks >= 19 # pyjks < 19 depends on pycryptodome, which conflicts with dyn's usage of pycrypto
-pyjwt
+pyjks
+pyjwt >= 2.4.0 # (CVE-2022-29217)
 pyOpenSSL
-pyyaml>=4.2b1 #high severity alert
 python_ldap
-redis < 4.5.0 # requires a newer release of fakeredis
-requests
+pyyaml
+redis
+requests >= 2.32.0 # (VULN-6901)
 retrying
-sentry-sdk
+sentry-sdk >= 2.8.0 # (VULN-7698)
+simplejson
 six
+sqlalchemy < 1.4.0 # ImportError: cannot import name '_ColumnEntity' https://github.com/sqlalchemy/sqlalchemy/issues/6226tabulate
 SQLAlchemy-Utils
-sqlalchemy < 1.4.0 # ImportError: cannot import name '_ColumnEntity' https://github.com/sqlalchemy/sqlalchemy/issues/6226
 tabulate
-urllib3 == 1.26.18 # urllib3 is used by 'requests' package. Version restriction is required to avoid vulnerability in previous version (VULN-4806)
+types-protobuf
+urllib3 >= 1.26.19 # (VULN-7275)
 validators
-werkzeug < 2.1.0 # requires a newer version of Flask
+werkzeug >= 3.0.3 # (VULN-6679)
 xmltodict
+zipp >= 3.19.1 # (VULN-7514)

@@ -114,7 +114,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
-    install_requires=install_requirements,
+    install_requires=["setuptools>=70.0.0"] + install_requirements, # Setuptools (VULN-7636)
     extras_require={
         'tests': tests_requirements,
         'docs': docs_requirements,
