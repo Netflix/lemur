@@ -1,6 +1,28 @@
 Changelog
 =========
 
+1.2.1 - `2024-10-18`
+~~~~~~~~~~~~~~~~~~~~
+
+This release fixes the following vulnerabilities:
+- https://datadoghq.atlassian.net/browse/VULN-7774
+- https://datadoghq.atlassian.net/browse/VULN-7698
+- https://datadoghq.atlassian.net/browse/VULN-7514
+- https://datadoghq.atlassian.net/browse/VULN-7275
+- https://datadoghq.atlassian.net/browse/VULN-7150
+- https://datadoghq.atlassian.net/browse/VULN-6901
+- https://datadoghq.atlassian.net/browse/VULN-6686
+- https://datadoghq.atlassian.net/browse/VULN-6679
+- https://datadoghq.atlassian.net/browse/VULN-6645
+- https://datadoghq.atlassian.net/browse/VULN-7636
+
+The local development environment and the other docker containes has been updated, fixed and are usable again.
+
+Python 3.8 has been deprecated.
+
+A few tests have been fixed due to backward incompatible changes introduced by the new packates.
+
+The Makefile has been improved to correctly compile the Python package requirements in a single passage.
 
 1.2.0 - `2022-01-31`
 ~~~~~~~~~~~~~~~~~~~~
