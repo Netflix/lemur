@@ -17,16 +17,16 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.x'
+        python-version: '3.9'
     - name: Autobump version
       run: |
         # from refs/tags/v0.8.1 get 0.8.1
         VERSION=$(echo $GITHUB_REF | sed 's#.*/v##')
-        PLACEHOLDER='__version__ = "develop"'
+        PLACEHOLDER='^__version__ =.*'
         VERSION_FILE='lemur/__about__.py'
         # in case placeholder is missing, exists with code 1 and github actions aborts the build
         grep "$PLACEHOLDER" "$VERSION_FILE"
-        sed -i "s/$PLACEHOLDER/__version__ = \"${VERSION}\"/g" "$VERSION_FILE"
+        sed -i "s#$PLACEHOLDER#\__version__ = \"${VERSION}\"#g" "$VERSION_FILE"
       shell: bash
     - name: Install dependencies
       run: |
