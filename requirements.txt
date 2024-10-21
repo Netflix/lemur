@@ -378,7 +378,7 @@ werkzeug==3.0.4
     #   flask
 wrapt==1.16.0
     # via deprecated
-xmltodict==0.13.0
+xmltodict==0.14.2
     # via -r requirements.in
 zipp==3.19.1
     # via
