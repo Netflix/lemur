@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.2.2 - `2024-11-01`
+~~~~~~~~~~~~~~~~~~~~
+
+Updated the GBI to Ubuntu 22.04 to deprecate Python 3.8 and solve a crash loop when deploying.
+
 1.2.1 - `2024-10-18`
 ~~~~~~~~~~~~~~~~~~~~
 
