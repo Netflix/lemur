@@ -159,7 +159,7 @@ configobj==5.0.8
     #   certbot
 coverage==7.6.4
     # via -r requirements-tests.txt
-cryptography==43.0.1
+cryptography==43.0.3
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
