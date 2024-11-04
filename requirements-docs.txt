@@ -196,7 +196,7 @@ docker==7.0.0
     # via
     #   -r requirements-tests.txt
     #   moto
-docutils==0.20.1
+docutils==0.21.2
     # via
     #   -r requirements-docs.in
     #   sphinx
