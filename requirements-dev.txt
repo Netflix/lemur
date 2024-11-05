@@ -868,7 +868,7 @@ wcwidth==0.2.13
     # via
     #   -r requirements-tests.txt
     #   prompt-toolkit
-werkzeug==3.0.6
+werkzeug==3.1.2
     # via
     #   -r requirements-tests.txt
     #   flask
