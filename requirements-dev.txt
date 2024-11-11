@@ -254,7 +254,7 @@ google-auth==2.29.0
     #   -r requirements-tests.txt
     #   google-api-core
     #   google-cloud-private-ca
-google-cloud-private-ca==1.12.2
+google-cloud-private-ca==1.13.0
     # via -r requirements-tests.txt
 googleapis-common-protos[grpc]==1.63.0
     # via
