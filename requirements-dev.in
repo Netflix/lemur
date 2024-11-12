@@ -4,5 +4,4 @@ flake8
 invoke
 nodeenv
 pre-commit
-twine
 -r requirements-tests.txt

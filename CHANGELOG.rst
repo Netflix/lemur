@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.2.3 - `2024-11-12`
+~~~~~~~~~~~~~~~~~~~~
+
+Removing some unused dependencies that cause issues in dd-source (cert-orchestration-adapter) and updated docs on how to make a release.
+
 1.2.2 - `2024-11-01`
 ~~~~~~~~~~~~~~~~~~~~
 
