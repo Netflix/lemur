@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-tests.txt requirements-tests.in
 #
-acme==2.11.0
+acme==3.0.1
     # via
     #   -r requirements.txt
     #   certbot
@@ -83,7 +83,7 @@ celery[redis]==5.3.6
     # via
     #   -r requirements-tests.in
     #   -r requirements.txt
-certbot==2.11.0
+certbot==3.0.1
     # via -r requirements.txt
 certifi==2024.8.30
     # via

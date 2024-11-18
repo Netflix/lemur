@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-dev.txt requirements-dev.in
 #
-acme==2.11.0
+acme==3.0.1
     # via
     #   -r requirements-tests.txt
     #   certbot
@@ -89,7 +89,7 @@ cachetools==5.3.3
     #   google-auth
 celery[redis]==5.3.6
     # via -r requirements-tests.txt
-certbot==2.11.0
+certbot==3.0.1
     # via -r requirements-tests.txt
 certifi==2024.8.30
     # via
