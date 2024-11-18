@@ -644,7 +644,7 @@ twofish==0.3.0
     #   pyjks
 types-cffi==1.16.0.20240331
     # via types-pyopenssl
-types-deprecated==1.2.9.20240311
+types-deprecated==1.2.15.20241117
     # via -r requirements-tests.in
 types-paramiko==3.5.0.20240928
     # via -r requirements-tests.in
