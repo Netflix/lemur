@@ -558,7 +558,7 @@ protobuf==4.25.5
     #   grpc-google-iam-v1
     #   grpcio-status
     #   proto-plus
-psycopg2==2.9.9
+psycopg2==2.9.10
     # via -r requirements-tests.txt
 py-partiql-parser==0.5.0
     # via
