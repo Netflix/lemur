@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-dev.txt requirements-dev.in
 #
-acme==2.11.0
+acme==3.0.1
     # via
     #   -r requirements-tests.txt
     #   certbot
