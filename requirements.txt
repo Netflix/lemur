@@ -139,7 +139,7 @@ google-auth==2.29.0
     # via
     #   google-api-core
     #   google-cloud-private-ca
-google-cloud-private-ca==1.12.2
+google-cloud-private-ca==1.13.1
     # via -r requirements.in
 googleapis-common-protos[grpc]==1.63.0
     # via
