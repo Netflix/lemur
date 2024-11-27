@@ -322,12 +322,16 @@ def get_certificates_with_same_cn_with_rotate_on(cn, date_created):
     date_created_max = date_created.ceil('day')
 
     query = database.session_query(Certificate)\
-        .filter(Certificate.cn.like(cn))\
         .filter(Certificate.rotation == true())\
         .filter(Certificate.not_after >= now)\
         .filter(Certificate.date_created >= date_created_min)\
         .filter(Certificate.date_created <= date_created_max)\
         .filter(not_(Certificate.replaced.any()))
+
+    if cn is not None:
+        query = query.filter(Certificate.cn.like(cn))
+    else:
+        query = query.filter(Certificate.cn.is_(None))
 
     return query.all()
 
