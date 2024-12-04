@@ -52,7 +52,7 @@ aws-xray-sdk==2.13.0
     #   moto
 backports-tarfile==1.0.0
     # via jaraco-context
-bandit==1.7.10
+bandit==1.8.0
     # via -r requirements-tests.txt
 bcrypt==4.1.2
     # via
