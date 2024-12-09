@@ -486,6 +486,7 @@ packaging==24.0
     #   gunicorn
     #   limits
     #   pytest
+    #   twine
 paramiko==3.5.0
     # via -r requirements-tests.txt
 parsedatetime==2.6
@@ -783,7 +784,7 @@ tomli==2.0.1
     #   black
     #   mypy
     #   pytest
-twine==5.1.1
+twine==6.0.1
     # via -r requirements-dev.in
 twofish==0.3.0
     # via
