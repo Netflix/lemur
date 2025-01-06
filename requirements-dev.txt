@@ -662,7 +662,7 @@ pyyaml==6.0.2
     #   responses
 readme-renderer==43.0
     # via twine
-redis==5.2.0
+redis==5.2.1
     # via
     #   -r requirements-tests.txt
     #   celery
