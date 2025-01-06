@@ -130,7 +130,7 @@ configargparse==1.7
     # via
     #   -r requirements.txt
     #   certbot
-configobj==5.0.8
+configobj==5.0.9
     # via
     #   -r requirements.txt
     #   certbot
@@ -607,7 +607,6 @@ sentry-sdk==2.19.2
 six==1.16.0
     # via
     #   -r requirements.txt
-    #   configobj
     #   ecdsa
     #   flask-restful
     #   junit-xml

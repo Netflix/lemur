@@ -78,7 +78,7 @@ cloudflare==2.20.0
     # via -r requirements.in
 configargparse==1.7
     # via certbot
-configobj==5.0.8
+configobj==5.0.9
     # via certbot
 cryptography==43.0.3
     # via
@@ -329,7 +329,6 @@ sentry-sdk==2.19.2
 six==1.16.0
     # via
     #   -r requirements.in
-    #   configobj
     #   flask-restful
     #   python-dateutil
     #   retrying
