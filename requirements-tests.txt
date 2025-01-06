@@ -371,7 +371,7 @@ mpmath==1.3.0
     # via sympy
 multipart==0.2.4
     # via moto
-mypy==1.13.0
+mypy==1.14.1
     # via -r requirements-tests.in
 mypy-extensions==1.0.0
     # via
