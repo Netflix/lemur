@@ -602,7 +602,7 @@ s3transfer==0.10.1
     #   boto3
 sarif-om==1.0.4
     # via cfn-lint
-sentry-sdk==2.18.0
+sentry-sdk==2.19.2
     # via -r requirements.txt
 six==1.16.0
     # via
