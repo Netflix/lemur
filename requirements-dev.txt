@@ -862,7 +862,7 @@ vine==5.1.0
     #   amqp
     #   celery
     #   kombu
-virtualenv==20.25.1
+virtualenv==20.26.6
     # via pre-commit
 wcwidth==0.2.13
     # via
