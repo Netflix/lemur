@@ -7,26 +7,26 @@
 
 .. moduleauthor:: Mathias Petermann <mathias.petermann@projektfokus.ch>
 """
-from datetime import datetime, timedelta
 import json
+from datetime import datetime, timedelta
 
 from acme import challenges
 from acme.errors import WildcardUnsupportedError
 from acme.messages import errors, STATUS_VALID, ERROR_CODES
 from botocore.exceptions import ClientError
 from flask import current_app
+from retrying import retry
 from sentry_sdk import capture_exception
 
 from lemur.authorizations import service as authorization_service
-from lemur.constants import ACME_ADDITIONAL_ATTEMPTS
 from lemur.common.utils import drop_last_cert_from_chain
+from lemur.constants import ACME_ADDITIONAL_ATTEMPTS
+from lemur.destinations import service as destination_service
 from lemur.exceptions import LemurException, InvalidConfiguration
 from lemur.extensions import metrics
 from lemur.plugins.base import plugins
-from lemur.destinations import service as destination_service
 from lemur.plugins.lemur_acme.acme_handlers import AcmeHandler, AcmeDnsHandler
-
-from retrying import retry
+from lemur.plugins.lemur_acme.plugin import csr_to_string
 
 
 class AcmeChallengeMissmatchError(LemurException):
@@ -86,7 +86,7 @@ class AcmeHttpChallenge(AcmeChallenge):
         authority = issuer_options.get("authority")
         acme_client, registration = self.acme.setup_acme_client(authority)
 
-        orderr = acme_client.new_order(csr)
+        orderr = acme_client.new_order(csr_to_string(csr))
 
         chall = []
         deployed_challenges = []
@@ -266,7 +266,7 @@ class AcmeDnsChallenge(AcmeChallenge):
     @retry(stop_max_attempt_number=ACME_ADDITIONAL_ATTEMPTS, wait_fixed=5000)
     def create_certificate_immediately(self, acme_client, order_info, csr):
         try:
-            order = acme_client.new_order(csr)
+            order = acme_client.new_order(csr_to_string(csr))
         except WildcardUnsupportedError:
             metrics.send("create_certificte_immediately_wildcard_unsupported", "counter", 1)
             raise Exception(

@@ -130,7 +130,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
                 self.acme.autodetect_dns_providers(domain)
 
         try:
-            order = acme_client.new_order(pending_cert.csr)
+            order = acme_client.new_order(csr_to_string(pending_cert.csr))
         except WildcardUnsupportedError:
             metrics.send("get_ordered_certificate_wildcard_unsupported", "counter", 1)
             raise Exception(
@@ -191,10 +191,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
                         self.acme.autodetect_dns_providers(domain)
 
                 try:
-                    csr = pending_cert.csr
-                    if isinstance(csr, str):
-                        csr = csr.encode("ascii")
-                    order = acme_client.new_order(csr)
+                    order = acme_client.new_order(csr_to_string(pending_cert.csr))
                 except WildcardUnsupportedError:
                     capture_exception()
                     metrics.send(
@@ -469,3 +466,9 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
             crl_reason = CRLReason[reason["crl_reason"]]
 
         return self.acme.revoke_certificate(certificate, crl_reason.value)
+
+
+def csr_to_string(csr):
+    if isinstance(csr, str):
+        return csr.encode("ascii")
+    return csr
