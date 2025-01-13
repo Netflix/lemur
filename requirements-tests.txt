@@ -659,7 +659,7 @@ types-python-dateutil==2.9.0.20240316
     # via
     #   -r requirements.txt
     #   arrow
-types-pytz==2024.2.0.20241003
+types-pytz==2024.2.0.20241221
     # via -r requirements-tests.in
 types-redis==4.6.0.20241004
     # via -r requirements-tests.in
