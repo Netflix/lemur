@@ -754,7 +754,7 @@ sentry-sdk==2.19.2
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
-six==1.16.0
+six==1.17.0
     # via
     #   -r requirements-tests.txt
     #   ecdsa
