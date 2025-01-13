@@ -24,7 +24,6 @@ from lemur.constants import CRLReason, EMAIL_RE
 from lemur.dns_providers import service as dns_provider_service
 from lemur.exceptions import InvalidConfiguration
 from lemur.extensions import metrics
-
 from lemur.plugins import lemur_acme as acme
 from lemur.plugins.bases import IssuerPlugin
 from lemur.plugins.lemur_acme.acme_handlers import AcmeHandler, AcmeDnsHandler
@@ -192,7 +191,10 @@ class ACMEIssuerPlugin(IssuerPlugin):
                         self.acme.autodetect_dns_providers(domain)
 
                 try:
-                    order = acme_client.new_order(pending_cert.csr)
+                    csr = pending_cert.csr
+                    if isinstance(csr, str):
+                        csr = csr.encode("ascii")
+                    order = acme_client.new_order(csr)
                 except WildcardUnsupportedError:
                     capture_exception()
                     metrics.send(
