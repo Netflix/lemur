@@ -19,14 +19,13 @@ from retrying import retry
 from sentry_sdk import capture_exception
 
 from lemur.authorizations import service as authorization_service
-from lemur.common.utils import drop_last_cert_from_chain
+from lemur.common.utils import drop_last_cert_from_chain, csr_to_string
 from lemur.constants import ACME_ADDITIONAL_ATTEMPTS
 from lemur.destinations import service as destination_service
 from lemur.exceptions import LemurException, InvalidConfiguration
 from lemur.extensions import metrics
 from lemur.plugins.base import plugins
 from lemur.plugins.lemur_acme.acme_handlers import AcmeHandler, AcmeDnsHandler
-from lemur.plugins.lemur_acme.plugin import csr_to_string
 
 
 class AcmeChallengeMissmatchError(LemurException):

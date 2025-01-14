@@ -19,7 +19,7 @@ from flask import current_app
 from sentry_sdk import capture_exception
 
 from lemur.authorizations import service as authorization_service
-from lemur.common.utils import check_validation, drop_last_cert_from_chain
+from lemur.common.utils import check_validation, drop_last_cert_from_chain, csr_to_string
 from lemur.constants import CRLReason, EMAIL_RE
 from lemur.dns_providers import service as dns_provider_service
 from lemur.exceptions import InvalidConfiguration
@@ -466,9 +466,3 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
             crl_reason = CRLReason[reason["crl_reason"]]
 
         return self.acme.revoke_certificate(certificate, crl_reason.value)
-
-
-def csr_to_string(csr):
-    if isinstance(csr, str):
-        return csr.encode("ascii")
-    return csr
