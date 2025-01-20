@@ -596,7 +596,7 @@ pynacl==1.5.0
     # via
     #   -r requirements-tests.txt
     #   paramiko
-pyopenssl==24.3.0
+pyopenssl==25.0.0
     # via
     #   -r requirements-tests.txt
     #   acme
@@ -841,6 +841,7 @@ typing-extensions==4.11.0
     #   mypy
     #   pydantic
     #   pydantic-core
+    #   pyopenssl
 tzdata==2024.1
     # via
     #   -r requirements-tests.txt
