@@ -22,10 +22,15 @@ aniso8601==9.0.1
     # via
     #   -r requirements-tests.txt
     #   flask-restful
-annotated-types==0.6.0
+annotated-types==0.7.0
     # via
     #   -r requirements-tests.txt
     #   pydantic
+anyio==4.8.0
+    # via
+    #   -r requirements-tests.txt
+    #   cloudflare
+    #   httpx
 arrow==1.3.0
     # via -r requirements-tests.txt
 async-timeout==4.0.3
@@ -38,7 +43,6 @@ attrs==23.2.0
     # via
     #   -r requirements-tests.txt
     #   jschema-to-python
-    #   jsonlines
     #   jsonschema
     #   referencing
     #   sarif-om
@@ -94,6 +98,8 @@ certbot==3.1.0
 certifi==2024.12.14
     # via
     #   -r requirements-tests.txt
+    #   httpcore
+    #   httpx
     #   requests
     #   sentry-sdk
 certsrv[ntlm]==2.1.1
@@ -134,7 +140,7 @@ click-repl==0.3.0
     # via
     #   -r requirements-tests.txt
     #   celery
-cloudflare==2.20.0
+cloudflare==4.0.0
     # via -r requirements-tests.txt
 configargparse==1.7
     # via
@@ -173,6 +179,7 @@ distro==1.9.0
     # via
     #   -r requirements-tests.txt
     #   certbot
+    #   cloudflare
 dnspython==1.15.0
     # via
     #   -r requirements-tests.txt
@@ -193,9 +200,10 @@ ecdsa==0.19.0
     #   moto
     #   python-jose
     #   sshpubkeys
-exceptiongroup==1.2.0
+exceptiongroup==1.2.2
     # via
     #   -r requirements-tests.txt
+    #   anyio
     #   pytest
 factory-boy==3.3.1
     # via -r requirements-tests.txt
@@ -283,6 +291,18 @@ grpcio-status==1.62.1
     #   google-api-core
 gunicorn==23.0.0
     # via -r requirements-tests.txt
+h11==0.14.0
+    # via
+    #   -r requirements-tests.txt
+    #   httpcore
+httpcore==1.0.7
+    # via
+    #   -r requirements-tests.txt
+    #   httpx
+httpx==0.28.1
+    # via
+    #   -r requirements-tests.txt
+    #   cloudflare
 hvac==2.3.0
     # via -r requirements-tests.txt
 identify==2.5.35
@@ -290,6 +310,8 @@ identify==2.5.35
 idna==3.7
     # via
     #   -r requirements-tests.txt
+    #   anyio
+    #   httpx
     #   requests
 importlib-metadata==7.1.0
     # via
@@ -351,10 +373,6 @@ jsondiff==2.0.0
     # via
     #   -r requirements-tests.txt
     #   moto
-jsonlines==4.0.0
-    # via
-    #   -r requirements-tests.txt
-    #   cloudflare
 jsonpatch==1.33
     # via
     #   -r requirements-tests.txt
@@ -571,11 +589,12 @@ pycryptodomex==3.20.0
     # via
     #   -r requirements-tests.txt
     #   pyjks
-pydantic==2.6.4
+pydantic==2.9.2
     # via
     #   -r requirements-tests.txt
     #   aws-sam-translator
-pydantic-core==2.16.3
+    #   cloudflare
+pydantic-core==2.23.4
     # via
     #   -r requirements-tests.txt
     #   pydantic
@@ -655,7 +674,6 @@ pyyaml==6.0.2
     #   -r requirements-tests.txt
     #   bandit
     #   cfn-lint
-    #   cloudflare
     #   jsonschema-path
     #   moto
     #   pre-commit
@@ -682,7 +700,6 @@ requests==2.32.3
     #   -r requirements-tests.txt
     #   acme
     #   certsrv
-    #   cloudflare
     #   docker
     #   google-api-core
     #   hvac
@@ -750,6 +767,11 @@ six==1.17.0
     #   python-dateutil
     #   retrying
     #   rfc3339-validator
+sniffio==1.3.1
+    # via
+    #   -r requirements-tests.txt
+    #   anyio
+    #   cloudflare
 sortedcontainers==2.4.0
     # via
     #   -r requirements-tests.txt
@@ -831,8 +853,10 @@ typing-extensions==4.11.0
     # via
     #   -r requirements-tests.txt
     #   alembic
+    #   anyio
     #   aws-sam-translator
     #   black
+    #   cloudflare
     #   faker
     #   fakeredis
     #   flask-limiter
