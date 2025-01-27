@@ -285,6 +285,8 @@ gunicorn==23.0.0
     # via -r requirements-tests.txt
 hvac==2.3.0
     # via -r requirements-tests.txt
+id==1.5.0
+    # via twine
 identify==2.5.35
     # via pre-commit
 idna==3.7
@@ -509,8 +511,6 @@ pbr==6.0.0
     #   stevedore
 pem==23.1.0
     # via -r requirements-tests.txt
-pkginfo==1.10.0
-    # via twine
 platformdirs==4.2.0
     # via
     #   -r requirements-tests.txt
@@ -686,6 +686,7 @@ requests==2.32.3
     #   docker
     #   google-api-core
     #   hvac
+    #   id
     #   jsonschema-path
     #   moto
     #   requests-mock
@@ -783,7 +784,7 @@ tomli==2.0.1
     #   black
     #   mypy
     #   pytest
-twine==6.0.1
+twine==6.1.0
     # via -r requirements-dev.in
 twofish==0.3.0
     # via
