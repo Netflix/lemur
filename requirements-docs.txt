@@ -76,13 +76,13 @@ blinker==1.7.0
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.36.2
+boto3==1.36.6
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
-botocore==1.36.2
+botocore==1.36.6
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
