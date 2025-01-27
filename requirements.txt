@@ -184,7 +184,7 @@ jmespath==1.0.1
     # via
     #   boto3
     #   botocore
-josepy==1.14.0
+josepy==1.15.0
     # via
     #   acme
     #   certbot
