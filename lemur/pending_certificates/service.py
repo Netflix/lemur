@@ -4,25 +4,25 @@
 .. moduleauthor:: James Chuong <jchuong@instartlogic.com>
 """
 import arrow
-from sqlalchemy import or_, cast, Integer
 from flask import current_app
+from sqlalchemy import or_, cast, Integer
 
 from lemur import database
-from lemur.authorities.models import Authority
 from lemur.authorities import service as authorities_service
+from lemur.authorities.models import Authority
 from lemur.certificates import service as certificate_service
 from lemur.certificates.schemas import CertificateUploadInputSchema
-from lemur.common.utils import truthiness, parse_cert_chain, parse_certificate
 from lemur.common import validators
+from lemur.common.utils import truthiness, parse_cert_chain, parse_certificate
 from lemur.destinations.models import Destination
 from lemur.domains.models import Domain
 from lemur.extensions import metrics
+from lemur.logs import service as log_service
 from lemur.notifications.models import Notification
 from lemur.pending_certificates.models import PendingCertificate
 from lemur.plugins.base import plugins
 from lemur.roles.models import Role
 from lemur.users import service as user_service
-from lemur.logs import service as log_service
 
 
 def get(pending_cert_id):
@@ -239,6 +239,10 @@ def render(args):
                         Domain.name.ilike(f"%{terms[1]}%")
                     ),
                 )
+            )
+        elif "name" in terms:
+            query = query.filter(
+                PendingCertificate.name.ilike(f"%{terms[1]}%"),
             )
         elif "id" in terms:
             query = query.filter(PendingCertificate.id == cast(terms[1], Integer))

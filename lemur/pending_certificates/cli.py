@@ -5,11 +5,12 @@
 .. moduleauthor:: Curtis Castrapel <ccastrapel@netflix.com>
 """
 
-import click
 import copy
 import sys
 
+import click
 from flask import current_app
+from flask.cli import with_appcontext
 
 from lemur.authorities.service import get as get_authority
 from lemur.constants import ACME_ADDITIONAL_ATTEMPTS
@@ -19,6 +20,7 @@ from lemur.plugins.base import plugins
 
 
 @click.group(name="pending_certs", help="Handles pending certificate related tasks.")
+@with_appcontext
 def cli():
     pass
 

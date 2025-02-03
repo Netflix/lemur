@@ -238,11 +238,24 @@ Basic Configuration
         LEMUR_ENCRYPTION_KEYS = ['1YeftooSbxCiX2zo8m1lXtpvQjy27smZcUUaGmffhMY=', 'LAfQt6yrkLqOK5lwpvQcT4jf2zdeTQJV1uYeh9coT5s=']
 
 
+.. data:: PUBLIC_CA_DEFAULT_VALIDITY_DAYS
+    :noindex:
+
+        Use this config to set a default validity for certificates issued by CA/Browser compliant authorities.
+        The authorities with cab_compliant option set to true will use this config. This value defaults to
+        `PUBLIC_CA_MAX_VALIDITY_DAYS` (see below) if not configured. The example below overrides the default validity
+        to 365 days.
+
+    ::
+
+        PUBLIC_CA_DEFAULT_VALIDITY_DAYS = 365
+
+
 .. data:: PUBLIC_CA_MAX_VALIDITY_DAYS
     :noindex:
 
         Use this config to override the limit of 397 days of validity for certificates issued by CA/Browser compliant authorities.
-        The authorities with cab_compliant option set to true will use this config. The example below overrides the default validity
+        The authorities with cab_compliant option set to true will use this config. The example below overrides the default max validity
         of 397 days and sets it to 365 days.
 
     ::
@@ -1533,6 +1546,11 @@ The following parameters have to be set in the configuration files.
 
         If set to True, Entrust will use the primary client ID of 1, which applies to most use-case.
         Otherwise, Entrust will first lookup the clientId before ordering the certificate.
+
+.. data:: ENTRUST_CLIENT_IDS
+    :noindex:
+
+        If set and ENTRUST_USE_DEFAULT_CLIENT_ID is not set, Entrust will randomly pick a client id from the provided list.
 
 .. data:: ENTRUST_INFER_EKU
     :noindex:

@@ -992,6 +992,73 @@ def test_reissue_certificate_authority_translation(
     assert new_cert.authority_id == authority.id
 
 
+def test_reissue_command_by_name(
+        issuer_plugin, crypto_authority, logged_in_user
+):
+    from lemur.certificates.cli import reissue
+    from lemur.tests.conf import LEMUR_DEFAULT_ORGANIZATION
+    from lemur.tests.factories import CertificateFactory
+
+    certificate = CertificateFactory(name="to_be_reissued_cert", authority=crypto_authority)
+
+    reissue(certificate.name, False, True, None)
+
+    new_cert = certificate.replaced[0]
+    assert new_cert
+    assert new_cert.key_type == "RSA2048"
+    assert new_cert.organization != certificate.organization
+    # Check for default value since authority does not have cab_compliant option set
+    assert new_cert.organization == LEMUR_DEFAULT_ORGANIZATION
+    assert new_cert.description.startswith(f"Reissued by Lemur for cert ID {certificate.id}")
+
+
+def test_reissue_command_by_serial_numbers(
+    issuer_plugin, crypto_authority, logged_in_user
+):
+    from lemur.certificates.cli import reissue
+    from lemur.tests.conf import LEMUR_DEFAULT_ORGANIZATION
+    from lemur.tests.factories import CertificateFactory
+
+    cert1 = CertificateFactory(name="to_be_reissued_cert_1", authority=crypto_authority)
+    cert2 = CertificateFactory(name="to_be_reissued_cert_2", authority=crypto_authority)
+    cert3 = CertificateFactory(name="to_be_reissued_cert_3", authority=crypto_authority)
+
+    reissue(None, False, True, [cert1.serial, cert2.serial, cert3.serial])
+
+    for cert in [cert1, cert2, cert3]:
+        new_cert = cert.replaced[0]
+        assert new_cert
+        assert new_cert.key_type == "RSA2048"
+        assert new_cert.organization != cert.organization
+        # Check for default value since authority does not have cab_compliant option set
+        assert new_cert.organization == LEMUR_DEFAULT_ORGANIZATION
+        assert new_cert.description.startswith(f"Reissued by Lemur for cert ID {cert.id}")
+
+
+def test_reissue_command_by_name_and_serial_numbers(
+    issuer_plugin, crypto_authority, logged_in_user
+):
+    from lemur.certificates.cli import reissue
+    from lemur.tests.conf import LEMUR_DEFAULT_ORGANIZATION
+    from lemur.tests.factories import CertificateFactory
+
+    cert1 = CertificateFactory(name="to_be_reissued_cert_1", authority=crypto_authority)
+    cert2 = CertificateFactory(name="to_be_reissued_cert_2", authority=crypto_authority)
+    cert3 = CertificateFactory(name="to_be_reissued_cert_3", authority=crypto_authority)
+    cert4 = CertificateFactory(name="to_be_reissued_cert_4", authority=crypto_authority)
+
+    reissue(cert1.name, False, True, [cert2.serial, cert3.serial, cert4.serial])
+
+    for cert in [cert1, cert2, cert3, cert4]:
+        new_cert = cert.replaced[0]
+        assert new_cert
+        assert new_cert.key_type == "RSA2048"
+        assert new_cert.organization != cert.organization
+        # Check for default value since authority does not have cab_compliant option set
+        assert new_cert.organization == LEMUR_DEFAULT_ORGANIZATION
+        assert new_cert.description.startswith(f"Reissued by Lemur for cert ID {cert.id}")
+
+
 def test_create_csr():
     csr, private_key = create_csr(
         owner="joe@example.com",
