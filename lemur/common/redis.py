@@ -24,11 +24,21 @@ class RedisHandler:
         self.db = db
 
     def redis(self, db=0):
-        # The decode_responses flag here directs the client to convert the responses from Redis into Python strings
-        # using the default encoding utf-8.  This is client specific.
         function = f"{__name__}.{sys._getframe().f_code.co_name}"
         try:
-            red = redis.StrictRedis(host=self.host, port=self.port, db=self.db, encoding="utf-8", decode_responses=True)
+            opts = {
+                "host": self.host,
+                "port": self.port,
+                "db": self.db,
+                "encoding": "utf-8",
+                # The decode_responses flag here directs the client to convert the responses from Redis into Python strings
+                # using the default encoding utf-8.  This is client specific.
+                "decode_responses": True,
+            }
+            if flask_app.config.get("REDIS_USE_SSL", False):
+                opts["ssl"] = True
+                opts["ssl_cert_reqs"] = True  # Always verify the server certificate.
+            red = redis.StrictRedis(**opts)
             red.set("test", 0)
         except redis.ConnectionError:
             log_data = {
