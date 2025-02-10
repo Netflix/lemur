@@ -447,7 +447,7 @@ multipart==0.2.4
     # via
     #   -r requirements-tests.txt
     #   moto
-mypy==1.14.1
+mypy==1.15.0
     # via -r requirements-tests.txt
 mypy-extensions==1.0.0
     # via
