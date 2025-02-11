@@ -21,7 +21,6 @@ from sqlalchemy.sql.expression import false, true
 
 from lemur import database
 from lemur.authorities.models import Authority
-from lemur.authorities.service import get
 from lemur.certificates.models import Certificate, CertificateAssociation
 from lemur.certificates.schemas import CertificateOutputSchema, CertificateInputSchema
 from lemur.common.utils import generate_private_key, truthiness, parse_serial, get_certificate_via_tls, windowed_query
@@ -988,7 +987,7 @@ def reissue_certificate(certificate, notify=None, replace=None, user=None):
         primitives["replaces"] = [certificate]
 
     if primitives["authority"].id in current_app.config.get("ROTATE_AUTHORITY_TRANSLATION", {}):
-        primitives["authority"] = get(
+        primitives["authority"] = database.get(Authority,
             current_app.config.get("ROTATE_AUTHORITY_TRANSLATION", {})[primitives["authority"].id]
         )
 
