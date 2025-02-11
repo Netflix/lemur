@@ -986,6 +986,11 @@ def reissue_certificate(certificate, notify=None, replace=None, user=None):
     if replace:
         primitives["replaces"] = [certificate]
 
+    if primitives["authority"].id in current_app.config.get("ROTATE_AUTHORITY_TRANSLATION", {}):
+        primitives["authority"] = database.get(Authority,
+            current_app.config.get("ROTATE_AUTHORITY_TRANSLATION", {})[primitives["authority"].id]
+        )
+
     # Modify description to include the certificate ID being reissued and mention that this is created by Lemur
     # as part of reissue
     reissue_message_prefix = "Reissued by Lemur for cert ID "
@@ -998,15 +1003,6 @@ def reissue_certificate(certificate, notify=None, replace=None, user=None):
             primitives["description"] = f"{reissue_message_prefix}{certificate.id}, {primitives['description']}"
     else:
         primitives["description"] = f"{reissue_message_prefix}{certificate.id}"
-
-    # Rotate the certificate to ECCPRIME256V1 if cert owner is present in the configured list
-    # This is a temporary change intending to rotate certificates to ECC, if opted in by certificate owners
-    # Unless identified a use case, this will be removed in mid-Q2 2021
-    ecc_reissue_owner_list = current_app.config.get("ROTATE_TO_ECC_OWNER_LIST", [])
-    ecc_reissue_exclude_cn_list = current_app.config.get("ECC_NON_COMPATIBLE_COMMON_NAMES", [])
-
-    if (certificate.owner in ecc_reissue_owner_list) and (certificate.cn not in ecc_reissue_exclude_cn_list):
-        primitives["key_type"] = "ECCPRIME256V1"
 
     # allow celery to send notifications for PendingCertificates using the old cert
     if notify:
