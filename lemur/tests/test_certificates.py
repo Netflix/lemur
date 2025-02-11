@@ -987,7 +987,7 @@ def test_reissue_certificate_authority_translation(
 
     # test-authority would return a mismatching private key, so use 'cryptography-issuer' plugin instead.
     certificate.authority = crypto_authority
-    current_app.config["ROTATE_AUTHORITY_TRANSLATION"][crypto_authority.id] = authority.id
+    current_app.config["ROTATE_AUTHORITY_TRANSLATION"] = {crypto_authority.id: authority.id}
     new_cert = reissue_certificate(certificate)
     assert new_cert.authority_id == authority.id
 
