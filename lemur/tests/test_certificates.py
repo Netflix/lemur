@@ -986,10 +986,10 @@ def test_reissue_certificate_authority_translation(
     from lemur.certificates.service import reissue_certificate
 
     # test-authority would return a mismatching private key, so use 'cryptography-issuer' plugin instead.
-    certificate.authority = crypto_authority
-    current_app.config["ROTATE_AUTHORITY_TRANSLATION"] = {crypto_authority.id: authority.id}
+    certificate.authority = authority
+    current_app.config["ROTATE_AUTHORITY_TRANSLATION"] = {authority.id: crypto_authority.id}
     new_cert = reissue_certificate(certificate)
-    assert new_cert.authority_id == authority.id
+    assert new_cert.authority_id == crypto_authority.id
 
 
 def test_reissue_command_by_name(
