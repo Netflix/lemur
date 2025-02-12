@@ -517,6 +517,15 @@ This needs 2 configurations
         AUTHORITY_TO_DISABLE_ROTATE_OF_DUPLICATE_CERTIFICATES = ["LetsEncrypt"]
 
 
+
+**Certificate re-issuance**
+
+When a cert is reissued (i.e. a new certificate is minted to replace it), *and* the re-issuance either fails or
+succeeds but the certificate has no associated endpoints (meaning the subsequent rotation step will not occur),
+Lemur will send a notification via email to the certificate owner. This notification is disabled by default;
+to enable it, you must set the option ``--notify`` (when using cron) or the configuration parameter
+``ENABLE_REISSUE_NOTIFICATION`` (when using celery).
+
 .. data:: DAYS_SINCE_ISSUANCE_DISABLE_ROTATE_OF_DUPLICATE_CERTIFICATES
     :noindex:
 
@@ -530,13 +539,17 @@ This needs 2 configurations
         DAYS_SINCE_ISSUANCE_DISABLE_ROTATE_OF_DUPLICATE_CERTIFICATES = 7
 
 
-**Certificate re-issuance**
 
-When a cert is reissued (i.e. a new certificate is minted to replace it), *and* the re-issuance either fails or
-succeeds but the certificate has no associated endpoints (meaning the subsequent rotation step will not occur),
-Lemur will send a notification via email to the certificate owner. This notification is disabled by default;
-to enable it, you must set the option ``--notify`` (when using cron) or the configuration parameter
-``ENABLE_REISSUE_NOTIFICATION`` (when using celery).
+.. data:: ROTATE_AUTHORITY_TRANSLATION
+    :noindex:
+
+        Use this config (optional) to migrate from one authority id to another on reissuance (useful for expiring authorities,
+        key migrations, etc).
+
+    ::
+
+        ROTATE_AUTHORITY_TRANSLATION = {1: 2}
+
 
 **Certificate rotation**
 
