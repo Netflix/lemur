@@ -1,4 +1,5 @@
 import datetime
+from flask import current_app
 import json
 import ssl
 import threading
@@ -977,6 +978,18 @@ def test_reissue_certificate(
     update_options(crypto_authority.id, '[{"name": "cab_compliant","value":false}]')
     new_cert = reissue_certificate(certificate)
     assert new_cert.organization == certificate.organization
+
+
+def test_reissue_certificate_authority_translation(
+    issuer_plugin, crypto_authority, certificate, logged_in_user, authority
+):
+    from lemur.certificates.service import reissue_certificate
+
+    # test-authority would return a mismatching private key, so use 'cryptography-issuer' plugin instead.
+    certificate.authority = authority
+    current_app.config["ROTATE_AUTHORITY_TRANSLATION"] = {authority.id: crypto_authority.id}
+    new_cert = reissue_certificate(certificate)
+    assert new_cert.authority_id == crypto_authority.id
 
 
 def test_reissue_command_by_name(
