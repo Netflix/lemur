@@ -87,7 +87,7 @@ test-js:
 test-python:
 	@echo "--> Running Python tests"
 	coverage run --source lemur -m pytest
-    coverage xml --format cobertura
+	coverage xml --format cobertura
 	@echo ""
 
 lint: lint-python lint-js
