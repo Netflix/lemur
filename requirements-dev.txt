@@ -63,7 +63,7 @@ billiard==4.2.0
     # via
     #   -r requirements-tests.txt
     #   celery
-black==24.10.0
+black==25.1.0
     # via -r requirements-tests.txt
 blinker==1.7.0
     # via
@@ -71,12 +71,12 @@ blinker==1.7.0
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.35.97
+boto3==1.36.17
     # via
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
-botocore==1.35.97
+botocore==1.36.17
     # via
     #   -r requirements-tests.txt
     #   aws-xray-sdk
@@ -144,9 +144,9 @@ configobj==5.0.9
     # via
     #   -r requirements-tests.txt
     #   certbot
-coverage==7.6.10
+coverage==7.6.11
     # via -r requirements-tests.txt
-cryptography==43.0.3
+cryptography==44.0.0
     # via
     #   -r requirements-tests.txt
     #   acme
@@ -197,13 +197,13 @@ exceptiongroup==1.2.0
     # via
     #   -r requirements-tests.txt
     #   pytest
-factory-boy==3.3.1
+factory-boy==3.3.3
     # via -r requirements-tests.txt
-faker==33.3.1
+faker==35.2.0
     # via
     #   -r requirements-tests.txt
     #   factory-boy
-fakeredis==2.26.1
+fakeredis==2.26.2
     # via -r requirements-tests.txt
 filelock==3.13.3
     # via virtualenv
@@ -225,7 +225,7 @@ flask-bcrypt==1.0.1
     # via -r requirements-tests.txt
 flask-cors==5.0.0
     # via -r requirements-tests.txt
-flask-limiter==3.10.0
+flask-limiter==3.10.1
     # via -r requirements-tests.txt
 flask-mail==0.10.0
     # via -r requirements-tests.txt
@@ -285,6 +285,8 @@ gunicorn==23.0.0
     # via -r requirements-tests.txt
 hvac==2.3.0
     # via -r requirements-tests.txt
+id==1.5.0
+    # via twine
 identify==2.5.35
     # via pre-commit
 idna==3.7
@@ -338,7 +340,7 @@ jmespath==1.0.1
     #   -r requirements-tests.txt
     #   boto3
     #   botocore
-josepy==1.14.0
+josepy==1.15.0
     # via
     #   -r requirements-tests.txt
     #   acme
@@ -445,7 +447,7 @@ multipart==0.2.4
     # via
     #   -r requirements-tests.txt
     #   moto
-mypy==1.14.1
+mypy==1.15.0
     # via -r requirements-tests.txt
 mypy-extensions==1.0.0
     # via
@@ -509,8 +511,6 @@ pbr==6.0.0
     #   stevedore
 pem==23.1.0
     # via -r requirements-tests.txt
-pkginfo==1.10.0
-    # via twine
 platformdirs==4.2.0
     # via
     #   -r requirements-tests.txt
@@ -520,7 +520,7 @@ pluggy==1.5.0
     # via
     #   -r requirements-tests.txt
     #   pytest
-pre-commit==4.0.1
+pre-commit==4.1.0
     # via -r requirements-dev.in
 prompt-toolkit==3.0.43
     # via
@@ -531,7 +531,7 @@ proto-plus==1.23.0
     #   -r requirements-tests.txt
     #   google-api-core
     #   google-cloud-private-ca
-protobuf==4.25.5
+protobuf==4.25.6
     # via
     #   -r requirements-tests.txt
     #   google-api-core
@@ -596,7 +596,7 @@ pynacl==1.5.0
     # via
     #   -r requirements-tests.txt
     #   paramiko
-pyopenssl==24.3.0
+pyopenssl==25.0.0
     # via
     #   -r requirements-tests.txt
     #   acme
@@ -686,6 +686,7 @@ requests==2.32.3
     #   docker
     #   google-api-core
     #   hvac
+    #   id
     #   jsonschema-path
     #   moto
     #   requests-mock
@@ -729,7 +730,7 @@ rsa==4.9
     #   -r requirements-tests.txt
     #   google-auth
     #   python-jose
-s3transfer==0.10.1
+s3transfer==0.11.1
     # via
     #   -r requirements-tests.txt
     #   boto3
@@ -739,7 +740,7 @@ sarif-om==1.0.4
     #   cfn-lint
 secretstorage==3.3.3
     # via keyring
-sentry-sdk==2.19.2
+sentry-sdk==2.20.0
     # via -r requirements-tests.txt
 six==1.17.0
     # via
@@ -783,7 +784,7 @@ tomli==2.0.1
     #   black
     #   mypy
     #   pytest
-twine==6.0.1
+twine==6.1.0
     # via -r requirements-dev.in
 twofish==0.3.0
     # via
@@ -797,13 +798,13 @@ types-deprecated==1.2.15.20241117
     # via -r requirements-tests.txt
 types-paramiko==3.5.0.20240928
     # via -r requirements-tests.txt
-types-protobuf==5.29.1.20241207
+types-protobuf==5.29.1.20250208
     # via -r requirements-tests.txt
 types-pyopenssl==24.1.0.20240722
     # via
     #   -r requirements-tests.txt
     #   types-redis
-types-pyrfc3339==1.1.1.5
+types-pyrfc3339==2.0.1.20241107
     # via -r requirements-tests.txt
 types-python-dateutil==2.9.0.20240316
     # via
@@ -815,7 +816,7 @@ types-redis==4.6.0.20241004
     # via -r requirements-tests.txt
 types-requests==2.31.0.6
     # via -r requirements-tests.txt
-types-setuptools==75.6.0.20241223
+types-setuptools==75.8.0.20250210
     # via
     #   -r requirements-tests.txt
     #   types-cffi
@@ -841,6 +842,7 @@ typing-extensions==4.11.0
     #   mypy
     #   pydantic
     #   pydantic-core
+    #   pyopenssl
 tzdata==2024.1
     # via
     #   -r requirements-tests.txt
