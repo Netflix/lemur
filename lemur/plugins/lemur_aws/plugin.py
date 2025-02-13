@@ -418,7 +418,7 @@ class AWSSourcePlugin(SourcePlugin):
                 )
         except Exception as e:
             current_app.logger.warning(
-                f"Error attaching certificate to endpoint named {endpoint.name} on port {endpoint.port} in account {account_number} and region {region}: {e}")
+                f"Error attaching certificate to endpoint named {endpoint.name} (ID {endpoint.id}) on port {endpoint.port} in account {account_number} and region {region}: {e}")
             raise e
 
     def clean(self, certificate, options, **kwargs):
