@@ -32,8 +32,9 @@
 .. moduleauthor:: Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
 .. moduleauthor:: Harm Weites <harm@weites.com>
 """
-from os.path import join
 import sys
+from os.path import join
+
 from acme.errors import ClientError
 from flask import current_app
 from sentry_sdk import capture_exception
@@ -392,28 +393,33 @@ class AWSSourcePlugin(SourcePlugin):
 
         # relies on the fact that region is included in DNS name
         region = get_region_from_dns(endpoint.dnsname)
-        if endpoint.type == "elbv2":
-            listener_arn = elb.get_listener_arn_from_endpoint(
-                endpoint.name,
-                endpoint.port,
-                account_number=account_number,
-                region=region,
-            )
-            elb.attach_certificate_v2(
-                listener_arn,
-                endpoint.port,
-                [{"CertificateArn": arn}],
-                account_number=account_number,
-                region=region,
-            )
-        elif endpoint.type == "elb":
-            elb.attach_certificate(
-                endpoint.name,
-                endpoint.port,
-                arn,
-                account_number=account_number,
-                region=region,
-            )
+        try:
+            if endpoint.type == "elbv2":
+                listener_arn = elb.get_listener_arn_from_endpoint(
+                    endpoint.name,
+                    endpoint.port,
+                    account_number=account_number,
+                    region=region,
+                )
+                elb.attach_certificate_v2(
+                    listener_arn,
+                    endpoint.port,
+                    [{"CertificateArn": arn}],
+                    account_number=account_number,
+                    region=region,
+                )
+            elif endpoint.type == "elb":
+                elb.attach_certificate(
+                    endpoint.name,
+                    endpoint.port,
+                    arn,
+                    account_number=account_number,
+                    region=region,
+                )
+        except Exception as e:
+            current_app.logger.warning(
+                f"Error attaching certificate to endpoint named {endpoint.name} on port {endpoint.port} in account {account_number} and region {region}: {e}")
+            raise e
 
     def clean(self, certificate, options, **kwargs):
         account_number = self.get_option("accountNumber", options)
