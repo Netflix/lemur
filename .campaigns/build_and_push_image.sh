@@ -20,6 +20,11 @@ if [[ -z "$CHECKOUT_REF" ]]; then
   CHECKOUT_REF=$IMAGE_TAG
 fi
 
+if [[ $FIPS_ENABLED == "true" ]]; then
+  # Release tags to build FIPS images for do not contain the -fips postfix.
+  CHECKOUT_REF=${CHECKOUT_REF%-fips}
+fi
+
 # Build and sign the image
 cd publish/
 METADATA_FILE=$(mktemp)
