@@ -26,6 +26,7 @@ from lemur.constants import ACME_ADDITIONAL_ATTEMPTS
 from lemur.dns_providers import cli as cli_dns_providers
 from lemur.extensions import metrics
 from lemur.factory import create_app
+from lemur import fips
 from lemur.notifications import cli as cli_notification
 from lemur.notifications.messaging import (
     send_pending_failure_notification,
@@ -35,6 +36,8 @@ from lemur.notifications.messaging import (
 from lemur.pending_certificates import service as pending_certificate_service
 from lemur.plugins.base import plugins
 from lemur.sources.cli import clean, sync, validate_sources
+
+fips.instance.must_enable_fips_if_needed()
 
 if current_app:
     flask_app = current_app

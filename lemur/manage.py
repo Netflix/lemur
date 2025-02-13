@@ -35,6 +35,8 @@ from lemur.common.utils import validate_conf
 
 from lemur import create_app
 
+from lemur import fips
+
 # Needed to be imported so that SQLAlchemy create_all can find our models
 from lemur.users.models import User  # noqa
 from lemur.roles.models import Role  # noqa
@@ -56,6 +58,8 @@ manager = Manager(create_app)
 manager.add_option("-c", "--config", dest="config_path", required=False)
 
 migrate = Migrate(create_app)
+
+fips.instance.must_enable_fips_if_needed()
 
 REQUIRED_VARIABLES = [
     "LEMUR_SECURITY_TEAM_EMAIL",

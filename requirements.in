@@ -18,7 +18,7 @@ certbot
 certifi
 certsrv[ntlm]
 CloudFlare
-cryptography
+cryptography==43.0.1 # Must keep `cryptography` pinned to the same version as `requirements-overrides.txt` for FIPS support.
 dnspython == 2.6.1
 dnspython3
 dyn

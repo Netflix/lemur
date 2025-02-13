@@ -1,5 +1,8 @@
+# Base Image Selection
+ARG BASE_IMAGE=registry.ddbuild.io/images/base/gbi-ubuntu_2204:release
+
 # Lemur Builder
-FROM registry.ddbuild.io/images/base/gbi-ubuntu_2204:release as builder
+FROM $BASE_IMAGE as builder
 
 ARG CI_COMMIT_SHA
 
@@ -25,7 +28,7 @@ RUN npm config set registry http://registry.npmjs.org/ && \
     npm install npm -g && \
     echo "Running with nodejs:" && node -v && \
     python3 -m venv /opt/venv && \
-    echo "Running with python:" && /opt/venv/bin/python3 -c 'import platform; print(platform.python_version())' && \
+    echo "Running with python:" && /opt/venv/bin/python3 -c 'import sys, platform; print("sys.platform == {}, platform.machine == {}, platform.python_version == {}".format(sys.platform, platform.machine(), platform.python_version()))' && \
     /opt/venv/bin/python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel && \
     # ddtrace is required to automatically instrument lemur to emit traces
     /opt/venv/bin/python3 -m pip install --no-cache-dir ddtrace && \
@@ -38,8 +41,16 @@ RUN npm config set registry http://registry.npmjs.org/ && \
     npm cache clean --force && \
     rm -rf node_modules
 
+# Install requirement overrides. Required for FIPS mode.
+RUN echo "Installing requirement overrides:" && /opt/venv/bin/python3 -c 'import sys, platform; print("sys.platform == {}, platform.machine == {}, platform.python_version == {}".format(sys.platform, platform.machine(), platform.python_version()))'
+RUN /opt/venv/bin/python3 -m pip install --no-cache-dir --no-deps --force-reinstall -r requirements-overrides.txt
+
 # Lemur Application
-FROM registry.ddbuild.io/images/base/gbi-ubuntu_2204:release
+FROM $BASE_IMAGE
+
+# FIPS mode
+ARG FIPS_ENABLED=false
+LABEL IS_FIPS=$FIPS_ENABLED
 
 USER root
 
@@ -50,5 +61,7 @@ COPY --from=builder /opt/venv /opt/venv
 
 RUN clean-apt install python3 python3-distutils haveged curl postgresql-client openssl &&\
     chown -R dog:dog /opt
+
+ENV FIPS_ENABLED=$FIPS_ENABLED
 
 USER dog

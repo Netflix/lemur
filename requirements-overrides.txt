@@ -1,0 +1,8 @@
+# cryptography:
+# On Linux, cryptography statically links OpenSSL.
+# For FIPS compliance, we rebuild against the FIPS-compliant OpenSSL installation in the FIPS GBI.
+#
+# jammy version with OpenSSL 3
+https://binaries.ddbuild.io/repackaging/python-cryptography-fips/cryptography-43.0.1+dd.repackaging.45120575-cp37-abi3-linux_x86_64.whl ; sys_platform == "linux" and platform_machine == "x86_64" and python_full_version == "3.10.12"
+# jammy version with OpenSSL 3
+https://binaries.ddbuild.io/repackaging/python-cryptography-fips/cryptography-43.0.1+dd.repackaging.45120575-cp37-abi3-linux_aarch64.whl ; sys_platform == "linux" and platform_machine == "aarch64" and python_full_version == "3.10.12"

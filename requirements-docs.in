@@ -11,7 +11,7 @@ celery[redis]
 certbot
 certsrv
 CloudFlare
-cryptography
+cryptography==43.0.1 # Must keep `cryptography` pinned to the same version as `requirements-overrides.txt` for FIPS support.
 dnspython >= 2.6.0
 dnspython3
 dyn

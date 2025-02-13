@@ -4,4 +4,5 @@ flake8
 invoke
 nodeenv
 pre-commit
+cryptography==43.0.1 # Must keep `cryptography` pinned to the same version as `requirements-overrides.txt` for FIPS support.
 -r requirements-tests.txt
