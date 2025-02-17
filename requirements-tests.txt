@@ -179,7 +179,7 @@ exceptiongroup==1.2.0
     # via pytest
 factory-boy==3.3.3
     # via -r requirements-tests.in
-faker==35.2.0
+faker==36.1.1
     # via
     #   -r requirements-tests.in
     #   factory-boy
@@ -517,7 +517,6 @@ python-dateutil==2.9.0.post0
     #   arrow
     #   botocore
     #   celery
-    #   faker
     #   freezegun
     #   moto
 python-jose[cryptography]==3.3.0
@@ -681,7 +680,6 @@ typing-extensions==4.11.0
     #   alembic
     #   aws-sam-translator
     #   black
-    #   faker
     #   fakeredis
     #   flask-limiter
     #   kombu
@@ -694,6 +692,7 @@ tzdata==2024.1
     # via
     #   -r requirements.txt
     #   celery
+    #   faker
 urllib3==1.26.18
     # via
     #   -r requirements.txt
