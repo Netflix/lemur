@@ -203,7 +203,7 @@ faker==36.1.1
     # via
     #   -r requirements-tests.txt
     #   factory-boy
-fakeredis==2.26.2
+fakeredis==2.27.0
     # via -r requirements-tests.txt
 filelock==3.13.3
     # via virtualenv
