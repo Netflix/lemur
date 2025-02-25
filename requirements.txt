@@ -139,14 +139,14 @@ google-auth==2.29.0
     # via
     #   google-api-core
     #   google-cloud-private-ca
-google-cloud-private-ca==1.14.0
+google-cloud-private-ca==1.14.1
     # via -r requirements.in
 googleapis-common-protos[grpc]==1.63.0
     # via
     #   google-api-core
     #   grpc-google-iam-v1
     #   grpcio-status
-grpc-google-iam-v1==0.13.0
+grpc-google-iam-v1==0.14.0
     # via google-cloud-private-ca
 grpcio==1.62.1
     # via

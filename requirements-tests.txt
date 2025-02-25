@@ -230,7 +230,7 @@ google-auth==2.29.0
     #   -r requirements.txt
     #   google-api-core
     #   google-cloud-private-ca
-google-cloud-private-ca==1.14.0
+google-cloud-private-ca==1.14.1
     # via -r requirements.txt
 googleapis-common-protos[grpc]==1.63.0
     # via
@@ -240,7 +240,7 @@ googleapis-common-protos[grpc]==1.63.0
     #   grpcio-status
 graphql-core==3.2.3
     # via moto
-grpc-google-iam-v1==0.13.0
+grpc-google-iam-v1==0.14.0
     # via
     #   -r requirements.txt
     #   google-cloud-private-ca
