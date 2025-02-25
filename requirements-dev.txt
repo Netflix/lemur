@@ -489,7 +489,7 @@ packaging==24.0
     #   limits
     #   pytest
     #   twine
-paramiko==3.5.0
+paramiko==3.5.1
     # via -r requirements-tests.txt
 parsedatetime==2.6
     # via
