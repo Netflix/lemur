@@ -44,7 +44,7 @@ aws-sam-translator==1.87.0
     # via cfn-lint
 aws-xray-sdk==2.13.0
     # via moto
-bandit==1.8.2
+bandit==1.8.3
     # via -r requirements-tests.in
 bcrypt==4.1.2
     # via
