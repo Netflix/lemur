@@ -46,7 +46,7 @@ cachetools==5.3.3
     # via google-auth
 celery[redis]==5.3.6
     # via -r requirements.in
-certbot==3.1.0
+certbot==3.2.0
     # via -r requirements.in
 certifi==2025.1.31
     # via
