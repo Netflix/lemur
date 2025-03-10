@@ -113,7 +113,7 @@ flask==2.3.3
     #   flask-sqlalchemy
 flask-bcrypt==1.0.1
     # via -r requirements.in
-flask-cors==5.0.0
+flask-cors==5.0.1
     # via -r requirements.in
 flask-limiter==3.10.1
     # via -r requirements.in
@@ -376,6 +376,7 @@ werkzeug==3.1.3
     # via
     #   -r requirements.in
     #   flask
+    #   flask-cors
 wrapt==1.16.0
     # via deprecated
 xmltodict==0.14.2
