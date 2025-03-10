@@ -223,7 +223,7 @@ flask==2.3.3
     #   pytest-flask
 flask-bcrypt==1.0.1
     # via -r requirements-tests.txt
-flask-cors==5.0.0
+flask-cors==5.0.1
     # via -r requirements-tests.txt
 flask-limiter==3.10.1
     # via -r requirements-tests.txt
@@ -873,6 +873,7 @@ werkzeug==3.1.3
     # via
     #   -r requirements-tests.txt
     #   flask
+    #   flask-cors
     #   moto
     #   pytest-flask
 wrapt==1.16.0
