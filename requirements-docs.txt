@@ -852,7 +852,7 @@ types-python-dateutil==2.9.0.20240316
     # via
     #   -r requirements-tests.txt
     #   arrow
-types-pytz==2024.2.0.20241221
+types-pytz==2025.1.0.20250204
     # via -r requirements-tests.txt
 types-redis==4.6.0.20241004
     # via -r requirements-tests.txt
