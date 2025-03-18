@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-docs.txt requirements-docs.in
 #
-acme==3.1.0
+acme==3.2.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -57,7 +57,7 @@ aws-xray-sdk==2.13.0
     #   moto
 babel==2.14.0
     # via sphinx
-bandit==1.8.2
+bandit==1.8.3
     # via -r requirements-tests.txt
 bcrypt==4.1.2
     # via
@@ -76,13 +76,13 @@ blinker==1.7.0
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.36.17
+boto3==1.37.9
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
-botocore==1.36.17
+botocore==1.37.9
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -98,11 +98,11 @@ celery[redis]==5.3.6
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
-certbot==3.1.0
+certbot==3.2.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
-certifi==2024.12.14
+certifi==2025.1.31
     # via
     #   -r requirements-tests.txt
     #   requests
@@ -157,9 +157,9 @@ configobj==5.0.9
     # via
     #   -r requirements-tests.txt
     #   certbot
-coverage==7.6.11
+coverage==7.6.12
     # via -r requirements-tests.txt
-cryptography==44.0.0
+cryptography==44.0.1
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -217,11 +217,11 @@ exceptiongroup==1.2.0
     #   pytest
 factory-boy==3.3.3
     # via -r requirements-tests.txt
-faker==35.2.0
+faker==36.1.1
     # via
     #   -r requirements-tests.txt
     #   factory-boy
-fakeredis==2.26.2
+fakeredis==2.27.0
     # via -r requirements-tests.txt
 flask==2.3.3
     # via
@@ -240,7 +240,7 @@ flask-bcrypt==1.0.1
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
-flask-cors==5.0.0
+flask-cors==5.0.1
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -286,7 +286,7 @@ google-auth==2.29.0
     #   -r requirements-tests.txt
     #   google-api-core
     #   google-cloud-private-ca
-google-cloud-private-ca==1.14.0
+google-cloud-private-ca==1.14.1
     # via -r requirements-tests.txt
 googleapis-common-protos[grpc]==1.63.0
     # via
@@ -298,7 +298,7 @@ graphql-core==3.2.3
     # via
     #   -r requirements-tests.txt
     #   moto
-grpc-google-iam-v1==0.13.0
+grpc-google-iam-v1==0.14.0
     # via
     #   -r requirements-tests.txt
     #   google-cloud-private-ca
@@ -506,7 +506,7 @@ packaging==24.0
     #   limits
     #   pytest
     #   sphinx
-paramiko==3.5.0
+paramiko==3.5.1
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -634,7 +634,7 @@ pyspnego==0.10.2
     # via
     #   -r requirements-tests.txt
     #   requests-ntlm
-pytest==8.3.4
+pytest==8.3.5
     # via
     #   -r requirements-tests.txt
     #   pytest-flask
@@ -649,7 +649,6 @@ python-dateutil==2.9.0.post0
     #   arrow
     #   botocore
     #   celery
-    #   faker
     #   freezegun
     #   moto
 python-jose[cryptography]==3.3.0
@@ -750,7 +749,7 @@ sarif-om==1.0.4
     # via
     #   -r requirements-tests.txt
     #   cfn-lint
-sentry-sdk==2.20.0
+sentry-sdk==2.22.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -853,13 +852,13 @@ types-python-dateutil==2.9.0.20240316
     # via
     #   -r requirements-tests.txt
     #   arrow
-types-pytz==2024.2.0.20241221
+types-pytz==2025.1.0.20250204
     # via -r requirements-tests.txt
 types-redis==4.6.0.20241004
     # via -r requirements-tests.txt
 types-requests==2.31.0.6
     # via -r requirements-tests.txt
-types-setuptools==75.8.0.20250210
+types-setuptools==75.8.2.20250305
     # via
     #   -r requirements-tests.txt
     #   types-cffi
@@ -877,7 +876,6 @@ typing-extensions==4.11.0
     #   alembic
     #   aws-sam-translator
     #   black
-    #   faker
     #   fakeredis
     #   flask-limiter
     #   kombu
@@ -890,6 +888,7 @@ tzdata==2024.1
     # via
     #   -r requirements-tests.txt
     #   celery
+    #   faker
 urllib3==1.26.18
     # via
     #   -r requirements-tests.txt
@@ -916,6 +915,7 @@ werkzeug==3.1.3
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   flask
+    #   flask-cors
     #   moto
     #   pytest-flask
 wrapt==1.16.0
