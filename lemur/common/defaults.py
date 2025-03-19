@@ -295,7 +295,7 @@ def not_before(cert):
     :param cert:
     :return: Datetime
     """
-    return cert.not_valid_before
+    return cert.not_valid_before_utc
 
 
 def not_after(cert):
@@ -306,4 +306,4 @@ def not_after(cert):
 
     :return: Datetime
     """
-    return cert.not_valid_after
+    return cert.not_valid_after_utc
