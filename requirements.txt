@@ -4,70 +4,64 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements.txt requirements.in
 #
-acme==3.3.0
+acme==3.2.0
     # via
     #   -r requirements.in
     #   certbot
-alembic==1.14.1
+alembic==1.13.1
     # via flask-migrate
 alembic-autogenerate-enums==0.1.2
     # via -r requirements.in
-amqp==5.3.1
+amqp==5.2.0
     # via kombu
-aniso8601==10.0.0
+aniso8601==9.0.1
     # via flask-restful
-annotated-types==0.7.0
-    # via pydantic
-anyio==4.9.0
-    # via
-    #   cloudflare
-    #   httpx
 arrow==1.3.0
     # via -r requirements.in
-async-timeout==5.0.1
+async-timeout==4.0.3
     # via redis
 asyncpool==1.0
     # via -r requirements.in
-bcrypt==4.3.0
+attrs==23.2.0
+    # via jsonlines
+bcrypt==4.1.2
     # via
     #   flask-bcrypt
     #   paramiko
-billiard==4.2.1
+billiard==4.2.0
     # via celery
-blinker==1.9.0
+blinker==1.7.0
     # via
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.37.18
+boto3==1.37.9
     # via -r requirements.in
-botocore==1.37.18
+botocore==1.37.9
     # via
     #   -r requirements.in
     #   boto3
     #   s3transfer
-cachetools==5.5.2
+cachetools==5.3.3
     # via google-auth
-celery[redis]==5.4.0
+celery[redis]==5.3.6
     # via -r requirements.in
-certbot==3.3.0
+certbot==3.2.0
     # via -r requirements.in
 certifi==2025.1.31
     # via
     #   -r requirements.in
-    #   httpcore
-    #   httpx
     #   requests
     #   sentry-sdk
 certsrv[ntlm]==2.1.1
     # via -r requirements.in
-cffi==1.17.1
+cffi==1.16.0
     # via
     #   cryptography
     #   pynacl
-charset-normalizer==3.4.1
+charset-normalizer==3.3.2
     # via requests
-click==8.1.8
+click==8.1.7
     # via
     #   celery
     #   click-didyoumean
@@ -80,13 +74,13 @@ click-plugins==1.1.1
     # via celery
 click-repl==0.3.0
     # via celery
-cloudflare==4.1.0
+cloudflare==2.20.0
     # via -r requirements.in
 configargparse==1.7
     # via certbot
 configobj==5.0.9
     # via certbot
-cryptography==44.0.2
+cryptography==44.0.1
     # via
     #   -r requirements.in
     #   acme
@@ -96,20 +90,16 @@ cryptography==44.0.2
     #   pyopenssl
     #   pyspnego
     #   requests-ntlm
-deprecated==1.2.18
+deprecated==1.2.14
     # via limits
 distro==1.9.0
-    # via
-    #   certbot
-    #   cloudflare
+    # via certbot
 dnspython==1.15.0
     # via dnspython3
 dnspython3==1.15.0
     # via -r requirements.in
 dyn==1.8.6
     # via -r requirements.in
-exceptiongroup==1.2.2
-    # via anyio
 flask==2.3.3
     # via
     #   -r requirements.in
@@ -125,11 +115,11 @@ flask-bcrypt==1.0.1
     # via -r requirements.in
 flask-cors==5.0.1
     # via -r requirements.in
-flask-limiter==3.11.0
+flask-limiter==3.10.1
     # via -r requirements.in
 flask-mail==0.10.0
     # via -r requirements.in
-flask-migrate==4.1.0
+flask-migrate==4.0.7
     # via -r requirements.in
 flask-principal==0.4.0
     # via -r requirements.in
@@ -143,48 +133,41 @@ flask-sqlalchemy==2.5.1
     #   flask-migrate
 future==1.0.0
     # via -r requirements.in
-google-api-core[grpc]==2.24.2
+google-api-core[grpc]==2.18.0
     # via google-cloud-private-ca
-google-auth==2.38.0
+google-auth==2.29.0
     # via
     #   google-api-core
     #   google-cloud-private-ca
-google-cloud-private-ca==1.14.2
+google-cloud-private-ca==1.14.1
     # via -r requirements.in
-googleapis-common-protos[grpc]==1.69.2
+googleapis-common-protos[grpc]==1.63.0
     # via
     #   google-api-core
     #   grpc-google-iam-v1
     #   grpcio-status
-grpc-google-iam-v1==0.14.2
+grpc-google-iam-v1==0.14.0
     # via google-cloud-private-ca
-grpcio==1.71.0
+grpcio==1.62.1
     # via
     #   google-api-core
     #   googleapis-common-protos
     #   grpc-google-iam-v1
     #   grpcio-status
-grpcio-status==1.71.0
+grpcio-status==1.62.1
     # via google-api-core
 gunicorn==23.0.0
     # via -r requirements.in
-h11==0.14.0
-    # via httpcore
-httpcore==1.0.7
-    # via httpx
-httpx==0.28.1
-    # via cloudflare
 hvac==2.3.0
     # via -r requirements.in
-idna==3.10
-    # via
-    #   anyio
-    #   httpx
-    #   requests
-importlib-metadata==8.6.1
+idna==3.7
+    # via requests
+importlib-metadata==7.1.0
     # via
     #   certbot
     #   flask
+importlib-resources==6.4.0
+    # via limits
 inflection==0.5.1
     # via -r requirements.in
 itsdangerous==2.2.0
@@ -193,7 +176,7 @@ itsdangerous==2.2.0
     #   flask
 javaobj-py3==0.4.4
     # via pyjks
-jinja2==3.1.6
+jinja2==3.1.3
     # via
     #   -r requirements.in
     #   flask
@@ -205,17 +188,19 @@ josepy==1.15.0
     # via
     #   acme
     #   certbot
-kombu==5.5.0
+jsonlines==4.0.0
+    # via cloudflare
+kombu==5.3.6
     # via celery
-limits==4.2
+limits==3.13.0
     # via flask-limiter
 lockfile==0.12.2
     # via -r requirements.in
-mako==1.3.9
+mako==1.3.2
     # via alembic
 markdown-it-py==3.0.0
     # via rich
-markupsafe==3.0.2
+markupsafe==2.1.5
     # via
     #   jinja2
     #   mako
@@ -232,7 +217,7 @@ ndg-httpsclient==0.5.1
     # via -r requirements.in
 ordered-set==4.1.0
     # via flask-limiter
-packaging==24.2
+packaging==24.0
     # via
     #   gunicorn
     #   limits
@@ -242,13 +227,13 @@ parsedatetime==2.6
     # via certbot
 pem==23.1.0
     # via -r requirements.in
-prompt-toolkit==3.0.50
+prompt-toolkit==3.0.43
     # via click-repl
-proto-plus==1.26.1
+proto-plus==1.23.0
     # via
     #   google-api-core
     #   google-cloud-private-ca
-protobuf==5.29.4
+protobuf==4.25.6
     # via
     #   -r requirements.in
     #   google-api-core
@@ -259,31 +244,27 @@ protobuf==5.29.4
     #   proto-plus
 psycopg2==2.9.10
     # via -r requirements.in
-pyasn1==0.6.1
+pyasn1==0.6.0
     # via
     #   ndg-httpsclient
     #   pyasn1-modules
     #   pyjks
     #   python-ldap
     #   rsa
-pyasn1-modules==0.4.1
+pyasn1-modules==0.4.0
     # via
     #   google-auth
     #   pyjks
     #   python-ldap
 pycparser==2.22
     # via cffi
-pycryptodomex==3.22.0
+pycryptodomex==3.20.0
     # via pyjks
-pydantic==2.10.6
-    # via cloudflare
-pydantic-core==2.27.2
-    # via pydantic
-pygments==2.19.1
+pygments==2.17.2
     # via rich
 pyjks==20.0.0
     # via -r requirements.in
-pyjwt==2.10.1
+pyjwt==2.9.0
     # via -r requirements.in
 pynacl==1.5.0
     # via paramiko
@@ -293,11 +274,11 @@ pyopenssl==25.0.0
     #   acme
     #   josepy
     #   ndg-httpsclient
-pyrfc3339==2.0.1
+pyrfc3339==1.1
     # via
     #   acme
     #   certbot
-pyspnego==0.11.2
+pyspnego==0.10.2
     # via requests-ntlm
 python-dateutil==2.9.0.post0
     # via
@@ -308,13 +289,16 @@ python-json-logger==3.3.0
     # via -r requirements.in
 python-ldap==3.4.4
     # via -r requirements.in
-pytz==2025.1
+pytz==2024.1
     # via
     #   acme
     #   certbot
     #   flask-restful
+    #   pyrfc3339
 pyyaml==6.0.2
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   cloudflare
 redis==5.2.1
     # via
     #   -r requirements.in
@@ -324,20 +308,21 @@ requests==2.32.3
     #   -r requirements.in
     #   acme
     #   certsrv
+    #   cloudflare
     #   google-api-core
     #   hvac
     #   requests-ntlm
-requests-ntlm==1.3.0
+requests-ntlm==1.2.0
     # via certsrv
 retrying==1.3.4
     # via -r requirements.in
-rich==13.9.4
+rich==13.7.1
     # via flask-limiter
 rsa==4.9
     # via google-auth
-s3transfer==0.11.4
+s3transfer==0.11.1
     # via boto3
-sentry-sdk==2.24.1
+sentry-sdk==2.22.0
     # via -r requirements.in
 six==1.17.0
     # via
@@ -345,10 +330,6 @@ six==1.17.0
     #   flask-restful
     #   python-dateutil
     #   retrying
-sniffio==1.3.1
-    # via
-    #   anyio
-    #   cloudflare
 sqlalchemy==1.3.24
     # via
     #   -r requirements.in
@@ -362,28 +343,20 @@ tabulate==0.9.0
     # via -r requirements.in
 twofish==0.3.0
     # via pyjks
-types-protobuf==5.29.1.20250315
+types-protobuf==5.29.1.20250208
     # via -r requirements.in
-types-python-dateutil==2.9.0.20241206
+types-python-dateutil==2.9.0.20240316
     # via arrow
-typing-extensions==4.12.2
+typing-extensions==4.11.0
     # via
     #   alembic
-    #   anyio
-    #   cloudflare
     #   flask-limiter
     #   kombu
     #   limits
-    #   pydantic
-    #   pydantic-core
     #   pyopenssl
-    #   python-json-logger
-    #   rich
-tzdata==2025.1
-    # via
-    #   celery
-    #   kombu
-urllib3==1.26.20
+tzdata==2024.1
+    # via celery
+urllib3==1.26.18
     # via
     #   botocore
     #   requests
@@ -402,9 +375,11 @@ werkzeug==3.1.3
     #   -r requirements.in
     #   flask
     #   flask-cors
-wrapt==1.17.2
+wrapt==1.16.0
     # via deprecated
 xmltodict==0.14.2
     # via -r requirements.in
-zipp==3.21.0
-    # via importlib-metadata
+zipp==3.19.1
+    # via
+    #   importlib-metadata
+    #   importlib-resources
