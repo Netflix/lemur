@@ -520,8 +520,7 @@ python-dateutil==2.9.0.post0
 python-jose[cryptography]==3.3.0
     # via moto
 python-json-logger==3.3.0
-    # via
-    #   -r requirements.txt
+    # via -r requirements.txt
 python-ldap==3.4.4
     # via -r requirements.txt
 pytz==2024.1
@@ -655,7 +654,7 @@ types-python-dateutil==2.9.0.20240316
     # via
     #   -r requirements.txt
     #   arrow
-types-pytz==2025.1.0.20250204
+types-pytz==2025.1.0.20250318
     # via -r requirements-tests.in
 types-redis==4.6.0.20241004
     # via -r requirements-tests.in
@@ -685,6 +684,7 @@ typing-extensions==4.11.0
     #   pydantic
     #   pydantic-core
     #   pyopenssl
+    #   python-json-logger
 tzdata==2024.1
     # via
     #   -r requirements.txt
