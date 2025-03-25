@@ -196,8 +196,6 @@ limits==3.13.0
     # via flask-limiter
 lockfile==0.12.2
     # via -r requirements.in
-logmatic-python==0.1.7
-    # via -r requirements.in
 mako==1.3.2
     # via alembic
 markdown-it-py==3.0.0
@@ -287,8 +285,8 @@ python-dateutil==2.9.0.post0
     #   arrow
     #   botocore
     #   celery
-python-json-logger==2.0.7
-    # via logmatic-python
+python-json-logger==3.3.0
+    # via -r requirements.in
 python-ldap==3.4.4
     # via -r requirements.in
 pytz==2024.1
