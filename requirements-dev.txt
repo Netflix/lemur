@@ -789,7 +789,7 @@ types-cffi==1.16.0.20240331
     # via
     #   -r requirements-tests.txt
     #   types-pyopenssl
-types-deprecated==1.2.15.20241117
+types-deprecated==1.2.15.20250304
     # via -r requirements-tests.txt
 types-paramiko==3.5.0.20240928
     # via -r requirements-tests.txt
