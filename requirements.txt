@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements.txt requirements.in
 #
-acme==3.2.0
+acme==3.3.0
     # via
     #   -r requirements.in
     #   certbot
@@ -46,7 +46,7 @@ cachetools==5.3.3
     # via google-auth
 celery[redis]==5.3.6
     # via -r requirements.in
-certbot==3.2.0
+certbot==3.3.0
     # via -r requirements.in
 certifi==2025.1.31
     # via
@@ -354,6 +354,7 @@ typing-extensions==4.11.0
     #   kombu
     #   limits
     #   pyopenssl
+    #   python-json-logger
 tzdata==2024.1
     # via celery
 urllib3==1.26.18
