@@ -34,7 +34,7 @@ inflection
 itsdangerous
 jinja2
 lockfile
-logmatic-python
+python-json-logger
 marshmallow-sqlalchemy == 0.23.1 #related to the marshmallow issue (to avoid conflicts)
 marshmallow<2.21.1 #schema duplicate issues https://github.com/marshmallow-code/marshmallow-sqlalchemy/issues/121
 ndg-httpsclient
