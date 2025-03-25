@@ -723,6 +723,11 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
         :param options:
         :return:
         """
-        name = "digicert_" + "_".join(options['name'].split(" ")) + "_admin"
+        ca_name = "_".join(options['name'].split(" "))
+        name = "digicert_" + ca_name + "_admin"
         role = {"username": "", "password": "", "name": name}
-        return current_app.config.get("DIGICERT_CIS_ROOTS", {}).get(options['authority'].name), "", [role]
+        # fallback to ca_name if authority not found
+        cis_root = ca_name
+        if 'authority' in options:
+            cis_root = options['authority'].name
+        return current_app.config.get("DIGICERT_CIS_ROOTS", {}).get(cis_root), "", [role]

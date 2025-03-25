@@ -238,11 +238,24 @@ Basic Configuration
         LEMUR_ENCRYPTION_KEYS = ['1YeftooSbxCiX2zo8m1lXtpvQjy27smZcUUaGmffhMY=', 'LAfQt6yrkLqOK5lwpvQcT4jf2zdeTQJV1uYeh9coT5s=']
 
 
+.. data:: PUBLIC_CA_DEFAULT_VALIDITY_DAYS
+    :noindex:
+
+        Use this config to set a default validity for certificates issued by CA/Browser compliant authorities.
+        The authorities with cab_compliant option set to true will use this config. This value defaults to
+        `PUBLIC_CA_MAX_VALIDITY_DAYS` (see below) if not configured. The example below overrides the default validity
+        to 365 days.
+
+    ::
+
+        PUBLIC_CA_DEFAULT_VALIDITY_DAYS = 365
+
+
 .. data:: PUBLIC_CA_MAX_VALIDITY_DAYS
     :noindex:
 
         Use this config to override the limit of 397 days of validity for certificates issued by CA/Browser compliant authorities.
-        The authorities with cab_compliant option set to true will use this config. The example below overrides the default validity
+        The authorities with cab_compliant option set to true will use this config. The example below overrides the default max validity
         of 397 days and sets it to 365 days.
 
     ::
@@ -523,6 +536,15 @@ This needs 2 configurations
         AUTHORITY_TO_DISABLE_ROTATE_OF_DUPLICATE_CERTIFICATES = ["LetsEncrypt"]
 
 
+
+**Certificate re-issuance**
+
+When a cert is reissued (i.e. a new certificate is minted to replace it), *and* the re-issuance either fails or
+succeeds but the certificate has no associated endpoints (meaning the subsequent rotation step will not occur),
+Lemur will send a notification via email to the certificate owner. This notification is disabled by default;
+to enable it, you must set the option ``--notify`` (when using cron) or the configuration parameter
+``ENABLE_REISSUE_NOTIFICATION`` (when using celery).
+
 .. data:: DAYS_SINCE_ISSUANCE_DISABLE_ROTATE_OF_DUPLICATE_CERTIFICATES
     :noindex:
 
@@ -536,13 +558,17 @@ This needs 2 configurations
         DAYS_SINCE_ISSUANCE_DISABLE_ROTATE_OF_DUPLICATE_CERTIFICATES = 7
 
 
-**Certificate re-issuance**
 
-When a cert is reissued (i.e. a new certificate is minted to replace it), *and* the re-issuance either fails or
-succeeds but the certificate has no associated endpoints (meaning the subsequent rotation step will not occur),
-Lemur will send a notification via email to the certificate owner. This notification is disabled by default;
-to enable it, you must set the option ``--notify`` (when using cron) or the configuration parameter
-``ENABLE_REISSUE_NOTIFICATION`` (when using celery).
+.. data:: ROTATE_AUTHORITY_TRANSLATION
+    :noindex:
+
+        Use this config (optional) to migrate from one authority id to another on reissuance (useful for expiring authorities,
+        key migrations, etc).
+
+    ::
+
+        ROTATE_AUTHORITY_TRANSLATION = {1: 2}
+
 
 **Certificate rotation**
 
@@ -1539,6 +1565,11 @@ The following parameters have to be set in the configuration files.
 
         If set to True, Entrust will use the primary client ID of 1, which applies to most use-case.
         Otherwise, Entrust will first lookup the clientId before ordering the certificate.
+
+.. data:: ENTRUST_CLIENT_IDS
+    :noindex:
+
+        If set and ENTRUST_USE_DEFAULT_CLIENT_ID is not set, Entrust will randomly pick a client id from the provided list.
 
 .. data:: ENTRUST_INFER_EKU
     :noindex:

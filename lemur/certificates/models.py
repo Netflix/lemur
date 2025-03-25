@@ -417,12 +417,6 @@ class Certificate(BaseModel):
                     return_extensions["crl_distribution_points"] = {
                         "include_crl_dp": value
                     }
-
-                # TODO: Not supporting custom OIDs yet. https://github.com/Netflix/lemur/issues/665
-                else:
-                    current_app.logger.warning(
-                        "Custom OIDs not yet supported for clone operation."
-                    )
         except InvalidCodepoint as e:
             capture_exception()
             current_app.logger.warning(

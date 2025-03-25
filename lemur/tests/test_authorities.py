@@ -406,3 +406,37 @@ def test_authority_roles(client, session, issuer_plugin):
     )
     assert resp.status_code == 200
     assert len(resp.json["roles"]) == 0
+
+
+@pytest.mark.parametrize(
+    "token,authority_number,status",
+    [
+        (VALID_ADMIN_HEADER_TOKEN, 100, 200),
+    ],
+)
+def test_authorities_put_update_options(client, authority_number, token, status):
+    """
+    This test relies on the configuration option ADMIN_ONLY_AUTHORITY_CREATION = True, set in conf.py
+    """
+    data = {'name': f'testauthority{authority_number}', 'owner': 'test@example.com',
+            'common_name': 'testauthority1.example.com', "serial_number": 1,
+            "validityStart": "2023-07-12T07:00:00.000Z",
+            "validityEnd": "2050-07-13T07:00:00.000Z",
+            'plugin': {'slug': 'cryptography-issuer'}}
+    response = client.post(
+        api.url_for(AuthoritiesList),
+        data=json.dumps(data),
+        headers=token
+    )
+    assert response.status_code == status, f"expected code {status}, but actual code was {response.status_code}; error: {response.json}"
+    response = json.loads(
+        client.put(
+            api.url_for(Authorities, authority_id=1), data=json.dumps(
+                {'owner': 'updated@example.com',
+                 'description': 'updated',
+                 'roles': [],
+                 'options': json.dumps([{'updated': 'bar'}])}), headers=token
+        ).text
+    )
+    for field in ['owner', 'description', 'options']:
+        assert 'updated' in json.dumps(response[field])

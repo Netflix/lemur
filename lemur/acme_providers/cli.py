@@ -1,11 +1,12 @@
-import time
 import json
+import time
+
 import arrow
 import click
-
 from flask import current_app
-
+from flask.cli import with_appcontext
 from sentry_sdk import capture_exception
+
 from lemur.common.utils import check_validation
 from lemur.constants import SUCCESS_METRIC_STATUS
 from lemur.plugins import plugins
@@ -14,6 +15,7 @@ from lemur.plugins.lemur_aws import s3
 
 
 @click.group(name="acme", help="Handles all ACME related tasks")
+@with_appcontext
 def cli():
     pass
 

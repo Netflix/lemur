@@ -15,6 +15,8 @@ def text_to_slug(value, joiner="-"):
     Normalize a string to a "slug" value, stripping character accents and removing non-alphanum characters.
     A series of non-alphanumeric characters is replaced with the joiner character.
     """
+    if len(value) > 10_000:
+        raise ValueError("Input value is too long.")
 
     # Strip all character accents: decompose Unicode characters and then drop combining chars.
     value = "".join(
@@ -293,7 +295,7 @@ def not_before(cert):
     :param cert:
     :return: Datetime
     """
-    return cert.not_valid_before
+    return cert.not_valid_before_utc
 
 
 def not_after(cert):
@@ -304,4 +306,4 @@ def not_after(cert):
 
     :return: Datetime
     """
-    return cert.not_valid_after
+    return cert.not_valid_after_utc

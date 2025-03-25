@@ -90,6 +90,7 @@ And then run:
 
 .. code-block:: bash
 
+  make up-reqs
   make release
 
 .. note:: This command will install npm dependencies as well as compile static assets.
@@ -193,12 +194,18 @@ Your database installation requires the pg_trgm extension. If you do not have th
 
 Additional notifications can be created through the UI or API.  See :ref:`Notification Options <NotificationOptions>` and :ref:`Command Line Interface <CommandLineInterface>` for details.
 
-**Make note of the password used as this will be used during first login to the Lemur UI.**
-
 .. code-block:: bash
 
     cd /www/lemur/lemur
+    lemur db init
+
+Then
+
+.. code-block:: bash
+
     lemur init
+
+**Make note of the password used as this will be used during first login to the Lemur UI.**
 
 .. note:: If you added the SUPERUSER permission to the lemur database user above, it is recommended you revoke that permission now.
 

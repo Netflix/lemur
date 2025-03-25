@@ -159,7 +159,10 @@ def retrieve_user(user_api_url, access_token):
     r = requests.get(user_api_url, params=user_params, headers=headers)
     # Some IDPs, like "Keycloak", require a POST instead of a GET
     if r.status_code == 400:
-        r = requests.post(user_api_url, data=user_params, headers=headers)
+        if current_app.config.get("PING_EXCLUDE_USER_PARAMS", False):
+            r = requests.post(user_api_url, headers=headers)
+        else:
+            r = requests.post(user_api_url, data=user_params, headers=headers)
 
     profile = r.json()
 

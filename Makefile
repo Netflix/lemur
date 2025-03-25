@@ -50,7 +50,7 @@ reset-db:
 
 setup-git:
 	@echo "--> Installing git hooks"
-	if [ -d .git/hooks ]; then \
+	if [[ -d .git/hooks && -d hooks ]]; then \
 		git config branch.autosetuprebase always; \
 		cd .git/hooks && ln -sf ../../hooks/* ./; \
 	fi
@@ -87,6 +87,7 @@ test-js:
 test-python:
 	@echo "--> Running Python tests"
 	coverage run --source lemur -m pytest
+	coverage xml
 	@echo ""
 
 lint: lint-python lint-js
@@ -94,7 +95,7 @@ lint: lint-python lint-js
 lint-python:
 	@echo "--> Linting Python files"
 	PYFLAKES_NODOCTEST=1 flake8 lemur
-	mypy .
+	mypy  # scan the directory specified in mypy.ini
 	@echo ""
 
 lint-js:
@@ -116,10 +117,10 @@ endif
 	@echo "--> Updating Python requirements"
 	pip install --upgrade pip
 	pip install --upgrade pip-tools
-	pip-compile --output-file requirements.txt requirements.in -U --no-emit-index-url --resolver=backtracking
-	pip-compile --output-file requirements-docs.txt requirements-docs.in -U --no-emit-index-url --resolver=backtracking
-	pip-compile --output-file requirements-dev.txt requirements-dev.in -U --no-emit-index-url --resolver=backtracking
-	pip-compile --output-file requirements-tests.txt requirements-tests.in -U --no-emit-index-url --resolver=backtracking
+	pip-compile -v --output-file requirements.txt requirements.in -U --no-emit-index-url --resolver=backtracking
+	pip-compile -v --output-file requirements-tests.txt requirements-tests.in -U --no-emit-index-url --resolver=backtracking
+	pip-compile -v --output-file requirements-dev.txt requirements-dev.in -U --no-emit-index-url --resolver=backtracking
+	pip-compile -v --output-file requirements-docs.txt requirements-docs.in -U --no-emit-index-url --resolver=backtracking
 	@echo "--> Done updating Python requirements"
 	@echo "--> Installing new dependencies"
 	pip install -e .

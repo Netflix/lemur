@@ -10,11 +10,12 @@ command: celery -A lemur.common.celery worker --loglevel=info -l DEBUG -B
 import copy
 import sys
 import time
+from datetime import datetime, timezone, timedelta
+
 from celery import Celery
 from celery.app.task import Context
 from celery.exceptions import SoftTimeLimitExceeded
 from celery.signals import task_failure, task_received, task_revoked, task_success
-from datetime import datetime, timezone, timedelta
 from flask import current_app
 from sentry_sdk import capture_exception
 
@@ -590,7 +591,7 @@ def certificate_reissue():
     current_app.logger.debug(log_data)
     try:
         notify = current_app.config.get("ENABLE_REISSUE_NOTIFICATION", None)
-        cli_certificate.reissue(None, notify, True)
+        cli_certificate.reissue(None, notify, True, None)
     except SoftTimeLimitExceeded:
         log_data["message"] = "Certificate reissue: Time limit exceeded."
         current_app.logger.error(log_data)

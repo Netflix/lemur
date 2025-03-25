@@ -18,7 +18,7 @@ from importlib.metadata import entry_points
 from logging import Formatter, StreamHandler
 from logging.handlers import RotatingFileHandler
 
-import logmatic
+from pythonjsonlogger.json import JsonFormatter
 import sentry_sdk
 from click import get_current_context
 from flask import Flask, current_app
@@ -61,7 +61,7 @@ def create_app(app_name=None, blueprints=None, config=None):
     if ctx and config is None:
         script_info = ctx.obj
         if script_info:
-            config = script_info.config
+            config = getattr(script_info, 'config')
 
     configure_app(app, config)
     configure_blueprints(app, blueprints)
@@ -231,7 +231,9 @@ def configure_logging(app):
 
     if app.config.get("LOG_JSON", False):
         handler.setFormatter(
-            logmatic.JsonFormatter(extra={"hostname": socket.gethostname()})
+            JsonFormatter(fmt="%(asctime) %(name) %(processName) %(filename) %(funcName) %(levelname) %(lineno) %(module) %(threadName) %(message)",
+                 datefmt="%Y-%m-%dT%H:%M:%SZ%z",
+                 defaults={"hostname": socket.gethostname()})
         )
 
     handler.setLevel(app.config.get("LOG_LEVEL", "DEBUG"))
