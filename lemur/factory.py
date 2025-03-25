@@ -231,7 +231,7 @@ def configure_logging(app):
 
     if app.config.get("LOG_JSON", False):
         handler.setFormatter(
-            JsonFormatter(fmt="%(asctime) %(name) %(processName) %(filename)  %(funcName) %(levelname) %(lineno) %(module) %(threadName) %(message)",
+            JsonFormatter(fmt="%(asctime) %(name) %(processName) %(filename) %(funcName) %(levelname) %(lineno) %(module) %(threadName) %(message)",
                  datefmt="%Y-%m-%dT%H:%M:%SZ%z",
                  defaults={"hostname": socket.gethostname()})
         )
