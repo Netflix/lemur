@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-tests.txt requirements-tests.in
 #
-acme==3.2.0
+acme==3.3.0
     # via
     #   -r requirements.txt
     #   certbot
@@ -63,12 +63,12 @@ blinker==1.7.0
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.37.9
+boto3==1.37.19
     # via
     #   -r requirements.txt
     #   aws-sam-translator
     #   moto
-botocore==1.37.18
+botocore==1.37.19
     # via
     #   -r requirements.txt
     #   aws-xray-sdk
@@ -83,7 +83,7 @@ celery[redis]==5.3.6
     # via
     #   -r requirements-tests.in
     #   -r requirements.txt
-certbot==3.2.0
+certbot==3.3.0
     # via -r requirements.txt
 certifi==2025.1.31
     # via
@@ -179,7 +179,7 @@ exceptiongroup==1.2.0
     # via pytest
 factory-boy==3.3.3
     # via -r requirements-tests.in
-faker==36.1.1
+faker==37.1.0
     # via
     #   -r requirements-tests.in
     #   factory-boy
@@ -201,7 +201,7 @@ flask-bcrypt==1.0.1
     # via -r requirements.txt
 flask-cors==5.0.1
     # via -r requirements.txt
-flask-limiter==3.10.1
+flask-limiter==3.11.0
     # via -r requirements.txt
 flask-mail==0.10.0
     # via -r requirements.txt
@@ -230,7 +230,7 @@ google-auth==2.29.0
     #   -r requirements.txt
     #   google-api-core
     #   google-cloud-private-ca
-google-cloud-private-ca==1.14.1
+google-cloud-private-ca==1.14.2
     # via -r requirements.txt
 googleapis-common-protos[grpc]==1.63.0
     # via
@@ -597,7 +597,7 @@ s3transfer==0.11.1
     #   boto3
 sarif-om==1.0.4
     # via cfn-lint
-sentry-sdk==2.22.0
+sentry-sdk==2.24.1
     # via -r requirements.txt
 six==1.17.0
     # via
@@ -638,7 +638,7 @@ twofish==0.3.0
     #   pyjks
 types-cffi==1.16.0.20240331
     # via types-pyopenssl
-types-deprecated==1.2.15.20241117
+types-deprecated==1.2.15.20250304
     # via -r requirements-tests.in
 types-paramiko==3.5.0.20240928
     # via -r requirements-tests.in
@@ -654,17 +654,17 @@ types-python-dateutil==2.9.0.20240316
     # via
     #   -r requirements.txt
     #   arrow
-types-pytz==2025.1.0.20250204
+types-pytz==2025.1.0.20250318
     # via -r requirements-tests.in
 types-redis==4.6.0.20241004
     # via -r requirements-tests.in
 types-requests==2.31.0.6
     # via -r requirements-tests.in
-types-setuptools==75.8.2.20250305
+types-setuptools==76.0.0.20250313
     # via
     #   -r requirements-tests.in
     #   types-cffi
-types-six==1.17.0.20241205
+types-six==1.17.0.20250304
     # via -r requirements-tests.in
 types-tabulate==0.9.0.20241207
     # via -r requirements-tests.in
