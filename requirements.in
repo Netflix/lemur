@@ -38,7 +38,7 @@ google-cloud-compute
 google-cloud-private-ca
 grpcio >= 1.62.0 # (VULN-7774)
 gunicorn
-https://binaries.ddbuild.io/dd-source/python/cert_orchestration_adapter-0.1.5-py3-none-any.whl
+https://binaries.ddbuild.io/dd-source/python/cert_orchestration_adapter-0.1.12-py3-none-any.whl
 hvac # required for the vault destination plugin
 importlib-metadata==8.5.0
 inflection

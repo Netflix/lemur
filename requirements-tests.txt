@@ -136,7 +136,7 @@ celery[redis]==5.4.0
     #   -r requirements.txt
 cert-manager==2.4.0
     # via -r requirements.txt
-cert-orchestration-adapter @ https://binaries.ddbuild.io/dd-source/python/cert_orchestration_adapter-0.1.5-py3-none-any.whl
+cert-orchestration-adapter @ https://binaries.ddbuild.io/dd-source/python/cert_orchestration_adapter-0.1.12-py3-none-any.whl
     # via -r requirements.txt
 certbot==3.0.0
     # via -r requirements.txt
