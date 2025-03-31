@@ -63,12 +63,12 @@ blinker==1.7.0
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.37.19
+boto3==1.37.23
     # via
     #   -r requirements.txt
     #   aws-sam-translator
     #   moto
-botocore==1.37.19
+botocore==1.37.23
     # via
     #   -r requirements.txt
     #   aws-xray-sdk
