@@ -138,6 +138,7 @@ setup(
             'aws_s3 = lemur.plugins.lemur_aws.plugin:S3DestinationPlugin',
             'aws_sns = lemur.plugins.lemur_aws.plugin:SNSNotificationPlugin',
             'cert_orchestration_adapter = cert_orchestration_adapter.plugin:AdapterDestinationPlugin',
+            'cert_orchestration_adapter = cert_orchestration_adapter.plugin:AdapterSourcePlugin',
             'email_notification = lemur.plugins.lemur_email.plugin:EmailNotificationPlugin',
             'slack_notification = lemur.plugins.lemur_slack.plugin:SlackNotificationPlugin',
             'java_truststore_export = lemur.plugins.lemur_jks.plugin:JavaTruststoreExportPlugin',
