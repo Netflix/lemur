@@ -1,6 +1,6 @@
---- setup.py	2023-01-13 15:22:50.000000000 -0500
-+++ setup.py	2023-01-13 15:23:32.000000000 -0500
-@@ -130,34 +130,10 @@
+--- setup.py.orig	2025-04-02 17:02:50
++++ setup.py	2025-04-02 17:03:06
+@@ -130,37 +130,13 @@
              'lemur = lemur.manage:main',
          ],
          'lemur.plugins': [
@@ -11,7 +11,8 @@
              'aws_source = lemur.plugins.lemur_aws.plugin:AWSSourcePlugin',
 -            'aws_s3 = lemur.plugins.lemur_aws.plugin:S3DestinationPlugin',
 -            'aws_sns = lemur.plugins.lemur_aws.plugin:SNSNotificationPlugin',
-             'cert_orchestration_adapter = cert_orchestration_adapter.plugin:AdapterDestinationPlugin',
+             'coa_destination = cert_orchestration_adapter.plugin:AdapterDestinationPlugin',
+             'coa_source = cert_orchestration_adapter.plugin:AdapterSourcePlugin',
              'email_notification = lemur.plugins.lemur_email.plugin:EmailNotificationPlugin',
 -            'slack_notification = lemur.plugins.lemur_slack.plugin:SlackNotificationPlugin',
 -            'java_truststore_export = lemur.plugins.lemur_jks.plugin:JavaTruststoreExportPlugin',
