@@ -28,7 +28,7 @@ bcrypt==4.1.2
     # via
     #   flask-bcrypt
     #   paramiko
-billiard==4.2.0
+billiard==4.2.1
     # via celery
 blinker==1.7.0
     # via
@@ -44,7 +44,7 @@ botocore==1.37.33
     #   s3transfer
 cachetools==5.3.3
     # via google-auth
-celery[redis]==5.3.6
+celery[redis]==5.5.1
     # via -r requirements.in
 certbot==3.3.0
     # via -r requirements.in
@@ -190,7 +190,7 @@ josepy==1.15.0
     #   certbot
 jsonlines==4.0.0
     # via cloudflare
-kombu==5.3.6
+kombu==5.5.3
     # via celery
 limits==3.13.0
     # via flask-limiter
@@ -347,16 +347,15 @@ types-protobuf==5.29.1.20250208
     # via -r requirements.in
 types-python-dateutil==2.9.0.20240316
     # via arrow
-typing-extensions==4.11.0
+typing-extensions==4.13.2
     # via
     #   alembic
     #   flask-limiter
-    #   kombu
     #   limits
     #   pyopenssl
     #   python-json-logger
-tzdata==2024.1
-    # via celery
+tzdata==2025.2
+    # via kombu
 urllib3==1.26.18
     # via
     #   botocore

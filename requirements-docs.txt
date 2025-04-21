@@ -64,7 +64,7 @@ bcrypt==4.1.2
     #   -r requirements-tests.txt
     #   flask-bcrypt
     #   paramiko
-billiard==4.2.0
+billiard==4.2.1
     # via
     #   -r requirements-tests.txt
     #   celery
@@ -94,7 +94,7 @@ cachetools==5.3.3
     # via
     #   -r requirements-tests.txt
     #   google-auth
-celery[redis]==5.3.6
+celery[redis]==5.5.1
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -415,7 +415,7 @@ junit-xml==1.9
     # via
     #   -r requirements-tests.txt
     #   cfn-lint
-kombu==5.3.6
+kombu==5.5.3
     # via
     #   -r requirements-tests.txt
     #   celery
@@ -868,7 +868,7 @@ types-urllib3==1.26.25.14
     # via
     #   -r requirements-tests.txt
     #   types-requests
-typing-extensions==4.11.0
+typing-extensions==4.13.2
     # via
     #   -r requirements-tests.txt
     #   alembic
@@ -876,18 +876,17 @@ typing-extensions==4.11.0
     #   black
     #   fakeredis
     #   flask-limiter
-    #   kombu
     #   limits
     #   mypy
     #   pydantic
     #   pydantic-core
     #   pyopenssl
     #   python-json-logger
-tzdata==2024.1
+tzdata==2025.2
     # via
     #   -r requirements-tests.txt
-    #   celery
     #   faker
+    #   kombu
 urllib3==1.26.18
     # via
     #   -r requirements-tests.txt
