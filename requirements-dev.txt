@@ -50,6 +50,10 @@ aws-xray-sdk==2.13.0
     # via
     #   -r requirements-tests.txt
     #   moto
+backports-datetime-fromisoformat==2.0.3
+    # via
+    #   -r requirements-tests.txt
+    #   marshmallow
 backports-tarfile==1.0.0
     # via jaraco-context
 bandit==1.8.3
@@ -419,7 +423,7 @@ markupsafe==2.1.5
     #   jinja2
     #   mako
     #   werkzeug
-marshmallow==2.21.0
+marshmallow==4.0.0
     # via
     #   -r requirements-tests.txt
     #   marshmallow-sqlalchemy
@@ -833,6 +837,7 @@ typing-extensions==4.11.0
     #   flask-limiter
     #   kombu
     #   limits
+    #   marshmallow
     #   mypy
     #   pydantic
     #   pydantic-core

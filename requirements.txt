@@ -24,6 +24,8 @@ asyncpool==1.0
     # via -r requirements.in
 attrs==23.2.0
     # via jsonlines
+backports-datetime-fromisoformat==2.0.3
+    # via marshmallow
 bcrypt==4.1.2
     # via
     #   flask-bcrypt
@@ -205,7 +207,7 @@ markupsafe==2.1.5
     #   jinja2
     #   mako
     #   werkzeug
-marshmallow==2.21.0
+marshmallow==4.0.0
     # via
     #   -r requirements.in
     #   marshmallow-sqlalchemy
@@ -353,6 +355,7 @@ typing-extensions==4.11.0
     #   flask-limiter
     #   kombu
     #   limits
+    #   marshmallow
     #   pyopenssl
     #   python-json-logger
 tzdata==2024.1

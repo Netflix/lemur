@@ -36,7 +36,7 @@ jinja2
 lockfile
 python-json-logger
 marshmallow-sqlalchemy == 0.23.1 #related to the marshmallow issue (to avoid conflicts)
-marshmallow<2.21.1 #schema duplicate issues https://github.com/marshmallow-code/marshmallow-sqlalchemy/issues/121
+marshmallow<4.0.1 #schema duplicate issues https://github.com/marshmallow-code/marshmallow-sqlalchemy/issues/121
 ndg-httpsclient
 paramiko  # required for the SFTP destination plugin
 pem
