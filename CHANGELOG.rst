@@ -3,6 +3,7 @@ Changelog
 
 Unreleased
 ~~~~~~~~~~~~~~~~~~~~
+Removed support for Postgres 12, Python 3.9, and Ubuntu 20.04.
 
 1.8.2 - `2024-06-11`
 ~~~~~~~~~~~~~~~~~~~~
