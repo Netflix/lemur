@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         python-version: [ "3.10", "3.11" ]
-        postgres-version: [15, 17]
+        postgres-version: [16, 17]
         os: [ubuntu-22.04]
         include:
           - python-version: "3.10"
