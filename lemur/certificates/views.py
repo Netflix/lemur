@@ -509,6 +509,11 @@ class CertificatesList(AuthenticatedResource):
         if not validators.is_valid_owner(data["owner"]):
             return dict(message=f"Invalid owner: check if {data['owner']} is a valid group email. Individuals cannot be certificate owners."), 412
 
+        if current_app.config.get("CERTIFICATE_CREATE_REQUEST_VALIDATION"):
+            message, code = current_app.config.get("CERTIFICATE_CREATE_REQUEST_VALIDATION")(data)
+            if message and code:
+                return dict(message=message), code
+
         role = role_service.get_by_name(data["authority"].owner)
 
         # all the authority role members should be allowed
@@ -925,6 +930,11 @@ class Certificates(AuthenticatedResource):
                     dict(message="You are not authorized to update this certificate"),
                     403,
                 )
+
+        if current_app.config.get("CERTIFICATE_UPDATE_REQUEST_VALIDATION"):
+            message, code = current_app.config.get("CERTIFICATE_UPDATE_REQUEST_VALIDATION")(data, cert)
+            if message and code:
+                return dict(message=message), code
 
         try:
             validate_no_duplicate_destinations(data["destinations"])
