@@ -3,6 +3,9 @@ Changelog
 
 Unreleased
 ~~~~~~~~~~~~~~~~~~~~
+Added CERTIFICATE_UPDATE_REQUEST_VALIDATION: a configurable, plugin-independent callback that can be used to reject requests
+based on your specific business logic. For example, you could disallow certs with rotate set and no destinations to reduce
+volume of unused certs.
 Added CERTIFICATE_CREATE_REQUEST_VALIDATION: a configurable, plugin-independent callback that can be used to reject requests
 based on your specific business logic. For example, you could disallow certs with rotate set and no destinations to reduce
 volume of unused certs.

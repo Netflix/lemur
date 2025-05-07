@@ -931,6 +931,11 @@ class Certificates(AuthenticatedResource):
                     403,
                 )
 
+        if isinstance(current_app.config.get("CERTIFICATE_UPDATE_REQUEST_VALIDATION")):
+            message, code = current_app.config.get("CERTIFICATE_UPDATE_REQUEST_VALIDATION")(data, cert)
+            if message and code:
+                return dict(message=message), code
+
         try:
             validate_no_duplicate_destinations(data["destinations"])
         except Exception as e:
