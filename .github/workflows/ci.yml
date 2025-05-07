@@ -8,21 +8,14 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: [ "3.9", "3.10", "3.11" ]
-        postgres-version: [12, 15]
-        os: [ubuntu-20.04, ubuntu-22.04]
+        python-version: [ "3.10", "3.11" ]
+        postgres-version: [16, 17]
+        os: [ubuntu-22.04]
         include:
-          - python-version: "3.9"
-            toxenv: py39
           - python-version: "3.10"
             toxenv: py310
           - python-version: "3.11"
             toxenv: py311
-        exclude:
-          - os: ubuntu-20.04  # python 3.10 isn't working on 20.04 due to missing "libldap-2.5.so.0"
-            python-version: "3.10"
-          - os: ubuntu-22.04  # python 3.9 isn't working on 22.04 due to missing "libldap_r-2.4.so.2"
-            python-version: "3.9"
       fail-fast: false # run all matrix jobs even if one fails, so we know if the problem is version-specific
 
     services:
@@ -84,21 +77,21 @@ jobs:
           source ~/env/bin/activate
           bandit -r . -ll -ii -x lemur/tests/,docs
           xvfb-run make test-js
-  # todo: re-enable me once https://github.com/coverallsapp/github-action/issues/205 is resolved
-  #     - name: Coveralls GitHub Action
-  #       uses: coverallsapp/github-action@v2
-  #       with:
-  #         parallel: true
-  #         flag-name: Python ${{ matrix.python-version }} Postgres ${{ matrix.postgres-version }} OS ${{ matrix.os }}
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  # coveralls:
-  #     name: Indicate completion to coveralls.io
-  #     needs: build
-  #     if: ${{ always() }}
-  #     runs-on: ubuntu-latest
-  #     steps:
-  #     - name: Coveralls Finished
-  #       uses: coverallsapp/github-action@v2
-  #       with:
-  #         parallel-finished: true
+      - name: Coveralls GitHub Action
+        uses: coverallsapp/github-action@v2
+        if: matrix.python-version == '3.11' && matrix.postgres-version == 17 && matrix.os == 'ubuntu-22.04'
+        with:
+          parallel: true
+          flag-name: Python ${{ matrix.python-version }} Postgres ${{ matrix.postgres-version }} OS ${{ matrix.os }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  coveralls:
+      name: Indicate completion to coveralls.io
+      needs: build
+      if: ${{ always() }}
+      runs-on: ubuntu-latest
+      steps:
+      - name: Coveralls Finished
+        uses: coverallsapp/github-action@v2
+        with:
+          parallel-finished: true

@@ -57,6 +57,7 @@ class CertificateFactory(BaseFactory):
     """Certificate factory."""
 
     name = Sequence(lambda n: f"certificate{n}")
+    serial = Sequence(lambda n: f"{n}")
     chain = INTERMEDIATE_CERT_STR
     body = SAN_CERT_STR
     private_key = SAN_CERT_KEY

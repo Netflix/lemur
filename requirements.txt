@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements.txt requirements.in
 #
-acme==2.10.0
+acme==3.3.0
     # via
     #   -r requirements.in
     #   certbot
@@ -35,9 +35,9 @@ blinker==1.7.0
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.34.84
+boto3==1.37.37
     # via -r requirements.in
-botocore==1.34.88
+botocore==1.37.37
     # via
     #   -r requirements.in
     #   boto3
@@ -46,9 +46,9 @@ cachetools==5.3.3
     # via google-auth
 celery[redis]==5.3.6
     # via -r requirements.in
-certbot==2.10.0
+certbot==3.3.0
     # via -r requirements.in
-certifi==2024.2.2
+certifi==2025.4.26
     # via
     #   -r requirements.in
     #   requests
@@ -74,13 +74,13 @@ click-plugins==1.1.1
     # via celery
 click-repl==0.3.0
     # via celery
-cloudflare==2.19.2
+cloudflare==2.20.0
     # via -r requirements.in
 configargparse==1.7
     # via certbot
-configobj==5.0.8
+configobj==5.0.9
     # via certbot
-cryptography==42.0.5
+cryptography==44.0.3
     # via
     #   -r requirements.in
     #   acme
@@ -113,11 +113,11 @@ flask==2.3.3
     #   flask-sqlalchemy
 flask-bcrypt==1.0.1
     # via -r requirements.in
-flask-cors==4.0.0
+flask-cors==5.0.1
     # via -r requirements.in
-flask-limiter==3.5.1
+flask-limiter==3.11.0
     # via -r requirements.in
-flask-mail==0.9.1
+flask-mail==0.10.0
     # via -r requirements.in
 flask-migrate==4.0.7
     # via -r requirements.in
@@ -139,14 +139,14 @@ google-auth==2.29.0
     # via
     #   google-api-core
     #   google-cloud-private-ca
-google-cloud-private-ca==1.12.0
+google-cloud-private-ca==1.14.2
     # via -r requirements.in
 googleapis-common-protos[grpc]==1.63.0
     # via
     #   google-api-core
     #   grpc-google-iam-v1
     #   grpcio-status
-grpc-google-iam-v1==0.13.0
+grpc-google-iam-v1==0.14.0
     # via google-cloud-private-ca
 grpcio==1.62.1
     # via
@@ -156,9 +156,9 @@ grpcio==1.62.1
     #   grpcio-status
 grpcio-status==1.62.1
     # via google-api-core
-gunicorn==22.0.0
+gunicorn==23.0.0
     # via -r requirements.in
-hvac==2.2.0
+hvac==2.3.0
     # via -r requirements.in
 idna==3.7
     # via requests
@@ -170,7 +170,7 @@ importlib-resources==6.4.0
     # via limits
 inflection==0.5.1
     # via -r requirements.in
-itsdangerous==2.1.2
+itsdangerous==2.2.0
     # via
     #   -r requirements.in
     #   flask
@@ -184,7 +184,7 @@ jmespath==1.0.1
     # via
     #   boto3
     #   botocore
-josepy==1.14.0
+josepy==1.15.0
     # via
     #   acme
     #   certbot
@@ -192,11 +192,9 @@ jsonlines==4.0.0
     # via cloudflare
 kombu==5.3.6
     # via celery
-limits==3.10.1
+limits==3.13.0
     # via flask-limiter
 lockfile==0.12.2
-    # via -r requirements.in
-logmatic-python==0.1.7
     # via -r requirements.in
 mako==1.3.2
     # via alembic
@@ -223,7 +221,7 @@ packaging==24.0
     # via
     #   gunicorn
     #   limits
-paramiko==3.4.0
+paramiko==3.5.1
     # via -r requirements.in
 parsedatetime==2.6
     # via certbot
@@ -235,7 +233,7 @@ proto-plus==1.23.0
     # via
     #   google-api-core
     #   google-cloud-private-ca
-protobuf==4.25.3
+protobuf==4.25.6
     # via
     #   -r requirements.in
     #   google-api-core
@@ -244,7 +242,7 @@ protobuf==4.25.3
     #   grpc-google-iam-v1
     #   grpcio-status
     #   proto-plus
-psycopg2==2.9.9
+psycopg2==2.9.10
     # via -r requirements.in
 pyasn1==0.6.0
     # via
@@ -266,11 +264,11 @@ pygments==2.17.2
     # via rich
 pyjks==20.0.0
     # via -r requirements.in
-pyjwt==2.8.0
+pyjwt==2.9.0
     # via -r requirements.in
 pynacl==1.5.0
     # via paramiko
-pyopenssl==24.1.0
+pyopenssl==25.0.0
     # via
     #   -r requirements.in
     #   acme
@@ -287,8 +285,8 @@ python-dateutil==2.9.0.post0
     #   arrow
     #   botocore
     #   celery
-python-json-logger==2.0.7
-    # via logmatic-python
+python-json-logger==3.3.0
+    # via -r requirements.in
 python-ldap==3.4.4
     # via -r requirements.in
 pytz==2024.1
@@ -297,15 +295,15 @@ pytz==2024.1
     #   certbot
     #   flask-restful
     #   pyrfc3339
-pyyaml==6.0.1
+pyyaml==6.0.2
     # via
     #   -r requirements.in
     #   cloudflare
-redis==5.0.3
+redis==5.2.1
     # via
     #   -r requirements.in
     #   celery
-requests==2.31.0
+requests==2.32.3
     # via
     #   -r requirements.in
     #   acme
@@ -322,14 +320,13 @@ rich==13.7.1
     # via flask-limiter
 rsa==4.9
     # via google-auth
-s3transfer==0.10.1
+s3transfer==0.11.1
     # via boto3
-sentry-sdk==2.0.1
+sentry-sdk==2.26.0
     # via -r requirements.in
-six==1.16.0
+six==1.17.0
     # via
     #   -r requirements.in
-    #   configobj
     #   flask-restful
     #   python-dateutil
     #   retrying
@@ -346,7 +343,7 @@ tabulate==0.9.0
     # via -r requirements.in
 twofish==0.3.0
     # via pyjks
-types-protobuf==5.26.0.20240422
+types-protobuf==6.30.2.20250503
     # via -r requirements.in
 types-python-dateutil==2.9.0.20240316
     # via arrow
@@ -356,6 +353,8 @@ typing-extensions==4.11.0
     #   flask-limiter
     #   kombu
     #   limits
+    #   pyopenssl
+    #   python-json-logger
 tzdata==2024.1
     # via celery
 urllib3==1.26.18
@@ -363,7 +362,7 @@ urllib3==1.26.18
     #   botocore
     #   requests
     #   sentry-sdk
-validators==0.28.1
+validators==0.34.0
     # via -r requirements.in
 vine==5.1.0
     # via
@@ -372,18 +371,16 @@ vine==5.1.0
     #   kombu
 wcwidth==0.2.13
     # via prompt-toolkit
-werkzeug==3.0.2
+werkzeug==3.1.3
     # via
     #   -r requirements.in
     #   flask
+    #   flask-cors
 wrapt==1.16.0
     # via deprecated
-xmltodict==0.13.0
+xmltodict==0.14.2
     # via -r requirements.in
-zipp==3.18.1
+zipp==3.19.1
     # via
     #   importlib-metadata
     #   importlib-resources
-
-# The following packages are considered to be unsafe in a requirements file:
-# setuptools

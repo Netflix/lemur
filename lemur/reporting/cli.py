@@ -6,13 +6,14 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import click
-
+from flask.cli import with_appcontext
 from tabulate import tabulate
 
 from lemur.reporting.service import fqdns, expiring_certificates
 
 
 @click.group(name="report", help="Reporting related tasks.")
+@with_appcontext
 def cli():
     pass
 

@@ -6,20 +6,21 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import click
-
 from flask import current_app
+from flask.cli import with_appcontext
 from sentry_sdk import capture_exception
 
 from lemur.certificates.service import get_expiring_deployed_certificates
 from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
 from lemur.extensions import metrics
+from lemur.notifications.messaging import send_authority_expiration_notifications
 from lemur.notifications.messaging import send_expiration_notifications, \
     send_expiring_deployed_certificate_notifications
-from lemur.notifications.messaging import send_authority_expiration_notifications
 from lemur.notifications.messaging import send_security_expiration_summary
 
 
 @click.group(name="notify", help="Handles notification related tasks.")
+@with_appcontext
 def cli():
     pass
 

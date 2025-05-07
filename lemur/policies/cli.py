@@ -6,11 +6,13 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import click
+from flask.cli import with_appcontext
 
 from lemur.policies import service as policy_service
 
 
 @click.group(name="policy", help="Handles all policy related tasks.")
+@with_appcontext
 def cli():
     pass
 

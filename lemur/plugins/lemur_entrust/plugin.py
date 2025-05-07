@@ -4,6 +4,7 @@ import sys
 import arrow
 import requests
 from flask import current_app
+from random import choice
 from retrying import retry
 from urllib3.util.retry import Retry
 
@@ -275,6 +276,8 @@ class EntrustIssuerPlugin(IssuerPlugin):
         if current_app.config.get("ENTRUST_USE_DEFAULT_CLIENT_ID"):
             # The ID of the primary client is 1.
             client_id = 1
+        elif current_app.config.get("ENTRUST_CLIENT_IDS"):
+            client_id = choice(current_app.config.get("ENTRUST_CLIENT_IDS"))
         else:
             client_id = get_client_id(self.session, issuer_options.get("organization"))
         log_data = {

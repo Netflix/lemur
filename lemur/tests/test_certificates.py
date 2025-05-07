@@ -1,4 +1,5 @@
 import datetime
+from flask import current_app
 import json
 import ssl
 import threading
@@ -979,6 +980,85 @@ def test_reissue_certificate(
     assert new_cert.organization == certificate.organization
 
 
+def test_reissue_certificate_authority_translation(
+    issuer_plugin, crypto_authority, certificate, logged_in_user, authority
+):
+    from lemur.certificates.service import reissue_certificate
+
+    # test-authority would return a mismatching private key, so use 'cryptography-issuer' plugin instead.
+    certificate.authority = authority
+    current_app.config["ROTATE_AUTHORITY_TRANSLATION"] = {authority.id: crypto_authority.id}
+    new_cert = reissue_certificate(certificate)
+    assert new_cert.authority_id == crypto_authority.id
+
+
+def test_reissue_command_by_name(
+        issuer_plugin, crypto_authority, logged_in_user
+):
+    from lemur.certificates.cli import reissue
+    from lemur.tests.conf import LEMUR_DEFAULT_ORGANIZATION
+    from lemur.tests.factories import CertificateFactory
+
+    certificate = CertificateFactory(name="to_be_reissued_cert", authority=crypto_authority)
+
+    reissue(certificate.name, False, True, None)
+
+    new_cert = certificate.replaced[0]
+    assert new_cert
+    assert new_cert.key_type == "RSA2048"
+    assert new_cert.organization != certificate.organization
+    # Check for default value since authority does not have cab_compliant option set
+    assert new_cert.organization == LEMUR_DEFAULT_ORGANIZATION
+    assert new_cert.description.startswith(f"Reissued by Lemur for cert ID {certificate.id}")
+
+
+def test_reissue_command_by_serial_numbers(
+    issuer_plugin, crypto_authority, logged_in_user
+):
+    from lemur.certificates.cli import reissue
+    from lemur.tests.conf import LEMUR_DEFAULT_ORGANIZATION
+    from lemur.tests.factories import CertificateFactory
+
+    cert1 = CertificateFactory(name="to_be_reissued_cert_1", authority=crypto_authority)
+    cert2 = CertificateFactory(name="to_be_reissued_cert_2", authority=crypto_authority)
+    cert3 = CertificateFactory(name="to_be_reissued_cert_3", authority=crypto_authority)
+
+    reissue(None, False, True, [cert1.serial, cert2.serial, cert3.serial])
+
+    for cert in [cert1, cert2, cert3]:
+        new_cert = cert.replaced[0]
+        assert new_cert
+        assert new_cert.key_type == "RSA2048"
+        assert new_cert.organization != cert.organization
+        # Check for default value since authority does not have cab_compliant option set
+        assert new_cert.organization == LEMUR_DEFAULT_ORGANIZATION
+        assert new_cert.description.startswith(f"Reissued by Lemur for cert ID {cert.id}")
+
+
+def test_reissue_command_by_name_and_serial_numbers(
+    issuer_plugin, crypto_authority, logged_in_user
+):
+    from lemur.certificates.cli import reissue
+    from lemur.tests.conf import LEMUR_DEFAULT_ORGANIZATION
+    from lemur.tests.factories import CertificateFactory
+
+    cert1 = CertificateFactory(name="to_be_reissued_cert_1", authority=crypto_authority)
+    cert2 = CertificateFactory(name="to_be_reissued_cert_2", authority=crypto_authority)
+    cert3 = CertificateFactory(name="to_be_reissued_cert_3", authority=crypto_authority)
+    cert4 = CertificateFactory(name="to_be_reissued_cert_4", authority=crypto_authority)
+
+    reissue(cert1.name, False, True, [cert2.serial, cert3.serial, cert4.serial])
+
+    for cert in [cert1, cert2, cert3, cert4]:
+        new_cert = cert.replaced[0]
+        assert new_cert
+        assert new_cert.key_type == "RSA2048"
+        assert new_cert.organization != cert.organization
+        # Check for default value since authority does not have cab_compliant option set
+        assert new_cert.organization == LEMUR_DEFAULT_ORGANIZATION
+        assert new_cert.description.startswith(f"Reissued by Lemur for cert ID {cert.id}")
+
+
 def test_create_csr():
     csr, private_key = create_csr(
         owner="joe@example.com",
@@ -1644,7 +1724,7 @@ def run_server(port, cert_file_name):
         print(f"Started https server on port {port} using cert file {cert_file_name}")
 
     daemon = threading.Thread(name=f'server_{cert_file_name}', target=start_server)
-    daemon.setDaemon(True)  # Set as a daemon so it will be killed once the main thread is dead.
+    daemon.daemon = True  # Set as a daemon so it will be killed once the main thread is dead.
     daemon.start()
     return daemon
 
@@ -1727,7 +1807,7 @@ def test_allowed_issuance_for_domain(common_name, extensions, expected_error, au
             if expected_error:
                 pass
             else:
-                assert False, f"UnauthorizedError occured, input: CN({common_name}), SAN({extensions})"
+                assert False, f"UnauthorizedError occurred, input: CN({common_name}), SAN({extensions})"
 
         assert wrapper.call_count == authz_check_count
 
