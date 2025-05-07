@@ -509,7 +509,7 @@ class CertificatesList(AuthenticatedResource):
         if not validators.is_valid_owner(data["owner"]):
             return dict(message=f"Invalid owner: check if {data['owner']} is a valid group email. Individuals cannot be certificate owners."), 412
 
-        if isinstance(current_app.config.get("CERTIFICATE_CREATE_REQUEST_VALIDATION"), callable):
+        if current_app.config.get("CERTIFICATE_CREATE_REQUEST_VALIDATION"):
             message, code = current_app.config.get("CERTIFICATE_CREATE_REQUEST_VALIDATION")(data)
             if message and code:
                 return dict(message=message), code
@@ -931,7 +931,7 @@ class Certificates(AuthenticatedResource):
                     403,
                 )
 
-        if isinstance(current_app.config.get("CERTIFICATE_UPDATE_REQUEST_VALIDATION"), callable):
+        if current_app.config.get("CERTIFICATE_UPDATE_REQUEST_VALIDATION"):
             message, code = current_app.config.get("CERTIFICATE_UPDATE_REQUEST_VALIDATION")(data, cert)
             if message and code:
                 return dict(message=message), code
