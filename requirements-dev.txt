@@ -735,7 +735,7 @@ sarif-om==1.0.4
     #   cfn-lint
 secretstorage==3.3.3
     # via keyring
-sentry-sdk==2.26.0
+sentry-sdk==2.27.0
     # via -r requirements-tests.txt
 six==1.17.0
     # via
@@ -852,7 +852,7 @@ urllib3==1.26.18
     #   responses
     #   sentry-sdk
     #   twine
-validators==0.34.0
+validators==0.35.0
     # via -r requirements-tests.txt
 vine==5.1.0
     # via

@@ -322,7 +322,7 @@ rsa==4.9
     # via google-auth
 s3transfer==0.11.1
     # via boto3
-sentry-sdk==2.26.0
+sentry-sdk==2.27.0
     # via -r requirements.in
 six==1.17.0
     # via
@@ -362,7 +362,7 @@ urllib3==1.26.18
     #   botocore
     #   requests
     #   sentry-sdk
-validators==0.34.0
+validators==0.35.0
     # via -r requirements.in
 vine==5.1.0
     # via
