@@ -1724,7 +1724,7 @@ def run_server(port, cert_file_name):
         print(f"Started https server on port {port} using cert file {cert_file_name}")
 
     daemon = threading.Thread(name=f'server_{cert_file_name}', target=start_server)
-    daemon.setDaemon(True)  # Set as a daemon so it will be killed once the main thread is dead.
+    daemon.daemon = True  # Set as a daemon so it will be killed once the main thread is dead.
     daemon.start()
     return daemon
 
@@ -1807,7 +1807,7 @@ def test_allowed_issuance_for_domain(common_name, extensions, expected_error, au
             if expected_error:
                 pass
             else:
-                assert False, f"UnauthorizedError occured, input: CN({common_name}), SAN({extensions})"
+                assert False, f"UnauthorizedError occurred, input: CN({common_name}), SAN({extensions})"
 
         assert wrapper.call_count == authz_check_count
 

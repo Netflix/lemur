@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-dev.txt requirements-dev.in
 #
-acme==3.2.0
+acme==3.3.0
     # via
     #   -r requirements-tests.txt
     #   certbot
@@ -71,12 +71,12 @@ blinker==1.7.0
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.37.9
+boto3==1.38.11
     # via
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
-botocore==1.37.18
+botocore==1.38.11
     # via
     #   -r requirements-tests.txt
     #   aws-xray-sdk
@@ -89,9 +89,9 @@ cachetools==5.3.3
     #   google-auth
 celery[redis]==5.3.6
     # via -r requirements-tests.txt
-certbot==3.2.0
+certbot==3.3.0
     # via -r requirements-tests.txt
-certifi==2025.1.31
+certifi==2025.4.26
     # via
     #   -r requirements-tests.txt
     #   requests
@@ -144,9 +144,9 @@ configobj==5.0.9
     # via
     #   -r requirements-tests.txt
     #   certbot
-coverage==7.6.12
+coverage==7.8.0
     # via -r requirements-tests.txt
-cryptography==44.0.1
+cryptography==44.0.3
     # via
     #   -r requirements-tests.txt
     #   acme
@@ -199,11 +199,11 @@ exceptiongroup==1.2.0
     #   pytest
 factory-boy==3.3.3
     # via -r requirements-tests.txt
-faker==36.1.1
+faker==37.1.0
     # via
     #   -r requirements-tests.txt
     #   factory-boy
-fakeredis==2.27.0
+fakeredis==2.28.1
     # via -r requirements-tests.txt
 filelock==3.13.3
     # via virtualenv
@@ -225,7 +225,7 @@ flask-bcrypt==1.0.1
     # via -r requirements-tests.txt
 flask-cors==5.0.1
     # via -r requirements-tests.txt
-flask-limiter==3.10.1
+flask-limiter==3.11.0
     # via -r requirements-tests.txt
 flask-mail==0.10.0
     # via -r requirements-tests.txt
@@ -254,7 +254,7 @@ google-auth==2.29.0
     #   -r requirements-tests.txt
     #   google-api-core
     #   google-cloud-private-ca
-google-cloud-private-ca==1.14.1
+google-cloud-private-ca==1.14.2
     # via -r requirements-tests.txt
 googleapis-common-protos[grpc]==1.63.0
     # via
@@ -725,7 +725,7 @@ rsa==4.9
     #   -r requirements-tests.txt
     #   google-auth
     #   python-jose
-s3transfer==0.11.1
+s3transfer==0.12.0
     # via
     #   -r requirements-tests.txt
     #   boto3
@@ -735,7 +735,7 @@ sarif-om==1.0.4
     #   cfn-lint
 secretstorage==3.3.3
     # via keyring
-sentry-sdk==2.22.0
+sentry-sdk==2.27.0
     # via -r requirements-tests.txt
 six==1.17.0
     # via
@@ -789,11 +789,11 @@ types-cffi==1.16.0.20240331
     # via
     #   -r requirements-tests.txt
     #   types-pyopenssl
-types-deprecated==1.2.15.20241117
+types-deprecated==1.2.15.20250304
     # via -r requirements-tests.txt
 types-paramiko==3.5.0.20240928
     # via -r requirements-tests.txt
-types-protobuf==5.29.1.20250208
+types-protobuf==6.30.2.20250503
     # via -r requirements-tests.txt
 types-pyopenssl==24.1.0.20240722
     # via
@@ -805,17 +805,17 @@ types-python-dateutil==2.9.0.20240316
     # via
     #   -r requirements-tests.txt
     #   arrow
-types-pytz==2025.1.0.20250204
+types-pytz==2025.2.0.20250326
     # via -r requirements-tests.txt
 types-redis==4.6.0.20241004
     # via -r requirements-tests.txt
 types-requests==2.31.0.6
     # via -r requirements-tests.txt
-types-setuptools==75.8.2.20250305
+types-setuptools==80.3.0.20250505
     # via
     #   -r requirements-tests.txt
     #   types-cffi
-types-six==1.17.0.20241205
+types-six==1.17.0.20250403
     # via -r requirements-tests.txt
 types-tabulate==0.9.0.20241207
     # via -r requirements-tests.txt
@@ -837,6 +837,7 @@ typing-extensions==4.11.0
     #   pydantic
     #   pydantic-core
     #   pyopenssl
+    #   python-json-logger
 tzdata==2024.1
     # via
     #   -r requirements-tests.txt
@@ -851,7 +852,7 @@ urllib3==1.26.18
     #   responses
     #   sentry-sdk
     #   twine
-validators==0.34.0
+validators==0.35.0
     # via -r requirements-tests.txt
 vine==5.1.0
     # via
