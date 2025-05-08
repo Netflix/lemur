@@ -233,7 +233,7 @@ proto-plus==1.23.0
     # via
     #   google-api-core
     #   google-cloud-private-ca
-protobuf==4.25.6
+protobuf==4.25.7
     # via
     #   -r requirements.in
     #   google-api-core
