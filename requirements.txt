@@ -35,9 +35,9 @@ blinker==1.7.0
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.37.37
+boto3==1.38.11
     # via -r requirements.in
-botocore==1.37.37
+botocore==1.38.11
     # via
     #   -r requirements.in
     #   boto3
@@ -320,7 +320,7 @@ rich==13.7.1
     # via flask-limiter
 rsa==4.9
     # via google-auth
-s3transfer==0.11.1
+s3transfer==0.12.0
     # via boto3
 sentry-sdk==2.27.0
     # via -r requirements.in
