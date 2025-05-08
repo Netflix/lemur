@@ -63,12 +63,12 @@ blinker==1.7.0
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.37.37
+boto3==1.38.11
     # via
     #   -r requirements.txt
     #   aws-sam-translator
     #   moto
-botocore==1.37.37
+botocore==1.38.11
     # via
     #   -r requirements.txt
     #   aws-xray-sdk
@@ -429,7 +429,7 @@ proto-plus==1.23.0
     #   -r requirements.txt
     #   google-api-core
     #   google-cloud-private-ca
-protobuf==4.25.6
+protobuf==4.25.7
     # via
     #   -r requirements.txt
     #   google-api-core
@@ -591,13 +591,13 @@ rsa==4.9
     #   -r requirements.txt
     #   google-auth
     #   python-jose
-s3transfer==0.11.1
+s3transfer==0.12.0
     # via
     #   -r requirements.txt
     #   boto3
 sarif-om==1.0.4
     # via cfn-lint
-sentry-sdk==2.26.0
+sentry-sdk==2.27.0
     # via -r requirements.txt
 six==1.17.0
     # via
@@ -698,7 +698,7 @@ urllib3==1.26.18
     #   requests
     #   responses
     #   sentry-sdk
-validators==0.34.0
+validators==0.35.0
     # via -r requirements.txt
 vine==5.1.0
     # via

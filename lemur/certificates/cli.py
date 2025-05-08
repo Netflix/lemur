@@ -978,14 +978,14 @@ def automatically_enable_autorotate_with_destination():
         "function": f"{__name__}.{sys._getframe().f_code.co_name}",
         "message": "Enabling auto-rotate for certificate"
     }
-
+    no_authority_restrictions = current_app.config.get("ENABLE_AUTO_ROTATE_ALL_AUTHORITIES", False)
     permitted_authorities = current_app.config.get("ENABLE_AUTO_ROTATE_AUTHORITY", [])
     destination_plugin_name = current_app.config.get("ENABLE_AUTO_ROTATE_DESTINATION_TYPE", None)
 
     eligible_certs = get_all_certs_attached_to_destination_without_autorotate(plugin_name=destination_plugin_name)
     for cert in eligible_certs:
 
-        if cert.authority_id not in permitted_authorities:
+        if not no_authority_restrictions and cert.authority_id not in permitted_authorities:
             continue
 
         log_data["certificate"] = cert.name

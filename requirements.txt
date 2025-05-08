@@ -35,9 +35,9 @@ blinker==1.7.0
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.37.37
+boto3==1.38.11
     # via -r requirements.in
-botocore==1.37.37
+botocore==1.38.11
     # via
     #   -r requirements.in
     #   boto3
@@ -233,7 +233,7 @@ proto-plus==1.23.0
     # via
     #   google-api-core
     #   google-cloud-private-ca
-protobuf==4.25.6
+protobuf==4.25.7
     # via
     #   -r requirements.in
     #   google-api-core
@@ -320,9 +320,9 @@ rich==13.7.1
     # via flask-limiter
 rsa==4.9
     # via google-auth
-s3transfer==0.11.1
+s3transfer==0.12.0
     # via boto3
-sentry-sdk==2.26.0
+sentry-sdk==2.27.0
     # via -r requirements.in
 six==1.17.0
     # via
@@ -362,7 +362,7 @@ urllib3==1.26.18
     #   botocore
     #   requests
     #   sentry-sdk
-validators==0.34.0
+validators==0.35.0
     # via -r requirements.in
 vine==5.1.0
     # via
