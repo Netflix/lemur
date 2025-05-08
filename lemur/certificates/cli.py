@@ -891,13 +891,13 @@ def automatically_enable_autorotate_with_endpoint():
         "function": f"{__name__}.{sys._getframe().f_code.co_name}",
         "message": "Enabling auto-rotate for certificate"
     }
-
+    no_authority_restrictions = current_app.config.get("ENABLE_AUTO_ROTATE_ALL_AUTHORITIES", False)
     permitted_authorities = current_app.config.get("ENABLE_AUTO_ROTATE_AUTHORITY", [])
 
     eligible_certs = get_all_certs_attached_to_endpoint_without_autorotate()
     for cert in eligible_certs:
 
-        if cert.authority_id not in permitted_authorities:
+        if not no_authority_restrictions and cert.authority_id not in permitted_authorities:
             continue
 
         log_data["certificate"] = cert.name
@@ -941,7 +941,7 @@ def disable_autorotate_without_endpoint():
     eligible_certs = get_all_certs_not_attached_to_endpoint_with_autorotate()
     for cert in eligible_certs:
 
-        if not isinstance(callable, current_app.config.get("DISABLE_AUTOROTATION_FILTER")) or not current_app.config.get("DISABLE_AUTOROTATION_FILTER")(cert):
+        if not current_app.config.get("DISABLE_AUTOROTATION_FILTER") or not current_app.config.get("DISABLE_AUTOROTATION_FILTER")(cert):
             continue
 
         log_data["certificate"] = cert.name
