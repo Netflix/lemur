@@ -882,10 +882,10 @@ def enable_autorotate_for_certs_attached_to_destination():
 
 
 @celery_app.task(soft_time_limit=3600)
-def automatically_disable_autorotate_without_endpoint_or_destination():
+def disable_autorotate_without_endpoint_or_destination():
     """
-    This celery task automatically disables autorotation for unexpired certificates that are
-    attached to no destinations or endpoints and have autorotate enabled.
+    This celery task disables autorotation for unexpired certificates that are
+    attached to no endpoints and have autorotate enabled.
     :return:
     """
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
@@ -900,7 +900,7 @@ def automatically_disable_autorotate_without_endpoint_or_destination():
     }
     current_app.logger.debug(log_data)
 
-    cli_certificate.automatically_disable_autorotate_without_endpoint_or_destination()
+    cli_certificate.disable_autorotate_without_endpoint()
     metrics.send(f"{function}.success", "counter", 1)
     return log_data
 
