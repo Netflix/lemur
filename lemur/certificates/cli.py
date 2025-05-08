@@ -37,7 +37,7 @@ from lemur.certificates.service import (
     list_recent_valid_certs_issued_by_authority,
     get_certificates_with_same_cn_with_rotate_on,
     identify_and_persist_expiring_deployed_certificates,
-    send_certificate_expiration_metrics, get_all_certs_not_attached_to_endpoint_or_destination_with_autorotate, get_by_serial
+    send_certificate_expiration_metrics, get_all_certs_not_attached_to_endpoint_with_autorotate, get_by_serial
 )
 from lemur.certificates.verify import verify_string
 from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS, CRLReason
@@ -921,15 +921,15 @@ def automatically_enable_autorotate_with_endpoint():
         database.update(cert)
 
 
-@cli.command("automatically_disable_autorotate_without_endpoint_or_destination")
-def automatically_disable_autorotate_without_endpoint_or_destination_command():
-    automatically_disable_autorotate_without_endpoint_or_destination()
+@cli.command("disable_autorotate_without_endpoint")
+def disable_autorotate_without_endpoint_command():
+    disable_autorotate_without_endpoint()
 
 
-def automatically_disable_autorotate_without_endpoint_or_destination():
+def disable_autorotate_without_endpoint():
     """
     This function automatically disables auto-rotation for unexpired certificates that are
-    not attached to an endpoint or destination but have autorotate enabled.
+    not attached to an endpoint but have autorotate enabled.
 
     WARNING: This will overwrite the Auto-rotate toggle!
     """
@@ -938,8 +938,9 @@ def automatically_disable_autorotate_without_endpoint_or_destination():
         "message": "Disabling auto-rotate for certificate"
     }
 
-    eligible_certs = get_all_certs_not_attached_to_endpoint_or_destination_with_autorotate()
+    eligible_certs = get_all_certs_not_attached_to_endpoint_with_autorotate()
     for cert in eligible_certs:
+
         if not isinstance(callable, current_app.config.get("DISABLE_AUTOROTATION_FILTER")) or not current_app.config.get("DISABLE_AUTOROTATION_FILTER")(cert):
             continue
 
@@ -949,7 +950,7 @@ def automatically_disable_autorotate_without_endpoint_or_destination():
         log_data["authority_name"] = authorities_get_by_id(cert.authority_id).name
         log_data["destination_names"] = "NONE"
         current_app.logger.info(log_data)
-        metrics.send("automatically_disable_autorotate_without_endpoint_or_destination",
+        metrics.send("automatically_disable_autorotate_without_endpoint",
                      "counter", 1,
                      metric_tags={"certificate": log_data["certificate"],
                                   "certificate_id": log_data["certificate_id"],
