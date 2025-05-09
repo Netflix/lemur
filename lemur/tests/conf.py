@@ -264,6 +264,9 @@ ENTRUST_PHONE = "123456"
 ENTRUST_ISSUING = ""
 ENTRUST_PRODUCT_ENTRUST = "ADVANTAGE_SSL"
 
-AWS_ELB_IGNORE_TAG = "lemur-test-ignore"
+AWS_ELB_IGNORE_TAGS = ["lemur-test-ignore"]
+AWS_CLOUDFRONT_IGNORE_TAGS = ["lemur-test-ignore-cloudfront"]
+AWS_IAM_IGNORE_TAGS = ["lemur-test-ignore-iam"]
+
 
 ADMIN_ONLY_AUTHORITY_CREATION = True
