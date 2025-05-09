@@ -156,5 +156,6 @@ def test_get_all_server_certs(app):
     from lemur.plugins.lemur_aws.iam import upload_cert, get_all_certificates
 
     upload_cert("123456789012", "testCert", EXTERNAL_VALID_STR, SAN_CERT_KEY)
+    upload_cert("123456789012", "testCert2", EXTERNAL_VALID_STR, SAN_CERT_KEY, Tags=[{"Key": "lemur-test-ignore-iam", "Value": ""}])
     certs = get_all_certificates("123456789012")
     assert len(certs) == 1

@@ -3,6 +3,8 @@ Changelog
 
 Unreleased
 ~~~~~~~~~~~~~~~~~~~~
+Added AWS_ELB_IGNORE_TAGS to allow mutiple ELB tags to be ignored.
+Added support for ignoring cloufront distirbutions and IAM certificates via the AWS_CLOUDFRONT_IGNORE_TAGS and AWS_IAM_IGNORE_TAGS config options.
 Added ENABLE_AUTO_ROTATE_ALL_AUTHORITIES configuration to allow all authorities to be considered for destination autorotate task.
 Added CERTIFICATE_UPDATE_REQUEST_VALIDATION: a configurable, plugin-independent callback that can be used to reject requests
 based on your specific business logic. For example, you could disallow certs with rotate set and no destinations to reduce
