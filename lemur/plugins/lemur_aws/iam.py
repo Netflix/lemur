@@ -7,6 +7,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import botocore
+from flask import current_app
 
 from retrying import retry
 from sentry_sdk import capture_exception
