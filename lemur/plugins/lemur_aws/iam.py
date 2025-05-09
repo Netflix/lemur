@@ -136,7 +136,7 @@ def upload_cert(name, body, private_key, path, cert_chain=None, **kwargs):
                 CertificateBody=str(body),
                 PrivateKey=str(private_key),
                 CertificateChain=str(cert_chain),
-                Tags=kwargs.get("Tags"),
+                Tags=kwargs.get("Tags", []),
             )
         else:
             return client.upload_server_certificate(
@@ -144,7 +144,7 @@ def upload_cert(name, body, private_key, path, cert_chain=None, **kwargs):
                 ServerCertificateName=name,
                 CertificateBody=str(body),
                 PrivateKey=str(private_key),
-                Tags=kwargs.get("Tags"),
+                Tags=kwargs.get("Tags", []),
             )
     except botocore.exceptions.ClientError as e:
         if e.response["Error"]["Code"] != "EntityAlreadyExists":
