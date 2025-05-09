@@ -233,7 +233,7 @@ def get_all_certificates(restrict_path=None, **kwargs):
             )
 
         if not response.get("Marker"):
-            return certificates
+            return _filter_ignored_certificates(certificates, **kwargs)
         else:
             kwargs.update(dict(Marker=response["Marker"]))
 
@@ -262,3 +262,56 @@ def get_certificate_id_to_name(**kwargs):
             return id_to_name
         else:
             kwargs.update(dict(Marker=response["Marker"]))
+
+
+@sts_client("iam")
+def _filter_ignored_certificates(certificates, **kwargs):
+    """
+    Filter out IAM certificates that have ignore tags.
+    :param certificates: List of IAM certificate objects
+    :param kwargs: must contain a 'client' from @sts_client
+    :return: Filtered list of certificates
+    """
+    if not certificates:
+        return certificates
+
+    # Get the ignore tag configuration
+    ignore_tags = current_app.config.get("AWS_IAM_IGNORE_TAGS", [])
+
+    if not ignore_tags:
+        return certificates
+
+    try:
+        client = kwargs.pop("client")
+        filtered_certificates = []
+
+        for cert in certificates:
+            # Get the ARN for the certificate
+            cert_arn = cert.get("ServerCertificateMetadata", {}).get("Arn")
+            if not cert_arn:
+                filtered_certificates.append(cert)
+                continue
+
+            try:
+                # Get tags for the certificate
+                tags_response = client.list_tags_for_resource(ResourceName=cert_arn)
+                tags = tags_response.get("Tags", [])
+
+                # If the certificate has any ignore tags, skip it
+                if any(tag["Key"] == ignore_tag for tag in tags for ignore_tag in ignore_tags):
+                    cert_name = cert.get("ServerCertificateMetadata", {}).get("ServerCertificateName")
+                    current_app.logger.info(f"Ignoring IAM certificate due to ignore tag: {cert_name}")
+                    continue
+
+            except Exception as e:
+                # If we can't get tags (e.g., permissions), still include the certificate
+                current_app.logger.warning(f"Could not get tags for IAM certificate: {str(e)}")
+
+            filtered_certificates.append(cert)
+
+        return filtered_certificates
+
+    except Exception as e:
+        metrics.send("iam_list_tags_error", "counter", 1, metric_tags={"error": str(e)})
+        capture_exception()
+        raise

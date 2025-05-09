@@ -119,7 +119,9 @@ def _filter_ignored_elbs(elbs, key_field, arg_name, response_key_field, **kwargs
     """
     if not elbs:
         return elbs
-    ignore_tag = current_app.config.get("AWS_ELB_IGNORE_TAG")
+    ignore_tags = current_app.config.get("AWS_ELB_IGNORE_TAGS", [])
+    if current_app.config.get("AWS_ELB_IGNORE_TAG"):
+        ignore_tags.append(current_app.config.get("AWS_ELB_IGNORE_TAG"))
     if not ignore_tag:
         return elbs
     try:
@@ -137,7 +139,7 @@ def _filter_ignored_elbs(elbs, key_field, arg_name, response_key_field, **kwargs
             key = tags[response_key_field]
             tags = tags["Tags"]
             for tag in tags:
-                if tag["Key"] == ignore_tag:
+                if any(tag["Key"] == ignore_tag for ignore_tag in ignore_tags):
                     current_app.logger.info(f"Ignoring ELB due to ignore tag: {key}")
                     ignored_keys[key] = True
 
