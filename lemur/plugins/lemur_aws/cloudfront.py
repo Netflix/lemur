@@ -13,6 +13,7 @@ from lemur.extensions import metrics
 from lemur.plugins.lemur_aws.sts import sts_client
 
 
+@sts_client("cloudfront")
 def get_all_distributions(**kwargs):
     """
     Fetches all distributions for a given account/region
@@ -44,7 +45,6 @@ def get_all_distributions(**kwargs):
         raise
 
 
-@sts_client("cloudfront")
 def _filter_ignored_distributions(distributions, **kwargs):
     """
     Look up tags and remove any CloudFront distributions that should be ignored based on tags.
@@ -90,7 +90,6 @@ def _filter_ignored_distributions(distributions, **kwargs):
         raise
 
 
-@sts_client("cloudfront")
 def get_distributions(**kwargs):
     """
     Fetches one page CloudFront distribution objects for a given account and region.
