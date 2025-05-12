@@ -267,7 +267,6 @@ def get_certificate_id_to_name(**kwargs):
             kwargs.update(dict(Marker=response["Marker"]))
 
 
-@sts_client("iam")
 def _filter_ignored_certificates(certificates, **kwargs):
     """
     Filter out IAM certificates that have ignore tags.
