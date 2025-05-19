@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements.txt requirements.in
 #
-acme==3.3.0
+acme==4.0.0
     # via
     #   -r requirements.in
     #   certbot
@@ -46,7 +46,7 @@ cachetools==5.3.3
     # via google-auth
 celery[redis]==5.3.6
     # via -r requirements.in
-certbot==3.3.0
+certbot==4.0.0
     # via -r requirements.in
 certifi==2025.4.26
     # via
@@ -184,7 +184,7 @@ jmespath==1.0.1
     # via
     #   boto3
     #   botocore
-josepy==1.15.0
+josepy==2.0.0
     # via
     #   acme
     #   certbot
@@ -274,7 +274,6 @@ pyopenssl==25.1.0
     # via
     #   -r requirements.in
     #   acme
-    #   josepy
     #   ndg-httpsclient
 pyrfc3339==1.1
     # via

@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-docs.txt requirements-docs.in
 #
-acme==3.3.0
+acme==4.0.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -98,7 +98,7 @@ celery[redis]==5.3.6
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
-certbot==3.3.0
+certbot==4.0.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -365,7 +365,7 @@ jmespath==1.0.1
     #   -r requirements-tests.txt
     #   boto3
     #   botocore
-josepy==1.15.0
+josepy==2.0.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -618,7 +618,6 @@ pyopenssl==25.1.0
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
     #   acme
-    #   josepy
     #   ndg-httpsclient
 pyparsing==3.1.2
     # via
