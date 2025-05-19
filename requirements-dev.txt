@@ -589,7 +589,9 @@ pygments==2.17.2
 pyjks==20.0.0
     # via -r requirements-tests.txt
 pyjwt==2.9.0
-    # via -r requirements-tests.txt
+    # via
+    #   -r requirements-tests.txt
+    #   redis
 pynacl==1.5.0
     # via
     #   -r requirements-tests.txt
@@ -657,7 +659,7 @@ pyyaml==6.0.2
     #   responses
 readme-renderer==43.0
     # via twine
-redis==5.2.1
+redis==5.3.0
     # via
     #   -r requirements-tests.txt
     #   celery
