@@ -190,7 +190,7 @@ def get_all_certs_not_attached_to_endpoint_with_autorotate():
     :return: list of certificates not attached to an endpoint or destination with autorotate
     """
     return (
-        Certificate.query.filter(Certificate.endpoints.none())
+        Certificate.query.filter(not_(Certificate.endpoints.any()))
         .filter(Certificate.rotation == true())
         .filter(Certificate.revoked == false())
         .filter(Certificate.not_after >= arrow.now())
