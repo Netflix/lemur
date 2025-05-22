@@ -654,6 +654,10 @@ class CertificatesUpload(AuthenticatedResource):
                 raise Exception(
                     "Private key must be provided in order to upload certificate to AWS"
                 )
+        if current_app.config.get("CERTIFICATE_CREATE_REQUEST_VALIDATION"):
+            message, code = current_app.config.get("CERTIFICATE_CREATE_REQUEST_VALIDATION")(data)
+            if message and code:
+                return dict(message=message), code
         return service.upload(**data)
 
 
@@ -1086,6 +1090,11 @@ class Certificates(AuthenticatedResource):
                     403,
                 )
 
+        if current_app.config.get("CERTIFICATE_UPDATE_REQUEST_VALIDATION"):
+            message, code = current_app.config.get("CERTIFICATE_UPDATE_REQUEST_VALIDATION")(data, cert)
+            if message and code:
+                return dict(message=message), code
+
         cert = service.update_switches(cert, notify_flag=data.get("notify"), rotation_flag=data.get("rotation"))
         log_service.create(g.current_user, "update_cert", certificate=cert)
         return cert
@@ -1253,6 +1262,11 @@ class CertificateUpdateOwner(AuthenticatedResource):
                     dict(message="You are not authorized to update this certificate"),
                     403,
                 )
+
+        if current_app.config.get("CERTIFICATE_UPDATE_REQUEST_VALIDATION"):
+            message, code = current_app.config.get("CERTIFICATE_UPDATE_REQUEST_VALIDATION")(data, cert)
+            if message and code:
+                return dict(message=message), code
 
         cert = service.update_owner(cert, data)
 
