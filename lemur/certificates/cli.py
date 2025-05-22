@@ -947,7 +947,10 @@ def disable_autorotate_without_endpoint():
         log_data["certificate"] = cert.name
         log_data["certificate_id"] = cert.id
         log_data["authority_id"] = cert.authority_id
-        log_data["authority_name"] = authorities_get_by_id(cert.authority_id).name
+        log_data["authority_name"] = "unknown"
+        authority = authorities_get_by_id(cert.authority_id)
+        if authority:
+            log_data["authority_name"] = authority.name
         log_data["destination_names"] = "NONE"
         current_app.logger.info(log_data)
         metrics.send("automatically_disable_autorotate_without_endpoint",
