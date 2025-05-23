@@ -257,6 +257,11 @@ paths:
                   type: array
                   items:
                     type: object
+                    properties:
+                      label:
+                        type: string
+                      plugin:
+                        type: object
                 notifications:
                   type: array
                   items:
