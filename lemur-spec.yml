@@ -1,6 +1,7 @@
 openapi: 3.0.0
 info:
   title: Lemur API
+  version: 1.8.2
 paths:
   /certificates:
     get:
