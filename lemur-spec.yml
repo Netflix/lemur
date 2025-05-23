@@ -1,0 +1,4293 @@
+openapi: 3.0.0
+info:
+  title: Lemur API
+paths:
+  /certificates:
+    get:
+      summary: Get the current list of certificates
+      description: Retrieve a list of certificates with support for pagination, sorting, and filtering.
+      tags:
+        - Lemur
+      parameters:
+        - name: count
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Number of items per page (default is 10)
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Page number (default is 1)
+        - name: sortBy
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Field to sort on
+        - name: sortDir
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ asc, desc ]
+          description: Sort direction
+        - name: filter
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter in key value pair format (e.g., k;v)
+        - name: showExpired
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Show expired certificates (1 to show)
+        - name: timeRange
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Time range of certificate not_after to return, in weeks
+        - name: serial
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Search by Serial Number (Decimal or Hex)
+      responses:
+        '200':
+          description: A list of certificates
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LemurCertificate'
+                  total:
+                    type: integer
+        '403':
+          description: Forbidden - unauthenticated
+
+    post:
+      summary: Create a new certificate
+      description: Creates a new certificate with the provided details
+      tags:
+        - Lemur
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                owner:
+                  type: string
+                  format: email
+                  description: Certificate owner email
+                commonName:
+                  type: string
+                  description: Common Name for the certificate
+                authority:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: Authority name
+                description:
+                  type: string
+                  description: Description of the certificate
+                validityStart:
+                  type: string
+                  format: date-time
+                  description: Start date of validity
+                validityEnd:
+                  type: string
+                  format: date-time
+                  description: End date of validity
+                country:
+                  type: string
+                  description: Country (C)
+                state:
+                  type: string
+                  description: State or Province (ST)
+                location:
+                  type: string
+                  description: Locality (L)
+                organization:
+                  type: string
+                  description: Organization (O)
+                organizationalUnit:
+                  type: string
+                  description: Organizational Unit (OU)
+                extensions:
+                  type: object
+                  properties:
+                    subAltNames:
+                      type: object
+                      properties:
+                        names:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              nameType:
+                                type: string
+                                enum: [DNSName, IPAddress, EmailAddress, URIName]
+                              value:
+                                type: string
+                destinations:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      label:
+                        type: string
+                      plugin:
+                        type: object
+                notifications:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                replaces:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                roles:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                notify:
+                  type: boolean
+                  description: Whether to notify about certificate expiration
+                rotation:
+                  type: boolean
+                  description: Whether to enable auto-rotation for the certificate
+      responses:
+        '200':
+          description: Created certificate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurCertificate'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /certificates/{id}:
+    get:
+      summary: Retrieve a certificate
+      description: Retrieve details of a specific certificate by its ID.
+      tags:
+        - Lemur
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the certificate to retrieve.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response with certificate details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurCertificate'
+        '403':
+          description: Forbidden - Unauthenticated
+        '404':
+          description: Not Found - Certificate not found
+
+    put:
+      summary: Update a certificate
+      description: Updates certificate properties
+      tags:
+        - Lemur
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Certificate ID
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                owner:
+                  type: string
+                  format: email
+                destinations:
+                  type: array
+                  items:
+                    type: object
+                notifications:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                replaces:
+                  type: array
+                  items:
+                    type: object
+                roles:
+                  type: array
+                  items:
+                    type: object
+                description:
+                  type: string
+                active:
+                  type: boolean
+                rotation:
+                  type: boolean
+      responses:
+        '200':
+          description: Updated certificate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurCertificate'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Certificate not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+    delete:
+      summary: Delete a certificate
+      description: Deletes a certificate by ID
+      tags:
+        - Lemur
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Certificate ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Certificate deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Certificate not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /certificates/{id}/update/switches:
+    post:
+      summary: Update certificate switches
+      description: Updates certificate notification and rotation flags
+      tags:
+        - Lemur
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Certificate ID
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                notify:
+                  type: boolean
+                  description: Whether to enable notification
+                rotation:
+                  type: boolean
+                  description: Whether to enable auto-rotation
+      responses:
+        '200':
+          description: Updated certificate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurCertificate'
+        '403':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Certificate not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /certificates/{id}/key:
+    get:
+      summary: Get certificate private key
+      description: Retrieves the private key for a specific certificate
+      tags:
+        - Lemur
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Certificate ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Certificate private key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key:
+                    type: string
+                    description: Private key in PEM format
+        '403':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Certificate not found or no private key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /certificates/{id}/export:
+    post:
+      summary: Export certificate
+      description: Exports a certificate in a specified format
+      tags:
+        - Lemur
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Certificate ID
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plugin:
+                  type: object
+                  properties:
+                    slug:
+                      type: string
+                      description: Export plugin slug (e.g., 'openssl-export')
+                    pluginOptions:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          value:
+                            type: string
+      responses:
+        '200':
+          description: Exported certificate
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: string
+                    description: Exported certificate data
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Certificate not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /certificates/{id}/revoke:
+    put:
+      summary: Revoke a certificate
+      description: Revokes a certificate and performs necessary cleanup
+      tags:
+        - Lemur
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Certificate ID
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  description: Reason for revoking the certificate
+      responses:
+        '200':
+          description: Certificate revoked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: ID of the revoked certificate
+        '400':
+          description: Failed to revoke certificate
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Certificate not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /certificates/{id}/deactivate:
+    put:
+      summary: Deactivate a certificate
+      description: Deactivates a certificate
+      tags:
+        - Lemur
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Certificate ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Certificate deactivated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: ID of the deactivated certificate
+        '400':
+          description: Failed to deactivate certificate
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Certificate not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /certificates/{id}/update/owner:
+    put:
+      summary: Update certificate owner
+      description: Updates the owner of a certificate and adjusts roles and notifications
+      tags:
+        - Lemur
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Certificate ID
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                owner:
+                  type: string
+                  format: email
+                  description: New owner email
+                notifications:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                roles:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+      responses:
+        '200':
+          description: Certificate owner updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurCertificate'
+        '403':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Certificate not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /certificates/{id}/replacements:
+    get:
+      summary: Get certificate replacements
+      description: Retrieves the list of certificates that could replace the specified certificate
+      tags:
+        - Lemur
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Certificate ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of potential replacement certificates
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LemurCertificate'
+                  total:
+                    type: integer
+        '404':
+          description: Certificate not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /certificates/upload:
+    post:
+      summary: Upload a certificate
+      description: Uploads an existing certificate to Lemur
+      tags:
+        - Lemur
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                owner:
+                  type: string
+                  format: email
+                  description: Certificate owner email
+                name:
+                  type: string
+                  description: Certificate name
+                body:
+                  type: string
+                  description: Certificate body in PEM format
+                chain:
+                  type: string
+                  description: Certificate chain in PEM format
+                privateKey:
+                  type: string
+                  description: Private key in PEM format
+                destinations:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      label:
+                        type: string
+                      plugin:
+                        type: object
+                notifications:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                roles:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                description:
+                  type: string
+                  description: Description of the certificate
+                notify:
+                  type: boolean
+                  description: Whether to notify about certificate expiration
+                rotation:
+                  type: boolean
+                  description: Whether to enable auto-rotation
+      responses:
+        '200':
+          description: Certificate uploaded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurCertificate'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /certificates/stats:
+    get:
+      summary: Get certificate statistics
+      description: Retrieves statistics about certificates in Lemur
+      tags:
+        - Lemur
+      responses:
+        '200':
+          description: Certificate statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    description: Total number of certificates
+                  expired:
+                    type: integer
+                    description: Number of expired certificates
+                  expiring:
+                    type: integer
+                    description: Number of soon-to-expire certificates
+                  days:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          format: date
+                        count:
+                          type: integer
+        '403':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /certificates/valid:
+    get:
+      summary: Get valid certificates
+      description: Retrieves a list of valid (not expired and not revoked) certificates
+      tags:
+        - Lemur
+      parameters:
+        - name: authority_plugin_name
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by authority plugin name
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: count
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+          description: Number of certificates per page
+      responses:
+        '200':
+          description: List of valid certificates
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LemurCertificate'
+                  total:
+                    type: integer
+        '403':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /certificates/name/{certificate_name}:
+    get:
+      summary: Get a certificate by name
+      description: Retrieves a specific certificate by its name
+      tags:
+        - Lemur
+      parameters:
+        - name: certificate_name
+          in: path
+          required: true
+          description: Certificate name
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: count
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+          description: Number of certificates per page
+      responses:
+        '200':
+          description: Certificate details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LemurCertificate'
+                  total:
+                    type: integer
+        '404':
+          description: Certificate not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /authorities:
+    get:
+      summary: Get the current list of authorities
+      description: Retrieve a list of authorities with support for pagination, sorting, and filtering.
+      tags:
+        - Lemur
+      parameters:
+        - name: count
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Number of items per page (default is 10)
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Page number (default is 1)
+        - name: sortBy
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Field to sort on
+        - name: sortDir
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ asc, desc ]
+          description: Sort direction
+        - name: filter
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter in key value pair format (e.g., k;v)
+      responses:
+        '200':
+          description: A list of authorities
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LemurAuthority'
+                  total:
+                    type: integer
+        '403':
+          description: Forbidden - unauthenticated
+    
+    post:
+      summary: Create a new authority
+      description: Creates a new certificate authority
+      tags:
+        - Lemur
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Authority's name
+                owner:
+                  type: string
+                  format: email
+                  description: Team or person who owns this authority
+                description:
+                  type: string
+                  description: Description about what the CA will be used for
+                commonName:
+                  type: string
+                  description: Common name for the authority
+                country:
+                  type: string
+                  description: Country (C)
+                state:
+                  type: string
+                  description: State or Province (ST)
+                location:
+                  type: string
+                  description: Locality (L)
+                organization:
+                  type: string
+                  description: Organization (O)
+                organizationalUnit:
+                  type: string
+                  description: Organizational Unit (OU)
+                type:
+                  type: string
+                  enum: [root, subca]
+                  description: The type of authority
+                plugin:
+                  type: object
+                  properties:
+                    slug:
+                      type: string
+                      description: Name of the plugin to create the authority
+                validityYears:
+                  type: string
+                  description: Years into the future the authority should be valid
+                signingAlgorithm:
+                  type: string
+                  description: Algorithm used to sign the authority
+                keyType:
+                  type: string
+                  description: Key type (e.g., RSA2048)
+                sensitivity:
+                  type: string
+                  description: Sensitivity of the root key
+                extensions:
+                  type: object
+                  properties:
+                    subAltNames:
+                      type: object
+                      properties:
+                        names:
+                          type: array
+                          items:
+                            type: object
+                    custom:
+                      type: array
+                      items:
+                        type: object
+                parent:
+                  type: object
+                  description: Parent authority if this is a subca
+      responses:
+        '200':
+          description: Created authority
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurAuthority'
+        '403':
+          description: Unauthorized - User not allowed to create authorities
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '412':
+          description: Precondition failed - Invalid owner
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /authorities/{authority_id}:
+    get:
+      summary: Retrieve an authority
+      description: Retrieve details of a specific authority by its ID
+      tags:
+        - Lemur
+      parameters:
+        - name: authority_id
+          in: path
+          required: true
+          description: The ID of the authority to retrieve
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response with authority details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurAuthority'
+        '403':
+          description: Forbidden - Unauthenticated
+        '404':
+          description: Not Found - Authority not found
+    
+    put:
+      summary: Update an authority
+      description: Updates the properties of an existing authority
+      tags:
+        - Lemur
+      parameters:
+        - name: authority_id
+          in: path
+          required: true
+          description: The ID of the authority to update
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                owner:
+                  type: string
+                  format: email
+                  description: Team or person who owns this authority
+                description:
+                  type: string
+                  description: Description about what the CA will be used for
+                active:
+                  type: boolean
+                  description: Whether this authority is currently in use
+                roles:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+                options:
+                  type: object
+                  description: Additional options for the authority
+      responses:
+        '200':
+          description: Updated authority
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurAuthority'
+        '403':
+          description: Unauthorized - User not allowed to update this authority
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Authority not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /authorities/{authority_id}/visualize:
+    get:
+      summary: Visualize authority hierarchy
+      description: Get a visualization of the authority and its certificates
+      tags:
+        - Lemur
+      parameters:
+        - name: authority_id
+          in: path
+          required: true
+          description: The ID of the authority to visualize
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Authority visualization data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  children:
+                    type: array
+                    items:
+                      type: object
+        '403':
+          description: Forbidden - Unauthenticated
+        '404':
+          description: Not Found - Authority not found
+
+  /certificates/{certificate_id}/authority:
+    get:
+      summary: Get certificate's authority
+      description: Retrieve the authority for a specific certificate
+      tags:
+        - Lemur
+      parameters:
+        - name: certificate_id
+          in: path
+          required: true
+          description: The ID of the certificate
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Authority details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurAuthority'
+        '403':
+          description: Forbidden - Unauthenticated
+        '404':
+          description: Not Found - Certificate not found
+
+  /auth/login:
+    post:
+      summary: Authenticate user
+      description: Authenticate a user with username and password
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: User's username or email
+                password:
+                  type: string
+                  description: User's password
+      responses:
+        '200':
+          description: Successfully authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: JWT token for authenticated user
+        '401':
+          description: Authentication failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /auth/ping:
+    get:
+      summary: Ping authentication service
+      description: Check if the authentication service is working
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: Authentication service is working
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+
+  /auth/google:
+    get:
+      summary: Google OAuth login
+      description: Initiate Google OAuth authentication
+      tags:
+        - Authentication
+      parameters:
+        - name: state
+          in: query
+          required: false
+          schema:
+            type: string
+          description: State token for OAuth flow
+        - name: code
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Authorization code from OAuth provider
+      responses:
+        '200':
+          description: Google OAuth authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: JWT token for authenticated user
+                  redirect:
+                    type: string
+                    description: Redirect URL
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /auth/oauth2:
+    get:
+      summary: Generic OAuth2 login
+      description: Initiate OAuth2 authentication
+      tags:
+        - Authentication
+      parameters:
+        - name: state
+          in: query
+          required: false
+          schema:
+            type: string
+          description: State token for OAuth flow
+        - name: code
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Authorization code from OAuth provider
+      responses:
+        '200':
+          description: OAuth2 authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: JWT token for authenticated user
+                  redirect:
+                    type: string
+                    description: Redirect URL
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /auth/providers:
+    get:
+      summary: List available authentication providers
+      description: Get a list of enabled authentication providers
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: List of available authentication providers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
+  /auth/me:
+    get:
+      summary: Get current user
+      description: Get details of the currently authenticated user
+      tags:
+        - Users
+      responses:
+        '200':
+          description: Current user details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurUser'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /logs:
+    get:
+      summary: Get logs
+      description: Get a list of system logs
+      tags:
+        - Logs
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: count
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+          description: Number of logs per page
+        - name: sortBy
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Field to sort on
+        - name: sortDir
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ asc, desc ]
+          description: Sort direction
+      responses:
+        '200':
+          description: List of logs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LemurLog'
+                  total:
+                    type: integer
+        '403':
+          description: Forbidden - Unauthenticated
+
+  /roles:
+    get:
+      summary: List roles
+      description: Get a list of all roles
+      tags:
+        - Roles
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: count
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+          description: Number of roles per page
+        - name: sortBy
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Field to sort on
+        - name: sortDir
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ asc, desc ]
+          description: Sort direction
+      responses:
+        '200':
+          description: List of roles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LemurRole'
+                  total:
+                    type: integer
+        '403':
+          description: Forbidden - Unauthenticated
+    
+    post:
+      summary: Create a new role
+      description: Create a new role in the system
+      tags:
+        - Roles
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Role name
+                description:
+                  type: string
+                  description: Description of the role
+                username:
+                  type: string
+                  description: Username for role-related user
+      responses:
+        '200':
+          description: Role created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurRole'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Forbidden - Unauthenticated
+
+  /roles/{role_id}:
+    parameters:
+      - name: role_id
+        in: path
+        required: true
+        description: The ID of the role
+        schema:
+          type: integer
+    
+    get:
+      summary: Get role details
+      description: Get details of a specific role by ID
+      tags:
+        - Roles
+      responses:
+        '200':
+          description: Role details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurRole'
+        '404':
+          description: Role not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+    
+    put:
+      summary: Update a role
+      description: Update an existing role
+      tags:
+        - Roles
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Role name
+                description:
+                  type: string
+                  description: Description of the role
+                users:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+      responses:
+        '200':
+          description: Role updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurRole'
+        '404':
+          description: Role not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /roles/{role_id}/users:
+    parameters:
+      - name: role_id
+        in: path
+        required: true
+        description: The ID of the role
+        schema:
+          type: integer
+    
+    get:
+      summary: List users with role
+      description: Get a list of users with the specified role
+      tags:
+        - Roles
+        - Users
+      responses:
+        '200':
+          description: List of users with the role
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LemurUser'
+                  total:
+                    type: integer
+        '404':
+          description: Role not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /users:
+    get:
+      summary: List users
+      description: Get a list of all users
+      tags:
+        - Users
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: count
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+          description: Number of users per page
+        - name: sortBy
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Field to sort on
+        - name: sortDir
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ asc, desc ]
+          description: Sort direction
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LemurUser'
+                  total:
+                    type: integer
+        '403':
+          description: Forbidden - Unauthenticated
+    
+    post:
+      summary: Create a new user
+      description: Create a new user in the system
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: Username for the new user
+                email:
+                  type: string
+                  format: email
+                  description: Email for the new user
+                password:
+                  type: string
+                  description: Password for the new user
+                active:
+                  type: boolean
+                  description: Whether the user is active
+                roles:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+      responses:
+        '200':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurUser'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Forbidden - Unauthenticated
+
+  /users/{user_id}:
+    parameters:
+      - name: user_id
+        in: path
+        required: true
+        description: The ID of the user
+        schema:
+          type: integer
+    
+    get:
+      summary: Get user details
+      description: Get details of a specific user by ID
+      tags:
+        - Users
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurUser'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+    
+    put:
+      summary: Update a user
+      description: Update an existing user
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: Username for the user
+                email:
+                  type: string
+                  format: email
+                  description: Email for the user
+                active:
+                  type: boolean
+                  description: Whether the user is active
+                roles:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurUser'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /users/{user_id}/roles:
+    parameters:
+      - name: user_id
+        in: path
+        required: true
+        description: The ID of the user
+        schema:
+          type: integer
+    
+    get:
+      summary: List user's roles
+      description: Get a list of roles for the specified user
+      tags:
+        - Users
+        - Roles
+      responses:
+        '200':
+          description: List of roles for the user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LemurRole'
+                  total:
+                    type: integer
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /domains:
+    get:
+      summary: List domains
+      description: Get a list of all domains
+      tags:
+        - Domains
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: count
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+          description: Number of domains per page
+        - name: sortBy
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Field to sort on
+        - name: sortDir
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ asc, desc ]
+          description: Sort direction
+        - name: filter
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter in key value pair format (e.g., k;v)
+      responses:
+        '200':
+          description: List of domains
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LemurDomain'
+                  total:
+                    type: integer
+        '403':
+          description: Forbidden - Unauthenticated
+    
+    post:
+      summary: Create a new domain
+      description: Create a new domain in the system
+      tags:
+        - Domains
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Domain name
+                sensitive:
+                  type: boolean
+                  description: Whether the domain is sensitive
+      responses:
+        '200':
+          description: Domain created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurDomain'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Forbidden - Unauthenticated
+
+  /domains/{domain_id}:
+    parameters:
+      - name: domain_id
+        in: path
+        required: true
+        description: The ID of the domain
+        schema:
+          type: integer
+    
+    get:
+      summary: Get domain details
+      description: Get details of a specific domain by ID
+      tags:
+        - Domains
+      responses:
+        '200':
+          description: Domain details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurDomain'
+        '404':
+          description: Domain not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+    
+    put:
+      summary: Update a domain
+      description: Update an existing domain
+      tags:
+        - Domains
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Domain name
+                sensitive:
+                  type: boolean
+                  description: Whether the domain is sensitive
+      responses:
+        '200':
+          description: Domain updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurDomain'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Domain not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /plugins:
+    get:
+      summary: List plugins
+      description: Get a list of all available plugins in Lemur
+      tags:
+        - Plugins
+      responses:
+        '200':
+          description: List of plugins
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LemurPlugin'
+        '403':
+          description: Forbidden - Unauthenticated
+
+  /plugins/{name}:
+    parameters:
+      - name: name
+        in: path
+        required: true
+        description: Plugin name
+        schema:
+          type: string
+    
+    get:
+      summary: Get plugin details
+      description: Get details of a specific plugin by name
+      tags:
+        - Plugins
+      responses:
+        '200':
+          description: Plugin details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurPlugin'
+        '404':
+          description: Plugin not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /sources:
+    get:
+      summary: List sources
+      description: Get a list of all certificate sources
+      tags:
+        - Sources
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: count
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+          description: Number of items per page
+        - name: sortBy
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Field to sort on
+        - name: sortDir
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ asc, desc ]
+          description: Sort direction
+      responses:
+        '200':
+          description: List of sources
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LemurSource'
+                  total:
+                    type: integer
+        '403':
+          description: Forbidden - Unauthenticated
+    
+    post:
+      summary: Create a new source
+      description: Create a new certificate source
+      tags:
+        - Sources
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                label:
+                  type: string
+                  description: Source label
+                plugin:
+                  type: object
+                  properties:
+                    slug:
+                      type: string
+                      description: Plugin slug name
+                    pluginOptions:
+                      type: array
+                      items:
+                        type: object
+                description:
+                  type: string
+                  description: Source description
+      responses:
+        '200':
+          description: Source created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurSource'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Forbidden - Unauthenticated
+
+  /sources/{source_id}:
+    parameters:
+      - name: source_id
+        in: path
+        required: true
+        description: Source ID
+        schema:
+          type: integer
+    
+    get:
+      summary: Get source details
+      description: Get details of a specific source by ID
+      tags:
+        - Sources
+      responses:
+        '200':
+          description: Source details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurSource'
+        '404':
+          description: Source not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+    
+    put:
+      summary: Update a source
+      description: Update an existing source
+      tags:
+        - Sources
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                label:
+                  type: string
+                  description: Source label
+                plugin:
+                  type: object
+                  properties:
+                    slug:
+                      type: string
+                      description: Plugin slug name
+                    pluginOptions:
+                      type: array
+                      items:
+                        type: object
+                description:
+                  type: string
+                  description: Source description
+                active:
+                  type: boolean
+                  description: Whether the source is active
+      responses:
+        '200':
+          description: Source updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurSource'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Source not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /keys:
+    get:
+      summary: List API keys
+      description: Get a list of all API keys
+      tags:
+        - API Keys
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: count
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+          description: Number of items per page
+        - name: sortBy
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Field to sort on
+        - name: sortDir
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ asc, desc ]
+          description: Sort direction
+      responses:
+        '200':
+          description: List of API keys
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LemurApiKey'
+                  total:
+                    type: integer
+        '403':
+          description: Forbidden - Unauthenticated
+    
+    post:
+      summary: Create a new API key
+      description: Create a new API key
+      tags:
+        - API Keys
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: API key name
+                user:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      description: User ID
+                ttl:
+                  type: integer
+                  description: Time to live in days
+                roles:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                description:
+                  type: string
+                  description: API key description
+      responses:
+        '200':
+          description: API key created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurApiKey'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Forbidden - Unauthenticated
+
+  /keys/{aid}:
+    parameters:
+      - name: aid
+        in: path
+        required: true
+        description: API key ID
+        schema:
+          type: integer
+    
+    get:
+      summary: Get API key details
+      description: Get details of a specific API key by ID
+      tags:
+        - API Keys
+      responses:
+        '200':
+          description: API key details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurApiKey'
+        '404':
+          description: API key not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+    
+    put:
+      summary: Update an API key
+      description: Update an existing API key
+      tags:
+        - API Keys
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: API key name
+                roles:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                description:
+                  type: string
+                  description: API key description
+                active:
+                  type: boolean
+                  description: Whether the API key is active
+      responses:
+        '200':
+          description: API key updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurApiKey'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: API key not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+    
+    delete:
+      summary: Delete an API key
+      description: Delete an existing API key
+      tags:
+        - API Keys
+      responses:
+        '200':
+          description: API key deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: API key not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /users/{user_id}/keys:
+    parameters:
+      - name: user_id
+        in: path
+        required: true
+        description: User ID
+        schema:
+          type: integer
+    
+    get:
+      summary: List user's API keys
+      description: Get a list of API keys for a specific user
+      tags:
+        - API Keys
+        - Users
+      responses:
+        '200':
+          description: List of user's API keys
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LemurApiKey'
+                  total:
+                    type: integer
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /defaults:
+    get:
+      summary: Get system defaults
+      description: Get the default configuration settings for Lemur
+      tags:
+        - Defaults
+      responses:
+        '200':
+          description: System defaults
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurDefaults'
+        '403':
+          description: Forbidden - Unauthenticated
+
+  /endpoints:
+    get:
+      summary: List endpoints
+      description: Get a list of all endpoints
+      tags:
+        - Endpoints
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: count
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+          description: Number of items per page
+        - name: sortBy
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Field to sort on
+        - name: sortDir
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ asc, desc ]
+          description: Sort direction
+      responses:
+        '200':
+          description: List of endpoints
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LemurEndpoint'
+                  total:
+                    type: integer
+        '403':
+          description: Forbidden - Unauthenticated
+    
+    post:
+      summary: Create a new endpoint
+      description: Create a new endpoint
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Endpoint name
+                dnsname:
+                  type: string
+                  description: DNS name of the endpoint
+                owner:
+                  type: string
+                  format: email
+                  description: Owner email
+                type:
+                  type: string
+                  description: Endpoint type
+                active:
+                  type: boolean
+                  description: Whether the endpoint is active
+                port:
+                  type: integer
+                  description: Port number
+                policy:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: Policy name
+      responses:
+        '200':
+          description: Endpoint created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurEndpoint'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Forbidden - Unauthenticated
+
+  /endpoints/{endpoint_id}:
+    parameters:
+      - name: endpoint_id
+        in: path
+        required: true
+        description: Endpoint ID
+        schema:
+          type: integer
+    
+    get:
+      summary: Get endpoint details
+      description: Get details of a specific endpoint by ID
+      tags:
+        - Endpoints
+      responses:
+        '200':
+          description: Endpoint details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurEndpoint'
+        '404':
+          description: Endpoint not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+    
+    put:
+      summary: Update an endpoint
+      description: Update an existing endpoint
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Endpoint name
+                dnsname:
+                  type: string
+                  description: DNS name of the endpoint
+                owner:
+                  type: string
+                  format: email
+                  description: Owner email
+                type:
+                  type: string
+                  description: Endpoint type
+                active:
+                  type: boolean
+                  description: Whether the endpoint is active
+                port:
+                  type: integer
+                  description: Port number
+                policy:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: Policy name
+      responses:
+        '200':
+          description: Endpoint updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurEndpoint'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Endpoint not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /destinations:
+    get:
+      summary: List destinations
+      description: Get a list of all destinations
+      tags:
+        - Destinations
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: count
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+          description: Number of items per page
+        - name: sortBy
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Field to sort on
+        - name: sortDir
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ asc, desc ]
+          description: Sort direction
+        - name: filter
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter in key value pair format (e.g., k;v)
+      responses:
+        '200':
+          description: List of destinations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LemurDestination'
+                  total:
+                    type: integer
+        '403':
+          description: Forbidden - Unauthenticated
+    
+    post:
+      summary: Create a new destination
+      description: Create a new certificate destination
+      tags:
+        - Destinations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                label:
+                  type: string
+                  description: Destination label
+                plugin:
+                  type: object
+                  properties:
+                    slug:
+                      type: string
+                      description: Plugin slug name
+                    pluginOptions:
+                      type: array
+                      items:
+                        type: object
+                description:
+                  type: string
+                  description: Destination description
+      responses:
+        '200':
+          description: Destination created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurDestination'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Forbidden - Unauthenticated
+
+  /destinations/{destination_id}:
+    parameters:
+      - name: destination_id
+        in: path
+        required: true
+        description: Destination ID
+        schema:
+          type: integer
+    
+    get:
+      summary: Get destination details
+      description: Get details of a specific destination by ID
+      tags:
+        - Destinations
+      responses:
+        '200':
+          description: Destination details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurDestination'
+        '404':
+          description: Destination not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+    
+    put:
+      summary: Update a destination
+      description: Update an existing destination
+      tags:
+        - Destinations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                label:
+                  type: string
+                  description: Destination label
+                plugin:
+                  type: object
+                  properties:
+                    slug:
+                      type: string
+                      description: Plugin slug name
+                    pluginOptions:
+                      type: array
+                      items:
+                        type: object
+                description:
+                  type: string
+                  description: Destination description
+                active:
+                  type: boolean
+                  description: Whether the destination is active
+      responses:
+        '200':
+          description: Destination updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurDestination'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Destination not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /destinations/stats:
+    get:
+      summary: Get destination statistics
+      description: Get statistics about destinations
+      tags:
+        - Destinations
+      responses:
+        '200':
+          description: Destination statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    description: Total number of destinations
+                  active:
+                    type: integer
+                    description: Number of active destinations
+        '403':
+          description: Forbidden - Unauthenticated
+
+  /dns_providers:
+    get:
+      summary: List DNS providers
+      description: Get a list of all DNS providers
+      tags:
+        - DNS Providers
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: count
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+          description: Number of items per page
+        - name: sortBy
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Field to sort on
+        - name: sortDir
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ asc, desc ]
+          description: Sort direction
+      responses:
+        '200':
+          description: List of DNS providers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LemurDnsProvider'
+                  total:
+                    type: integer
+        '403':
+          description: Forbidden - Unauthenticated
+    
+    post:
+      summary: Create a new DNS provider
+      description: Create a new DNS provider
+      tags:
+        - DNS Providers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: DNS provider name
+                description:
+                  type: string
+                  description: DNS provider description
+                provider_type:
+                  type: string
+                  description: Type of DNS provider
+                credentials:
+                  type: object
+                  description: Provider-specific credentials
+      responses:
+        '200':
+          description: DNS provider created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurDnsProvider'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Forbidden - Unauthenticated
+
+  /dns_providers/{dns_provider_id}:
+    parameters:
+      - name: dns_provider_id
+        in: path
+        required: true
+        description: DNS provider ID
+        schema:
+          type: integer
+    
+    get:
+      summary: Get DNS provider details
+      description: Get details of a specific DNS provider by ID
+      tags:
+        - DNS Providers
+      responses:
+        '200':
+          description: DNS provider details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurDnsProvider'
+        '404':
+          description: DNS provider not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+    
+    put:
+      summary: Update a DNS provider
+      description: Update an existing DNS provider
+      tags:
+        - DNS Providers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: DNS provider name
+                description:
+                  type: string
+                  description: DNS provider description
+                credentials:
+                  type: object
+                  description: Provider-specific credentials
+                active:
+                  type: boolean
+                  description: Whether the DNS provider is active
+      responses:
+        '200':
+          description: DNS provider updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurDnsProvider'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: DNS provider not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /dns_provider_options:
+    get:
+      summary: Get DNS provider types
+      description: Get a list of available DNS provider types
+      tags:
+        - DNS Providers
+      responses:
+        '200':
+          description: List of DNS provider types
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '403':
+          description: Forbidden - Unauthenticated
+
+  /notifications:
+    get:
+      summary: List notifications
+      description: Get a list of all notifications
+      tags:
+        - Notifications
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: count
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+          description: Number of items per page
+        - name: sortBy
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Field to sort on
+        - name: sortDir
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ asc, desc ]
+          description: Sort direction
+      responses:
+        '200':
+          description: List of notifications
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LemurNotification'
+                  total:
+                    type: integer
+        '403':
+          description: Forbidden - Unauthenticated
+    
+    post:
+      summary: Create a new notification
+      description: Create a new notification
+      tags:
+        - Notifications
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                label:
+                  type: string
+                  description: Notification label
+                plugin:
+                  type: object
+                  properties:
+                    slug:
+                      type: string
+                      description: Plugin slug name
+                    pluginOptions:
+                      type: array
+                      items:
+                        type: object
+                description:
+                  type: string
+                  description: Notification description
+                active:
+                  type: boolean
+                  description: Whether the notification is active
+      responses:
+        '200':
+          description: Notification created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurNotification'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Forbidden - Unauthenticated
+
+  /notifications/{notification_id}:
+    parameters:
+      - name: notification_id
+        in: path
+        required: true
+        description: Notification ID
+        schema:
+          type: integer
+    
+    get:
+      summary: Get notification details
+      description: Get details of a specific notification by ID
+      tags:
+        - Notifications
+      responses:
+        '200':
+          description: Notification details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurNotification'
+        '404':
+          description: Notification not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+    
+    put:
+      summary: Update a notification
+      description: Update an existing notification
+      tags:
+        - Notifications
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                label:
+                  type: string
+                  description: Notification label
+                plugin:
+                  type: object
+                  properties:
+                    slug:
+                      type: string
+                      description: Plugin slug name
+                    pluginOptions:
+                      type: array
+                      items:
+                        type: object
+                description:
+                  type: string
+                  description: Notification description
+                active:
+                  type: boolean
+                  description: Whether the notification is active
+      responses:
+        '200':
+          description: Notification updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurNotification'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Notification not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /certificates/{certificate_id}/notifications:
+    parameters:
+      - name: certificate_id
+        in: path
+        required: true
+        description: Certificate ID
+        schema:
+          type: integer
+    
+    get:
+      summary: Get certificate notifications
+      description: Get notifications for a specific certificate
+      tags:
+        - Notifications
+        - Certificates
+      responses:
+        '200':
+          description: List of notifications for the certificate
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LemurNotification'
+                  total:
+                    type: integer
+        '404':
+          description: Certificate not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /pending_certificates:
+    get:
+      summary: List pending certificates
+      description: Get a list of all pending certificates
+      tags:
+        - Pending Certificates
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: count
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+          description: Number of items per page
+        - name: sortBy
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Field to sort on
+        - name: sortDir
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ asc, desc ]
+          description: Sort direction
+      responses:
+        '200':
+          description: List of pending certificates
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LemurPendingCertificate'
+                  total:
+                    type: integer
+        '403':
+          description: Forbidden - Unauthenticated
+    
+    post:
+      summary: Create a new pending certificate
+      description: Create a new pending certificate
+      tags:
+        - Pending Certificates
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                owner:
+                  type: string
+                  format: email
+                  description: Certificate owner email
+                common_name:
+                  type: string
+                  description: Common Name for the certificate
+                authority:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: Authority name
+                description:
+                  type: string
+                  description: Description of the certificate
+                validity_start:
+                  type: string
+                  format: date-time
+                  description: Start date of validity
+                validity_end:
+                  type: string
+                  format: date-time
+                  description: End date of validity
+                extensions:
+                  type: object
+                  properties:
+                    sub_alt_names:
+                      type: object
+                      properties:
+                        names:
+                          type: array
+                          items:
+                            type: object
+      responses:
+        '200':
+          description: Pending certificate created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurPendingCertificate'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Forbidden - Unauthenticated
+
+  /pending_certificates/{pending_certificate_id}:
+    parameters:
+      - name: pending_certificate_id
+        in: path
+        required: true
+        description: Pending certificate ID
+        schema:
+          type: integer
+    
+    get:
+      summary: Get pending certificate details
+      description: Get details of a specific pending certificate by ID
+      tags:
+        - Pending Certificates
+      responses:
+        '200':
+          description: Pending certificate details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurPendingCertificate'
+        '404':
+          description: Pending certificate not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+    
+    put:
+      summary: Update a pending certificate
+      description: Update an existing pending certificate
+      tags:
+        - Pending Certificates
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                owner:
+                  type: string
+                  format: email
+                  description: Certificate owner email
+                description:
+                  type: string
+                  description: Description of the certificate
+                notify:
+                  type: boolean
+                  description: Whether to notify about certificate expiration
+                rotation:
+                  type: boolean
+                  description: Whether to enable auto-rotation
+      responses:
+        '200':
+          description: Pending certificate updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurPendingCertificate'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Pending certificate not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /pending_certificates/{pending_certificate_id}/upload:
+    parameters:
+      - name: pending_certificate_id
+        in: path
+        required: true
+        description: Pending certificate ID
+        schema:
+          type: integer
+    
+    post:
+      summary: Upload a pending certificate
+      description: Upload an existing certificate to a pending certificate
+      tags:
+        - Pending Certificates
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                body:
+                  type: string
+                  description: Certificate body in PEM format
+                chain:
+                  type: string
+                  description: Certificate chain in PEM format
+      responses:
+        '200':
+          description: Pending certificate uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurCertificate'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Forbidden - Unauthenticated
+
+  /pending_certificates/{pending_certificate_id}/key:
+    parameters:
+      - name: pending_certificate_id
+        in: path
+        required: true
+        description: Pending certificate ID
+        schema:
+          type: integer
+    
+    get:
+      summary: Get pending certificate private key
+      description: Retrieves the private key for a specific pending certificate
+      tags:
+        - Pending Certificates
+      responses:
+        '200':
+          description: Pending certificate private key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key:
+                    type: string
+                    description: Private key in PEM format
+        '403':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Pending certificate not found or no private key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+components:
+  schemas:
+    LemurCertificate:
+      type: object
+      properties:
+        id:
+          type: integer
+        cn:
+          type: string
+        chain:
+          type: string
+        csr:
+          type: string
+        authority:
+          type: object
+          properties:
+            active:
+              type: boolean
+            owner:
+              type: string
+            id:
+              type: integer
+            description:
+              type: string
+            name:
+              type: string
+        owner:
+          type: string
+        serial:
+          type: string
+        issuer:
+          type: string
+        dateCreated:
+          type: string
+          format: date-time
+        notBefore:
+          type: string
+          format: date-time
+        notAfter:
+          type: string
+          format: date-time
+        destinations:
+          type: array
+          items:
+            type: object
+        bits:
+          type: integer
+        body:
+          type: string
+        description:
+          type: string
+        deleted:
+          type: string
+        notifications:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+        signingAlgorithm:
+          type: string
+        user:
+          type: object
+          properties:
+            username:
+              type: string
+            active:
+              type: boolean
+            email:
+              type: string
+            id:
+              type: integer
+        active:
+          type: boolean
+        domains:
+          type: array
+          items:
+            type: object
+            properties:
+              sensitive:
+                type: boolean
+              id:
+                type: integer
+              name:
+                type: string
+        replaces:
+          type: array
+          items:
+            type: object
+        replaced:
+          type: array
+          items:
+            type: object
+        name:
+          type: string
+        roles:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              description:
+                type: string
+              name:
+                type: string
+        san:
+          type: string
+    LemurAuthority:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier
+        name:
+          type: string
+          description: Authority name
+        owner:
+          type: string
+          format: email
+          description: Owner email
+        description:
+          type: string
+          description: Description of the authority
+        active:
+          type: boolean
+          description: Whether the authority is active
+        roles:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+        options:
+          type: object
+          nullable: true
+          description: Additional authority options
+        authorityCertificate:
+          type: object
+          properties:
+            body:
+              type: string
+              description: Certificate body in PEM format
+            chain:
+              type: string
+              description: Certificate chain
+            status:
+              type: boolean
+              description: Certificate status
+            cn:
+              type: string
+              description: Common name
+            description:
+              type: string
+            notBefore:
+              type: string
+              format: date-time
+              description: Start date of validity
+            notAfter:
+              type: string
+              format: date-time
+              description: End date of validity
+            owner:
+              type: string
+              format: email
+            user:
+              type: object
+              properties:
+                username:
+                  type: string
+                active:
+                  type: boolean
+                email:
+                  type: string
+                  format: email
+                id:
+                  type: integer
+            active:
+              type: boolean
+            bits:
+              type: integer
+            id:
+              type: integer
+            name:
+              type: string
+
+    LemurUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier
+        username:
+          type: string
+          description: Username
+        email:
+          type: string
+          format: email
+          description: Email address
+        active:
+          type: boolean
+          description: Whether the user is active
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/LemurRole'
+    
+    LemurRole:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier
+        name:
+          type: string
+          description: Role name
+        description:
+          type: string
+          description: Description of the role
+        users:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              username:
+                type: string
+              email:
+                type: string
+                format: email
+    
+    LemurLog:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier
+        user:
+          type: object
+          properties:
+            id:
+              type: integer
+            username:
+              type: string
+            email:
+              type: string
+              format: email
+        action:
+          type: string
+          description: The action performed
+        logType:
+          type: string
+          description: Type of log entry
+        resource:
+          type: object
+          description: The resource affected
+        date:
+          type: string
+          format: date-time
+          description: When the action occurred
+    
+    LemurDomain:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier
+        name:
+          type: string
+          description: Domain name
+        sensitive:
+          type: boolean
+          description: Whether the domain is sensitive
+
+    LemurPlugin:
+      type: object
+      properties:
+        pluginOptions:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              type:
+                type: string
+              required:
+                type: boolean
+              description:
+                type: string
+              value:
+                type: string
+        slug:
+          type: string
+          description: Plugin slug name
+        title:
+          type: string
+          description: Plugin title
+        description:
+          type: string
+          description: Plugin description
+        version:
+          type: string
+          description: Plugin version
+        author:
+          type: string
+          description: Plugin author
+    
+    LemurSource:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier
+        label:
+          type: string
+          description: Source label
+        description:
+          type: string
+          description: Source description
+        active:
+          type: boolean
+          description: Whether the source is active
+        options:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              value:
+                type: string
+        plugin:
+          type: object
+          properties:
+            slug:
+              type: string
+              description: Plugin slug name
+            title:
+              type: string
+              description: Plugin title
+    
+    LemurApiKey:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier
+        name:
+          type: string
+          description: API key name
+        description:
+          type: string
+          description: API key description
+        ttl:
+          type: integer
+          description: Time to live in days
+        user:
+          $ref: '#/components/schemas/LemurUser'
+        revoked:
+          type: boolean
+          description: Whether the API key is revoked
+        issued_at:
+          type: string
+          format: date-time
+          description: When the API key was issued
+        expires:
+          type: string
+          format: date-time
+          description: When the API key expires
+        token:
+          type: string
+          description: The API key token (only shown on creation)
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/LemurRole'
+    
+    LemurDefaults:
+      type: object
+      properties:
+        common_name:
+          type: array
+          items:
+            type: string
+            description: Default common names
+        country:
+          type: string
+          description: Default country
+        state:
+          type: string
+          description: Default state
+        location:
+          type: string
+          description: Default location
+        organizational_unit:
+          type: string
+          description: Default organizational unit
+        organization:
+          type: string
+          description: Default organization
+        default_authority:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Default authority name
+        notifications:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: Notification name
+    
+    LemurEndpoint:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier
+        name:
+          type: string
+          description: Endpoint name
+        dnsname:
+          type: string
+          description: DNS name of the endpoint
+        type:
+          type: string
+          description: Endpoint type
+        active:
+          type: boolean
+          description: Whether the endpoint is active
+        owner:
+          type: string
+          format: email
+          description: Owner email
+        port:
+          type: integer
+          description: Port number
+        policy:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Policy name
+        certificate:
+          $ref: '#/components/schemas/LemurCertificate'
+    
+    LemurDestination:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier
+        label:
+          type: string
+          description: Destination label
+        description:
+          type: string
+          description: Destination description
+        active:
+          type: boolean
+          description: Whether the destination is active
+        options:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              value:
+                type: string
+        plugin:
+          type: object
+          properties:
+            slug:
+              type: string
+              description: Plugin slug name
+            title:
+              type: string
+              description: Plugin title
+
+    LemurDnsProvider:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier
+        name:
+          type: string
+          description: DNS provider name
+        description:
+          type: string
+          description: DNS provider description
+        provider_type:
+          type: string
+          description: Type of DNS provider
+        credentials:
+          type: object
+          description: Provider-specific credentials
+        active:
+          type: boolean
+          description: Whether the DNS provider is active
+        options:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              value:
+                type: string
+    
+    LemurNotification:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier
+        label:
+          type: string
+          description: Notification label
+        description:
+          type: string
+          description: Notification description
+        active:
+          type: boolean
+          description: Whether the notification is active
+        options:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              value:
+                type: string
+        plugin:
+          type: object
+          properties:
+            slug:
+              type: string
+              description: Plugin slug name
+            title:
+              type: string
+              description: Plugin title
+    
+    LemurPendingCertificate:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier
+        name:
+          type: string
+          description: Certificate name
+        owner:
+          type: string
+          format: email
+          description: Owner email
+        description:
+          type: string
+          description: Description of the certificate
+        cn:
+          type: string
+          description: Common Name
+        status:
+          type: string
+          description: Certificate status
+        external_id:
+          type: string
+          description: External identifier
+        csr:
+          type: string
+          description: Certificate signing request
+        chain:
+          type: string
+          description: Certificate chain in PEM format
+        private_key:
+          type: string
+          description: Private key in PEM format
+        notify:
+          type: boolean
+          description: Whether to notify about certificate expiration
+        rotation:
+          type: boolean
+          description: Whether auto-rotation is enabled
+        authority:
+          $ref: '#/components/schemas/LemurAuthority'
+        user:
+          $ref: '#/components/schemas/LemurUser'
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: [ ]
