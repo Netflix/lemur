@@ -165,6 +165,8 @@ paths:
                     properties:
                       id:
                         type: integer
+                      name:
+                        type: string
                 roles:
                   type: array
                   items:
@@ -255,6 +257,11 @@ paths:
                   type: array
                   items:
                     type: object
+                    properties:
+                      label:
+                        type: string
+                      plugin:
+                        type: object
                 notifications:
                   type: array
                   items:
@@ -266,6 +273,11 @@ paths:
                   type: array
                   items:
                     type: object
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
                 roles:
                   type: array
                   items:
@@ -1470,7 +1482,7 @@ paths:
       summary: List roles
       description: Get a list of all roles
       tags:
-        - Roles
+        - Lemur
       parameters:
         - name: page
           in: query
@@ -1520,7 +1532,7 @@ paths:
       summary: Create a new role
       description: Create a new role in the system
       tags:
-        - Roles
+        - Lemur
       requestBody:
         required: true
         content:
@@ -1569,7 +1581,7 @@ paths:
       summary: Get role details
       description: Get details of a specific role by ID
       tags:
-        - Roles
+        - Lemur
       responses:
         '200':
           description: Role details
@@ -1591,7 +1603,7 @@ paths:
       summary: Update a role
       description: Update an existing role
       tags:
-        - Roles
+        - Lemur
       requestBody:
         required: true
         content:
@@ -1642,8 +1654,7 @@ paths:
       summary: List users with role
       description: Get a list of users with the specified role
       tags:
-        - Roles
-        - Users
+        - Lemur
       responses:
         '200':
           description: List of users with the role
@@ -1860,8 +1871,7 @@ paths:
       summary: List user's roles
       description: Get a list of roles for the specified user
       tags:
-        - Users
-        - Roles
+        - Lemur
       responses:
         '200':
           description: List of roles for the user
@@ -1947,7 +1957,7 @@ paths:
       summary: Create a new domain
       description: Create a new domain in the system
       tags:
-        - Domains
+        - Lemur
       requestBody:
         required: true
         content:
@@ -1993,7 +2003,7 @@ paths:
       summary: Get domain details
       description: Get details of a specific domain by ID
       tags:
-        - Domains
+        - Lemur
       responses:
         '200':
           description: Domain details
@@ -2015,7 +2025,7 @@ paths:
       summary: Update a domain
       description: Update an existing domain
       tags:
-        - Domains
+        - Lemur
       requestBody:
         required: true
         content:
@@ -2060,7 +2070,7 @@ paths:
       summary: List plugins
       description: Get a list of all available plugins in Lemur
       tags:
-        - Plugins
+        - Lemur
       responses:
         '200':
           description: List of plugins
@@ -2086,7 +2096,7 @@ paths:
       summary: Get plugin details
       description: Get details of a specific plugin by name
       tags:
-        - Plugins
+        - Lemur
       responses:
         '200':
           description: Plugin details
@@ -2109,7 +2119,7 @@ paths:
       summary: List sources
       description: Get a list of all certificate sources
       tags:
-        - Sources
+        - Lemur
       parameters:
         - name: page
           in: query
@@ -2159,7 +2169,7 @@ paths:
       summary: Create a new source
       description: Create a new certificate source
       tags:
-        - Sources
+        - Lemur
       requestBody:
         required: true
         content:
@@ -2215,7 +2225,7 @@ paths:
       summary: Get source details
       description: Get details of a specific source by ID
       tags:
-        - Sources
+        - Lemur
       responses:
         '200':
           description: Source details
@@ -2237,7 +2247,7 @@ paths:
       summary: Update a source
       description: Update an existing source
       tags:
-        - Sources
+        - Lemur
       requestBody:
         required: true
         content:
@@ -2295,7 +2305,7 @@ paths:
       summary: List API keys
       description: Get a list of all API keys
       tags:
-        - API Keys
+        - Lemur
       parameters:
         - name: page
           in: query
@@ -2345,7 +2355,7 @@ paths:
       summary: Create a new API key
       description: Create a new API key
       tags:
-        - API Keys
+        - Lemur
       requestBody:
         required: true
         content:
@@ -2407,7 +2417,7 @@ paths:
       summary: Get API key details
       description: Get details of a specific API key by ID
       tags:
-        - API Keys
+        - Lemur
       responses:
         '200':
           description: API key details
@@ -2429,7 +2439,7 @@ paths:
       summary: Update an API key
       description: Update an existing API key
       tags:
-        - API Keys
+        - Lemur
       requestBody:
         required: true
         content:
@@ -2483,7 +2493,7 @@ paths:
       summary: Delete an API key
       description: Delete an existing API key
       tags:
-        - API Keys
+        - Lemur
       responses:
         '200':
           description: API key deleted successfully
@@ -2517,8 +2527,7 @@ paths:
       summary: List user's API keys
       description: Get a list of API keys for a specific user
       tags:
-        - API Keys
-        - Users
+        - Lemur
       responses:
         '200':
           description: List of user's API keys
@@ -2548,7 +2557,7 @@ paths:
       summary: Get system defaults
       description: Get the default configuration settings for Lemur
       tags:
-        - Defaults
+        - Lemur
       responses:
         '200':
           description: System defaults
@@ -2564,7 +2573,7 @@ paths:
       summary: List endpoints
       description: Get a list of all endpoints
       tags:
-        - Endpoints
+        - Lemur
       parameters:
         - name: page
           in: query
@@ -2614,7 +2623,7 @@ paths:
       summary: Create a new endpoint
       description: Create a new endpoint
       tags:
-        - Endpoints
+        - Lemur
       requestBody:
         required: true
         content:
@@ -2679,7 +2688,7 @@ paths:
       summary: Get endpoint details
       description: Get details of a specific endpoint by ID
       tags:
-        - Endpoints
+        - Lemur
       responses:
         '200':
           description: Endpoint details
@@ -2701,7 +2710,7 @@ paths:
       summary: Update an endpoint
       description: Update an existing endpoint
       tags:
-        - Endpoints
+        - Lemur
       requestBody:
         required: true
         content:
@@ -2765,7 +2774,7 @@ paths:
       summary: List destinations
       description: Get a list of all destinations
       tags:
-        - Destinations
+        - Lemur
       parameters:
         - name: page
           in: query
@@ -2821,7 +2830,7 @@ paths:
       summary: Create a new destination
       description: Create a new certificate destination
       tags:
-        - Destinations
+        - Lemur
       requestBody:
         required: true
         content:
@@ -2877,7 +2886,7 @@ paths:
       summary: Get destination details
       description: Get details of a specific destination by ID
       tags:
-        - Destinations
+        - Lemur
       responses:
         '200':
           description: Destination details
@@ -2899,7 +2908,7 @@ paths:
       summary: Update a destination
       description: Update an existing destination
       tags:
-        - Destinations
+        - Lemur
       requestBody:
         required: true
         content:
@@ -2957,7 +2966,7 @@ paths:
       summary: Get destination statistics
       description: Get statistics about destinations
       tags:
-        - Destinations
+        - Lemur
       responses:
         '200':
           description: Destination statistics
@@ -2980,7 +2989,7 @@ paths:
       summary: List DNS providers
       description: Get a list of all DNS providers
       tags:
-        - DNS Providers
+        - Lemur
       parameters:
         - name: page
           in: query
@@ -3030,7 +3039,7 @@ paths:
       summary: Create a new DNS provider
       description: Create a new DNS provider
       tags:
-        - DNS Providers
+        - Lemur
       requestBody:
         required: true
         content:
@@ -3082,7 +3091,7 @@ paths:
       summary: Get DNS provider details
       description: Get details of a specific DNS provider by ID
       tags:
-        - DNS Providers
+        - Lemur
       responses:
         '200':
           description: DNS provider details
@@ -3104,7 +3113,7 @@ paths:
       summary: Update a DNS provider
       description: Update an existing DNS provider
       tags:
-        - DNS Providers
+        - Lemur
       requestBody:
         required: true
         content:
@@ -3155,7 +3164,7 @@ paths:
       summary: Get DNS provider types
       description: Get a list of available DNS provider types
       tags:
-        - DNS Providers
+        - Lemur
       responses:
         '200':
           description: List of DNS provider types
@@ -3173,7 +3182,7 @@ paths:
       summary: List notifications
       description: Get a list of all notifications
       tags:
-        - Notifications
+        - Lemur
       parameters:
         - name: page
           in: query
@@ -3223,7 +3232,7 @@ paths:
       summary: Create a new notification
       description: Create a new notification
       tags:
-        - Notifications
+        - Lemur
       requestBody:
         required: true
         content:
@@ -3282,7 +3291,7 @@ paths:
       summary: Get notification details
       description: Get details of a specific notification by ID
       tags:
-        - Notifications
+        - Lemur
       responses:
         '200':
           description: Notification details
@@ -3304,7 +3313,7 @@ paths:
       summary: Update a notification
       description: Update an existing notification
       tags:
-        - Notifications
+        - Lemur
       requestBody:
         required: true
         content:
@@ -3370,8 +3379,7 @@ paths:
       summary: Get certificate notifications
       description: Get notifications for a specific certificate
       tags:
-        - Notifications
-        - Certificates
+        - Lemur
       responses:
         '200':
           description: List of notifications for the certificate
@@ -3401,7 +3409,7 @@ paths:
       summary: List pending certificates
       description: Get a list of all pending certificates
       tags:
-        - Pending Certificates
+        - Lemur
       parameters:
         - name: page
           in: query
@@ -3451,7 +3459,7 @@ paths:
       summary: Create a new pending certificate
       description: Create a new pending certificate
       tags:
-        - Pending Certificates
+        - Lemur
       requestBody:
         required: true
         content:
@@ -3525,7 +3533,7 @@ paths:
       summary: Get pending certificate details
       description: Get details of a specific pending certificate by ID
       tags:
-        - Pending Certificates
+        - Lemur
       responses:
         '200':
           description: Pending certificate details
@@ -3547,7 +3555,7 @@ paths:
       summary: Update a pending certificate
       description: Update an existing pending certificate
       tags:
-        - Pending Certificates
+        - Lemur
       requestBody:
         required: true
         content:
@@ -3607,7 +3615,7 @@ paths:
       summary: Upload a pending certificate
       description: Upload an existing certificate to a pending certificate
       tags:
-        - Pending Certificates
+        - Lemur
       requestBody:
         required: true
         content:
@@ -3653,7 +3661,7 @@ paths:
       summary: Get pending certificate private key
       description: Retrieves the private key for a specific pending certificate
       tags:
-        - Pending Certificates
+        - Lemur
       responses:
         '200':
           description: Pending certificate private key
@@ -3729,6 +3737,11 @@ components:
           type: array
           items:
             type: object
+            properties:
+              label:
+                type: string
+              plugin:
+                type: object
         bits:
           type: integer
         body:
@@ -3774,10 +3787,20 @@ components:
           type: array
           items:
             type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
         replaced:
           type: array
           items:
             type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
         name:
           type: string
         roles:
