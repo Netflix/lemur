@@ -615,6 +615,8 @@ def reissue(old_certificate_name, notify, commit, serial_numbers):
         # if neither name nor serial numbers were specified, reissue all pending reissues
         if not certs_to_reissue:
             certs_to_reissue = get_all_pending_reissue()
+            if current_app.config.get("REISSUE_FILTER"):
+                certs_to_reissue = [c for c in certs_to_reissue if current_app.config.get("REISSUE_FILTER")(c)]
             click.echo(f"[+] Reissuing all {len(certs_to_reissue)} pending certificates.")
 
         for old_cert in certs_to_reissue:
