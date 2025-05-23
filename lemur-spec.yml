@@ -3737,6 +3737,11 @@ components:
           type: array
           items:
             type: object
+            properties:
+              label:
+                type: string
+              plugin:
+                type: object
         bits:
           type: integer
         body:
