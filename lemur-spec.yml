@@ -165,6 +165,8 @@ paths:
                     properties:
                       id:
                         type: integer
+                      name:
+                        type: string
                 roles:
                   type: array
                   items:
@@ -266,6 +268,11 @@ paths:
                   type: array
                   items:
                     type: object
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
                 roles:
                   type: array
                   items:
@@ -3774,10 +3781,20 @@ components:
           type: array
           items:
             type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
         replaced:
           type: array
           items:
             type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
         name:
           type: string
         roles:
