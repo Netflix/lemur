@@ -509,7 +509,7 @@ pytest==8.3.5
     #   pytest-mock
 pytest-flask==1.3.0
     # via -r requirements-tests.in
-pytest-mock==3.14.0
+pytest-mock==3.14.1
     # via -r requirements-tests.in
 python-dateutil==2.9.0.post0
     # via
