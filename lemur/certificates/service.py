@@ -1385,3 +1385,15 @@ def get_certificates_for_expiration_metrics(expiry_window):
 def _get_cert_expiry_in_days(cert_not_after):
     time_until_expiration = arrow.get(cert_not_after) - arrow.utcnow()
     return time_until_expiration.days
+
+
+def update_description(cert, description=None):
+    """
+    Update certificate description
+    :param cert: Certificate object to be updated
+    :param description: new description value
+    :return: Updated certificate
+    """
+    if description is not None:
+        cert.description = description
+    return database.update(cert)
