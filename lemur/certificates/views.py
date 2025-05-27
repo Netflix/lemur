@@ -1811,6 +1811,17 @@ class CertificateDescriptionUpdate(AuthenticatedResource):
         if not cert:
             return dict(message="Certificate not found"), 404
 
+        # allow creators
+        if g.current_user != cert.user:
+            owner_role = role_service.get_by_name(cert.owner)
+            permission = CertificatePermission(owner_role, [x.name for x in cert.roles])
+
+            if not permission.can():
+                return (
+                    dict(message="You are not authorized to update this certificate"),
+                    403,
+                )
+
         self.reqparse.add_argument('description', type=str, location='json', required=True)
         args = self.reqparse.parse_args()
         description = args.get('description')
