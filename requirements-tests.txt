@@ -63,12 +63,12 @@ blinker==1.7.0
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.38.18
+boto3==1.38.23
     # via
     #   -r requirements.txt
     #   aws-sam-translator
     #   moto
-botocore==1.38.18
+botocore==1.38.23
     # via
     #   -r requirements.txt
     #   aws-xray-sdk
@@ -134,7 +134,7 @@ configobj==5.0.9
     # via
     #   -r requirements.txt
     #   certbot
-coverage==7.8.0
+coverage==7.8.2
     # via -r requirements-tests.in
 cryptography==44.0.3
     # via
@@ -217,7 +217,7 @@ flask-sqlalchemy==2.5.1
     # via
     #   -r requirements.txt
     #   flask-migrate
-freezegun==1.5.1
+freezegun==1.5.2
     # via -r requirements-tests.in
 future==1.0.0
     # via -r requirements.txt
@@ -509,7 +509,7 @@ pytest==8.3.5
     #   pytest-mock
 pytest-flask==1.3.0
     # via -r requirements-tests.in
-pytest-mock==3.14.0
+pytest-mock==3.14.1
     # via -r requirements-tests.in
 python-dateutil==2.9.0.post0
     # via
@@ -593,7 +593,7 @@ rsa==4.9
     #   -r requirements.txt
     #   google-auth
     #   python-jose
-s3transfer==0.12.0
+s3transfer==0.13.0
     # via
     #   -r requirements.txt
     #   boto3
@@ -666,7 +666,7 @@ types-setuptools==80.4.0.20250511
     # via
     #   -r requirements-tests.in
     #   types-cffi
-types-six==1.17.0.20250403
+types-six==1.17.0.20250515
     # via -r requirements-tests.in
 types-tabulate==0.9.0.20241207
     # via -r requirements-tests.in
