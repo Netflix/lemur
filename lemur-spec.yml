@@ -3693,6 +3693,60 @@ paths:
                   message:
                     type: string
 
+  /certificates/{certificate_id}/description:
+    parameters:
+      - name: certificate_id
+        in: path
+        required: true
+        description: Certificate ID
+        schema:
+          type: integer
+    
+    put:
+      summary: Update certificate description
+      description: Update the description field of a certificate
+      tags:
+        - Lemur
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                  description: New description for the certificate
+              required:
+                - description
+      responses:
+        '200':
+          description: Certificate updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LemurCertificate'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Forbidden - Unauthenticated
+        '404':
+          description: Certificate not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
 components:
   schemas:
     LemurCertificate:
