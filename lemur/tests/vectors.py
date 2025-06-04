@@ -2,21 +2,21 @@ from lemur.common.utils import parse_certificate
 
 VALID_USER_HEADER_TOKEN = {
     "Authorization": "Basic "
-    + "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE1MjE2NTIwMjIsImV4cCI6MjM4NTY1MjAyMiwic3ViIjoxfQ.uK4PZjVAs0gt6_9h2EkYkKd64nFXdOq-rHsJZzeQicc",
+    + "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE1MjE2NTIwMjIsImV4cCI6MjM4NTY1MjAyMiwic3ViIjoiMSJ9.UQBQzJHyUJNgTVKQRHsBw3tz-plqRWAXiaSIYnOfY9g",
     "Content-Type": "application/json",
 }
 
 
 VALID_ADMIN_HEADER_TOKEN = {
     "Authorization": "Basic "
-    + "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1MjE2NTE2NjMsInN1YiI6MiwiYWlkIjoxfQ.wyf5PkQNcggLrMFqxDfzjY-GWPw_XsuWvU2GmQaC5sg",
+    + "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE1MjE2NTE2NjMsInN1YiI6IjIiLCJhaWQiOjF9.iwffQd6msR9Qpythn7IHzk1LpZtz7rLWcdP3ECL1R9I",
     "Content-Type": "application/json",
 }
 
 
 VALID_ADMIN_API_TOKEN = {
     "Authorization": "Basic "
-    + "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImFpZCI6MSwiaWF0IjoxNDM1MjMzMzY5fQ.umW0I_oh4MVZ2qrClzj9SfYnQl6cd0HGzh9EwkDW60I",
+    + "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwiYWlkIjoxLCJpYXQiOjE0MzUyMzMzNjl9.G4LPxutGiMAJBQfVxVqfECplVOguiDHHQSu0z32q3-0",
     "Content-Type": "application/json",
 }
 
