@@ -476,6 +476,7 @@ pyflakes==3.2.0
 pygments==2.17.2
     # via
     #   -r requirements.txt
+    #   pytest
     #   rich
 pyjks==20.0.0
     # via -r requirements.txt
@@ -504,7 +505,7 @@ pyspnego==0.10.2
     # via
     #   -r requirements.txt
     #   requests-ntlm
-pytest==8.3.5
+pytest==8.4.0
     # via
     #   -r requirements-tests.in
     #   pytest-flask
