@@ -470,7 +470,7 @@ openapi-schema-validator==0.6.2
     # via
     #   -r requirements-tests.txt
     #   openapi-spec-validator
-openapi-spec-validator==0.7.1
+openapi-spec-validator==0.7.2
     # via
     #   -r requirements-tests.txt
     #   moto
