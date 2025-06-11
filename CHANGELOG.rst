@@ -18,6 +18,7 @@ Added the disable_autorotate_without_endpoint celery task, along with a customiz
 function you can use to determine when to disable autorotate. By default, nothing will be changed by this task when scheduled.
 Added a new API endpoint `/certificates/{certificate_id}/description` for updating just the description field of a certificate, avoiding the need to provide the full certificate object for simple description updates.
 Removed support for Postgres 12, Postgres 15, Python 3.9, and Ubuntu 20.04. Added support for postgres 16.
+Added GcsDestinationPlugin, which allows uploading certificates to Google Cloud Storage.
 
 1.8.2 - `2024-06-11`
 ~~~~~~~~~~~~~~~~~~~~
