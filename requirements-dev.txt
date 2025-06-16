@@ -676,7 +676,7 @@ regex==2023.12.25
     # via
     #   -r requirements-tests.txt
     #   cfn-lint
-requests==2.32.3
+requests==2.32.4
     # via
     #   -r requirements-tests.txt
     #   acme
