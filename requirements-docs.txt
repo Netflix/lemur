@@ -548,7 +548,7 @@ proto-plus==1.23.0
     #   -r requirements-tests.txt
     #   google-api-core
     #   google-cloud-private-ca
-protobuf==4.25.7
+protobuf==4.25.8
     # via
     #   -r requirements-tests.txt
     #   google-api-core
@@ -694,7 +694,7 @@ regex==2023.12.25
     # via
     #   -r requirements-tests.txt
     #   cfn-lint
-requests==2.32.3
+requests==2.32.4
     # via
     #   -r requirements-tests.txt
     #   acme

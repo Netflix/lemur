@@ -431,7 +431,7 @@ proto-plus==1.23.0
     #   -r requirements.txt
     #   google-api-core
     #   google-cloud-private-ca
-protobuf==4.25.7
+protobuf==4.25.8
     # via
     #   -r requirements.txt
     #   google-api-core
@@ -556,7 +556,7 @@ referencing==0.31.1
     #   jsonschema-specifications
 regex==2023.12.25
     # via cfn-lint
-requests==2.32.3
+requests==2.32.4
     # via
     #   -r requirements.txt
     #   acme
