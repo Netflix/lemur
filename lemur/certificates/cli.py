@@ -898,29 +898,32 @@ def automatically_enable_autorotate_with_endpoint():
 
     eligible_certs = get_all_certs_attached_to_endpoint_without_autorotate()
     for cert in eligible_certs:
+        try:
+            if not no_authority_restrictions and cert.authority_id not in permitted_authorities:
+                continue
 
-        if not no_authority_restrictions and cert.authority_id not in permitted_authorities:
-            continue
-
-        log_data["certificate"] = cert.name
-        log_data["certificate_id"] = cert.id
-        log_data["authority_id"] = cert.authority_id
-        log_data["authority_name"] = authorities_get_by_id(cert.authority_id).name
-        if cert.destinations:
-            log_data["destination_names"] = ', '.join([d.label for d in cert.destinations])
-        else:
-            log_data["destination_names"] = "NONE"
-        current_app.logger.info(log_data)
-        metrics.send("automatically_enable_autorotate_with_endpoint",
-                     "counter", 1,
-                     metric_tags={"certificate": log_data["certificate"],
-                                  "certificate_id": log_data["certificate_id"],
-                                  "authority_id": log_data["authority_id"],
-                                  "authority_name": log_data["authority_name"],
-                                  "destination_names": log_data["destination_names"]
-                                  })
-        cert.rotation = True
-        database.update(cert)
+            log_data["certificate"] = cert.name
+            log_data["certificate_id"] = cert.id
+            log_data["authority_id"] = cert.authority_id
+            log_data["authority_name"] = authorities_get_by_id(cert.authority_id).name
+            if cert.destinations:
+                log_data["destination_names"] = ', '.join([d.label for d in cert.destinations])
+            else:
+                log_data["destination_names"] = "NONE"
+            current_app.logger.info(log_data)
+            metrics.send("automatically_enable_autorotate_with_endpoint",
+                         "counter", 1,
+                         metric_tags={"certificate": log_data["certificate"],
+                                      "certificate_id": log_data["certificate_id"],
+                                      "authority_id": log_data["authority_id"],
+                                      "authority_name": log_data["authority_name"],
+                                      "destination_names": log_data["destination_names"]
+                                      })
+            cert.rotation = True
+            database.update(cert)
+        except Exception as e:
+            capture_exception()
+            current_app.logger.warning(f"Unable to enable auto-rotate for certificate {cert.name}. Reason: {e}")
 
 
 @cli.command("disable_autorotate_without_endpoint")
