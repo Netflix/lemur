@@ -76,7 +76,7 @@ boto3==1.38.23
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
-botocore==1.38.23
+botocore==1.38.32
     # via
     #   -r requirements-tests.txt
     #   aws-xray-sdk
@@ -146,7 +146,7 @@ configobj==5.0.9
     #   certbot
 coverage==7.8.2
     # via -r requirements-tests.txt
-cryptography==44.0.3
+cryptography==45.0.3
     # via
     #   -r requirements-tests.txt
     #   acme
@@ -199,7 +199,7 @@ exceptiongroup==1.2.0
     #   pytest
 factory-boy==3.3.3
     # via -r requirements-tests.txt
-faker==37.1.0
+faker==37.3.0
     # via
     #   -r requirements-tests.txt
     #   factory-boy
@@ -445,7 +445,7 @@ multipart==0.2.4
     # via
     #   -r requirements-tests.txt
     #   moto
-mypy==1.15.0
+mypy==1.16.0
     # via -r requirements-tests.txt
 mypy-extensions==1.0.0
     # via
@@ -470,7 +470,7 @@ openapi-schema-validator==0.6.2
     # via
     #   -r requirements-tests.txt
     #   openapi-spec-validator
-openapi-spec-validator==0.7.1
+openapi-spec-validator==0.7.2
     # via
     #   -r requirements-tests.txt
     #   moto
@@ -501,6 +501,7 @@ pathspec==0.12.1
     # via
     #   -r requirements-tests.txt
     #   black
+    #   mypy
 pbr==6.0.0
     # via
     #   -r requirements-tests.txt
@@ -529,7 +530,7 @@ proto-plus==1.23.0
     #   -r requirements-tests.txt
     #   google-api-core
     #   google-cloud-private-ca
-protobuf==4.25.7
+protobuf==4.25.8
     # via
     #   -r requirements-tests.txt
     #   google-api-core
@@ -584,6 +585,7 @@ pyflakes==3.2.0
 pygments==2.17.2
     # via
     #   -r requirements-tests.txt
+    #   pytest
     #   readme-renderer
     #   rich
 pyjks==20.0.0
@@ -615,7 +617,7 @@ pyspnego==0.10.2
     # via
     #   -r requirements-tests.txt
     #   requests-ntlm
-pytest==8.3.5
+pytest==8.4.0
     # via
     #   -r requirements-tests.txt
     #   pytest-flask
@@ -674,7 +676,7 @@ regex==2023.12.25
     # via
     #   -r requirements-tests.txt
     #   cfn-lint
-requests==2.32.3
+requests==2.32.4
     # via
     #   -r requirements-tests.txt
     #   acme
@@ -737,7 +739,7 @@ sarif-om==1.0.4
     #   cfn-lint
 secretstorage==3.3.3
     # via keyring
-sentry-sdk==2.29.1
+sentry-sdk==2.30.0
     # via -r requirements-tests.txt
 six==1.17.0
     # via
@@ -807,13 +809,13 @@ types-python-dateutil==2.9.0.20240316
     # via
     #   -r requirements-tests.txt
     #   arrow
-types-pytz==2025.2.0.20250326
+types-pytz==2025.2.0.20250516
     # via -r requirements-tests.txt
 types-redis==4.6.0.20241004
     # via -r requirements-tests.txt
 types-requests==2.31.0.6
     # via -r requirements-tests.txt
-types-setuptools==80.4.0.20250511
+types-setuptools==80.9.0.20250529
     # via
     #   -r requirements-tests.txt
     #   types-cffi

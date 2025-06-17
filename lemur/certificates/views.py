@@ -67,7 +67,7 @@ class CertificatesListValid(AuthenticatedResource):
               Host: example.com
               Accept: application/json, text/javascript
 
-           **Example response (with single cert to be concise)**:
+           **Example response**:
 
            .. sourcecode:: http
 
@@ -1761,6 +1761,81 @@ class CertificateDeactivate(AuthenticatedResource):
             return dict(message=f"Failed to Deactivate: {str(e)}"), 400
 
 
+class CertificateDescriptionUpdate(AuthenticatedResource):
+    """ Defines the 'certificates/<int:certificate_id>/description' endpoint """
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        super().__init__()
+
+    @validate_schema(None, certificate_output_schema)
+    def put(self, certificate_id):
+        """
+        .. http:put:: /certificates/1/description
+
+           Update a certificate's description
+
+           **Example request**:
+
+           .. sourcecode:: http
+
+              PUT /certificates/1/description HTTP/1.1
+              Host: example.com
+              Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
+
+              {
+                 "description": "Updated certificate description"
+              }
+
+           **Example response**:
+
+           .. sourcecode:: http
+
+              HTTP/1.1 200 OK
+              Vary: Accept
+              Content-Type: text/javascript
+
+              {
+                "status": null,
+                "cn": "*.test.example.net",
+                ... certificate data ...
+              }
+
+           :reqheader Authorization: OAuth token to authenticate
+           :statuscode 200: no error
+           :statuscode 403: unauthenticated
+           :statuscode 404: certificate not found
+           :statuscode 400: bad request
+        """
+        cert = service.get(certificate_id)
+        if not cert:
+            return dict(message="Certificate not found"), 404
+
+        # allow creators
+        if g.current_user != cert.user:
+            owner_role = role_service.get_by_name(cert.owner)
+            permission = CertificatePermission(owner_role, [x.name for x in cert.roles])
+
+            if not permission.can():
+                return (
+                    dict(message="You are not authorized to update this certificate"),
+                    403,
+                )
+
+        self.reqparse.add_argument('description', type=str, location='json', required=True)
+        args = self.reqparse.parse_args()
+        description = args.get('description')
+
+        if current_app.config.get("CERTIFICATE_UPDATE_REQUEST_VALIDATION"):
+            message, code = current_app.config.get("CERTIFICATE_UPDATE_REQUEST_VALIDATION")({"description": description}, cert)
+            if message and code:
+                return dict(message=message), code
+
+        cert = service.update_description(cert, description=description)
+        log_service.create(g.current_user, "update_cert_description", certificate=cert)
+        return cert
+
+
 api.add_resource(
     CertificateDeactivate,
     "/certificates/<int:certificate_id>/deactivate",
@@ -1812,4 +1887,9 @@ api.add_resource(
     CertificatesReplacementsList,
     "/certificates/<int:certificate_id>/replacements",
     endpoint="replacements",
+)
+api.add_resource(
+    CertificateDescriptionUpdate,
+    "/certificates/<int:certificate_id>/description",
+    endpoint="certificateDescriptionUpdate",
 )
