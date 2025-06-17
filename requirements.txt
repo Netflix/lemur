@@ -48,7 +48,7 @@ celery[redis]==5.3.6
     # via -r requirements.in
 certbot==3.3.0
     # via -r requirements.in
-certifi==2025.4.26
+certifi==2025.6.15
     # via
     #   -r requirements.in
     #   requests
