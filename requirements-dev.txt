@@ -530,7 +530,7 @@ proto-plus==1.23.0
     #   -r requirements-tests.txt
     #   google-api-core
     #   google-cloud-private-ca
-protobuf==4.25.7
+protobuf==4.25.8
     # via
     #   -r requirements-tests.txt
     #   google-api-core
