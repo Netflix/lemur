@@ -705,7 +705,7 @@ responses==0.25.0
     # via
     #   -r requirements-tests.txt
     #   moto
-retrying==1.3.4
+retrying==1.4.0
     # via -r requirements-tests.txt
 rfc3339-validator==0.1.4
     # via
@@ -748,7 +748,6 @@ six==1.17.0
     #   flask-restful
     #   junit-xml
     #   python-dateutil
-    #   retrying
     #   rfc3339-validator
 sortedcontainers==2.4.0
     # via
