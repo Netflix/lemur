@@ -578,7 +578,7 @@ requests-ntlm==1.2.0
     #   certsrv
 responses==0.25.0
     # via moto
-retrying==1.4.0
+retrying==1.4.2
     # via -r requirements.txt
 rfc3339-validator==0.1.4
     # via openapi-schema-validator
