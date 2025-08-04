@@ -719,7 +719,7 @@ responses==0.25.0
     # via
     #   -r requirements-tests.txt
     #   moto
-retrying==1.4.0
+retrying==1.4.2
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
