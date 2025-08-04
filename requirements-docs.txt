@@ -345,6 +345,10 @@ iniconfig==2.0.0
     # via
     #   -r requirements-tests.txt
     #   pytest
+invoke==2.2.0
+    # via
+    #   -r requirements-tests.txt
+    #   paramiko
 itsdangerous==2.2.0
     # via
     #   -r requirements-docs.in
@@ -504,7 +508,7 @@ packaging==24.0
     #   limits
     #   pytest
     #   sphinx
-paramiko==3.5.1
+paramiko==4.0.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
