@@ -113,7 +113,7 @@ flask==2.3.3
     #   flask-sqlalchemy
 flask-bcrypt==1.0.1
     # via -r requirements.in
-flask-cors==6.0.0
+flask-cors==6.0.1
     # via -r requirements.in
 flask-limiter==3.11.0
     # via -r requirements.in
