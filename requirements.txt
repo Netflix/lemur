@@ -316,7 +316,7 @@ requests==2.32.4
     #   requests-ntlm
 requests-ntlm==1.2.0
     # via certsrv
-retrying==1.4.0
+retrying==1.4.2
     # via -r requirements.in
 rich==13.7.1
     # via flask-limiter
