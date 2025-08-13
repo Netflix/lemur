@@ -705,7 +705,7 @@ responses==0.25.0
     # via
     #   -r requirements-tests.txt
     #   moto
-retrying==1.4.0
+retrying==1.4.2
     # via -r requirements-tests.txt
 rfc3339-validator==0.1.4
     # via
