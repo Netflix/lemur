@@ -311,7 +311,10 @@ iniconfig==2.0.0
     #   -r requirements-tests.txt
     #   pytest
 invoke==2.2.0
-    # via -r requirements-dev.in
+    # via
+    #   -r requirements-dev.in
+    #   -r requirements-tests.txt
+    #   paramiko
 itsdangerous==2.2.0
     # via
     #   -r requirements-tests.txt
@@ -487,7 +490,7 @@ packaging==24.0
     #   limits
     #   pytest
     #   twine
-paramiko==3.5.1
+paramiko==4.0.0
     # via -r requirements-tests.txt
 parsedatetime==2.6
     # via

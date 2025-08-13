@@ -276,6 +276,10 @@ inflection==0.5.1
     # via -r requirements.txt
 iniconfig==2.0.0
     # via pytest
+invoke==2.2.0
+    # via
+    #   -r requirements.txt
+    #   paramiko
 itsdangerous==2.2.0
     # via
     #   -r requirements.txt
@@ -399,7 +403,7 @@ packaging==24.0
     #   gunicorn
     #   limits
     #   pytest
-paramiko==3.5.1
+paramiko==4.0.0
     # via -r requirements.txt
 parsedatetime==2.6
     # via
