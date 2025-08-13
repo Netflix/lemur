@@ -170,6 +170,8 @@ importlib-resources==6.4.0
     # via limits
 inflection==0.5.1
     # via -r requirements.in
+invoke==2.2.0
+    # via paramiko
 itsdangerous==2.2.0
     # via
     #   -r requirements.in
@@ -221,7 +223,7 @@ packaging==24.0
     # via
     #   gunicorn
     #   limits
-paramiko==3.5.1
+paramiko==4.0.0
     # via -r requirements.in
 parsedatetime==2.6
     # via certbot
