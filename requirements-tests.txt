@@ -68,7 +68,7 @@ boto3==1.40.8
     #   -r requirements.txt
     #   aws-sam-translator
     #   moto
-botocore==1.40.9
+botocore==1.40.16
     # via
     #   -r requirements.txt
     #   aws-xray-sdk
