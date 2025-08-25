@@ -842,7 +842,7 @@ types-cffi==1.16.0.20240331
     #   types-pyopenssl
 types-deprecated==1.2.15.20250304
     # via -r requirements-tests.txt
-types-paramiko==4.0.0.20250809
+types-paramiko==4.0.0.20250822
     # via -r requirements-tests.txt
 types-protobuf==6.30.2.20250703
     # via -r requirements-tests.txt
