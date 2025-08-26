@@ -742,7 +742,7 @@ sarif-om==1.0.4
     #   cfn-lint
 secretstorage==3.3.3
     # via keyring
-sentry-sdk==2.34.1
+sentry-sdk==2.35.0
     # via -r requirements-tests.txt
 six==1.17.0
     # via
