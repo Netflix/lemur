@@ -656,7 +656,7 @@ types-pyopenssl==24.1.0.20240722
     # via
     #   -r requirements-tests.in
     #   types-redis
-types-pyrfc3339==2.0.1.20241107
+types-pyrfc3339==2.0.1.20250825
     # via -r requirements-tests.in
 types-python-dateutil==2.9.0.20240316
     # via
