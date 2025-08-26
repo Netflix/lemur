@@ -560,7 +560,7 @@ referencing==0.31.1
     #   jsonschema-specifications
 regex==2023.12.25
     # via cfn-lint
-requests==2.32.4
+requests==2.32.5
     # via
     #   -r requirements.txt
     #   acme
