@@ -18,7 +18,7 @@ class Log(BaseModel):
     __tablename__ = "logs"
     id = Column(Integer, primary_key=True)
     certificate_id = Column(Integer, ForeignKey("certificates.id"))
-    log_type = Column(
+    log_type = Column(  # type: ignore[var-annotated]
         Enum(
             "key_view",
             "create_cert",

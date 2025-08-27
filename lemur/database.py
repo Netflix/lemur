@@ -9,6 +9,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+from typing import TYPE_CHECKING
 from inflection import underscore
 from flask_sqlalchemy.model import DefaultMeta
 from sqlalchemy import exc, func, distinct
@@ -18,8 +19,10 @@ from sqlalchemy.sql import and_, or_
 from lemur.exceptions import AttrNotFound, DuplicateError
 from lemur.extensions import db
 
-
-BaseModel: DefaultMeta = db.Model
+if TYPE_CHECKING:
+    BaseModel = DefaultMeta
+else:
+    BaseModel = db.Model
 
 
 def filter_none(kwargs):

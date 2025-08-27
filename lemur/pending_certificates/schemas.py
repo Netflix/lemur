@@ -71,7 +71,7 @@ class PendingCertificateOutputSchema(LemurOutputSchema):
 
 
 class PendingCertificateEditInputSchema(PendingCertificateSchema):
-    owner = fields.String()
+    owner = fields.Email()
 
     notify = fields.Boolean()
     rotation = fields.Boolean()

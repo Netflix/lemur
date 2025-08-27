@@ -449,7 +449,7 @@ class CertificateAssociation(BaseModel):
     )
     domain_id = Column(Integer, ForeignKey("domains.id"), primary_key=True)
     certificate_id = Column(Integer, ForeignKey("certificates.id"), primary_key=True)
-    ports = Column(postgresql.ARRAY(Integer))
+    ports = Column(postgresql.ARRAY(Integer))  # type: ignore[var-annotated]
     certificate = relationship(Certificate,
                                backref=backref("certificate_associations",
                                                cascade="all, delete-orphan")

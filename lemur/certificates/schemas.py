@@ -178,7 +178,7 @@ class CertificateInputSchema(CertificateCreationSchema):
 
 
 class CertificateEditInputSchema(CertificateSchema):
-    owner = fields.String()
+    owner = fields.Email()
 
     notify = fields.Boolean()
     rotation = fields.Boolean()

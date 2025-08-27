@@ -36,7 +36,7 @@ class User(BaseModel):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
     password = Column(String(128))
-    active = Column(Boolean())
+    active = Column(Boolean())  # type: ignore[var-annotated]
     confirmed_at = Column(ArrowType())
     username = Column(String(255), nullable=False, unique=True)
     email = Column(String(128), unique=True)
