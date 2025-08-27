@@ -38,8 +38,6 @@ jobs:
     env:
       TOXENV: ${{ matrix.toxenv }}
       PIP_DOWNLOAD_CACHE: .pip_download_cache
-      # The following line is a temporary workaround for this issue: https://github.com/pypa/setuptools/issues/2230
-      SETUPTOOLS_USE_DISTUTILS: stdlib
       # do not load /etc/boto.cfg with Python 3 incompatible plugin
       # https://github.com/travis-ci/travis-ci/issues/5246#issuecomment-166460882
       BOTO_CONFIG: /doesnotexist
@@ -64,7 +62,7 @@ jobs:
           python -m venv ~/env
           source ~/env/bin/activate
           python -m pip install --upgrade pip
-          python -m pip install --upgrade setuptools
+          python -m pip install --upgrade setuptools wheel
           pip install bandit
           sudo apt-get update
           sudo apt-get install libsasl2-dev libldap2-dev xvfb
