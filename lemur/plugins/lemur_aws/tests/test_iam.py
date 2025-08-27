@@ -1,5 +1,5 @@
 import pytest
-from moto import mock_iam, mock_sts
+from moto import mock_aws
 
 from lemur.tests.vectors import EXTERNAL_VALID_STR, SAN_CERT_KEY
 
@@ -150,8 +150,7 @@ def test_create_arn_from_cert():
 @pytest.mark.skipif(
     True, reason="this fails because moto is not currently returning what boto does"
 )
-@mock_sts()
-@mock_iam()
+@mock_aws
 def test_get_all_server_certs(app):
     from lemur.plugins.lemur_aws.iam import upload_cert, get_all_certificates
 

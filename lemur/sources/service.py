@@ -10,6 +10,7 @@ from datetime import timedelta
 import copy
 
 from flask import current_app
+from marshmallow import ValidationError
 from sqlalchemy.exc import OperationalError
 from sentry_sdk import capture_exception
 from sqlalchemy import cast
@@ -33,11 +34,11 @@ from lemur.plugins.utils import get_plugin_option, set_plugin_option
 
 
 def certificate_create(certificate, source):
-    data, errors = CertificateUploadInputSchema().load(certificate)
-
-    if errors:
+    try:
+        data = CertificateUploadInputSchema().load(certificate)
+    except ValidationError as err:
         raise Exception(
-            f"Unable to import certificate: {errors}"
+            f"Unable to import certificate: {err.messages}"
         )
 
     data["creator"] = certificate["creator"]

@@ -2,13 +2,13 @@
 -r requirements.txt
 bandit
 black
-celery[redis]>=5.3.5
+celery[redis]
 coverage
 factory-boy
 Faker
 fakeredis
 freezegun
-moto[all] < 5
+moto[all]
 nose
 openapi-spec-validator
 pyflakes

@@ -25,7 +25,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, ec, padding
 from cryptography.hazmat.primitives.serialization import load_pem_private_key, Encoding, pkcs7
-from flask_restful.reqparse import RequestParser
+from flask_restx.reqparse import RequestParser
 from sqlalchemy import and_, func
 from sqlalchemy.dialects.postgresql import TEXT
 

@@ -4,7 +4,7 @@
     :license: Apache, see LICENSE for more details.
 """
 from flask import current_app, Blueprint
-from flask_restful import Api
+from flask_restx import Api
 
 from lemur.common.schema import validate_schema
 from lemur.authorities.service import get_by_name

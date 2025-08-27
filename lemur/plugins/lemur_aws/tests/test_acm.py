@@ -1,4 +1,4 @@
-from moto import mock_acm, mock_sts
+from moto import mock_aws
 from lemur.common.utils import check_validation
 from lemur.tests.vectors import ROOTCA_CERT_STR, INTERMEDIATE_CERT_STR, SAN_CERT_STR, SAN_CERT_KEY
 
@@ -17,8 +17,7 @@ def test_acm_dest_certificates(app):
     assert p
 
 
-@mock_sts()
-@mock_acm()
+@mock_aws
 def test_acm_plugin(app):
     from lemur.plugins.base import plugins
 

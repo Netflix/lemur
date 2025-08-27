@@ -1,7 +1,7 @@
 from collections import namedtuple
 from os.path import join
 import boto3
-from moto import mock_sts, mock_s3, mock_ec2, mock_elb, mock_elbv2, mock_acm
+from moto import mock_aws
 from pytest import raises
 
 
@@ -19,8 +19,7 @@ def test_s3_default_prefix(app):
     assert p.get_option("prefix", p.options) is not None
 
 
-@mock_sts()
-@mock_s3()
+@mock_aws
 def test_upload_invalid_prefix(app):
     from lemur.common.utils import check_validation
     from lemur.plugins.base import plugins
@@ -86,8 +85,7 @@ def test_upload_invalid_prefix(app):
     assert "'prefix' cannot be validated" in str(e)
 
 
-@mock_sts()
-@mock_s3()
+@mock_aws
 def test_clean(app):
     from lemur.common.utils import check_validation
     from lemur.plugins.base import plugins
@@ -138,8 +136,7 @@ def test_clean(app):
     assert "Contents" not in s3_client.list_objects(Bucket=bucket)
 
 
-@mock_sts()
-@mock_s3()
+@mock_aws
 def test_upload_acme_token(app):
     from lemur.common.utils import check_validation
     from lemur.plugins.base import plugins
@@ -218,11 +215,7 @@ def test_upload_acme_token(app):
     assert response
 
 
-@mock_sts()
-@mock_acm()
-@mock_elb()
-@mock_ec2()
-@mock_elbv2()
+@mock_aws
 def test_get_all_elb_and_elbv2s(app, aws_credentials):
     from copy import deepcopy
     from lemur.plugins.lemur_aws.elb import get_load_balancer_arn_from_endpoint

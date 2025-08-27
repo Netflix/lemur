@@ -207,12 +207,13 @@ class PluginInputSchema(LemurInputSchema):
                 )
             if "plugin" in option.get("type", []):
                 # for plugins, sub-plugin options are validated in a recursive call to schema.load() below
-                sub_data, errors = PluginInputSchema().load(option_value)
-                if errors:
+                try:
+                    sub_data = PluginInputSchema().load(option_value)
+                    option["value"] = sub_data
+                except ValidationError:
                     raise ValidationError(
                         f"Unable to load plugin options. Slug: {data['slug']} Option {option_name}"
                     )
-                option["value"] = sub_data
                 plugin_options_validated.append(option)
             elif data["plugin_object"]:
                 # validate user inputs for sub-plugin options and only accept "value" field from user
@@ -242,7 +243,7 @@ class PluginOutputSchema(LemurOutputSchema):
     label = fields.String()
     description = fields.String()
     active = fields.Boolean()
-    options = fields.List(fields.Dict(), dump_to="pluginOptions")
+    options = fields.List(fields.Dict(), data_key="pluginOptions")
     slug = fields.String()
     title = fields.String()
 
@@ -252,11 +253,11 @@ plugin_output_schema = PluginOutputSchema
 
 
 class BaseExtensionSchema(LemurSchema):
-    @pre_load(pass_many=True)
+    @pre_load(pass_collection=True)
     def preprocess(self, data, many):
         return self.under(data, many=many)
 
-    @post_dump(pass_many=True)
+    @post_dump(pass_collection=True)
     def post_process(self, data, many):
         if data:
             data = self.camel(data, many=many)
@@ -310,11 +311,11 @@ class ExtensionSchema(BaseExtensionSchema):
     key_usage = KeyUsageExtension()
     extended_key_usage = ExtendedKeyUsageExtension()
     subject_key_identifier = fields.Nested(SubjectKeyIdentifierSchema)
-    sub_alt_names = fields.Nested(NamesSchema, missing={"names": []})
+    sub_alt_names = fields.Nested(NamesSchema, load_default={"names": []})
     authority_key_identifier = fields.Nested(AuthorityKeyIdentifierSchema)
     certificate_info_access = fields.Nested(CertificateInfoAccessSchema)
     crl_distribution_points = fields.Nested(
-        CRLDistributionPointsSchema, dump_to="cRL_distribution_points"
+        CRLDistributionPointsSchema, data_key="cRL_distribution_points"
     )
     # FIXME: Convert custom OIDs to a custom field in fields.py like other Extensions
     # FIXME: Remove support in UI for Critical custom extensions https://github.com/Netflix/lemur/issues/665

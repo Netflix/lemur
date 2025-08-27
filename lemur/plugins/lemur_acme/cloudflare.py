@@ -1,13 +1,13 @@
 import time
 
-import CloudFlare
+from cloudflare import Cloudflare
 from flask import current_app
 
 
 def cf_api_call():
     cf_key = current_app.config.get("ACME_CLOUDFLARE_KEY", "")
     cf_email = current_app.config.get("ACME_CLOUDFLARE_EMAIL", "")
-    return CloudFlare.CloudFlare(email=cf_email, token=cf_key)
+    return Cloudflare(api_email=cf_email, api_token=cf_key)
 
 
 def find_zone_id(host):

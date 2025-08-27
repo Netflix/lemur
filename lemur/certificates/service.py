@@ -15,6 +15,7 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from flask import current_app
+from marshmallow import ValidationError
 from sentry_sdk import capture_exception
 from sqlalchemy import and_, func, or_, not_, cast, Integer
 from sqlalchemy.sql.expression import false, true
@@ -957,11 +958,12 @@ def get_certificate_primitives(certificate):
     certificate via `create`.
     """
     start, end = calculate_reissue_range(certificate.not_before, certificate.not_after)
-    ser = CertificateInputSchema().load(
-        CertificateOutputSchema().dump(certificate).data
-    )
-    assert not ser.errors, "Error re-serializing certificate: %s" % ser.errors
-    data = ser.data
+    try:
+        data = CertificateInputSchema().load(
+            CertificateOutputSchema().dump(certificate)
+        )
+    except ValidationError as err:
+        raise AssertionError(f"Error re-serializing certificate: {err.messages}")
 
     # we can't quite tell if we are using a custom name, as this is an automated process (typically)
     # we will rely on the Lemur generated name

@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 import arrow
-from moto import mock_ses
+from moto import mock_aws
 
 from lemur.tests.factories import NotificationFactory, CertificateFactory
 from lemur.tests.test_messaging import verify_sender_email
@@ -40,7 +40,7 @@ def get_options():
     ]
 
 
-@mock_ses()  # because email notifications are also sent
+@mock_aws()  # because email notifications are also sent
 def test_send_expiration_notification():
     from lemur.notifications.messaging import send_expiration_notifications
     prepare_test()
@@ -48,7 +48,7 @@ def test_send_expiration_notification():
     assert send_expiration_notifications([], []) == (3, 0)  # owner, Slack, and security
 
 
-@mock_ses()
+@mock_aws()
 def test_send_expiration_notification_slack_disabled():
     from lemur.notifications.messaging import send_expiration_notifications
     prepare_test()
@@ -58,7 +58,7 @@ def test_send_expiration_notification_slack_disabled():
     assert send_expiration_notifications([], ['slack-notification']) == (0, 0)
 
 
-@mock_ses()
+@mock_aws()
 def test_send_expiration_notification_email_disabled():
     from lemur.notifications.messaging import send_expiration_notifications
     prepare_test()
@@ -66,7 +66,7 @@ def test_send_expiration_notification_email_disabled():
     assert send_expiration_notifications([], ['email-notification']) == (1, 0)  # Slack only
 
 
-@mock_ses()
+@mock_aws()
 def test_send_expiration_notification_both_disabled():
     from lemur.notifications.messaging import send_expiration_notifications
     prepare_test()

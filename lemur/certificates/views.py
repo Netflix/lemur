@@ -8,7 +8,7 @@
 import base64
 
 from flask import Blueprint, make_response, jsonify, g, current_app
-from flask_restful import reqparse, Api, inputs
+from flask_restx import reqparse, Api, inputs
 
 from lemur.certificates.service import validate_no_duplicate_destinations
 from lemur.common import validators

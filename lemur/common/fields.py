@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+import email.utils
 import ipaddress
 import warnings
 from datetime import datetime as dt
@@ -24,7 +25,7 @@ class Hex(Field):
     A hex formatted string.
     """
 
-    def _serialize(self, value, attr, obj):
+    def _serialize(self, value, attr, obj, **kwargs):
         if value:
             value = hex(int(value))[2:].upper()
         return value
@@ -47,17 +48,17 @@ class ArrowDateTime(Field):
     """
 
     DATEFORMAT_SERIALIZATION_FUNCS = {
-        "iso": utils.isoformat,
-        "iso8601": utils.isoformat,
-        "rfc": utils.rfcformat,
-        "rfc822": utils.rfcformat,
+        "iso": dt.isoformat,
+        "iso8601": dt.isoformat,
+        "rfc": email.utils.format_datetime,
+        "rfc822": email.utils.format_datetime,
     }
 
     DATEFORMAT_DESERIALIZATION_FUNCS = {
-        "iso": utils.from_iso,
-        "iso8601": utils.from_iso,
-        "rfc": utils.from_rfc,
-        "rfc822": utils.from_rfc,
+        "iso": dt.fromisoformat,
+        "iso8601": dt.fromisoformat,
+        "rfc": email.utils.parsedate_to_datetime,
+        "rfc822": email.utils.parsedate_to_datetime,
     }
 
     DEFAULT_FORMAT = "iso"
@@ -79,7 +80,7 @@ class ArrowDateTime(Field):
         super()._add_to_schema(field_name, schema)
         self.dateformat = self.dateformat or schema.opts.dateformat
 
-    def _serialize(self, value, attr, obj):
+    def _serialize(self, value, attr, obj, **kwargs):
         if value is None:
             return None
         self.dateformat = self.dateformat or self.DEFAULT_FORMAT
@@ -92,32 +93,32 @@ class ArrowDateTime(Field):
         else:
             return value.strftime(self.dateformat)
 
-    def _deserialize(self, value, attr, data):
+    def _deserialize(self, value, attr, data, **kwargs):
         if not value:  # Falsy values, e.g. '', None, [] are not valid
-            raise self.fail("invalid")
+            self.fail("invalid")
         self.dateformat = self.dateformat or self.DEFAULT_FORMAT
         func = self.DATEFORMAT_DESERIALIZATION_FUNCS.get(self.dateformat)
         if func:
             try:
                 return arrow.get(func(value))
             except (TypeError, AttributeError, ValueError):
-                raise self.fail("invalid")
+                self.fail("invalid")
         elif self.dateformat:
             try:
                 return dt.datetime.strptime(value, self.dateformat)
             except (TypeError, AttributeError, ValueError):
-                raise self.fail("invalid")
+                self.fail("invalid")
         elif utils.dateutil_available:
             try:
                 return arrow.get(utils.from_datestring(value))
             except TypeError:
-                raise self.fail("invalid")
+                self.fail("invalid")
         else:
             warnings.warn(
                 "It is recommended that you install python-dateutil "
                 "for improved datetime deserialization."
             )
-            raise self.fail("invalid")
+            self.fail("invalid")
 
 
 class KeyUsageExtension(Field):
@@ -130,7 +131,7 @@ class KeyUsageExtension(Field):
 
     """
 
-    def _serialize(self, value, attr, obj):
+    def _serialize(self, value, attr, obj, **kwargs):
         return {
             "useDigitalSignature": value.digital_signature,
             "useNonRepudiation": value.content_commitment,
@@ -143,7 +144,7 @@ class KeyUsageExtension(Field):
             "useDecipherOnly": value._decipher_only,
         }
 
-    def _deserialize(self, value, attr, data):
+    def _deserialize(self, value, attr, data, **kwargs):
         keyusages = {
             "digital_signature": False,
             "content_commitment": False,
@@ -214,7 +215,7 @@ class ExtendedKeyUsageExtension(Field):
 
     """
 
-    def _serialize(self, value, attr, obj):
+    def _serialize(self, value, attr, obj, **kwargs):
         usages = value._usages
         usage_list = {}
         for usage in usages:
@@ -254,7 +255,7 @@ class ExtendedKeyUsageExtension(Field):
 
         return usage_list
 
-    def _deserialize(self, value, attr, data):
+    def _deserialize(self, value, attr, data, **kwargs):
         usage_oids = []
         for k, v in value.items():
             if k == "useClientAuthentication" and v:
@@ -304,10 +305,10 @@ class BasicConstraintsExtension(Field):
 
     """
 
-    def _serialize(self, value, attr, obj):
+    def _serialize(self, value, attr, obj, **kwargs):
         return {"ca": value.ca, "path_length": value.path_length}
 
-    def _deserialize(self, value, attr, data):
+    def _deserialize(self, value, attr, data, **kwargs):
         ca = value.get("ca", False)
         path_length = value.get("path_length", None)
 
@@ -331,7 +332,7 @@ class SubjectAlternativeNameExtension(Field):
 
     """
 
-    def _serialize(self, value, attr, obj):
+    def _serialize(self, value, attr, obj, **kwargs):
         general_names = []
         name_type = None
 
@@ -372,7 +373,7 @@ class SubjectAlternativeNameExtension(Field):
 
         return general_names
 
-    def _deserialize(self, value, attr, data):
+    def _deserialize(self, value, attr, data, **kwargs):
         general_names = []
         for name in value:
             if name["nameType"] == "DNSName":

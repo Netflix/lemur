@@ -6,7 +6,7 @@
 .. moduleauthor:: Curtis Castrapel <ccastrapel@netflix.com>
 """
 from flask import Blueprint, g
-from flask_restful import reqparse, Api
+from flask_restx import reqparse, Api
 
 from lemur.auth.permissions import admin_permission
 from lemur.auth.service import AuthenticatedResource

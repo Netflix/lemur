@@ -5,6 +5,7 @@
 """
 import arrow
 from flask import current_app
+from marshmallow import ValidationError
 from sqlalchemy import or_, cast, Integer
 
 from lemur import database
@@ -103,10 +104,11 @@ def create_certificate(pending_certificate, certificate, user):
     :arg user: User that called this function, used as 'creator' of the certificate if it does not have an owner
     """
     certificate["owner"] = pending_certificate.owner
-    data, errors = CertificateUploadInputSchema().load(certificate)
-    if errors:
+    try:
+        data = CertificateUploadInputSchema().load(certificate)
+    except ValidationError as err:
         raise Exception(
-            f"Unable to create certificate: {errors}"
+            f"Unable to create certificate: {err.messages}"
         )
 
     data.update(vars(pending_certificate))

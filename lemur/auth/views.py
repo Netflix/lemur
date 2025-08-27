@@ -20,7 +20,7 @@ from flask import Blueprint, current_app
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_principal import Identity, identity_changed
-from flask_restful import reqparse, Resource, Api
+from flask_restx import reqparse, Resource, Api
 
 from lemur.auth import ldap
 from lemur.auth.service import create_token, fetch_token_header, get_rsa_public_key

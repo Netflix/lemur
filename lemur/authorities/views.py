@@ -6,7 +6,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from flask import Blueprint, g
-from flask_restful import reqparse, Api
+from flask_restx import reqparse, Api
 
 from lemur.common import validators
 from lemur.common.utils import paginated_parser

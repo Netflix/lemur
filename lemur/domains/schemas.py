@@ -17,15 +17,15 @@ from lemur.schemas import AssociatedCertificateSchema
 class DomainInputSchema(LemurInputSchema):
     id = fields.Integer()
     name = fields.String(required=True)
-    sensitive = fields.Boolean(missing=False)
-    certificates = fields.Nested(AssociatedCertificateSchema, many=True, missing=[])
+    sensitive = fields.Boolean(load_default=False)
+    certificates = fields.Nested(AssociatedCertificateSchema, many=True, load_default=[])
 
 
 class DomainOutputSchema(LemurOutputSchema):
     id = fields.Integer()
     name = fields.String()
     sensitive = fields.Boolean()
-    # certificates = fields.Nested(CertificateNestedOutputSchema, many=True, missing=[])
+    # certificates = fields.Nested(CertificateNestedOutputSchema, many=True, load_default=[])
 
 
 class DomainNestedOutputSchema(DomainOutputSchema):

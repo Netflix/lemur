@@ -11,7 +11,7 @@ from functools import wraps
 
 from flask import request, current_app
 from inflection import camelize, underscore
-from marshmallow import Schema, post_dump, pre_load
+from marshmallow import Schema, post_dump, pre_load, ValidationError
 from sentry_sdk import capture_exception
 from sqlalchemy.orm.collections import InstrumentedList
 
@@ -55,7 +55,7 @@ class LemurSchema(Schema):
 
 
 class LemurInputSchema(LemurSchema):
-    @pre_load(pass_many=True)
+    @pre_load(pass_collection=True)
     def preprocess(self, data, many):
         if isinstance(data, dict) and data.get("owner"):
             data["owner"] = data["owner"].lower()
@@ -63,7 +63,7 @@ class LemurInputSchema(LemurSchema):
 
 
 class LemurOutputSchema(LemurSchema):
-    @pre_load(pass_many=True)
+    @pre_load(pass_collection=True)
     def preprocess(self, data, many):
         if many:
             data = self.unwrap_envelope(data, many)
@@ -85,7 +85,7 @@ class LemurOutputSchema(LemurSchema):
 
         return data
 
-    @post_dump(pass_many=True)
+    @post_dump(pass_collection=True)
     def post_process(self, data, many):
         if data:
             data = self.camel(data, many=many)
@@ -125,16 +125,16 @@ def unwrap_pagination(data, output_schema):
                 return data
 
             marshaled_data = {"total": data["total"]}
-            marshaled_data["items"] = output_schema.dump(data["items"], many=True).data
+            marshaled_data["items"] = output_schema.dump(data["items"], many=True)
             return marshaled_data
 
-        return output_schema.dump(data).data
+        return output_schema.dump(data)
 
     elif isinstance(data, list):
         marshaled_data = {"total": len(data)}
-        marshaled_data["items"] = output_schema.dump(data, many=True).data
+        marshaled_data["items"] = output_schema.dump(data, many=True)
         return marshaled_data
-    return output_schema.dump(data).data
+    return output_schema.dump(data)
 
 
 def validate_schema(input_schema, output_schema):
@@ -147,10 +147,10 @@ def validate_schema(input_schema, output_schema):
                 else:
                     request_data = request.args
 
-                data, errors = input_schema.load(request_data)
-
-                if errors:
-                    return wrap_errors(errors), 400
+                try:
+                    data = input_schema.load(request_data)
+                except ValidationError as err:
+                    return wrap_errors(err.messages), 400
 
                 kwargs["data"] = data
 

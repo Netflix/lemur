@@ -5,7 +5,7 @@
 .. moduleauthor:: James Chuong <jchuong@instartlogic.com>
 """
 from flask import Blueprint, g, make_response, jsonify
-from flask_restful import Api, reqparse, inputs
+from flask_restx import Api, reqparse, inputs
 
 from lemur.auth.service import AuthenticatedResource
 from lemur.auth.permissions import CertificatePermission, StrictRolePermission

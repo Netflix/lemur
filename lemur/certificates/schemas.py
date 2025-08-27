@@ -6,8 +6,8 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from flask import current_app
-from flask_restful import inputs
-from flask_restful.reqparse import RequestParser
+from flask_restx import inputs
+from flask_restx.reqparse import RequestParser
 from marshmallow import fields, validate, validates_schema, post_load, pre_load, post_dump
 from marshmallow.exceptions import ValidationError
 
@@ -42,7 +42,7 @@ from lemur.users.schemas import UserNestedOutputSchema
 
 class CertificateSchema(LemurInputSchema):
     owner = fields.Email(required=True)
-    description = fields.String(missing="", allow_none=True)
+    description = fields.String(load_default="", allow_none=True)
 
 
 class CertificateCreationSchema(CertificateSchema):
@@ -68,57 +68,57 @@ class CertificateCreationSchema(CertificateSchema):
 
 class CertificateInputSchema(CertificateCreationSchema):
     name = fields.String()
-    # Earlier common_name was a required field and thus in most places there is no None check for it. Adding missing=""
+    # Earlier common_name was a required field and thus in most places there is no None check for it. Adding load_default=""
     # as it is not a required field anymore.
-    common_name = fields.String(validate=validators.common_name, missing="")
+    common_name = fields.String(validate=validators.common_name, load_default="")
     authority = fields.Nested(AssociatedAuthoritySchema, required=True)
 
     validity_start = ArrowDateTime(allow_none=True)
     validity_end = ArrowDateTime(allow_none=True)
     validity_years = fields.Integer(allow_none=True)
 
-    destinations = fields.Nested(AssociatedDestinationSchema, missing=[], many=True)
-    notifications = fields.Nested(AssociatedNotificationSchema, missing=[], many=True)
-    replaces = fields.Nested(AssociatedCertificateSchema, missing=[], many=True)
+    destinations = fields.Nested(AssociatedDestinationSchema, load_default=[], many=True)
+    notifications = fields.Nested(AssociatedNotificationSchema, load_default=[], many=True)
+    replaces = fields.Nested(AssociatedCertificateSchema, load_default=[], many=True)
     replacements = fields.Nested(
-        AssociatedCertificateSchema, missing=[], many=True
+        AssociatedCertificateSchema, load_default=[], many=True
     )  # deprecated
-    roles = fields.Nested(AssociatedRoleSchema, missing=[], many=True)
+    roles = fields.Nested(AssociatedRoleSchema, load_default=[], many=True)
     dns_provider = fields.Nested(
-        AssociatedDnsProviderSchema, missing=None, allow_none=True, required=False
+        AssociatedDnsProviderSchema, load_default=None, allow_none=True, required=False
     )
 
     csr = fields.String(allow_none=True, validate=validators.csr)
 
     key_type = fields.String(
-        validate=validate.OneOf(CERTIFICATE_KEY_TYPES), missing="ECCPRIME256V1"
+        validate=validate.OneOf(CERTIFICATE_KEY_TYPES), load_default="ECCPRIME256V1"
     )
 
-    notify = fields.Boolean(default=True)
+    notify = fields.Boolean(load_default=True)
     rotation = fields.Boolean()
     rotation_policy = fields.Nested(
         AssociatedRotationPolicySchema,
-        missing={"name": "default"},
+        load_default={"name": "default"},
         allow_none=True,
-        default={"name": "default"},
+        dump_default={"name": "default"},
     )
 
     # certificate body fields
     organizational_unit = fields.String(
-        missing=lambda: current_app.config.get("LEMUR_DEFAULT_ORGANIZATIONAL_UNIT")
+        load_default=lambda: current_app.config.get("LEMUR_DEFAULT_ORGANIZATIONAL_UNIT")
     )
     organization = fields.String(
-        missing=lambda: current_app.config.get("LEMUR_DEFAULT_ORGANIZATION")
+        load_default=lambda: current_app.config.get("LEMUR_DEFAULT_ORGANIZATION")
     )
     location = fields.String(
-        missing=lambda: current_app.config.get("LEMUR_DEFAULT_LOCATION")
+        load_default=lambda: current_app.config.get("LEMUR_DEFAULT_LOCATION")
     )
     country = fields.String(
-        missing=lambda: current_app.config.get("LEMUR_DEFAULT_COUNTRY")
+        load_default=lambda: current_app.config.get("LEMUR_DEFAULT_COUNTRY")
     )
-    state = fields.String(missing=lambda: current_app.config.get("LEMUR_DEFAULT_STATE"))
+    state = fields.String(load_default=lambda: current_app.config.get("LEMUR_DEFAULT_STATE"))
 
-    extensions = fields.Nested(ExtensionSchema, missing={})
+    extensions = fields.Nested(ExtensionSchema, load_default={})
 
     @validates_schema
     def validate_authority(self, data):
@@ -183,13 +183,13 @@ class CertificateEditInputSchema(CertificateSchema):
     notify = fields.Boolean()
     rotation = fields.Boolean()
 
-    destinations = fields.Nested(AssociatedDestinationSchema, missing=[], many=True)
-    notifications = fields.Nested(AssociatedNotificationSchema, missing=[], many=True)
-    replaces = fields.Nested(AssociatedCertificateSchema, missing=[], many=True)
+    destinations = fields.Nested(AssociatedDestinationSchema, load_default=[], many=True)
+    notifications = fields.Nested(AssociatedNotificationSchema, load_default=[], many=True)
+    replaces = fields.Nested(AssociatedCertificateSchema, load_default=[], many=True)
     replacements = fields.Nested(
-        AssociatedCertificateSchema, missing=[], many=True
+        AssociatedCertificateSchema, load_default=[], many=True
     )  # deprecated
-    roles = fields.Nested(AssociatedRoleSchema, missing=[], many=True)
+    roles = fields.Nested(AssociatedRoleSchema, load_default=[], many=True)
 
     @pre_load
     def load_data(self, data):
@@ -210,7 +210,7 @@ class CertificateEditInputSchema(CertificateSchema):
             )
 
             # Put  role info in correct format using RoleNestedOutputSchema
-            owner_role_dict = RoleNestedOutputSchema().dump(owner_role).data
+            owner_role_dict = RoleNestedOutputSchema().dump(owner_role)
             if data.get("roles"):
                 data["roles"].append(owner_role_dict)
             else:
@@ -267,13 +267,10 @@ class CertificateNestedOutputSchema(LemurOutputSchema):
     rotation_policy = fields.Nested(RotationPolicyNestedOutputSchema)
 
     # Note aliasing is the first step in deprecating these fields.
-    cn = fields.String()  # deprecated
     common_name = fields.String(attribute="cn")
 
-    not_after = fields.DateTime()  # deprecated
     validity_end = ArrowDateTime(attribute="not_after")
 
-    not_before = fields.DateTime()  # deprecated
     validity_start = ArrowDateTime(attribute="not_before")
 
     issuer = fields.Nested(AuthorityNestedOutputSchema)
@@ -292,7 +289,7 @@ class CertificateOutputSchema(LemurOutputSchema):
     body = fields.String()
     chain = fields.String()
     csr = fields.String()
-    deleted = fields.Boolean(default=False)
+    deleted = fields.Boolean(load_default=False)
     description = fields.String()
     issuer = fields.String()
     name = fields.String()
@@ -304,23 +301,18 @@ class CertificateOutputSchema(LemurOutputSchema):
     rotation = fields.Boolean()
 
     # Note aliasing is the first step in deprecating these fields.
-    notify = fields.Boolean()
     active = fields.Boolean(attribute="notify")
     has_private_key = fields.Boolean()
 
-    cn = fields.String()
     common_name = fields.String(attribute="cn")
     distinguished_name = fields.String()
 
-    not_after = fields.DateTime()
     validity_end = ArrowDateTime(attribute="not_after")
 
-    not_before = fields.DateTime()
     validity_start = ArrowDateTime(attribute="not_before")
 
     owner = fields.Email()
     san = fields.Boolean()
-    serial = fields.String()
     serial_hex = Hex(attribute="serial")
     signing_algorithm = fields.String()
     key_type = fields.String(allow_none=True)
@@ -338,7 +330,7 @@ class CertificateOutputSchema(LemurOutputSchema):
     authority = fields.Nested(AuthorityNestedOutputSchema)
     dns_provider = fields.Nested(DnsProvidersNestedOutputSchema)
     roles = fields.Nested(RoleNestedOutputSchema, many=True)
-    endpoints = fields.Nested(EndpointNestedOutputSchema, many=True, missing=[])
+    endpoints = fields.Nested(EndpointNestedOutputSchema, many=True, load_default=[])
     replaced_by = fields.Nested(
         CertificateNestedOutputSchema, many=True, attribute="replaced"
     )
@@ -389,18 +381,18 @@ class CertificateShortOutputSchema(LemurOutputSchema):
 class CertificateUploadInputSchema(CertificateCreationSchema):
     name = fields.String()
     authority = fields.Nested(AssociatedAuthoritySchema, required=False)
-    notify = fields.Boolean(missing=True)
-    external_id = fields.String(missing=None, allow_none=True)
+    notify = fields.Boolean(load_default=True)
+    external_id = fields.String(load_default=None, allow_none=True)
     private_key = fields.String()
     body = fields.String(required=True)
-    chain = fields.String(missing=None, allow_none=True)
+    chain = fields.String(load_default=None, allow_none=True)
     csr = fields.String(required=False, allow_none=True, validate=validators.csr)
     key_type = fields.String()
 
-    destinations = fields.Nested(AssociatedDestinationSchema, missing=[], many=True)
-    notifications = fields.Nested(AssociatedNotificationSchema, missing=[], many=True)
-    replaces = fields.Nested(AssociatedCertificateSchema, missing=[], many=True)
-    roles = fields.Nested(AssociatedRoleSchema, missing=[], many=True)
+    destinations = fields.Nested(AssociatedDestinationSchema, load_default=[], many=True)
+    notifications = fields.Nested(AssociatedNotificationSchema, load_default=[], many=True)
+    replaces = fields.Nested(AssociatedCertificateSchema, load_default=[], many=True)
+    roles = fields.Nested(AssociatedRoleSchema, load_default=[], many=True)
 
     @validates_schema
     def keys(self, data):
@@ -472,12 +464,12 @@ class CertificateNotificationOutputSchema(LemurOutputSchema):
     replaces = fields.Nested(
         CertificateNestedOutputSchema, many=True, attribute="replaces"
     )
-    endpoints = fields.Nested(EndpointNestedOutputSchema, many=True, missing=[])
+    endpoints = fields.Nested(EndpointNestedOutputSchema, many=True, load_default=[])
 
 
 class CertificateRevokeSchema(LemurInputSchema):
     comments = fields.String()
-    crl_reason = fields.String(validate=validate.OneOf(CRLReason.__members__), missing="unspecified")
+    crl_reason = fields.String(validate=validate.OneOf(CRLReason.__members__), load_default="unspecified")
 
 
 certificates_list_request_parser = RequestParser()

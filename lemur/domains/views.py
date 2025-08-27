@@ -8,7 +8,7 @@
 
 """
 from flask import Blueprint
-from flask_restful import reqparse, Api
+from flask_restx import reqparse, Api
 
 from lemur.domains import service
 from lemur.auth.service import AuthenticatedResource

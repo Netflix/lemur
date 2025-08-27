@@ -1,9 +1,8 @@
 import boto3
-from moto import mock_sts, mock_s3
+from moto import mock_aws
 
 
-@mock_sts()
-@mock_s3()
+@mock_aws
 def test_put_delete_s3_object(app):
     from lemur.plugins.lemur_aws.s3 import put, delete, get
 

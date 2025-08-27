@@ -7,7 +7,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from flask import Blueprint
-from flask_restful import Api, reqparse, inputs
+from flask_restx import Api, reqparse, inputs
 from lemur.notifications import service
 from lemur.notifications.schemas import (
     notification_input_schema,

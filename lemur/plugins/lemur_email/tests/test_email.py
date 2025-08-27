@@ -3,7 +3,7 @@ from collections import defaultdict
 from datetime import timedelta
 
 import arrow
-from moto import mock_ses
+from moto import mock_aws
 
 from lemur.certificates.schemas import certificate_notification_output_schema
 from lemur.plugins.lemur_email.plugin import render_html
@@ -102,7 +102,7 @@ def test_render_expiring_deployed_certificate(certificate):
     assert render_html("expiring_deployed_certificate", get_options(), [cert_data])
 
 
-@mock_ses
+@mock_aws
 def test_send_expiration_notification_no_security_team():
     from lemur.notifications.messaging import send_expiration_notifications
     from lemur.tests.factories import CertificateFactory
@@ -121,7 +121,7 @@ def test_send_expiration_notification_no_security_team():
     assert send_expiration_notifications([], [], True) == (3, 0)  # owner (1) and recipients (2)
 
 
-@mock_ses
+@mock_aws
 def test_send_expiration_notification():
     from lemur.notifications.messaging import send_expiration_notifications
     from lemur.tests.factories import CertificateFactory
@@ -141,7 +141,7 @@ def test_send_expiration_notification():
     assert send_expiration_notifications(["TEST1"], []) == (4, 0)  # owner (1), recipients (2), and security (1)
 
 
-@mock_ses
+@mock_aws
 def test_send_expiration_notification_disabled():
     from lemur.notifications.messaging import send_expiration_notifications
     from lemur.tests.factories import CertificateFactory
@@ -160,7 +160,7 @@ def test_send_expiration_notification_disabled():
     assert send_expiration_notifications([], ['email-notification']) == (0, 0)
 
 
-@mock_ses
+@mock_aws
 def test_send_revocation_notification(certificate, endpoint):
     from lemur.notifications.messaging import send_revocation_notification
 
@@ -169,7 +169,7 @@ def test_send_revocation_notification(certificate, endpoint):
     assert send_revocation_notification(certificate)
 
 
-@mock_ses
+@mock_aws
 def test_send_rotation_notification(certificate, endpoint, source_plugin):
     from lemur.notifications.messaging import send_rotation_notification
     from lemur.deployment.service import rotate_certificate
@@ -185,7 +185,7 @@ def test_send_rotation_notification(certificate, endpoint, source_plugin):
     assert send_rotation_notification(new_certificate)
 
 
-@mock_ses
+@mock_aws
 def test_send_reissue_failed_notification(certificate):
     from lemur.notifications.messaging import send_reissue_failed_notification
 
@@ -194,7 +194,7 @@ def test_send_reissue_failed_notification(certificate):
     assert send_reissue_failed_notification(certificate)
 
 
-@mock_ses
+@mock_aws
 def test_send_reissue_no_endpoints_notification(certificate):
     from lemur.notifications.messaging import send_reissue_no_endpoints_notification
 
@@ -205,7 +205,7 @@ def test_send_reissue_no_endpoints_notification(certificate):
     assert send_reissue_no_endpoints_notification(certificate, new_certificate)
 
 
-@mock_ses
+@mock_aws
 def test_send_pending_failure_notification(user, pending_certificate, async_issuer_plugin):
     from lemur.notifications.messaging import send_pending_failure_notification
 

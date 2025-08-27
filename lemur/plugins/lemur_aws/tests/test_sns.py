@@ -3,7 +3,7 @@ from datetime import timedelta
 
 import arrow
 import boto3
-from moto import mock_sns, mock_sqs, mock_ses
+from moto import mock_aws
 
 from lemur.certificates.schemas import certificate_notification_output_schema
 from lemur.notifications import service
@@ -13,7 +13,7 @@ from lemur.tests.factories import NotificationFactory, CertificateFactory
 from lemur.tests.test_messaging import verify_sender_email
 
 
-@mock_sns()
+@mock_aws
 def test_format_nonexpiration(certificate, endpoint):
     data = [certificate_notification_output_schema.dump(certificate).data]
 
@@ -34,7 +34,7 @@ def test_format_nonexpiration(certificate, endpoint):
         assert expected_message == json.loads(format_message(certificate, "not-expiration", None))
 
 
-@mock_sns()
+@mock_aws
 def test_format_expiration(certificate, endpoint):
     data = [certificate_notification_output_schema.dump(certificate).data]
     options = get_options()
@@ -54,8 +54,8 @@ def test_format_expiration(certificate, endpoint):
         assert expected_message == json.loads(format_message(certificate, "expiration", options))
 
 
-@mock_sns()
-@mock_sqs()
+@mock_aws
+@mock_aws
 def create_and_subscribe_to_topic():
     sns_client = boto3.client("sns", region_name="us-east-1")
     topic_arn = sns_client.create_topic(Name='lemursnstest')["TopicArn"]
@@ -70,8 +70,8 @@ def create_and_subscribe_to_topic():
     return [topic_arn, sqs_client, queue_url]
 
 
-@mock_sns()
-@mock_sqs()
+@mock_aws
+@mock_aws
 def test_publish(certificate, endpoint):
     data = [certificate_notification_output_schema.dump(certificate).data]
 
@@ -100,9 +100,9 @@ def get_options():
     ]
 
 
-@mock_sns()
-@mock_sqs()
-@mock_ses()  # because email notifications are also sent
+@mock_aws
+@mock_aws
+@mock_aws()  # because email notifications are also sent
 def test_send_expiration_notification():
     from lemur.notifications.messaging import send_expiration_notifications
 
@@ -129,9 +129,9 @@ def test_send_expiration_notification():
     assert actual_message == expected_message
 
 
-@mock_sns()
-@mock_sqs()
-@mock_ses()
+@mock_aws
+@mock_aws
+@mock_aws()
 def test_send_expiration_notification_sns_disabled():
     from lemur.notifications.messaging import send_expiration_notifications
 
@@ -146,9 +146,9 @@ def test_send_expiration_notification_sns_disabled():
     assert "Messages" not in received_messages
 
 
-@mock_sns()
-@mock_sqs()
-@mock_ses()
+@mock_aws
+@mock_aws
+@mock_aws()
 def test_send_expiration_notification_email_disabled():
     from lemur.notifications.messaging import send_expiration_notifications
 
@@ -165,9 +165,9 @@ def test_send_expiration_notification_email_disabled():
     assert actual_message == expected_message
 
 
-@mock_sns()
-@mock_sqs()
-@mock_ses()
+@mock_aws
+@mock_aws
+@mock_aws()
 def test_send_expiration_notification_both_disabled():
     from lemur.notifications.messaging import send_expiration_notifications
 
