@@ -17,7 +17,6 @@ import string
 import OpenSSL
 import josepy as jose
 import pem
-import sqlalchemy
 from certbot.crypto_util import CERT_PEM_REGEX
 from cryptography import x509
 from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
@@ -28,6 +27,7 @@ from cryptography.hazmat.primitives.serialization import load_pem_private_key, E
 from flask_restx.reqparse import RequestParser
 from sqlalchemy import and_, func
 from sqlalchemy.dialects.postgresql import TEXT
+from sqlalchemy.sql import text
 
 from lemur.constants import CERTIFICATE_KEY_TYPES
 from lemur.exceptions import InvalidConfiguration
@@ -378,12 +378,14 @@ def column_windows(session, column, windowsize):
         else:
             return column >= start_id
 
-    q = session.query(
+    subq = session.query(
         column, func.row_number().over(order_by=column).label("rownum")
-    ).from_self(column)
+    ).subquery()
+
+    q = session.query(subq.c[column.name])
 
     if windowsize > 1:
-        q = q.filter(sqlalchemy.text("rownum %% %d=1" % windowsize))
+        q = q.filter(text("rownum %% %d=1" % windowsize))
 
     intervals = [id for id, in q]
 
