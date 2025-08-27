@@ -11,7 +11,7 @@ ifeq ($(USER), root)
 else
 	npm install
 endif
-	pip install setuptools
+	pip install "setuptools>=64" wheel
 	# order matters here, base package must install first
 	pip install -e .
 	pip install -e "file://`pwd`#egg=lemur[dev]"
@@ -28,7 +28,7 @@ ifeq ($(USER), root)
 else
 	npm install
 endif
-	pip install setuptools
+	pip install "setuptools>=64" wheel
 	# order matters here, base package must install first
 	pip install -e .
 	node_modules/.bin/gulp build
