@@ -82,7 +82,7 @@ class PendingCertificateEditInputSchema(PendingCertificateSchema):
     roles = fields.Nested(AssociatedRoleSchema, load_default=[], many=True)
 
     @post_load
-    def enforce_notifications(self, data):
+    def enforce_notifications(self, data, **kwargs):
         """
         Ensures that when an owner changes, default notifications are added for the new owner.
         Old owner notifications are retained unless explicitly removed.

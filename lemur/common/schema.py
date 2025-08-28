@@ -56,7 +56,7 @@ class LemurSchema(Schema):
 
 class LemurInputSchema(LemurSchema):
     @pre_load(pass_collection=True)
-    def preprocess(self, data, many):
+    def preprocess(self, data, many, **kwargs):
         if isinstance(data, dict) and data.get("owner"):
             data["owner"] = data["owner"].lower()
         return self.under(data, many=many)
@@ -64,7 +64,7 @@ class LemurInputSchema(LemurSchema):
 
 class LemurOutputSchema(LemurSchema):
     @pre_load(pass_collection=True)
-    def preprocess(self, data, many):
+    def preprocess(self, data, many, **kwargs):
         if many:
             data = self.unwrap_envelope(data, many)
         return self.under(data, many=many)
@@ -86,7 +86,7 @@ class LemurOutputSchema(LemurSchema):
         return data
 
     @post_dump(pass_collection=True)
-    def post_process(self, data, many):
+    def post_process(self, data, many, **kwargs):
         if data:
             data = self.camel(data, many=many)
         if self.__envelope__:

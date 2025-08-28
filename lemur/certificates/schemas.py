@@ -47,7 +47,7 @@ class CertificateSchema(LemurInputSchema):
 
 class CertificateCreationSchema(CertificateSchema):
     @post_load
-    def default_notification(self, data):
+    def default_notification(self, data, **kwargs):
         if not data["notifications"]:
             data[
                 "notifications"
@@ -136,7 +136,7 @@ class CertificateInputSchema(CertificateCreationSchema):
         validators.dates(data)
 
     @post_load
-    def validate_common_name(self, data):
+    def validate_common_name(self, data, **kwargs):
         if data["authority"] and (not data["authority"].is_cn_optional) and data["common_name"] == "":
             raise ValidationError("Missing common_name")
 
@@ -219,7 +219,7 @@ class CertificateEditInputSchema(CertificateSchema):
         return data
 
     @post_load
-    def enforce_notifications(self, data):
+    def enforce_notifications(self, data, **kwargs):
         """
         Add default notification for current owner if none exist.
         This ensures that the default notifications are added in the event of owner change.

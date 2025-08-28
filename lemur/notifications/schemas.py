@@ -35,7 +35,7 @@ class NotificationOutputSchema(LemurOutputSchema):
     plugin = fields.Nested(PluginOutputSchema)
 
     @post_dump
-    def fill_object(self, data):
+    def fill_object(self, data, **kwargs):
         if data:
             data["plugin"]["pluginOptions"] = data["options"]
         return data

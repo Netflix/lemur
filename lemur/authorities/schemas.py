@@ -89,7 +89,7 @@ class AuthorityInputSchema(LemurInputSchema):
                 )
 
     @pre_load
-    def ensure_dates(self, data):
+    def ensure_dates(self, data, **kwargs):
         return missing.convert_validity_years(data)
 
 

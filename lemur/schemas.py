@@ -109,7 +109,7 @@ class AssociatedAuthoritySchema(LemurInputSchema):
     name = fields.String()
 
     @post_load
-    def get_object(self, data, many=False):
+    def get_object(self, data, many=False, **kwargs):
         return fetch_objects(Authority, data, many=many)
 
 
@@ -118,7 +118,7 @@ class AssociatedDnsProviderSchema(LemurInputSchema):
     name = fields.String()
 
     @post_load
-    def get_object(self, data, many=False):
+    def get_object(self, data, many=False, **kwargs):
         return fetch_objects(DnsProvider, data, many=many)
 
 
@@ -127,7 +127,7 @@ class AssociatedRoleSchema(LemurInputSchema):
     name = fields.String()
 
     @post_load
-    def get_object(self, data, many=False):
+    def get_object(self, data, many=False, **kwargs):
         return fetch_objects(Role, data, many=many)
 
 
@@ -136,7 +136,7 @@ class AssociatedDestinationSchema(LemurInputSchema):
     name = fields.String()
 
     @post_load
-    def get_object(self, data, many=False):
+    def get_object(self, data, many=False, **kwargs):
         return fetch_objects(Destination, data, many=many)
 
 
@@ -145,7 +145,7 @@ class AssociatedNotificationSchema(LemurInputSchema):
     name = fields.String()
 
     @post_load
-    def get_object(self, data, many=False):
+    def get_object(self, data, many=False, **kwargs):
         return fetch_objects(Notification, data, many=many)
 
 
@@ -154,7 +154,7 @@ class AssociatedCertificateSchema(LemurInputSchema):
     name = fields.String()
 
     @post_load
-    def get_object(self, data, many=False):
+    def get_object(self, data, many=False, **kwargs):
         return fetch_objects(Certificate, data, many=many)
 
 
@@ -163,7 +163,7 @@ class AssociatedUserSchema(LemurInputSchema):
     name = fields.String()
 
     @post_load
-    def get_object(self, data, many=False):
+    def get_object(self, data, many=False, **kwargs):
         return fetch_objects(User, data, many=many)
 
 
@@ -172,7 +172,7 @@ class AssociatedRotationPolicySchema(LemurInputSchema):
     name = fields.String()
 
     @post_load
-    def get_object(self, data, many=False):
+    def get_object(self, data, many=False, **kwargs):
         return fetch_objects(RotationPolicy, data, many=many)
 
 
@@ -183,7 +183,7 @@ class PluginInputSchema(LemurInputSchema):
     description = fields.String()
 
     @post_load
-    def get_object(self, data, many=False):
+    def get_object(self, data, many=False, **kwargs):
         try:
             data["plugin_object"] = plugins.get(data["slug"])
         except KeyError as e:
@@ -254,11 +254,11 @@ plugin_output_schema = PluginOutputSchema
 
 class BaseExtensionSchema(LemurSchema):
     @pre_load(pass_collection=True)
-    def preprocess(self, data, many):
+    def preprocess(self, data, many, **kwargs):
         return self.under(data, many=many)
 
     @post_dump(pass_collection=True)
-    def post_process(self, data, many):
+    def post_process(self, data, many, **kwargs):
         if data:
             data = self.camel(data, many=many)
         return data
