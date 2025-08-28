@@ -20,8 +20,8 @@ api = Api(mod)
 class LemurDefaults(AuthenticatedResource):
     """ Defines the 'defaults' endpoint """
 
-    def __init__(self):
-        super(LemurDefaults)
+    def __init__(self, api=None, *args, **kwargs):
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, default_output_schema)
     def get(self):

@@ -29,9 +29,9 @@ api = Api(mod)
 class NotificationsList(AuthenticatedResource):
     """ Defines the 'notifications' endpoint """
 
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, notifications_output_schema)
     def get(self):
@@ -236,9 +236,9 @@ class NotificationsList(AuthenticatedResource):
 
 
 class Notifications(AuthenticatedResource):
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, notification_output_schema)
     def get(self, notification_id):
@@ -390,8 +390,8 @@ class Notifications(AuthenticatedResource):
 class CertificateNotifications(AuthenticatedResource):
     """ Defines the 'certificate/<int:certificate_id/notifications'' endpoint """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, api=None, *args, **kwargs):
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, notifications_output_schema)
     def get(self, certificate_id):

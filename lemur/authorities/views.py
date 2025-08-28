@@ -32,9 +32,9 @@ api = Api(mod)
 class AuthoritiesList(AuthenticatedResource):
     """ Defines the 'authorities' endpoint """
 
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, authorities_output_schema)
     def get(self):
@@ -241,9 +241,9 @@ class AuthoritiesList(AuthenticatedResource):
 
 
 class Authorities(AuthenticatedResource):
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, authority_output_schema)
     def get(self, authority_id):
@@ -425,8 +425,8 @@ class Authorities(AuthenticatedResource):
 
 
 class CertificateAuthority(AuthenticatedResource):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, api=None, *args, **kwargs):
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, authority_output_schema)
     def get(self, certificate_id):
@@ -502,6 +502,9 @@ class CertificateAuthority(AuthenticatedResource):
 
 
 class AuthorityVisualizations(AuthenticatedResource):
+    def __init__(self, api=None, *args, **kwargs):
+        super().__init__(api, *args, **kwargs)
+
     def get(self, authority_id):
         """
         .. http:get:: /authorities/1/visualize

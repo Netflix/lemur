@@ -234,5 +234,5 @@ class AuthenticatedResource(Resource):
 
     method_decorators = [login_required]
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, api=None, *args, **kwargs):
+        super().__init__(api, *args, **kwargs)

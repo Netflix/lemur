@@ -28,9 +28,9 @@ api = Api(mod)
 class UsersList(AuthenticatedResource):
     """ Defines the 'users' endpoint """
 
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, users_output_schema)
     def get(self):
@@ -168,9 +168,9 @@ class UsersList(AuthenticatedResource):
 
 
 class Users(AuthenticatedResource):
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, user_output_schema)
     def get(self, user_id):
@@ -283,9 +283,9 @@ class Users(AuthenticatedResource):
 
 
 class CertificateUsers(AuthenticatedResource):
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, user_output_schema)
     def get(self, certificate_id):
@@ -325,9 +325,9 @@ class CertificateUsers(AuthenticatedResource):
 
 
 class RoleUsers(AuthenticatedResource):
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, users_output_schema)
     def get(self, role_id):
@@ -379,8 +379,8 @@ class RoleUsers(AuthenticatedResource):
 
 
 class Me(AuthenticatedResource):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, api=None, *args, **kwargs):
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, user_output_schema)
     def get(self):

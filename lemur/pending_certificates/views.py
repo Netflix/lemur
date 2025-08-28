@@ -30,9 +30,9 @@ api = Api(mod)
 
 
 class PendingCertificatesList(AuthenticatedResource):
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, pending_certificate_output_schema)
     def get(self):
@@ -127,9 +127,9 @@ class PendingCertificatesList(AuthenticatedResource):
 
 
 class PendingCertificates(AuthenticatedResource):
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, pending_certificate_output_schema)
     def get(self, pending_certificate_id):
@@ -394,8 +394,8 @@ class PendingCertificates(AuthenticatedResource):
 
 
 class PendingCertificatePrivateKey(AuthenticatedResource):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, api=None, *args, **kwargs):
+        super().__init__(api, *args, **kwargs)
 
     def get(self, pending_certificate_id):
         """
@@ -451,9 +451,9 @@ class PendingCertificatePrivateKey(AuthenticatedResource):
 class PendingCertificatesUpload(AuthenticatedResource):
     """ Defines the 'pending_certificates' upload endpoint """
 
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(
         pending_certificate_upload_input_schema, pending_certificate_output_schema

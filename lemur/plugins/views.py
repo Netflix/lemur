@@ -22,9 +22,9 @@ api = Api(mod)
 class PluginsList(AuthenticatedResource):
     """ Defines the 'plugins' endpoint """
 
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, plugins_output_schema)
     def get(self):
@@ -82,8 +82,8 @@ class PluginsList(AuthenticatedResource):
 class Plugins(AuthenticatedResource):
     """ Defines the 'plugins' endpoint """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, api=None, *args, **kwargs):
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, plugin_output_schema)
     def get(self, name):

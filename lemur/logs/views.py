@@ -24,9 +24,9 @@ api = Api(mod)
 class LogsList(AuthenticatedResource):
     """ Defines the 'logs' endpoint """
 
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, logs_output_schema)
     def get(self):

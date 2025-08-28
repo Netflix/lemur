@@ -23,9 +23,9 @@ api = Api(mod)
 class EndpointsList(AuthenticatedResource):
     """ Defines the 'endpoints' endpoint """
 
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, endpoints_output_schema)
     def get(self):
@@ -69,9 +69,9 @@ class EndpointsList(AuthenticatedResource):
 
 
 class Endpoints(AuthenticatedResource):
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, endpoint_output_schema)
     def get(self, endpoint_id):

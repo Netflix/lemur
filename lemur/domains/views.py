@@ -30,8 +30,8 @@ api = Api(mod)
 class DomainsList(AuthenticatedResource):
     """ Defines the 'domains' endpoint """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, api=None, *args, **kwargs):
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, domains_output_schema)
     def get(self):
@@ -134,9 +134,9 @@ class DomainsList(AuthenticatedResource):
 
 
 class Domains(AuthenticatedResource):
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, domain_output_schema)
     def get(self, domain_id):
@@ -219,8 +219,8 @@ class Domains(AuthenticatedResource):
 class CertificateDomains(AuthenticatedResource):
     """ Defines the 'domains' endpoint """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, api=None, *args, **kwargs):
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, domains_output_schema)
     def get(self, certificate_id):

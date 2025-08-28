@@ -29,9 +29,9 @@ api = Api(mod)
 class DestinationsList(AuthenticatedResource):
     """ Defines the 'destinations' endpoint """
 
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, destinations_output_schema)
     def get(self):
@@ -191,9 +191,9 @@ class DestinationsList(AuthenticatedResource):
 
 
 class Destinations(AuthenticatedResource):
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, destination_output_schema)
     def get(self, destination_id):
@@ -354,8 +354,8 @@ class Destinations(AuthenticatedResource):
 class CertificateDestinations(AuthenticatedResource):
     """ Defines the 'certificate/<int:certificate_id/destinations'' endpoint """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, api=None, *args, **kwargs):
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, destination_output_schema)
     def get(self, certificate_id):
@@ -427,9 +427,9 @@ class CertificateDestinations(AuthenticatedResource):
 class DestinationsStats(AuthenticatedResource):
     """ Defines the 'destinations' stats endpoint """
 
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     def get(self):
         self.reqparse.add_argument("metric", type=str, location="args")

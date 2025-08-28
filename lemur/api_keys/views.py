@@ -35,8 +35,8 @@ api = Api(mod)
 class ApiKeyList(AuthenticatedResource):
     """ Defines the 'api_keys' endpoint """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, api=None, *args, **kwargs):
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, api_keys_output_schema)
     def get(self):
@@ -156,8 +156,8 @@ class ApiKeyList(AuthenticatedResource):
 class ApiKeyUserList(AuthenticatedResource):
     """ Defines the 'keys' endpoint on the 'users' endpoint. """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, api=None, *args, **kwargs):
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, api_keys_output_schema)
     def get(self, user_id):
@@ -274,9 +274,9 @@ class ApiKeyUserList(AuthenticatedResource):
 
 
 class ApiKeys(AuthenticatedResource):
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, api_key_output_schema)
     def get(self, aid):
@@ -414,9 +414,9 @@ class ApiKeys(AuthenticatedResource):
 
 
 class UserApiKeys(AuthenticatedResource):
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, api_key_output_schema)
     def get(self, uid, aid):
@@ -563,9 +563,9 @@ class UserApiKeys(AuthenticatedResource):
 
 
 class ApiKeysDescribed(AuthenticatedResource):
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, api_key_described_output_schema)
     def get(self, aid):

@@ -25,9 +25,9 @@ api = Api(mod)
 class DnsProvidersList(AuthenticatedResource):
     """ Defines the 'dns_providers' endpoint """
 
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, dns_provider_output_schema)
     def get(self):
@@ -165,6 +165,9 @@ class DnsProvidersList(AuthenticatedResource):
 
 
 class DnsProviders(AuthenticatedResource):
+    def __init__(self, api=None, *args, **kwargs):
+        super().__init__(api, *args, **kwargs)
+
     @validate_schema(None, dns_provider_output_schema)
     def get(self, dns_provider_id):
         return service.get_friendly(dns_provider_id)
@@ -178,9 +181,9 @@ class DnsProviders(AuthenticatedResource):
 class DnsProviderOptions(AuthenticatedResource):
     """ Defines the 'dns_provider_types' endpoint """
 
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     def get(self):
         return service.get_types()

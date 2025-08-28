@@ -45,9 +45,9 @@ api = Api(mod)
 class CertificatesListValid(AuthenticatedResource):
     """ Defines the 'certificates/valid' endpoint """
 
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, certificates_output_schema)
     def get(self):
@@ -150,9 +150,9 @@ class CertificatesListValid(AuthenticatedResource):
 class CertificatesNameQuery(AuthenticatedResource):
     """ Defines the 'certificates/name' endpoint """
 
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, certificates_output_schema)
     def get(self, certificate_name):
@@ -260,9 +260,9 @@ class CertificatesNameQuery(AuthenticatedResource):
 class CertificatesList(AuthenticatedResource):
     """ Defines the 'certificates' endpoint """
 
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, certificates_list_output_schema_factory)
     def get(self):
@@ -545,9 +545,9 @@ class CertificatesList(AuthenticatedResource):
 class CertificatesUpload(AuthenticatedResource):
     """ Defines the 'certificates' upload endpoint """
 
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(certificate_upload_input_schema, certificate_output_schema)
     def post(self, data=None):
@@ -664,9 +664,9 @@ class CertificatesUpload(AuthenticatedResource):
 class CertificatesStats(AuthenticatedResource):
     """ Defines the 'certificates' stats endpoint """
 
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     def get(self):
         self.reqparse.add_argument("metric", type=str, location="args")
@@ -688,8 +688,8 @@ class CertificatesStats(AuthenticatedResource):
 
 
 class CertificatePrivateKey(AuthenticatedResource):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, api=None, *args, **kwargs):
+        super().__init__(api, *args, **kwargs)
 
     def get(self, certificate_id):
         """
@@ -744,9 +744,9 @@ class CertificatePrivateKey(AuthenticatedResource):
 
 
 class Certificates(AuthenticatedResource):
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, certificate_output_schema)
     def get(self, certificate_id):
@@ -1153,9 +1153,9 @@ class Certificates(AuthenticatedResource):
 
 
 class CertificateUpdateOwner(AuthenticatedResource):
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(certificate_edit_input_schema, certificate_output_schema)
     def post(self, certificate_id, data=None):
@@ -1277,9 +1277,9 @@ class CertificateUpdateOwner(AuthenticatedResource):
 class NotificationCertificatesList(AuthenticatedResource):
     """ Defines the 'certificates' endpoint """
 
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, certificates_output_schema)
     def get(self, notification_id):
@@ -1389,9 +1389,9 @@ class NotificationCertificatesList(AuthenticatedResource):
 
 
 class CertificatesReplacementsList(AuthenticatedResource):
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, certificates_output_schema)
     def get(self, certificate_id):
@@ -1481,9 +1481,9 @@ class CertificatesReplacementsList(AuthenticatedResource):
 
 
 class CertificateExport(AuthenticatedResource):
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(certificate_export_input_schema, None)
     def post(self, certificate_id, data=None):
@@ -1608,9 +1608,9 @@ class CertificateExport(AuthenticatedResource):
 
 
 class CertificateRevoke(AuthenticatedResource):
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(certificate_revoke_schema, None)
     def put(self, certificate_id, data=None):
@@ -1695,9 +1695,9 @@ class CertificateRevoke(AuthenticatedResource):
 
 
 class CertificateDeactivate(AuthenticatedResource):
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     def put(self, certificate_id):
         """
@@ -1763,9 +1763,9 @@ class CertificateDeactivate(AuthenticatedResource):
 
 class CertificateDescriptionUpdate(AuthenticatedResource):
     """ Defines the 'certificates/<int:certificate_id>/description' endpoint """
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, certificate_output_schema)
     def put(self, certificate_id):

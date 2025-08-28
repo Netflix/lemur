@@ -32,9 +32,9 @@ api = Api(mod)
 class RolesList(AuthenticatedResource):
     """ Defines the 'roles' endpoint """
 
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, roles_output_schema)
     def get(self):
@@ -152,8 +152,8 @@ class RolesList(AuthenticatedResource):
 
 
 class RoleViewCredentials(AuthenticatedResource):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, api=None, *args, **kwargs):
+        super().__init__(api, *args, **kwargs)
 
     def get(self, role_id):
         """
@@ -207,9 +207,9 @@ class RoleViewCredentials(AuthenticatedResource):
 
 
 class Roles(AuthenticatedResource):
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, role_output_schema)
     def get(self, role_id):
@@ -340,9 +340,9 @@ class Roles(AuthenticatedResource):
 class UserRolesList(AuthenticatedResource):
     """ Defines the 'roles' endpoint """
 
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, roles_output_schema)
     def get(self, user_id):
@@ -400,9 +400,9 @@ class UserRolesList(AuthenticatedResource):
 class AuthorityRolesList(AuthenticatedResource):
     """ Defines the 'roles' endpoint """
 
-    def __init__(self):
+    def __init__(self, api=None, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        super().__init__()
+        super().__init__(api, *args, **kwargs)
 
     @validate_schema(None, roles_output_schema)
     def get(self, authority_id):
