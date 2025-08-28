@@ -62,10 +62,10 @@ class ArrowDateTime(Field):
         return arrow_obj.format('ddd, DD MMM YYYY HH:mm:ss ZZ')
 
     DATEFORMAT_SERIALIZATION_FUNCS = {
-        "iso": _arrow_isoformat.__func__,
-        "iso8601": _arrow_isoformat.__func__,
-        "rfc": _arrow_rfc_format.__func__,
-        "rfc822": _arrow_rfc_format.__func__,
+        "iso": _arrow_isoformat,
+        "iso8601": _arrow_isoformat,
+        "rfc": _arrow_rfc_format,
+        "rfc822": _arrow_rfc_format,
     }
 
     DATEFORMAT_DESERIALIZATION_FUNCS = {

@@ -1716,10 +1716,10 @@ def run_server(port, cert_file_name):
 
     def start_server():
         server = HTTPServer(('localhost', port), SimpleHTTPRequestHandler)
-        server.socket = ssl.wrap_socket(server.socket,
-                                        server_side=True,
-                                        certfile=cert_file_name,
-                                        ssl_version=ssl.PROTOCOL_TLSv1_2)
+        context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+        context.load_cert_chain(cert_file_name)
+        context.minimum_version = ssl.TLSVersion.TLSv1_2
+        server.socket = context.wrap_socket(server.socket, server_side=True)
         server.serve_forever()
         print(f"Started https server on port {port} using cert file {cert_file_name}")
 
