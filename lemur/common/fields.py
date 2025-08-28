@@ -7,7 +7,7 @@
 """
 import email.utils
 import ipaddress
-from datetime import datetime as dt
+import datetime as dt
 
 import arrow
 from cryptography import x509
@@ -48,8 +48,11 @@ class ArrowDateTime(Field):
     @staticmethod
     def _to_datetime(dt_obj):
         """Convert Arrow or other datetime-like objects to standard datetime."""
-        if hasattr(dt_obj, 'datetime'):
-            # Arrow object
+        # Handle Arrow objects by checking for the Arrow type
+        if isinstance(dt_obj, arrow.Arrow):
+            return dt_obj.datetime
+        elif hasattr(dt_obj, 'datetime') and not isinstance(dt_obj, dt.datetime):
+            # Likely an Arrow object that isn't recognized by isinstance
             return dt_obj.datetime
         elif isinstance(dt_obj, dt.datetime):
             return dt_obj
@@ -57,20 +60,18 @@ class ArrowDateTime(Field):
             # Try to convert with arrow first
             return arrow.get(dt_obj).datetime
 
-    @staticmethod
-    def _standard_isoformat(dt_obj, localtime=False):
+    def _standard_isoformat(self, dt_obj, localtime=False):
         """Standard library ISO format serialization."""
-        datetime_obj = ArrowDateTime._to_datetime(dt_obj)
+        datetime_obj = self._to_datetime(dt_obj)
         if localtime and datetime_obj.tzinfo is not None:
             # Convert to local time if timezone-aware
             local_dt = datetime_obj.astimezone()
             return local_dt.isoformat()
         return datetime_obj.isoformat()
 
-    @staticmethod
-    def _standard_rfc_format(dt_obj, localtime=False):
+    def _standard_rfc_format(self, dt_obj, localtime=False):
         """Standard library RFC format serialization."""
-        datetime_obj = ArrowDateTime._to_datetime(dt_obj)
+        datetime_obj = self._to_datetime(dt_obj)
         if localtime and datetime_obj.tzinfo is not None:
             # Convert to local time if timezone-aware
             local_dt = datetime_obj.astimezone()
@@ -85,8 +86,8 @@ class ArrowDateTime(Field):
     }
 
     DATEFORMAT_DESERIALIZATION_FUNCS = {
-        "iso": dt.fromisoformat,
-        "iso8601": dt.fromisoformat,
+        "iso": dt.datetime.fromisoformat,
+        "iso8601": dt.datetime.fromisoformat,
         "rfc": email.utils.parsedate_to_datetime,
         "rfc822": email.utils.parsedate_to_datetime,
     }
@@ -117,7 +118,7 @@ class ArrowDateTime(Field):
         format_func = self.DATEFORMAT_SERIALIZATION_FUNCS.get(self.dateformat, None)
         if format_func:
             try:
-                return format_func(value, localtime=self.localtime)
+                return format_func(self, value, localtime=self.localtime)
             except (AttributeError, ValueError) as err:
                 raise self.make_error("format", input=value)
         else:
