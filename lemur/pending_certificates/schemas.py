@@ -111,7 +111,7 @@ class PendingCertificateUploadInputSchema(LemurInputSchema):
     chain = fields.String(load_default=None, allow_none=True)
 
     @validates_schema
-    def validate_cert_chain(self, data):
+    def validate_cert_chain(self, data, **kwargs):
         cert = None
         if data.get("body"):
             try:
