@@ -77,36 +77,57 @@ def app(request):
 
 @pytest.fixture(scope="session")
 def db(app, request):
-    # Try to use a fresh database connection
+    # Force close any existing sessions
     try:
-        # Close any existing sessions first
         _db.session.remove()
-
-        # Use SQLAlchemy's built-in drop/create with proper engine handling
-        _db.drop_all()
-
     except Exception:
-        # If drop_all fails, try more aggressive cleanup
-        try:
-            _db.engine.dispose()
+        pass
 
-            # Recreate engine and try again
-            with _db.engine.connect() as conn:
-                conn.execute(text("SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = current_database() AND pid <> pg_backend_pid()"))
-                conn.commit()
+    try:
+        _db.engine.dispose()
+    except Exception:
+        pass
 
-            _db.drop_all()
-        except Exception:
-            # Last resort: skip cleanup and just create tables
-            pass
+    # Aggressive database cleanup using direct SQL commands
+    try:
+        with _db.engine.connect() as connection:
+            # Kill all other connections to avoid locks
+            connection.execute(text("SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = current_database() AND pid <> pg_backend_pid()"))
+            connection.commit()
 
-    # Ensure extension exists
-    with _db.engine.connect() as connection:
-        connection.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
-        connection.commit()
+            # Drop all tables individually with CASCADE to avoid dependency issues
+            result = connection.execute(text("SELECT tablename FROM pg_tables WHERE schemaname = 'public'"))
+            table_names = [row[0] for row in result.fetchall()]
+
+            for table_name in table_names:
+                connection.execute(text(f"DROP TABLE IF EXISTS public.{table_name} CASCADE"))
+
+            # Drop all sequences
+            result = connection.execute(text("SELECT sequence_name FROM information_schema.sequences WHERE sequence_schema = 'public'"))
+            sequence_names = [row[0] for row in result.fetchall()]
+
+            for sequence_name in sequence_names:
+                connection.execute(text(f"DROP SEQUENCE IF EXISTS public.{sequence_name} CASCADE"))
+
+            # Drop all views
+            result = connection.execute(text("SELECT viewname FROM pg_views WHERE schemaname = 'public'"))
+            view_names = [row[0] for row in result.fetchall()]
+
+            for view_name in view_names:
+                connection.execute(text(f"DROP VIEW IF EXISTS public.{view_name} CASCADE"))
+
+            # Ensure required extension exists
+            connection.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
+            connection.commit()
+    except Exception:
+        # If even this fails, just proceed - database might be empty
+        pass
+
+    # Create all tables fresh
     _db.create_all()
     _db.app = app
 
+    # Set up test data
     UserFactory()
     r = RoleFactory(name="admin")
     u = UserFactory(roles=[r])
@@ -116,7 +137,7 @@ def db(app, request):
     _db.session.commit()
     yield _db
 
-    # Clean shutdown at the end
+    # Clean shutdown - don't use drop_all as it can hang
     try:
         _db.session.remove()
         _db.engine.dispose()
