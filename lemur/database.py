@@ -12,8 +12,8 @@
 from typing import TYPE_CHECKING
 from inflection import underscore
 from flask_sqlalchemy.model import DefaultMeta
-from sqlalchemy import exc, func, distinct
-from sqlalchemy.orm import make_transient, lazyload
+from sqlalchemy import exc, func
+from sqlalchemy.orm import make_transient
 from sqlalchemy.sql import and_, or_
 
 from lemur.exceptions import AttrNotFound, DuplicateError
@@ -281,14 +281,13 @@ def get_count(q):
         # SQLAlchemy 2.0 compatible approach
         # Check if we have multiple entities using column_descriptions
         column_descriptions = q.column_descriptions
-        
+
         if len(column_descriptions) > 1:
             # currently support only one entity
             raise Exception("only one entity is supported for get_count, got: %s" % q)
-        
+
         # Use the built-in count() method which works in SQLAlchemy 2.0
         return q.count()
-            
     except Exception as e:
         # If count() fails, try a different approach
         try:
