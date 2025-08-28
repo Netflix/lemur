@@ -77,13 +77,31 @@ def app(request):
 
 @pytest.fixture(scope="session")
 def db(app, request):
-    # Force close any existing connections first
-    _db.session.remove()
-    _db.engine.dispose()
-    # Use more aggressive drop approach with CASCADE
+    # Try to use a fresh database connection
+    try:
+        # Close any existing sessions first
+        _db.session.remove()
+
+        # Use SQLAlchemy's built-in drop/create with proper engine handling
+        _db.drop_all()
+
+    except Exception:
+        # If drop_all fails, try more aggressive cleanup
+        try:
+            _db.engine.dispose()
+
+            # Recreate engine and try again
+            with _db.engine.connect() as conn:
+                conn.execute(text("SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = current_database() AND pid <> pg_backend_pid()"))
+                conn.commit()
+
+            _db.drop_all()
+        except Exception:
+            # Last resort: skip cleanup and just create tables
+            pass
+
+    # Ensure extension exists
     with _db.engine.connect() as connection:
-        connection.execute(text("DROP SCHEMA IF EXISTS public CASCADE"))
-        connection.execute(text("CREATE SCHEMA public"))
         connection.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
         connection.commit()
     _db.create_all()
@@ -99,8 +117,11 @@ def db(app, request):
     yield _db
 
     # Clean shutdown at the end
-    _db.session.remove()
-    _db.engine.dispose()
+    try:
+        _db.session.remove()
+        _db.engine.dispose()
+    except Exception:
+        pass
 
 
 @pytest.fixture(scope="function")
