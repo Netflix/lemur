@@ -15,6 +15,7 @@ pyflakes
 pytest
 pytest-flask
 pytest-mock
+pytest-timeout
 requests-mock
 mypy
 types-tabulate

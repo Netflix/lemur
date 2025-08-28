@@ -8,7 +8,7 @@ acme==4.2.0
     # via
     #   -r requirements.in
     #   certbot
-alembic==1.16.4
+alembic==1.16.5
     # via flask-migrate
 alembic-autogenerate-enums==0.1.2
     # via -r requirements.in
@@ -41,9 +41,9 @@ blinker==1.9.0
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.40.18
+boto3==1.40.19
     # via -r requirements.in
-botocore==1.40.18
+botocore==1.40.19
     # via
     #   -r requirements.in
     #   boto3
