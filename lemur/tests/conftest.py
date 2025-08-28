@@ -77,12 +77,18 @@ def app(request):
 
 @pytest.fixture(scope="session")
 def db(app, request):
-    _db.drop_all()
+    # Force close any existing connections first
+    _db.session.remove()
+    _db.engine.dispose()
+    
+    # Use more aggressive drop approach with CASCADE
     with _db.engine.connect() as connection:
+        connection.execute(text("DROP SCHEMA IF EXISTS public CASCADE"))
+        connection.execute(text("CREATE SCHEMA public"))
         connection.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
         connection.commit()
+    
     _db.create_all()
-
     _db.app = app
 
     UserFactory()
@@ -93,7 +99,10 @@ def db(app, request):
 
     _db.session.commit()
     yield _db
-    _db.drop_all()
+    
+    # Clean shutdown at the end
+    _db.session.remove()
+    _db.engine.dispose()
 
 
 @pytest.fixture(scope="function")
