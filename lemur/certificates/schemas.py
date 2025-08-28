@@ -121,7 +121,7 @@ class CertificateInputSchema(CertificateCreationSchema):
     extensions = fields.Nested(ExtensionSchema, load_default={})
 
     @validates_schema
-    def validate_authority(self, data):
+    def validate_authority(self, data, **kwargs):
         if 'authority' not in data:
             raise ValidationError("Missing Authority.")
 
@@ -132,7 +132,7 @@ class CertificateInputSchema(CertificateCreationSchema):
             raise ValidationError("The authority is inactive.", ["authority"])
 
     @validates_schema
-    def validate_dates(self, data):
+    def validate_dates(self, data, **kwargs):
         validators.dates(data)
 
     @post_load
@@ -144,7 +144,7 @@ class CertificateInputSchema(CertificateCreationSchema):
             raise ValidationError("Missing common_name, either CN or SAN must be present")
 
     @pre_load
-    def load_data(self, data):
+    def load_data(self, data, **kwargs):
         if data.get("replacements"):
             data["replaces"] = data[
                 "replacements"
@@ -192,7 +192,7 @@ class CertificateEditInputSchema(CertificateSchema):
     roles = fields.Nested(AssociatedRoleSchema, load_default=[], many=True)
 
     @pre_load
-    def load_data(self, data):
+    def load_data(self, data, **kwargs):
         if data.get("replacements"):
             data["replaces"] = data[
                 "replacements"
@@ -343,7 +343,7 @@ class CertificateOutputSchema(LemurOutputSchema):
     organizational_unit = fields.String()
 
     @post_dump
-    def handle_subject_details(self, data):
+    def handle_subject_details(self, data, **kwargs):
         subject_details = ["country", "state", "location", "organization", "organizational_unit"]
 
         # Remove subject details if authority is CA/Browser Forum compliant. The code will use default set of values in that case.
@@ -395,13 +395,13 @@ class CertificateUploadInputSchema(CertificateCreationSchema):
     roles = fields.Nested(AssociatedRoleSchema, load_default=[], many=True)
 
     @validates_schema
-    def keys(self, data):
+    def keys(self, data, **kwargs):
         if data.get("destinations"):
             if not data.get("private_key"):
                 raise ValidationError("Destinations require private key.")
 
     @validates_schema
-    def validate_cert_private_key_chain(self, data):
+    def validate_cert_private_key_chain(self, data, **kwargs):
         cert = None
         key = None
         if data.get("body"):
@@ -436,7 +436,7 @@ class CertificateUploadInputSchema(CertificateCreationSchema):
             validators.verify_cert_chain([cert] + chain)
 
     @pre_load
-    def load_data(self, data):
+    def load_data(self, data, **kwargs):
         if data.get("body"):
             try:
                 data["key_type"] = utils.get_key_type_from_certificate(data["body"])

@@ -273,7 +273,7 @@ class CertificateInfoAccessSchema(BaseExtensionSchema):
     include_aia = fields.Boolean()
 
     @post_dump
-    def handle_keys(self, data):
+    def handle_keys(self, data, **kwargs):
         return {"includeAIA": data["include_aia"]}
 
 
@@ -281,7 +281,7 @@ class CRLDistributionPointsSchema(BaseExtensionSchema):
     include_crl_dp = fields.String()
 
     @post_dump
-    def handle_keys(self, data):
+    def handle_keys(self, data, **kwargs):
         return {"includeCRLDP": data["include_crl_dp"]}
 
 
@@ -289,7 +289,7 @@ class SubjectKeyIdentifierSchema(BaseExtensionSchema):
     include_ski = fields.Boolean()
 
     @post_dump
-    def handle_keys(self, data):
+    def handle_keys(self, data, **kwargs):
         return {"includeSKI": data["include_ski"]}
 
 

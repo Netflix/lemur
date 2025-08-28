@@ -77,11 +77,11 @@ class AuthorityInputSchema(LemurInputSchema):
     roles = fields.Nested(AssociatedRoleSchema(many=True))
 
     @validates_schema
-    def validate_dates(self, data):
+    def validate_dates(self, data, **kwargs):
         validators.dates(data)
 
     @validates_schema
-    def validate_subca(self, data):
+    def validate_subca(self, data, **kwargs):
         if data["type"] == "subca":
             if not data.get("parent"):
                 raise ValidationError(

@@ -25,10 +25,10 @@ class SourceOutputSchema(LemurOutputSchema):
     description = fields.String()
     plugin = fields.Nested(PluginOutputSchema)
     options = fields.List(fields.Dict())
-    fields.Boolean()
+    active = fields.Boolean()
 
     @post_dump
-    def fill_object(self, data):
+    def fill_object(self, data, **kwargs):
         if data:
             data["plugin"]["pluginOptions"] = data["options"]
         return data

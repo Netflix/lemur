@@ -28,7 +28,7 @@ class DestinationOutputSchema(LemurOutputSchema):
     options = fields.List(fields.Dict())
 
     @post_dump
-    def fill_object(self, data):
+    def fill_object(self, data, **kwargs):
         if data:
             data["plugin"]["pluginOptions"] = data["options"]
             for option in data["plugin"]["pluginOptions"]:
