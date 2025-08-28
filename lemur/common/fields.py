@@ -53,7 +53,7 @@ class ArrowDateTime(Field):
         if localtime:
             return arrow_obj.to('local').isoformat()
         return arrow_obj.isoformat()
-    
+
     @staticmethod
     def _arrow_rfc_format(arrow_obj, localtime=False):
         """Arrow-compatible RFC format serialization."""
