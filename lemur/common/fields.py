@@ -8,6 +8,7 @@
 import email.utils
 import ipaddress
 from datetime import datetime as dt
+from typing import Any, Optional, Union
 
 import arrow
 from cryptography import x509
@@ -29,7 +30,7 @@ class Hex(Field):
         return value
 
 
-class ArrowDateTime(Field):
+class ArrowDateTime(Field[arrow.Arrow]):
     """A formatted datetime string in UTC.
 
     Example: ``'2014-12-22T03:12:58.019077+00:00'``
@@ -63,7 +64,6 @@ class ArrowDateTime(Field):
         datetime_obj = ArrowDateTime._to_datetime(dt_obj)
         if localtime and datetime_obj.tzinfo is not None:
             # Convert to local time if timezone-aware
-            import time
             local_dt = datetime_obj.astimezone()
             return local_dt.isoformat()
         return datetime_obj.isoformat()
