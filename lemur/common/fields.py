@@ -7,13 +7,11 @@
 """
 import email.utils
 import ipaddress
-import warnings
 from datetime import datetime as dt
 
 import arrow
 from cryptography import x509
 from flask import current_app
-from marshmallow import utils
 from marshmallow.exceptions import ValidationError
 from marshmallow.fields import Field
 
@@ -48,43 +46,43 @@ class ArrowDateTime(Field):
     """
 
     @staticmethod
-    def _arrow_isoformat(dt_obj, localtime=False):
-        """Arrow-compatible ISO format serialization."""
-        # Handle Arrow objects
-        if hasattr(dt_obj, 'to') and hasattr(dt_obj, 'isoformat'):
-            if localtime:
-                return dt_obj.to('local').isoformat()
-            return dt_obj.isoformat()
-        # Handle datetime objects
-        elif hasattr(dt_obj, 'isoformat'):
-            return dt_obj.isoformat()
-        # Convert to Arrow if it's not already
+    def _to_datetime(dt_obj):
+        """Convert Arrow or other datetime-like objects to standard datetime."""
+        if hasattr(dt_obj, 'datetime'):
+            # Arrow object
+            return dt_obj.datetime
+        elif isinstance(dt_obj, dt.datetime):
+            return dt_obj
         else:
-            arrow_obj = arrow.get(dt_obj)
-            if localtime:
-                return arrow_obj.to('local').isoformat()
-            return arrow_obj.isoformat()
+            # Try to convert with arrow first
+            return arrow.get(dt_obj).datetime
 
     @staticmethod
-    def _arrow_rfc_format(dt_obj, localtime=False):
-        """Arrow-compatible RFC format serialization."""
-        # Handle Arrow objects
-        if hasattr(dt_obj, 'to') and hasattr(dt_obj, 'format'):
-            if localtime:
-                return dt_obj.to('local').format('ddd, DD MMM YYYY HH:mm:ss ZZ')
-            return dt_obj.format('ddd, DD MMM YYYY HH:mm:ss ZZ')
-        # Convert to Arrow if it's not already
-        else:
-            arrow_obj = arrow.get(dt_obj)
-            if localtime:
-                return arrow_obj.to('local').format('ddd, DD MMM YYYY HH:mm:ss ZZ')
-            return arrow_obj.format('ddd, DD MMM YYYY HH:mm:ss ZZ')
+    def _standard_isoformat(dt_obj, localtime=False):
+        """Standard library ISO format serialization."""
+        datetime_obj = ArrowDateTime._to_datetime(dt_obj)
+        if localtime and datetime_obj.tzinfo is not None:
+            # Convert to local time if timezone-aware
+            import time
+            local_dt = datetime_obj.astimezone()
+            return local_dt.isoformat()
+        return datetime_obj.isoformat()
+
+    @staticmethod
+    def _standard_rfc_format(dt_obj, localtime=False):
+        """Standard library RFC format serialization."""
+        datetime_obj = ArrowDateTime._to_datetime(dt_obj)
+        if localtime and datetime_obj.tzinfo is not None:
+            # Convert to local time if timezone-aware
+            local_dt = datetime_obj.astimezone()
+            return email.utils.format_datetime(local_dt)
+        return email.utils.format_datetime(datetime_obj)
 
     DATEFORMAT_SERIALIZATION_FUNCS = {
-        "iso": _arrow_isoformat,
-        "iso8601": _arrow_isoformat,
-        "rfc": _arrow_rfc_format,
-        "rfc822": _arrow_rfc_format,
+        "iso": _standard_isoformat,
+        "iso8601": _standard_isoformat,
+        "rfc": _standard_rfc_format,
+        "rfc822": _standard_rfc_format,
     }
 
     DATEFORMAT_DESERIALIZATION_FUNCS = {
@@ -122,7 +120,7 @@ class ArrowDateTime(Field):
             try:
                 return format_func(value, localtime=self.localtime)
             except (AttributeError, ValueError) as err:
-                self.fail("format", input=value)
+                raise self.make_error("format", input=value)
         else:
             # Handle both Arrow objects and datetime objects
             try:
@@ -135,34 +133,29 @@ class ArrowDateTime(Field):
                 else:
                     raise ValueError(f"Cannot format object of type {type(value)} with dateformat")
             except (AttributeError, ValueError) as err:
-                self.fail("format", input=value)
+                raise self.make_error("format", input=value)
 
     def _deserialize(self, value, attr, data, **kwargs):
         if not value:  # Falsy values, e.g. '', None, [] are not valid
-            self.fail("invalid")
+            raise self.make_error("invalid")
         self.dateformat = self.dateformat or self.DEFAULT_FORMAT
         func = self.DATEFORMAT_DESERIALIZATION_FUNCS.get(self.dateformat)
         if func:
             try:
                 return arrow.get(func(value))
             except (TypeError, AttributeError, ValueError):
-                self.fail("invalid")
+                raise self.make_error("invalid")
         elif self.dateformat:
             try:
-                return dt.datetime.strptime(value, self.dateformat)
+                return arrow.get(dt.datetime.strptime(value, self.dateformat))
             except (TypeError, AttributeError, ValueError):
-                self.fail("invalid")
-        elif utils.dateutil_available:
-            try:
-                return arrow.get(utils.from_datestring(value))
-            except TypeError:
-                self.fail("invalid")
+                raise self.make_error("invalid")
         else:
-            warnings.warn(
-                "It is recommended that you install python-dateutil "
-                "for improved datetime deserialization."
-            )
-            self.fail("invalid")
+            try:
+                # Try to parse with arrow's built-in parser as fallback
+                return arrow.get(value)
+            except (TypeError, ValueError, arrow.parser.ParserError):
+                raise self.make_error("invalid")
 
 
 class KeyUsageExtension(Field):
