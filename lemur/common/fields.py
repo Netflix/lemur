@@ -48,18 +48,37 @@ class ArrowDateTime(Field):
     """
 
     @staticmethod
-    def _arrow_isoformat(arrow_obj, localtime=False):
+    def _arrow_isoformat(dt_obj, localtime=False):
         """Arrow-compatible ISO format serialization."""
-        if localtime:
-            return arrow_obj.to('local').isoformat()
-        return arrow_obj.isoformat()
+        # Handle Arrow objects
+        if hasattr(dt_obj, 'to') and hasattr(dt_obj, 'isoformat'):
+            if localtime:
+                return dt_obj.to('local').isoformat()
+            return dt_obj.isoformat()
+        # Handle datetime objects
+        elif hasattr(dt_obj, 'isoformat'):
+            return dt_obj.isoformat()
+        # Convert to Arrow if it's not already
+        else:
+            arrow_obj = arrow.get(dt_obj)
+            if localtime:
+                return arrow_obj.to('local').isoformat()
+            return arrow_obj.isoformat()
 
     @staticmethod
-    def _arrow_rfc_format(arrow_obj, localtime=False):
+    def _arrow_rfc_format(dt_obj, localtime=False):
         """Arrow-compatible RFC format serialization."""
-        if localtime:
-            return arrow_obj.to('local').format('ddd, DD MMM YYYY HH:mm:ss ZZ')
-        return arrow_obj.format('ddd, DD MMM YYYY HH:mm:ss ZZ')
+        # Handle Arrow objects
+        if hasattr(dt_obj, 'to') and hasattr(dt_obj, 'format'):
+            if localtime:
+                return dt_obj.to('local').format('ddd, DD MMM YYYY HH:mm:ss ZZ')
+            return dt_obj.format('ddd, DD MMM YYYY HH:mm:ss ZZ')
+        # Convert to Arrow if it's not already
+        else:
+            arrow_obj = arrow.get(dt_obj)
+            if localtime:
+                return arrow_obj.to('local').format('ddd, DD MMM YYYY HH:mm:ss ZZ')
+            return arrow_obj.format('ddd, DD MMM YYYY HH:mm:ss ZZ')
 
     DATEFORMAT_SERIALIZATION_FUNCS = {
         "iso": _arrow_isoformat,
@@ -105,7 +124,18 @@ class ArrowDateTime(Field):
             except (AttributeError, ValueError) as err:
                 self.fail("format", input=value)
         else:
-            return value.strftime(self.dateformat)
+            # Handle both Arrow objects and datetime objects
+            try:
+                if hasattr(value, 'format') and callable(getattr(value, 'format')):
+                    # Arrow object
+                    return value.format(self.dateformat)
+                elif hasattr(value, 'strftime'):
+                    # datetime object
+                    return value.strftime(self.dateformat)
+                else:
+                    raise ValueError(f"Cannot format object of type {type(value)} with dateformat")
+            except (AttributeError, ValueError) as err:
+                self.fail("format", input=value)
 
     def _deserialize(self, value, attr, data, **kwargs):
         if not value:  # Falsy values, e.g. '', None, [] are not valid
