@@ -1,6 +1,6 @@
 import json
 import pytest
-from marshmallow.exceptions import ValidationError
+from marshmallow import ValidationError
 
 from lemur.tests.factories import RoleFactory
 
@@ -122,11 +122,8 @@ def test_plugin_input_schema_invalid_account_number(session):
         "title": "AWS-S3"
     }
 
-    from marshmallow import ValidationError
-    import json
-    
     with pytest.raises(ValidationError) as exc_info:
         PluginInputSchema().load(input_data)
-    
+
     errors = exc_info.value.messages
     assert '\'accountNumber\' cannot be validated' in json.dumps(errors)
