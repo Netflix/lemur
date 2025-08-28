@@ -1626,7 +1626,7 @@ def test_sensitive_sort(client):
         api.url_for(CertificatesList) + "?sortBy=private_key&sortDir=asc",
         headers=VALID_ADMIN_HEADER_TOKEN,
     )
-    assert "'private_key' is not sortable or filterable" in resp.json["message"]
+    assert "'private_key' is not sortable or filterable" in resp.json["error"]
 
 
 def test_boolean_filter(client):
@@ -1983,13 +1983,13 @@ def test_certificate_update_duplicate_destinations_not_allowed(client, crypto_au
     resp = client.put(
         api.url_for(Certificates, certificate_id=certificate.id),
         data=json.dumps(
-            certificate_output_schema.dump(certificate).data
+            certificate_output_schema.dump(certificate)
         ),
         headers=VALID_ADMIN_HEADER_TOKEN,
     )
     assert resp.status_code == 400
     assert 'Duplicate destinations for plugin test-destination and account 1234567890 are not allowed' \
-           in resp.json['message']
+           in resp.json['error']
 
 
 def test_certificate_update_duplicate_destinations_allowed(client, crypto_authority, certificate, issuer_plugin,
@@ -2007,12 +2007,12 @@ def test_certificate_update_duplicate_destinations_allowed(client, crypto_author
     resp = client.put(
         api.url_for(Certificates, certificate_id=certificate.id),
         data=json.dumps(
-            certificate_output_schema.dump(certificate).data
+            certificate_output_schema.dump(certificate)
         ),
         headers=VALID_ADMIN_HEADER_TOKEN,
     )
     assert resp.status_code == 200
     resp_cert = resp.json
     assert len(resp_cert['destinations']) == 2
-    assert destination_output_schema.dump(destination1).data in resp_cert['destinations']
-    assert destination_output_schema.dump(destination2).data in resp_cert['destinations']
+    assert destination_output_schema.dump(destination1) in resp_cert['destinations']
+    assert destination_output_schema.dump(destination2) in resp_cert['destinations']

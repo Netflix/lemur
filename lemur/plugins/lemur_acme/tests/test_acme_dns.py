@@ -188,7 +188,7 @@ class TestAcmeDns(unittest.TestCase):
 
     @patch("acme.client.ClientV2")
     @patch("OpenSSL.crypto", return_value="mock_cert")
-    @patch("josepy.util.ComparableX509")
+    @patch("cryptography.x509.load_der_x509_certificate")
     @patch("lemur.plugins.lemur_acme.plugin.AcmeDnsHandler.get_dns_challenges")
     def test_request_certificate(
             self,

@@ -332,7 +332,7 @@ class Certificate(BaseModel):
 
     @expired.expression  # type: ignore
     def expired(cls):
-        return case([(cls.not_after <= arrow.utcnow(), True)], else_=False)
+        return case((cls.not_after <= arrow.utcnow(), True), else_=False)
 
     @hybrid_property
     def revoked(self):
@@ -341,7 +341,7 @@ class Certificate(BaseModel):
 
     @revoked.expression  # type: ignore
     def revoked(cls):
-        return case([(cls.status == "revoked", True)], else_=False)
+        return case((cls.status == "revoked", True), else_=False)
 
     @hybrid_property
     def has_private_key(self):
@@ -349,7 +349,7 @@ class Certificate(BaseModel):
 
     @has_private_key.expression  # type: ignore
     def has_private_key(cls):
-        return case([(cls.private_key.is_(None), True)], else_=False)
+        return case((cls.private_key.is_(None), True), else_=False)
 
     @hybrid_property
     def in_rotation_window(self):
@@ -372,7 +372,7 @@ class Certificate(BaseModel):
         :return:
         """
         return case(
-            [(extract("day", cls.not_after - func.now()) <= RotationPolicy.days, True)],
+            (extract("day", cls.not_after - func.now()) <= RotationPolicy.days, True),
             else_=False,
         )
 

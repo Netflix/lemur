@@ -241,4 +241,4 @@ def test_sensitive_filter(client):
     resp = client.get(
         api.url_for(RolesList) + "?filter=password;a", headers=VALID_ADMIN_HEADER_TOKEN
     )
-    assert "'password' is not sortable or filterable" in resp.json["message"]
+    assert "'password' is not sortable or filterable" in resp.json["error"]

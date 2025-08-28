@@ -190,7 +190,7 @@ def test_sensitive_filter(client):
     resp = client.get(
         api.url_for(UsersList) + "?filter=password;a", headers=VALID_ADMIN_HEADER_TOKEN
     )
-    assert "'password' is not sortable or filterable" in resp.json["message"]
+    assert "'password' is not sortable or filterable" in resp.json["error"]
 
 
 def test_sensitive_sort(client):
@@ -198,7 +198,7 @@ def test_sensitive_sort(client):
         api.url_for(UsersList) + "?sortBy=password&sortDir=asc",
         headers=VALID_ADMIN_HEADER_TOKEN,
     )
-    assert "'password' is not sortable or filterable" in resp.json["message"]
+    assert "'password' is not sortable or filterable" in resp.json["error"]
 
 
 def test_user_role_changes(client, session):

@@ -33,7 +33,7 @@ class Cipher(BaseModel):
 
     @deprecated.expression  # type: ignore
     def deprecated(cls):
-        return case([(cls.name in BAD_CIPHERS, True)], else_=False)
+        return case((cls.name.in_(BAD_CIPHERS), True), else_=False)
 
 
 class Policy(BaseModel):
