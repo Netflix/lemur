@@ -47,11 +47,25 @@ class ArrowDateTime(Field):
 
     """
 
+    @staticmethod
+    def _arrow_isoformat(arrow_obj, localtime=False):
+        """Arrow-compatible ISO format serialization."""
+        if localtime:
+            return arrow_obj.to('local').isoformat()
+        return arrow_obj.isoformat()
+    
+    @staticmethod
+    def _arrow_rfc_format(arrow_obj, localtime=False):
+        """Arrow-compatible RFC format serialization."""
+        if localtime:
+            return arrow_obj.to('local').format('ddd, DD MMM YYYY HH:mm:ss ZZ')
+        return arrow_obj.format('ddd, DD MMM YYYY HH:mm:ss ZZ')
+
     DATEFORMAT_SERIALIZATION_FUNCS = {
-        "iso": dt.isoformat,
-        "iso8601": dt.isoformat,
-        "rfc": email.utils.format_datetime,
-        "rfc822": email.utils.format_datetime,
+        "iso": _arrow_isoformat.__func__,
+        "iso8601": _arrow_isoformat.__func__,
+        "rfc": _arrow_rfc_format.__func__,
+        "rfc822": _arrow_rfc_format.__func__,
     }
 
     DATEFORMAT_DESERIALIZATION_FUNCS = {
