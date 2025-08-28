@@ -8,7 +8,6 @@
 import email.utils
 import ipaddress
 from datetime import datetime as dt
-from typing import Any, Optional, Union
 
 import arrow
 from cryptography import x509
@@ -30,7 +29,7 @@ class Hex(Field):
         return value
 
 
-class ArrowDateTime(Field[arrow.Arrow]):
+class ArrowDateTime(Field):
     """A formatted datetime string in UTC.
 
     Example: ``'2014-12-22T03:12:58.019077+00:00'``
