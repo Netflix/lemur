@@ -80,14 +80,12 @@ def db(app, request):
     # Force close any existing connections first
     _db.session.remove()
     _db.engine.dispose()
-    
     # Use more aggressive drop approach with CASCADE
     with _db.engine.connect() as connection:
         connection.execute(text("DROP SCHEMA IF EXISTS public CASCADE"))
         connection.execute(text("CREATE SCHEMA public"))
         connection.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
         connection.commit()
-    
     _db.create_all()
     _db.app = app
 
@@ -99,7 +97,7 @@ def db(app, request):
 
     _db.session.commit()
     yield _db
-    
+
     # Clean shutdown at the end
     _db.session.remove()
     _db.engine.dispose()
