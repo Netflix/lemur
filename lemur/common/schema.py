@@ -8,12 +8,16 @@
 
 """
 from functools import wraps
+import contextvars
 
 from flask import request, current_app
 from inflection import camelize, underscore
 from marshmallow import Schema, post_dump, pre_load, ValidationError
 from sentry_sdk import capture_exception
 from sqlalchemy.orm.collections import InstrumentedList
+
+# Context variable for pagination info
+pagination_context: contextvars.ContextVar = contextvars.ContextVar('pagination_context', default={})
 
 
 class LemurSchema(Schema):
@@ -49,8 +53,9 @@ class LemurSchema(Schema):
 
     def wrap_with_envelope(self, data, many):
         if many:
-            if "total" in self.context.keys():
-                return dict(total=self.context["total"], items=data)
+            context = pagination_context.get()
+            if "total" in context:
+                return dict(total=context["total"], items=data)
         return data
 
 
@@ -71,17 +76,25 @@ class LemurOutputSchema(LemurSchema):
 
     def unwrap_envelope(self, data, many):
         if many:
-            if data["items"]:
-                if isinstance(data, InstrumentedList) or isinstance(data, list):
-                    self.context["total"] = len(data)
-                    return data
+            context = pagination_context.get()
+            if data and isinstance(data, dict) and "items" in data:
+                if data["items"]:
+                    if isinstance(data, InstrumentedList) or isinstance(data, list):
+                        context["total"] = len(data)
+                        pagination_context.set(context)
+                        return data
+                    else:
+                        context["total"] = data["total"]
+                        pagination_context.set(context)
                 else:
-                    self.context["total"] = data["total"]
-            else:
-                self.context["total"] = 0
-                data = {"items": []}
-
-            return data["items"]
+                    context["total"] = 0
+                    pagination_context.set(context)
+                    data = {"items": []}
+                return data["items"]
+            elif isinstance(data, (InstrumentedList, list)):
+                context["total"] = len(data)
+                pagination_context.set(context)
+                return data
 
         return data
 
@@ -124,6 +137,9 @@ def unwrap_pagination(data, output_schema):
             if data.get("total") == 0:
                 return data
 
+            # Set context for pagination
+            context = {"total": data["total"]}
+            pagination_context.set(context)
             marshaled_data = {"total": data["total"]}
             marshaled_data["items"] = output_schema.dump(data["items"], many=True)
             return marshaled_data
@@ -131,6 +147,9 @@ def unwrap_pagination(data, output_schema):
         return output_schema.dump(data)
 
     elif isinstance(data, list):
+        # Set context for pagination
+        context = {"total": len(data)}
+        pagination_context.set(context)
         marshaled_data = {"total": len(data)}
         marshaled_data["items"] = output_schema.dump(data, many=True)
         return marshaled_data
