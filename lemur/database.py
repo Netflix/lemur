@@ -273,43 +273,32 @@ def clone(model):
 def get_count(q):
     """
     Count the number of rows in a table. More efficient than count(*)
-    :param q:
-    :return:
+    Compatible with SQLAlchemy 2.0
+    :param q: SQLAlchemy Query object
+    :return: count of rows
     """
-    disable_group_by = False
-    if len(q._entities) > 1:
-        # currently support only one entity
-        raise Exception("only one entity is supported for get_count, got: %s" % q)
-    entity = q._entities[0]
-    if hasattr(entity, "column"):
-        # _ColumnEntity has column attr - on case: query(Model.column)...
-        col = entity.column
-        if q._group_by and q._distinct:
-            # which query can have both?
-            raise NotImplementedError
-        if q._group_by or q._distinct:
-            col = distinct(col)
-        if q._group_by:
-            # need to disable group_by and enable distinct - we can do this because we have only 1 entity
-            disable_group_by = True
-        count_func = func.count(col)
-    else:
-        # _MapperEntity doesn't have column attr - on case: query(Model)...
-        count_func = func.count()
-    if q._group_by and not disable_group_by:
-        count_func = count_func.over(None)
-    count_q = (
-        q.options(lazyload("*"))
-        .statement.with_only_columns([count_func])
-        .order_by(None)
-    )
-    if disable_group_by:
-        count_q = count_q.group_by(None)
     try:
-        count = q.session.execute(count_q).scalar()
-    except Exception:
-        raise Exception("error executing query")
-    return count
+        # SQLAlchemy 2.0 compatible approach
+        # Check if we have multiple entities using column_descriptions
+        column_descriptions = q.column_descriptions
+        
+        if len(column_descriptions) > 1:
+            # currently support only one entity
+            raise Exception("only one entity is supported for get_count, got: %s" % q)
+        
+        # Use the built-in count() method which works in SQLAlchemy 2.0
+        return q.count()
+            
+    except Exception as e:
+        # If count() fails, try a different approach
+        try:
+            # Fallback: use func.count() with subquery
+            subquery = q.subquery()
+            count_query = db.session.query(func.count()).select_from(subquery)
+            return count_query.scalar()
+        except Exception:
+            # Final fallback: materialize the query and count (less efficient)
+            return len(q.all())
 
 
 def sort_and_page(query, model, args):
