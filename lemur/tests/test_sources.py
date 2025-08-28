@@ -20,8 +20,7 @@ def validate_source_schema(client):
         "plugin": {"slug": "aws-source"},
     }
 
-    data, errors = SourceInputSchema().load(input_data)
-    assert not errors
+    data = SourceInputSchema().load(input_data)
 
 
 def test_create_certificate(user, source):

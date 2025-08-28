@@ -232,7 +232,7 @@ def test_certificate_output_schema(session, certificate, issuer_plugin):
     with patch(
         "lemur.common.utils.parse_certificate", side_effect=utils.parse_certificate
     ) as wrapper:
-        data, errors = CertificateOutputSchema().dump(certificate)
+        data = CertificateOutputSchema().dump(certificate)
         assert data["issuer"] == "LemurTrustUnittestsClass1CA2018"
         assert data["distinguishedName"] == "L=Earth,ST=N/A,C=EE,OU=Karate Lessons,O=Daniel San & co,CN=san.example.org"
         # Authority does not have 'cab_compliant', thus subject details should not be returned
@@ -248,8 +248,7 @@ def test_certificate_output_schema_subject_details(session, certificate, issuer_
     # Mark authority as non-cab-compliant
     update_options(certificate.authority.id, '[{"name": "cab_compliant","value":false}]')
 
-    data, errors = CertificateOutputSchema().dump(certificate)
-    assert not errors
+    data = CertificateOutputSchema().dump(certificate)
     assert data["issuer"] == "LemurTrustUnittestsClass1CA2018"
     assert data["distinguishedName"] == "L=Earth,ST=N/A,C=EE,OU=Karate Lessons,O=Daniel San & co,CN=san.example.org"
 
@@ -262,8 +261,7 @@ def test_certificate_output_schema_subject_details(session, certificate, issuer_
 
     # Mark authority as cab-compliant
     update_options(certificate.authority.id, '[{"name": "cab_compliant","value":true}]')
-    data, errors = CertificateOutputSchema().dump(certificate)
-    assert not errors
+    data = CertificateOutputSchema().dump(certificate)
     assert "country" not in data
     assert "state" not in data
     assert "location" not in data
@@ -275,9 +273,8 @@ def test_certificate_edit_schema(session):
     from lemur.certificates.schemas import CertificateEditInputSchema
 
     input_data = {"owner": "bob@example.com"}
-    data, errors = CertificateEditInputSchema().load(input_data)
+    data = CertificateEditInputSchema().load(input_data)
 
-    assert not errors
     assert len(data["notifications"]) == 3
     assert data["roles"][0].name == input_data["owner"]
 
@@ -287,16 +284,14 @@ def test_authority_key_identifier_schema():
 
     input_data = {"useKeyIdentifier": True, "useAuthorityCert": True}
 
-    data, errors = AuthorityKeyIdentifierSchema().load(input_data)
+    data = AuthorityKeyIdentifierSchema().load(input_data)
 
     assert sorted(data) == sorted(
         {"use_key_identifier": True, "use_authority_cert": True}
     )
-    assert not errors
 
-    data, errors = AuthorityKeyIdentifierSchema().dumps(data)
+    data = AuthorityKeyIdentifierSchema().dumps(data)
     assert sorted(data) == sorted(json.dumps(input_data))
-    assert not errors
 
 
 def test_certificate_info_access_schema():
@@ -304,12 +299,10 @@ def test_certificate_info_access_schema():
 
     input_data = {"includeAIA": True}
 
-    data, errors = CertificateInfoAccessSchema().load(input_data)
-    assert not errors
+    data = CertificateInfoAccessSchema().load(input_data)
     assert data == {"include_aia": True}
 
-    data, errors = CertificateInfoAccessSchema().dump(data)
-    assert not errors
+    data = CertificateInfoAccessSchema().dump(data)
     assert data == input_data
 
 
@@ -318,11 +311,9 @@ def test_subject_key_identifier_schema():
 
     input_data = {"includeSKI": True}
 
-    data, errors = SubjectKeyIdentifierSchema().load(input_data)
-    assert not errors
+    data = SubjectKeyIdentifierSchema().load(input_data)
     assert data == {"include_ski": True}
-    data, errors = SubjectKeyIdentifierSchema().dump(data)
-    assert not errors
+    data = SubjectKeyIdentifierSchema().dump(data)
     assert data == input_data
 
 
@@ -335,11 +326,9 @@ def test_extension_schema(client):
         "subjectKeyIdentifier": {"includeSKI": True},
     }
 
-    data, errors = ExtensionSchema().load(input_data)
-    assert not errors
+    data = ExtensionSchema().load(input_data)
 
-    data, errors = ExtensionSchema().dump(data)
-    assert not errors
+    data = ExtensionSchema().dump(data)
 
 
 def test_certificate_input_schema(client, authority):
@@ -356,9 +345,8 @@ def test_certificate_input_schema(client, authority):
         "location": "A Place"
     }
 
-    data, errors = CertificateInputSchema().load(input_data)
+    data = CertificateInputSchema().load(input_data)
 
-    assert not errors
     assert data["authority"].id == authority.id
     assert data["location"] == "A Place"
 
@@ -384,9 +372,8 @@ def test_certificate_input_schema_empty_location(client, authority):
         "location": ""
     }
 
-    data, errors = CertificateInputSchema().load(input_data)
+    data = CertificateInputSchema().load(input_data)
 
-    assert not errors
     assert len(data.keys()) == 20
     assert data["location"] == ""
 
@@ -419,8 +406,7 @@ def test_certificate_input_with_extensions(client, authority):
         "keyType": "RSA2048"
     }
 
-    data, errors = CertificateInputSchema().load(input_data)
-    assert not errors
+    data = CertificateInputSchema().load(input_data)
     assert data["key_type"] == "RSA2048"
 
 
@@ -454,9 +440,8 @@ def test_certificate_input_schema_parse_csr(authority, logged_in_admin):
         "dnsProvider": None,
     }
 
-    data, errors = CertificateInputSchema().load(input_data)
+    data = CertificateInputSchema().load(input_data)
 
-    assert not errors
     for san in data["extensions"]["sub_alt_names"]["names"]:
         assert san.value == test_san_dns
 
@@ -475,18 +460,18 @@ def test_certificate_out_of_range_date(client, authority):
         "dnsProvider": None,
     }
 
-    data, errors = CertificateInputSchema().load(input_data)
-    assert errors
+    with pytest.raises(ValidationError):
+        CertificateInputSchema().load(input_data)
 
     input_data["validityStart"] = "2017-04-30T00:12:34.513631"
 
-    data, errors = CertificateInputSchema().load(input_data)
-    assert errors
+    with pytest.raises(ValidationError):
+        CertificateInputSchema().load(input_data)
 
     input_data["validityEnd"] = "2018-04-30T00:12:34.513631"
 
-    data, errors = CertificateInputSchema().load(input_data)
-    assert errors
+    with pytest.raises(ValidationError):
+        CertificateInputSchema().load(input_data)
 
 
 def test_certificate_valid_years(client, authority):
@@ -501,8 +486,7 @@ def test_certificate_valid_years(client, authority):
         "dnsProvider": None,
     }
 
-    data, errors = CertificateInputSchema().load(input_data)
-    assert not errors
+    data = CertificateInputSchema().load(input_data)
 
 
 def test_certificate_valid_dates(client, authority):
@@ -518,8 +502,7 @@ def test_certificate_valid_dates(client, authority):
         "dnsProvider": None,
     }
 
-    data, errors = CertificateInputSchema().load(input_data)
-    assert not errors
+    data = CertificateInputSchema().load(input_data)
 
 
 def test_certificate_cn_admin(client, authority, logged_in_admin):
@@ -536,8 +519,7 @@ def test_certificate_cn_admin(client, authority, logged_in_admin):
         "dnsProvider": None,
     }
 
-    data, errors = CertificateInputSchema().load(input_data)
-    assert not errors
+    data = CertificateInputSchema().load(input_data)
 
 
 def test_certificate_allowed_names(client, authority, session, logged_in_user):
@@ -562,8 +544,7 @@ def test_certificate_allowed_names(client, authority, session, logged_in_user):
         "dnsProvider": None,
     }
 
-    data, errors = CertificateInputSchema().load(input_data)
-    assert not errors
+    data = CertificateInputSchema().load(input_data)
 
 
 def test_certificate_inactive_authority(client, authority, session, logged_in_user):
@@ -583,8 +564,9 @@ def test_certificate_inactive_authority(client, authority, session, logged_in_us
         "dnsProvider": None,
     }
 
-    data, errors = CertificateInputSchema().load(input_data)
-    assert errors["authority"][0] == "The authority is inactive."
+    with pytest.raises(ValidationError) as exc_info:
+        CertificateInputSchema().load(input_data)
+    assert exc_info.value.messages["authority"][0] == "The authority is inactive."
 
 
 def test_certificate_disallowed_names(client, authority, session, logged_in_user):
@@ -609,11 +591,12 @@ def test_certificate_disallowed_names(client, authority, session, logged_in_user
         "dnsProvider": None,
     }
 
-    data, errors = CertificateInputSchema().load(input_data)
-    assert errors["common_name"][0].startswith(
+    with pytest.raises(ValidationError) as exc_info:
+        CertificateInputSchema().load(input_data)
+    assert exc_info.value.messages["common_name"][0].startswith(
         "Domain *.example.com does not match allowed domain patterns"
     )
-    assert errors["extensions"]["sub_alt_names"]["names"][0].startswith(
+    assert exc_info.value.messages["extensions"]["sub_alt_names"]["names"][0].startswith(
         "Domain evilhacker.org does not match allowed domain patterns"
     )
 
@@ -633,8 +616,9 @@ def test_certificate_sensitive_name(client, authority, session, logged_in_user):
     }
     session.add(Domain(name="sensitive.example.com", sensitive=True))
 
-    data, errors = CertificateInputSchema().load(input_data)
-    assert errors["common_name"][0].startswith(
+    with pytest.raises(ValidationError) as exc_info:
+        CertificateInputSchema().load(input_data)
+    assert exc_info.value.messages["common_name"][0].startswith(
         "Domain sensitive.example.com has been marked as sensitive"
     )
 
@@ -649,8 +633,9 @@ def test_certificate_missing_common_name(client, authority, session, logged_in_u
         "description": "testtestest"
     }
 
-    data, errors = CertificateInputSchema().load(input_data)
-    assert errors["_schema"][0].startswith(
+    with pytest.raises(ValidationError) as exc_info:
+        CertificateInputSchema().load(input_data)
+    assert exc_info.value.messages["_schema"][0].startswith(
         "Missing common_name"
     )
 
@@ -673,8 +658,7 @@ def test_certificate_only_san_no_cn(session, issuer_plugin, optional_cn_authorit
         }
     }
 
-    data, errors = CertificateInputSchema().load(input_data)
-    assert not errors
+    data = CertificateInputSchema().load(input_data)
 
     csr_text, pkey = create_csr(
         owner=data["owner"],
@@ -709,16 +693,14 @@ def test_certificate_upload_schema_ok(client):
         "csr": SAN_CERT_CSR,
         "external_id": "1234",
     }
-    data, errors = CertificateUploadInputSchema().load(data)
-    assert not errors
+    data = CertificateUploadInputSchema().load(data)
 
 
 def test_certificate_upload_schema_minimal(client):
     from lemur.certificates.schemas import CertificateUploadInputSchema
 
     data = {"owner": "pwner@example.com", "body": SAN_CERT_STR}
-    data, errors = CertificateUploadInputSchema().load(data)
-    assert not errors
+    data = CertificateUploadInputSchema().load(data)
 
 
 def test_certificate_upload_schema_long_chain(client):
@@ -729,8 +711,7 @@ def test_certificate_upload_schema_long_chain(client):
         "body": SAN_CERT_STR,
         "chain": INTERMEDIATE_CERT_STR + "\n" + ROOTCA_CERT_STR,
     }
-    data, errors = CertificateUploadInputSchema().load(data)
-    assert not errors
+    data = CertificateUploadInputSchema().load(data)
 
 
 def test_certificate_upload_schema_invalid_body(client):
@@ -740,8 +721,9 @@ def test_certificate_upload_schema_invalid_body(client):
         "owner": "pwner@example.com",
         "body": "Hereby I certify that this is a valid body",
     }
-    data, errors = CertificateUploadInputSchema().load(data)
-    assert errors == {"body": ["Public certificate presented is not valid."]}
+    with pytest.raises(ValidationError) as exc_info:
+        CertificateUploadInputSchema().load(data)
+    assert exc_info.value.messages == {"body": ["Public certificate presented is not valid."]}
 
 
 def test_certificate_upload_schema_invalid_pkey(client):
@@ -752,16 +734,18 @@ def test_certificate_upload_schema_invalid_pkey(client):
         "body": SAN_CERT_STR,
         "privateKey": "Look at me Im a private key!!111",
     }
-    data, errors = CertificateUploadInputSchema().load(data)
-    assert errors == {"private_key": ["Private key presented is not valid."]}
+    with pytest.raises(ValidationError) as exc_info:
+        CertificateUploadInputSchema().load(data)
+    assert exc_info.value.messages == {"private_key": ["Private key presented is not valid."]}
 
 
 def test_certificate_upload_schema_invalid_chain(client):
     from lemur.certificates.schemas import CertificateUploadInputSchema
 
     data = {"body": SAN_CERT_STR, "chain": "CHAINSAW", "owner": "pwner@example.com"}
-    data, errors = CertificateUploadInputSchema().load(data)
-    assert errors == {"chain": ["Invalid certificate in certificate chain."]}
+    with pytest.raises(ValidationError) as exc_info:
+        CertificateUploadInputSchema().load(data)
+    assert exc_info.value.messages == {"chain": ["Invalid certificate in certificate chain."]}
 
 
 def test_certificate_upload_schema_wrong_pkey(client):
@@ -773,8 +757,9 @@ def test_certificate_upload_schema_wrong_pkey(client):
         "chain": INTERMEDIATE_CERT_STR,
         "owner": "pwner@example.com",
     }
-    data, errors = CertificateUploadInputSchema().load(data)
-    assert errors == {"_schema": ["Private key does not match certificate."]}
+    with pytest.raises(ValidationError) as exc_info:
+        CertificateUploadInputSchema().load(data)
+    assert exc_info.value.messages == {"_schema": ["Private key does not match certificate."]}
 
 
 def test_certificate_upload_schema_wrong_chain(client):
@@ -785,8 +770,9 @@ def test_certificate_upload_schema_wrong_chain(client):
         "body": SAN_CERT_STR,
         "chain": ROOTCA_CERT_STR,
     }
-    data, errors = CertificateUploadInputSchema().load(data)
-    assert errors == {
+    with pytest.raises(ValidationError) as exc_info:
+        CertificateUploadInputSchema().load(data)
+    assert exc_info.value.messages == {
         "_schema": [
             "Incorrect chain certificate(s) provided: 'san.example.org' is not signed by "
             "'LemurTrust Unittests Root CA 2018'"
@@ -802,8 +788,9 @@ def test_certificate_upload_schema_wrong_chain_2nd(client):
         "body": SAN_CERT_STR,
         "chain": INTERMEDIATE_CERT_STR + "\n" + SAN_CERT_STR,
     }
-    data, errors = CertificateUploadInputSchema().load(data)
-    assert errors == {
+    with pytest.raises(ValidationError) as exc_info:
+        CertificateUploadInputSchema().load(data)
+    assert exc_info.value.messages == {
         "_schema": [
             "Incorrect chain certificate(s) provided: 'LemurTrust Unittests Class 1 CA 2018' is "
             "not signed by 'san.example.org'"
@@ -818,12 +805,12 @@ def test_certificate_revoke_schema():
         "comments": "testing certificate revoke schema",
         "crl_reason": "cessationOfOperation"
     }
-    data, errors = CertificateRevokeSchema().load(input)
-    assert not errors
+    data = CertificateRevokeSchema().load(input)
 
     input["crl_reason"] = "fakeCrlReason"
-    data, errors = CertificateRevokeSchema().load(input)
-    assert errors == {
+    with pytest.raises(ValidationError) as exc_info:
+        CertificateRevokeSchema().load(input)
+    assert exc_info.value.messages == {
         "crl_reason": ['Not a valid choice.']
     }
 

@@ -21,9 +21,7 @@ def test_notification_input_schema(client, notification_plugin, notification):
         "plugin": {"slug": "test-notification"},
     }
 
-    data, errors = NotificationInputSchema().load(input_data)
-
-    assert not errors
+    data = NotificationInputSchema().load(input_data)
 
 
 @pytest.mark.parametrize(

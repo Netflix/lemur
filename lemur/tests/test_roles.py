@@ -21,9 +21,7 @@ def test_role_input_schema(client):
 
     input_data = {"name": "myRole"}
 
-    data, errors = RoleInputSchema().load(input_data)
-
-    assert not errors
+    data = RoleInputSchema().load(input_data)
 
 
 def test_multiple_authority_certificate_association(session, client):

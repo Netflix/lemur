@@ -29,9 +29,7 @@ def test_authority_input_schema(client, role, issuer_plugin, logged_in_user):
         "sensitivity": "medium",
     }
 
-    data, errors = AuthorityInputSchema().load(input_data)
-
-    assert not errors
+    data = AuthorityInputSchema().load(input_data)
 
 
 def test_authority_input_schema_ecc(client, role, issuer_plugin, logged_in_user):
@@ -52,9 +50,7 @@ def test_authority_input_schema_ecc(client, role, issuer_plugin, logged_in_user)
         "sensitivity": "medium",
     }
 
-    data, errors = AuthorityInputSchema().load(input_data)
-
-    assert not errors
+    data = AuthorityInputSchema().load(input_data)
 
 
 def test_user_authority(session, client, authority, role, user, issuer_plugin):

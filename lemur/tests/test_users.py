@@ -20,9 +20,7 @@ def test_user_input_schema(client):
         "email": "example@example.com",
     }
 
-    data, errors = UserInputSchema().load(input_data)
-
-    assert not errors
+    data = UserInputSchema().load(input_data)
 
 
 def test_valid_password():

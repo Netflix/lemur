@@ -1,6 +1,7 @@
 from validators.url import url
 from lemur.plugins.bases import SourcePlugin
 import pytest
+from marshmallow import ValidationError
 
 from lemur.plugins.lemur_vault_dest.plugin import VaultSourcePlugin, VaultDestinationPlugin
 
@@ -48,8 +49,8 @@ def test_plugin_input_schema_invalid_url_validator(vault_source_plugin):
         ],
     }
 
-    with pytest.raises(TypeError):
-        data, errors = PluginInputSchema().load(input_data)
+    with pytest.raises((TypeError, ValidationError)):
+        PluginInputSchema().load(input_data)
 
 
 def test_vault_plugin_input_schema(session):
@@ -91,9 +92,7 @@ def test_vault_plugin_input_schema(session):
         ],
     }
 
-    data, errors = PluginInputSchema().load(input_data)
-
-    assert not errors
+    data = PluginInputSchema().load(input_data)
     assert data
     assert "plugin_object" in data
 

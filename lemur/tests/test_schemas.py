@@ -94,9 +94,7 @@ def test_plugin_input_schema(session):
         "title": "AWS-S3"
     }
 
-    data, errors = PluginInputSchema().load(input_data)
-
-    assert not errors
+    data = PluginInputSchema().load(input_data)
     assert data
     assert "plugin_object" in data
 
@@ -124,7 +122,11 @@ def test_plugin_input_schema_invalid_account_number(session):
         "title": "AWS-S3"
     }
 
-    data, errors = PluginInputSchema().load(input_data)
-
-    assert errors
+    from marshmallow import ValidationError
+    import json
+    
+    with pytest.raises(ValidationError) as exc_info:
+        PluginInputSchema().load(input_data)
+    
+    errors = exc_info.value.messages
     assert '\'accountNumber\' cannot be validated' in json.dumps(errors)

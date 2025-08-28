@@ -28,9 +28,7 @@ def test_destination_input_schema(client, destination_plugin, destination):
         "plugin": {"slug": "test-destination"},
     }
 
-    data, errors = DestinationInputSchema().load(input_data)
-
-    assert not errors
+    data = DestinationInputSchema().load(input_data)
 
 
 @pytest.mark.parametrize(
