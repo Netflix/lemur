@@ -52,31 +52,26 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: 'pip'
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
       - name: Set up Node.js 16
         uses: actions/setup-node@v4
         with:
           node-version: 16
       - name: Install dependencies
         run: |
-          python -m venv ~/env
-          source ~/env/bin/activate
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade setuptools
-          pip install bandit
+          uv sync --group dev --group test
           sudo apt-get update
           sudo apt-get install libsasl2-dev libldap2-dev xvfb
       - name: Test
         run: |
-          python -m venv ~/env
-          source ~/env/bin/activate
-          make test
+          uv run make test
       - name: Test JS
         run: |
-          python -m venv ~/env
-          source ~/env/bin/activate
-          bandit -r . -ll -ii -x lemur/tests/,docs
-          xvfb-run make test-js
+          uv run bandit -r . -ll -ii -x lemur/tests/,docs
+          xvfb-run uv run make test-js
       - name: Coveralls GitHub Action
         uses: coverallsapp/github-action@v2
         if: matrix.python-version == '3.11' && matrix.postgres-version == 17 && matrix.os == 'ubuntu-22.04'
