@@ -79,7 +79,7 @@ cachetools==5.3.3
     # via
     #   -r requirements.txt
     #   google-auth
-celery[redis]==5.3.6
+celery==5.3.6
     # via
     #   -r requirements-tests.in
     #   -r requirements.txt
@@ -90,7 +90,7 @@ certifi==2025.8.3
     #   -r requirements.txt
     #   requests
     #   sentry-sdk
-certsrv[ntlm]==2.1.1
+certsrv==2.1.1
     # via -r requirements.txt
 cffi==1.16.0
     # via
@@ -221,7 +221,7 @@ freezegun==1.5.5
     # via -r requirements-tests.in
 future==1.0.0
     # via -r requirements.txt
-google-api-core[grpc]==2.18.0
+google-api-core==2.18.0
     # via
     #   -r requirements.txt
     #   google-cloud-private-ca
@@ -232,7 +232,7 @@ google-auth==2.29.0
     #   google-cloud-private-ca
 google-cloud-private-ca==1.15.0
     # via -r requirements.txt
-googleapis-common-protos[grpc]==1.63.0
+googleapis-common-protos==1.63.0
     # via
     #   -r requirements.txt
     #   google-api-core
@@ -240,6 +240,10 @@ googleapis-common-protos[grpc]==1.63.0
     #   grpcio-status
 graphql-core==3.2.3
     # via moto
+greenlet==3.2.4
+    # via
+    #   -r requirements.txt
+    #   sqlalchemy
 grpc-google-iam-v1==0.14.0
     # via
     #   -r requirements.txt
@@ -263,11 +267,6 @@ idna==3.7
     # via
     #   -r requirements.txt
     #   requests
-importlib-metadata==7.1.0
-    # via
-    #   -r requirements.txt
-    #   certbot
-    #   flask
 importlib-resources==6.4.0
     # via
     #   -r requirements.txt
@@ -367,7 +366,7 @@ mdurl==0.1.2
     # via
     #   -r requirements.txt
     #   markdown-it-py
-moto[all]==4.2.14
+moto==4.2.14
     # via -r requirements-tests.in
 mpmath==1.3.0
     # via sympy
@@ -526,7 +525,7 @@ python-dateutil==2.9.0.post0
     #   celery
     #   freezegun
     #   moto
-python-jose[cryptography]==3.3.0
+python-jose==3.3.0
     # via moto
 python-json-logger==3.3.0
     # via -r requirements.txt
@@ -577,9 +576,7 @@ requests==2.32.5
 requests-mock==1.12.1
     # via -r requirements-tests.in
 requests-ntlm==1.2.0
-    # via
-    #   -r requirements.txt
-    #   certsrv
+    # via -r requirements.txt
 responses==0.25.0
     # via moto
 retrying==1.4.2
@@ -608,6 +605,8 @@ sarif-om==1.0.4
     # via cfn-lint
 sentry-sdk==2.35.1
     # via -r requirements.txt
+setuptools==80.9.0
+    # via moto
 six==1.17.0
     # via
     #   -r requirements.txt
@@ -618,7 +617,7 @@ six==1.17.0
     #   rfc3339-validator
 sortedcontainers==2.4.0
     # via fakeredis
-sqlalchemy==1.3.24
+sqlalchemy==2.0.43
     # via
     #   -r requirements.txt
     #   alembic
@@ -686,13 +685,12 @@ typing-extensions==4.11.0
     #   black
     #   fakeredis
     #   flask-limiter
-    #   kombu
     #   limits
     #   mypy
     #   pydantic
     #   pydantic-core
     #   pyopenssl
-    #   python-json-logger
+    #   sqlalchemy
 tzdata==2024.1
     # via
     #   -r requirements.txt
@@ -734,11 +732,3 @@ xmltodict==0.14.2
     # via
     #   -r requirements.txt
     #   moto
-zipp==3.19.1
-    # via
-    #   -r requirements.txt
-    #   importlib-metadata
-    #   importlib-resources
-
-# The following packages are considered to be unsafe in a requirements file:
-# setuptools

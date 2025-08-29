@@ -70,7 +70,7 @@ dependencies = [
     "retrying",
     "sentry-sdk",
     "six",
-    "sqlalchemy<1.4.0",
+    "sqlalchemy<2.1.0",
     "sqlalchemy-utils",
     "tabulate",
     "types-protobuf",
