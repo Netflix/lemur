@@ -63,9 +63,9 @@ jobs:
       - name: Install dependencies
         timeout-minutes: 10
         run: |
-          uv sync --python ${{ matrix.python-version }} --group dev --group test --verbose
           sudo apt-get update
-          sudo apt-get install libsasl2-dev libldap2-dev xvfb
+          sudo apt-get install libsasl2-dev libldap2-dev libldap-dev build-essential xvfb
+          uv sync --python ${{ matrix.python-version }} --group dev --group test
       - name: Test
         run: |
           uv run --python ${{ matrix.python-version }} make test
