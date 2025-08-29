@@ -9,8 +9,6 @@
         timezone: "America/Los_Angeles"
       versioning-strategy: auto
       open-pull-requests-limit: 20
-      # Use pyproject.toml for faster dependency resolution
-      pip-resolver: "uv"
     - package-ecosystem: "github-actions"
       directory: "/"
       schedule:
