@@ -1,0 +1,192 @@
+[project]
+name = "lemur"
+version = "1.3.dev0"
+description = "Certificate management and orchestration service"
+authors = [
+    {name = "The Lemur developers", email = "security@netflix.com"},
+]
+readme = "README.rst"
+requires-python = ">=3.10"
+license = {text = "Apache License, Version 2.0"}
+classifiers = [
+    "Framework :: Flask",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Natural Language :: English",
+    "License :: OSI Approved :: Apache Software License"
+]
+dependencies = [
+    "acme==3.3.0",
+    "alembic-autogenerate-enums==0.1.2",
+    "arrow==1.3.0",
+    "asyncpool==1.0",
+    "boto3==1.40.18",
+    "botocore==1.40.18",
+    "celery[redis]==5.3.6",
+    "certbot==3.3.0",
+    "certifi==2025.8.3",
+    "certsrv[ntlm]==2.1.1",
+    "cloudflare==2.20.0",
+    "cryptography==45.0.6",
+    "dnspython3==1.15.0",
+    "dyn==1.8.6",
+    "flask==2.3.3",
+    "flask-bcrypt==1.0.1",
+    "flask-cors==6.0.1",
+    "flask-limiter==3.11.0",
+    "flask-mail==0.10.0",
+    "flask-migrate==4.0.7",
+    "flask-principal==0.4.0",
+    "flask-replicated==2.1",
+    "flask-restful==0.3.10",
+    "flask-sqlalchemy==2.5.1",
+    "future==1.0.0",
+    "google-cloud-private-ca==1.15.0",
+    "gunicorn==23.0.0",
+    "hvac==2.3.0",
+    "inflection==0.5.1",
+    "itsdangerous==2.2.0",
+    "jinja2==3.1.3",
+    "lockfile==0.12.2",
+    "marshmallow==2.21.0",
+    "marshmallow-sqlalchemy==0.23.1",
+    "ndg-httpsclient==0.5.1",
+    "paramiko==4.0.0",
+    "pem==23.1.0",
+    "protobuf==4.25.8",
+    "psycopg2==2.9.10",
+    "pyjks==20.0.0",
+    "pyjwt==2.9.0",
+    "pyopenssl==25.1.0",
+    "python-json-logger==3.3.0",
+    "python-ldap==3.4.4",
+    "pyyaml==6.0.2",
+    "redis==5.3.1",
+    "requests==2.32.5",
+    "retrying==1.4.2",
+    "sentry-sdk==2.35.1",
+    "six==1.17.0",
+    "sqlalchemy==1.3.24",
+    "sqlalchemy-utils==0.41.2",
+    "tabulate==0.9.0",
+    "types-protobuf==6.30.2.20250822",
+    "validators==0.35.0",
+    "werkzeug==3.1.3",
+    "xmltodict==0.14.2",
+]
+
+[project.optional-dependencies]
+tests = [
+    "bandit",
+    "black",
+    "coverage",
+    "factory-boy",
+    "faker",
+    "fakeredis",
+    "freezegun",
+    "moto[all] < 5",
+    "nose",
+    "openapi-spec-validator",
+    "pyflakes",
+    "pytest",
+    "pytest-flask",
+    "pytest-mock",
+    "requests-mock",
+    "mypy",
+    "types-tabulate",
+    "types-six",
+    "types-setuptools",
+    "types-pytz",
+    "types-pyRFC3339",
+    "types-Deprecated",
+    "types-requests",
+    "types-pyOpenSSL",
+    "types-paramiko",
+    "types-redis",
+]
+docs = [
+    "sphinx",
+    "sphinxcontrib-httpdomain",
+    "sphinx-rtd-theme",
+    "docutils",
+    "logmatic-python",
+    "josepy",
+    "vine",
+]
+dev = [
+    "flake8",
+    "pre-commit",
+    "invoke",
+    "twine",
+    "nodeenv",
+]
+
+[project.scripts]
+lemur = "lemur.manage:main"
+
+[project.entry-points."lemur.plugins"]
+verisign_issuer = "lemur.plugins.lemur_verisign.plugin:VerisignIssuerPlugin"
+acme_issuer = "lemur.plugins.lemur_acme.plugin:ACMEIssuerPlugin"
+acme_http_issuer = "lemur.plugins.lemur_acme.plugin:ACMEHttpIssuerPlugin"
+aws_destination = "lemur.plugins.lemur_aws.plugin:AWSDestinationPlugin"
+aws_acm_destination = "lemur.plugins.lemur_aws.plugin:ACMDestinationPlugin"
+aws_source = "lemur.plugins.lemur_aws.plugin:AWSSourcePlugin"
+aws_acm_source = "lemur.plugins.lemur_aws.plugin:AWSACMSourcePlugin"
+aws_s3 = "lemur.plugins.lemur_aws.plugin:S3DestinationPlugin"
+aws_sns = "lemur.plugins.lemur_aws.plugin:SNSNotificationPlugin"
+email_notification = "lemur.plugins.lemur_email.plugin:EmailNotificationPlugin"
+slack_notification = "lemur.plugins.lemur_slack.plugin:SlackNotificationPlugin"
+java_truststore_export = "lemur.plugins.lemur_jks.plugin:JavaTruststoreExportPlugin"
+java_keystore_export = "lemur.plugins.lemur_jks.plugin:JavaKeystoreExportPlugin"
+openssl_export = "lemur.plugins.lemur_openssl.plugin:OpenSSLExportPlugin"
+atlas_metric = "lemur.plugins.lemur_atlas.plugin:AtlasMetricPlugin"
+atlas_metric_redis = "lemur.plugins.lemur_atlas_redis.plugin:AtlasMetricRedisPlugin"
+kubernetes_destination = "lemur.plugins.lemur_kubernetes.plugin:KubernetesDestinationPlugin"
+cryptography_issuer = "lemur.plugins.lemur_cryptography.plugin:CryptographyIssuerPlugin"
+cfssl_issuer = "lemur.plugins.lemur_cfssl.plugin:CfsslIssuerPlugin"
+digicert_issuer = "lemur.plugins.lemur_digicert.plugin:DigiCertIssuerPlugin"
+digicert_source = "lemur.plugins.lemur_digicert.plugin:DigiCertSourcePlugin"
+digicert_cis_issuer = "lemur.plugins.lemur_digicert.plugin:DigiCertCISIssuerPlugin"
+digicert_cis_source = "lemur.plugins.lemur_digicert.plugin:DigiCertCISSourcePlugin"
+csr_export = "lemur.plugins.lemur_csr.plugin:CSRExportPlugin"
+sftp_destination = "lemur.plugins.lemur_sftp.plugin:SFTPDestinationPlugin"
+vault_source = "lemur.plugins.lemur_vault_dest.plugin:VaultSourcePlugin"
+vault_desination = "lemur.plugins.lemur_vault_dest.plugin:VaultDestinationPlugin"
+adcs_issuer = "lemur.plugins.lemur_adcs.plugin:ADCSIssuerPlugin"
+adcs_source = "lemur.plugins.lemur_adcs.plugin:ADCSSourcePlugin"
+entrust_issuer = "lemur.plugins.lemur_entrust.plugin:EntrustIssuerPlugin"
+entrust_source = "lemur.plugins.lemur_entrust.plugin:EntrustSourcePlugin"
+azure_destination = "lemur.plugins.lemur_azure_dest.plugin:AzureDestinationPlugin"
+google_ca_issuer = "lemur.plugins.lemur_google_ca.plugin:GoogleCaIssuerPlugin"
+
+[project.urls]
+Homepage = "https://github.com/Netflix/lemur"
+Repository = "https://github.com/Netflix/lemur"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/lemur",
+    "/README.rst",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["lemur"]
+
+[tool.uv]
+dev-dependencies = [
+    "flake8>=7.3.0",
+    "pre-commit>=4.3.0",
+    "invoke>=2.2.0",
+    "twine>=6.1.0",
+    "nodeenv>=1.9.1",
+]
+
+[tool.uv.sources]
