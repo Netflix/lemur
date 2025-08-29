@@ -56,6 +56,8 @@ jobs:
         uses: astral-sh/setup-uv@v4
         with:
           enable-cache: true
+      - name: Pin Python version for uv
+        run: uv python pin ${{ matrix.python-version }}
       - name: Set up Node.js 16
         uses: actions/setup-node@v4
         with:
