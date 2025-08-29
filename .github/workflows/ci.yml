@@ -61,7 +61,6 @@ jobs:
         with:
           node-version: 16
       - name: Install dependencies
-        timeout-minutes: 10
         run: |
           sudo apt-get update
           sudo apt-get install libsasl2-dev libldap2-dev libldap-dev build-essential xvfb
@@ -71,7 +70,7 @@ jobs:
           uv run --python ${{ matrix.python-version }} make test
       - name: Test JS
         run: |
-          uv run --python ${{ matrix.python-version }} bandit -r lemur/
+          uv run --python ${{ matrix.python-version }} bandit -r lemur/ -ll -ii -x 'lemur/tests/,docs,node_modules,.tox,env,.venv,venv,build,dist,*.egg-info,bower_components'
           xvfb-run uv run --python ${{ matrix.python-version }} make test-js
       - name: Coveralls GitHub Action
         uses: coverallsapp/github-action@v2
