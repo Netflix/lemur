@@ -2138,7 +2138,7 @@ requires-dist = [
     { name = "retrying" },
     { name = "sentry-sdk" },
     { name = "six" },
-    { name = "sqlalchemy", specifier = "<1.4.0" },
+    { name = "sqlalchemy", specifier = "<2.1.0" },
     { name = "sqlalchemy-utils" },
     { name = "tabulate" },
     { name = "types-protobuf" },

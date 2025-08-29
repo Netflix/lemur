@@ -47,9 +47,7 @@ aws-sam-translator==1.87.0
     #   -r requirements-tests.txt
     #   cfn-lint
 aws-xray-sdk==2.13.0
-    # via
-    #   -r requirements-tests.txt
-    #   moto
+    # via -r requirements-tests.txt
 backports-tarfile==1.0.0
     # via jaraco-context
 bandit==1.8.6
@@ -87,7 +85,7 @@ cachetools==5.3.3
     # via
     #   -r requirements-tests.txt
     #   google-auth
-celery[redis]==5.3.6
+celery==5.3.6
     # via -r requirements-tests.txt
 certbot==3.3.0
     # via -r requirements-tests.txt
@@ -96,7 +94,7 @@ certifi==2025.8.3
     #   -r requirements-tests.txt
     #   requests
     #   sentry-sdk
-certsrv[ntlm]==2.1.1
+certsrv==2.1.1
     # via -r requirements-tests.txt
 cffi==1.16.0
     # via
@@ -106,9 +104,7 @@ cffi==1.16.0
 cfgv==3.4.0
     # via pre-commit
 cfn-lint==0.86.2
-    # via
-    #   -r requirements-tests.txt
-    #   moto
+    # via -r requirements-tests.txt
 charset-normalizer==3.3.2
     # via
     #   -r requirements-tests.txt
@@ -156,7 +152,6 @@ cryptography==45.0.6
     #   paramiko
     #   pyopenssl
     #   pyspnego
-    #   python-jose
     #   requests-ntlm
     #   secretstorage
     #   sshpubkeys
@@ -180,9 +175,7 @@ dnspython==1.15.0
 dnspython3==1.15.0
     # via -r requirements-tests.txt
 docker==7.0.0
-    # via
-    #   -r requirements-tests.txt
-    #   moto
+    # via -r requirements-tests.txt
 docutils==0.21.2
     # via readme-renderer
 dyn==1.8.6
@@ -190,7 +183,6 @@ dyn==1.8.6
 ecdsa==0.19.0
     # via
     #   -r requirements-tests.txt
-    #   moto
     #   python-jose
     #   sshpubkeys
 exceptiongroup==1.2.0
@@ -245,7 +237,7 @@ freezegun==1.5.5
     # via -r requirements-tests.txt
 future==1.0.0
     # via -r requirements-tests.txt
-google-api-core[grpc]==2.18.0
+google-api-core==2.18.0
     # via
     #   -r requirements-tests.txt
     #   google-cloud-private-ca
@@ -256,16 +248,18 @@ google-auth==2.29.0
     #   google-cloud-private-ca
 google-cloud-private-ca==1.15.0
     # via -r requirements-tests.txt
-googleapis-common-protos[grpc]==1.63.0
+googleapis-common-protos==1.63.0
     # via
     #   -r requirements-tests.txt
     #   google-api-core
     #   grpc-google-iam-v1
     #   grpcio-status
 graphql-core==3.2.3
+    # via -r requirements-tests.txt
+greenlet==3.2.4
     # via
     #   -r requirements-tests.txt
-    #   moto
+    #   sqlalchemy
 grpc-google-iam-v1==0.14.0
     # via
     #   -r requirements-tests.txt
@@ -294,12 +288,7 @@ idna==3.7
     #   -r requirements-tests.txt
     #   requests
 importlib-metadata==7.1.0
-    # via
-    #   -r requirements-tests.txt
-    #   certbot
-    #   flask
-    #   keyring
-    #   twine
+    # via keyring
 importlib-resources==6.4.0
     # via
     #   -r requirements-tests.txt
@@ -353,9 +342,7 @@ jschema-to-python==1.2.3
     #   -r requirements-tests.txt
     #   cfn-lint
 jsondiff==2.0.0
-    # via
-    #   -r requirements-tests.txt
-    #   moto
+    # via -r requirements-tests.txt
 jsonlines==4.0.0
     # via
     #   -r requirements-tests.txt
@@ -438,16 +425,14 @@ more-itertools==10.2.0
     # via
     #   jaraco-classes
     #   jaraco-functools
-moto[all]==4.2.14
+moto==4.2.14
     # via -r requirements-tests.txt
 mpmath==1.3.0
     # via
     #   -r requirements-tests.txt
     #   sympy
 multipart==0.2.4
-    # via
-    #   -r requirements-tests.txt
-    #   moto
+    # via -r requirements-tests.txt
 mypy==1.17.1
     # via -r requirements-tests.txt
 mypy-extensions==1.0.0
@@ -474,9 +459,7 @@ openapi-schema-validator==0.6.2
     #   -r requirements-tests.txt
     #   openapi-spec-validator
 openapi-spec-validator==0.7.2
-    # via
-    #   -r requirements-tests.txt
-    #   moto
+    # via -r requirements-tests.txt
 ordered-set==4.1.0
     # via
     #   -r requirements-tests.txt
@@ -545,9 +528,7 @@ protobuf==4.25.8
 psycopg2==2.9.10
     # via -r requirements-tests.txt
 py-partiql-parser==0.5.0
-    # via
-    #   -r requirements-tests.txt
-    #   moto
+    # via -r requirements-tests.txt
 pyasn1==0.6.0
     # via
     #   -r requirements-tests.txt
@@ -608,9 +589,7 @@ pyopenssl==25.1.0
     #   josepy
     #   ndg-httpsclient
 pyparsing==3.1.2
-    # via
-    #   -r requirements-tests.txt
-    #   moto
+    # via -r requirements-tests.txt
 pyrfc3339==1.1
     # via
     #   -r requirements-tests.txt
@@ -637,10 +616,8 @@ python-dateutil==2.9.0.post0
     #   celery
     #   freezegun
     #   moto
-python-jose[cryptography]==3.3.0
-    # via
-    #   -r requirements-tests.txt
-    #   moto
+python-jose==3.3.0
+    # via -r requirements-tests.txt
 python-json-logger==3.3.0
     # via -r requirements-tests.txt
 python-ldap==3.4.4
@@ -659,7 +636,6 @@ pyyaml==6.0.2
     #   cfn-lint
     #   cloudflare
     #   jsonschema-path
-    #   moto
     #   pre-commit
     #   responses
 readme-renderer==43.0
@@ -667,7 +643,6 @@ readme-renderer==43.0
 redis==5.3.1
     # via
     #   -r requirements-tests.txt
-    #   celery
     #   fakeredis
 referencing==0.31.1
     # via
@@ -699,9 +674,7 @@ requests==2.32.5
 requests-mock==1.12.1
     # via -r requirements-tests.txt
 requests-ntlm==1.2.0
-    # via
-    #   -r requirements-tests.txt
-    #   certsrv
+    # via -r requirements-tests.txt
 requests-toolbelt==1.0.0
     # via twine
 responses==0.25.0
@@ -744,6 +717,8 @@ secretstorage==3.3.3
     # via keyring
 sentry-sdk==2.35.1
     # via -r requirements-tests.txt
+setuptools==80.9.0
+    # via -r requirements-tests.txt
 six==1.17.0
     # via
     #   -r requirements-tests.txt
@@ -756,7 +731,7 @@ sortedcontainers==2.4.0
     # via
     #   -r requirements-tests.txt
     #   fakeredis
-sqlalchemy==1.3.24
+sqlalchemy==2.0.43
     # via
     #   -r requirements-tests.txt
     #   alembic
@@ -766,9 +741,7 @@ sqlalchemy==1.3.24
 sqlalchemy-utils==0.41.2
     # via -r requirements-tests.txt
 sshpubkeys==3.3.1
-    # via
-    #   -r requirements-tests.txt
-    #   moto
+    # via -r requirements-tests.txt
 stevedore==5.2.0
     # via
     #   -r requirements-tests.txt
@@ -837,13 +810,12 @@ typing-extensions==4.11.0
     #   black
     #   fakeredis
     #   flask-limiter
-    #   kombu
     #   limits
     #   mypy
     #   pydantic
     #   pydantic-core
     #   pyopenssl
-    #   python-json-logger
+    #   sqlalchemy
 tzdata==2024.1
     # via
     #   -r requirements-tests.txt
@@ -889,10 +861,4 @@ xmltodict==0.14.2
     #   -r requirements-tests.txt
     #   moto
 zipp==3.19.1
-    # via
-    #   -r requirements-tests.txt
-    #   importlib-metadata
-    #   importlib-resources
-
-# The following packages are considered to be unsafe in a requirements file:
-# setuptools
+    # via importlib-metadata
