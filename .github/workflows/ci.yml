@@ -71,7 +71,7 @@ jobs:
           uv run --python ${{ matrix.python-version }} make test
       - name: Test JS
         run: |
-          uv run --python ${{ matrix.python-version }} bandit -r . -ll -ii -x lemur/tests/,docs,.tox,node_modules
+          uv run --python ${{ matrix.python-version }} bandit -r lemur/
           xvfb-run uv run --python ${{ matrix.python-version }} make test-js
       - name: Coveralls GitHub Action
         uses: coverallsapp/github-action@v2

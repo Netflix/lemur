@@ -2,6 +2,7 @@
   updates:
     - package-ecosystem: "uv"
       directory: "/"
+      target-branch: "uv"
       schedule:
         interval: "weekly"
         day: "monday"
