@@ -12,8 +12,7 @@ If you're looking to help document Lemur, you can get set up with Sphinx, our do
 but first you will want to make sure you have a few things on your local system:
 
 * python-dev (if you're on OS X, you already have this)
-* pip
-* virtualenvwrapper
+* uv (Python package manager)
 
 Once you've got all that, the rest is simple:
 
@@ -22,19 +21,17 @@ Once you've got all that, the rest is simple:
     # If you have a fork, you'll want to clone it instead
     git clone git://github.com/netflix/lemur.git
 
-    # Create and activate python virtualenv from within the lemur repo
-    python3 -m venv env
-    . env/bin/activate
+    # Navigate to the lemur repo
+    cd lemur
 
-    # Install doc requirements
-
-    make dev-docs
+    # Install doc requirements (uv handles virtual environment automatically)
+    uv sync --group docs
 
     # Make the docs
     cd docs
-    make html
+    uv run make html
 
-Running ``make dev-docs`` will install the basic requirements to get Sphinx running.
+Running ``uv sync --group docs`` will install the basic requirements to get Sphinx running. uv automatically creates and manages the virtual environment for you.
 
 
 Building Documentation
@@ -68,8 +65,7 @@ Usage instructions are self-contained in the README for that project.
 You'll want to make sure you have a few things on your local system first:
 
 * python-dev (if you're on OS X, you already have this)
-* pip
-* virtualenv (ideally virtualenvwrapper)
+* uv (Python package manager)
 * node.js (for npm and building css/javascript)
 * `PostgreSQL <https://lemur.readthedocs.io/en/latest/quickstart/index.html#setup-postgres>`_
 
@@ -80,34 +76,31 @@ Once you've got all that, the rest is simple:
     # If you have a fork, you'll want to clone it instead
     git clone git://github.com/lemur/lemur.git
 
-    # Create a python virtualenv
-    python3 -m venv env
+    # Navigate to the lemur directory
+    cd lemur
 
     # Make the magic happen
-    make
+    uv run make develop
 
-Running ``make`` will do several things, including:
+Running ``uv run make develop`` will do several things, including:
 
 * Setting up any submodules (including Bootstrap)
-* Installing Python requirements
+* Installing Python requirements with uv
 * Installing NPM requirements
-
-.. note::
-    You will want to store your virtualenv out of the ``lemur`` directory you cloned above,
-    otherwise ``make`` will fail.
+* Creating and managing the virtual environment automatically
 
 Create a default Lemur configuration just as if this were a production instance:
 
 ::
 
-    lemur create_config
-    lemur init
+    uv run lemur create_config
+    uv run lemur init
 
 You'll likely want to make some changes to the default configuration (we recommend developing against Postgres, for example). Once done, migrate your database using the following command:
 
 ::
 
-	lemur upgrade
+	uv run lemur upgrade
 
 
 .. note:: The ``upgrade`` shortcut is simply a shortcut to Alembic's upgrade command.
@@ -127,7 +120,7 @@ Coding Standards
 Lemur follows the guidelines laid out in `pep8 <http://www.python.org/dev/peps/pep-0008/>`_  with a little bit
 of flexibility on things like line length. We always give way for the `Zen of Python <http://www.python.org/dev/peps/pep-0020/>`_. We also use strict mode for JavaScript, enforced by jshint.
 
-You can run all linters with ``make lint``, or respectively ``lint-python`` or ``lint-js``.
+You can run all linters with ``uv run make lint``, or respectively ``uv run make lint-python`` or ``uv run make lint-js``.
 
 Spacing
 ~~~~~~~
