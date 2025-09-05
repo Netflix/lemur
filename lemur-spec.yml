@@ -3797,6 +3797,17 @@ components:
                 type: string
               plugin:
                 type: object
+        endpoints:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              dnsname:
+                type: string
+              type:
+                type: object
         bits:
           type: integer
         body:
