@@ -13,11 +13,10 @@ Dependencies
 Some basic prerequisites which you'll need in order to run Lemur:
 
 * A UNIX-based operating system (we test on Ubuntu, develop on macOS)
-* Python 3.10 or greater
-* uv (Python package manager)
+* Python 3.7 or greater
 * PostgreSQL 9.4 or greater
 * Nginx
-* Node v16.x (LTS)
+* Node v10.x (LTS)
 
 .. note:: Ubuntu 18.04 supports by default Python 3.6.x and Node v8.x
 .. note:: Lemur was built with AWS in mind. This means that things such as databases (RDS), mail (SES), and TLS (ELB), are largely handled for us.  Lemur does **not** require AWS to function. Our guides and documentation try to be as generic as possible and are not intended to document every step of launching Lemur into a given environment.
@@ -31,19 +30,18 @@ If installing Lemur on a bare Ubuntu OS you will need to grab the following pack
 .. code-block:: bash
 
     sudo apt-get update
-    sudo apt-get install nodejs npm python3-dev libpq-dev build-essential libssl-dev libffi-dev libsasl2-dev libldap2-dev nginx git supervisor postgresql
+    sudo apt-get install nodejs npm python-pip python-dev python3-dev libpq-dev build-essential libssl-dev libffi-dev libsasl2-dev libldap2-dev nginx git supervisor postgresql
 
-.. note:: PostgreSQL is only required if your database is going to be on the same host as the webserver. npm is needed if you're installing Lemur from the source (e.g., from git).
+.. note:: PostgreSQL is only required if your database is going to be on the same host as the webserver.  npm is needed if you're installing Lemur from the source (e.g., from git).
 
-.. note:: Installing node from a package manager may create the nodejs bin at /usr/bin/nodejs instead of /usr/bin/node. If that is the case run the following
+.. note:: Installing node from a package manager may create the nodejs bin at /usr/bin/nodejs instead of /usr/bin/node.  If that is the case run the following
     sudo ln -s /usr/bin/nodejs /usr/bin/node
 
-Now, install ``uv`` (Python package manager):
+Now, install Python ``virtualenv`` package:
 
 .. code-block:: bash
 
-    curl -LsSf https://astral.sh/uv/install.sh | sh
-    source $HOME/.cargo/env
+    sudo pip install -U virtualenv
 
 
 Setting up an Environment
@@ -67,27 +65,35 @@ Clone Lemur inside the just created directory and give yourself write permission
     sudo git clone https://github.com/Netflix/lemur
     sudo chown -R lemur lemur/
 
-Switch to the lemur user and enter the Lemur's directory:
+Create the virtual environment, activate it and enter the Lemur's directory:
 
 .. code-block:: bash
 
     su lemur
+    virtualenv -p python3 lemur
+    source /www/lemur/bin/activate
     cd lemur
 
-.. note:: uv will automatically create and manage the virtual environment for you.
+.. note:: Activating the environment adjusts your PATH, so that things like pip now install into the virtualenv by default.
 
 
 Installing from Source
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Once your system is prepared, install dependencies and build the project:
+Once your system is prepared, ensure that you are in the virtualenv:
 
 .. code-block:: bash
 
-  uv sync --group dev
-  uv run make release
+  which python
 
-.. note:: This command will install all Python and npm dependencies as well as compile static assets. uv automatically manages the virtual environment and Python installation.
+And then run:
+
+.. code-block:: bash
+
+  make up-reqs
+  make release
+
+.. note:: This command will install npm dependencies as well as compile static assets.
 
 
 You may also run with the urlContextPath variable set. If this is set it will add the desired context path for subsequent calls back to lemur. This will only edit the front end code for calls back to the server, you will have to make sure the server knows about these routes.

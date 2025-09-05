@@ -11,7 +11,11 @@ ifeq ($(USER), root)
 else
 	npm install
 endif
-	uv sync --group dev --group test
+	pip install setuptools
+	# order matters here, base package must install first
+	pip install -e .
+	pip install -e "file://`pwd`#egg=lemur[dev]"
+	pip install -e "file://`pwd`#egg=lemur[tests]"
 	node_modules/.bin/gulp build
 	node_modules/.bin/gulp package --urlContextPath=$(urlContextPath)
 	@echo ""
@@ -24,13 +28,15 @@ ifeq ($(USER), root)
 else
 	npm install
 endif
-	uv sync
+	pip install setuptools
+	# order matters here, base package must install first
+	pip install -e .
 	node_modules/.bin/gulp build
 	node_modules/.bin/gulp package --urlContextPath=$(urlContextPath)
 	@echo ""
 
 dev-docs:
-	uv sync --group docs
+	pip install -r requirements-docs.txt
 
 reset-db:
 	@echo "--> Dropping existing 'lemur' database"
@@ -60,16 +66,16 @@ clean:
 test: develop lint test-python
 
 testloop: develop
-	uv add pytest-xdist
-	uv run coverage run --source lemur -m pytest
+	pip install pytest-xdist
+	coverage run --source lemur -m pytest
 
 test-cli:
 	@echo "--> Testing CLI"
 	rm -rf test_cli
 	mkdir test_cli
-	cd test_cli && uv run lemur create_config -c ./test.conf > /dev/null
-	cd test_cli && uv run lemur -c ./test.conf db upgrade > /dev/null
-	cd test_cli && uv run lemur -c ./test.conf help 2>&1 | grep start > /dev/null
+	cd test_cli && lemur create_config -c ./test.conf > /dev/null
+	cd test_cli && lemur -c ./test.conf db upgrade > /dev/null
+	cd test_cli && lemur -c ./test.conf help 2>&1 | grep start > /dev/null
 	rm -r test_cli
 	@echo ""
 
@@ -80,16 +86,16 @@ test-js:
 
 test-python:
 	@echo "--> Running Python tests"
-	uv run coverage run --source lemur -m pytest
-	uv run coverage xml
+	coverage run --source lemur -m pytest
+	coverage xml
 	@echo ""
 
 lint: lint-python lint-js
 
 lint-python:
 	@echo "--> Linting Python files"
-	uv run flake8 lemur
-	uv run mypy  # scan the directory specified in mypy.ini
+	PYFLAKES_NODOCTEST=1 flake8 lemur
+	mypy  # scan the directory specified in mypy.ini
 	@echo ""
 
 lint-js:
@@ -98,19 +104,26 @@ lint-js:
 	@echo ""
 
 coverage: develop
-	uv run coverage run --source=lemur -m pytest
-	uv run coverage html
+	coverage run --source=lemur -m pytest
+	coverage html
 
 publish:
-	uv build
-	uv publish
+	python setup.py sdist bdist_wheel upload
 
 up-reqs:
+ifndef VIRTUAL_ENV
+    $(error Please activate virtualenv first)
+endif
 	@echo "--> Updating Python requirements"
-	uv lock --upgrade
+	pip install --upgrade pip
+	pip install --upgrade pip-tools
+	pip-compile -v --output-file requirements.txt requirements.in -U --no-emit-index-url --resolver=backtracking
+	pip-compile -v --output-file requirements-tests.txt requirements-tests.in -U --no-emit-index-url --resolver=backtracking
+	pip-compile -v --output-file requirements-dev.txt requirements-dev.in -U --no-emit-index-url --resolver=backtracking
+	pip-compile -v --output-file requirements-docs.txt requirements-docs.in -U --no-emit-index-url --resolver=backtracking
 	@echo "--> Done updating Python requirements"
 	@echo "--> Installing new dependencies"
-	uv sync --all-groups
+	pip install -e .
 	@echo "--> Done installing new dependencies"
 	@echo ""
 
