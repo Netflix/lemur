@@ -785,7 +785,7 @@ tomli==2.0.1
     #   black
     #   mypy
     #   pytest
-twine==6.1.0
+twine==6.2.0
     # via -r requirements-dev.in
 twofish==0.3.0
     # via
