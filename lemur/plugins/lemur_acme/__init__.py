@@ -1,4 +1,5 @@
 try:
-    VERSION = __import__("pkg_resources").get_distribution(__name__).version
-except Exception as e:
+    from importlib.metadata import version, PackageNotFoundError
+    VERSION = version(__name__)
+except (ImportError, PackageNotFoundError, Exception):
     VERSION = "unknown"

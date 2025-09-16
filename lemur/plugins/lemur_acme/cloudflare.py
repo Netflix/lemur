@@ -1,6 +1,6 @@
 import time
 
-import CloudFlare
+import cloudflare as CloudFlare
 from flask import current_app
 
 
