@@ -1,6 +1,7 @@
 # Run `make up-reqs` to update pinned dependencies in requirement text files
 
 flake8
+Flake8-pyproject
 pre-commit
 invoke
 twine
