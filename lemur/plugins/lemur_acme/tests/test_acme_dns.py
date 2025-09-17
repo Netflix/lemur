@@ -186,29 +186,44 @@ class TestAcmeDns(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.acme.complete_dns_challenge(mock_acme, mock_authz)
 
-    @patch("acme.client.ClientV2")
-    @patch("OpenSSL.crypto", return_value="mock_cert")
-    @patch("josepy.util.ComparableX509")
-    @patch("lemur.plugins.lemur_acme.plugin.AcmeDnsHandler.get_dns_challenges")
+    @patch("lemur.plugins.lemur_acme.acme_handlers.OpenSSL.crypto.dump_certificate")
+    @patch("lemur.plugins.lemur_acme.acme_handlers.OpenSSL.crypto.load_certificate")
     def test_request_certificate(
             self,
-            mock_get_dns_challenges,
-            mock_jose,
-            mock_crypto,
-            mock_acme,
+            mock_load_certificate,
+            mock_dump_certificate,
     ):
-        mock_cert_response = Mock()
-        mock_cert_response.body = "123"
-        mock_cert_response_full = [mock_cert_response, True]
-        mock_acme.poll_and_request_issuance = Mock(return_value=mock_cert_response_full)
+        # Mock the acme client
+        mock_acme_client = Mock()
+        mock_acme_client.poll = Mock(return_value=(Mock(), Mock()))
+
+        # Mock the order and its finalization
+        mock_order = Mock()
+        mock_order.uri = "https://test.com/order/123"
+        mock_finalized_order = Mock()
+        mock_finalized_order.fullchain_pem = "mock_fullchain_pem"
+        mock_finalized_order.alternative_fullchains_pem = []
+        mock_finalized_order.authorizations = []
+
+        mock_acme_client.poll_authorizations = Mock(return_value=mock_order)
+        mock_acme_client.finalize_order = Mock(return_value=mock_finalized_order)
+        mock_acme_client.net.account.uri = "https://test.com/account/123"
+
+        # Mock crypto operations
+        mock_dump_certificate.return_value = b"mock_certificate"
+        mock_load_certificate.return_value = Mock()
+
+        # Mock authorizations
         mock_authz = []
         mock_authz_record = MagicMock()
-        mock_authz_record.authz = Mock()
+        mock_authz_record.authz = [Mock()]
         mock_authz.append(mock_authz_record)
-        mock_acme.fetch_chain = Mock(return_value="mock_chain")
-        mock_crypto.dump_certificate = Mock(return_value=b"chain")
-        mock_order = Mock()
-        self.acme.request_certificate(mock_acme, [], mock_order)
+
+        result = self.acme.request_certificate(mock_acme_client, mock_authz, mock_order)
+
+        # Verify the result is a tuple of (certificate, chain)
+        self.assertIsInstance(result, tuple)
+        self.assertEqual(len(result), 2)
 
     def test_setup_acme_client_fail(self):
         mock_authority = Mock()
