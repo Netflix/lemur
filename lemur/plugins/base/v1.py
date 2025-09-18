@@ -45,7 +45,7 @@ class IPlugin(local):
     title: Optional[str] = None
     slug: Optional[str] = None
     description: Optional[str] = None
-    version = None
+    version: Optional[str] = None
     author: Optional[str] = None
     author_url: Optional[str] = None
     resource_links = ()
