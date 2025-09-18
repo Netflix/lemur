@@ -20,11 +20,13 @@ build:
       python: "3.11"
    jobs:
       pre_install:
+         - grep -v "python-ldap" requirements.txt > tempreqs && mv tempreqs requirements.txt
          - grep -v "python-ldap" requirements-docs.txt > tempreqs && mv tempreqs requirements-docs.txt
 
 
 python:
    install:
-   - requirements: requirements-docs.txt
-   - method: setuptools
+   - method: pip
      path: .
+     extra_requirements:
+       - docs
