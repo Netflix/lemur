@@ -71,12 +71,12 @@ blinker==1.7.0
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.40.18
+boto3==1.40.30
     # via
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
-botocore==1.40.18
+botocore==1.40.30
     # via
     #   -r requirements-tests.txt
     #   aws-xray-sdk
@@ -146,7 +146,7 @@ configobj==5.0.9
     #   certbot
 coverage==7.10.6
     # via -r requirements-tests.txt
-cryptography==45.0.6
+cryptography==45.0.7
     # via
     #   -r requirements-tests.txt
     #   acme
@@ -202,7 +202,7 @@ faker==37.6.0
     # via
     #   -r requirements-tests.txt
     #   factory-boy
-fakeredis==2.31.0
+fakeredis==2.31.1
     # via -r requirements-tests.txt
 filelock==3.19.1
     # via virtualenv
@@ -444,7 +444,7 @@ multipart==0.2.4
     # via
     #   -r requirements-tests.txt
     #   moto
-mypy==1.17.1
+mypy==1.18.1
     # via -r requirements-tests.txt
 mypy-extensions==1.0.0
     # via
@@ -597,7 +597,7 @@ pynacl==1.5.0
     # via
     #   -r requirements-tests.txt
     #   paramiko
-pyopenssl==25.1.0
+pyopenssl==25.2.0
     # via
     #   -r requirements-tests.txt
     #   acme
@@ -616,14 +616,14 @@ pyspnego==0.10.2
     # via
     #   -r requirements-tests.txt
     #   requests-ntlm
-pytest==8.4.1
+pytest==8.4.2
     # via
     #   -r requirements-tests.txt
     #   pytest-flask
     #   pytest-mock
 pytest-flask==1.3.0
     # via -r requirements-tests.txt
-pytest-mock==3.14.1
+pytest-mock==3.15.0
     # via -r requirements-tests.txt
 python-dateutil==2.9.0.post0
     # via
@@ -728,7 +728,7 @@ rsa==4.9
     #   -r requirements-tests.txt
     #   google-auth
     #   python-jose
-s3transfer==0.13.0
+s3transfer==0.14.0
     # via
     #   -r requirements-tests.txt
     #   boto3
@@ -794,7 +794,7 @@ types-deprecated==1.2.15.20250304
     # via -r requirements-tests.txt
 types-paramiko==4.0.0.20250822
     # via -r requirements-tests.txt
-types-protobuf==6.30.2.20250822
+types-protobuf==6.30.2.20250914
     # via -r requirements-tests.txt
 types-pyopenssl==24.1.0.20240722
     # via
@@ -877,7 +877,7 @@ wrapt==1.16.0
     #   -r requirements-tests.txt
     #   aws-xray-sdk
     #   deprecated
-xmltodict==0.14.2
+xmltodict==1.0.0
     # via
     #   -r requirements-tests.txt
     #   moto
