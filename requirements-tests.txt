@@ -68,7 +68,7 @@ boto3==1.40.18
     #   -r requirements.txt
     #   aws-sam-translator
     #   moto
-botocore==1.40.18
+botocore==1.40.30
     # via
     #   -r requirements.txt
     #   aws-xray-sdk
@@ -730,7 +730,7 @@ wrapt==1.16.0
     #   -r requirements.txt
     #   aws-xray-sdk
     #   deprecated
-xmltodict==0.14.2
+xmltodict==1.0.0
     # via
     #   -r requirements.txt
     #   moto
