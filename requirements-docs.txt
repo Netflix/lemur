@@ -76,7 +76,7 @@ blinker==1.7.0
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.40.18
+boto3==1.40.30
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -746,7 +746,7 @@ rsa==4.9
     #   -r requirements-tests.txt
     #   google-auth
     #   python-jose
-s3transfer==0.13.0
+s3transfer==0.14.0
     # via
     #   -r requirements-tests.txt
     #   boto3
