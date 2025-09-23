@@ -168,7 +168,7 @@ def login_required(f):
             return dict(message="You are not logged in"), 403
 
         metrics.send("user_authentication", "counter", 1,
-                     metric_tags={"application_name": getattr(g, "caller_application", "unknown"),
+                     metric_tags={"application_name": getattr(g, "caller_application", "none"),
                                   "user_id": g.current_user.id,
                                   "endpoint": request.endpoint,
                                   "aid": payload.get("aid", "none")})
