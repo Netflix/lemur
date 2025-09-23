@@ -167,7 +167,7 @@ def login_required(f):
         if not g.current_user:
             return dict(message="You are not logged in"), 403
 
-        metrics.send("api_key_authentication", "counter", 1,
+        metrics.send("user_authentication", "counter", 1,
                      metric_tags={"application_name": getattr(g, "caller_application", "unknown"),
                                   "user_id": g.current_user.id,
                                   "endpoint": request.endpoint})
