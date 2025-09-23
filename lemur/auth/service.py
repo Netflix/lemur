@@ -170,7 +170,8 @@ def login_required(f):
         metrics.send("user_authentication", "counter", 1,
                      metric_tags={"application_name": getattr(g, "caller_application", "unknown"),
                                   "user_id": g.current_user.id,
-                                  "endpoint": request.endpoint})
+                                  "endpoint": request.endpoint,
+                                  "aid": payload.get("aid", "none")})
 
         # Tell Flask-Principal the identity changed
         identity_changed.send(
