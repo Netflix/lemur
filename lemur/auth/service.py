@@ -8,11 +8,11 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
+import binascii
 import json
 from datetime import datetime, timedelta
 from functools import wraps
 
-import binascii
 import jwt
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization, hashes
@@ -166,6 +166,12 @@ def login_required(f):
 
         if not g.current_user:
             return dict(message="You are not logged in"), 403
+
+        metrics.send("user_authentication", "counter", 1,
+                     metric_tags={"application_name": getattr(g, "caller_application", "none"),
+                                  "user_id": g.current_user.id,
+                                  "endpoint": request.endpoint,
+                                  "aid": payload.get("aid", "none")})
 
         # Tell Flask-Principal the identity changed
         identity_changed.send(
