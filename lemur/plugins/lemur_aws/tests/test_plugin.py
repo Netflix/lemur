@@ -66,27 +66,31 @@ def test_upload_acme_token(app):
         },
     ]
 
-    s3_client = boto3.client('s3')
+    s3_client = boto3.client("s3")
     s3_client.create_bucket(Bucket=bucket)
     p = plugins.get("aws-s3")
 
-    response = p.upload_acme_token(token_path=token_path,
-                                   token_content=token_content,
-                                   token=token_content,
-                                   options=additional_options)
+    response = p.upload_acme_token(
+        token_path=token_path,
+        token_content=token_content,
+        token=token_content,
+        options=additional_options,
+    )
     assert response
 
-    response = get(bucket_name=bucket,
-                   prefixed_object_name=prefix + token_name,
-                   encrypt=False,
-                   account_number=account)
+    response = get(
+        bucket_name=bucket,
+        prefixed_object_name=prefix + token_name,
+        encrypt=False,
+        account_number=account,
+    )
 
     # put data, and getting the same data
-    assert (response == token_content)
+    assert response == token_content
 
-    response = p.delete_acme_token(token_path=token_path,
-                                   options=additional_options,
-                                   account_number=account)
+    response = p.delete_acme_token(
+        token_path=token_path, options=additional_options, account_number=account
+    )
     assert response
 
 
@@ -113,7 +117,10 @@ def test_get_all_elb_and_elbv2s(app, aws_credentials):
     acm_request_response = acm_client.request_certificate(
         DomainName="test2.example.com",
         DomainValidationOptions=[
-            {"DomainName": "test2.example.com", "ValidationDomain": "test2.example.com"},
+            {
+                "DomainName": "test2.example.com",
+                "ValidationDomain": "test2.example.com",
+            },
         ],
     )
     arn2 = acm_request_response["CertificateArn"]
@@ -137,9 +144,7 @@ def test_get_all_elb_and_elbv2s(app, aws_credentials):
     elbv2 = boto3.client("elbv2", region_name="us-east-1")
     vpc = ec2.create_vpc(CidrBlock="10.0.1.0/24")
     subnet1 = ec2.create_subnet(
-        VpcId=vpc.id,
-        CidrBlock="10.0.1.128/25",
-        AvailabilityZone="us-east-1b"
+        VpcId=vpc.id, CidrBlock="10.0.1.128/25", AvailabilityZone="us-east-1b"
     )
     elbv2.create_load_balancer(
         Name="test-lbv2",
@@ -147,14 +152,12 @@ def test_get_all_elb_and_elbv2s(app, aws_credentials):
             subnet1.id,
         ],
     )
-    lb_arn = lemur_elb.get_load_balancer_arn_from_endpoint("test-lbv2",
-                                                 account_number="123456789012",
-                                                 region="us-east-1")
+    lb_arn = lemur_elb.get_load_balancer_arn_from_endpoint(
+        "test-lbv2", account_number="123456789012", region="us-east-1"
+    )
     target_group_arn = elbv2.create_target_group(
-        Name="a-target",
-        Protocol="HTTPS",
-        Port=443,
-        VpcId=vpc.id).get("TargetGroups")[0]["TargetGroupArn"]
+        Name="a-target", Protocol="HTTPS", Port=443, VpcId=vpc.id
+    ).get("TargetGroups")[0]["TargetGroupArn"]
     listener = elbv2.create_listener(
         LoadBalancerArn=lb_arn,
         Protocol="HTTPS",
@@ -171,20 +174,20 @@ def test_get_all_elb_and_elbv2s(app, aws_credentials):
 
     # Note: required because mocking describe_listener_certificates API call not yet supported by moto.
     with mock.patch.object(
-            lemur_elb,
-            'describe_listener_certificates_v2',
-            return_value={
-                "Certificates": [
-                    {
-                        "CertificateArn": arn2,
-                        "IsDefault": True,
-                    },
-                    {
-                        "CertificateArn": arn1,
-                        "IsDefault": False,
-                    },
-                ]
-            }
+        lemur_elb,
+        "describe_listener_certificates_v2",
+        return_value={
+            "Certificates": [
+                {
+                    "CertificateArn": arn2,
+                    "IsDefault": True,
+                },
+                {
+                    "CertificateArn": arn1,
+                    "IsDefault": False,
+                },
+            ]
+        },
     ):
         elbs = aws_source.get_endpoints(options)
         assert lemur_elb.describe_listener_certificates_v2.called

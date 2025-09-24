@@ -4,6 +4,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: James Chuong <jchuong@instartlogic.com>
 """
+
 from flask import Blueprint, g, make_response, jsonify
 from flask_restful import Api, reqparse, inputs
 
@@ -443,13 +444,16 @@ class PendingCertificatePrivateKey(AuthenticatedResource):
         response.headers["cache-control"] = "private, max-age=0, no-cache, no-store"
         response.headers["pragma"] = "no-cache"
 
-        log_service.audit_log("export_private_key_pending_certificate", cert.name,
-                              "Exported Private key for the pending certificate")
+        log_service.audit_log(
+            "export_private_key_pending_certificate",
+            cert.name,
+            "Exported Private key for the pending certificate",
+        )
         return response
 
 
 class PendingCertificatesUpload(AuthenticatedResource):
-    """ Defines the 'pending_certificates' upload endpoint """
+    """Defines the 'pending_certificates' upload endpoint"""
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()

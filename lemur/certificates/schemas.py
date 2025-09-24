@@ -5,10 +5,18 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from flask import current_app
 from flask_restful import inputs
 from flask_restful.reqparse import RequestParser
-from marshmallow import fields, validate, validates_schema, post_load, pre_load, post_dump
+from marshmallow import (
+    fields,
+    validate,
+    validates_schema,
+    post_load,
+    pre_load,
+    post_dump,
+)
 from marshmallow.exceptions import ValidationError
 
 from lemur.authorities.schemas import AuthorityNestedOutputSchema
@@ -122,7 +130,7 @@ class CertificateInputSchema(CertificateCreationSchema):
 
     @validates_schema
     def validate_authority(self, data):
-        if 'authority' not in data:
+        if "authority" not in data:
             raise ValidationError("Missing Authority.")
 
         if isinstance(data["authority"], str):
@@ -137,11 +145,20 @@ class CertificateInputSchema(CertificateCreationSchema):
 
     @post_load
     def validate_common_name(self, data):
-        if data["authority"] and (not data["authority"].is_cn_optional) and data["common_name"] == "":
+        if (
+            data["authority"]
+            and (not data["authority"].is_cn_optional)
+            and data["common_name"] == ""
+        ):
             raise ValidationError("Missing common_name")
 
-        if len(data["extensions"]["sub_alt_names"]["names"]) == 0 and data["common_name"] == "":
-            raise ValidationError("Missing common_name, either CN or SAN must be present")
+        if (
+            len(data["extensions"]["sub_alt_names"]["names"]) == 0
+            and data["common_name"] == ""
+        ):
+            raise ValidationError(
+                "Missing common_name, either CN or SAN must be present"
+            )
 
     @pre_load
     def load_data(self, data):
@@ -200,13 +217,15 @@ class CertificateEditInputSchema(CertificateSchema):
 
         if data.get("owner"):
             # Check if role already exists. This avoids adding duplicate role.
-            if data.get("roles") and any(r.get("name") == data["owner"] for r in data["roles"]):
+            if data.get("roles") and any(
+                r.get("name") == data["owner"] for r in data["roles"]
+            ):
                 return data
 
             # Add required role
             owner_role = roles_service.get_or_create(
                 data["owner"],
-                description=f"Auto generated role based on owner: {data['owner']}"
+                description=f"Auto generated role based on owner: {data['owner']}",
             )
 
             # Put  role info in correct format using RoleNestedOutputSchema
@@ -234,7 +253,9 @@ class CertificateEditInputSchema(CertificateSchema):
 
             # Even if one default role exists, return
             # This allows a User to remove unwanted default notification for current owner
-            if any(n.label.startswith(notification_name) for n in data["notifications"]):
+            if any(
+                n.label.startswith(notification_name) for n in data["notifications"]
+            ):
                 return data
 
             data[
@@ -352,7 +373,13 @@ class CertificateOutputSchema(LemurOutputSchema):
 
     @post_dump
     def handle_subject_details(self, data):
-        subject_details = ["country", "state", "location", "organization", "organizational_unit"]
+        subject_details = [
+            "country",
+            "state",
+            "location",
+            "organization",
+            "organizational_unit",
+        ]
 
         # Remove subject details if authority is CA/Browser Forum compliant. The code will use default set of values in that case.
         # If CA/Browser Forum compliance of an authority is unknown (None), it is safe to fallback to default values. Thus below
@@ -472,11 +499,15 @@ class CertificateNotificationOutputSchema(LemurOutputSchema):
 
 class CertificateRevokeSchema(LemurInputSchema):
     comments = fields.String()
-    crl_reason = fields.String(validate=validate.OneOf(CRLReason.__members__), missing="unspecified")
+    crl_reason = fields.String(
+        validate=validate.OneOf(CRLReason.__members__), missing="unspecified"
+    )
 
 
 certificates_list_request_parser = RequestParser()
-certificates_list_request_parser.add_argument("short", type=inputs.boolean, default=False, location="args")
+certificates_list_request_parser.add_argument(
+    "short", type=inputs.boolean, default=False, location="args"
+)
 
 
 def certificates_list_output_schema_factory():

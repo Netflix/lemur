@@ -7,6 +7,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
+
 from flask import Blueprint
 from flask_restful import reqparse, Api
 
@@ -28,7 +29,7 @@ api = Api(mod)
 
 
 class DomainsList(AuthenticatedResource):
-    """ Defines the 'domains' endpoint """
+    """Defines the 'domains' endpoint"""
 
     def __init__(self):
         super(DomainsList, self).__init__()
@@ -216,7 +217,7 @@ class Domains(AuthenticatedResource):
 
 
 class CertificateDomains(AuthenticatedResource):
-    """ Defines the 'domains' endpoint """
+    """Defines the 'domains' endpoint"""
 
     def __init__(self):
         super(CertificateDomains, self).__init__()

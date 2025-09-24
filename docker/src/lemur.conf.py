@@ -9,8 +9,8 @@ _basedir = os.path.abspath(os.path.dirname(__file__))
 
 # See the Lemur docs (https://lemur.readthedocs.org) for more information on configuration
 
-LOG_LEVEL = str(os.environ.get('LOG_LEVEL', 'DEBUG'))
-LOG_FILE = str(os.environ.get('LOG_FILE', '/home/lemur/.lemur/lemur.log'))
+LOG_LEVEL = str(os.environ.get("LOG_LEVEL", "DEBUG"))
+LOG_FILE = str(os.environ.get("LOG_FILE", "/home/lemur/.lemur/lemur.log"))
 LOG_JSON = True
 
 CORS = os.environ.get("CORS") == "True"
@@ -18,31 +18,51 @@ debug = os.environ.get("DEBUG") == "True"
 
 
 def get_random_secret(length):
-    secret_key = ''.join(random.choice(string.ascii_uppercase) for x in range(round(length / 4)))
-    secret_key = secret_key + ''.join(random.choice("~!@#$%^&*()_+") for x in range(round(length / 4)))
-    secret_key = secret_key + ''.join(random.choice(string.ascii_lowercase) for x in range(round(length / 4)))
-    return secret_key + ''.join(random.choice(string.digits) for x in range(round(length / 4)))
+    secret_key = "".join(
+        random.choice(string.ascii_uppercase) for x in range(round(length / 4))
+    )
+    secret_key = secret_key + "".join(
+        random.choice("~!@#$%^&*()_+") for x in range(round(length / 4))
+    )
+    secret_key = secret_key + "".join(
+        random.choice(string.ascii_lowercase) for x in range(round(length / 4))
+    )
+    return secret_key + "".join(
+        random.choice(string.digits) for x in range(round(length / 4))
+    )
 
 
 # This is the secret key used by Flask session management
-SECRET_KEY = repr(os.environ.get('SECRET_KEY', get_random_secret(32).encode('utf8')))
+SECRET_KEY = repr(os.environ.get("SECRET_KEY", get_random_secret(32).encode("utf8")))
 
 # You should consider storing these separately from your config
-LEMUR_TOKEN_SECRET = repr(os.environ.get('LEMUR_TOKEN_SECRET',
-                                         base64.b64encode(get_random_secret(32).encode('utf8'))))
+LEMUR_TOKEN_SECRET = repr(
+    os.environ.get(
+        "LEMUR_TOKEN_SECRET", base64.b64encode(get_random_secret(32).encode("utf8"))
+    )
+)
 # This must match the key for whichever DB the container is using - this could be a dump of dev or test, or a unique key
-LEMUR_ENCRYPTION_KEYS = repr(os.environ.get('LEMUR_ENCRYPTION_KEYS',
-                                            base64.b64encode(get_random_secret(32).encode('utf8')).decode('utf8')))
+LEMUR_ENCRYPTION_KEYS = repr(
+    os.environ.get(
+        "LEMUR_ENCRYPTION_KEYS",
+        base64.b64encode(get_random_secret(32).encode("utf8")).decode("utf8"),
+    )
+)
 
 # this is the secret used to generate oauth state tokens
-OAUTH_STATE_TOKEN_SECRET = repr(os.environ.get('OAUTH_STATE_TOKEN_SECRET', base64.b64encode(get_random_secret(32).encode('utf8'))))
+OAUTH_STATE_TOKEN_SECRET = repr(
+    os.environ.get(
+        "OAUTH_STATE_TOKEN_SECRET",
+        base64.b64encode(get_random_secret(32).encode("utf8")),
+    )
+)
 
-REDIS_HOST = 'redis'
+REDIS_HOST = "redis"
 REDIS_PORT = 6379
 REDIS_DB = 0
-CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}'
-CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}'
-CELERY_IMPORTS = ('lemur.common.celery')
+CELERY_RESULT_BACKEND = f"redis://{REDIS_HOST}:{REDIS_PORT}"
+CELERY_BROKER_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}"
+CELERY_IMPORTS = "lemur.common.celery"
 CELERYBEAT_SCHEDULE = {
     # All tasks are disabled by default. Enable any tasks you wish to run.
     # 'fetch_all_pending_acme_certs': {
@@ -144,24 +164,26 @@ CELERYBEAT_SCHEDULE = {
     #     'schedule': crontab(hour=10, minute=0, day_of_week='mon-fri'),
     # }
 }
-CELERY_TIMEZONE = 'UTC'
+CELERY_TIMEZONE = "UTC"
 
 SQLALCHEMY_ENABLE_FLASK_REPLICATED = False
-SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI', 'postgresql://lemur:lemur@localhost:5432/lemur')
+SQLALCHEMY_DATABASE_URI = os.environ.get(
+    "SQLALCHEMY_DATABASE_URI", "postgresql://lemur:lemur@localhost:5432/lemur"
+)
 
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 SQLALCHEMY_ECHO = True
 
 SQLALCHEMY_ENGINE_OPTIONS = {
-    'pool_recycle': 499,
-    'pool_timeout': 20,
+    "pool_recycle": 499,
+    "pool_timeout": 20,
 }
 
-LEMUR_EMAIL = 'lemur@example.com'
-LEMUR_SECURITY_TEAM_EMAIL = ['security@example.com']
+LEMUR_EMAIL = "lemur@example.com"
+LEMUR_SECURITY_TEAM_EMAIL = ["security@example.com"]
 LEMUR_SECURITY_TEAM_EMAIL_INTERVALS = [15, 2]
 LEMUR_DEFAULT_EXPIRATION_NOTIFICATION_INTERVALS = [30, 15, 2]
-LEMUR_EMAIL_SENDER = 'smtp'
+LEMUR_EMAIL_SENDER = "smtp"
 
 # mail configuration
 # MAIL_SERVER = 'mail.example.com'
@@ -171,15 +193,19 @@ DEFAULT_VALIDITY_DAYS = 365
 
 LEMUR_OWNER_EMAIL_IN_SUBJECT = False
 
-LEMUR_DEFAULT_COUNTRY = str(os.environ.get('LEMUR_DEFAULT_COUNTRY', 'US'))
-LEMUR_DEFAULT_STATE = str(os.environ.get('LEMUR_DEFAULT_STATE', 'California'))
-LEMUR_DEFAULT_LOCATION = str(os.environ.get('LEMUR_DEFAULT_LOCATION', 'Los Gatos'))
-LEMUR_DEFAULT_ORGANIZATION = str(os.environ.get('LEMUR_DEFAULT_ORGANIZATION', 'Example, Inc.'))
-LEMUR_DEFAULT_ORGANIZATIONAL_UNIT = str(os.environ.get('LEMUR_DEFAULT_ORGANIZATIONAL_UNIT', ''))
+LEMUR_DEFAULT_COUNTRY = str(os.environ.get("LEMUR_DEFAULT_COUNTRY", "US"))
+LEMUR_DEFAULT_STATE = str(os.environ.get("LEMUR_DEFAULT_STATE", "California"))
+LEMUR_DEFAULT_LOCATION = str(os.environ.get("LEMUR_DEFAULT_LOCATION", "Los Gatos"))
+LEMUR_DEFAULT_ORGANIZATION = str(
+    os.environ.get("LEMUR_DEFAULT_ORGANIZATION", "Example, Inc.")
+)
+LEMUR_DEFAULT_ORGANIZATIONAL_UNIT = str(
+    os.environ.get("LEMUR_DEFAULT_ORGANIZATIONAL_UNIT", "")
+)
 
-LEMUR_DEFAULT_AUTHORITY = str(os.environ.get('LEMUR_DEFAULT_AUTHORITY', 'ExampleCa'))
+LEMUR_DEFAULT_AUTHORITY = str(os.environ.get("LEMUR_DEFAULT_AUTHORITY", "ExampleCa"))
 
-LEMUR_DEFAULT_ROLE = 'operator'
+LEMUR_DEFAULT_ROLE = "operator"
 
 ACTIVE_PROVIDERS = []
 METRIC_PROVIDERS = []
@@ -193,42 +219,44 @@ current_path = os.path.dirname(os.path.realpath(__file__))
 # exclude logging missing SAN, since we can have certs from private CAs with only cn, prod parity
 LOG_SSL_SUBJ_ALT_NAME_ERRORS = False
 
-ACME_DNS_PROVIDER_TYPES = {"items": [
-    {
-        'name': 'route53',
-        'requirements': [
-            {
-                'name': 'account_id',
-                'type': 'int',
-                'required': True,
-                'helpMessage': 'AWS Account number'
-            },
-        ]
-    },
-    {
-        'name': 'cloudflare',
-        'requirements': [
-            {
-                'name': 'email',
-                'type': 'str',
-                'required': True,
-                'helpMessage': 'Cloudflare Email'
-            },
-            {
-                'name': 'key',
-                'type': 'str',
-                'required': True,
-                'helpMessage': 'Cloudflare Key'
-            },
-        ]
-    },
-    {
-        'name': 'dyn',
-    },
-    {
-        'name': 'ultradns',
-    },
-]}
+ACME_DNS_PROVIDER_TYPES = {
+    "items": [
+        {
+            "name": "route53",
+            "requirements": [
+                {
+                    "name": "account_id",
+                    "type": "int",
+                    "required": True,
+                    "helpMessage": "AWS Account number",
+                },
+            ],
+        },
+        {
+            "name": "cloudflare",
+            "requirements": [
+                {
+                    "name": "email",
+                    "type": "str",
+                    "required": True,
+                    "helpMessage": "Cloudflare Email",
+                },
+                {
+                    "name": "key",
+                    "type": "str",
+                    "required": True,
+                    "helpMessage": "Cloudflare Key",
+                },
+            ],
+        },
+        {
+            "name": "dyn",
+        },
+        {
+            "name": "ultradns",
+        },
+    ]
+}
 
 # Authority plugins which support revocation
-SUPPORTED_REVOCATION_AUTHORITY_PLUGINS = ['acme-issuer']
+SUPPORTED_REVOCATION_AUTHORITY_PLUGINS = ["acme-issuer"]

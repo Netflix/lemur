@@ -7,6 +7,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
+
 from flask import Blueprint, g
 from flask import make_response, jsonify
 from flask_restful import reqparse, Api
@@ -30,7 +31,7 @@ api = Api(mod)
 
 
 class RolesList(AuthenticatedResource):
-    """ Defines the 'roles' endpoint """
+    """Defines the 'roles' endpoint"""
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
@@ -195,7 +196,9 @@ class RoleViewCredentials(AuthenticatedResource):
             response.headers["cache-control"] = "private, max-age=0, no-cache, no-store"
             response.headers["pragma"] = "no-cache"
 
-            log_service.audit_log("view_role_credentials", role.name, "View role username and password")
+            log_service.audit_log(
+                "view_role_credentials", role.name, "View role username and password"
+            )
 
             return response
         return (
@@ -338,7 +341,7 @@ class Roles(AuthenticatedResource):
 
 
 class UserRolesList(AuthenticatedResource):
-    """ Defines the 'roles' endpoint """
+    """Defines the 'roles' endpoint"""
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
@@ -398,7 +401,7 @@ class UserRolesList(AuthenticatedResource):
 
 
 class AuthorityRolesList(AuthenticatedResource):
-    """ Defines the 'roles' endpoint """
+    """Defines the 'roles' endpoint"""
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()

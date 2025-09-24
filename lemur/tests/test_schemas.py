@@ -75,23 +75,23 @@ def test_plugin_input_schema(session):
                     "title": "export",
                     "description": "Exports a CSR",
                     "slug": "openssl-csr",
-                    "route": "plugins"
-                }
+                    "route": "plugins",
+                },
             },
             {
                 "name": "bucket",
                 "type": "str",
                 "validation": "[0-9a-z.-]{3,63}",
-                "value": "nflx"
+                "value": "nflx",
             },
             {
                 "name": "accountNumber",
                 "type": "str",
                 "required": True,
-                "value": "555555555555"
+                "value": "555555555555",
             },
         ],
-        "title": "AWS-S3"
+        "title": "AWS-S3",
     }
 
     data, errors = PluginInputSchema().load(input_data)
@@ -118,13 +118,13 @@ def test_plugin_input_schema_invalid_account_number(session):
                 "name": "accountNumber",
                 "type": "str",
                 "required": True,
-                "value": "1234"  # invalid account number
+                "value": "1234",  # invalid account number
             },
         ],
-        "title": "AWS-S3"
+        "title": "AWS-S3",
     }
 
     data, errors = PluginInputSchema().load(input_data)
 
     assert errors
-    assert '\'accountNumber\' cannot be validated' in json.dumps(errors)
+    assert "'accountNumber' cannot be validated" in json.dumps(errors)

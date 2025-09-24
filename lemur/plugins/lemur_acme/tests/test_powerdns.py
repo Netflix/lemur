@@ -21,7 +21,7 @@ class TestPowerdns(unittest.TestCase):
 
         # Creates a new Flask application for a test duration. In python 3.8, manual push of application context is
         # needed to run tests in dev environment without getting error 'Working outside of application context'.
-        _app = Flask('lemur_test_acme')
+        _app = Flask("lemur_test_acme")
         self.ctx = _app.app_context()
         assert self.ctx
         self.ctx.push()
@@ -33,16 +33,45 @@ class TestPowerdns(unittest.TestCase):
     def test_get_zones(self, mock_current_app):
         account_number = "1234567890"
         path = "a/b/c"
-        zones = ['example.com', 'test.example.com']
-        get_response = [{'account': '', 'dnssec': 'False', 'id': 'example.com.', 'kind': 'Master', 'last_check': 0, 'masters': [],
-          'name': 'example.com.', 'notified_serial': '2019111907', 'serial': '2019111907',
-          'url': '/api/v1/servers/localhost/zones/example.com.'},
-         {'account': '', 'dnssec': 'False', 'id': 'bad.example.com.', 'kind': 'Secondary', 'last_check': 0, 'masters': [],
-          'name': 'bad.example.com.', 'notified_serial': '2018053104', 'serial': '2018053104',
-          'url': '/api/v1/servers/localhost/zones/bad.example.com.'},
-         {'account': '', 'dnssec': 'False', 'id': 'test.example.com.', 'kind': 'Master', 'last_check': 0,
-          'masters': [], 'name': 'test.example.com.', 'notified_serial': '2019112501', 'serial': '2019112501',
-          'url': '/api/v1/servers/localhost/zones/test.example.com.'}]
+        zones = ["example.com", "test.example.com"]
+        get_response = [
+            {
+                "account": "",
+                "dnssec": "False",
+                "id": "example.com.",
+                "kind": "Master",
+                "last_check": 0,
+                "masters": [],
+                "name": "example.com.",
+                "notified_serial": "2019111907",
+                "serial": "2019111907",
+                "url": "/api/v1/servers/localhost/zones/example.com.",
+            },
+            {
+                "account": "",
+                "dnssec": "False",
+                "id": "bad.example.com.",
+                "kind": "Secondary",
+                "last_check": 0,
+                "masters": [],
+                "name": "bad.example.com.",
+                "notified_serial": "2018053104",
+                "serial": "2018053104",
+                "url": "/api/v1/servers/localhost/zones/bad.example.com.",
+            },
+            {
+                "account": "",
+                "dnssec": "False",
+                "id": "test.example.com.",
+                "kind": "Master",
+                "last_check": 0,
+                "masters": [],
+                "name": "test.example.com.",
+                "notified_serial": "2019112501",
+                "serial": "2019112501",
+                "url": "/api/v1/servers/localhost/zones/test.example.com.",
+            },
+        ]
         powerdns._check_conf = Mock()
         powerdns._get = Mock(path)
         powerdns._get.side_effect = [get_response]
@@ -51,7 +80,7 @@ class TestPowerdns(unittest.TestCase):
         self.assertEqual(result, zones)
 
     def test_get_zone_name(self):
-        zones = ['example.com', 'test.example.com']
+        zones = ["example.com", "test.example.com"]
         zone = "test.example.com"
         domain = "_acme-challenge.test.example.com"
         account_number = "1234567890"
@@ -76,7 +105,7 @@ class TestPowerdns(unittest.TestCase):
             "function": "create_txt_record",
             "fqdn": domain,
             "token": token,
-            "message": "TXT record(s) successfully created"
+            "message": "TXT record(s) successfully created",
         }
         result = powerdns.create_txt_record(domain, token, account_number)
         mock_current_app.logger.debug.assert_called_with(log_data)
@@ -91,7 +120,11 @@ class TestPowerdns(unittest.TestCase):
         change_id = (domain, token)
         powerdns._check_conf = Mock()
         cur_token = "123456"
-        cur_records = [powerdns.Record({'name': domain, 'content': f"\"{cur_token}\"", 'disabled': False})]
+        cur_records = [
+            powerdns.Record(
+                {"name": domain, "content": f'"{cur_token}"', "disabled": False}
+            )
+        ]
         powerdns._get_txt_records = Mock(return_value=cur_records)
         powerdns._get_zone_name = Mock(return_value=zone)
         mock_current_app.logger.debug = Mock()
@@ -101,7 +134,7 @@ class TestPowerdns(unittest.TestCase):
             "function": "create_txt_record",
             "fqdn": domain,
             "token": token,
-            "message": "TXT record(s) successfully created"
+            "message": "TXT record(s) successfully created",
         }
         expected_path = "/api/v1/servers/localhost/zones/test.example.com."
         expected_payload = {
@@ -112,16 +145,10 @@ class TestPowerdns(unittest.TestCase):
                     "ttl": 300,
                     "changetype": "REPLACE",
                     "records": [
-                        {
-                            "content": f"\"{token}\"",
-                            "disabled": False
-                        },
-                        {
-                            "content": f"\"{cur_token}\"",
-                            "disabled": False
-                        }
+                        {"content": f'"{token}"', "disabled": False},
+                        {"content": f'"{cur_token}"', "disabled": False},
                     ],
-                    "comments": []
+                    "comments": [],
                 }
             ]
         }
@@ -135,7 +162,9 @@ class TestPowerdns(unittest.TestCase):
     @patch("lemur.plugins.lemur_acme.powerdns.current_app")
     @patch("lemur.extensions.metrics")
     @patch("time.sleep")
-    def test_wait_for_dns_change(self, mock_sleep, mock_metrics, mock_current_app, mock_dnsutil):
+    def test_wait_for_dns_change(
+        self, mock_sleep, mock_metrics, mock_current_app, mock_dnsutil
+    ):
         domain = "_acme-challenge.test.example.com"
         token1 = "ABCDEFG"
         token2 = "HIJKLMN"
@@ -157,7 +186,7 @@ class TestPowerdns(unittest.TestCase):
             "function": "wait_for_dns_change",
             "fqdn": domain,
             "status": True,
-            "message": "Record status on PowerDNS authoritative server"
+            "message": "Record status on PowerDNS authoritative server",
         }
         mock_current_app.logger.debug.assert_called_with(log_data)
 
@@ -177,7 +206,7 @@ class TestPowerdns(unittest.TestCase):
             "function": "delete_txt_record",
             "fqdn": domain,
             "token": token,
-            "message": "Unable to delete TXT record: Token not found in existing TXT records"
+            "message": "Unable to delete TXT record: Token not found in existing TXT records",
         }
         powerdns.delete_txt_record(change_id, account_number, domain, token)
         mock_current_app.logger.debug.assert_called_with(log_data)

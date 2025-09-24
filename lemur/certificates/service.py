@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 import re
 import time
 from collections import defaultdict
@@ -24,7 +25,13 @@ from lemur import database
 from lemur.authorities.models import Authority
 from lemur.certificates.models import Certificate, CertificateAssociation
 from lemur.certificates.schemas import CertificateOutputSchema, CertificateInputSchema
-from lemur.common.utils import generate_private_key, truthiness, parse_serial, get_certificate_via_tls, windowed_query
+from lemur.common.utils import (
+    generate_private_key,
+    truthiness,
+    parse_serial,
+    get_certificate_via_tls,
+    windowed_query,
+)
 from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
 from lemur.destinations.models import Destination
 from lemur.domains.models import Domain
@@ -115,7 +122,9 @@ def get_all_certs():
     return Certificate.query.all()
 
 
-def get_all_valid_certs(authority_plugin_name, paginate=False, page=1, count=1000, created_on_or_before=None):
+def get_all_valid_certs(
+    authority_plugin_name, paginate=False, page=1, count=1000, created_on_or_before=None
+):
     """
     Retrieves all valid (not expired & not revoked) certificates within Lemur, for the given authority plugin names
     ignored if no authority_plugin_name provided.
@@ -128,25 +137,30 @@ def get_all_valid_certs(authority_plugin_name, paginate=False, page=1, count=100
 
     :return: list of certificates to check for revocation
     """
-    assert (page > 0)
+    assert page > 0
     query = database.session_query(Certificate) if paginate else Certificate.query
 
     if authority_plugin_name:
-        query = query.outerjoin(Authority, Authority.id == Certificate.authority_id)\
-            .filter(Certificate.not_after > arrow.now().format("YYYY-MM-DD"))\
-            .filter(Authority.plugin_name.in_(authority_plugin_name))\
+        query = (
+            query.outerjoin(Authority, Authority.id == Certificate.authority_id)
+            .filter(Certificate.not_after > arrow.now().format("YYYY-MM-DD"))
+            .filter(Authority.plugin_name.in_(authority_plugin_name))
             .filter(Certificate.revoked.is_(False))
+        )
 
     else:
-        query = query.filter(Certificate.not_after > arrow.now().format("YYYY-MM-DD"))\
-            .filter(Certificate.revoked.is_(False))
+        query = query.filter(
+            Certificate.not_after > arrow.now().format("YYYY-MM-DD")
+        ).filter(Certificate.revoked.is_(False))
 
     if created_on_or_before:
-        query = query.filter(Certificate.date_created <= created_on_or_before.format("YYYY-MM-DD"))
+        query = query.filter(
+            Certificate.date_created <= created_on_or_before.format("YYYY-MM-DD")
+        )
 
     if paginate:
         items = database.paginate(query, page, count)
-        return items['items']
+        return items["items"]
 
     return query.all()
 
@@ -192,7 +206,9 @@ def get_all_certs_attached_to_destination_without_autorotate(plugin_name=None):
     """
     if plugin_name:
         return (
-            Certificate.query.filter(Certificate.destinations.any(plugin_name=plugin_name))
+            Certificate.query.filter(
+                Certificate.destinations.any(plugin_name=plugin_name)
+            )
             .filter(Certificate.rotation == false())
             .filter(Certificate.revoked == false())
             .filter(Certificate.not_after >= arrow.now())
@@ -293,12 +309,14 @@ def list_duplicate_certs_by_authority(authority_ids, days_since_issuance):
     """
 
     now = arrow.now().format("YYYY-MM-DD")
-    query = database.session_query(Certificate)\
-        .filter(Certificate.authority_id.in_(authority_ids))\
-        .filter(Certificate.not_after >= now)\
-        .filter(Certificate.rotation == true())\
-        .filter(not_(Certificate.replaced.any()))\
+    query = (
+        database.session_query(Certificate)
+        .filter(Certificate.authority_id.in_(authority_ids))
+        .filter(Certificate.not_after >= now)
+        .filter(Certificate.rotation == true())
+        .filter(not_(Certificate.replaced.any()))
         .filter(text("name ~ '.*-[0-9]{8}-[0-9]{8}-.*'"))
+    )
 
     if days_since_issuance:
         issuance_window = (
@@ -358,7 +376,11 @@ def update(cert_id, **kwargs):
 def cleanup_owner_roles_notification(owner_name, kwargs):
     kwargs["roles"] = [r for r in kwargs["roles"] if r.name != owner_name]
     notification_prefix = f"DEFAULT_{owner_name.split('@')[0].upper()}"
-    kwargs["notifications"] = [n for n in kwargs["notifications"] if not n.label.startswith(notification_prefix)]
+    kwargs["notifications"] = [
+        n
+        for n in kwargs["notifications"]
+        if not n.label.startswith(notification_prefix)
+    ]
 
 
 def update_switches(cert, notify_flag=None, rotation_flag=None):
@@ -385,9 +407,13 @@ def update_owner(cert, new_cert_data):
     :return:
     """
     # remove all notifications and roles associated with old owner
-    cert.roles = new_cert_data["roles"] + [r for r in cert.roles if r.name != cert.owner]
+    cert.roles = new_cert_data["roles"] + [
+        r for r in cert.roles if r.name != cert.owner
+    ]
     notification_prefix = f"DEFAULT_{cert.owner.split('@')[0].upper()}"
-    cert.notifications = new_cert_data["notifications"] + [n for n in cert.notifications if not n.label.startswith(notification_prefix)]
+    cert.notifications = new_cert_data["notifications"] + [
+        n for n in cert.notifications if not n.label.startswith(notification_prefix)
+    ]
 
     cert.owner = new_cert_data["owner"]
     return database.update(cert)
@@ -397,7 +423,7 @@ def create_certificate_roles(**kwargs):
     # create a role for the owner and assign it
     owner_role = role_service.get_or_create(
         kwargs["owner"],
-        description=f"Auto generated role based on owner: {kwargs['owner']}"
+        description=f"Auto generated role based on owner: {kwargs['owner']}",
     )
 
     # ensure that the authority's owner is also associated with the certificate
@@ -485,7 +511,9 @@ def create(**kwargs):
             # only AWS destinations have an account number, so we can skip this validation if an account number is not found
             if account is not None:
                 if account in plugin_accounts:
-                    raise Exception(f"Too many destinations for plugin {dest.plugin_name} and account {account}")
+                    raise Exception(
+                        f"Too many destinations for plugin {dest.plugin_name} and account {account}"
+                    )
                 plugin_accounts[account] = True
 
     try:
@@ -538,9 +566,9 @@ def create(**kwargs):
             "name": cert.name,
             "serial": cert.serial,
             "issuer": cert.issuer,
-            "not_after": cert.not_after.format('YYYY-MM-DD HH:mm:ss'),
-            "not_before": cert.not_before.format('YYYY-MM-DD HH:mm:ss'),
-            "sans": str(', '.join([domain.name for domain in cert.domains])),
+            "not_after": cert.not_after.format("YYYY-MM-DD HH:mm:ss"),
+            "not_before": cert.not_before.format("YYYY-MM-DD HH:mm:ss"),
+            "sans": str(", ".join([domain.name for domain in cert.domains])),
         }
         current_app.logger.info(log_data)
 
@@ -551,7 +579,13 @@ def create(**kwargs):
         from lemur.common.celery import fetch_acme_cert
 
         if not current_app.config.get("ACME_DISABLE_AUTORESOLVE", False):
-            fetch_acme_cert.apply_async((pending_cert.id, kwargs.get("async_reissue_notification_cert_id", None)), countdown=5)
+            fetch_acme_cert.apply_async(
+                (
+                    pending_cert.id,
+                    kwargs.get("async_reissue_notification_cert_id", None),
+                ),
+                countdown=5,
+            )
 
     return cert
 
@@ -673,10 +707,10 @@ def render(args):
         query = query.filter(Certificate.deleted == false())
 
     if serial_number:
-        if serial_number.lower().startswith('0x'):
+        if serial_number.lower().startswith("0x"):
             serial_number = str(int(serial_number[2:], 16))
         elif ":" in serial_number:
-            serial_number = str(int(serial_number.replace(':', ''), 16))
+            serial_number = str(int(serial_number.replace(":", ""), 16))
 
         query = query.filter(Certificate.serial == serial_number)
 
@@ -722,9 +756,11 @@ def query_common_name(common_name, args):
 
     # only not expired certificates
     current_time = arrow.utcnow()
-    query = query.filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))\
-        .filter(not_(Certificate.revoked))\
-        .filter(not_(Certificate.replaced.any()))  # ignore rotated certificates to avoid duplicates
+    query = (
+        query.filter(Certificate.not_after >= current_time.format("YYYY-MM-DD"))
+        .filter(not_(Certificate.revoked))
+        .filter(not_(Certificate.replaced.any()))
+    )  # ignore rotated certificates to avoid duplicates
 
     if owner:
         query = query.filter(Certificate.owner.ilike(owner))
@@ -837,9 +873,7 @@ def stats(**kwargs):
     allow_list = ["bits", "issuer", "not_after", "signing_algorithm"]
     req_metric = kwargs.get("metric")
     if req_metric not in allow_list:
-        raise Exception(
-            f"Stats not available for requested metric: {req_metric}"
-        )
+        raise Exception(f"Stats not available for requested metric: {req_metric}")
 
     if req_metric == "not_after":
         start = arrow.utcnow()
@@ -962,9 +996,13 @@ def reissue_certificate(certificate, notify=None, replace=None, user=None):
     if primitives["description"]:
         match = reissue_message.search(primitives["description"])
         if match:
-            primitives["description"] = primitives["description"].replace(match.group(1), str(certificate.id))
+            primitives["description"] = primitives["description"].replace(
+                match.group(1), str(certificate.id)
+            )
         else:
-            primitives["description"] = f"{reissue_message_prefix}{certificate.id}, {primitives['description']}"
+            primitives["description"] = (
+                f"{reissue_message_prefix}{certificate.id}, {primitives['description']}"
+            )
     else:
         primitives["description"] = f"{reissue_message_prefix}{certificate.id}"
 
@@ -972,9 +1010,13 @@ def reissue_certificate(certificate, notify=None, replace=None, user=None):
     # This is a temporary change intending to rotate certificates to ECC, if opted in by certificate owners
     # Unless identified a use case, this will be removed in mid-Q2 2021
     ecc_reissue_owner_list = current_app.config.get("ROTATE_TO_ECC_OWNER_LIST", [])
-    ecc_reissue_exclude_cn_list = current_app.config.get("ECC_NON_COMPATIBLE_COMMON_NAMES", [])
+    ecc_reissue_exclude_cn_list = current_app.config.get(
+        "ECC_NON_COMPATIBLE_COMMON_NAMES", []
+    )
 
-    if (certificate.owner in ecc_reissue_owner_list) and (certificate.cn not in ecc_reissue_exclude_cn_list):
+    if (certificate.owner in ecc_reissue_owner_list) and (
+        certificate.cn not in ecc_reissue_exclude_cn_list
+    ):
         primitives["key_type"] = "ECCPRIME256V1"
 
     # allow celery to send notifications for PendingCertificates using the old cert
@@ -995,7 +1037,9 @@ def is_attached_to_endpoint(certificate_name, endpoint_name):
     :return: True if certificate is attached to the given endpoint, False otherwise
     """
     endpoint = endpoint_service.get_by_name(endpoint_name)
-    attached_certificates = endpoint.source.plugin.get_endpoint_certificate_names(endpoint)
+    attached_certificates = endpoint.source.plugin.get_endpoint_certificate_names(
+        endpoint
+    )
     return certificate_name in attached_certificates
 
 
@@ -1039,12 +1083,13 @@ def cleanup_after_revoke(certificate):
     except Exception:
         capture_exception()
         current_app.logger.warn(
-            f"Error sending revocation notification for certificate: {certificate.name}", exc_info=True
+            f"Error sending revocation notification for certificate: {certificate.name}",
+            exc_info=True,
         )
 
     certificate.notify = False
     certificate.rotation = False
-    certificate.status = 'revoked'
+    certificate.status = "revoked"
 
     error_message = ""
 
@@ -1056,7 +1101,10 @@ def cleanup_after_revoke(certificate):
             # This cleanup is the best-effort since certificate is already revoked at this point.
             # We will capture the exception and move on to the next destination
             capture_exception()
-            error_message = error_message + f"Failed to remove destination: {destination.label}. {str(e)}. "
+            error_message = (
+                error_message
+                + f"Failed to remove destination: {destination.label}. {str(e)}. "
+            )
 
     database.update(certificate)
     return error_message
@@ -1068,7 +1116,11 @@ def get_issued_cert_count_for_authority(authority):
 
     :return:
     """
-    return database.db.session.query(Certificate).filter(Certificate.authority_id == authority.id).count()
+    return (
+        database.db.session.query(Certificate)
+        .filter(Certificate.authority_id == authority.id)
+        .count()
+    )
 
 
 def get_all_valid_certificates_with_source(source_id):
@@ -1109,9 +1161,11 @@ def remove_source_association(certificate, source):
         "delete_certificate_source_association",
         "counter",
         1,
-        metric_tags={"status": SUCCESS_METRIC_STATUS,
-                     "source": source.label,
-                     "certificate": certificate.name}
+        metric_tags={
+            "status": SUCCESS_METRIC_STATUS,
+            "source": source.label,
+            "certificate": certificate.name,
+        },
     )
 
 
@@ -1125,20 +1179,25 @@ def remove_destination_association(certificate, destination, clean=True):
         except Exception as e:
             # This cleanup is the best-effort, it will capture the exception and log
             capture_exception()
-            current_app.logger.warning(f"Failed to remove destination: {destination.label}. {str(e)}")
+            current_app.logger.warning(
+                f"Failed to remove destination: {destination.label}. {str(e)}"
+            )
 
     metrics.send(
         "delete_certificate_destination_association",
         "counter",
         1,
-        metric_tags={"status": SUCCESS_METRIC_STATUS,
-                     "destination": destination.label,
-                     "certificate": certificate.name}
+        metric_tags={
+            "status": SUCCESS_METRIC_STATUS,
+            "destination": destination.label,
+            "certificate": certificate.name,
+        },
     )
 
 
-def identify_and_persist_expiring_deployed_certificates(exclude_domains, exclude_owners, commit,
-                                                        timeout_seconds_per_network_call=1):
+def identify_and_persist_expiring_deployed_certificates(
+    exclude_domains, exclude_owners, commit, timeout_seconds_per_network_call=1
+):
     """
     Finds all certificates expiring soon but are still being used for TLS at any domain with which they are associated.
     Identified ports will then be persisted on the certificate_associations row for the given cert/domain combo.
@@ -1146,15 +1205,20 @@ def identify_and_persist_expiring_deployed_certificates(exclude_domains, exclude
     Note that this makes actual TLS network calls in order to establish the "deployed" part of this check.
     """
     all_certs = defaultdict(dict)
-    for c in get_certs_for_expiring_deployed_cert_check(exclude_domains, exclude_owners):
-        domains_for_cert = find_and_persist_domains_where_cert_is_deployed(c, exclude_domains, commit,
-                                                                           timeout_seconds_per_network_call)
+    for c in get_certs_for_expiring_deployed_cert_check(
+        exclude_domains, exclude_owners
+    ):
+        domains_for_cert = find_and_persist_domains_where_cert_is_deployed(
+            c, exclude_domains, commit, timeout_seconds_per_network_call
+        )
         if len(domains_for_cert) > 0:
             all_certs[c] = domains_for_cert
 
 
 def get_certs_for_expiring_deployed_cert_check(exclude_domains, exclude_owners):
-    threshold_days = current_app.config.get("LEMUR_EXPIRING_DEPLOYED_CERT_THRESHOLD_DAYS", 14)
+    threshold_days = current_app.config.get(
+        "LEMUR_EXPIRING_DEPLOYED_CERT_THRESHOLD_DAYS", 14
+    )
     max_not_after = arrow.utcnow().shift(days=+threshold_days).format("YYYY-MM-DD")
 
     q = (
@@ -1181,8 +1245,9 @@ def get_certs_for_expiring_deployed_cert_check(exclude_domains, exclude_owners):
     return windowed_query(q, Certificate.id, 10000)
 
 
-def find_and_persist_domains_where_cert_is_deployed(certificate, excluded_domains, commit,
-                                                    timeout_seconds_per_network_call):
+def find_and_persist_domains_where_cert_is_deployed(
+    certificate, excluded_domains, commit, timeout_seconds_per_network_call
+):
     """
     Checks if the specified cert is still deployed. Returns a list of domains to which it's deployed.
 
@@ -1197,34 +1262,53 @@ def find_and_persist_domains_where_cert_is_deployed(certificate, excluded_domain
     """
     matched_domains = defaultdict(list)
     # filter out wildcards, we can't check them
-    for cert_association in [assoc for assoc in certificate.certificate_associations if '*' not in assoc.domain.name]:
+    for cert_association in [
+        assoc
+        for assoc in certificate.certificate_associations
+        if "*" not in assoc.domain.name
+    ]:
         domain_name = cert_association.domain.name
         # skip this domain if excluded
         if not any(excluded in domain_name for excluded in excluded_domains):
             matched_ports_for_domain = []
-            for port in current_app.config.get("LEMUR_PORTS_FOR_DEPLOYED_CERTIFICATE_CHECK", [443]):
+            for port in current_app.config.get(
+                "LEMUR_PORTS_FOR_DEPLOYED_CERTIFICATE_CHECK", [443]
+            ):
                 start_time = time.time()
                 status = FAILURE_METRIC_STATUS
                 match = False
                 try:
-                    parsed_serial = parse_serial(get_certificate_via_tls(domain_name, port,
-                                                                         timeout_seconds_per_network_call))
+                    parsed_serial = parse_serial(
+                        get_certificate_via_tls(
+                            domain_name, port, timeout_seconds_per_network_call
+                        )
+                    )
                     if parsed_serial == int(certificate.serial):
                         matched_ports_for_domain.append(port)
                         match = True
-                        current_app.logger.warning(f'Identified expiring deployed certificate {certificate.name} '
-                                                   f'at domain {domain_name} on port {port}')
+                        current_app.logger.warning(
+                            f"Identified expiring deployed certificate {certificate.name} "
+                            f"at domain {domain_name} on port {port}"
+                        )
                     status = SUCCESS_METRIC_STATUS
                 except Exception:
-                    current_app.logger.info(f'Unable to check certificate for domain {domain_name} on port {port}',
-                                            exc_info=True)
+                    current_app.logger.info(
+                        f"Unable to check certificate for domain {domain_name} on port {port}",
+                        exc_info=True,
+                    )
                 elapsed = int(round(1000 * (time.time() - start_time)))
-                metrics.send("deployed_certificate_check", "TIMER", elapsed,
-                             metric_tags={"certificate": certificate.name,
-                                          "domain": domain_name,
-                                          "port": port,
-                                          "status": status,
-                                          "match": match})
+                metrics.send(
+                    "deployed_certificate_check",
+                    "TIMER",
+                    elapsed,
+                    metric_tags={
+                        "certificate": certificate.name,
+                        "domain": domain_name,
+                        "port": port,
+                        "status": status,
+                        "match": match,
+                    },
+                )
             matched_domains[domain_name] = matched_ports_for_domain
             if commit:
                 # Update the DB
@@ -1250,15 +1334,19 @@ def get_expiring_deployed_certificates(exclude=None):
     certs_domains_and_ports = defaultdict(dict)
     for certificate in get_certs_for_expiring_deployed_cert_check(exclude, None):
         matched_domains = defaultdict(list)
-        for cert_association in [assoc for assoc in certificate.certificate_associations if assoc.ports]:
+        for cert_association in [
+            assoc for assoc in certificate.certificate_associations if assoc.ports
+        ]:
             matched_domains[cert_association.domain.name] = cert_association.ports
         if len(matched_domains) > 0:
             certs_domains_and_ports[certificate] = matched_domains
 
     certs_domains_and_ports_by_owner = defaultdict(list)
     # group by owner
-    for owner, owner_certs in groupby(sorted(certs_domains_and_ports.items(),
-                                             key=lambda x: x[0].owner), lambda x: x[0].owner):
+    for owner, owner_certs in groupby(
+        sorted(certs_domains_and_ports.items(), key=lambda x: x[0].owner),
+        lambda x: x[0].owner,
+    ):
         certs_domains_and_ports_by_owner[owner] = list(owner_certs)
     return certs_domains_and_ports_by_owner
 
@@ -1303,13 +1391,14 @@ def send_certificate_expiration_metrics(expiry_window=None):
                     "cert_id": certificate.id,
                     "common_name": certificate.cn.replace("*", "star"),
                     "has_active_endpoints": has_active_endpoints,
-                    "is_replacement": is_replacement
-                }
+                    "is_replacement": is_replacement,
+                },
             )
             success += 1
         except Exception as e:
             current_app.logger.warn(
-                f"Error sending expiry metric for certificate: {certificate.name}", exc_info=True
+                f"Error sending expiry metric for certificate: {certificate.name}",
+                exc_info=True,
             )
             failure += 1
 
@@ -1322,14 +1411,19 @@ def get_certificates_for_expiration_metrics(expiry_window):
     :param expiry_window: defines the window for cert filter, ex: 90 will only return certs expiring in the next 90 days.
     :return: list of certificates
     """
-    query = database.db.session.query(Certificate)\
-        .filter(Certificate.expired == false())\
-        .filter(Certificate.revoked == false())\
+    query = (
+        database.db.session.query(Certificate)
+        .filter(Certificate.expired == false())
+        .filter(Certificate.revoked == false())
         .filter(not_(Certificate.replaced.any()))
+    )
 
     # if expiry_window param was passed in then get only certs within that window
     if expiry_window:
-        query = query.filter(Certificate.not_after <= arrow.now().shift(days=int(expiry_window)).format("YYYY-MM-DD"))
+        query = query.filter(
+            Certificate.not_after
+            <= arrow.now().shift(days=int(expiry_window)).format("YYYY-MM-DD")
+        )
 
     return query.all()
 

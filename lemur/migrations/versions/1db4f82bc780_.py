@@ -18,9 +18,7 @@ from logging import Formatter, FileHandler, getLogger
 log = getLogger(__name__)
 handler = FileHandler(current_app.config.get("LOG_UPGRADE_FILE", "db_upgrade.log"))
 handler.setFormatter(
-    Formatter(
-        "%(asctime)s %(levelname)s: %(message)s " "[in %(pathname)s:%(lineno)d]"
-    )
+    Formatter("%(asctime)s %(levelname)s: %(message)s " "[in %(pathname)s:%(lineno)d]")
 )
 handler.setLevel(current_app.config.get("LOG_LEVEL", "DEBUG"))
 log.setLevel(current_app.config.get("LOG_LEVEL", "DEBUG"))

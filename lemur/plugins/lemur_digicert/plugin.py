@@ -13,6 +13,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 import json
 
 import arrow
@@ -89,7 +90,9 @@ def determine_end_date(end_date):
     :return: validity_end
     """
     default_days = current_app.config.get("DIGICERT_DEFAULT_VALIDITY_DAYS", 397)
-    max_validity_end = arrow.utcnow().shift(days=current_app.config.get("DIGICERT_MAX_VALIDITY_DAYS", default_days))
+    max_validity_end = arrow.utcnow().shift(
+        days=current_app.config.get("DIGICERT_MAX_VALIDITY_DAYS", default_days)
+    )
 
     if not end_date:
         end_date = arrow.utcnow().shift(days=default_days)
@@ -136,10 +139,16 @@ def map_fields(options, csr):
     if options.get("validity_years"):
         data["validity_years"] = determine_validity_years(options.get("validity_years"))
     elif options.get("validity_end"):
-        data["custom_expiration_date"] = determine_end_date(options.get("validity_end")).format("YYYY-MM-DD")
+        data["custom_expiration_date"] = determine_end_date(
+            options.get("validity_end")
+        ).format("YYYY-MM-DD")
         # check if validity got truncated. If resultant validity is not equal to requested validity, it just got truncated
-        if data["custom_expiration_date"] != options.get("validity_end").format("YYYY-MM-DD"):
-            log_validity_truncation(options, f"{__name__}.{sys._getframe().f_code.co_name}")
+        if data["custom_expiration_date"] != options.get("validity_end").format(
+            "YYYY-MM-DD"
+        ):
+            log_validity_truncation(
+                options, f"{__name__}.{sys._getframe().f_code.co_name}"
+            )
     else:
         data["validity_years"] = determine_validity_years(0)
 
@@ -162,41 +171,45 @@ def map_cis_fields(options, csr):
     """
 
     if options.get("validity_years"):
-        validity_end = determine_end_date(arrow.utcnow().shift(years=options["validity_years"]))
+        validity_end = determine_end_date(
+            arrow.utcnow().shift(years=options["validity_years"])
+        )
     elif options.get("validity_end"):
         validity_end = determine_end_date(options.get("validity_end"))
         # check if validity got truncated. If resultant validity is not equal to requested validity, it just got truncated
         if validity_end != options.get("validity_end"):
-            log_validity_truncation(options, f"{__name__}.{sys._getframe().f_code.co_name}")
+            log_validity_truncation(
+                options, f"{__name__}.{sys._getframe().f_code.co_name}"
+            )
     else:
         validity_end = determine_end_date(False)
 
     data = {
-        "profile_name": current_app.config.get("DIGICERT_CIS_PROFILE_NAMES", {}).get(options['authority'].name),
+        "profile_name": current_app.config.get("DIGICERT_CIS_PROFILE_NAMES", {}).get(
+            options["authority"].name
+        ),
         "common_name": options["common_name"],
         "additional_dns_names": get_additional_names(options),
         "csr": csr,
         "signature_hash": signature_hash(options.get("signing_algorithm")),
-        "validity": {
-            "valid_to": validity_end.format("YYYY-MM-DDTHH:mm:ss") + "Z"
-        },
+        "validity": {"valid_to": validity_end.format("YYYY-MM-DDTHH:mm:ss") + "Z"},
         "organization": {
             "name": options["organization"],
         },
     }
     #  possibility to default to a SIGNING_ALGORITHM for a given profile
-    if current_app.config.get("DIGICERT_CIS_SIGNING_ALGORITHMS", {}).get(options['authority'].name):
-        data["signature_hash"] = current_app.config.get("DIGICERT_CIS_SIGNING_ALGORITHMS", {}).get(
-            options['authority'].name)
+    if current_app.config.get("DIGICERT_CIS_SIGNING_ALGORITHMS", {}).get(
+        options["authority"].name
+    ):
+        data["signature_hash"] = current_app.config.get(
+            "DIGICERT_CIS_SIGNING_ALGORITHMS", {}
+        ).get(options["authority"].name)
 
     return data
 
 
 def log_validity_truncation(options, function):
-    log_data = {
-        "cn": options["common_name"],
-        "creator": g.user.username
-    }
+    log_data = {"cn": options["common_name"], "creator": g.user.username}
     metrics.send("digicert_validity_truncated", "counter", 1, metric_tags=log_data)
 
     log_data["function"] = function
@@ -211,7 +224,10 @@ def handle_response(response):
     :return:
     """
     if response.status_code > 399:
-        raise Exception("DigiCert rejected request with the error:" + response.json()["errors"][0]["message"])
+        raise Exception(
+            "DigiCert rejected request with the error:"
+            + response.json()["errors"][0]["message"]
+        )
 
     return response.json()
 
@@ -267,7 +283,9 @@ def get_certificate_id(session, base_url, order_id):
 @retry(stop_max_attempt_number=10, wait_fixed=1000)
 def get_cis_certificate(session, base_url, order_id):
     """Retrieve certificate order id from Digicert API, including the chain"""
-    certificate_url = "{0}/platform/cis/certificate/{1}/download".format(base_url, order_id)
+    certificate_url = "{0}/platform/cis/certificate/{1}/download".format(
+        base_url, order_id
+    )
     session.headers.update({"Accept": "application/x-pkcs7-certificates"})
     response = session.get(certificate_url)
     session.headers.pop("Accept")
@@ -350,7 +368,9 @@ class DigiCertIssuerPlugin(IssuerPlugin):
         # max_retries applies only to failed DNS lookups, socket connections and connection timeouts,
         # never to requests where data has made it to the server.
         # we Retry we also covers HTTP status code 406, 500, 502, 503, 504
-        retry_strategy = Retry(total=3, backoff_factor=0.1, status_forcelist=[406, 500, 502, 503, 504])
+        retry_strategy = Retry(
+            total=3, backoff_factor=0.1, status_forcelist=[406, 500, 502, 503, 504]
+        )
         adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("https://", adapter)
 
@@ -383,8 +403,10 @@ class DigiCertIssuerPlugin(IssuerPlugin):
         certificate_id = get_certificate_id(self.session, base_url, order_id)
 
         # retrieve certificate
-        certificate_url = "{0}/services/v2/certificate/{1}/download/format/pem_all".format(
-            base_url, certificate_id
+        certificate_url = (
+            "{0}/services/v2/certificate/{1}/download/format/pem_all".format(
+                base_url, certificate_id
+            )
         )
         end_entity, intermediate, root = pem.parse(
             self.session.get(certificate_url).content
@@ -404,24 +426,26 @@ class DigiCertIssuerPlugin(IssuerPlugin):
             base_url, certificate.external_id
         )
 
-        comments = reason["comments"] if "comments" in reason else ''
+        comments = reason["comments"] if "comments" in reason else ""
         if "crl_reason" in reason:
-            comments += '(' + reason["crl_reason"] + ')'
+            comments += "(" + reason["crl_reason"] + ")"
 
         metrics.send("digicert_revoke_certificate", "counter", 1)
         response = self.session.put(create_url, data=json.dumps({"comments": comments}))
         return handle_response(response)
 
     def get_ordered_certificate(self, pending_cert):
-        """ Retrieve a certificate via order id """
+        """Retrieve a certificate via order id"""
         order_id = pending_cert.external_id
         base_url = current_app.config.get("DIGICERT_URL")
         try:
             certificate_id = get_certificate_id(self.session, base_url, order_id)
         except Exception as ex:
             return None
-        certificate_url = "{0}/services/v2/certificate/{1}/download/format/pem_all".format(
-            base_url, certificate_id
+        certificate_url = (
+            "{0}/services/v2/certificate/{1}/download/format/pem_all".format(
+                base_url, certificate_id
+            )
         )
         end_entity, intermediate, root = pem.parse(
             self.session.get(certificate_url).content
@@ -434,7 +458,7 @@ class DigiCertIssuerPlugin(IssuerPlugin):
         return cert
 
     def cancel_ordered_certificate(self, pending_cert, **kwargs):
-        """ Set the certificate order to canceled """
+        """Set the certificate order to canceled"""
         base_url = current_app.config.get("DIGICERT_URL")
         api_url = "{0}/services/v2/order/certificate/{1}/status".format(
             base_url, pending_cert.external_id
@@ -469,7 +493,7 @@ class DigiCertIssuerPlugin(IssuerPlugin):
         :param options:
         :return:
         """
-        name = "digicert_" + "_".join(options['name'].split(" ")) + "_admin"
+        name = "digicert_" + "_".join(options["name"].split(" ")) + "_admin"
         role = {"username": "", "password": "", "name": name}
         return current_app.config.get("DIGICERT_ROOT"), "", [role]
 
@@ -510,7 +534,9 @@ class DigiCertCISSourcePlugin(SourcePlugin):
         # max_retries applies only to failed DNS lookups, socket connections and connection timeouts,
         # never to requests where data has made it to the server.
         # we Retry we also covers HTTP status code 406, 500, 502, 503, 504
-        retry_strategy = Retry(total=3, backoff_factor=0.1, status_forcelist=[406, 500, 502, 503, 504])
+        retry_strategy = Retry(
+            total=3, backoff_factor=0.1, status_forcelist=[406, 500, 502, 503, 504]
+        )
         adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("https://", adapter)
 
@@ -589,7 +615,9 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
         # max_retries applies only to failed DNS lookups, socket connections and connection timeouts,
         # never to requests where data has made it to the server.
         # we Retry we also covers HTTP status code 406, 500, 502, 503, 504
-        retry_strategy = Retry(total=3, backoff_factor=0.1, status_forcelist=[406, 500, 502, 503, 504])
+        retry_strategy = Retry(
+            total=3, backoff_factor=0.1, status_forcelist=[406, 500, 502, 503, 504]
+        )
         adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("https://", adapter)
 
@@ -628,9 +656,9 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
         )
         metrics.send("digicert_revoke_certificate_success", "counter", 1)
 
-        comments = reason["comments"] if "comments" in reason else ''
+        comments = reason["comments"] if "comments" in reason else ""
         if "crl_reason" in reason:
-            comments += '(' + reason["crl_reason"] + ')'
+            comments += "(" + reason["crl_reason"] + ")"
         response = self.session.put(revoke_url, data=json.dumps({"comments": comments}))
 
         if response.status_code != 204:
@@ -650,6 +678,12 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
         :param options:
         :return:
         """
-        name = "digicert_" + "_".join(options['name'].split(" ")) + "_admin"
+        name = "digicert_" + "_".join(options["name"].split(" ")) + "_admin"
         role = {"username": "", "password": "", "name": name}
-        return current_app.config.get("DIGICERT_CIS_ROOTS", {}).get(options['authority'].name), "", [role]
+        return (
+            current_app.config.get("DIGICERT_CIS_ROOTS", {}).get(
+                options["authority"].name
+            ),
+            "",
+            [role],
+        )

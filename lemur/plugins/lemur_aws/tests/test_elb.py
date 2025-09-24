@@ -42,7 +42,7 @@ def test_get_all_elbs(app, aws_credentials):
                 "Key": "lemur-test-ignore",
                 "Value": "",
             }
-        ]
+        ],
     )
 
     elbs = get_all_elbs(account_number="123456789012", region="us-east-1")
@@ -60,15 +60,12 @@ def test_get_all_elbs_v2(app):
     ec2 = boto3.resource("ec2", region_name="us-east-1")
     elbv2 = boto3.client("elbv2", region_name="us-east-1")
 
-    elbs = get_all_elbs_v2(account_number="123456789012",
-                           region="us-east-1")
+    elbs = get_all_elbs_v2(account_number="123456789012", region="us-east-1")
     assert not elbs
 
     vpc = ec2.create_vpc(CidrBlock="10.0.1.0/24")
     subnet1 = ec2.create_subnet(
-        VpcId=vpc.id,
-        CidrBlock="10.0.1.128/25",
-        AvailabilityZone="us-east-1b"
+        VpcId=vpc.id, CidrBlock="10.0.1.128/25", AvailabilityZone="us-east-1b"
     )
     elbv2.create_load_balancer(
         Name="test-lbv2",
@@ -77,8 +74,7 @@ def test_get_all_elbs_v2(app):
         ],
     )
 
-    elbs = get_all_elbs_v2(account_number="123456789012",
-                           region="us-east-1")
+    elbs = get_all_elbs_v2(account_number="123456789012", region="us-east-1")
     assert "test-lbv2" in [elb["LoadBalancerName"] for elb in elbs]
 
     elbv2.create_load_balancer(
@@ -91,10 +87,9 @@ def test_get_all_elbs_v2(app):
                 "Key": "lemur-test-ignore",
                 "Value": "",
             }
-        ]
+        ],
     )
-    elbs = get_all_elbs_v2(account_number="123456789012",
-                           region="us-east-1")
+    elbs = get_all_elbs_v2(account_number="123456789012", region="us-east-1")
 
     assert "test-lbv2" in [elb["LoadBalancerName"] for elb in elbs]
     assert "test-lbv2-ignored" not in [elb["LoadBalancerName"] for elb in elbs]
@@ -106,6 +101,7 @@ def test_get_all_elbs_v2(app):
 @mock_iam
 def test_create_elb_with_https_listener_miscellaneous(app, aws_credentials):
     from lemur.plugins.lemur_aws import iam, elb
+
     endpoint_name = "example-lbv2"
     account_number = "123456789012"
     region_ue1 = "us-east-1"
@@ -123,21 +119,22 @@ def test_create_elb_with_https_listener_miscellaneous(app, aws_credentials):
     assert target_group_arn
 
     # Test get_load_balancer_arn_from_endpoint
-    lb_arn = elb.get_load_balancer_arn_from_endpoint(endpoint_name,
-                                                     account_number=account_number,
-                                                     region=region_ue1)
+    lb_arn = elb.get_load_balancer_arn_from_endpoint(
+        endpoint_name, account_number=account_number, region=region_ue1
+    )
     assert lb_arn
 
     # Test describe_listeners_v2
-    listeners = elb.describe_listeners_v2(account_number=account_number,
-                                          region=region_ue1,
-                                          LoadBalancerArn=lb_arn)
+    listeners = elb.describe_listeners_v2(
+        account_number=account_number, region=region_ue1, LoadBalancerArn=lb_arn
+    )
     assert listeners
     assert not listeners["Listeners"]
 
     # Upload cert
-    response = iam.upload_cert("LemurTestCert", "testCert", "cert1", "cert2",
-                               account_number=account_number)
+    response = iam.upload_cert(
+        "LemurTestCert", "testCert", "cert1", "cert2", account_number=account_number
+    )
     assert response
     cert_arn = response["ServerCertificateMetadata"]["Arn"]
     assert cert_arn
@@ -171,9 +168,7 @@ def test_create_elb_with_https_listener_miscellaneous(app, aws_credentials):
 
 def create_load_balancer(client, ec2, vpc_id, endpoint_name):
     subnet1 = ec2.create_subnet(
-        VpcId=vpc_id,
-        CidrBlock="172.28.7.192/26",
-        AvailabilityZone="us-east-1a"
+        VpcId=vpc_id, CidrBlock="172.28.7.192/26", AvailabilityZone="us-east-1a"
     )
 
     return client.create_load_balancer(

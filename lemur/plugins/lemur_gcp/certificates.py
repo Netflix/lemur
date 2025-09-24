@@ -20,7 +20,9 @@ def get_name(body):
     serial = modify_for_gcp(hex(cert.serial_number))
     suffix = f"-{authority}-{serial}"
     if len(suffix) > 63:
-        raise Exception(f"Could not create certificate due to naming restrictions: {cert.serial_number}")
+        raise Exception(
+            f"Could not create certificate due to naming restrictions: {cert.serial_number}"
+        )
     cn = modify_for_gcp(common_name(cert))
     available_chars = 63 - len(suffix)
     cn = cn[:available_chars]
@@ -40,10 +42,10 @@ def get_issuer(cert):
 
 def modify_for_gcp(name):
     # Modify the name to comply with GCP naming convention
-    gcp_name = name.replace('.', '-')
+    gcp_name = name.replace(".", "-")
     gcp_name = gcp_name.replace("*", "star")
     gcp_name = gcp_name.lower()
-    gcp_name = gcp_name.rstrip('.*-')
+    gcp_name = gcp_name.rstrip(".*-")
     return gcp_name
 
 
@@ -58,15 +60,21 @@ def insert_certificate(project_id, ssl_certificate_body, credentials, region):
             project=project_id, ssl_certificate_resource=ssl_certificate_body
         )
     else:
-        region_ssl_certificates.RegionSslCertificatesClient(credentials=credentials).insert(
-            project=project_id, ssl_certificate_resource=ssl_certificate_body, region=region
+        region_ssl_certificates.RegionSslCertificatesClient(
+            credentials=credentials
+        ).insert(
+            project=project_id,
+            ssl_certificate_resource=ssl_certificate_body,
+            region=region,
         )
 
 
 def fetch_all(project_id, credentials, region):
     certs = []
     if region:
-        client = region_ssl_certificates.RegionSslCertificatesClient(credentials=credentials)
+        client = region_ssl_certificates.RegionSslCertificatesClient(
+            credentials=credentials
+        )
         pager = client.list(project=project_id, region=region)
     else:
         client = ssl_certificates.SslCertificatesClient(credentials=credentials)
@@ -90,8 +98,12 @@ def fetch_all(project_id, credentials, region):
 
 def fetch_by_name(project_id, credentials, certificate_name, region):
     if region:
-        client = region_ssl_certificates.RegionSslCertificatesClient(credentials=credentials)
-        cert_meta = client.get(project=project_id, ssl_certificate=certificate_name, region=region)
+        client = region_ssl_certificates.RegionSslCertificatesClient(
+            credentials=credentials
+        )
+        cert_meta = client.get(
+            project=project_id, ssl_certificate=certificate_name, region=region
+        )
     else:
         client = ssl_certificates.SslCertificatesClient(credentials=credentials)
         cert_meta = client.get(project=project_id, ssl_certificate=certificate_name)
@@ -138,14 +150,18 @@ def find_cert(project_id, credentials, body, cert_self_links, region):
     :return: The self link with a matching body, if it exists.
     """
     if region:
-        client = region_ssl_certificates.RegionSslCertificatesClient(credentials=credentials)
+        client = region_ssl_certificates.RegionSslCertificatesClient(
+            credentials=credentials
+        )
     else:
         client = ssl_certificates.SslCertificatesClient(credentials=credentials)
 
     for self_link in cert_self_links:
         name = utils.get_name_from_self_link(self_link)
         if region:
-            cert_meta = client.get(project=project_id, ssl_certificate=name, region=region)
+            cert_meta = client.get(
+                project=project_id, ssl_certificate=name, region=region
+            )
         else:
             cert_meta = client.get(project=project_id, ssl_certificate=name)
         parsed_cert = parse_certificate_meta(cert_meta)

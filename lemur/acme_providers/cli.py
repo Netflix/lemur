@@ -12,9 +12,7 @@ from lemur.plugins import plugins
 from lemur.plugins.lemur_acme.plugin import AcmeHandler
 from lemur.plugins.lemur_aws import s3
 
-manager = Manager(
-    usage="Handles all ACME related tasks"
-)
+manager = Manager(usage="Handles all ACME related tasks")
 
 
 @manager.option(
@@ -22,7 +20,7 @@ manager = Manager(
     "--domain",
     dest="domain",
     required=True,
-    help="Name of the Domain to store to (ex. \"_acme-chall.test.com\".",
+    help='Name of the Domain to store to (ex. "_acme-chall.test.com".',
 )
 @manager.option(
     "-t",
@@ -188,5 +186,5 @@ def upload_acme_token_s3(token, token_name, prefix, account_number, bucket_name)
         prefix + "/"
 
     token_res = s3.get(bucket_name, prefix + token_name, account_number=account_number)
-    assert (token_res == token)
+    assert token_res == token
     s3.delete(bucket_name, prefix + token_name, account_number=account_number)

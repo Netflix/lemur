@@ -9,6 +9,7 @@
 
 .. moduleauthor:: sirferl
 """
+
 from flask import current_app
 from sentry_sdk import capture_exception
 from azure.keyvault.certificates import CertificateClient, CertificatePolicy

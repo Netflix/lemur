@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Eric Coan <kungfury@instructure.com>
 """
+
 from flask_script import Manager
 from lemur.api_keys import service as api_key_service
 from lemur.auth.service import create_token

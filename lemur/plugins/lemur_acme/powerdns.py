@@ -27,17 +27,17 @@ class Zone:
 
     @property
     def id(self):
-        """ Zone id, has a trailing "." at the end, which we manually remove. """
+        """Zone id, has a trailing "." at the end, which we manually remove."""
         return self._data["id"][:-1]
 
     @property
     def name(self):
-        """ Zone name, has a trailing "." at the end, which we manually remove. """
+        """Zone name, has a trailing "." at the end, which we manually remove."""
         return self._data["name"][:-1]
 
     @property
     def kind(self):
-        """ Indicates whether the zone is setup as a PRIMARY or SECONDARY """
+        """Indicates whether the zone is setup as a PRIMARY or SECONDARY"""
         return self._data["kind"]
 
 
@@ -83,9 +83,7 @@ def get_zones(account_number):
     path = f"/api/v1/servers/{server_id}/zones"
     zones = []
     function = sys._getframe().f_code.co_name
-    log_data = {
-        "function": function
-    }
+    log_data = {"function": function}
     try:
         records = _get(path)
         log_data["message"] = "Retrieved Zones Successfully"
@@ -99,7 +97,7 @@ def get_zones(account_number):
 
     for record in records:
         zone = Zone(record)
-        if zone.kind == 'Master':
+        if zone.kind == "Master":
             zones.append(zone.name)
     return zones
 
@@ -124,7 +122,7 @@ def create_txt_record(domain, token, account_number):
 
     # Create new record
     domain_id = domain + "."
-    records = [Record({'name': domain_id, 'content': f"\"{token}\"", 'disabled': False})]
+    records = [Record({"name": domain_id, "content": f'"{token}"', "disabled": False})]
 
     # Get current records
     cur_records = _get_txt_records(domain)
@@ -175,14 +173,24 @@ def wait_for_dns_change(change_id, account_number=None):
         "function": function,
         "fqdn": domain,
         "status": record_found,
-        "message": "Record status on PowerDNS authoritative server"
+        "message": "Record status on PowerDNS authoritative server",
     }
     current_app.logger.debug(log_data)
 
     if record_found:
-        metrics.send(f"{function}.success", "counter", 1, metric_tags={"fqdn": domain, "txt_record": token})
+        metrics.send(
+            f"{function}.success",
+            "counter",
+            1,
+            metric_tags={"fqdn": domain, "txt_record": token},
+        )
     else:
-        metrics.send(f"{function}.fail", "counter", 1, metric_tags={"fqdn": domain, "txt_record": token})
+        metrics.send(
+            f"{function}.fail",
+            "counter",
+            1,
+            metric_tags={"fqdn": domain, "txt_record": token},
+        )
 
 
 def delete_txt_record(change_id, account_number, domain, token):
@@ -213,14 +221,16 @@ def delete_txt_record(change_id, account_number, domain, token):
     found = False
     new_records = []
     for record in cur_records:
-        if record.content == f"\"{token}\"":
+        if record.content == f'"{token}"':
             found = True
         else:
             new_records.append(record)
 
     # Since the matching token is not in DNS, there is nothing to delete
     if not found:
-        log_data["message"] = "Unable to delete TXT record: Token not found in existing TXT records"
+        log_data["message"] = (
+            "Unable to delete TXT record: Token not found in existing TXT records"
+        )
         current_app.logger.debug(log_data)
         return
 
@@ -253,22 +263,13 @@ def delete_txt_record(change_id, account_number, domain, token):
                     "type": "TXT",
                     "ttl": 300,
                     "changetype": "DELETE",
-                    "records": [
-                        {
-                            "content": f"\"{token}\"",
-                            "disabled": False
-                        }
-                    ],
-                    "comments": []
+                    "records": [{"content": f'"{token}"', "disabled": False}],
+                    "comments": [],
                 }
             ]
         }
         function = sys._getframe().f_code.co_name
-        log_data = {
-            "function": function,
-            "fqdn": domain,
-            "token": token
-        }
+        log_data = {"function": function, "fqdn": domain, "token": token}
         try:
             _patch(path, payload)
             log_data["message"] = "TXT record successfully deleted"
@@ -335,11 +336,11 @@ def _get_txt_records(domain):
     """
     server_id = current_app.config.get("ACME_POWERDNS_SERVERID", "localhost")
 
-    path = f"/api/v1/servers/{server_id}/search-data?q={domain}&max=100&object_type=record"
+    path = (
+        f"/api/v1/servers/{server_id}/search-data?q={domain}&max=100&object_type=record"
+    )
     function = sys._getframe().f_code.co_name
-    log_data = {
-        "function": function
-    }
+    log_data = {"function": function}
     try:
         records = _get(path)
         log_data["message"] = "Retrieved TXT Records Successfully"
@@ -373,7 +374,7 @@ def _get(path, params=None):
         f"{base_uri}{path}",
         headers=_generate_header(),
         params=params,
-        verify=verify_value
+        verify=verify_value,
     )
     resp.raise_for_status()
     return resp.json()
@@ -393,9 +394,7 @@ def _patch_txt_records(domain, account_number, records):
     # Create records
     txt_records = []
     for record in records:
-        txt_records.append(
-            {'content': record.content, 'disabled': record.disabled}
-        )
+        txt_records.append({"content": record.content, "disabled": record.disabled})
 
     # Create RRSet
     payload = {
@@ -406,7 +405,7 @@ def _patch_txt_records(domain, account_number, records):
                 "ttl": 300,
                 "changetype": "REPLACE",
                 "records": txt_records,
-                "comments": []
+                "comments": [],
             }
         ]
     }
@@ -433,6 +432,6 @@ def _patch(path, payload):
         f"{base_uri}{path}",
         data=json.dumps(payload),
         headers=_generate_header(),
-        verify=verify_value
+        verify=verify_value,
     )
     resp.raise_for_status()

@@ -6,6 +6,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 import json
 import requests
 from requests.exceptions import ConnectionError

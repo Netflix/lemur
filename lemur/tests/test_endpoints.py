@@ -214,15 +214,19 @@ def test_rotate_cli_bulk(session, source_plugin):
     session.commit()
 
     _setup_rotation_eligible_endpoint_primary_certificate(
-        endpoint=ep1, old_primary_certificate=old_cert1, new_primary_certificate=new_cert1
+        endpoint=ep1,
+        old_primary_certificate=old_cert1,
+        new_primary_certificate=new_cert1,
     )
     _setup_rotation_eligible_endpoint_sni_certificate(
         endpoint=ep2, old_sni_certificate=old_cert1, new_sni_certificate=new_cert1
     )
     _setup_rotation_eligible_endpoint(
         endpoint=ep3,
-        old_primary_certificate=old_cert1, new_primary_certificate=new_cert1,
-        old_sni_certificate=old_cert2, new_sni_certificate=new_cert2,
+        old_primary_certificate=old_cert1,
+        new_primary_certificate=new_cert1,
+        old_sni_certificate=old_cert2,
+        new_sni_certificate=new_cert2,
     )
 
     rotate(
@@ -232,7 +236,7 @@ def test_rotate_cli_bulk(session, source_plugin):
         new_certificate_name=None,
         message=None,
         commit=True,
-        region=None
+        region=None,
     )
 
     assert ep1.primary_certificate == new_cert1
@@ -262,18 +266,24 @@ def test_rotate_cli_bulk_in_region(session, source_plugin):
 
     _setup_rotation_eligible_endpoint(
         endpoint=ep1,
-        old_primary_certificate=old_cert1, new_primary_certificate=new_cert1,
-        old_sni_certificate=old_cert2, new_sni_certificate=new_cert2,
+        old_primary_certificate=old_cert1,
+        new_primary_certificate=new_cert1,
+        old_sni_certificate=old_cert2,
+        new_sni_certificate=new_cert2,
     )
     _setup_rotation_eligible_endpoint(
         endpoint=ep2,
-        old_primary_certificate=old_cert1, new_primary_certificate=new_cert1,
-        old_sni_certificate=old_cert2, new_sni_certificate=new_cert2,
+        old_primary_certificate=old_cert1,
+        new_primary_certificate=new_cert1,
+        old_sni_certificate=old_cert2,
+        new_sni_certificate=new_cert2,
     )
     _setup_rotation_eligible_endpoint(
         endpoint=ep3,
-        old_primary_certificate=old_cert1, new_primary_certificate=new_cert1,
-        old_sni_certificate=old_cert2, new_sni_certificate=new_cert2,
+        old_primary_certificate=old_cert1,
+        new_primary_certificate=new_cert1,
+        old_sni_certificate=old_cert2,
+        new_sni_certificate=new_cert2,
     )
 
     rotate(
@@ -283,7 +293,7 @@ def test_rotate_cli_bulk_in_region(session, source_plugin):
         new_certificate_name=None,
         message=None,
         commit=True,
-        region="us-east-1"
+        region="us-east-1",
     )
 
     assert ep1.primary_certificate == new_cert1
@@ -309,15 +319,19 @@ def test_rotate_cli_old_to_new(session, source_plugin):
     session.commit()
 
     _setup_rotation_eligible_endpoint_primary_certificate(
-        endpoint=ep1, old_primary_certificate=old_cert1, new_primary_certificate=new_cert1
+        endpoint=ep1,
+        old_primary_certificate=old_cert1,
+        new_primary_certificate=new_cert1,
     )
     _setup_rotation_eligible_endpoint_sni_certificate(
         endpoint=ep2, old_sni_certificate=old_cert1, new_sni_certificate=new_cert1
     )
     _setup_rotation_eligible_endpoint(
         endpoint=ep3,
-        old_primary_certificate=old_cert1, new_primary_certificate=new_cert1,
-        old_sni_certificate=old_cert2, new_sni_certificate=new_cert2,
+        old_primary_certificate=old_cert1,
+        new_primary_certificate=new_cert1,
+        old_sni_certificate=old_cert2,
+        new_sni_certificate=new_cert2,
     )
 
     rotate(
@@ -327,7 +341,7 @@ def test_rotate_cli_old_to_new(session, source_plugin):
         new_certificate_name=new_cert1.name,
         message=None,
         commit=True,
-        region=None
+        region=None,
     )
 
     assert ep1.primary_certificate == new_cert1
@@ -346,7 +360,7 @@ def test_rotate_cli_old_to_new(session, source_plugin):
         new_certificate_name=new_cert2.name,
         message=None,
         commit=True,
-        region=None
+        region=None,
     )
 
     assert ep3.primary_certificate == new_cert1
@@ -369,11 +383,15 @@ def test_rotate_cli_by_source_primary(session, source_plugin):
     ep1, ep2 = EndpointFactory(), EndpointFactory()
 
     _setup_rotation_eligible_endpoint_primary_certificate(
-        endpoint=ep1, old_primary_certificate=old_cert1, new_primary_certificate=new_cert1
+        endpoint=ep1,
+        old_primary_certificate=old_cert1,
+        new_primary_certificate=new_cert1,
     )
 
     _setup_rotation_eligible_endpoint_primary_certificate(
-        endpoint=ep2, old_primary_certificate=old_cert2, new_primary_certificate=new_cert2
+        endpoint=ep2,
+        old_primary_certificate=old_cert2,
+        new_primary_certificate=new_cert2,
     )
 
     source_name = "test-source"
@@ -476,16 +494,24 @@ def test_rotate_cli_by_source_multiple_sources(session, source_plugin):
 
     # Setup all endpoints to be eligible for rotation
     _setup_rotation_eligible_endpoint_primary_certificate(
-        endpoint=ep1, old_primary_certificate=ep1_old_cert, new_primary_certificate=ep1_new_cert
+        endpoint=ep1,
+        old_primary_certificate=ep1_old_cert,
+        new_primary_certificate=ep1_new_cert,
     )
     _setup_rotation_eligible_endpoint_primary_certificate(
-        endpoint=ep2, old_primary_certificate=ep2_old_cert, new_primary_certificate=ep2_new_cert
+        endpoint=ep2,
+        old_primary_certificate=ep2_old_cert,
+        new_primary_certificate=ep2_new_cert,
     )
     _setup_rotation_eligible_endpoint_primary_certificate(
-        endpoint=ep3, old_primary_certificate=ep3_old_cert, new_primary_certificate=ep3_new_cert
+        endpoint=ep3,
+        old_primary_certificate=ep3_old_cert,
+        new_primary_certificate=ep3_new_cert,
     )
     _setup_rotation_eligible_endpoint_primary_certificate(
-        endpoint=ep4, old_primary_certificate=ep4_old_cert, new_primary_certificate=ep4_new_cert
+        endpoint=ep4,
+        old_primary_certificate=ep4_old_cert,
+        new_primary_certificate=ep4_new_cert,
     )
 
     # Associated ep1 and ep2 with Source.label="test-source"
@@ -547,7 +573,9 @@ def test_rotate_cli_endpoint(session, source_plugin):
     session.commit()
 
     _setup_rotation_eligible_endpoint_primary_certificate(
-        endpoint=ep1, old_primary_certificate=old_cert1, new_primary_certificate=new_cert1
+        endpoint=ep1,
+        old_primary_certificate=old_cert1,
+        new_primary_certificate=new_cert1,
     )
 
     _setup_rotation_eligible_endpoint_sni_certificate(
@@ -556,8 +584,10 @@ def test_rotate_cli_endpoint(session, source_plugin):
 
     _setup_rotation_eligible_endpoint(
         endpoint=ep3,
-        old_primary_certificate=old_cert1, new_primary_certificate=new_cert1,
-        old_sni_certificate=old_cert2, new_sni_certificate=new_cert2,
+        old_primary_certificate=old_cert1,
+        new_primary_certificate=new_cert1,
+        old_sni_certificate=old_cert2,
+        new_sni_certificate=new_cert2,
     )
 
     rotate(
@@ -567,7 +597,7 @@ def test_rotate_cli_endpoint(session, source_plugin):
         new_certificate_name=new_cert1.name,
         message=None,
         commit=True,
-        region=None
+        region=None,
     )
 
     assert ep1.primary_certificate == new_cert1
@@ -586,7 +616,7 @@ def test_rotate_cli_endpoint(session, source_plugin):
         new_certificate_name=new_cert1.name,
         message=None,
         commit=True,
-        region=None
+        region=None,
     )
 
     assert ep1.primary_certificate == new_cert1
@@ -605,7 +635,7 @@ def test_rotate_cli_endpoint(session, source_plugin):
         new_certificate_name=new_cert1.name,
         message=None,
         commit=True,
-        region=None
+        region=None,
     )
 
     assert ep1.primary_certificate == new_cert1
@@ -618,14 +648,18 @@ def test_rotate_cli_endpoint(session, source_plugin):
     assert ep3.sni_certificates == [old_cert2]
 
 
-def _setup_rotation_eligible_endpoint_primary_certificate(endpoint, old_primary_certificate, new_primary_certificate):
+def _setup_rotation_eligible_endpoint_primary_certificate(
+    endpoint, old_primary_certificate, new_primary_certificate
+):
     """Sets up an endpoint with only a primary certificate that is eligible for rotation."""
     old_primary_certificate.replaced = [new_primary_certificate]
     new_primary_certificate.replaces = [old_primary_certificate]
     endpoint.primary_certificate = old_primary_certificate
 
 
-def _setup_rotation_eligible_endpoint_sni_certificate(endpoint, old_sni_certificate, new_sni_certificate):
+def _setup_rotation_eligible_endpoint_sni_certificate(
+    endpoint, old_sni_certificate, new_sni_certificate
+):
     """Sets up an endpoint both only a SNI certificate that is eligible for rotation."""
     old_sni_certificate.replaced = [new_sni_certificate]
     new_sni_certificate.replaces = [old_sni_certificate]
@@ -633,11 +667,11 @@ def _setup_rotation_eligible_endpoint_sni_certificate(endpoint, old_sni_certific
 
 
 def _setup_rotation_eligible_endpoint(
-        endpoint,
-        old_primary_certificate,
-        new_primary_certificate,
-        old_sni_certificate,
-        new_sni_certificate
+    endpoint,
+    old_primary_certificate,
+    new_primary_certificate,
+    old_sni_certificate,
+    new_sni_certificate,
 ):
     """Sets up an endpoint both both a primary and SNI certificate that is eligible for rotation."""
     old_primary_certificate.replaced = [new_primary_certificate]

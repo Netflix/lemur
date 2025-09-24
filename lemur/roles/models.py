@@ -9,6 +9,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
+
 from sqlalchemy.orm import relationship
 from sqlalchemy import Boolean, Column, Integer, String, Text, ForeignKey
 

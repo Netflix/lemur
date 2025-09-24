@@ -10,19 +10,19 @@ defaults Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`schemas` Module	
------------------------------	
+:mod:`schemas` Module
+-----------------------------
 
-.. automodule:: lemur.defaults.schemas	
+.. automodule:: lemur.defaults.schemas
     :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`views` Module	
----------------------------	
+:mod:`views` Module
+---------------------------
 
-.. automodule:: lemur.defaults.views	
+.. automodule:: lemur.defaults.views
     :noindex:
     :members:
     :undoc-members:

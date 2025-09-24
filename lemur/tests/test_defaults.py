@@ -120,7 +120,7 @@ def test_create_name(client):
             datetime(2015, 5, 7, 0, 0, 0),
             datetime(2025, 5, 12, 13, 37, 0),
             False,
-            domains=[Domain(name='san-example')],
+            domains=[Domain(name="san-example")],
         )
         == "selfie.example.org-selfsigned-20150507-20250512"
     )
@@ -131,7 +131,7 @@ def test_create_name(client):
             datetime(2015, 5, 7, 0, 0, 0),
             datetime(2025, 5, 12, 13, 37, 0),
             False,
-            domains=[Domain(name='san-example')],
+            domains=[Domain(name="san-example")],
         )
         == "san-example-selfsigned-20150507-20250512"
     )
@@ -142,7 +142,7 @@ def test_create_name(client):
             datetime(2015, 5, 7, 0, 0, 0),
             datetime(2025, 5, 12, 13, 37, 0),
             True,
-            domains=[Domain(name='san1'), Domain(name='san2')],
+            domains=[Domain(name="san1"), Domain(name="san2")],
         )
         == "SAN-san1-selfsigned-20150507-20250512"
     )

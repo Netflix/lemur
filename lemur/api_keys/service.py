@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Eric Coan <kungfury@instructure.com>
 """
+
 from lemur import database
 from lemur.api_keys.models import ApiKey
 from lemur.logs import service as log_service
@@ -59,7 +60,9 @@ def create(**kwargs):
     """
     api_key = ApiKey(**kwargs)
     # this logs only metadata about the api key
-    log_service.audit_log("create_api_key", api_key.name, f"Creating the API key {api_key}")
+    log_service.audit_log(
+        "create_api_key", api_key.name, f"Creating the API key {api_key}"
+    )
 
     database.create(api_key)
     return api_key

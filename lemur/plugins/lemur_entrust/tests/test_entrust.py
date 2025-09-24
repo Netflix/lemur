@@ -17,7 +17,7 @@ def config_mock(*args):
         "ENTRUST_NAME": "test",
         "ENTRUST_EMAIL": "test@lemur.net",
         "ENTRUST_PHONE": "0123456",
-        "ENTRUST_PRODUCT_ENTRUST": "ADVANTAGE_SSL"
+        "ENTRUST_PRODUCT_ENTRUST": "ADVANTAGE_SSL",
     }
     return values[args[0]]
 
@@ -25,17 +25,25 @@ def config_mock(*args):
 @patch("lemur.plugins.lemur_digicert.plugin.current_app")
 def test_determine_end_date(mock_current_app):
     with freeze_time(time_to_freeze=arrow.get(2016, 11, 3).datetime):
-        assert arrow.get(2017, 12, 3).format('YYYY-MM-DD') == plugin.determine_end_date(0)  # 1 year + 1 month
-        assert arrow.get(2017, 3, 5).format('YYYY-MM-DD') == plugin.determine_end_date(arrow.get(2017, 3, 5))
-        assert arrow.get(2017, 12, 3).format('YYYY-MM-DD') == plugin.determine_end_date(arrow.get(2020, 5, 7))
+        assert arrow.get(2017, 12, 3).format("YYYY-MM-DD") == plugin.determine_end_date(
+            0
+        )  # 1 year + 1 month
+        assert arrow.get(2017, 3, 5).format("YYYY-MM-DD") == plugin.determine_end_date(
+            arrow.get(2017, 3, 5)
+        )
+        assert arrow.get(2017, 12, 3).format("YYYY-MM-DD") == plugin.determine_end_date(
+            arrow.get(2020, 5, 7)
+        )
 
 
 @patch("lemur.plugins.lemur_entrust.plugin.current_app")
 def test_process_options(mock_current_app, authority):
     mock_current_app.config.get = Mock(side_effect=config_mock)
-    plugin.determine_end_date = Mock(return_value=arrow.get(2017, 11, 5).format('YYYY-MM-DD'))
+    plugin.determine_end_date = Mock(
+        return_value=arrow.get(2017, 11, 5).format("YYYY-MM-DD")
+    )
     authority.name = "Entrust"
-    names = [u"one.example.com", u"two.example.com", u"three.example.com"]
+    names = ["one.example.com", "two.example.com", "three.example.com"]
     options = {
         "common_name": "example.com",
         "owner": "bob@example.com",
@@ -51,14 +59,14 @@ def test_process_options(mock_current_app, authority):
         "signingAlg": "SHA-2",
         "eku": "SERVER_AND_CLIENT_AUTH",
         "certType": "ADVANTAGE_SSL",
-        "certExpiryDate": arrow.get(2017, 11, 5).format('YYYY-MM-DD'),
+        "certExpiryDate": arrow.get(2017, 11, 5).format("YYYY-MM-DD"),
         "tracking": {
             "requesterName": mock_current_app.config.get("ENTRUST_NAME"),
             "requesterEmail": mock_current_app.config.get("ENTRUST_EMAIL"),
-            "requesterPhone": mock_current_app.config.get("ENTRUST_PHONE")
+            "requesterPhone": mock_current_app.config.get("ENTRUST_PHONE"),
         },
         "org": "Example, Inc.",
-        "clientId": 1
+        "clientId": 1,
     }
 
     client_id = 1
@@ -68,9 +76,9 @@ def test_process_options(mock_current_app, authority):
 def test_create_authority(app):
     from lemur.plugins.base import plugins
 
-    options = {
-        "name": "test Entrust authority"
-    }
+    options = {"name": "test Entrust authority"}
     p = plugins.get("entrust-issuer")
     entrust_root, intermediate, role = p.create_authority(options)
-    assert role == [{"username": "", "password": "", "name": "entrust_test_Entrust_authority_admin"}]
+    assert role == [
+        {"username": "", "password": "", "name": "entrust_test_Entrust_authority_admin"}
+    ]

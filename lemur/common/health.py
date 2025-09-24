@@ -6,6 +6,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from flask import Blueprint
 from sentry_sdk import capture_exception
 

@@ -1,4 +1,4 @@
-""" Add delete_cert to log_type enum
+"""Add delete_cert to log_type enum
 
 Revision ID: 9f79024fe67b
 Revises: ee827d1e1974

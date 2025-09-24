@@ -6,6 +6,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from flask import Blueprint
 from flask_restful import Api, reqparse
 from lemur.sources import service
@@ -27,7 +28,7 @@ api = Api(mod)
 
 
 class SourcesList(AuthenticatedResource):
-    """ Defines the 'sources' endpoint """
+    """Defines the 'sources' endpoint"""
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
@@ -305,7 +306,7 @@ class Sources(AuthenticatedResource):
 
 
 class CertificateSources(AuthenticatedResource):
-    """ Defines the 'certificate/<int:certificate_id/sources'' endpoint """
+    """Defines the 'certificate/<int:certificate_id/sources'' endpoint"""
 
     def __init__(self):
         super(CertificateSources, self).__init__()

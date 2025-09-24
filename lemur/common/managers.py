@@ -6,6 +6,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from flask import current_app
 
 from lemur.exceptions import InvalidConfiguration

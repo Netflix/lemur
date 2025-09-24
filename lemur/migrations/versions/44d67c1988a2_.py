@@ -7,8 +7,8 @@ Create Date: 2022-07-20 18:05:10.859504
 """
 
 # revision identifiers, used by Alembic.
-revision = '44d67c1988a2'
-down_revision = 'a9987414cf36'
+revision = "44d67c1988a2"
+down_revision = "a9987414cf36"
 
 from alembic import op
 import sqlalchemy as sa
@@ -34,7 +34,7 @@ def upgrade():
         "certificates",
         ["certificate_id"],
         ["id"],
-        ondelete="cascade"
+        ondelete="cascade",
     )
 
     print("Creating endpoint_id_fkey foreign key on endpoints_certificates table")
@@ -44,10 +44,12 @@ def upgrade():
         "endpoints",
         ["endpoint_id"],
         ["id"],
-        ondelete="cascade"
+        ondelete="cascade",
     )
 
-    print("Creating partial index unique_primary_certificate_ix on endpoints_certificates table")
+    print(
+        "Creating partial index unique_primary_certificate_ix on endpoints_certificates table"
+    )
     op.create_index(
         "unique_primary_certificate_endpoint_ix",
         "endpoints_certificates",
@@ -59,13 +61,16 @@ def upgrade():
     print("Populating endpoints_certificates table")
     conn = op.get_bind()
     for endpoint_id, certificate_id, certificate_path in conn.execute(
-            text("select id, certificate_id, certificate_path from endpoints")
+        text("select id, certificate_id, certificate_path from endpoints")
     ):
         stmt = text(
             "insert into endpoints_certificates (endpoint_id, certificate_id, path, is_primary) values (:endpoint_id, :certificate_id, :path, :is_primary)"
         )
         stmt = stmt.bindparams(
-            endpoint_id=endpoint_id, certificate_id=certificate_id, path=certificate_path, is_primary=True
+            endpoint_id=endpoint_id,
+            certificate_id=certificate_id,
+            path=certificate_path,
+            is_primary=True,
         )
         op.execute(stmt)
 
@@ -80,7 +85,9 @@ def upgrade():
 def downgrade():
     print("Restoring certificate_id and certificate_path columns to endpoints table")
     op.add_column("endpoints", sa.Column("certificate_id", sa.Integer(), nullable=True))
-    op.add_column("endpoints", sa.Column("certificate_path", sa.String(length=256), nullable=True))
+    op.add_column(
+        "endpoints", sa.Column("certificate_path", sa.String(length=256), nullable=True)
+    )
 
     print("Restoring endpoints_certificate_id_fkey foreign key to endpoints table")
     op.create_foreign_key(
@@ -99,7 +106,9 @@ def downgrade():
             "update endpoints set certificate_id = :certificate_id, certificate_path = :certificate_path where id = :endpoint_id"
         )
         stmt = stmt.bindparams(
-            certificate_id=certificate_id, endpoint_id = endpoint_id, certificate_path=path
+            certificate_id=certificate_id,
+            endpoint_id=endpoint_id,
+            certificate_path=path,
         )
         op.execute(stmt)
 

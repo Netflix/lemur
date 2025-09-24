@@ -8,6 +8,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
+
 from flask import current_app
 
 from lemur import database
@@ -106,7 +107,16 @@ def create(label, plugin_name, options, description, certificates):
     return database.create(notification)
 
 
-def update(notification_id, label, plugin_name, options, description, active, added_certificates, removed_certificates):
+def update(
+    notification_id,
+    label,
+    plugin_name,
+    options,
+    description,
+    active,
+    added_certificates,
+    removed_certificates,
+):
     """
     Updates an existing notification.
 
@@ -129,7 +139,9 @@ def update(notification_id, label, plugin_name, options, description, active, ad
     notification.description = description
     notification.active = active
     notification.certificates = notification.certificates + added_certificates
-    notification.certificates = [c for c in notification.certificates if c not in removed_certificates]
+    notification.certificates = [
+        c for c in notification.certificates if c not in removed_certificates
+    ]
 
     return database.update(notification)
 
@@ -142,7 +154,9 @@ def delete(notification_id):
     """
     notification = get(notification_id)
     if notification:
-        log_service.audit_log("delete_notification", notification.label, "Deleting notification")
+        log_service.audit_log(
+            "delete_notification", notification.label, "Deleting notification"
+        )
         database.delete(notification)
 
 

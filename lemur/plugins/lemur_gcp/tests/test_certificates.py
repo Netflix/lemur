@@ -37,17 +37,22 @@ aNVFrNhMcvbKB0eqb5VHL90=
 
 
 def test_get_name():
-    assert get_name(body) == 'test-localhost-co-exampleinc-0x82cf436d8fe742989ee7d239cc82df18'
+    assert (
+        get_name(body)
+        == "test-localhost-co-exampleinc-0x82cf436d8fe742989ee7d239cc82df18"
+    )
 
 
 @pytest.mark.parametrize(
-    ('original_cert_name', 'gcp_cert_name'),
+    ("original_cert_name", "gcp_cert_name"),
     [
         ("*.test.com", "star-test-com"),
         ("CAPITALIZED.TEST.COM", "capitalized-test-com"),
-        ("ssl-lemur-sandbox-datad0g-com-digicerttlsrsasha2562020ca1-2022-",
-         "ssl-lemur-sandbox-datad0g-com-digicerttlsrsasha2562020ca1-2022"),
-    ]
+        (
+            "ssl-lemur-sandbox-datad0g-com-digicerttlsrsasha2562020ca1-2022-",
+            "ssl-lemur-sandbox-datad0g-com-digicerttlsrsasha2562020ca1-2022",
+        ),
+    ],
 )
 def test_modify_for_gcp(original_cert_name, gcp_cert_name):
     assert modify_for_gcp(original_cert_name) == gcp_cert_name
@@ -58,13 +63,19 @@ def test_full_ca():
 
 
 def test_get_self_link():
-    assert certificates.get_self_link("sandbox", "cert1", None) == \
-           "https://www.googleapis.com/compute/v1/projects/sandbox/global/sslCertificates/cert1"
-    assert certificates.get_self_link("sandbox", "cert2", "europe-west3") == \
-        "https://www.googleapis.com/compute/v1/projects/sandbox/regions/europe-west3/sslCertificates/cert2"
+    assert (
+        certificates.get_self_link("sandbox", "cert1", None)
+        == "https://www.googleapis.com/compute/v1/projects/sandbox/global/sslCertificates/cert1"
+    )
+    assert (
+        certificates.get_self_link("sandbox", "cert2", "europe-west3")
+        == "https://www.googleapis.com/compute/v1/projects/sandbox/regions/europe-west3/sslCertificates/cert2"
+    )
 
 
-@mock.patch("google.cloud.compute_v1.services.ssl_certificates.SslCertificatesClient.get")
+@mock.patch(
+    "google.cloud.compute_v1.services.ssl_certificates.SslCertificatesClient.get"
+)
 def test_find_cert(mock_get_cert):
     from google.cloud.compute_v1 import types
 
@@ -106,8 +117,13 @@ m+ZM2ySV8YGaVzkbkknOARI=
         gcp_cert0,
         gcp_cert1,
     ]
-    got = certificates.find_cert(project_id, credentials, gcp_cert1.certificate, self_links, None)
-    assert got == "https://www.googleapis.com/compute/v1/projects/proj/global/sslCertificates/cert1"
+    got = certificates.find_cert(
+        project_id, credentials, gcp_cert1.certificate, self_links, None
+    )
+    assert (
+        got
+        == "https://www.googleapis.com/compute/v1/projects/proj/global/sslCertificates/cert1"
+    )
 
 
 @pytest.mark.parametrize(
@@ -123,7 +139,7 @@ m+ZM2ySV8YGaVzkbkknOARI=
         (["a", "b", "c"], "c", "d", ["a", "b", "c"]),
         # new cert exists, old cert exists
         (["a", "b"], "a", "b", ["a"]),
-    ]
+    ],
 )
 def test_calc_certs(certs, new_cert, old_cert, expected):
     assert certificates.calc_diff(certs, new_cert, old_cert) == expected

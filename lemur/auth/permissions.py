@@ -6,6 +6,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from functools import partial
 from collections import namedtuple
 

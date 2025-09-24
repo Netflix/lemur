@@ -8,6 +8,7 @@ Debugging hooks for dumping imported or generated CSR and certificate details to
 
 .. moduleauthor:: Marti Raudsepp <marti@juffo.org>
 """
+
 import subprocess
 
 from flask import current_app

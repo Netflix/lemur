@@ -88,9 +88,9 @@ def common_name(cert):
             {
                 "message": "Unable to get common name",
                 "error": e,
-                "public_key": cert.public_bytes(Encoding.PEM).decode("utf-8")
+                "public_key": cert.public_bytes(Encoding.PEM).decode("utf-8"),
             },
-            exc_info=True
+            exc_info=True,
         )
 
 

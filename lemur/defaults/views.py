@@ -3,6 +3,7 @@
     :copyright: (c) 2018 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 """
+
 from flask import current_app, Blueprint
 from flask_restful import Api
 
@@ -18,7 +19,7 @@ api = Api(mod)
 
 
 class LemurDefaults(AuthenticatedResource):
-    """ Defines the 'defaults' endpoint """
+    """Defines the 'defaults' endpoint"""
 
     def __init__(self):
         super(LemurDefaults)

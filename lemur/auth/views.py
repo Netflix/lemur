@@ -65,9 +65,7 @@ def exchange_for_access_token(
     token = "{0}:{1}".format(client_id, secret)
 
     basic = base64.b64encode(bytes(token, "utf-8"))
-    headers = {
-        "Content-Type": "application/x-www-form-urlencoded"
-    }
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
     if current_app.config.get("TOKEN_AUTH_HEADER_CASE_SENSITIVE"):
         headers["Authorization"] = "Basic {0}".format(basic.decode("utf-8"))
@@ -161,9 +159,13 @@ def retrieve_user_memberships(user_api_url, user_membership_provider, access_tok
     for custom implementation.
     """
     membership_provider = plugins.get(user_membership_provider)
-    user_membership = {"email": profile["email"],
-                       "thumbnailPhotoUrl": profile["thumbnailPhotoUrl"],
-                       "googleGroups": membership_provider.retrieve_user_memberships(profile["userId"])}
+    user_membership = {
+        "email": profile["email"],
+        "thumbnailPhotoUrl": profile["thumbnailPhotoUrl"],
+        "googleGroups": membership_provider.retrieve_user_memberships(
+            profile["userId"]
+        ),
+    }
 
     return user, user_membership
 
@@ -186,7 +188,7 @@ def create_user_roles(profile):
                     description="This is a google group based role created by Lemur",
                     third_party=True,
                 )
-            if (group != 'admin') and (not role.third_party):
+            if (group != "admin") and (not role.third_party):
                 role = role_service.set_third_party(role.id, third_party_status=True)
             roles.append(role)
     else:
@@ -251,7 +253,9 @@ def update_user(user, profile, roles):
                 removed_roles.append(ur.name)
 
         if removed_roles:
-            log_service.audit_log("unassign_role", user.username, f"Un-assigning roles {removed_roles}")
+            log_service.audit_log(
+                "unassign_role", user.username, f"Un-assigning roles {removed_roles}"
+            )
         # update any changes to the user
         user_service.update(
             user.id,
@@ -266,11 +270,15 @@ def update_user(user, profile, roles):
 
 
 def build_hmac():
-    key = current_app.config.get('OAUTH_STATE_TOKEN_SECRET', None)
+    key = current_app.config.get("OAUTH_STATE_TOKEN_SECRET", None)
     if not key:
-        current_app.logger.warning("OAuth State Token Secret not discovered in config. Generating one.")
+        current_app.logger.warning(
+            "OAuth State Token Secret not discovered in config. Generating one."
+        )
         key = get_state_token_secret()
-        current_app.config['OAUTH_STATE_TOKEN_SECRET'] = key  # store for remainder of Flask session
+        current_app.config["OAUTH_STATE_TOKEN_SECRET"] = (
+            key  # store for remainder of Flask session
+        )
 
     try:
         h = hmac.HMAC(key, hashes.SHA256(), backend=default_backend())
@@ -282,26 +290,28 @@ def build_hmac():
 
 def generate_state_token():
     t = int(time.time())
-    ts = hex(t)[2:].encode('ascii')
+    ts = hex(t)[2:].encode("ascii")
     h = build_hmac()
     h.update(ts)
     digest = base64.b64encode(h.finalize())
-    state = ts + b':' + digest
-    return state.decode('utf-8')
+    state = ts + b":" + digest
+    return state.decode("utf-8")
 
 
 def verify_state_token(token):
-    stale_seconds = current_app.config.get('OAUTH_STATE_TOKEN_STALE_TOLERANCE_SECONDS', 15)
+    stale_seconds = current_app.config.get(
+        "OAUTH_STATE_TOKEN_STALE_TOLERANCE_SECONDS", 15
+    )
     try:
-        state = token.encode('utf-8')
-        ts, digest = state.split(b':')
+        state = token.encode("utf-8")
+        ts, digest = state.split(b":")
         timestamp = int(ts, 16)
         if float(time.time() - timestamp) > stale_seconds:
-            current_app.logger.warning('OAuth State token is too stale.')
+            current_app.logger.warning("OAuth State token is too stale.")
             return False
         digest = base64.b64decode(digest)
     except ValueError as e:
-        current_app.logger.warning(f'Error while parsing OAuth State token: {e}')
+        current_app.logger.warning(f"Error while parsing OAuth State token: {e}")
         return False
 
     try:
@@ -310,10 +320,10 @@ def verify_state_token(token):
         h.verify(digest)
         return True
     except InvalidSignature:
-        current_app.logger.warning('OAuth State token is invalid.')
+        current_app.logger.warning("OAuth State token is invalid.")
         return False
     except Exception as e:
-        current_app.logger.warning(f'Error while parsing OAuth State token: {e}')
+        current_app.logger.warning(f"Error while parsing OAuth State token: {e}")
         return False
 
 
@@ -478,7 +488,7 @@ class Ping(Resource):
         user, profile = retrieve_user_memberships(
             current_app.config.get("PING_USER_API_URL"),
             current_app.config.get("USER_MEMBERSHIP_PROVIDER"),
-            access_token
+            access_token,
         )
         roles = create_user_roles(profile)
         user = update_user(user, profile, roles)
@@ -633,21 +643,26 @@ class Vault(Resource):
         authenticator = JWTAuthenticator.instance(
             name="lemur_vault_authenticator",
             audience=current_app.config.get("VAULT_CLIENT_ID"),
-            issuers=[current_app.config.get("VAULT_ISSUER_URL"),],
-            timeout=1,)
+            issuers=[
+                current_app.config.get("VAULT_ISSUER_URL"),
+            ],
+            timeout=1,
+        )
         profile = authenticator.authenticate(id_token)
 
-        user_has_authorized_email = profile['email'] in current_app.config.get("VAULT_AUTHORIZED_EMAILS")
+        user_has_authorized_email = profile["email"] in current_app.config.get(
+            "VAULT_AUTHORIZED_EMAILS"
+        )
         user_in_authorized_group = False
         for group in current_app.config.get("VAULT_AUTHORIZED_GROUPS"):
-            if group in profile['groups']:
+            if group in profile["groups"]:
                 user_in_authorized_group = True
                 break
 
         if not user_has_authorized_email and not user_in_authorized_group:
             return dict(message="The supplied credentials are invalid"), 403
 
-        user = user_service.get_by_email(profile['email'])
+        user = user_service.get_by_email(profile["email"])
 
         roles = create_user_roles(profile)
         user = update_user(user, profile, roles)
@@ -690,7 +705,9 @@ class Providers(Resource):
                 active_providers.append(
                     {
                         "name": current_app.config.get("PING_NAME"),
-                        "url": current_app.config.get("PING_URL", current_app.config.get("PING_REDIRECT_URI")),
+                        "url": current_app.config.get(
+                            "PING_URL", current_app.config.get("PING_REDIRECT_URI")
+                        ),
                         "redirectUri": current_app.config.get("PING_REDIRECT_URI"),
                         "clientId": current_app.config.get("PING_CLIENT_ID"),
                         "responseType": "code",
@@ -708,7 +725,9 @@ class Providers(Resource):
                 active_providers.append(
                     {
                         "name": current_app.config.get("OAUTH2_NAME"),
-                        "url": current_app.config.get("OAUTH2_URL", current_app.config.get("OAUTH2_REDIRECT_URI")),
+                        "url": current_app.config.get(
+                            "OAUTH2_URL", current_app.config.get("OAUTH2_REDIRECT_URI")
+                        ),
                         "redirectUri": current_app.config.get("OAUTH2_REDIRECT_URI"),
                         "clientId": current_app.config.get("OAUTH2_CLIENT_ID"),
                         "responseType": "code",

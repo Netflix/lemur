@@ -8,8 +8,17 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from sqlalchemy.orm import relationship
-from sqlalchemy import Column, Integer, ForeignKey, Index, UniqueConstraint, String, Boolean
+from sqlalchemy import (
+    Column,
+    Integer,
+    ForeignKey,
+    Index,
+    UniqueConstraint,
+    String,
+    Boolean,
+)
 
 from lemur.database import db
 
@@ -27,7 +36,7 @@ Index(
     "certificate_destination_associations_ix",
     certificate_destination_associations.c.destination_id,
     certificate_destination_associations.c.certificate_id,
-    unique=True
+    unique=True,
 )
 
 certificate_source_associations = db.Table(
@@ -42,7 +51,7 @@ Index(
     "certificate_source_associations_ix",
     certificate_source_associations.c.source_id,
     certificate_source_associations.c.certificate_id,
-    unique=True
+    unique=True,
 )
 
 certificate_notification_associations = db.Table(
@@ -92,7 +101,7 @@ Index(
     "roles_authorities_ix",
     roles_authorities.c.authority_id,
     roles_authorities.c.role_id,
-    unique=True
+    unique=True,
 )
 
 roles_certificates = db.Table(
@@ -105,7 +114,7 @@ Index(
     "roles_certificates_ix",
     roles_certificates.c.certificate_id,
     roles_certificates.c.role_id,
-    unique=True
+    unique=True,
 )
 
 

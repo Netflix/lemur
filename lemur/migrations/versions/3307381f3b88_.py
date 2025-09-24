@@ -38,7 +38,7 @@ def upgrade():
         "certificates", "owner", existing_type=sa.VARCHAR(length=128), nullable=True
     )
     op.drop_constraint(
-        u"certificates_authority_id_fkey", "certificates", type_="foreignkey"
+        "certificates_authority_id_fkey", "certificates", type_="foreignkey"
     )
     op.create_foreign_key(
         None,
@@ -150,7 +150,7 @@ def downgrade():
     op.drop_constraint(None, "certificates", type_="foreignkey")
     op.drop_constraint(None, "certificates", type_="foreignkey")
     op.create_foreign_key(
-        u"certificates_authority_id_fkey",
+        "certificates_authority_id_fkey",
         "certificates",
         "authorities",
         ["authority_id"],

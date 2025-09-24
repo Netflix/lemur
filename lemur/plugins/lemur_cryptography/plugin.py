@@ -6,6 +6,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 import uuid
 
 from flask import current_app

@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from flask import current_app
 
 from marshmallow import fields, validates_schema, pre_load
@@ -59,8 +60,15 @@ class AuthorityInputSchema(LemurInputSchema):
     type = fields.String(validate=validate.OneOf(["root", "subca"]), missing="root")
     parent = fields.Nested(AssociatedAuthoritySchema)
     signing_algorithm = fields.String(
-        validate=validate.OneOf(["sha256WithRSA", "sha1WithRSA",
-                                 "sha256WithECDSA", "SHA384withECDSA", "SHA512withECDSA"]),
+        validate=validate.OneOf(
+            [
+                "sha256WithRSA",
+                "sha1WithRSA",
+                "sha256WithECDSA",
+                "SHA384withECDSA",
+                "SHA512withECDSA",
+            ]
+        ),
         missing="sha256WithRSA",
     )
     key_type = fields.String(
@@ -140,7 +148,9 @@ class AuthorityNestedOutputSchema(LemurOutputSchema):
     owner = fields.Email()
     plugin = fields.Nested(PluginOutputSchema)
     active = fields.Boolean()
-    authority_certificate = fields.Nested(RootAuthorityCertificateOutputSchema, only=["not_after", "not_before"])
+    authority_certificate = fields.Nested(
+        RootAuthorityCertificateOutputSchema, only=["not_after", "not_before"]
+    )
     is_cab_compliant = fields.Boolean()
     is_cn_optional = fields.Boolean()
     max_issuance_days = fields.Integer()

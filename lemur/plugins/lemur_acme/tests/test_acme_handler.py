@@ -18,7 +18,7 @@ class TestAcmeHandler(unittest.TestCase):
 
         # Creates a new Flask application for a test duration. In python 3.8, manual push of application context is
         # needed to run tests in dev environment without getting error 'Working outside of application context'.
-        _app = Flask('lemur_test_acme')
+        _app = Flask("lemur_test_acme")
         self.ctx = _app.app_context()
         assert self.ctx
         self.ctx.push()
@@ -36,7 +36,9 @@ class TestAcmeHandler(unittest.TestCase):
         self.assertEqual(expected, result)
 
     def test_authz_record(self):
-        a = acme_handlers.AuthorizationRecord("domain", "host", "authz", "challenge", "id", "cname_delegation")
+        a = acme_handlers.AuthorizationRecord(
+            "domain", "host", "authz", "challenge", "id", "cname_delegation"
+        )
         self.assertEqual(type(a), acme_handlers.AuthorizationRecord)
 
     def test_setup_acme_client_fail(self):
@@ -61,7 +63,10 @@ class TestAcmeHandler(unittest.TestCase):
     def test_reuse_account_from_config(self, mock_current_app):
         mock_authority = Mock()
         mock_authority.options = '[{"name": "mock_name", "value": "mock_value"}]'
-        mock_current_app.config = {"ACME_PRIVATE_KEY": "PRIVATE_KEY", "ACME_REGR": "ACME_REGR"}
+        mock_current_app.config = {
+            "ACME_PRIVATE_KEY": "PRIVATE_KEY",
+            "ACME_REGR": "ACME_REGR",
+        }
 
         self.assertTrue(self.acme.reuse_account(mock_authority))
 
@@ -75,8 +80,10 @@ class TestAcmeHandler(unittest.TestCase):
     @patch("lemur.plugins.lemur_acme.acme_handlers.ClientV2")
     def test_setup_acme_client_success(self, mock_acme, mock_authorities_service):
         mock_authority = Mock()
-        mock_authority.options = '[{"name": "mock_name", "value": "mock_value"}, ' \
-                                 '{"name": "store_account", "value": false}]'
+        mock_authority.options = (
+            '[{"name": "mock_name", "value": "mock_value"}, '
+            '{"name": "store_account", "value": false}]'
+        )
         mock_client = Mock()
         mock_registration = Mock()
         mock_registration.uri = "http://test.com"
@@ -97,7 +104,12 @@ class TestAcmeHandler(unittest.TestCase):
         options = {
             "common_name": "test.netflix.net",
             "extensions": {
-                "sub_alt_names": {"names": [DNSName("test2.netflix.net"), DNSName("test3.netflix.net")]}
+                "sub_alt_names": {
+                    "names": [
+                        DNSName("test2.netflix.net"),
+                        DNSName("test3.netflix.net"),
+                    ]
+                }
             },
         }
         result = self.acme.get_domains(options)
@@ -109,25 +121,29 @@ class TestAcmeHandler(unittest.TestCase):
         options = {
             "common_name": "test.netflix.net",
             "extensions": {
-                "sub_alt_names": {"names": [DNSName("test.netflix.net"), DNSName("test2.netflix.net")]}
+                "sub_alt_names": {
+                    "names": [DNSName("test.netflix.net"), DNSName("test2.netflix.net")]
+                }
             },
         }
         result = self.acme.get_domains(options)
-        self.assertEqual(
-            result, [options["common_name"], "test2.netflix.net"]
-        )
+        self.assertEqual(result, [options["common_name"], "test2.netflix.net"])
 
     def test_extract_cert_and_chain(self):
         # expecting the short chain
-        leaf_pem, chain_pem = self.acme.extract_cert_and_chain(ACME_CHAIN_SHORT_STR,
-                                                               [ACME_CHAIN_LONG_STR],
-                                                               "(STAGING) Artificial Apricot R3")
+        leaf_pem, chain_pem = self.acme.extract_cert_and_chain(
+            ACME_CHAIN_SHORT_STR,
+            [ACME_CHAIN_LONG_STR],
+            "(STAGING) Artificial Apricot R3",
+        )
         self.assertEqual(leaf_pem, SAN_CERT_STR)
-        self.assertEqual(chain_pem, ACME_CHAIN_SHORT_STR[len(leaf_pem):].lstrip())
+        self.assertEqual(chain_pem, ACME_CHAIN_SHORT_STR[len(leaf_pem) :].lstrip())
 
         # expecting the long chain
-        leaf_pem, chain_pem = self.acme.extract_cert_and_chain(ACME_CHAIN_SHORT_STR,
-                                                               [ACME_CHAIN_LONG_STR],
-                                                               "(STAGING) Doctored Durian Root CA X3")
+        leaf_pem, chain_pem = self.acme.extract_cert_and_chain(
+            ACME_CHAIN_SHORT_STR,
+            [ACME_CHAIN_LONG_STR],
+            "(STAGING) Doctored Durian Root CA X3",
+        )
         self.assertEqual(leaf_pem, SAN_CERT_STR)
-        self.assertEqual(chain_pem, ACME_CHAIN_LONG_STR[len(leaf_pem):].lstrip())
+        self.assertEqual(chain_pem, ACME_CHAIN_LONG_STR[len(leaf_pem) :].lstrip())

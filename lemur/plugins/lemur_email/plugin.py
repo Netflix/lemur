@@ -6,6 +6,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 import boto3
 from flask import current_app
 from flask_mail import Message
@@ -87,10 +88,15 @@ def send_via_ses(subject, body, targets, **kwargs):
         # logging information about the email (particularly the message ID) allows reconcilitation with SES bounce notifications
         message_id = response["MessageId"]
         email_tags["ses_message_id"] = message_id
-        current_app.logger.info(f"Sent SES email: {message_id}", extra={"SES-Email": email_tags})
+        current_app.logger.info(
+            f"Sent SES email: {message_id}", extra={"SES-Email": email_tags}
+        )
     except Exception:
-        current_app.logger.error("Unable to log message ID of sent SES email", extra={"SES-Email": email_tags},
-                                 exc_info=True)
+        current_app.logger.error(
+            "Unable to log message ID of sent SES email",
+            extra={"SES-Email": email_tags},
+            exc_info=True,
+        )
         capture_exception()
 
 
@@ -125,7 +131,9 @@ class EmailNotificationPlugin(ExpirationNotificationPlugin):
         if not targets:
             return
 
-        readable_notification_type = ' '.join(map(lambda x: x.capitalize(), notification_type.split('_')))
+        readable_notification_type = " ".join(
+            map(lambda x: x.capitalize(), notification_type.split("_"))
+        )
         subject = f"Lemur: {readable_notification_type} Notification"
 
         body = render_html(notification_type, options, message)

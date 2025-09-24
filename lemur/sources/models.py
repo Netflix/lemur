@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Integer, String, Text, Boolean
 from sqlalchemy_utils import JSONType

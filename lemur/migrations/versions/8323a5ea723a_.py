@@ -7,8 +7,8 @@ Create Date: 2020-01-10 10:51:44.776052
 """
 
 # revision identifiers, used by Alembic.
-revision = '8323a5ea723a'
-down_revision = 'b33c838cb669'
+revision = "8323a5ea723a"
+down_revision = "b33c838cb669"
 
 from alembic import op
 from sqlalchemy import text
@@ -41,7 +41,6 @@ def upgrade():
         postgresql_ops={"lower(name)": "gin_trgm_ops"},
         postgresql_using="gin",
     )
-
 
 
 def downgrade():

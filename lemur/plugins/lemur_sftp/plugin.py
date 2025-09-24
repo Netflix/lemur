@@ -16,6 +16,7 @@
 
 .. moduleauthor:: Dmitry Zykov https://github.com/DmitryZykov
 """
+
 from os import path
 
 import paramiko
@@ -49,7 +50,9 @@ class SFTPDestinationPlugin(DestinationPlugin):
             "type": "int",
             "required": True,
             "helpMessage": "The SFTP port, default is 22.",
-            "validation": check_validation(r"^(6553[0-5]|655[0-2][0-9]\d|65[0-4](\d){2}|6[0-4](\d){3}|[1-5](\d){4}|[1-9](\d){0,3})"),
+            "validation": check_validation(
+                r"^(6553[0-5]|655[0-2][0-9]\d|65[0-4](\d){2}|6[0-4](\d){3}|[1-5](\d){4}|[1-9](\d){0,3})"
+            ),
             "default": "22",
         },
         {
@@ -136,10 +139,14 @@ class SFTPDestinationPlugin(DestinationPlugin):
 
         except AuthenticationException as e:
             current_app.logger.error("ERROR in {0}: {1}".format(e.__class__, e))
-            raise AuthenticationException("Couldn't connect to {0}, due to an Authentication exception.")
+            raise AuthenticationException(
+                "Couldn't connect to {0}, due to an Authentication exception."
+            )
         except NoValidConnectionsError as e:
             current_app.logger.error("ERROR in {0}: {1}".format(e.__class__, e))
-            raise NoValidConnectionsError("Couldn't connect to {0}, possible timeout or invalid hostname")
+            raise NoValidConnectionsError(
+                "Couldn't connect to {0}, possible timeout or invalid hostname"
+            )
 
     # this is called when using this as a default destination plugin
     def upload(self, name, body, private_key, cert_chain, options, **kwargs):
@@ -168,7 +175,9 @@ class SFTPDestinationPlugin(DestinationPlugin):
     # this is called from the acme http challenge
     def upload_acme_token(self, token_path, token, options, **kwargs):
 
-        current_app.logger.debug("SFTP destination plugin is started for HTTP-01 challenge")
+        current_app.logger.debug(
+            "SFTP destination plugin is started for HTTP-01 challenge"
+        )
 
         dst_path = self.get_option("destinationPath", options)
 
@@ -208,7 +217,8 @@ class SFTPDestinationPlugin(DestinationPlugin):
                     if permerror.errno == 13:
                         current_app.logger.debug(
                             "Deleting {0} from {1} returned Permission Denied Error, making file writable and retrying".format(
-                                filename, dst_path)
+                                filename, dst_path
+                            )
                         )
                         sftp.chmod(path.join(dst_path, filename), 0o600)
                         sftp.remove(path.join(dst_path, filename))
@@ -253,12 +263,17 @@ class SFTPDestinationPlugin(DestinationPlugin):
                         remote_path = path.join(remote_path, part)
                     sftp.stat(remote_path)
                 except IOError:
-                    current_app.logger.debug("{0} doesn't exist, trying to create it".format(remote_path))
+                    current_app.logger.debug(
+                        "{0} doesn't exist, trying to create it".format(remote_path)
+                    )
                     try:
                         sftp.mkdir(remote_path)
                     except IOError as ioerror:
                         current_app.logger.debug(
-                            "Couldn't create {0}, error message: {1}".format(remote_path, ioerror))
+                            "Couldn't create {0}, error message: {1}".format(
+                                remote_path, ioerror
+                            )
+                        )
 
             # upload certificate files to the sftp destination
             for filename, data in files.items():
@@ -272,7 +287,8 @@ class SFTPDestinationPlugin(DestinationPlugin):
                     if permerror.errno == 13:
                         current_app.logger.debug(
                             "Uploading {0} to {1} returned Permission Denied Error, making file writable and retrying".format(
-                                filename, dst_path)
+                                filename, dst_path
+                            )
                         )
                         sftp.chmod(path.join(dst_path, filename), 0o600)
                         with sftp.open(path.join(dst_path, filename), "w") as f:
@@ -290,9 +306,12 @@ class SFTPDestinationPlugin(DestinationPlugin):
                 ssh.close()
             except BaseException:
                 pass
-            message = ''
-            if hasattr(e, 'errors'):
+            message = ""
+            if hasattr(e, "errors"):
                 for _, error in e.errors.items():
                     message = error.strerror
                 raise Exception(
-                    'Couldn\'t upload file to {}, error message: {}'.format(self.get_option("host", options), message))
+                    "Couldn't upload file to {}, error message: {}".format(
+                        self.get_option("host", options), message
+                    )
+                )

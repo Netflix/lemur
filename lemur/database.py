@@ -9,6 +9,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 import math
 from inflection import underscore
 from sqlalchemy import exc, func, distinct

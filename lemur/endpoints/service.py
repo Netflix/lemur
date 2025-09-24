@@ -8,6 +8,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
+
 import arrow
 
 from sqlalchemy import func
@@ -16,7 +17,13 @@ from sqlalchemy.orm import joinedload
 from lemur import database
 from lemur.common.utils import truthiness
 from lemur.certificates.models import Certificate
-from lemur.endpoints.models import Endpoint, EndpointsCertificates, EndpointDnsAlias, Policy, Cipher
+from lemur.endpoints.models import (
+    Endpoint,
+    EndpointsCertificates,
+    EndpointDnsAlias,
+    Policy,
+    Cipher,
+)
 from lemur.sources.models import Source
 from lemur.extensions import metrics
 
@@ -106,7 +113,9 @@ def get_all_pending_rotation():
     that have been replaced.
     :return:
     """
-    return Endpoint.query.filter(Endpoint.certificates.any(Certificate.replaced.any())).all()
+    return Endpoint.query.filter(
+        Endpoint.certificates.any(Certificate.replaced.any())
+    ).all()
 
 
 def get_all_pending_rotation_by_source(source_label):
@@ -115,12 +124,13 @@ def get_all_pending_rotation_by_source(source_label):
     that have been replaced.
     :return:
     """
-    return Endpoint.query \
-        .join(Endpoint.certificates_assoc)\
-        .join(EndpointsCertificates.certificate)\
-        .filter(Certificate.replaced.any())\
-        .filter(Endpoint.source.has(label=source_label))\
+    return (
+        Endpoint.query.join(Endpoint.certificates_assoc)
+        .join(EndpointsCertificates.certificate)
+        .filter(Certificate.replaced.any())
+        .filter(Endpoint.source.has(label=source_label))
         .all()
+    )
 
 
 def create(**kwargs):
@@ -132,20 +142,28 @@ def create(**kwargs):
     primary_certificate = kwargs.pop("primary_certificate", None)
     sni_certificates = kwargs.pop("sni_certificates", [])
     if "aliases" in kwargs:
-        kwargs["aliases"] = [EndpointDnsAlias(alias=name) for name in kwargs.get("aliases")]
+        kwargs["aliases"] = [
+            EndpointDnsAlias(alias=name) for name in kwargs.get("aliases")
+        ]
 
     endpoint = Endpoint(**kwargs)
 
     if primary_certificate:
         endpoint.primary_certificate = primary_certificate["certificate"]
-        endpoint.set_certificate_path(certificate=endpoint.primary_certificate, path=primary_certificate["path"])
+        endpoint.set_certificate_path(
+            certificate=endpoint.primary_certificate, path=primary_certificate["path"]
+        )
     for sni_certificate in sni_certificates:
-        endpoint.add_sni_certificate(certificate=sni_certificate["certificate"], path=sni_certificate["path"])
+        endpoint.add_sni_certificate(
+            certificate=sni_certificate["certificate"], path=sni_certificate["path"]
+        )
 
     database.create(endpoint)
     metrics.send(
-        "endpoint_added", "counter", 1,
-        metric_tags={"source": endpoint.source.label, "type": endpoint.type}
+        "endpoint_added",
+        "counter",
+        1,
+        metric_tags={"source": endpoint.source.label, "type": endpoint.type},
     )
     return endpoint
 
@@ -177,7 +195,9 @@ def update(endpoint_id, **kwargs):
 
     if primary_certificate:
         endpoint.primary_certificate = primary_certificate["certificate"]
-        endpoint.set_certificate_path(certificate=endpoint.primary_certificate, path=primary_certificate["path"])
+        endpoint.set_certificate_path(
+            certificate=endpoint.primary_certificate, path=primary_certificate["path"]
+        )
     endpoint.sni_certificates = []
     for crt in sni_certificates:
         endpoint.add_sni_certificate(crt["certificate"], crt["path"])
@@ -199,8 +219,10 @@ def update(endpoint_id, **kwargs):
 
     endpoint.last_updated = arrow.utcnow()
     metrics.send(
-        "endpoint_updated", "counter", 1,
-        metric_tags={"source": endpoint.source.label, "type": endpoint.type}
+        "endpoint_updated",
+        "counter",
+        1,
+        metric_tags={"source": endpoint.source.label, "type": endpoint.type},
     )
 
     database.update(endpoint)
@@ -213,9 +235,11 @@ def render(args):
     :param args:
     :return:
     """
-    query = database.session_query(Endpoint)\
-        .options(joinedload(Endpoint.certificates_assoc))\
+    query = (
+        database.session_query(Endpoint)
+        .options(joinedload(Endpoint.certificates_assoc))
         .options(joinedload(Endpoint.source))
+    )
     filt = args.pop("filter")
 
     if filt:
@@ -235,7 +259,8 @@ def render(args):
 
         if terms[0] == "name":
             alias_query = Endpoint.query.filter(
-                Endpoint.aliases.any(EndpointDnsAlias.alias.ilike(f"%{terms[1]}%")))
+                Endpoint.aliases.any(EndpointDnsAlias.alias.ilike(f"%{terms[1]}%"))
+            )
             query = query.union(alias_query)
 
     return database.sort_and_page(query, Endpoint, args)

@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from flask import current_app
 from flask_script import Manager
 from sentry_sdk import capture_exception
@@ -12,8 +13,10 @@ from sentry_sdk import capture_exception
 from lemur.certificates.service import get_expiring_deployed_certificates
 from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
 from lemur.extensions import metrics
-from lemur.notifications.messaging import send_expiration_notifications, \
-    send_expiring_deployed_certificate_notifications
+from lemur.notifications.messaging import (
+    send_expiration_notifications,
+    send_expiring_deployed_certificate_notifications,
+)
 from lemur.notifications.messaging import send_authority_expiration_notifications
 from lemur.notifications.messaging import send_security_expiration_summary
 
@@ -51,8 +54,12 @@ def expirations(exclude, disabled_notification_plugins):
     status = FAILURE_METRIC_STATUS
     try:
         print("Starting to notify subscribers about expiring certificates!")
-        disable_security_team_emails = current_app.config.get("LEMUR_DISABLE_SECURITY_TEAM_EXPIRATION_EMAILS", False)
-        success, failed = send_expiration_notifications(exclude, disabled_notification_plugins, disable_security_team_emails)
+        disable_security_team_emails = current_app.config.get(
+            "LEMUR_DISABLE_SECURITY_TEAM_EXPIRATION_EMAILS", False
+        )
+        success, failed = send_expiration_notifications(
+            exclude, disabled_notification_plugins, disable_security_team_emails
+        )
         print(
             f"Finished notifying subscribers about expiring certificates! Sent: {success} Failed: {failed}"
         )
@@ -74,7 +81,9 @@ def authority_expirations():
     """
     status = FAILURE_METRIC_STATUS
     try:
-        print("Starting to notify subscribers about expiring certificate authority certificates!")
+        print(
+            "Starting to notify subscribers about expiring certificate authority certificates!"
+        )
         success, failed = send_authority_expiration_notifications()
         print(
             "Finished notifying subscribers about expiring certificate authority certificates! "
@@ -85,7 +94,10 @@ def authority_expirations():
         capture_exception()
 
     metrics.send(
-        "authority_expiration_notification_job", "counter", 1, metric_tags={"status": status}
+        "authority_expiration_notification_job",
+        "counter",
+        1,
+        metric_tags={"status": status},
     )
 
 
@@ -108,7 +120,10 @@ def security_expiration_summary(exclude):
         capture_exception()
 
     metrics.send(
-        "security_expiration_notification_job", "counter", 1, metric_tags={"status": status}
+        "security_expiration_notification_job",
+        "counter",
+        1,
+        metric_tags={"status": status},
     )
 
 
@@ -120,7 +135,9 @@ def notify_expiring_deployed_certificates(exclude):
     """
     status = FAILURE_METRIC_STATUS
     try:
-        print("Starting to notify owners about certificates that are expiring but still deployed!")
+        print(
+            "Starting to notify owners about certificates that are expiring but still deployed!"
+        )
         certificates = get_expiring_deployed_certificates(exclude).items()
         success = send_expiring_deployed_certificate_notifications(certificates)
         print(
@@ -132,5 +149,8 @@ def notify_expiring_deployed_certificates(exclude):
         capture_exception()
 
     metrics.send(
-        "notify_expiring_deployed_certificates_job", "counter", 1, metric_tags={"status": status}
+        "notify_expiring_deployed_certificates_job",
+        "counter",
+        1,
+        metric_tags={"status": status},
     )

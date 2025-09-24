@@ -6,6 +6,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 import arrow
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
@@ -48,7 +49,7 @@ class Policy(db.Model):
 class EndpointDnsAlias(db.Model):
     __tablename__ = "endpoint_dnsalias"
     id = Column(Integer, primary_key=True)
-    endpoint_id = Column(Integer, ForeignKey('endpoints.id'))
+    endpoint_id = Column(Integer, ForeignKey("endpoints.id"))
     alias = Column(String(256))
 
 
@@ -68,7 +69,9 @@ class Endpoint(db.Model):
         "EndpointsCertificates", back_populates="endpoint", cascade="all, delete-orphan"
     )
     certificates = association_proxy(
-        "certificates_assoc", "certificate", creator=lambda cert: EndpointsCertificates(certificate=cert)
+        "certificates_assoc",
+        "certificate",
+        creator=lambda cert: EndpointsCertificates(certificate=cert),
     )
     registry_type = Column(String(128))
     source_id = Column(Integer, ForeignKey("sources.id"))
@@ -139,25 +142,33 @@ class Endpoint(db.Model):
                 assoc.certificate = cert
                 return
         self.certificates_assoc.append(
-            EndpointsCertificates(certificate=cert, endpoint=self, primary=True, path="")
+            EndpointsCertificates(
+                certificate=cert, endpoint=self, primary=True, path=""
+            )
         )
 
     @hybrid_property
     def sni_certificates(self):
         """Returns the SNI certificates associated with the endpoint."""
-        return [assoc.certificate for assoc in self.certificates_assoc if not assoc.primary]
+        return [
+            assoc.certificate for assoc in self.certificates_assoc if not assoc.primary
+        ]
 
     @sni_certificates.setter
     def sni_certificates(self, certs):
         """Sets the SNI certificates associated with the endpoint."""
-        self.certificates_assoc = [assoc for assoc in self.certificates_assoc if assoc.primary]
+        self.certificates_assoc = [
+            assoc for assoc in self.certificates_assoc if assoc.primary
+        ]
         for cert in certs:
             self.add_sni_certificate(cert)
 
     def add_sni_certificate(self, certificate, path=""):
         """Associates a SNI certificate with the endpoint."""
         self.certificates_assoc.append(
-            EndpointsCertificates(certificate=certificate, endpoint=self, primary=False, path=path)
+            EndpointsCertificates(
+                certificate=certificate, endpoint=self, primary=False, path=path
+            )
         )
 
     def replace_sni_certificate(self, old_certificate, new_certificate, path=""):
@@ -174,19 +185,25 @@ class Endpoint(db.Model):
                 assoc.path = path
 
     @hybrid_property
-    @deprecated("The certificate attribute is deprecated and will be removed soon. Use Endpoint.primary_certificate instead.")
+    @deprecated(
+        "The certificate attribute is deprecated and will be removed soon. Use Endpoint.primary_certificate instead."
+    )
     def certificate(self):
         """DEPRECATED: Returns the primary certificate associated with the endpoint."""
         return self.primary_certificate
 
     @certificate.setter
-    @deprecated("The certificate attribute is deprecated and will be removed soon. Use Endpoint.primary_certificate instead.")
+    @deprecated(
+        "The certificate attribute is deprecated and will be removed soon. Use Endpoint.primary_certificate instead."
+    )
     def certificate(self, cert):
         """DEPRECATED: Sets the primary certificate associated with the endpoint."""
         self.primary_certificate = cert
 
     @hybrid_property
-    @deprecated("The certificate_path attribute is deprecated and will be removed soon. Retrieve from Endpoint.certificates_assoc instead.")
+    @deprecated(
+        "The certificate_path attribute is deprecated and will be removed soon. Retrieve from Endpoint.certificates_assoc instead."
+    )
     def certificate_path(self):
         """DEPRECATED: Returns the path of the primary certificate associated with the endpoint."""
         for assoc in self.certificates_assoc:
@@ -195,7 +212,9 @@ class Endpoint(db.Model):
         return None
 
     @certificate_path.setter
-    @deprecated("The certificate_path attribute is deprecated and will be removed soon. Retrieve from Endpoint.certificates_assoc instead.")
+    @deprecated(
+        "The certificate_path attribute is deprecated and will be removed soon. Retrieve from Endpoint.certificates_assoc instead."
+    )
     def certificate_path(self, path):
         """DEPRECATED: Sets the path of the primary certificate associated with the endpoint."""
         for assoc in self.certificates_assoc:

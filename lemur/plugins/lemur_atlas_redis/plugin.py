@@ -88,10 +88,13 @@ class AtlasMetricRedisPlugin(MetricPlugin):
 
         try:
             r = Redis(host=self.redis_host, port=self.redis_port, socket_timeout=0.1)
-            r.rpush('atlas-agent', json.dumps(self.metric_data))
+            r.rpush("atlas-agent", json.dumps(self.metric_data))
         except Exception as e:
             current_app.logger.warning(
                 "AtlasMetricsRedis: exception [{exception}] could not post atlas metrics to AtlasRedis [{host}:{port}], metric [{metricdata}]".format(
-                    exception=e, host=self.redis_host, port=self.redis_port, metricdata=json.dumps(self.metric_data)
+                    exception=e,
+                    host=self.redis_host,
+                    port=self.redis_port,
+                    metricdata=json.dumps(self.metric_data),
                 )
             )

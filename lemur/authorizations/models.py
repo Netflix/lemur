@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Netflix Secops <secops@netflix.com>
 """
+
 from sqlalchemy import Column, Integer, String
 from sqlalchemy_utils import JSONType
 from lemur.database import db

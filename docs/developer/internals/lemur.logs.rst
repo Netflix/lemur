@@ -11,7 +11,7 @@ logs Package
     :show-inheritance:
 
 :mod:`models` Module
-------------------------------	
+------------------------------
 
 .. automodule:: lemur.logs.models
     :noindex:

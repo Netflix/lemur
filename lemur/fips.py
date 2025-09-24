@@ -224,7 +224,9 @@ class OpensslFipsStatus:
         fips_status_debug = self.debug_fips_status()
         logging.info("openssl_fips_status = [%s]", fips_status_debug)
 
-        must_enable_fips = os.environ.get("FIPS_ENABLED", "false").lower().strip() == "true"
+        must_enable_fips = (
+            os.environ.get("FIPS_ENABLED", "false").lower().strip() == "true"
+        )
         if must_enable_fips:
             logging.info(
                 "Detected that FIPS mode on OpenSSL is needed, attempting to enable..."
@@ -241,7 +243,9 @@ class OpensslFipsStatus:
             )
             sys.exit(1)
         else:
-            logging.info("FIPS mode on OpenSSL is NOT needed, it will NOT be enabled...")
+            logging.info(
+                "FIPS mode on OpenSSL is NOT needed, it will NOT be enabled..."
+            )
             return False
 
 

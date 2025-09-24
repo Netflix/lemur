@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Eric Coan <kungfury@instructure.com>
 """
+
 from flask import g
 from marshmallow import fields
 

@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from flask import Blueprint, g
 from flask_restful import reqparse, Api
 
@@ -21,7 +22,7 @@ api = Api(mod)
 
 
 class EndpointsList(AuthenticatedResource):
-    """ Defines the 'endpoints' endpoint """
+    """Defines the 'endpoints' endpoint"""
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()

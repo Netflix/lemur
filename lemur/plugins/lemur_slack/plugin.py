@@ -7,6 +7,7 @@
 .. moduleauthor:: Harm Weites <harm@weites.com>
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 import json
 import arrow
 from flask import current_app
@@ -90,7 +91,9 @@ class SlackNotificationPlugin(ExpirationNotificationPlugin):
             "name": "webhook",
             "type": "str",
             "required": True,
-            "validation": check_validation(r"^https:\/\/hooks\.slack\.com\/services\/.+$"),
+            "validation": check_validation(
+                r"^https:\/\/hooks\.slack\.com\/services\/.+$"
+            ),
             "helpMessage": "The url Slack told you to use for this integration",
         },
         {
@@ -137,8 +140,8 @@ class SlackNotificationPlugin(ExpirationNotificationPlugin):
         r = requests.post(self.get_option("webhook", options), json.dumps(body))
 
         if r.status_code not in [200]:
-            raise Exception(f"Failed to send message. Slack response: {r.status_code} {body}")
+            raise Exception(
+                f"Failed to send message. Slack response: {r.status_code} {body}"
+            )
 
-        current_app.logger.info(
-            f"Slack response: {r.status_code} Message Body: {body}"
-        )
+        current_app.logger.info(f"Slack response: {r.status_code} Message Body: {body}")

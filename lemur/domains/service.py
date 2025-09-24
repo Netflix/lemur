@@ -6,6 +6,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from sqlalchemy import and_
 
 from flask import current_app, g
@@ -74,11 +75,15 @@ def is_authorized_for_domain(name):
         # nothing to check since USER_DOMAIN_AUTHORIZATION_PROVIDER is not configured
         return
 
-    user_domain_authorization_provider = plugins.get(current_app.config.get("USER_DOMAIN_AUTHORIZATION_PROVIDER"))
+    user_domain_authorization_provider = plugins.get(
+        current_app.config.get("USER_DOMAIN_AUTHORIZATION_PROVIDER")
+    )
     # if the caller can be mapped to an application name, use that to perform authorization
     # this could be true when using API key to call lemur (migration script e2d406ada25c_.py)
-    caller = g.caller_application if hasattr(g, 'caller_application') else g.user.email
-    authorized, error = user_domain_authorization_provider.is_authorized(domain=name, caller=caller)
+    caller = g.caller_application if hasattr(g, "caller_application") else g.user.email
+    authorized, error = user_domain_authorization_provider.is_authorized(
+        domain=name, caller=caller
+    )
 
     if error:
         raise error

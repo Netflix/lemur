@@ -10,6 +10,7 @@
 
 .. moduleauthor:: Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
 """
+
 import itertools
 import os
 
@@ -147,7 +148,9 @@ class KubernetesDestinationPlugin(DestinationPlugin):
             "name": "kubernetesServerCertificate",
             "type": "textarea",
             "required": False,
-            "validation": check_validation("-----BEGIN CERTIFICATE-----[a-zA-Z0-9/+\\s\\r\\n]+-----END CERTIFICATE-----"),
+            "validation": check_validation(
+                "-----BEGIN CERTIFICATE-----[a-zA-Z0-9/+\\s\\r\\n]+-----END CERTIFICATE-----"
+            ),
             "helpMessage": "Must be a valid Kubernetes server Certificate!",
         },
         {

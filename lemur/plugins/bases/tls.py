@@ -6,6 +6,7 @@
 
 .. moduleauthor:: Sayali Charhate <scharhate@netflix.com>
 """
+
 from lemur.plugins.base import Plugin
 
 
@@ -14,6 +15,7 @@ class TLSPlugin(Plugin):
     This is the base class from which all supported
     tls session providers will inherit from.
     """
+
     type = "tls"
 
     def session(self, server_application):

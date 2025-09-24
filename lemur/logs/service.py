@@ -7,6 +7,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from flask import current_app, g
 
 from lemur import database
@@ -28,7 +29,7 @@ def create(user, type, certificate=None):
         "function": "lemur-audit",
         "action": type,
         "user": user.email,
-        "certificate": certificate.name
+        "certificate": certificate.name,
     }
     # format before August 2021: f"[lemur-audit] action: {type}, user: {user.email}, certificate: {certificate.name}."
     current_app.logger.info(log_data)
@@ -47,13 +48,13 @@ def audit_log(action, entity, message):
     :return:
     """
 
-    user = g.current_user.email if hasattr(g, 'current_user') else "LEMUR"
+    user = g.current_user.email if hasattr(g, "current_user") else "LEMUR"
     log_data = {
         "function": "lemur-audit",
         "action": action,
         "user": user,
         "entity": entity,
-        "details": message
+        "details": message,
     }
     # format before August 2021: f"[lemur-audit] action: {action}, user: {user}, entity: {entity}, details: {message}"
     current_app.logger.info(log_data)

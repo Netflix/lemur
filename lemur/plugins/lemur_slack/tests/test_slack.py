@@ -18,7 +18,7 @@ def test_formatting(certificate):
         "color": "danger",
         "fields": [
             {"short": True, "value": "joe@example.com", "title": "Owner"},
-            {"short": True, "value": u"Tuesday, December 31, 2047", "title": "Expires"},
+            {"short": True, "value": "Tuesday, December 31, 2047", "title": "Expires"},
             {"short": True, "value": 0, "title": "Endpoints Detected"},
         ],
         "title_link": "https://lemur.example.com/#/certificates/{name}".format(
@@ -43,6 +43,7 @@ def get_options():
 @mock_ses()  # because email notifications are also sent
 def test_send_expiration_notification():
     from lemur.notifications.messaging import send_expiration_notifications
+
     prepare_test()
 
     assert send_expiration_notifications([], []) == (3, 0)  # owner, Slack, and security
@@ -51,27 +52,35 @@ def test_send_expiration_notification():
 @mock_ses()
 def test_send_expiration_notification_slack_disabled():
     from lemur.notifications.messaging import send_expiration_notifications
+
     prepare_test()
 
     # though email is not disabled, we don't send the owner/security notifications via email if
     # the main notification's plugin is disabled
-    assert send_expiration_notifications([], ['slack-notification']) == (0, 0)
+    assert send_expiration_notifications([], ["slack-notification"]) == (0, 0)
 
 
 @mock_ses()
 def test_send_expiration_notification_email_disabled():
     from lemur.notifications.messaging import send_expiration_notifications
+
     prepare_test()
 
-    assert send_expiration_notifications([], ['email-notification']) == (1, 0)  # Slack only
+    assert send_expiration_notifications([], ["email-notification"]) == (
+        1,
+        0,
+    )  # Slack only
 
 
 @mock_ses()
 def test_send_expiration_notification_both_disabled():
     from lemur.notifications.messaging import send_expiration_notifications
+
     prepare_test()
 
-    assert send_expiration_notifications([], ['slack-notification', 'email-notification']) == (0, 0)
+    assert send_expiration_notifications(
+        [], ["slack-notification", "email-notification"]
+    ) == (0, 0)
 
 
 def prepare_test():
@@ -81,11 +90,14 @@ def prepare_test():
     notification.options = get_options()
 
     now = arrow.utcnow()
-    in_ten_days = now + timedelta(days=10, hours=1)  # a bit more than 10 days since we'll check in the future
+    in_ten_days = now + timedelta(
+        days=10, hours=1
+    )  # a bit more than 10 days since we'll check in the future
 
     certificate = CertificateFactory()
     certificate.not_after = in_ten_days
     certificate.notifications.append(notification)
+
 
 # Currently disabled as the Slack plugin doesn't support this type of notification
 # def test_send_rotation_notification(endpoint, source_plugin):

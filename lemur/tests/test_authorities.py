@@ -84,13 +84,17 @@ def test_create_authority(issuer_plugin, user):
         type="root",
         name="example authority",
         creator=user["user"],
-        roles=[RoleFactory(name="new-role-test_create_authority")]
+        roles=[RoleFactory(name="new-role-test_create_authority")],
     )
     assert authority.authority_certificate
     assert authority.owner == user["user"].email
     assert len(authority.roles) == 3
     for role in authority.roles:
-        assert role.name in [user["user"].email, "test_example_authority_admin", "new-role-test_create_authority"]
+        assert role.name in [
+            user["user"].email,
+            "test_example_authority_admin",
+            "new-role-test_create_authority",
+        ]
     assert "test_example_authority_admin" not in user["user"].roles
     assert "new-role-test_create_authority" not in user["user"].roles
 

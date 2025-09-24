@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from copy import deepcopy
 import sys
 import time
@@ -74,9 +75,7 @@ def validate_destinations(destination_strings):
         dest = dest_service.get_by_label(label)
 
         if not dest:
-            print(
-                "Unable to find specified destination with label: {0}".format(label)
-            )
+            print("Unable to find specified destination with label: {0}".format(label))
             sys.exit(1)
 
         destinations.append(dest)
@@ -122,8 +121,11 @@ def sync(source_strings, ttl):
         status = FAILURE_METRIC_STATUS
 
         start_time = time.time()
-        print("[+] Staring to sync source: {label} and expire endpoints ttl={ttl}h\n".format(
-            label=source.label, ttl=ttl))
+        print(
+            "[+] Staring to sync source: {label} and expire endpoints ttl={ttl}h\n".format(
+                label=source.label, ttl=ttl
+            )
+        )
         user = user_service.get_by_username("lemur")
 
         try:
@@ -135,7 +137,9 @@ def sync(source_strings, ttl):
             )
             print(
                 "[+] Endpoints: New: {new} Updated: {updated} Expired: {expired}".format(
-                    new=data["endpoints"][0], updated=data["endpoints"][1], expired=data["endpoints"][2]
+                    new=data["endpoints"][0],
+                    updated=data["endpoints"][1],
+                    expired=data["endpoints"][2],
                 )
             )
             print(
@@ -207,14 +211,22 @@ def clean(source_strings, commit):
                 "certificate_clean",
                 "counter",
                 1,
-                metric_tags={"status": status, "source": source.label, "certificate": certificate.name},
+                metric_tags={
+                    "status": status,
+                    "source": source.label,
+                    "certificate": certificate.name,
+                },
             )
-            current_app.logger.warning(f"Removed {certificate.name} from source {source.label} during cleaning")
+            current_app.logger.warning(
+                f"Removed {certificate.name} from source {source.label} during cleaning"
+            )
             cleaned += 1
 
-        info_text = f"[+] Finished cleaning source: {source.label}. " \
-                    f"Removed {cleaned} certificates from source. " \
-                    f"Run Time: {(time.time() - start_time)}\n"
+        info_text = (
+            f"[+] Finished cleaning source: {source.label}. "
+            f"Removed {cleaned} certificates from source. "
+            f"Run Time: {(time.time() - start_time)}\n"
+        )
         print(info_text)
         current_app.logger.warning(info_text)
 
@@ -259,7 +271,9 @@ def clean_unused_and_expiring_within_days(source_strings, days_to_expire, commit
         print("[+] Staring to clean source: {label}!\n".format(label=source.label))
 
         cleaned = 0
-        certificates = certificate_service.get_all_pending_cleaning_expiring_in_days(source, days_to_expire)
+        certificates = certificate_service.get_all_pending_cleaning_expiring_in_days(
+            source, days_to_expire
+        )
         for certificate in certificates:
             status = FAILURE_METRIC_STATUS
             if commit:
@@ -269,14 +283,22 @@ def clean_unused_and_expiring_within_days(source_strings, days_to_expire, commit
                 "certificate_clean",
                 "counter",
                 1,
-                metric_tags={"status": status, "source": source.label, "certificate": certificate.name},
+                metric_tags={
+                    "status": status,
+                    "source": source.label,
+                    "certificate": certificate.name,
+                },
             )
-            current_app.logger.warning(f"Removed {certificate.name} from source {source.label} during cleaning")
+            current_app.logger.warning(
+                f"Removed {certificate.name} from source {source.label} during cleaning"
+            )
             cleaned += 1
 
-        info_text = f"[+] Finished cleaning source: {source.label}. " \
-                    f"Removed {cleaned} certificates from source. " \
-                    f"Run Time: {(time.time() - start_time)}\n"
+        info_text = (
+            f"[+] Finished cleaning source: {source.label}. "
+            f"Removed {cleaned} certificates from source. "
+            f"Run Time: {(time.time() - start_time)}\n"
+        )
         print(info_text)
         current_app.logger.warning(info_text)
 
@@ -321,7 +343,9 @@ def clean_unused_and_issued_since_days(source_strings, days_since_issuance, comm
         print("[+] Staring to clean source: {label}!\n".format(label=source.label))
 
         cleaned = 0
-        certificates = certificate_service.get_all_pending_cleaning_issued_since_days(source, days_since_issuance)
+        certificates = certificate_service.get_all_pending_cleaning_issued_since_days(
+            source, days_since_issuance
+        )
         for certificate in certificates:
             status = FAILURE_METRIC_STATUS
             if commit:
@@ -331,14 +355,22 @@ def clean_unused_and_issued_since_days(source_strings, days_since_issuance, comm
                 "certificate_clean",
                 "counter",
                 1,
-                metric_tags={"status": status, "source": source.label, "certificate": certificate.name},
+                metric_tags={
+                    "status": status,
+                    "source": source.label,
+                    "certificate": certificate.name,
+                },
             )
-            current_app.logger.warning(f"Removed {certificate.name} from source {source.label} during cleaning")
+            current_app.logger.warning(
+                f"Removed {certificate.name} from source {source.label} during cleaning"
+            )
             cleaned += 1
 
-        info_text = f"[+] Finished cleaning source: {source.label}. " \
-                    f"Removed {cleaned} certificates from source. " \
-                    f"Run Time: {(time.time() - start_time)}\n"
+        info_text = (
+            f"[+] Finished cleaning source: {source.label}. "
+            f"Removed {cleaned} certificates from source. "
+            f"Run Time: {(time.time() - start_time)}\n"
+        )
         print(info_text)
         current_app.logger.warning(info_text)
 
@@ -380,8 +412,10 @@ def enable_cloudfront(source_label):
     :param source_strings:
     :return:
     """
+
     class ValidationError(Exception):
         pass
+
     try:
         source = source_service.get_by_label(source_label)
         if not source:
@@ -390,7 +424,9 @@ def enable_cloudfront(source_label):
             raise ValidationError(f"Source '{source_label}' is not an AWS source")
         for opt_name in ["endpointType", "path"]:
             if get_plugin_option(opt_name, source.options) is not None:
-                raise ValidationError(f"Source '{source_label}' already sets option '{opt_name}'")
+                raise ValidationError(
+                    f"Source '{source_label}' already sets option '{opt_name}'"
+                )
         cloudfront_label = f"{source_label}-cloudfront"
         cloudfront_source = source_service.get_by_label(cloudfront_label)
         if cloudfront_source:
@@ -404,16 +440,26 @@ def enable_cloudfront(source_label):
             set_plugin_option(name, value, new_options)
         set_plugin_option("path", "/", new_options)
         set_plugin_option("endpointType", "elb", new_options)
-        source_service.update(source.id, source.label, source.plugin_name, new_options, source.description)
+        source_service.update(
+            source.id, source.label, source.plugin_name, new_options, source.description
+        )
 
         cloudfront_options = deepcopy(new_options)
         set_plugin_option("path", "/cloudfront/", cloudfront_options)
         set_plugin_option("endpointType", "cloudfront", cloudfront_options)
-        source_service.create(cloudfront_label, source.plugin_name, cloudfront_options,
-                              f"CloudFront certificates and distributions for {source_label}")
+        source_service.create(
+            cloudfront_label,
+            source.plugin_name,
+            cloudfront_options,
+            f"CloudFront certificates and distributions for {source_label}",
+        )
 
-        print(f"[+] Limited source {source_label} to discover ELBs and ELB certificates.\n")
-        print(f"[+] Created source {cloudfront_label} to discover CloudFront distributions and certificates.\n")
+        print(
+            f"[+] Limited source {source_label} to discover ELBs and ELB certificates.\n"
+        )
+        print(
+            f"[+] Created source {cloudfront_label} to discover CloudFront distributions and certificates.\n"
+        )
 
     except ValidationError as e:
         print(f"[+] Error: {str(e)}")

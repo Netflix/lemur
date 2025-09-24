@@ -6,6 +6,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from flask import Blueprint
 from flask_restful import Api, reqparse
 from lemur.auth.service import AuthenticatedResource
@@ -20,7 +21,7 @@ api = Api(mod)
 
 
 class PluginsList(AuthenticatedResource):
-    """ Defines the 'plugins' endpoint """
+    """Defines the 'plugins' endpoint"""
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
@@ -80,7 +81,7 @@ class PluginsList(AuthenticatedResource):
 
 
 class Plugins(AuthenticatedResource):
-    """ Defines the 'plugins' endpoint """
+    """Defines the 'plugins' endpoint"""
 
     def __init__(self):
         super(Plugins, self).__init__()

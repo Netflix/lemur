@@ -104,7 +104,10 @@ def _generate_header():
     Contains the Authorization access_key obtained from the get_ultradns_token() function.
     """
     access_token = get_ultradns_token()
-    return {"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"}
+    return {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json",
+    }
 
 
 def _paginate(path, key):
@@ -199,7 +202,7 @@ def wait_for_dns_change(change_id, account_number=None):
             "function": function,
             "fqdn": fqdn,
             "status": status,
-            "message": "Record status on ultraDNS authoritative server"
+            "message": "Record status on ultraDNS authoritative server",
         }
         current_app.logger.debug(log_data)
         if status:
@@ -214,7 +217,7 @@ def wait_for_dns_change(change_id, account_number=None):
                 "function": function,
                 "fqdn": fqdn,
                 "status": status,
-                "message": "Record status on Public DNS"
+                "message": "Record status on Public DNS",
             }
             current_app.logger.debug(log_data)
             if status:
@@ -222,7 +225,12 @@ def wait_for_dns_change(change_id, account_number=None):
                 break
             time.sleep(10)
     if not status:
-        metrics.send(f"{function}.fail", "counter", 1, metric_tags={"fqdn": fqdn, "txt_record": token})
+        metrics.send(
+            f"{function}.fail",
+            "counter",
+            1,
+            metric_tags={"fqdn": fqdn, "txt_record": token},
+        )
         capture_exception(extra={"fqdn": str(fqdn), "txt_record": str(token)})
     return
 
@@ -280,9 +288,7 @@ def create_txt_record(domain, token, account_number):
     path = f"/v2/zones/{zone_name}/rrsets/TXT/{node_name}"
     params = {
         "ttl": 5,
-        "rdata": [
-            f"{token}"
-        ],
+        "rdata": [f"{token}"],
     }
 
     try:
@@ -292,7 +298,7 @@ def create_txt_record(domain, token, account_number):
             "function": function,
             "fqdn": fqdn,
             "token": token,
-            "message": "TXT record created"
+            "message": "TXT record created",
         }
         current_app.logger.debug(log_data)
     except Exception as e:
@@ -302,7 +308,7 @@ def create_txt_record(domain, token, account_number):
             "domain": domain,
             "token": token,
             "Exception": e,
-            "message": "Unable to add record. Record already exists."
+            "message": "Unable to add record. Record already exists.",
         }
         current_app.logger.debug(log_data)
 
@@ -326,10 +332,7 @@ def delete_txt_record(change_id, account_number, domain, token):
 
     if not domain:
         function = sys._getframe().f_code.co_name
-        log_data = {
-            "function": function,
-            "message": "No domain passed"
-        }
+        log_data = {"function": function, "message": "No domain passed"}
         current_app.logger.debug(log_data)
         return
 
@@ -351,11 +354,7 @@ def delete_txt_record(change_id, account_number, domain, token):
         record.rdata.remove(f"{token}")
     except ValueError:
         function = sys._getframe().f_code.co_name
-        log_data = {
-            "function": function,
-            "token": token,
-            "message": "Token not found"
-        }
+        log_data = {"function": function, "token": token, "message": "Token not found"}
         current_app.logger.debug(log_data)
         return
 
@@ -375,10 +374,7 @@ def delete_acme_txt_records(domain):
 
     if not domain:
         function = sys._getframe().f_code.co_name
-        log_data = {
-            "function": function,
-            "message": "No domain passed"
-        }
+        log_data = {"function": function, "message": "No domain passed"}
         current_app.logger.debug(log_data)
         return
     acme_challenge_string = "_acme-challenge"
@@ -388,7 +384,7 @@ def delete_acme_txt_records(domain):
             "function": function,
             "domain": domain,
             "acme_challenge_string": acme_challenge_string,
-            "message": "Domain does not start with the acme challenge string"
+            "message": "Domain does not start with the acme challenge string",
         }
         current_app.logger.debug(log_data)
         return
@@ -413,7 +409,7 @@ def get_authoritative_nameserver(domain):
     while not last:
         s = n.split(depth)
 
-        last = s[0].to_unicode() == u"@"
+        last = s[0].to_unicode() == "@"
         sub = s[1]
 
         query = dns.message.make_query(sub, dns.rdatatype.NS)

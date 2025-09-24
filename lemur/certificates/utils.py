@@ -73,9 +73,7 @@ def get_key_type_from_csr(data):
 
     try:
         if isinstance(request.public_key(), rsa.RSAPublicKey):
-            return "RSA{key_size}".format(
-                key_size=request.public_key().key_size
-            )
+            return "RSA{key_size}".format(key_size=request.public_key().key_size)
         elif isinstance(request.public_key(), ec.EllipticCurvePublicKey):
             return get_key_type_from_ec_curve(request.public_key().curve.name)
         else:

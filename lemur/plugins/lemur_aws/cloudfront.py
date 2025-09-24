@@ -53,7 +53,9 @@ def get_distributions(**kwargs):
         client = kwargs.pop("client")
         return client.list_distributions(**kwargs)
     except Exception as e:  # noqa
-        metrics.send("list_distributions_error", "counter", 1, metric_tags={"error": str(e)})
+        metrics.send(
+            "list_distributions_error", "counter", 1, metric_tags={"error": str(e)}
+        )
         capture_exception()
         raise
 
@@ -68,7 +70,9 @@ def get_distribution(distribution_id, **kwargs):
     :return:
     """
     try:
-        dist_and_config = kwargs["client"].get_distribution(Id=distribution_id)["Distribution"]
+        dist_and_config = kwargs["client"].get_distribution(Id=distribution_id)[
+            "Distribution"
+        ]
         # Compose a similar dictionary to get_all_distributions
         dist = {
             "Id": dist_and_config["Id"],
@@ -106,7 +110,9 @@ def attach_certificate(distribution_id, iam_cert_id, **kwargs):
         if iam_cert_id == viewer_cert["IAMCertificateId"]:
             current_app.logger.warning(
                 "distribution {0} already assigned to IAM certificate {1}, not updated".format(
-                    distribution_id, iam_cert_id))
+                    distribution_id, iam_cert_id
+                )
+            )
             return
         viewer_cert["IAMCertificateId"] = iam_cert_id
         if "Certificate" in viewer_cert:
@@ -115,9 +121,8 @@ def attach_certificate(distribution_id, iam_cert_id, **kwargs):
             del viewer_cert["CertificateSource"]
 
         client.update_distribution(
-            Id=distribution_id,
-            DistributionConfig=config,
-            IfMatch=response["ETag"])
+            Id=distribution_id, DistributionConfig=config, IfMatch=response["ETag"]
+        )
     except Exception as e:  # noqa
         metrics.send("get_distribution_error", "counter", 1)
         capture_exception()

@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from sqlalchemy import func
 from flask import current_app
 
@@ -40,7 +41,9 @@ def create(label, plugin_name, options, description=None):
     if add_aws_destination_to_sources(destination):
         current_app.logger.info("Source: %s created", label)
 
-    log_service.audit_log("create_destination", destination.label, "Creating new destination")
+    log_service.audit_log(
+        "create_destination", destination.label, "Creating new destination"
+    )
     return database.create(destination)
 
 
@@ -67,7 +70,9 @@ def update(destination_id, label, plugin_name, options, description):
     destination.options = options
     destination.description = description
 
-    log_service.audit_log("update_destination", destination.label, "Updating destination")
+    log_service.audit_log(
+        "update_destination", destination.label, "Updating destination"
+    )
     updated = database.update(destination)
     # add the destination as source, to avoid new destinations that are not in source, as long as an AWS destination
     if add_aws_destination_to_sources(updated):
@@ -84,14 +89,19 @@ def delete(destination_id):
     destination = get(destination_id)
     if destination:
         # remove association of this source from all valid certificates
-        certificates = certificate_service.get_all_valid_certificates_with_destination(destination_id)
+        certificates = certificate_service.get_all_valid_certificates_with_destination(
+            destination_id
+        )
         for certificate in certificates:
             certificate_service.remove_destination_association(certificate, destination)
             current_app.logger.warning(
-                f"Removed destination {destination.label} for {certificate.name} during destination delete")
+                f"Removed destination {destination.label} for {certificate.name} during destination delete"
+            )
 
         # proceed with destination delete
-        log_service.audit_log("delete_destination", destination.label, "Deleting destination")
+        log_service.audit_log(
+            "delete_destination", destination.label, "Deleting destination"
+        )
         database.delete(destination)
 
 

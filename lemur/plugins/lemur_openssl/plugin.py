@@ -6,6 +6,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from io import open
 import subprocess
 
@@ -14,7 +15,11 @@ from flask import current_app
 from lemur.utils import mktempfile, mktemppath
 from lemur.plugins.bases import ExportPlugin
 from lemur.plugins import lemur_openssl as openssl
-from lemur.common.utils import get_psuedo_random_string, parse_certificate, check_validation
+from lemur.common.utils import (
+    get_psuedo_random_string,
+    parse_certificate,
+    check_validation,
+)
 from lemur.common.defaults import common_name
 
 

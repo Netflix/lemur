@@ -32,7 +32,7 @@ class ADCSIssuerPlugin(IssuerPlugin):
         """
         adcs_root = current_app.config.get("ADCS_ROOT")
         adcs_issuing = current_app.config.get("ADCS_ISSUING")
-        name = "adcs_" + "_".join(options['name'].split(" ")) + "_admin"
+        name = "adcs_" + "_".join(options["name"].split(" ")) + "_admin"
         role = {"username": "", "password": "", "name": name}
         return adcs_root, adcs_issuing, [role]
 
@@ -44,7 +44,10 @@ class ADCSIssuerPlugin(IssuerPlugin):
         # if there is a config variable ADCS_TEMPLATE_<upper(authority.name)> take the value as Cert template
         # else default to ADCS_TEMPLATE to be compatible with former versions
         authority = issuer_options.get("authority").name.upper()
-        adcs_template = current_app.config.get("ADCS_TEMPLATE_{0}".format(authority), current_app.config.get("ADCS_TEMPLATE"))
+        adcs_template = current_app.config.get(
+            "ADCS_TEMPLATE_{0}".format(authority),
+            current_app.config.get("ADCS_TEMPLATE"),
+        )
         ca_server = Certsrv(
             adcs_server, adcs_user, adcs_pwd, auth_method=adcs_auth_method
         )

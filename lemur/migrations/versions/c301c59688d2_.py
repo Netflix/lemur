@@ -2,8 +2,8 @@
 
 This database upgrade updates the key_type information for either
 still valid or expired certificates in the last 30 days. For RSA
-keys, the algorithm is determined based on the key length. For 
-the rest of the keys, the certificate body is parsed to determine 
+keys, the algorithm is determined based on the key length. For
+the rest of the keys, the certificate body is parsed to determine
 the exact key_type information.
 
 Each individual DB change is explicitly committed, and the respective
@@ -27,8 +27,8 @@ Create Date: 2020-09-21 14:28:50.757998
 """
 
 # revision identifiers, used by Alembic.
-revision = 'c301c59688d2'
-down_revision = '434c29e40511'
+revision = "c301c59688d2"
+down_revision = "434c29e40511"
 
 from alembic import op
 from sqlalchemy.sql import text
@@ -43,9 +43,7 @@ from lemur.common import utils
 log = getLogger(__name__)
 handler = FileHandler(current_app.config.get("LOG_UPGRADE_FILE", "db_upgrade.log"))
 handler.setFormatter(
-    Formatter(
-        "%(asctime)s %(levelname)s: %(message)s " "[in %(pathname)s:%(lineno)d]"
-    )
+    Formatter("%(asctime)s %(levelname)s: %(message)s " "[in %(pathname)s:%(lineno)d]")
 )
 handler.setLevel(current_app.config.get("LOG_LEVEL", "DEBUG"))
 log.setLevel(current_app.config.get("LOG_LEVEL", "DEBUG"))
@@ -103,18 +101,23 @@ def update_key_type():
 
     # Loop through all certificates that are valid today or expired in the last 30 days.
     for cert_id, body in conn.execute(
-            text(
-                "select id, body from certificates where not_after > CURRENT_DATE - 31 and key_type is null")
+        text(
+            "select id, body from certificates where not_after > CURRENT_DATE - 31 and key_type is null"
+        )
     ):
         try:
             cert_key_type = utils.get_key_type_from_certificate(body)
         except ValueError as e:
-            log.error("Error in processing certificate - ID: %s Error: %s \n" % (cert_id, str(e)))
-        else:
-            log.info("Processing certificate - ID: %s key_type: %s\n" % (cert_id, cert_key_type))
-            stmt = text(
-                "update certificates set key_type=:key_type where id=:id"
+            log.error(
+                "Error in processing certificate - ID: %s Error: %s \n"
+                % (cert_id, str(e))
             )
+        else:
+            log.info(
+                "Processing certificate - ID: %s key_type: %s\n"
+                % (cert_id, cert_key_type)
+            )
+            stmt = text("update certificates set key_type=:key_type where id=:id")
             stmt = stmt.bindparams(key_type=cert_key_type, id=cert_id)
             op.execute(stmt)
 

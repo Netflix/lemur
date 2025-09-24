@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from datetime import timedelta
 
 import arrow
@@ -168,7 +169,7 @@ class Certificate(db.Model):
     sources = relationship(
         "Source", secondary=certificate_source_associations, backref="certificate"
     )
-    domains = association_proxy('certificate_associations', 'domain')
+    domains = association_proxy("certificate_associations", "domain")
     roles = relationship("Role", secondary=roles_certificates, backref="certificate")
     replaces = relationship(
         "Certificate",
@@ -187,10 +188,14 @@ class Certificate(db.Model):
 
     logs = relationship("Log", backref="certificate")
     endpoints_assoc = relationship(
-        "EndpointsCertificates", back_populates="certificate", cascade="all, delete-orphan"
+        "EndpointsCertificates",
+        back_populates="certificate",
+        cascade="all, delete-orphan",
     )
     endpoints = association_proxy(
-        "endpoints_assoc", "endpoint", creator=lambda ep: EndpointsCertificates(endpoint=ep)
+        "endpoints_assoc",
+        "endpoint",
+        creator=lambda ep: EndpointsCertificates(endpoint=ep),
     )
     rotation_policy = relationship("RotationPolicy")
     sensitive_fields = ("private_key",)
@@ -243,7 +248,12 @@ class Certificate(db.Model):
         else:
             self.name = get_or_increase_name(
                 defaults.certificate_name(
-                    self.cn, self.issuer, self.not_before, self.not_after, self.san, self.domains
+                    self.cn,
+                    self.issuer,
+                    self.not_before,
+                    self.not_after,
+                    self.san,
+                    self.domains,
                 ),
                 self.serial,
             )
@@ -446,13 +456,10 @@ class Certificate(db.Model):
 
 
 class CertificateAssociation(db.Model):
-    __tablename__ = 'certificate_associations'
+    __tablename__ = "certificate_associations"
     __table_args__ = (
         Index(
-            "certificate_associations_ix",
-            "domain_id",
-            "certificate_id",
-            unique=True
+            "certificate_associations_ix", "domain_id", "certificate_id", unique=True
         ),
         Index(
             "certificate_associations_certificate_id_idx",
@@ -462,10 +469,10 @@ class CertificateAssociation(db.Model):
     domain_id = Column(Integer, ForeignKey("domains.id"), primary_key=True)
     certificate_id = Column(Integer, ForeignKey("certificates.id"), primary_key=True)
     ports = Column(postgresql.ARRAY(Integer))
-    certificate = relationship(Certificate,
-                               backref=backref("certificate_associations",
-                                               cascade="all, delete-orphan")
-                               )
+    certificate = relationship(
+        Certificate,
+        backref=backref("certificate_associations", cascade="all, delete-orphan"),
+    )
     domain = relationship("Domain")
 
     def __init__(self, domain=None, certificate=None, ports=None):

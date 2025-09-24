@@ -6,6 +6,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 import json
 
 from flask import current_app
@@ -95,7 +96,7 @@ class Authority(db.Model):
         options_array = json.loads(self.options)
         if isinstance(options_array, list):
             for option in options_array:
-                if "name" in option and option["name"] == 'cab_compliant':
+                if "name" in option and option["name"] == "cab_compliant":
                     return option["value"]
 
         return None
@@ -107,7 +108,9 @@ class Authority(db.Model):
         If plugin is configured in list LEMUR_PRIVATE_AUTHORITY_PLUGIN_NAMES, the authority is treated as private
         :return: True if private, False otherwise
         """
-        return self.plugin_name in current_app.config.get("LEMUR_PRIVATE_AUTHORITY_PLUGIN_NAMES", [])
+        return self.plugin_name in current_app.config.get(
+            "LEMUR_PRIVATE_AUTHORITY_PLUGIN_NAMES", []
+        )
 
     @property
     def max_issuance_days(self):
@@ -136,7 +139,7 @@ class Authority(db.Model):
         options_array = json.loads(self.options)
         if isinstance(options_array, list):
             for option in options_array:
-                if "name" in option and option["name"] == 'cn_optional':
+                if "name" in option and option["name"] == "cn_optional":
                     return option["value"]
 
         return False

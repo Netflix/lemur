@@ -7,8 +7,12 @@ def test_get_certificates(app):
 def test_create_cis_authority(app):
     from lemur.plugins.lemur_verisign.plugin import VerisignIssuerPlugin
 
-    options = {
-        "name": "test Verisign authority"
-    }
+    options = {"name": "test Verisign authority"}
     digicert_root, intermediate, role = VerisignIssuerPlugin.create_authority(options)
-    assert role == [{"username": "", "password": "", "name": "verisign_test_Verisign_authority_admin"}]
+    assert role == [
+        {
+            "username": "",
+            "password": "",
+            "name": "verisign_test_Verisign_authority_admin",
+        }
+    ]

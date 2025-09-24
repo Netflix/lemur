@@ -111,7 +111,7 @@ Special thanks to all who contributed to this release, notably:
 0.10.0 - `2021-06-28`
 ~~~~~~~~~~~~~~~~~~~~~
 
-This release introduces a breaking change (PR `#3646 <https://github.com/Netflix/lemur/pull/3646>`_) to the following API endpoint: 
+This release introduces a breaking change (PR `#3646 <https://github.com/Netflix/lemur/pull/3646>`_) to the following API endpoint:
 
 - `POST /certificates/1/update/notify <https://lemur.readthedocs.io/en/latest/developer/index.html#lemur.certificates.views.Certificates.post>`_
 
@@ -119,7 +119,7 @@ The endpoint is now:
 
 - `POST /certificates/1/update/switches <https://lemur.readthedocs.io/en/latest/developer/index.html#lemur.certificates.views.Certificates.post>`_
 
-The new endpoint honors the existing `notify` request parameter, and additionally accepts a new `rotation` parameter. 
+The new endpoint honors the existing `notify` request parameter, and additionally accepts a new `rotation` parameter.
 As a result of this change, the certificate table view now includes rotation switches and filtering by rotation status.
 
 

@@ -5,6 +5,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 import botocore
 from flask import current_app
 
@@ -75,7 +76,9 @@ def get_all_elbs(**kwargs):
     try:
         while True:
             response = _get_elbs(**kwargs)
-            elbs += _filter_ignored_elbsv1(response["LoadBalancerDescriptions"], **kwargs)
+            elbs += _filter_ignored_elbsv1(
+                response["LoadBalancerDescriptions"], **kwargs
+            )
 
             if not response.get("NextMarker"):
                 return elbs
@@ -94,7 +97,9 @@ def _filter_ignored_elbsv1(elbs, **kwargs):
     :param kwargs: must contain a 'client' from @sts_client
     :return:
     """
-    return _filter_ignored_elbs(elbs, "LoadBalancerName", "LoadBalancerNames", "LoadBalancerName", **kwargs)
+    return _filter_ignored_elbs(
+        elbs, "LoadBalancerName", "LoadBalancerNames", "LoadBalancerName", **kwargs
+    )
 
 
 def _filter_ignored_elbsv2(elbs, **kwargs):
@@ -104,7 +109,9 @@ def _filter_ignored_elbsv2(elbs, **kwargs):
     :param kwargs: must contain a 'client' from @sts_client
     :return:
     """
-    return _filter_ignored_elbs(elbs, "LoadBalancerArn", "ResourceArns", "ResourceArn", **kwargs)
+    return _filter_ignored_elbs(
+        elbs, "LoadBalancerArn", "ResourceArns", "ResourceArn", **kwargs
+    )
 
 
 def _filter_ignored_elbs(elbs, key_field, arg_name, response_key_field, **kwargs):
@@ -131,7 +138,9 @@ def _filter_ignored_elbs(elbs, key_field, arg_name, response_key_field, **kwargs
         while len(keys):
             next_keys = keys[:20]
             keys = keys[20:]
-            tags_list += client.describe_tags(**{arg_name: next_keys})["TagDescriptions"]
+            tags_list += client.describe_tags(**{arg_name: next_keys})[
+                "TagDescriptions"
+            ]
         ignored_keys = {}
         for tags in tags_list:
             key = tags[response_key_field]
@@ -329,7 +338,10 @@ def describe_listener_certificates_v2(**kwargs):
         return client.describe_listener_certificates(**kwargs)
     except Exception as e:  # noqa
         metrics.send(
-            "describe_listener_certificates_v2_error", "counter", 1, metric_tags={"error": str(e)}
+            "describe_listener_certificates_v2_error",
+            "counter",
+            1,
+            metric_tags={"error": str(e)},
         )
         capture_exception()
         raise

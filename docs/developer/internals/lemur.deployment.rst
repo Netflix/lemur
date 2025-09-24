@@ -10,8 +10,8 @@ deployment Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`service` Module	
-------------------------------	
+:mod:`service` Module
+------------------------------
 
 .. automodule:: lemur.deployment.service
     :noindex:

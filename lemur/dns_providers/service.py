@@ -66,7 +66,9 @@ def delete(dns_provider_id):
     """
     dns_provider = get(dns_provider_id)
     if dns_provider:
-        log_service.audit_log("delete_dns_provider", dns_provider.name, "Deleting the DNS provider")
+        log_service.audit_log(
+            "delete_dns_provider", dns_provider.name, "Deleting the DNS provider"
+        )
         database.delete(dns_provider)
 
 
@@ -139,5 +141,7 @@ def create(data):
     )
     created = database.create(dns_provider)
 
-    log_service.audit_log("create_dns_provider", provider_name, "Created new DNS provider")
+    log_service.audit_log(
+        "create_dns_provider", provider_name, "Created new DNS provider"
+    )
     return created.id

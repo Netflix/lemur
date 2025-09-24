@@ -22,7 +22,7 @@ class TestUltradns(unittest.TestCase):
 
         # Creates a new Flask application for a test duration. In python 3.8, manual push of application context is
         # needed to run tests in dev environment without getting error 'Working outside of application context'.
-        _app = Flask('lemur_test_acme')
+        _app = Flask("lemur_test_acme")
         self.ctx = _app.app_context()
         assert self.ctx
         self.ctx.push()
@@ -55,7 +55,7 @@ class TestUltradns(unittest.TestCase):
             "function": "create_txt_record",
             "fqdn": domain,
             "token": token,
-            "message": "TXT record created"
+            "message": "TXT record created",
         }
         result = ultradns.create_txt_record(domain, token, account_number)
         mock_current_app.logger.debug.assert_called_with(log_data)
@@ -73,11 +73,19 @@ class TestUltradns(unittest.TestCase):
         ultradns.get_zone_name = Mock(return_value=zone)
         ultradns._post = Mock()
         ultradns._get = Mock()
-        ultradns._get.return_value = {'zoneName': 'test.example.com.com',
-                                      'rrSets': [{'ownerName': '_acme-challenge.test.example.com.',
-                                                  'rrtype': 'TXT (16)', 'ttl': 5, 'rdata': ['ABCDEFGHIJ']}],
-                                      'queryInfo': {'sort': 'OWNER', 'reverse': False, 'limit': 100},
-                                      'resultInfo': {'totalCount': 1, 'offset': 0, 'returnedCount': 1}}
+        ultradns._get.return_value = {
+            "zoneName": "test.example.com.com",
+            "rrSets": [
+                {
+                    "ownerName": "_acme-challenge.test.example.com.",
+                    "rrtype": "TXT (16)",
+                    "ttl": 5,
+                    "rdata": ["ABCDEFGHIJ"],
+                }
+            ],
+            "queryInfo": {"sort": "OWNER", "reverse": False, "limit": 100},
+            "resultInfo": {"totalCount": 1, "offset": 0, "returnedCount": 1},
+        }
         ultradns._delete = Mock()
         mock_metrics.send = Mock()
         ultradns.delete_txt_record(change_id, account_number, domain, token)
@@ -101,12 +109,12 @@ class TestUltradns(unittest.TestCase):
             "function": "wait_for_dns_change",
             "fqdn": domain,
             "status": True,
-            "message": "Record status on Public DNS"
+            "message": "Record status on Public DNS",
         }
         mock_current_app.logger.debug.assert_called_with(log_data)
 
     def test_ultradns_get_zone_name(self):
-        zones = ['example.com', 'test.example.com']
+        zones = ["example.com", "test.example.com"]
         zone = "test.example.com"
         domain = "_acme-challenge.test.example.com"
         account_number = "1234567890"
@@ -117,32 +125,75 @@ class TestUltradns(unittest.TestCase):
     def test_ultradns_get_zones(self):
         account_number = "1234567890"
         path = "a/b/c"
-        zones = ['example.com', 'test.example.com']
-        paginate_response = [{
-            'properties': {
-                'name': 'example.com.', 'accountName': 'example', 'type': 'PRIMARY',
-                'dnssecStatus': 'UNSIGNED', 'status': 'ACTIVE', 'resourceRecordCount': 9,
-                'lastModifiedDateTime': '2017-06-14T06:45Z'},
-            'registrarInfo': {
-                'nameServers': {'missing': ['example.ultradns.com.', 'example.ultradns.net.',
-                                            'example.ultradns.biz.', 'example.ultradns.org.']}},
-            'inherit': 'ALL'}, {
-            'properties': {
-                'name': 'test.example.com.', 'accountName': 'example', 'type': 'PRIMARY',
-                'dnssecStatus': 'UNSIGNED', 'status': 'ACTIVE', 'resourceRecordCount': 9,
-                'lastModifiedDateTime': '2017-06-14T06:45Z'},
-            'registrarInfo': {
-                'nameServers': {'missing': ['example.ultradns.com.', 'example.ultradns.net.',
-                                            'example.ultradns.biz.', 'example.ultradns.org.']}},
-            'inherit': 'ALL'}, {
-            'properties': {
-                'name': 'example2.com.', 'accountName': 'example', 'type': 'SECONDARY',
-                'dnssecStatus': 'UNSIGNED', 'status': 'ACTIVE', 'resourceRecordCount': 9,
-                'lastModifiedDateTime': '2017-06-14T06:45Z'},
-            'registrarInfo': {
-                'nameServers': {'missing': ['example.ultradns.com.', 'example.ultradns.net.',
-                                            'example.ultradns.biz.', 'example.ultradns.org.']}},
-            'inherit': 'ALL'}]
+        zones = ["example.com", "test.example.com"]
+        paginate_response = [
+            {
+                "properties": {
+                    "name": "example.com.",
+                    "accountName": "example",
+                    "type": "PRIMARY",
+                    "dnssecStatus": "UNSIGNED",
+                    "status": "ACTIVE",
+                    "resourceRecordCount": 9,
+                    "lastModifiedDateTime": "2017-06-14T06:45Z",
+                },
+                "registrarInfo": {
+                    "nameServers": {
+                        "missing": [
+                            "example.ultradns.com.",
+                            "example.ultradns.net.",
+                            "example.ultradns.biz.",
+                            "example.ultradns.org.",
+                        ]
+                    }
+                },
+                "inherit": "ALL",
+            },
+            {
+                "properties": {
+                    "name": "test.example.com.",
+                    "accountName": "example",
+                    "type": "PRIMARY",
+                    "dnssecStatus": "UNSIGNED",
+                    "status": "ACTIVE",
+                    "resourceRecordCount": 9,
+                    "lastModifiedDateTime": "2017-06-14T06:45Z",
+                },
+                "registrarInfo": {
+                    "nameServers": {
+                        "missing": [
+                            "example.ultradns.com.",
+                            "example.ultradns.net.",
+                            "example.ultradns.biz.",
+                            "example.ultradns.org.",
+                        ]
+                    }
+                },
+                "inherit": "ALL",
+            },
+            {
+                "properties": {
+                    "name": "example2.com.",
+                    "accountName": "example",
+                    "type": "SECONDARY",
+                    "dnssecStatus": "UNSIGNED",
+                    "status": "ACTIVE",
+                    "resourceRecordCount": 9,
+                    "lastModifiedDateTime": "2017-06-14T06:45Z",
+                },
+                "registrarInfo": {
+                    "nameServers": {
+                        "missing": [
+                            "example.ultradns.com.",
+                            "example.ultradns.net.",
+                            "example.ultradns.biz.",
+                            "example.ultradns.org.",
+                        ]
+                    }
+                },
+                "inherit": "ALL",
+            },
+        ]
         ultradns._paginate = Mock(path, "zones")
         ultradns._paginate.side_effect = [[paginate_response]]
         result = ultradns.get_zones(account_number)

@@ -6,6 +6,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from lemur.common.utils import check_validation
 from lemur.plugins.base import Plugin
 

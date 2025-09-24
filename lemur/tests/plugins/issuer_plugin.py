@@ -1,6 +1,10 @@
 from lemur.plugins.bases import IssuerPlugin
 
-from lemur.tests.vectors import SAN_CERT_STR, INTERMEDIATE_CERT_STR, IP_SAN_NO_CN_CERT_STR
+from lemur.tests.vectors import (
+    SAN_CERT_STR,
+    INTERMEDIATE_CERT_STR,
+    IP_SAN_NO_CN_CERT_STR,
+)
 from lemur.common.utils import parse_csr
 from cryptography import x509
 from cryptography.x509.oid import ExtensionOID
@@ -21,7 +25,9 @@ class TestIssuerPlugin(IssuerPlugin):
         # body, chain, external_id
         parsed_csr = parse_csr(csr)
         try:
-            san = parsed_csr.extensions.get_extension_for_oid(ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
+            san = parsed_csr.extensions.get_extension_for_oid(
+                ExtensionOID.SUBJECT_ALTERNATIVE_NAME
+            )
             if san and san.value.get_values_for_type(x509.IPAddress):
                 return IP_SAN_NO_CN_CERT_STR, INTERMEDIATE_CERT_STR, None
         except x509.ExtensionNotFound:
@@ -30,7 +36,7 @@ class TestIssuerPlugin(IssuerPlugin):
 
     @staticmethod
     def create_authority(options):
-        name = "test_" + "_".join(options['name'].split(" ")) + "_admin"
+        name = "test_" + "_".join(options["name"].split(" ")) + "_admin"
         role = {"username": "", "password": "", "name": name}
         return SAN_CERT_STR, "", [role]
 
@@ -54,7 +60,7 @@ class TestAsyncIssuerPlugin(IssuerPlugin):
 
     @staticmethod
     def create_authority(options):
-        name = "test_" + "_".join(options['name'].split(" ")) + "_admin"
+        name = "test_" + "_".join(options["name"].split(" ")) + "_admin"
         role = {"username": "", "password": "", "name": name}
         return SAN_CERT_STR, "", [role]
 

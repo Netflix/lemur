@@ -12,7 +12,7 @@ from lemur.tests.vectors import (
     DSA_CERT,
     CERT_CHAIN_PKCS7_PEM,
     ACME_CHAIN_LONG_STR,
-    ACME_CHAIN_X1_STR
+    ACME_CHAIN_X1_STR,
 )
 
 
@@ -115,46 +115,53 @@ def test_is_selfsigned(selfsigned_cert):
 
 def test_get_key_type_from_certificate():
     from lemur.common.utils import get_key_type_from_certificate
-    assert (get_key_type_from_certificate(SAN_CERT_STR) == "RSA2048")
-    assert (get_key_type_from_certificate(ECDSA_SECP384r1_CERT_STR) == "ECCSECP384R1")
+
+    assert get_key_type_from_certificate(SAN_CERT_STR) == "RSA2048"
+    assert get_key_type_from_certificate(ECDSA_SECP384r1_CERT_STR) == "ECCSECP384R1"
 
 
 def test_convert_pkcs7_bytes_to_pem():
     from lemur.common.utils import convert_pkcs7_bytes_to_pem
     from lemur.common.utils import parse_certificate
+
     cert_chain = convert_pkcs7_bytes_to_pem(CERT_CHAIN_PKCS7_PEM)
-    assert (len(cert_chain) == 3)
+    assert len(cert_chain) == 3
 
     leaf = cert_chain[1]
     root = cert_chain[2]
 
-    assert (parse_certificate("\n".join(str(root).splitlines())) == ROOTCA_CERT)
-    assert (parse_certificate("\n".join(str(leaf).splitlines())) == INTERMEDIATE_CERT)
+    assert parse_certificate("\n".join(str(root).splitlines())) == ROOTCA_CERT
+    assert parse_certificate("\n".join(str(leaf).splitlines())) == INTERMEDIATE_CERT
 
 
 def test_encryption(client):
     from lemur.common.utils import data_encrypt, data_decrypt
+
     plaintext = "encrypt this string"
-    assert (data_decrypt(data_encrypt(plaintext)) == plaintext)
+    assert data_decrypt(data_encrypt(plaintext)) == plaintext
 
     plaintext = 123
-    assert (data_decrypt(data_encrypt(plaintext)) == str(plaintext))
+    assert data_decrypt(data_encrypt(plaintext)) == str(plaintext)
 
     plaintext = {"this": "is a test"}
-    assert (data_decrypt(data_encrypt(plaintext)) == str(plaintext))
+    assert data_decrypt(data_encrypt(plaintext)) == str(plaintext)
 
 
 def test_is_json():
     from lemur.common.utils import is_json
+
     assert is_json("{}") is True
     assert is_json("{some text}") is False
     assert is_json("{'value':100 }") is False
     assert is_json('{ "value":100}') is True
-    assert is_json("{\"value\":100 }") is True
+    assert is_json('{"value":100 }') is True
     assert is_json('{"range":[5,6.8],"name":"something"}') is True
 
 
 def drop_last_cert_from_chain(self):
     from lemur.common.utils import drop_last_cert_from_chain
+
     chain_pem = drop_last_cert_from_chain(ACME_CHAIN_LONG_STR)
-    self.assertEqual(chain_pem, ACME_CHAIN_LONG_STR[len(SAN_CERT_STR + ACME_CHAIN_X1_STR):].lstrip())
+    self.assertEqual(
+        chain_pem, ACME_CHAIN_LONG_STR[len(SAN_CERT_STR + ACME_CHAIN_X1_STR) :].lstrip()
+    )

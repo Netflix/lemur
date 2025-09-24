@@ -41,7 +41,7 @@ def test_build_intermediate_certificate_authority(authority):
         "first_serial": 1,
         "serial_number": 1,
         "owner": "owner@example.com",
-        "parent": authority
+        "parent": authority,
     }
     cert_pem, private_key_pem, chain_cert_pem = build_certificate_authority(options)
 

@@ -7,6 +7,7 @@
 .. moduleauthor:: Eric Coan <kungfury@instructure.com>
 
 """
+
 from datetime import datetime
 
 from flask import Blueprint, g
@@ -33,7 +34,7 @@ api = Api(mod)
 
 
 class ApiKeyList(AuthenticatedResource):
-    """ Defines the 'api_keys' endpoint """
+    """Defines the 'api_keys' endpoint"""
 
     def __init__(self):
         super(ApiKeyList, self).__init__()
@@ -154,7 +155,7 @@ class ApiKeyList(AuthenticatedResource):
 
 
 class ApiKeyUserList(AuthenticatedResource):
-    """ Defines the 'keys' endpoint on the 'users' endpoint. """
+    """Defines the 'keys' endpoint on the 'users' endpoint."""
 
     def __init__(self):
         super(ApiKeyUserList, self).__init__()

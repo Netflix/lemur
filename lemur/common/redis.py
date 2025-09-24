@@ -2,6 +2,7 @@
 Helper Class for Redis
 
 """
+
 import redis
 import sys
 from flask import current_app
@@ -16,9 +17,12 @@ else:
 
 
 class RedisHandler:
-    def __init__(self, host=flask_app.config.get('REDIS_HOST', 'localhost'),
-                 port=flask_app.config.get('REDIS_PORT', 6379),
-                 db=flask_app.config.get('REDIS_DB', 0)):
+    def __init__(
+        self,
+        host=flask_app.config.get("REDIS_HOST", "localhost"),
+        port=flask_app.config.get("REDIS_PORT", 6379),
+        db=flask_app.config.get("REDIS_DB", 0),
+    ):
         self.host = host
         self.port = port
         self.db = db
@@ -45,7 +49,7 @@ class RedisHandler:
                 "function": function,
                 "message": "Redis Connection error",
                 "host": self.host,
-                "port": self.port
+                "port": self.port,
             }
             current_app.logger.error(log_data)
             capture_exception()

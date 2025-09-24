@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Ian Stahnke <ian.stahnke@myob.com>
 """
+
 import ldap
 
 from flask import current_app
@@ -105,7 +106,9 @@ class LdapPrincipal:
             role = role_service.get_by_name(self.ldap_default_role)
             if role:
                 if not role.third_party:
-                    role = role_service.set_third_party(role.id, third_party_status=True)
+                    role = role_service.set_third_party(
+                        role.id, third_party_status=True
+                    )
                 roles.add(role)
 
         # update their 'roles'
@@ -199,8 +202,10 @@ class LdapPrincipal:
             )[0][1]["distinguishedName"][0]
             userdn = userdn.decode("utf-8")
             # Search all groups that have the userDN as a member
-            groupfilter = "(&(objectclass=group)(member:1.2.840.113556.1.4.1941:={0}))".format(
-                userdn
+            groupfilter = (
+                "(&(objectclass=group)(member:1.2.840.113556.1.4.1941:={0}))".format(
+                    userdn
+                )
             )
             lgroups = self.ldap_client.search_s(
                 self.ldap_base_dn, ldap.SCOPE_SUBTREE, groupfilter, ["cn"]

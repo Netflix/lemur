@@ -10,10 +10,18 @@ _basedir = os.path.abspath(os.path.dirname(__file__))
 
 # generate random secrets for unittest
 def get_random_secret(length):
-    secret_key = ''.join(random.choice(string.ascii_uppercase) for x in range(round(length / 4)))
-    secret_key = secret_key + ''.join(random.choice("~!@#$%^&*()_+") for x in range(round(length / 4)))
-    secret_key = secret_key + ''.join(random.choice(string.ascii_lowercase) for x in range(round(length / 4)))
-    return secret_key + ''.join(random.choice(string.digits) for x in range(round(length / 4)))
+    secret_key = "".join(
+        random.choice(string.ascii_uppercase) for x in range(round(length / 4))
+    )
+    secret_key = secret_key + "".join(
+        random.choice("~!@#$%^&*()_+") for x in range(round(length / 4))
+    )
+    secret_key = secret_key + "".join(
+        random.choice(string.ascii_lowercase) for x in range(round(length / 4))
+    )
+    return secret_key + "".join(
+        random.choice(string.digits) for x in range(round(length / 4))
+    )
 
 
 THREADS_PER_PAGE = 8
@@ -27,16 +35,18 @@ debug = False
 TESTING = True
 
 # this is the secret key used by flask session management (utf8 encoded)
-SECRET_KEY = get_random_secret(length=32).encode('utf8')
+SECRET_KEY = get_random_secret(length=32).encode("utf8")
 
 
 # You should consider storing these separately from your config (should be URL-safe)
 LEMUR_TOKEN_SECRET = "test"
-LEMUR_ENCRYPTION_KEYS = base64.urlsafe_b64encode(get_random_secret(length=32).encode('utf8'))
+LEMUR_ENCRYPTION_KEYS = base64.urlsafe_b64encode(
+    get_random_secret(length=32).encode("utf8")
+)
 
 
 # this is the secret used to generate oauth state tokens
-OAUTH_STATE_TOKEN_SECRET = base64.b64encode(get_random_secret(32).encode('utf8'))
+OAUTH_STATE_TOKEN_SECRET = base64.b64encode(get_random_secret(32).encode("utf8"))
 
 OAUTH_STATE_TOKEN_STALE_TOLERANCE_SECONDS = 15
 
@@ -73,7 +83,7 @@ LEMUR_ALLOW_WEEKEND_EXPIRATION = False
 LEMUR_PORTS_FOR_DEPLOYED_CERTIFICATE_CHECK = [443, 65521, 65522, 65523, 65524]
 
 # needed for test_messaging
-LEMUR_REISSUE_NOTIFICATION_EXCLUDED_DESTINATIONS = ['excluded-destination']
+LEMUR_REISSUE_NOTIFICATION_EXCLUDED_DESTINATIONS = ["excluded-destination"]
 
 # Database
 

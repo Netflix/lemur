@@ -20,10 +20,8 @@ fileConfig(config.config_file_name)
 # target_metadata = mymodel.Base.metadata
 from flask import current_app
 
-db_url_escaped = current_app.config.get('SQLALCHEMY_DATABASE_URI').replace('%', '%%')
-config.set_main_option(
-    "sqlalchemy.url", db_url_escaped
-)
+db_url_escaped = current_app.config.get("SQLALCHEMY_DATABASE_URI").replace("%", "%%")
+config.set_main_option("sqlalchemy.url", db_url_escaped)
 target_metadata = current_app.extensions["migrate"].db.metadata
 
 # other values from the config, defined by the needs of env.py,

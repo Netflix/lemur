@@ -3,6 +3,7 @@
     Copyright (c) 2018 and onwards Netflix, Inc.  All rights reserved.
 .. moduleauthor:: Secops <secops@netflix.com>
 """
+
 from lemur import database
 
 from lemur.authorizations.models import Authorization

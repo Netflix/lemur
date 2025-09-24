@@ -209,7 +209,9 @@ def verify_cert_chain(certs, error_class=ValidationError):
 def is_valid_owner(email):
     user_membership_provider = None
     if current_app.config.get("USER_MEMBERSHIP_PROVIDER") is not None:
-        user_membership_provider = plugins.get(current_app.config.get("USER_MEMBERSHIP_PROVIDER"))
+        user_membership_provider = plugins.get(
+            current_app.config.get("USER_MEMBERSHIP_PROVIDER")
+        )
     if user_membership_provider is None:
         # nothing to check since USER_MEMBERSHIP_PROVIDER is not configured
         return True

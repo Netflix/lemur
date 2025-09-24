@@ -11,7 +11,7 @@ endpoints Package
     :show-inheritance:
 
 :mod:`models` Module
------------------------------	
+-----------------------------
 
 .. automodule:: lemur.endpoints.models
     :noindex:
@@ -19,8 +19,8 @@ endpoints Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`schemas` Module	
-------------------------------	
+:mod:`schemas` Module
+------------------------------
 
 .. automodule:: lemur.endpoints.schemas
     :noindex:
@@ -28,19 +28,19 @@ endpoints Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`service` Module	
-------------------------------	
+:mod:`service` Module
+------------------------------
 
-.. automodule:: lemur.endpoints.service	
+.. automodule:: lemur.endpoints.service
     :noindex:
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`views` Module	
-----------------------------	
+:mod:`views` Module
+----------------------------
 
-.. automodule:: lemur.endpoints.views	
+.. automodule:: lemur.endpoints.views
     :noindex:
     :members:
     :undoc-members:

@@ -1,24 +1,10 @@
--   repo: git://github.com/pre-commit/pre-commit-hooks
-    sha: v0.9.1
-    hooks:
-    -   id: trailing-whitespace
-    -   id: flake8
-    -   id: check-merge-conflict
--   repo: git://github.com/pre-commit/mirrors-jshint
-    sha: v2.9.5
-    hooks:
-    -   id: jshint
--   repo: https://github.com/ambv/black
-    rev: stable
-    hooks:
-    - id: black
-      language_version: python3.7
-
--   repo: local
-    hooks:
-    -   id: python-bandit-vulnerability-check
-        name: bandit
-        entry: bandit
-        args: ['--ini', 'tox.ini', '-r', 'consoleme']
-        language: system
-        pass_filenames: false
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v6.0.0 # Use the ref you want to point at
+  hooks:
+  - id: trailing-whitespace
+  - id: check-merge-conflict
+- repo: https://github.com/ambv/black
+  rev: '25.1.0'
+  hooks:
+  - id: black

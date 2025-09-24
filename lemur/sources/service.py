@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 import arrow
 from datetime import timedelta
 import copy
@@ -108,13 +109,17 @@ def sync_endpoints(source):
         if "primary_certificate" in endpoint:
             crt_name = endpoint["primary_certificate"]["name"]
             current_app.logger.debug(
-                "Syncing primary certificate {} attached to endpoint {}".format(crt_name, endpoint["name"])
+                "Syncing primary certificate {} attached to endpoint {}".format(
+                    crt_name, endpoint["name"]
+                )
             )
             crt, updated_by_hash_tmp = get_cert_for_endpoint(source, endpoint, crt_name)
             updated_by_hash += updated_by_hash_tmp
 
             if crt:
-                endpoint["registry_type"] = endpoint["primary_certificate"]["registry_type"]
+                endpoint["registry_type"] = endpoint["primary_certificate"][
+                    "registry_type"
+                ]
                 endpoint["primary_certificate"] = dict(
                     certificate=crt,
                     path=endpoint["primary_certificate"]["path"],
@@ -125,18 +130,18 @@ def sync_endpoints(source):
             current_app.logger.warn(
                 "Source plugin {} specified certificate for endpoint {} using the certificate_name "
                 "parameter which is deprecated, use the primary_certificate parameter instead.".format(
-                    source.plugin_name,
-                    endpoint["name"]
+                    source.plugin_name, endpoint["name"]
                 )
             )
             certificate_name = endpoint.pop("certificate_name")
-            crt, updated_by_hash_tmp = get_cert_for_endpoint(source, endpoint, certificate_name)
+            crt, updated_by_hash_tmp = get_cert_for_endpoint(
+                source, endpoint, certificate_name
+            )
             updated_by_hash += updated_by_hash_tmp
 
             if crt:
                 endpoint["primary_certificate"] = dict(
-                    certificate=crt,
-                    path=endpoint.pop("certificate_path", "")
+                    certificate=crt, path=endpoint.pop("certificate_path", "")
                 )
             else:
                 continue
@@ -145,7 +150,9 @@ def sync_endpoints(source):
         for sni_certificate in endpoint.get("sni_certificates", []):
             crt_name = sni_certificate["name"]
             current_app.logger.debug(
-                "Syncing SNI certificate {} attached to endpoint {}".format(crt_name, endpoint["name"])
+                "Syncing SNI certificate {} attached to endpoint {}".format(
+                    crt_name, endpoint["name"]
+                )
             )
             crt, updated_by_hash_tmp = get_cert_for_endpoint(source, endpoint, crt_name)
             updated_by_hash += updated_by_hash_tmp
@@ -154,10 +161,9 @@ def sync_endpoints(source):
                 endpoint["registry_type"] = sni_certificate["registry_type"]
 
             if crt:
-                synced_sni_certificates.append(dict(
-                    certificate=crt,
-                    path=sni_certificate["path"]
-                ))
+                synced_sni_certificates.append(
+                    dict(certificate=crt, path=sni_certificate["path"])
+                )
             else:
                 continue
         endpoint["sni_certificates"] = synced_sni_certificates
@@ -187,7 +193,11 @@ def sync_endpoints(source):
 
 
 def get_cert_for_endpoint(source, endpoint, certificate_name):
-    endpoint_name, dns_name, updated_by_hash = endpoint["name"], endpoint.get("dns_name"), 0
+    endpoint_name, dns_name, updated_by_hash = (
+        endpoint["name"],
+        endpoint.get("dns_name"),
+        0,
+    )
     s = plugins.get(source.plugin_name)
     crt = certificate_service.get_by_name(certificate_name)
 
@@ -196,7 +206,9 @@ def get_cert_for_endpoint(source, endpoint, certificate_name):
     if not crt:
         certificate_attached_to_endpoint = None
         try:
-            certificate_attached_to_endpoint = s.get_certificate_by_name(certificate_name, source.options)
+            certificate_attached_to_endpoint = s.get_certificate_by_name(
+                certificate_name, source.options
+            )
         except NotImplementedError:
             current_app.logger.warning(
                 "Unable to describe server certificate for endpoints in source {0}:"
@@ -207,7 +219,9 @@ def get_cert_for_endpoint(source, endpoint, certificate_name):
             capture_exception()
 
         if certificate_attached_to_endpoint:
-            lemur_matching_cert, updated_by_hash = find_cert(certificate_attached_to_endpoint)
+            lemur_matching_cert, updated_by_hash = find_cert(
+                certificate_attached_to_endpoint
+            )
 
             if lemur_matching_cert:
                 crt = lemur_matching_cert[0]
@@ -218,23 +232,37 @@ def get_cert_for_endpoint(source, endpoint, certificate_name):
                         len(lemur_matching_cert), certificate_name, endpoint_name
                     )
                 )
-                metrics.send("endpoint.certificate.conflict",
-                             "gauge", len(lemur_matching_cert),
-                             metric_tags={"cert": certificate_name, "endpoint": endpoint_name,
-                                          "acct": s.get_option("accountNumber", source.options)})
+                metrics.send(
+                    "endpoint.certificate.conflict",
+                    "gauge",
+                    len(lemur_matching_cert),
+                    metric_tags={
+                        "cert": certificate_name,
+                        "endpoint": endpoint_name,
+                        "acct": s.get_option("accountNumber", source.options),
+                    },
+                )
         if not crt:
-            current_app.logger.error({
-                "message": "Certificate Not Found",
-                "certificate_name": certificate_name,
-                "endpoint_name": endpoint_name,
-                "dns_name": dns_name,
-                "account": s.get_option("accountNumber", source.options),
-            })
-            metrics.send("endpoint.certificate.not.found",
-                         "counter", 1,
-                         metric_tags={"cert": certificate_name, "endpoint": endpoint_name,
-                                      "acct": s.get_option("accountNumber", source.options),
-                                      "dnsname": dns_name})
+            current_app.logger.error(
+                {
+                    "message": "Certificate Not Found",
+                    "certificate_name": certificate_name,
+                    "endpoint_name": endpoint_name,
+                    "dns_name": dns_name,
+                    "account": s.get_option("accountNumber", source.options),
+                }
+            )
+            metrics.send(
+                "endpoint.certificate.not.found",
+                "counter",
+                1,
+                metric_tags={
+                    "cert": certificate_name,
+                    "endpoint": endpoint_name,
+                    "acct": s.get_option("accountNumber", source.options),
+                    "dnsname": dns_name,
+                },
+            )
 
     return crt, updated_by_hash
 
@@ -242,16 +270,23 @@ def get_cert_for_endpoint(source, endpoint, certificate_name):
 def expire_endpoints(source, ttl_hours):
     now = arrow.utcnow()
     expiration = now - timedelta(hours=ttl_hours)
-    endpoints = database.session_query(Endpoint).filter(Endpoint.source_id == source.id).filter(
-        cast(Endpoint.last_updated, ArrowType) <= expiration
+    endpoints = (
+        database.session_query(Endpoint)
+        .filter(Endpoint.source_id == source.id)
+        .filter(cast(Endpoint.last_updated, ArrowType) <= expiration)
     )
     expired = 0
     for endpoint in endpoints:
         current_app.logger.info(
-            f"Expiring endpoint from source {source.label}: {endpoint.name} Last Updated: {endpoint.last_updated}")
+            f"Expiring endpoint from source {source.label}: {endpoint.name} Last Updated: {endpoint.last_updated}"
+        )
         database.delete(endpoint)
-        metrics.send("endpoint_expired", "counter", 1,
-                     metric_tags={"source": source.label, "endpoint": endpoint.dnsname})
+        metrics.send(
+            "endpoint_expired",
+            "counter",
+            1,
+            metric_tags={"source": source.label, "endpoint": endpoint.dnsname},
+        )
         expired += 1
     return expired
 
@@ -291,9 +326,12 @@ def sync_certificates(source, user):
     certificates = s.get_certificates(source.options)
 
     # emitting the count of certificates on the source
-    metrics.send("sync_certificates_count",
-                 "gauge", len(certificates),
-                 metric_tags={"source": source.label})
+    metrics.send(
+        "sync_certificates_count",
+        "gauge",
+        len(certificates),
+        metric_tags={"source": source.label},
+    )
 
     existing_certificates_with_source_by_id = {}
     for e in certificate_service.get_all_valid_certificates_with_source(source.id):
@@ -326,31 +364,50 @@ def sync_certificates(source, user):
     destination = destination_service.get_by_label(source.label)
     for certificate in existing_certificates_with_source_by_id.values():
         certificate_service.remove_source_association(certificate, source)
-        current_app.logger.warning(f"Removed source {source.label} for {certificate.name} during source sync")
+        current_app.logger.warning(
+            f"Removed source {source.label} for {certificate.name} during source sync"
+        )
         if destination in certificate.destinations:
-            certificate_service.remove_destination_association(certificate, destination, clean=False)
-            current_app.logger.warning(f"Removed destination {source.label} for {certificate.name} during source sync")
+            certificate_service.remove_destination_association(
+                certificate, destination, clean=False
+            )
+            current_app.logger.warning(
+                f"Removed destination {source.label} for {certificate.name} during source sync"
+            )
         updated += 1
         unlinked += 1
 
-    metrics.send("sync_certificates_unlinked",
-                 "gauge", unlinked,
-                 metric_tags={"source": source.label})
+    metrics.send(
+        "sync_certificates_unlinked",
+        "gauge",
+        unlinked,
+        metric_tags={"source": source.label},
+    )
 
     return new, updated, updated_by_hash
 
 
 def sync(source, user, ttl_hours=2):
     try:
-        new_certs, updated_certs, updated_certs_by_hash = sync_certificates(source, user)
-        metrics.send("sync.updated_certs_by_hash",
-                     "gauge", updated_certs_by_hash,
-                     metric_tags={"source": source.label})
+        new_certs, updated_certs, updated_certs_by_hash = sync_certificates(
+            source, user
+        )
+        metrics.send(
+            "sync.updated_certs_by_hash",
+            "gauge",
+            updated_certs_by_hash,
+            metric_tags={"source": source.label},
+        )
 
-        new_endpoints, updated_endpoints, updated_endpoints_by_hash = sync_endpoints(source)
-        metrics.send("sync.updated_endpoints_by_hash",
-                     "gauge", updated_endpoints_by_hash,
-                     metric_tags={"source": source.label})
+        new_endpoints, updated_endpoints, updated_endpoints_by_hash = sync_endpoints(
+            source
+        )
+        metrics.send(
+            "sync.updated_endpoints_by_hash",
+            "gauge",
+            updated_endpoints_by_hash,
+            metric_tags={"source": source.label},
+        )
 
         expired_endpoints = expire_endpoints(source, ttl_hours)
 
@@ -417,10 +474,14 @@ def delete(source_id):
     source = get(source_id)
     if source:
         # remove association of this source from all valid certificates
-        certificates = certificate_service.get_all_valid_certificates_with_source(source_id)
+        certificates = certificate_service.get_all_valid_certificates_with_source(
+            source_id
+        )
         for certificate in certificates:
             certificate_service.remove_source_association(certificate, source)
-            current_app.logger.warning(f"Removed source {source.label} for {certificate.name} during source delete")
+            current_app.logger.warning(
+                f"Removed source {source.label} for {certificate.name} during source delete"
+            )
 
         # proceed with source delete
         log_service.audit_log("delete_source", source.label, "Deleting source")
@@ -485,7 +546,10 @@ def add_aws_destination_to_sources(dst):
     """
     # check that destination can be synced to a source
     destination_plugin = plugins.get(dst.plugin_name)
-    if destination_plugin.sync_as_source is None or not destination_plugin.sync_as_source:
+    if (
+        destination_plugin.sync_as_source is None
+        or not destination_plugin.sync_as_source
+    ):
         return False
     account_number = get_plugin_option("accountNumber", dst.options)
     if account_number is None:
@@ -499,7 +563,10 @@ def add_aws_destination_to_sources(dst):
     sources = get_all()
     for src in sources:
         src_account_paths.add(
-            (get_plugin_option("accountNumber", src.options), get_plugin_option("path", src.options))
+            (
+                get_plugin_option("accountNumber", src.options),
+                get_plugin_option("path", src.options),
+            )
         )
 
     if (account_number, path) not in src_account_paths:
@@ -509,7 +576,10 @@ def add_aws_destination_to_sources(dst):
         set_plugin_option("accountNumber", account_number, src_options)
         set_plugin_option("path", path, src_options)
         # Set the right endpointType for cloudfront sources.
-        if get_plugin_option("endpointType", src_options) is not None and path == "/cloudfront/":
+        if (
+            get_plugin_option("endpointType", src_options) is not None
+            and path == "/cloudfront/"
+        ):
             set_plugin_option("endpointType", "cloudfront", src_options)
         create(
             label=dst.label,

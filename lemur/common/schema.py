@@ -7,6 +7,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
+
 from functools import wraps
 from flask import request, current_app
 from sentry_sdk import capture_exception

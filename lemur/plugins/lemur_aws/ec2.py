@@ -5,6 +5,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from lemur.plugins.lemur_aws.sts import sts_client
 
 

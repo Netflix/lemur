@@ -7,6 +7,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from flask import current_app
 
 from lemur import database
@@ -78,11 +79,13 @@ def update_roles(user, roles):
         else:
             user.roles.remove(ur)
             removed_roles.append(ur.name)
-            if ur.name == 'admin':
+            if ur.name == "admin":
                 current_app.logger.warning(f"Removing admin role for {user.username}")
 
     if removed_roles:
-        log_service.audit_log("unassign_role", user.username, f"Un-assigning roles {removed_roles}")
+        log_service.audit_log(
+            "unassign_role", user.username, f"Un-assigning roles {removed_roles}"
+        )
 
     added_roles = []
     for r in roles:
@@ -92,11 +95,13 @@ def update_roles(user, roles):
         else:
             user.roles.append(r)
             added_roles.append(r.name)
-            if r.name == 'admin':
+            if r.name == "admin":
                 current_app.logger.warning(f"{user.username} added as admin")
 
     if added_roles:
-        log_service.audit_log("assign_role", user.username, f"Assigning roles {added_roles}")
+        log_service.audit_log(
+            "assign_role", user.username, f"Assigning roles {added_roles}"
+        )
 
 
 def get(user_id):

@@ -39,7 +39,9 @@ def update(authority_id, description, owner, active, roles):
     authority.description = description
     authority.owner = owner
 
-    log_service.audit_log("update_authority", authority.name, "Updating authority")  # check ui what can be updated
+    log_service.audit_log(
+        "update_authority", authority.name, "Updating authority"
+    )  # check ui what can be updated
     return database.update(authority)
 
 
@@ -80,7 +82,9 @@ def mint(**kwargs):
         kwargs["creator"],
     )
 
-    log_service.audit_log("create_authority_with_issuer", issuer.title, "Created new authority")
+    log_service.audit_log(
+        "create_authority_with_issuer", issuer.title, "Created new authority"
+    )
     return body, private_key, chain, roles
 
 
@@ -96,7 +100,11 @@ def create_authority_roles(roles, owner, plugin_title, creator):
         role = role_service.get_by_name(r["name"])
         # error out if the role already exists, because we want a unique role per authority
         if role:
-            raise Exception("Unable to create authority role {} because it already exists".format(r["name"]))
+            raise Exception(
+                "Unable to create authority role {} because it already exists".format(
+                    r["name"]
+                )
+            )
         role = role_service.create(
             r["name"],
             password=r["password"],
@@ -124,8 +132,12 @@ def create(**kwargs):
     ca_name = kwargs.get("name")
     if get_by_name(ca_name):
         raise Exception(f"Authority with name {ca_name} already exists")
-    if role_service.get_by_name(f"{ca_name}_admin") or role_service.get_by_name(f"{ca_name}_operator"):
-        raise Exception(f"Admin and/or operator roles for authority {ca_name} already exist")
+    if role_service.get_by_name(f"{ca_name}_admin") or role_service.get_by_name(
+        f"{ca_name}_operator"
+    ):
+        raise Exception(
+            f"Admin and/or operator roles for authority {ca_name} already exist"
+        )
 
     body, private_key, chain, roles = mint(**kwargs)
 
@@ -153,7 +165,9 @@ def create(**kwargs):
     log_service.audit_log("create_authority", ca_name, "Created new authority")
 
     issuer = kwargs["plugin"]["plugin_object"]
-    current_app.logger.warning(f"Created new authority {ca_name} with issuer {issuer.title}")
+    current_app.logger.warning(
+        f"Created new authority {ca_name} with issuer {issuer.title}"
+    )
 
     metrics.send(
         "authority_created", "counter", 1, metric_tags=dict(owner=authority.owner)

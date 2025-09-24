@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from marshmallow import fields, post_dump
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
 from lemur.schemas import (
@@ -21,8 +22,12 @@ class NotificationInputSchema(LemurInputSchema):
     active = fields.Boolean()
     plugin = fields.Nested(PluginInputSchema, required=True)
     certificates = fields.Nested(AssociatedCertificateSchema, many=True, missing=[])
-    added_certificates = fields.Nested(AssociatedCertificateSchema, many=True, missing=[])
-    removed_certificates = fields.Nested(AssociatedCertificateSchema, many=True, missing=[])
+    added_certificates = fields.Nested(
+        AssociatedCertificateSchema, many=True, missing=[]
+    )
+    removed_certificates = fields.Nested(
+        AssociatedCertificateSchema, many=True, missing=[]
+    )
 
 
 class NotificationOutputSchema(LemurOutputSchema):

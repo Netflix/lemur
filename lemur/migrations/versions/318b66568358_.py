@@ -1,4 +1,4 @@
-""" Set 'deleted' flag from null to false on all certificates once
+"""Set 'deleted' flag from null to false on all certificates once
 
 Revision ID: 318b66568358
 Revises: 9f79024fe67b

@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from flask import Blueprint, g
 from flask_restful import reqparse, Api
 
@@ -30,7 +31,7 @@ api = Api(mod)
 
 
 class AuthoritiesList(AuthenticatedResource):
-    """ Defines the 'authorities' endpoint """
+    """Defines the 'authorities' endpoint"""
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
@@ -228,8 +229,13 @@ class AuthoritiesList(AuthenticatedResource):
            :statuscode 200: no error
         """
         if not validators.is_valid_owner(data["owner"]):
-            return dict(message=f"Invalid owner: check if {data['owner']} is a valid group email. Individuals cannot "
-                                f"be authority owners."), 412
+            return (
+                dict(
+                    message=f"Invalid owner: check if {data['owner']} is a valid group email. Individuals cannot "
+                    f"be authority owners."
+                ),
+                412,
+            )
 
         data["creator"] = g.current_user
         return service.create(**data)

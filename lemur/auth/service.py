@@ -8,6 +8,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
+
 import jwt
 import json
 import binascii
@@ -102,7 +103,11 @@ def login_required(f):
 
         try:
             header_data = fetch_token_header(token)
-            payload = jwt.decode(token, current_app.config["LEMUR_TOKEN_SECRET"], algorithms=[header_data["alg"]])
+            payload = jwt.decode(
+                token,
+                current_app.config["LEMUR_TOKEN_SECRET"],
+                algorithms=[header_data["alg"]],
+            )
         except jwt.DecodeError:
             return dict(message="Token is invalid"), 403
         except jwt.ExpiredSignatureError:
@@ -117,7 +122,9 @@ def login_required(f):
             if access_key.ttl != -1:
                 current_time = datetime.utcnow()
                 # API key uses days
-                expired_time = datetime.fromtimestamp(access_key.issued_at) + timedelta(days=access_key.ttl)
+                expired_time = datetime.fromtimestamp(access_key.issued_at) + timedelta(
+                    days=access_key.ttl
+                )
                 if current_time >= expired_time:
                     return dict(message="Token has expired"), 403
             if access_key.application_name:

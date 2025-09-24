@@ -9,6 +9,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
+
 import os
 import importlib
 import logmatic
@@ -147,17 +148,21 @@ def configure_extensions(app):
     # the legacy Raven[flask] relied on SENTRY_CONFIG
     if app.config.get("SENTRY_DSN", None) or app.config.get("SENTRY_CONFIG", None):
         # priority given to SENTRY_DSN
-        sentry_dsn = app.config.get("SENTRY_DSN", None) or app.config["SENTRY_CONFIG"]['dsn']
+        sentry_dsn = (
+            app.config.get("SENTRY_DSN", None) or app.config["SENTRY_CONFIG"]["dsn"]
+        )
         sentry_sdk.init(
             dsn=sentry_dsn,
-            integrations=[SqlalchemyIntegration(),
-                          CeleryIntegration(),
-                          RedisIntegration(),
-                          FlaskIntegration()],
+            integrations=[
+                SqlalchemyIntegration(),
+                CeleryIntegration(),
+                RedisIntegration(),
+                FlaskIntegration(),
+            ],
             # associating users to errors
             send_default_pii=True,
             shutdown_timeout=60,
-            environment=app.config.get("LEMUR_ENV", ''),
+            environment=app.config.get("LEMUR_ENV", ""),
         )
 
     if app.config["CORS"]:
@@ -197,9 +202,11 @@ def configure_logging(app):
     logfile = app.config.get("LOG_FILE", "lemur.log")
     # if the log file is a character special device file (ie. stdout/stderr),
     # file rotation will not work and must be disabled.
-    disable_file_rotation = os.path.exists(logfile) and stat.S_ISCHR(os.stat(logfile).st_mode)
+    disable_file_rotation = os.path.exists(logfile) and stat.S_ISCHR(
+        os.stat(logfile).st_mode
+    )
     if disable_file_rotation:
-        handler = StreamHandler(open(logfile, 'a'))
+        handler = StreamHandler(open(logfile, "a"))
     else:
         handler = RotatingFileHandler(logfile, maxBytes=10000000, backupCount=100)
 
@@ -268,11 +275,14 @@ def install_plugins(app):
 
         if current_app.config.get("USER_DOMAIN_AUTHORIZATION_PROVIDER"):
             try:
-                user_domain_authz_provider = plugins.get(current_app.config.get("USER_DOMAIN_AUTHORIZATION_PROVIDER"))
+                user_domain_authz_provider = plugins.get(
+                    current_app.config.get("USER_DOMAIN_AUTHORIZATION_PROVIDER")
+                )
                 user_domain_authz_provider.warmup()
             except Exception:
                 import traceback
 
                 app.logger.error(
-                    "Domain authorization warmup failed, this is a best effort call:\n%s\n" % (traceback.format_exc())
+                    "Domain authorization warmup failed, this is a best effort call:\n%s\n"
+                    % (traceback.format_exc())
                 )

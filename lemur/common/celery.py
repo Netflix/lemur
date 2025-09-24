@@ -7,6 +7,7 @@ beat scheduler and a worker simultaneously, and to have jobs kick off starting a
 command: celery -A lemur.common.celery worker --loglevel=info -l DEBUG -B
 
 """
+
 import copy
 import sys
 import time
@@ -31,7 +32,7 @@ from lemur.notifications import cli as cli_notification
 from lemur.notifications.messaging import (
     send_pending_failure_notification,
     send_reissue_no_endpoints_notification,
-    send_reissue_failed_notification
+    send_reissue_failed_notification,
 )
 from lemur.pending_certificates import service as pending_certificate_service
 from lemur.plugins.base import plugins
@@ -163,7 +164,7 @@ def report_celery_last_success_metrics():
                 f"{task}.time_since_last_success",
                 "gauge",
                 current_time - last_success,
-                metric_tags=metric_tags
+                metric_tags=metric_tags,
             )
 
     red.set(
@@ -297,9 +298,9 @@ def fetch_acme_cert(id, notify_reissue_cert_id=None):
         pending_cert = pending_certificate_service.get(cert.get("pending_cert").id)
         if not pending_cert or pending_cert.resolved:
             # pending_cert is cleared or it was resolved by another process
-            log_data[
-                "message"
-            ] = "Pending certificate doesn't exist anymore. Was it resolved by another process?"
+            log_data["message"] = (
+                "Pending certificate doesn't exist anymore. Was it resolved by another process?"
+            )
             current_app.logger.error(log_data)
             continue
         if real_cert:
@@ -562,7 +563,9 @@ def sync_source(source):
 
     current_app.logger.debug(log_data)
     try:
-        sync([source], current_app.config.get("CELERY_ENDPOINTS_EXPIRE_TIME_IN_HOURS", 2))
+        sync(
+            [source], current_app.config.get("CELERY_ENDPOINTS_EXPIRE_TIME_IN_HOURS", 2)
+        )
         metrics.send(
             f"{function}.success", "counter", 1, metric_tags={"source": source}
         )
@@ -623,7 +626,6 @@ def certificate_reissue():
 
 @celery_app.task(soft_time_limit=3600)
 def certificate_rotate(**kwargs):
-
     """
     This celery task rotates certificates which are reissued but having endpoints attached to the replaced cert
     :return:
@@ -664,7 +666,7 @@ def certificate_rotate(**kwargs):
             old_certificate_name=None,
             message=notify,
             commit=commit,
-            region=region
+            region=region,
         )
     except SoftTimeLimitExceeded:
         log_data["message"] = "Certificate rotate: Time limit exceeded."
@@ -783,7 +785,7 @@ def notify_expirations():
     try:
         cli_notification.expirations(
             current_app.config.get("EXCLUDE_CN_FROM_NOTIFICATION", []),
-            current_app.config.get("DISABLE_NOTIFICATION_PLUGINS", [])
+            current_app.config.get("DISABLE_NOTIFICATION_PLUGINS", []),
         )
     except SoftTimeLimitExceeded:
         log_data["message"] = "Notify expiring Time limit exceeded."
@@ -856,7 +858,9 @@ def send_security_expiration_summary():
 
     current_app.logger.debug(log_data)
     try:
-        cli_notification.security_expiration_summary(current_app.config.get("EXCLUDE_CN_FROM_NOTIFICATION", []))
+        cli_notification.security_expiration_summary(
+            current_app.config.get("EXCLUDE_CN_FROM_NOTIFICATION", [])
+        )
     except SoftTimeLimitExceeded:
         log_data["message"] = "Send summary for expiring certs Time limit exceeded."
         current_app.logger.error(log_data)
@@ -1042,7 +1046,9 @@ def identity_expiring_deployed_certificates():
     """
     DEPRECATED: Use identify_expiring_deployed_certificates instead.
     """
-    current_app.logger.warn("identity_expiring_deployed_certificates is deprecated and will be removed in a future release, please use identify_expiring_deployed_certificates instead")
+    current_app.logger.warn(
+        "identity_expiring_deployed_certificates is deprecated and will be removed in a future release, please use identify_expiring_deployed_certificates instead"
+    )
     return identify_expiring_deployed_certificates()
 
 
@@ -1070,10 +1076,18 @@ def identify_expiring_deployed_certificates():
 
     current_app.logger.debug(log_data)
     try:
-        exclude_domains = current_app.config.get("LEMUR_DEPLOYED_CERTIFICATE_CHECK_EXCLUDED_DOMAINS", [])
-        exclude_owners = current_app.config.get("LEMUR_DEPLOYED_CERTIFICATE_CHECK_EXCLUDED_OWNERS", [])
-        commit = current_app.config.get("LEMUR_DEPLOYED_CERTIFICATE_CHECK_COMMIT_MODE", False)
-        cli_certificate.identify_expiring_deployed_certificates(exclude_domains, exclude_owners, commit)
+        exclude_domains = current_app.config.get(
+            "LEMUR_DEPLOYED_CERTIFICATE_CHECK_EXCLUDED_DOMAINS", []
+        )
+        exclude_owners = current_app.config.get(
+            "LEMUR_DEPLOYED_CERTIFICATE_CHECK_EXCLUDED_OWNERS", []
+        )
+        commit = current_app.config.get(
+            "LEMUR_DEPLOYED_CERTIFICATE_CHECK_COMMIT_MODE", False
+        )
+        cli_certificate.identify_expiring_deployed_certificates(
+            exclude_domains, exclude_owners, commit
+        )
     except SoftTimeLimitExceeded:
         log_data["message"] = "Time limit exceeded."
         current_app.logger.error(log_data)

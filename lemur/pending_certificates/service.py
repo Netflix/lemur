@@ -3,6 +3,7 @@
     Copyright (c) 2018 and onwards Netflix, Inc.  All rights reserved.
 .. moduleauthor:: James Chuong <jchuong@instartlogic.com>
 """
+
 import arrow
 from sqlalchemy import or_, cast, Integer
 from flask import current_app
@@ -58,7 +59,11 @@ def get_by_name(pending_cert_name):
 
 
 def delete(pending_certificate):
-    log_service.audit_log("delete_pending_certificate", pending_certificate.name, "Deleting the pending certificate")
+    log_service.audit_log(
+        "delete_pending_certificate",
+        pending_certificate.name,
+        "Deleting the pending certificate",
+    )
     database.delete(pending_certificate)
 
 
@@ -135,17 +140,25 @@ def create_certificate(pending_certificate, certificate, user):
     cert = certificate_service.import_certificate(**data)
     database.update(cert)
 
-    metrics.send("certificate_issued", "counter", 1, metric_tags=dict(owner=cert.owner, issuer=cert.issuer))
-    log_service.audit_log("certificate_from_pending_certificate", cert.name,
-                          f"Created from the pending certificate {pending_certificate.name}")
+    metrics.send(
+        "certificate_issued",
+        "counter",
+        1,
+        metric_tags=dict(owner=cert.owner, issuer=cert.issuer),
+    )
+    log_service.audit_log(
+        "certificate_from_pending_certificate",
+        cert.name,
+        f"Created from the pending certificate {pending_certificate.name}",
+    )
     log_data = {
         "function": "lemur.certificates.service.create",
         "owner": cert.owner,
         "name": cert.name,
         "serial": cert.serial,
         "issuer": cert.issuer,
-        "not_after": cert.not_after.format('YYYY-MM-DD HH:mm:ss'),
-        "not_before": cert.not_before.format('YYYY-MM-DD HH:mm:ss'),
+        "not_after": cert.not_after.format("YYYY-MM-DD HH:mm:ss"),
+        "not_before": cert.not_before.format("YYYY-MM-DD HH:mm:ss"),
         "sans": cert.san,
     }
     current_app.logger.info(log_data)
@@ -159,8 +172,11 @@ def increment_attempt(pending_certificate):
     pending_certificate.number_attempts += 1
     database.update(pending_certificate)
 
-    log_service.audit_log("increment_attempt_pending_certificate", pending_certificate.name,
-                          "Incremented attempts for the pending certificate")
+    log_service.audit_log(
+        "increment_attempt_pending_certificate",
+        pending_certificate.name,
+        "Incremented attempts for the pending certificate",
+    )
     return pending_certificate.number_attempts
 
 
@@ -173,7 +189,9 @@ def update(pending_cert_id, **kwargs):
     for key, value in kwargs.items():
         setattr(pending_cert, key, value)
 
-    log_service.audit_log("update_pending_certificate", pending_cert.name, f"Update summary - {kwargs}")
+    log_service.audit_log(
+        "update_pending_certificate", pending_cert.name, f"Update summary - {kwargs}"
+    )
     return database.update(pending_cert)
 
 
@@ -190,7 +208,11 @@ def cancel(pending_certificate, **kwargs):
     pending_certificate.status = "Cancelled"
     database.update(pending_certificate)
 
-    log_service.audit_log("cancel_pending_certificate", pending_certificate.name, "Cancelled the pending certificate")
+    log_service.audit_log(
+        "cancel_pending_certificate",
+        pending_certificate.name,
+        "Cancelled the pending certificate",
+    )
     return pending_certificate
 
 
@@ -310,6 +332,10 @@ def upload(pending_certificate_id, **kwargs):
     pending_cert_final_result = update(pending_cert.id, resolved_cert_id=final_cert.id)
     update(pending_cert.id, resolved=True)
 
-    log_service.audit_log("resolve_pending_certificate", pending_cert.name, "Resolved the pending certificate")
+    log_service.audit_log(
+        "resolve_pending_certificate",
+        pending_cert.name,
+        "Resolved the pending certificate",
+    )
 
     return pending_cert_final_result

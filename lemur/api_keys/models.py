@@ -6,6 +6,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Eric Coan <kungfury@instructure.com>
 """
+
 from sqlalchemy import BigInteger, Boolean, Column, ForeignKey, Integer, String
 
 from lemur.database import db

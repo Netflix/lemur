@@ -8,6 +8,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from sqlalchemy.orm import relationship
 from sqlalchemy import Integer, String, Column, Boolean
 from sqlalchemy.event import listen

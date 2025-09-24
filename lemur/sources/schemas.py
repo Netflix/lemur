@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from marshmallow import fields, post_dump
 
 from lemur.schemas import PluginInputSchema, PluginOutputSchema

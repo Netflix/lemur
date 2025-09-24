@@ -6,6 +6,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from flask import current_app
 from threading import local
 import re
@@ -139,7 +140,9 @@ class IPlugin(local):
             if available is None:
                 return value
             if value not in available:
-                raise ValueError(f"Option '{option_name}' doesn't match available options")
+                raise ValueError(
+                    f"Option '{option_name}' doesn't match available options"
+                )
         return value
 
     def get_server_options(self, name):

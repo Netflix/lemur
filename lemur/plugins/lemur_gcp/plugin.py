@@ -4,8 +4,11 @@ from google.api_core import exceptions
 from lemur.plugins.bases import DestinationPlugin, SourcePlugin
 from lemur.plugins import lemur_gcp as gcp
 from lemur.plugins.lemur_gcp import auth, certificates
-from lemur.plugins.lemur_gcp.endpoints import fetch_target_proxies, update_target_proxy_default_cert, \
-    update_target_proxy_sni_certs
+from lemur.plugins.lemur_gcp.endpoints import (
+    fetch_target_proxies,
+    update_target_proxy_default_cert,
+    update_target_proxy_sni_certs,
+)
 
 
 class GCPDestinationPlugin(DestinationPlugin):
@@ -27,7 +30,7 @@ class GCPDestinationPlugin(DestinationPlugin):
             "name": "region",
             "type": "str",
             "helpMessage": "Scopes the certificate to a region, if supplied. If no region is given, this will "
-                           "upload certificates as a global resource."
+            "upload certificates as a global resource.",
         },
         {
             "name": "authenticationMethod",
@@ -47,7 +50,7 @@ class GCPDestinationPlugin(DestinationPlugin):
             "type": "str",
             "required": False,
             "helpMessage": "Path to vault secret",
-        }
+        },
     ]
 
     def __init__(self, *args, **kwargs):
@@ -99,7 +102,7 @@ class GCPSourcePlugin(SourcePlugin):
             "name": "region",
             "type": "str",
             "helpMessage": "Scopes the operation to a region. If no region is given, this will "
-                           "list certificates as a global resource and rotate global endpoints."
+            "list certificates as a global resource and rotate global endpoints.",
         },
         {
             "name": "authenticationMethod",
@@ -119,7 +122,7 @@ class GCPSourcePlugin(SourcePlugin):
             "type": "str",
             "required": False,
             "helpMessage": "Path to vault secret",
-        }
+        },
     ]
 
     def __init__(self, *args, **kwargs):
@@ -143,7 +146,9 @@ class GCPSourcePlugin(SourcePlugin):
             credentials = auth.get_gcp_credentials(self, options)
             project_id = self.get_option("projectID", options)
             region = self.get_option("region", options)
-            return certificates.fetch_by_name(project_id, credentials, certificate_name, region)
+            return certificates.fetch_by_name(
+                project_id, credentials, certificate_name, region
+            )
         except Exception as e:
             current_app.logger.error(
                 f"Issue with fetching certificate by name from GCP. Action failed with the following log: {e}",
@@ -170,11 +175,15 @@ class GCPSourcePlugin(SourcePlugin):
         credentials = auth.get_gcp_credentials(self, options)
         project_id = self.get_option("projectID", options)
         region = self.get_option("region", options)
-        update_target_proxy_default_cert(project_id, credentials, endpoint, certificate, region)
+        update_target_proxy_default_cert(
+            project_id, credentials, endpoint, certificate, region
+        )
 
     def replace_sni_certificate(self, endpoint, old_cert, new_cert):
         options = endpoint.source.options
         credentials = auth.get_gcp_credentials(self, options)
         project_id = self.get_option("projectID", options)
         region = self.get_option("region", options)
-        update_target_proxy_sni_certs(project_id, credentials, endpoint, old_cert, new_cert, region)
+        update_target_proxy_sni_certs(
+            project_id, credentials, endpoint, old_cert, new_cert, region
+        )

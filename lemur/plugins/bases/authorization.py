@@ -15,6 +15,7 @@ class AuthorizationPlugin(Plugin):
     """
     This is the base class for authorization providers. Check if the caller is authorized to access a resource.
     """
+
     type = "authorization"
 
     def warmup(self):
@@ -28,6 +29,7 @@ class DomainAuthorizationPlugin(AuthorizationPlugin):
     """
     This is the base class for domain authorization providers. Check if the caller can issue certificates for a domain.
     """
+
     type = "domain-authorization"
 
     def is_authorized(self, domain, caller):
@@ -38,6 +40,7 @@ class UnauthorizedError(LemurException):
     """
     Raised when user is unauthorized to perform an action on the resource
     """
+
     def __init__(self, user, resource, action, details="no additional details"):
         self.user = user
         self.resource = resource
@@ -45,4 +48,6 @@ class UnauthorizedError(LemurException):
         self.details = details
 
     def __str__(self):
-        return repr(f"{self.user} is not authorized to perform {self.action} on {self.resource}: {self.details}")
+        return repr(
+            f"{self.user} is not authorized to perform {self.action} on {self.resource}: {self.details}"
+        )

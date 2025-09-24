@@ -7,6 +7,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from sqlalchemy import Column, Integer, ForeignKey, DefaultClause, func, Enum
 
 from sqlalchemy_utils.types.arrow import ArrowType

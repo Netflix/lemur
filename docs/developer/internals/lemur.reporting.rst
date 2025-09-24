@@ -11,7 +11,7 @@ reporting Package
     :show-inheritance:
 
 :mod:`cli` Module
-------------------------------	
+------------------------------
 
 .. automodule:: lemur.reporting.cli
     :noindex:

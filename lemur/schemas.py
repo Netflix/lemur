@@ -7,6 +7,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
+
 from sqlalchemy.orm.exc import NoResultFound
 
 from marshmallow import fields, post_load, pre_load, post_dump
@@ -220,11 +221,17 @@ class PluginInputSchema(LemurInputSchema):
                 # validate user inputs for sub-plugin options and only accept "value" field from user
                 try:
                     # Run regex validation rule on user input
-                    data["plugin_object"].validate_option_value(option_name, option_value)
+                    data["plugin_object"].validate_option_value(
+                        option_name, option_value
+                    )
 
                     # Only accept the "value" field from the user - keep server default options for all other fields
-                    server_options_with_user_value = data["plugin_object"].get_server_options(option_name)
-                    if server_options_with_user_value is None:  # no server options discovered
+                    server_options_with_user_value = data[
+                        "plugin_object"
+                    ].get_server_options(option_name)
+                    if (
+                        server_options_with_user_value is None
+                    ):  # no server options discovered
                         plugin_options_validated.append(option)
                         continue
                     server_options_with_user_value["value"] = option_value

@@ -32,118 +32,106 @@ def test_get_path_from_arn():
     from lemur.plugins.lemur_aws.iam import get_path_from_arn
 
     arn = "arn:aws:iam::123456789012:server-certificate/tttt2.netflixtest.net-NetflixInc-20150624-20150625"
-    assert (
-        get_path_from_arn(arn) == ""
-    )
+    assert get_path_from_arn(arn) == ""
 
     arn = "arn:aws:iam::123456789012:server-certificate/cloudfront/tttt2.netflixtest.net-NetflixInc-20150624-20150625"
-    assert (
-        get_path_from_arn(arn) == "cloudfront"
-    )
+    assert get_path_from_arn(arn) == "cloudfront"
 
     arn = "arn:aws:iam::123456789012:server-certificate/cloudfront/2/tttt2.netflixtest.net-NetflixInc-20150624-20150625"
-    assert (
-        get_path_from_arn(arn) == "cloudfront/2"
-    )
+    assert get_path_from_arn(arn) == "cloudfront/2"
 
     arn = "arn:aws:acm:us-west-2:123456789012:server-certificate/tttt2.netflixtest.net-NetflixInc-20150624-20150625"
-    assert (
-        get_path_from_arn(arn) == ""
-    )
+    assert get_path_from_arn(arn) == ""
 
 
 def test_get_registery_type_from_arn():
     from lemur.plugins.lemur_aws.iam import get_registry_type_from_arn
 
     arn = "arn:aws:iam::123456789012:server-certificate/tttt2.netflixtest.net-NetflixInc-20150624-20150625"
-    assert (
-        get_registry_type_from_arn(arn) == "iam"
-    )
+    assert get_registry_type_from_arn(arn) == "iam"
 
     arn = "arn:aws:iam::123456789012:server-certificate/cloudfront/tttt2.netflixtest.net-NetflixInc-20150624-20150625"
-    assert (
-        get_registry_type_from_arn(arn) == "iam"
-    )
+    assert get_registry_type_from_arn(arn) == "iam"
 
     arn = "arn:aws:iam::123456789012:server-certificate/cloudfront/2/tttt2.netflixtest.net-NetflixInc-20150624-20150625"
-    assert (
-        get_registry_type_from_arn(arn) == "iam"
-    )
+    assert get_registry_type_from_arn(arn) == "iam"
 
     arn = "arn:aws-us-gov:iam::123456789012:server-certificate/cloudfront/2/tttt2.netflixtest.net-NetflixInc-20150624-20150625"
-    assert (
-        get_registry_type_from_arn(arn) == "iam"
-    )
+    assert get_registry_type_from_arn(arn) == "iam"
 
     arn = "arn:aws-cn:iam::123456789012:server-certificate/cloudfront/2/tttt2.netflixtest.net-NetflixInc-20150624-20150625"
-    assert (
-        get_registry_type_from_arn(arn) == "iam"
-    )
+    assert get_registry_type_from_arn(arn) == "iam"
 
     arn = "arn:aws:acm:us-west-2:123456789012:server-certificate/tttt2.netflixtest.net-NetflixInc-20150624-20150625"
-    assert (
-        get_registry_type_from_arn(arn) == "acm"
-    )
+    assert get_registry_type_from_arn(arn) == "acm"
 
     arn = "arn:aws-us-gov:acm:us-west-2:123456789012:server-certificate/tttt2.netflixtest.net-NetflixInc-20150624-20150625"
-    assert (
-        get_registry_type_from_arn(arn) == "acm"
-    )
+    assert get_registry_type_from_arn(arn) == "acm"
 
     arn = "arn:aws-cn:acm:us-west-2:123456789012:server-certificate/tttt2.netflixtest.net-NetflixInc-20150624-20150625"
-    assert (
-        get_registry_type_from_arn(arn) == "acm"
-    )
+    assert get_registry_type_from_arn(arn) == "acm"
 
     arn = "arn:aws:new:us-west-2:123456789012:server-certificate/tttt2.netflixtest.net-NetflixInc-20150624-20150625"
-    assert (
-        get_registry_type_from_arn(arn) == "unknown"
-    )
+    assert get_registry_type_from_arn(arn) == "unknown"
 
 
 def test_create_arn_from_cert():
     from lemur.plugins.lemur_aws.iam import create_arn_from_cert
 
-    account_number = '123456789012'
-    certificate_name = 'tttt2.netflixtest.net-NetflixInc-20150624-20150625'
-    partition_commercial = 'aws'
-    partition_gov = 'aws-us-gov'
-    partition_cn = 'aws-cn'
+    account_number = "123456789012"
+    certificate_name = "tttt2.netflixtest.net-NetflixInc-20150624-20150625"
+    partition_commercial = "aws"
+    partition_gov = "aws-us-gov"
+    partition_cn = "aws-cn"
 
     arn = "arn:aws:iam::123456789012:server-certificate/tttt2.netflixtest.net-NetflixInc-20150624-20150625"
     path = ""
     assert (
-        create_arn_from_cert(account_number, partition_commercial, certificate_name, path) == arn
+        create_arn_from_cert(
+            account_number, partition_commercial, certificate_name, path
+        )
+        == arn
     )
 
     arn = "arn:aws:iam::123456789012:server-certificate/cloudfront/tttt2.netflixtest.net-NetflixInc-20150624-20150625"
     path = "cloudfront"
     assert (
-        create_arn_from_cert(account_number, partition_commercial, certificate_name, path) == arn
+        create_arn_from_cert(
+            account_number, partition_commercial, certificate_name, path
+        )
+        == arn
     )
 
     arn = "arn:aws:iam::123456789012:server-certificate/cloudfront/2/tttt2.netflixtest.net-NetflixInc-20150624-20150625"
     path = "cloudfront/2"
     assert (
-        create_arn_from_cert(account_number, partition_commercial, certificate_name, path) == arn
+        create_arn_from_cert(
+            account_number, partition_commercial, certificate_name, path
+        )
+        == arn
     )
 
     arn = "arn:aws:iam::123456789012:server-certificate/cloudfront/2/tttt2.netflixtest.net-NetflixInc-20150624-20150625"
     path = "cloudfront/2"
     assert (
-        create_arn_from_cert(account_number, partition_commercial, certificate_name, path) == arn
+        create_arn_from_cert(
+            account_number, partition_commercial, certificate_name, path
+        )
+        == arn
     )
 
     arn = "arn:aws-us-gov:iam::123456789012:server-certificate/cloudfront/2/tttt2.netflixtest.net-NetflixInc-20150624-20150625"
     path = "cloudfront/2"
     assert (
-        create_arn_from_cert(account_number, partition_gov, certificate_name, path) == arn
+        create_arn_from_cert(account_number, partition_gov, certificate_name, path)
+        == arn
     )
 
     arn = "arn:aws-cn:iam::123456789012:server-certificate/cloudfront/2/tttt2.netflixtest.net-NetflixInc-20150624-20150625"
     path = "cloudfront/2"
     assert (
-        create_arn_from_cert(account_number, partition_cn, certificate_name, path) == arn
+        create_arn_from_cert(account_number, partition_cn, certificate_name, path)
+        == arn
     )
 
 

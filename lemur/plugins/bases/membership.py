@@ -6,6 +6,7 @@
 
 .. moduleauthor:: Sayali Charhate <scharhate@netflix.com>
 """
+
 from lemur.plugins.base import Plugin
 
 
@@ -13,6 +14,7 @@ class MembershipPlugin(Plugin):
     """
     This is the base class for membership API providers.
     """
+
     type = "membership"
 
     # check if principal exists as a user or a group (Team DL)

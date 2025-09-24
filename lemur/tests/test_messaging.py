@@ -107,14 +107,17 @@ def test_get_eligible_certificates_multiple(app, notification):
     delta = cert_1.not_after - timedelta(days=10)
     with freeze_time(delta.datetime):
         assert get_eligible_certificates() == {
-            cert_1.owner: {notification.label: [(notification, cert_1), (notification, cert_3)]},
-            cert_2.owner: {notification.label: [(notification, cert_2)]}
+            cert_1.owner: {
+                notification.label: [(notification, cert_1), (notification, cert_3)]
+            },
+            cert_2.owner: {notification.label: [(notification, cert_2)]},
         }
 
 
 @mock_ses
 def test_send_expiration_notification(certificate, notification, notification_plugin):
     from lemur.notifications.messaging import send_expiration_notifications
+
     verify_sender_email()
 
     certificate.notifications.append(notification)
@@ -131,8 +134,11 @@ def test_send_expiration_notification(certificate, notification, notification_pl
 
 
 @mock_ses
-def test_send_expiration_notification_email_disabled(certificate, notification, notification_plugin):
+def test_send_expiration_notification_email_disabled(
+    certificate, notification, notification_plugin
+):
     from lemur.notifications.messaging import send_expiration_notifications
+
     verify_sender_email()
 
     certificate.notifications.append(notification)
@@ -144,7 +150,7 @@ def test_send_expiration_notification_email_disabled(certificate, notification, 
     delta = certificate.not_after - timedelta(days=10)
     with freeze_time(delta.datetime):
         # no notifications sent since the "test-notification" plugin is disabled
-        assert send_expiration_notifications([], ['test-notification']) == (0, 0)
+        assert send_expiration_notifications([], ["test-notification"]) == (0, 0)
 
 
 @mock_ses
@@ -159,8 +165,11 @@ def test_send_expiration_notification_with_no_notifications(
 
 
 @mock_ses
-def test_send_expiration_summary_notification(certificate, notification, notification_plugin):
+def test_send_expiration_summary_notification(
+    certificate, notification, notification_plugin
+):
     from lemur.notifications.messaging import send_security_expiration_summary
+
     verify_sender_email()
 
     # we don't actually test the email contents, but adding an assortment of certs here is useful for step debugging
@@ -183,6 +192,7 @@ def test_send_expiration_summary_notification(certificate, notification, notific
 @mock_ses
 def test_send_evocation_notification(notification_plugin, certificate):
     from lemur.notifications.messaging import send_revocation_notification
+
     verify_sender_email()
 
     certificate.endpoints = [EndpointFactory()]
@@ -192,6 +202,7 @@ def test_send_evocation_notification(notification_plugin, certificate):
 @mock_ses
 def test_send_rotation_notification(notification_plugin, certificate):
     from lemur.notifications.messaging import send_rotation_notification
+
     verify_sender_email()
 
     new_cert = CertificateFactory()
@@ -202,8 +213,11 @@ def test_send_rotation_notification(notification_plugin, certificate):
 
 
 @mock_ses
-def test_send_reissue_no_endpoints_notification(notification_plugin, endpoint, certificate):
+def test_send_reissue_no_endpoints_notification(
+    notification_plugin, endpoint, certificate
+):
     from lemur.notifications.messaging import send_reissue_no_endpoints_notification
+
     verify_sender_email()
 
     new_cert = CertificateFactory()
@@ -214,32 +228,38 @@ def test_send_reissue_no_endpoints_notification(notification_plugin, endpoint, c
 
 
 @mock_ses
-def test_send_reissue_no_endpoints_notification_excluded_destination(destination_plugin, notification_plugin,
-                                                                     certificate, destination):
+def test_send_reissue_no_endpoints_notification_excluded_destination(
+    destination_plugin, notification_plugin, certificate, destination
+):
     from lemur.notifications.messaging import send_reissue_no_endpoints_notification
+
     verify_sender_email()
 
     new_cert = CertificateFactory()
     new_cert.replaces.append(certificate)
-    destination.label = 'not-excluded-destination'
+    destination.label = "not-excluded-destination"
     certificate.destinations.append(destination)
     assert send_reissue_no_endpoints_notification(certificate, new_cert)
     # specified in tests/conf.py
-    destination.label = 'excluded-destination'
+    destination.label = "excluded-destination"
     assert not send_reissue_no_endpoints_notification(certificate, new_cert)
 
 
 @mock_ses
 def test_send_reissue_failed_notification(notification_plugin, certificate):
     from lemur.notifications.messaging import send_reissue_failed_notification
+
     verify_sender_email()
 
     assert send_reissue_failed_notification(certificate)
 
 
 @mock_ses
-def test_send_pending_failure_notification(notification_plugin, async_issuer_plugin, pending_certificate):
+def test_send_pending_failure_notification(
+    notification_plugin, async_issuer_plugin, pending_certificate
+):
     from lemur.notifications.messaging import send_pending_failure_notification
+
     verify_sender_email()
 
     assert send_pending_failure_notification(pending_certificate)
@@ -262,10 +282,13 @@ def test_get_authority_certificates():
 @mock_ses
 def test_send_authority_expiration_notifications():
     from lemur.notifications.messaging import send_authority_expiration_notifications
+
     verify_sender_email()
 
     create_ca_cert_that_expires_in_days(180)
-    create_ca_cert_that_expires_in_days(180)  # two on the same day results in a single email
+    create_ca_cert_that_expires_in_days(
+        180
+    )  # two on the same day results in a single email
     create_ca_cert_that_expires_in_days(365)
     create_ca_cert_that_expires_in_days(364)
     create_ca_cert_that_expires_in_days(366)
@@ -279,26 +302,42 @@ def test_send_authority_expiration_notifications():
 @mock_ses
 def test_send_expiring_deployed_certificate_notifications():
     from lemur.domains.models import Domain
-    from lemur.notifications.messaging import send_expiring_deployed_certificate_notifications
+    from lemur.notifications.messaging import (
+        send_expiring_deployed_certificate_notifications,
+    )
+
     verify_sender_email()
 
     # three certs with ports, one cert with no ports
-    cert_1 = create_cert_that_expires_in_days(10, domains=[Domain(name='domain1.com')], owner='testowner1@example.com')
+    cert_1 = create_cert_that_expires_in_days(
+        10, domains=[Domain(name="domain1.com")], owner="testowner1@example.com"
+    )
     cert_1.certificate_associations[0].ports = [1234]
-    cert_2 = create_cert_that_expires_in_days(10, domains=[Domain(name='domain1.com')], owner='testowner2@example.com')
+    cert_2 = create_cert_that_expires_in_days(
+        10, domains=[Domain(name="domain1.com")], owner="testowner2@example.com"
+    )
     cert_2.certificate_associations[0].ports = [1234, 12345]
-    cert_3 = create_cert_that_expires_in_days(10, domains=[Domain(name='domain1.com')], owner='testowner3@example.com')
+    cert_3 = create_cert_that_expires_in_days(
+        10, domains=[Domain(name="domain1.com")], owner="testowner3@example.com"
+    )
     cert_3.certificate_associations[0].ports = [1234, 12345, 12456]
-    cert_4 = create_cert_that_expires_in_days(10, domains=[Domain(name='domain1.com')], owner='testowner3@example.com')
+    cert_4 = create_cert_that_expires_in_days(
+        10, domains=[Domain(name="domain1.com")], owner="testowner3@example.com"
+    )
     cert_4.certificate_associations[0].ports = []
 
     certificates = get_expiring_deployed_certificates([]).items()
-    assert send_expiring_deployed_certificate_notifications(certificates) == (3, 0)  # 3 certs with ports
+    assert send_expiring_deployed_certificate_notifications(certificates) == (
+        3,
+        0,
+    )  # 3 certs with ports
 
 
 def create_ca_cert_that_expires_in_days(days):
     now = arrow.utcnow()
-    not_after = now + timedelta(days=days, hours=1)  # a bit more than specified since we'll check in the future
+    not_after = now + timedelta(
+        days=days, hours=1
+    )  # a bit more than specified since we'll check in the future
 
     authority = AuthorityFactory()
     certificate = CertificateFactory()
@@ -315,12 +354,16 @@ def create_cert_that_expires_in_days(days, serial=None, domains=None, owner=None
     from string import ascii_lowercase
 
     now = arrow.utcnow()
-    not_after = now + timedelta(days=days, hours=1)  # a bit more than specified since we'll check in the future
+    not_after = now + timedelta(
+        days=days, hours=1
+    )  # a bit more than specified since we'll check in the future
 
     certificate = CertificateFactory()
     certificate.not_after = not_after
     certificate.notify = True
-    certificate.owner = ''.join(random.choice(ascii_lowercase) for _ in range(10)) + '@example.com'
+    certificate.owner = (
+        "".join(random.choice(ascii_lowercase) for _ in range(10)) + "@example.com"
+    )
     endpoints = []
     for i in range(0, randrange(0, 5)):
         endpoints.append(EndpointFactory())

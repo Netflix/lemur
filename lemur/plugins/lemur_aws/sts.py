@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from functools import wraps
 
 import boto3
@@ -22,9 +23,12 @@ def sts_client(service, service_type="client"):
         def decorated_function(*args, **kwargs):
             if current_app.config.get("LEMUR_AWS_REGION"):
                 deployment_region = current_app.config.get("LEMUR_AWS_REGION")
-                sts = boto3.client('sts', region_name=deployment_region,
-                                   endpoint_url=f"https://sts.{deployment_region}.amazonaws.com/",
-                                   config=config)
+                sts = boto3.client(
+                    "sts",
+                    region_name=deployment_region,
+                    endpoint_url=f"https://sts.{deployment_region}.amazonaws.com/",
+                    config=config,
+                )
             else:
                 sts = boto3.client("sts", config=config)
             arn = "arn:{partition}:iam::{account_number}:role/{profile}".format(
@@ -39,7 +43,10 @@ def sts_client(service, service_type="client"):
             if service_type == "client":
                 client = boto3.client(
                     service,
-                    region_name=kwargs.pop("region", current_app.config.get("LEMUR_AWS_REGION", "us-east-1")),
+                    region_name=kwargs.pop(
+                        "region",
+                        current_app.config.get("LEMUR_AWS_REGION", "us-east-1"),
+                    ),
                     aws_access_key_id=role["Credentials"]["AccessKeyId"],
                     aws_secret_access_key=role["Credentials"]["SecretAccessKey"],
                     aws_session_token=role["Credentials"]["SessionToken"],
@@ -49,7 +56,10 @@ def sts_client(service, service_type="client"):
             elif service_type == "resource":
                 resource = boto3.resource(
                     service,
-                    region_name=kwargs.pop("region", current_app.config.get("LEMUR_AWS_REGION", "us-east-1")),
+                    region_name=kwargs.pop(
+                        "region",
+                        current_app.config.get("LEMUR_AWS_REGION", "us-east-1"),
+                    ),
                     aws_access_key_id=role["Credentials"]["AccessKeyId"],
                     aws_secret_access_key=role["Credentials"]["SecretAccessKey"],
                     aws_session_token=role["Credentials"]["SessionToken"],

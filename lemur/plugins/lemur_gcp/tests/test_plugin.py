@@ -46,50 +46,42 @@ aNVFrNhMcvbKB0eqb5VHL90=
 """
 
 SUCCESS_INSERT_RESPONSE = {
-    'kind': 'compute#operation',
-    'id': '4927389014336055823',
-    'name': 'operation-1661211870499-5e6dd077012f4-9b6e5e0d-ddfc98d2',
-    'operationType': 'insert',
-    'targetLink': 'https://www.googleapis.com/compute/v1/projects/testubg-sandbox/global/sslCertificates/test-cert-1234',
-    'targetId': '8919843282434501135',
-    'status': 'RUNNING',
-    'user': 'lemur-test@test.iam.gserviceaccount.com',
-    'progress': 0,
-    'insertTime': '2022-08-22T16:44:32.218-07:00',
-    'startTime': '2022-08-22T16:44:32.231-07:00',
+    "kind": "compute#operation",
+    "id": "4927389014336055823",
+    "name": "operation-1661211870499-5e6dd077012f4-9b6e5e0d-ddfc98d2",
+    "operationType": "insert",
+    "targetLink": "https://www.googleapis.com/compute/v1/projects/testubg-sandbox/global/sslCertificates/test-cert-1234",
+    "targetId": "8919843282434501135",
+    "status": "RUNNING",
+    "user": "lemur-test@test.iam.gserviceaccount.com",
+    "progress": 0,
+    "insertTime": "2022-08-22T16:44:32.218-07:00",
+    "startTime": "2022-08-22T16:44:32.231-07:00",
 }
 
 options = [
+    {"name": "projectID", "type": "str", "required": True, "value": "lemur-test"},
+    {"name": "region", "type": "str", "value": "europe-west3"},
     {
-        'name': 'projectID',
-        'type': 'str',
-        'required': True,
-        'value': 'lemur-test'
+        "name": "authenticationMethod",
+        "type": "str",
+        "required": True,
+        "value": "vault",
     },
-    {
-        'name': 'region',
-        'type': 'str',
-        'value': 'europe-west3'
-    },
-    {
-        'name': 'authenticationMethod',
-        'type': 'str',
-        'required': True,
-        'value': 'vault',
-    }]
+]
 
 
 @mock.patch("lemur.plugins.lemur_gcp.auth.get_gcp_credentials", return_value=token)
-@mock.patch("lemur.plugins.lemur_gcp.plugin.certificates.insert_certificate",
-            return_value=SUCCESS_INSERT_RESPONSE)
+@mock.patch(
+    "lemur.plugins.lemur_gcp.plugin.certificates.insert_certificate",
+    return_value=SUCCESS_INSERT_RESPONSE,
+)
 def test_upload(mock_ssl_certificates, mock_credentials):
     plugin = GCPDestinationPlugin()
-    assert plugin.upload(
-        name,
-        body,
-        private_key,
-        cert_chain,
-        options) == SUCCESS_INSERT_RESPONSE
+    assert (
+        plugin.upload(name, body, private_key, cert_chain, options)
+        == SUCCESS_INSERT_RESPONSE
+    )
 
     ssl_certificate_body = {
         "name": certificates.get_name(body),
@@ -99,7 +91,9 @@ def test_upload(mock_ssl_certificates, mock_credentials):
     }
 
     # assert our mocks are being called with the params we expect
-    mock_ssl_certificates.assert_called_with("lemur-test", ssl_certificate_body, token, "europe-west3")
+    mock_ssl_certificates.assert_called_with(
+        "lemur-test", ssl_certificate_body, token, "europe-west3"
+    )
     mock_credentials.assert_called_with(plugin, options)
 
 
@@ -251,9 +245,12 @@ cert4.type_ = "MANAGED"
 
 @mock.patch("lemur.plugins.lemur_gcp.plugin.GCPSourcePlugin.get_option")
 @mock.patch("lemur.plugins.lemur_gcp.auth.get_gcp_credentials", return_value=token)
-@mock.patch("google.cloud.compute_v1.services.ssl_certificates.SslCertificatesClient.list")
+@mock.patch(
+    "google.cloud.compute_v1.services.ssl_certificates.SslCertificatesClient.list"
+)
 def test_get_certificates(mock_ssl_client_list, mock_credentials, mock_get_option):
     from lemur.plugins.lemur_gcp.plugin import GCPSourcePlugin
+
     mock_ssl_client_list.return_value = [cert1, cert2, cert3, cert4]
     mock_get_option.side_effect = ["lemur-test", None]
     certs = GCPSourcePlugin().get_certificates(options)
@@ -278,9 +275,14 @@ def test_get_certificates(mock_ssl_client_list, mock_credentials, mock_get_optio
 
 @mock.patch("lemur.plugins.lemur_gcp.plugin.GCPSourcePlugin.get_option")
 @mock.patch("lemur.plugins.lemur_gcp.auth.get_gcp_credentials", return_value=token)
-@mock.patch("google.cloud.compute_v1.services.region_ssl_certificates.RegionSslCertificatesClient.list")
-def test_get_regional_certificates(mock_ssl_client_list, mock_credentials, mock_get_option):
+@mock.patch(
+    "google.cloud.compute_v1.services.region_ssl_certificates.RegionSslCertificatesClient.list"
+)
+def test_get_regional_certificates(
+    mock_ssl_client_list, mock_credentials, mock_get_option
+):
     from lemur.plugins.lemur_gcp.plugin import GCPSourcePlugin
+
     mock_ssl_client_list.return_value = [cert1, cert2, cert3, cert4]
     mock_get_option.side_effect = ["lemur-test", "europe-west3"]
     certs = GCPSourcePlugin().get_certificates(options)
@@ -300,11 +302,15 @@ def test_get_regional_certificates(mock_ssl_client_list, mock_credentials, mock_
         "chain": "",
         "name": "cert3",
     }
-    mock_ssl_client_list.assert_called_once_with(project="lemur-test", region="europe-west3")
+    mock_ssl_client_list.assert_called_once_with(
+        project="lemur-test", region="europe-west3"
+    )
 
 
-@mock.patch("lemur.plugins.lemur_gcp.auth.get_gcp_credentials_from_vault",
-            return_value="ya29.c.b0AXv0zTN36HtXN2cJolg9tAj0vGAOT29FF-WNxQzvPu")
+@mock.patch(
+    "lemur.plugins.lemur_gcp.auth.get_gcp_credentials_from_vault",
+    return_value="ya29.c.b0AXv0zTN36HtXN2cJolg9tAj0vGAOT29FF-WNxQzvPu",
+)
 def test_get_gcp_credentials(mock_get_gcp_credentials_from_vault):
     plugin = GCPDestinationPlugin()
     assert get_gcp_credentials(plugin, options) == token

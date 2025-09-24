@@ -54,7 +54,9 @@ def test_sync_endpoints(session):
     crt1 = CertificateFactory()
     crt2 = CertificateFactory()
     crt3 = CertificateFactory()
-    existing_endpoint = EndpointFactory(name="test-lb-4", dnsname="test4.example.com", port=443)
+    existing_endpoint = EndpointFactory(
+        name="test-lb-4", dnsname="test4.example.com", port=443
+    )
     existing_endpoint.primary_certificate = crt1
     existing_endpoint.source = source
     session.commit()
@@ -83,7 +85,7 @@ def test_sync_endpoints(session):
                         path="/fakecrt2",
                         registry_type="iam",
                     )
-                ]
+                ],
             ),
             dict(
                 name="test-lb-2",
@@ -117,7 +119,7 @@ def test_sync_endpoints(session):
                         name=crt2.name,
                         path="/fakecrt2",
                         registry_type="iam",
-                    )
+                    ),
                 ],
                 registry_type="iam",
             ),
@@ -143,7 +145,7 @@ def test_sync_endpoints(session):
                     )
                 ],
                 registry_type="iam",
-            )
+            ),
         ],
     ):
         new, updated, updated_by_hash = source_service.sync_endpoints(source)

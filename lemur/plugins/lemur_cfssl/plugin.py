@@ -100,7 +100,7 @@ class CfsslIssuerPlugin(IssuerPlugin):
         :param options:
         :return:
         """
-        name = "cfssl_" + "_".join(options['name'].split(" ")) + "_admin"
+        name = "cfssl_" + "_".join(options["name"].split(" ")) + "_admin"
         role = {"username": "", "password": "", "name": name}
         return current_app.config.get("CFSSL_ROOT"), "", [role]
 

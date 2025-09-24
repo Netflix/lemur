@@ -5,6 +5,7 @@
 
 .. moduleauthor:: Kevin Glisson (kglisson@netflix.com)
 """
+
 from flask import current_app
 from lemur.common.managers import InstanceManager
 

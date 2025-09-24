@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from marshmallow import fields
 from lemur.users.schemas import UserNestedOutputSchema
 from lemur.authorities.schemas import AuthorityNestedOutputSchema

@@ -3,6 +3,7 @@
     :copyright: (c) 2018 by Netflix Inc.
     :license: Apache, see LICENSE for more details.
 """
+
 from enum import IntEnum
 import re
 
@@ -42,20 +43,22 @@ CERTIFICATE_KEY_TYPES = [
 
 # For commonly reused regexes used by plugins
 # RFC5322-compliant Regular Expression for email addresses
-EMAIL_RE = re.compile(r"([-!#-'*+/-9=?A-Z^-~]+(\.[-!#-'*+/-9=?A-Z^-~]+)*|\"([]!#-[^-~ \t]|(\\[\t -~]))+\")"
-                   r"@([-!#-'*+/-9=?A-Z^-~]+(\.[-!#-'*+/-9=?A-Z^-~]+)*|\[[\t -Z^-~]*])")
+EMAIL_RE = re.compile(
+    r"([-!#-'*+/-9=?A-Z^-~]+(\.[-!#-'*+/-9=?A-Z^-~]+)*|\"([]!#-[^-~ \t]|(\\[\t -~]))+\")"
+    r"@([-!#-'*+/-9=?A-Z^-~]+(\.[-!#-'*+/-9=?A-Z^-~]+)*|\[[\t -Z^-~]*])"
+)
 EMAIL_RE_HELP = "Comma delimited list of email addresses"
 
 
 # As per RFC 5280 section 5.3.1 (https://tools.ietf.org/html/rfc5280#section-5.3.1)
 class CRLReason(IntEnum):
-    unspecified = 0,
-    keyCompromise = 1,
-    cACompromise = 2,
-    affiliationChanged = 3,
-    superseded = 4,
-    cessationOfOperation = 5,
-    certificateHold = 6,
-    removeFromCRL = 8,
-    privilegeWithdrawn = 9,
+    unspecified = (0,)
+    keyCompromise = (1,)
+    cACompromise = (2,)
+    affiliationChanged = (3,)
+    superseded = (4,)
+    cessationOfOperation = (5,)
+    certificateHold = (6,)
+    removeFromCRL = (8,)
+    privilegeWithdrawn = (9,)
     aACompromise = 10

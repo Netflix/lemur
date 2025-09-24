@@ -3,6 +3,7 @@
     Copyright (c) 2018 and onwards Netflix, Inc.  All rights reserved.
 .. moduleauthor:: James Chuong <jchuong@instartlogic.com>
 """
+
 from datetime import datetime as dt
 
 from sqlalchemy import (

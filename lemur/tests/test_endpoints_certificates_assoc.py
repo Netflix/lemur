@@ -13,7 +13,9 @@ def test_primary_certificate_assoc(session):
     expected_endpoint = EndpointFactory()
     expected_endpoint.primary_certificate = crt
 
-    actual_endpoint = session.query(Endpoint).filter(Endpoint.name == expected_endpoint.name).scalar()
+    actual_endpoint = (
+        session.query(Endpoint).filter(Endpoint.name == expected_endpoint.name).scalar()
+    )
     assert expected_endpoint == actual_endpoint
     assert actual_endpoint.primary_certificate == crt
 
@@ -32,7 +34,9 @@ def test_secondary_certificates_assoc(session):
     for crt in additional_certs:
         expected_endpoint.add_sni_certificate(certificate=crt)
 
-    actual_endpoint = session.query(Endpoint).filter(Endpoint.name == expected_endpoint.name).scalar()
+    actual_endpoint = (
+        session.query(Endpoint).filter(Endpoint.name == expected_endpoint.name).scalar()
+    )
     assert expected_endpoint == actual_endpoint
 
 
@@ -44,7 +48,9 @@ def test_primary_certificate_uniqueness(session):
     endpoint.primary_certificate = crt
 
     endpoint.certificates_assoc.append(
-        EndpointsCertificates(certificate=CertificateFactory(), endpoint=endpoint, primary=True)
+        EndpointsCertificates(
+            certificate=CertificateFactory(), endpoint=endpoint, primary=True
+        )
     )
 
     with pytest.raises(Exception):

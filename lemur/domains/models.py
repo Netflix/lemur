@@ -7,6 +7,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
+
 from sqlalchemy import Column, Integer, String, Boolean
 
 from lemur.database import db

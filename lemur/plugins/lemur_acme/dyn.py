@@ -49,7 +49,9 @@ def _has_dns_propagated(fqdn, token):
 
     for txt_record in txt_records:
         if txt_record == token:
-            metrics.send("has_dns_propagated_success", "counter", 1, metric_tags={"dns": fqdn})
+            metrics.send(
+                "has_dns_propagated_success", "counter", 1, metric_tags={"dns": fqdn}
+            )
             return True
 
     return False
@@ -62,12 +64,16 @@ def wait_for_dns_change(change_id, account_number=None):
         status = _has_dns_propagated(fqdn, token)
         current_app.logger.debug("Record status for fqdn: {}: {}".format(fqdn, status))
         if status:
-            metrics.send("wait_for_dns_change_success", "counter", 1, metric_tags={"dns": fqdn})
+            metrics.send(
+                "wait_for_dns_change_success", "counter", 1, metric_tags={"dns": fqdn}
+            )
             break
         time.sleep(10)
     if not status:
         # TODO: Delete associated DNS text record here
-        metrics.send("wait_for_dns_change_fail", "counter", 1, metric_tags={"dns": fqdn})
+        metrics.send(
+            "wait_for_dns_change_fail", "counter", 1, metric_tags={"dns": fqdn}
+        )
         capture_exception(extra={"fqdn": str(fqdn), "txt_record": str(token)})
         metrics.send(
             "wait_for_dns_change_error",
@@ -255,7 +261,7 @@ def get_authoritative_nameserver(domain):
         while not last:
             s = n.split(depth)
 
-            last = s[0].to_unicode() == u"@"
+            last = s[0].to_unicode() == "@"
             sub = s[1]
 
             query = dns.message.make_query(sub, dns.rdatatype.NS)

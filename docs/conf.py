@@ -32,8 +32,18 @@ if on_rtd:
     MOCK_MODULES = ["ldap"]
     sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
-autodoc_mock_imports = ["python-ldap", "acme", "certsrv", "dnspython3", "dyn", "factory-boy", "flask_replicated",
-                        "josepy", "logmatic", "pem"]
+autodoc_mock_imports = [
+    "python-ldap",
+    "acme",
+    "certsrv",
+    "dnspython3",
+    "dyn",
+    "factory-boy",
+    "flask_replicated",
+    "josepy",
+    "logmatic",
+    "pem",
+]
 
 # -- General configuration ------------------------------------------------
 
@@ -58,8 +68,8 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # General information about the project.
-project = u"lemur"
-copyright = u"2018, Netflix Inc."
+project = "lemur"
+copyright = "2018, Netflix Inc."
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -216,7 +226,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    ("index", "lemur.tex", u"Lemur Documentation", u"Netflix Security", "manual")
+    ("index", "lemur.tex", "Lemur Documentation", "Netflix Security", "manual")
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -244,7 +254,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [("index", "Lemur", u"Lemur Documentation", [u"Netflix Security"], 1)]
+man_pages = [("index", "Lemur", "Lemur Documentation", ["Netflix Security"], 1)]
 
 # If true, show URL addresses after external links.
 # man_show_urls = False
@@ -259,8 +269,8 @@ texinfo_documents = [
     (
         "index",
         "Lemur",
-        u"Lemur Documentation",
-        u"Netflix Security",
+        "Lemur Documentation",
+        "Netflix Security",
         "Lemur",
         "SSL Certificate Management",
         "Miscellaneous",

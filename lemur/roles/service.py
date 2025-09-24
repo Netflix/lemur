@@ -9,6 +9,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from flask import current_app
 
 from lemur import database
@@ -39,7 +40,7 @@ def update(role_id, name, description, users):
     """
     role = get(role_id)
 
-    if name == 'admin':
+    if name == "admin":
         warn_user_updates(name, role.users, users)
     role.name = name
     role.description = description
@@ -63,7 +64,9 @@ def set_third_party(role_id, third_party_status=False):
     role.third_party = third_party_status
     database.update(role)
 
-    log_service.audit_log("update_role", role.name, f"Updated third_party_status={third_party_status}")
+    log_service.audit_log(
+        "update_role", role.name, f"Updated third_party_status={third_party_status}"
+    )
     return role
 
 

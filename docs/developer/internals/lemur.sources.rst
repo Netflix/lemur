@@ -11,7 +11,7 @@ sources Package
     :show-inheritance:
 
 :mod:`cli` Module
-------------------------------	
+------------------------------
 
 .. automodule:: lemur.sources.cli
     :noindex:

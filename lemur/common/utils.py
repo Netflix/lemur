@@ -6,6 +6,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 import base64
 import json
 import random
@@ -22,7 +23,11 @@ from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, ec, padding
-from cryptography.hazmat.primitives.serialization import load_pem_private_key, Encoding, pkcs7
+from cryptography.hazmat.primitives.serialization import (
+    load_pem_private_key,
+    Encoding,
+    pkcs7,
+)
 from flask_restful.reqparse import RequestParser
 from sqlalchemy import and_, func
 
@@ -66,15 +71,23 @@ def get_psuedo_random_string():
 
 
 def get_random_secret(length):
-    """ Similar to get_pseudo_random_string, but accepts a length parameter. """
-    secret_key = ''.join(random.choice(string.ascii_uppercase) for x in range(round(length / 4)))
-    secret_key = secret_key + ''.join(random.choice("~!@#$%^&*()_+") for x in range(round(length / 4)))
-    secret_key = secret_key + ''.join(random.choice(string.ascii_lowercase) for x in range(round(length / 4)))
-    return secret_key + ''.join(random.choice(string.digits) for x in range(round(length / 4)))
+    """Similar to get_pseudo_random_string, but accepts a length parameter."""
+    secret_key = "".join(
+        random.choice(string.ascii_uppercase) for x in range(round(length / 4))
+    )
+    secret_key = secret_key + "".join(
+        random.choice("~!@#$%^&*()_+") for x in range(round(length / 4))
+    )
+    secret_key = secret_key + "".join(
+        random.choice(string.ascii_lowercase) for x in range(round(length / 4))
+    )
+    return secret_key + "".join(
+        random.choice(string.digits) for x in range(round(length / 4))
+    )
 
 
 def get_state_token_secret():
-    return base64.b64encode(get_random_secret(32).encode('utf8'))
+    return base64.b64encode(get_random_secret(32).encode("utf8"))
 
 
 def parse_certificate(body):
@@ -114,9 +127,7 @@ def get_key_type_from_certificate(body):
     """
     parsed_cert = parse_certificate(body)
     if isinstance(parsed_cert.public_key(), rsa.RSAPublicKey):
-        return "RSA{key_size}".format(
-            key_size=parsed_cert.public_key().key_size
-        )
+        return "RSA{key_size}".format(key_size=parsed_cert.public_key().key_size)
     elif isinstance(parsed_cert.public_key(), ec.EllipticCurvePublicKey):
         return get_key_type_from_ec_curve(parsed_cert.public_key().curve.name)
 
@@ -336,7 +347,9 @@ def check_validation(validation):
     try:
         compiled = re.compile(validation)
     except re.error as e:
-        raise InvalidConfiguration(f"Validation {validation} couldn't compile. Reason: {e}")
+        raise InvalidConfiguration(
+            f"Validation {validation} couldn't compile. Reason: {e}"
+        )
 
     return compiled.pattern
 
@@ -383,7 +396,7 @@ def column_windows(session, column, windowsize):
 
 
 def windowed_query(q, column, windowsize):
-    """"Break a Query into windows on a given column."""
+    """ "Break a Query into windows on a given column."""
 
     for whereclause in column_windows(q.session, column, windowsize):
         for row in q.filter(whereclause).order_by(column):
@@ -437,7 +450,9 @@ def get_certificate_via_tls(host, port, timeout=10):
     """
     context = ssl.create_default_context()
     context.check_hostname = False  # we don't care about validating the cert
-    context.verify_mode = ssl.CERT_NONE  # we don't care about validating the cert; it may be self-signed
+    context.verify_mode = (
+        ssl.CERT_NONE
+    )  # we don't care about validating the cert; it may be self-signed
     conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     conn.settimeout(timeout)
     conn.connect((host, port))
@@ -454,9 +469,13 @@ def parse_serial(pem_certificate):
     """
     Parses a serial number from a PEM-encoded certificate.
     """
-    x509_cert = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, pem_certificate)
+    x509_cert = OpenSSL.crypto.load_certificate(
+        OpenSSL.crypto.FILETYPE_PEM, pem_certificate
+    )
     x509_cert.get_notAfter()
-    parsed_certificate = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, pem_certificate)
+    parsed_certificate = OpenSSL.crypto.load_certificate(
+        OpenSSL.crypto.FILETYPE_PEM, pem_certificate
+    )
     return parsed_certificate.get_serial_number()
 
 
@@ -502,13 +521,14 @@ def drop_last_cert_from_chain(full_chain: str) -> str:
     :param full_chain: string of a certificate chain
     :return:  string of a new certificate chain, omitting the last certificate
     """
-    if full_chain == '' or full_chain.count("BEGIN CERTIFICATE") <= 1:
+    if full_chain == "" or full_chain.count("BEGIN CERTIFICATE") <= 1:
         return full_chain
     full_chain_certs = CERT_PEM_REGEX.findall(full_chain.encode())
     pem_certificate = OpenSSL.crypto.dump_certificate(
         OpenSSL.crypto.FILETYPE_PEM,
         OpenSSL.crypto.load_certificate(
-            OpenSSL.crypto.FILETYPE_PEM, ''.join(cert.decode() for cert in full_chain_certs[:-1])
+            OpenSSL.crypto.FILETYPE_PEM,
+            "".join(cert.decode() for cert in full_chain_certs[:-1]),
         ),
     ).decode()
     return pem_certificate

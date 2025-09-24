@@ -7,6 +7,7 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 import arrow
 import requests
 import xmltodict
@@ -102,7 +103,9 @@ def process_options(options):
     # if there is a config variable with VERISIGN_PRODUCT_<upper(authority.name)> take the value as Cert product-type
     # else default to "Server", to be compatoible with former versions
     authority = options.get("authority").name.upper()
-    product_type = current_app.config.get("VERISIGN_PRODUCT_{0}".format(authority), "Server")
+    product_type = current_app.config.get(
+        "VERISIGN_PRODUCT_{0}".format(authority), "Server"
+    )
     data = {
         "challenge": get_psuedo_random_string(),
         "serverType": "Apache",
@@ -223,11 +226,14 @@ class VerisignIssuerPlugin(IssuerPlugin):
             )
             raise Exception(f"Error with Verisign: {response.content}")
         authority = issuer_options.get("authority").name.upper()
-        cert = response_dict['Response']['Certificate']
+        cert = response_dict["Response"]["Certificate"]
         external_id = None
-        if 'Transaction_ID' in response_dict['Response'].keys():
-            external_id = response_dict['Response']['Transaction_ID']
-        chain = current_app.config.get("VERISIGN_INTERMEDIATE_{0}".format(authority), current_app.config.get("VERISIGN_INTERMEDIATE"))
+        if "Transaction_ID" in response_dict["Response"].keys():
+            external_id = response_dict["Response"]["Transaction_ID"]
+        chain = current_app.config.get(
+            "VERISIGN_INTERMEDIATE_{0}".format(authority),
+            current_app.config.get("VERISIGN_INTERMEDIATE"),
+        )
         return cert, chain, external_id
 
     @staticmethod
@@ -239,7 +245,7 @@ class VerisignIssuerPlugin(IssuerPlugin):
         :param options:
         :return:
         """
-        name = "verisign_" + "_".join(options['name'].split(" ")) + "_admin"
+        name = "verisign_" + "_".join(options["name"].split(" ")) + "_admin"
         role = {"username": "", "password": "", "name": name}
         return current_app.config.get("VERISIGN_ROOT"), "", [role]
 

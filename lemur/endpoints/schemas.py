@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+
 from marshmallow import fields
 
 from lemur.common.schema import LemurOutputSchema
@@ -43,7 +44,9 @@ class EndpointOutputSchema(LemurOutputSchema):
     type = fields.String()
     port = fields.Integer()
     active = fields.Boolean()
-    certificates = fields.Nested(EndpointCertificateOutputSchema, many=True, attribute="certificates_assoc")
+    certificates = fields.Nested(
+        EndpointCertificateOutputSchema, many=True, attribute="certificates_assoc"
+    )
     registry_type = fields.String()
     policy = fields.Nested(PolicyNestedOutputSchema)
 

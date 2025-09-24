@@ -9,12 +9,20 @@
 
 .. moduleauthor:: Christopher Jolley <chris@alwaysjolley.com>
 """
+
 import os
 import re
 import hvac
 from flask import current_app
 
-from lemur.common.defaults import common_name, country, state, location, organizational_unit, organization
+from lemur.common.defaults import (
+    common_name,
+    country,
+    state,
+    location,
+    organizational_unit,
+    organization,
+)
 from lemur.common.utils import parse_certificate, check_validation
 from lemur.plugins.bases import DestinationPlugin
 from lemur.plugins.bases import SourcePlugin
@@ -26,7 +34,7 @@ from validators.url import url
 
 
 class VaultSourcePlugin(SourcePlugin):
-    """ Class for importing certificates from Hashicorp Vault"""
+    """Class for importing certificates from Hashicorp Vault"""
 
     title = "Vault"
     slug = "vault-source"
@@ -105,14 +113,14 @@ class VaultSourcePlugin(SourcePlugin):
         cert_delimiter = "-----END CERTIFICATE-----"
 
         client = hvac.Client(url=url)
-        if auth_method == 'token':
+        if auth_method == "token":
             with open(auth_key, "r") as tfile:
                 token = tfile.readline().rstrip("\n")
             client.token = token
 
-        if auth_method == 'kubernetes':
-            token_path = '/var/run/secrets/kubernetes.io/serviceaccount/token'
-            with open(token_path, 'r') as f:
+        if auth_method == "kubernetes":
+            token_path = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+            with open(token_path, "r") as f:
                 jwt = f.read()
             client.auth_kubernetes(auth_key, jwt)
 
@@ -147,7 +155,7 @@ class VaultSourcePlugin(SourcePlugin):
         ]
 
     def get_endpoints(self, options, **kwargs):
-        """ Not implemented yet """
+        """Not implemented yet"""
         endpoints = []
         return endpoints
 
@@ -204,7 +212,9 @@ class VaultDestinationPlugin(DestinationPlugin):
             "name": "vaultPath",
             "type": "str",
             "required": True,
-            "validation": check_validation("^(([a-zA-Z0-9._-]+|{(CN|OU|O|L|S|C)})+/?)+$"),
+            "validation": check_validation(
+                "^(([a-zA-Z0-9._-]+|{(CN|OU|O|L|S|C)})+/?)+$"
+            ),
             "helpMessage": "Must be a valid Vault secrets path. Support vars: {CN|OU|O|L|S|C}",
         },
         {
@@ -275,14 +285,14 @@ class VaultDestinationPlugin(DestinationPlugin):
                     )
 
         client = hvac.Client(url=url)
-        if auth_method == 'token':
+        if auth_method == "token":
             with open(auth_key, "r") as tfile:
                 token = tfile.readline().rstrip("\n")
             client.token = token
 
-        if auth_method == 'kubernetes':
-            token_path = '/var/run/secrets/kubernetes.io/serviceaccount/token'
-            with open(token_path, 'r') as f:
+        if auth_method == "kubernetes":
+            token_path = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+            with open(token_path, "r") as f:
                 jwt = f.read()
             client.auth_kubernetes(auth_key, jwt)
 
@@ -294,10 +304,10 @@ class VaultDestinationPlugin(DestinationPlugin):
             O=organization(cert),  # noqa: E741
             L=location(cert),
             S=state(cert),
-            C=country(cert)
+            C=country(cert),
         )
         if not obj_name:
-            obj_name = '{CN}'
+            obj_name = "{CN}"
 
         f_obj_name = obj_name.format(
             CN=cname,
@@ -305,7 +315,7 @@ class VaultDestinationPlugin(DestinationPlugin):
             O=organization(cert),  # noqa: E741
             L=location(cert),
             S=state(cert),
-            C=country(cert)
+            C=country(cert),
         )
 
         path = "{0}/{1}".format(t_path, f_obj_name)
@@ -314,7 +324,7 @@ class VaultDestinationPlugin(DestinationPlugin):
         secret["data"][cname] = {}
 
         if not cert_chain:
-            chain = ''
+            chain = ""
         else:
             chain = cert_chain
 
@@ -345,7 +355,7 @@ class VaultDestinationPlugin(DestinationPlugin):
 
 
 def get_san_list(body):
-    """ parse certificate for SAN names and return list, return empty list on error """
+    """parse certificate for SAN names and return list, return empty list on error"""
     san_list = []
     try:
         byte_body = body.encode("utf-8")
@@ -361,7 +371,7 @@ def get_san_list(body):
 
 
 def get_secret(client, mount, path):
-    """ retreive existing data from mount path and return dictionary """
+    """retreive existing data from mount path and return dictionary"""
     result = {"data": {}}
     try:
         if client.secrets.kv.default_kv_version == "1":
@@ -370,7 +380,7 @@ def get_secret(client, mount, path):
             result = client.secrets.kv.v2.read_secret_version(
                 path=path, mount_point=mount
             )
-            result = result['data']
+            result = result["data"]
     except ConnectionError:
         pass
     finally:
