@@ -200,7 +200,6 @@ flask-sqlalchemy==2.5.1
     # via
     #   -r requirements.in
     #   flask-migrate
-future==1.0.0
     # via -r requirements.in
 google-api-core[grpc]==2.23.0
     # via
