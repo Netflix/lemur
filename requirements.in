@@ -33,7 +33,6 @@ flask-Script==2.0.5
 Flask-SQLAlchemy
 Flask<3  # until https://github.com/pytest-dev/pytest-flask/pull/168 is released
 flask_replicated
-future
 google-cloud-compute
 google-cloud-private-ca
 grpcio >= 1.62.0 # (VULN-7774)
