@@ -1004,6 +1004,8 @@ def reissue_certificate(certificate, notify=None, replace=None, user=None):
     # Support both static authority ID mapping and dynamic callback functions
     authority_translation = current_app.config.get("ROTATE_AUTHORITY_TRANSLATION", {})
     if primitives["authority"].id in authority_translation:
+        original_authority_id = primitives["authority"].id
+        original_authority_name = primitives["authority"].name
         translation_value = authority_translation[primitives["authority"].id]
 
         # Check if the value is a callable (function)
@@ -1014,7 +1016,25 @@ def reissue_certificate(certificate, notify=None, replace=None, user=None):
                 primitives["authority"] = database.get(Authority, new_authority_id)
         else:
             # Static integer mapping (original behavior)
+            new_authority_id = translation_value
             primitives["authority"] = database.get(Authority, translation_value)
+
+        # Log and metric the translation
+        if new_authority_id is not None:
+            current_app.logger.info(
+                f"Authority translated for certificate {certificate.name}: "
+                f"{original_authority_name} (ID: {original_authority_id}) -> "
+                f"{primitives['authority'].name} (ID: {new_authority_id})"
+            )
+            metrics.send(
+                "certificate_authority_translation",
+                "counter",
+                1,
+                metric_tags={
+                    "original_authority": original_authority_name,
+                    "new_authority": primitives["authority"].name,
+                }
+            )
 
     # Modify description to include the certificate ID being reissued and mention that this is created by Lemur
     # as part of reissue
