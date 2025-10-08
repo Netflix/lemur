@@ -546,9 +546,43 @@ to enable it, you must set the option ``--notify`` (when using cron) or the conf
         Use this config (optional) to migrate from one authority id to another on reissuance (useful for expiring authorities,
         key migrations, etc).
 
-    ::
+        This configuration supports two types of values:
+
+        1. **Static mapping** (integer): Maps an old authority ID directly to a new authority ID.
+        2. **Dynamic callback** (callable): A function that receives a certificate object and returns the new authority ID based on certificate properties.
+
+    Static mapping example::
 
         ROTATE_AUTHORITY_TRANSLATION = {1: 2}
+
+    Callback function example::
+
+        def select_authority_for_renewal(certificate):
+            """
+            Dynamically determine the authority for certificate renewal.
+
+            Args:
+                certificate: Certificate object with properties like:
+                    - owner: str
+                    - destinations: list of Destination objects
+                    - key_type: str
+                    - cn: str
+                    - san: str
+                    - authority: Authority object
+                    - authority_id: int
+
+            Returns:
+                int or None: The new authority ID to use, or None to keep the original authority
+            """
+            # Example: Select authority based on destinations
+            destination_labels = [dest.label for dest in certificate.destinations]
+            if 'production-aws' in destination_labels:
+                return 3  # Use cross-signed chain for production AWS
+            elif 'legacy-systems' in destination_labels:
+                return 4  # Use older authority for legacy compatibility
+            return None  # Keep original authority
+
+        ROTATE_AUTHORITY_TRANSLATION = {1: select_authority_for_renewal}
 
 
 **Certificate rotation**

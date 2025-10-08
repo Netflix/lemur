@@ -992,6 +992,44 @@ def test_reissue_certificate_authority_translation(
     assert new_cert.authority_id == crypto_authority.id
 
 
+def test_reissue_certificate_authority_translation_with_callback(
+    issuer_plugin, crypto_authority, certificate, logged_in_user, authority
+):
+    from lemur.certificates.service import reissue_certificate
+
+    # test-authority would return a mismatching private key, so use 'cryptography-issuer' plugin instead.
+    certificate.authority = authority
+
+    # Define a callback function that determines authority based on certificate properties
+    def determine_authority(cert):
+        # Example: choose authority based on owner or destinations
+        if cert.owner == "joe@example.com":
+            return crypto_authority.id
+        return None
+
+    current_app.config["ROTATE_AUTHORITY_TRANSLATION"] = {authority.id: determine_authority}
+    new_cert = reissue_certificate(certificate)
+    assert new_cert.authority_id == crypto_authority.id
+
+
+def test_reissue_certificate_authority_translation_with_callback_returns_none(
+    issuer_plugin, crypto_authority, certificate, logged_in_user, authority
+):
+    from lemur.certificates.service import reissue_certificate
+
+    # test-authority would return a mismatching private key, so use 'cryptography-issuer' plugin instead.
+    certificate.authority = authority
+
+    # Define a callback that returns None (no translation)
+    def determine_authority(cert):
+        return None
+
+    current_app.config["ROTATE_AUTHORITY_TRANSLATION"] = {authority.id: determine_authority}
+    new_cert = reissue_certificate(certificate)
+    # Should keep the original authority since callback returned None
+    assert new_cert.authority_id == authority.id
+
+
 def test_reissue_command_by_name(
         issuer_plugin, crypto_authority, logged_in_user
 ):
