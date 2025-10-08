@@ -572,7 +572,7 @@ to enable it, you must set the option ``--notify`` (when using cron) or the conf
                     - authority_id: int
 
             Returns:
-                int or None: The new authority ID to use, or None to keep the original authority
+                int: The new authority ID to use
             """
             # Example: Select authority based on destinations
             destination_labels = [dest.label for dest in certificate.destinations]
@@ -580,7 +580,7 @@ to enable it, you must set the option ``--notify`` (when using cron) or the conf
                 return 3  # Use cross-signed chain for production AWS
             elif 'legacy-systems' in destination_labels:
                 return 4  # Use older authority for legacy compatibility
-            return None  # Keep original authority
+            return certificate.authority_id  # Keep original authority
 
         ROTATE_AUTHORITY_TRANSLATION = {1: select_authority_for_renewal}
 
