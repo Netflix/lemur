@@ -691,7 +691,7 @@ class DigiCertCISIssuerPlugin(IssuerPlugin):
             cross_signed_root = current_app.config.get("DIGICERT_CIS_ALTERNATE_CHAINS", {}).get(authority_name)
             if cross_signed_root:
                 # Append the cross-signed root to the intermediate chain
-                intermediate = intermediate + "\n" + cross_signed_root
+                intermediate = str(intermediate) + "\n" + cross_signed_root
 
         return (
             "\n".join(str(end_entity).splitlines()),
