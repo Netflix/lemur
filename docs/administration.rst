@@ -1757,16 +1757,33 @@ The following configuration properties are optional when using the Digicert CIS 
             Defines the default signing algorithm for a given issuer name e.g. {"Digicert": "sha1"} will result in sha1 certs issued with the Digicert issuer (default = {}).
 
 
-.. data:: DIGICERT_CIS_ROOTS
-    :noindex:
-
-            A string->string mapping from issuer name to root PEM. These will be optionally be appended to / stripped from response chains as requested by users.
 
 
 .. data:: DIGICERT_CIS_USE_CSR_FIELDS
     :noindex:
 
             Controls the setting of the `use_csr_fields` parameter of the create certificate endpoint. When set, certificates will be issued with values from the csr instead of via API fields (default = False).
+
+
+.. data:: DIGICERT_CIS_ROOTS
+    :noindex:
+
+            A string->string mapping from authority name to root certificate PEM. This is used during authority creation to store the root certificate in Lemur's database.
+
+
+.. data:: DIGICERT_CIS_ALTERNATE_CHAINS
+    :noindex:
+
+            A string->string mapping from authority name to alternate/cross-signed chain PEM. When configured, the specified chain will be appended to certificates issued by that authority. This is useful for providing cross-signed roots for compatibility with older systems.
+
+            Example::
+
+                DIGICERT_CIS_ALTERNATE_CHAINS = {
+                    "DigiCert-G2-RSA-Cross-Global": """-----BEGIN CERTIFICATE-----
+                MIIEgjCCA2qgAwIBAgIQBEbB7LuEYrWpF3L5qhjmezANBgkqhkiG9w0BAQsFADBh
+                ...
+                -----END CERTIFICATE-----"""
+                }
 
 
 CFSSL Issuer Plugin
