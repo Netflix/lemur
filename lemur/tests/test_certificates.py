@@ -1012,6 +1012,89 @@ def test_reissue_certificate_authority_translation_with_callback(
     assert new_cert.authority_id == crypto_authority.id
 
 
+def test_reissue_certificate_with_autorotation_default_validity_disabled(
+    issuer_plugin, crypto_authority, certificate, logged_in_user
+):
+    """Test that when LEMUR_AUTOROTATION_USE_DEFAULT_VALIDITY is False (default),
+    reissued certificates maintain the original validity period."""
+    from lemur.certificates.service import reissue_certificate
+
+    # Enable rotation on the certificate
+    certificate.authority = crypto_authority
+    certificate.rotation = True
+
+    # Store original validity span
+    original_span = certificate.not_after - certificate.not_before
+
+    # Ensure the feature is disabled (default behavior)
+    current_app.config["LEMUR_AUTOROTATION_USE_DEFAULT_VALIDITY"] = False
+
+    # Reissue the certificate
+    new_cert = reissue_certificate(certificate)
+
+    # The new certificate should maintain the original validity span
+    new_span = new_cert.not_after - new_cert.not_before
+    assert abs((new_span - original_span).total_seconds()) < 60  # Allow 1 minute tolerance
+
+
+def test_reissue_certificate_with_autorotation_default_validity_enabled(
+    issuer_plugin, crypto_authority, certificate, logged_in_user
+):
+    """Test that when LEMUR_AUTOROTATION_USE_DEFAULT_VALIDITY is True,
+    reissued certificates with autorotation use the authority's default validity."""
+    from lemur.certificates.service import reissue_certificate
+    from lemur.authorities.service import update_options
+
+    # Enable rotation on the certificate
+    certificate.authority = crypto_authority
+    certificate.rotation = True
+
+    # Store original validity span (should be different from default)
+    original_span = certificate.not_after - certificate.not_before
+
+    # Enable the feature
+    current_app.config["LEMUR_AUTOROTATION_USE_DEFAULT_VALIDITY"] = True
+
+    # Set a specific default validity on the authority (different from original span)
+    # For non-CAB compliant authorities, default is DEFAULT_VALIDITY_DAYS (365 days)
+    update_options(crypto_authority.id, '[{"name": "cab_compliant","value":false}]')
+
+    # Reissue the certificate
+    new_cert = reissue_certificate(certificate)
+
+    # The new certificate should use authority's default validity (365 days)
+    expected_days = crypto_authority.default_validity_days
+    new_span_days = (new_cert.not_after - new_cert.not_before).days
+
+    # Allow 1 day tolerance for calculation differences
+    assert abs(new_span_days - expected_days) <= 1
+
+
+def test_reissue_certificate_without_autorotation_ignores_default_validity(
+    issuer_plugin, crypto_authority, certificate, logged_in_user
+):
+    """Test that certificates without autorotation enabled use original validity
+    even when LEMUR_AUTOROTATION_USE_DEFAULT_VALIDITY is True."""
+    from lemur.certificates.service import reissue_certificate
+
+    # Disable rotation on the certificate
+    certificate.authority = crypto_authority
+    certificate.rotation = False
+
+    # Store original validity span
+    original_span = certificate.not_after - certificate.not_before
+
+    # Enable the feature (should be ignored for non-rotation certificates)
+    current_app.config["LEMUR_AUTOROTATION_USE_DEFAULT_VALIDITY"] = True
+
+    # Reissue the certificate
+    new_cert = reissue_certificate(certificate)
+
+    # The new certificate should maintain the original validity span
+    new_span = new_cert.not_after - new_cert.not_before
+    assert abs((new_span - original_span).total_seconds()) < 60  # Allow 1 minute tolerance
+
+
 def test_reissue_command_by_name(
         issuer_plugin, crypto_authority, logged_in_user
 ):

@@ -276,6 +276,25 @@ Basic Configuration
         DEFAULT_VALIDITY_DAYS = 1095
 
 
+.. data:: LEMUR_AUTOROTATION_USE_DEFAULT_VALIDITY
+    :noindex:
+
+        When set to True, certificates with autorotation enabled will use the authority's default validity period upon
+        reissuance, instead of maintaining the original certificate's validity span. This is useful when you want all
+        autorotated certificates to use a standardized validity period based on the authority's configuration (e.g.,
+        PUBLIC_CA_DEFAULT_VALIDITY_DAYS for CAB-compliant authorities, or DEFAULT_VALIDITY_DAYS for other authorities).
+
+        This feature only affects certificates that have autorotation (rotation flag) enabled. Certificates without
+        autorotation will continue to maintain their original validity span during reissuance, regardless of this setting.
+
+        The default value is False, which maintains backward compatibility by preserving the original certificate's
+        validity span during reissuance.
+
+    ::
+
+        LEMUR_AUTOROTATION_USE_DEFAULT_VALIDITY = False
+
+
 .. data:: DEBUG_DUMP
     :noindex:
 
