@@ -933,17 +933,32 @@ def get_name_from_arn(arn):
     return arn.split("/", 1)[1]
 
 
-def calculate_reissue_range(start, end):
+def calculate_reissue_range(start, end, authority=None, rotation=False):
     """
     Determine what the new validity_start and validity_end dates should be.
     :param start:
     :param end:
+    :param authority: Optional authority to use for default validity calculation
+    :param rotation: Whether this certificate has autorotation enabled
     :return:
     """
-    span = end - start
-
     new_start = arrow.utcnow()
-    new_end = new_start + span
+
+    # Check if we should use default validity for autorotation reissues
+    use_default_validity = (
+        rotation and
+        authority and
+        current_app.config.get("LEMUR_AUTOROTATION_USE_DEFAULT_VALIDITY", False)
+    )
+
+    if use_default_validity:
+        # Use authority's default validity days
+        default_days = authority.default_validity_days
+        new_end = new_start.shift(days=default_days)
+    else:
+        # Use original certificate's validity span
+        span = end - start
+        new_end = new_start + span
 
     return new_start, arrow.get(new_end)
 
@@ -956,7 +971,12 @@ def get_certificate_primitives(certificate):
     :return: dict of certificate primitives, should be enough to effectively re-issue
     certificate via `create`.
     """
-    start, end = calculate_reissue_range(certificate.not_before, certificate.not_after)
+    start, end = calculate_reissue_range(
+        certificate.not_before,
+        certificate.not_after,
+        authority=certificate.authority,
+        rotation=certificate.rotation
+    )
     ser = CertificateInputSchema().load(
         CertificateOutputSchema().dump(certificate).data
     )
