@@ -946,9 +946,9 @@ def calculate_reissue_range(start, end, authority=None, rotation=False):
 
     # Check if we should use default validity for autorotation reissues
     use_default_validity = (
-        rotation and
-        authority and
-        current_app.config.get("LEMUR_AUTOROTATION_USE_DEFAULT_VALIDITY", False)
+        rotation
+        and authority
+        and current_app.config.get("LEMUR_AUTOROTATION_USE_DEFAULT_VALIDITY")
     )
 
     if use_default_validity:

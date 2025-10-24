@@ -1018,7 +1018,6 @@ def test_reissue_certificate_with_autorotation_default_validity_disabled(
     """Test that when LEMUR_AUTOROTATION_USE_DEFAULT_VALIDITY is False (default),
     reissued certificates maintain the original validity period."""
     from lemur.certificates.service import reissue_certificate
-    import arrow
 
     # Enable rotation on the certificate
     certificate.authority = crypto_authority
@@ -1045,7 +1044,6 @@ def test_reissue_certificate_with_autorotation_default_validity_enabled(
     reissued certificates with autorotation use the authority's default validity."""
     from lemur.certificates.service import reissue_certificate
     from lemur.authorities.service import update_options
-    import arrow
 
     # Enable rotation on the certificate
     certificate.authority = crypto_authority
@@ -1078,7 +1076,6 @@ def test_reissue_certificate_without_autorotation_ignores_default_validity(
     """Test that certificates without autorotation enabled use original validity
     even when LEMUR_AUTOROTATION_USE_DEFAULT_VALIDITY is True."""
     from lemur.certificates.service import reissue_certificate
-    import arrow
 
     # Disable rotation on the certificate
     certificate.authority = crypto_authority
