@@ -25,10 +25,6 @@ from lemur.endpoints import service as endpoint_service
 from lemur.endpoints.models import Endpoint
 from lemur.extensions import metrics
 from lemur.destinations import service as destination_service
-from lemur.plugins.lemur_aws import plugin as aws_plugin
-# from cert_orchestration_adapter.plugin import AdapterSourcePlugin
-from lemur.plugins.lemur_gcp import plugin as gcp_plugin
-from lemur.plugins.lemur_azure import plugin as azure_plugin
 from lemur.certificates.schemas import CertificateUploadInputSchema
 from lemur.common.utils import find_matching_certificates_by_hash, parse_certificate
 from lemur.common.defaults import serial
@@ -557,7 +553,7 @@ def add_destination_to_sources(dst):
     sources = get_all()
     for src in sources:
         source_titles.add(src.title)
-    
+
     if destination_plugin.title in source_titles:
         return False
 
@@ -566,7 +562,9 @@ def add_destination_to_sources(dst):
         plugins.get(destination_plugin.sync_as_source_name).options
     )
     for option in src_options:
-        set_plugin_option(option.name, get_plugin_option(option.name, dst.options), src_options)
+        set_plugin_option(
+            option.name, get_plugin_option(option.name, dst.options), src_options
+        )
     create(
         label=dst.label,
         plugin_name=destination_plugin.sync_as_source_name,
