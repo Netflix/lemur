@@ -465,6 +465,7 @@ def enable_cloudfront(source_label):
         print(f"[+] Error: {str(e)}")
         sys.exit(1)
 
+
 def recreate_sources_from_destinations():
     """
     This command will recreate all sources from destinations.

@@ -6,7 +6,6 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 
-from typing import Any
 import arrow
 from datetime import timedelta
 import copy
