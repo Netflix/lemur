@@ -15,7 +15,7 @@ from lemur.destinations.models import Destination
 from lemur.certificates.models import Certificate
 from lemur.certificates import service as certificate_service
 from lemur.logs import service as log_service
-from lemur.sources.service import add_aws_destination_to_sources
+from lemur.sources.service import add_destination_to_sources
 
 
 def create(label, plugin_name, options, description=None):
@@ -38,7 +38,7 @@ def create(label, plugin_name, options, description=None):
     current_app.logger.info("Destination: %s created", label)
 
     # add the destination as source, to avoid new destinations that are not in source, as long as an AWS destination
-    if add_aws_destination_to_sources(destination):
+    if add_destination_to_sources(destination):
         current_app.logger.info("Source: %s created", label)
 
     log_service.audit_log(
@@ -75,7 +75,7 @@ def update(destination_id, label, plugin_name, options, description):
     )
     updated = database.update(destination)
     # add the destination as source, to avoid new destinations that are not in source, as long as an AWS destination
-    if add_aws_destination_to_sources(updated):
+    if add_destination_to_sources(updated):
         current_app.logger.info("Source: %s created", label)
     return updated
 

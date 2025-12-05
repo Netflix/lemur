@@ -394,7 +394,7 @@ def sync_source_destination(labels):
     """
     destinations = validate_destinations(labels)
     for destination in destinations:
-        if source_service.add_aws_destination_to_sources(destination):
+        if source_service.add_destination_to_sources(destination):
             info_text = f"[+] New source added: {destination.label}.\n"
             print(info_text)
             current_app.logger.warning(info_text)

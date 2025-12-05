@@ -6,6 +6,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 
+from typing import Any
 import arrow
 from datetime import timedelta
 import copy
@@ -24,7 +25,10 @@ from lemur.endpoints import service as endpoint_service
 from lemur.endpoints.models import Endpoint
 from lemur.extensions import metrics
 from lemur.destinations import service as destination_service
-
+from lemur.plugins.lemur_aws import plugin as aws_plugin
+# from cert_orchestration_adapter.plugin import AdapterSourcePlugin
+from lemur.plugins.lemur_gcp import plugin as gcp_plugin
+from lemur.plugins.lemur_azure import plugin as azure_plugin
 from lemur.certificates.schemas import CertificateUploadInputSchema
 from lemur.common.utils import find_matching_certificates_by_hash, parse_certificate
 from lemur.common.defaults import serial
@@ -536,57 +540,37 @@ def render(args):
     return database.sort_and_page(query, Source, args)
 
 
-def add_aws_destination_to_sources(dst):
+def add_destination_to_sources(dst):
     """
     Given a destination, check if it can be added as sources, and include it if not already a source
     We identify qualified destinations based on the sync_as_source attributed of the plugin.
     The destination sync_as_source_name reveals the name of the suitable source-plugin.
-    We rely on account numbers to avoid duplicates.
+    We rely on source & dest titles to match to avoid duplicates.
     :return: true for success and false for not adding the destination as source
     """
     # check that destination can be synced to a source
     destination_plugin = plugins.get(dst.plugin_name)
-    if (
-        destination_plugin.sync_as_source is None
-        or not destination_plugin.sync_as_source
-    ):
-        return False
-    account_number = get_plugin_option("accountNumber", dst.options)
-    if account_number is None:
-        return False
-    path = get_plugin_option("path", dst.options)
-    if path is None:
+    if not destination_plugin.sync_as_source:
         return False
 
-    # a set of all (account number, path) available as sources
-    src_account_paths = set()
+    source_titles = set()
     sources = get_all()
     for src in sources:
-        src_account_paths.add(
-            (
-                get_plugin_option("accountNumber", src.options),
-                get_plugin_option("path", src.options),
-            )
-        )
+        source_titles.add(src.title)
+    
+    if destination_plugin.title in source_titles:
+        return False
 
-    if (account_number, path) not in src_account_paths:
-        src_options = copy.deepcopy(
-            plugins.get(destination_plugin.sync_as_source_name).options
-        )
-        set_plugin_option("accountNumber", account_number, src_options)
-        set_plugin_option("path", path, src_options)
-        # Set the right endpointType for cloudfront sources.
-        if (
-            get_plugin_option("endpointType", src_options) is not None
-            and path == "/cloudfront/"
-        ):
-            set_plugin_option("endpointType", "cloudfront", src_options)
-        create(
-            label=dst.label,
-            plugin_name=destination_plugin.sync_as_source_name,
-            options=src_options,
-            description=dst.description,
-        )
-        return True
-
-    return False
+    destination_plugin = plugins.get(dst.plugin_name)
+    src_options = copy.deepcopy(
+        plugins.get(destination_plugin.sync_as_source_name).options
+    )
+    for option in src_options:
+        set_plugin_option(option.name, get_plugin_option(option.name, dst.options), src_options)
+    create(
+        label=dst.label,
+        plugin_name=destination_plugin.sync_as_source_name,
+        options=src_options,
+        description=dst.description,
+    )
+    return True
