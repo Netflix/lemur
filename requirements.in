@@ -26,6 +26,7 @@ Flask-Cors
 flask_replicated
 future
 google-cloud-private-ca
+google-cloud-storage
 protobuf
 types-protobuf
 gunicorn
