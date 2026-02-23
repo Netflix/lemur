@@ -960,6 +960,12 @@ def calculate_reissue_range(start, end, authority=None, rotation=False):
         span = end - start
         new_end = new_start + span
 
+    # Enforce authority's maximum validity period if configured
+    if authority and authority.max_issuance_days:
+        calculated_days = (new_end - new_start).days
+        if calculated_days > authority.max_issuance_days:
+            new_end = new_start.shift(days=authority.max_issuance_days)
+
     return new_start, arrow.get(new_end)
 
 
